@@ -33,7 +33,9 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   }, [modelData])
 
   const { gl, scene } = useThree()
-  const selectedObj = findParent(scene.getObjectById(selectedObject))
+  const worldScaleGroup = scene.children.find(child => child.userData.type === 'world-scale')
+  const selectedObj = worldScaleGroup ? findParent(worldScaleGroup.children.find(child => child.userData.id === selectedObject)) : undefined
+
   isSelected.current = selectedObj && selectedObj.userData.id === props.id
 
   const ref = useUpdate(

@@ -144,7 +144,7 @@ const SceneContent = ({
   const [selectorOffset, setSelectorOffset] = useState(0)
 
   const worldScaleRef = useRef(0.1)
-  const worldScaleGroupRef = useRef([])
+  const worldScaleGroupRef = useRef(null)
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const intersectArray = useRef([])
@@ -302,19 +302,19 @@ const SceneContent = ({
       if (intersection.object.name.includes('selector-pose')) {
         const posePresetId = intersection.object.name.split('_')[1]
         const skeleton = presets.poses[posePresetId].state.skeleton
-        const object = scene.getObjectById(selectedObject)
+        const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
         updateObject(object.userData.id, { posePresetId, skeleton })
       }
 
       if (intersection.object.name.includes('selector-object')) {
         const model = intersection.object.name.split('_')[1]
-        const object = scene.getObjectById(selectedObject)
+        const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
         updateObject(object.userData.id, { model })
       }
 
       if (intersection.object.name.includes('selector-character')) {
         const model = intersection.object.name.split('_')[1]
-        const object = scene.getObjectById(selectedObject)
+        const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
         updateObject(object.userData.id, { model })
       }
 
@@ -420,7 +420,7 @@ const SceneContent = ({
       }
 
       let object = findParent(intersection.object)
-      const { id } = object
+      const { id } = object.userData
       // is this probably NOT a scene object?
       // (used to exclude environment meshes for example)
       if (object.userData.id == null) {
@@ -428,7 +428,7 @@ const SceneContent = ({
       }
 
       setSelectedObject(id)
-      selectedObjRef.current = scene.getObjectById(id)
+      selectedObjRef.current = object
       setHideArray(createHideArray(scene))
       setGuiMode('selection')
 
@@ -512,7 +512,7 @@ const SceneContent = ({
           setGuiMode('selection')
         }, 250)
         break
-      case 'duplicate':
+      case 'duplicate':        
         if (!selectedObjRef.current) return
         setGuiMode(mode)
 
@@ -521,7 +521,7 @@ const SceneContent = ({
 
         setTimeout(() => {
           const match = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
-          setSelectedObject(match.id)
+          setSelectedObject(match.userData.id)
           selectedObjRef.current = match
           setHideArray(createHideArray(scene))
           setGuiMode('selection')
@@ -873,9 +873,9 @@ const SceneContent = ({
       if (intersection.object.userData.type === 'bone') return
 
       let object = findParent(intersection.object)
-      const { id } = object
+      const { id } = object.userData
       setSelectedObject(id)
-      selectedObjRef.current = scene.getObjectById(id)
+      selectedObjRef.current = object
       setHideArray(createHideArray(scene))
       setGuiMode('selection')
     } else {
@@ -1202,7 +1202,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ rStatsRef, models, presets, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI {...{ rStatsRef, worldScaleGroupRef, models, presets, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
@@ -1213,11 +1213,11 @@ const SceneContent = ({
     </group>
   )
 
-  const selectedObject3d = scene.getObjectById(selectedObject)
+  const selectedObj3d = worldScaleGroupRef.current ? worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject) : undefined
 
   let sceneObjectComponents = Object.values(sceneObjects)
     .map((sceneObject, i) => {
-      const isSelected = selectedObject3d && selectedObject3d.userData.id === sceneObject.id
+      const isSelected = selectedObj3d && selectedObj3d.userData.id === sceneObject.id
         ? true
         : false
 

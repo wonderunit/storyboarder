@@ -16,6 +16,7 @@ const bWidth = 0.0125
 
 const GUI = ({
   rStatsRef,
+  worldScaleGroupRef,
   aspectRatio,
   models,
   presets,
@@ -62,10 +63,20 @@ const GUI = ({
   //   return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
   // }, [])
 
+  // first look for matching id under world group, if not found look under vrControllers
+  let object = worldScaleGroupRef.current
+    ? worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
+    : undefined
+  if (object === undefined) {
+    vrControllers.forEach(controller => {
+      const match = controller.children.find(child => child.userData.id === selectedObject)
+      if (match) object = match
+    })
+    if (object === undefined) object = false
+  }
+
   const updateGeometry = (id, prop, value) => {
     if (id && prop) {
-      let object = scene.getObjectById(id)
-
       if (prop === 'guiFOV') {
         const guiCam = scene.getObjectByName('guiCam')
         guiCam.dispatchEvent({ type: 'updateFOV', fov: value })
@@ -199,7 +210,6 @@ const GUI = ({
       scene.remove(obj)
     })
 
-    const object = scene.getObjectById(selectedObject)
     if (!object) return []
 
     const parent = findParent(object)
@@ -374,14 +384,13 @@ const GUI = ({
   )
 
   const invertGUI = flipHand ? -1 : 1
-  const object = scene.getObjectById(selectedObject)
   const fpsMeter = useMemo(() => textCreator.create(fps.toString(), { color: 0xff0000, scale: 0.475, centerText: false }), [fps])
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         <group name="selector_container">
-          {selectedObject && object.userData.type === 'character' && guiSelector === 'pose' && (
+          {object && object.userData.type === 'character' && guiSelector === 'pose' && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -454,7 +463,7 @@ const GUI = ({
             </group>
           )}
 
-          {selectedObject && object.userData.type === 'character' && guiSelector === 'character' && (
+          {object && object.userData.type === 'character' && guiSelector === 'character' && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -527,7 +536,7 @@ const GUI = ({
             </group>
           )}
 
-          {selectedObject && object.userData.type === 'object' && guiSelector === 'object' && (
+          {object && object.userData.type === 'object' && guiSelector === 'object' && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -602,7 +611,7 @@ const GUI = ({
         </group>
 
         <group name="properties_container">
-          {selectedObject && textCount && (
+          {object && textCount && (
             <group
               position={[
                 (uiScale * 2.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1 * invertGUI,
