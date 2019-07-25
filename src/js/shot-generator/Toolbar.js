@@ -2,7 +2,6 @@ const { connect } = require('react-redux')
 
 const {
   // action creators
-  createObject,
   selectObject,
   undoGroupStart,
   undoGroupEnd,
@@ -14,11 +13,7 @@ const {
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
-// all pose presets (so we can use `stand` for new characters)
-const defaultPosePresets = require('../shared/reducers/shot-generator-presets/poses.json')
-
-// id of the pose preset used for new characters
-const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
+const SceneObjectCreators = require('../shared/actions/scene-object-creators')
 
 const h = require('../utils/h')
 
@@ -30,46 +25,22 @@ const preventDefault = (fn, ...args) => e => {
   fn(e, ...args)
 }
 
-// TODO solve case where near a wall
-const generatePositionAndRotation = (camera, room) => {
-  let direction = new THREE.Vector3()
-  camera.getWorldDirection( direction )
-
-  // place 5 meters away from the camera
-  // TODO limit based on room bounds?
-  let center = new THREE.Vector3().addVectors( camera.position, direction.multiplyScalar( 5 ) )
-
-  let obj = new THREE.Object3D()
-  obj.position.set(center.x, 0, center.z)
-  obj.position.x += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
-  obj.position.z += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
-  obj.lookAt(camera.position)
-
-  let euler = new THREE.Euler()
-    .setFromQuaternion(
-      obj.quaternion.clone().normalize(),
-      'YXZ'
-    )
-
-  return {
-    x: obj.position.x,
-    y: obj.position.z,
-    z: obj.position.y,
-    rotation: euler.y
-  }
-}
-
 const Toolbar = connect(
     state => ({
       room: getWorld(state).room,
       cameraState: getSceneObjects(state)[getActiveCamera(state)]
     }),
     {
-      createObject,
       selectObject,
       undoGroupStart,
       undoGroupEnd,
-      setActiveCamera
+      setActiveCamera,
+
+      createCamera: SceneObjectCreators.createCamera,
+      createModelObject: SceneObjectCreators.createModelObject,
+      createCharacter: SceneObjectCreators.createCharacter,
+      createLight: SceneObjectCreators.createLight,
+      createVolume: SceneObjectCreators.createVolume
     }
 )(
   ({
@@ -78,11 +49,16 @@ const Toolbar = connect(
     cameraState,
 
     // action creators
-    createObject,
     selectObject,
     undoGroupStart,
     undoGroupEnd,
     setActiveCamera,
+
+    createCamera,
+    createModelObject,
+    createCharacter,
+    createLight,
+    createVolume,
 
     // props
     camera,
@@ -99,29 +75,8 @@ const Toolbar = connect(
     const onCreateCameraClick = () => {
       let id = THREE.Math.generateUUID()
 
-      let { x, y, z } = camera.position
-
-      let rot = new THREE.Euler().setFromQuaternion( camera.quaternion, "YXZ" )
-      let rotation = rot.y
-      let tilt = rot.x
-      let roll = rot.z
-
-      // TODO base on current camera rotation so offset is always left-ward
-      // offset by ~3 feet
-      x -= 0.91
-
-      let object = {
-        id,
-        type: 'camera',
-
-        fov: cameraState.fov,
-
-        x, y: z, z: y,
-        rotation, tilt, roll
-      }
-
       undoGroupStart()
-      createObject(object)
+      createCamera(id, cameraState, camera)
       selectObject(id)
       setActiveCamera(id)
       undoGroupEnd()
@@ -129,22 +84,9 @@ const Toolbar = connect(
 
     const onCreateObjectClick = () => {
       let id = THREE.Math.generateUUID()
-      let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
 
       undoGroupStart()
-      createObject({
-        id,
-        type: 'object',
-        model: 'box',
-
-        width: 1, height: 1, depth: 1,
-
-        x, y, z,
-
-        rotation: { x: 0, y: rotation, z: 0 },
-
-        visible: true
-      })
+      createModelObject(id, camera, room)
       selectObject(id)
       undoGroupEnd()
     }
@@ -152,31 +94,8 @@ const Toolbar = connect(
     const onCreateCharacterClick = () => {
       let id = THREE.Math.generateUUID()
 
-      let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
-
       undoGroupStart()
-      createObject({
-        id,
-        type: 'character',
-        height: 1.8,
-        model: 'adult-male',
-
-        x, y, z,
-        rotation,
-
-        headScale: 1,
-
-        morphTargets: {
-          mesomorphic: 0,
-          ectomorphic: 0,
-          endomorphic: 0
-        },
-
-        posePresetId: DEFAULT_POSE_PRESET_ID,
-        skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
-
-        visible: true
-      })
+      createCharacter(id, camera, room)
       selectObject(id)
       undoGroupEnd()
     }
@@ -185,20 +104,7 @@ const Toolbar = connect(
       let id = THREE.Math.generateUUID()
 
       undoGroupStart()
-      createObject({
-        id,
-        type: 'light',
-
-        x: 0, y: 0, z: 2,
-        rotation: 0, tilt: 0, roll: 0,
-
-        intensity: 0.8,
-        visible: true,
-        angle: 1.04,
-        distance: 5,
-        penumbra: 1.0,
-        decay: 1,
-      })
+      createLight(id)
       selectObject(id)
       undoGroupEnd()
     }
@@ -207,23 +113,7 @@ const Toolbar = connect(
       let id = THREE.Math.generateUUID()
 
       undoGroupStart()
-      createObject({
-        id,
-        type: 'volume',
-
-        x: 0, y: 2, z: 0,
-
-        width: 5, height: 5, depth: 5,
-
-        rotation: 0,
-
-        visible: true,
-        opacity: 0.3,
-        color: 0x777777,
-        numberOfLayers: 4,
-        distanceBetweenLayers: 1.5,
-        volumeImageAttachmentIds: ['rain2', 'rain1']
-      })
+      createVolume(id)
       selectObject(id)
       undoGroupEnd()
     }
