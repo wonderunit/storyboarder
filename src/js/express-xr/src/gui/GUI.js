@@ -368,16 +368,10 @@ const GUI = ({
     return textureArray
   }, [])
 
-  const help_textures = [
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_1.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_2.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_3.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_4.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_5.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_6.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_7.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_8.png'), [])
-  ]
+  const help_textures = useMemo(
+    () => [1, 2, 3, 4, 5, 6, 7, 8].map(n => new THREE.TextureLoader().load(`/data/system/xr/help_${n}.png`)),
+    []
+  )
 
   const invertGUI = flipHand ? -1 : 1
   const object = scene.getObjectById(selectedObject)
