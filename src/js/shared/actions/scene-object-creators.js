@@ -21,6 +21,19 @@ const generatePositionAndRotation = (camera, room) => {
   obj.position.z += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
   obj.lookAt(camera.position)
 
+
+  if (room) {
+    let vector = camera.getWorldDirection().normalize()
+    let raycaster = new THREE.Raycaster()
+    raycaster.set(camera.position, vector)
+    let intersects = raycaster.intersectObject(room)
+    if (intersects.length) {
+      let intersect = intersects[0]
+      console.log('nearest room surface is', intersect.distance, 'm away')
+    }
+  }
+
+
   let euler = new THREE.Euler()
     .setFromQuaternion(
       obj.quaternion.clone().normalize(),

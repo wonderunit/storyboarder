@@ -1,4 +1,6 @@
 const { connect } = require('react-redux')
+const React = require('react')
+const { useMemo } = React
 
 const {
   // action creators
@@ -72,6 +74,21 @@ const Toolbar = connect(
     //  loadScene,
     //  saveScene,
   }) => {
+    const roomObject3dFactory = ({ width, height, length }) => {
+      let geometry = new THREE.BoxBufferGeometry(
+        width,
+        height,
+        length
+      )
+      let material = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } )
+      let mesh = new THREE.Mesh(geometry, material)
+      return mesh
+    }
+    const roomObject3d = useMemo(
+      () => roomObject3dFactory(room),
+      [room]
+    )
+
     const onCreateCameraClick = () => {
       let id = THREE.Math.generateUUID()
 
@@ -86,7 +103,7 @@ const Toolbar = connect(
       let id = THREE.Math.generateUUID()
 
       undoGroupStart()
-      createModelObject(id, camera, room)
+      createModelObject(id, camera, room.visible && roomObject3d)
       selectObject(id)
       undoGroupEnd()
     }
@@ -95,7 +112,7 @@ const Toolbar = connect(
       let id = THREE.Math.generateUUID()
 
       undoGroupStart()
-      createCharacter(id, camera, room)
+      createCharacter(id, camera, room.visible && roomObject3d)
       selectObject(id)
       undoGroupEnd()
     }
