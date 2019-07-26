@@ -6,21 +6,12 @@ const defaultPosePresets = require('../reducers/shot-generator-presets/poses.jso
 // id of the pose preset used for new characters
 const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
-// TODO solve case where near a wall
 const generatePositionAndRotation = (camera, room) => {
   let direction = new THREE.Vector3()
   camera.getWorldDirection( direction )
 
-  // place 5 meters away from the camera
   // TODO limit based on room bounds?
-  let center = new THREE.Vector3().addVectors( camera.position, direction.multiplyScalar( 5 ) )
-
-  let obj = new THREE.Object3D()
-  obj.position.set(center.x, 0, center.z)
-  obj.position.x += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
-  obj.position.z += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
-  obj.lookAt(camera.position)
-
+  let distance = 5
 
   if (room) {
     let vector = camera.getWorldDirection().normalize()
@@ -30,9 +21,21 @@ const generatePositionAndRotation = (camera, room) => {
     if (intersects.length) {
       let intersect = intersects[0]
       console.log('nearest room surface is', intersect.distance, 'm away')
+      // if the room surface is closer than the default distance ...
+      if (intersect.distance < distance) {
+        // ... use a distance of halfway to the room surface
+        distance = intersect.distance / 2
+      }
     }
   }
 
+  let center = new THREE.Vector3().addVectors( camera.position, direction.multiplyScalar( distance ) )
+
+  let obj = new THREE.Object3D()
+  obj.position.set(center.x, 0, center.z)
+  obj.position.x += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
+  obj.position.z += (Math.random() * 2 - 1) * 0.3 // offset by +/- 0.3m
+  obj.lookAt(camera.position)
 
   let euler = new THREE.Euler()
     .setFromQuaternion(
