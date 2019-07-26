@@ -10,7 +10,6 @@ const generatePositionAndRotation = (camera, room) => {
   let direction = new THREE.Vector3()
   camera.getWorldDirection( direction )
 
-  // TODO limit based on room bounds?
   let distance = 5
 
   if (room) {
