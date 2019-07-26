@@ -20,7 +20,7 @@ const SGWorld = React.memo(({ groundTexture, wallTexture, world, modelData }) =>
 
   const roomMesh = useMemo(
     () => {
-      let group = buildSquareRoom(
+      let mesh = buildSquareRoom(
         world.room.width,
         world.room.length,
         world.room.height,
@@ -30,9 +30,9 @@ const SGWorld = React.memo(({ groundTexture, wallTexture, world, modelData }) =>
           }
         }
       )
-      group.position.y = -0.03
-      group.children[0].layers.enable(0)
-      return group
+      mesh.position.y = -0.03
+      mesh.layers.enable(0)
+      return mesh
     },
     [world, wallTexture]
   )
