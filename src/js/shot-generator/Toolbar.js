@@ -80,7 +80,7 @@ const Toolbar = connect(
         height,
         length
       )
-      let material = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.DoubleSide } )
+      let material = new THREE.MeshBasicMaterial( { color: 0xff0000, side: THREE.BackSide } )
       let mesh = new THREE.Mesh(geometry, material)
       return mesh
     }
