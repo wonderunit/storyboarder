@@ -151,7 +151,7 @@ const SceneManager = connect(
       // )
 
       largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current, {defaultThickness:0.008} )
-
+      console.log(largeRenderer.current.getPixelRatio());
       smallRenderer.current = new THREE.WebGLRenderer({
         canvas: smallCanvasRef.current,
         antialias: true
@@ -356,14 +356,14 @@ const SceneManager = connect(
               }
               let tempColor = scene.background.clone()
               if (state.mainViewCamera === 'live') {
-                largeRendererEffect.current.render(scene, cameraForLarge)
+                //largeRendererEffect.current.render(scene, cameraForLarge)
                 scene.background.set(new THREE.Color( '#FFFFFF' ))
                 smallRendererEffect.current.render( scene, cameraForSmall)
                 scene.background.set(tempColor)
 
               } else {
                 scene.background.set(new THREE.Color( '#FFFFFF' ))
-                largeRendererEffect.current.render(scene, cameraForLarge)
+                //largeRendererEffect.current.render(scene, cameraForLarge)
                 scene.background.set(tempColor)
                 smallRendererEffect.current.render( scene, cameraForSmall)
               }
@@ -619,7 +619,8 @@ const SceneManager = connect(
           el: largeCanvasRef.current,
           selectOnPointerDown: mainViewCamera !== 'live',
           useIcons: mainViewCamera !== 'live',
-          transition
+          transition, 
+          renderer: largeRenderer.current
         }],
 
         [SelectionManager, {
@@ -629,7 +630,7 @@ const SceneManager = connect(
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',
           useIcons: mainViewCamera === 'live',
-          transition
+          transition,
         }],
 
         // [SelectionsMover, {

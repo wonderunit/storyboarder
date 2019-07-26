@@ -1,6 +1,6 @@
 const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
-
+const GPUPicker  = require('./GPUPickers/GPUPicker');
 const {
   selectObject,
   selectObjectToggle,
@@ -139,7 +139,7 @@ const getIntersectionTarget = intersect => {
     return intersect.object.parent
   }
 }
-
+const gpuPicker = new GPUPicker();
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
@@ -172,15 +172,16 @@ const SelectionManager = connect(
     updateObjects,
 
     transition,
-    
+    renderer,
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    
   }) => {
 
   const { scene } = useContext(SceneContext)
-
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
+ 
 
   const intersectables = scene.children.filter(o =>
     o.userData.type === 'object' ||
@@ -270,12 +271,15 @@ const SelectionManager = connect(
 
   const onPointerDown = event => {
     event.preventDefault()
-
+    gpuPicker.initialize(scene, renderer);
+    gpuPicker.setChildren(scene.children);
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
-
+    
     // get the mouse coords
     const { x, y } = mouse(event)
+    gpuPicker.setPickingPosition(event.clientX, event.clientY);
+    gpuPicker.pick(camera);
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
     let intersects = getIntersects({ x, y }, camera, useIcons)
@@ -452,6 +456,7 @@ const SelectionManager = connect(
 
     const { x, y } = mouse(event)
 
+    gpuPicker.updateObject();
     if (dragTarget)
     {
       if(dragTarget.target.userData.type === 'character')
