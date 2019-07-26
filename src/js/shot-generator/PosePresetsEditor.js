@@ -49,6 +49,22 @@ const comparePresetNames = (a, b) => {
 
 const comparePresetPriority = (a, b) => b.priority - a.priority
 
+const searchPresetsForTerms = (presets, terms) => {
+  const matchAll = terms == null || terms.length === 0
+
+  return presets
+    .sort(comparePresetNames)
+    .filter(preset => {
+      if (matchAll) return true
+
+      return (
+        (LiquidMetal.score(preset.name, terms) > 0.8) ||
+        (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
+      )
+    })
+    .sort(comparePresetPriority)
+}
+
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const GUTTER_SIZE = 5
@@ -230,21 +246,7 @@ React.memo(({
   const [ready, setReady] = useState(false)
   const [terms, setTerms] = useState(null)
 
-  const presets = useMemo(() => {
-    const matchAll = terms == null || terms.length === 0
-
-    return posePresets
-      .sort(comparePresetNames)
-      .filter(preset => {
-        if (matchAll) return true
-
-        return (
-          (LiquidMetal.score(preset.name, terms) > 0.8) ||
-          (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
-        )
-      })
-      .sort(comparePresetPriority)
-  }, [posePresets, terms])
+  const presets = useMemo(() => searchPresetsForTerms(posePresets, terms), [posePresets, terms])
 
   useEffect(() => {
     if (ready) return
