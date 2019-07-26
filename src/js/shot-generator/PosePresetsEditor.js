@@ -47,6 +47,8 @@ const comparePresetNames = (a, b) => {
   return 0
 }
 
+const comparePresetPriority = (a, b) => b.priority - a.priority
+
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const GUTTER_SIZE = 5
@@ -200,16 +202,11 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   ])
 })
 
-const getSortedPosePresets = createSelector(
-  [state => state.presets.poses],
-  poses => Object.values(poses).sort(comparePresetNames)
-)
-
 const PosePresetsEditor = connect(
   state => ({
-    sortedPosePresets: getSortedPosePresets(state),
+    attachments: state.attachments,
 
-    attachments: state.attachments
+    posePresets: Object.values(state.presets.poses),
   }),
   {
     updateObject,
@@ -221,7 +218,7 @@ React.memo(({
   id,
   posePresetId,
 
-  sortedPosePresets,
+  posePresets,
   attachments,
 
   updateObject,
@@ -236,7 +233,8 @@ React.memo(({
   const presets = useMemo(() => {
     const matchAll = terms == null || terms.length === 0
 
-    return sortedPosePresets
+    return posePresets
+      .sort(comparePresetNames)
       .filter(preset => {
         if (matchAll) return true
 
@@ -245,7 +243,8 @@ React.memo(({
           (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
         )
       })
-  }, [sortedPosePresets, terms])
+      .sort(comparePresetPriority)
+  }, [posePresets, terms])
 
   useEffect(() => {
     if (ready) return
