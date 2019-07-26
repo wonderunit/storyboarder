@@ -287,7 +287,8 @@ React.memo(({
             keywords: name, // TODO keyword editing
             state: {
               skeleton: skeleton || {}
-            }
+            },
+            priority: 0
           }
 
           // add it to state
