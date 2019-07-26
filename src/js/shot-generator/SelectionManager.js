@@ -280,7 +280,8 @@ const SelectionManager = connect(
     
     // get the mouse coords
     const { x, y } = mouse(event)
-    gpuPicker.setPickingPosition(event.clientX, event.clientY);
+    const rect = el.getBoundingClientRect();
+    gpuPicker.setPickingPosition(event.clientX - rect.left, event.clientY - rect.top);
     gpuPicker.pick(camera);
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)

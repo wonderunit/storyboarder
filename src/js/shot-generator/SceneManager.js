@@ -305,7 +305,7 @@ const SceneManager = connect(
             }
           )
         }
-     
+        console.log(scene);
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -356,14 +356,15 @@ const SceneManager = connect(
               }
               let tempColor = scene.background.clone()
               if (state.mainViewCamera === 'live') {
-                //largeRendererEffect.current.render(scene, cameraForLarge)
+                largeRendererEffect.current.render(scene, cameraForLarge)
                 scene.background.set(new THREE.Color( '#FFFFFF' ))
                 smallRendererEffect.current.render( scene, cameraForSmall)
                 scene.background.set(tempColor)
-
+         
               } else {
                 scene.background.set(new THREE.Color( '#FFFFFF' ))
-                //largeRendererEffect.current.render(scene, cameraForLarge)
+                
+                largeRendererEffect.current.render(scene, cameraForLarge)
                 scene.background.set(tempColor)
                 smallRendererEffect.current.render( scene, cameraForSmall)
               }

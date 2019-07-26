@@ -12,7 +12,7 @@ class GPUPicker
         this.pickingScene.background = new THREE.Color(0);
         this.isInitialized = false;
         this.childrenSetted = false;
-        this.idBonus = 1;
+        this.idBonus = 300;
     }
 
     initialize(scene, renderer, rendererEffect)
@@ -21,7 +21,6 @@ class GPUPicker
         {
             return;
         }
-        console.log(scene);
         this.pickingScene.background = new THREE.Color(0);
         this.children = scene.children;
         this.renderer = renderer;
@@ -39,13 +38,13 @@ class GPUPicker
     {
         if(!this.childrenSetted)
         {
-            
-            let objects = children.filter(child => child.type !== "camera" && child.type !== "DirectionalLight" && child.type !== "AmbientLight" && child.children.filter(obj => obj.type === "Mesh").length !== 0);
-            objects = objects.flatMap(child => child.children.filter(obj => obj.type === "Mesh" && obj.material.type === "MeshToonMaterial"));
+            let objects = children.filter(child => child.type !== "camera" && child.type !== "DirectionalLight" && child.type !== "AmbientLight" && child.children.filter(obj => obj.type === "Mesh" ||  obj.type === "SkinnedMesh").length !== 0);
+            objects = objects.flatMap(child => child.children.filter(obj => (obj.type === "Mesh" || obj.type === "SkinnedMesh") && obj.material.type === "MeshToonMaterial"));
             for(let i = 0, n = objects.length; i < n; i++)
             {
                 const id = i + this.idBonus;
                 let object = objects[i];
+                console.log(object);
                 object.parent.updateMatrixWorld(true);
                 this.gpuPickerHelper.selectableObjects[id] = object;
                 const pickingMaterial = new THREE.MeshToonMaterial({
@@ -63,14 +62,9 @@ class GPUPicker
                   pickingCube.position.copy(object.worldPosition());
                   pickingCube.quaternion.copy(object.worldQuaternion());
                   pickingCube.scale.copy(object.worldScale());
-                 // pickingCube.matrix.copy( object.matrixWorld );
-                  pickingCube.updateMatrixWorld(true);
-                  pickingCube.updateMatrix(true);
+                  pickingCube.updateMatrix();
                 
                 }
-                console.log(children[0].parent);
-                console.log(this.pickingScene);
-
             this.childrenSetted = this.pickingScene.children.length === 0 ? false : true;
         }
     }
@@ -88,15 +82,11 @@ class GPUPicker
 
     pick(camera)
     {
-        //this.updateObject();
-        console.log("Pick", camera);
-        //console.log(this.pickingScene);
         this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.rendererEffect);
     }
 
     updateObject()
     {
-        console.log(this.pickingScene);
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
             let child = this.pickingScene.children[i];

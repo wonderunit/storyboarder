@@ -9,17 +9,16 @@ class GPUPickerHelper
         this.pickedObject = null;
         this.pickedObjectSaveColor = 0;
         this.selectableObjects = {};
+        this.selectedColor = new THREE.Color(0.2, 0.2, 0.2);
     }
     
     pick(cssPosition, scene, camera, renderer)
     {
         const {pickingTexture, pixelBuffer} = this;
        
-        //this.pickingTexture = new THREE.WebGLRenderTarget(w, h);
         if(this.pickedObject)
         {
             this.pickedObject.material.color = this.pickedObjectSaveColor;
-            this.pickedObject.material.emmisive = this.pickedObjectSaveColor;
             this.pickedObject = undefined;
         }
 
@@ -38,7 +37,6 @@ class GPUPickerHelper
         renderer.setRenderTarget(null);
 
         camera.clearViewOffset();
-
         renderer.readRenderTargetPixels(
             pickingTexture,
             0, 
@@ -57,10 +55,8 @@ class GPUPickerHelper
         if(intersectedObject)
         {
             this.pickedObject = intersectedObject;
-            this.pickedObjectSaveColor = this.pickedObject.material.color;
-            this.pickedObject.material.color = { r : 0.2, g: 0.2, b: 0.2};
-            this.pickedObject.material.emissive = { r : 0.2, g: 0.2, b: 0.2};
-            //this.pickedObject.material.emissive.setHex(0xFF0000);
+            this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
+            this.pickedObject.material.color =  this.selectedColor;
         }
     }
 
