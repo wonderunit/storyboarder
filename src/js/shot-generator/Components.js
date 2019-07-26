@@ -15,8 +15,6 @@ const prompt = require('electron-prompt')
 
 const { createSelector } = require('reselect')
 
-const child_process = require('child_process')
-
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 
@@ -30,7 +28,7 @@ const {
   selectObject,
   selectObjectToggle,
 
-  createObject,
+  // createObject,
   updateObject,
   deleteObjects,
 
@@ -38,26 +36,26 @@ const {
 
   selectBone,
   setMainViewCamera,
-  loadScene,
-  saveScene,
+  // loadScene,
+  // saveScene,
   updateCharacterSkeleton,
   setActiveCamera,
-  resetScene,
-  createScenePreset,
-  updateScenePreset,
-  deleteScenePreset,
+  // resetScene,
+  // createScenePreset,
+  // updateScenePreset,
+  // deleteScenePreset,
 
   createCharacterPreset,
 
-  createPosePreset,
-  updatePosePreset,
-  deletePosePreset,
+  // createPosePreset,
+  // updatePosePreset,
+  // deletePosePreset,
 
   updateWorld,
   updateWorldRoom,
   updateWorldEnvironment,
 
-  markSaved,
+  // markSaved,
 
   toggleWorkspaceGuide,
   undoGroupStart,
@@ -67,8 +65,8 @@ const {
   //
   // selectors
   //
-  getSerializedState,
-  getIsSceneDirty,
+  // getSerializedState,
+  // getIsSceneDirty,
 
   getSceneObjects,
   getSelections,
@@ -78,7 +76,7 @@ const {
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
-const IconSprites = require('./IconSprites')
+const Icon = require('./Icon')
 
 const presetsStorage = require('../shared/store/presetsStorage')
 //const presetsStorage = require('../presetsStorage')
@@ -99,8 +97,6 @@ const PosePresetsEditor = require('./PosePresetsEditor')
 const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 
-const notifications = require('../window/notifications')
-
 require('../vendor/OutlineEffect.js')
 
 
@@ -118,6 +114,7 @@ window.THREE = THREE
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
+// TODO dry
 const metersAsFeetAndInches = meters => {
   let heightInInches = meters * 39.3701
   let heightFeet = Math.floor(heightInInches / 12)
@@ -126,7 +123,6 @@ const metersAsFeetAndInches = meters => {
 }
 
 const feetAndInchesAsString = (feet, inches) => `${feet}′${inches}″`
-const feetAndInchesAsString2nd = (feet, inches) => `${feet}'${inches}"`  //need these because sdf font doesn't have these glyphs
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
@@ -163,11 +159,6 @@ const indexOfGreaterThan = (array, item) => {
   return ((item - array[i]) < (array[j] - item)) ? i : j
 }
 
-// all pose presets (so we can use `stand` for new characters)
-const defaultPosePresets = require('../shared/reducers/shot-generator-presets/poses.json')
-// id of the pose preset used for new characters
-const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
-
 const SceneContext = React.createContext()
 
 
@@ -192,132 +183,6 @@ THREE.Cache.enabled = true
 //
 //   return null
 // })
-
-
-
-const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
-  let camera = useRef(
-    new THREE.PerspectiveCamera(
-    props.fov,
-    props.aspectRatio,
-    // near
-    0.01,
-    // far
-    1000
-  ))
-
-  useEffect(() => {
-    console.log(type, id, 'added')
-
-    // TODO do we ever need these?  - we do at least some (aspectRatio breaks)
-    // camera.current.position.x = props.x
-    // camera.current.position.y = props.z
-    // camera.current.position.z = props.y
-    // camera.current.rotation.x = 0
-    // camera.current.rotation.z = 0
-    // camera.current.rotation.y = props.rotation
-    // camera.current.rotateX(props.tilt)
-    // camera.current.rotateZ(props.roll)
-    // camera.current.userData.type = type
-    // camera.current.userData.id = id
-    camera.current.fov = props.fov
-    let focal = camera.current.getFocalLength()
-    let [camFeet, camInches] = metersAsFeetAndInches(props.z)
-    camera.current.aspect = props.aspectRatio
-    camera.current.orthoIcon = new IconSprites( type, props.name ? props.name : props.displayName, camera.current, Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
-    camera.current.orthoIcon.position.copy(camera.current.position)
-    camera.current.orthoIcon.icon.material.rotation = camera.current.rotation.y
-    scene.add(camera.current.orthoIcon)
-    let frustumIcons = new THREE.Object3D()
-
-    frustumIcons.left = new IconSprites( 'object', '', camera.current )
-    frustumIcons.right = new IconSprites( 'object', '', camera.current )
-    frustumIcons.left.scale.set(0.06, 2.5, 1)
-    frustumIcons.right.scale.set(0.06, 2.5, 1)
-    //frustumIcons.left.icon.position.z = -0.3
-    frustumIcons.left.icon.center = new THREE.Vector2(0.5, -0.2)
-    frustumIcons.right.icon.center = new THREE.Vector2(0.5, -0.2)
-    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect )
-    frustumIcons.left.icon.material.rotation = hFOV/2 + camera.current.rotation.y
-    frustumIcons.right.icon.material.rotation = -hFOV/2 + camera.current.rotation.y
-
-    camera.current.orthoIcon.frustumIcons = frustumIcons
-    frustumIcons.add(frustumIcons.left)
-    frustumIcons.add(frustumIcons.right)
-    camera.current.orthoIcon.add(frustumIcons)
-
-    scene.add(camera.current)
-    // setCamera(camera.current)
-
-    // console.log(
-    //   'focal length:',
-    //   camera.current.getFocalLength(),
-    //   'fov',
-    //   camera.current.fov,
-    //   'h',
-    //   camera.current.getFilmHeight(),
-    //   'gauge',
-    //   camera.current.filmGauge,
-    //   'aspect',
-    //   camera.current.aspect
-    // )
-
-    return function cleanup () {
-      console.log(type, id, 'removed')
-      scene.remove(camera.current.orthoIcon)
-      scene.remove(camera.current)
-      // setCamera(null)
-    }
-  }, [])
-
-  useEffect(()=>{
-    if (camera.current) {
-      camera.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
-    }
-  }, [props.displayName, props.name])
-
-  useEffect(() => {
-    camera.current.orthoIcon.setSelected(props.isSelected)
-  }, [props.isSelected])
-
-  camera.current.position.x = props.x
-  camera.current.position.y = props.z
-  camera.current.position.z = props.y
-  camera.current.rotation.x = 0
-  camera.current.rotation.z = 0
-  camera.current.rotation.y = props.rotation
-  camera.current.rotateX(props.tilt)
-  camera.current.rotateZ(props.roll)
-  camera.current.userData.type = type
-  camera.current.userData.id = id
-  camera.current.aspect = props.aspectRatio
-
-  camera.current.fov = props.fov
-  camera.current.updateProjectionMatrix()
-  if (camera.current.orthoIcon) {
-    camera.current.orthoIcon.position.copy(camera.current.position)
-    let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )   //always "YXZ" when we gat strange rotations
-    camera.current.orthoIcon.icon.material.rotation = rotation.y
-
-    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect )
-    camera.current.orthoIcon.frustumIcons.left.icon.material.rotation = hFOV/2 + rotation.y
-    camera.current.orthoIcon.frustumIcons.right.icon.material.rotation = -hFOV/2 + rotation.y
-
-
-    //calculatedName = camera.current.name || capitalize(`${camera.current.type} ${number}`)
-    //if (camera.current.orthoIcon.iconText)
-      //camera.current.orthoIcon.iconText.textGeometry.update( calculatedName )
-
-    let focal = camera.current.getFocalLength()
-    let [camFeet, camInches] = metersAsFeetAndInches(props.z)
-    if (camera.current.orthoIcon.iconSecondText)
-      camera.current.orthoIcon.changeSecondText( Math.round(focal)+"mm, "+feetAndInchesAsString2nd(camFeet, camInches) )
-    //camera.current.orthoIcon.frustumIcons = frustumIcons
-  }
-  camera.current.layers.enable(1)
-
-  return null
-})
 
 const WorldElement = React.memo(({ index, world, isSelected, selectObject, style = {} }) => {
   const onClick = preventDefault(() => {
@@ -1963,286 +1828,6 @@ const PhoneCursor = connect(
       )
     })
 
-const Icon = ({ src }) => h(
-  [
-    'img.icon', {
-      width: 32,
-      height: 32,
-      src: `./img/shot-generator/${src}.svg`
-    }
-  ]
-)
-
-const Toolbar = ({
-  createObject,
-  selectObject,
-  loadScene,
-  saveScene,
-  camera,
-  setActiveCamera,
-  resetScene,
-  saveToBoard,
-  insertAsNewBoard,
-  xrServerUrl,
-
-  undoGroupStart,
-  undoGroupEnd
-}) => {
-  const onCreateCameraClick = () => {
-    let id = THREE.Math.generateUUID()
-
-    undoGroupStart()
-    createObject({
-      id,
-
-      type: 'camera',
-      fov: 22.25,
-      x: 0,
-      y: 6,
-      z: 2,
-      rotation: 0,
-      tilt: 0,
-      roll: 0
-    })
-    selectObject(id)
-    setActiveCamera(id)
-    undoGroupEnd()
-  }
-
-  const onCreateObjectClick = () => {
-    let id = THREE.Math.generateUUID()
-    //let camera = findCamera();
-    let newPoz = generatePositionAndRotation(camera)
-
-    undoGroupStart()
-    createObject({
-      id,
-      type: 'object',
-      model: 'box',
-      width: 1,
-      height: 1,
-      depth: 1,
-      x: newPoz.x,
-      y: newPoz.y,
-      z: newPoz.z,
-      rotation: { x: 0, y: 0, z: 0 }, //Math.random() * Math.PI * 2,
-
-      visible: true
-    })
-    selectObject(id)
-    undoGroupEnd()
-  }
-
-  const generatePositionAndRotation = (camera) => {
-    let direction = new THREE.Vector3() // create once and reuse it!
-    camera.getWorldDirection( direction )
-    let newPos = new THREE.Vector3()
-    let dist = (Math.random()) * 6 + 4
-    newPos.addVectors ( camera.position, direction.multiplyScalar( dist ) )
-    let obj = new THREE.Object3D()
-    newPos.x += (Math.random() * 4 - 2)
-    newPos.z += (Math.random() * 4 - 2)
-    obj.position.set(newPos.x, 0, newPos.z)
-    obj.lookAt(camera.position)
-    obj.rotation.set(0, obj.rotation.y, 0)  //maybe we want rotation relative to camera (facing the camera)
-    obj.rotation.y = Math.random() * Math.PI * 2
-
-    return {
-      x: obj.position.x,
-      y: obj.position.z,
-      z: obj.position.y,
-      rotation: obj.rotation.y
-    }
-  }
-
-  const onCreateCharacterClick = () => {
-    let newPoz = generatePositionAndRotation(camera)
-    let id = THREE.Math.generateUUID()
-
-    undoGroupStart()
-    createObject({
-      id,
-      type: 'character',
-      height: 1.8,
-      model: 'adult-male',
-      x: newPoz.x,
-      y: newPoz.y,
-      z: newPoz.z,
-      rotation: 0,//newPoz.rotation,
-      headScale: 1,
-
-      morphTargets: {
-        mesomorphic: 0,
-        ectomorphic: 0,
-        endomorphic: 0
-      },
-
-      posePresetId: DEFAULT_POSE_PRESET_ID,
-      skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
-
-      visible: true
-    })
-    selectObject(id)
-    undoGroupEnd()
-  }
-
-  const onCreateLightClick = () => {
-    let id = THREE.Math.generateUUID()
-
-    undoGroupStart()
-    createObject({
-      id,
-      type: 'light',
-      x: 0,
-      y: 0,
-      z: 2,
-      rotation: 0,
-      tilt: 0,
-      roll: 0,
-      intensity: 0.8,
-      visible: true,
-      angle: 1.04,
-      distance: 5,
-      penumbra: 1.0,
-      decay: 1,
-    })
-    selectObject(id)
-    undoGroupEnd()
-  }
-
-  const onCreateVolumeClick = () => {
-    let id = THREE.Math.generateUUID()
-
-    undoGroupStart()
-    createObject({
-      id,
-      type: 'volume',
-      x: 0,
-      y:2,
-      z: 0,
-      width: 5,
-      height: 5,
-      depth:5,
-      rotation: 0,
-      visible: true,
-      opacity: 0.3,
-      color: 0x777777,
-      numberOfLayers: 4,
-      distanceBetweenLayers: 1.5,
-      volumeImageAttachmentIds: ['rain2', 'rain1']
-    })
-    selectObject(id)
-    undoGroupEnd()
-  }
-
-  const onCreateStressClick = () => {
-    undoGroupStart()
-    for (let i = 0; i < 500; i++) {
-      onCreateObjectClick()
-    }
-    for (let i = 0; i < 20; i++) {
-      onCreateCharacterClick()
-    }
-    undoGroupEnd()
-    setTimeout(() => {
-      console.log(Object.values(getSceneObjects($r.store.getState())).length, 'scene objects')
-    }, 100)
-  }
-
-  const onLoadClick = () => {
-    let filepaths = dialog.showOpenDialog(null, {})
-    if (filepaths) {
-      let filepath = filepaths[0]
-      let choice = dialog.showMessageBox(null, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        message: 'Your existing scene will be cleared to load the file. Are you sure?',
-        defaultId: 1 // default to No
-      })
-      if (choice === 0) {
-        try {
-          let data = JSON.parse(
-            fs.readFileSync(filepath)
-          )
-          loadScene(data)
-        } catch (err) {
-          console.error(err)
-          dialog.showMessageBox(null, {
-            message: 'Sorry, an error occurred.'
-          })
-        }
-      }
-    }
-  }
-
-  const onSaveClick = () => {
-    let filepath = dialog.showSaveDialog(null, { defaultPath: 'test.json' })
-    if (filepath) {
-      // if (fs.existsSync(filepath)) {
-      //   let choice = dialog.showMessageBox(null, {
-      //     type: 'question',
-      //     buttons: ['Yes', 'No'],
-      //     message: 'That file already exists. Overwrite?',
-      //     defaultId: 1 // default to No
-      //   })
-      //   if (choice === 1) return
-      // }
-      saveScene(filepath)
-    }
-  }
-
-  const onClearClick = () => {
-    let choice = dialog.showMessageBox(null, {
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      message: 'Your existing scene will be cleared. Are you sure?',
-      defaultId: 1 // default to No
-    })
-    if (choice === 0) {
-      resetScene()
-    }
-  }
-
-  const onSaveToBoardClick = event => {
-    saveToBoard()
-  }
-
-  const onInsertNewBoardClick = event => {
-    insertAsNewBoard()
-  }
-
-  const onOpenVR = preventDefault(() =>
-    notifications.notify({
-      message: `To view, open a VR web browser to:\n<a href="${xrServerUrl}">${xrServerUrl}</a>`,
-      timing: 30,
-      onClick: () => require('electron').shell.openExternal(xrServerUrl)
-    })
-  )
-
-  return h(
-    ['div#toolbar', { key: 'toolbar' },
-      ['div.toolbar__addition.row', [
-        ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], 'Camera']],
-        ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
-        ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
-        ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
-        ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']]
-      ]],
-      // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
-
-      // ['a[href=#]', { onClick: preventDefault(onClearClick) }, 'Clear'],
-      // ['a[href=#]', { onClick: preventDefault(onLoadClick) }, 'Load'],
-      // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
-
-      ['div.toolbar__board-actions.row', [
-        xrServerUrl ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, 'Open in VR'] : [],
-        ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Save to Board']],
-        ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], 'Insert As New Board']],
-      ]]
-    ]
-  )
-}
-
 const getClosestCharacterInView = (objects, camera) => {
   let obj = null
   let dist = 1000000
@@ -2924,8 +2509,6 @@ ipcRenderer.on('shot-generator:menu:view:fps-meter', (event, value) => {
 
 module.exports = {
   SceneContext,
-  Toolbar,
-  Icon,
   ElementsPanel,
   CameraInspector,
   BoardInspector,
@@ -2934,8 +2517,6 @@ module.exports = {
   KeyHandler,
   MenuManager,
   PhoneCursor,
-
-  Camera,
 
   preventDefault,
   animatedUpdate,
