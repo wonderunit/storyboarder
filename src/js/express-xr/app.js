@@ -3,6 +3,7 @@ const path = require('path')
 const dns = require('dns')
 
 const express = require('express')
+const remote = require('electron').remote
 const app = express()
 const http = require('http').Server(app)
 
@@ -32,6 +33,10 @@ class XRServer {
       path.join(__dirname, 'public', 'snd')
     ))
 
+    app.use('/data/presets/poses', express.static(
+      path.join(remote.app.getPath('userData'), 'presets', 'poses')
+    ))
+
     app.get('/', function(req, res) {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'))
     })
@@ -43,7 +48,10 @@ class XRServer {
       res.json({
         ...getSerializedState(state),
 
-        aspectRatio
+        aspectRatio,
+        presets: {
+          poses: state.presets.poses
+        }
       })
     })
 

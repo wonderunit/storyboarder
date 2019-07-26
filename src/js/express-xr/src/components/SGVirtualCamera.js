@@ -5,7 +5,6 @@ const { findParent } = require('../utils/xrHelperFuncs')
 
 const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
-  const [targetUpdated, setTargetUpdated] = useState(false)
 
   const previousTime = useRef([null])
   const isSelected = useRef(false)
@@ -49,20 +48,37 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     [props.rotation, props.tilt, props.roll]
   )
 
+  useMemo(() => {
+    renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
+  }, [])
+  const heightShader = useMemo(
+    () => new THREE.MeshBasicMaterial({
+      map: renderTarget.current,
+      side: THREE.DoubleSide,
+      depthTest: props.guiCamera ? false : true,
+      depthWrite: props.guiCamera ? false : true,
+      transparent: props.guiCamera ? true : false
+    }),
+    [renderTarget.current]
+  )
+
   const renderCamera = () => {
     if (virtualCamera.current && renderTarget.current) {
       gl.vr.enabled = false
 
-      hideArrayRef.current.forEach(child => {
-        child.visible = false
-      })
+      for (let i = 0; i < hideArrayRef.current.length; i++) {
+        hideArrayRef.current[i].visible = false
+      }
 
-      gl.render(scene, virtualCamera.current, renderTarget.current)
+      gl.setRenderTarget(renderTarget.current)
+      gl.render(scene, virtualCamera.current)
+      gl.setRenderTarget(null)
+
+      for (let i = 0; i < hideArrayRef.current.length; i++) {
+        hideArrayRef.current[i].visible = true
+      }
+
       gl.vr.enabled = true
-
-      hideArrayRef.current.forEach(child => {
-        child.visible = true
-      })
     }
   }
 
@@ -71,11 +87,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   }, [hideArray])
 
   useEffect(() => {
-    if (!renderTarget.current) {
-      renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
-      setTargetUpdated(true)
-    }
-
     if (virtualCamera.current) {
       virtualCamera.current.addEventListener('updateFOV', e => setCamSliderFOV(e.fov))
     }
@@ -84,7 +95,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   useRender(() => {
     if (!previousTime.current) previousTime.current = 0
 
-    const currentTime = new Date().getTime()
+    const currentTime = Date.now()
     const delta = currentTime - previousTime.current
 
     if (delta > 500) {
@@ -96,18 +107,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     renderCamera()
   })
 
-  const heightShader = useMemo(() => {
-    const heightShader = new THREE.MeshBasicMaterial({
-      map: renderTarget.current ? renderTarget.current.texture : null,
-      side: THREE.DoubleSide,
-      depthTest: props.guiCamera ? false : true,
-      depthWrite: props.guiCamera ? false : true,
-      transparent: props.guiCamera ? true : false
-    })
-
-    return heightShader
-  }, [targetUpdated])
-
   return (
     <group
       userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { fov: props.fov } }}
@@ -117,7 +116,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
       <group visible={virtualCamVisible || props.guiCamera === true}>
         <mesh
           userData={{ type: props.guiCamera ? 'gui' : 'view' }}
-          position={[0, props.guiCamera ? 0 : 0.3, (props.guiCamera ? 0.0025 : 0.01)]}
+          position={[0, props.guiCamera ? 0 : 0.3, props.guiCamera ? 0.0025 : 0.01]}
           material={heightShader}
         >
           <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
@@ -133,7 +132,10 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
             <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
           </mesh>
         )}
-        <mesh position={[0, props.guiCamera ? 0 : 0.3, 0]} material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}>
+        <mesh
+          position={[0, props.guiCamera ? 0 : 0.3, 0]}
+          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}
+        >
           <planeGeometry
             attach="geometry"
             args={[size * aspectRatio + (props.guiCamera ? 0.005 : 0.015), size + (props.guiCamera ? 0.005 : 0.015)]}
