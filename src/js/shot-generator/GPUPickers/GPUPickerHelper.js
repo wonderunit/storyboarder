@@ -51,7 +51,6 @@ class GPUPickerHelper
             (pixelBuffer[2]);
 
         const intersectedObject = this.selectableObjects[id];
-        console.log(id);
         if(intersectedObject)
         {
             this.pickedObject = intersectedObject;

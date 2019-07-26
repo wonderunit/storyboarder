@@ -36,37 +36,39 @@ class GPUPicker
     // TODO: don't make it each step
     setChildren(children)
     {
-        if(!this.childrenSetted)
+
+        let objects = children.filter(child => child.type !== "camera" && child.type !== "DirectionalLight" && child.type !== "AmbientLight" && child.children.filter(obj => obj.type === "Mesh" ||  obj.type === "SkinnedMesh").length !== 0);
+        objects = objects.flatMap(child => child.children.filter(obj => (obj.type === "Mesh" || obj.type === "SkinnedMesh") && obj.material.type === "MeshToonMaterial"));
+        for(let i = 0, n = objects.length; i < n; i++)
         {
-            let objects = children.filter(child => child.type !== "camera" && child.type !== "DirectionalLight" && child.type !== "AmbientLight" && child.children.filter(obj => obj.type === "Mesh" ||  obj.type === "SkinnedMesh").length !== 0);
-            objects = objects.flatMap(child => child.children.filter(obj => (obj.type === "Mesh" || obj.type === "SkinnedMesh") && obj.material.type === "MeshToonMaterial"));
-            for(let i = 0, n = objects.length; i < n; i++)
+            let object = objects[i];
+            if(this.isObjectAdded(object))
             {
-                const id = i + this.idBonus;
-                let object = objects[i];
-                console.log(object);
-                object.parent.updateMatrixWorld(true);
-                this.gpuPickerHelper.selectableObjects[id] = object;
-                const pickingMaterial = new THREE.MeshToonMaterial({
-                    emissive: new THREE.Color(id),
-                    color: new THREE.Color(0, 0, 0),
-                    specular: new THREE.Color(0, 0, 0),
-                    transparent: true,
-                    side: THREE.DoubleSide,
-                    alphaTest: 0.5,
-                    blending: THREE.NoBlending,
-                    
-                  });
-                  const pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
-                  this.pickingScene.add(pickingCube);
-                  pickingCube.position.copy(object.worldPosition());
-                  pickingCube.quaternion.copy(object.worldQuaternion());
-                  pickingCube.scale.copy(object.worldScale());
-                  pickingCube.updateMatrix();
+                continue;
+            }
+            const id = i + this.idBonus;
+            console.log(object);
+            object.parent.updateMatrixWorld(true);
+            this.gpuPickerHelper.selectableObjects[id] = object;
+            const pickingMaterial = new THREE.MeshToonMaterial({
+                emissive: new THREE.Color(id),
+                color: new THREE.Color(0, 0, 0),
+                specular: new THREE.Color(0, 0, 0),
+                transparent: true,
+                side: THREE.DoubleSide,
+                alphaTest: 0.5,
+                blending: THREE.NoBlending,
                 
-                }
-            this.childrenSetted = this.pickingScene.children.length === 0 ? false : true;
+              });
+              const pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
+              this.pickingScene.add(pickingCube);
+              pickingCube.position.copy(object.worldPosition());
+              pickingCube.quaternion.copy(object.worldQuaternion());
+              pickingCube.scale.copy(object.worldScale());
+              pickingCube.updateMatrix();
+            
         }
+        this.childrenSetted = this.pickingScene.children.length === 0 ? false : true;
     }
 
     setPickingPosition(vector2)
@@ -90,7 +92,6 @@ class GPUPicker
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
             let child = this.pickingScene.children[i];
-            //console.log(this.gpuPickerHelper.selectableObjects);
             let object = this.gpuPickerHelper.selectableObjects[i + this.idBonus];
             child.position.copy(object.worldPosition());
             child.quaternion.copy(object.worldQuaternion());
@@ -98,6 +99,15 @@ class GPUPicker
             child.updateMatrix();
             child.updateMatrixWorld(true);
         }
+    }
+
+    isObjectAdded(object)
+    {
+        if(Object.values(this.gpuPickerHelper.selectableObjects).filter(obj => obj.uuid === object.uuid).length !== 0)
+        {
+            return true;
+        }
+        return false;
     }
 }
 module.exports = GPUPicker;
