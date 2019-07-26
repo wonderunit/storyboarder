@@ -1,8 +1,10 @@
+const THREE = require('three');
 class GPUPickerHelper
 {
     constructor()
     {
         this.pickingTexture = new THREE.WebGLRenderTarget(1, 1);
+        this.pickingTexture.texture.minFilter = THREE.LinearFilter;
         this.pixelBuffer = new Uint8Array(4);
         this.pickedObject = null;
         this.pickedObjectSaveColor = 0;
@@ -12,17 +14,19 @@ class GPUPickerHelper
     pick(cssPosition, scene, camera, renderer)
     {
         const {pickingTexture, pixelBuffer} = this;
-
+       
+        //this.pickingTexture = new THREE.WebGLRenderTarget(w, h);
         if(this.pickedObject)
         {
             this.pickedObject.material.color = this.pickedObjectSaveColor;
+            this.pickedObject.material.emmisive = this.pickedObjectSaveColor;
             this.pickedObject = undefined;
         }
 
         const pixelRatio = renderer.getPixelRatio();
         camera.setViewOffset(
-            renderer.context.drawingBufferWidth,
-            renderer.context.drawingBufferHeight,
+            renderer.domElement.width,
+            renderer.domElement.height,
             cssPosition.x * pixelRatio | 0,
             cssPosition.y * pixelRatio | 0,
             1,
@@ -33,19 +37,16 @@ class GPUPickerHelper
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
 
-        //camera.clearViewOffset();
-        let renderTarget = renderer.getRenderTarget();
-        console.log(renderTarget);
+        camera.clearViewOffset();
 
         renderer.readRenderTargetPixels(
             pickingTexture,
-            0,
+            0, 
             0,
             1,
             1,
             pixelBuffer);
 
-            console.log(pickingTexture);
         const id =
             (pixelBuffer[0] << 16) |
             (pixelBuffer[1] << 8) |
@@ -58,6 +59,7 @@ class GPUPickerHelper
             this.pickedObject = intersectedObject;
             this.pickedObjectSaveColor = this.pickedObject.material.color;
             this.pickedObject.material.color = { r : 0.2, g: 0.2, b: 0.2};
+            this.pickedObject.material.emissive = { r : 0.2, g: 0.2, b: 0.2};
             //this.pickedObject.material.emissive.setHex(0xFF0000);
         }
     }

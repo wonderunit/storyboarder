@@ -173,6 +173,7 @@ const SelectionManager = connect(
 
     transition,
     renderer,
+    rendererEffect,
     undoGroupStart,
     undoGroupEnd,
     
@@ -257,6 +258,7 @@ const SelectionManager = connect(
         changes[selection] = { x, y: z }
       }
       updateObjects(changes)
+      gpuPicker.updateObject();
     }
   }
   const endDrag = () => {
@@ -271,7 +273,7 @@ const SelectionManager = connect(
 
   const onPointerDown = event => {
     event.preventDefault()
-    gpuPicker.initialize(scene, renderer);
+    gpuPicker.initialize(scene, renderer, rendererEffect);
     gpuPicker.setChildren(scene.children);
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
@@ -456,7 +458,7 @@ const SelectionManager = connect(
 
     const { x, y } = mouse(event)
 
-    gpuPicker.updateObject();
+  
     if (dragTarget)
     {
       if(dragTarget.target.userData.type === 'character')
