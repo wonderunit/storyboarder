@@ -316,6 +316,7 @@ const SceneContent = ({
         const model = intersection.object.name.split('_')[1]
         const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
         updateObject(object.userData.id, { model })
+        updateObject(object.userData.id, { ['height']: sceneObjects[object.userData.id].height })
       }
 
       if (intersection.object.userData.type === 'gui') {
