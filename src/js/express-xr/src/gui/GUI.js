@@ -89,13 +89,13 @@ const GUI = ({
           break
         case 'height':
           if (object.userData.name === 'character-container') {
-            object = object.children[0]
-            if (object.userData.modelSettings.height) {
-              let originalHeight = object.userData.originalHeight
+            const character = object.children[0]
+            if (character.userData.modelSettings.height) {
+              let originalHeight = character.userData.originalHeight
               let scale = value / originalHeight
-              object.scale.set(scale, scale, scale)
+              character.scale.set(scale, scale, scale)
             } else {
-              object.scale.setScalar(value)
+              character.scale.setScalar(value)
             }
           } else {
             object.scale.y = value
