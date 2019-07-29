@@ -14,8 +14,6 @@ const { machineIdSync } = require('node-machine-id')
 const pkg = require('../../../package.json')
 const request = require('request')
 
-const { createSelector } = require('reselect')
-
 const { FixedSizeGrid } = require('react-window')
 
 const h = require('../utils/h')
@@ -45,6 +43,24 @@ const comparePresetNames = (a, b) => {
     return 1
   }
   return 0
+}
+
+const comparePresetPriority = (a, b) => b.priority - a.priority
+
+const searchPresetsForTerms = (presets, terms) => {
+  const matchAll = terms == null || terms.length === 0
+
+  return presets
+    .sort(comparePresetNames)
+    .filter(preset => {
+      if (matchAll) return true
+
+      return (
+        (LiquidMetal.score(preset.name, terms) > 0.8) ||
+        (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
+      )
+    })
+    .sort(comparePresetPriority)
 }
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
@@ -200,16 +216,11 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   ])
 })
 
-const getSortedPosePresets = createSelector(
-  [state => state.presets.poses],
-  poses => Object.values(poses).sort(comparePresetNames)
-)
-
 const PosePresetsEditor = connect(
   state => ({
-    sortedPosePresets: getSortedPosePresets(state),
+    attachments: state.attachments,
 
-    attachments: state.attachments
+    posePresets: Object.values(state.presets.poses),
   }),
   {
     updateObject,
@@ -221,7 +232,7 @@ React.memo(({
   id,
   posePresetId,
 
-  sortedPosePresets,
+  posePresets,
   attachments,
 
   updateObject,
@@ -233,19 +244,7 @@ React.memo(({
   const [ready, setReady] = useState(false)
   const [terms, setTerms] = useState(null)
 
-  const presets = useMemo(() => {
-    const matchAll = terms == null || terms.length === 0
-
-    return sortedPosePresets
-      .filter(preset => {
-        if (matchAll) return true
-
-        return (
-          (LiquidMetal.score(preset.name, terms) > 0.8) ||
-          (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
-        )
-      })
-  }, [sortedPosePresets, terms])
+  const presets = useMemo(() => searchPresetsForTerms(posePresets, terms), [posePresets, terms])
 
   useEffect(() => {
     if (ready) return
@@ -288,7 +287,8 @@ React.memo(({
             keywords: name, // TODO keyword editing
             state: {
               skeleton: skeleton || {}
-            }
+            },
+            priority: 0
           }
 
           // add it to state
