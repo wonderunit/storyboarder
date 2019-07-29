@@ -932,6 +932,46 @@ const worldReducer = (state = initialState.undoable.world, action) => {
   })
 }
 
+const presetsReducer = (state = initialState.presets, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'CREATE_SCENE_PRESET':
+        draft.scenes[action.payload.id] = action.payload
+        return
+
+      case 'DELETE_SCENE_PRESET':
+        delete draft.scenes[action.payload.id]
+        return
+
+      case 'UPDATE_SCENE_PRESET':
+        // allow a null value for name
+        if (action.payload.hasOwnProperty('name')) {
+          draft.scenes[action.payload.id].name = action.payload.name
+        }
+        return
+
+      case 'CREATE_CHARACTER_PRESET':
+        draft.characters[action.payload.id] = action.payload
+        return
+
+      case 'CREATE_POSE_PRESET':
+        draft.poses[action.payload.id] = action.payload
+        return
+
+      case 'DELETE_POSE_PRESET':
+        delete draft.poses[action.payload.id]
+        return
+
+      case 'UPDATE_POSE_PRESET':
+        // allow a null value for name
+        if (action.payload.hasOwnProperty('name')) {
+          draft.poses[action.payload.id].name = action.payload.name
+        }
+        return
+    }
+  })
+}
+
 const mainReducer = (state/* = initialState*/, action) => {
   return produce(state, draft => {
     switch (action.type) {
@@ -978,42 +1018,8 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.mainViewCamera = action.payload
         return
 
-      case 'CREATE_SCENE_PRESET':
-        draft.presets.scenes[action.payload.id] = action.payload
-        return
-
-      case 'DELETE_SCENE_PRESET':
-        delete draft.presets.scenes[action.payload.id]
-        return
-
-      case 'UPDATE_SCENE_PRESET':
-        // allow a null value for name
-        if (action.payload.hasOwnProperty('name')) {
-          draft.presets.scenes[action.payload.id].name = action.payload.name
-        }
-        return
-
       case 'UPDATE_DEVICE':
         draft.devices[action.payload.id] = action.payload
-        return
-
-      case 'CREATE_CHARACTER_PRESET':
-        draft.presets.characters[action.payload.id] = action.payload
-        return
-
-      case 'CREATE_POSE_PRESET':
-        draft.presets.poses[action.payload.id] = action.payload
-        return
-
-      case 'DELETE_POSE_PRESET':
-        delete draft.presets.poses[action.payload.id]
-        return
-
-      case 'UPDATE_POSE_PRESET':
-        // allow a null value for name
-        if (action.payload.hasOwnProperty('name')) {
-          draft.presets.poses[action.payload.id].name = action.payload.name
-        }
         return
 
       case 'UPDATE_SERVER':
@@ -1150,6 +1156,11 @@ const rootReducer = reduceReducers(
   initialState,
 
   mainReducer,
+
+  (state, action) => ({
+    ...state,
+    presets: presetsReducer(state.presets, action)
+  }),
 
   (state, action) => ({
     ...state,
