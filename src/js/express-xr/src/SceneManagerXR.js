@@ -975,6 +975,7 @@ const SceneContent = ({
         const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
         if (hits.length) {
+          if (controller.userData.currentBoneHighlight === hits[0].bone) return
           controller.userData.currentBoneHighlight = hits[0].bone
           controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
         } else if (controller.userData.currentBoneHighlight) {
