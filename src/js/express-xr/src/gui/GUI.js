@@ -14,6 +14,25 @@ const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 
+
+
+// via PosePresetsEditor.js
+const comparePresetNames = (a, b) => {
+  var nameA = a.name.toUpperCase()
+  var nameB = b.name.toUpperCase()
+
+  if (nameA < nameB) {
+    return -1
+  }
+  if (nameA > nameB) {
+    return 1
+  }
+  return 0
+}
+const comparePresetPriority = (a, b) => b.priority - a.priority
+
+
+
 const GUI = ({
   rStatsRef,
   worldScaleGroupRef,
@@ -50,6 +69,8 @@ const GUI = ({
   }
 
   const poses = Object.values(presets.poses)
+    .sort(comparePresetNames)
+    .sort(comparePresetPriority)
   const poseVisibleAmount = poses.slice(selectorOffset * 4, selectorOffset * 4 + 16)
 
   const characters = Object.values(models).filter(model => model.type === 'character')
