@@ -6,9 +6,9 @@ const { useRef, useEffect, useState } = React
 const path = require('path')
 
 const buildSquareRoom = require('./build-square-room')
+const onlyOfTypes = require('./only-of-types')
 
-// TODO use functions of ModelLoader?
-require('../vendor/three/examples/js/loaders/GLTFLoader')
+require('three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -16,6 +16,15 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 const imageLoader = new THREE.ImageLoader(loadingManager)
 
 objLoader.setLogging(false, false)
+
+const materialFactory = () => new THREE.MeshToonMaterial({
+  color: 0xffffff,
+  emissive: 0x0,
+  specular: 0x0,
+  skinning: true,
+  shininess: 0,
+  flatShading: false
+})
 
 const useGround = (world, scene) => {
   const [loaded, setLoaded] = useState(false)
@@ -89,6 +98,7 @@ const useRoom = (world, scene) => {
   const [loaded, setLoaded] = useState(false)
 
   const object = useRef(null)
+  const walls = useRef(null)
   const wallTexture = useRef(null)
 
   const load = () => imageLoader.load(
@@ -118,6 +128,21 @@ const useRoom = (world, scene) => {
     return object
   }
 
+  const wallsFactory = ({ width, height, length }) => {
+    let geometry = new THREE.BoxBufferGeometry(
+      width,
+      height,
+      length
+    )
+    var edges = new THREE.EdgesGeometry( geometry )
+    var line = new THREE.LineSegments(
+      edges,
+      new THREE.LineBasicMaterial({ color: 0x999999 })
+    )
+    line.position.set(0, height / 2, 0)
+    return line
+  }
+
   useEffect(() => {
     if (world.room.visible) {
       if (!loaded) {
@@ -130,12 +155,26 @@ const useRoom = (world, scene) => {
           texture: wallTexture.current
         })
         object.current.visible = world.room.visible
+        object.current.layers.disable(0)
+        object.current.layers.enable(1)
+        object.current.layers.disable(2)
+        object.current.layers.enable(3)
+
+        walls.current = wallsFactory(world.room)
+        walls.current.visible = world.room.visible
+        walls.current.layers.disable(0)
+        walls.current.layers.disable(1)
+        walls.current.layers.enable(2)
+        walls.current.layers.disable(3)
         scene.add(object.current)
+
+        scene.add(walls.current)
       }
     }
 
     return function cleanup () {
       scene.remove(object.current)
+      scene.remove(walls.current)
     }
   }, [world.room, loaded])
 
@@ -147,25 +186,16 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
 
   useEffect(() => {
     if (modelData) {
-      const g = new THREE.Group()
+      let g = new THREE.Group()
 
-      modelData.scene.children.forEach(child => {
-        if (child.type === 'Mesh') {
-          let m = child.clone()
+      let sceneData = onlyOfTypes(modelData.scene.clone(), ['Scene', 'Mesh', 'Group'])
 
-          const material = new THREE.MeshToonMaterial({
-            color: 0xffffff,
-            emissive: 0x0,
-            specular: 0x0,
-            skinning: true,
-            shininess: 0,
-            flatShading: false
-          })
-          m.material = material
-
-          g.add(m)
-        }
+      // update all Mesh textures
+      sceneData.traverse(child => {
+        if (child.isMesh) { child.material = materialFactory() }
       })
+
+      g.add( ...sceneData.children )
 
       setGroup(g)
     } else {
@@ -203,6 +233,17 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
 
   useEffect(() => {
     if (!group) return
+
+    group.traverse(child => {
+      // "always show"
+      child.layers.disable(0)
+      // camera
+      child.layers.enable(1)
+      // plot
+      child.layers.disable(2)
+      // image rendering
+      child.layers.enable(3)
+    })
 
     scene.add(group)
 
