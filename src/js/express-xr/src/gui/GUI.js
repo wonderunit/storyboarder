@@ -178,9 +178,9 @@ const GUI = ({
       prop: 'guiFOV',
       id: 'guiCam',
       object: new THREE.Vector3(),
-      initialValue: 22,
-      min: 3,
-      max: 71,
+      initialValue: 37,
+      min: 10,
+      max: 280,
       width: (uiScale + bWidth) / 0.35,
       height: (uiScale * 0.5) / 0.35,
       corner: bWidth / 0.35,
@@ -226,6 +226,7 @@ const GUI = ({
 
     let idx = 1
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
+      // if (key === 'fov') console.log(value)
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
       let minMax = { min: 0, max: 1 }
@@ -234,7 +235,7 @@ const GUI = ({
 
       switch (key) {
         case 'fov':
-          minMax = { min: 3, max: 71 }
+          minMax = { min: 10, max: 280 }
           break
         case 'intensity':
           minMax = { min: 0.03, max: 1 }
@@ -261,7 +262,7 @@ const GUI = ({
           break
       }
 
-      if (key === 'fov') title = 'F.O.V'
+      if (key === 'fov') title = 'FL'
       if (key === 'headScale') title = 'head'
       if (key === 'mesomorphic') title = 'meso'
       if (key === 'ectomorphic') title = 'ecto'
@@ -284,7 +285,7 @@ const GUI = ({
       const name = title.charAt(0).toUpperCase() + title.slice(1)
       slider
         .name(name)
-        .step(0.1)
+        .step(key === 'fov' ? 1 : 0.1)
         .onChange(updateGeometry)
         .onFinishedChange(updateState)
       slider.scale.set(0.35, 0.35, 0.35)
