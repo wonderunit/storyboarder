@@ -963,8 +963,8 @@ const SceneContent = ({
 
     THREE.VRController.update()
 
-    vrControllers.forEach((controller, idx) => {
-
+    for (let i = 0; i < vrControllers.length; i++) {
+    const controller = vrControllers[i]
       if (
         selectedObjRef.current &&
         selectedObjRef.current.userData.type === 'character' &&
@@ -986,7 +986,7 @@ const SceneContent = ({
 
       const handedness = controller.getHandedness()
       if (handedness === (flipHand ? 'right' : 'left')) {
-        const otherController = vrControllers[1 - idx]
+        const otherController = vrControllers[1 - i]
         if (otherController && !otherController.pressed && !controller.userData.selected) {
           const intersections = getIntersections(controller, guiArray.current)
           if (intersections.length > 0) {
@@ -1011,7 +1011,7 @@ const SceneContent = ({
       }
 
       if (controller.userData.bone) rotateBone(controller)
-    })
+    }
   }, false, [vrControllers, selectedBone, worldScale, flipHand])
 
   const snapObjectRotation = (object, controller) => {
