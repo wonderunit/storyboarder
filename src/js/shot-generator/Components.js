@@ -94,7 +94,7 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
-const ServerInspector = require('./ServerInspector')
+// const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 
 require('../vendor/OutlineEffect.js')
@@ -318,7 +318,7 @@ const Inspector = ({
             updateWorldEnvironment
           }
         ],
-      [ServerInspector]
+      // [ServerInspector]
   ])
 }
 
