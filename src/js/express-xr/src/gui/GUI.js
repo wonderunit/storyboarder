@@ -15,7 +15,11 @@ const uiScale = 0.075
 const bWidth = 0.0125
 
 const GUI = ({
+  rStatsRef,
+  worldScaleGroupRef,
   aspectRatio,
+  models,
+  presets,
   guiMode,
   addMode,
   currentBoard,
@@ -23,11 +27,16 @@ const GUI = ({
   hideArray,
   virtualCamVisible,
   flipHand,
+  selectorOffset, 
+  guiSelector,
   helpToggle,
   helpSlide,
   guiCamFOV,
   vrControllers
 }) => {
+  const previousTime = useRef([null])
+  const [fps, setFPS] = useState(0)
+
   const [textCount, setTextCount] = useState(0)
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
@@ -40,16 +49,34 @@ const GUI = ({
     fov: guiCamFOV
   }
 
+  const poses = Object.values(presets.poses)
+  const poseVisibleAmount = poses.slice(selectorOffset * 4, selectorOffset * 4 + 16)
+
+  const characters = Object.values(models).filter(model => model.type === 'character')
+  const characterVisibleAmount = characters.slice(selectorOffset * 4, selectorOffset * 4 + 16)
+
+  const objects = Object.values(models).filter(model => model.type === 'object')
+  const objectVisibleAmount = objects.slice(selectorOffset * 4, selectorOffset * 4 + 16)
   // console.log(camSettings)
 
   // const fovLabel = useMemo(() => {
   //   return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
   // }, [])
 
+  // first look for matching id under world group, if not found look under vrControllers
+  let object = worldScaleGroupRef.current
+    ? worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
+    : undefined
+  if (object === undefined) {
+    vrControllers.forEach(controller => {
+      const match = controller.children.find(child => child.userData.id === selectedObject)
+      if (match) object = match
+    })
+    if (object === undefined) object = false
+  }
+
   const updateGeometry = (id, prop, value) => {
     if (id && prop) {
-      let object = scene.getObjectById(id)
-
       if (prop === 'guiFOV') {
         const guiCam = scene.getObjectByName('guiCam')
         guiCam.dispatchEvent({ type: 'updateFOV', fov: value })
@@ -183,7 +210,6 @@ const GUI = ({
       scene.remove(obj)
     })
 
-    const object = scene.getObjectById(selectedObject)
     if (!object) return []
 
     const parent = findParent(object)
@@ -288,6 +314,21 @@ const GUI = ({
 
   useRender(updateSliders, false, [vrControllers])
 
+  useRender(() => {
+    if (rStatsRef.current) {
+      // Update XR FPS Counter every 1 second
+      if (!previousTime.current) previousTime.current = 0
+
+      const currentTime = Date.now()
+      const delta = currentTime - previousTime.current
+
+      if (delta > 1000) {
+        previousTime.current = currentTime
+        setFPS(parseInt(rStatsRef.current('FPS').value()))
+      }
+    }
+  }, false, [rStatsRef.current])
+
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
   const add_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/add.png'), [])
@@ -304,25 +345,274 @@ const GUI = ({
   const object_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-object.png'), [])
   const character_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-character.png'), [])
   const light_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-light.png'), [])
+  
+  const poseSelect_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/pose.png'), [])
+  const objectSelect_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/object.png'), [])
 
-  const help_textures = [
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_1.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_2.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_3.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_4.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_5.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_6.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_7.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_8.png'), [])
-  ]
+  const poseTextures = useMemo(() => {
+    const textureArray = []
+    poses.forEach((pose, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/presets/poses/${pose.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
+  const objectTextures = useMemo(() => {
+    const textureArray = []
+    objects.forEach((model, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/system/objects/${model.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
+  const characterTextures = useMemo(() => {
+    const textureArray = []
+    characters.forEach((model, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/system/dummies/gltf/${model.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
+  const help_textures = useMemo(
+    () => [1, 2, 3, 4, 5, 6, 7, 8].map(n => new THREE.TextureLoader().load(`/data/system/xr/help_${n}.png`)),
+    []
+  )
 
   const invertGUI = flipHand ? -1 : 1
+  const fpsMeter = useMemo(() => textCreator.create(fps.toString(), { color: 0xff0000, scale: 0.475, centerText: false }), [fps])
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
+        <group name="selector_container">
+          {object && object.userData.type === 'character' && guiSelector === 'pose' && (
+            <group
+              position={[
+                ((uiScale * 2 + bWidth) * 0.5 +
+                  uiScale * 2.75 * 1 +
+                  uiScale * 0.5 +
+                  (uiScale * 0.5 + uiScale * 0.5) +
+                  bWidth * 3) *
+                  -1 *
+                  invertGUI,
+                uiScale * 2.5 * 0.5 - uiScale * 0.5,
+                0
+              ]}
+            >
+              <primitive
+                position={[-uiScale + bWidth - bWidth * 0.5, uiScale * 1.25 - uiScale * 0.325, 0.001]}
+                object={textCreator.create('Poses', { color: 0xffffff, scale: 0.475, centerText: false })}
+              />
+              <GUIElement
+                {...{
+                  name: 'selector_ui',
+                  width: uiScale * 2 + bWidth,
+                  height: uiScale * 2.5,
+                  radius: bWidth,
+                  color: 'black'
+                }}
+              />
+
+              <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                <group
+                  position={[
+                    uiScale + bWidth * 0.75,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(poses.length / 4)) * selectorOffset,
+                    0
+                  ]}
+                >
+                  <GUIElement
+                    {...{
+                      name: 'scroll_indicator',
+                      width: bWidth * 0.5,
+                      height: (uiScale * 2) / 4,
+                      radius: bWidth * 0.25,
+                      color: 0x6e6e6e
+                    }}
+                  />
+                </group>
+
+                {poseVisibleAmount.map((pose, idx) => {
+                  const x = (idx % 4) * 0.5 - 0.75
+                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
+                  const texture = poseTextures[idx + selectorOffset * 4]
+
+                  if (texture && texture.image) {
+                    return (
+                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                        <GUIElement
+                          {...{
+                            icon: texture,
+                            name: `selector-pose_${poses[idx + selectorOffset * 4].id}`,
+                            width: uiScale * 0.5,
+                            height: uiScale * 0.5,
+                            radius: bWidth,
+                            color: 0x3e4043
+                          }}
+                        />
+                      </group>
+                    )
+                  }
+                })}
+              </group>
+            </group>
+          )}
+
+          {object && object.userData.type === 'character' && guiSelector === 'character' && (
+            <group
+              position={[
+                ((uiScale * 2 + bWidth) * 0.5 +
+                  uiScale * 2.75 * 1 +
+                  uiScale * 0.5 +
+                  (uiScale * 0.5 + uiScale * 0.5) +
+                  bWidth * 3) *
+                  -1 *
+                  invertGUI,
+                uiScale * 2.5 * 0.5 - uiScale * 0.5,
+                0
+              ]}
+            >
+              <primitive
+                position={[-uiScale + bWidth - bWidth * 0.5, uiScale * 1.25 - uiScale * 0.325, 0.001]}
+                object={textCreator.create('Characters', { color: 0xffffff, scale: 0.475, centerText: false })}
+              />
+              <GUIElement
+                {...{
+                  name: 'selector_ui',
+                  width: uiScale * 2 + bWidth,
+                  height: uiScale * 2.5,
+                  radius: bWidth,
+                  color: 'black'
+                }}
+              />
+
+              <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                <group
+                  position={[
+                    uiScale + bWidth * 0.75,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(characters.length / 4)) * selectorOffset,
+                    0
+                  ]}
+                >
+                  <GUIElement
+                    {...{
+                      name: 'scroll_indicator',
+                      width: bWidth * 0.5,
+                      height: (uiScale * 2) / 4,
+                      radius: bWidth * 0.25,
+                      color: 0x6e6e6e
+                    }}
+                  />
+                </group>
+
+                {characterVisibleAmount.map((object, idx) => {
+                  const x = (idx % 4) * 0.5 - 0.75
+                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
+                  const texture = characterTextures[idx + selectorOffset * 4]
+
+                  if (texture && texture.image) {
+                    return (
+                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                        <GUIElement
+                          {...{
+                            icon: texture,
+                            name: `selector-character_${characters[idx + selectorOffset * 4].id}`,
+                            width: uiScale * 0.5,
+                            height: uiScale * 0.5,
+                            radius: bWidth,
+                            color: 0x3e4043
+                          }}
+                        />
+                      </group>
+                    )
+                  }
+                })}
+              </group>
+            </group>
+          )}
+
+          {object && object.userData.type === 'object' && guiSelector === 'object' && (
+            <group
+              position={[
+                ((uiScale * 2 + bWidth) * 0.5 +
+                  uiScale * 2.75 * 1 +
+                  uiScale * 0.5 +
+                  (uiScale * 0.5 + uiScale * 0.5) +
+                  bWidth * 3) *
+                  -1 *
+                  invertGUI,
+                uiScale * 2.5 * 0.5 - uiScale * 0.5,
+                0
+              ]}
+            >
+              <primitive
+                position={[-uiScale + bWidth - bWidth * 0.5, uiScale * 1.25 - uiScale * 0.325, 0.001]}
+                object={textCreator.create('Objects', { color: 0xffffff, scale: 0.475, centerText: false })}
+              />
+              <GUIElement
+                {...{
+                  name: 'selector_ui',
+                  width: uiScale * 2 + bWidth,
+                  height: uiScale * 2.5,
+                  radius: bWidth,
+                  color: 'black'
+                }}
+              />
+
+              <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                <group
+                  position={[
+                    uiScale + bWidth * 0.75,
+                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / parseInt(objects.length / 4)) * selectorOffset,
+                    0
+                  ]}
+                >
+                  <GUIElement
+                    {...{
+                      name: 'scroll_indicator',
+                      width: bWidth * 0.5,
+                      height: (uiScale * 2) / 4,
+                      radius: bWidth * 0.25,
+                      color: 0x6e6e6e
+                    }}
+                  />
+                </group>
+
+                {objectVisibleAmount.map((object, idx) => {
+                  const x = (idx % 4) * 0.5 - 0.75
+                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
+                  const texture = objectTextures[idx + selectorOffset * 4]
+
+                  if (texture && texture.image) {
+                    return (
+                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                        <GUIElement
+                          {...{
+                            icon: texture,
+                            name: `selector-object_${objects[idx + selectorOffset * 4].id}`,
+                            width: uiScale * 0.5,
+                            height: uiScale * 0.5,
+                            radius: bWidth,
+                            color: 0x3e4043
+                          }}
+                        />
+                      </group>
+                    )
+                  }
+                })}
+              </group>
+            </group>
+          )}
+        </group>
+
         <group name="properties_container">
-          {selectedObject && textCount && (
+          {object && textCount && (
             <group
               position={[
                 (uiScale * 2.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1 * invertGUI,
@@ -348,6 +638,69 @@ const GUI = ({
               >
                 {sliderObjects}
               </group>
+
+              {object.userData.type === 'object' && (
+                <group
+                  position={[
+                    uiScale * 2.75 * -0.5 + uiScale * 0.25,
+                    ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * -0.5 - uiScale * 0.25 - bWidth,
+                    0.001
+                  ]}
+                >
+                  <GUIElement
+                    {...{
+                      icon: objectSelect_texture,
+                      name: `selector_object_button`,
+                      width: uiScale * 0.5,
+                      height: uiScale * 0.5,
+                      radius: bWidth,
+                      color: guiSelector === 'object' ? 0x6e6e6e : 'black'
+                    }}
+                  />
+                </group>
+              )}
+
+              {object.userData.type === 'character' && (
+                <group>
+                  <group
+                    position={[
+                      uiScale * 2.75 * -0.5 + uiScale * 0.25,
+                      ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * -0.5 - uiScale * 0.25 - bWidth,
+                      0.001
+                    ]}
+                  >
+                    <GUIElement
+                      {...{
+                        icon: poseSelect_texture,
+                        name: `selector_pose_button`,
+                        width: uiScale * 0.5,
+                        height: uiScale * 0.5,
+                        radius: bWidth,
+                        color: guiSelector === 'pose' ? 0x6e6e6e : 'black'
+                      }}
+                    />
+                  </group>
+
+                  {/* <group
+                    position={[
+                      uiScale * 2.75 * -0.5 + uiScale * 0.75 + bWidth,
+                      ((textCount + 1) * (uiScale * 0.5 + bWidth) + bWidth) * -0.5 - uiScale * 0.25 - bWidth,
+                      0.001
+                    ]}
+                  >
+                    <GUIElement
+                      {...{
+                        icon: poseSelect_texture,
+                        name: `selector_character_button`,
+                        width: uiScale * 0.5,
+                        height: uiScale * 0.5,
+                        radius: bWidth,
+                        color: guiSelector === 'character' ? 0x6e6e6e : 'black'
+                      }}
+                    />
+                  </group> */}
+                </group>
+              )}
             </group>
           )}
         </group>
@@ -543,8 +896,21 @@ const GUI = ({
         />
 
         {helpToggle && (
-          <group position={[-0.2, (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 + (0.07 + bWidth) * 0.5 + bWidth * 2 +0.15, -0.4]} scale={[2, 2, 1]}>
-            <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * -0.5 - uiScale * 0.5 - bWidth, 0, 0]} scale={[-1, 1, 1]}>
+          <group
+            position={[
+              -0.2,
+              (aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.775 * 0.5 +
+                (0.07 + bWidth) * 0.5 +
+                bWidth * 2 +
+                0.15,
+              -0.4
+            ]}
+            scale={[2, 2, 1]}
+          >
+            <group
+              position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * -0.5 - uiScale * 0.5 - bWidth, 0, 0]}
+              scale={[-1, 1, 1]}
+            >
               <GUIElement
                 {...{
                   icon: arrow_texture,
@@ -557,7 +923,9 @@ const GUI = ({
               />
             </group>
 
-            <group position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}>
+            <group
+              position={[(aspectRatio * (0.07 + bWidth) * 2 + uiScale + bWidth * 2) * 0.5 + uiScale * 0.5 + bWidth, 0, 0]}
+            >
               <GUIElement
                 {...{
                   icon: arrow_texture,
@@ -616,7 +984,7 @@ const GUI = ({
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: addMode === 'gui_camera' ? 0x6e6e6e : 0x212121
+              color: addMode === 'gui_camera' ? 0x6e6e6e : 'black'
             }}
           />
         </group>
@@ -635,7 +1003,7 @@ const GUI = ({
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: virtualCamVisible ? 0x6e6e6e : 0x212121
+              color: virtualCamVisible ? 0x6e6e6e : 'black'
             }}
           />
         </group>
@@ -654,7 +1022,7 @@ const GUI = ({
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: flipHand ? 0x6e6e6e : 0x212121
+              color: flipHand ? 0x6e6e6e : 'black'
             }}
           />
         </group>
@@ -673,9 +1041,19 @@ const GUI = ({
               width: uiScale * 0.5,
               height: uiScale * 0.5,
               radius: bWidth,
-              color: helpToggle ? 0x6e6e6e : 0x212121
+              color: helpToggle ? 0x6e6e6e : 'black'
             }}
           />
+        </group>
+
+        <group
+          position={[
+            (camSettings.size * 0.5 * aspectRatio + uiScale * 1.75 + bWidth * 3) * invertGUI,
+            uiScale * -0.25 + bWidth * -0.5,
+            0
+          ]}
+        >
+          <primitive object={fpsMeter} />)
         </group>
 
         <group
