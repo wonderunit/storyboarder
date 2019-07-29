@@ -26,7 +26,6 @@ const {
 
 const {
   SceneContext,
-  Camera,
   animatedUpdate,
   stats
 } = require('./Components')
@@ -39,6 +38,7 @@ const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
+const Camera = require('./Camera')
 
 const WorldObject = require('./World')
 

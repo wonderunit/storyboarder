@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { MeshLine, MeshLineMaterial } = require('../vendor/THREE.MeshLine')
+// const { MeshLine, MeshLineMaterial } = require('../vendor/THREE.MeshLine')
 
 const BoundingUVGenerator = {
   generateTopUV: function (geometry, extrudedShape, extrudeOptions, indexA, indexB, indexC) {
@@ -69,20 +69,20 @@ const BoundingUVGenerator = {
   }
 }
 
-let createLineMesh = (pointsArray, material) => {
-  let geometry = new THREE.Geometry()
-  for (var i = 0; i < pointsArray.length; i++) {
-    var n = 2
-    while (n--) {
-      geometry.vertices.push(new THREE.Vector3(pointsArray[i][0], pointsArray[i][1], pointsArray[i][2]))
-    }
-  }
-  geometry.translate(-.5, 0, -.5)
-  let line = new MeshLine()
-  line.setGeometry(geometry, function (p) { return 1 })
-  let mesh = new THREE.Mesh(line.geometry, material)
-  return mesh
-}
+// let createLineMesh = (pointsArray, material) => {
+//   let geometry = new THREE.Geometry()
+//   for (var i = 0; i < pointsArray.length; i++) {
+//     var n = 2
+//     while (n--) {
+//       geometry.vertices.push(new THREE.Vector3(pointsArray[i][0], pointsArray[i][1], pointsArray[i][2]))
+//     }
+//   }
+//   geometry.translate(-.5, 0, -.5)
+//   let line = new MeshLine()
+//   line.setGeometry(geometry, function (p) { return 1 })
+//   let mesh = new THREE.Mesh(line.geometry, material)
+//   return mesh
+// }
 
 const buildSquareRoom = (w, l, h, { textures }) => {
   var hw = w / 2
@@ -157,15 +157,7 @@ const buildSquareRoom = (w, l, h, { textures }) => {
 
   mesh.renderOrder = 1.0
 
-  var room = new THREE.Group()
-  room.add(mesh)
-
-  mesh.layers.disable(0)
-  mesh.layers.enable(1)
-  mesh.layers.disable(2)
-  mesh.layers.enable(3)
-
-  return room
+  return mesh
 }
 
 module.exports = buildSquareRoom

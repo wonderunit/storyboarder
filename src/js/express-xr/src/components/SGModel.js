@@ -66,7 +66,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
   const forPanel = model === 'box' ? { width, height, depth } : { size: width }
 
   return <group
-    userData={{ id, displayName: props.displayName, type: props.type, forPanel }}
+    userData={{ id, displayName: props.name || props.displayName, type: props.type, forPanel }}
     visible={visible}
     position={[ x, z, y ]}
     scale={[ width, height, depth ]}
