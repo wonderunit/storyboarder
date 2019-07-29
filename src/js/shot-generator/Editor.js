@@ -722,7 +722,8 @@ const Editor = connect(
               insertAsNewBoard: onToolbarInsertAsNewBoard,
               xrServerUrl,
               // undoGroupStart,
-              // undoGroupEnd
+              // undoGroupEnd,
+              notifications
             }],
 
             ['div.row', { style: { flex: 1, height: '100%' }},

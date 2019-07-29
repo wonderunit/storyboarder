@@ -67,12 +67,14 @@ const Toolbar = connect(
 
     saveToBoard,
     insertAsNewBoard,
-    xrServerUrl
+    xrServerUrl,
 
     // unused
     //  resetScene,
     //  loadScene,
     //  saveScene,
+
+    notifications
   }) => {
     const roomObject3dFactory = ({ width, height, length }) => {
       let geometry = new THREE.BoxBufferGeometry(
