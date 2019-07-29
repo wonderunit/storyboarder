@@ -226,7 +226,7 @@ const GUI = ({
 
     let idx = 1
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
-      if (key === 'fov') value = parent.userData.camera.getFocalLength()
+      if (key === 'fov') console.log(value)
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
       let minMax = { min: 0, max: 1 }
