@@ -1,4 +1,4 @@
-const { useMemo, useState, useRef } = (React = require('react'))
+const { useEffect, useMemo, useState, useRef } = (React = require('react'))
 const { useThree, useRender } = require('react-three-fiber')
 const { updateObject } = require('../../../shared/reducers/shot-generator')
 const { findParent } = require('../utils/xrHelperFuncs')
@@ -38,6 +38,9 @@ const GUI = ({
   const [fps, setFPS] = useState(0)
 
   const [textCount, setTextCount] = useState(0)
+  const [showScroller, setShowScroller] = useState(false)
+
+  const timeOutRef = useRef(null)
   const slidersRef = useRef([])
   const fovSliderRef = useRef([])
 
@@ -328,6 +331,16 @@ const GUI = ({
     }
   }, false, [rStatsRef.current])
 
+  useEffect(() => {
+    if (selectorOffset === 0) return
+    setShowScroller(true)
+
+    if (timeOutRef.current) clearTimeout(timeOutRef.current)
+    timeOutRef.current = setTimeout(() => {
+      setShowScroller(false)
+    }, 1000)
+  }, [selectorOffset])
+
   const selection_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/selection.png'), [])
   const duplicate_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/duplicate.png'), [])
   const add_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/add.png'), [])
@@ -420,6 +433,7 @@ const GUI = ({
               />
 
               <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                {showScroller && (
                 <group
                   position={[
                     uiScale * selectorScale + bWidth * 0.75,
@@ -438,6 +452,7 @@ const GUI = ({
                     }}
                   />
                 </group>
+                )}
 
                 {poseVisibleAmount.map((pose, idx) => {
                   const x = ((idx % 4) * 0.5 - 0.75) * selectorScale
@@ -494,6 +509,8 @@ const GUI = ({
               />
 
               <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                
+                {showScroller && (
                 <group
                   position={[
                     uiScale * selectorScale + bWidth * 0.75,
@@ -512,6 +529,7 @@ const GUI = ({
                     }}
                   />
                 </group>
+                )}
 
                 {characterVisibleAmount.map((object, idx) => {
                   const x = ((idx % 2) * 1 - 0.5) * selectorScale
@@ -568,6 +586,7 @@ const GUI = ({
               />
 
               <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+                {showScroller && (
                 <group
                   position={[
                     uiScale * selectorScale + bWidth * 0.75,
@@ -586,6 +605,7 @@ const GUI = ({
                     }}
                   />
                 </group>
+                )}
 
                 {objectVisibleAmount.map((object, idx) => {
                   const x = ((idx % 4) * 0.5 - 0.75) * selectorScale
