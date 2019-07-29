@@ -385,6 +385,7 @@ const GUI = ({
 
   const invertGUI = flipHand ? -1 : 1
   const fpsMeter = useMemo(() => textCreator.create(fps.toString(), { color: 0xff0000, scale: 0.475, centerText: false }), [fps])
+  const selectorScale = 1.5
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
@@ -539,26 +540,26 @@ const GUI = ({
           {object && object.userData.type === 'object' && guiSelector === 'object' && (
             <group
               position={[
-                ((uiScale * 2 + bWidth) * 0.5 +
+                ((uiScale * 2 * selectorScale + bWidth) * 0.5 +
                   uiScale * 2.75 * 1 +
                   uiScale * 0.5 +
                   (uiScale * 0.5 + uiScale * 0.5) +
                   bWidth * 3) *
                   -1 *
                   invertGUI,
-                uiScale * 2.5 * 0.5 - uiScale * 0.5,
+                (uiScale * 2 * selectorScale + uiScale * 0.5) * 0.5 - uiScale * 0.5,
                 0
               ]}
             >
               <primitive
-                position={[-uiScale + bWidth - bWidth * 0.5, uiScale * 1.25 - uiScale * 0.325, 0.001]}
+                position={[-uiScale * selectorScale + bWidth - bWidth * 0.5, (uiScale * 1.25 - uiScale * 0.325) * selectorScale, 0.001]}
                 object={textCreator.create('Objects', { color: 0xffffff, scale: 0.475, centerText: false })}
               />
               <GUIElement
                 {...{
                   name: 'selector_ui',
-                  width: uiScale * 2 + bWidth,
-                  height: uiScale * 2.5,
+                  width: uiScale * 2 * selectorScale + bWidth,
+                  height: uiScale * 2 * selectorScale + uiScale * 0.5,
                   radius: bWidth,
                   color: 'black'
                 }}
@@ -567,8 +568,9 @@ const GUI = ({
               <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
                 <group
                   position={[
-                    uiScale + bWidth * 0.75,
-                    -(uiScale * 2) / 8 + uiScale - ((uiScale * 6) / 4 / (Math.ceil(objects.length / 4) - 4)) * selectorOffset,
+                    uiScale * selectorScale + bWidth * 0.75,
+                    (-(uiScale * 2) / 8 + uiScale) * selectorScale -
+                    ((uiScale * 6) / 4 / (Math.ceil(objects.length / 4) - 4)) * selectorOffset * selectorScale,
                     0
                   ]}
                 >
@@ -584,8 +586,8 @@ const GUI = ({
                 </group>
 
                 {objectVisibleAmount.map((object, idx) => {
-                  const x = (idx % 4) * 0.5 - 0.75
-                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1
+                  const x = ((idx % 4) * 0.5 - 0.75) * selectorScale
+                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1 * selectorScale
                   const texture = objectTextures[idx + selectorOffset * 4]
 
                   if (texture && texture.image) {
@@ -595,8 +597,8 @@ const GUI = ({
                           {...{
                             icon: texture,
                             name: `selector-object_${objects[idx + selectorOffset * 4].id}`,
-                            width: uiScale * 0.5,
-                            height: uiScale * 0.5,
+                            width: uiScale * 0.5 * selectorScale,
+                            height: uiScale * 0.5 * selectorScale,
                             radius: bWidth,
                             color: 0x3e4043
                           }}
