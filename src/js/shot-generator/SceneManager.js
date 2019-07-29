@@ -10,6 +10,7 @@ const {
   updateObject,
   selectBone,
   updateCharacterSkeleton,
+  updateCharacterIkSkeleton,
   createPosePreset,
   updateWorldEnvironment,
 
@@ -25,7 +26,6 @@ const {
 
 const {
   SceneContext,
-  Camera,
   animatedUpdate,
   stats
 } = require('./Components')
@@ -38,6 +38,7 @@ const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
+const Camera = require('./Camera')
 
 const WorldObject = require('./World')
 
@@ -65,6 +66,7 @@ const SceneManager = connect(
     animatedUpdate,
     selectBone,
     updateCharacterSkeleton,
+    updateCharacterIkSkeleton,
     createPosePreset,
     updateWorldEnvironment,
 
@@ -72,7 +74,7 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -220,7 +222,7 @@ const SceneManager = connect(
       let mAspectRatio = (mWidth/mHeight)
 
       if (mAspectRatio>rs) {
-        let padding = (mWidth / (1/rs))-mHeight
+        let padding = (mWidth / rs)-mHeight
         minMax[2] -= padding/2
         minMax[3] += padding/2
       } else {
@@ -303,18 +305,17 @@ const SceneManager = connect(
             }
           )
         }
-
+     
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
-
+            updateCharacterIk(scene);
             animatedUpdate((dispatch, state) => {
               let cameraForSmall = state.mainViewCamera === 'ortho' ? camera : orthoCamera.current
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
 
               if (cameraControlsView.current && cameraControlsView.current.enabled) {
                 let cameraState = Object.values(getSceneObjects(state)).find(o => o.id === camera.userData.id)
-
                 if (!cameraState) {
                   // FIXME
                   // when loading a new scene, rAF might run with a state reference
@@ -325,7 +326,7 @@ const SceneManager = connect(
                 }
 
                 cameraControlsView.current.object = CameraControls.objectFromCameraState(cameraState)
-
+              
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
 
@@ -525,6 +526,7 @@ const SceneManager = connect(
                 camera,
 
                 updateCharacterSkeleton,
+                updateCharacterIkSkeleton,
                 updateObject,
 
                 devices,
@@ -535,7 +537,7 @@ const SceneManager = connect(
                 storyboarderFilePath: meta.storyboarderFilePath,
                 loaded: props.loaded ? props.loaded : false,
                 modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
-
+                largeRenderer,
                 ...props
               }
             ]
@@ -642,5 +644,17 @@ const SceneManager = connect(
     ]
   }
 )
+
+function updateCharacterIk(scene)
+{
+  scene.traverse((object) =>
+  {
+    if(object.userData.ikRig !== undefined)
+    {
+        object.userData.ikRig.update();
+    }
+  });
+
+}
 
 module.exports = SceneManager

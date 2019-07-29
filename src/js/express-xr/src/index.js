@@ -23,7 +23,7 @@ const SceneManagerXR = require('./SceneManagerXR')
 fetch('/state.json')
   .then(response => response.json())
   .then(result => {
-    const { aspectRatio, activeCamera, sceneObjects, world } = result
+    const { aspectRatio, activeCamera, sceneObjects, world, presets } = result
     const store = configureStore({
       aspectRatio,
       undoable: {
@@ -33,20 +33,23 @@ fetch('/state.json')
       },
       models: initialState.models,
       presets: {
-        poses: {},
+        poses: presets.poses,
         characters: {},
         scenes: {}
       }
     })
 
     if (!process.env.XR_STANDALONE_DEMO) {
-      store.subscribe(() => {
-        let state = {
-          ...getSerializedState(store.getState()),
-          // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
-        }
-        sendStateToServer({ state })
-      })
+      // after 5s, start POST'ing changes back
+      setTimeout(() => {
+        store.subscribe(() => {
+          let state = {
+            ...getSerializedState(store.getState()),
+            // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
+          }
+          sendStateToServer({ state })
+        })
+      }, 5000)
     }
 
     ReactDOM.render(

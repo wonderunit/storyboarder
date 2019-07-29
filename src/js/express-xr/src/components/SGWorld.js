@@ -1,17 +1,41 @@
 const { useEffect, useRef, useMemo } = (React = require('react'))
 const buildSquareRoom = require('../../../shot-generator/build-square-room')
 
-const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
+const onlyOfTypes = require('../../../shot-generator/only-of-types')
+
+const materialFactory = () => new THREE.MeshLambertMaterial({
+  color: 0xffffff,
+  emissive: 0x0,
+  specular: 0x0,
+  skinning: true,
+  shininess: 0,
+  flatShading: false
+})
+
+const SGWorld = React.memo(({ groundTexture, wallTexture, world, modelData }) => {
   const ambientLight = useRef(null)
   const directionalLight = useRef(null)
   const ground = useRef(null)
   const room = useRef(null)
 
-  const roomMesh = buildSquareRoom(world.room.width, world.room.length, world.room.height, {
-    textures: { wall: wallTexture }
-  })
-  roomMesh.position.y = -0.03
-  roomMesh.children[0].layers.enable(0)
+  const roomMesh = useMemo(
+    () => {
+      let mesh = buildSquareRoom(
+        world.room.width,
+        world.room.length,
+        world.room.height,
+        {
+          textures: {
+            wall: wallTexture
+          }
+        }
+      )
+      mesh.position.y = -0.03
+      mesh.layers.enable(0)
+      return mesh
+    },
+    [world, wallTexture]
+  )
 
   useEffect(() => {
     if (directionalLight.current) {
@@ -28,25 +52,16 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
   const environmentObject = useMemo(() => {
     if (!modelData) return null
 
-    const g = new THREE.Group()
+    let g = new THREE.Group()
 
-    modelData.scene.children.forEach(child => {
-      if (child.type === 'Mesh') {
-        let m = child.clone()
-    
-        const material = new THREE.MeshToonMaterial({
-          color: 0xffffff,
-          emissive: 0x0,
-          specular: 0x0,
-          skinning: true,
-          shininess: 0,
-          flatShading: false
-        })
-        m.material = material
-    
-        g.add(m)
-      }
+    let sceneData = onlyOfTypes(modelData.scene.clone(), ['Scene', 'Mesh', 'Group'])
+
+    // update all Mesh textures
+    sceneData.traverse(child => {
+      if (child.isMesh) { child.material = materialFactory() }
     })
+
+    g.add( ...sceneData.children )
 
     return g
   }, [modelData])
@@ -68,9 +83,9 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
         rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
       >
         <planeGeometry attach="geometry" args={[135 / 3, 135 / 3, 32]} />
-        <meshToonMaterial attach="material" side={THREE.FrontSide} visible={!world.room.visible && world.ground}>
+        <meshLambertMaterial attach="material" side={THREE.FrontSide} visible={!world.room.visible && world.ground}>
           <primitive attach="map" object={groundTexture} />
-        </meshToonMaterial>
+        </meshLambertMaterial>
       </mesh>
       <primitive ref={room} userData={{ type: 'room' }} object={roomMesh} visible={world.room.visible} />
       {environmentObject && (
@@ -86,6 +101,6 @@ const SGWorld = ({ groundTexture, wallTexture, world, modelData }) => {
       />
     </>
   )
-}
+})
 
 module.exports = SGWorld

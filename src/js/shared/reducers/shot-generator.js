@@ -7,6 +7,8 @@ const { combineReducers } = require('redux')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
 
+const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
+
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
 const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
@@ -58,6 +60,7 @@ const getSerializedState = state => {
 const checkForCharacterChanges = (state, draft, actionPayloadId) => {
   // check to see if character has changed from preset
   // and invalidate if so
+
   let characterPresetId = getSceneObjects(draft)[actionPayloadId].characterPresetId
   if (characterPresetId) {
     let statePreset = state.presets.characters[characterPresetId]
@@ -68,7 +71,6 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
       getSceneObjects(draft)[actionPayloadId].characterPresetId = undefined
       return true
     }
-
     let stateCharacter = getSceneObjects(draft)[actionPayloadId]
 
     // for every top-level prop in the preset
@@ -105,6 +107,7 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   // check to see if pose has changed from preset
   // and invalidate if so
+
   let posePresetId = getSceneObjects(draft)[actionPayloadId].posePresetId
   if (posePresetId) {
     let statePreset = state.presets.poses[posePresetId]
@@ -117,6 +120,7 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
     }
 
     let draftSkeleton = getSceneObjects(draft)[actionPayloadId].skeleton
+    let characterPreset = getSceneObjects(draft)[actionPayloadId].ragDoll;
 
     let preset = statePreset.state.skeleton
     let curr = draftSkeleton
@@ -126,8 +130,7 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
       getSceneObjects(draft)[actionPayloadId].posePresetId = undefined
       return true
     }
-
-    for (name in preset) {
+    for (let name in preset) {
       if (
         preset[name].rotation.x !== curr[name].rotation.x ||
         preset[name].rotation.y !== curr[name].rotation.y ||
@@ -164,7 +167,8 @@ const updateObject = (draft, state, props, { models }) => {
 
   // update skeleton first
   // so that subsequent changes to height and headScale take effect
-  if (props.hasOwnProperty('skeleton')) {
+  if (props.hasOwnProperty('skeleton'))
+  {
     draft.skeleton = props.skeleton
   }
 
@@ -361,8 +365,8 @@ const defaultScenePreset = {
     backgroundColor: 0xFFFFFF,
     room: {
       visible: true,
-      width: 4,
-      length: 4,
+      width: 10,
+      length: 10,
       height: 3
     },
     environment: {
@@ -453,6 +457,7 @@ const defaultScenePreset = {
       z: 2,
       rotation: 10,
       tilt: 10,
+      roll: 0,
       intensity: 0.7,
       visible: true,
       angle: 1.04,
@@ -483,8 +488,8 @@ const initialScene = {
     backgroundColor: 0xFFFFFF,
     room: {
       visible: false,
-      width: 4,
-      length: 4,
+      width: 10,
+      length: 10,
       height: 3
     },
     environment: {
@@ -552,40 +557,11 @@ const initialState = {
 
     'box': {
       id: 'box',
-      name: 'box',
+      name: 'Box',
       type: 'object',
       height: 1
     },
-    'tree': {
-      id: 'tree',
-      name: 'tree',
-      type: 'object',
-      height: 1
-    },
-    'chair': {
-      id: 'chair',
-      name: 'chair',
-      type: 'object',
-      height: 1
-    },
-    'car': {
-      id: 'car',
-      name: 'car',
-      type: 'object',
-      height: 1
-    },
-    'door': {
-      id: 'door',
-      name: 'door',
-      type: 'object',
-      height: 1
-    },
-    'building': {
-      id: 'building_one_storey',
-      name:  'building (1)',
-      type: 'object',
-      height: 1
-    }
+    ...ObjectModelFileDescriptions,
   },
 
   attachments: {},
@@ -748,7 +724,6 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       case 'UPDATE_OBJECT':
         if (draft[action.payload.id] == null) return
-
         updateObject(
           draft[action.payload.id],
           state[action.payload.id],
@@ -789,10 +764,22 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
         return withDisplayNames(draft)
 
+      // update a single bone by name
       case 'UPDATE_CHARACTER_SKELETON':
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         draft[action.payload.id].skeleton[action.payload.name] = {
           rotation: action.payload.rotation
+        }
+        return
+
+      // update many bones from a skeleton object
+      case 'UPDATE_CHARACTER_IK_SKELETON':
+        draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
+        for (let bone of action.payload.skeleton) {
+          let { x, y, z } = bone.rotation
+          draft[action.payload.id].skeleton[bone.name] = {
+            rotation: { x, y, z }
+          }
         }
         return
 
@@ -945,6 +932,46 @@ const worldReducer = (state = initialState.undoable.world, action) => {
   })
 }
 
+const presetsReducer = (state = initialState.presets, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'CREATE_SCENE_PRESET':
+        draft.scenes[action.payload.id] = action.payload
+        return
+
+      case 'DELETE_SCENE_PRESET':
+        delete draft.scenes[action.payload.id]
+        return
+
+      case 'UPDATE_SCENE_PRESET':
+        // allow a null value for name
+        if (action.payload.hasOwnProperty('name')) {
+          draft.scenes[action.payload.id].name = action.payload.name
+        }
+        return
+
+      case 'CREATE_CHARACTER_PRESET':
+        draft.characters[action.payload.id] = action.payload
+        return
+
+      case 'CREATE_POSE_PRESET':
+        draft.poses[action.payload.id] = action.payload
+        return
+
+      case 'DELETE_POSE_PRESET':
+        delete draft.poses[action.payload.id]
+        return
+
+      case 'UPDATE_POSE_PRESET':
+        // allow a null value for name
+        if (action.payload.hasOwnProperty('name')) {
+          draft.poses[action.payload.id].name = action.payload.name
+        }
+        return
+    }
+  })
+}
+
 const mainReducer = (state/* = initialState*/, action) => {
   return produce(state, draft => {
     switch (action.type) {
@@ -952,29 +979,29 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.mainViewCamera = 'live'
         return
 
-      case 'SET_INPUT_ACCEL':
-        draft.input.accel = action.payload
-        return
-
-        case 'SET_INPUT_MAG':
-        draft.input.mag = action.payload
-        return
-
-        case 'SET_INPUT_SENSOR':
-        draft.input.sensor = action.payload
-        return
-
-      case 'SET_INPUT_DOWN':
-        draft.input.down = action.payload
-        return
-
-      case 'SET_INPUT_MOUSEMODE':
-        draft.input.mouseMode = action.payload
-        return
-
-      case 'SET_INPUT_ORBITMODE':          
-        draft.input.orbitMode = action.payload
-        return
+      // case 'SET_INPUT_ACCEL':
+      //   draft.input.accel = action.payload
+      //   return
+      // 
+      //   case 'SET_INPUT_MAG':
+      //   draft.input.mag = action.payload
+      //   return
+      // 
+      //   case 'SET_INPUT_SENSOR':
+      //   draft.input.sensor = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_DOWN':
+      //   draft.input.down = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_MOUSEMODE':
+      //   draft.input.mouseMode = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_ORBITMODE':          
+      //   draft.input.orbitMode = action.payload
+      //   return
 
       case 'UPDATE_MODELS':
         draft.models = {
@@ -991,48 +1018,14 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.mainViewCamera = action.payload
         return
 
-      case 'CREATE_SCENE_PRESET':
-        draft.presets.scenes[action.payload.id] = action.payload
-        return
-
-      case 'DELETE_SCENE_PRESET':
-        delete draft.presets.scenes[action.payload.id]
-        return
-
-      case 'UPDATE_SCENE_PRESET':
-        // allow a null value for name
-        if (action.payload.hasOwnProperty('name')) {
-          draft.presets.scenes[action.payload.id].name = action.payload.name
-        }
-        return
-
       case 'UPDATE_DEVICE':
         draft.devices[action.payload.id] = action.payload
         return
 
-      case 'CREATE_CHARACTER_PRESET':
-        draft.presets.characters[action.payload.id] = action.payload
-        return
-
-      case 'CREATE_POSE_PRESET':
-        draft.presets.poses[action.payload.id] = action.payload
-        return
-
-      case 'DELETE_POSE_PRESET':
-        delete draft.presets.poses[action.payload.id]
-        return
-
-      case 'UPDATE_POSE_PRESET':
-        // allow a null value for name
-        if (action.payload.hasOwnProperty('name')) {
-          draft.presets.poses[action.payload.id].name = action.payload.name
-        }
-        return
-
-      case 'UPDATE_SERVER':
-        console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
-        draft.server = { ...draft.server, ...action.payload }
-        return
+      // case 'UPDATE_SERVER':
+      //   console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
+      //   draft.server = { ...draft.server, ...action.payload }
+      //   return
 
       case 'SET_BOARD':
         draft.board = action.payload
@@ -1108,6 +1101,10 @@ const checksReducer = (state, action) => {
         checkForSkeletonChanges(state, draft, action.payload.id)
         return
 
+      case 'UPDATE_CHARACTER_IK_SKELETON':
+        checkForSkeletonChanges(state, draft, action.payload.id)
+        return
+
       // when we REDO, we are changing the entire state all at once
       // so, we gotta run all the checks
       case '@@redux-undo/REDO':
@@ -1162,6 +1159,11 @@ const rootReducer = reduceReducers(
 
   (state, action) => ({
     ...state,
+    presets: presetsReducer(state.presets, action)
+  }),
+
+  (state, action) => ({
+    ...state,
     undoable: undoableReducer(state.undoable, action)
   }),
 
@@ -1207,6 +1209,12 @@ module.exports = {
     payload: { id, name, rotation }
   }),
 
+  updateCharacterIkSkeleton: ({ id, skeleton }) => 
+  ({
+    type: 'UPDATE_CHARACTER_IK_SKELETON',
+    payload: { id, skeleton }
+  }),
+
   setActiveCamera: id => ({ type: 'SET_ACTIVE_CAMERA', payload: id }),
 
   resetScene: () => ({
@@ -1234,7 +1242,7 @@ module.exports = {
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
 
-  updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
+  // updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
 
   setBoard: payload => ({ type: 'SET_BOARD', payload }),
   

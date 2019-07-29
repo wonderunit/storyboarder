@@ -1,18 +1,18 @@
 const fs = require('fs-extra')
 const path = require('path')
 
+
 const { Provider, connect } = require('react-redux')
 const React = require('react')
 const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const { ipcRenderer, remote } = require('electron')
+const { dialog } = remote
 
 const log = require('electron-log')
 
 const {
   SceneContext,
-  Toolbar,
-  Icon,
   ElementsPanel,
   CameraInspector,
   BoardInspector,
@@ -27,6 +27,8 @@ const {
 } = require('./Components')
 const SceneManager = require('./SceneManager')
 const GuidesView = require('./GuidesView')
+const Icon = require('./Icon')
+const Toolbar = require('./Toolbar')
 const FatalErrorBoundary = require('./FatalErrorBoundary')
 
 const ModelLoader = require('../services/model-loader')
@@ -709,18 +711,19 @@ const Editor = connect(
         [FatalErrorBoundary,
           ['div.column', { style: { width: '100%', height: '100%' } }, [
             [Toolbar, {
-              createObject,
-              selectObject,
-              loadScene,
-              saveScene,
+              // createObject,
+              // selectObject,
+              // loadScene,
+              // saveScene,
               camera,
-              setActiveCamera,
-              resetScene,
+              // setActiveCamera,
+              // resetScene,
               saveToBoard: onToolbarSaveToBoard,
               insertAsNewBoard: onToolbarInsertAsNewBoard,
               xrServerUrl,
-              undoGroupStart,
-              undoGroupEnd
+              // undoGroupStart,
+              // undoGroupEnd,
+              notifications
             }],
 
             ['div.row', { style: { flex: 1, height: '100%' }},
