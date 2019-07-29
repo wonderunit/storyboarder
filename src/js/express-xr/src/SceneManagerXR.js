@@ -971,8 +971,8 @@ const SceneContent = ({
 
     THREE.VRController.update()
 
-    vrControllers.forEach((controller, idx) => {
-
+    for (let i = 0; i < vrControllers.length; i++) {
+    const controller = vrControllers[i]
       if (
         selectedObjRef.current &&
         selectedObjRef.current.userData.type === 'character' &&
@@ -983,6 +983,7 @@ const SceneContent = ({
         const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
         if (hits.length) {
+          if (controller.userData.currentBoneHighlight === hits[0].bone) return
           controller.userData.currentBoneHighlight = hits[0].bone
           controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
         } else if (controller.userData.currentBoneHighlight) {
@@ -991,23 +992,18 @@ const SceneContent = ({
         }
       }
 
-      const otherController = vrControllers[1 - idx]
-      if (otherController && !otherController.pressed && !controller.userData.selected) {
-        const intersections = getIntersections(controller, guiArray.current)
-        if (intersections.length > 0) {
-          let intersection = intersections[0]
-          if (intersection.object.userData.type === 'slider') {
-            controller.intersections = intersections
-          } else if (intersection.object.name.includes('selector')) {
-            controller.intersections = [intersection]
-          } else {
-            controller.intersections = []
+      const handedness = controller.getHandedness()
+      if (handedness === (flipHand ? 'right' : 'left')) {
+        const otherController = vrControllers[1 - i]
+        if (otherController && !otherController.pressed && !controller.userData.selected) {
+          const intersections = getIntersections(controller, guiArray.current)
+          if (intersections.length > 0) {
+            let intersection = intersections[0]
+            if (intersection.object.userData.type === 'slider') controller.intersections = intersections
+            else if (intersection.object.name.includes('selector')) controller.intersections = [intersection]
           }
-        } else {
-          controller.intersections = []
-        }
-      } else {
-        controller.intersections = []
+        } 
+        else if (controller.intersections.lenght !== 0) controller.intersections = []
       }
 
       const object = controller.userData.selected
@@ -1017,47 +1013,48 @@ const SceneContent = ({
 
       if (controller.pressed === true) {
         if (object && object.userData.type === 'object' && controller.gripped) {
-          if (object.parent.uuid === controller.uuid) {
-            object.matrix.premultiply(controller.matrixWorld)
-            object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-            object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-            object.position.multiplyScalar(1 / worldScale)
-
-            object.userData.order = object.rotation.order
-            object.rotation.reorder('YXZ')
-
-            const sign = Math.sign(object.rotation.y)
-            let degreeY =  THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
-            degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
-
-            let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
-            degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
-
-            object.rotation.x = 0
-            object.rotation.z = degreeZ
-            object.rotation.y = degreeY
-            object.rotation.order = object.userData.order
-            worldScaleGroupRef.current.add(object)
-
-            const intersections = getIntersections(controller, intersectArray.current)
-            if (intersections.length > 0) {
-              const intersection = intersections[0]
-              const raycastDepth = controller.getObjectByName('raycast-depth')
-              raycastDepth.position.z = -intersection.distance
-
-              const objectWorldPos = intersection.object.getWorldPosition(new THREE.Vector3())
-              const posOffset = new THREE.Vector3().subVectors(intersection.point, objectWorldPos)
-              controller.userData.posOffset = posOffset
-            }
-          } else {
-            constraintObjectRotation(controller, worldScale)
-          }
+          if (object.parent.uuid === controller.uuid) snapObjectRotation(object, controller)
+          else constraintObjectRotation(controller, worldScale)
         }
       }
 
       if (controller.userData.bone) rotateBone(controller)
-    })
-  }, false, [vrControllers, selectedBone, worldScale])
+    }
+  }, false, [vrControllers, selectedBone, worldScale, flipHand])
+
+  const snapObjectRotation = (object, controller) => {
+    object.matrix.premultiply(controller.matrixWorld)
+    object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+    object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
+    object.position.multiplyScalar(1 / worldScale)
+
+    object.userData.order = object.rotation.order
+    object.rotation.reorder('YXZ')
+
+    const sign = Math.sign(object.rotation.y)
+    let degreeY = THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
+    degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
+
+    let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
+    degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
+
+    object.rotation.x = 0
+    object.rotation.z = degreeZ
+    object.rotation.y = degreeY
+    object.rotation.order = object.userData.order
+    worldScaleGroupRef.current.add(object)
+
+    const intersections = getIntersections(controller, intersectArray.current)
+    if (intersections.length > 0) {
+      const intersection = intersections[0]
+      const raycastDepth = controller.getObjectByName('raycast-depth')
+      raycastDepth.position.z = -intersection.distance
+
+      const objectWorldPos = intersection.object.getWorldPosition(new THREE.Vector3())
+      const posOffset = new THREE.Vector3().subVectors(intersection.point, objectWorldPos)
+      controller.userData.posOffset = posOffset
+    }
+  }
 
   useEffect(() => {
     navigator
