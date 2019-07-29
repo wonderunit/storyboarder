@@ -979,29 +979,29 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.mainViewCamera = 'live'
         return
 
-      case 'SET_INPUT_ACCEL':
-        draft.input.accel = action.payload
-        return
-
-        case 'SET_INPUT_MAG':
-        draft.input.mag = action.payload
-        return
-
-        case 'SET_INPUT_SENSOR':
-        draft.input.sensor = action.payload
-        return
-
-      case 'SET_INPUT_DOWN':
-        draft.input.down = action.payload
-        return
-
-      case 'SET_INPUT_MOUSEMODE':
-        draft.input.mouseMode = action.payload
-        return
-
-      case 'SET_INPUT_ORBITMODE':          
-        draft.input.orbitMode = action.payload
-        return
+      // case 'SET_INPUT_ACCEL':
+      //   draft.input.accel = action.payload
+      //   return
+      // 
+      //   case 'SET_INPUT_MAG':
+      //   draft.input.mag = action.payload
+      //   return
+      // 
+      //   case 'SET_INPUT_SENSOR':
+      //   draft.input.sensor = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_DOWN':
+      //   draft.input.down = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_MOUSEMODE':
+      //   draft.input.mouseMode = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_ORBITMODE':          
+      //   draft.input.orbitMode = action.payload
+      //   return
 
       case 'UPDATE_MODELS':
         draft.models = {
@@ -1022,10 +1022,10 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.devices[action.payload.id] = action.payload
         return
 
-      case 'UPDATE_SERVER':
-        console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
-        draft.server = { ...draft.server, ...action.payload }
-        return
+      // case 'UPDATE_SERVER':
+      //   console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
+      //   draft.server = { ...draft.server, ...action.payload }
+      //   return
 
       case 'SET_BOARD':
         draft.board = action.payload
@@ -1242,7 +1242,7 @@ module.exports = {
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
 
-  updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
+  // updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
 
   setBoard: payload => ({ type: 'SET_BOARD', payload }),
   
