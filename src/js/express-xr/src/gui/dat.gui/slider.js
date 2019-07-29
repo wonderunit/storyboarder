@@ -133,9 +133,9 @@ export function createSlider({
 
   function updateValueLabel(value) {
     if (state.useStep) {
-      valueLabel.updateLabel(roundToDecimal(state.value, state.precision).toString())
+      valueLabel.updateLabel(roundToDecimal(value, state.precision).toString())
     } else {
-      valueLabel.updateLabel(state.value.toString())
+      valueLabel.updateLabel(value.toString())
     }
   }
 
@@ -234,12 +234,25 @@ export function createSlider({
     const previousValue = state.value
 
     updateStateFromAlpha(getPointAlpha(point, { a, b }))
-    updateValueLabel(state.value)
+    // updateValueLabel(state.value)
     updateSlider()
     updateObject(state.value)
 
     if (previousValue !== state.value && state.onChangedCB) {
-      state.onChangedCB(id, prop, state.value)
+      let value = state.value
+      if (prop === 'guiFOV' || prop === 'fov') {
+        const fovMin = 10
+        const fovMax = 280
+        const minSlider = 10
+        const maxSlider = 280
+        const minValue = Math.log(fovMin)
+        const maxValue = Math.log(fovMax)
+        const scale = (maxValue - minValue) / (maxSlider - minSlider)
+        value = Math.exp(minValue + scale * (state.value - minSlider))
+      }
+
+      state.onChangedCB(id, prop, value)
+      updateValueLabel(value)
     }
   }
 
