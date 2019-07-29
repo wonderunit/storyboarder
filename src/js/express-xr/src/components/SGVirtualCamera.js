@@ -111,7 +111,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
 
   return (
     <group
-      userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { fov: props.fov } }}
+      userData={{ id: props.id, displayName: props.name || props.displayName, type: 'virtual-camera', forPanel: { fov: props.fov } }}
       position={[props.x || 0, props.z || 0, props.y || 0]}
       ref={ref}
     >
