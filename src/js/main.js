@@ -30,7 +30,7 @@ const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
 const registration = require('./windows/registration/main')
-const shotGeneratorWindow = require('./windows/shot-generator/main')
+const shotGeneratorMain = require('./windows/shot-generator/main')
 const tutorialMain = require('./windows/shot-generator-tutorial/main')
 
 const JWT = require('jsonwebtoken')
@@ -173,6 +173,13 @@ app.on('ready', async () => {
   }
 
 
+  // are we testing locally?
+  // SHOT_GENERATOR_STANDALONE=true npm start
+  if (process.env.SHOT_GENERATOR_STANDALONE) {
+    log.info('Running Shot Generator Standalone')
+    shotGeneratorMain.show(() => {})
+    return
+  }
 
   if (os.platform() === 'darwin') {
     if (!isDev && !app.isInApplicationsFolder()) {
@@ -231,14 +238,6 @@ app.on('ready', async () => {
   })
 
   await attemptLicenseVerification()
-
-  // are we testing locally?
-  // SHOT_GENERATOR_STANDALONE=true npm start
-  if (process.env.SHOT_GENERATOR_STANDALONE) {
-    log.info('Running Shot Generator Standalone')
-    shotGeneratorWindow.show(() => {})
-    return
-  }
 
   // open the welcome window when the app loads up first
   openWelcomeWindow()
@@ -1471,7 +1470,7 @@ ipcMain.on('insertShot',
 ipcMain.on('registration:open', event => registration.show())
 
 ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardData }) => {  
-  shotGeneratorWindow.show(win => {
+  shotGeneratorMain.show(win => {
     win.webContents.send('loadBoard', { storyboarderFilePath, boardData, board })
   })
 
@@ -1480,7 +1479,7 @@ ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardDa
   // analytics.screenView('shot-generator')
 })
 ipcMain.on('shot-generator:update', (event, { board }) => {
-  let win = shotGeneratorWindow.getWindow()
+  let win = shotGeneratorMain.getWindow()
   if (win) {
     win.webContents.send('update', { board })
   }
