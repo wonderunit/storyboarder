@@ -30,7 +30,8 @@ const preventDefault = (fn, ...args) => e => {
 const Toolbar = connect(
     state => ({
       room: getWorld(state).room,
-      cameraState: getSceneObjects(state)[getActiveCamera(state)]
+      cameraState: getSceneObjects(state)[getActiveCamera(state)],
+      server: state.server
     }),
     {
       selectObject,
@@ -49,6 +50,7 @@ const Toolbar = connect(
     // redux state
     room,
     cameraState,
+    server,
 
     // action creators
     selectObject,
@@ -67,7 +69,6 @@ const Toolbar = connect(
 
     saveToBoard,
     insertAsNewBoard,
-    xrServerUrl,
 
     // unused
     //  resetScene,
@@ -217,9 +218,9 @@ const Toolbar = connect(
 
     const onOpenVR = preventDefault(() =>
       notifications.notify({
-        message: `To view, open a VR web browser to:\n<a href="${xrServerUrl}">${xrServerUrl}</a>`,
+        message: `To view, open a VR web browser to:\n<a href="${server.xrUri}">${server.xrUri}</a>`,
         timing: 30,
-        onClick: () => require('electron').shell.openExternal(xrServerUrl)
+        onClick: () => require('electron').shell.openExternal(server.xrUri)
       })
     )
 
@@ -239,7 +240,7 @@ const Toolbar = connect(
         // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
         ['div.toolbar__board-actions.row', [
-          xrServerUrl ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, 'Open in VR'] : [],
+          server.xrUri ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, 'Open in VR'] : [],
           ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Save to Board']],
           ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], 'Insert As New Board']],
         ]]

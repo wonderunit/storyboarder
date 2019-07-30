@@ -1022,10 +1022,15 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.devices[action.payload.id] = action.payload
         return
 
-      // case 'UPDATE_SERVER':
-      //   console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
-      //   draft.server = { ...draft.server, ...action.payload }
-      //   return
+      case 'UPDATE_SERVER':
+        if (action.payload.uri) {
+          console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
+        }
+        if (action.payload.xrUri) {
+          console.log('%cshot-generator XR client at', 'color:blue', action.payload.xrUri)
+        }
+        draft.server = { ...draft.server, ...action.payload }
+        return
 
       case 'SET_BOARD':
         draft.board = action.payload
@@ -1242,7 +1247,7 @@ module.exports = {
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
 
-  // updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
+  updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
 
   setBoard: payload => ({ type: 'SET_BOARD', payload }),
   
