@@ -62,7 +62,7 @@ const show = (onComplete) => {
   //
   // if beforeunload is telling us to prevent unload ...
   win.webContents.on('will-prevent-unload', event => {
-    const choice = dialog.showMessageBox({
+    const choice = dialog.showMessageBoxSync({
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm',
