@@ -171,29 +171,3 @@ createDualShockController(throttle(updater, 16, { leading: true }))
 // 
 //   updateServer: payload => store.dispatch(updateServer(payload))
 // })
-
-// are we testing locally?
-// SHOT_GENERATOR_STANDALONE=true npm start
-if (process.env.SHOT_GENERATOR_STANDALONE) {
-  log.info('loading shot from shot-generator.storyboarder')
-
-  const fs = require('fs')
-  const path = require('path')
-
-  let storyboarderFilePath = path.join(
-    __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'
-  )
-
-  let file = JSON.parse(fs.readFileSync(storyboarderFilePath))
-
-  let win = electron.remote.BrowserWindow.getAllWindows()
-    .find(w => w.webContents.getURL() === window.location.toString())
-
-  win.webContents.send('loadBoard', { storyboarderFilePath, boardData: file, board: file.boards[0] })
-
-  // send storyboarderFilePath immediately so XRServer has access to it
-  store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
-
-  xrServer = new XRServer({ store })
-}
-

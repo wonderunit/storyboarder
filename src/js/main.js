@@ -93,6 +93,13 @@ app.on('open-file', (event, path) => {
   }
 })
 
+// are we testing locally?
+// SHOT_GENERATOR_STANDALONE=true npm run shot-generator
+if (process.env.SHOT_GENERATOR_STANDALONE) {
+  log.info('[SHOT_GENERATOR_STANDALONE]: Running Shot Generator Standalone')
+  return
+}
+
 app.on('ready', async () => {
   analytics.init(prefs.enableAnalytics)
 
@@ -170,15 +177,6 @@ app.on('ready', async () => {
   if (shouldOverwrite) {
     log.info('Writing', keymapPath)
     fs.writeFileSync(keymapPath, JSON.stringify(store.getState().entities.keymap, null, 2) + '\n')
-  }
-
-
-  // are we testing locally?
-  // SHOT_GENERATOR_STANDALONE=true npm start
-  if (process.env.SHOT_GENERATOR_STANDALONE) {
-    log.info('Running Shot Generator Standalone')
-    shotGeneratorMain.show(() => {})
-    return
   }
 
   if (os.platform() === 'darwin') {
