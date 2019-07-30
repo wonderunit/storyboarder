@@ -13,7 +13,6 @@ const {
   getSelections,
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
-
 function getObjectsFromIcons ( objects ) {
   return objects
       // visible objects
@@ -273,15 +272,22 @@ const SelectionManager = connect(
 
   const onPointerDown = event => {
     event.preventDefault()
-    gpuPicker.initialize(scene, renderer, rendererEffect);
-    gpuPicker.setChildren(scene.children);
+    gpuPicker.initialize(scene, renderer);
+    gpuPicker.initalizeChildren(scene);
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
     
     // get the mouse coords
     const { x, y } = mouse(event)
     const rect = el.getBoundingClientRect();
-    gpuPicker.setPickingPosition(event.clientX - rect.left, event.clientY - rect.top);
+    let center = new THREE.Vector3().setFromMatrixPosition(camera.projectionMatrix);
+    let middle = new THREE.Vector2(renderer.domElement.width / 2, renderer.domElement.height / 2);
+    let mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
+    console.log(center);
+    console.log(middle);
+    console.log(mousePosition);
+    gpuPicker.updateObject();
+    gpuPicker.setPickingPosition(middle.x, middle.y);
     gpuPicker.pick(camera);
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)

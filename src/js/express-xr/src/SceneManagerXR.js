@@ -7,6 +7,10 @@ const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 const { ActionCreators } = require('redux-undo')
 
+const GPUPicker = require("../../shot-generator/GPUPickers/GPUPicker");
+const GPUPickerHelper = require("../../shot-generator/GPUPickers/GPUPickerHelper");
+require("../../shot-generator/IK/utils/Object3dExtension");
+
 const {
   createObject,
   updateObject,
@@ -159,17 +163,20 @@ const SceneContent = ({
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
 
+  const gpuPicker = useRef(new GPUPicker());
+  
   // Rotate Bone
   let isControllerRotatingCurrent = useRef(false)
   let startingObjectQuaternion = useRef(null)
   let startingDeviceOffset = useRef(null)
   let startingObjectOffset = useRef(null)
   let startingDeviceRotation = useRef(null)
-
   guiModeRef.current = guiMode
-
+  let wall = useRef(null);
+  
   const { gl, scene, camera, setDefaultCamera } = useThree()
-
+  const selectionCamera = useRef(new THREE.PerspectiveCamera( camera.fov, camera.aspect, camera.near, camera.far ));
+  //scene.add(selectionCamera.current);
   const onUpdateGUIProp = e => {
     const { id, prop, value } = e.detail
 
@@ -270,7 +277,65 @@ const SceneContent = ({
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (otherController && otherController.userData.selected) return
     if (controller.gripped) return
+    console.log(controller);
+    
+    
+ /*    selectionCamera.current.position.copy(controller.worldPosition());
+    selectionCamera.current.quaternion.copy(controller.worldQuaternion());
+    selectionCamera.current.scale.copy(controller.worldScale());
 
+    selectionCamera.current.updateMatrix();
+    selectionCamera.current.updateMatrixWorld(true); */
+
+    let selectCamera = selectionCamera.current;
+    selectCamera.visible = true;
+    selectionCamera.current.name = "Cameron";
+    let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
+    if(!controller.isSelectionAdded)
+    {
+      controller.isSelectionAdded = true;
+      controller.children[2].add(selectionCamera.current);
+      let geometry = new THREE.BoxBufferGeometry( 3, 3, 3 );
+      let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
+        emissive: 0x0,
+        flatShading: false } );
+      let mesh = new THREE.Mesh( geometry, material );
+      mesh.position.copy(selectCamera.position);
+      mesh.rotation.copy(selectCamera.rotation);
+      mesh.scale.copy(selectCamera.scale);
+      controller.children[2].add(mesh);
+      geometry = new THREE.BoxBufferGeometry( 6, 6, 6 );
+      material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
+        emissive: 0x0,
+        flatShading: false } );
+      mesh = new THREE.Mesh( geometry, material );
+      scene.add(mesh);
+      wall.current = mesh;
+    }
+    console.log(scene);
+    gpuPicker.current.initialize(scene, gl);
+    gpuPicker.current.initalizeChildren(scene);
+    
+    gpuPicker.current.updateObject();
+    let top = selectCamera.near * Math.tan( THREE.Math.DEG2RAD * 0.5 * selectCamera.fov ) / selectCamera.zoom,
+    height = 2 * top,
+    width = selectCamera.aspect * height,
+    left = - 0.5 * width;
+    //let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
+    console.log(center);
+    console.log(camera);
+    //center = center.applyMatrix4(selectionCamera.current.projectionMatrix);
+    console.log(selectionCamera.current.projectionMatrix.clone());
+    console.log(center.clone());
+    gpuPicker.current.setPickingPosition(center.x, center.y);
+
+    let tempMatrix = new THREE.Matrix4();
+    tempMatrix.identity().extractRotation(controller.matrixWorld);
+    const tiltControllerMatrix = new THREE.Matrix4().makeRotationX((Math.PI / 180) * -45);
+    tempMatrix.multiply(tiltControllerMatrix);
+    selectionCamera.current.applyMatrix(tempMatrix.inverse());
+    gpuPicker.current.pick(selectionCamera.current, wall.current);
+    selectionCamera.current.applyMatrix(tempMatrix);
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
@@ -863,7 +928,7 @@ const SceneContent = ({
       const controller = vrControllers[i]
       if (controller.pressed && selectedObjRef.current) return
     }
-
+  
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
