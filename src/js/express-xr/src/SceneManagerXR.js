@@ -173,6 +173,7 @@ const SceneContent = ({
   let startingDeviceRotation = useRef(null)
   guiModeRef.current = guiMode
   let wall = useRef(null);
+  let cameraHelper = useRef(null);
   
   const { gl, scene, camera, setDefaultCamera } = useThree()
   const selectionCamera = useRef(new THREE.PerspectiveCamera( camera.fov, camera.aspect, camera.near, camera.far ));
@@ -291,51 +292,62 @@ const SceneContent = ({
     selectCamera.visible = true;
     selectionCamera.current.name = "Cameron";
     let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-    if(!controller.isSelectionAdded)
+    if(!wall.current)
     {
-      controller.isSelectionAdded = true;
-      controller.children[2].add(selectionCamera.current);
-      let geometry = new THREE.BoxBufferGeometry( 3, 3, 3 );
+      console.log("Added helper");
+      let geometry = new THREE.PlaneBufferGeometry( 20, 20, 6 );
       let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
         emissive: 0x0,
         flatShading: false } );
       let mesh = new THREE.Mesh( geometry, material );
-      mesh.position.copy(selectCamera.position);
-      mesh.rotation.copy(selectCamera.rotation);
-      mesh.scale.copy(selectCamera.scale);
-      controller.children[2].add(mesh);
-      geometry = new THREE.BoxBufferGeometry( 6, 6, 6 );
-      material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
-        emissive: 0x0,
-        flatShading: false } );
-      mesh = new THREE.Mesh( geometry, material );
       scene.add(mesh);
       wall.current = mesh;
     }
-    console.log(scene);
+
+    if(!cameraHelper.current)
+    {
+      console.log("Added helper");
+      cameraHelper.current = new THREE.CameraHelper( selectionCamera.current );
+      scene.add( cameraHelper.current );
+    }
+    if(!controller.isSelectionAdded)
+    {
+      if(otherController.isSelectionAdded)
+      {
+        //otherController.children[0].remove(selectionCamera.current);
+        for(let i = 0, n = controller.children.length; i < n; i++)
+        {
+          if(controller.children[i].userData && controller.children[i].userData.id === "controller")
+          {
+             controller.children[i].remove(selectionCamera.current);
+             i = n;
+          }
+        }
+        otherController.isSelectionAdded = false;
+      }
+      controller.isSelectionAdded = true;
+      for(let i = 0, n = controller.children.length; i < n; i++)
+      {
+        if(controller.children[i].userData && controller.children[i].userData.id === "controller")
+        {
+           controller.children[i].add(selectionCamera.current);
+           i = n;
+        }
+      }
+  
+      cameraHelper.current.camera = selectionCamera.current;
+      cameraHelper.current.update();
+ 
+    }
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(scene);
     
     gpuPicker.current.updateObject();
-    let top = selectCamera.near * Math.tan( THREE.Math.DEG2RAD * 0.5 * selectCamera.fov ) / selectCamera.zoom,
-    height = 2 * top,
-    width = selectCamera.aspect * height,
-    left = - 0.5 * width;
     //let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-    console.log(center);
-    console.log(camera);
     //center = center.applyMatrix4(selectionCamera.current.projectionMatrix);
-    console.log(selectionCamera.current.projectionMatrix.clone());
-    console.log(center.clone());
     gpuPicker.current.setPickingPosition(center.x, center.y);
 
-    let tempMatrix = new THREE.Matrix4();
-    tempMatrix.identity().extractRotation(controller.matrixWorld);
-    const tiltControllerMatrix = new THREE.Matrix4().makeRotationX((Math.PI / 180) * -45);
-    tempMatrix.multiply(tiltControllerMatrix);
-    selectionCamera.current.applyMatrix(tempMatrix.inverse());
     gpuPicker.current.pick(selectionCamera.current, wall.current);
-    selectionCamera.current.applyMatrix(tempMatrix);
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {

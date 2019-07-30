@@ -181,8 +181,18 @@ const SelectionManager = connect(
   const { scene } = useContext(SceneContext)
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
- 
+  let wall = useRef(null);
 
+  if(! wall.current || !wall.current.isAdded)
+  {
+    geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );
+    material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
+      emissive: 0x0,
+      flatShading: false } );
+    wall.current = new THREE.Mesh( geometry, material );
+    scene.add( wall.current);
+    wall.current.isAdded = true;
+  }
   const intersectables = scene.children.filter(o =>
     o.userData.type === 'object' ||
     o.userData.type === 'character' ||
@@ -288,7 +298,8 @@ const SelectionManager = connect(
     console.log(mousePosition);
     gpuPicker.updateObject();
     gpuPicker.setPickingPosition(middle.x, middle.y);
-    gpuPicker.pick(camera);
+    console.log(wall.current);
+    gpuPicker.pick(camera, wall.current);
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
     let intersects = getIntersects({ x, y }, camera, useIcons)

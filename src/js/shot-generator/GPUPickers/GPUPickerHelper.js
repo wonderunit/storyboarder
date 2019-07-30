@@ -45,7 +45,7 @@ class GPUPickerHelper
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         wall.material.map = renderTarget.texture;
-
+            
         //renderer.render(scene, camera);
         renderer.readRenderTargetPixels(
             pickingTexture,
