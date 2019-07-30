@@ -8,8 +8,6 @@ const { useEffect, useRef, useMemo, useState, useReducer } = React
 const { ActionCreators } = require('redux-undo')
 
 const GPUPicker = require("../../shot-generator/GPUPickers/GPUPicker");
-const GPUPickerHelper = require("../../shot-generator/GPUPickers/GPUPickerHelper");
-require("../../shot-generator/IK/utils/Object3dExtension");
 
 const {
   createObject,
@@ -278,23 +276,13 @@ const SceneContent = ({
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (otherController && otherController.userData.selected) return
     if (controller.gripped) return
-    console.log(controller);
-    
-    
- /*    selectionCamera.current.position.copy(controller.worldPosition());
-    selectionCamera.current.quaternion.copy(controller.worldQuaternion());
-    selectionCamera.current.scale.copy(controller.worldScale());
-
-    selectionCamera.current.updateMatrix();
-    selectionCamera.current.updateMatrixWorld(true); */
 
     let selectCamera = selectionCamera.current;
     selectCamera.visible = true;
-    selectionCamera.current.name = "Cameron";
+    selectCamera.name = "Cameron";
     let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
     if(!wall.current)
     {
-      console.log("Added helper");
       let geometry = new THREE.PlaneBufferGeometry( 20, 20, 6 );
       let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
         emissive: 0x0,
@@ -306,20 +294,18 @@ const SceneContent = ({
 
     if(!cameraHelper.current)
     {
-      console.log("Added helper");
-      cameraHelper.current = new THREE.CameraHelper( selectionCamera.current );
+      cameraHelper.current = new THREE.CameraHelper( selectCamera );
       scene.add( cameraHelper.current );
     }
     if(!controller.isSelectionAdded)
     {
       if(otherController.isSelectionAdded)
       {
-        //otherController.children[0].remove(selectionCamera.current);
         for(let i = 0, n = controller.children.length; i < n; i++)
         {
           if(controller.children[i].userData && controller.children[i].userData.id === "controller")
           {
-             controller.children[i].remove(selectionCamera.current);
+             controller.children[i].remove(selectCamera);
              i = n;
           }
         }
@@ -330,12 +316,13 @@ const SceneContent = ({
       {
         if(controller.children[i].userData && controller.children[i].userData.id === "controller")
         {
-           controller.children[i].add(selectionCamera.current);
+           controller.children[i].add(selectCamera);
            i = n;
         }
       }
-  
-      cameraHelper.current.camera = selectionCamera.current;
+      selectionCamera.current.updateMatrix();
+      selectionCamera.current.updateMatrixWorld(true);
+      cameraHelper.current.camera = selectCamera;
       cameraHelper.current.update();
  
     }
@@ -343,11 +330,9 @@ const SceneContent = ({
     gpuPicker.current.initalizeChildren(scene);
     
     gpuPicker.current.updateObject();
-    //let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-    //center = center.applyMatrix4(selectionCamera.current.projectionMatrix);
     gpuPicker.current.setPickingPosition(center.x, center.y);
 
-    gpuPicker.current.pick(selectionCamera.current, wall.current);
+    gpuPicker.current.pick(selectCamera, wall.current);
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
