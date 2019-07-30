@@ -365,8 +365,8 @@ const defaultScenePreset = {
     backgroundColor: 0xFFFFFF,
     room: {
       visible: true,
-      width: 4,
-      length: 4,
+      width: 10,
+      length: 10,
       height: 3
     },
     environment: {
@@ -488,8 +488,8 @@ const initialScene = {
     backgroundColor: 0xFFFFFF,
     room: {
       visible: false,
-      width: 4,
-      length: 4,
+      width: 10,
+      length: 10,
       height: 3
     },
     environment: {
@@ -932,6 +932,46 @@ const worldReducer = (state = initialState.undoable.world, action) => {
   })
 }
 
+const presetsReducer = (state = initialState.presets, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'CREATE_SCENE_PRESET':
+        draft.scenes[action.payload.id] = action.payload
+        return
+
+      case 'DELETE_SCENE_PRESET':
+        delete draft.scenes[action.payload.id]
+        return
+
+      case 'UPDATE_SCENE_PRESET':
+        // allow a null value for name
+        if (action.payload.hasOwnProperty('name')) {
+          draft.scenes[action.payload.id].name = action.payload.name
+        }
+        return
+
+      case 'CREATE_CHARACTER_PRESET':
+        draft.characters[action.payload.id] = action.payload
+        return
+
+      case 'CREATE_POSE_PRESET':
+        draft.poses[action.payload.id] = action.payload
+        return
+
+      case 'DELETE_POSE_PRESET':
+        delete draft.poses[action.payload.id]
+        return
+
+      case 'UPDATE_POSE_PRESET':
+        // allow a null value for name
+        if (action.payload.hasOwnProperty('name')) {
+          draft.poses[action.payload.id].name = action.payload.name
+        }
+        return
+    }
+  })
+}
+
 const mainReducer = (state/* = initialState*/, action) => {
   return produce(state, draft => {
     switch (action.type) {
@@ -939,29 +979,29 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.mainViewCamera = 'live'
         return
 
-      case 'SET_INPUT_ACCEL':
-        draft.input.accel = action.payload
-        return
-
-        case 'SET_INPUT_MAG':
-        draft.input.mag = action.payload
-        return
-
-        case 'SET_INPUT_SENSOR':
-        draft.input.sensor = action.payload
-        return
-
-      case 'SET_INPUT_DOWN':
-        draft.input.down = action.payload
-        return
-
-      case 'SET_INPUT_MOUSEMODE':
-        draft.input.mouseMode = action.payload
-        return
-
-      case 'SET_INPUT_ORBITMODE':          
-        draft.input.orbitMode = action.payload
-        return
+      // case 'SET_INPUT_ACCEL':
+      //   draft.input.accel = action.payload
+      //   return
+      // 
+      //   case 'SET_INPUT_MAG':
+      //   draft.input.mag = action.payload
+      //   return
+      // 
+      //   case 'SET_INPUT_SENSOR':
+      //   draft.input.sensor = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_DOWN':
+      //   draft.input.down = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_MOUSEMODE':
+      //   draft.input.mouseMode = action.payload
+      //   return
+      // 
+      // case 'SET_INPUT_ORBITMODE':          
+      //   draft.input.orbitMode = action.payload
+      //   return
 
       case 'UPDATE_MODELS':
         draft.models = {
@@ -978,48 +1018,14 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.mainViewCamera = action.payload
         return
 
-      case 'CREATE_SCENE_PRESET':
-        draft.presets.scenes[action.payload.id] = action.payload
-        return
-
-      case 'DELETE_SCENE_PRESET':
-        delete draft.presets.scenes[action.payload.id]
-        return
-
-      case 'UPDATE_SCENE_PRESET':
-        // allow a null value for name
-        if (action.payload.hasOwnProperty('name')) {
-          draft.presets.scenes[action.payload.id].name = action.payload.name
-        }
-        return
-
       case 'UPDATE_DEVICE':
         draft.devices[action.payload.id] = action.payload
         return
 
-      case 'CREATE_CHARACTER_PRESET':
-        draft.presets.characters[action.payload.id] = action.payload
-        return
-
-      case 'CREATE_POSE_PRESET':
-        draft.presets.poses[action.payload.id] = action.payload
-        return
-
-      case 'DELETE_POSE_PRESET':
-        delete draft.presets.poses[action.payload.id]
-        return
-
-      case 'UPDATE_POSE_PRESET':
-        // allow a null value for name
-        if (action.payload.hasOwnProperty('name')) {
-          draft.presets.poses[action.payload.id].name = action.payload.name
-        }
-        return
-
-      case 'UPDATE_SERVER':
-        console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
-        draft.server = { ...draft.server, ...action.payload }
-        return
+      // case 'UPDATE_SERVER':
+      //   console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
+      //   draft.server = { ...draft.server, ...action.payload }
+      //   return
 
       case 'SET_BOARD':
         draft.board = action.payload
@@ -1153,6 +1159,11 @@ const rootReducer = reduceReducers(
 
   (state, action) => ({
     ...state,
+    presets: presetsReducer(state.presets, action)
+  }),
+
+  (state, action) => ({
+    ...state,
     undoable: undoableReducer(state.undoable, action)
   }),
 
@@ -1231,7 +1242,7 @@ module.exports = {
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
 
-  updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
+  // updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
 
   setBoard: payload => ({ type: 'SET_BOARD', payload }),
   

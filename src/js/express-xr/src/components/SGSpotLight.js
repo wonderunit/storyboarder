@@ -38,7 +38,7 @@ const SGSpotLight = ({ ...props }) => {
       visible={props.visible}
       userData={{
         id: props.id,
-        displayName: props.displayName,
+        displayName: props.name || props.displayName,
         type: props.type,
         forPanel: { intensity: props.intensity, angle: props.angle }
       }}

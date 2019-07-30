@@ -2,11 +2,11 @@ const { useMemo } = React
 
 const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 
-const materialFactory = () => new THREE.MeshToonMaterial({
+const materialFactory = () => new THREE.MeshLambertMaterial({
   color: 0xcccccc,
   emissive: 0x0,
-  specular: 0x0,
-  shininess: 0,
+  // specular: 0x0,
+  // shininess: 0,
   flatShading: false
 })
 
@@ -66,7 +66,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
   const forPanel = model === 'box' ? { width, height, depth } : { size: width }
 
   return <group
-    userData={{ id, displayName: props.displayName, type: props.type, forPanel }}
+    userData={{ id, displayName: props.name || props.displayName, type: props.type, forPanel }}
     visible={visible}
     position={[ x, z, y ]}
     scale={[ width, height, depth ]}
