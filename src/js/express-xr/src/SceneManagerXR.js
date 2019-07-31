@@ -174,6 +174,10 @@ const SceneContent = ({
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
 
+  useMemo(() => {
+    scene.background = new THREE.Color(world.backgroundColor)
+  }, [world.backgroundColor])
+
   const onUpdateGUIProp = e => {
     const { id, prop, value } = e.detail
 
@@ -1051,18 +1055,6 @@ const SceneContent = ({
   }
 
   useEffect(() => {
-    navigator
-      .getVRDisplays()
-      .then(displays => {
-        // console.log({ displays })
-        if (displays.length) {
-          console.log('adding VR button')
-          scene.background = new THREE.Color(world.backgroundColor)
-          document.body.appendChild(WEBVR.createButton(gl))
-        }
-      })
-      .catch(err => console.error(err))
-
     if (SHOW_RSTATS) {
       const threeStats = new window.threeStats(gl)
       rStatsRef.current = new RStats({
@@ -1279,11 +1271,6 @@ const SceneContent = ({
     />
   )
 
-  // wait until the camera is setup before showing the scene
-  const ready = !!xrOffset.current
-
-  // console.log('scene is', ready ? 'shown' : 'not shown')
-
   return (
     <>
       {activeCameraComponent}
@@ -1296,6 +1283,16 @@ const SceneContent = ({
       </mesh>
     </>
   )
+}
+
+const XRStartButton = ({ }) => {
+  const { gl } = useThree()
+
+  useMemo(() => {
+    document.body.appendChild(WEBVR.createButton(gl))
+  }, [])
+
+  return null
 }
 
 const SceneManagerXR = connect(
@@ -1341,8 +1338,39 @@ const SceneManagerXR = connect(
     undo,
     redo
   }) => {
+    const [isLoading, setIsLoading] = useState(false)
+    const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
     const [attachments, attachmentsDispatch] = useAttachmentLoader()
 
+    // app model files
+    useMemo(() => {
+      [
+        controllerObjectSettings,
+        cameraObjectSettings
+      ].forEach(loadable =>
+        attachmentsDispatch({
+          type: 'PENDING',
+          payload: { id: getFilepathForLoadable(loadable) }
+        })
+      )
+    }, [])
+
+    // world model files
+    useMemo(() => {
+      if (world.environment.file) {
+        attachmentsDispatch({
+          type: 'PENDING',
+          payload: {
+            id: getFilepathForLoadable({
+              type: 'environment',
+              model: world.environment.file
+            })
+          }
+        })
+      }
+    }, [world.environment])
+
+    // scene object model files
     useMemo(() => {
       let loadables = Object.values(sceneObjects)
         // has a value for model
@@ -1352,20 +1380,25 @@ const SceneManagerXR = connect(
         // is not a box
         .filter(o => !(o.type === 'object' && o.model === 'box'))
 
-      world.environment.file && loadables.push(
-        { type: 'environment', model: world.environment.file }
-      )
-
-      loadables.push(controllerObjectSettings)
-      loadables.push(cameraObjectSettings)
-
-      loadables.forEach(o =>
+      loadables.forEach(loadable =>
         attachmentsDispatch({
           type: 'PENDING',
-          payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) }
+          payload: { id: getFilepathForLoadable(loadable) }
         })
       )
     }, [sceneObjects])
+
+    useMemo(() => {
+      let incomplete = a => a.status !== 'Success' && a.status !== 'Error'
+      let remaining = Object.values(attachments).filter(incomplete)
+
+      if (isLoading && !hasLoadedOnce && remaining.length === 0) {
+        setHasLoadedOnce(true)
+        setIsLoading(false)
+      } else if (remaining.length > 0) {
+        setIsLoading(true)
+      }
+    }, [attachments, sceneObjects, hasLoadedOnce, isLoading])
 
     const getModelData = sceneObject => {
       let key = getFilepathForLoadable(sceneObject)
@@ -1374,7 +1407,38 @@ const SceneManagerXR = connect(
 
     return (
       <>
-        <Canvas vr>
+        {
+          !hasLoadedOnce && <div style={
+            {
+              position: 'absolute',
+
+              bottom: 'auto',
+              top: 'calc(50% - 20px)',
+
+              padding: '12px 6px',
+              border: '3px solid transparent',
+              borderRadius: '9px',
+              background: 'rgba(0,0,0,0.5)',
+              color: '#aaa',
+              font: 'normal 13px sans-serif',
+              textAlign: 'center',
+              opacity: '0.5',
+              outline: 'none',
+              zIndex: '999',
+
+              left: 'calc(50% - 75px)',
+              width: 150,
+              height: 41,
+              lineHeight: 1,
+
+              cursor: 'default'
+            }
+          }>LOADING …</div>
+        }
+        <Canvas vr style={{ visibility: 'hidden' }}>
+          {
+            hasLoadedOnce && <XRStartButton />
+          }
           <SceneContent
             {...{
               aspectRatio,
