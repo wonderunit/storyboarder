@@ -1407,6 +1407,34 @@ const SceneManagerXR = connect(
 
     return (
       <>
+        {
+          !hasLoadedOnce && <div style={
+            {
+              position: 'absolute',
+
+              bottom: 'auto',
+              top: 'calc(50% - 20px)',
+
+              padding: '12px 6px',
+              border: '3px solid transparent',
+              borderRadius: '9px',
+              background: 'rgba(0,0,0,0.5)',
+              color: '#aaa',
+              font: 'normal 13px sans-serif',
+              textAlign: 'center',
+              opacity: '0.5',
+              outline: 'none',
+              zIndex: '999',
+
+              left: 'calc(50% - 75px)',
+              width: 150,
+              height: 41,
+              lineHeight: 1,
+
+              cursor: 'default'
+            }
+          }>LOADING …</div>
+        }
         <Canvas vr style={{ visibility: 'hidden' }}>
           {
             hasLoadedOnce && <XRStartButton />
