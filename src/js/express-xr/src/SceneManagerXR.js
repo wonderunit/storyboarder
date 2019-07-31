@@ -1340,6 +1340,35 @@ const SceneManagerXR = connect(
   }) => {
     const [attachments, attachmentsDispatch] = useAttachmentLoader()
 
+    // app model files
+    useMemo(() => {
+      [
+        controllerObjectSettings,
+        cameraObjectSettings
+      ].forEach(loadable =>
+        attachmentsDispatch({
+          type: 'PENDING',
+          payload: { id: getFilepathForLoadable(loadable) }
+        })
+      )
+    }, [])
+
+    // world model files
+    useMemo(() => {
+      if (world.environment.file) {
+        attachmentsDispatch({
+          type: 'PENDING',
+          payload: {
+            id: getFilepathForLoadable({
+              type: 'environment',
+              model: world.environment.file
+            })
+          }
+        })
+      }
+    }, [world.environment])
+
+    // scene object model files
     useMemo(() => {
       let loadables = Object.values(sceneObjects)
         // has a value for model
@@ -1349,17 +1378,10 @@ const SceneManagerXR = connect(
         // is not a box
         .filter(o => !(o.type === 'object' && o.model === 'box'))
 
-      world.environment.file && loadables.push(
-        { type: 'environment', model: world.environment.file }
-      )
-
-      loadables.push(controllerObjectSettings)
-      loadables.push(cameraObjectSettings)
-
-      loadables.forEach(o =>
+      loadables.forEach(loadable =>
         attachmentsDispatch({
           type: 'PENDING',
-          payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) }
+          payload: { id: getFilepathForLoadable(loadable) }
         })
       )
     }, [sceneObjects])
