@@ -160,6 +160,7 @@ const SceneContent = ({
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
+  const selectionCamera = useRef(null);
 
   const gpuPicker = useRef(new GPUPicker());
   
@@ -170,10 +171,8 @@ const SceneContent = ({
   let startingObjectOffset = useRef(null)
   let startingDeviceRotation = useRef(null)
   guiModeRef.current = guiMode
-  let cameraHelper = useRef(null);
   
   const { gl, scene, camera, setDefaultCamera } = useThree()
-  const selectionCamera = useRef(null);
   const onUpdateGUIProp = e => {
     const { id, prop, value } = e.detail
 
@@ -287,7 +286,6 @@ const SceneContent = ({
     {
       if(otherController.isSelectionAdded)
       {
-        console.log("Other controller");
         for(let i = 0, n = controller.children.length; i < n; i++)
         {
           if(controller.children[i].userData && controller.children[i].userData.id === "controller")
@@ -311,13 +309,11 @@ const SceneContent = ({
       selectionCamera.current.updateMatrixWorld(true);
     }
 
-    let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(scene);
     
     gpuPicker.current.updateObject();
-    gpuPicker.current.setPickingPosition(center.x, center.y);
+    gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
 
     gpuPicker.current.pick(selectCamera);
 

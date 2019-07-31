@@ -1,6 +1,5 @@
 const THREE = require('three');
 const GPUPickerHelper = require("./GPUPickerHelper");
-const SkeletonUtils = require("../../vendor/three/examples/js/utils/SkeletonUtils");
 require("../IK/utils/Object3dExtension");
 class GPUPicker
 {
@@ -27,17 +26,8 @@ class GPUPicker
         this.isInitialized = true;
     }
 
-    addObject(object)
-    {
-        //this.scene.children.add(object);
-    }
-
-    // TODO: don't make it each step
     initalizeChildren(scene)
     {
-        /*         let objects = children.filter(child => (child.type === "box" || child.type === "character") && child.children.filter(obj => obj.type === "Mesh" ||  obj.type === "SkinnedMesh").length !== 0);
-        objects = objects.flatMap(child => child.children.filter(obj => (obj.type === "Mesh" || obj.type === "SkinnedMesh") && obj.material.type === "MeshToonMaterial"));
-        */
         let objects = [];
         this.getAllSceneMeshes(scene, objects);
 
@@ -125,8 +115,6 @@ class GPUPicker
             child.updateMatrixWorld(true);
             if(child.type === "SkinnedMesh")
             {
-                console.log(object);
-                console.log(child);
                 let originalRootBone = object.skeleton.bones[0];
                 let clonnedRootBone = child.skeleton.bones[0];
                 //this.updateSkeletonBone(clonnedRootBone, originalRootBone);
@@ -155,19 +143,18 @@ class GPUPicker
         return false;
     }
 
-    getAllSceneMeshes(scene, meshes)
+    getAllSceneMeshes(sceneMesh, meshes)
     {
-        let sceneChildren = scene.children;
+        let sceneChildren = sceneMesh.children;
         if(sceneChildren === undefined)
         {
             return;
         }
-        if(scene.userData && (scene.userData.type === "object" || scene.userData.type === "character" ) && scene.userData.id !== "controller")
+        if(sceneMesh.userData && (sceneMesh.userData.type === "object" || sceneMesh.userData.type === "character" ))
         {
             for(let i = 0, n = sceneChildren.length; i < n; i++)
             {
                 let child = sceneChildren[i];
-                console.log(child);
                 if(child.type === "Mesh") 
                 {
                     meshes.push(child); 
