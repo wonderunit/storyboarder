@@ -310,7 +310,11 @@ const SceneContent = ({
       if (intersection.object.name.includes('selector-object')) {
         const model = intersection.object.name.split('_')[1]
         const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
-        updateObject(object.userData.id, { model })
+        updateObject(object.userData.id, { model, depth: 1, height: 1, width: 1 })
+
+        // hacky way of refreshing slider values
+        setSelectedObject(0)
+        setSelectedObject(object.userData.id)
       }
 
       if (intersection.object.name.includes('selector-character')) {
