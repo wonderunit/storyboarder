@@ -70,7 +70,7 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
     if (!object.current) return
     if (isSelected) updateObjectHighlight(object.current, 0.15)
     else updateObjectHighlight(object.current, 0)
-  }, [isSelected])
+  }, [modelData, isSelected])
 
   const forPanel = model === 'box' ? { width, height, depth } : { size: width }
 
