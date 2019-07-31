@@ -146,6 +146,7 @@ class GPUPicker
             for(let i = 0, n = sceneChildren.length; i < n; i++)
             {
                 let child = sceneChildren[i];
+                console.log(child);
                 if(child.type === "Mesh") 
                 {
                     meshes.push(child); 
@@ -156,9 +157,9 @@ class GPUPicker
                     meshes.push(child.children[0].children[0]);
                     return;
                 }
-                if(child.children.length !== 0 && child.children[0].type === "SkinnedMesh")
+                if( child.type === "SkinnedMesh")
                 {
-                    meshes.push(child.children[0]);
+                    meshes.push(child);
                     return;
                 }
             }

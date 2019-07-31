@@ -279,16 +279,11 @@ const SceneContent = ({
     if(!selectionCamera.current)
     {
       console.log("Created");
-      selectionCamera.current = new THREE.PerspectiveCamera( camera.fov, gl.domElement.width / gl.domElement.height, camera.near, camera.far );
-      console.log(selectionCamera.current.clone());
+      selectionCamera.current = new THREE.PerspectiveCamera(75, gl.domElement.width / gl.domElement.height, 0.1, 1000 );
     }
  
     let selectCamera = selectionCamera.current;
-    //
-    //selectCamera.visible = true;
     selectCamera.name = "Cameron";
-  
-    console.log(checkingPosition);
     if(!wall.current)
     {
       let geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );

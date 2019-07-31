@@ -33,6 +33,7 @@ class GPUPickerHelper
             1,
             1
         );
+        console.log(camera.clone());
         renderer.setRenderTarget(pickingTexture);
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
@@ -44,7 +45,7 @@ class GPUPickerHelper
         renderer.setRenderTarget(null);
         wall.material.map = this.renderTarget.texture;
         wall.needsUpdate = true;
-        wall.material.map.repeat.set( 1, 1 );
+        //wall.material.map.repeat.set( 1, 1 );
         renderer.readRenderTargetPixels(
             pickingTexture,
             0, 
