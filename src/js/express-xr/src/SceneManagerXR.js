@@ -1062,9 +1062,9 @@ const SceneContent = ({
         }
       })
       .catch(err => console.error(err))
-    const threeStats = new window.threeStats(gl)
 
     if (SHOW_RSTATS) {
+      const threeStats = new window.threeStats(gl)
       rStatsRef.current = new RStats({
         css: [],
         values: {
