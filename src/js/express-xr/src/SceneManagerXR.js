@@ -1271,11 +1271,6 @@ const SceneContent = ({
     />
   )
 
-  // wait until the camera is setup before showing the scene
-  const ready = !!xrOffset.current
-
-  // console.log('scene is', ready ? 'shown' : 'not shown')
-
   return (
     <>
       {activeCameraComponent}
