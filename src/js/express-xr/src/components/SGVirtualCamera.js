@@ -1,13 +1,12 @@
 const { useUpdate, useThree, useRender } = require('react-three-fiber')
 const React = require('react')
 const { useEffect, useRef, useState, useMemo } = React
-const { findParent } = require('../utils/xrHelperFuncs')
+const { findParent, updateObjectHighlight } = require('../utils/xrHelperFuncs')
 
-const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData, ...props }) => {
+const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData, isSelected, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
 
   const previousTime = useRef([null])
-  const isSelected = useRef(false)
 
   const virtualCamera = useRef(null)
   const renderTarget = useRef(null)
@@ -35,8 +34,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   const { gl, scene } = useThree()
   const worldScaleGroup = scene.children.find(child => child.userData.type === 'world-scale')
   const selectedObj = worldScaleGroup ? findParent(worldScaleGroup.children.find(child => child.userData.id === selectedObject)) : undefined
-
-  isSelected.current = selectedObj && selectedObj.userData.id === props.id
 
   const ref = useUpdate(
     self => {
@@ -109,11 +106,17 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     if (delta > 500) {
       previousTime.current = currentTime
     } else {
-      if (!props.guiCamera && !isSelected.current) return
+      if (!props.guiCamera && !isSelected) return
     }
 
     renderCamera()
-  })
+  }, false, [isSelected])
+
+  useEffect(() => {
+    if (!ref.current) return
+    if (isSelected) updateObjectHighlight(ref.current, 0.15)
+    else updateObjectHighlight(ref.current, 0)
+  }, [isSelected])
 
   return (
     <group

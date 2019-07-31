@@ -1215,7 +1215,7 @@ const SceneContent = ({
       switch (sceneObject.type) {
         case 'camera':
           return (
-            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData: getModelData(cameraObjectSettings), ...sceneObject }}>
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData: getModelData(cameraObjectSettings), isSelected, ...sceneObject }}>
               {isSelected && <primitive object={soundBeam.current} />}
             </SGVirtualCamera>
           )
@@ -1234,7 +1234,7 @@ const SceneContent = ({
               {isSelected && <primitive object={soundBeam.current} />}
             </SGModel>
         case 'light':
-          return <SGSpotLight key={i} {...{ ...sceneObject }}>
+          return <SGSpotLight key={i} {...{ isSelected, ...sceneObject }}>
             {isSelected && <primitive object={soundBeam.current} />}
           </SGSpotLight>
       }
