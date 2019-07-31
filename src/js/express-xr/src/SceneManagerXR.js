@@ -1284,6 +1284,7 @@ const SceneContent = ({
     </>
   )
 }
+
 const XRStartButton = ({ }) => {
   const { gl } = useThree()
 
@@ -1293,7 +1294,6 @@ const XRStartButton = ({ }) => {
 
   return null
 }
-
 
 const SceneManagerXR = connect(
   state => ({
