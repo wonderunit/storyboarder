@@ -51,9 +51,9 @@ const h = require('../../utils/h')
 const Editor = require('../../shot-generator/Editor')
 
 const presetsStorage = require('../../shared/store/presetsStorage')
-const { initialState, loadScene, resetScene, updateDevice, updateServer, setBoard } = require('../../shared/reducers/shot-generator')
+const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ setBoard } = require('../../shared/reducers/shot-generator')
 
-const createServer = require('../../services/createServer')
+// const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
 
 const XRServer = require('../../express-xr/app')
@@ -161,16 +161,16 @@ const updater = (values, changed) => {
 }
 createDualShockController(throttle(updater, 16, { leading: true }))
 
-createServer({
-  setInputAccel: payload => store.dispatch({ type: 'SET_INPUT_ACCEL', payload }),
-  setInputMag: payload => store.dispatch({ type: 'SET_INPUT_MAG', payload }),
-  setInputSensor: payload => store.dispatch({ type: 'SET_INPUT_SENSOR', payload }),
-  setInputDown: payload => store.dispatch({ type: 'SET_INPUT_DOWN', payload }),
-  setInputMouseMode: payload => store.dispatch({ type: 'SET_INPUT_MOUSEMODE', payload }),
-  setInputOrbitMode: payload => store.dispatch({ type: 'SET_INPUT_ORBITMODE', payload }),
-  
-  updateServer: payload => store.dispatch(updateServer(payload))
-})
+// createServer({
+//   setInputAccel: payload => store.dispatch({ type: 'SET_INPUT_ACCEL', payload }),
+//   setInputMag: payload => store.dispatch({ type: 'SET_INPUT_MAG', payload }),
+//   setInputSensor: payload => store.dispatch({ type: 'SET_INPUT_SENSOR', payload }),
+//   setInputDown: payload => store.dispatch({ type: 'SET_INPUT_DOWN', payload }),
+//   setInputMouseMode: payload => store.dispatch({ type: 'SET_INPUT_MOUSEMODE', payload }),
+//   setInputOrbitMode: payload => store.dispatch({ type: 'SET_INPUT_ORBITMODE', payload }),
+// 
+//   updateServer: payload => store.dispatch(updateServer(payload))
+// })
 
 // are we testing locally?
 // SHOT_GENERATOR_STANDALONE=true npm start

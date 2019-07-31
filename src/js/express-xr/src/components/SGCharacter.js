@@ -462,7 +462,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         id,
         type,
         name: 'character-container',
-        displayName: props.displayName,
+        displayName: props.name || props.displayName,
         forPanel: {
           height: props.height,
           headScale: props.headScale,

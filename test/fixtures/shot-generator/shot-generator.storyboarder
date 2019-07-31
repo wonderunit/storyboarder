@@ -157,9 +157,9 @@
             "ground": false,
             "room": {
               "height": 3,
-              "length": 4,
+              "length": 10,
               "visible": true,
-              "width": 4
+              "width": 10
             }
           }
         }

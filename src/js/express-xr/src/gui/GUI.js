@@ -14,6 +14,25 @@ const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 
+
+
+// via PosePresetsEditor.js
+const comparePresetNames = (a, b) => {
+  var nameA = a.name.toUpperCase()
+  var nameB = b.name.toUpperCase()
+
+  if (nameA < nameB) {
+    return -1
+  }
+  if (nameA > nameB) {
+    return 1
+  }
+  return 0
+}
+const comparePresetPriority = (a, b) => b.priority - a.priority
+
+
+
 const GUI = ({
   rStatsRef,
   worldScaleGroupRef,
@@ -53,6 +72,8 @@ const GUI = ({
   }
 
   const poses = Object.values(presets.poses)
+    .sort(comparePresetNames)
+    .sort(comparePresetPriority)
   const poseVisibleAmount = poses.slice(selectorOffset * 4, selectorOffset * 4 + 16)
 
   const characters = Object.values(models).filter(model => model.type === 'character')
@@ -181,9 +202,9 @@ const GUI = ({
       prop: 'guiFOV',
       id: 'guiCam',
       object: new THREE.Vector3(),
-      initialValue: 22,
-      min: 3,
-      max: 71,
+      initialValue: 37,
+      min: 10,
+      max: 280,
       width: (uiScale + bWidth) / 0.35,
       height: (uiScale * 0.5) / 0.35,
       corner: bWidth / 0.35,
@@ -229,6 +250,7 @@ const GUI = ({
 
     let idx = 1
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
+      // if (key === 'fov') console.log(value)
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
       let minMax = { min: 0, max: 1 }
@@ -238,7 +260,8 @@ const GUI = ({
 
       switch (key) {
         case 'fov':
-          minMax = { min: 3, max: 71 }
+          minMax = { min: 10, max: 280 }
+          step = 1
           break
         case 'intensity':
           minMax = { min: 0.03, max: 1 }
@@ -268,7 +291,7 @@ const GUI = ({
           break
       }
 
-      if (key === 'fov') title = 'F.O.V'
+      if (key === 'fov') title = 'FL'
       if (key === 'headScale') title = 'head'
       if (key === 'mesomorphic') title = 'meso'
       if (key === 'ectomorphic') title = 'ecto'
