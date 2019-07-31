@@ -477,20 +477,7 @@ const SceneContent = ({
 
       controller.userData.selected = object
       soundBeam.current.play()
-
-      let objMaterial
-      if (intersection.object.type === 'LOD') objMaterial = intersection.object.children[0].material
-      else objMaterial = intersection.object.material
-
-      if (Array.isArray(objMaterial)) {
-        objMaterial.forEach(material => {
-          if (!material.emissive) return
-          material.emissive.b = 0.15
-        })
-      } else {
-        if (!objMaterial.emissive) return
-        objMaterial.emissive.b = 0.15
-      }
+      // updateObjectHighlight(intersection.object, 0.15)
 
       return true
   }
@@ -662,7 +649,6 @@ const SceneContent = ({
       // is this probably a scene object?
       // (used to exclude environment meshes for example)
       if (object.userData.id) {
-        updateObjectHighlight(object)
         updateObjectForType(object)
       }
     }
@@ -1244,7 +1230,7 @@ const SceneContent = ({
             </SGCharacter>
           )
         case 'object':
-          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }}>
+          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), isSelected, ...sceneObject }}>
               {isSelected && <primitive object={soundBeam.current} />}
             </SGModel>
         case 'light':

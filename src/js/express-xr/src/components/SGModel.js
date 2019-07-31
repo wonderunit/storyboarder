@@ -1,4 +1,5 @@
-const { useMemo } = React
+const { useRef, useEffect, useMemo } = React
+const { updateObjectHighlight } = require('../utils/xrHelperFuncs')
 
 const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 
@@ -32,7 +33,9 @@ const meshFactory = originalMesh => {
 const boxRadius = .005
 const boxRadiusSegments = 5
 
-const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation, visible, ...props }) => {
+const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation, visible, isSelected, ...props }) => {
+  const object = useRef(null)
+  
   const boxGeometry = useMemo(() => {
     const geometry = new RoundedBoxGeometry( 1, 1, 1, boxRadius, boxRadiusSegments )
     geometry.translate( 0, 1 / 2, 0 )
@@ -63,9 +66,16 @@ const SGModel = ({ id, model, modelData, x, y, z, width, height, depth, rotation
     return []
   }, [model, modelData])
 
+  useEffect(() => {
+    if (!object.current) return
+    if (isSelected) updateObjectHighlight(object.current, 0.15)
+    else updateObjectHighlight(object.current, 0)
+  }, [isSelected])
+
   const forPanel = model === 'box' ? { width, height, depth } : { size: width }
 
   return <group
+    ref={object}
     userData={{ id, displayName: props.name || props.displayName, type: props.type, forPanel }}
     visible={visible}
     position={[ x, z, y ]}
