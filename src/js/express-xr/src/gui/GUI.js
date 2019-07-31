@@ -1096,15 +1096,17 @@ const GUI = ({
           />
         </group>
 
-        <group
-          position={[
-            (camSettings.size * 0.5 * aspectRatio + uiScale * 1.75 + bWidth * 3) * invertGUI,
-            uiScale * -0.25 + bWidth * -0.5,
-            0
-          ]}
-        >
-          <primitive object={fpsMeter} />)
-        </group>
+        {
+          rStatsRef.current && <group
+            position={[
+              (camSettings.size * 0.5 * aspectRatio + uiScale * 1.75 + bWidth * 3) * invertGUI,
+              uiScale * -0.25 + bWidth * -0.5,
+              0
+            ]}
+          >
+            <primitive object={fpsMeter} />)
+          </group>
+        }
 
         <group
           name="fov_slider"

@@ -1,3 +1,6 @@
+// only show rstats in `development` mode
+const SHOW_RSTATS = process.env.NODE_ENV === 'development'
+
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree, useRender } = require('react-three-fiber')
@@ -1060,14 +1063,17 @@ const SceneContent = ({
       })
       .catch(err => console.error(err))
     const threeStats = new window.threeStats(gl)
-    rStatsRef.current = new RStats({
-      css: [],
-      values: {
-        fps: { caption: 'fps', below: 30 }
-      },
-      groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
-      plugins: [threeStats]
-    })
+
+    if (SHOW_RSTATS) {
+      rStatsRef.current = new RStats({
+        css: [],
+        values: {
+          fps: { caption: 'fps', below: 30 }
+        },
+        groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
+        plugins: [threeStats]
+      })
+    }
   }, [])
 
   // if our camera is setup
