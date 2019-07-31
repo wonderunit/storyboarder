@@ -477,7 +477,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
           <group
             //visible={false}
             ref={object}
-            bonesHelper={bonesHelper ? bonesHelper : null}
+            bonesHelper={bonesHelper ? bonesHelper : undefined}
             userData={{
               id,
               type,
@@ -494,7 +494,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
           >
             <primitive userData={{ id, type }} object={skinnedMesh} />
             <primitive object={armatures[0]} />
-            {props.children}
+            {bonesHelper && props.children}
           </group>
         )
       }

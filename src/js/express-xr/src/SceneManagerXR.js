@@ -18,7 +18,8 @@ const {
   getSceneObjects,
   getWorld,
   getActiveCamera,
-  getSelectedBone
+  getSelectedBone,
+  initialState
 } = require('../../shared/reducers/shot-generator')
 
 // all pose presets (so we can use `stand` for new characters)
@@ -317,13 +318,21 @@ const SceneContent = ({
       if (intersection.object.name.includes('selector-object')) {
         const model = intersection.object.name.split('_')[1]
         const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
-        updateObject(object.userData.id, { model })
+        updateObject(object.userData.id, { model, depth: 1, height: 1, width: 1 })
+
+        // hacky way of refreshing slider values
+        setSelectedObject(0)
+        setSelectedObject(object.userData.id)
       }
 
       if (intersection.object.name.includes('selector-character')) {
         const model = intersection.object.name.split('_')[1]
         const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
-        updateObject(object.userData.id, { model })
+        updateObject(object.userData.id, { model, height: initialState.models[model].height })
+       
+        // hacky way of refreshing slider values
+        setSelectedObject(0)
+        setSelectedObject(object.userData.id)
       }
 
       if (intersection.object.userData.type === 'gui') {
@@ -722,13 +731,13 @@ const SceneContent = ({
                 return Object.keys(presets.poses).length
               case 'object':
                 return Object.values(models).filter(model => model.type === 'object').length
-              case 'object':
+              case 'character':
                 return Object.values(models).filter(model => model.type === 'character').length
             }
           })()
 
-          const limit = parseInt(count / 4) 
-          newValue = Math.min(newValue, limit)
+          const limit = Math.max(Math.ceil(count / 4) - 4, 0)
+          newValue = Math.min(newValue, limit)          
           return newValue
         })
       }
