@@ -174,6 +174,10 @@ const SceneContent = ({
 
   const { gl, scene, camera, setDefaultCamera } = useThree()
 
+  useMemo(() => {
+    scene.background = new THREE.Color(world.backgroundColor)
+  }, [world.backgroundColor])
+
   const onUpdateGUIProp = e => {
     const { id, prop, value } = e.detail
 
@@ -1057,7 +1061,6 @@ const SceneContent = ({
         // console.log({ displays })
         if (displays.length) {
           console.log('adding VR button')
-          scene.background = new THREE.Color(world.backgroundColor)
           document.body.appendChild(WEBVR.createButton(gl))
         }
       })
