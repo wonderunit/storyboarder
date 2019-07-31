@@ -1,7 +1,7 @@
 const THREE = require('three');
 const GPUPickerHelper = require("./GPUPickerHelper");
+const SkeletonUtils = require("../../vendor/three/examples/js/utils/SkeletonUtils");
 require("../IK/utils/Object3dExtension");
-
 class GPUPicker
 {
     constructor()
@@ -64,18 +64,23 @@ class GPUPicker
             let pickingCube = null;
             if(object.type === "SkinnedMesh")
             {
-              //pickingCube = object.clone();//new THREE.SkinnedMesh(object.geometry.clone(), pickingMaterial);
-              //pickingCube.material = pickingMaterial;
-              //let skeleton = new THREE.Skeleton( object.skeleton.bones );
-              //pickingCube.bindMode = "detached";
-              //object.bindMode = "detached";
-              //object.bind(object.skeleton);
-              //let rootBone = pickingCube.skeleton.bones[ 0 ];
-              //pickingCube.add( rootBone );
-              //pickingCube.bind( pickingCube.skeleton);
-              
-              //console.log(object);
-              //console.log(pickingCube);
+                //let userData = object.userData;
+                //object.userData = [];
+                //pickingCube = THREE.SkeletonUtils.clone(object);//new THREE.SkinnedMesh(object.geometry.clone(), pickingMaterial);
+                //object.userData = userData;
+                //pickingCube.material = pickingMaterial;
+                ////let skeleton = new THREE.Skeleton( object.skeleton.bones );
+                ////pickingCube.bindMode = "detached";
+                ////object.bindMode = "detached";
+                ////object.bind(object.skeleton);
+                ////let rootBone = pickingCube.skeleton.bones[ 0 ];
+                ////pickingCube.add( rootBone );
+                ////pickingCube.bind( pickingCube.skeleton);
+                ////pickingCube.skeleton.bones = object.skeleton.bones;
+                ////console.log(object);
+                ////console.log(pickingCube);
+                //console.log(pickingCube);
+                //console.log(object);
             }
             else
             {
@@ -122,6 +127,26 @@ class GPUPicker
             child.scale.copy(object.worldScale());
             child.updateMatrix();
             child.updateMatrixWorld(true);
+            if(child.type === "SkinnedMesh")
+            {
+                console.log(object);
+                console.log(child);
+                let originalRootBone = object.skeleton.bones[0];
+                let clonnedRootBone = child.skeleton.bones[0];
+                //this.updateSkeletonBone(clonnedRootBone, originalRootBone);
+                clonnedRootBone.updateMatrixWorld(true);
+            }
+        }
+    }
+
+    updateSkeletonBone(cloneBone, originalBone)
+    {
+        cloneBone.position.copy(originalBone.position);
+        cloneBone.quaternion.copy(originalBone.quaternion);
+        cloneBone.scale.copy(originalBone.scale);
+        for(let i = 0, n = originalBone.children.length; i < n; i++)
+        {   
+            this.updateSkeletonBone(cloneBone.children[i], originalBone.children[i]);
         }
     }
 

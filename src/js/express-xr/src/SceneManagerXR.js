@@ -348,7 +348,7 @@ const SceneContent = ({
     gpuPicker.current.initalizeChildren(scene);
     
     gpuPicker.current.updateObject();
-    gpuPicker.current.setPickingPosition(checkingPosition.x, checkingPosition.y);
+    gpuPicker.current.setPickingPosition(center.x, center.y);
 
     gpuPicker.current.pick(selectCamera, wall.current);
 

@@ -17,7 +17,7 @@ class GPUPickerHelper
     pick(cssPosition, scene, camera, renderer, wall)
     {
         const {pickingTexture, pixelBuffer} = this;
-       
+        renderer.vr.enabled = false;
         if(this.pickedObject)
         {
             this.pickedObject.material.color = this.pickedObjectSaveColor;
@@ -54,20 +54,21 @@ class GPUPickerHelper
             1,
             pixelBuffer);
             
-            const id =
+        const id =
             (pixelBuffer[0] << 16) |
             (pixelBuffer[1] << 8) |
             (pixelBuffer[2]);
-            console.log(id);
-            const intersectedObject = this.selectableObjects[id];
-            if(intersectedObject)
-            {
-                this.pickedObject = intersectedObject;
-                this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
-                this.pickedObject.material.color =  this.selectedColor;
-            }
-            console.log(this.selectableObjects);
+        console.log(id);
+        const intersectedObject = this.selectableObjects[id];
+        if(intersectedObject)
+        {
+            this.pickedObject = intersectedObject;
+            this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
+            this.pickedObject.material.color =  this.selectedColor;
         }
+        console.log(this.selectableObjects);
+        renderer.vr.enabled = true;
+    }
 
 }
 module.exports = GPUPickerHelper;
