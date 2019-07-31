@@ -1407,8 +1407,10 @@ const SceneManagerXR = connect(
 
     return (
       <>
-        <Canvas vr>
-          <XRStartButton />
+        <Canvas vr style={{ visibility: 'hidden' }}>
+          {
+            hasLoadedOnce && <XRStartButton />
+          }
           <SceneContent
             {...{
               aspectRatio,
