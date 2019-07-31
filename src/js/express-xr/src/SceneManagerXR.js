@@ -1338,6 +1338,8 @@ const SceneManagerXR = connect(
     undo,
     redo
   }) => {
+    const [isLoading, setIsLoading] = useState(false)
+    const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
     const [attachments, attachmentsDispatch] = useAttachmentLoader()
 
     // app model files
@@ -1385,6 +1387,18 @@ const SceneManagerXR = connect(
         })
       )
     }, [sceneObjects])
+
+    useMemo(() => {
+      let incomplete = a => a.status !== 'Success' && a.status !== 'Error'
+      let remaining = Object.values(attachments).filter(incomplete)
+
+      if (isLoading && !hasLoadedOnce && remaining.length === 0) {
+        setHasLoadedOnce(true)
+        setIsLoading(false)
+      } else if (remaining.length > 0) {
+        setIsLoading(true)
+      }
+    }, [attachments, sceneObjects, hasLoadedOnce, isLoading])
 
     const getModelData = sceneObject => {
       let key = getFilepathForLoadable(sceneObject)
