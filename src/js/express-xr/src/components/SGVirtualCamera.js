@@ -1,13 +1,12 @@
 const { useUpdate, useThree, useRender } = require('react-three-fiber')
 const React = require('react')
 const { useEffect, useRef, useState, useMemo } = React
-const { findParent } = require('../utils/xrHelperFuncs')
+const { findParent, updateObjectHighlight } = require('../utils/xrHelperFuncs')
 
-const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData, ...props }) => {
+const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData, isSelected, ...props }) => {
   const [camSliderFOV, setCamSliderFOV] = useState(null)
 
   const previousTime = useRef([null])
-  const isSelected = useRef(false)
 
   const virtualCamera = useRef(null)
   const renderTarget = useRef(null)
@@ -36,8 +35,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   const worldScaleGroup = scene.children.find(child => child.userData.type === 'world-scale')
   const selectedObj = worldScaleGroup ? findParent(worldScaleGroup.children.find(child => child.userData.id === selectedObject)) : undefined
 
-  isSelected.current = selectedObj && selectedObj.userData.id === props.id
-
   const ref = useUpdate(
     self => {
       self.rotation.x = 0
@@ -56,7 +53,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   const heightShader = useMemo(
     () => new THREE.MeshBasicMaterial({
       map: renderTarget.current,
-      side: THREE.DoubleSide,
+      side: THREE.FrontSide,
       depthTest: props.guiCamera ? false : true,
       depthWrite: props.guiCamera ? false : true,
       transparent: props.guiCamera ? true : false
@@ -109,11 +106,17 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     if (delta > 500) {
       previousTime.current = currentTime
     } else {
-      if (!props.guiCamera && !isSelected.current) return
+      if (!props.guiCamera && !isSelected) return
     }
 
     renderCamera()
-  })
+  }, false, [isSelected])
+
+  useEffect(() => {
+    if (!ref.current) return
+    if (isSelected) updateObjectHighlight(ref.current, 0.3)
+    else updateObjectHighlight(ref.current, 0.15)
+  }, [isSelected])
 
   return (
     <group
@@ -130,7 +133,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
       <group visible={virtualCamVisible || props.guiCamera === true}>
         <mesh
           userData={{ type: props.guiCamera ? 'gui' : 'view' }}
-          position={[0, props.guiCamera ? 0 : 0.3, props.guiCamera ? 0.0025 : 0.01]}
+          position={[0, props.guiCamera ? 0 : 0.3, 0]}
           material={heightShader}
         >
           <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
@@ -138,7 +141,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
         {children}
         {!props.guiCamera && (
           <mesh
-            position={[0, 0.3, -0.01]}
+            position={[0, 0.3, 0]}
             rotation={[0, Math.PI, 0]}
             userData={{ type: props.guiCamera ? 'gui' : 'view' }}
             material={heightShader}
@@ -146,12 +149,38 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
             <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
           </mesh>
         )}
-        <mesh position={[0, props.guiCamera ? 0 : 0.3, 0]} material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}>
-          <planeGeometry
-            attach="geometry"
-            args={[size * aspectRatio + (props.guiCamera ? 0.005 : 0.015), size + (props.guiCamera ? 0.005 : 0.015)]}
-          />
-        </mesh>
+        <group>
+          <mesh
+            position={[(size * aspectRatio + (props.guiCamera ? 0.003 : 0.009)) * -0.5, props.guiCamera ? 0 : 0.3, 0]}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
+          >
+            <planeGeometry attach="geometry" args={[props.guiCamera ? 0.003 : 0.009, size]} />
+          </mesh>
+          <mesh
+            position={[(size * aspectRatio + (props.guiCamera ? 0.003 : 0.009)) * 0.5, props.guiCamera ? 0 : 0.3, 0]}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
+          >
+            <planeGeometry attach="geometry" args={[props.guiCamera ? 0.003 : 0.009, size]} />
+          </mesh>
+          <mesh
+            position={[0, (props.guiCamera ? 0 : 0.3) + (size + (props.guiCamera ? 0.003 : 0.009)) * -0.5, 0]}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
+          >
+            <planeGeometry
+              attach="geometry"
+              args={[size * aspectRatio + (props.guiCamera ? 0.003 : 0.009) * 2, props.guiCamera ? 0.003 : 0.009]}
+            />
+          </mesh>
+          <mesh
+            position={[0, (props.guiCamera ? 0 : 0.3) + (size + (props.guiCamera ? 0.003 : 0.009)) * 0.5, 0]}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
+          >
+            <planeGeometry
+              attach="geometry"
+              args={[size * aspectRatio + (props.guiCamera ? 0.003 : 0.009) * 2, props.guiCamera ? 0.003 : 0.009]}
+            />
+          </mesh>
+        </group>
         <group position={props.camOffset || new THREE.Vector3()}>
           <perspectiveCamera
             name={props.guiCamera ? 'guiCam' : ''}

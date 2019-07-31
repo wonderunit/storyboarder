@@ -304,10 +304,6 @@ const SceneContent = ({
         return true
       }
 
-      if (intersection.object.userData.type === 'view') {
-        intersection = intersections[1]
-      }
-
       if (intersection.object.name.includes('selector-pose')) {
         const posePresetId = intersection.object.name.split('_')[1]
         const skeleton = presets.poses[posePresetId].state.skeleton
@@ -486,20 +482,7 @@ const SceneContent = ({
 
       controller.userData.selected = object
       soundBeam.current.play()
-
-      let objMaterial
-      if (intersection.object.type === 'LOD') objMaterial = intersection.object.children[0].material
-      else objMaterial = intersection.object.material
-
-      if (Array.isArray(objMaterial)) {
-        objMaterial.forEach(material => {
-          if (!material.emissive) return
-          material.emissive.b = 0.15
-        })
-      } else {
-        if (!objMaterial.emissive) return
-        objMaterial.emissive.b = 0.15
-      }
+      // updateObjectHighlight(intersection.object, 0.15)
 
       return true
   }
@@ -671,7 +654,6 @@ const SceneContent = ({
       // is this probably a scene object?
       // (used to exclude environment meshes for example)
       if (object.userData.id) {
-        updateObjectHighlight(object)
         updateObjectForType(object)
       }
     }
@@ -1238,7 +1220,7 @@ const SceneContent = ({
       switch (sceneObject.type) {
         case 'camera':
           return (
-            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData: getModelData(cameraObjectSettings), ...sceneObject }}>
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData: getModelData(cameraObjectSettings), isSelected, ...sceneObject }}>
               {isSelected && <primitive object={soundBeam.current} />}
             </SGVirtualCamera>
           )
@@ -1253,11 +1235,11 @@ const SceneContent = ({
             </SGCharacter>
           )
         case 'object':
-          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }}>
+          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), isSelected, ...sceneObject }}>
               {isSelected && <primitive object={soundBeam.current} />}
             </SGModel>
         case 'light':
-          return <SGSpotLight key={i} {...{ ...sceneObject }}>
+          return <SGSpotLight key={i} {...{ isSelected, ...sceneObject }}>
             {isSelected && <primitive object={soundBeam.current} />}
           </SGSpotLight>
       }

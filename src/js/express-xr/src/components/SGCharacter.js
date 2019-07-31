@@ -3,6 +3,7 @@ const { useRender } = require('react-three-fiber')
 
 const { initialState } = require('../../../shared/reducers/shot-generator')
 const BonesHelper = require('./SGBonesHelper')
+const { updateObjectHighlight } = require('../utils/xrHelperFuncs')
 
 THREE.Cache.enabled = true
 
@@ -411,6 +412,9 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         level.distance = i * 2 * worldScaleMult
       })
     }
+
+    if (isSelected) updateObjectHighlight(object.current, 0.15)
+    else updateObjectHighlight(object.current, 0)
   }, [props.model, worldScale, isSelected, ready])
 
   useMemo(() => {
