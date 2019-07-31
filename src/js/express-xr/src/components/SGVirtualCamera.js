@@ -23,6 +23,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     if (modelData) {
       modelData.scene.traverse(child => {
         if (child instanceof THREE.Mesh) {
+          child.material.color = new THREE.Color(0x4400ff)
           children.push(<primitive key={`${props.id}-${index}`} object={child.clone()} />)
           index++
         }
@@ -53,7 +54,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   const heightShader = useMemo(
     () => new THREE.MeshBasicMaterial({
       map: renderTarget.current,
-      side: THREE.DoubleSide,
+      side: THREE.FrontSide,
       depthTest: props.guiCamera ? false : true,
       depthWrite: props.guiCamera ? false : true,
       transparent: props.guiCamera ? true : false
@@ -133,7 +134,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
       <group visible={virtualCamVisible || props.guiCamera === true}>
         <mesh
           userData={{ type: props.guiCamera ? 'gui' : 'view' }}
-          position={[0, props.guiCamera ? 0 : 0.3, props.guiCamera ? 0.0025 : 0.01]}
+          position={[0, props.guiCamera ? 0 : 0.3, 0]}
           material={heightShader}
         >
           <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
@@ -141,7 +142,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
         {children}
         {!props.guiCamera && (
           <mesh
-            position={[0, 0.3, -0.01]}
+            position={[0, 0.3, 0]}
             rotation={[0, Math.PI, 0]}
             userData={{ type: props.guiCamera ? 'gui' : 'view' }}
             material={heightShader}
@@ -149,12 +150,38 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
             <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
           </mesh>
         )}
-        <mesh position={[0, props.guiCamera ? 0 : 0.3, 0]} material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}>
-          <planeGeometry
-            attach="geometry"
-            args={[size * aspectRatio + (props.guiCamera ? 0.005 : 0.015), size + (props.guiCamera ? 0.005 : 0.015)]}
-          />
-        </mesh>
+        <group>
+          <mesh
+            position={[(size * aspectRatio + (props.guiCamera ? 0.003 : 0.009)) * -0.5, props.guiCamera ? 0 : 0.3, 0]}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400ff })}
+          >
+            <planeGeometry attach="geometry" args={[props.guiCamera ? 0.003 : 0.009, size]} />
+          </mesh>
+          <mesh
+            position={[(size * aspectRatio + (props.guiCamera ? 0.003 : 0.009)) * 0.5, props.guiCamera ? 0 : 0.3, 0]}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400ff })}
+          >
+            <planeGeometry attach="geometry" args={[props.guiCamera ? 0.003 : 0.009, size]} />
+          </mesh>
+          <mesh
+            position={[0, (props.guiCamera ? 0 : 0.3) + (size + (props.guiCamera ? 0.003 : 0.009)) * -0.5, 0]}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400ff })}
+          >
+            <planeGeometry
+              attach="geometry"
+              args={[size * aspectRatio + (props.guiCamera ? 0.003 : 0.009) * 2, props.guiCamera ? 0.003 : 0.009]}
+            />
+          </mesh>
+          <mesh
+            position={[0, (props.guiCamera ? 0 : 0.3) + (size + (props.guiCamera ? 0.003 : 0.009)) * 0.5, 0]}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400ff })}
+          >
+            <planeGeometry
+              attach="geometry"
+              args={[size * aspectRatio + (props.guiCamera ? 0.003 : 0.009) * 2, props.guiCamera ? 0.003 : 0.009]}
+            />
+          </mesh>
+        </group>
         <group position={props.camOffset || new THREE.Vector3()}>
           <perspectiveCamera
             name={props.guiCamera ? 'guiCam' : ''}

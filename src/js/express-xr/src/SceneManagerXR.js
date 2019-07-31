@@ -303,10 +303,6 @@ const SceneContent = ({
         return true
       }
 
-      if (intersection.object.userData.type === 'view') {
-        intersection = intersections[1]
-      }
-
       if (intersection.object.name.includes('selector-pose')) {
         const posePresetId = intersection.object.name.split('_')[1]
         const skeleton = presets.poses[posePresetId].state.skeleton
