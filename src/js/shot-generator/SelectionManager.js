@@ -139,7 +139,6 @@ const getIntersectionTarget = intersect => {
   }
 }
 const gpuPicker = new GPUPicker();
-let wall = null;
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
@@ -273,35 +272,22 @@ const SelectionManager = connect(
   const onPointerDown = event => {
     
     event.preventDefault()
-    if(! wall)
-    {
-      geometry = new THREE.PlaneBufferGeometry( 5, 5, 6 );
-      material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
-        emissive: 0x0,
-        flatShading: false } );
-      wall = new THREE.Mesh( geometry, material );
-      scene.add( wall);
-      wall.position.y = wall.position.y + 2.5;
-      wall.matrixWorldNeedsUpdate = true;
-    }
     gpuPicker.initialize(scene, renderer);
     gpuPicker.initalizeChildren(scene);
+
+    const rect = el.getBoundingClientRect();
+    let mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
+    gpuPicker.updateObject();
+    gpuPicker.setPickingPosition(mousePosition.x, mousePosition.y);
+    //gpuPicker.pick(camera, wall);
+    
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
     
     // get the mouse coords
     const { x, y } = mouse(event)
-    const rect = el.getBoundingClientRect();
-    let center = new THREE.Vector3().setFromMatrixPosition(camera.projectionMatrix);
-    let middle = new THREE.Vector2(renderer.domElement.width / 2, renderer.domElement.height / 2);
-    let mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
-    console.log(center);
-    console.log(middle);
-    console.log(mousePosition);
-    gpuPicker.updateObject();
-    gpuPicker.setPickingPosition(middle.x, middle.y);
-    console.log(wall);
-    gpuPicker.pick(camera, wall);
+
+
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
     let intersects = getIntersects({ x, y }, camera, useIcons)

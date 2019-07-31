@@ -11,19 +11,18 @@ class GPUPickerHelper
         this.pickedObjectSaveColor = 0;
         this.selectableObjects = {};
         this.selectedColor = new THREE.Color(0.2, 0.2, 0.2);
-        this.renderTarget = new THREE.WebGLRenderTarget(0, 0);
     }
     
-    pick(cssPosition, scene, camera, renderer, wall)
+    pick(cssPosition, scene, camera, renderer)
     {
         const {pickingTexture, pixelBuffer} = this;
-        renderer.vr.enabled = false;
+   
         if(this.pickedObject)
         {
             this.pickedObject.material.color = this.pickedObjectSaveColor;
             this.pickedObject = undefined;
         }
-
+        renderer.vr.enabled = false;
         const pixelRatio = renderer.getPixelRatio();
         camera.setViewOffset(
             renderer.domElement.width,
@@ -33,19 +32,12 @@ class GPUPickerHelper
             1,
             1
         );
-        console.log(camera.clone());
         renderer.setRenderTarget(pickingTexture);
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         camera.clearViewOffset();
-        this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
 
-        renderer.setRenderTarget(this.renderTarget);
-        renderer.render(scene, camera);
-        renderer.setRenderTarget(null);
-        wall.material.map = this.renderTarget.texture;
-        wall.needsUpdate = true;
-        //wall.material.map.repeat.set( 1, 1 );
+        renderer.vr.enabled = true;
         renderer.readRenderTargetPixels(
             pickingTexture,
             0, 
@@ -58,7 +50,6 @@ class GPUPickerHelper
             (pixelBuffer[0] << 16) |
             (pixelBuffer[1] << 8) |
             (pixelBuffer[2]);
-        console.log(id);
         const intersectedObject = this.selectableObjects[id];
         if(intersectedObject)
         {
@@ -66,8 +57,7 @@ class GPUPickerHelper
             this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
             this.pickedObject.material.color =  this.selectedColor;
         }
-        console.log(this.selectableObjects);
-        renderer.vr.enabled = true;
+       
     }
 
 }

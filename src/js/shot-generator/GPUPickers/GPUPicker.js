@@ -87,15 +87,11 @@ class GPUPicker
             }
             pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
             this.pickingScene.add(pickingCube);
-            //scene.add(pickingCube);
-            //this.pickingScene = scene;
             pickingCube.position.copy(object.worldPosition());
             pickingCube.quaternion.copy(object.worldQuaternion());
             pickingCube.scale.copy(object.worldScale());
             pickingCube.updateMatrix();
-            object.updateMatrix();
-            object.updateMatrixWorld();
-            //console.log(object);
+            object.updateMatrixWorld(true);
         }
         this.childrenSetted = this.pickingScene.children.length === 0 ? false : true;
     }
@@ -111,9 +107,9 @@ class GPUPicker
         this.pickingPosition.y = y;
     }
 
-    pick(camera, wall)
+    pick(camera)
     {
-        this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, wall);
+        this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer);
     }
 
     updateObject()

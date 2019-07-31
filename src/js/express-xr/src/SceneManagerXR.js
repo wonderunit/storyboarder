@@ -170,7 +170,6 @@ const SceneContent = ({
   let startingObjectOffset = useRef(null)
   let startingDeviceRotation = useRef(null)
   guiModeRef.current = guiMode
-  let wall = useRef(null);
   let cameraHelper = useRef(null);
   
   const { gl, scene, camera, setDefaultCamera } = useThree()
@@ -278,27 +277,11 @@ const SceneContent = ({
 
     if(!selectionCamera.current)
     {
-      console.log("Created");
       selectionCamera.current = new THREE.PerspectiveCamera(75, gl.domElement.width / gl.domElement.height, 0.1, 1000 );
     }
  
     let selectCamera = selectionCamera.current;
     selectCamera.name = "Cameron";
-    if(!wall.current)
-    {
-      let geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );
-      let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
-        emissive: 0x0,
-        flatShading: false } );
-      let mesh = new THREE.Mesh( geometry, material );
-      scene.add(mesh);
-      mesh.position.y = mesh.position.y + 5;
-      wall.current = mesh;
-    }
-    console.log(selectCamera);
-    console.log(selectCamera.position.clone());
-    console.log(selectCamera.quaternion.clone());
-    console.log(selectCamera.scale.clone());
   
     if(!controller.isSelectionAdded)
     {
@@ -326,23 +309,9 @@ const SceneContent = ({
       }
       selectionCamera.current.updateMatrix();
       selectionCamera.current.updateMatrixWorld(true);
-      if(!cameraHelper.current)
-      {
-        cameraHelper.current = new THREE.CameraHelper( selectionCamera.current );
-        scene.add( cameraHelper.current );
-        cameraHelper.current.update();
-      }
-      else
-      {
-        cameraHelper.current.camera = selectionCamera.current;
-        cameraHelper.current.update();
-      } 
     }
 
     let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-    let rightEyeTop = new THREE.Vector2(center.x, 0);
-    let rightEyeBottom = new THREE.Vector2(gl.domElement.width, gl.domElement.height);
-    let checkingPosition = new THREE.Vector2((rightEyeBottom.x - rightEyeTop.x) / 2, center.y);
 
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(scene);
@@ -350,7 +319,7 @@ const SceneContent = ({
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition(center.x, center.y);
 
-    gpuPicker.current.pick(selectCamera, wall.current);
+    gpuPicker.current.pick(selectCamera);
 
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
