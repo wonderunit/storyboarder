@@ -174,8 +174,7 @@ const SceneContent = ({
   let cameraHelper = useRef(null);
   
   const { gl, scene, camera, setDefaultCamera } = useThree()
-  const selectionCamera = useRef(new THREE.PerspectiveCamera( camera.fov, camera.aspect, camera.near, camera.far ));
-  //scene.add(selectionCamera.current);
+  const selectionCamera = useRef(null);
   const onUpdateGUIProp = e => {
     const { id, prop, value } = e.detail
 
@@ -277,30 +276,40 @@ const SceneContent = ({
     if (otherController && otherController.userData.selected) return
     if (controller.gripped) return
 
+    if(!selectionCamera.current)
+    {
+      console.log("Created");
+      selectionCamera.current = new THREE.PerspectiveCamera( camera.fov, gl.domElement.width / gl.domElement.height, camera.near, camera.far );
+      console.log(selectionCamera.current.clone());
+    }
+ 
     let selectCamera = selectionCamera.current;
-    selectCamera.visible = true;
+    //
+    //selectCamera.visible = true;
     selectCamera.name = "Cameron";
-    let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
+  
+    console.log(checkingPosition);
     if(!wall.current)
     {
-      let geometry = new THREE.PlaneBufferGeometry( 20, 20, 6 );
+      let geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );
       let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
         emissive: 0x0,
         flatShading: false } );
       let mesh = new THREE.Mesh( geometry, material );
       scene.add(mesh);
+      mesh.position.y = mesh.position.y + 5;
       wall.current = mesh;
     }
-
-    if(!cameraHelper.current)
-    {
-      cameraHelper.current = new THREE.CameraHelper( selectCamera );
-      scene.add( cameraHelper.current );
-    }
+    console.log(selectCamera);
+    console.log(selectCamera.position.clone());
+    console.log(selectCamera.quaternion.clone());
+    console.log(selectCamera.scale.clone());
+  
     if(!controller.isSelectionAdded)
     {
       if(otherController.isSelectionAdded)
       {
+        console.log("Other controller");
         for(let i = 0, n = controller.children.length; i < n; i++)
         {
           if(controller.children[i].userData && controller.children[i].userData.id === "controller")
@@ -322,17 +331,35 @@ const SceneContent = ({
       }
       selectionCamera.current.updateMatrix();
       selectionCamera.current.updateMatrixWorld(true);
-      cameraHelper.current.camera = selectCamera;
-      cameraHelper.current.update();
- 
+      if(!cameraHelper.current)
+      {
+        cameraHelper.current = new THREE.CameraHelper( selectionCamera.current );
+        scene.add( cameraHelper.current );
+        cameraHelper.current.update();
+      }
+      else
+      {
+        cameraHelper.current.camera = selectionCamera.current;
+        cameraHelper.current.update();
+      } 
     }
+
+    let center = new THREE.Vector2((gl.domElement.width) / 2, (gl.domElement.height) / 2);
+    let rightEyeTop = new THREE.Vector2(center.x, 0);
+    let rightEyeBottom = new THREE.Vector2(gl.domElement.width, gl.domElement.height);
+    let checkingPosition = new THREE.Vector2((rightEyeBottom.x - rightEyeTop.x) / 2, center.y);
+
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(scene);
     
     gpuPicker.current.updateObject();
-    gpuPicker.current.setPickingPosition(center.x, center.y);
+    gpuPicker.current.setPickingPosition(checkingPosition.x, checkingPosition.y);
 
     gpuPicker.current.pick(selectCamera, wall.current);
+
+    selectionCamera.current.position.set(0, 0, 0);
+    selectionCamera.current.quaternion.set(0, 0, 0, 0);
+    selectionCamera.current.updateMatrixWorld(true);
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {

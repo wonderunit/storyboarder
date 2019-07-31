@@ -11,6 +11,7 @@ class GPUPickerHelper
         this.pickedObjectSaveColor = 0;
         this.selectableObjects = {};
         this.selectedColor = new THREE.Color(0.2, 0.2, 0.2);
+        this.renderTarget = new THREE.WebGLRenderTarget(0, 0);
     }
     
     pick(cssPosition, scene, camera, renderer, wall)
@@ -20,7 +21,6 @@ class GPUPickerHelper
         if(this.pickedObject)
         {
             this.pickedObject.material.color = this.pickedObjectSaveColor;
-            console.log("Set to undefined");
             this.pickedObject = undefined;
         }
 
@@ -33,19 +33,18 @@ class GPUPickerHelper
             1,
             1
         );
-        console.log(renderer);
         renderer.setRenderTarget(pickingTexture);
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         camera.clearViewOffset();
-        console.log(pickingTexture);
-        let renderTarget =  new THREE.WebGLRenderTarget(renderer.domElement.width,
-            renderer.domElement.height);
-        renderer.setRenderTarget(renderTarget);
+        this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
+
+        renderer.setRenderTarget(this.renderTarget);
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
-        wall.material.map = renderTarget.texture;
-            
+        wall.material.map = this.renderTarget.texture;
+        wall.needsUpdate = true;
+        wall.material.map.repeat.set( 1, 1 );
         renderer.readRenderTargetPixels(
             pickingTexture,
             0, 
