@@ -1055,17 +1055,6 @@ const SceneContent = ({
   }
 
   useEffect(() => {
-    navigator
-      .getVRDisplays()
-      .then(displays => {
-        // console.log({ displays })
-        if (displays.length) {
-          console.log('adding VR button')
-          document.body.appendChild(WEBVR.createButton(gl))
-        }
-      })
-      .catch(err => console.error(err))
-
     if (SHOW_RSTATS) {
       const threeStats = new window.threeStats(gl)
       rStatsRef.current = new RStats({
@@ -1300,6 +1289,16 @@ const SceneContent = ({
     </>
   )
 }
+const XRStartButton = ({ }) => {
+  const { gl } = useThree()
+
+  useMemo(() => {
+    document.body.appendChild(WEBVR.createButton(gl))
+  }, [])
+
+  return null
+}
+
 
 const SceneManagerXR = connect(
   state => ({
@@ -1378,6 +1377,7 @@ const SceneManagerXR = connect(
     return (
       <>
         <Canvas vr>
+          <XRStartButton />
           <SceneContent
             {...{
               aspectRatio,
