@@ -23,7 +23,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     if (modelData) {
       modelData.scene.traverse(child => {
         if (child instanceof THREE.Mesh) {
-          child.material.color = new THREE.Color(0x4400ff)
           children.push(<primitive key={`${props.id}-${index}`} object={child.clone()} />)
           index++
         }
@@ -115,8 +114,8 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
 
   useEffect(() => {
     if (!ref.current) return
-    if (isSelected) updateObjectHighlight(ref.current, 0.15)
-    else updateObjectHighlight(ref.current, 0)
+    if (isSelected) updateObjectHighlight(ref.current, 0.3)
+    else updateObjectHighlight(ref.current, 0.15)
   }, [isSelected])
 
   return (
@@ -153,19 +152,19 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
         <group>
           <mesh
             position={[(size * aspectRatio + (props.guiCamera ? 0.003 : 0.009)) * -0.5, props.guiCamera ? 0 : 0.3, 0]}
-            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400ff })}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
           >
             <planeGeometry attach="geometry" args={[props.guiCamera ? 0.003 : 0.009, size]} />
           </mesh>
           <mesh
             position={[(size * aspectRatio + (props.guiCamera ? 0.003 : 0.009)) * 0.5, props.guiCamera ? 0 : 0.3, 0]}
-            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400ff })}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
           >
             <planeGeometry attach="geometry" args={[props.guiCamera ? 0.003 : 0.009, size]} />
           </mesh>
           <mesh
             position={[0, (props.guiCamera ? 0 : 0.3) + (size + (props.guiCamera ? 0.003 : 0.009)) * -0.5, 0]}
-            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400ff })}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
           >
             <planeGeometry
               attach="geometry"
@@ -174,7 +173,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
           </mesh>
           <mesh
             position={[0, (props.guiCamera ? 0 : 0.3) + (size + (props.guiCamera ? 0.003 : 0.009)) * 0.5, 0]}
-            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x4400ff })}
+            material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
           >
             <planeGeometry
               attach="geometry"
