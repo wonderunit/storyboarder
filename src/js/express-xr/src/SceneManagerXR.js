@@ -18,7 +18,8 @@ const {
   getSceneObjects,
   getWorld,
   getActiveCamera,
-  getSelectedBone
+  getSelectedBone,
+  initialState
 } = require('../../shared/reducers/shot-generator')
 
 // all pose presets (so we can use `stand` for new characters)
@@ -315,8 +316,11 @@ const SceneContent = ({
       if (intersection.object.name.includes('selector-character')) {
         const model = intersection.object.name.split('_')[1]
         const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
-        updateObject(object.userData.id, { model })
-        updateObject(object.userData.id, { ['height']: sceneObjects[object.userData.id].height })
+        updateObject(object.userData.id, { model, ['height']: initialState.models[model].height })
+       
+        // hacky way of refreshing slider values
+        setSelectedObject(0)
+        setSelectedObject(object.userData.id)
       }
 
       if (intersection.object.userData.type === 'gui') {

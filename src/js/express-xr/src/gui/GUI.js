@@ -234,6 +234,7 @@ const GUI = ({
       let minMax = { min: 0, max: 1 }
       let prop = key
       let title = key
+      let step = 0.1
 
       switch (key) {
         case 'fov':
@@ -249,7 +250,10 @@ const GUI = ({
           minMax = { min: 0.8, max: 1.2 }
           break
         case 'height':
-          if (parent.userData.type === 'character') minMax = { min: 1.4732, max: 2.1336 }
+          if (parent.userData.type === 'character') {
+            minMax = { min: 1.4732, max: 2.1336 }
+            step = 0.05
+          }
           else minMax = { min: 0.03, max: 5 }
           break
         case 'mesomorphic':
@@ -287,7 +291,7 @@ const GUI = ({
       const name = title.charAt(0).toUpperCase() + title.slice(1)
       slider
         .name(name)
-        .step(0.1)
+        .step(step)
         .onChange(updateGeometry)
         .onFinishedChange(updateState)
       slider.scale.set(0.35, 0.35, 0.35)
