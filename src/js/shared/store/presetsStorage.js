@@ -8,6 +8,16 @@ const getScenePresetsFilePath = () => path.join(getPresetsFolderPath(), 'scenes.
 const getCharacterPresetsFilePath = () => path.join(getPresetsFolderPath(), 'characters.json')
 const getPosePresetsFilePath = () => path.join(getPresetsFolderPath(), 'poses.json')
 
+// versions 1.13.0 and before had no priority field for poses
+// ensure that all poses have a priority field
+const migratePosePresets = poses => {
+  for (let key of Object.keys(poses)) {
+    let pose = poses[key]
+    pose.priority = pose.priority == null ? 0 : pose.priority
+  }
+  return poses
+}
+
 module.exports = {
   loadScenePresets: () => {
     let filepath = getScenePresetsFilePath()
@@ -52,6 +62,7 @@ module.exports = {
     if (fs.existsSync(filepath)) {
       let string = fs.readFileSync(filepath)
       let data = JSON.parse(string)
+      migratePosePresets(data)
       return { poses: data }
     } else {
       return { poses: undefined }
@@ -61,6 +72,7 @@ module.exports = {
   savePosePresets: ({ poses }) => {
     if (!fs.existsSync(getPresetsFolderPath())) { fs.mkdirSync(getPresetsFolderPath()) }
 
+    migratePosePresets(poses)
     let string = JSON.stringify(poses, null, 2)
     fs.writeFileSync(getPosePresetsFilePath(), string)
   }

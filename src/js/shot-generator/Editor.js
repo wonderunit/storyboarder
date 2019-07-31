@@ -13,8 +13,6 @@ const log = require('electron-log')
 
 const {
   SceneContext,
-  Toolbar,
-  Icon,
   ElementsPanel,
   CameraInspector,
   BoardInspector,
@@ -29,6 +27,8 @@ const {
 } = require('./Components')
 const SceneManager = require('./SceneManager')
 const GuidesView = require('./GuidesView')
+const Icon = require('./Icon')
+const Toolbar = require('./Toolbar')
 const FatalErrorBoundary = require('./FatalErrorBoundary')
 
 const ModelLoader = require('../services/model-loader')
@@ -134,8 +134,7 @@ const Editor = connect(
     sceneObjects: getSceneObjects(state),
     world: getWorld(state),
     selectedBone: getSelectedBone(state),
-    attachments: state.attachments,
-    server: state.server
+    attachments: state.attachments
   }),
   {
     createObject,
@@ -169,9 +168,7 @@ const Editor = connect(
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
-  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, server, undoGroupStart, undoGroupEnd }) => {
-    const xrServerUrl = useMemo(() => server.uri && server.uri.replace(/8001$/, '1234'), [server.uri])
-
+  ({ mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, undoGroupStart, undoGroupEnd }) => {
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
@@ -711,18 +708,18 @@ const Editor = connect(
         [FatalErrorBoundary,
           ['div.column', { style: { width: '100%', height: '100%' } }, [
             [Toolbar, {
-              createObject,
-              selectObject,
-              loadScene,
-              saveScene,
+              // createObject,
+              // selectObject,
+              // loadScene,
+              // saveScene,
               camera,
-              setActiveCamera,
-              resetScene,
+              // setActiveCamera,
+              // resetScene,
               saveToBoard: onToolbarSaveToBoard,
               insertAsNewBoard: onToolbarInsertAsNewBoard,
-              xrServerUrl,
-              undoGroupStart,
-              undoGroupEnd
+              // undoGroupStart,
+              // undoGroupEnd,
+              notifications
             }],
 
             ['div.row', { style: { flex: 1, height: '100%' }},

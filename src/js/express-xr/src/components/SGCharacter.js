@@ -169,7 +169,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   const [ready, setReady] = useState(false) // ready to load?
   // setting loaded = true forces an update to sceneObjects,
   // which is what Editor listens for to attach the BonesHelper
-  const setLoaded = loaded => updateObject(id, { loaded: true })
+  const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
@@ -257,20 +257,20 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     return {}
   }, [modelData])
 
-  const { bonesHelper } = useMemo(() => {
-    if (object.current) {
-      let bonesHelper = new BonesHelper(skeleton.bones[0].parent, object.current, {
-        boneLengthScale,
-        cacheKey: props.model
-      })
-
-      return {
-        bonesHelper
-      }
+  const bonesHelper = useMemo(() => {
+    if (ready && object.current) {
+      return new BonesHelper(
+        skeleton.bones[0].parent,
+        object.current,
+        {
+          boneLengthScale,
+          cacheKey: props.model
+        }
+      )
+    } else {
+      return undefined
     }
-
-    return {}
-  }, [object.current])
+  }, [ready, object.current])
 
   useEffect(() => {
     return function cleanup() {
@@ -456,14 +456,13 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     }
   }, [selectedBone, ready])
 
-  return skinnedMesh ? (
-    <group
+  return <group
       //visible={false}
       userData={{
         id,
         type,
         name: 'character-container',
-        displayName: props.displayName,
+        displayName: props.name || props.displayName,
         forPanel: {
           height: props.height,
           headScale: props.headScale,
@@ -473,30 +472,34 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         }
       }}
     >
-      <group
-        ref={object}
-        //visible={false}
-        bonesHelper={bonesHelper ? bonesHelper : null}
-        userData={{
-          id,
-          type,
-          originalHeight,
-          mesh,
-          skeleton,
-          boneLengthScale,
-          parentRotation,
-          parentPosition,
-          modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
-            rotation: props.rotation
-          }
-        }}
-      >
-        <primitive userData={{ id, type }} object={skinnedMesh} />
-        <primitive object={armatures[0]} />
-        {props.children}
-      </group>
+      {
+        skinnedMesh && (
+          <group
+            //visible={false}
+            ref={object}
+            bonesHelper={bonesHelper ? bonesHelper : null}
+            userData={{
+              id,
+              type,
+              originalHeight,
+              mesh,
+              skeleton,
+              boneLengthScale,
+              parentRotation,
+              parentPosition,
+              modelSettings: Object.assign({ rotation: props.rotation }, initialState.models[props.model]) || {
+                rotation: props.rotation
+              }
+            }}
+          >
+            <primitive userData={{ id, type }} object={skinnedMesh} />
+            <primitive object={armatures[0]} />
+            {props.children}
+          </group>
+        )
+      }
 
-      {bonesHelper && (
+      {(skinnedMesh && bonesHelper) && (
         <group>
           <primitive
             userData={{
@@ -506,8 +509,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
           />
         </group>
       )}
-    </group>
-  ) : null
+  </group>
 })
 
 module.exports = SGCharacter

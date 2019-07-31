@@ -14,8 +14,28 @@ const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 
+
+
+// via PosePresetsEditor.js
+const comparePresetNames = (a, b) => {
+  var nameA = a.name.toUpperCase()
+  var nameB = b.name.toUpperCase()
+
+  if (nameA < nameB) {
+    return -1
+  }
+  if (nameA > nameB) {
+    return 1
+  }
+  return 0
+}
+const comparePresetPriority = (a, b) => b.priority - a.priority
+
+
+
 const GUI = ({
   rStatsRef,
+  worldScaleGroupRef,
   aspectRatio,
   models,
   presets,
@@ -49,6 +69,8 @@ const GUI = ({
   }
 
   const poses = Object.values(presets.poses)
+    .sort(comparePresetNames)
+    .sort(comparePresetPriority)
   const poseVisibleAmount = poses.slice(selectorOffset * 4, selectorOffset * 4 + 16)
 
   const characters = Object.values(models).filter(model => model.type === 'character')
@@ -62,10 +84,20 @@ const GUI = ({
   //   return textCreator.create(`${camSettings.fov}mm`, { centerText: 'custom' })
   // }, [])
 
+  // first look for matching id under world group, if not found look under vrControllers
+  let object = worldScaleGroupRef.current
+    ? worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
+    : undefined
+  if (object === undefined) {
+    vrControllers.forEach(controller => {
+      const match = controller.children.find(child => child.userData.id === selectedObject)
+      if (match) object = match
+    })
+    if (object === undefined) object = false
+  }
+
   const updateGeometry = (id, prop, value) => {
     if (id && prop) {
-      let object = scene.getObjectById(id)
-
       if (prop === 'guiFOV') {
         const guiCam = scene.getObjectByName('guiCam')
         guiCam.dispatchEvent({ type: 'updateFOV', fov: value })
@@ -167,9 +199,9 @@ const GUI = ({
       prop: 'guiFOV',
       id: 'guiCam',
       object: new THREE.Vector3(),
-      initialValue: 22,
-      min: 3,
-      max: 71,
+      initialValue: 37,
+      min: 10,
+      max: 280,
       width: (uiScale + bWidth) / 0.35,
       height: (uiScale * 0.5) / 0.35,
       corner: bWidth / 0.35,
@@ -199,7 +231,6 @@ const GUI = ({
       scene.remove(obj)
     })
 
-    const object = scene.getObjectById(selectedObject)
     if (!object) return []
 
     const parent = findParent(object)
@@ -216,6 +247,7 @@ const GUI = ({
 
     let idx = 1
     for (const [key, value] of Object.entries(parent.userData.forPanel || {})) {
+      // if (key === 'fov') console.log(value)
       const decimal = Math.round((value + 0.00001) * 100) / 100
 
       let minMax = { min: 0, max: 1 }
@@ -224,7 +256,7 @@ const GUI = ({
 
       switch (key) {
         case 'fov':
-          minMax = { min: 3, max: 71 }
+          minMax = { min: 10, max: 280 }
           break
         case 'intensity':
           minMax = { min: 0.03, max: 1 }
@@ -251,7 +283,7 @@ const GUI = ({
           break
       }
 
-      if (key === 'fov') title = 'F.O.V'
+      if (key === 'fov') title = 'FL'
       if (key === 'headScale') title = 'head'
       if (key === 'mesomorphic') title = 'meso'
       if (key === 'ectomorphic') title = 'ecto'
@@ -274,7 +306,7 @@ const GUI = ({
       const name = title.charAt(0).toUpperCase() + title.slice(1)
       slider
         .name(name)
-        .step(0.1)
+        .step(key === 'fov' ? 1 : 0.1)
         .onChange(updateGeometry)
         .onFinishedChange(updateState)
       slider.scale.set(0.35, 0.35, 0.35)
@@ -368,26 +400,19 @@ const GUI = ({
     return textureArray
   }, [])
 
-  const help_textures = [
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_1.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_2.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_3.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_4.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_5.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_6.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_7.png'), []),
-    useMemo(() => new THREE.TextureLoader().load('/data/system/xr/help_8.png'), [])
-  ]
+  const help_textures = useMemo(
+    () => [1, 2, 3, 4, 5, 6, 7, 8].map(n => new THREE.TextureLoader().load(`/data/system/xr/help_${n}.png`)),
+    []
+  )
 
   const invertGUI = flipHand ? -1 : 1
-  const object = scene.getObjectById(selectedObject)
   const fpsMeter = useMemo(() => textCreator.create(fps.toString(), { color: 0xff0000, scale: 0.475, centerText: false }), [fps])
 
   return (
     <group rotation={[(Math.PI / 180) * -30, 0, 0]} userData={{ type: 'gui' }} position={[0, 0.015, -0.005]}>
       <group rotation={[(Math.PI / 180) * -70, 0, 0]}>
         <group name="selector_container">
-          {selectedObject && object.userData.type === 'character' && guiSelector === 'pose' && (
+          {object && object.userData.type === 'character' && guiSelector === 'pose' && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -460,7 +485,7 @@ const GUI = ({
             </group>
           )}
 
-          {selectedObject && object.userData.type === 'character' && guiSelector === 'character' && (
+          {object && object.userData.type === 'character' && guiSelector === 'character' && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -533,7 +558,7 @@ const GUI = ({
             </group>
           )}
 
-          {selectedObject && object.userData.type === 'object' && guiSelector === 'object' && (
+          {object && object.userData.type === 'object' && guiSelector === 'object' && (
             <group
               position={[
                 ((uiScale * 2 + bWidth) * 0.5 +
@@ -608,7 +633,7 @@ const GUI = ({
         </group>
 
         <group name="properties_container">
-          {selectedObject && textCount && (
+          {object && textCount && (
             <group
               position={[
                 (uiScale * 2.75 * 0.5 + uiScale * 0.5 + (uiScale * 0.5 + uiScale * 0.5) + bWidth * 2) * -1 * invertGUI,

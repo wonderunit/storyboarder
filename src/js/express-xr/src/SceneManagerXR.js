@@ -146,7 +146,7 @@ const SceneContent = ({
   const [selectorOffset, setSelectorOffset] = useState(0)
 
   const worldScaleRef = useRef(0.1)
-  const worldScaleGroupRef = useRef([])
+  const worldScaleGroupRef = useRef(null)
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const intersectArray = useRef([])
@@ -177,7 +177,15 @@ const SceneContent = ({
     const { id, prop, value } = e.detail
 
     if (prop === 'guiFOV') {
-      setGuiCamFOV(value)
+      const guiCam = scene.getObjectByName('guiCam')
+      setGuiCamFOV(guiCam.fov)
+      return
+    }
+
+    if (prop === 'fov') {
+      const camGroup = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
+      const cam = camGroup.userData.camera
+      if (cam) updateObject(id, { [prop]: cam.fov })
       return
     }
 
@@ -351,19 +359,19 @@ const SceneContent = ({
       if (intersection.object.name.includes('selector-pose')) {
         const posePresetId = intersection.object.name.split('_')[1]
         const skeleton = presets.poses[posePresetId].state.skeleton
-        const object = scene.getObjectById(selectedObject)
+        const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
         updateObject(object.userData.id, { posePresetId, skeleton })
       }
 
       if (intersection.object.name.includes('selector-object')) {
         const model = intersection.object.name.split('_')[1]
-        const object = scene.getObjectById(selectedObject)
+        const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
         updateObject(object.userData.id, { model })
       }
 
       if (intersection.object.name.includes('selector-character')) {
         const model = intersection.object.name.split('_')[1]
-        const object = scene.getObjectById(selectedObject)
+        const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
         updateObject(object.userData.id, { model })
       }
 
@@ -423,7 +431,7 @@ const SceneContent = ({
             createObject({
               id,
               type: 'camera',
-              fov: guiCamFOV,
+              fov: guiCam.fov,
               x: pos.x,
               y: pos.z,
               z: pos.y,
@@ -469,7 +477,7 @@ const SceneContent = ({
       }
 
       let object = findParent(intersection.object)
-      const { id } = object
+      const { id } = object.userData
       // is this probably NOT a scene object?
       // (used to exclude environment meshes for example)
       if (object.userData.id == null) {
@@ -477,7 +485,7 @@ const SceneContent = ({
       }
 
       setSelectedObject(id)
-      selectedObjRef.current = scene.getObjectById(id)
+      selectedObjRef.current = object
       setHideArray(createHideArray(scene))
       setGuiMode('selection')
 
@@ -561,7 +569,7 @@ const SceneContent = ({
           setGuiMode('selection')
         }, 250)
         break
-      case 'duplicate':
+      case 'duplicate':        
         if (!selectedObjRef.current) return
         setGuiMode(mode)
 
@@ -570,7 +578,7 @@ const SceneContent = ({
 
         setTimeout(() => {
           const match = worldScaleGroupRef.current.children.find(child => child.userData.id === id)
-          setSelectedObject(match.id)
+          setSelectedObject(match.userData.id)
           selectedObjRef.current = match
           setHideArray(createHideArray(scene))
           setGuiMode('selection')
@@ -922,9 +930,9 @@ const SceneContent = ({
       if (intersection.object.userData.type === 'bone') return
 
       let object = findParent(intersection.object)
-      const { id } = object
+      const { id } = object.userData
       setSelectedObject(id)
-      selectedObjRef.current = scene.getObjectById(id)
+      selectedObjRef.current = object
       setHideArray(createHideArray(scene))
       setGuiMode('selection')
     } else {
@@ -1012,12 +1020,19 @@ const SceneContent = ({
 
     THREE.VRController.update()
 
-    vrControllers.forEach((controller, idx) => {
-
-      if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
+    for (let i = 0; i < vrControllers.length; i++) {
+    const controller = vrControllers[i]
+      if (
+        selectedObjRef.current &&
+        selectedObjRef.current.userData.type === 'character' &&
+        !selectedBone &&
+        // has it loaded the skinned mesh yet?
+        selectedObjRef.current.children[0]
+      ) {
         const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
         if (hits.length) {
+          if (controller.userData.currentBoneHighlight === hits[0].bone) return
           controller.userData.currentBoneHighlight = hits[0].bone
           controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
         } else if (controller.userData.currentBoneHighlight) {
@@ -1026,23 +1041,18 @@ const SceneContent = ({
         }
       }
 
-      const otherController = vrControllers[1 - idx]
-      if (otherController && !otherController.pressed && !controller.userData.selected) {
-        const intersections = getIntersections(controller, guiArray.current)
-        if (intersections.length > 0) {
-          let intersection = intersections[0]
-          if (intersection.object.userData.type === 'slider') {
-            controller.intersections = intersections
-          } else if (intersection.object.name.includes('selector')) {
-            controller.intersections = [intersection]
-          } else {
-            controller.intersections = []
+      const handedness = controller.getHandedness()
+      if (handedness === (flipHand ? 'right' : 'left')) {
+        const otherController = vrControllers[1 - i]
+        if (otherController && !otherController.pressed && !controller.userData.selected) {
+          const intersections = getIntersections(controller, guiArray.current)
+          if (intersections.length > 0) {
+            let intersection = intersections[0]
+            if (intersection.object.userData.type === 'slider') controller.intersections = intersections
+            else if (intersection.object.name.includes('selector')) controller.intersections = [intersection]
           }
-        } else {
-          controller.intersections = []
-        }
-      } else {
-        controller.intersections = []
+        } 
+        else if (controller.intersections.lenght !== 0) controller.intersections = []
       }
 
       const object = controller.userData.selected
@@ -1052,47 +1062,48 @@ const SceneContent = ({
 
       if (controller.pressed === true) {
         if (object && object.userData.type === 'object' && controller.gripped) {
-          if (object.parent.uuid === controller.uuid) {
-            object.matrix.premultiply(controller.matrixWorld)
-            object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-            object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-            object.position.multiplyScalar(1 / worldScale)
-
-            object.userData.order = object.rotation.order
-            object.rotation.reorder('YXZ')
-
-            const sign = Math.sign(object.rotation.y)
-            let degreeY =  THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
-            degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
-
-            let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
-            degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
-
-            object.rotation.x = 0
-            object.rotation.z = degreeZ
-            object.rotation.y = degreeY
-            object.rotation.order = object.userData.order
-            worldScaleGroupRef.current.add(object)
-
-            const intersections = getIntersections(controller, intersectArray.current)
-            if (intersections.length > 0) {
-              const intersection = intersections[0]
-              const raycastDepth = controller.getObjectByName('raycast-depth')
-              raycastDepth.position.z = -intersection.distance
-
-              const objectWorldPos = intersection.object.getWorldPosition(new THREE.Vector3())
-              const posOffset = new THREE.Vector3().subVectors(intersection.point, objectWorldPos)
-              controller.userData.posOffset = posOffset
-            }
-          } else {
-            constraintObjectRotation(controller, worldScale)
-          }
+          if (object.parent.uuid === controller.uuid) snapObjectRotation(object, controller)
+          else constraintObjectRotation(controller, worldScale)
         }
       }
 
       if (controller.userData.bone) rotateBone(controller)
-    })
-  }, false, [vrControllers, selectedBone, worldScale])
+    }
+  }, false, [vrControllers, selectedBone, worldScale, flipHand])
+
+  const snapObjectRotation = (object, controller) => {
+    object.matrix.premultiply(controller.matrixWorld)
+    object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+    object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
+    object.position.multiplyScalar(1 / worldScale)
+
+    object.userData.order = object.rotation.order
+    object.rotation.reorder('YXZ')
+
+    const sign = Math.sign(object.rotation.y)
+    let degreeY = THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
+    degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
+
+    let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
+    degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
+
+    object.rotation.x = 0
+    object.rotation.z = degreeZ
+    object.rotation.y = degreeY
+    object.rotation.order = object.userData.order
+    worldScaleGroupRef.current.add(object)
+
+    const intersections = getIntersections(controller, intersectArray.current)
+    if (intersections.length > 0) {
+      const intersection = intersections[0]
+      const raycastDepth = controller.getObjectByName('raycast-depth')
+      raycastDepth.position.z = -intersection.distance
+
+      const objectWorldPos = intersection.object.getWorldPosition(new THREE.Vector3())
+      const posOffset = new THREE.Vector3().subVectors(intersection.point, objectWorldPos)
+      controller.userData.posOffset = posOffset
+    }
+  }
 
   useEffect(() => {
     navigator
@@ -1245,7 +1256,7 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ rStatsRef, models, presets, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI {...{ rStatsRef, worldScaleGroupRef, models, presets, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
@@ -1256,11 +1267,11 @@ const SceneContent = ({
     </group>
   )
 
-  const selectedObject3d = scene.getObjectById(selectedObject)
+  const selectedObj3d = worldScaleGroupRef.current ? worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject) : undefined
 
   let sceneObjectComponents = Object.values(sceneObjects)
     .map((sceneObject, i) => {
-      const isSelected = selectedObject3d && selectedObject3d.userData.id === sceneObject.id
+      const isSelected = selectedObj3d && selectedObj3d.userData.id === sceneObject.id
         ? true
         : false
 

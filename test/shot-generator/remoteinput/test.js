@@ -1,3 +1,5 @@
+// npx electron test/shot-generator/remoteinput
+
 const THREE = require('three')
 window.THREE = THREE
 

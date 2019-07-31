@@ -20,6 +20,7 @@
     "xr:clean": "trash src/js/express-xr/dist",
     "xr:build": "parcel build src/js/express-xr/src/index.html -d src/js/express-xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
+    "xr:test-server": "npx electron src/js/express-xr/test/test-server.js",
     "build:thumbnails": "npx electron test/views/thumbnail-renderer/main.js"
   },
   "repository": {

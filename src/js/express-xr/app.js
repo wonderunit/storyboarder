@@ -3,7 +3,9 @@ const path = require('path')
 const dns = require('dns')
 
 const express = require('express')
-const remote = require('electron').remote
+const electron = require('electron')
+const electronApp = electron.app ? electron.app : electron.remote.app
+
 const app = express()
 const http = require('http').Server(app)
 
@@ -11,7 +13,7 @@ const log = require('electron-log')
 
 const portNumber = 1234
 
-const { getSerializedState } = require('../shared/reducers/shot-generator')
+const { getSerializedState, updateServer } = require('../shared/reducers/shot-generator')
 
 class XRServer {
   constructor ({ store }) {
@@ -34,7 +36,7 @@ class XRServer {
     ))
 
     app.use('/data/presets/poses', express.static(
-      path.join(remote.app.getPath('userData'), 'presets', 'poses')
+      path.join(electronApp.getPath('userData'), 'presets', 'poses')
     ))
 
     app.get('/', function(req, res) {
@@ -68,36 +70,46 @@ class XRServer {
     http.listen(portNumber, function() {
       let desc = `XRServer running at`
 
-      let hostname = os.hostname()
-
-      dns.lookup(hostname, function (err, addr) {
-        if (err) {
-          // use IP address instead of .local
-          let ip
-          if (hostname.match(/\.local$/)) {
-            ip = Object.values(os.networkInterfaces()).reduce(
-              (r, list) =>
-                r.concat(
-                  list.reduce(
-                    (rr, i) =>
-                      rr.concat((i.family === "IPv4" && !i.internal && i.address) || []),
-                    []
-                  )
-                ),
-              []
-            )
+      new Promise(resolve => {
+        let hostname = os.hostname()
+        dns.lookup(hostname, function (err, addr) {
+          if (err) {
+            // use IP address instead of .local
+            let ip
+            if (hostname.match(/\.local$/)) {
+              ip = Object.values(os.networkInterfaces()).reduce(
+                (r, list) =>
+                  r.concat(
+                    list.reduce(
+                      (rr, i) =>
+                        rr.concat((i.family === "IPv4" && !i.internal && i.address) || []),
+                      []
+                    )
+                  ),
+                []
+              )
+            }
+            if (ip) {
+              resolve(ip)
+            } else {
+              log.error(err)
+              resolve(hostname)
+            }
+            return
           }
-          if (ip) {
-            log.info(`${desc} http://${ip}:${portNumber}`)
 
-          } else {
-            log.info(`${desc} http://${hostname}:${portNumber}`)
-          }
-          return
-        }
-
-        log.info(`${desc} http://${addr}:${portNumber}`)
+          resolve(addr)
+        })
       })
+      .then(result => {
+        log.info(`${desc} http://${result}:${portNumber}`)
+
+        // there are two servers:
+        // createServer creates one on :8000/8001 which is the old default remote input server
+        // XRServer creates one on :1234 for XR/VR
+        store.dispatch(updateServer({ xrUri: `http://${result}:${portNumber}` }))
+      })
+      .catch(err => log.error(err))
     })
   }
 }

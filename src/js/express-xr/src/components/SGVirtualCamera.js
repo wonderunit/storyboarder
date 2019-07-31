@@ -33,7 +33,9 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
   }, [modelData])
 
   const { gl, scene } = useThree()
-  const selectedObj = findParent(scene.getObjectById(selectedObject))
+  const worldScaleGroup = scene.children.find(child => child.userData.type === 'world-scale')
+  const selectedObj = worldScaleGroup ? findParent(worldScaleGroup.children.find(child => child.userData.id === selectedObject)) : undefined
+
   isSelected.current = selectedObj && selectedObj.userData.id === props.id
 
   const ref = useUpdate(
@@ -92,6 +94,12 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     }
   }, [])
 
+  useEffect(() => {
+    if (virtualCamera.current && camSliderFOV) {
+      virtualCamera.current.setFocalLength(camSliderFOV)
+    }
+  }, [camSliderFOV])
+
   useRender(() => {
     if (!previousTime.current) previousTime.current = 0
 
@@ -109,7 +117,13 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
 
   return (
     <group
-      userData={{ id: props.id, displayName: props.displayName, type: 'virtual-camera', forPanel: { fov: props.fov } }}
+      userData={{
+        id: props.id,
+        displayName: props.name || props.displayName,
+        type: 'virtual-camera',
+        camera: virtualCamera.current,
+        forPanel: { fov: virtualCamera.current ? virtualCamera.current.getFocalLength() : 0 }
+      }}
       position={[props.x || 0, props.z || 0, props.y || 0]}
       ref={ref}
     >
@@ -132,10 +146,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
             <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
           </mesh>
         )}
-        <mesh
-          position={[0, props.guiCamera ? 0 : 0.3, 0]}
-          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}
-        >
+        <mesh position={[0, props.guiCamera ? 0 : 0.3, 0]} material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide })}>
           <planeGeometry
             attach="geometry"
             args={[size * aspectRatio + (props.guiCamera ? 0.005 : 0.015), size + (props.guiCamera ? 0.005 : 0.015)]}
@@ -146,7 +157,7 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
             name={props.guiCamera ? 'guiCam' : ''}
             ref={virtualCamera}
             aspect={aspectRatio}
-            fov={camSliderFOV || props.fov}
+            fov={props.fov}
             near={0.01}
             far={1000}
             onUpdate={self => self.updateProjectionMatrix()}
