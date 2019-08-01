@@ -34,7 +34,6 @@ const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 
 const SGWorld = require('./components/SGWorld')
 const SGSpotLight = require('./components/SGSpotLight')
-const SGLiveCamera = require('./components/SGLiveCamera')
 const SGVirtualCamera = require('./components/SGVirtualCamera')
 const SGModel = require('./components/SGModel')
 const SGController = require('./components/SGController')
@@ -145,7 +144,7 @@ const SceneContent = ({
 }) => {
   const teleportMaxDist = 10
   const rStatsRef = useRef(null)
-  const xrOffset = useRef(null)
+  // const hmdCameraGroup = useRef(null)
 
   const [guiMode, setGuiMode] = useState('selection')
   const [addMode, setAddMode] = useState(null)
@@ -164,7 +163,8 @@ const SceneContent = ({
   const [selectorOffset, setSelectorOffset] = useState(0)
   const [teleportMode, setTeleportMode] = useState(false)
 
-  const cameraRef = useRef()
+  const hmdCameraGroup = useRef()
+  const hmdCamera = useRef()
 
   const worldScaleRef = useRef(0.1)
   const worldScaleGroupRef = useRef(null)
@@ -175,7 +175,7 @@ const SceneContent = ({
   const guiArray = useRef([])
   const teleportArray = useRef([])
   const initialCamPos = useRef()
-  const hmdCamInitialized = useRef(false)
+  // const hmdCamInitialized = useRef(false)
   const previousTime = useRef([null])
 
   // Why do I need to create ref to access updated state in some functions?
@@ -559,7 +559,7 @@ const SceneContent = ({
   const onAddObject = mode => {
     const id = THREE.Math.generateUUID()
 
-    const hmdCam = cameraRef.current
+    const hmdCam = hmdCamera.current
     let offsetVector
     if (mode == 'camera') {
       offsetVector = new THREE.Vector3(0, 0, -1)
@@ -568,7 +568,7 @@ const SceneContent = ({
     }
     offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
     offsetVector.multiply(new THREE.Vector3(1, 0, 1)).multiplyScalar(worldScale === 1 ? 1 : 0.5 / worldScale)
-    const newPoz = xrOffset.current.position
+    const newPoz = hmdCameraGroup.current.position
       .clone()
       .multiply(new THREE.Vector3(1 / worldScale, 0, 1 / worldScale))
       .add(hmdCam.position)
@@ -774,8 +774,8 @@ const SceneContent = ({
     if (moveCamRef.current) return
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
-    const { x, y } = xrOffset.current.userData
-    const hmdCam = cameraRef.current
+    const { x, y } = hmdCameraGroup.current.userData
+    const hmdCam = hmdCamera.current
     const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
 
     if (event.axes[1] > 0.075) {
@@ -865,7 +865,8 @@ const SceneContent = ({
       setWorldScale(oldValue => {
         return oldValue === 1 ? worldScaleRef.current : 1
       })
-      const hmdCam = cameraRef.current
+      const hmdCam = hmdCamera.current
+      let cameraState = sceneObjects[activeCamera]
       const teleport =
         worldScale !== 1
           ? new THREE.Vector3(cameraState.x, cameraState.z, cameraState.y)
@@ -1107,23 +1108,24 @@ const SceneContent = ({
   //   console.log('camera: using Canvas camera')
   // }
 
+  /*
   const camPosZero = camera.position.length() === 0
-  if (xrOffset.current && teleportPos) {
-    xrOffset.current.position.x = teleportPos.x
-    xrOffset.current.position.z = teleportPos.z
-  } else if (xrOffset.current && !camPosZero && camera.position.y !== xrOffset.current.userData.z && !hmdCamInitialized.current) {
-    const { x, y, rotation } = xrOffset.current.userData
+  if (hmdCameraGroup.current && teleportPos) {
+    hmdCameraGroup.current.position.x = teleportPos.x
+    hmdCameraGroup.current.position.z = teleportPos.z
+  } else if (hmdCameraGroup.current && !camPosZero && camera.position.y !== hmdCameraGroup.current.userData.z && !hmdCamInitialized.current) {
+    const { x, y, rotation } = hmdCameraGroup.current.userData
     const behindCam = {
       x: Math.sin(rotation),
       y: Math.cos(rotation)
     }
 
-    xrOffset.current.position.x = x + behindCam.x
-    xrOffset.current.position.z = y + behindCam.y
+    hmdCameraGroup.current.position.x = x + behindCam.x
+    hmdCameraGroup.current.position.z = y + behindCam.y
     hmdCamInitialized.current = true
   }
-
-  let cameraState = sceneObjects[activeCamera]
+  */
+  /*
   useEffect(() => {
     // Store Initial Camera Position here so HMD doesn't jump even if virtual camera get's updated
     const { x, y, z } = cameraState
@@ -1131,13 +1133,14 @@ const SceneContent = ({
   }, [])
 
   useEffect(() => {
-    const hmdCam = cameraRef.current
+    const hmdCam = hmdCamera.current
     if (worldScale !== 1) {
-      xrOffset.current.position.y = -(hmdCam.position.y - 0.75)
+      hmdCameraGroup.current.position.y = -(hmdCam.position.y - 0.75)
     } else {
-      xrOffset.current.position.y = 0
+      hmdCameraGroup.current.position.y = 0
     }
   }, [worldScale])
+  */
 
   const soundBeam = useRef()
   const soundSelect = useRef()
@@ -1249,29 +1252,55 @@ const SceneContent = ({
     return textureArray
   }, [])
 
-  let activeCameraComponent = (
-    <group
-      key={'camera'}
-      ref={xrOffset}
-      rotation={[0, (Math.PI / 4) * camExtraRot, 0]}
-      userData={{
-        x: initialCamPos.current ? initialCamPos.current.x : cameraState.x,
-        y: initialCamPos.current ? initialCamPos.current.y : cameraState.y,
-        z: initialCamPos.current ? initialCamPos.current.z : cameraState.z,
-        rotation: cameraState.rotation,
-        type: cameraState.type
-      }}
-    >
-      <SGLiveCamera {...{
-          cameraRef,
-          aspectRatio,
-          activeCamera,
-          setDefaultCamera,
-          audioListener,
-          ...cameraState
-        }} 
-      />
+  useMemo(
+    () => hmdCamera.current && setDefaultCamera(hmdCamera.current),
+    [hmdCamera.current]
+  )
 
+  // initialize behind the camera
+  const cameraOrigin = useMemo(() => {
+    let { x, y, z, rotation } = sceneObjects[activeCamera]
+
+    let behindCam = {
+      x: Math.sin(rotation),
+      y: Math.cos(rotation)
+    }
+
+    return {
+      x: x + behindCam.x,
+      y: z,
+      z: y + behindCam.y
+    }
+  }, [])
+
+  // yOverride matches worldScale
+  const yOverride = useMemo(() => {
+    worldScale !== 1
+      ? -0.75
+      : 0
+  }, [worldScale])
+
+  let activeCameraComponent = (
+    // "body"/container/platform for the HMD, with position offset
+    <group
+      ref={hmdCameraGroup}
+      position={
+        new THREE.Vector3(
+          cameraOrigin.x,
+          cameraOrigin.y + yOverride,
+          cameraOrigin.z
+        )
+      }
+    >
+      // "head"/P.O.V. moved automatically by HMD motion
+      <perspectiveCamera
+        ref={hmdCamera}
+      >
+        // listener is attached to the "head"
+        <primitive object={audioListener} />
+      </perspectiveCamera>
+
+      // controllers are attached to the "body"
       {vrControllers.map((object, n) => {
         const handedness = object.getHandedness()
         const flipModel = handedness === 'right'
@@ -1332,7 +1361,7 @@ const SceneContent = ({
             </SGVirtualCamera>
           )
         case 'character':
-          const hmdCam = cameraRef.current
+          const hmdCam = hmdCamera.current
           return (
             <SGCharacter
               key={i}
@@ -1561,7 +1590,10 @@ const SceneManagerXR = connect(
             }
           }>LOADING …</div>
         }
-        <Canvas vr style={{ visibility: 'hidden' }}>
+        <Canvas
+          vr
+          updateDefaultCamera={false}
+          style={{ visibility: 'hidden' }}>
           {
             hasLoadedOnce && <XRStartButton />
           }
