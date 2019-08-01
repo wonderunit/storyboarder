@@ -1,6 +1,6 @@
 const { useMemo } = React = require('react')
 
-const SGCamera = ({
+const SGLiveCamera = ({
   cameraRef,
   aspectRatio,
   activeCamera,
@@ -22,7 +22,7 @@ const SGCamera = ({
   useMemo(() => {
     if (cameraRef.current) {
       if (activeCamera === props.id) {
-        console.log('SGCamera: setDefaultCamera to', props.id)
+        console.log('SGLiveCamera: setDefaultCamera to', props.id)
         setDefaultCamera(cameraRef.current)
       }
     }
@@ -47,4 +47,4 @@ const SGCamera = ({
   </perspectiveCamera>
 }
 
-module.exports = SGCamera
+module.exports = SGLiveCamera

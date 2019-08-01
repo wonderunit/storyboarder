@@ -34,7 +34,7 @@ const { WEBVR } = require('../../vendor/three/examples/js/vr/WebVR')
 
 const SGWorld = require('./components/SGWorld')
 const SGSpotLight = require('./components/SGSpotLight')
-const SGCamera = require('./components/SGCamera')
+const SGLiveCamera = require('./components/SGLiveCamera')
 const SGVirtualCamera = require('./components/SGVirtualCamera')
 const SGModel = require('./components/SGModel')
 const SGController = require('./components/SGController')
@@ -1262,7 +1262,7 @@ const SceneContent = ({
         type: cameraState.type
       }}
     >
-      <SGCamera {...{
+      <SGLiveCamera {...{
           cameraRef,
           aspectRatio,
           activeCamera,
