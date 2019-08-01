@@ -1,30 +1,35 @@
-const { useUpdate } = require('react-three-fiber')
-const { useEffect } = React = require('react')
+const { useMemo } = React = require('react')
 
-const SGCamera = ({ aspectRatio, activeCamera, setDefaultCamera, audioListener, ...props }) => {
-  const ref = useUpdate(
-    self => {
-      self.rotation.x = 0
-      self.rotation.z = 0
-      self.rotation.y = props.rotation
+const SGCamera = ({
+  cameraRef,
+  aspectRatio,
+  activeCamera,
+  setDefaultCamera,
+  audioListener,
+  ...props
+}) => {
+  useMemo(() => {
+    if (cameraRef.current) {
+      cameraRef.current.rotation.x = 0
+      cameraRef.current.rotation.z = 0
+      cameraRef.current.rotation.y = props.rotation
 
-      self.rotateX(props.tilt)
-      self.rotateZ(props.roll)
-    },
-    [props.rotation, props.tilt, props.roll]
-  )
+      cameraRef.current.rotateX(props.tilt)
+      cameraRef.current.rotateZ(props.roll)
+    }
+  }, [cameraRef.current, props.rotation, props.tilt, props.roll])
 
-  useEffect(() => {
-    if (ref.current) {
+  useMemo(() => {
+    if (cameraRef.current) {
       if (activeCamera === props.id) {
-        setDefaultCamera(ref.current)
         console.log('SGCamera: setDefaultCamera to', props.id)
+        setDefaultCamera(cameraRef.current)
       }
     }
-  }, [])
+  }, [cameraRef.current])
 
   return <perspectiveCamera
-    ref={ref}
+    ref={cameraRef}
 
     userData={{
       type: props.type,
@@ -35,8 +40,6 @@ const SGCamera = ({ aspectRatio, activeCamera, setDefaultCamera, audioListener, 
     fov={props.fov}
     near={0.01}
     far={1000}
-
-    // position={[ props.x, props.z, props.y ]}
 
     onUpdate={self => self.updateProjectionMatrix()}
   >

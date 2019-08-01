@@ -164,6 +164,8 @@ const SceneContent = ({
   const [selectorOffset, setSelectorOffset] = useState(0)
   const [teleportMode, setTeleportMode] = useState(false)
 
+  const cameraRef = useRef()
+
   const worldScaleRef = useRef(0.1)
   const worldScaleGroupRef = useRef(null)
   const teleportLocRef = useRef(null)
@@ -557,7 +559,7 @@ const SceneContent = ({
   const onAddObject = mode => {
     const id = THREE.Math.generateUUID()
 
-    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    const hmdCam = cameraRef.current
     let offsetVector
     if (mode == 'camera') {
       offsetVector = new THREE.Vector3(0, 0, -1)
@@ -773,7 +775,7 @@ const SceneContent = ({
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
     const { x, y } = xrOffset.current.userData
-    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    const hmdCam = cameraRef.current
     const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
 
     if (event.axes[1] > 0.075) {
@@ -863,7 +865,7 @@ const SceneContent = ({
       setWorldScale(oldValue => {
         return oldValue === 1 ? worldScaleRef.current : 1
       })
-      const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+      const hmdCam = cameraRef.current
       const teleport =
         worldScale !== 1
           ? new THREE.Vector3(cameraState.x, cameraState.z, cameraState.y)
@@ -1129,7 +1131,7 @@ const SceneContent = ({
   }, [])
 
   useEffect(() => {
-    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    const hmdCam = cameraRef.current
     if (worldScale !== 1) {
       xrOffset.current.position.y = -(hmdCam.position.y - 0.75)
     } else {
@@ -1260,7 +1262,15 @@ const SceneContent = ({
         type: cameraState.type
       }}
     >
-      <SGCamera {...{ aspectRatio, activeCamera, setDefaultCamera, audioListener, ...cameraState }} />
+      <SGCamera {...{
+          cameraRef,
+          aspectRatio,
+          activeCamera,
+          setDefaultCamera,
+          audioListener,
+          ...cameraState
+        }} 
+      />
 
       {vrControllers.map((object, n) => {
         const handedness = object.getHandedness()
@@ -1322,7 +1332,7 @@ const SceneContent = ({
             </SGVirtualCamera>
           )
         case 'character':
-          const hmdCam = xrOffset.current ? xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0] : null
+          const hmdCam = cameraRef.current
           return (
             <SGCharacter
               key={i}
