@@ -11,9 +11,10 @@ class GPUPickerHelper
         this.pickedObjectSaveColor = 0;
         this.selectableObjects = {};
         this.selectedColor = new THREE.Color(0.2, 0.2, 0.2);
+        this.renderTarget = new THREE.WebGLRenderTarget(0, 0);
     }
     
-    pick(cssPosition, scene, camera, renderer)
+    pick(cssPosition, scene, camera, renderer, wall)
     {
         const {pickingTexture, pixelBuffer} = this;
    
@@ -25,21 +26,28 @@ class GPUPickerHelper
         let vrEnabled = renderer.vr.enabled;
         renderer.vr.enabled = vrEnabled ? false : false;
         const pixelRatio = renderer.getPixelRatio();
+
         camera.setViewOffset(
             renderer.domElement.width,
             renderer.domElement.height,
             cssPosition.x * pixelRatio | 0,
             cssPosition.y * pixelRatio | 0,
             1,
-            1
-        );
+            1);
+
         renderer.setRenderTarget(pickingTexture);
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         camera.clearViewOffset();
-        console.log(scene);
+        if(wall)
+        {
+            this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
+            renderer.setRenderTarget(this.renderTarget);
+            renderer.render(scene, camera);
+            renderer.setRenderTarget(null);
+            wall.material.map = this.renderTarget.texture;
+        }
         renderer.vr.enabled = vrEnabled ? true : false;
-        renderer.render(scene, camera);
         renderer.readRenderTargetPixels(
             pickingTexture,
             0, 

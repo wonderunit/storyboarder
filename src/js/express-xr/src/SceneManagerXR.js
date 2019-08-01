@@ -161,6 +161,7 @@ const SceneContent = ({
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
   const selectionCamera = useRef(null);
+ /*  const wall = useRef(null); */
 
   const gpuPicker = useRef(new GPUPicker());
   
@@ -317,13 +318,25 @@ const SceneContent = ({
       selectionCamera.current.updateMatrixWorld(true);
     }
 
+  /*   if(!wall.current)
+    {
+      let geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );
+      let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
+        emissive: 0x0,
+        flatShading: false } );
+      let mesh = new THREE.Mesh( geometry, material );
+      scene.add(mesh);
+      mesh.position.y = mesh.position.y + 5;
+      wall.current = mesh;
+    } */
+ 
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(scene);
     
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
 
-    gpuPicker.current.pick(selectCamera);
+    gpuPicker.current.pick(selectCamera/* , wall.current */);
 
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);

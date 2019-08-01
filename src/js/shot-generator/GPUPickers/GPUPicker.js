@@ -1,6 +1,6 @@
 const THREE = require('three');
 const GPUPickerHelper = require("./GPUPickerHelper");
-//const SkeletonUtilities = require("../../vendor/three/examples/js/utils/SkeletonUtils");
+const SkeletonUtils = require("../IK/utils/SkeletonUtils");
 require("../IK/utils/Object3dExtension");
 class GPUPicker
 {
@@ -13,6 +13,7 @@ class GPUPicker
         this.isInitialized = false;
         this.childrenSetted = false;
         this.idBonus = 3000;
+        this.vrModeEnabled = false;
     }
 
     initialize(scene, renderer)
@@ -24,6 +25,7 @@ class GPUPicker
         this.pickingScene.background = new THREE.Color(0);
         this.children = scene.children;
         this.renderer = renderer;
+        this.vrModeEnabled = renderer.vr.enabled;
         this.isInitialized = true;
     }
 
@@ -56,22 +58,31 @@ class GPUPicker
             let node = new THREE.Object3D();
             if(object.type === "SkinnedMesh")
             {
-               //pickingMaterial.defines = {USE_SKINNING: true};
-               console.log(object);
-               let parent = object.parent;
-               let userData = parent.userData;
-               parent.userData = [];
-               node = THREE.SkeletonUtils.clone(parent);
-               parent.userData = userData;
-               pickingCube = node.children[1];
-               pickingCube.material = pickingMaterial;
-               pickingCube.matrixWorldNeedsUpdate = true;
-               pickingCube.updateMatrixWorld(true);
-               node.type = "character";
-               //pickingCube.bind(pickingCube.skeleton, pickingCube.matrixWorld);
-               node.children[0].rotateX(1.5708);
-               node.children[0].updateMatrixWorld(true);
-              //console.log(node);
+                let parent = null;
+                if(this.vrModeEnabled)
+                {
+                    parent = object.parent.parent;
+                }
+                else
+                {
+                    parent = object.parent;
+                }
+                let userData = parent.userData;
+                parent.userData = [];
+                node = SkeletonUtils.clone(parent);
+                parent.userData = userData;
+                if(this.vrModeEnabled)
+                {
+                    pickingCube = node.children[0].children[0];
+                }
+                else
+                {
+                    pickingCube = node.children[1];
+                }
+                pickingCube.material = pickingMaterial;
+                pickingCube.matrixWorldNeedsUpdate = true;
+                pickingCube.updateMatrixWorld(true);
+                node.type = "character";
             }
             else
             {
@@ -103,62 +114,52 @@ class GPUPicker
         this.pickingPosition.y = y;
     }
 
-    pick(camera)
+    pick(camera, wall)
     {
-        //this.setUpSkinnedMesh();
-        this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer);
-        //this.returnedBackSkinnedMesh();
-    }
-
-    setUpSkinnedMesh()
-    {
-        for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
-        {
-            let child = this.pickingScene.children[i].children[0];
-            if(child.type == "SkinnedMesh")
-            {
-                child.add(this.gpuPickerHelper.selectableObjects[child.pickerId].skeleton.bones[0]);
-                child.bind(child.skeleton);
-            }
-        }
-    }
-
-    returnedBackSkinnedMesh()
-    {
-        for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
-        {
-            let child = this.pickingScene.children[i].children[0];
-            if(child.type == "SkinnedMesh")
-            {
-                console.log(this.gpuPickerHelper.selectableObjects[child.pickerId]);
-                this.gpuPickerHelper.selectableObjects[child.pickerId].parent.add(child.skeleton.bones[0]);
-                this.gpuPickerHelper.selectableObjects[child.pickerId].bind(this.gpuPickerHelper.selectableObjects[child.pickerId].skeleton);
-            }
-        }
+        this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, wall);
     }
 
     updateObject()
     {
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
-            let clonnedObject = this.pickingScene.children[i];
-            let originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus] : this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent;
+            let clonnedObject = null;
+            let originalObject = null;
+            if(this.vrModeEnabled)
+            {
+                clonnedObject = this.pickingScene.children[i];
+                originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus] : this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent.parent;
+            }
+            else
+            {
+                clonnedObject = this.pickingScene.children[i];
+                originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus] : this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent;
+            }
+     /*        console.log(clonnedObject);
+            console.log(originalObject); */
             clonnedObject.position.copy(originalObject.worldPosition());
             clonnedObject.quaternion.copy(originalObject.worldQuaternion());
             clonnedObject.scale.copy(originalObject.worldScale());
-            clonnedObject.updateMatrix();
             clonnedObject.updateMatrixWorld(true);
             if(clonnedObject.type === "character")
             {
-                let clonnedSkinnedMesh = clonnedObject.children.find(child => child.type === "SkinnedMesh");
-                let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[i + this.idBonus];//.parent.children.find(child => child.type === "SkinnedMesh");
-                //child.bind(child.skeleton);
-                let originalRootBone = originalSkinnedMesh.skeleton.bones[0];
-                let clonnedRootBone = clonnedSkinnedMesh.skeleton.bones[0];
-                this.updateSkeletonBone(clonnedRootBone, originalRootBone);
-                clonnedRootBone.updateMatrixWorld(true);
+                let clonnedSkinnedMesh = null;
+                if(this.vrModeEnabled)
+                {
+                    clonnedSkinnedMesh = clonnedObject.children[0].children.find(child => child.type === "SkinnedMesh");
+                }
+                else
+                {
+                    clonnedSkinnedMesh = clonnedObject.children.find(child => child.type === "SkinnedMesh");
+                }
+                let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[i + this.idBonus];
                 console.log(clonnedSkinnedMesh);
                 console.log(originalSkinnedMesh);
+                let originalRootBone = originalSkinnedMesh.skeleton.bones[0];
+                let clonnedRootBone = clonnedSkinnedMesh.skeleton.bones[0];
+           
+                this.updateSkeletonBone(clonnedRootBone, originalRootBone);
+                clonnedRootBone.updateMatrixWorld(true);
             }
         }
     }
@@ -168,8 +169,7 @@ class GPUPicker
         cloneBone.position.copy(originalBone.position);
         cloneBone.quaternion.copy(originalBone.quaternion);
         cloneBone.scale.copy(originalBone.scale);
-        //cloneBone.rotateX(1.5708);
-        for(let i = 0, n = originalBone.children.length; i < n; i++)
+        for(let i = 0, n = cloneBone.children.length; i < n; i++)
         {   
             this.updateSkeletonBone(cloneBone.children[i], originalBone.children[i]);
         }
