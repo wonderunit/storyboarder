@@ -19,8 +19,8 @@ const GUI = ({
   worldScaleGroupRef,
   aspectRatio,
   poses,
-  characters,
-  objects,
+  characterModels,
+  objectModels,
   poseTextures,
   objectTextures,
   characterTextures,
@@ -57,8 +57,8 @@ const GUI = ({
   }
 
   const poseVisibleAmount = poses.slice(selectorOffset * 4, selectorOffset * 4 + 16)
-  const characterVisibleAmount = characters.slice(selectorOffset * 4, selectorOffset * 4 + 16)
-  const objectVisibleAmount = objects.slice(selectorOffset * 4, selectorOffset * 4 + 16)
+  const characterVisibleAmount = characterModels.slice(selectorOffset * 4, selectorOffset * 4 + 16)
+  const objectVisibleAmount = objectModels.slice(selectorOffset * 4, selectorOffset * 4 + 16)
   // console.log(camSettings)
 
   // const fovLabel = useMemo(() => {
@@ -490,7 +490,7 @@ const GUI = ({
                     position={[
                       uiScale * selectorScale + bWidth * 0.75,
                       (-(uiScale * 2) / 8 + uiScale) * selectorScale -
-                        ((uiScale * 6) / 4 / (Math.ceil(characters.length / 4) - 4)) * selectorOffset * selectorScale,
+                        ((uiScale * 6) / 4 / (Math.ceil(characterModels.length / 4) - 4)) * selectorOffset * selectorScale,
                       0
                     ]}
                   >
@@ -517,7 +517,7 @@ const GUI = ({
                         <GUIElement
                           {...{
                             icon: texture,
-                            name: `selector-character_${characters[idx + selectorOffset * 4].id}`,
+                            name: `selector-character_${characterModels[idx + selectorOffset * 4].id}`,
                             width: uiScale * 1 * selectorScale,
                             height: uiScale * 1 * selectorScale,
                             radius: bWidth,
@@ -566,7 +566,7 @@ const GUI = ({
                     position={[
                       uiScale * selectorScale + bWidth * 0.75,
                       (-(uiScale * 2) / 8 + uiScale) * selectorScale -
-                        ((uiScale * 6) / 4 / (Math.ceil(objects.length / 4) - 4)) * selectorOffset * selectorScale,
+                        ((uiScale * 6) / 4 / (Math.ceil(objectModels.length / 4) - 4)) * selectorOffset * selectorScale,
                       0
                     ]}
                   >
@@ -593,7 +593,7 @@ const GUI = ({
                         <GUIElement
                           {...{
                             icon: texture,
-                            name: `selector-object_${objects[idx + selectorOffset * 4].id}`,
+                            name: `selector-object_${objectModels[idx + selectorOffset * 4].id}`,
                             width: uiScale * 0.5 * selectorScale,
                             height: uiScale * 0.5 * selectorScale,
                             radius: bWidth,

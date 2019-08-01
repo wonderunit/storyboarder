@@ -1194,11 +1194,11 @@ const SceneContent = ({
       .sort(comparePresetPriority)
   }, [presets.poses])
 
-  const characters = useMemo(() => {
+  const characterModels = useMemo(() => {
     return Object.values(models).filter(model => model.type === 'character')
   }, [models])
 
-  const objects = useMemo(() => {
+  const objectModels = useMemo(() => {
     return Object.values(models).filter(model => model.type === 'object')
   }, [models])
 
@@ -1214,7 +1214,7 @@ const SceneContent = ({
 
   const objectTextures = useMemo(() => {
     const textureArray = []
-    objects.forEach((model, id) => {
+    objectModels.forEach((model, id) => {
       const texture = new THREE.TextureLoader().load(`/data/system/objects/${model.id}.jpg`)
       textureArray[id] = texture
     })
@@ -1224,7 +1224,7 @@ const SceneContent = ({
 
   const characterTextures = useMemo(() => {
     const textureArray = []
-    characters.forEach((model, id) => {
+    characterModels.forEach((model, id) => {
       const texture = new THREE.TextureLoader().load(`/data/system/dummies/gltf/${model.id}.jpg`)
       textureArray[id] = texture
     })
@@ -1261,8 +1261,8 @@ const SceneContent = ({
                   worldScaleGroupRef,
                   aspectRatio,
                   poses,
-                  characters,
-                  objects,
+                  characterModels,
+                  objectModels,
                   poseTextures,
                   objectTextures,
                   characterTextures,
