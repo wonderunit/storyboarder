@@ -322,19 +322,19 @@ const GUI = ({
   useRender(updateSliders, false, [vrControllers])
 
   useRender(() => {
-      if (rStatsRef.current) {
-        // Update XR FPS Counter every 1 second
-        if (!previousTime.current) previousTime.current = 0
+    if (rStatsRef.current) {
+      // Update XR FPS Counter every 1 second
+      if (!previousTime.current) previousTime.current = 0
 
-        const currentTime = Date.now()
-        const delta = currentTime - previousTime.current
+      const currentTime = Date.now()
+      const delta = currentTime - previousTime.current
 
-        if (delta > 1000) {
-          previousTime.current = currentTime
-          setFPS(parseInt(rStatsRef.current('FPS').value()))
-        }
+      if (delta > 1000) {
+        previousTime.current = currentTime
+        setFPS(parseInt(rStatsRef.current('FPS').value()))
       }
-    }, false, [rStatsRef.current])
+    }
+  }, false, [rStatsRef.current])
 
   useEffect(() => {
     if (selectorOffset === 0) return
