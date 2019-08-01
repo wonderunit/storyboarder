@@ -1,5 +1,6 @@
 const THREE = require('three');
 const GPUPickerHelper = require("./GPUPickerHelper");
+//const SkeletonUtilities = require("../../vendor/three/examples/js/utils/SkeletonUtils");
 require("../IK/utils/Object3dExtension");
 class GPUPicker
 {
@@ -44,44 +45,49 @@ class GPUPicker
             const pickingMaterial = new THREE.MeshToonMaterial({
                 emissive: new THREE.Color(id),
                 color: new THREE.Color(0, 0, 0),
-                specular: new THREE.Color(0, 0, 0),
-                transparent: true,
-                side: THREE.DoubleSide,
-                alphaTest: 0.5,
-                blending: THREE.NoBlending,
-                
+                specular: 0x0,
+                skinning: true,
+                shininess: 0,
+                flatShading: false,
+                morphNormals: true,
+                morphTargets: true
               });
             let pickingCube = null;
+            let node = new THREE.Object3D();
             if(object.type === "SkinnedMesh")
             {
-                //let userData = object.userData;
-                //object.userData = [];
-                //pickingCube = THREE.SkeletonUtils.clone(object);//new THREE.SkinnedMesh(object.geometry.clone(), pickingMaterial);
-                //object.userData = userData;
-                //pickingCube.material = pickingMaterial;
-                ////let skeleton = new THREE.Skeleton( object.skeleton.bones );
-                ////pickingCube.bindMode = "detached";
-                ////object.bindMode = "detached";
-                ////object.bind(object.skeleton);
-                ////let rootBone = pickingCube.skeleton.bones[ 0 ];
-                ////pickingCube.add( rootBone );
-                ////pickingCube.bind( pickingCube.skeleton);
-                ////pickingCube.skeleton.bones = object.skeleton.bones;
-                ////console.log(object);
-                ////console.log(pickingCube);
-                //console.log(pickingCube);
-                //console.log(object);
+               //pickingMaterial.defines = {USE_SKINNING: true};
+               console.log(object);
+               let parent = object.parent;
+               let userData = parent.userData;
+               parent.userData = [];
+               node = THREE.SkeletonUtils.clone(parent);
+               parent.userData = userData;
+               pickingCube = node.children[1];
+               pickingCube.material = pickingMaterial;
+               pickingCube.matrixWorldNeedsUpdate = true;
+               pickingCube.updateMatrixWorld(true);
+               node.type = "character";
+               //pickingCube.bind(pickingCube.skeleton, pickingCube.matrixWorld);
+               node.children[0].rotateX(1.5708);
+               node.children[0].updateMatrixWorld(true);
+              //console.log(node);
             }
             else
             {
+                pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
+
+                pickingCube.position.copy(object.worldPosition());
+                pickingCube.quaternion.copy(object.worldQuaternion());
+                pickingCube.scale.copy(object.worldScale());
+                pickingCube.updateMatrix();
+                pickingCube.updateMatrixWorld(true);
+                node.type = "object"
+                node.add(pickingCube);
             }
-            pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
-            this.pickingScene.add(pickingCube);
-            pickingCube.position.copy(object.worldPosition());
-            pickingCube.quaternion.copy(object.worldQuaternion());
-            pickingCube.scale.copy(object.worldScale());
-            pickingCube.updateMatrix();
-            object.updateMatrixWorld(true);
+            this.pickingScene.add(node);
+            pickingCube.pickerId = id;
+       
         }
         this.childrenSetted = this.pickingScene.children.length === 0 ? false : true;
     }
@@ -99,26 +105,60 @@ class GPUPicker
 
     pick(camera)
     {
+        //this.setUpSkinnedMesh();
         this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer);
+        //this.returnedBackSkinnedMesh();
+    }
+
+    setUpSkinnedMesh()
+    {
+        for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
+        {
+            let child = this.pickingScene.children[i].children[0];
+            if(child.type == "SkinnedMesh")
+            {
+                child.add(this.gpuPickerHelper.selectableObjects[child.pickerId].skeleton.bones[0]);
+                child.bind(child.skeleton);
+            }
+        }
+    }
+
+    returnedBackSkinnedMesh()
+    {
+        for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
+        {
+            let child = this.pickingScene.children[i].children[0];
+            if(child.type == "SkinnedMesh")
+            {
+                console.log(this.gpuPickerHelper.selectableObjects[child.pickerId]);
+                this.gpuPickerHelper.selectableObjects[child.pickerId].parent.add(child.skeleton.bones[0]);
+                this.gpuPickerHelper.selectableObjects[child.pickerId].bind(this.gpuPickerHelper.selectableObjects[child.pickerId].skeleton);
+            }
+        }
     }
 
     updateObject()
     {
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
-            let child = this.pickingScene.children[i];
-            let object = this.gpuPickerHelper.selectableObjects[i + this.idBonus];
-            child.position.copy(object.worldPosition());
-            child.quaternion.copy(object.worldQuaternion());
-            child.scale.copy(object.worldScale());
-            child.updateMatrix();
-            child.updateMatrixWorld(true);
-            if(child.type === "SkinnedMesh")
+            let clonnedObject = this.pickingScene.children[i];
+            let originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus] : this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent;
+            clonnedObject.position.copy(originalObject.worldPosition());
+            clonnedObject.quaternion.copy(originalObject.worldQuaternion());
+            clonnedObject.scale.copy(originalObject.worldScale());
+            clonnedObject.updateMatrix();
+            clonnedObject.updateMatrixWorld(true);
+            if(clonnedObject.type === "character")
             {
-                let originalRootBone = object.skeleton.bones[0];
-                let clonnedRootBone = child.skeleton.bones[0];
-                //this.updateSkeletonBone(clonnedRootBone, originalRootBone);
+                let clonnedSkinnedMesh = clonnedObject.children.find(child => child.type === "SkinnedMesh");
+                let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[i + this.idBonus];//.parent.children.find(child => child.type === "SkinnedMesh");
+                //child.bind(child.skeleton);
+                let originalRootBone = originalSkinnedMesh.skeleton.bones[0];
+                let clonnedRootBone = clonnedSkinnedMesh.skeleton.bones[0];
+                this.updateSkeletonBone(clonnedRootBone, originalRootBone);
                 clonnedRootBone.updateMatrixWorld(true);
+                console.log(clonnedSkinnedMesh);
+                console.log(originalSkinnedMesh);
             }
         }
     }
@@ -128,6 +168,7 @@ class GPUPicker
         cloneBone.position.copy(originalBone.position);
         cloneBone.quaternion.copy(originalBone.quaternion);
         cloneBone.scale.copy(originalBone.scale);
+        //cloneBone.rotateX(1.5708);
         for(let i = 0, n = originalBone.children.length; i < n; i++)
         {   
             this.updateSkeletonBone(cloneBone.children[i], originalBone.children[i]);

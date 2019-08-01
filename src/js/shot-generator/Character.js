@@ -2,6 +2,7 @@
 const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
 const BoneRotationControl = require("./IK/objects/BoneRotationControl")
 const {AddTransformationControl, createTransformationControls} = require("./IK/utils/IkUtils");
+require("./IK/utils/Object3dExtension");
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -80,7 +81,8 @@ const cloneGltf = (gltf) => {
       const cloneBone = cloneBones[skeleton.bones[i].name];
       orderedCloneBones.push(cloneBone);
     }
-
+    //cloneSkinnedMesh.bindMode = 'detached';
+    //cloneSkinnedMesh.rotateX(THREE.Math.PI / 2);
     cloneSkinnedMesh.bind(
         new THREE.Skeleton(orderedCloneBones, skeleton.boneInverses),
         cloneSkinnedMesh.matrixWorld);
@@ -122,10 +124,12 @@ const characterFactory = data => {
     return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
 
+  console.log(mesh);
+  
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
   if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
     armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
-
+    
     if (armatures.length === 0) {  //specifically adult-female - bone structure is inside the skinned mesh
       armatures = mesh.children[0].children.filter(child => child instanceof THREE.Bone)
     }
@@ -140,7 +144,6 @@ const characterFactory = data => {
     parentPosition = armatures[0].position.clone()
     boneLengthScale = 100
   }
-
   skeleton = mesh.skeleton
 
   if (mesh.material.map) {
@@ -293,12 +296,10 @@ const Character = React.memo(({
           z : rotation.z,
         }  
       } );}); 
-      console.log(mesh.name);
       if(!(mesh.name === "female-adult-meso" || mesh.name === "adult-male-lod"
       || mesh.name === "male-adult-meso" || mesh.name === "female-youth-meso"
       || mesh.name === "female-youth-meso"))
       {
-        console.log("custom model");
         return;
       }
       ragDoll.current = new RagDoll();

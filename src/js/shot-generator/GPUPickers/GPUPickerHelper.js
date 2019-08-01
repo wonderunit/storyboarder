@@ -22,7 +22,8 @@ class GPUPickerHelper
             this.pickedObject.material.color = this.pickedObjectSaveColor;
             this.pickedObject = undefined;
         }
-        renderer.vr.enabled = false;
+        let vrEnabled = renderer.vr.enabled;
+        renderer.vr.enabled = vrEnabled ? false : false;
         const pixelRatio = renderer.getPixelRatio();
         camera.setViewOffset(
             renderer.domElement.width,
@@ -36,8 +37,9 @@ class GPUPickerHelper
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         camera.clearViewOffset();
-
-        renderer.vr.enabled = true;
+        console.log(scene);
+        renderer.vr.enabled = vrEnabled ? true : false;
+        renderer.render(scene, camera);
         renderer.readRenderTargetPixels(
             pickingTexture,
             0, 
@@ -57,8 +59,7 @@ class GPUPickerHelper
             this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
             this.pickedObject.material.color =  this.selectedColor;
         }
-       
+        console.log(this.selectableObjects);
     }
-
 }
 module.exports = GPUPickerHelper;
