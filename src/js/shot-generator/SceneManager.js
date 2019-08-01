@@ -1,6 +1,6 @@
 const { Provider, connect } = require('react-redux')
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const h = require('../utils/h')
 
@@ -95,7 +95,7 @@ const SceneManager = connect(
 
     let clock = useRef(new THREE.Clock())
 
-    useEffect(() => {
+    useMemo(() => {
       console.log('new SceneManager')
 
       scene.background = new THREE.Color(world.backgroundColor)
@@ -140,7 +140,7 @@ const SceneManager = connect(
       }
     }, [])
 
-    useEffect(() => {
+    useMemo(() => {
       largeRenderer.current = new THREE.WebGLRenderer({
         canvas: largeCanvasRef.current,
         antialias: true
@@ -165,7 +165,7 @@ const SceneManager = connect(
 
     // resize the renderers (large and small)
     // FIXME this is running _after_ the animation frame, causing a visible jump
-    useEffect(() => {
+    useMemo(() => {
 
       //seems this is called a bit often, see later about reducing hooks
 
@@ -445,7 +445,7 @@ const SceneManager = connect(
 
     }, [selections, sceneObjects])
 
-    useEffect(() => {
+    useMemo(() => {
       if (camera && cameraControlsView.current) {
         if (mainViewCamera === 'ortho') {
           cameraControlsView.current.enabled = false
