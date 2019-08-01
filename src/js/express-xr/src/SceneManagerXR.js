@@ -1257,40 +1257,38 @@ const SceneContent = ({
     [hmdCamera.current]
   )
 
-  // initialize behind the camera
-  const cameraOrigin = useMemo(() => {
-    let { x, y, z, rotation } = sceneObjects[activeCamera]
+  // initialize behind the camera, on the floor
+  useMemo(() => {
+    let { x, y, rotation } = sceneObjects[activeCamera]
 
     let behindCam = {
       x: Math.sin(rotation),
       y: Math.cos(rotation)
     }
 
-    return {
-      x: x + behindCam.x,
-      y: z,
-      z: y + behindCam.y
-    }
+    setTeleportPos(
+      new THREE.Vector3(
+        x + behindCam.x,
+        0,
+        y + behindCam.y
+      )
+    )
   }, [])
 
+  // TODO
   // yOverride matches worldScale
   const yOverride = useMemo(() => {
     worldScale !== 1
       ? -0.75
       : 0
   }, [worldScale])
+  // .add([0, yOverride, 0])
 
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
     <group
       ref={hmdCameraGroup}
-      position={
-        new THREE.Vector3(
-          cameraOrigin.x,
-          cameraOrigin.y + yOverride,
-          cameraOrigin.z
-        )
-      }
+      position={teleportPos}
       rotation={[0, (Math.PI / 4) * camExtraRot, 0]}
     >
       // "head"/P.O.V. moved automatically by HMD motion
