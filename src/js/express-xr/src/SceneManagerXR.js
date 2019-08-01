@@ -745,7 +745,7 @@ const SceneContent = ({
           })()
 
           const limit = Math.max(Math.ceil(count / 4) - 4, 0)
-          newValue = Math.min(newValue, limit)          
+          newValue = Math.min(newValue, limit)
           return newValue
         })
       }
@@ -757,7 +757,7 @@ const SceneContent = ({
       if (!selected) selected = controller.userData.selected ? controller : false
     })
 
-    if (selected) {    
+    if (selected) {
       moveObject(event, selected, worldScale)
       rotateObject(event, selected)
     } else {
