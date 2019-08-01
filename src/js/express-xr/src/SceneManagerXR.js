@@ -128,6 +128,7 @@ const SceneContent = ({
   undo,
   redo
 }) => {
+  const teleportMaxDist = 10
   const rStatsRef = useRef(null)
   const xrOffset = useRef(null)
 
@@ -146,15 +147,16 @@ const SceneContent = ({
   const [hideArray, setHideArray] = useState([])
   const [worldScale, setWorldScale] = useState(1)
   const [selectorOffset, setSelectorOffset] = useState(0)
+  const [teleportMode, setTeleportMode] = useState(false)
 
   const worldScaleRef = useRef(0.1)
   const worldScaleGroupRef = useRef(null)
+  const teleportLocRef = useRef(null)
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const intersectArray = useRef([])
   const guiArray = useRef([])
   const teleportArray = useRef([])
-  const teleportMode = useRef(false)
   const initialCamPos = useRef()
   const hmdCamInitialized = useRef(false)
   const previousTime = useRef([null])
@@ -226,7 +228,7 @@ const SceneContent = ({
     var controller = event.target
     const intersect = intersectObjects(controller, teleportArray.current)
 
-    if (intersect && intersect.distance < 10) {
+    if (intersect && intersect.distance < teleportMaxDist) {
       // console.log('try to teleport')
       vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
@@ -278,7 +280,7 @@ const SceneContent = ({
     const controller = event.target
     controller.pressed = true
 
-    if (teleportMode.current) {
+    if (teleportMode) {
       onTeleport(event)
       return
     }
@@ -834,13 +836,15 @@ const SceneContent = ({
   }
 
   const onGripDown = event => {
-    teleportMode.current = true
+    setTeleportMode(true)
 
     const controller = event.target
     controller.gripped = true
 
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (!selectedObjRef.current && otherController && otherController.gripped) {
+      setTeleportMode(false)
+
       setWorldScale(oldValue => {
         return oldValue === 1 ? worldScaleRef.current : 1
       })
@@ -892,7 +896,7 @@ const SceneContent = ({
   }
 
   const onGripUp = event => {
-    teleportMode.current = false
+    setTeleportMode(false)
 
     const controller = event.target
     controller.gripped = false
@@ -991,8 +995,8 @@ const SceneContent = ({
       }
 
       const handedness = controller.getHandedness()
+      const otherController = vrControllers[1 - i]
       if (handedness === (flipHand ? 'right' : 'left')) {
-        const otherController = vrControllers[1 - i]
         if (otherController && !otherController.pressed && !controller.userData.selected) {
           const intersections = getIntersections(controller, guiArray.current)
           if (intersections.length > 0) {
@@ -1013,6 +1017,17 @@ const SceneContent = ({
         if (object && object.userData.type === 'object' && controller.gripped) {
           if (object.parent.uuid === controller.uuid) snapObjectRotation(object, controller)
           else constraintObjectRotation(controller, worldScale)
+        }
+      }
+
+      if (controller.gripped) {
+        if (!teleportLocRef.current) return
+        const intersect = intersectObjects(controller, teleportArray.current)
+        if (intersect && intersect.distance < teleportMaxDist) {
+          teleportLocRef.current.position.copy(intersect.point)
+          teleportLocRef.current.material.visible = true
+        } else {
+          teleportLocRef.current.material.visible = false
         }
       }
 
@@ -1244,6 +1259,7 @@ const SceneContent = ({
     })
     .filter(Boolean)
 
+  const teleportTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/teleport.png'), [])
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
   const wallTexture = useMemo(
     () =>
@@ -1281,6 +1297,22 @@ const SceneContent = ({
         <planeGeometry attach="geometry" args={[100, 100]} />
         <meshBasicMaterial attach="material" visible={false} />
       </mesh>
+      <group position={[0, 0.5 * worldScale, 0]}>
+        <mesh ref={teleportLocRef} userData={{ type: 'teleportLocator' }} visible={teleportMode}>
+          <cylinderGeometry attach="geometry" args={[0.5 * worldScale, 0.5 * worldScale, 1 * worldScale, 32, 1, true]} />
+          <meshBasicMaterial
+            attach="material"
+            opacity={0.25}
+            color={0x7a72e9}
+            transparent={true}
+            depthTest={false}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          >
+            <primitive attach="map" object={teleportTexture} />
+          </meshBasicMaterial>
+        </mesh>
+      </group>
     </>
   )
 }
