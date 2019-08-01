@@ -318,7 +318,7 @@ const SceneContent = ({
       selectionCamera.current.updateMatrixWorld(true);
     }
 
-   /*  if(!wall.current)
+    if(!wall.current)
     {
       let geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );
       let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
@@ -328,7 +328,7 @@ const SceneContent = ({
       scene.add(mesh);
       mesh.position.y = mesh.position.y + 5;
       wall.current = mesh;
-    } */
+    }
  
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(scene);
@@ -336,7 +336,7 @@ const SceneContent = ({
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
 
-    gpuPicker.current.pick(selectCamera/* , wall.current */);
+    gpuPicker.current.pick(selectCamera, wall.current);
 
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
