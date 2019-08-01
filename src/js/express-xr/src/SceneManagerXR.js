@@ -1291,6 +1291,7 @@ const SceneContent = ({
           cameraOrigin.z
         )
       }
+      rotation={[0, (Math.PI / 4) * camExtraRot, 0]}
     >
       // "head"/P.O.V. moved automatically by HMD motion
       <perspectiveCamera
