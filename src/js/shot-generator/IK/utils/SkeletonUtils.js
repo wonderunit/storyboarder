@@ -538,8 +538,8 @@ const SkeletonUtils = {
         var sourceLookup = new Map();
         var cloneLookup = new Map();
 
+        var initializedMesh = false;
         var clone = source.cloneMesh();
-
         parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
 
             sourceLookup.set( clonedNode, sourceNode );
@@ -550,7 +550,7 @@ const SkeletonUtils = {
         clone.traverse( function ( node ) {
 
             if ( ! node.isSkinnedMesh ) return;
-            if(!node.visible) return;
+            if(initializedMesh) return;
             var clonedMesh = node;
             var sourceMesh = sourceLookup.get( node );
             var sourceBones = sourceMesh.skeleton.bones;
@@ -565,7 +565,7 @@ const SkeletonUtils = {
             } );
 
             clonedMesh.bind( clonedMesh.skeleton, clonedMesh.bindMatrix );
-
+            initializedMesh = true;
         } );
 
         return clone;

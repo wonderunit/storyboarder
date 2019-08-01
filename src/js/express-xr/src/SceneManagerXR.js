@@ -7,7 +7,7 @@ const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 const { ActionCreators } = require('redux-undo')
 
-const GPUPicker = require("../../shot-generator/GPUPickers/GPUPicker");
+const XRGPUPicker = require("../../shot-generator/GPUPickers/XRGPUPicker");
 
 const {
   createObject,
@@ -161,9 +161,9 @@ const SceneContent = ({
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
   const selectionCamera = useRef(null);
- /*  const wall = useRef(null); */
+  const wall = useRef(null);
 
-  const gpuPicker = useRef(new GPUPicker());
+  const gpuPicker = useRef(new XRGPUPicker());
   
   // Rotate Bone
   let isControllerRotatingCurrent = useRef(false)
@@ -318,7 +318,7 @@ const SceneContent = ({
       selectionCamera.current.updateMatrixWorld(true);
     }
 
-  /*   if(!wall.current)
+   /*  if(!wall.current)
     {
       let geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );
       let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,

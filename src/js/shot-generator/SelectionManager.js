@@ -1,6 +1,6 @@
 const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
-const GPUPicker  = require('./GPUPickers/GPUPicker');
+const EditorGPUPicker  = require('./GPUPickers/EditorGPUPicker');
 const {
   selectObject,
   selectObjectToggle,
@@ -138,7 +138,7 @@ const getIntersectionTarget = intersect => {
     return intersect.object.parent
   }
 }
-const gpuPicker = new GPUPicker();
+const gpuPicker = new EditorGPUPicker();
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
@@ -275,7 +275,7 @@ const SelectionManager = connect(
     gpuPicker.initialize(scene, renderer);
     gpuPicker.initalizeChildren(scene);
 
-    
+
     const rect = el.getBoundingClientRect();
     let mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
     gpuPicker.updateObject();
