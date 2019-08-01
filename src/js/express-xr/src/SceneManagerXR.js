@@ -1259,6 +1259,7 @@ const SceneContent = ({
     })
     .filter(Boolean)
 
+  const teleportTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/teleport.png'), [])
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
   const wallTexture = useMemo(
     () =>
@@ -1296,15 +1297,22 @@ const SceneContent = ({
         <planeGeometry attach="geometry" args={[100, 100]} />
         <meshBasicMaterial attach="material" visible={false} />
       </mesh>
-      <mesh
-        ref={teleportLocRef}
-        userData={{ type: 'teleportLocator' }}
-        rotation={new THREE.Euler(-Math.PI / 2, 0, 0)}
-        visible={teleportMode}
-      >
-        <circleGeometry attach="geometry" args={[0.5 * worldScale, 32]} />
-        <meshBasicMaterial attach="material" opacity={0.25} transparent={true} />
-      </mesh>
+      <group position={[0, 0.5 * worldScale, 0]}>
+        <mesh ref={teleportLocRef} userData={{ type: 'teleportLocator' }} visible={teleportMode}>
+          <cylinderGeometry attach="geometry" args={[0.5 * worldScale, 0.5 * worldScale, 1 * worldScale, 32, 1, true]} />
+          <meshBasicMaterial
+            attach="material"
+            opacity={0.25}
+            color={0x7a72e9}
+            transparent={true}
+            depthTest={false}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          >
+            <primitive attach="map" object={teleportTexture} />
+          </meshBasicMaterial>
+        </mesh>
+      </group>
     </>
   )
 }
