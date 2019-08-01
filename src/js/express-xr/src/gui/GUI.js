@@ -14,31 +14,16 @@ const textPadding = 0.03
 const uiScale = 0.075
 const bWidth = 0.0125
 
-
-
-// via PosePresetsEditor.js
-const comparePresetNames = (a, b) => {
-  var nameA = a.name.toUpperCase()
-  var nameB = b.name.toUpperCase()
-
-  if (nameA < nameB) {
-    return -1
-  }
-  if (nameA > nameB) {
-    return 1
-  }
-  return 0
-}
-const comparePresetPriority = (a, b) => b.priority - a.priority
-
-
-
 const GUI = ({
   rStatsRef,
   worldScaleGroupRef,
   aspectRatio,
-  models,
-  presets,
+  poses,
+  characters,
+  objects,
+  poseTextures,
+  objectTextures,
+  characterTextures,
   guiMode,
   addMode,
   currentBoard,
@@ -46,7 +31,7 @@ const GUI = ({
   hideArray,
   virtualCamVisible,
   flipHand,
-  selectorOffset, 
+  selectorOffset,
   guiSelector,
   helpToggle,
   helpSlide,
@@ -71,15 +56,8 @@ const GUI = ({
     fov: guiCamFOV
   }
 
-  const poses = Object.values(presets.poses)
-    .sort(comparePresetNames)
-    .sort(comparePresetPriority)
   const poseVisibleAmount = poses.slice(selectorOffset * 4, selectorOffset * 4 + 16)
-
-  const characters = Object.values(models).filter(model => model.type === 'character')
   const characterVisibleAmount = characters.slice(selectorOffset * 4, selectorOffset * 4 + 16)
-
-  const objects = Object.values(models).filter(model => model.type === 'object')
   const objectVisibleAmount = objects.slice(selectorOffset * 4, selectorOffset * 4 + 16)
   // console.log(camSettings)
 
@@ -344,19 +322,19 @@ const GUI = ({
   useRender(updateSliders, false, [vrControllers])
 
   useRender(() => {
-    if (rStatsRef.current) {
-      // Update XR FPS Counter every 1 second
-      if (!previousTime.current) previousTime.current = 0
+      if (rStatsRef.current) {
+        // Update XR FPS Counter every 1 second
+        if (!previousTime.current) previousTime.current = 0
 
-      const currentTime = Date.now()
-      const delta = currentTime - previousTime.current
+        const currentTime = Date.now()
+        const delta = currentTime - previousTime.current
 
-      if (delta > 1000) {
-        previousTime.current = currentTime
-        setFPS(parseInt(rStatsRef.current('FPS').value()))
+        if (delta > 1000) {
+          previousTime.current = currentTime
+          setFPS(parseInt(rStatsRef.current('FPS').value()))
+        }
       }
-    }
-  }, false, [rStatsRef.current])
+    }, false, [rStatsRef.current])
 
   useEffect(() => {
     if (selectorOffset === 0) return
@@ -384,39 +362,9 @@ const GUI = ({
   const object_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-object.png'), [])
   const character_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-character.png'), [])
   const light_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/icon-toolbar-light.png'), [])
-  
+
   const poseSelect_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/pose.png'), [])
   const objectSelect_texture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/object.png'), [])
-
-  const poseTextures = useMemo(() => {
-    const textureArray = []
-    poses.forEach((pose, id) => {
-      const texture = new THREE.TextureLoader().load(`/data/presets/poses/${pose.id}.jpg`)
-      textureArray[id] = texture
-    })
-
-    return textureArray
-  }, [])
-
-  const objectTextures = useMemo(() => {
-    const textureArray = []
-    objects.forEach((model, id) => {
-      const texture = new THREE.TextureLoader().load(`/data/system/objects/${model.id}.jpg`)
-      textureArray[id] = texture
-    })
-
-    return textureArray
-  }, [])
-
-  const characterTextures = useMemo(() => {
-    const textureArray = []
-    characters.forEach((model, id) => {
-      const texture = new THREE.TextureLoader().load(`/data/system/dummies/gltf/${model.id}.jpg`)
-      textureArray[id] = texture
-    })
-
-    return textureArray
-  }, [])
 
   const help_textures = useMemo(
     () => [1, 2, 3, 4, 5, 6, 7, 8].map(n => new THREE.TextureLoader().load(`/data/system/xr/help_${n}.png`)),
@@ -461,24 +409,24 @@ const GUI = ({
 
               <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
                 {showScroller && (
-                <group
-                  position={[
-                    uiScale * selectorScale + bWidth * 0.75,
-                    (-(uiScale * 2) / 8 + uiScale) * selectorScale -
-                    ((uiScale * 6) / 4 / (Math.ceil(poses.length / 4) - 4)) * selectorOffset * selectorScale,
-                    0
-                  ]}
-                >
-                  <GUIElement
-                    {...{
-                      name: 'scroll_indicator',
-                      width: bWidth * 0.5,
-                      height: (uiScale * 2) / 4,
-                      radius: bWidth * 0.25,
-                      color: 0x6e6e6e
-                    }}
-                  />
-                </group>
+                  <group
+                    position={[
+                      uiScale * selectorScale + bWidth * 0.75,
+                      (-(uiScale * 2) / 8 + uiScale) * selectorScale -
+                        ((uiScale * 6) / 4 / (Math.ceil(poses.length / 4) - 4)) * selectorOffset * selectorScale,
+                      0
+                    ]}
+                  >
+                    <GUIElement
+                      {...{
+                        name: 'scroll_indicator',
+                        width: bWidth * 0.5,
+                        height: (uiScale * 2) / 4,
+                        radius: bWidth * 0.25,
+                        color: 0x6e6e6e
+                      }}
+                    />
+                  </group>
                 )}
 
                 {poseVisibleAmount.map((pose, idx) => {
@@ -538,24 +486,24 @@ const GUI = ({
               <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
                 
                 {showScroller && (
-                <group
-                  position={[
-                    uiScale * selectorScale + bWidth * 0.75,
-                    (-(uiScale * 2) / 8 + uiScale) * selectorScale -
-                    ((uiScale * 6) / 4 / (Math.ceil(characters.length / 4) - 4)) * selectorOffset * selectorScale,
-                    0
-                  ]}
-                >
-                  <GUIElement
-                    {...{
-                      name: 'scroll_indicator',
-                      width: bWidth * 0.5,
-                      height: (uiScale * 2) / 4,
-                      radius: bWidth * 0.25,
-                      color: 0x6e6e6e
-                    }}
-                  />
-                </group>
+                  <group
+                    position={[
+                      uiScale * selectorScale + bWidth * 0.75,
+                      (-(uiScale * 2) / 8 + uiScale) * selectorScale -
+                        ((uiScale * 6) / 4 / (Math.ceil(characters.length / 4) - 4)) * selectorOffset * selectorScale,
+                      0
+                    ]}
+                  >
+                    <GUIElement
+                      {...{
+                        name: 'scroll_indicator',
+                        width: bWidth * 0.5,
+                        height: (uiScale * 2) / 4,
+                        radius: bWidth * 0.25,
+                        color: 0x6e6e6e
+                      }}
+                    />
+                  </group>
                 )}
 
                 {characterVisibleAmount.map((object, idx) => {
@@ -614,24 +562,24 @@ const GUI = ({
 
               <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
                 {showScroller && (
-                <group
-                  position={[
-                    uiScale * selectorScale + bWidth * 0.75,
-                    (-(uiScale * 2) / 8 + uiScale) * selectorScale -
-                    ((uiScale * 6) / 4 / (Math.ceil(objects.length / 4) - 4)) * selectorOffset * selectorScale,
-                    0
-                  ]}
-                >
-                  <GUIElement
-                    {...{
-                      name: 'scroll_indicator',
-                      width: bWidth * 0.5,
-                      height: (uiScale * 2) / 4,
-                      radius: bWidth * 0.25,
-                      color: 0x6e6e6e
-                    }}
-                  />
-                </group>
+                  <group
+                    position={[
+                      uiScale * selectorScale + bWidth * 0.75,
+                      (-(uiScale * 2) / 8 + uiScale) * selectorScale -
+                        ((uiScale * 6) / 4 / (Math.ceil(objects.length / 4) - 4)) * selectorOffset * selectorScale,
+                      0
+                    ]}
+                  >
+                    <GUIElement
+                      {...{
+                        name: 'scroll_indicator',
+                        width: bWidth * 0.5,
+                        height: (uiScale * 2) / 4,
+                        radius: bWidth * 0.25,
+                        color: 0x6e6e6e
+                      }}
+                    />
+                  </group>
                 )}
 
                 {objectVisibleAmount.map((object, idx) => {

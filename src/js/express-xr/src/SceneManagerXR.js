@@ -57,6 +57,21 @@ new THREE.AudioLoader().load('data/snd/vr-welcome.ogg', () => {})
 new THREE.AudioLoader().load('data/snd/vr-beam2.mp3', () => {})
   // new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
 
+// via PosePresetsEditor.js
+const comparePresetNames = (a, b) => {
+  var nameA = a.name.toUpperCase()
+  var nameB = b.name.toUpperCase()
+
+  if (nameA < nameB) {
+    return -1
+  }
+  if (nameA > nameB) {
+    return 1
+  }
+  return 0
+}
+const comparePresetPriority = (a, b) => b.priority - a.priority
+
 const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged, undo, redo }) => {
   const [controllers, setControllers] = useState([])
 
@@ -1173,6 +1188,50 @@ const SceneContent = ({
     return listener
   }, [])
 
+  const poses = useMemo(() => {
+    return Object.values(presets.poses)
+      .sort(comparePresetNames)
+      .sort(comparePresetPriority)
+  }, [presets.poses])
+
+  const characters = useMemo(() => {
+    return Object.values(models).filter(model => model.type === 'character')
+  }, [models])
+
+  const objects = useMemo(() => {
+    return Object.values(models).filter(model => model.type === 'object')
+  }, [models])
+
+  const poseTextures = useMemo(() => {
+    const textureArray = []
+    poses.forEach((pose, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/presets/poses/${pose.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
+  const objectTextures = useMemo(() => {
+    const textureArray = []
+    objects.forEach((model, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/system/objects/${model.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
+  const characterTextures = useMemo(() => {
+    const textureArray = []
+    characters.forEach((model, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/system/dummies/gltf/${model.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
   let activeCameraComponent = (
     <group
       key={'camera'}
@@ -1196,7 +1255,32 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ rStatsRef, worldScaleGroupRef, models, presets, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI
+                {...{
+                  rStatsRef,
+                  worldScaleGroupRef,
+                  aspectRatio,
+                  poses,
+                  characters,
+                  objects,
+                  poseTextures,
+                  objectTextures,
+                  characterTextures,
+                  guiMode,
+                  addMode,
+                  currentBoard,
+                  selectedObject,
+                  hideArray,
+                  virtualCamVisible,
+                  flipHand,
+                  selectorOffset,
+                  guiSelector,
+                  helpToggle,
+                  helpSlide,
+                  guiCamFOV,
+                  vrControllers
+                }}
+              />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
