@@ -107,6 +107,7 @@ const SceneManager = connect(
 
       orthoCamera.current.position.y = 900
       orthoCamera.current.rotation.x = -Math.PI / 2
+      orthoCamera.current.layers.enable(2)
     }, [])
 
     useEffect(() => {
@@ -238,7 +239,6 @@ const SceneManager = connect(
 
       orthoCamera.current.updateProjectionMatrix()
 
-      orthoCamera.current.layers.enable(2)
 
       // resize the renderers
       if (mainViewCamera === 'live') {
