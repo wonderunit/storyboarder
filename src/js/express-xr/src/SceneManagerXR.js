@@ -1529,10 +1529,10 @@ const SceneManagerXR = connect(
               top: 'calc(50% - 20px)',
 
               padding: '12px 6px',
-              border: '3px solid transparent',
+              border: '3px solid #fff',
               borderRadius: '9px',
               background: 'rgba(0,0,0,0.5)',
-              color: '#aaa',
+              color: '#fff',
               font: 'normal 13px sans-serif',
               textAlign: 'center',
               opacity: '0.5',
@@ -1541,8 +1541,6 @@ const SceneManagerXR = connect(
 
               left: 'calc(50% - 75px)',
               width: 150,
-              height: 41,
-              lineHeight: 1,
 
               cursor: 'default'
             }
