@@ -105,6 +105,7 @@ const SceneManager = connect(
       // directionalLight.position.set(0, 1, 3)
       // scene.add(directionalLight)
 
+      // initialize orthoCamera
       orthoCamera.current.position.y = 900
       orthoCamera.current.rotation.x = -Math.PI / 2
       orthoCamera.current.layers.enable(2)
@@ -164,13 +165,9 @@ const SceneManager = connect(
       smallRendererEffect.current = new THREE.OutlineEffect( smallRenderer.current, {defaultThickness:0.02, defaultAlpha:0.5, defaultColor: [ 0.4, 0.4, 0.4 ], ignoreMaterial: true} )
     }, [])
 
-    // resize the renderers (large and small)
-    useMemo(() => {
-      // how wide is the canvas which will render the large view?
-      let width = Math.ceil(largeCanvasSize.width)
-      // assign a target height, based on scene aspect ratio
-      let height = Math.ceil(width / aspectRatio)
 
+    // autofit ortho camera for scene
+    useMemo(() => {
       let minMax = [9999,-9999,9999,-9999]
 
       // go through all appropriate objects and get the min max
@@ -238,7 +235,14 @@ const SceneManager = connect(
       orthoCamera.current.far = 1000
 
       orthoCamera.current.updateProjectionMatrix()
+    }, [sceneObjects, mainViewCamera, aspectRatio])
 
+    // resize the renderers (large and small)
+    useMemo(() => {
+      // how wide is the canvas which will render the large view?
+      let width = Math.ceil(largeCanvasSize.width)
+      // assign a target height, based on scene aspect ratio
+      let height = Math.ceil(width / aspectRatio)
 
       // resize the renderers
       if (mainViewCamera === 'live') {
@@ -278,7 +282,7 @@ const SceneManager = connect(
           defaultColor: [0, 0, 0]
         })
       }
-    }, [sceneObjects, largeCanvasSize, mainViewCamera, aspectRatio])
+    }, [largeCanvasSize, mainViewCamera, aspectRatio])
 
     useEffect(() => {
       setCamera(scene.children.find(o => o.userData.id === activeCamera))
