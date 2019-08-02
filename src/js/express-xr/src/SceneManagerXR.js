@@ -175,8 +175,6 @@ const SceneContent = ({
   const intersectArray = useRef([])
   const guiArray = useRef([])
   const teleportArray = useRef([])
-  const initialCamPos = useRef()
-  // const hmdCamInitialized = useRef(false)
   const previousTime = useRef([null])
 
   // Why do I need to create ref to access updated state in some functions?
@@ -1118,47 +1116,6 @@ const SceneContent = ({
       })
     }
   }, [])
-
-  // if our camera is setup
-  // if (activeCamera === camera.userData.id) {
-  //   console.log('camera: using user-defined camera')
-  // } else {
-  //   console.log('camera: using Canvas camera')
-  // }
-
-  /*
-  const camPosZero = camera.position.length() === 0
-  if (hmdCameraGroup.current && teleportPos) {
-    hmdCameraGroup.current.position.x = teleportPos.x
-    hmdCameraGroup.current.position.z = teleportPos.z
-  } else if (hmdCameraGroup.current && !camPosZero && camera.position.y !== hmdCameraGroup.current.userData.z && !hmdCamInitialized.current) {
-    const { x, y, rotation } = hmdCameraGroup.current.userData
-    const behindCam = {
-      x: Math.sin(rotation),
-      y: Math.cos(rotation)
-    }
-
-    hmdCameraGroup.current.position.x = x + behindCam.x
-    hmdCameraGroup.current.position.z = y + behindCam.y
-    hmdCamInitialized.current = true
-  }
-  */
-  /*
-  useEffect(() => {
-    // Store Initial Camera Position here so HMD doesn't jump even if virtual camera get's updated
-    const { x, y, z } = cameraState
-    initialCamPos.current = new THREE.Vector3(x, y, z)
-  }, [])
-
-  useEffect(() => {
-    const hmdCam = hmdCamera.current
-    if (worldScale !== 1) {
-      hmdCameraGroup.current.position.y = -(hmdCam.position.y - 0.75)
-    } else {
-      hmdCameraGroup.current.position.y = 0
-    }
-  }, [worldScale])
-  */
 
   const soundBeam = useRef()
   const soundSelect = useRef()
