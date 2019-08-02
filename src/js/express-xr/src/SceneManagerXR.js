@@ -45,6 +45,7 @@ const { findParent, moveObject, rotateObject, createHideArray, updateObjectHighl
 const { useAttachmentLoader, getFilepathForLoadable } = require('./hooks/useAttachmentLoader')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 require('./lib/VRController')
+require('../../shot-generator/IK/utils/Object3dExtension');
 
 const RStats = require('./lib/rStats')
 require('./lib/rStats.extras')
@@ -331,20 +332,19 @@ const SceneContent = ({
     }
  
     gpuPicker.current.initialize(scene, gl);
-    console.log(scene);
     gpuPicker.current.initalizeChildren(intersectArray.current);
-    
+    console.log(intersectArray.current);
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
 
-    gpuPicker.current.pick(selectCamera, wall.current);
+    let pickedObjects = gpuPicker.current.pick(selectCamera, wall.current);
+
+    const intersections = getIntersections(controller, pickedObjects);
 
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
     selectionCamera.current.updateMatrixWorld(true);
-    console.log(intersectArray.current);
-    const intersections = getIntersections(controller, intersectArray.current)
-
+    console.log(intersections);
     if (intersections.length > 0) {
       let didMakeSelection = onIntersection(controller, intersections)
       if (didMakeSelection) {
@@ -1049,9 +1049,9 @@ const SceneContent = ({
         if (hits.length) {
           if (controller.userData.currentBoneHighlight === hits[0].bone) return
           controller.userData.currentBoneHighlight = hits[0].bone
-          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
+          //controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
         } else if (controller.userData.currentBoneHighlight) {
-          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x7a72e9)
+          //controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x7a72e9)
           controller.userData.currentBoneHighlight = null
         }
       }

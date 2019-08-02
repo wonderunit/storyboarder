@@ -10,8 +10,9 @@ class GPUPickerHelper
         this.pickedObject = null;
         this.pickedObjectSaveColor = 0;
         this.selectableObjects = {};
-        this.selectedColor = new THREE.Color(0.2, 0.2, 0.2);
+        this.selectedColor = new THREE.Color(1, 0.5, 0);
         this.renderTarget = new THREE.WebGLRenderTarget(0, 0);
+        this.returnObject = [];
     }
     
     pick(cssPosition, scene, camera, renderer, wall)
@@ -22,6 +23,7 @@ class GPUPickerHelper
         {
             this.pickedObject.material.color = this.pickedObjectSaveColor;
             this.pickedObject = undefined;
+            this.returnObject = [];
         }
         let vrEnabled = renderer.vr.enabled;
         renderer.vr.enabled = vrEnabled ? false : false;
@@ -39,6 +41,7 @@ class GPUPickerHelper
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         camera.clearViewOffset();
+        console.log(scene);
         if(wall)
         {
             this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
@@ -67,7 +70,25 @@ class GPUPickerHelper
             this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
             this.pickedObject.material.color =  this.selectedColor;
         }
+        if(!intersectedObject)
+        {
+            return this.returnObject;
+        }
+
+        //if(intersectedObject.type === "SkinnedMesh")
+        //{
+        //    this.returnObject.push( intersectedObject.parent});
+        //}
+        //else
+        {
+            
+            this.returnObject.push(intersectedObject);
+        }
+   
+        console.log(intersectedObject);
         console.log(this.selectableObjects);
+        console.log(scene);
+        return this.returnObject;
     }
 }
 module.exports = GPUPickerHelper;

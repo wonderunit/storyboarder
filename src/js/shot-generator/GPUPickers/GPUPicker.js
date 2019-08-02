@@ -11,7 +11,7 @@ class GPUPicker
         this.gpuPickerHelper = new GPUPickerHelper();
         this.pickingScene.background = new THREE.Color(0);
         this.isInitialized = false;
-        this.idBonus = 3000;
+        this.idBonus = 200;
         this.vrModeEnabled = false;
     }
 
@@ -42,7 +42,7 @@ class GPUPicker
 
     pick(camera, wall)
     {
-        this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, wall);
+        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, wall);
     }
 
   

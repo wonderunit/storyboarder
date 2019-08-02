@@ -540,7 +540,6 @@ const SkeletonUtils = {
 
         var initializedMesh = false;
         var clone = source.cloneMesh();
-        console.log(clone);
         let skinnedMeshAdded = false;
         let nodesToRemove = [];
         parallelTraverse( source, clone, ( sourceNode, clonedNode ) => {
@@ -571,7 +570,6 @@ const SkeletonUtils = {
         clone.traverse( function ( node ) {
 
             if ( ! node.isSkinnedMesh ) return;
-            if(initializedMesh) return;
             var clonedMesh = node;
             var sourceMesh = sourceLookup.get( node );
             var sourceBones = sourceMesh.skeleton.bones;
@@ -586,11 +584,8 @@ const SkeletonUtils = {
             } );
 
             clonedMesh.bind( clonedMesh.skeleton, clonedMesh.bindMatrix );
-            initializedMesh = true;
         } );
-
         return clone;
-
     }
 
 };
