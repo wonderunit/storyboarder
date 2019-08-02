@@ -36,7 +36,6 @@ class GPUPickerHelper
             1);
 
         renderer.setRenderTarget(pickingTexture);
-        console.log(scene);
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         camera.clearViewOffset();

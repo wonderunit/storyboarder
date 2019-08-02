@@ -331,7 +331,8 @@ const SceneContent = ({
     }
  
     gpuPicker.current.initialize(scene, gl);
-    gpuPicker.current.initalizeChildren(scene);
+    console.log(scene);
+    gpuPicker.current.initalizeChildren(intersectArray.current);
     
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
@@ -341,6 +342,7 @@ const SceneContent = ({
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
     selectionCamera.current.updateMatrixWorld(true);
+    console.log(intersectArray.current);
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {

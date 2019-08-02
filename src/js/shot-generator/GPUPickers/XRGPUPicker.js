@@ -7,11 +7,15 @@ class XRGPUPicker extends GPUPicker
         super();
     }
 
-    initalizeChildren(scene)
+    initalizeChildren(intersectObjects)
     {
-        super.initalizeChildren(scene);
+        super.initalizeChildren(intersectObjects);
         let objects = [];
-        this.getAllSceneMeshes(scene, objects);
+        for(let i = 0, n = intersectObjects.length; i < n; i++)
+        {
+            let intesectable = intersectObjects[i];
+            this.getAllSceneMeshes(intesectable, objects);
+        }
 
         for(let i = 0, n = objects.length; i < n; i++)
         {
@@ -53,12 +57,6 @@ class XRGPUPicker extends GPUPicker
             else
             {
                 pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
-
-                pickingCube.position.copy(object.worldPosition());
-                pickingCube.quaternion.copy(object.worldQuaternion());
-                pickingCube.scale.copy(object.worldScale());
-                pickingCube.updateMatrix();
-                pickingCube.updateMatrixWorld(true);
                 node.type = "object"
                 node.add(pickingCube);
             }
@@ -75,16 +73,8 @@ class XRGPUPicker extends GPUPicker
         {
             let clonnedObject = null;
             let originalObject = null;
-            if(this.vrModeEnabled)
-            {
-                clonnedObject = this.pickingScene.children[i];
-                originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus] : this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent.parent;
-            }
-            else
-            {
-                clonnedObject = this.pickingScene.children[i];
-                originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus] : this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent;
-            }
+            clonnedObject = this.pickingScene.children[i];
+            originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus] : this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent.parent;
             console.log(clonnedObject);
             console.log(originalObject); 
             clonnedObject.position.copy(originalObject.worldPosition());
@@ -131,6 +121,7 @@ class XRGPUPicker extends GPUPicker
                     return;
                 }
             }
+            console.log(meshes);
         }
         for(let i = 0, n = sceneChildren.length; i < n; i++)
         {
