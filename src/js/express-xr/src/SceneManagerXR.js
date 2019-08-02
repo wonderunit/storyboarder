@@ -1548,10 +1548,7 @@ const SceneManagerXR = connect(
             }
           }>LOADING …</div>
         }
-        <Canvas
-          vr
-          updateDefaultCamera={false}
-          style={{ visibility: 'hidden' }}>
+        <Canvas vr>
           {
             hasLoadedOnce && <XRStartButton />
           }
