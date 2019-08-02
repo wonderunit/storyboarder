@@ -64,7 +64,7 @@ class XRServer {
     })
 
     http.on('error', err => {
-      that.emit('error', err)
+      console.error(err)
     })
 
     http.listen(portNumber, function() {
