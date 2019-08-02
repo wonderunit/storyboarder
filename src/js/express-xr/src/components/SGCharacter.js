@@ -500,7 +500,11 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
       }
 
       {(skinnedMesh && bonesHelper) && (
-        <group>
+        <group 
+        userData={{
+          type: "bonesHelper"
+        }}> 
+           
           <primitive
             userData={{
               character: skinnedMesh
@@ -508,6 +512,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
             object={bonesHelper}
           />
         </group>
+        
       )}
   </group>
 })
