@@ -1245,6 +1245,33 @@ const SceneContent = ({
     )
   }, [])
 
+  const [hasInitializedVrCamera, setHasInitializedVrCamera] = useState(false)
+  useEffect(() => {
+    // wait until ...
+    if (
+      // ... controllers are available ...
+      vrControllers.length &&
+      // ... and camera has a ref ...
+      hmdCamera.current &&
+      // then, if we have not initialized the VR camera at least once ...
+      !hasInitializedVrCamera
+    ) {
+      // mark as initialized
+      setHasInitializedVrCamera(true)
+
+      console.log('-----')
+      console.log('Initializing camera rotation')
+      
+      console.log('HMD rotation', hmdCamera.current.rotation) // Euler { x, y, z }
+      console.log('camera sceneObject rotation', sceneObjects[activeCamera].rotation) // -3.14159
+
+      console.log('-----')
+      // used like: (Math.PI / 4) * camExtraRot
+      // let n = 0
+      // setCamExtraRot(n)
+    }
+  }, [vrControllers, hmdCamera.current, hasInitializedVrCamera])
+
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
     <group
