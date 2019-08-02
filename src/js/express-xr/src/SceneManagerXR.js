@@ -537,7 +537,7 @@ const SceneContent = ({
           setGuiMode('selection')
         }, 250)
         break
-      case 'duplicate':        
+      case 'duplicate':
         if (!selectedObjRef.current) return
         setGuiMode(mode)
 
