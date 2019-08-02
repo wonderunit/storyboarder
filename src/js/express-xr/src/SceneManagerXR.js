@@ -162,11 +162,12 @@ const SceneContent = ({
   const [worldScale, setWorldScale] = useState(1)
   const [selectorOffset, setSelectorOffset] = useState(0)
   const [teleportMode, setTeleportMode] = useState(false)
+  const [standingMemento, setStandingMemento] = useState(null)
 
   const hmdCameraGroup = useRef()
   const hmdCamera = useRef()
 
-  const worldScaleRef = useRef(0.1)
+  const MINIATURE_MODE_SCALE = 0.1
   const worldScaleGroupRef = useRef(null)
   const teleportLocRef = useRef(null)
   const moveCamRef = useRef(null)
@@ -862,18 +863,35 @@ const SceneContent = ({
     if (!selectedObjRef.current && otherController && otherController.gripped) {
       setTeleportMode(false)
 
-      setWorldScale(oldValue => {
-        return oldValue === 1 ? worldScaleRef.current : 1
-      })
-      const hmdCam = hmdCamera.current
-      let cameraState = sceneObjects[activeCamera]
-      const teleport =
-        worldScale !== 1
-          ? new THREE.Vector3(cameraState.x, cameraState.z, cameraState.y)
-          : new THREE.Vector3(-hmdCam.position.x, 0, -hmdCam.position.z + 0.5)
+      if (worldScale === 1) {
+        // remember where we were standing
+        setStandingMemento({
+          teleportPos: teleportPos,
+          camExtraRot: camExtraRot
+        })
 
-      setTeleportPos(teleport)
-      setCamExtraRot(0)
+        // switch to mini mode
+        setWorldScale(MINIATURE_MODE_SCALE)
+
+        // alter the camera position
+        setTeleportPos(new THREE.Vector3(
+          -hmdCamera.current.position.x,
+          0,
+          -hmdCamera.current.position.z + 0.5
+        ))
+        setCamExtraRot(0)
+      } else {
+        // set the world scale
+        setWorldScale(1)
+
+        // return to where we were standing
+        setTeleportPos(standingMemento.teleportPos)
+        setCamExtraRot(standingMemento.camExtraRot)
+
+        // clear the memento
+        setStandingMemento(null)
+      }
+
       return
     }
 
@@ -1274,15 +1292,6 @@ const SceneContent = ({
       )
     )
   }, [])
-
-  // TODO
-  // yOverride matches worldScale
-  const yOverride = useMemo(() => {
-    worldScale !== 1
-      ? -0.75
-      : 0
-  }, [worldScale])
-  // .add([0, yOverride, 0])
 
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
