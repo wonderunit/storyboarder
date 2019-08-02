@@ -876,7 +876,7 @@ const SceneContent = ({
         // alter the camera position
         setTeleportPos(new THREE.Vector3(
           -hmdCamera.current.position.x,
-          0,
+          -0.75,
           -hmdCamera.current.position.z + 0.5
         ))
         setCamExtraRot(0)
