@@ -190,7 +190,7 @@ const SceneContent = ({
 
   guiModeRef.current = guiMode
 
-  const { gl, scene, camera, setDefaultCamera } = useThree()
+  const { gl, scene, camera } = useThree()
 
   useMemo(() => {
     scene.background = new THREE.Color(world.backgroundColor)
@@ -1227,11 +1227,6 @@ const SceneContent = ({
     return textureArray
   }, [])
 
-  useMemo(
-    () => hmdCamera.current && setDefaultCamera(hmdCamera.current),
-    [hmdCamera.current]
-  )
-
   // initialize behind the camera, on the floor
   useMemo(() => {
     let { x, y, rotation } = sceneObjects[activeCamera]
@@ -1258,12 +1253,10 @@ const SceneContent = ({
       rotation={[0, (Math.PI / 4) * camExtraRot, 0]}
     >
       // "head"/P.O.V. moved automatically by HMD motion
-      <perspectiveCamera
-        ref={hmdCamera}
-      >
+      <primitive ref={hmdCamera} object={camera}>
         // listener is attached to the "head"
         <primitive object={audioListener} />
-      </perspectiveCamera>
+      </primitive>
 
       // controllers are attached to the "body"
       {vrControllers.map((object, n) => {
