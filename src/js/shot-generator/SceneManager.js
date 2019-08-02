@@ -164,11 +164,7 @@ const SceneManager = connect(
     }, [])
 
     // resize the renderers (large and small)
-    // FIXME this is running _after_ the animation frame, causing a visible jump
     useMemo(() => {
-
-      //seems this is called a bit often, see later about reducing hooks
-
       // how wide is the canvas which will render the large view?
       let width = Math.ceil(largeCanvasSize.width)
       // assign a target height, based on scene aspect ratio
