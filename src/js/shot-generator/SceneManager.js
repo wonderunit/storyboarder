@@ -172,7 +172,7 @@ const SceneManager = connect(
 
       let minMax = [9999,-9999,9999,-9999]
 
-      // go through all appropriate opbjects and get the min max
+      // go through all appropriate objects and get the min max
       let numVisible = 0
       for (child of scene.children) {
         if (
