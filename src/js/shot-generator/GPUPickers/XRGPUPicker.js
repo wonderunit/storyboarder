@@ -65,10 +65,20 @@ class XRGPUPicker extends GPUPicker
                 pickingCube.name = "male-adult-0";
 
             }
-            else
+            else if(object.userData && object.userData.type === "gui")
             {
                 pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
-                node.type = "object"
+                node.type = "gui"
+                node.add(pickingCube);
+                if(object.name === "camera_button")
+                {
+                    object.updateMatrixWorld(true);
+                }
+            }
+            else
+            {  
+                pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
+                node.type = object.userData.type;
                 node.add(pickingCube);
             }
             pickingCube.matrixAutoUpdate = false;
@@ -78,7 +88,7 @@ class XRGPUPicker extends GPUPicker
         } 
     }
   
-    updateObject()
+    updateObject(hmdCam)
     {
         super.updateObject();
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
@@ -87,10 +97,28 @@ class XRGPUPicker extends GPUPicker
             let originalObject = null;
             clonnedObject = this.pickingScene.children[i];
             originalObject = clonnedObject.type === "character" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent : this.gpuPickerHelper.selectableObjects[i + this.idBonus];
-            clonnedObject.position.copy(originalObject.worldPosition());
-            clonnedObject.quaternion.copy(originalObject.worldQuaternion());
-            clonnedObject.scale.copy(originalObject.worldScale());
-            clonnedObject.updateMatrixWorld(true);
+            originalObject = clonnedObject.type === "gui" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent : originalObject;
+            if(!originalObject)
+            {
+                continue;
+            }
+            if(clonnedObject.type === "gui")
+            {
+                clonnedObject.position.copy(originalObject.worldPosition());
+                //clonnedObject.position.z = -clonnedObject.position.z;
+                clonnedObject.position.x -= hmdCam.position.x;
+                clonnedObject.position.z -= hmdCam.position.z;
+                clonnedObject.quaternion.copy(originalObject.worldQuaternion());
+                clonnedObject.scale.copy(originalObject.worldScale());
+                clonnedObject.updateMatrixWorld(true);
+            }
+            else
+            {
+                clonnedObject.position.copy(originalObject.worldPosition());
+                clonnedObject.quaternion.copy(originalObject.worldQuaternion());
+                clonnedObject.scale.copy(originalObject.worldScale());
+                clonnedObject.updateMatrixWorld(true);
+            }
             if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[i + this.idBonus].skeleton)
             {
                 let clonnedSkinnedMesh = null;
@@ -139,11 +167,11 @@ class XRGPUPicker extends GPUPicker
                         return;
                     }  
 
-                  /*   if(child.children.length !== 0 && child.children[0].type === "BonesHelper")
+                    if(child.children.length !== 0 && child.children[0].type === "BonesHelper")
                     {
                         this.addConesToArray(meshes, child.children[0].cones );
                         return;
-                    } */
+                    }
 
                     if(child.children.length !== 0 && child.children[0].type === "LOD")
                     {

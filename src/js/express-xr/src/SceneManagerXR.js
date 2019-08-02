@@ -326,21 +326,22 @@ const SceneContent = ({
         emissive: 0x0,
         flatShading: false } );
       let mesh = new THREE.Mesh( geometry, material );
-      scene.add(mesh);
+      //scene.add(mesh);
       mesh.position.y = mesh.position.y + 5;
       wall.current = mesh;
     }
- 
+
+    
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
-    console.log(intersectArray.current);
-    gpuPicker.current.updateObject();
+    //console.log(intersectArray.current);
+    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
+    gpuPicker.current.updateObject(controller);
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-
-    let pickedObjects = gpuPicker.current.pick(selectCamera, wall.current);
-
+    //
+    let pickedObjects = gpuPicker.current.pick(selectCamera/* , wall.current */);
     const intersections = getIntersections(controller, pickedObjects);
-
+    
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
     selectionCamera.current.updateMatrixWorld(true);
