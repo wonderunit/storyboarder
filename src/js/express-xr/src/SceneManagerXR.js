@@ -1243,6 +1243,9 @@ const SceneContent = ({
         y + behindCam.y
       )
     )
+    setCamExtraRot(
+      Math.PI * 4 / rotation
+    )
   }, [])
 
   const [hasInitializedVrCamera, setHasInitializedVrCamera] = useState(false)
