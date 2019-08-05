@@ -156,6 +156,8 @@ const SceneContent = ({
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
+  const [teleportRot, setTeleportRot] = useState(0)
+
   const [selectedObject, setSelectedObject] = useState(null)
   const [guiCamFOV, setGuiCamFOV] = useState(22)
   const [hideArray, setHideArray] = useState([])
@@ -1243,48 +1245,15 @@ const SceneContent = ({
         y + behindCam.y
       )
     )
+    setTeleportRot(rotation)
   }, [])
-
-  const [hasInitializedVrCamera, setHasInitializedVrCamera] = useState(false)
-  const [teleportRot, setTeleportRot] = useState([0, 0, 0])
-  useEffect(() => {
-    // wait until ...
-    if (
-      // ... controllers are available ...
-      vrControllers.length &&
-      // ... and camera has a ref ...
-      hmdCamera.current &&
-      // then, if we have not initialized the VR camera at least once ...
-      !hasInitializedVrCamera
-    ) {
-      // mark as initialized
-      setHasInitializedVrCamera(true)
-
-      console.log('-----')
-      console.log('Initializing camera rotation')
-
-      console.log('HMD rotation', THREE.Math.radToDeg(hmdCamera.current.rotation.y)) // Euler { x, y, z }
-      console.log('camera sceneObject rotation', THREE.Math.radToDeg(sceneObjects[activeCamera].rotation)) // -3.14159
-
-      let r = sceneObjects[activeCamera].rotation - hmdCamera.current.rotation.y
-      
-      console.log('teleportRot', THREE.Math.radToDeg(r))
-
-      setTeleportRot([0, r, 0])
-    }
-  }, [vrControllers, hmdCamera.current, hasInitializedVrCamera])
-
-  // rotation={[0, Math.PI / 4 * camExtraRot, 0]}
-  console.log(
-    'teleportRot', teleportRot
-  )
 
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
     <group
       ref={hmdCameraGroup}
       position={teleportPos}
-      rotation={teleportRot}
+      rotation={[0, teleportRot + (Math.PI / 4 * camExtraRot), 0]}
     >
       // "head"/P.O.V. moved automatically by HMD motion
       <primitive ref={hmdCamera} object={camera}>
