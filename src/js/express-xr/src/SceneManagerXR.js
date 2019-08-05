@@ -1246,6 +1246,7 @@ const SceneContent = ({
   }, [])
 
   const [hasInitializedVrCamera, setHasInitializedVrCamera] = useState(false)
+  const [teleportRot, setTeleportRot] = useState([0, 0, 0])
   useEffect(() => {
     // wait until ...
     if (
@@ -1261,28 +1262,29 @@ const SceneContent = ({
 
       console.log('-----')
       console.log('Initializing camera rotation')
-      
-      console.log('HMD rotation', hmdCamera.current.rotation) // Euler { x, y, z }
-      console.log('camera sceneObject rotation', sceneObjects[activeCamera].rotation) // -3.14159
+
+      console.log('HMD rotation', THREE.Math.radToDeg(hmdCamera.current.rotation.y)) // Euler { x, y, z }
+      console.log('camera sceneObject rotation', THREE.Math.radToDeg(sceneObjects[activeCamera].rotation)) // -3.14159
 
       let r = sceneObjects[activeCamera].rotation - hmdCamera.current.rotation.y
+      
+      console.log('teleportRot', THREE.Math.radToDeg(r))
 
-      console.log('-----')
-      // used like: (Math.PI / 4) * camExtraRot
-      // let n = 0
-      // setCamExtraRot(n)
-      setCamExtraRot(prev =>
-        prev + (Math.PI * 4 / r)
-      )
+      setTeleportRot([0, r, 0])
     }
   }, [vrControllers, hmdCamera.current, hasInitializedVrCamera])
+
+  // rotation={[0, Math.PI / 4 * camExtraRot, 0]}
+  console.log(
+    'teleportRot', teleportRot
+  )
 
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
     <group
       ref={hmdCameraGroup}
       position={teleportPos}
-      rotation={[0, Math.PI / 4 * camExtraRot, 0]}
+      rotation={teleportRot}
     >
       // "head"/P.O.V. moved automatically by HMD motion
       <primitive ref={hmdCamera} object={camera}>
