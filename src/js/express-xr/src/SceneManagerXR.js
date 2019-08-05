@@ -352,7 +352,7 @@ const SceneContent = ({
         const model = intersection.object.name.split('_')[1]
         const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
         updateObject(object.userData.id, { model, height: initialState.models[model].height })
-       
+
         // hacky way of refreshing slider values
         setSelectedObject(0)
         setSelectedObject(object.userData.id)
@@ -875,11 +875,27 @@ const SceneContent = ({
 
         // alter the camera position
         setTeleportPos(new THREE.Vector3(
-          -hmdCamera.current.position.x,
-          -0.75,
-          -hmdCamera.current.position.z + 0.5
+          (hmdCameraGroup.current.position.x*MINIATURE_MODE_SCALE),
+          -(hmdCamera.current.position.y - 0.75),
+          (hmdCameraGroup.current.position.z*MINIATURE_MODE_SCALE),
         ))
-        setCamExtraRot(0)
+
+        let offsetVector = new THREE.Vector3(0, 0, 1)
+        offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCamera.current.matrixWorld))
+        offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(1)
+
+        setTeleportPos(oldPos => {
+          if (!oldPos) {
+            offsetVector.add(new THREE.Vector3(x, 0, y))
+            return offsetVector
+          } else {
+            return oldPos.clone().add(offsetVector)
+          }
+        })
+
+
+
+        //setCamExtraRot(0)
       } else {
         // set the world scale
         setWorldScale(1)
@@ -1040,7 +1056,7 @@ const SceneContent = ({
             if (intersection.object.userData.type === 'slider') controller.intersections = intersections
             else if (intersection.object.name.includes('selector')) controller.intersections = [intersection]
           }
-        } 
+        }
         else if (controller.intersections.lenght !== 0) controller.intersections = []
       }
 
