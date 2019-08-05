@@ -1285,7 +1285,7 @@ const SceneContent = ({
     <group
       ref={hmdCameraGroup}
       position={teleportPos}
-      rotation={[0, (Math.PI / 4) * camExtraRot, 0]}
+      rotation={[0, Math.PI / 4 * camExtraRot, 0]}
     >
       // "head"/P.O.V. moved automatically by HMD motion
       <primitive ref={hmdCamera} object={camera}>
