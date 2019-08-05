@@ -1274,7 +1274,9 @@ const SceneContent = ({
       // used like: (Math.PI / 4) * camExtraRot
       // let n = 0
       // setCamExtraRot(n)
-      setCamExtraRot(Math.PI * 4 / r)
+      setCamExtraRot(prev =>
+        prev + (Math.PI * 4 / r)
+      )
     }
   }, [vrControllers, hmdCamera.current, hasInitializedVrCamera])
 
