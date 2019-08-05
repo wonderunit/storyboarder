@@ -1265,10 +1265,13 @@ const SceneContent = ({
       console.log('HMD rotation', hmdCamera.current.rotation) // Euler { x, y, z }
       console.log('camera sceneObject rotation', sceneObjects[activeCamera].rotation) // -3.14159
 
+      let r = sceneObjects[activeCamera].rotation - hmdCamera.current.rotation.y
+
       console.log('-----')
       // used like: (Math.PI / 4) * camExtraRot
       // let n = 0
       // setCamExtraRot(n)
+      setCamExtraRot(Math.PI * 4 / r)
     }
   }, [vrControllers, hmdCamera.current, hasInitializedVrCamera])
 
