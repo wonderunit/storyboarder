@@ -6,6 +6,7 @@ class XRGPUPicker extends GPUPicker
     {
         super();
         this.addedGroupsId = [];
+        this.allowedObjectsTypes = ["object", "character", "bonesHelper", "gui"];
     }
 
     initalizeChildren(intersectObjects)
@@ -142,7 +143,7 @@ class XRGPUPicker extends GPUPicker
         {
             return;
         }
-        if(sceneMesh.userData && (sceneMesh.userData.type === "object" || sceneMesh.userData.type === "character"  /* || sceneMesh.userData.type === "bonesHelper" */ || sceneMesh.userData.type === "gui"))
+        if(sceneMesh.userData && this.allowedObjectsTypes.some(allowObject => allowObject === sceneMesh.userData.type))
         {
             if(sceneMesh.userData.type === "gui")
             {
@@ -159,7 +160,6 @@ class XRGPUPicker extends GPUPicker
             {
                 for(let i = 0, n = sceneChildren.length; i < n; i++)
                 {
-                
                     let child = sceneChildren[i];
                     if(child.type === "Mesh") 
                     {
@@ -183,19 +183,6 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = sceneChildren.length; i < n; i++)
         {
             this.getAllSceneMeshes(sceneChildren[i], meshes);
-        }
-    }
-
-    addConesToArray(source, array)
-    {
-        let index = 4;
-        for(let i = 0, n = array.length; i < n; i+=index)
-        {
-            source.push(array[i]);
-            source.push(array[i + 1]);
-            source.push(array[i + 2]);
-            source.push(array[i + 3]);
-
         }
     }
 }

@@ -27,7 +27,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
       // near
       0.01,
       // far
-      1000
+      100
     )
 
     // TODO do we ever need these?  - we do at least some (aspectRatio breaks)

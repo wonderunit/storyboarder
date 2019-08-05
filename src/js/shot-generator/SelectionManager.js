@@ -139,6 +139,7 @@ const getIntersectionTarget = intersect => {
   }
 }
 const gpuPicker = new EditorGPUPicker();
+let wall = null;
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
@@ -272,15 +273,28 @@ const SelectionManager = connect(
   const onPointerDown = event => {
     
     event.preventDefault()
+
+    
     gpuPicker.initialize(scene, renderer);
     gpuPicker.initalizeChildren(scene);
 
+    if(! wall)
+    {
+      let geometry = new THREE.PlaneBufferGeometry( 5, 5, 6 );
+      let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
+        emissive: 0x0,
+        flatShading: false } );
+      wall = new THREE.Mesh( geometry, material );
+      scene.add( wall);
+      wall.position.y = wall.position.y + 2.5;
+      wall.matrixWorldNeedsUpdate = true;
+    }
 
     const rect = el.getBoundingClientRect();
     let mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
     gpuPicker.updateObject();
     gpuPicker.setPickingPosition(mousePosition.x, mousePosition.y);
-    gpuPicker.pick(camera);
+    gpuPicker.pick(camera, wall);
     
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
@@ -358,6 +372,7 @@ const SelectionManager = connect(
           intersects[0] = controlPoint[0];
         }
         target = getIntersectionTarget(intersects[0])
+        console.log(intersects[0].point);
         if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
         {
           let characterId = target.characterId;

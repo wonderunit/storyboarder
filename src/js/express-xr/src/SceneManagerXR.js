@@ -345,7 +345,6 @@ const SceneContent = ({
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
     selectionCamera.current.updateMatrixWorld(true);
-    console.log(intersections);
     if (intersections.length > 0) {
       let didMakeSelection = onIntersection(controller, intersections)
       if (didMakeSelection) {

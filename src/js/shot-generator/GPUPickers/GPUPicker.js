@@ -13,6 +13,7 @@ class GPUPicker
         this.isInitialized = false;
         this.idBonus = 1;
         this.vrModeEnabled = false;
+        this.allowedObjectsTypes = [];
     }
 
     initialize(scene, renderer)
@@ -64,6 +65,19 @@ class GPUPicker
             return true;
         }
         return false;
+    }
+
+    addConesToArray(source, array)
+    {
+        let index = 4;
+        for(let i = 0, n = array.length; i < n; i+=index)
+        {
+            source.push(array[i]);
+            source.push(array[i + 1]);
+            source.push(array[i + 2]);
+            source.push(array[i + 3]);
+
+        }
     }
 
     //#region Virtual merhods
