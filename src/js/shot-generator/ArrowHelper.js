@@ -47,7 +47,8 @@ const ArrowHelper = React.memo(({ scene, title, description, position, rotation 
   useMemo(() => {
     console.log('\t', 'ArrowHelper changed position', position)
     if (ref.current) {
-      ref.current.position.set(position)
+      let { x, y, z } = position
+      ref.current.position.set(x, y, z)
       iconRef.current.position.copy(ref.current.position)
     }
   }, [ref.current, position])
@@ -55,7 +56,8 @@ const ArrowHelper = React.memo(({ scene, title, description, position, rotation 
   useMemo(() => {
     console.log('\t', 'ArrowHelper changed rotation', rotation)
     if (ref.current) {
-      ref.current.rotation.set(rotation)
+      let { x, y, z } = rotation
+      ref.current.rotation.set(x, y, z)
       iconRef.current.rotation.copy(ref.current.rotation)
     }
   }, [ref.current, rotation])

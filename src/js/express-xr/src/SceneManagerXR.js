@@ -1268,6 +1268,19 @@ const SceneContent = connect()(
     setTeleportRot(rotation)
   }, [])
 
+  useEffect(() => {
+    dispatch({
+      type: 'UPDATE_LOCAL',
+      payload: {
+        id: 'teleport',
+        type: 'cursor',
+        label: 'teleport',
+        position: teleportPos,
+        rotation: { x: 0, y: teleportRot + (Math.PI / 4 * camExtraRot), z: 0}
+      }
+    })
+  }, [teleportPos, teleportRot, camExtraRot])
+
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
     <group

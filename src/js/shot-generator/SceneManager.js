@@ -50,6 +50,7 @@ const SceneManager = connect(
   state => ({
     world: getWorld(state),
     sceneObjects: getSceneObjects(state),
+    locals: state.locals,
     remoteInput: state.input,
     selections: getSelections(state),
     selectedBone: getSelectedBone(state),
@@ -76,7 +77,7 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera }) => {
+  ({ world, sceneObjects, locals, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -615,28 +616,18 @@ const SceneManager = connect(
     // helpers, local to the system
     // not part of the scene
     // e.g.: user's headset cursor position
-    const localComponents = useMemo(() => [
-      [
+    const localComponents = useMemo(
+      () => Object.values(locals).map(local => [
         ArrowHelper, {
-          key: 'teleport',
-          name: 'teleport',
-          title: 'teleport',
-          position: [0, 0, 0],
-          rotation: [0, 0, 0],
+          key: `local-${local.id}`,
+          title: local.label,
+          position: local.position,
+          rotation: local.rotation,
           scene
         }
-      ],
-      [
-        ArrowHelper, {
-          key: 'display',
-          name: 'display',
-          description: 'hmd',
-          position: [0, 0, 0],
-          rotation: [0, 0, 0],
-          scene
-        }
-      ]
-    ], [])
+      ]),
+      [locals]
+    )
 
     // TODO Scene parent object??
     return [

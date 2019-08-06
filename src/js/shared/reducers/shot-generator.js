@@ -7,6 +7,8 @@ const { combineReducers } = require('redux')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
 
+const Locals = require('./shot-generator/localsReducer')
+
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
@@ -578,6 +580,7 @@ const initialState = {
     selections: [],
     selectedBone: null,
   },
+  locals: Locals.reducer(),
 
   meta: {
     storyboarderFilePath: undefined,
@@ -1173,6 +1176,11 @@ const rootReducer = reduceReducers(
   }),
 
   checksReducer,
+  
+  (state, action) => ({
+    ...state,
+    locals: Locals.reducer(state.locals, action)
+  }),
 
   // `meta` must run last, to calculate lastSavedHash
   (state, action) => ({
