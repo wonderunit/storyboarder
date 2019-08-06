@@ -26,8 +26,6 @@ const ArrowHelper = React.memo(({ scene, title, description, position, rotation 
 
     ref.current.add(arrowHelper)
     ref.current.add(axesHelper)
-    ref.current.add(iconRef.current)
-
 
     // "always show"
     ref.current.layers.disable(0)
@@ -39,6 +37,7 @@ const ArrowHelper = React.memo(({ scene, title, description, position, rotation 
     ref.current.layers.disable(3)
 
     scene.add(ref.current)
+    scene.add(iconRef.current)
 
     return function cleanup () {
       scene.remove(ref.current)
