@@ -389,19 +389,23 @@ const GUI = ({
                   bWidth * 3) *
                   -1 *
                   invertGUI,
-                (uiScale * 2 * selectorScale + uiScale * 0.5) * 0.5 - uiScale * 0.5,
+                (uiScale * 2 * selectorScale + uiScale * 0.5 + bWidth * 2) * 0.5 - uiScale * 0.5,
                 0
               ]}
             >
               <primitive
-                position={[-uiScale * selectorScale + bWidth, (uiScale * 1.25 - uiScale * 0.325) * selectorScale, 0.001]}
+                position={[
+                  -uiScale * selectorScale + bWidth,
+                  (uiScale * 1.25 - uiScale * 0.325) * selectorScale + bWidth,
+                  0.001
+                ]}
                 object={textCreator.create('Poses', { color: 0xffffff, scale: 0.475, centerText: false })}
               />
               <GUIElement
                 {...{
                   name: 'selector_ui',
                   width: uiScale * 2 * selectorScale + bWidth,
-                  height: uiScale * 2 * selectorScale + uiScale * 0.5,
+                  height: uiScale * 2 * selectorScale + uiScale * 0.5 + bWidth * 2,
                   radius: bWidth,
                   color: 'black'
                 }}
@@ -413,7 +417,7 @@ const GUI = ({
                     position={[
                       uiScale * selectorScale + bWidth * 0.75,
                       (-(uiScale * 2) / 8 + uiScale) * selectorScale -
-                        ((uiScale * 6) / 4 / (Math.ceil(poses.length / 4) - 4)) * selectorOffset * selectorScale,
+                        ((uiScale * 6) / 4 / (Math.ceil(poses.length / 4) - 3)) * selectorOffset * selectorScale,
                       0
                     ]}
                   >
@@ -431,18 +435,31 @@ const GUI = ({
 
                 {poseVisibleAmount.map((pose, idx) => {
                   const x = ((idx % 4) * 0.5 - 0.75) * selectorScale
-                  const y = (parseInt(idx / 4) * 0.5 - 0.75) * -1 * selectorScale
+                  const y = ((parseInt(idx / 4) * 0.5) / 0.68 - 0.75) * -1 * selectorScale
                   const texture = poseTextures[idx + selectorOffset * 4]
 
                   if (texture && texture.image) {
                     return (
                       <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                        <primitive
+                          scale={[0.33, 0.33, 0.33]}
+                          position={[
+                            uiScale * -0.25 * selectorScale,
+                            (uiScale * -0.25 * selectorScale) / 0.68 - bWidth,
+                            0.002
+                          ]}
+                          object={textCreator.create(pose.name, {
+                            color: 0xffffff,
+                            scale: 0.475,
+                            centerText: false
+                          })}
+                        />
                         <GUIElement
                           {...{
                             icon: texture,
                             name: `selector-pose_${poses[idx + selectorOffset * 4].id}`,
                             width: uiScale * 0.5 * selectorScale,
-                            height: uiScale * 0.5 * selectorScale,
+                            height: (uiScale * 0.5 * selectorScale) / 0.68,
                             radius: bWidth,
                             color: 0x3e4043
                           }}
@@ -484,7 +501,6 @@ const GUI = ({
               />
 
               <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
-
                 {showScroller && (
                   <group
                     position={[
@@ -547,7 +563,11 @@ const GUI = ({
               ]}
             >
               <primitive
-                position={[-uiScale * selectorScale + bWidth, (uiScale * 1.25 - uiScale * 0.325) * selectorScale + bWidth, 0.001]}
+                position={[
+                  -uiScale * selectorScale + bWidth,
+                  (uiScale * 1.25 - uiScale * 0.325) * selectorScale + bWidth,
+                  0.001
+                ]}
                 object={textCreator.create('Objects', { color: 0xffffff, scale: 0.475, centerText: false })}
               />
               <GUIElement
@@ -591,7 +611,7 @@ const GUI = ({
                     return (
                       <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
                         <primitive
-                          scale={[0.4, 0.4, 0.4]}
+                          scale={[0.33, 0.33, 0.33]}
                           position={[
                             uiScale * -0.25 * selectorScale,
                             (uiScale * -0.25 * selectorScale) / 0.68 - bWidth,
@@ -1057,8 +1077,8 @@ const GUI = ({
           />
         </group>
 
-         {
-          rStatsRef.current && <group
+        {rStatsRef.current && (
+          <group
             position={[
               (camSettings.size * 0.5 * aspectRatio + uiScale * 1.75 + bWidth * 3) * invertGUI,
               uiScale * -0.25 + bWidth * -0.5,
@@ -1067,7 +1087,7 @@ const GUI = ({
           >
             <primitive object={fpsMeter} />)
           </group>
-        }
+        )}
 
         <group
           name="fov_slider"
