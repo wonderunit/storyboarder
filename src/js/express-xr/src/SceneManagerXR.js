@@ -1276,7 +1276,7 @@ const SceneContent = connect()(
         id: 'teleport',
         type: 'cursor',
         label: 'teleport',
-        position: teleportPos,
+        position: { x: teleportPos.x, y: teleportPos.y, z: teleportPos.z },
         rotation: { x: 0, y: teleportRot + (Math.PI / 4 * camExtraRot), z: 0}
       }
     })
