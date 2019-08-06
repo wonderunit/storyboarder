@@ -166,7 +166,7 @@
     "ramda": "0.25.0",
     "react": "16.8.3",
     "react-dom": "16.8.3",
-    "react-redux": "6.0.1",
+    "react-redux": "7.1.0",
     "react-three-fiber": "2.2.12",
     "react-window": "1.5.0",
     "redux": "4.0.1",
