@@ -1280,7 +1280,49 @@ const SceneContent = connect()(
         rotation: { x: 0, y: teleportRot + (Math.PI / 4 * camExtraRot), z: 0}
       }
     })
+    dispatch({
+      type: 'UPDATE_LOCAL',
+      payload: {
+        id: 'display',
+        type: 'cursor',
+        label: 'display',
+        position: {
+          x: hmdCamera.current.position.x,
+          y: hmdCamera.current.position.y,
+          z: hmdCamera.current.position.z
+        },
+        rotation: {
+          x: hmdCamera.current.rotation.x,
+          y: hmdCamera.current.rotation.y,
+          z: hmdCamera.current.rotation.z
+        }
+      }
+    })
   }, [teleportPos, teleportRot, camExtraRot])
+
+  useInterval(
+    () => {
+      dispatch({
+        type: 'UPDATE_LOCAL',
+        payload: {
+          id: 'display',
+          type: 'cursor',
+          label: 'display',
+          position: {
+            x: hmdCamera.current.position.x,
+            y: hmdCamera.current.position.y,
+            z: hmdCamera.current.position.z
+          },
+          rotation: {
+            x: hmdCamera.current.rotation.x,
+            y: hmdCamera.current.rotation.y,
+            z: hmdCamera.current.rotation.z
+          }
+        }
+      })
+    },
+    1000
+  )
 
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
