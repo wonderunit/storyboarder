@@ -6,8 +6,8 @@ class XRGPUPicker extends GPUPicker
     {
         super();
         this.addedGroupsId = [];
-        this.allowedObjectsTypes = ["object", "character", "bonesHelper", "virtual-camera", "light"];
-        this.idBonus = 1;
+        this.allowedObjectsTypes = [/* "object", */ "character", "bonesHelper"/* , "virtual-camera", "light" */];
+        this.idBonus = 300;
     }
 
     initalizeChildren(intersectObjects)
@@ -25,11 +25,11 @@ class XRGPUPicker extends GPUPicker
             this.getAllSceneMeshes(intesectable, objects);
             this.addedGroupsId.push(intesectable.uuid);
         }
-
+        let sceneElementsAmount = this.pickingScene.children.length;
         for(let i = 0, n = objects.length; i < n; i++)
         {
             let object = objects[i];
-            const id = this.pickingScene.children.length + i + this.idBonus;
+            const id = sceneElementsAmount + i + this.idBonus;
             this.gpuPickerHelper.selectableObjects[id] = object;
             const pickingMaterial = new THREE.MeshPhongMaterial({
                 emissive: new THREE.Color(id),
@@ -116,6 +116,7 @@ class XRGPUPicker extends GPUPicker
             }
             if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].skeleton)
             {
+                console.log("updating bones");
                 let clonnedSkinnedMesh = null;
                 clonnedSkinnedMesh = clonnedObject.children[0].children.find(child => child.type === "SkinnedMesh");
                 let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
@@ -138,7 +139,7 @@ class XRGPUPicker extends GPUPicker
             return;
         }
         
-        if(sceneMesh.userData && sceneMesh.userData.type === "gui")
+        /* if(sceneMesh.userData && sceneMesh.userData.type === "gui")
         {
             sceneMesh.traverse(object =>
             {
@@ -151,12 +152,11 @@ class XRGPUPicker extends GPUPicker
                 }  
             });
         }
-        else if(sceneMesh.userData && this.allowedObjectsTypes.some(allowedObjects => allowedObjects === sceneMesh.userData.type))
+        else  */if(sceneMesh.userData && this.allowedObjectsTypes.some(allowedObjects => allowedObjects === sceneMesh.userData.type))
         {
             if(sceneMesh.userData.type === "virtual-camera" || sceneMesh.userData.type === "light")
             {
                 sceneChildren = sceneMesh.children[0].children;
-                console.log(sceneChildren);
             }
             for(let i = 0, n = sceneChildren.length; i < n; i++)
             {
@@ -169,6 +169,7 @@ class XRGPUPicker extends GPUPicker
 
                 if(child.children.length !== 0 && child.children[0].type === "BonesHelper")
                 {
+                    console.log(child.children[0].cones);
                     this.addConesToArray(meshes, child.children[0].cones );
                     return;
                 }

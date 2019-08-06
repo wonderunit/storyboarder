@@ -21,6 +21,7 @@ class GPUPickerHelper
                 depthTest: true,
                 depthWrite: true,
                 skinning: true,
+                morphTargets: true,
                 depthPacking: THREE.RGBADepthPacking,
                 side: THREE.FrontSide,
                 blending: THREE.NoBlending
@@ -62,7 +63,16 @@ class GPUPickerHelper
         camera.clearViewOffset();
         console.log(scene);
         
-      
+        if(wall)
+        {
+            this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
+            renderer.setRenderTarget(this.renderTarget);
+            renderer.render(scene, camera);
+            renderer.setRenderTarget(null);
+            wall.material.map = this.renderTarget.texture;
+            wall.needsUpdate = true;
+            wall.material.needsUpdate = true;
+        }
         
         renderer.readRenderTargetPixels(
             pickingTexture,
@@ -107,16 +117,7 @@ class GPUPickerHelper
             renderer.render(this.depthScene, camera);
             renderer.setRenderTarget(null);
             camera.clearViewOffset();
-            if(wall)
-            {
-                this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
-                renderer.setRenderTarget(this.renderTarget);
-                renderer.render(this.depthScene, camera);
-                renderer.setRenderTarget(null);
-                wall.material.map = this.renderTarget.texture;
-                wall.needsUpdate = true;
-                wall.material.needsUpdate = true;
-            }
+          
             this.depthScene.remove(selectedObject);
             scene.add(selectedObject);
             
