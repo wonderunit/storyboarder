@@ -5,7 +5,7 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree, useRender } = require('react-three-fiber')
 
-const { connect } = require('react-redux')
+const { connect, useStore, useDispatch, Provider } = require('react-redux')
 const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 const { ActionCreators } = require('redux-undo')
@@ -124,7 +124,9 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
   return controllers
 }
 
-const SceneContent = ({
+// TODO mapStateToProps
+const SceneContent = connect()(
+({
   aspectRatio,
   models,
   presets,
@@ -142,6 +144,8 @@ const SceneContent = ({
   undo,
   redo
 }) => {
+  const dispatch = useDispatch()
+
   const teleportMaxDist = 10
   const rStatsRef = useRef(null)
   // const hmdCameraGroup = useRef(null)
@@ -1415,7 +1419,7 @@ const SceneContent = ({
       </group>
     </>
   )
-}
+})
 
 const XRStartButton = ({ }) => {
   const { gl } = useThree()
@@ -1470,6 +1474,8 @@ const SceneManagerXR = connect(
     undo,
     redo
   }) => {
+    const store = useStore()
+
     const [isLoading, setIsLoading] = useState(false)
     const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
     const [attachments, attachmentsDispatch] = useAttachmentLoader()
@@ -1566,29 +1572,31 @@ const SceneManagerXR = connect(
           }>LOADING …</div>
         }
         <Canvas vr>
-          {
-            hasLoadedOnce && <XRStartButton />
-          }
-          <SceneContent
-            {...{
-              aspectRatio,
-              models,
-              presets,
-              sceneObjects,
-              getModelData,
-              activeCamera,
-              world,
-              createObject,
-              updateObject,
-              deleteObjects,
-              duplicateObjects,
-              selectedBone,
-              selectBone,
-              updateCharacterSkeleton,
-              undo,
-              redo
-            }}
-          />
+          <Provider store={store}>
+            {
+              hasLoadedOnce && <XRStartButton />
+            }
+            <SceneContent
+              {...{
+                aspectRatio,
+                models,
+                presets,
+                sceneObjects,
+                getModelData,
+                activeCamera,
+                world,
+                createObject,
+                updateObject,
+                deleteObjects,
+                duplicateObjects,
+                selectedBone,
+                selectBone,
+                updateCharacterSkeleton,
+                undo,
+                redo
+              }}
+            />
+          </Provider>
         </Canvas>
         <div className="scene-overlay"></div>
       </>
