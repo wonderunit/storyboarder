@@ -6,18 +6,21 @@ class XRGPUPicker extends GPUPicker
     {
         super();
         this.addedGroupsId = [];
-        this.allowedObjectsTypes = ["object", "character", "bonesHelper", "gui"];
+        this.allowedObjectsTypes = ["object", "character", "bonesHelper"];
+        this.idBonus = 400;
     }
 
     initalizeChildren(intersectObjects)
     {
         super.initalizeChildren(intersectObjects);
         let objects = [];
+        console.log(intersectObjects);
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
             if(this.addedGroupsId.some(group => group === intesectable.uuid))
             {
+                console.log("Already added");
                 continue;
             }
             this.getAllSceneMeshes(intesectable, objects);
@@ -71,20 +74,17 @@ class XRGPUPicker extends GPUPicker
                 pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
                 node.type = "gui"
                 node.add(pickingCube);
-                if(object.name === "camera_button")
-                {
-                    object.updateMatrixWorld(true);
-                }
             }
             else
             {  
                 pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
-                node.type = object.userData.type;
+                node.type = "object";
                 node.add(pickingCube);
             }
             pickingCube.matrixAutoUpdate = false;
             node.matrixAutoUpdate = false;
             this.pickingScene.add(node);
+            node.pickerId = id;
             pickingCube.pickerId = id;
         } 
     }
@@ -94,11 +94,11 @@ class XRGPUPicker extends GPUPicker
         super.updateObject();
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
-            let clonnedObject = null;
+            let clonnedObject = this.pickingScene.children[i];
             let originalObject = null;
-            clonnedObject = this.pickingScene.children[i];
-            originalObject = clonnedObject.type === "character" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent : this.gpuPickerHelper.selectableObjects[i + this.idBonus];
-            originalObject = clonnedObject.type === "gui" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent : originalObject;
+           
+            originalObject = clonnedObject.type === "character" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].parent : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].parent;
+            originalObject = clonnedObject.type === "gui" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].parent : originalObject;
             if(!originalObject)
             {
                 continue;
@@ -106,25 +106,22 @@ class XRGPUPicker extends GPUPicker
             if(clonnedObject.type === "gui")
             {
                 clonnedObject.position.copy(originalObject.worldPosition());
-                //clonnedObject.position.z = -clonnedObject.position.z;
-                clonnedObject.position.x -= hmdCam.position.x;
-                clonnedObject.position.z -= hmdCam.position.z;
                 clonnedObject.quaternion.copy(originalObject.worldQuaternion());
                 clonnedObject.scale.copy(originalObject.worldScale());
                 clonnedObject.updateMatrixWorld(true);
             }
-            else
+            else if(clonnedObject.type === "object")
             {
                 clonnedObject.position.copy(originalObject.worldPosition());
                 clonnedObject.quaternion.copy(originalObject.worldQuaternion());
                 clonnedObject.scale.copy(originalObject.worldScale());
                 clonnedObject.updateMatrixWorld(true);
             }
-            if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[i + this.idBonus].skeleton)
+            else if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].skeleton)
             {
                 let clonnedSkinnedMesh = null;
                 clonnedSkinnedMesh = clonnedObject.children[0].children.find(child => child.type === "SkinnedMesh");
-                let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[i + this.idBonus];
+                let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
             
                 let originalRootBone = originalSkinnedMesh.skeleton.bones[0];
                 let clonnedRootBone = clonnedSkinnedMesh.skeleton.bones[0];
@@ -143,42 +140,40 @@ class XRGPUPicker extends GPUPicker
         {
             return;
         }
-        if(sceneMesh.userData && this.allowedObjectsTypes.some(allowObject => allowObject === sceneMesh.userData.type))
+        
+        /* if(sceneMesh.userData && sceneMesh.userData.type === "gui")
         {
-            if(sceneMesh.userData.type === "gui")
+            sceneMesh.traverse(object =>
             {
-                sceneMesh.traverse(object =>
-                    {
-                        if(object.type === "Mesh" && !object.name.includes("_icon")) 
-                        {
-                            meshes.push(object); 
-                            return;
-                        }  
-                    });
-            }
-            else
-            {
-                for(let i = 0, n = sceneChildren.length; i < n; i++)
+                if(object.type === "Mesh" && !object.name.includes("_icon")) 
                 {
-                    let child = sceneChildren[i];
-                    if(child.type === "Mesh") 
-                    {
-                        meshes.push(child); 
-                        return;
-                    }  
+                    meshes.push(object); 
+                    return;
+                }  
+            });
+        }
+        else  */if(sceneMesh.userData && (sceneMesh.userData.type === "object" || sceneMesh.userData.type === "character" ))
+        {
+            for(let i = 0, n = sceneChildren.length; i < n; i++)
+            {
+                let child = sceneChildren[i];
+                if(child.type === "Mesh") 
+                {
+                    meshes.push(child); 
+                    return;
+                }  
 
-                    if(child.children.length !== 0 && child.children[0].type === "BonesHelper")
-                    {
-                        this.addConesToArray(meshes, child.children[0].cones );
-                        return;
-                    }
-
-                    if(child.children.length !== 0 && child.children[0].type === "LOD")
-                    {
-                        meshes.push(child.children[0].children[0]);
-                    }
+                if(child.children.length !== 0 && child.children[0].type === "BonesHelper")
+                {
+                    this.addConesToArray(meshes, child.children[0].cones );
+                    return;
                 }
-            }
+
+                if(child.children.length !== 0 && child.children[0].type === "LOD")
+                {
+                    meshes.push(child.children[0].children[0]);
+                }
+            }   
         }
         for(let i = 0, n = sceneChildren.length; i < n; i++)
         {

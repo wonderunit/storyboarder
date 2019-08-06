@@ -76,10 +76,8 @@ class EditorGPUPicker extends GPUPicker
         super.updateObject();
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
-            let clonnedObject = null;
-            let originalObject = null;
-            clonnedObject = this.pickingScene.children[i];
-            originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[i + this.idBonus] : this.gpuPickerHelper.selectableObjects[i + this.idBonus].parent;
+            let clonnedObject = this.pickingScene.children[i];;
+            let originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId] : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].parent;
             if(!originalObject)
             {
                 continue;
@@ -88,11 +86,11 @@ class EditorGPUPicker extends GPUPicker
             clonnedObject.quaternion.copy(originalObject.worldQuaternion());
             clonnedObject.scale.copy(originalObject.worldScale());
             clonnedObject.updateMatrixWorld(true);
-            if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[i + this.idBonus].skeleton)
+            if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].skeleton)
             {
                 let clonnedSkinnedMesh = null;
                 clonnedSkinnedMesh = clonnedObject.children.find(child => child.type === "SkinnedMesh");
-                let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[i + this.idBonus];
+                let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
             
                 let originalRootBone = originalSkinnedMesh.skeleton.bones[0];
                 let clonnedRootBone = clonnedSkinnedMesh.skeleton.bones[0];

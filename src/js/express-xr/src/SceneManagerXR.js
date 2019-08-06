@@ -163,7 +163,7 @@ const SceneContent = ({
   const selectedObjRef = useRef(null)
   const selectionCamera = useRef(null);
   const wall = useRef(null);
-
+  const cameraHelper = useRef(null);
   const gpuPicker = useRef(new XRGPUPicker());
   
   // Rotate Bone
@@ -294,7 +294,7 @@ const SceneContent = ({
   
     if(!controller.isSelectionAdded)
     {
-      if(otherController.isSelectionAdded)
+      if(otherController && otherController.isSelectionAdded)
       {
         for(let i = 0, n = controller.children.length; i < n; i++)
         {
@@ -317,6 +317,17 @@ const SceneContent = ({
       }
       selectionCamera.current.updateMatrix();
       selectionCamera.current.updateMatrixWorld(true);
+      if(!cameraHelper.current)
+      {
+        cameraHelper.current = new THREE.CameraHelper( selectionCamera.current );
+        scene.add( cameraHelper.current );
+        cameraHelper.current.update();
+      }
+      else
+      {
+        cameraHelper.current.camera = selectionCamera.current;
+        cameraHelper.current.update();
+      } 
     }
 
     if(!wall.current)
@@ -326,7 +337,7 @@ const SceneContent = ({
         emissive: 0x0,
         flatShading: false } );
       let mesh = new THREE.Mesh( geometry, material );
-      //scene.add(mesh);
+      scene.add(mesh);
       mesh.position.y = mesh.position.y + 5;
       wall.current = mesh;
     }
@@ -334,19 +345,25 @@ const SceneContent = ({
     
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
-    //console.log(intersectArray.current);
-    const hmdCam = xrOffset.current.children.filter(child => child.type === 'PerspectiveCamera')[0]
     gpuPicker.current.updateObject(controller);
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-    //
-    let pickedObjects = gpuPicker.current.pick(selectCamera/* , wall.current */);
-    const intersections = getIntersections(controller, pickedObjects);
+    let pickedObjects = gpuPicker.current.pick(selectionCamera.current, wall.current);
+
+    const intersections = pickedObjects;//getIntersections(controller, pickedObjects);
     
-    selectionCamera.current.position.set(0, 0, 0);
+    /* selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
-    selectionCamera.current.updateMatrixWorld(true);
+    selectionCamera.current.updateMatrixWorld(true); */
     if (intersections.length > 0) {
-      let didMakeSelection = onIntersection(controller, intersections)
+
+      const tempMatrix = new THREE.Matrix4()
+      tempMatrix.identity().extractRotation(controller.matrixWorld)
+      const tiltControllerMatrix = new THREE.Matrix4().makeRotationX((Math.PI / 180) * -45)
+      tempMatrix.multiply(tiltControllerMatrix)
+      let origin = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
+      pickedObjects[0].distance = origin.distanceTo(pickedObjects[0].point);
+
+      let didMakeSelection = onIntersection(controller, pickedObjects)
       if (didMakeSelection) {
         soundSelect.current.play()
       }

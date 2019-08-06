@@ -45,9 +45,10 @@ class GPUPickerHelper
             this.pickedObject = undefined;
             this.returnObject = [];
         }
-        console.log(camera);
         let vrEnabled = renderer.vr.enabled;
         renderer.vr.enabled = false;
+        console.log(renderer);
+        console.log("Width and height", (renderer.domElement.width) / 2, (renderer.domElement.height) / 2);
         const pixelRatio = renderer.getPixelRatio();
         camera.setViewOffset(
             renderer.domElement.width,
@@ -61,8 +62,20 @@ class GPUPickerHelper
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         camera.clearViewOffset();
-        console.log(this.pickingTexture);
-        renderer.vr.enabled = vrEnabled ? true : false;
+        
+        if(wall)
+        {
+            this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
+            renderer.setRenderTarget(this.renderTarget);
+            renderer.render(scene, camera);
+            renderer.setRenderTarget(null);
+            wall.material.map = this.renderTarget.texture;
+            wall.needsUpdate = true;
+            wall.material.needsUpdate = true;
+            console.log(this.renderTarget);
+        }
+        console.log(scene);
+        
         renderer.readRenderTargetPixels(
             pickingTexture,
             0, 
@@ -76,23 +89,17 @@ class GPUPickerHelper
             (pixelBuffer[1] << 8) |
             (pixelBuffer[2]);
 
-        renderer.readRenderTargetPixels(
-            pickingTexture,
-            0, 
-            0,
-            1,
-            1,
-            pixelBuffer);
-
         const intersectedObject = this.selectableObjects[id];
+        let canvasPos = new THREE.Vector3();
         if(intersectedObject)
         {
-            
             this.pickedObject = intersectedObject;
             this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
             this.pickedObject.material.color =  this.selectedColor;
             let selectedObject = scene.children.find(child => child.pickerId === id);
+            console.log(selectedObject);
             this.directionalLight.updateMatrixWorld(true);
+            scene.remove(selectedObject);
             this.depthScene.add(selectedObject);
             this.depthScene.overrideMaterial.map = intersectedObject.material.map;
             this.depthScene.needsUpdate = true;
@@ -108,15 +115,11 @@ class GPUPickerHelper
             renderer.render(this.depthScene, camera);
             renderer.setRenderTarget(null);
             camera.clearViewOffset();
-         //
-            if(wall)
-            {
-                this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
-                renderer.setRenderTarget(this.renderTarget);
-                renderer.render(this.depthScene, camera);
-                renderer.setRenderTarget(null);
-                wall.material.map = this.renderTarget.texture;
-            }
+            //
+            this.depthScene.remove(selectedObject);
+            scene.add(selectedObject);
+            //selectedObject.updateMatrixWorld(true);
+            
             renderer.readRenderTargetPixels(
                 pickingTexture,
                 0, 
@@ -125,24 +128,25 @@ class GPUPickerHelper
                 1,
                 pixelBuffer);
             let vector = new THREE.Vector4().fromArray(pixelBuffer).multiplyScalar(1/255);
-            id = this.unpackRGBAToDepth(vector);
-            scene.add(selectedObject);
+            let zDepth = this.unpackRGBAToDepth(vector);
 
             let x = cssPosition.x / renderer.domElement.width;
             let y = cssPosition.y / renderer.domElement.height;
             x = 2 * x - 1; 
             y = 2 * (1 - y) - 1; 
-            id = 2 * id - 1;
-            let canvasPos = new THREE.Vector3(x, y, id);
+            zDepth = 2 * zDepth - 1;
+            canvasPos.set(x, y, zDepth);
             canvasPos.applyMatrix4(camera.projectionMatrixInverse);
             canvasPos.applyMatrix4(camera.matrix);
             console.log(canvasPos);
         }
+        renderer.vr.enabled = vrEnabled ? true : false;
+      
         if(!intersectedObject)
         {
             return this.returnObject;
         }
-        this.returnObject.push(intersectedObject);
+        this.returnObject.push({ object: intersectedObject, point: canvasPos});
         console.log(this.selectableObjects);
         return this.returnObject;
     }
