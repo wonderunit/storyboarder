@@ -58,8 +58,19 @@ class XRServer {
     })
 
     app.post('/state.json', (req, res) => {
-      let payload = req.body
-      store.dispatch({ type: 'LOAD_SCENE', payload })
+      let { state } = req.body
+      let { world, sceneObjects, activeCamera } = state
+      let { locals } = state
+
+      store.dispatch({ type: 'LOAD_SCENE', payload: { world, sceneObjects, activeCamera} })
+
+      Object.entries(locals).forEach(([id, local]) => {
+        store.dispatch({
+          type: 'UPDATE_LOCAL',
+          payload: local
+        })
+      })
+
       res.status(200).send({ ok: true })
     })
 

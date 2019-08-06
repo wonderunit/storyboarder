@@ -43,11 +43,14 @@ fetch('/state.json')
       // after 5s, start POST'ing changes back
       setTimeout(() => {
         store.subscribe(() => {
-          let state = {
-            ...getSerializedState(store.getState()),
-            // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
+          let state = store.getState()
+          let payload = {
+            state: {
+              ...getSerializedState(state),
+              // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
+            }
           }
-          sendStateToServer({ state })
+          sendStateToServer( payload )
         })
       }, 5000)
     }
@@ -65,7 +68,9 @@ const sendStateToServer = ({ state }) => {
     '/state.json',
     {
       method: 'POST',
-      body: JSON.stringify(state),
+      body: JSON.stringify({
+        state
+      }),
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
       },
