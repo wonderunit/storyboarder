@@ -15,7 +15,7 @@ class GPUPickerHelper
             minFilter: THREE.LinearFilter,
             magFilter: THREE.LinearFilter
           });
-        this.returnObject = [];
+       
         this.depthMaterial = new THREE.MeshDepthMaterial(
             { 
                 depthTest: true,
@@ -43,7 +43,6 @@ class GPUPickerHelper
         {
             this.pickedObject.material.color = this.pickedObjectSaveColor;
             this.pickedObject = undefined;
-            this.returnObject = [];
         }
         let vrEnabled = renderer.vr.enabled;
         renderer.vr.enabled = false;
@@ -91,8 +90,11 @@ class GPUPickerHelper
         if(intersectedObject)
         {
             this.pickedObject = intersectedObject;
-            this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
-            this.pickedObject.material.color =  this.selectedColor;
+            if(this.pickedObject.material.color)
+            {
+                this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
+                this.pickedObject.material.color =  this.selectedColor;
+            }
             let selectedObject = scene.children.find(child => child.pickerId === id);
             console.log(selectedObject);
             this.directionalLight.updateMatrixWorld(true);
@@ -135,14 +137,15 @@ class GPUPickerHelper
             console.log(canvasPos);
         }
         renderer.vr.enabled = vrEnabled ? true : false;
-      
+        let returnObject = [];
         if(!intersectedObject)
         {
-            return this.returnObject;
+            return returnObject;
         }
-        this.returnObject.push({ object: intersectedObject, point: canvasPos});
+        returnObject.push({ object: intersectedObject, point: canvasPos});
+        console.log(returnObject);
         console.log(this.selectableObjects);
-        return this.returnObject;
+        return returnObject;
     }
 
     unpackRGBAToDepth( v ) 

@@ -6,8 +6,8 @@ class XRGPUPicker extends GPUPicker
     {
         super();
         this.addedGroupsId = [];
-        this.allowedObjectsTypes = ["object", "character", "bonesHelper"];
-        this.idBonus = 400;
+        this.allowedObjectsTypes = ["object", "character", "bonesHelper", "virtual-camera", "light"];
+        this.idBonus = 1;
     }
 
     initalizeChildren(intersectObjects)
@@ -20,7 +20,6 @@ class XRGPUPicker extends GPUPicker
             let intesectable = intersectObjects[i];
             if(intesectable.userData.type !== "gui" && this.addedGroupsId.some(group => group === intesectable.uuid))
             {
-                console.log("Already added");
                 continue;
             }
             this.getAllSceneMeshes(intesectable, objects);
@@ -30,7 +29,6 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = objects.length; i < n; i++)
         {
             let object = objects[i];
-            console.log(this.pickingScene.children.length);
             const id = this.pickingScene.children.length + i + this.idBonus;
             this.gpuPickerHelper.selectableObjects[id] = object;
             const pickingMaterial = new THREE.MeshPhongMaterial({
@@ -153,8 +151,13 @@ class XRGPUPicker extends GPUPicker
                 }  
             });
         }
-        else if(sceneMesh.userData && (sceneMesh.userData.type === "object" || sceneMesh.userData.type === "character" ))
+        else if(sceneMesh.userData && this.allowedObjectsTypes.some(allowedObjects => allowedObjects === sceneMesh.userData.type))
         {
+            if(sceneMesh.userData.type === "virtual-camera" || sceneMesh.userData.type === "light")
+            {
+                sceneChildren = sceneMesh.children[0].children;
+                console.log(sceneChildren);
+            }
             for(let i = 0, n = sceneChildren.length; i < n; i++)
             {
                 let child = sceneChildren[i];

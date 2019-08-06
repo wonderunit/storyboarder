@@ -372,7 +372,7 @@ const SceneContent = ({
       }
 
       if (intersection.object.userData.type === 'view') {
-        intersection = intersections[1]
+        intersection = intersections[0]
       }
 
       if (intersection.object.name.includes('selector-pose')) {
