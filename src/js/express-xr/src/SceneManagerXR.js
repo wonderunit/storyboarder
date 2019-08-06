@@ -1269,6 +1269,19 @@ const SceneContent = connect()(
     setTeleportRot(rotation)
   }, [])
 
+  const positionDataFor = object3d => {
+    let { x, y, z } = object3d.localToWorld(object3d.position.clone())
+    return {
+      position: { x, y, z },
+    }
+  }
+  const rotationDataFor = object3d => {
+    let { x, y, z } = new THREE.Euler().setFromQuaternion( object3d.getWorldQuaternion() )
+    return {
+      rotation: { x, y, z }
+    }
+  }
+
   useEffect(() => {
     dispatch({
       type: 'UPDATE_LOCAL',
@@ -1276,8 +1289,10 @@ const SceneContent = connect()(
         id: 'teleport',
         type: 'cursor',
         label: 'teleport',
-        position: { x: teleportPos.x, y: teleportPos.y, z: teleportPos.z },
-        rotation: { x: 0, y: teleportRot + (Math.PI / 4 * camExtraRot), z: 0}
+        ...positionDataFor(hmdCameraGroup.current),
+        ...rotationDataFor(hmdCameraGroup.current)
+        // position: { x: teleportPos.x, y: teleportPos.y, z: teleportPos.z },
+        // rotation: { x: 0, y: teleportRot + (Math.PI / 4 * camExtraRot), z: 0}
       }
     })
     dispatch({
@@ -1286,16 +1301,8 @@ const SceneContent = connect()(
         id: 'display',
         type: 'cursor',
         label: 'display',
-        position: {
-          x: hmdCamera.current.position.x,
-          y: hmdCamera.current.position.y,
-          z: hmdCamera.current.position.z
-        },
-        rotation: {
-          x: hmdCamera.current.rotation.x,
-          y: hmdCamera.current.rotation.y,
-          z: hmdCamera.current.rotation.z
-        }
+        ...positionDataFor(hmdCamera.current),
+        ...rotationDataFor(hmdCamera.current)
       }
     })
   }, [teleportPos, teleportRot, camExtraRot])
@@ -1308,16 +1315,8 @@ const SceneContent = connect()(
           id: 'display',
           type: 'cursor',
           label: 'display',
-          position: {
-            x: hmdCamera.current.position.x,
-            y: hmdCamera.current.position.y,
-            z: hmdCamera.current.position.z
-          },
-          rotation: {
-            x: hmdCamera.current.rotation.x,
-            y: hmdCamera.current.rotation.y,
-            z: hmdCamera.current.rotation.z
-          }
+          ...positionDataFor(hmdCamera.current),
+          ...rotationDataFor(hmdCamera.current)
         }
       })
     },
