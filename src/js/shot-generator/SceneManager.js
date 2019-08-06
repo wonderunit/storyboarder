@@ -1,6 +1,6 @@
 const { Provider, connect } = require('react-redux')
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const h = require('../utils/h')
 
@@ -41,6 +41,8 @@ const SceneObject = require('./SceneObject')
 const Camera = require('./Camera')
 
 const WorldObject = require('./World')
+
+const ArrowHelper = require('./ArrowHelper')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -609,6 +611,33 @@ const SceneManager = connect(
         )
       }
     ]
+
+    // helpers, local to the system
+    // not part of the scene
+    // e.g.: user's headset cursor position
+    const localComponents = useMemo(() => [
+      [
+        ArrowHelper, {
+          key: 'teleport',
+          name: 'teleport',
+          title: 'teleport',
+          position: [0, 0, 0],
+          rotation: [0, 0, 0],
+          scene
+        }
+      ],
+      [
+        ArrowHelper, {
+          key: 'display',
+          name: 'display',
+          description: 'hmd',
+          position: [0, 0, 0],
+          rotation: [0, 0, 0],
+          scene
+        }
+      ]
+    ], [])
+
     // TODO Scene parent object??
     return [
       [
@@ -638,8 +667,11 @@ const SceneManager = connect(
         //   camera
         // }],
 
+        ...localComponents,
+
         worldComponent,
-        ...components
+        ...components,
+
       ].map(c => h(c))
     ]
   }
