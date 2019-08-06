@@ -345,15 +345,15 @@ const SceneContent = ({
     
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
-    gpuPicker.current.updateObject(controller);
+    gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-    let pickedObjects = gpuPicker.current.pick(selectionCamera.current, wall.current);
+    let pickedObjects = gpuPicker.current.pick(selectCamera, wall.current);
 
     const intersections = pickedObjects;//getIntersections(controller, pickedObjects);
     
-    /* selectionCamera.current.position.set(0, 0, 0);
+    selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
-    selectionCamera.current.updateMatrixWorld(true); */
+    selectionCamera.current.updateMatrixWorld(true);
     if (intersections.length > 0) {
 
       const tempMatrix = new THREE.Matrix4()
@@ -361,9 +361,9 @@ const SceneContent = ({
       const tiltControllerMatrix = new THREE.Matrix4().makeRotationX((Math.PI / 180) * -45)
       tempMatrix.multiply(tiltControllerMatrix)
       let origin = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
-      pickedObjects[0].distance = origin.distanceTo(pickedObjects[0].point);
+      intersections[0].distance = origin.distanceTo(intersections[0].point);
 
-      let didMakeSelection = onIntersection(controller, pickedObjects)
+      let didMakeSelection = onIntersection(controller, intersections)
       if (didMakeSelection) {
         soundSelect.current.play()
       }

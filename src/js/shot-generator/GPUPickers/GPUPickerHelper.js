@@ -47,8 +47,6 @@ class GPUPickerHelper
         }
         let vrEnabled = renderer.vr.enabled;
         renderer.vr.enabled = false;
-        console.log(renderer);
-        console.log("Width and height", (renderer.domElement.width) / 2, (renderer.domElement.height) / 2);
         const pixelRatio = renderer.getPixelRatio();
         camera.setViewOffset(
             renderer.domElement.width,
@@ -72,9 +70,7 @@ class GPUPickerHelper
             wall.material.map = this.renderTarget.texture;
             wall.needsUpdate = true;
             wall.material.needsUpdate = true;
-            console.log(this.renderTarget);
         }
-        console.log(scene);
         
         renderer.readRenderTargetPixels(
             pickingTexture,
@@ -110,15 +106,12 @@ class GPUPickerHelper
                 cssPosition.y * pixelRatio | 0,
                 1,
                 1);
-    //
             renderer.setRenderTarget(pickingTexture);
             renderer.render(this.depthScene, camera);
             renderer.setRenderTarget(null);
             camera.clearViewOffset();
-            //
             this.depthScene.remove(selectedObject);
             scene.add(selectedObject);
-            //selectedObject.updateMatrixWorld(true);
             
             renderer.readRenderTargetPixels(
                 pickingTexture,
