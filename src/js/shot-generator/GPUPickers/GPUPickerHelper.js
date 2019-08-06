@@ -60,6 +60,7 @@ class GPUPickerHelper
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         camera.clearViewOffset();
+        console.log(scene);
         
         if(wall)
         {

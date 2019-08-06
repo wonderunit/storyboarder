@@ -163,7 +163,6 @@ const SceneContent = ({
   const selectedObjRef = useRef(null)
   const selectionCamera = useRef(null);
   const wall = useRef(null);
-  const cameraHelper = useRef(null);
   const gpuPicker = useRef(new XRGPUPicker());
   
   // Rotate Bone
@@ -317,17 +316,6 @@ const SceneContent = ({
       }
       selectionCamera.current.updateMatrix();
       selectionCamera.current.updateMatrixWorld(true);
-      if(!cameraHelper.current)
-      {
-        cameraHelper.current = new THREE.CameraHelper( selectionCamera.current );
-        scene.add( cameraHelper.current );
-        cameraHelper.current.update();
-      }
-      else
-      {
-        cameraHelper.current.camera = selectionCamera.current;
-        cameraHelper.current.update();
-      } 
     }
 
     if(!wall.current)
@@ -342,7 +330,6 @@ const SceneContent = ({
       wall.current = mesh;
     }
 
-    
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
     gpuPicker.current.updateObject();

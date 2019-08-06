@@ -18,7 +18,7 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
-            if(this.addedGroupsId.some(group => group === intesectable.uuid))
+            if(intesectable.userData.type !== "gui" && this.addedGroupsId.some(group => group === intesectable.uuid))
             {
                 console.log("Already added");
                 continue;
@@ -30,7 +30,8 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = objects.length; i < n; i++)
         {
             let object = objects[i];
-            const id = i + this.idBonus;
+            console.log(this.pickingScene.children.length);
+            const id = this.pickingScene.children.length + i + this.idBonus;
             this.gpuPickerHelper.selectableObjects[id] = object;
             const pickingMaterial = new THREE.MeshPhongMaterial({
                 emissive: new THREE.Color(id),
@@ -95,7 +96,7 @@ class XRGPUPicker extends GPUPicker
             let clonnedObject = this.pickingScene.children[i];
             let originalObject = null;
            
-            originalObject = clonnedObject.type === "character" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].parent.parent : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].parent;
+            originalObject = clonnedObject.type === "character" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].parent : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
             originalObject = clonnedObject.type === "gui" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].parent : originalObject;
             if(!originalObject)
             {
@@ -134,7 +135,7 @@ class XRGPUPicker extends GPUPicker
     {
         super.getAllSceneMeshes();
         let sceneChildren = sceneMesh.children;
-        if(sceneChildren === undefined)
+        if(sceneChildren === undefined )
         {
             return;
         }
@@ -143,7 +144,9 @@ class XRGPUPicker extends GPUPicker
         {
             sceneMesh.traverse(object =>
             {
-                if(object.type === "Mesh" && !object.name.includes("_icon")) 
+                if(!this.isObjectAdded(object) && object.type === "Mesh" 
+                    && !object.name.includes("_icon") && !object.name !== ""
+                    && object.visible) 
                 {
                     meshes.push(object); 
                     return;
