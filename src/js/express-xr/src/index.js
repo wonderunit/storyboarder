@@ -76,5 +76,6 @@ const sendStateToServer = ({ state }) => {
     })
     .catch(err => {
       console.error(err)
+      alert(err)
     })
 }
