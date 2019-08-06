@@ -44,6 +44,7 @@ const { controllerObjectSettings, cameraObjectSettings } = require('./utils/xrOb
 const { getIntersections, boneIntersect, intersectObjects, constraintObjectRotation, setControllerData } = require('./utils/xrControllerFuncs')
 const { findParent, moveObject, rotateObject, createHideArray, updateObjectHighlight } = require('./utils/xrHelperFuncs')
 const { useAttachmentLoader, getFilepathForLoadable } = require('./hooks/useAttachmentLoader')
+const useInterval = require('../../hooks/use-interval')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 require('./lib/VRController')
 
