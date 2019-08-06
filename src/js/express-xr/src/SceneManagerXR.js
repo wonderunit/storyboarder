@@ -333,16 +333,15 @@ const SceneContent = ({
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
     gpuPicker.current.updateObject();
-    gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
+    gpuPicker.current.setPickingPosition((gl.domElement.width) / 2 + 1, (gl.domElement.height) / 2 + 1);
     let pickedObjects = gpuPicker.current.pick(selectCamera, wall.current);
 
-    const intersections = pickedObjects;//getIntersections(controller, pickedObjects);
+    const intersections = pickedObjects;
     
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
     selectionCamera.current.updateMatrixWorld(true);
     if (intersections.length > 0) {
-
       const tempMatrix = new THREE.Matrix4()
       tempMatrix.identity().extractRotation(controller.matrixWorld)
       const tiltControllerMatrix = new THREE.Matrix4().makeRotationX((Math.PI / 180) * -45)

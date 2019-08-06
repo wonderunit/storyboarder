@@ -20,6 +20,7 @@ class GPUPickerHelper
             { 
                 depthTest: true,
                 depthWrite: true,
+                skinning: true,
                 depthPacking: THREE.RGBADepthPacking,
                 side: THREE.FrontSide,
                 blending: THREE.NoBlending
@@ -61,16 +62,7 @@ class GPUPickerHelper
         camera.clearViewOffset();
         console.log(scene);
         
-        if(wall)
-        {
-            this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
-            renderer.setRenderTarget(this.renderTarget);
-            renderer.render(scene, camera);
-            renderer.setRenderTarget(null);
-            wall.material.map = this.renderTarget.texture;
-            wall.needsUpdate = true;
-            wall.material.needsUpdate = true;
-        }
+      
         
         renderer.readRenderTargetPixels(
             pickingTexture,
@@ -98,8 +90,10 @@ class GPUPickerHelper
             let selectedObject = scene.children.find(child => child.pickerId === id);
             console.log(selectedObject);
             this.directionalLight.updateMatrixWorld(true);
+            ///if(selectedObject.type ===)
             scene.remove(selectedObject);
             this.depthScene.add(selectedObject);
+            console.log(this.depthScene.clone());
             this.depthScene.overrideMaterial.map = intersectedObject.material.map;
             this.depthScene.needsUpdate = true;
             camera.setViewOffset(
@@ -113,6 +107,16 @@ class GPUPickerHelper
             renderer.render(this.depthScene, camera);
             renderer.setRenderTarget(null);
             camera.clearViewOffset();
+            if(wall)
+            {
+                this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
+                renderer.setRenderTarget(this.renderTarget);
+                renderer.render(this.depthScene, camera);
+                renderer.setRenderTarget(null);
+                wall.material.map = this.renderTarget.texture;
+                wall.needsUpdate = true;
+                wall.material.needsUpdate = true;
+            }
             this.depthScene.remove(selectedObject);
             scene.add(selectedObject);
             
@@ -133,7 +137,7 @@ class GPUPickerHelper
             zDepth = 2 * zDepth - 1;
             canvasPos.set(x, y, zDepth);
             canvasPos.applyMatrix4(camera.projectionMatrixInverse);
-            canvasPos.applyMatrix4(camera.matrix);
+            canvasPos.applyMatrix4(camera.matrixWorld);
             console.log(canvasPos);
         }
         renderer.vr.enabled = vrEnabled ? true : false;
@@ -142,7 +146,14 @@ class GPUPickerHelper
         {
             return returnObject;
         }
-        returnObject.push({ object: intersectedObject, point: canvasPos});
+        if(intersectedObject.type === "SkinnedMesh")
+        {
+            returnObject.push({ object: intersectedObject.parent, point: canvasPos});
+        }
+        else
+        {
+            returnObject.push({ object: intersectedObject, point: canvasPos});
+        }
         console.log(returnObject);
         console.log(this.selectableObjects);
         return returnObject;
@@ -150,7 +161,6 @@ class GPUPickerHelper
 
     unpackRGBAToDepth( v ) 
     {
-        console.log(this.unPackFactors);
     	return  v.dot(this.unPackFactors );
     }
 }
