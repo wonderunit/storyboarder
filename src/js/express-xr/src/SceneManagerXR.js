@@ -750,7 +750,7 @@ const SceneContent = connect()(
             }
           })()
 
-          const limit = Math.max(Math.ceil(count / 4) - 4, 0)
+          const limit = Math.max(Math.ceil(count / 4) - 3, 0)
           newValue = Math.min(newValue, limit)
           return newValue
         })

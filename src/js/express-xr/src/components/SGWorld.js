@@ -37,7 +37,7 @@ const SGWorld = React.memo(({ groundTexture, wallTexture, world, modelData }) =>
     [world, wallTexture]
   )
 
-  useEffect(() => {
+  useMemo(() => {
     if (directionalLight.current) {
       directionalLight.current.target.position.set(0, 0, 0.4)
       directionalLight.current.add(directionalLight.current.target)
@@ -46,7 +46,7 @@ const SGWorld = React.memo(({ groundTexture, wallTexture, world, modelData }) =>
       directionalLight.current.rotation.y = world.directional.rotation
       directionalLight.current.rotateX(world.directional.tilt + Math.PI / 2)
     }
-  })
+  }, [directionalLight.current])
 
   const environmentRef = useRef()
   const environmentObject = useMemo(() => {
