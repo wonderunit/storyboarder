@@ -442,13 +442,13 @@ const GUI = ({
                     return (
                       <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
                         <primitive
-                          scale={[0.33, 0.33, 0.33]}
+                          scale={[0.66, 0.66, 0.66]}
                           position={[
                             uiScale * -0.25 * selectorScale,
                             (uiScale * -0.25 * selectorScale) / 0.68 - bWidth,
                             0.002
                           ]}
-                          object={textCreator.create(pose.name, {
+                          object={textCreator.create(pose.name.slice(0, 14), {
                             color: 0xffffff,
                             scale: 0.475,
                             centerText: false
@@ -611,13 +611,13 @@ const GUI = ({
                     return (
                       <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
                         <primitive
-                          scale={[0.33, 0.33, 0.33]}
+                          scale={[0.66, 0.66, 0.66]}
                           position={[
                             uiScale * -0.25 * selectorScale,
                             (uiScale * -0.25 * selectorScale) / 0.68 - bWidth,
                             0.002
                           ]}
-                          object={textCreator.create(object.name, {
+                          object={textCreator.create(object.name.slice(0, 14), {
                             color: 0xffffff,
                             scale: 0.475,
                             centerText: false
