@@ -287,7 +287,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   let bones = getBoneList( object );
   this.cones = []
 
-  this.hit_meshes = []
+  //this.hit_meshes = []
 
   // If matrix scale is not 1, 1, 1 colliders and bones appear massive
   object.matrixWorld.makeScale(1, 1, 1)
@@ -316,7 +316,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
         let currentCreated = traversedBones[traversedBones.indexOf(bone)]
         this.remove(currentCreated)
-        this.remove(currentCreated.hitBone)
+        //this.remove(currentCreated.hitBone)
         this.remove(currentCreated.helper)
         traversedBones[traversedBones.indexOf(bone)] = bone
       }
@@ -362,12 +362,12 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       boneWidth = boneLength * boneLengthScale > 0.15 ? boneLength : 0.15 / boneLengthScale   //restrict minimum width
       if (boneLength * boneLengthScale > 0.35) boneWidth = 0.35 / boneLengthScale //also maximum..
       
-      let hit_bone_width = distanceToVerts*1.5 // / scaleA.y
+      //let hit_bone_width = distanceToVerts*1.5 // / scaleA.y
       let geometry = new THREE.CylinderBufferGeometry(boneWidth / 25, boneWidth /15 , boneLength - boneWidth/20, 4 )//, heightSegments : Integer, openEnded : Boolean, thetaStart : Float, thetaLength : Float)
 
       // secondary geometry used for hit testing
       if (bone.name === 'Head') boneLength *= 1.5
-      let hit_geometry = new THREE.BoxBufferGeometry(hit_bone_width, boneLength, hit_bone_width )
+     /*  let hit_geometry = new THREE.BoxBufferGeometry(hit_bone_width, boneLength, hit_bone_width )
       let hit_material = new THREE.MeshBasicMaterial({
         color: 0x00ff00,
         depthTest: false,
@@ -375,7 +375,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         transparent: true,
         opacity: 0.5,
         flatShading: true
-      })
+      }) */
 
       let s_material = new THREE.MeshBasicMaterial({
         color:0x7a72e9,
@@ -388,21 +388,21 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
       this.cones[boneIndex]= new THREE.Mesh()
 
-      let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
-      let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
+      //let coneGeom = new THREE.Mesh( geometry.clone(), s_material.clone() )
+      //let hitMesh = new THREE.Mesh(hit_geometry, hit_material)
 
-      coneGeom.position.y = boneLength / 2 + boneWidth / 60
-      this.cones[boneIndex].add( coneGeom )
+      //coneGeom.position.y = boneLength / 2 + boneWidth / 60
+      //this.cones[boneIndex].add( coneGeom )
       this.cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
 
       this.cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
-      hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
+      /* hitMesh.geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2, 0))
       
       // set visible here to see the hit mesh
       hitMesh.material.visible = false
       hitMesh.name = 'hitter_'+bone.name
       hitMesh.userData.type = 'hitter'
-
+ */
       // Add the axis helper if needed
       // let axisHelper = new THREE.AxesHelper(0.2)
       // axisHelper.position.y -= boneLength/2
@@ -474,13 +474,13 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         }
         */
 
-        this.hit_meshes[boneIndex] = ( hitMesh )
+        //this.hit_meshes[boneIndex] = ( hitMesh )
         
-        this.add(hitMesh)
+        //this.add(hitMesh)
         this.add(createdHelper)
 
         bone.helper = createdHelper
-        bone.hitBone = hitMesh
+        //bone.hitBone = hitMesh
         bone.connectedBone = this.cones[boneIndex]
 
         boneCounter++
@@ -494,7 +494,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
   zeroedSkinnedMesh = null
 
-  this.hit_meshes = filter_array(this.hit_meshes)
+  //this.hit_meshes = filter_array(this.hit_meshes)
   this.root = object
   this.object3D = object3D
   this.bones = bones
@@ -525,11 +525,11 @@ BonesHelper.prototype.updateMatrixWorld = function () {
       bone.connectedBone.position.setFromMatrixPosition( boneMatrix )
       bone.connectedBone.quaternion.setFromRotationMatrix( boneMatrix )
       bone.connectedBone.scale.setFromMatrixScale( boneMatrix )
-      if (bone.hitBone) {
+      /* if (bone.hitBone) {
         bone.hitBone.position.setFromMatrixPosition( boneMatrix )
         bone.hitBone.quaternion.setFromRotationMatrix( boneMatrix )
         bone.hitBone.scale.setFromMatrixScale( boneMatrix )
-      }
+      } */
     }
 
     Object3D.prototype.updateMatrixWorld.call( this, force )
