@@ -850,7 +850,7 @@ const SceneContent = connect()(
         new THREE.Vector3(
           hmdWorldPos.x,
           teleportPos.y,
-          hmdWorldPos.y
+          hmdWorldPos.z
         )
       )
       // then rotate
@@ -870,7 +870,7 @@ const SceneContent = connect()(
         new THREE.Vector3(
           hmdWorldPos.x,
           teleportPos.y,
-          hmdWorldPos.y
+          hmdWorldPos.z
         )
       )
       // then rotate
