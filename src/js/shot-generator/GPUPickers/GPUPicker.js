@@ -27,6 +27,7 @@ class GPUPicker
         this.renderer = renderer;
         this.vrModeEnabled = renderer.vr.enabled;
         this.isInitialized = true;
+        this.bonesScene = new THREE.Scene();
     }
 
 
@@ -43,7 +44,29 @@ class GPUPicker
 
     pick(camera, wall)
     {
-        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, wall);
+        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.gpuPickerHelper.selectableObjects, wall);
+    }
+
+    pickBone(camera)
+    {
+        console.log(this.gpuPickerHelper.pickedSkinnedMesh);
+        if(this.gpuPickerHelper.pickedSkinnedMesh)
+        {
+            let picker = this.gpuPickerHelper.pickedSkinnedMesh.pickerObject;
+            let cones = picker.cones;
+            let originObject = this.gpuPickerHelper.pickedSkinnedMesh.originObject;
+            this.bonesScene.add(cones);
+            let result = this.gpuPickerHelper.pick(this.pickingPosition, this.bonesScene, camera, this.renderer, picker.selectable, null, true);
+            console.log(result);
+            if(result.length === 0)
+            {
+                return result;
+            }
+            this.bonesScene.remove(cones);
+            result[0].bone = originObject.parent.parent.bonesHelper.bones.find(bone => bone.uuid === result[0].object.userData.bone)
+            return result;
+        }
+        return [];
     }
 
     initializeCones(cones)
@@ -55,7 +78,6 @@ class GPUPicker
         {
             let object = cones[i];
             const id = 400 + i + this.idBonus;
-            selectableCones[id] = object;
             const pickingMaterial = new THREE.MeshToonMaterial({
                 emissive: new THREE.Color(id),
                 color: new THREE.Color(0, 0, 0),
@@ -65,12 +87,13 @@ class GPUPicker
                 flatShading: false,
                 morphNormals: true,
                 morphTargets: true
-              });
+            });
             let pickingCube = null;
             pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
             pickingCube.type = object.userData.type;
             pickingCube.originCone = object;
             pickingCones.add(pickingCube);
+            selectableCones[id] = {originObject:object, pickerObject: pickingCube};
         }
         return {cones:pickingCones, selectable: selectableCones};
     }

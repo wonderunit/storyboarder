@@ -19,7 +19,12 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
-            if(intesectable.userData.type !== "gui" && this.addedGroupsId.some(group => group === intesectable.uuid))
+            if(intesectable.userData.type === "gui")
+            {
+                this.getGuiMeshes(intesectable, objects);
+                continue;
+            }
+            if(this.addedGroupsId.some(group => group === intesectable.uuid))
             {
                 continue;
             }
@@ -146,7 +151,7 @@ class XRGPUPicker extends GPUPicker
             return;
         }
         
-        if(sceneMesh.userData && sceneMesh.userData.type === "gui")
+        /* if(sceneMesh.userData && sceneMesh.userData.type === "gui")
         {
             sceneMesh.traverse(object =>
             {
@@ -158,8 +163,9 @@ class XRGPUPicker extends GPUPicker
                     return;
                 }  
             });
+            return;
         }
-        else if(sceneMesh.userData && this.allowedObjectsTypes.some(allowedObjects => allowedObjects === sceneMesh.userData.type))
+        else */ if(sceneMesh.userData && this.allowedObjectsTypes.some(allowedObjects => allowedObjects === sceneMesh.userData.type))
         {
             if(sceneMesh.userData.type === "virtual-camera" || sceneMesh.userData.type === "light")
             {
@@ -176,9 +182,7 @@ class XRGPUPicker extends GPUPicker
 
                 if(child.children.length !== 0 && child.children[0].type === "BonesHelper")
                 {
-                    console.log(child);
-                    console.log(child.children[0].cones);
-                    additionalObjects[sceneMesh.uuid] = child.children[0].cones; //this.addConesToArray(meshes, child.children[0].cones );
+                    additionalObjects[sceneMesh.uuid] = child.children[0].cones;
                     return;
                 }
 
@@ -191,6 +195,24 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = sceneChildren.length; i < n; i++)
         {
             this.getAllSceneMeshes(sceneChildren[i], meshes);
+        }
+    }
+
+    getGuiMeshes(gui, meshes)
+    {
+        if(gui.userData && gui.userData.type === "gui")
+        {
+            gui.traverse(object =>
+            {
+                if(!this.isObjectAdded(object) && object.type === "Mesh" 
+                    && !object.name.includes("_icon") && !object.name !== ""
+                    && object.visible) 
+                {
+                    meshes.push(object); 
+                    return;
+                }  
+            });
+           // return;
         }
     }
 }
