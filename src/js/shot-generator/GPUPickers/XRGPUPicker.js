@@ -6,8 +6,8 @@ class XRGPUPicker extends GPUPicker
     {
         super();
         this.addedGroupsId = [];
-        this.allowedObjectsTypes = [/* "object", */ "character", "bonesHelper"/* , "virtual-camera", "light" */];
-        this.idBonus = 300;
+        this.allowedObjectsTypes = [ "object", "character", "bonesHelper" , "virtual-camera", "light" ];
+        this.idBonus = 1;
     }
 
     initalizeChildren(intersectObjects)
@@ -15,7 +15,6 @@ class XRGPUPicker extends GPUPicker
         super.initalizeChildren(intersectObjects);
         let objects = [];
         let additionalObjects = [];
-        console.log(intersectObjects);
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
@@ -36,7 +35,6 @@ class XRGPUPicker extends GPUPicker
         {
             let object = objects[i];
             const id = sceneElementsAmount + i + this.idBonus;
-            //this.gpuPickerHelper.selectableObjects[id] = object;
             const pickingMaterial = new THREE.MeshPhongMaterial({
                 emissive: new THREE.Color(id),
                 color: new THREE.Color(0, 0, 0),
@@ -72,7 +70,6 @@ class XRGPUPicker extends GPUPicker
                 node.type = "character";
                 pickingCube.visible = true;
                 pickingCube.name = "male-adult-0";
-                console.log(parent);
                 let {cones, selectable} = this.initializeCones(additionalObjects[parent.parent.uuid]);
                 node.cones = cones;
                 node.selectable = selectable;
@@ -111,23 +108,12 @@ class XRGPUPicker extends GPUPicker
             {
                 continue;
             }
-            if(clonnedObject.type === "gui")
-            {
-                clonnedObject.position.copy(originalObject.worldPosition());
-                clonnedObject.quaternion.copy(originalObject.worldQuaternion());
-                clonnedObject.scale.copy(originalObject.worldScale());
-                clonnedObject.updateMatrixWorld(true);
-            }
-            else 
-            {
-                clonnedObject.position.copy(originalObject.worldPosition());
-                clonnedObject.quaternion.copy(originalObject.worldQuaternion());
-                clonnedObject.scale.copy(originalObject.worldScale());
-                clonnedObject.updateMatrixWorld(true);
-            }
+            clonnedObject.position.copy(originalObject.worldPosition());
+            clonnedObject.quaternion.copy(originalObject.worldQuaternion());
+            clonnedObject.scale.copy(originalObject.worldScale());
+            clonnedObject.updateMatrixWorld(true);
             if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.skeleton)
             {
-                console.log("updating bones");
                 let clonnedSkinnedMesh = null;
                 clonnedSkinnedMesh = clonnedObject.children[0].children.find(child => child.type === "SkinnedMesh");
                 let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject;
@@ -161,21 +147,7 @@ class XRGPUPicker extends GPUPicker
             return;
         }
         
-        /* if(sceneMesh.userData && sceneMesh.userData.type === "gui")
-        {
-            sceneMesh.traverse(object =>
-            {
-                if(!this.isObjectAdded(object) && object.type === "Mesh" 
-                    && !object.name.includes("_icon") && !object.name !== ""
-                    && object.visible) 
-                {
-                    meshes.push(object); 
-                    return;
-                }  
-            });
-            return;
-        }
-        else */ if(sceneMesh.userData && this.allowedObjectsTypes.some(allowedObjects => allowedObjects === sceneMesh.userData.type))
+        if(sceneMesh.userData && this.allowedObjectsTypes.some(allowedObjects => allowedObjects === sceneMesh.userData.type))
         {
             if(sceneMesh.userData.type === "virtual-camera" || sceneMesh.userData.type === "light")
             {
@@ -222,7 +194,6 @@ class XRGPUPicker extends GPUPicker
                     return;
                 }  
             });
-           // return;
         }
     }
 }

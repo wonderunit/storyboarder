@@ -162,7 +162,6 @@ const SceneContent = ({
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
   const selectionCamera = useRef(null);
-  const wall = useRef(null);
   const gpuPicker = useRef(new XRGPUPicker());
   
   // Rotate Bone
@@ -318,26 +317,13 @@ const SceneContent = ({
       selectionCamera.current.updateMatrixWorld(true);
     }
 
-    if(!wall.current)
-    {
-      let geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );
-      let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
-        emissive: 0x0,
-        flatShading: false } );
-      let mesh = new THREE.Mesh( geometry, material );
-      scene.add(mesh);
-      mesh.position.y = mesh.position.y + 5;
-      wall.current = mesh;
-    }
-
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2 + 1, (gl.domElement.height) / 2 + 1);
-    let pickedObjects = gpuPicker.current.pick(selectCamera, wall.current);
+    const intersections = gpuPicker.current.pick(selectCamera);
 
-    const intersections = pickedObjects;
-    console.log(pickedObjects);
+    
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
     selectionCamera.current.updateMatrixWorld(true);
@@ -929,9 +915,6 @@ const SceneContent = ({
       gpuPicker.current.updateCurrentCharacter();
       gpuPicker.current.setPickingPosition((gl.domElement.width) / 2 + 1, (gl.domElement.height) / 2 + 1);
       const hits = gpuPicker.current.pickBone(selectionCamera.current);
-      let intersections = boneIntersect(controller, bonesHelper);
-      console.log(hits);
-      console.log(intersections);
       if (hits.length) {
         controller.userData.bone = hits[0].bone
         selectBone(hits[0].bone.uuid)

@@ -42,22 +42,20 @@ class GPUPicker
         this.pickingPosition.y = y;
     }
 
-    pick(camera, wall)
+    pick(camera)
     {
-        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.gpuPickerHelper.selectableObjects, wall);
+        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.gpuPickerHelper.selectableObjects);
     }
 
     pickBone(camera)
     {
-        console.log(this.gpuPickerHelper.pickedSkinnedMesh);
         if(this.gpuPickerHelper.pickedSkinnedMesh)
         {
             let picker = this.gpuPickerHelper.pickedSkinnedMesh.pickerObject;
             let cones = picker.cones;
             let originObject = this.gpuPickerHelper.pickedSkinnedMesh.originObject;
             this.bonesScene.add(cones);
-            let result = this.gpuPickerHelper.pick(this.pickingPosition, this.bonesScene, camera, this.renderer, picker.selectable, null, true);
-            console.log(result);
+            let result = this.gpuPickerHelper.pick(this.pickingPosition, this.bonesScene, camera, this.renderer, picker.selectable, true);
             if(result.length === 0)
             {
                 return result;
@@ -73,7 +71,6 @@ class GPUPicker
     {
         let pickingCones = new THREE.Group();
         let selectableCones = [];
-        console.log(cones);
         for(let i = 0, n = cones.length; i < n; i++)
         {
             let object = cones[i];
@@ -82,11 +79,8 @@ class GPUPicker
                 emissive: new THREE.Color(id),
                 color: new THREE.Color(0, 0, 0),
                 specular: 0x0,
-                skinning: true,
                 shininess: 0,
                 flatShading: false,
-                morphNormals: true,
-                morphTargets: true
             });
             let pickingCube = null;
             pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
@@ -100,7 +94,6 @@ class GPUPicker
 
     updateCones(cones)
     {
-        console.log(cones);
         for(let i = 0, n = cones.children.length; i < n; i++)
         {
             let cone = cones.children[i];
@@ -113,7 +106,6 @@ class GPUPicker
         }
     }
 
-  
     updateSkeletonBone(cloneBone, originalBone)
     {
         cloneBone.position.copy(originalBone.position);
