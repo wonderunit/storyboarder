@@ -482,25 +482,29 @@ const GUI = ({
                   bWidth * 3) *
                   -1 *
                   invertGUI,
-                (uiScale * 2 * selectorScale + uiScale * 0.5) * 0.5 - uiScale * 0.5,
+                ((uiScale * 2 * selectorScale) / 0.68 + uiScale * 0.25) * 0.5 - uiScale * 0.5,
                 0
               ]}
             >
               <primitive
-                position={[-uiScale * selectorScale + bWidth, (uiScale * 1.25 - uiScale * 0.325) * selectorScale, 0.001]}
+                position={[
+                  -uiScale * selectorScale + bWidth,
+                  (uiScale * 1.25 - uiScale * 0.325) * selectorScale + uiScale * 0.5 + bWidth * 2,
+                  0.001
+                ]}
                 object={textCreator.create('Characters', { color: 0xffffff, scale: 0.475, centerText: false })}
               />
               <GUIElement
                 {...{
                   name: 'selector_ui',
                   width: uiScale * 2 * selectorScale + bWidth,
-                  height: uiScale * 2 * selectorScale + uiScale * 0.5,
+                  height: (uiScale * 2 * selectorScale) / 0.68 + uiScale * 0.25,
                   radius: bWidth,
                   color: 'black'
                 }}
               />
 
-              <group position={[bWidth * -0.5, -uiScale * 0.25, 0.001]} scale={[0.9, 0.9, 0.9]}>
+              <group position={[bWidth * -0.5, bWidth * 2 - uiScale * 0.125, 0.001]} scale={[0.9, 0.9, 0.9]}>
                 {showScroller && (
                   <group
                     position={[
@@ -522,23 +526,32 @@ const GUI = ({
                   </group>
                 )}
 
-                {characterVisibleAmount.map((object, idx) => {
+                {characterVisibleAmount.map((character, idx) => {
                   const x = ((idx % 2) * 1 - 0.5) * selectorScale
-                  const y = (parseInt(idx / 2) * 1 - 0.5) * -1 * selectorScale
+                  const y = ((parseInt(idx / 2) * 1) / 0.68 - 0.5) * -1 * selectorScale
                   const texture = characterTextures[idx + selectorOffset * 4]
 
                   if (texture && texture.image) {
                     return (
-                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.8, 0.8, 0.8]}>
+                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.9, 0.9, 0.9]}>
                         <GUIElement
                           {...{
                             icon: texture,
                             name: `selector-character_${characterModels[idx + selectorOffset * 4].id}`,
                             width: uiScale * 1 * selectorScale,
-                            height: uiScale * 1 * selectorScale,
+                            height: (uiScale * 1 * selectorScale) / 0.68,
                             radius: bWidth,
                             color: 0x3e4043
                           }}
+                        />
+                        <primitive
+                          scale={[0.66, 0.66, 0.66]}
+                          position={[uiScale * -0.5 * selectorScale, (uiScale * -0.5 * selectorScale) / 0.68 - bWidth, 0.002]}
+                          object={textCreator.create(character.name, {
+                            color: 0xffffff,
+                            scale: 0.475,
+                            centerText: false
+                          })}
                         />
                       </group>
                     )
