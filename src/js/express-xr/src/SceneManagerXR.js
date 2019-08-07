@@ -257,7 +257,9 @@ const SceneContent = connect()(
         controller.dispatchEvent({ type: 'trigger press ended' })
       })
 
-      setTeleportPos(intersect.point.multiplyScalar(1 / worldScale))
+      let point = intersect.point.multiplyScalar(1 / worldScale)
+      point.y = 0
+      setTeleportPos(point)
       setWorldScale(1)
     }
   }
