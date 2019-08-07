@@ -843,7 +843,7 @@ const SceneContent = connect()(
       })
 
       rotateCamRef.current = 'Right'
-      })
+
       // update teleport pos
       let hmdWorldPos = hmdCamera.current.localToWorld(hmdCamera.current.position.clone())
       setTeleportPos(
@@ -863,7 +863,7 @@ const SceneContent = connect()(
       })
 
       rotateCamRef.current = 'Left'
-      })
+
       // update teleport pos
       let hmdWorldPos = hmdCamera.current.localToWorld(hmdCamera.current.position.clone())
       setTeleportPos(
