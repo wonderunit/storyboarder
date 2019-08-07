@@ -844,8 +844,17 @@ const SceneContent = connect()(
 
       rotateCamRef.current = 'Right'
 
+      /*
       // update teleport pos
       let hmdWorldPos = hmdCamera.current.localToWorld(hmdCamera.current.position.clone())
+
+      console.log('rotate right', {
+        hmd: hmdCamera.current.position,
+        group: hmdCameraGroup.current.position,
+        teleport: teleportPos,
+        hmdWorldPos
+      })
+
       setTeleportPos(
         new THREE.Vector3(
           hmdWorldPos.x,
@@ -854,6 +863,7 @@ const SceneContent = connect()(
         )
       )
       // then rotate
+      */
       setCamExtraRot(prev => prev - 1)
     }
 
@@ -864,8 +874,17 @@ const SceneContent = connect()(
 
       rotateCamRef.current = 'Left'
 
+      /*
       // update teleport pos
       let hmdWorldPos = hmdCamera.current.localToWorld(hmdCamera.current.position.clone())
+
+      console.log('rotate left from:', {
+        hmd: hmdCamera.current.position,
+        group: hmdCameraGroup.current.position,
+        teleport: teleportPos,
+        hmdWorldPos
+      })
+
       setTeleportPos(
         new THREE.Vector3(
           hmdWorldPos.x,
@@ -874,6 +893,7 @@ const SceneContent = connect()(
         )
       )
       // then rotate
+      */
       setCamExtraRot(prev => prev + 1)
     }
   }
