@@ -142,6 +142,16 @@ class XRGPUPicker extends GPUPicker
         }
     }
 
+    updateCurrentCharacter()
+    {
+        if(!this.gpuPickerHelper.pickedSkinnedMesh)
+        {
+            return;
+        }
+        let picker = this.gpuPickerHelper.pickedSkinnedMesh.pickerObject;
+        this.updateCones(picker.cones);
+    }
+
     getAllSceneMeshes(sceneMesh, meshes, additionalObjects)
     {
         super.getAllSceneMeshes();

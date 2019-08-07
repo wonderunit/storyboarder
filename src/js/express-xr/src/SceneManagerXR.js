@@ -926,7 +926,7 @@ const SceneContent = ({
 
     if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
       const bonesHelper = selectedObjRef.current.children[0].bonesHelper
-      gpuPicker.current.updateObject();
+      gpuPicker.current.updateCurrentCharacter();
       gpuPicker.current.setPickingPosition((gl.domElement.width) / 2 + 1, (gl.domElement.height) / 2 + 1);
       const hits = gpuPicker.current.pickBone(selectionCamera.current);
       let intersections = boneIntersect(controller, bonesHelper);

@@ -84,9 +84,9 @@ class GPUPickerHelper
         if(intersectedObject)
         {
             this.pickedObject = intersectedObject.originObject;
-            console.log(intersectedObject);
-            console.log(this.pickedObject);
-            if(this.pickedObject.type === "SkinnedMesh")
+            if(!pickingBones)
+            {
+                if(this.pickedObject.type === "SkinnedMesh")
             {
                 this.pickedSkinnedMesh = intersectedObject;
                 let pickedCone = this.tryPickCones(renderer, camera, wall, intersectedObject.pickerObject);
@@ -94,44 +94,45 @@ class GPUPickerHelper
                 {
                     this.pickedObject = pickedCone;
                 }
-            }
-            if(this.pickedObject.material.color)
+                }
+                if(this.pickedObject.material.color)
             {
                 this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
                 this.pickedObject.material.color =  this.selectedColor;
-            }
-            let selectedObject = intersectedObject.pickerObject;
-            this.directionalLight.updateMatrixWorld(true);
-            scene.remove(selectedObject);
-            this.depthScene.add(selectedObject);
-            this.depthScene.overrideMaterial.map = this.pickedObject.material.map;
-            this.depthScene.needsUpdate = true;
-            renderer.setRenderTarget(pickingTexture);
-            renderer.render(this.depthScene, camera);
-            renderer.setRenderTarget(null);
+                }
+                let selectedObject = intersectedObject.pickerObject;
+                this.directionalLight.updateMatrixWorld(true);
+                scene.remove(selectedObject);
+                this.depthScene.add(selectedObject);
+                this.depthScene.overrideMaterial.map = this.pickedObject.material.map;
+                this.depthScene.needsUpdate = true;
+                renderer.setRenderTarget(pickingTexture);
+                renderer.render(this.depthScene, camera);
+                renderer.setRenderTarget(null);
 
-          
-            this.depthScene.remove(selectedObject);
-            scene.add(selectedObject);
             
-            renderer.readRenderTargetPixels(
-                pickingTexture,
-                0, 
-                0,
-                1,
-                1,
-                pixelBuffer);
-            let vector = new THREE.Vector4().fromArray(pixelBuffer).multiplyScalar(1/255);
-            let zDepth = this.unpackRGBAToDepth(vector);
+                this.depthScene.remove(selectedObject);
+                scene.add(selectedObject);
 
-            let x = cssPosition.x / renderer.domElement.width;
-            let y = cssPosition.y / renderer.domElement.height;
-            x = 2 * x - 1; 
-            y = 2 * (1 - y) - 1; 
-            zDepth = 2 * zDepth - 1;
-            canvasPos.set(x, y, zDepth);
-            canvasPos.applyMatrix4(camera.projectionMatrixInverse);
-            canvasPos.applyMatrix4(camera.matrixWorld);
+                renderer.readRenderTargetPixels(
+                    pickingTexture,
+                    0, 
+                    0,
+                    1,
+                    1,
+                    pixelBuffer);
+                let vector = new THREE.Vector4().fromArray(pixelBuffer).multiplyScalar(1/255);
+                let zDepth = this.unpackRGBAToDepth(vector);
+
+                let x = cssPosition.x / renderer.domElement.width;
+                let y = cssPosition.y / renderer.domElement.height;
+                x = 2 * x - 1; 
+                y = 2 * (1 - y) - 1; 
+                zDepth = 2 * zDepth - 1;
+                canvasPos.set(x, y, zDepth);
+                canvasPos.applyMatrix4(camera.projectionMatrixInverse);
+                canvasPos.applyMatrix4(camera.matrixWorld);
+            }
         }
         camera.clearViewOffset();
         renderer.vr.enabled = vrEnabled ? true : false;
@@ -148,8 +149,6 @@ class GPUPickerHelper
         {
             returnObject.push({ object: this.pickedObject, point: canvasPos});
         }
-        console.log(returnObject);
-        console.log(this.selectableObjects);
         return returnObject;
     }
 
