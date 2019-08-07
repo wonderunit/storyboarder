@@ -54,9 +54,6 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
     () => new THREE.MeshBasicMaterial({
       map: renderTarget.current,
       side: THREE.FrontSide,
-      depthTest: props.guiCamera ? false : true,
-      depthWrite: props.guiCamera ? false : true,
-      transparent: props.guiCamera ? true : false
     }),
     [renderTarget.current]
   )
