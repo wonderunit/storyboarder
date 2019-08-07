@@ -15,11 +15,13 @@ class XRGPUPicker extends GPUPicker
         super.initalizeChildren(intersectObjects);
         let objects = [];
         let additionalObjects = [];
+        let updatedGuiUuid = [];
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
-            if(intesectable.userData.type === "gui")
+            if(intesectable.userData.type === "gui" && !updatedGuiUuid[intesectable.uuid])
             {
+                updatedGuiUuid[intesectable.uuid] = true;
                 this.getGuiMeshes(intesectable, objects);
                 continue;
             }

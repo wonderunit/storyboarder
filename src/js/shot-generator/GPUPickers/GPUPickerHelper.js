@@ -72,11 +72,6 @@ class GPUPickerHelper
                 if(this.pickedObject.type === "SkinnedMesh")
                 {
                     this.pickedSkinnedMesh = intersectedObject;
-                    let pickedCone = this.tryPickCones(renderer, camera, selectedObject);
-                    if(pickedCone)
-                    {
-                        this.pickedObject = pickedCone;
-                    }
                 }
                 scene.remove(selectedObject);
                 this.depthScene.add(selectedObject);
