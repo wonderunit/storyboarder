@@ -1276,7 +1276,9 @@ const SceneContent = connect()(
     }
   }
   const rotationDataFor = object3d => {
-    let { x, y, z } = new THREE.Euler().setFromQuaternion( object3d.getWorldQuaternion() )
+    let quaternion = new THREE.Quaternion()
+    object3d.getWorldQuaternion( quaternion )
+    let { x, y, z } = new THREE.Euler().setFromQuaternion( quaternion )
     return {
       rotation: { x, y, z }
     }
