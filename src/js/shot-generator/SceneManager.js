@@ -42,7 +42,7 @@ const Camera = require('./Camera')
 
 const WorldObject = require('./World')
 
-const ArrowHelper = require('./ArrowHelper')
+const VRCursor = require('./VRCursor')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -613,21 +613,17 @@ const SceneManager = connect(
       }
     ]
 
-    // helpers, local to the system
-    // not part of the scene
-    // e.g.: user's headset cursor position
-    const localComponents = useMemo(
-      () => Object.values(locals).map(local => [
-        ArrowHelper, {
-          key: `local-${local.id}`,
-          title: local.label,
-          position: local.position,
-          rotation: local.rotation,
-          scene
-        }
-      ]),
-      [locals]
-    )
+    let vrCursor = 
+    (locals.teleport && locals.display)
+      ? [[
+          VRCursor, {
+            key: 'vrcursor',
+            teleport: locals.teleport,
+            display: locals.display,
+            parent: scene
+          }
+        ]]
+      : []
 
     // TODO Scene parent object??
     return [
@@ -658,10 +654,10 @@ const SceneManager = connect(
         //   camera
         // }],
 
-        ...localComponents,
-
         worldComponent,
         ...components,
+
+        ...vrCursor
 
       ].map(c => h(c))
     ]

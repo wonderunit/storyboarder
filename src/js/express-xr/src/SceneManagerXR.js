@@ -1310,15 +1310,13 @@ const SceneContent = connect()(
   }, [])
 
   const positionDataFor = object3d => {
-    let { x, y, z } = object3d.localToWorld(object3d.position.clone())
+    let { x, y, z } = object3d.position
     return {
       position: { x, y, z },
     }
   }
   const rotationDataFor = object3d => {
-    let quaternion = new THREE.Quaternion()
-    object3d.getWorldQuaternion( quaternion )
-    let { x, y, z } = new THREE.Euler().setFromQuaternion( quaternion )
+    let { x, y, z } = object3d.rotation
     return {
       rotation: { x, y, z }
     }
