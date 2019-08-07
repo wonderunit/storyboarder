@@ -46,6 +46,50 @@ class GPUPicker
         return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, wall);
     }
 
+    initializeCones(cones)
+    {
+        let pickingCones = new THREE.Group();
+        let selectableCones = [];
+        console.log(cones);
+        for(let i = 0, n = cones.length; i < n; i++)
+        {
+            let object = cones[i];
+            const id = 400 + i + this.idBonus;
+            selectableCones[id] = object;
+            const pickingMaterial = new THREE.MeshToonMaterial({
+                emissive: new THREE.Color(id),
+                color: new THREE.Color(0, 0, 0),
+                specular: 0x0,
+                skinning: true,
+                shininess: 0,
+                flatShading: false,
+                morphNormals: true,
+                morphTargets: true
+              });
+            let pickingCube = null;
+            pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
+            pickingCube.type = object.userData.type;
+            pickingCube.originCone = object;
+            pickingCones.add(pickingCube);
+        }
+        return {cones:pickingCones, selectable: selectableCones};
+    }
+
+    updateCones(cones)
+    {
+        console.log(cones);
+        for(let i = 0, n = cones.children.length; i < n; i++)
+        {
+            let cone = cones.children[i];
+            let originalCone = cone.originCone;
+            cone.position.copy(originalCone.worldPosition());
+            cone.quaternion.copy(originalCone.worldQuaternion());
+            cone.scale.copy(originalCone.worldScale());
+            //TODO(): probably run needs update
+            cone.updateMatrixWorld(true);
+        }
+    }
+
   
     updateSkeletonBone(cloneBone, originalBone)
     {
@@ -89,7 +133,7 @@ class GPUPicker
     {
     }
 
-    getAllSceneMeshes(sceneMesh, meshes)
+    getAllSceneMeshes(sceneMesh, meshes, additionalObjects)
     {
     }
     //#endregion  

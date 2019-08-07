@@ -32,7 +32,7 @@ class GPUPickerHelper
         this.depthScene.needsUpdate = true;
         this.directionalLight = new THREE.DirectionalLight( 0xffffff, 0.5 );
         this.depthScene.add(  this.directionalLight );
-
+        this.testScene = new THREE.Scene();
         this.unpackDownscale = 255. / 256.;
         this.unPackFactors = new THREE.Vector4( this.unpackDownscale / (256*256*256), this.unpackDownscale / (256*256), this.unpackDownscale / 256, this.unpackDownscale / 1 );
     }
@@ -63,16 +63,7 @@ class GPUPickerHelper
         camera.clearViewOffset();
         console.log(scene);
         
-        if(wall)
-        {
-            this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
-            renderer.setRenderTarget(this.renderTarget);
-            renderer.render(scene, camera);
-            renderer.setRenderTarget(null);
-            wall.material.map = this.renderTarget.texture;
-            wall.needsUpdate = true;
-            wall.material.needsUpdate = true;
-        }
+      
         
         renderer.readRenderTargetPixels(
             pickingTexture,
@@ -91,7 +82,15 @@ class GPUPickerHelper
         let canvasPos = new THREE.Vector3();
         if(intersectedObject)
         {
-            this.pickedObject = intersectedObject;
+            this.pickedObject = intersectedObject.originObject;
+            if(this.pickedObject.type === "SkinnedMesh")
+            {
+                let pickedCone = this.tryPickCones(cssPosition, renderer, camera, wall, intersectedObject.pickerObject);
+                if(pickedCone)
+                {
+                    this.pickedObject = pickedCone;
+                }
+            }
             if(this.pickedObject.material.color)
             {
                 this.pickedObjectSaveColor = this.pickedObject.material.color.clone();
@@ -104,7 +103,7 @@ class GPUPickerHelper
             scene.remove(selectedObject);
             this.depthScene.add(selectedObject);
             console.log(this.depthScene.clone());
-            this.depthScene.overrideMaterial.map = intersectedObject.material.map;
+            this.depthScene.overrideMaterial.map = this.pickedObject.material.map;
             this.depthScene.needsUpdate = true;
             camera.setViewOffset(
                 renderer.domElement.width,
@@ -147,17 +146,63 @@ class GPUPickerHelper
         {
             return returnObject;
         }
-        if(intersectedObject.type === "SkinnedMesh")
+        if(this.pickedObject.type === "SkinnedMesh")
         {
-            returnObject.push({ object: intersectedObject.parent, point: canvasPos});
+            returnObject.push({ object: this.pickedObject.parent, point: canvasPos});
         }
         else
         {
-            returnObject.push({ object: intersectedObject, point: canvasPos});
+            returnObject.push({ object: this.pickedObject, point: canvasPos});
         }
         console.log(returnObject);
         console.log(this.selectableObjects);
         return returnObject;
+    }
+
+    tryPickCones(cssPosition, renderer, camera, wall, pickingObject)
+    {
+        const {pickingTexture, pixelBuffer, testScene} = this;
+        testScene.add(pickingObject.cones);
+        const pixelRatio = renderer.getPixelRatio();
+        camera.setViewOffset(
+            renderer.domElement.width,
+            renderer.domElement.height,
+            cssPosition.x * pixelRatio | 0,
+            cssPosition.y * pixelRatio | 0,
+            1,
+            1);
+
+        renderer.setRenderTarget(pickingTexture);
+        renderer.render(this.testScene, camera);
+        renderer.setRenderTarget(null);
+        camera.clearViewOffset();
+
+        if(wall)
+        {
+            this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
+            renderer.setRenderTarget(this.renderTarget);
+            renderer.render(testScene, camera);
+            renderer.setRenderTarget(null);
+            wall.material.map = this.renderTarget.texture;
+            wall.needsUpdate = true;
+            wall.material.needsUpdate = true;
+        }
+        this.testScene.remove(pickingObject.cones);
+        renderer.readRenderTargetPixels(
+            pickingTexture,
+            0, 
+            0,
+            1,
+            1,
+            pixelBuffer);
+            
+        let id =
+            (pixelBuffer[0] << 16) |
+            (pixelBuffer[1] << 8) |
+            (pixelBuffer[2]);
+
+        const intersectedObject = pickingObject.selectable[id];
+        return intersectedObject;
     }
 
     unpackRGBAToDepth( v ) 

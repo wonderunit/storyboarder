@@ -337,7 +337,7 @@ const SceneContent = ({
     let pickedObjects = gpuPicker.current.pick(selectCamera, wall.current);
 
     const intersections = pickedObjects;
-    
+    console.log(pickedObjects);
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);
     selectionCamera.current.updateMatrixWorld(true);
