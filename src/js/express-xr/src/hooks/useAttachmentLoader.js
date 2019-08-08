@@ -37,7 +37,7 @@ const useAttachmentLoader = () => {
         return {
           ...state,
           [action.payload.id]: {
-            ...[action.payload.id],
+            ...state[action.payload.id],
             progress: {
               loaded: action.payload.progress.loaded,
               total: action.payload.progress.total,

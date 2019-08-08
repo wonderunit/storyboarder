@@ -1,3 +1,6 @@
+// only show rstats in `development` mode
+const SHOW_RSTATS = process.env.NODE_ENV === 'development'
+
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree, useRender } = require('react-three-fiber')
@@ -20,7 +23,8 @@ const {
   getSceneObjects,
   getWorld,
   getActiveCamera,
-  getSelectedBone
+  getSelectedBone,
+  initialState
 } = require('../../shared/reducers/shot-generator')
 
 // all pose presets (so we can use `stand` for new characters)
@@ -55,6 +59,21 @@ new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
 new THREE.AudioLoader().load('data/snd/vr-welcome.ogg', () => {})
 new THREE.AudioLoader().load('data/snd/vr-beam2.mp3', () => {})
   // new THREE.AudioLoader().load('data/snd/vr-atmosphere.mp3', () => {})
+
+// via PosePresetsEditor.js
+const comparePresetNames = (a, b) => {
+  var nameA = a.name.toUpperCase()
+  var nameB = b.name.toUpperCase()
+
+  if (nameA < nameB) {
+    return -1
+  }
+  if (nameA > nameB) {
+    return 1
+  }
+  return 0
+}
+const comparePresetPriority = (a, b) => b.priority - a.priority
 
 const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, onAxisChanged, undo, redo }) => {
   const [controllers, setControllers] = useState([])
@@ -127,6 +146,7 @@ const SceneContent = ({
   undo,
   redo
 }) => {
+  const teleportMaxDist = 10
   const rStatsRef = useRef(null)
   const xrOffset = useRef(null)
 
@@ -145,15 +165,16 @@ const SceneContent = ({
   const [hideArray, setHideArray] = useState([])
   const [worldScale, setWorldScale] = useState(1)
   const [selectorOffset, setSelectorOffset] = useState(0)
+  const [teleportMode, setTeleportMode] = useState(false)
 
   const worldScaleRef = useRef(0.1)
   const worldScaleGroupRef = useRef(null)
+  const teleportLocRef = useRef(null)
   const moveCamRef = useRef(null)
   const rotateCamRef = useRef(null)
   const intersectArray = useRef([])
   const guiArray = useRef([])
   const teleportArray = useRef([])
-  const teleportMode = useRef(false)
   const initialCamPos = useRef()
   const hmdCamInitialized = useRef(false)
   const previousTime = useRef([null])
@@ -173,6 +194,12 @@ const SceneContent = ({
   guiModeRef.current = guiMode
   
   const { gl, scene, camera, setDefaultCamera } = useThree()
+
+
+  useMemo(() => {
+    scene.background = new THREE.Color(world.backgroundColor)
+  }, [world.backgroundColor])
+
   const onUpdateGUIProp = e => {
     const { id, prop, value } = e.detail
 
@@ -221,7 +248,7 @@ const SceneContent = ({
     var controller = event.target
     const intersect = intersectObjects(controller, teleportArray.current)
 
-    if (intersect && intersect.distance < 10) {
+    if (intersect && intersect.distance < teleportMaxDist) {
       // console.log('try to teleport')
       vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
@@ -273,7 +300,7 @@ const SceneContent = ({
     const controller = event.target
     controller.pressed = true
 
-    if (teleportMode.current) {
+    if (teleportMode) {
       onTeleport(event)
       return
     }
@@ -355,10 +382,6 @@ const SceneContent = ({
         return true
       }
 
-      if (intersection.object.userData.type === 'view') {
-        intersection = intersections[0]
-      }
-
       if (intersection.object.name.includes('selector-pose')) {
         const posePresetId = intersection.object.name.split('_')[1]
         const skeleton = presets.poses[posePresetId].state.skeleton
@@ -369,13 +392,21 @@ const SceneContent = ({
       if (intersection.object.name.includes('selector-object')) {
         const model = intersection.object.name.split('_')[1]
         const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
-        updateObject(object.userData.id, { model })
+        updateObject(object.userData.id, { model, depth: 1, height: 1, width: 1 })
+
+        // hacky way of refreshing slider values
+        setSelectedObject(0)
+        setSelectedObject(object.userData.id)
       }
 
       if (intersection.object.name.includes('selector-character')) {
         const model = intersection.object.name.split('_')[1]
         const object = worldScaleGroupRef.current.children.find(child => child.userData.id === selectedObject)
-        updateObject(object.userData.id, { model })
+        updateObject(object.userData.id, { model, height: initialState.models[model].height })
+       
+        // hacky way of refreshing slider values
+        setSelectedObject(0)
+        setSelectedObject(object.userData.id)
       }
 
       if (intersection.object.userData.type === 'gui') {
@@ -529,20 +560,6 @@ const SceneContent = ({
 
       controller.userData.selected = object
       soundBeam.current.play()
-
-      let objMaterial
-      if (intersection.object.type === 'LOD') objMaterial = intersection.object.children[0].material
-      else objMaterial = intersection.object.material
-      
-      if (Array.isArray(objMaterial)) {
-        objMaterial.forEach(material => {
-          if (!material.emissive) return
-          material.emissive.b = 0.15
-        })
-      } else {
-        if (!objMaterial.emissive) return
-        objMaterial.emissive.b = 0.15
-      }
 
       return true
   }
@@ -714,7 +731,6 @@ const SceneContent = ({
       // is this probably a scene object?
       // (used to exclude environment meshes for example)
       if (object.userData.id) {
-        updateObjectHighlight(object)
         updateObjectForType(object)
       }
     }
@@ -774,13 +790,13 @@ const SceneContent = ({
                 return Object.keys(presets.poses).length
               case 'object':
                 return Object.values(models).filter(model => model.type === 'object').length
-              case 'object':
+              case 'character':
                 return Object.values(models).filter(model => model.type === 'character').length
             }
           })()
 
-          const limit = parseInt(count / 4) 
-          newValue = Math.min(newValue, limit)
+          const limit = Math.max(Math.ceil(count / 4) - 4, 0)
+          newValue = Math.min(newValue, limit)          
           return newValue
         })
       }
@@ -888,13 +904,15 @@ const SceneContent = ({
   }
 
   const onGripDown = event => {
-    teleportMode.current = true
+    setTeleportMode(true)
 
     const controller = event.target
     controller.gripped = true
 
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (!selectedObjRef.current && otherController && otherController.gripped) {
+      setTeleportMode(false)
+
       setWorldScale(oldValue => {
         return oldValue === 1 ? worldScaleRef.current : 1
       })
@@ -947,7 +965,7 @@ const SceneContent = ({
   }
 
   const onGripUp = event => {
-    teleportMode.current = false
+    setTeleportMode(false)
 
     const controller = event.target
     controller.gripped = false
@@ -1046,8 +1064,8 @@ const SceneContent = ({
       }
 
       const handedness = controller.getHandedness()
+      const otherController = vrControllers[1 - i]
       if (handedness === (flipHand ? 'right' : 'left')) {
-        const otherController = vrControllers[1 - i]
         if (otherController && !otherController.pressed && !controller.userData.selected) {
           const intersections = getIntersections(controller, guiArray.current)
           if (intersections.length > 0) {
@@ -1068,6 +1086,17 @@ const SceneContent = ({
         if (object && object.userData.type === 'object' && controller.gripped) {
           if (object.parent.uuid === controller.uuid) snapObjectRotation(object, controller)
           else constraintObjectRotation(controller, worldScale)
+        }
+      }
+
+      if (controller.gripped) {
+        if (!teleportLocRef.current) return
+        const intersect = intersectObjects(controller, teleportArray.current)
+        if (intersect && intersect.distance < teleportMaxDist) {
+          teleportLocRef.current.position.copy(intersect.point)
+          teleportLocRef.current.material.visible = true
+        } else {
+          teleportLocRef.current.material.visible = false
         }
       }
 
@@ -1110,26 +1139,17 @@ const SceneContent = ({
   }
 
   useEffect(() => {
-    navigator
-      .getVRDisplays()
-      .then(displays => {
-        // console.log({ displays })
-        if (displays.length) {
-          console.log('adding VR button')
-          scene.background = new THREE.Color(world.backgroundColor)
-          document.body.appendChild(WEBVR.createButton(gl))
-        }
+    if (SHOW_RSTATS) {
+      const threeStats = new window.threeStats(gl)
+      rStatsRef.current = new RStats({
+        css: [],
+        values: {
+          fps: { caption: 'fps', below: 30 }
+        },
+        groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
+        plugins: [threeStats]
       })
-      .catch(err => console.error(err))
-    const threeStats = new window.threeStats(gl)
-    rStatsRef.current = new RStats({
-      css: [],
-      values: {
-        fps: { caption: 'fps', below: 30 }
-      },
-      groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
-      plugins: [threeStats]
-    })
+    }
   }, [])
 
   // if our camera is setup
@@ -1237,6 +1257,50 @@ const SceneContent = ({
     return listener
   }, [])
 
+  const poses = useMemo(() => {
+    return Object.values(presets.poses)
+      .sort(comparePresetNames)
+      .sort(comparePresetPriority)
+  }, [presets.poses])
+
+  const characterModels = useMemo(() => {
+    return Object.values(models).filter(model => model.type === 'character')
+  }, [models])
+
+  const objectModels = useMemo(() => {
+    return Object.values(models).filter(model => model.type === 'object')
+  }, [models])
+
+  const poseTextures = useMemo(() => {
+    const textureArray = []
+    poses.forEach((pose, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/presets/poses/${pose.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
+  const objectTextures = useMemo(() => {
+    const textureArray = []
+    objectModels.forEach((model, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/system/objects/${model.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
+  const characterTextures = useMemo(() => {
+    const textureArray = []
+    characterModels.forEach((model, id) => {
+      const texture = new THREE.TextureLoader().load(`/data/system/dummies/gltf/${model.id}.jpg`)
+      textureArray[id] = texture
+    })
+
+    return textureArray
+  }, [])
+
   let activeCameraComponent = (
     <group
       key={'camera'}
@@ -1260,7 +1324,32 @@ const SceneContent = ({
         return (
           <primitive key={n} object={object}>
             {handedness === hand && (
-              <GUI {...{ rStatsRef, worldScaleGroupRef, models, presets, aspectRatio, guiMode, addMode, currentBoard, selectedObject, hideArray, virtualCamVisible, flipHand, selectorOffset, guiSelector, helpToggle, helpSlide, guiCamFOV, vrControllers }} />
+              <GUI
+                {...{
+                  rStatsRef,
+                  worldScaleGroupRef,
+                  aspectRatio,
+                  poses,
+                  characterModels,
+                  objectModels,
+                  poseTextures,
+                  objectTextures,
+                  characterTextures,
+                  guiMode,
+                  addMode,
+                  currentBoard,
+                  selectedObject,
+                  hideArray,
+                  virtualCamVisible,
+                  flipHand,
+                  selectorOffset,
+                  guiSelector,
+                  helpToggle,
+                  helpSlide,
+                  guiCamFOV,
+                  vrControllers
+                }}
+              />
             )}
             <SGController
               {...{ flipModel, modelData: getModelData(controllerObjectSettings), ...controllerObjectSettings }}
@@ -1282,7 +1371,7 @@ const SceneContent = ({
       switch (sceneObject.type) {
         case 'camera':
           return (
-            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData: getModelData(cameraObjectSettings), ...sceneObject }}>
+            <SGVirtualCamera key={i} {...{ aspectRatio, selectedObject, hideArray, virtualCamVisible, modelData: getModelData(cameraObjectSettings), isSelected, ...sceneObject }}>
               {isSelected && <primitive object={soundBeam.current} />}
             </SGVirtualCamera>
           )
@@ -1297,17 +1386,18 @@ const SceneContent = ({
             </SGCharacter>
           )
         case 'object':
-          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), ...sceneObject }}>
+          return <SGModel key={i} {...{ modelData: getModelData(sceneObject), isSelected, ...sceneObject }}>
               {isSelected && <primitive object={soundBeam.current} />}
             </SGModel>
         case 'light':
-          return <SGSpotLight key={i} {...{ ...sceneObject }}>
+          return <SGSpotLight key={i} {...{ isSelected, ...sceneObject }}>
             {isSelected && <primitive object={soundBeam.current} />}
           </SGSpotLight>
       }
     })
     .filter(Boolean)
 
+  const teleportTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/xr/teleport.png'), [])
   const groundTexture = useMemo(() => new THREE.TextureLoader().load('/data/system/grid_floor.png'), [])
   const wallTexture = useMemo(
     () =>
@@ -1335,11 +1425,6 @@ const SceneContent = ({
     />
   )
 
-  // wait until the camera is setup before showing the scene
-  const ready = !!xrOffset.current
-
-  // console.log('scene is', ready ? 'shown' : 'not shown')
-
   return (
     <>
       {activeCameraComponent}
@@ -1350,8 +1435,34 @@ const SceneContent = ({
         <planeGeometry attach="geometry" args={[100, 100]} />
         <meshBasicMaterial attach="material" visible={false} />
       </mesh>
+      <group position={[0, 0.5 * worldScale, 0]}>
+        <mesh ref={teleportLocRef} userData={{ type: 'teleportLocator' }} visible={teleportMode}>
+          <cylinderGeometry attach="geometry" args={[0.5 * worldScale, 0.5 * worldScale, 1 * worldScale, 32, 1, true]} />
+          <meshBasicMaterial
+            attach="material"
+            opacity={0.25}
+            color={0x7a72e9}
+            transparent={true}
+            depthTest={false}
+            depthWrite={false}
+            side={THREE.DoubleSide}
+          >
+            <primitive attach="map" object={teleportTexture} />
+          </meshBasicMaterial>
+        </mesh>
+      </group>
     </>
   )
+}
+
+const XRStartButton = ({ }) => {
+  const { gl } = useThree()
+
+  useMemo(() => {
+    document.body.appendChild(WEBVR.createButton(gl))
+  }, [])
+
+  return null
 }
 
 const SceneManagerXR = connect(
@@ -1397,8 +1508,39 @@ const SceneManagerXR = connect(
     undo,
     redo
   }) => {
+    const [isLoading, setIsLoading] = useState(false)
+    const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
     const [attachments, attachmentsDispatch] = useAttachmentLoader()
 
+    // app model files
+    useMemo(() => {
+      [
+        controllerObjectSettings,
+        cameraObjectSettings
+      ].forEach(loadable =>
+        attachmentsDispatch({
+          type: 'PENDING',
+          payload: { id: getFilepathForLoadable(loadable) }
+        })
+      )
+    }, [])
+
+    // world model files
+    useMemo(() => {
+      if (world.environment.file) {
+        attachmentsDispatch({
+          type: 'PENDING',
+          payload: {
+            id: getFilepathForLoadable({
+              type: 'environment',
+              model: world.environment.file
+            })
+          }
+        })
+      }
+    }, [world.environment])
+
+    // scene object model files
     useMemo(() => {
       let loadables = Object.values(sceneObjects)
         // has a value for model
@@ -1408,20 +1550,25 @@ const SceneManagerXR = connect(
         // is not a box
         .filter(o => !(o.type === 'object' && o.model === 'box'))
 
-      world.environment.file && loadables.push(
-        { type: 'environment', model: world.environment.file }
-      )
-
-      loadables.push(controllerObjectSettings)
-      loadables.push(cameraObjectSettings)
-
-      loadables.forEach(o =>
+      loadables.forEach(loadable =>
         attachmentsDispatch({
           type: 'PENDING',
-          payload: { id: getFilepathForLoadable({ type: o.type, model: o.model }) }
+          payload: { id: getFilepathForLoadable(loadable) }
         })
       )
     }, [sceneObjects])
+
+    useMemo(() => {
+      let incomplete = a => a.status !== 'Success' && a.status !== 'Error'
+      let remaining = Object.values(attachments).filter(incomplete)
+
+      if (isLoading && !hasLoadedOnce && remaining.length === 0) {
+        setHasLoadedOnce(true)
+        setIsLoading(false)
+      } else if (remaining.length > 0) {
+        setIsLoading(true)
+      }
+    }, [attachments, sceneObjects, hasLoadedOnce, isLoading])
 
     const getModelData = sceneObject => {
       let key = getFilepathForLoadable(sceneObject)
@@ -1430,7 +1577,38 @@ const SceneManagerXR = connect(
 
     return (
       <>
-        <Canvas vr>
+        {
+          !hasLoadedOnce && <div style={
+            {
+              position: 'absolute',
+
+              bottom: 'auto',
+              top: 'calc(50% - 20px)',
+
+              padding: '12px 6px',
+              border: '3px solid transparent',
+              borderRadius: '9px',
+              background: 'rgba(0,0,0,0.5)',
+              color: '#aaa',
+              font: 'normal 13px sans-serif',
+              textAlign: 'center',
+              opacity: '0.5',
+              outline: 'none',
+              zIndex: '999',
+
+              left: 'calc(50% - 75px)',
+              width: 150,
+              height: 41,
+              lineHeight: 1,
+
+              cursor: 'default'
+            }
+          }>LOADING …</div>
+        }
+        <Canvas vr style={{ visibility: 'hidden' }}>
+          {
+            hasLoadedOnce && <XRStartButton />
+          }
           <SceneContent
             {...{
               aspectRatio,

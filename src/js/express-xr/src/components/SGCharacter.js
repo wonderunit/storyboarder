@@ -3,6 +3,7 @@ const { useRender } = require('react-three-fiber')
 
 const { initialState } = require('../../../shared/reducers/shot-generator')
 const BonesHelper = require('./SGBonesHelper')
+const { updateObjectHighlight } = require('../utils/xrHelperFuncs')
 
 THREE.Cache.enabled = true
 
@@ -416,6 +417,9 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         level.distance = i * 2 * worldScaleMult
       })
     }
+
+    if (isSelected) updateObjectHighlight(object.current, 0.15)
+    else updateObjectHighlight(object.current, 0)
   }, [props.model, worldScale, isSelected, ready])
 
   useMemo(() => {
@@ -481,7 +485,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
           <group
             //visible={false}
             ref={object}
-            bonesHelper={bonesHelper ? bonesHelper : null}
+            bonesHelper={bonesHelper ? bonesHelper : undefined}
             userData={{
               id,
               type,
@@ -497,7 +501,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
           >
             <primitive userData={{ id, type }} object={skinnedMesh} />
             <primitive object={armatures[0]} />
-            {props.children}
+            {bonesHelper && props.children}
           </group>
         )
       }

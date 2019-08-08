@@ -69,18 +69,18 @@ const createHideArray = scene => {
   return array
 }
 
-const updateObjectHighlight = object => {
+const updateObjectHighlight = (object, value) => {
   object.traverse(child => {
     if (child instanceof THREE.Mesh) {
       const objMaterial = child.material
       if (Array.isArray(objMaterial)) {
         objMaterial.forEach(material => {
           if (!material.emissive) return
-          material.emissive.b = 0
+          material.emissive.b = value
         })
       } else {
         if (!objMaterial.emissive) return
-        objMaterial.emissive.b = 0
+        objMaterial.emissive.b = value
       }
     }
   })

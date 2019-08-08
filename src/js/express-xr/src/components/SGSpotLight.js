@@ -1,7 +1,8 @@
 const { useUpdate } = require('react-three-fiber')
 const { useEffect, useRef } = (React = require('react'))
+const { updateObjectHighlight } = require('../utils/xrHelperFuncs')
 
-const SGSpotLight = ({ ...props }) => {
+const SGSpotLight = ({ isSelected, ...props }) => {
   const light = useRef(null)
   const box_light_mesh = useRef(null)
 
@@ -31,6 +32,12 @@ const SGSpotLight = ({ ...props }) => {
       light.current.light.current.target.position.set(0, 0, props.distance)
     }
   }, [props.rotation, props.tilt, props.roll, props.distance])
+
+  useEffect(() => {
+    if (!light.current) return
+    if (isSelected) updateObjectHighlight(light.current, 0.15)
+    else updateObjectHighlight(light.current, 0)
+  }, [isSelected])
 
   return (
     <group

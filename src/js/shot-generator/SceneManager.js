@@ -1,6 +1,6 @@
 const { Provider, connect } = require('react-redux')
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const h = require('../utils/h')
 
@@ -95,7 +95,7 @@ const SceneManager = connect(
 
     let clock = useRef(new THREE.Clock())
 
-    useEffect(() => {
+    useMemo(() => {
       console.log('new SceneManager')
 
       scene.background = new THREE.Color(world.backgroundColor)
@@ -105,8 +105,10 @@ const SceneManager = connect(
       // directionalLight.position.set(0, 1, 3)
       // scene.add(directionalLight)
 
+      // initialize orthoCamera
       orthoCamera.current.position.y = 900
       orthoCamera.current.rotation.x = -Math.PI / 2
+      orthoCamera.current.layers.enable(2)
     }, [])
 
     useEffect(() => {
@@ -140,7 +142,7 @@ const SceneManager = connect(
       }
     }, [])
 
-    useEffect(() => {
+    useMemo(() => {
       largeRenderer.current = new THREE.WebGLRenderer({
         canvas: largeCanvasRef.current,
         antialias: true
@@ -163,20 +165,12 @@ const SceneManager = connect(
       smallRendererEffect.current = new THREE.OutlineEffect( smallRenderer.current, {defaultThickness:0.02, defaultAlpha:0.5, defaultColor: [ 0.4, 0.4, 0.4 ], ignoreMaterial: true} )
     }, [])
 
-    // resize the renderers (large and small)
-    // FIXME this is running _after_ the animation frame, causing a visible jump
-    useEffect(() => {
 
-      //seems this is called a bit often, see later about reducing hooks
-
-      // how wide is the canvas which will render the large view?
-      let width = Math.ceil(largeCanvasSize.width)
-      // assign a target height, based on scene aspect ratio
-      let height = Math.ceil(width / aspectRatio)
-
+    // autofit ortho camera for scene
+    useMemo(() => {
       let minMax = [9999,-9999,9999,-9999]
 
-      // go through all appropriate opbjects and get the min max
+      // go through all appropriate objects and get the min max
       let numVisible = 0
       for (child of scene.children) {
         if (
@@ -241,8 +235,14 @@ const SceneManager = connect(
       orthoCamera.current.far = 1000
 
       orthoCamera.current.updateProjectionMatrix()
+    }, [sceneObjects, mainViewCamera, aspectRatio])
 
-      orthoCamera.current.layers.enable(2)
+    // resize the renderers (large and small)
+    useMemo(() => {
+      // how wide is the canvas which will render the large view?
+      let width = Math.ceil(largeCanvasSize.width)
+      // assign a target height, based on scene aspect ratio
+      let height = Math.ceil(width / aspectRatio)
 
       // resize the renderers
       if (mainViewCamera === 'live') {
@@ -282,7 +282,7 @@ const SceneManager = connect(
           defaultColor: [0, 0, 0]
         })
       }
-    }, [sceneObjects, largeCanvasSize, mainViewCamera, aspectRatio])
+    }, [largeCanvasSize, mainViewCamera, aspectRatio])
 
     useEffect(() => {
       setCamera(scene.children.find(o => o.userData.id === activeCamera))
@@ -446,7 +446,7 @@ const SceneManager = connect(
 
     }, [selections, sceneObjects])
 
-    useEffect(() => {
+    useMemo(() => {
       if (camera && cameraControlsView.current) {
         if (mainViewCamera === 'ortho') {
           cameraControlsView.current.enabled = false
