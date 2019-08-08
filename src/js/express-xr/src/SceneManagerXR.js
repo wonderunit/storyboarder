@@ -489,7 +489,6 @@ const SceneContent = ({
 
       setSelectedObject(id)
       selectedObjRef.current = object
-      setHideArray(createHideArray(scene))
       setGuiMode('selection')
 
       if (object.userData.type === 'character') {
@@ -525,6 +524,7 @@ const SceneContent = ({
         object.scale.multiplyScalar(worldScale)
 
         controller.add(object)
+        setHideArray(createHideArray(scene))
       }
 
       controller.userData.selected = object

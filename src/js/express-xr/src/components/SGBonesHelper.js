@@ -471,8 +471,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
     }
     let boneIndex = traversedBones.indexOf(bone);
     this.conesGroup.add(this.cones[boneIndex]);
-    console.log(this.conesGroup);
-    console.log(traversedBones);
   }
 
   zeroedSkinnedMesh = null
