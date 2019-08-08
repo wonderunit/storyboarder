@@ -462,15 +462,20 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         //bone.helper = createdHelper
         bone.connectedBone = this.cones[boneIndex]
 
- 
+  
         boneCounter++
       }
 
       jj++
 
     }
-    let boneIndex = traversedBones.indexOf(bone);
-    this.conesGroup.add(this.cones[boneIndex]);
+  
+    let boneIndex = traversedBones.indexOf(bone)
+    let cone = this.cones[boneIndex];
+    if(cone)
+    {
+      this.conesGroup.add(cone);
+    }
   }
 
   zeroedSkinnedMesh = null
@@ -481,6 +486,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   //if (sknMesh.needsRepose) sknMesh.repose()
   this.matrix = object.matrixWorld
   this.matrixAutoUpdate = false
+  //this.visible = false;
 }
 
 BonesHelper.prototype = Object.create( Object3D.prototype )
@@ -492,6 +498,12 @@ BonesHelper.prototype.updateMatrixWorld = function () {
   var object3dMatrix = new Matrix4()
   
   return function updateMatrixWorld( force ) {
+    if(!this.conesGroup.parent)
+    {
+      return;
+    } 
+    
+
     var bones = this.bones
     matrixWorldInv.getInverse( this.root.matrixWorld )
 

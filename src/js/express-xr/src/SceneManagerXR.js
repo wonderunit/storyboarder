@@ -533,7 +533,7 @@ const SceneContent = ({
       let objMaterial
       if (intersection.object.type === 'LOD') objMaterial = intersection.object.children[0].material
       else objMaterial = intersection.object.material
-
+      
       if (Array.isArray(objMaterial)) {
         objMaterial.forEach(material => {
           if (!material.emissive) return
