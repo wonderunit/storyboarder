@@ -12,7 +12,6 @@ class GPUPicker
         this.pickingScene.background = new THREE.Color(0);
         this.isInitialized = false;
         this.idBonus = 1;
-        this.vrModeEnabled = false;
         this.allowedObjectsTypes = [];
     }
 
@@ -22,14 +21,11 @@ class GPUPicker
         {
             return;
         }
-        this.pickingScene.background = new THREE.Color(0);
         this.children = scene.children;
         this.renderer = renderer;
-        this.vrModeEnabled = renderer.vr.enabled;
         this.isInitialized = true;
         this.bonesScene = new THREE.Scene();
     }
-
 
     setPickingPosition(vector2)
     {
@@ -74,7 +70,7 @@ class GPUPicker
         for(let i = 0, n = cones.length; i < n; i++)
         {
             let object = cones[i];
-            const id = 400 + i + this.idBonus;
+            const id = i + this.idBonus;
             const pickingMaterial = new THREE.MeshToonMaterial({
                 emissive: new THREE.Color(id),
                 color: new THREE.Color(0, 0, 0),
@@ -126,17 +122,14 @@ class GPUPicker
         return false;
     }
 
-    addConesToArray(source, array)
+    updateCurrentCharacter()
     {
-        let index = 4;
-        for(let i = 0, n = array.length; i < n; i+=index)
+        if(!this.gpuPickerHelper.pickedSkinnedMesh)
         {
-            source.push(array[i]);
-            source.push(array[i + 1]);
-            source.push(array[i + 2]);
-            source.push(array[i + 3]);
-
+            return;
         }
+        let picker = this.gpuPickerHelper.pickedSkinnedMesh.pickerObject;
+        this.updateCones(picker.cones);
     }
 
     //#region Virtual merhods

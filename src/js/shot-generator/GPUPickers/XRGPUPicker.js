@@ -7,7 +7,6 @@ class XRGPUPicker extends GPUPicker
         super();
         this.addedGroupsId = [];
         this.allowedObjectsTypes = [ "object", "character", "bonesHelper" , "virtual-camera", "light" ];
-        this.idBonus = 1;
     }
 
     initalizeChildren(intersectObjects)
@@ -68,14 +67,11 @@ class XRGPUPicker extends GPUPicker
                 pickingCube = node.children[0].children[0];
                 pickingCube.material = pickingMaterial;
                 pickingCube.matrixWorldNeedsUpdate = true;
-                pickingCube.updateMatrixWorld(true);
-                node.type = "character";
                 pickingCube.visible = true;
-                pickingCube.name = "male-adult-0";
+                node.type = "character";
                 let {cones, selectable} = this.initializeCones(additionalObjects[parent.parent.uuid]);
                 node.cones = cones;
                 node.selectable = selectable;
-
             }
             else if(object.userData && object.userData.type === "gui")
             {
@@ -102,10 +98,7 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
             let clonnedObject = this.pickingScene.children[i];
-            let originalObject = null;
-           
-            originalObject = clonnedObject.type === "character" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.parent : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject;
-            originalObject = clonnedObject.type === "gui" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.parent : originalObject;
+            let originalObject = originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.parent;
             if(!originalObject)
             {
                 continue;
@@ -128,16 +121,6 @@ class XRGPUPicker extends GPUPicker
                 this.updateCones(clonnedObject.cones);
             }
         }
-    }
-
-    updateCurrentCharacter()
-    {
-        if(!this.gpuPickerHelper.pickedSkinnedMesh)
-        {
-            return;
-        }
-        let picker = this.gpuPickerHelper.pickedSkinnedMesh.pickerObject;
-        this.updateCones(picker.cones);
     }
 
     getAllSceneMeshes(sceneMesh, meshes, additionalObjects)

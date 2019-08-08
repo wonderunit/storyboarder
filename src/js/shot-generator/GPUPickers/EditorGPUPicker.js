@@ -6,7 +6,6 @@ class EditorGPUPicker extends GPUPicker
     {
         super();
         this.addedGroupsId = [];
-        this.idBonus = 1;
     }
 
     initalizeChildren(scene)
@@ -31,8 +30,6 @@ class EditorGPUPicker extends GPUPicker
         {
             let object = objects[i];
             const id = this.pickingScene.children.length + i + this.idBonus;
-            object.parent.updateMatrixWorld(true);
-           
             const pickingMaterial = new THREE.MeshToonMaterial({
                 emissive: new THREE.Color(id),
                 color: new THREE.Color(0, 0, 0),
@@ -76,8 +73,7 @@ class EditorGPUPicker extends GPUPicker
             }
             this.pickingScene.add(node);
             node.pickerId = id;
-            this.gpuPickerHelper.selectableObjects[id] = { originObject: object, pickerObject: node} ;
-            //pickingCube.colorId = id;           
+            this.gpuPickerHelper.selectableObjects[id] = { originObject: object, pickerObject: node} ;    
         }
         this.childrenSetted = this.pickingScene.children.length === 0 ? false : true;
     }
@@ -132,7 +128,6 @@ class EditorGPUPicker extends GPUPicker
                     meshes.push(child); 
                     return;
                 }
-
                 if( child.type === "SkinnedMesh")
                 {
                     meshes.push(child);
@@ -140,7 +135,7 @@ class EditorGPUPicker extends GPUPicker
             }
             if(sceneMesh.userData.type === "character" && sceneMesh.bonesHelper)
             {
-                additionalObjects[sceneMesh.uuid] = sceneMesh.bonesHelper.cones;//this.addConesToArray(meshes, sceneMesh.bonesHelper.cones );
+                additionalObjects[sceneMesh.uuid] = sceneMesh.bonesHelper.cones;
                 return;
             }
         }

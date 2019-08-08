@@ -3,9 +3,7 @@ class GPUPickerHelper
 {
     constructor()
     {
-        this.pickingTexture = new THREE.WebGLRenderTarget(1, 1);
-        
-        this.pickingTexture.texture.minFilter = THREE.LinearFilter;
+        this.pickingTexture = new THREE.WebGLRenderTarget(1, 1, {minFilter: THREE.LinearFilter});
         this.pixelBuffer = new Uint8Array(4);
         this.pickedObject = null;
         this.selectableObjects = {};
@@ -24,7 +22,6 @@ class GPUPickerHelper
         this.depthScene = new THREE.Scene();
         this.depthScene.overrideMaterial = this.depthMaterial;
         this.depthScene.needsUpdate = true;
-        this.testScene = new THREE.Scene();
         this.unpackDownscale = 255. / 256.;
         this.unPackFactors = new THREE.Vector4( this.unpackDownscale / (256*256*256), this.unpackDownscale / (256*256), this.unpackDownscale / 256, this.unpackDownscale / 1 );
         this.pickedSkinnedMesh = null;
@@ -56,10 +53,9 @@ class GPUPickerHelper
 
         this.readRenderedPixel(renderer, scene, camera, pickingTexture, pixelBuffer);
             
-        let id =
-            (pixelBuffer[0] << 16) |
-            (pixelBuffer[1] << 8) |
-            (pixelBuffer[2]);
+        let id = (pixelBuffer[0] << 16) |
+                 (pixelBuffer[1] << 8) |
+                 (pixelBuffer[2]);
 
         const intersectedObject = selectables[id];
         let canvasPos = null;
@@ -90,22 +86,6 @@ class GPUPickerHelper
         }
         returnObject.push({ object: this.pickedObject, point: canvasPos});
         return returnObject;
-    }
-
-    tryPickCones(renderer, camera, pickingObject)
-    {
-        let {pickingTexture, pixelBuffer, testScene} = this;
-        testScene.add(pickingObject.cones);
-        this.readRenderedPixel(renderer, this.testScene, camera, pickingTexture, pixelBuffer);
-        this.testScene.remove(pickingObject.cones);
-            
-        let id =
-            (pixelBuffer[0] << 16) |
-            (pixelBuffer[1] << 8) |
-            (pixelBuffer[2]);
-
-        const intersectedObject = pickingObject.selectable[id];
-        return intersectedObject ? intersectedObject.originObject : intersectedObject;
     }
 
     unpackRGBAToScenePosition( rgba, cssPosition, camera, renderer ) 
