@@ -264,7 +264,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   let skeleton_clone
   if (!cache[cacheKey]) {
     console.log('adding to cache', cacheKey)
-    cache[cacheKey] = cloneSkinned( object3D )
+    cache[cacheKey] = object3D;//cloneSkinned( object3D )
   }
   skeleton_clone = cache[cacheKey]
 
@@ -286,7 +286,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   if (height>2) vertexDistanceMyltiplyFactor = height * 10
   let bones = getBoneList( object );
   this.cones = []
-
+  this.conesGroup = new THREE.Group();
   //this.hit_meshes = []
 
   // If matrix scale is not 1, 1, 1 colliders and bones appear massive
@@ -312,11 +312,12 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
     while (bone.children && bone.children[jj] && bone.children[jj].isBone  )
     {
+     
       if (traversedBones.includes(bone)) {
 
         let currentCreated = traversedBones[traversedBones.indexOf(bone)]
         this.remove(currentCreated)
-        this.remove(currentCreated.helper)
+        //this.remove(currentCreated.helper)
         traversedBones[traversedBones.indexOf(bone)] = bone
       }
       else {
@@ -347,13 +348,13 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       absoluteBonePosA.setFromMatrixPosition(boneEquiv.matrixWorld)
       absoluteBonePosB.setFromMatrixPosition(boneEquiv.children[jj].matrixWorld)
       
-      if (bonesContainingVerts[ii])
-      {
-        relativePos = getPointInBetweenByPerc(absoluteBonePosA, absoluteBonePosB, 0.5)
-        let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, boneEquiv, vertexDistanceMyltiplyFactor, ii, sknMesh)
-        distanceToVerts = med.median !== 0 ? med.median : 0.1
-        createdHelper = med.object
-      }
+      //if (bonesContainingVerts[ii])
+      //{
+      //  relativePos = getPointInBetweenByPerc(absoluteBonePosA, absoluteBonePosB, 0.5)
+      //  let med = calcMedianDistance(relativePos, bonesContainingVerts[ii], this, matrixWorldInv, boneEquiv, vertexDistanceMyltiplyFactor, ii, sknMesh)
+      //  distanceToVerts = med.median !== 0 ? med.median : 0.1
+      //  createdHelper = med.object
+      //}
 
       let boneLength = posA.distanceTo(posB) * scaleC.y// / scaleA.y
       let boneWidth
@@ -377,7 +378,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         flatShading: true,
       })
 
-      this.cones[boneIndex]= new THREE.Mesh()
+      //this.cones[boneIndex]= new THREE.Mesh()
 
       this.cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
 
@@ -393,7 +394,9 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       this.cones[boneIndex].userData.type = 'bone'
       this.cones[boneIndex].userData.bone = bone.uuid
       this.cones[boneIndex].userData.segment = 0
+      this.cones.matrixAutoUpdate = false;
 
+      
       //hitMesh.geometry.applyMatrix(new Matrix4().makeScale(4, 1, 4))
       //this.cones[boneCounter].add(s_sphere)
       if (boneLength>0)
@@ -454,18 +457,22 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         }
         */
 
-        this.add(createdHelper)
+        //this.add(createdHelper)
 
-        bone.helper = createdHelper
+        //bone.helper = createdHelper
         bone.connectedBone = this.cones[boneIndex]
 
+ 
         boneCounter++
-
       }
 
       jj++
 
     }
+    let boneIndex = traversedBones.indexOf(bone);
+    this.conesGroup.add(this.cones[boneIndex]);
+    console.log(this.conesGroup);
+    console.log(traversedBones);
   }
 
   zeroedSkinnedMesh = null
@@ -485,7 +492,7 @@ BonesHelper.prototype.updateMatrixWorld = function () {
   var boneMatrix = new Matrix4()
   var matrixWorldInv = new Matrix4()
   var object3dMatrix = new Matrix4()
-
+  
   return function updateMatrixWorld( force ) {
     var bones = this.bones
     matrixWorldInv.getInverse( this.root.matrixWorld )
@@ -494,13 +501,13 @@ BonesHelper.prototype.updateMatrixWorld = function () {
     {
       var bone = bones [ii]
       boneMatrix.multiplyMatrices( matrixWorldInv, bone.matrixWorld )   // changed to parent position, as that's the length calculated
-
+    
       if (bone.connectedBone === undefined) continue
-
+    
       bone.connectedBone.position.setFromMatrixPosition( boneMatrix )
       bone.connectedBone.quaternion.setFromRotationMatrix( boneMatrix )
       bone.connectedBone.scale.setFromMatrixScale( boneMatrix )
-
+    
     }
 
     Object3D.prototype.updateMatrixWorld.call( this, force )
@@ -516,10 +523,13 @@ BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
   }
 }
 
-const cloneSkinned = ( source ) => {
+/* const cloneSkinned = ( source ) => {
 
   var cloneLookup = new Map()
+  let userData = source.userData;
+  source.userData = null;
   var clone = source.clone()
+  source.userData = userData;
 
   parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
     cloneLookup.set( sourceNode, clonedNode )
@@ -540,7 +550,7 @@ const cloneSkinned = ( source ) => {
   } )
 
   return clone
-}
+} */
 
 const parallelTraverse = ( a, b, callback ) => {
   callback( a, b )

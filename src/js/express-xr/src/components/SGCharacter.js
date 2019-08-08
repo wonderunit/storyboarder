@@ -19,6 +19,7 @@ const isValidSkinnedMesh = data => {
 }
 
 const cloneGltf = gltf => {
+  console.log("clone");
   const clone = {
     animations: gltf.animations,
     scene: gltf.scene.clone(true)
@@ -88,14 +89,18 @@ const characterFactory = data => {
   let lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
   if (lods.length === 0) lods = data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
 
-  if (lods.length > 1) {
+   if (lods.length > 1) {
     mesh = new THREE.LOD()
-    lods.forEach((lod, i) => {
-      mesh.addLevel(lod, i * 2)
-    })
-  } else {
+    for(let i = 0, n = lods.length; i < n; i++)
+    {
+      let lod = lods[i];
+      mesh.addLevel(lod, i * 2);
+      //lod.visible = false;
+    }
+  } else { 
     mesh = lods[0]
   }
+  console.log(mesh);
 
   if (mesh == null) {
     mesh = new THREE.Mesh()
@@ -237,7 +242,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(
         modelData
       )
-
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
@@ -356,7 +360,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   useEffect(() => {
     if (!ready) return
     if (!object.current) return
-
     // console.log(type, id, 'skeleton')
     updateSkeleton()
   }, [props.model, props.skeleton, ready])
@@ -397,12 +400,14 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     // console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
-
+    let currentBoneHelper = object.current.bonesHelper;
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected && worldScale === 1) {
-      for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
+      currentBoneHelper.add(currentBoneHelper.conesGroup);
+      //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
     } else {
-      for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
+      currentBoneHelper.remove(currentBoneHelper.conesGroup);
+      //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
     }
 
     if (skinnedMesh.type === 'LOD') {
@@ -415,7 +420,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
 
   useMemo(() => {
     if (!skinnedMesh) return
-
     if (skinnedMesh.type === 'LOD') {
       skinnedMesh.children.forEach(lod => {
         if (lod.morphTargetDictionary && Object.values(lod.morphTargetDictionary).length === 3) {
@@ -482,7 +486,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
               id,
               type,
               originalHeight,
-              mesh,
               skeleton,
               boneLengthScale,
               parentRotation,
@@ -507,7 +510,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
            
           <primitive
             userData={{
-              character: skinnedMesh,
+              //character: skinnedMesh,
             }}
             object={bonesHelper}
             type={"BonesHelper"}
