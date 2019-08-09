@@ -849,9 +849,11 @@ const SceneContent = connect()(
     if (moveCamRef.current) return
     if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
-    const { x, y } = hmdCameraGroup.current.userData
-    const hmdCam = hmdCamera.current
     const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
+
+    let center = new THREE.Vector3()
+    hmdCamera.current.getWorldPosition( center )
+    let gr = hmdCamera.current.rotation.y + hmdCameraGroup.current.rotation.y
 
     if (event.axes[1] > 0.075) {
       vrControllers.forEach(controller => {
@@ -860,18 +862,9 @@ const SceneContent = connect()(
 
       moveCamRef.current = 'Backwards'
 
-      let offsetVector = new THREE.Vector3(0, 0, 1)
-      offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult)
-
-      setTeleportPos(oldPos => {
-        if (!oldPos) {
-          offsetVector.add(new THREE.Vector3(x, 0, y))
-          return offsetVector
-        } else {
-          return oldPos.clone().add(offsetVector)
-        }
-      })
+      let target = new THREE.Vector3(center.x, 0, center.z + 1)
+      let d = rotatePoint( target, center, -gr )
+      teleport(d.x, null, d.z, null)
     }
 
     if (event.axes[1] < -0.075) {
@@ -881,18 +874,9 @@ const SceneContent = connect()(
 
       moveCamRef.current = 'Forwards'
 
-      let offsetVector = new THREE.Vector3(0, 0, -1)
-      offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCam.matrixWorld))
-      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(worldScaleMult)
-
-      setTeleportPos(oldPos => {
-        if (!oldPos) {
-          offsetVector.add(new THREE.Vector3(x, 0, y))
-          return offsetVector
-        } else {
-          return oldPos.clone().add(offsetVector)
-        }
-      })
+      let target = new THREE.Vector3(center.x, 0, center.z - 1)
+      let d = rotatePoint( target, center, -gr )
+      teleport(d.x, null, d.z, null)
     }
   }
 
@@ -904,6 +888,10 @@ const SceneContent = connect()(
     if (rotateCamRef.current) return
     if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
+    let center = new THREE.Vector3()
+    hmdCamera.current.getWorldPosition( center )
+    let gr = hmdCamera.current.rotation.y + hmdCameraGroup.current.rotation.y
+
     if (event.axes[0] > 0.075) {
       vrControllers.forEach(controller => {
         controller.dispatchEvent({ type: 'trigger press ended' })
@@ -911,27 +899,7 @@ const SceneContent = connect()(
 
       rotateCamRef.current = 'Right'
 
-      /*
-      // update teleport pos
-      let hmdWorldPos = hmdCamera.current.localToWorld(hmdCamera.current.position.clone())
-
-      console.log('rotate right', {
-        hmd: hmdCamera.current.position,
-        group: hmdCameraGroup.current.position,
-        teleport: teleportPos,
-        hmdWorldPos
-      })
-
-      setTeleportPos(
-        new THREE.Vector3(
-          hmdWorldPos.x,
-          teleportPos.y,
-          hmdWorldPos.z
-        )
-      )
-      // then rotate
-      */
-      setCamExtraRot(prev => prev - 1)
+      teleport(null, null, null, gr + THREE.Math.degToRad(-45))
     }
 
     if (event.axes[0] < -0.075) {
@@ -941,27 +909,7 @@ const SceneContent = connect()(
 
       rotateCamRef.current = 'Left'
 
-      /*
-      // update teleport pos
-      let hmdWorldPos = hmdCamera.current.localToWorld(hmdCamera.current.position.clone())
-
-      console.log('rotate left from:', {
-        hmd: hmdCamera.current.position,
-        group: hmdCameraGroup.current.position,
-        teleport: teleportPos,
-        hmdWorldPos
-      })
-
-      setTeleportPos(
-        new THREE.Vector3(
-          hmdWorldPos.x,
-          teleportPos.y,
-          hmdWorldPos.z
-        )
-      )
-      // then rotate
-      */
-      setCamExtraRot(prev => prev + 1)
+      teleport(null, null, null, gr + THREE.Math.degToRad(45))
     }
   }
 
