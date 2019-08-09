@@ -5,7 +5,7 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree, useRender } = require('react-three-fiber')
 
-const { connect, useStore, useDispatch, Provider } = require('react-redux')
+const { connect, useStore, Provider } = require('react-redux')
 const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 const { ActionCreators } = require('redux-undo')
@@ -167,8 +167,6 @@ const SceneContent = connect()(
   undo,
   redo
 }) => {
-  const dispatch = useDispatch()
-
   const teleportMaxDist = 10
   const rStatsRef = useRef(null)
 
@@ -1321,49 +1319,6 @@ const SceneContent = connect()(
       rotation: { x, y, z }
     }
   }
-
-  useEffect(() => {
-    dispatch({
-      type: 'UPDATE_LOCAL',
-      payload: {
-        id: 'teleport',
-        type: 'cursor',
-        label: 'teleport',
-        ...positionDataFor(hmdCameraGroup.current),
-        ...rotationDataFor(hmdCameraGroup.current)
-      }
-    })
-    dispatch({
-      type: 'UPDATE_LOCAL',
-      payload: {
-        id: 'display',
-        type: 'cursor',
-        label: 'display',
-        ...positionDataFor(hmdCamera.current),
-        ...rotationDataFor(hmdCamera.current)
-      }
-    })
-  }, [teleportPos, teleportRot])
-
-  useInterval(
-    () => {
-      // prevent update if controller is pressed
-      let anyPressed = vrControllers.find(controller => controller.pressed)
-      if (!anyPressed) {
-        dispatch({
-          type: 'UPDATE_LOCAL',
-          payload: {
-            id: 'display',
-            type: 'cursor',
-            label: 'display',
-            ...positionDataFor(hmdCamera.current),
-            ...rotationDataFor(hmdCamera.current)
-          }
-        })
-      }
-    },
-    1000
-  )
 
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
