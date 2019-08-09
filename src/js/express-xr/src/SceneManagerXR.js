@@ -171,7 +171,6 @@ const SceneContent = connect()(
 
   const teleportMaxDist = 10
   const rStatsRef = useRef(null)
-  // const hmdCameraGroup = useRef(null)
 
   const [guiMode, setGuiMode] = useState('selection')
   const [addMode, setAddMode] = useState(null)
