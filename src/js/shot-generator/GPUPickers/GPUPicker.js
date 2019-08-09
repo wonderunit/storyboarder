@@ -44,7 +44,7 @@ class GPUPicker
 
     pick(camera, wall)
     {
-        console.log(this.pickingScene);
+        //console.log(this.pickingScene);
         return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.gpuPickerHelper.selectableObjects, false, wall);
     }
 
@@ -120,8 +120,10 @@ class GPUPicker
 
     isObjectAdded(object)
     {
-        if(Object.values(this.gpuPickerHelper.selectableObjects).filter(obj => obj.uuid === object.uuid).length !== 0)
+        let addedObject = Object.values(this.gpuPickerHelper.selectableObjects).find(obj => obj.originObject.uuid === object.uuid);
+        if(addedObject)
         {
+            addedObject.pickerObject.visible = object.visible;
             return true;
         }
         return false;
