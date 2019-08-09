@@ -42,8 +42,6 @@ const Camera = require('./Camera')
 
 const WorldObject = require('./World')
 
-const VRCursor = require('./VRCursor')
-
 const ModelLoader = require('../services/model-loader')
 
 const SceneManager = connect(
@@ -643,8 +641,6 @@ const SceneManager = connect(
 
         worldComponent,
         ...components,
-
-        ...vrCursor
 
       ].map(c => h(c))
     ]
