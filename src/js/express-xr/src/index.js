@@ -31,7 +31,6 @@ fetch('/state.json')
         world,
         activeCamera
       },
-      locals: initialState.locals,
       models: initialState.models,
       presets: {
         poses: presets.poses,
@@ -47,9 +46,7 @@ fetch('/state.json')
           let state = store.getState()
           let payload = {
             state: {
-              ...getSerializedState(state),
-              // send locals back
-              locals: state.locals
+              ...getSerializedState(state)
               // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
             }
           }
