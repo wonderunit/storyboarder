@@ -125,6 +125,28 @@ const useVrControllers = ({ onSelectStart, onSelectEnd, onGripDown, onGripUp, on
   return controllers
 }
 
+// via https://stackoverflow.com/a/2259502
+const rotatePoint = (point, pivot, angle) => {
+  let p = new THREE.Vector3()
+
+  let s = Math.sin(angle)
+  let c = Math.cos(angle)
+
+  // subtract the pivot point
+  p.x = point.x - pivot.x
+  p.z = point.z - pivot.z
+
+  // rotate
+  let x = p.x * c - p.z * s
+  let y = p.x * s + p.z * c
+
+  // translate new point back
+  p.x = x + pivot.x
+  p.z = y + pivot.z
+
+  return p
+}
+
 // TODO mapStateToProps
 const SceneContent = connect()(
 ({
@@ -161,7 +183,7 @@ const SceneContent = connect()(
   const [currentBoard, setCurrentBoard] = useState(null)
   const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
-  const [teleportRot, setTeleportRot] = useState(0)
+  const [teleportRot, setTeleportRot] = useState(null)
 
   const [selectedObject, setSelectedObject] = useState(null)
   const [guiCamFOV, setGuiCamFOV] = useState(22)
@@ -202,6 +224,50 @@ const SceneContent = connect()(
   useMemo(() => {
     scene.background = new THREE.Color(world.backgroundColor)
   }, [world.backgroundColor])
+
+  const teleport = (x, y, z, r) => {
+    let parent = new THREE.Object3D()
+    parent.position.copy(hmdCameraGroup.current.position)
+    parent.rotation.copy(hmdCameraGroup.current.rotation)
+    let child = new THREE.Object3D()
+    child.position.copy(hmdCamera.current.position)
+    child.rotation.copy(hmdCamera.current.rotation)
+    parent.add(child)
+    parent.updateMatrixWorld()
+
+    if (x != null && z != null) {
+      let center = new THREE.Vector3()
+      child.getWorldPosition( center )
+
+      let dx = parent.position.x - center.x
+      let dz = parent.position.z - center.z
+
+      parent.position.x = x + dx
+      parent.position.z = z + dz
+      parent.updateMatrixWorld()
+    }
+
+    if (r != null) {
+      let center = new THREE.Vector3()
+      child.getWorldPosition( center )
+
+      let gr = child.rotation.y + parent.rotation.y
+    
+      let dr = gr - r
+
+      let v = rotatePoint(parent.position, center, dr)
+
+      parent.position.x = v.x
+      parent.position.z = v.z
+      parent.rotation.y = r - child.rotation.y
+    }
+    if (y != null) {
+      parent.position.y = 0
+    }
+
+    setTeleportPos(parent.position)
+    setTeleportRot(parent.rotation)
+  }
 
   const onUpdateGUIProp = e => {
     const { id, prop, value } = e.detail
@@ -259,7 +325,9 @@ const SceneContent = connect()(
 
       let point = intersect.point.multiplyScalar(1 / worldScale)
       point.y = 0
-      setTeleportPos(point)
+
+      teleport(point.x, null, point.z, null)
+
       setWorldScale(1)
     }
   }
@@ -1299,14 +1367,8 @@ const SceneContent = connect()(
       y: Math.cos(rotation)
     }
 
-    setTeleportPos(
-      new THREE.Vector3(
-        x + behindCam.x,
-        0,
-        y + behindCam.y
-      )
-    )
-    setTeleportRot(rotation)
+    setTeleportPos(new THREE.Vector3(x + behindCam.x, 0, y + behindCam.y))
+    setTeleportRot(new THREE.Euler(0, rotation, 0))
   }, [])
 
   const positionDataFor = object3d => {
@@ -1368,7 +1430,7 @@ const SceneContent = connect()(
     <group
       ref={hmdCameraGroup}
       position={teleportPos}
-      rotation={[0, teleportRot + (Math.PI / 4 * camExtraRot), 0]}
+      rotation={teleportRot}
     >
       // "head"/P.O.V. moved automatically by HMD motion
       <primitive ref={hmdCamera} object={camera}>
