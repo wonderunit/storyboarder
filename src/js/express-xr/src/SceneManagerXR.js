@@ -1358,16 +1358,20 @@ const SceneContent = connect()(
 
   useInterval(
     () => {
-      dispatch({
-        type: 'UPDATE_LOCAL',
-        payload: {
-          id: 'display',
-          type: 'cursor',
-          label: 'display',
-          ...positionDataFor(hmdCamera.current),
-          ...rotationDataFor(hmdCamera.current)
-        }
-      })
+      // prevent update if controller is pressed
+      let anyPressed = vrControllers.find(controller => controller.pressed)
+      if (!anyPressed) {
+        dispatch({
+          type: 'UPDATE_LOCAL',
+          payload: {
+            id: 'display',
+            type: 'cursor',
+            label: 'display',
+            ...positionDataFor(hmdCamera.current),
+            ...rotationDataFor(hmdCamera.current)
+          }
+        })
+      }
     },
     1000
   )
