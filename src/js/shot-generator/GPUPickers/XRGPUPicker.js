@@ -16,26 +16,20 @@ class XRGPUPicker extends GPUPicker
     { 
         let updatedGuiUuid = [];
         let guiMesh = {};
-        //for(let i = 0, n = intersectObjects.length; i < n; i++)
-        //{
-            let intesectable = intersectObjects;
-            if(intesectable.userData.type === "gui" && !updatedGuiUuid[intesectable.uuid])
+        let intesectable = intersectObjects;
+        if(intesectable.userData.type === "gui" && !updatedGuiUuid[intesectable.uuid])
+        {
+            updatedGuiUuid[intesectable.uuid] = true;
+            if(intesectable.parent.name !== this.currentGuiController)
             {
-                updatedGuiUuid[intesectable.uuid] = true;
-                if(intesectable.parent.name !== this.currentGuiController)
+                for(let j = 0, m = this.controllers.length; j < m; j++ )
                 {
-                    console.log("removed controller gui");
-                    for(let j = 0, m = this.controllers.length; j < m; j++ )
-                    {
-
-                        this.pickingScene.remove(this.controllers[j]);
-                    }
-                    this.controllers = [];
+                    this.pickingScene.remove(this.controllers[j]);
                 }
-                this.getGuiMeshes(intesectable, guiMesh);
-                //continue;
+                this.controllers = [];
             }
-        //}
+            this.getGuiMeshes(intesectable, guiMesh);
+        }
         this.initializeGuiMeshes(guiMesh);
     }
 
@@ -125,7 +119,6 @@ class XRGPUPicker extends GPUPicker
             let clonnedObject = this.pickingScene.children[i];
             if(clonnedObject.type === "gui")
             {   
-                console.log("Updating gui", clonnedObject);
                 for(let j = 0, m = clonnedObject.children.length; j < m; j++)
                 {
                     let guiElement = clonnedObject.children[j];
@@ -222,20 +215,12 @@ class XRGPUPicker extends GPUPicker
         {
             let controllerName = gui.parent.name;
             meshes[controllerName] = [];
-            if(this.currentGuiController != controllerName)
-            {
-                console.log(meshes);
-            }
             gui.traverse(object =>
             {
                 if(!this.isObjectAdded(object) && object.type === "Mesh" 
                     && !object.name.includes("_icon") && !object.name !== ""
                     && object.visible) 
                 {
-                    if(this.currentGuiController != controllerName)
-                    {
-                        console.log(object);
-                    }
                     meshes[controllerName].push(object); 
                     return;
                 }  
@@ -246,7 +231,6 @@ class XRGPUPicker extends GPUPicker
     initializeGuiMeshes(guiMeshes)
     {
         let keys = Object.keys(guiMeshes);
-        console.log(keys);
         for(let i = 0, n = keys.length; i < n; i++)
         {
             let selectableKey = Object.keys(this.gpuPickerHelper.selectableObjects);

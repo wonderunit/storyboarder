@@ -20,7 +20,6 @@ const isValidSkinnedMesh = data => {
 }
 
 const cloneGltf = gltf => {
-  console.log("clone");
   const clone = {
     animations: gltf.animations,
     scene: gltf.scene.clone(true)
@@ -101,7 +100,6 @@ const characterFactory = data => {
   } else { 
     mesh = lods[0]
   }
-  console.log(mesh);
 
   if (mesh == null) {
     mesh = new THREE.Mesh()
