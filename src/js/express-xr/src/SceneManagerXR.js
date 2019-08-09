@@ -359,6 +359,11 @@ const SceneContent = ({
 
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
+    let gui = controller.children.find(child => child.userData.type === "gui");
+    gui = gui ? gui : otherController.children.find(child => child.userData.type === "gui");
+    console.log(controller);
+    gpuPicker.current.intializeGui(gui);
+    console.log(intersectArray.current);
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2 + 1, (gl.domElement.height) / 2 + 1);
     const intersections = gpuPicker.current.pick(selectCamera, wall.current);

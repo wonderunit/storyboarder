@@ -12,34 +12,46 @@ class XRGPUPicker extends GPUPicker
         this.controllers = [];
     }
 
-    initalizeChildren(intersectObjects)
-    {
-        super.initalizeChildren(intersectObjects);
-        let objects = [];
-        let additionalObjects = [];
+    intializeGui(intersectObjects)
+    { 
         let updatedGuiUuid = [];
         let guiMesh = {};
-        for(let i = 0, n = intersectObjects.length; i < n; i++)
-        {
-            let intesectable = intersectObjects[i];
-      /*       if(intesectable.userData.type === "gui")
-            {
-                console.log(intesectable);
-            } */
+        //for(let i = 0, n = intersectObjects.length; i < n; i++)
+        //{
+            let intesectable = intersectObjects;
             if(intesectable.userData.type === "gui" && !updatedGuiUuid[intesectable.uuid])
             {
                 updatedGuiUuid[intesectable.uuid] = true;
                 if(intesectable.parent.name !== this.currentGuiController)
                 {
+                    console.log("removed controller gui");
                     for(let j = 0, m = this.controllers.length; j < m; j++ )
                     {
+
                         this.pickingScene.remove(this.controllers[j]);
                     }
                     this.controllers = [];
                 }
                 this.getGuiMeshes(intesectable, guiMesh);
+                //continue;
+            }
+        //}
+        this.initializeGuiMeshes(guiMesh);
+    }
+
+    initalizeChildren(intersectObjects)
+    {
+        super.initalizeChildren(intersectObjects);
+        let objects = [];
+        let additionalObjects = [];
+        for(let i = 0, n = intersectObjects.length; i < n; i++)
+        {
+            let intesectable = intersectObjects[i];
+            if(intesectable.userData.type === "gui")
+            {
                 continue;
             }
+            
             if(this.addedGroupsId.some(group => group === intesectable.uuid))
             {
                 continue;
@@ -102,7 +114,7 @@ class XRGPUPicker extends GPUPicker
             pickingCube.pickerId = id;
             this.gpuPickerHelper.selectableObjects[id] = { originObject: object, pickerObject: node} ;
         } 
-        this.initializeGui(guiMesh);
+       
     }
   
     updateObject()
@@ -112,7 +124,8 @@ class XRGPUPicker extends GPUPicker
         {
             let clonnedObject = this.pickingScene.children[i];
             if(clonnedObject.type === "gui")
-            {
+            {   
+                console.log("Updating gui", clonnedObject);
                 for(let j = 0, m = clonnedObject.children.length; j < m; j++)
                 {
                     let guiElement = clonnedObject.children[j];
@@ -209,12 +222,20 @@ class XRGPUPicker extends GPUPicker
         {
             let controllerName = gui.parent.name;
             meshes[controllerName] = [];
+            if(this.currentGuiController != controllerName)
+            {
+                console.log(meshes);
+            }
             gui.traverse(object =>
             {
                 if(!this.isObjectAdded(object) && object.type === "Mesh" 
                     && !object.name.includes("_icon") && !object.name !== ""
                     && object.visible) 
                 {
+                    if(this.currentGuiController != controllerName)
+                    {
+                        console.log(object);
+                    }
                     meshes[controllerName].push(object); 
                     return;
                 }  
@@ -222,9 +243,10 @@ class XRGPUPicker extends GPUPicker
         }
     }
 
-    initializeGui(guiMeshes)
+    initializeGuiMeshes(guiMeshes)
     {
         let keys = Object.keys(guiMeshes);
+        console.log(keys);
         for(let i = 0, n = keys.length; i < n; i++)
         {
             let selectableKey = Object.keys(this.gpuPickerHelper.selectableObjects);
@@ -247,7 +269,8 @@ class XRGPUPicker extends GPUPicker
                     shininess: 0,
                     flatShading: false,
                     morphNormals: true,
-                    morphTargets: true
+                    morphTargets: true,
+                    side: THREE.DoubleSide
                   });
                 let pickingCube = null;
                 pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
