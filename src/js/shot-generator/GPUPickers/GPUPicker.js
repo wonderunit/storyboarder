@@ -1,6 +1,5 @@
 const THREE = require('three');
 const GPUPickerHelper = require("./GPUPickerHelper");
-const SkeletonUtils = require("../IK/utils/SkeletonUtils");
 require("../IK/utils/Object3dExtension");
 class GPUPicker
 {
@@ -13,6 +12,11 @@ class GPUPicker
         this.isInitialized = false;
         this.idBonus = 1;
         this.allowedObjectsTypes = [];
+    }
+
+    addAllowedObject(allowedType)
+    {
+        this.allowedObjectsTypes.push(allowedType);
     }
 
     initialize(scene, renderer)

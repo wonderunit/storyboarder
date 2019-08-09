@@ -520,6 +520,7 @@ const SceneContent = ({
 
       setSelectedObject(id)
       selectedObjRef.current = object
+      setHideArray(createHideArray(scene))
       setGuiMode('selection')
 
       if (object.userData.type === 'character') {
@@ -543,7 +544,7 @@ const SceneContent = ({
         const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
         const rotOffset = Math.atan2(rotVector.y, rotVector.x)
         controller.userData.rotOffset = rotOffset
-        setHideArray(createHideArray(scene))
+        //setHideArray(createHideArray(scene))
       } else {
         const tempMatrix = new THREE.Matrix4()
         tempMatrix
@@ -555,8 +556,8 @@ const SceneContent = ({
         object.scale.multiplyScalar(worldScale)
 
         controller.add(object)
-        setHideArray(createHideArray(scene))
       }
+     
 
       controller.userData.selected = object
       soundBeam.current.play()

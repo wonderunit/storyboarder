@@ -522,7 +522,7 @@ BonesHelper.prototype.updateMatrixWorld = function () {
 
     Object3D.prototype.updateMatrixWorld.call( this, force )
   }
-}()
+}() 
 
 BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
   let results = raycaster.intersectObjects(this.cones)
