@@ -1306,19 +1306,6 @@ const SceneContent = connect()(
     setTeleportRot(new THREE.Euler(0, rotation, 0))
   }, [])
 
-  const positionDataFor = object3d => {
-    let { x, y, z } = object3d.position
-    return {
-      position: { x, y, z },
-    }
-  }
-  const rotationDataFor = object3d => {
-    let { x, y, z } = object3d.rotation
-    return {
-      rotation: { x, y, z }
-    }
-  }
-
   let activeCameraComponent = (
     // "body"/container/platform for the HMD, with position offset
     <group
