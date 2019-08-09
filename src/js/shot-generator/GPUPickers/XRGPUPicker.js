@@ -7,6 +7,7 @@ class XRGPUPicker extends GPUPicker
         super();
         this.addedGroupsId = [];
         this.allowedObjectsTypes = [ "object", "character", "bonesHelper" , "virtual-camera", "light" ];
+        this.idBonus = 400;
     }
 
     initalizeChildren(intersectObjects)
@@ -144,7 +145,7 @@ class XRGPUPicker extends GPUPicker
                 if(child.type === "Mesh") 
                 {
                     meshes.push(child); 
-                    return;
+                    //return;
                 }  
 
                 if(child.children.length !== 0 && child.children[0].type === "BonesHelper")
