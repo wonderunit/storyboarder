@@ -180,7 +180,6 @@ const SceneContent = connect()(
   const [helpToggle, setHelpToggle] = useState(false)
   const [helpSlide, setHelpSlide] = useState(0)
   const [currentBoard, setCurrentBoard] = useState(null)
-  const [camExtraRot, setCamExtraRot] = useState(0)
   const [teleportPos, setTeleportPos] = useState(null)
   const [teleportRot, setTeleportRot] = useState(null)
 
@@ -932,42 +931,29 @@ const SceneContent = connect()(
         // remember where we were standing
         setStandingMemento({
           teleportPos: teleportPos,
-          camExtraRot: camExtraRot
+          teleportRot: teleportRot
         })
 
         // switch to mini mode
         setWorldScale(MINIATURE_MODE_SCALE)
 
         // alter the camera position
-        setTeleportPos(new THREE.Vector3(
+        teleport(
           (hmdCameraGroup.current.position.x*MINIATURE_MODE_SCALE),
           -(hmdCamera.current.position.y - 0.75),
-          (hmdCameraGroup.current.position.z*MINIATURE_MODE_SCALE),
-        ))
-
-        let offsetVector = new THREE.Vector3(0, 0, 1)
-        offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(hmdCamera.current.matrixWorld))
-        offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1)).normalize().multiplyScalar(1)
-
-        setTeleportPos(oldPos => {
-          if (!oldPos) {
-            offsetVector.add(new THREE.Vector3(x, 0, y))
-            return offsetVector
-          } else {
-            return oldPos.clone().add(offsetVector)
-          }
-        })
-
-
-
-        //setCamExtraRot(0)
+          (hmdCameraGroup.current.position.z*MINIATURE_MODE_SCALE)
+        )
       } else {
         // set the world scale
         setWorldScale(1)
 
         // return to where we were standing
-        setTeleportPos(standingMemento.teleportPos)
-        setCamExtraRot(standingMemento.camExtraRot)
+        teleport(
+          standingMemento.teleportPos.x,
+          standingMemento.teleportPos.y,
+          standingMemento.teleportPos.z,
+          standingMemento.teleportRot.y
+        )
 
         // clear the memento
         setStandingMemento(null)
@@ -1345,8 +1331,6 @@ const SceneContent = connect()(
         label: 'teleport',
         ...positionDataFor(hmdCameraGroup.current),
         ...rotationDataFor(hmdCameraGroup.current)
-        // position: { x: teleportPos.x, y: teleportPos.y, z: teleportPos.z },
-        // rotation: { x: 0, y: teleportRot + (Math.PI / 4 * camExtraRot), z: 0}
       }
     })
     dispatch({
@@ -1359,7 +1343,7 @@ const SceneContent = connect()(
         ...rotationDataFor(hmdCamera.current)
       }
     })
-  }, [teleportPos, teleportRot, camExtraRot])
+  }, [teleportPos, teleportRot])
 
   useInterval(
     () => {
