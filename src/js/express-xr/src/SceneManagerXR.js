@@ -225,6 +225,7 @@ const SceneContent = connect()(
   }, [world.backgroundColor])
 
   const teleport = (x, y, z, r) => {
+    // create virtual objects
     let parent = new THREE.Object3D()
     parent.position.copy(hmdCameraGroup.current.position)
     parent.rotation.copy(hmdCameraGroup.current.rotation)
@@ -234,6 +235,7 @@ const SceneContent = connect()(
     parent.add(child)
     parent.updateMatrixWorld()
 
+    // if x and y both present
     if (x != null && z != null) {
       let center = new THREE.Vector3()
       child.getWorldPosition( center )
@@ -244,6 +246,11 @@ const SceneContent = connect()(
       parent.position.x = x + dx
       parent.position.z = z + dz
       parent.updateMatrixWorld()
+    }
+
+    // reset y unless given explicit value
+    if (y != null) {
+      parent.position.y = 0
     }
 
     if (r != null) {
@@ -260,10 +267,8 @@ const SceneContent = connect()(
       parent.position.z = v.z
       parent.rotation.y = r - child.rotation.y
     }
-    if (y != null) {
-      parent.position.y = 0
-    }
 
+    // update state from new position of virtual objects
     setTeleportPos(parent.position)
     setTeleportRot(parent.rotation)
   }
