@@ -220,7 +220,7 @@ const PosePresetsEditor = connect(
   state => ({
     attachments: state.attachments,
 
-    posePresets: Object.values(state.presets.poses),
+    posePresets: state.presets.poses,
   }),
   {
     updateObject,
@@ -244,7 +244,7 @@ React.memo(({
   const [ready, setReady] = useState(false)
   const [terms, setTerms] = useState(null)
 
-  const presets = useMemo(() => searchPresetsForTerms(posePresets, terms), [posePresets, terms])
+  const presets = useMemo(() => searchPresetsForTerms(Object.values(posePresets), terms), [posePresets, terms])
 
   useEffect(() => {
     if (ready) return
