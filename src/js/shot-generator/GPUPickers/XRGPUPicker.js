@@ -45,11 +45,24 @@ class XRGPUPicker extends GPUPicker
             {
                 continue;
             }
-            
             if(this.addedGroupsId.some(group => group === intesectable.uuid))
             {
-                continue;
+                //console.log("Object's group added", intesectable);
+                if(intesectable.userData.type === "object" && !this.isObjectAdded(intesectable.getObjectByProperty("type", "Mesh")))
+                {
+                   
+                }
+                else if(intesectable.userData.type === "character" && !this.isObjectAdded(intesectable.getObjectByProperty("type", "SkinnedMesh")))
+                {
+
+                }
+                else
+                {
+                    continue;
+                }
+                //continue;
             }
+            //console.log("Adding object", intesectable);
             this.getAllSceneMeshes(intesectable, objects, additionalObjects);
             this.addedGroupsId.push(intesectable.uuid);
         }
@@ -68,27 +81,36 @@ class XRGPUPicker extends GPUPicker
                 shininess: 0,
                 flatShading: false,
                 morphNormals: true,
-                morphTargets: true
+                morphTargets: true,
+                side: THREE.DoubleSide
               });
             let pickingCube = null;
             let node = new THREE.Object3D();
 
             if(object.type === "SkinnedMesh")
             {
-                let parent = null;
-                parent = object.parent.parent;
+                let parent = object.parent;
+                if(parent.type === "LOD")
+                {
+                    parent = parent.parent;
+                }
                 let userData = parent.userData;
                 parent.userData = [];
+                console.log(parent);
                 node = SkeletonUtils.clone(parent);
                 parent.userData = userData;
-                // Removes load
                 let lod = node.children[0];
-                lod.levels.pop();
-                lod.levels.pop();
-                lod.levels.pop();
-                lod.levels.pop();
-                // removes load
-                pickingCube = node.children[0].children[0];
+                if(lod.type === "LOD")
+                {
+                    //let bones = node.children[1];
+                    node.attach(lod.children[0]);
+                    node.remove(lod);
+                   //console.log(node.children[0].children.find(child => child.type === "SkinnedMesh"));
+                   //pickingCube = node.children[0].children.find(child => child.type === "SkinnedMesh");
+                }
+                pickingCube = node.children.find(child => child.type === "SkinnedMesh");
+    
+
                 pickingCube.material = pickingMaterial;
                 pickingCube.matrixWorldNeedsUpdate = true;
                 pickingCube.visible = true;
@@ -125,6 +147,7 @@ class XRGPUPicker extends GPUPicker
                     let originalObject = this.gpuPickerHelper.selectableObjects[guiElement.pickerId].originObject;
                     if(!originalObject)
                     {
+                        
                         clonnedObject.remove(guiElement);
                         delete this.gpuPickerHelper.selectableObjects[guiElement.pickerId];
                         m = clonnedObject.children.length;
@@ -141,20 +164,32 @@ class XRGPUPicker extends GPUPicker
             let originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.parent;
             if(!originalObject)
             {
+                console.log("Object removed", clonnedObject);
                 this.pickingScene.remove(clonnedObject);
                 delete this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
                 n = this.pickingScene.children.length;
                 i--;
                 continue;
             }
+            if(originalObject.userData.type === "character" && originalObject.type !== "LOD")
+            {
+                originalObject = this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject;
+                console.log(originalObject);
+                //originalObject.rotateX(Math.PI/2);
+            }
             clonnedObject.position.copy(originalObject.worldPosition());
             clonnedObject.quaternion.copy(originalObject.worldQuaternion());
             clonnedObject.scale.copy(originalObject.worldScale());
+            if(originalObject.type === "SkinnedMesh")
+            {
+                console.log(clonnedObject);
+                clonnedObject.rotateX(Math.PI/2);
+            }
+
             clonnedObject.updateMatrixWorld(true);
             if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.skeleton)
             {
-                let clonnedSkinnedMesh = null;
-                clonnedSkinnedMesh = clonnedObject.children[0].children.find(child => child.type === "SkinnedMesh");
+                let clonnedSkinnedMesh = clonnedObject.children.find(child => child.type === "SkinnedMesh");
                 let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject;
             
                 let originalRootBone = originalSkinnedMesh.skeleton.bones[0];
@@ -191,15 +226,24 @@ class XRGPUPicker extends GPUPicker
                     //return;
                 }  
 
-                if(child.children.length !== 0 && child.children[0].type === "BonesHelper")
+                if(child.children.length !== 0 )
                 {
-                    additionalObjects[sceneMesh.uuid] = child.children[0].cones;
-                    return;
-                }
+                    if(child.children[0].type === "BonesHelper")
+                    {
+                        additionalObjects[sceneMesh.uuid] = child.children[0].cones;
+                        return;
+                    }
 
-                if(child.children.length !== 0 && child.children[0].type === "LOD")
-                {
-                    meshes.push(child.children[0].children[0]);
+                    if(child.children[0].type === "LOD")
+                    {
+                        meshes.push(child.children[0].children[0]);
+                        //continue;
+                    }
+                    else if(child.children[0].type === "SkinnedMesh")
+                    {
+                        meshes.push(child.children[0]);
+                        //continue;
+                    }
                 }
             }   
         }

@@ -42,9 +42,9 @@ class GPUPicker
         this.pickingPosition.y = y;
     }
 
-    pick(camera)
+    pick(camera, wall)
     {
-        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.gpuPickerHelper.selectableObjects, false);
+        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.gpuPickerHelper.selectableObjects, false, wall);
     }
 
     pickBone(camera)
@@ -61,7 +61,14 @@ class GPUPicker
                 return result;
             }
             this.bonesScene.remove(cones);
-            result[0].bone = originObject.parent.parent.bonesHelper.bones.find(bone => bone.uuid === result[0].object.userData.bone)
+            if(originObject.parent.type === "LOD")
+            {
+                result[0].bone = originObject.parent.parent.bonesHelper.bones.find(bone => bone.uuid === result[0].object.userData.bone);
+            }
+            else
+            {
+                result[0].bone = originObject.parent.bonesHelper.bones.find(bone => bone.uuid === result[0].object.userData.bone);
+            }
             return result;
         }
         return [];
@@ -122,7 +129,7 @@ class GPUPicker
         let addedObject = Object.values(this.gpuPickerHelper.selectableObjects).find(obj => obj.originObject.uuid === object.uuid);
         if(addedObject)
         {
-            addedObject.pickerObject.visible = object.visible;
+            //addedObject.pickerObject.visible = object.visible;
             return true;
         }
         return false;

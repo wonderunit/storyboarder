@@ -203,7 +203,10 @@ THREE.Object3D.prototype.copyMesh = function( source, recursive)
         for ( var i = 0; i < source.children.length; i ++ ) {
 
             var child = source.children[ i ];
-            this.add( child.clone() );
+            if(child.type !== "Audio")
+            {
+                this.add( child.clone() );
+            }
         }
     }
     return this;

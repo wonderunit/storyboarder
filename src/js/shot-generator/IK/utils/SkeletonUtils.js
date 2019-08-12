@@ -541,9 +541,14 @@ const SkeletonUtils = {
         var initializedMesh = false;
         var clone = source.cloneMesh();
         let skinnedMeshAdded = false;
+        console.log(clone);
         let nodesToRemove = [];
         parallelTraverse( source, clone, ( sourceNode, clonedNode ) => {
 
+            if(!clonedNode)
+            {
+                return;
+            }
             if(clonedNode.isSkinnedMesh)
             {
                 if(skinnedMeshAdded)
