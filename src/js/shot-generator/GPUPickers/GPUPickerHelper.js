@@ -69,11 +69,9 @@ class GPUPickerHelper
                 {
                     this.pickedSkinnedMesh = intersectedObject;
                 }
-                scene.remove(selectedObject);
-                this.depthScene.add(selectedObject);
+                this.depthScene.attach(selectedObject);
                 this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
-                this.depthScene.remove(selectedObject);
-                scene.add(selectedObject);
+                scene.attach(selectedObject);
                 canvasPos = this.unpackRGBAToScenePosition(pixelBuffer, cssPosition, camera, renderer);
             }
         }
