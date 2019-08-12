@@ -851,11 +851,10 @@ const SceneContent = ({
   }
 
   const onGripDown = event => {
-    setTeleportMode(true)
-
     const controller = event.target
     controller.gripped = true
 
+    if (!controller.pressed) setTeleportMode(true)
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (!selectedObjRef.current && otherController && otherController.gripped) {
       setTeleportMode(false)
