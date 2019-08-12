@@ -854,7 +854,6 @@ const SceneContent = ({
     const controller = event.target
     controller.gripped = true
 
-    if (!controller.pressed) setTeleportMode(true)
     const otherController = vrControllers.find(i => i.uuid !== controller.uuid)
     if (!selectedObjRef.current && otherController && otherController.gripped) {
       setTeleportMode(false)
@@ -903,6 +902,7 @@ const SceneContent = ({
       setHideArray(createHideArray(scene))
       setGuiMode('selection')
     } else {
+      if (!controller.pressed) setTeleportMode(true)
       setSelectedObject(0)
       selectedObjRef.current = null
       setHideArray(createHideArray(scene))
