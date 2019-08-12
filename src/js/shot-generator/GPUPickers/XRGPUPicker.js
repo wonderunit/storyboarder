@@ -96,7 +96,6 @@ class XRGPUPicker extends GPUPicker
                 }
                 let userData = parent.userData;
                 parent.userData = [];
-                console.log(parent);
                 node = SkeletonUtils.clone(parent);
                 parent.userData = userData;
                 let lod = node.children[0];
@@ -115,7 +114,7 @@ class XRGPUPicker extends GPUPicker
                 pickingCube.matrixWorldNeedsUpdate = true;
                 pickingCube.visible = true;
                 node.type = "character";
-                let {cones, selectable} = this.initializeCones(additionalObjects[parent.parent.uuid]);
+                let {cones, selectable} = this.initializeCones(additionalObjects[parent.parent.uuid], object.skeleton.bones);
                 node.cones = cones;
                 node.selectable = selectable;
             }
@@ -164,7 +163,6 @@ class XRGPUPicker extends GPUPicker
             let originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.parent;
             if(!originalObject)
             {
-                console.log("Object removed", clonnedObject);
                 this.pickingScene.remove(clonnedObject);
                 delete this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
                 n = this.pickingScene.children.length;
@@ -174,7 +172,6 @@ class XRGPUPicker extends GPUPicker
             if(originalObject.userData.type === "character" && originalObject.type !== "LOD")
             {
                 originalObject = this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject;
-                console.log(originalObject);
                 //originalObject.rotateX(Math.PI/2);
             }
             clonnedObject.position.copy(originalObject.worldPosition());
@@ -182,7 +179,6 @@ class XRGPUPicker extends GPUPicker
             clonnedObject.scale.copy(originalObject.worldScale());
             if(originalObject.type === "SkinnedMesh")
             {
-                console.log(clonnedObject);
                 clonnedObject.rotateX(Math.PI/2);
             }
 

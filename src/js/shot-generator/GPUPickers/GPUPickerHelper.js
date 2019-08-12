@@ -91,7 +91,14 @@ class GPUPickerHelper
         {
             return returnObject;
         }
-        returnObject.push({ object: this.pickedObject, point: canvasPos});
+        if(pickingBones)
+        {
+            returnObject.push({ object: this.pickedObject, point: canvasPos, bone: intersectedObject.originalBone });
+        }
+        else
+        {
+            returnObject.push({ object: this.pickedObject, point: canvasPos});
+        }
 
         return returnObject;
     }

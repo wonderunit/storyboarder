@@ -346,7 +346,7 @@ const SceneContent = ({
       selectionCamera.current.updateMatrixWorld(true);
     }
 
-    if(!wall.current)
+   /*  if(!wall.current)
     {
       let geometry = new THREE.PlaneBufferGeometry( 10, 10, 6 );
       let material = new THREE.MeshLambertMaterial( {  color: 0xcccccc,
@@ -356,8 +356,7 @@ const SceneContent = ({
       scene.add(mesh);
       mesh.position.y = mesh.position.y + 5;
       wall.current = mesh;
-    }
-    console.log(scene);
+    } */
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
     let gui = controller.children.find(child => child.userData.type === "gui");

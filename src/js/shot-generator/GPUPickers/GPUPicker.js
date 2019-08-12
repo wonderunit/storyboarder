@@ -61,20 +61,12 @@ class GPUPicker
                 return result;
             }
             this.bonesScene.remove(cones);
-            if(originObject.parent.type === "LOD")
-            {
-                result[0].bone = originObject.parent.parent.bonesHelper.bones.find(bone => bone.uuid === result[0].object.userData.bone);
-            }
-            else
-            {
-                result[0].bone = originObject.parent.bonesHelper.bones.find(bone => bone.uuid === result[0].object.userData.bone);
-            }
             return result;
         }
         return [];
     }
 
-    initializeCones(cones)
+    initializeCones(cones, bones)
     {
         let pickingCones = new THREE.Group();
         let selectableCones = [];
@@ -94,7 +86,8 @@ class GPUPicker
             pickingCube.type = object.userData.type;
             pickingCube.originCone = object;
             pickingCones.add(pickingCube);
-            selectableCones[id] = {originObject:object, pickerObject: pickingCube};
+            let bone = bones.find(obj => object.userData.bone === obj.uuid);
+            selectableCones[id] = {originObject:object, pickerObject: pickingCube, originalBone: bone };
         }
         return {cones:pickingCones, selectable: selectableCones};
     }
