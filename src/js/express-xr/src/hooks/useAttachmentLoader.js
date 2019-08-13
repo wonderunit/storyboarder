@@ -99,7 +99,7 @@ const getFilepathForLoadable = ({ type, model }) => {
   } else {
     switch (type) {
       case 'character':
-        if (model === 'adult-male') model = 'adult-male-lod'
+        model = `${model}-lod`
         return `/data/system/dummies/gltf/${model}.glb`
       case 'object':
         return `/data/system/objects/${model}.glb`
