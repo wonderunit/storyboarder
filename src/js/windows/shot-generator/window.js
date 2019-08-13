@@ -56,7 +56,7 @@ const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ set
 // const createServer = require('../../services/createServer')
 const createDualShockController = require('../../shot-generator/DualshockController')
 
-const XRServer = require('../../express-xr/app')
+const XRServer = require('../../xr/app')
 let xrServer
 
 

@@ -16,11 +16,11 @@
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
     "postinstall": "electron-builder install-app-deps",
-    "xr:watch": "parcel watch --no-hmr src/js/express-xr/src/index.html -d src/js/express-xr/dist",
-    "xr:clean": "trash src/js/express-xr/dist",
-    "xr:build": "parcel build src/js/express-xr/src/index.html -d src/js/express-xr/dist --no-source-maps",
+    "xr:watch": "parcel watch --no-hmr src/js/xr/src/index.html -d src/js/xr/dist",
+    "xr:clean": "trash src/js/xr/dist",
+    "xr:build": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
-    "xr:test-server": "electron src/js/express-xr/test/test-server.js",
+    "xr:test-server": "electron src/js/xr/test/test-server.js",
     "build:thumbnails": "electron test/views/thumbnail-renderer/main.js"
   },
   "repository": {
