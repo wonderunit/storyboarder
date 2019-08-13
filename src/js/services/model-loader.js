@@ -34,7 +34,9 @@ const characterHeights = {
   'adult-male': 1.8,
   'teen-male': 1.6,
   'adult-female': 1.65,
-  'teen-female': 1.6
+  'teen-female': 1.6,
+  'child': 1.2,
+  'baby': 0.75
 }
 
 const toonMaterial = new THREE.MeshToonMaterial({

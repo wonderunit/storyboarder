@@ -554,6 +554,18 @@ const initialState = {
       type: 'character',
       height: 1.6
     },
+    'child': {
+      id: 'child',
+      name: 'Child',
+      type: 'character',
+      height: 1.2
+    },
+    'baby': {
+      id: 'baby',
+      name: 'Baby',
+      type: 'character',
+      height: 0.75
+    },
 
     'box': {
       id: 'box',
