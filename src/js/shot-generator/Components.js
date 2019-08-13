@@ -72,7 +72,9 @@ const {
   getSelections,
   getActiveCamera,
   getSelectedBone,
-  getWorld
+  getWorld,
+
+  initialState
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
@@ -952,6 +954,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
 
+  const validMorphTargets = initialState.models[sceneObject.model].validMorphTargets
+  
   return h([
     'div',
       [
@@ -1257,8 +1261,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
             ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
 
-            sceneObject.model !== 'baby' && ['div', { style: { flex: 1 } },
-              Object.entries(sceneObject.morphTargets).map(([ key, value ]) =>
+            ['div', { style: { flex: 1 } },
+              Object.entries(sceneObject.morphTargets).filter(m => validMorphTargets.includes(m[0])).map(([ key, value ]) =>
                 [
                   NumberSlider,
                   {
