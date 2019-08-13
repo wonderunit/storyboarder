@@ -314,6 +314,7 @@ const SceneContent = ({
     if(!selectionCamera.current)
     {
       selectionCamera.current = new THREE.PerspectiveCamera(75, gl.domElement.width / gl.domElement.height, 0.1, 1000 );
+     
     }
  
     let selectCamera = selectionCamera.current;
@@ -1055,7 +1056,6 @@ const SceneContent = ({
       rStatsRef.current('FPS').frame()
       rStatsRef.current().update()
     }
-
     THREE.VRController.update()
 
     for (let i = 0; i < vrControllers.length; i++) {
@@ -1065,8 +1065,11 @@ const SceneContent = ({
         selectedObjRef.current.userData.type === 'character' &&
         !selectedBone &&
         // has it loaded the skinned mesh yet?
-        selectedObjRef.current.children[0]
+        selectedObjRef.current.children[0] && 
+        vrControllers.length > 1 ? (!vrControllers[0].pressed && !vrControllers[1].pressed) :
+        !controller.pressed
       ) {
+
         //const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         gpuPicker.current.updateCurrentCharacter();
         gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);

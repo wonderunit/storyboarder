@@ -65,11 +65,11 @@ const SGVirtualCamera = ({ i, aspectRatio, selectedObject, hideArray, virtualCam
       for (let i = 0; i < hideArrayRef.current.length; i++) {
         hideArrayRef.current[i].visible = false
       }
-
+      scene.autoUpdate = false;
       gl.setRenderTarget(renderTarget.current)
       gl.render(scene, virtualCamera.current)
       gl.setRenderTarget(null)
-
+      scene.autoUpdate = true;
       for (let i = 0; i < hideArrayRef.current.length; i++) {
         hideArrayRef.current[i].visible = true
       }
