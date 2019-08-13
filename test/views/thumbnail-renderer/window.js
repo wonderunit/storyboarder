@@ -285,6 +285,18 @@ const Render = ({ model, modelData }) => {
         group.rotation.y = Math.PI/20
         break
 
+      case 'baby':
+        group.scale.multiplyScalar(0.75)
+        group.rotation.x -= Math.PI / 2
+        camera.position.y -= 0.125
+        break
+
+      case 'child':
+        group.scale.multiplyScalar(1.25)
+        group.rotation.x -= Math.PI / 2
+        camera.position.y -= 0.25
+        break
+
       case 'box':
         camera.position.y -= 1
         camera.position.x += 0.05
