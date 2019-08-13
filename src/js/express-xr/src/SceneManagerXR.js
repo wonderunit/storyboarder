@@ -741,7 +741,6 @@ const SceneContent = ({
         worldScaleGroupRef.current.add(object)
         object.position.multiplyScalar(1 / worldScale)
       }
-
       controller.userData.selected = undefined
       soundBeam.current.stop()
 
@@ -1057,34 +1056,22 @@ const SceneContent = ({
       rStatsRef.current().update()
     }
     THREE.VRController.update()
-/*     if(selectedObjRef.current && selectedObjRef.current.userData.type === 'character')
-    {
-      console.log(selectedObjRef);
-      console.log(scene);
-    }
-
-    if(selectedObjRef.current && selectedObjRef.current.userData.type === 'object')
-    {
-      console.log(scene);
-    } */
 
     for (let i = 0; i < vrControllers.length; i++) {
     const controller = vrControllers[i]
+    let isControllerPressed = vrControllers.length > 1 ? (vrControllers[0].pressed && vrControllers[1].pressed) :
+    vrControllers[0].pressed
       if (
         selectedObjRef.current &&
         selectedObjRef.current.userData.type === 'character' &&
         !selectedBone &&
         // has it loaded the skinned mesh yet?
         selectedObjRef.current.children[0] && 
-        vrControllers.length > 1 ? (!vrControllers[0].pressed && !vrControllers[1].pressed) :
-        !vrControllers[0].pressed
+        !isControllerPressed
       ) {
-
-        //const bonesHelper = selectedObjRef.current.children[0].bonesHelper
         gpuPicker.current.updateCurrentCharacter();
         gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
         const hits = gpuPicker.current.pickBone(selectionCamera.current);
-        //const hits =  bonesHelper ? boneIntersect(controller, bonesHelper) : []
         const selectedBones = highlightedBones.current;
         if (hits.length) {
           controller.userData.currentBoneHighlight = hits[0].bone

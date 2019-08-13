@@ -175,9 +175,8 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
-
   const originalSkeleton = useRef(null)
-
+  const characterBonesHelper = useRef();
   // const doCleanup = () => {
   //   if (object.current) {
   //     console.log(type, id, 'remove')
@@ -191,7 +190,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   useRender(
     () => {
       if (object.current && hmdCam && object.current.children[0] instanceof THREE.LOD) {
-        object.current.children[0].update(hmdCam)
+        //object.current.children[0].update(hmdCam)
       }
     },
     false,
@@ -262,14 +261,18 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
 
   const bonesHelper = useMemo(() => {
     if (ready && object.current) {
-      return new BonesHelper(
-        skeleton.bones[0].parent,
-        object.current,
-        {
-          boneLengthScale,
-          cacheKey: props.model
-        }
-      )
+      if(!characterBonesHelper.current)
+      {
+        characterBonesHelper.current = new BonesHelper(
+          skeleton.bones[0].parent,
+          object.current,
+          {
+            boneLengthScale,
+            cacheKey: props.model
+          }
+        )
+      }
+      return characterBonesHelper.current;
     } else {
       return undefined
     }
@@ -401,10 +404,10 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     if (!object.current) return
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected && worldScale === 1) {
-      object.current.add(object.current.bonesHelper.conesGroup);
+      object.current.add(characterBonesHelper.current.conesGroup);
       //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
     } else {
-      object.current.remove(object.current.bonesHelper.conesGroup);
+      object.current.remove(characterBonesHelper.current.conesGroup);
       //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
     }
 
@@ -441,7 +444,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   useEffect(() => {
     if (!ready) return
     if (!object.current) return
-
     // if there was a prior selected bone
     if (currentBoneSelected.current) {
       // reset it
@@ -460,7 +462,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
       }
     }
   }, [selectedBone, ready])
-
+  
   return <group
       //visible={false}
       userData={{
@@ -482,7 +484,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
           <group
             //visible={false}
             ref={object}
-            bonesHelper={bonesHelper ? bonesHelper : undefined}
+            //bonesHelper={bonesHelper ? bonesHelper : undefined}
             userData={{
               id,
               type,

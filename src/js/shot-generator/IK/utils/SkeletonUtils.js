@@ -538,10 +538,8 @@ const SkeletonUtils = {
         var sourceLookup = new Map();
         var cloneLookup = new Map();
 
-        var initializedMesh = false;
         var clone = source.cloneMesh();
         let skinnedMeshAdded = false;
-        console.log(clone);
         let nodesToRemove = [];
         parallelTraverse( source, clone, ( sourceNode, clonedNode ) => {
 
@@ -594,11 +592,6 @@ const SkeletonUtils = {
     }
 
 };
-
-function cloneObject(object)
-{
-
-}
 
 function parallelTraverse( a, b, callback ) {
 
