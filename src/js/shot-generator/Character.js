@@ -44,7 +44,7 @@ const isValidSkinnedMesh = data => {
 
 const cloneGltf = (gltf) => {
   const clone = {
-    animations: gltf.animations,
+    animations: gltf.animations || [],
     scene: gltf.scene.clone(true)
   };
 

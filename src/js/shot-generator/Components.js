@@ -1257,7 +1257,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
             ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
 
-            (sceneObject.model.includes('adult') || sceneObject.model.includes('teen')) && ['div', { style: { flex: 1 } },
+            sceneObject.model !== 'baby' && ['div', { style: { flex: 1 } },
               Object.entries(sceneObject.morphTargets).map(([ key, value ]) =>
                 [
                   NumberSlider,
