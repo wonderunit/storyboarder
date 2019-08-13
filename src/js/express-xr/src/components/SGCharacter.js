@@ -399,17 +399,16 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     // console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
-    let currentBoneHelper = object.current.bonesHelper;
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected && worldScale === 1) {
-      currentBoneHelper.add(currentBoneHelper.conesGroup);
+      object.current.add(object.current.bonesHelper.conesGroup);
       //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
     } else {
-      currentBoneHelper.remove(currentBoneHelper.conesGroup);
+      object.current.remove(object.current.bonesHelper.conesGroup);
       //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
     }
 
-    if (skinnedMesh.type === 'LOD') {
+     if (skinnedMesh.type === 'LOD') {
       skinnedMesh.levels.forEach((level, i) => {
         const worldScaleMult = worldScale === 1 ? 1 : 0.01
         level.distance = i * 2 * worldScaleMult
@@ -417,7 +416,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     }
 
     if (isSelected) updateObjectHighlight(object.current, 0.15)
-    else updateObjectHighlight(object.current, 0)
+    else updateObjectHighlight(object.current, 0) 
   }, [props.model, worldScale, isSelected, ready])
 
   useMemo(() => {

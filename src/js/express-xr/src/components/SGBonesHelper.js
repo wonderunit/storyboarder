@@ -285,7 +285,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   let height = bbox.max.y - bbox.min.y
   if (height>2) vertexDistanceMyltiplyFactor = height * 10
   let bones = getBoneList( object );
-  this.cones = []
+  let cones = []
   this.conesGroup = new THREE.Group();
   //this.hit_meshes = []
 
@@ -380,9 +380,9 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
       //this.cones[boneIndex]= new THREE.Mesh()
 
-      this.cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
+      cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
 
-      this.cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
+      cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
 
       // Add the axis helper if needed
       // let axisHelper = new THREE.AxesHelper(0.2)
@@ -390,11 +390,11 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       //this.cones[boneIndex].add(axisHelper)
       
 
-      this.cones[boneIndex].userData.name = bone.name
-      this.cones[boneIndex].userData.type = 'bone'
-      this.cones[boneIndex].userData.bone = bone.uuid
-      this.cones[boneIndex].userData.segment = 0
-      this.cones.matrixAutoUpdate = false;
+      cones[boneIndex].userData.name = bone.name
+      cones[boneIndex].userData.type = 'bone'
+      cones[boneIndex].userData.bone = bone.uuid
+      cones[boneIndex].userData.segment = 0
+      cones.matrixAutoUpdate = false;
 
       
       //hitMesh.geometry.applyMatrix(new Matrix4().makeScale(4, 1, 4))
@@ -460,7 +460,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
         //this.add(createdHelper)
 
         //bone.helper = createdHelper
-        bone.connectedBone = this.cones[boneIndex]
+        bone.connectedBone = cones[boneIndex]
 
   
         boneCounter++
@@ -471,7 +471,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
     }
   
     let boneIndex = traversedBones.indexOf(bone)
-    let cone = this.cones[boneIndex];
+    let cone = cones[boneIndex];
     if(cone)
     {
       this.conesGroup.add(cone);
@@ -481,7 +481,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   zeroedSkinnedMesh = null
 
   this.root = object
-  this.object3D = object3D
+  //this.object3D = object3D
   this.bones = bones
   //if (sknMesh.needsRepose) sknMesh.repose()
   this.matrix = object.matrixWorld
@@ -503,7 +503,7 @@ BonesHelper.prototype.updateMatrixWorld = function () {
       return;
     } 
     
-
+    console.log("Updating cones");
     var bones = this.bones
     matrixWorldInv.getInverse( this.root.matrixWorld )
 
@@ -525,7 +525,7 @@ BonesHelper.prototype.updateMatrixWorld = function () {
 }() 
 
 BonesHelper.prototype.raycast = function ( raycaster, intersects ) {
-  let results = raycaster.intersectObjects(this.cones)
+  let results = raycaster.intersectObjects(this.conesGroup.children)
   for (let result of results) {
     // add a .bone key to the Intersection object referencing the cone's bone
     result.bone = this.bones.find(bone => bone.uuid === result.object.userData.bone)

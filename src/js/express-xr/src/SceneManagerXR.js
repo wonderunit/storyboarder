@@ -1057,6 +1057,16 @@ const SceneContent = ({
       rStatsRef.current().update()
     }
     THREE.VRController.update()
+/*     if(selectedObjRef.current && selectedObjRef.current.userData.type === 'character')
+    {
+      console.log(selectedObjRef);
+      console.log(scene);
+    }
+
+    if(selectedObjRef.current && selectedObjRef.current.userData.type === 'object')
+    {
+      console.log(scene);
+    } */
 
     for (let i = 0; i < vrControllers.length; i++) {
     const controller = vrControllers[i]
@@ -1067,7 +1077,7 @@ const SceneContent = ({
         // has it loaded the skinned mesh yet?
         selectedObjRef.current.children[0] && 
         vrControllers.length > 1 ? (!vrControllers[0].pressed && !vrControllers[1].pressed) :
-        !controller.pressed
+        !vrControllers[0].pressed
       ) {
 
         //const bonesHelper = selectedObjRef.current.children[0].bonesHelper

@@ -226,7 +226,7 @@ class XRGPUPicker extends GPUPicker
                 {
                     if(child.children[0].type === "BonesHelper")
                     {
-                        additionalObjects[sceneMesh.uuid] = child.children[0].cones;
+                        additionalObjects[sceneMesh.uuid] = child.children[0].conesGroup.children;
                         return;
                     }
 

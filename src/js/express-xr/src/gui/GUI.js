@@ -328,10 +328,11 @@ const GUI = ({
 
       const currentTime = Date.now()
       const delta = currentTime - previousTime.current
-
+      
       if (delta > 1000) {
         previousTime.current = currentTime
-        setFPS(parseInt(rStatsRef.current('FPS').value()))
+        let fps = parseInt(rStatsRef.current('FPS').value());
+        setFPS(fps);
       }
     }
   }, false, [rStatsRef.current])
@@ -370,9 +371,21 @@ const GUI = ({
     () => [1, 2, 3, 4, 5, 6, 7, 8].map(n => new THREE.TextureLoader().load(`/data/system/xr/help_${n}.png`)),
     []
   )
-
+  let fpsText = useRef(null);
   const invertGUI = flipHand ? -1 : 1
-  const fpsMeter = useMemo(() => textCreator.create(fps.toString(), { color: 0xff0000, scale: 0.475, centerText: false }), [fps])
+  const fpsMeter = useMemo(() =>  
+  { 
+    if(fpsText.current)
+    {
+      fpsText.current.updateLabel(fps.toString());
+    }
+    else
+    {
+      fpsText.current = textCreator.create(fps.toString(), { color: 0xff0000, scale: 0.475, centerText: false }) ;
+    }
+    return fpsText.current;
+  }, [fps])
+
   const selectorScale = 2
 
   return (
