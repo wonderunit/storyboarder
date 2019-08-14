@@ -128,7 +128,7 @@ const SceneContent = connect(
 
     useMemo(() => {
       if (groupRef.current) {
-        let material = new THREE.MeshStandardMaterial({ color: 0xff0000 })
+        let material = new THREE.MeshBasicMaterial({ color: 0xff0000 })
         let geometry = new THREE.BoxBufferGeometry(1, 1, 1)
 
         for (let i = 0; i < 500; i++) {
