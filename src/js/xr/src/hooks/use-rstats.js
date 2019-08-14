@@ -1,0 +1,33 @@
+const { useThree, useRender } = require('react-three-fiber')
+const { useRef, useMemo } = React = require('react')
+
+const rStats = require('rstatsjs/src/rStats.js')
+const { threeStats } = require("rstatsjs/src/rStats.extras.js")
+
+const useRStats = () => {
+  const { gl } = useThree()
+  const ref = useRef()
+
+  useMemo(() => {
+    ref.current = new rStats({
+      css: [],
+      values: {
+        fps: { caption: "fps", below: 30 }
+      },
+      groups: [{ caption: "Framerate", values: ["fps", "raf"] }],
+      plugins: [new threeStats(gl)]
+    })
+  }, [])
+
+  useRender(() => {
+    ref.current("rAF").tick()
+    ref.current("FPS").frame()
+    ref.current().update()
+
+    // ref.current().element
+  })
+
+  return ref.current
+}
+
+module.exports = useRStats

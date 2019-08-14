@@ -13,6 +13,8 @@ const {
   getActiveCamera
 } = require('../../shared/reducers/shot-generator')
 
+const useRStats = require('./hooks/use-rstats')
+
 const SceneContent = connect(
   state => ({
     sceneObjects: getSceneObjects(state),
@@ -46,6 +48,8 @@ const SceneContent = connect(
     const groundTexture = useMemo(
       () => new THREE.TextureLoader().load('/data/system/grid_floor.png'), []
     )
+
+    const rStats = useRStats()
 
     return (
       <>
