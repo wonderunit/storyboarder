@@ -10,17 +10,20 @@ const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
 const {
   getSceneObjects,
+  getWorld,
   getActiveCamera
 } = require('../../shared/reducers/shot-generator')
 
 const SceneContent = connect(
   state => ({
     sceneObjects: getSceneObjects(state),
+    world: getWorld(state),
     activeCamera: getActiveCamera(state)
   })
 )(
 ({
   sceneObjects,
+  world,
   activeCamera
 }) => {
   const { scene, camera } = useThree()
@@ -41,6 +44,10 @@ const SceneContent = connect(
     setTeleportRot(new THREE.Euler(0, rotation, 0))
   }, [])
 
+  const groundTexture = useMemo(
+    () => new THREE.TextureLoader().load('/data/system/grid_floor.png'), []
+  )
+
   return (
     <>
       <group
@@ -50,10 +57,16 @@ const SceneContent = connect(
         <primitive object={camera} />
       </group>
 
-      <ambientLight color={0xffffff} intensity={1} />
-      <mesh position={[0, 0, 0]} rotation={[0, 0, 0]}>
-        <sphereGeometry attach="geometry" args={[1, 16, 16]} />
-        <meshStandardMaterial attach="material" color="indianred" transparent />
+      <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
+
+      <mesh
+        position={[0, -0.03, 0]}
+        rotation={[-Math.PI / 2, 0, 0]}
+      >
+        <planeGeometry attach="geometry" args={[135 / 3, 135 / 3, 32]} />
+        <meshLambertMaterial attach="material" side={THREE.FrontSide} visible={true /* !world.room.visible && world.ground */}>
+          <primitive attach="map" object={groundTexture} />
+        </meshLambertMaterial>
       </mesh>
     </>
   )
