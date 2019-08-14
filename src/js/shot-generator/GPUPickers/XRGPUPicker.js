@@ -62,7 +62,6 @@ class XRGPUPicker extends GPUPicker
                 }
                 //continue;
             }
-            //console.log("Adding object", intesectable);
             this.getAllSceneMeshes(intesectable, objects, additionalObjects);
             this.addedGroupsId.push(intesectable.uuid);
         }

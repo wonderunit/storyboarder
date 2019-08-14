@@ -296,6 +296,7 @@ const SceneContent = ({
     })
 
     target.quaternion.copy(objectQuaternion.normalize())
+    //target.updateCone();
   }
 
   const onSelectStart = event => {
@@ -1069,23 +1070,22 @@ const SceneContent = ({
         selectedObjRef.current.children[0] && 
         !isControllerPressed
       ) {
-        gpuPicker.current.updateCurrentCharacter();
-        gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-        const hits = gpuPicker.current.pickBone(selectionCamera.current);
-        const selectedBones = highlightedBones.current;
-        if (hits.length) {
-          controller.userData.currentBoneHighlight = hits[0].bone
-          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
-          selectedBones.push(hits[0].bone);
+        const bonesHelper = selectedObjRef.current.children[1].children[0];
+        const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
+       const selectedBones = highlightedBones.current;
+       if (hits.length) {
+         controller.userData.currentBoneHighlight = hits[0].bone
+         controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
+         selectedBones.push(hits[0].bone);
 
-        } else if (controller.userData.currentBoneHighlight) {
-          controller.userData.currentBoneHighlight = null
-          for(let highlightedBone of selectedBones)
-          {
-            highlightedBone.connectedBone.material.color = new THREE.Color(0x7a72e9)
-          }
-          highlightedBones.current = [];
-        }
+       } else if (controller.userData.currentBoneHighlight) {
+         controller.userData.currentBoneHighlight = null
+         for(let highlightedBone of selectedBones)
+         {
+           highlightedBone.connectedBone.material.color = new THREE.Color(0x7a72e9)
+         }
+         highlightedBones.current = [];
+       }
       }
 
       const handedness = controller.getHandedness()

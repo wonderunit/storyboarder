@@ -404,10 +404,10 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     if (!object.current) return
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected && worldScale === 1) {
-      object.current.add(characterBonesHelper.current.conesGroup);
+      characterBonesHelper.current.add(characterBonesHelper.current.conesGroup);
       //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
     } else {
-      object.current.remove(characterBonesHelper.current.conesGroup);
+      characterBonesHelper.current.remove(characterBonesHelper.current.conesGroup);
       //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
     }
 
@@ -460,6 +460,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color(0x242246)
       }
+      characterBonesHelper.current.needsUpdate = true;
     }
   }, [selectedBone, ready])
   
