@@ -14,7 +14,7 @@ const FPSMeter = ({ rStats, textCreator, ...props }) => {
 
     if (delta > 1000) {
       prev.current = time
-      let value = parseInt(rStats('FPS').value(), 10)
+      let value = Math.round(parseFloat(rStats('FPS').value()))
       setFps(value)
     }
   })
