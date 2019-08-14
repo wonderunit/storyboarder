@@ -1,10 +1,9 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree } = require('react-three-fiber')
+const { Canvas, useThree, useRender } = require('react-three-fiber')
 
 const { connect, useStore, Provider } = require('react-redux')
-const React = require('react')
-const { useMemo, useState } = React
+const { useMemo, useState, useEffect, useRef } = React = require('react')
 
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
@@ -83,35 +82,27 @@ const XRStartButton = ({ }) => {
   return null
 }
 
-const SceneManagerXR = connect(
-  state => ({
-    //
-  }),
-  {
-    //
-  }
-)(
-  () => {
-    const store = useStore()
+const SceneManagerXR = () => {
+  const store = useStore()
 
-    const loaded = true
+  const loaded = true
 
-    return (
-      <>
-        {
-          !loaded && <div className='loading-button'>LOADING …</div>
-        }
-        <Canvas vr>
-          <Provider store={store}>
-            {
-              loaded && <XRStartButton />
-            }
-            <SceneContent />
-          </Provider>
-        </Canvas>
-        <div className='scene-overlay' />
-      </>
-    )
-  })
+  return (
+    <>
+      {
+        !loaded && <div className='loading-button'>LOADING …</div>
+      }
+      <Canvas vr>
+        <Provider store={store}>
+          {
+            loaded && <XRStartButton />
+          }
+          <SceneContent />
+        </Provider>
+      </Canvas>
+      <div className='scene-overlay' />
+    </>
+  )
+}
 
 module.exports = SceneManagerXR
