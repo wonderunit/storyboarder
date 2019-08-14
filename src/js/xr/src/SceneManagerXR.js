@@ -79,10 +79,11 @@ const SceneContent = connect(
         <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
 
         <mesh
+          // slightly offset to allow for outlines
           position={[0, -0.03, 0]}
           rotation={[-Math.PI / 2, 0, 0]}
         >
-          <planeGeometry attach='geometry' args={[135 / 3, 135 / 3, 32]} />
+          <planeGeometry attach='geometry' args={[45, 45, 32]} />
           <meshLambertMaterial attach='material' side={THREE.FrontSide} visible>
             <primitive attach='map' object={groundTexture} />
           </meshLambertMaterial>
