@@ -359,7 +359,6 @@ const SelectionManager = connect(
           intersects[0] = controlPoint[0];
         }
         target = getIntersectionTarget(intersects[0])
-        console.log(intersects);
         if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
         {
           let characterId = target.characterId;

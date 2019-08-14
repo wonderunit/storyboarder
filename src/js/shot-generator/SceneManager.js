@@ -290,12 +290,10 @@ const SceneManager = connect(
 
     useEffect(() => {
       if (camera) {
-        console.log('camera changed')
 
         // state of the active camera
         let cameraState = Object.values(sceneObjects).find(o => o.id === camera.userData.id)
         if (!cameraControlsView.current) {
-          console.log('new CameraControls')
           cameraControlsView.current = new CameraControls(
             CameraControls.objectFromCameraState(cameraState),
             largeCanvasRef.current,
@@ -305,7 +303,6 @@ const SceneManager = connect(
             }
           )
         }
-        console.log(scene);
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -380,7 +377,6 @@ const SceneManager = connect(
       }
 
       return function cleanup () {
-        console.log('cameraControls setter cleanup')
 
         cancelAnimationFrame(animatorId.current)
         animator.current = () => {}

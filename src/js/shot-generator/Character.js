@@ -123,8 +123,6 @@ const characterFactory = data => {
 
     return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
-
-  console.log(mesh);
   
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
   if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
@@ -594,7 +592,7 @@ const Character = React.memo(({
   }, [props.model, props.morphTargets, ready])
 
   useEffect(() => {
-    console.log(type, id, 'isSelected', isSelected)
+    //console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
     
