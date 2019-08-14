@@ -14,46 +14,10 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
+const FPSMeter = require('./components/FPSMeter')
 
 const SDFText = require('datguivr/modules/datguivr/sdftext')
 const textCreator = SDFText.creator()
-
-const FPSMeter = ({ rStats, textCreator, ...props }) => {
-  const [fps, setFps] = useState(0)
-
-  const prev = useRef(null)
-
-  useRender((state, time) => {
-    if (prev.current == null) prev.current = time
-
-    const delta = time - prev.current
-
-    if (delta > 1000) {
-      prev.current = time
-      let value = parseInt(rStats('FPS').value(), 10)
-      setFps(value)
-    }
-  })
-
-  const group = useRef(null)
-  useMemo(() => {
-    if (group.current) {
-      // changed in dataguivr 0.1.6
-      group.current.update(fps.toString())
-    } else {
-      group.current = textCreator.create(
-        fps.toString(),
-        {
-          color: 0xff0000,
-          scale: 1,
-          centerText: false
-        }
-      )
-    }
-  }, [fps])
-
-  return <primitive {...props} object={group.current} />
-}
 
 const HUD = ({ position, children }) => {
   return (
