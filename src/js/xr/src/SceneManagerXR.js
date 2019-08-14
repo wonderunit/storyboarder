@@ -124,6 +124,17 @@ const SceneContent = connect(
     const controllerLeft = useMemo(() => controllers.find(c => c.getHandedness() === 'left'), [controllers])
     const controllerRight = useMemo(() => controllers.find(c => c.getHandedness() === 'right'), [controllers])
 
+    const boxes = useMemo(() => {
+      let arr = []
+      for (let i = 0; i < 100; i++) {
+        let n = i
+        let x = (Math.random() * 2 - 1) * 45/2
+        let z = (Math.random() * 2 - 1) * 45/2
+        arr.push({ n, x, z })
+      }
+      return arr
+    }, [])
+
     return (
       <>
         <group
@@ -140,7 +151,16 @@ const SceneContent = connect(
           </primitive>
         </group>
 
-        <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
+        <ambientLight color={0xffffff} intensity={1 /*world.ambient.intensity*/} />
+
+        {
+          boxes.map(box =>
+            <mesh key={box.n} position={[box.x, 0, box.z]} rotation={[0, 0, 0]}>
+              <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
+              <meshStandardMaterial attach="material" color={0xff0000} />
+            </mesh>
+          )
+        }
 
         <mesh
           // slightly offset to allow for outlines
