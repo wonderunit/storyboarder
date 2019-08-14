@@ -29,6 +29,21 @@ const { Vector4 } = THREE
 const { Object3D } = THREE
 const { SkinnedMesh } = THREE
 
+
+function getBoneList( object ) {
+  var boneList = []
+
+  if ( object && object.isBone ) {
+    boneList.push( object )
+  }
+
+  for ( var i = 0; i < object.children.length; i ++ ) {
+    boneList.push.apply( boneList, getBoneList( object.children[ i ] ) )
+  }
+
+  return boneList
+}
+
 let cache = {}
 
 function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
@@ -62,8 +77,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   let cones = []
   this.conesGroup = new THREE.Group();
   this.bonesCones = {};
-  //this.hit_meshes = []
-
   let boneMatrix = new Matrix4()
   let matrixWorldInv = new Matrix4()
   matrixWorldInv.getInverse( object.matrixWorld )
@@ -95,7 +108,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
         let currentCreated = traversedBones[traversedBones.indexOf(bone)]
         this.remove(currentCreated)
-        currentCreated.dispose();
         traversedBones[traversedBones.indexOf(bone)] = bone
       }
       else {
@@ -130,11 +142,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       cones[boneIndex].userData.segment = 0
 
       cones.matrixAutoUpdate = false;
-     
-      if (boneLength>0)
-      {
-        boneCounter++
-      }
 
       jj++
     }
