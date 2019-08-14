@@ -124,16 +124,33 @@ const SceneContent = connect(
     const controllerLeft = useMemo(() => controllers.find(c => c.getHandedness() === 'left'), [controllers])
     const controllerRight = useMemo(() => controllers.find(c => c.getHandedness() === 'right'), [controllers])
 
-    const boxes = useMemo(() => {
-      let arr = []
-      for (let i = 0; i < 100; i++) {
-        let n = i
-        let x = (Math.random() * 2 - 1) * 45/2
-        let z = (Math.random() * 2 - 1) * 45/2
-        arr.push({ n, x, z })
+    const groupRef = useRef()
+
+    useMemo(() => {
+      if (groupRef.current) {
+        let material = new THREE.MeshStandardMaterial({ color: 0xff0000 })
+        let geometry = new THREE.BoxBufferGeometry(1, 1, 1)
+
+        for (let i = 0; i < 500; i++) {
+          let n = i
+          let x = (Math.random() * 2 - 1) * 45 / 2
+          let z = (Math.random() * 2 - 1) * 45 / 2
+
+          let child = new THREE.Mesh(geometry, material)
+
+          child.matrixAutoUpdate = false
+
+          child.position.x = x
+          child.position.y = 0.5
+          child.position.z = z
+          child.updateMatrix()
+
+          groupRef.current.add(child)
+
+        }
+        console.log('added 500 objects')
       }
-      return arr
-    }, [])
+    }, [groupRef.current])
 
     return (
       <>
@@ -153,14 +170,16 @@ const SceneContent = connect(
 
         <ambientLight color={0xffffff} intensity={1 /*world.ambient.intensity*/} />
 
-        {
+        <group ref={groupRef}></group>
+
+        {/* {
           boxes.map(box =>
-            <mesh key={box.n} position={[box.x, 0, box.z]} rotation={[0, 0, 0]}>
+            <mesh key={box.n} position={[box.x, 0, box.z]} rotation={[0, 0, 0]} matrixAutoUpdate={false}>
               <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
               <meshStandardMaterial attach="material" color={0xff0000} />
             </mesh>
           )
-        }
+        } */}
 
         <mesh
           // slightly offset to allow for outlines
