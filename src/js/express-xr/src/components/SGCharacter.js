@@ -422,6 +422,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
 
     if (skinnedMesh.type === 'LOD') {
       skinnedMesh.children.forEach(lod => {
+        lod.material.morphTargets = lod.material.morphNormals = props.model !== 'baby'
         if (lod.morphTargetDictionary) {
           if (props.model === 'child') {
             lod.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
@@ -435,6 +436,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
       })
     } else {
       if (skinnedMesh.morphTargetDictionary) {
+        mesh.material.morphTargets = mesh.material.morphNormals = props.model !== 'baby'
         if (props.model === 'child') {
           skinnedMesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
           skinnedMesh.morphTargetInfluences[ 1 ] = props.morphTargets.endomorphic

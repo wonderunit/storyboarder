@@ -584,6 +584,7 @@ const Character = React.memo(({
     if (!object.current) return
     let mesh = object.current.userData.mesh
 
+    mesh.material.morphTargets = mesh.material.morphNormals = props.model !== 'baby'
     if (!mesh.morphTargetDictionary) return
     if (props.model === 'child') {
       mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
