@@ -21,34 +21,34 @@ const SceneContent = connect(
     activeCamera: getActiveCamera(state)
   })
 )(
-({
-  sceneObjects,
-  world,
-  activeCamera
-}) => {
-  const { scene, camera } = useThree()
+  ({
+    sceneObjects,
+    world,
+    activeCamera
+  }) => {
+    const { scene, camera } = useThree()
 
-  const [teleportPos, setTeleportPos] = useState(null)
-  const [teleportRot, setTeleportRot] = useState(null)
+    const [teleportPos, setTeleportPos] = useState(null)
+    const [teleportRot, setTeleportRot] = useState(null)
 
-  // initialize behind the camera, on the floor
-  useMemo(() => {
-    let { x, y, rotation } = sceneObjects[activeCamera]
+    // initialize behind the camera, on the floor
+    useMemo(() => {
+      const { x, y, rotation } = sceneObjects[activeCamera]
 
-    let behindCam = {
-      x: Math.sin(rotation),
-      y: Math.cos(rotation)
-    }
+      const behindCam = {
+        x: Math.sin(rotation),
+        y: Math.cos(rotation)
+      }
 
-    setTeleportPos(new THREE.Vector3(x + behindCam.x, 0, y + behindCam.y))
-    setTeleportRot(new THREE.Euler(0, rotation, 0))
-  }, [])
+      setTeleportPos(new THREE.Vector3(x + behindCam.x, 0, y + behindCam.y))
+      setTeleportRot(new THREE.Euler(0, rotation, 0))
+    }, [])
 
-  const groundTexture = useMemo(
-    () => new THREE.TextureLoader().load('/data/system/grid_floor.png'), []
-  )
+    const groundTexture = useMemo(
+      () => new THREE.TextureLoader().load('/data/system/grid_floor.png'), []
+    )
 
-  return (
+    return (
     <>
       <group
         position={teleportPos}
@@ -63,14 +63,14 @@ const SceneContent = connect(
         position={[0, -0.03, 0]}
         rotation={[-Math.PI / 2, 0, 0]}
       >
-        <planeGeometry attach="geometry" args={[135 / 3, 135 / 3, 32]} />
-        <meshLambertMaterial attach="material" side={THREE.FrontSide} visible={true /* !world.room.visible && world.ground */}>
-          <primitive attach="map" object={groundTexture} />
+        <planeGeometry attach='geometry' args={[135 / 3, 135 / 3, 32]} />
+        <meshLambertMaterial attach='material' side={THREE.FrontSide} visible>
+          <primitive attach='map' object={groundTexture} />
         </meshLambertMaterial>
       </mesh>
     </>
-  )
-})
+    )
+  })
 
 const XRStartButton = ({ }) => {
   const { gl } = useThree()
@@ -91,9 +91,7 @@ const SceneManagerXR = connect(
     //
   }
 )(
-  ({
-    //
-  }) => {
+  () => {
     const store = useStore()
 
     const loaded = true
@@ -111,7 +109,7 @@ const SceneManagerXR = connect(
             <SceneContent />
           </Provider>
         </Canvas>
-        <div className="scene-overlay"></div>
+        <div className='scene-overlay' />
       </>
     )
   })
