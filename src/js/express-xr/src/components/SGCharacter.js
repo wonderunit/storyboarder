@@ -422,17 +422,27 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
 
     if (skinnedMesh.type === 'LOD') {
       skinnedMesh.children.forEach(lod => {
-        if (lod.morphTargetDictionary && Object.values(lod.morphTargetDictionary).length === 3) {
-          lod.morphTargetInfluences[0] = props.morphTargets.mesomorphic
-          lod.morphTargetInfluences[1] = props.morphTargets.ectomorphic
-          lod.morphTargetInfluences[2] = props.morphTargets.endomorphic
+        if (lod.morphTargetDictionary) {
+          if (props.model === 'child') {
+            lod.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+            lod.morphTargetInfluences[ 1 ] = props.morphTargets.endomorphic
+          } else {
+            lod.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+            lod.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
+            lod.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
+          }
         }
       })
     } else {
-      if (skinnedMesh.morphTargetDictionary && Object.values(skinnedMesh.morphTargetDictionary).length === 3) {
-        skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
-        skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
-        skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+      if (skinnedMesh.morphTargetDictionary) {
+        if (props.model === 'child') {
+          skinnedMesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+          skinnedMesh.morphTargetInfluences[ 1 ] = props.morphTargets.endomorphic
+        } else {
+          skinnedMesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+          skinnedMesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
+          skinnedMesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
+        }
       }
     }
   }, [modelData, props.morphTargets])
@@ -460,6 +470,20 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     }
   }, [selectedBone, ready])
 
+  const forPanel = {
+    height: props.height,
+    headScale: props.headScale
+  }
+
+  if (props.model !== 'baby') {
+    forPanel['mesomorphic'] = props.morphTargets.mesomorphic
+    forPanel['endomorphic'] = props.morphTargets.endomorphic
+  }
+
+  if (props.model.includes('adult') || props.model.includes('teen')) {
+    forPanel['ectomorphic'] = props.morphTargets.ectomorphic
+  }
+
   return <group
       //visible={false}
       userData={{
@@ -467,13 +491,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         type,
         name: 'character-container',
         displayName: props.name || props.displayName,
-        forPanel: {
-          height: props.height,
-          headScale: props.headScale,
-          mesomorphic: props.morphTargets.mesomorphic,
-          ectomorphic: props.morphTargets.ectomorphic,
-          endomorphic: props.morphTargets.endomorphic
-        }
+        forPanel
       }}
     >
       {
