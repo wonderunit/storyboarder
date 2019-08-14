@@ -26,7 +26,7 @@ const SceneContent = connect(
     world,
     activeCamera
   }) => {
-    const { scene, camera } = useThree()
+    const { camera } = useThree()
 
     const [teleportPos, setTeleportPos] = useState(null)
     const [teleportRot, setTeleportRot] = useState(null)
@@ -49,26 +49,26 @@ const SceneContent = connect(
     )
 
     return (
-    <>
-      <group
-        position={teleportPos}
-        rotation={teleportRot}
-      >
-        <primitive object={camera} />
-      </group>
+      <>
+        <group
+          position={teleportPos}
+          rotation={teleportRot}
+        >
+          <primitive object={camera} />
+        </group>
 
-      <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
+        <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
 
-      <mesh
-        position={[0, -0.03, 0]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <planeGeometry attach='geometry' args={[135 / 3, 135 / 3, 32]} />
-        <meshLambertMaterial attach='material' side={THREE.FrontSide} visible>
-          <primitive attach='map' object={groundTexture} />
-        </meshLambertMaterial>
-      </mesh>
-    </>
+        <mesh
+          position={[0, -0.03, 0]}
+          rotation={[-Math.PI / 2, 0, 0]}
+        >
+          <planeGeometry attach='geometry' args={[135 / 3, 135 / 3, 32]} />
+          <meshLambertMaterial attach='material' side={THREE.FrontSide} visible>
+            <primitive attach='map' object={groundTexture} />
+          </meshLambertMaterial>
+        </mesh>
+      </>
     )
   })
 
