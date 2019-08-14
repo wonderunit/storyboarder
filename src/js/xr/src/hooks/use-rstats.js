@@ -18,7 +18,6 @@ const useRStats = () => {
       plugins: [new threeStats(gl)]
     })
     ref.current().element.style.color = '#eee'
-    ref.current().element.style.lineHeight = 1.5
   }, [])
 
   useRender(() => {
