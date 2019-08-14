@@ -405,10 +405,8 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected && worldScale === 1) {
       characterBonesHelper.current.add(characterBonesHelper.current.conesGroup);
-      //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
     } else {
       characterBonesHelper.current.remove(characterBonesHelper.current.conesGroup);
-      //for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
     }
 
      if (skinnedMesh.type === 'LOD') {
