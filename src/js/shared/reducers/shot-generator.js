@@ -562,7 +562,7 @@ const initialState = {
       id: 'child',
       name: 'Child',
       type: 'character',
-      validMorphTargets: ['ectomorphic', 'endomorphic'],
+      validMorphTargets: ['mesomorphic', 'endomorphic'],
       height: 1.2
     },
     'baby': {
