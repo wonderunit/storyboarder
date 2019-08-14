@@ -27,6 +27,64 @@ const HUD = ({ position, children }) => {
   )
 }
 
+require('../vendor/VRController')
+const useVrControllers = () => {
+  const { gl } = useThree()
+  const [list, setList] = useState([])
+
+  useRender(() => {
+    THREE.VRController.update()
+  })
+
+  const onVRControllerConnected = event => {
+    let controller = event.detail
+    controller.standingMatrix = gl.vr.getStandingMatrix()
+    setList(THREE.VRController.controllers)
+  }
+
+  const onVRControllerDisconnected = event => {
+    let controller = event.detail
+    setList(THREE.VRController.controllers)
+  }
+
+  useEffect(() => {
+    window.addEventListener('vr controller connected', onVRControllerConnected)
+    window.addEventListener('vr controller disconnected', onVRControllerDisconnected)
+    return () => {
+      window.removeEventListener('vr controller connected', onVRControllerConnected)
+      window.removeEventListener('vr controller disconnected', onVRControllerDisconnected)
+    }
+  }, [])
+
+  return list
+}
+
+const SimpleText = ({
+  label,
+  textProps = {
+    color: 0xffffff,
+    scale: 1,
+    centerText: false
+  },
+  ...props
+}) => {
+  const group = useRef(null)
+
+  useMemo(() => {
+    if (group.current) {
+      // changed in dataguivr 0.1.6
+      group.current.update(label.toString())
+    } else {
+      group.current = textCreator.create(
+        label.toString(),
+        textProps
+      )
+    }
+  }, [label])
+
+  return <primitive {...props} object={group.current} />
+}
+
 const SceneContent = connect(
   state => ({
     sceneObjects: getSceneObjects(state),
@@ -62,6 +120,7 @@ const SceneContent = connect(
     )
 
     const rStats = useRStats()
+    const controllers = useVrControllers()
 
     return (
       <>
@@ -72,6 +131,7 @@ const SceneContent = connect(
           <primitive object={camera}>
             <HUD position={[0, 0, -1]}>
               <FPSMeter rStats={rStats} textCreator={textCreator} position={[0.3, 0.05, 0]} />
+              <SimpleText label={`controllers: ${controllers.length}`} position={[-0.3, 0.05, 0]} />
             </HUD>
           </primitive>
         </group>
