@@ -121,6 +121,8 @@ const SceneContent = connect(
 
     const rStats = useRStats()
     const controllers = useVrControllers()
+    const controllerLeft = useMemo(() => controllers.find(c => c.getHandedness() === 'left'), [controllers])
+    const controllerRight = useMemo(() => controllers.find(c => c.getHandedness() === 'right'), [controllers])
 
     return (
       <>
@@ -131,7 +133,9 @@ const SceneContent = connect(
           <primitive object={camera}>
             <HUD position={[0, 0, -1]}>
               <FPSMeter rStats={rStats} textCreator={textCreator} position={[0.3, 0.05, 0]} />
-              <SimpleText label={`controllers: ${controllers.length}`} position={[-0.3, 0.05, 0]} />
+
+              <SimpleText label={`left: ${controllerLeft && controllerLeft.uuid.substr(0, 7)}`} position={[-0.3, 0.05, 0]} />
+              <SimpleText label={`right: ${controllerRight && controllerRight.uuid.substr(0, 7)}`} position={[-0.3, 0, 0]} />
             </HUD>
           </primitive>
         </group>
