@@ -1,5 +1,7 @@
 const GPUPicker = require("./GPUPicker");
 const SkeletonUtils = require("../IK/utils/SkeletonUtils");
+const PickerObject = require("./PickersContainers/UPickerObject");
+const Pickable = require("../GPUPickers/PickersContainers/Pickable");
 class EditorGPUPicker extends GPUPicker
 {
     constructor()
@@ -30,6 +32,15 @@ class EditorGPUPicker extends GPUPicker
         {
             let object = objects[i];
             const id = this.pickingScene.children.length + i + this.idBonus;
+            if(objects[i] instanceof Pickable)
+            {
+                console.log("Pickable here");
+                object.initialize(id);
+                console.log(object);
+                this.pickingScene.add(object.node);
+                this.gpuPickerHelper.selectableObjects[id] = { originObject: object.sceneMesh, pickerObject: object.node} ;
+                continue;
+            }
             const pickingMaterial = new THREE.MeshToonMaterial({
                 emissive: new THREE.Color(id),
                 color: new THREE.Color(0, 0, 0),
@@ -84,6 +95,22 @@ class EditorGPUPicker extends GPUPicker
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
             let clonnedObject = this.pickingScene.children[i];
+            console.log(clonnedObject);
+            if(clonnedObject.pickingContainer)
+            {
+                console.log("Pickable here");
+                let pickingContainer = clonnedObject.pickingContainer;
+                pickingContainer.update();
+                if(pickingContainer.needsRemoval)
+                {
+                    pickingContainer.dispose();
+                    this.pickingScene.remove(clonnedObject);
+                    delete this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
+                    n = this.pickingScene.children.length;
+                    i--;
+                }
+                continue;
+            }
             let originalObject = clonnedObject.type === "character" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.parent : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject;
             if(!originalObject)
             {
@@ -120,14 +147,16 @@ class EditorGPUPicker extends GPUPicker
   
         if(sceneMesh.userData && (sceneMesh.userData.type === "object" || sceneMesh.userData.type === "character"))
         {
+            if(sceneMesh.userData.type === "object")
+            {
+                let pickerObject = new PickerObject(sceneMesh);
+                meshes.push(pickerObject);
+                console.log(pickerObject);
+                return;
+            }
             for(let i = 0, n = sceneChildren.length; i < n; i++)
             {
                 let child = sceneChildren[i];
-                if(child.type === "Mesh") 
-                {
-                    meshes.push(child); 
-                    return;
-                }
                 if( child.type === "SkinnedMesh")
                 {
                     meshes.push(child);

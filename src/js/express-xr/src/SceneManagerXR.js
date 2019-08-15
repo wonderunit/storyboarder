@@ -354,6 +354,7 @@ const SceneContent = ({
     gpuPicker.current.intializeGui(gui);
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2 + 1, (gl.domElement.height) / 2 + 1);
+    
     const intersections = gpuPicker.current.pick(selectCamera);
     selectionCamera.current.position.set(0, 0, 0);
     selectionCamera.current.quaternion.set(0, 0, 0, 0);

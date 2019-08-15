@@ -1,5 +1,7 @@
 const GPUPicker = require("./GPUPicker");
 const SkeletonUtils = require("../IK/utils/SkeletonUtils");
+const Pickable = require("./PickersContainers/Pickable");
+const PickerObject = require("./PickersContainers/UPickerObject");
 class XRGPUPicker extends GPUPicker
 {
     constructor()
@@ -72,6 +74,17 @@ class XRGPUPicker extends GPUPicker
             let object = objects[i];
             
             const id = sceneElementsAmount + i + 1;
+            console.log(objects[i]);
+            console.log(objects[i].prototype);
+            console.log(objects[i].prototype instanceof Pickable);
+            if(objects[i] instanceof Pickable)
+            {
+                console.log("Pickable here");
+                object.initialize(id);
+                this.pickingScene.add(object.node);
+                this.gpuPickerHelper.selectableObjects[id] = { originObject: object.sceneMesh, pickerObject: object.node} ;
+                continue;
+            }
             const pickingMaterial = new THREE.MeshPhongMaterial({
                 emissive: new THREE.Color(id),
                 color: new THREE.Color(0, 0, 0),
@@ -128,7 +141,6 @@ class XRGPUPicker extends GPUPicker
             pickingCube.pickerId = id;
             this.gpuPickerHelper.selectableObjects[id] = { originObject: object, pickerObject: node} ;
         } 
-       
     }
   
     updateObject()
@@ -137,6 +149,21 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
             let clonnedObject = this.pickingScene.children[i];
+            if(clonnedObject.pickingContainer)
+            {
+                console.log("Pickable here");
+                let pickingContainer = clonnedObject.pickingContainer;
+                pickingContainer.update();
+                if(pickingContainer.needsRemoval)
+                {
+                    pickingContainer.dispose();
+                    this.pickingScene.remove(clonnedObject);
+                    delete this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
+                    n = this.pickingScene.children.length;
+                    i--;
+                }
+                continue;
+            }
             if(clonnedObject.type === "gui")
             {   
                 for(let j = 0, m = clonnedObject.children.length; j < m; j++)
@@ -159,6 +186,7 @@ class XRGPUPicker extends GPUPicker
                 }
                 continue;
             }
+            console.log(clonnedObject);
             let originalObject = clonnedObject.type === "object" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.parent;
             if(!originalObject)
             {
@@ -208,6 +236,11 @@ class XRGPUPicker extends GPUPicker
         
         if(sceneMesh.userData && this.allowedObjectsTypes.some(allowedObjects => allowedObjects === sceneMesh.userData.type))
         {
+            if(sceneMesh.userData.type === "object")
+            {
+                meshes.push(new PickerObject(sceneMesh));
+                return;
+            }
             if(sceneMesh.userData.type === "virtual-camera" || sceneMesh.userData.type === "light")
             {
                 sceneChildren = sceneMesh.children[0].children;
@@ -215,11 +248,11 @@ class XRGPUPicker extends GPUPicker
             for(let i = 0, n = sceneChildren.length; i < n; i++)
             {
                 let child = sceneChildren[i];
-                if(child.type === "Mesh") 
+/*                 if(child.type === "Mesh") 
                 {
                     meshes.push(child); 
                     //return;
-                }  
+                }  */ 
 
                 if(child.children.length !== 0 )
                 {

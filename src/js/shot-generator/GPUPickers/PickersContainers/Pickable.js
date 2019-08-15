@@ -1,0 +1,43 @@
+const THREE = require( "three");
+require("../../IK/utils/Object3dExtension");
+class Pickable
+{
+    constructor(object)
+    {
+        if(new.target === Pickable)
+        {
+            throw new TypeError("Cannot construct abstract Pickable directly");
+        }
+
+        if(this.update === undefined)
+        {
+            throw new TypeError("Must override method update()");
+        }
+        this.sceneObject = object;
+        this.pickingMaterial = null;
+        this.pickingCube = null;
+        this.node = new THREE.Group();
+    }
+
+    initialize(id)
+    {
+        this.pickingMaterial = new THREE.MeshPhongMaterial({
+            emissive: new THREE.Color(id),
+            color: new THREE.Color(0, 0, 0),
+            specular: 0x0,
+            shininess: 0,
+          });
+          return;
+    }
+
+    isSceneObjectRemoved()
+    {
+        return this.sceneObject ? false : true;
+    }
+
+    dispose()
+    {
+        this.pickingMaterial.dispose();
+    }
+}
+module.exports = Pickable;

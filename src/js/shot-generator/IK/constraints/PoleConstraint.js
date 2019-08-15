@@ -14,7 +14,6 @@ class PoleConstraint extends IkConstraint
         this.chainLength = 3;
         this.currentPoleAngle = this.poleAngle;
         //this.influence = 50;
-
     }
 
     // Applies constraint to chain's joint
