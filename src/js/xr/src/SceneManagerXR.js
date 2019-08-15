@@ -29,7 +29,7 @@ const SceneContent = connect(
   ({
     sceneObjects, world, activeCamera
   }) => {
-    const { camera } = useThree()
+    const { camera, scene } = useThree()
 
     const [teleportPos, setTeleportPos] = useState(null)
     const [teleportRot, setTeleportRot] = useState(null)
@@ -46,6 +46,13 @@ const SceneContent = connect(
       setTeleportPos(new THREE.Vector3(x + behindCam.x, 0, y + behindCam.y))
       setTeleportRot(new THREE.Euler(0, rotation, 0))
     }, [])
+
+    useMemo(() => {
+      scene.background = new THREE.Color(0x000000)
+      scene.fog = new THREE.Fog( 0x000000, 4, 25 )
+    })
+
+
 
     const groundTexture = useMemo(
       () => new THREE.TextureLoader().load('/data/system/grid_floor.png'), []
