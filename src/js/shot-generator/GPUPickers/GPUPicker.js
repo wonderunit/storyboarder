@@ -124,7 +124,6 @@ class GPUPicker
         let addedObject = Object.values(this.gpuPickerHelper.selectableObjects).find(obj => obj.originObject.uuid === object.uuid);
         if(addedObject)
         {
-            //addedObject.pickerObject.visible = object.visible;
             return true;
         }
         return false;

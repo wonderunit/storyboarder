@@ -56,7 +56,6 @@ class GPUPickerHelper
         let id = (pixelBuffer[0] << 16) |
                  (pixelBuffer[1] << 8) |
                  (pixelBuffer[2]);
-
         const intersectedObject = selectables[id];
         let canvasPos = null;
         if(intersectedObject)

@@ -1,17 +1,18 @@
 const Pickable = require("./Pickable");
 const SkeletonUtils = require("../../IK/utils/SkeletonUtils");
 const {updateBoneToBone} = require("../utils/PickableCharacterUtils");
-class EditorPickableCharacter extends Pickable
+class XRPickableCharacter extends Pickable
 {
     constructor(object)
     {
         super(object);
+        this.sceneObject = object.children.find(child => child.userData.type === "character");
         this.getMeshFromSceneObject();
     }
 
     getMeshFromSceneObject()
     {
-        this.sceneMesh = this.sceneObject.children.find(child => child.type === "SkinnedMesh");
+        this.sceneMesh = this.sceneObject.getObjectByProperty("type", "SkinnedMesh");
     }
 
     initialize(id)
@@ -22,9 +23,15 @@ class EditorPickableCharacter extends Pickable
         this.pickingMaterial.morphTargets = true;
         let parent = this.sceneObject;
         this.node = SkeletonUtils.clone(parent);
-        this.pickingMesh = this.node.find(child => child.type === "SkinnedMesh");
+        let lod = this.node.children[0];
+        if(lod.type === "LOD")
+        {
+            this.node.attach(lod.children[0]);
+            this.node.remove(lod);
+        }
+        this.pickingMesh = this.node.children.find(child => child.type === "SkinnedMesh");
         this.pickingMesh.material = this.pickingMaterial;
-        //TODO(): Remove when XRGPUPIcker changed
+        //TODO(): Remove when XRGPUPicker changed
         this.node.pickingContainer = this;
         this.node.type = "character";
     }
@@ -45,4 +52,4 @@ class EditorPickableCharacter extends Pickable
         updateBoneToBone(clonnedRootBone, originalRootBone);
     }
 }
-module.exports = EditorPickableCharacter;
+module.exports = XRPickableCharacter;

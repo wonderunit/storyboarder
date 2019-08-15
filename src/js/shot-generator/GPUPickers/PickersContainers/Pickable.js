@@ -22,14 +22,14 @@ class Pickable
 
     initialize(id)
     {
-        this.pickingMaterial = new THREE.MeshPhongMaterial({
+        return this.pickingMaterial = new THREE.MeshPhongMaterial({
             emissive: new THREE.Color(id),
             color: new THREE.Color(0, 0, 0),
             specular: 0x0,
             shininess: 0,
             flatShading: true,
           });
-          return;
+          
     }
 
     isSceneObjectRemoved()
