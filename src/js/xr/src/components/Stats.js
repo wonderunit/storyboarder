@@ -51,11 +51,11 @@ const Stats = ({ rStats, position }) => {
     1000
   )
 
+  let label = `F ${fps}\nC ${calls}\nT ${triangles}`
+
   return (
     <group position={position}>
-      <SimpleText label={`F ${fps}`} position={[0.3, 0.05, 0]} textProps={{ color: 0xff0000 }}/>
-      <SimpleText label={`C ${calls}`} position={[0.3, 0.00, 0]} textProps={{ color: 0xff0000 }} />
-      <SimpleText label={`T ${triangles}`} position={[0.3, -0.05, 0]} textProps={{ color: 0xff0000 }} />
+      <SimpleText label={label} position={[0.3, 0.05, 0]} textProps={{ color: 0xff0000 }}/>
     </group>
   )
 }
