@@ -1,5 +1,5 @@
 const Pickable = require("./Pickable");
-class UPickerObject extends Pickable
+class UniversalPickableObject extends Pickable
 {
     constructor(sceneObject)
     {
@@ -17,8 +17,7 @@ class UPickerObject extends Pickable
         super.initialize(id);
         this.pickingMesh = new THREE.Mesh(this.sceneMesh.geometry, this.pickingMaterial);
         this.node.type = "object";
-        this.node.add(this.pickingCube);
-        console.log(this.node);
+        this.node.add(this.pickingMesh);
         this.node.pickerId = id;
         this.pickingMesh.pickerId = id;
         //TODO(): Remove when XRGPUPIcker changed
@@ -40,4 +39,4 @@ class UPickerObject extends Pickable
     }
 
 }
-module.exports = UPickerObject;
+module.exports = UniversalPickableObject;

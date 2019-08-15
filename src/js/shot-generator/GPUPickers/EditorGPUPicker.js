@@ -1,5 +1,4 @@
 const GPUPicker = require("./GPUPicker");
-const SkeletonUtils = require("../IK/utils/SkeletonUtils");
 const Pickable = require("../GPUPickers/PickersContainers/Pickable");
 const EditorGPUPickerFactory = require("../GPUPickers/EditorGPUPickerFactory");
 class EditorGPUPicker extends GPUPicker
@@ -13,10 +12,7 @@ class EditorGPUPicker extends GPUPicker
 
     initalizeChildren(scene)
     {
-        super.initalizeChildren();
-
         let objects = [];
-        let additionalObjects = [];
         let intersectObjects = scene.children;
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
@@ -25,7 +21,7 @@ class EditorGPUPicker extends GPUPicker
             {
                 continue;
             }
-            this.getAllSceneMeshes(intesectable, objects, additionalObjects);
+            this.getAllSceneMeshes(intesectable, objects);
             this.addedGroupsId.push(intesectable.uuid);
         }
 
@@ -33,127 +29,44 @@ class EditorGPUPicker extends GPUPicker
         {
             let object = objects[i];
             const id = this.pickingScene.children.length + i + this.idBonus;
-            console.log(object);
             if(objects[i] instanceof Pickable)
             {
-                console.log("Pickable here");
                 object.initialize(id);
-                console.log(object);
                 this.pickingScene.add(object.node);
                 this.gpuPickerHelper.selectableObjects[id] = { originObject: object.sceneMesh, pickerObject: object.node} ;
-                continue;
             }
-            const pickingMaterial = new THREE.MeshToonMaterial({
-                emissive: new THREE.Color(id),
-                color: new THREE.Color(0, 0, 0),
-                specular: 0x0,
-                skinning: true,
-                shininess: 0,
-                flatShading: false,
-                morphNormals: true,
-                morphTargets: true
-              });
-            let pickingCube = null;
-            let node = new THREE.Object3D();
-
-            if(object.type === "SkinnedMesh")
-            {
-                let parent = null;
-                parent = object.parent;
-                let userData = parent.userData;
-                parent.userData = [];
-                node = SkeletonUtils.clone(parent);
-                parent.userData = userData;
-                pickingCube = node.children[1];
-                pickingCube.material = pickingMaterial;
-                node.type = "character";
-                let {cones, selectable} = this.initializeCones(additionalObjects[parent.uuid]);
-                node.cones = cones;
-                node.selectable = selectable;
-            }
-            else if (object.userData.type === "bone")
-            {
-                pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
-                node.type = object.userData.type;
-                node.userData.name = object.userData.name;
-                node.add(pickingCube);
-            }
-            else
-            {
-                pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
-                node.type = object.userData.type;
-                node.add(pickingCube);
-            }
-            this.pickingScene.add(node);
-            node.pickerId = id;
-            this.gpuPickerHelper.selectableObjects[id] = { originObject: object, pickerObject: node} ;    
         }
-        this.childrenSetted = this.pickingScene.children.length === 0 ? false : true;
     }
 
     updateObject()
     {
-        super.updateObject();
         for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
         {
-            let clonnedObject = this.pickingScene.children[i];
-            console.log(clonnedObject);
-            if(clonnedObject.pickingContainer)
+            let pickingObject = this.pickingScene.children[i];
+            if(pickingObject.pickingContainer)
             {
-                console.log("Pickable here");
-                let pickingContainer = clonnedObject.pickingContainer;
+                let pickingContainer = pickingObject.pickingContainer;
                 pickingContainer.update();
                 if(pickingContainer.needsRemoval)
                 {
                     pickingContainer.dispose();
-                    this.pickingScene.remove(clonnedObject);
-                    delete this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
+                    this.pickingScene.remove(pickingObject);
+                    delete this.gpuPickerHelper.selectableObjects[pickingObject.pickerId];
                     n = this.pickingScene.children.length;
                     i--;
                 }
-                continue;
-            }
-            let originalObject = clonnedObject.type === "character" ? this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.parent : this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject;
-            if(!originalObject)
-            {
-                continue;
-            }
-            clonnedObject.position.copy(originalObject.worldPosition());
-            clonnedObject.quaternion.copy(originalObject.worldQuaternion());
-            clonnedObject.scale.copy(originalObject.worldScale());
-            clonnedObject.updateMatrixWorld(true);
-            if(clonnedObject.type === "character" && this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject.skeleton)
-            {
-                let clonnedSkinnedMesh = null;
-                clonnedSkinnedMesh = clonnedObject.children.find(child => child.type === "SkinnedMesh");
-                let originalSkinnedMesh = this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId].originObject;
-            
-                let originalRootBone = originalSkinnedMesh.skeleton.bones[0];
-                let clonnedRootBone = clonnedSkinnedMesh.skeleton.bones[0];
-           
-                this.updateSkeletonBone(clonnedRootBone, originalRootBone);
-                clonnedRootBone.updateMatrixWorld(true);
-                this.updateCones(clonnedObject.cones);
             }
         }
     }
 
-    getAllSceneMeshes(sceneMesh, meshes, additionalObjects)
+    getAllSceneMeshes(sceneMesh, meshes)
     {
-        super.getAllSceneMeshes();
-        let sceneChildren = sceneMesh.children;
-        if(sceneChildren === undefined)
-        {
-            return;
-        }
-  
-        if(sceneMesh.userData && (sceneMesh.userData.type === "object" || sceneMesh.userData.type === "character"))
+        if(sceneMesh.userData)
         {
             if(sceneMesh.userData.type === "object")
             {
                 let pickerObject = this.gpuPickerFactory.createObject(sceneMesh);
                 meshes.push(pickerObject);
-                console.log(pickerObject);
                 return;
             }
             if(sceneMesh.userData.type === "character")
@@ -162,23 +75,6 @@ class EditorGPUPicker extends GPUPicker
                 meshes.push(pickerObject);
                 return;
             }
-            for(let i = 0, n = sceneChildren.length; i < n; i++)
-            {
-                let child = sceneChildren[i];
-                if( child.type === "SkinnedMesh")
-                {
-                    meshes.push(child);
-                }
-            }
-            if(sceneMesh.userData.type === "character" && sceneMesh.bonesHelper)
-            {
-                additionalObjects[sceneMesh.uuid] = sceneMesh.bonesHelper.cones;
-                return;
-            }
-        }
-        for(let i = 0, n = sceneChildren.length; i < n; i++)
-        {
-            this.getAllSceneMeshes(sceneChildren[i], meshes);
         }
     }
 }

@@ -1,5 +1,5 @@
 const AbstractGPUPickerFactory = require("./AbstractGPUPickerFactory");
-const PickerObject = require("./PickersContainers/UPickerObject")
+const UniversalPickerObject = require("./PickersContainers/UniversalPickableObject")
 class XRGPUPickerFactory extends AbstractGPUPickerFactory
 {
     constructor()
@@ -9,12 +9,12 @@ class XRGPUPickerFactory extends AbstractGPUPickerFactory
 
     createObject(object)
     {
-        return new PickerObject(object);
+        return new UniversalPickerObject(object);
     }
 
     createCharacter(object)
     {
-
+        return null;
     }
 }
 module.exports = XRGPUPickerFactory;
