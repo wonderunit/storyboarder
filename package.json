@@ -106,6 +106,9 @@
       "license": "build/license_en.txt"
     }
   },
+  "browserslist": [
+    "last 1 Chrome version"
+  ],
   "devDependencies": {
     "cross-env": "^5.2.0",
     "electron": "5.0.5",
@@ -168,7 +171,7 @@
     "react": "16.8.3",
     "react-dom": "16.8.3",
     "react-redux": "7.1.0",
-    "react-three-fiber": "2.2.17",
+    "react-three-fiber": "2.3.5",
     "react-window": "1.5.0",
     "redux": "4.0.1",
     "redux-promise": "0.5.3",
