@@ -106,6 +106,9 @@
       "license": "build/license_en.txt"
     }
   },
+  "browserslist": [
+    "last 1 Chrome version"
+  ],
   "devDependencies": {
     "cross-env": "^5.2.0",
     "electron": "5.0.5",
