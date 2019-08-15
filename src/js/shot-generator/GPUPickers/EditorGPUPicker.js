@@ -1,13 +1,14 @@
 const GPUPicker = require("./GPUPicker");
 const SkeletonUtils = require("../IK/utils/SkeletonUtils");
-const PickerObject = require("./PickersContainers/UPickerObject");
 const Pickable = require("../GPUPickers/PickersContainers/Pickable");
+const EditorGPUPickerFactory = require("../GPUPickers/EditorGPUPickerFactory");
 class EditorGPUPicker extends GPUPicker
 {
     constructor()
     {
         super();
         this.addedGroupsId = [];
+        this.gpuPickerFactory = new EditorGPUPickerFactory();
     }
 
     initalizeChildren(scene)
@@ -32,6 +33,7 @@ class EditorGPUPicker extends GPUPicker
         {
             let object = objects[i];
             const id = this.pickingScene.children.length + i + this.idBonus;
+            console.log(object);
             if(objects[i] instanceof Pickable)
             {
                 console.log("Pickable here");
@@ -149,9 +151,15 @@ class EditorGPUPicker extends GPUPicker
         {
             if(sceneMesh.userData.type === "object")
             {
-                let pickerObject = new PickerObject(sceneMesh);
+                let pickerObject = this.gpuPickerFactory.createObject(sceneMesh);
                 meshes.push(pickerObject);
                 console.log(pickerObject);
+                return;
+            }
+            if(sceneMesh.userData.type === "character")
+            {
+                let pickerObject = this.gpuPickerFactory.createCharacter(sceneMesh);
+                meshes.push(pickerObject);
                 return;
             }
             for(let i = 0, n = sceneChildren.length; i < n; i++)

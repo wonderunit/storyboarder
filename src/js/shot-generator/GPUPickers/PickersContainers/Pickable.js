@@ -15,7 +15,8 @@ class Pickable
         }
         this.sceneObject = object;
         this.pickingMaterial = null;
-        this.pickingCube = null;
+        this.pickingMesh = null;
+        this.sceneMesh = null;
         this.node = new THREE.Group();
     }
 
@@ -26,6 +27,7 @@ class Pickable
             color: new THREE.Color(0, 0, 0),
             specular: 0x0,
             shininess: 0,
+            flatShading: true,
           });
           return;
     }

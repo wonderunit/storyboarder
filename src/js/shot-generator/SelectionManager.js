@@ -282,6 +282,7 @@ const SelectionManager = connect(
     gpuPicker.updateObject();
     gpuPicker.setPickingPosition(mousePosition.x, mousePosition.y);
     let result = gpuPicker.pick(camera);
+    console.log(result);
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
     

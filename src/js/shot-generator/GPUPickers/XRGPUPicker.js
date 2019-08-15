@@ -1,7 +1,6 @@
 const GPUPicker = require("./GPUPicker");
 const SkeletonUtils = require("../IK/utils/SkeletonUtils");
 const Pickable = require("./PickersContainers/Pickable");
-const PickerObject = require("./PickersContainers/UPickerObject");
 class XRGPUPicker extends GPUPicker
 {
     constructor()
@@ -12,6 +11,7 @@ class XRGPUPicker extends GPUPicker
         this.idBonus = 400;
         this.currentGuiController = "";
         this.controllers = [];
+        this.gpuPickerFactory = new XRGPUPickerFactory();
     }
 
     intializeGui(intersectObjects)
@@ -238,7 +238,7 @@ class XRGPUPicker extends GPUPicker
         {
             if(sceneMesh.userData.type === "object")
             {
-                meshes.push(new PickerObject(sceneMesh));
+                meshes.push(this.gpuPickerFactory.createObject(sceneMeshe));
                 return;
             }
             if(sceneMesh.userData.type === "virtual-camera" || sceneMesh.userData.type === "light")

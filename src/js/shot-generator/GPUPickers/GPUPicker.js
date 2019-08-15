@@ -1,5 +1,6 @@
 const THREE = require('three');
 const GPUPickerHelper = require("./GPUPickerHelper");
+const XRGPUPickerFactory = require("./XRGPUPickerFactory");
 require("../IK/utils/Object3dExtension");
 class GPUPicker
 {
@@ -12,6 +13,7 @@ class GPUPicker
         this.isInitialized = false;
         this.idBonus = 1;
         this.allowedObjectsTypes = [];
+        this.gpuPickerFactory = null;
     }
 
     addAllowedObject(allowedType)
