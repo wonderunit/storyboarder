@@ -69,9 +69,9 @@ const SceneContent = connect(
           </primitive>
         </group>
 
-        <ambientLight color={0xffffff} intensity={1 /*world.ambient.intensity*/} />
+        <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
 
-        <Ground texture={groundTexture} visible={true /* TODO via world */} />
+        <Ground texture={groundTexture} visible={true/*!world.room.visible && world.ground*/} />
       </>
     )
   })
