@@ -1,4 +1,5 @@
 const { useMemo, useRef, useState } = React = require('react')
+const { useThree } = require('react-three-fiber')
 
 const useInterval = require('../hooks/use-interval')
 
@@ -33,23 +34,15 @@ const SimpleText = ({
 }
 
 const Stats = ({ rStats, position }) => {
+  const { gl } = useThree()
+
   const [fps, setFps] = useState(0)
-  const [calls, setCalls] = useState(0)
-  const [triangles, setTriangles] = useState(0)
 
   useInterval(
     () => setFps(Math.round(parseFloat(rStats('fps').value()))),
     250)
 
-  useInterval(
-    () => {
-      setCalls(rStats('renderer.info.render.calls').value())
-      setTriangles(rStats('renderer.info.render.triangles').value())
-    },
-    1000
-  )
-
-  let label = `F ${fps}\nC ${calls}\nT ${triangles}`
+  let label = `F ${fps}\nC ${gl.info.render.calls}\nT ${gl.info.render.triangles}`
 
   return (
     <group position={position}>
