@@ -1,4 +1,6 @@
-const { useMemo, useRef } = React = require('react')
+const { useMemo, useRef, useState } = React = require('react')
+
+const useInterval = require('../hooks/use-interval')
 
 const SDFText = require('datguivr/modules/datguivr/sdftext')
 const textCreator = SDFText.creator()
@@ -31,9 +33,23 @@ const SimpleText = ({
 }
 
 const Stats = ({ rStats, position }) => {
-  const fps = 0
-  const calls = 0
-  const triangles = 0
+  const [fps, setFps] = useState(0)
+  const [calls, setCalls] = useState(0)
+  const [triangles, setTriangles] = useState(0)
+
+  useInterval(
+    () => setFps(Math.round(parseFloat(rStats('fps').value()))),
+    250)
+
+  useInterval(
+    () => setCalls(rStats('renderer.info.render.calls').value()),
+    1000
+  )
+
+  useInterval(
+    () => setTriangles(rStats('renderer.info.render.triangles').value()),
+    1000
+  )
 
   return (
     <group position={position}>
