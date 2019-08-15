@@ -1,8 +1,8 @@
 const { useThree, useRender } = require('react-three-fiber')
 const { useRef, useMemo } = React = require('react')
 
-const rStats = require('rstatsjs/src/rStats.js')
-const { threeStats } = require('rstatsjs/src/rStats.extras.js')
+const rStats = require('../../vendor/rStats.js')
+const { threeStats } = require('../../vendor/rStats.extras.js')
 
 const useRStats = () => {
   const { gl } = useThree()
