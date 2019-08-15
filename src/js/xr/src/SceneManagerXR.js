@@ -3,7 +3,7 @@ window.THREE = window.THREE || THREE
 const { Canvas, useThree, useRender } = require('react-three-fiber')
 
 const { connect, useStore, Provider } = require('react-redux')
-const { useMemo, useState, useRef } = React = require('react')
+const { useMemo, useState, useRef, Suspense } = React = require('react')
 
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
@@ -18,16 +18,29 @@ const useVrControllers = require('./hooks/use-vr-controllers')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
+const Character = require('./components/Character')
+
+const { createSelector } = require('reselect')
+
+// TODO move to selectors if useful
+// TODO optimize to only change if top-level keys change
+const getSceneObjectCharacterIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
+)
 
 const SceneContent = connect(
   state => ({
     sceneObjects: getSceneObjects(state),
     world: getWorld(state),
-    activeCamera: getActiveCamera(state)
+    activeCamera: getActiveCamera(state),
+
+    characterIds: getSceneObjectCharacterIds(state)
   })
 )(
   ({
-    sceneObjects, world, activeCamera
+    sceneObjects, world, activeCamera,
+    characterIds
   }) => {
     const { camera } = useThree()
 
@@ -70,6 +83,14 @@ const SceneContent = connect(
         </group>
 
         <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
+
+        {
+          characterIds.map(id =>
+            <Suspense key={id} fallback={null}>
+              <Character sceneObject={sceneObjects[id]} />
+            </Suspense>
+          )
+        }
 
         <Ground texture={groundTexture} visible={true/*!world.room.visible && world.ground*/} />
       </>
