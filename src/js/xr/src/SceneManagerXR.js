@@ -3,7 +3,7 @@ window.THREE = window.THREE || THREE
 const { Canvas, useThree, useRender } = require('react-three-fiber')
 
 const { connect, useStore, Provider } = require('react-redux')
-const { useMemo, useState, useEffect, useRef } = React = require('react')
+const { useMemo, useState, useRef } = React = require('react')
 
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
@@ -14,76 +14,10 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
-const FPSMeter = require('./components/FPSMeter')
+const useVrControllers = require('./hooks/use-vr-controllers')
 
-const SDFText = require('datguivr/modules/datguivr/sdftext')
-const textCreator = SDFText.creator()
-
-const HUD = ({ position, children }) => {
-  return (
-    <group position={position}>
-      {children}
-    </group>
-  )
-}
-
-require('../vendor/VRController')
-const useVrControllers = () => {
-  const { gl } = useThree()
-  const [list, setList] = useState([])
-
-  useRender(() => {
-    THREE.VRController.update()
-  })
-
-  const onVRControllerConnected = event => {
-    let controller = event.detail
-    controller.standingMatrix = gl.vr.getStandingMatrix()
-    setList(THREE.VRController.controllers)
-  }
-
-  const onVRControllerDisconnected = event => {
-    let controller = event.detail
-    setList(THREE.VRController.controllers)
-  }
-
-  useEffect(() => {
-    window.addEventListener('vr controller connected', onVRControllerConnected)
-    window.addEventListener('vr controller disconnected', onVRControllerDisconnected)
-    return () => {
-      window.removeEventListener('vr controller connected', onVRControllerConnected)
-      window.removeEventListener('vr controller disconnected', onVRControllerDisconnected)
-    }
-  }, [])
-
-  return list
-}
-
-const SimpleText = ({
-  label,
-  textProps = {
-    color: 0xffffff,
-    scale: 1,
-    centerText: false
-  },
-  ...props
-}) => {
-  const group = useRef(null)
-
-  useMemo(() => {
-    if (group.current) {
-      // changed in dataguivr 0.1.6
-      group.current.update(label.toString())
-    } else {
-      group.current = textCreator.create(
-        label.toString(),
-        textProps
-      )
-    }
-  }, [label])
-
-  return <primitive {...props} object={group.current} />
-}
+const Stats = require('./components/Stats')
+const Ground = require('./components/Ground')
 
 const SceneContent = connect(
   state => ({
@@ -93,9 +27,7 @@ const SceneContent = connect(
   })
 )(
   ({
-    sceneObjects,
-    world,
-    activeCamera
+    sceneObjects, world, activeCamera
   }) => {
     const { camera } = useThree()
 
@@ -133,27 +65,13 @@ const SceneContent = connect(
           rotation={teleportRot}
         >
           <primitive object={camera}>
-            <HUD position={[0, 0, -1]}>
-              <FPSMeter rStats={rStats} textCreator={textCreator} position={[0.3, 0.05, 0]} />
-
-              <SimpleText label={`left: ${controllerLeft && controllerLeft.uuid.substr(0, 7)}`} position={[-0.3, 0.05, 0]} />
-              <SimpleText label={`right: ${controllerRight && controllerRight.uuid.substr(0, 7)}`} position={[-0.3, 0, 0]} />
-            </HUD>
+            <Stats rStats={rStats} position={[0, 0, -1]} />
           </primitive>
         </group>
 
         <ambientLight color={0xffffff} intensity={1 /*world.ambient.intensity*/} />
 
-        <mesh
-          // slightly offset to allow for outlines
-          position={[0, -0.03, 0]}
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
-          <planeBufferGeometry attach='geometry' args={[45, 45]} />
-          <meshLambertMaterial attach='material' side={THREE.FrontSide} visible>
-            <primitive attach='map' object={groundTexture} />
-          </meshLambertMaterial>
-        </mesh>
+        <Ground texture={groundTexture} visible={true /* TODO via world */} />
       </>
     )
   })
