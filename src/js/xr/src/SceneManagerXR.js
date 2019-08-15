@@ -160,12 +160,7 @@ const SceneContent = connect(
 
 const XRStartButton = ({ }) => {
   const { gl } = useThree()
-
-  useMemo(
-    () => document.body.appendChild(WEBVR.createButton(gl)),
-    []
-  )
-
+  useMemo(() => document.body.appendChild(WEBVR.createButton(gl)), [])
   return null
 }
 
