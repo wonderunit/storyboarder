@@ -42,12 +42,10 @@ const Stats = ({ rStats, position }) => {
     250)
 
   useInterval(
-    () => setCalls(rStats('renderer.info.render.calls').value()),
-    1000
-  )
-
-  useInterval(
-    () => setTriangles(rStats('renderer.info.render.triangles').value()),
+    () => {
+      setCalls(rStats('renderer.info.render.calls').value())
+      setTriangles(rStats('renderer.info.render.triangles').value())
+    },
     1000
   )
 
