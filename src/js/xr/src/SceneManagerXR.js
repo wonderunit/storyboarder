@@ -85,6 +85,23 @@ const SceneContent = connect(
           <primitive object={camera}>
             <Stats rStats={rStats} position={[0, 0, -1]} />
           </primitive>
+
+          {controllerLeft &&
+            <primitive object={controllerLeft}>
+              <mesh scale={[0.025, 0.025, 0.025]}>
+                <sphereGeometry attach="geometry" args={[1, 16, 16]} />
+                <meshStandardMaterial attach="material" color="red" />
+              </mesh>
+            </primitive>
+          }
+          {controllerRight &&
+            <primitive object={controllerRight}>
+              <mesh scale={[0.025, 0.025, 0.025]}>
+                <sphereGeometry attach="geometry" args={[1, 16, 16]} />
+                <meshStandardMaterial attach="material" color="blue" />
+              </mesh>
+            </primitive>
+          }
         </group>
 
         <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
