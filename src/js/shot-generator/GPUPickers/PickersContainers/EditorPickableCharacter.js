@@ -22,7 +22,7 @@ class EditorPickableCharacter extends Pickable
         this.pickingMaterial.morphTargets = true;
         let parent = this.sceneObject;
         this.node = SkeletonUtils.clone(parent);
-        this.pickingMesh = this.node.find(child => child.type === "SkinnedMesh");
+        this.pickingMesh = this.node.children.find(child => child.type === "SkinnedMesh");
         this.pickingMesh.material = this.pickingMaterial;
         //TODO(): Remove when XRGPUPIcker changed
         this.node.pickingContainer = this;

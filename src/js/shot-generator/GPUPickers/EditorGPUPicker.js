@@ -34,27 +34,25 @@ class EditorGPUPicker extends GPUPicker
                 object.initialize(id);
                 this.pickingScene.add(object.node);
                 this.gpuPickerHelper.selectableObjects[id] = { originObject: object.sceneMesh, pickerObject: object.node} ;
+                this.pickableObjects.push(object);
             }
         }
     }
 
     updateObject()
     {
-        for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
+        for(let i = 0, n = this.pickableObjects.length; i < n; i++)
         {
-            let pickingObject = this.pickingScene.children[i];
-            if(pickingObject.pickingContainer)
+            let pickableObject = this.pickableObjects[i];
+            pickableObject.update();
+            if(pickableObject.needsRemoval)
             {
-                let pickingContainer = pickingObject.pickingContainer;
-                pickingContainer.update();
-                if(pickingContainer.needsRemoval)
-                {
-                    pickingContainer.dispose();
-                    this.pickingScene.remove(pickingObject);
-                    delete this.gpuPickerHelper.selectableObjects[pickingObject.pickerId];
-                    n = this.pickingScene.children.length;
-                    i--;
-                }
+                let pickingObject = pickableObject.node;
+                pickableObject.dispose();
+                this.pickingScene.remove(pickingObject);
+                delete this.gpuPickerHelper.selectableObjects[pickingObject.pickerId];
+                n = this.pickingScene.children.length;
+                i--;
             }
         }
     }

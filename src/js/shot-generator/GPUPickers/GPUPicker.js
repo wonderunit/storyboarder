@@ -13,6 +13,7 @@ class GPUPicker
         this.idBonus = 1;
         this.allowedObjectsTypes = [];
         this.gpuPickerFactory = null;
+        this.pickableObjects = [];
     }
 
     addAllowedObject(allowedType)

@@ -1,5 +1,4 @@
 const GPUPicker = require("./GPUPicker");
-const SkeletonUtils = require("../IK/utils/SkeletonUtils");
 const Pickable = require("./PickersContainers/Pickable");
 const XRGPUPickerFactory = require("./XRGPUPickerFactory");
 class XRGPUPicker extends GPUPicker
@@ -66,7 +65,6 @@ class XRGPUPicker extends GPUPicker
                 {
                     this.gpuPickerHelper.selectableObjects[id] = { originObject: object.sceneMesh, pickerObject: object.node} ;
                 }
-                continue;
             }
         } 
     }
