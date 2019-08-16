@@ -14,7 +14,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
-const useVrControllers = require('./hooks/use-vr-controllers')
+// const useVrControllers = require('./hooks/use-vr-controllers')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -43,7 +43,7 @@ const SceneContent = connect(
     sceneObjects, world, activeCamera,
     characterIds
   }) => {
-    const { camera, scene } = useThree()
+    const { gl, camera, scene } = useThree()
 
     const [teleportPos, setTeleportPos] = useState(null)
     const [teleportRot, setTeleportRot] = useState(null)
@@ -71,11 +71,13 @@ const SceneContent = connect(
     )
 
     const rStats = useRStats()
-    const controllers = useVrControllers()
-    const controllerLeft = useMemo(() => controllers.find(c => c.getHandedness() === 'left'), [controllers])
-    const controllerRight = useMemo(() => controllers.find(c => c.getHandedness() === 'right'), [controllers])
 
     const groupRef = useRef()
+
+    const controllers = useMemo(
+      () => [gl.vr.getController(0), gl.vr.getController(1)],
+      []
+    )
 
     return (
       <>
@@ -87,21 +89,17 @@ const SceneContent = connect(
             <Stats rStats={rStats} position={[0, 0, -1]} />
           </primitive>
 
-          {controllerLeft &&
-            <Suspense fallback={null}>
-              <primitive object={controllerLeft}>
-                <Controller />
-              </primitive>
-            </Suspense>
-          }
+          <Suspense fallback={null}>
+            <primitive object={controllers[0]}>
+              <Controller />
+            </primitive>
+          </Suspense>
 
-          {controllerRight &&
-            <Suspense fallback={null}>
-              <primitive object={controllerRight}>
-                <Controller />
-              </primitive>
-            </Suspense>
-          }
+          <Suspense fallback={null}>
+            <primitive object={controllers[1]}>
+              <Controller />
+            </primitive>
+          </Suspense>
         </group>
 
         <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
