@@ -38,15 +38,21 @@ const Character = ({ sceneObject }) => {
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
+      lod.position.x = sceneObject.x
+      lod.position.y = sceneObject.z
+      lod.position.z = sceneObject.y
+      lod.updateMatrix()
+      console.log('set lod to', lod.position)
+
       return [skeleton, lod, originalSkeleton]
     },
     [gltf]
   )
 
-  const position = useMemo(
-    () => [sceneObject.x, sceneObject.z, sceneObject.y],
-    [sceneObject.x, sceneObject.y, sceneObject.z]
-  )
+  // const position = useMemo(
+  //   () => [sceneObject.x, sceneObject.z, sceneObject.y],
+  //   [sceneObject.x, sceneObject.y, sceneObject.z]
+  // )
 
   useMemo(() => {
     if (!skeleton) return
@@ -77,7 +83,7 @@ const Character = ({ sceneObject }) => {
   }, [skeleton, sceneObject.skeleton])
 
   return lod
-    ? <primitive object={lod} position={position} matrixAutoUpdate={false} />
+    ? <primitive object={lod} matrixAutoUpdate={false} />
     : null
 }
 
