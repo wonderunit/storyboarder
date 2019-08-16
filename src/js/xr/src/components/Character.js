@@ -26,7 +26,7 @@ const Character = ({ sceneObject }) => {
         let mesh = meshes[i] // shared reference to the mesh in the cache
         mesh.matrixAutoUpdate = false
         map = mesh.material.map
-        mesh.material = new THREE.MeshBasicMaterial({map: map, skinning: true, morphTargets: true, color: 0xffcccc})
+        mesh.material = new THREE.MeshBasicMaterial({map: map, skinning: true, morphTargets: true, color: 0xffffff})
         lod.addLevel(mesh, d * 4)
       }
 
