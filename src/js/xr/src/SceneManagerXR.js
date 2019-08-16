@@ -62,13 +62,11 @@ const SceneContent = connect(
 
     useMemo(() => {
       scene.background = new THREE.Color(0x000000)
-      scene.fog = new THREE.Fog( 0x000000, 4, 25 )
+      scene.fog = new THREE.Fog( 0x000000, -10, 40 )
     })
 
-
-
     const groundTexture = useMemo(
-      () => new THREE.TextureLoader().load('/data/system/grid_floor.png'), []
+      () => new THREE.TextureLoader().load('/data/system/grid_floor_1.png'), []
     )
 
     const rStats = useRStats()
