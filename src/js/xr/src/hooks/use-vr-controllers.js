@@ -1,12 +1,26 @@
 const { useThree, useRender } = require('react-three-fiber')
-const { useState, useEffect } = React = require('react')
+const { useState, useEffect, useRef } = React = require('react')
 
 window.THREE = window.THREE || THREE
 require('../../vendor/VRController')
 
-const useVrControllers = () => {
+const useVrControllers = ({
+  // onSelectStart,
+  // onSelectEnd,
+  // onGripDown,
+  // onGripUp,
+  onAxesChanged
+}) => {
   const { gl } = useThree()
   const [list, setList] = useState([])
+
+  // const onSelectStartRef = useRef(onSelectStart)
+  // const onSelectEndRef = useRef(onSelectEnd)
+
+  // const onGripDownRef = useRef(onGripDown)
+  // const onGripUpRef = useRef(onGripUp)
+
+  const onAxesChangedRef = useRef(onAxesChanged)
 
   useRender(() => {
     THREE.VRController.update()
@@ -16,6 +30,16 @@ const useVrControllers = () => {
     let controller = event.detail
     controller.standingMatrix = gl.vr.getStandingMatrix()
     setList(THREE.VRController.controllers)
+
+    // controller.addEventListener('trigger press began', (...rest) => onSelectStartRef.current(...rest))
+    // controller.addEventListener('trigger press ended', (...rest) => onSelectEndRef.current(...rest))
+    // controller.addEventListener('grip press began', (...rest) => onGripDownRef.current(...rest))
+    // controller.addEventListener('grip press ended', (...rest) => onGripUpRef.current(...rest))
+    controller.addEventListener('thumbstick axes changed', (...rest) => onAxesChangedRef.current(...rest))
+    controller.addEventListener('thumbpad axes changed', (...rest) => onAxesChangedRef.current(...rest))
+
+    // controller.addEventListener('A press ended', event => undo())
+    // controller.addEventListener('B press ended', event => redo())
   }
 
   const onVRControllerDisconnected = event => {

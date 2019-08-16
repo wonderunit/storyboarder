@@ -14,7 +14,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
-// const useVrControllers = require('./hooks/use-vr-controllers')
+const useVrControllers = require('./hooks/use-vr-controllers')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -45,10 +45,119 @@ const SceneContent = connect(
     sceneObjects, world, activeCamera,
     characterIds
   }) => {
+    const teleport = (x, y, z, r) => {
+      // create virtual objects
+      let parent = new THREE.Object3D()
+      parent.position.copy(teleportRef.current.position)
+      parent.rotation.copy(teleportRef.current.rotation)
+      let child = new THREE.Object3D()
+      child.position.copy(camera.position)
+      child.rotation.copy(camera.rotation)
+      parent.add(child)
+      parent.updateMatrixWorld()
+
+      // if x and y both present
+      if (x != null && z != null) {
+        let center = new THREE.Vector3()
+        child.getWorldPosition(center)
+
+        let dx = parent.position.x - center.x
+        let dz = parent.position.z - center.z
+
+        parent.position.x = x + dx
+        parent.position.z = z + dz
+        parent.updateMatrixWorld()
+      }
+
+      // reset y unless given explicit value
+      if (y != null) {
+        parent.position.y = 0
+      }
+
+      if (r != null) {
+        let center = new THREE.Vector3()
+        child.getWorldPosition(center)
+
+        let gr = child.rotation.y + parent.rotation.y
+
+        let dr = gr - r
+
+        let v = rotatePoint(parent.position, center, dr)
+
+        parent.position.x = v.x
+        parent.position.z = v.z
+        parent.rotation.y = r - child.rotation.y
+      }
+
+      // update state from new position of virtual objects
+      setTeleportPos(parent.position)
+      setTeleportRot(parent.rotation)
+    }
+
+    const onAxesChanged = event => {
+      moveCamera(event)
+      rotateCamera(event)
+    }
+
+    const moveCamera = event => {
+      if (event.axes[1] === 0) {
+        moveCamRef.current = null
+      }
+
+      if (moveCamRef.current) return
+      if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
+
+      let center = new THREE.Vector3()
+      camera.getWorldPosition(center)
+      let gr = camera.rotation.y + teleportRef.current.rotation.y
+
+      if (event.axes[1] > 0.075) {
+        moveCamRef.current = 'Backwards'
+
+        let target = new THREE.Vector3(center.x, 0, center.z + 1)
+        let d = rotatePoint(target, center, -gr)
+        teleport(d.x, null, d.z, null)
+      }
+
+      if (event.axes[1] < -0.075) {
+        moveCamRef.current = 'Forwards'
+
+        let target = new THREE.Vector3(center.x, 0, center.z - 1)
+        let d = rotatePoint(target, center, -gr)
+        teleport(d.x, null, d.z, null)
+      }
+    }
+
+    const rotateCamera = event => {
+      if (event.axes[0] === 0) {
+        rotateCamRef.current = null
+      }
+
+      if (rotateCamRef.current) return
+      if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
+
+      let center = new THREE.Vector3()
+      camera.getWorldPosition(center)
+      let gr = camera.rotation.y + teleportRef.current.rotation.y
+
+      if (event.axes[0] > 0.075) {
+        rotateCamRef.current = 'Right'
+        teleport(null, null, null, gr + THREE.Math.degToRad(-45))
+      }
+
+      if (event.axes[0] < -0.075) {
+        rotateCamRef.current = 'Left'
+        teleport(null, null, null, gr + THREE.Math.degToRad(45))
+      }
+    }
+
     const { gl, camera, scene } = useThree()
 
     const [teleportPos, setTeleportPos] = useState(null)
     const [teleportRot, setTeleportRot] = useState(null)
+
+    const moveCamRef = useRef()
+    const rotateCamRef = useRef()
 
     // initialize behind the camera, on the floor
     useMemo(() => {
@@ -81,6 +190,17 @@ const SceneContent = connect(
       () => [gl.vr.getController(0), gl.vr.getController(1)],
       []
     )
+
+    // controller state via THREE.VRController
+    const controllers = useVrControllers({
+      // onSelectStart,
+      // onSelectEnd,
+      // onGripDown,
+      // onGripUp,
+      onAxesChanged
+    })
+    const controllerLeft = useMemo(() => controllers.find(c => c.getHandedness() === 'left'), [controllers])
+    const controllerRight = useMemo(() => controllers.find(c => c.getHandedness() === 'right'), [controllers])
 
     return (
       <>
