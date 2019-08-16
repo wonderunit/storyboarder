@@ -19,7 +19,7 @@ const Character = ({ sceneObject }) => {
 
   const gltf = resource.read(filepath)
 
-  const [skeleton, lod, originalSkeleton] = useMemo(
+  const [skeleton, lod, originalSkeleton, armature] = useMemo(
     () => {
       let lod = new THREE.LOD()
 
@@ -38,14 +38,11 @@ const Character = ({ sceneObject }) => {
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
-      return [skeleton, lod, originalSkeleton]
+      let armature = scene.children[0].children[0]
+
+      return [skeleton, lod, originalSkeleton, armature]
     },
     [gltf]
-  )
-
-  const position = useMemo(
-    () => [sceneObject.x, sceneObject.z, sceneObject.y],
-    [sceneObject.x, sceneObject.y, sceneObject.z]
   )
 
   useMemo(() => {
@@ -76,21 +73,11 @@ const Character = ({ sceneObject }) => {
     }
   }, [skeleton, sceneObject.skeleton])
 
-  const ref = useRef()
-  useEffect(() => {
-    if (ref.current) {
-      console.log('updating', ref.current, sceneObject.x, sceneObject.y, sceneObject.z)
-
-      ref.current.position.x = sceneObject.x
-      ref.current.position.y = sceneObject.z
-      ref.current.position.z = sceneObject.y
-
-      ref.current.updateMatrix()
-    }
-  }, [ref.current, sceneObject.x, sceneObject.y, sceneObject.z])
-
   return lod
-    ? <primitive ref={ref} object={lod} />
+    ? <group position={[sceneObject.x, sceneObject.z, sceneObject.y]}>
+      <primitive object={lod} />
+      <primitive object={armature} />
+    </group>
     : null
 }
 
