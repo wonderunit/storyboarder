@@ -72,7 +72,7 @@ const fs = require('fs')
 // const path = require('path')
 
 let storyboarderFilePath = path.join(
-  __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'
+  __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'xr', 'xr.storyboarder'
 )
 
 let boardData = JSON.parse(fs.readFileSync(storyboarderFilePath))
