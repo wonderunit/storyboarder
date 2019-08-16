@@ -36,7 +36,26 @@ class UniversalPickableObject extends Pickable
         this.node.position.copy(this.sceneMesh.worldPosition());
         this.node.quaternion.copy(this.sceneMesh.worldQuaternion());
         this.node.scale.copy(this.sceneMesh.worldScale());
+        this.node.updateMatrixWorld();
+    }
+    
+    isObjectChanged()
+    {
+        if(this.sceneObject && !this.sceneMesh.parent)
+        {
+            return true;
+        }
+        return false;
     }
 
+    applyObjectChanges()
+    {
+        this.sceneMesh = this.sceneObject.children.find(child => child.type === "Mesh");
+        this.pickingMesh.geometry.dispose();
+        this.pickingMesh.geometry = this.sceneMesh.geometry;
+        this.pickingMesh.name = this.sceneMesh.name;
+        this.pickingMesh.needsUpdate = true;
+    }
+    
 }
 module.exports = UniversalPickableObject;

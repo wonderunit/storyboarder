@@ -36,6 +36,7 @@ class EditorPickableCharacter extends Pickable
             this.needsRemoval = true;
             return;
         }
+        console.log(this.sceneObject);
         let parent = this.sceneObject;
         this.node.position.copy(parent.worldPosition());
         this.node.quaternion.copy(parent.worldQuaternion());
@@ -43,6 +44,25 @@ class EditorPickableCharacter extends Pickable
         let clonnedRootBone = this.pickingMesh.skeleton.bones[0];
         let originalRootBone = this.sceneMesh.skeleton.bones[0];
         updateBoneToBone(clonnedRootBone, originalRootBone);
+        clonnedRootBone.updateMatrixWorld(true);
+    }
+
+    isObjectChanged()
+    {
+        if(this.sceneObject && !this.sceneMesh.parent)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    applyObjectChanges()
+    {
+        this.sceneMesh = this.sceneObject.children.find(child => child.type === "SkinnedMesh");
+        this.pickingMesh.geometry.dispose();
+        this.pickingMesh.geometry = this.sceneMesh.geometry;
+        this.pickingMesh.name = this.sceneMesh.name;
+        this.pickingMesh.needsUpdate = true;
     }
 }
 module.exports = EditorPickableCharacter;

@@ -41,5 +41,13 @@ class Pickable
     {
         this.pickingMaterial.dispose();
     }
+
+    isObjectChanged()
+    {
+    }
+
+    applyObjectChanges()
+    {
+    }
 }
 module.exports = Pickable;

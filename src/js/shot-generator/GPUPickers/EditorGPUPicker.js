@@ -17,6 +17,15 @@ class EditorGPUPicker extends GPUPicker
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
+            let pickableObjects = this.pickableObjects;
+            let pickableObject =  pickableObjects[intesectable.uuid];
+            if(Object.keys(pickableObjects).length !== 0 && pickableObject)
+            {
+                if(pickableObject.isObjectChanged())
+                {
+                    pickableObject.applyObjectChanges();
+                }
+            }
             if(this.addedGroupsId.some(group => group === intesectable.uuid))
             {
                 continue;
@@ -34,16 +43,17 @@ class EditorGPUPicker extends GPUPicker
                 object.initialize(id);
                 this.pickingScene.add(object.node);
                 this.gpuPickerHelper.selectableObjects[id] = { originObject: object.sceneMesh, pickerObject: object.node} ;
-                this.pickableObjects.push(object);
+                this.pickableObjects[object.sceneObject.uuid] = object;
             }
         }
     }
 
     updateObject()
     {
-        for(let i = 0, n = this.pickableObjects.length; i < n; i++)
+        let keys = Object.keys(this.pickableObjects);
+        for(let i = 0, n = keys.length; i < n; i++)
         {
-            let pickableObject = this.pickableObjects[i];
+            let pickableObject = this.pickableObjects[keys[i]];
             pickableObject.update();
             if(pickableObject.needsRemoval)
             {

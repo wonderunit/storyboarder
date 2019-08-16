@@ -3,9 +3,10 @@ function updateBoneToBone(cloneBone, sourceBone)
     cloneBone.position.copy(sourceBone.position);
     cloneBone.quaternion.copy(sourceBone.quaternion);
     cloneBone.scale.copy(sourceBone.scale);
-    for(let i = 0, n = cloneBone.children[i]; i < n; i++)
+    cloneBone.updateMatrixWorld(true);
+    for(let i = 0, n = cloneBone.children.length; i < n; i++)
     {
-        this.updateBoneToBone(cloneBone.children[i], oriignalBone.children[i]);
+        updateBoneToBone(cloneBone.children[i], sourceBone.children[i]);
     }
 }
 module.exports = {updateBoneToBone};

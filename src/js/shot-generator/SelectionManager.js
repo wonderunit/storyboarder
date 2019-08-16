@@ -256,7 +256,7 @@ const SelectionManager = connect(
         changes[selection] = { x, y: z }
       }
       updateObjects(changes)
-      gpuPicker.updateObject();
+      //gpuPicker.updateObject();
     }
   }
   const endDrag = () => {
