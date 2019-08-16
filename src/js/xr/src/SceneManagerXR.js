@@ -21,6 +21,8 @@ const Ground = require('./components/Ground')
 const Character = require('./components/Character')
 const Controller = require('./components/Controller')
 
+const rotatePoint = require('./helpers/rotate-point')
+
 const { createSelector } = require('reselect')
 
 // TODO move to selectors if useful
