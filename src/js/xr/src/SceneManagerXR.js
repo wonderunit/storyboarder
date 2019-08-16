@@ -74,7 +74,7 @@ const SceneContent = connect(
 
     const rStats = useRStats()
 
-    const groupRef = useRef()
+    const teleportRef = useRef()
 
     const controllers = useMemo(
       () => [gl.vr.getController(0), gl.vr.getController(1)],
@@ -84,6 +84,7 @@ const SceneContent = connect(
     return (
       <>
         <group
+          ref={teleportRef}
           position={teleportPos}
           rotation={teleportRot}
         >
