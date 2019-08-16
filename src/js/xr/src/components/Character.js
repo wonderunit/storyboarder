@@ -1,14 +1,8 @@
 const THREE = require('three')
 const { useMemo, useEffect, useRef } = React = require('react')
 
-const { unstable_createResource } = require('../../vendor/react-cache')
-const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader')
-
+const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
-
-const resource = unstable_createResource(
-  file => new Promise(async res => new GLTFLoader().load(file, res))
-)
 
 const Character = ({ sceneObject }) => {
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
@@ -17,7 +11,7 @@ const Character = ({ sceneObject }) => {
     [sceneObject.model]
   )
 
-  const gltf = resource.read(filepath)
+  const gltf = useGltf(filepath)
 
   const [skeleton, lod, originalSkeleton, armature] = useMemo(
     () => {
