@@ -1,6 +1,5 @@
 const THREE = require('three');
 const GPUPickerHelper = require("./GPUPickerHelper");
-const XRGPUPickerFactory = require("./XRGPUPickerFactory");
 require("../IK/utils/Object3dExtension");
 class GPUPicker
 {

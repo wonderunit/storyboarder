@@ -15,27 +15,6 @@ class XRGPUPicker extends GPUPicker
         this.gpuPickerFactory = new XRGPUPickerFactory();
     }
 
-    intializeGui(intersectObjects)
-    { 
-        let updatedGuiUuid = [];
-        let guiMesh = {};
-        let intesectable = intersectObjects;
-        if(intesectable.userData.type === "gui" && !updatedGuiUuid[intesectable.uuid])
-        {
-            updatedGuiUuid[intesectable.uuid] = true;
-            if(intesectable.parent.name !== this.currentGuiController)
-            {
-                for(let j = 0, m = this.controllers.length; j < m; j++ )
-                {
-                    this.pickingScene.remove(this.controllers[j]);
-                }
-                this.controllers = [];
-            }
-            this.getGuiMeshes(intesectable, guiMesh);
-        }
-        this.initializeGuiMeshes(guiMesh);
-    }
-
     initalizeChildren(intersectObjects)
     {
         super.initalizeChildren(intersectObjects);
@@ -44,10 +23,6 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
-            if(intesectable.userData.type === "gui")
-            {
-                continue;
-            }
             if(this.addedGroupsId.some(group => group === intesectable.uuid))
             {
                 if(intesectable.userData.type === "object" && !this.isObjectAdded(intesectable.getObjectByProperty("type", "Mesh")))
@@ -116,33 +91,15 @@ class XRGPUPicker extends GPUPicker
                 }
                 continue;
             }
-            if(clonnedObject.type === "gui")
-            {   
-                for(let j = 0, m = clonnedObject.children.length; j < m; j++)
-                {
-                    let guiElement = clonnedObject.children[j];
-                    let originalObject = this.gpuPickerHelper.selectableObjects[guiElement.pickerId].originObject;
-                    if(!originalObject)
-                    {
-                        
-                        clonnedObject.remove(guiElement);
-                        delete this.gpuPickerHelper.selectableObjects[guiElement.pickerId];
-                        m = clonnedObject.children.length;
-                        j--;
-                        continue;
-                    }
-                    guiElement.position.copy(originalObject.worldPosition());
-                    guiElement.quaternion.copy(originalObject.worldQuaternion());
-                    guiElement.scale.copy(originalObject.worldScale());
-                    guiElement.updateMatrixWorld(true);
-                }
-                continue;
-            }
         }
     }
 
     getAllSceneMeshes(sceneMesh, meshes, additionalObjects)
     {
+        if(!sceneMesh.userData)
+        {
+            return;
+        }
         if(sceneMesh.userData.type === "object")
         {
             meshes.push(this.gpuPickerFactory.createObject(sceneMesh));
@@ -158,64 +115,9 @@ class XRGPUPicker extends GPUPicker
             meshes.push(this.gpuPickerFactory.createContainer( sceneMesh.children[0]));
             return;
         }
-    }
-
-    getGuiMeshes(gui, meshes)
-    {
-        if(gui.userData && gui.userData.type === "gui")
+        if(sceneMesh.userData.type === "gui")
         {
-            let controllerName = gui.parent.name;
-            meshes[controllerName] = [];
-            gui.traverse(object =>
-            {
-                if(!this.isObjectAdded(object) && object.type === "Mesh" 
-                    && !object.name.includes("_icon") && !object.name !== ""
-                    && object.visible) 
-                {
-                    meshes[controllerName].push(object); 
-                    return;
-                }  
-            });
-        }
-    }
-
-    initializeGuiMeshes(guiMeshes)
-    {
-        let keys = Object.keys(guiMeshes);
-        for(let i = 0, n = keys.length; i < n; i++)
-        {
-            let selectableKey = Object.keys(this.gpuPickerHelper.selectableObjects);
-            let sceneElementsAmount = parseInt(selectableKey[selectableKey.length - 1], 10);
-            let node = new THREE.Object3D();
-            let key = keys[i];
-            node.type = "gui";
-            node.name = key;
-            let elements = guiMeshes[key];
-            this.currentGuiController = key;
-            for(let j = 0, m = elements.length; j < m; j++)
-            {
-                let object = elements[j];
-                const id = sceneElementsAmount + j + 1;
-                const pickingMaterial = new THREE.MeshPhongMaterial({
-                    emissive: new THREE.Color(id),
-                    color: new THREE.Color(0, 0, 0),
-                    specular: 0x0,
-                    skinning: true,
-                    shininess: 0,
-                    flatShading: false,
-                    morphNormals: true,
-                    morphTargets: true,
-                    side: THREE.DoubleSide
-                  });
-                let pickingCube = null;
-                pickingCube = new THREE.Mesh(object.geometry, pickingMaterial);
-                node.add(pickingCube);
-                pickingCube.pickerId = id;
-                this.gpuPickerHelper.selectableObjects[id] = { originObject: object, pickerObject: pickingCube} ;
-            }
-            this.pickingScene.add(node);
-            this.controllers.push(node);
-            //node.pickerId = id;
+            meshes.push(this.gpuPickerFactory.createGUI(sceneMesh));
         }
     }
 }

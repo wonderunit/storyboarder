@@ -349,9 +349,6 @@ const SceneContent = ({
 
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
-    let gui = controller.children.find(child => child.userData.type === "gui");
-    gui = gui ? gui : otherController.children.find(child => child.userData.type === "gui");
-    gpuPicker.current.intializeGui(gui);
     gpuPicker.current.updateObject();
     gpuPicker.current.setPickingPosition((gl.domElement.width) / 2 + 1, (gl.domElement.height) / 2 + 1);
     
