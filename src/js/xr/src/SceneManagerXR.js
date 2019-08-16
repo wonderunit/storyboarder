@@ -105,7 +105,24 @@ const SceneContent = connect(
         </group>
 
         <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
-        <directionalLight color={0xffffff} intensity={0.5} />
+
+        <directionalLight
+          ref={ref => {
+            if (ref) {
+              ref.add(ref.target)
+
+              ref.rotation.x = 0
+              ref.rotation.z = 0
+              ref.rotation.y = world.directional.rotation
+
+              ref.rotateX(world.directional.tilt + Math.PI / 2)
+            }
+          }}
+          color={0xffffff}
+          intensity={world.directional.intensity}
+          position={[0, 1.5, 0]}
+          target-position={[0, 0, 0.4]}
+        />
 
         {
           characterIds.map(id =>
