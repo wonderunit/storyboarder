@@ -88,6 +88,7 @@ const SceneContent = connect(
         </group>
 
         <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
+        <directionalLight color={0xffffff} intensity={0.5} />
 
         {
           characterIds.map(id =>

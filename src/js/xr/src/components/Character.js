@@ -26,10 +26,14 @@ const Character = ({ sceneObject }) => {
       let { scene } = cloneGltf(gltf)
       let meshes = scene.children.filter(child => child.isSkinnedMesh)
 
+      let map
+
       for (let i = 1, d = 0; i < meshes.length; i++, d++) {
         let mesh = meshes[i] // shared reference to the mesh in the cache
         mesh.matrixAutoUpdate = false
-        lod.addLevel(mesh, d * 2)
+        map = mesh.material.map
+        mesh.material = new THREE.MeshBasicMaterial({map: map, skinning: true, morphTargets: true, color: 0xffcccc})
+        lod.addLevel(mesh, d * 4)
       }
 
       let skeleton = lod.children[0].skeleton
