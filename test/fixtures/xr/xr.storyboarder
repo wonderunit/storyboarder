@@ -166,6 +166,56 @@
               "y": 4,
               "z": 1
             },
+            "85F835D3-9414-46A1-ABE0-EB64EB9B9630": {
+              "displayName": "Character 2",
+              "headScale": 1,
+              "height": 1.8,
+              "id": "85F835D3-9414-46A1-ABE0-EB64EB9B9630",
+              "model": "adult-male",
+              "morphTargets": {
+                "ectomorphic": 0,
+                "endomorphic": 0,
+                "mesomorphic": 0
+              },
+              "name": "Second Actor",
+              "posePresetId": "79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE",
+              "rotation": -0.03326302960560049,
+              "skeleton": {
+                "LeftArm": {
+                  "rotation": {
+                    "x": 1.0708379327832764,
+                    "y": -0.11931130645160759,
+                    "z": -0.1776163624389008
+                  }
+                },
+                "LeftForeArm": {
+                  "rotation": {
+                    "x": 0.09392413349188732,
+                    "y": 0.06624836455319376,
+                    "z": 0.29879477158887485
+                  }
+                },
+                "RightArm": {
+                  "rotation": {
+                    "x": 1.057228116003184,
+                    "y": 0.13045102714961612,
+                    "z": 0.1570463626924257
+                  }
+                },
+                "RightForeArm": {
+                  "rotation": {
+                    "x": 0.08067946699767342,
+                    "y": -0.19368502447268662,
+                    "z": -0.2725073929210185
+                  }
+                }
+              },
+              "type": "character",
+              "visible": true,
+              "x": -1.825962433247152,
+              "y": -1.230232403229444,
+              "z": 0
+            },
             "97F2D438-4FDC-44FF-8570-54A54AF27F79": {
               "color": 7829367,
               "depth": 5,
