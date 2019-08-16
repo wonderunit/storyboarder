@@ -4,6 +4,8 @@ const { useMemo } = React = require('react')
 const { unstable_createResource } = require('../../vendor/react-cache')
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader')
 
+const cloneGltf = require('../helpers/clone-gltf')
+
 const resource = unstable_createResource(
   file => new Promise(async res => new GLTFLoader().load(file, res))
 )
@@ -15,12 +17,13 @@ const Character = ({ sceneObject }) => {
     [sceneObject.model]
   )
 
-  const { scene } = resource.read(filepath)
+  const gltf = resource.read(filepath)
 
   const [skeleton, lod, originalSkeleton] = useMemo(
     () => {
       let lod = new THREE.LOD()
 
+      let { scene } = cloneGltf(gltf)
       let meshes = scene.children.filter(child => child.isSkinnedMesh)
 
       for (let i = 1, d = 0; i < meshes.length; i++, d++) {
@@ -37,7 +40,7 @@ const Character = ({ sceneObject }) => {
 
       return [skeleton, lod, originalSkeleton]
     },
-    [scene]
+    [gltf]
   )
 
   const position = useMemo(
