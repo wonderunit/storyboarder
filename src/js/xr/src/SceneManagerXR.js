@@ -19,6 +19,7 @@ const useVrControllers = require('./hooks/use-vr-controllers')
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
 const Character = require('./components/Character')
+const Controller = require('./components/Controller')
 
 const { createSelector } = require('reselect')
 
@@ -87,20 +88,19 @@ const SceneContent = connect(
           </primitive>
 
           {controllerLeft &&
-            <primitive object={controllerLeft}>
-              <mesh scale={[0.025, 0.025, 0.025]}>
-                <sphereGeometry attach="geometry" args={[1, 16, 16]} />
-                <meshStandardMaterial attach="material" color="red" />
-              </mesh>
-            </primitive>
+            <Suspense fallback={null}>
+              <primitive object={controllerLeft}>
+                <Controller />
+              </primitive>
+            </Suspense>
           }
+
           {controllerRight &&
-            <primitive object={controllerRight}>
-              <mesh scale={[0.025, 0.025, 0.025]}>
-                <sphereGeometry attach="geometry" args={[1, 16, 16]} />
-                <meshStandardMaterial attach="material" color="blue" />
-              </mesh>
-            </primitive>
+            <Suspense fallback={null}>
+              <primitive object={controllerRight}>
+                <Controller />
+              </primitive>
+            </Suspense>
           }
         </group>
 
