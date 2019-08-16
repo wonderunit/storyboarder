@@ -23,7 +23,7 @@ const Character = ({ sceneObject }) => {
       let map
 
       for (let i = 1, d = 0; i < meshes.length; i++, d++) {
-        let mesh = meshes[i] // shared reference to the mesh in the cache
+        let mesh = meshes[i]
         mesh.matrixAutoUpdate = false
         map = mesh.material.map
         mesh.material = new THREE.MeshBasicMaterial({map: map, skinning: true, morphTargets: true, color: 0xffffff})
