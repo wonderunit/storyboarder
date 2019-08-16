@@ -354,7 +354,7 @@ const SceneContent = ({
         emissive: 0x0,
         flatShading: false } );
       let mesh = new THREE.Mesh( geometry, material );
-      scene.add(mesh);
+      //scene.add(mesh);
       mesh.position.y = mesh.position.y + 5;
       wall.current = mesh;
     }

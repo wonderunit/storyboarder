@@ -52,6 +52,7 @@ class XRGPUPicker extends GPUPicker
             {
                 object.initialize(id);
                 this.pickingScene.add(object.node);
+                this.pickableObjects[object.sceneObject.uuid] = object;
                 if(object.isContainer)
                 {
                     for(let i = 0, n = object.pickingMeshes.length; i < n; i++)
@@ -71,23 +72,20 @@ class XRGPUPicker extends GPUPicker
   
     updateObject()
     {
-        super.updateObject();
-        for(let i = 0, n = this.pickingScene.children.length; i < n; i++)
+        let keys = Object.keys(this.pickableObjects);
+        for(let i = 0, n = keys.length; i < n; i++)
         {
-            let clonnedObject = this.pickingScene.children[i];
-            if(clonnedObject.pickingContainer)
+            let pickableObject = this.pickableObjects[keys[i]];
+            pickableObject.update();
+            if(pickableObject.needsRemoval)
             {
-                let pickingContainer = clonnedObject.pickingContainer;
-                pickingContainer.update();
-                if(pickingContainer.needsRemoval)
-                {
-                    pickingContainer.dispose();
-                    this.pickingScene.remove(clonnedObject);
-                    delete this.gpuPickerHelper.selectableObjects[clonnedObject.pickerId];
-                    n = this.pickingScene.children.length;
-                    i--;
-                }
-                continue;
+                let pickingObject = pickableObject.node;
+                pickableObject.dispose();
+                this.pickingScene.remove(pickingObject);
+                delete this.gpuPickerHelper.selectableObjects[pickingObject.pickerId];
+                keys = Object.keys(this.pickableObjects);
+                n = keys.length;
+                i--;
             }
         }
     }
