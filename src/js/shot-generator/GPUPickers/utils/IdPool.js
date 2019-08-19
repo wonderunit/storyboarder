@@ -21,7 +21,7 @@ class IdPool
         let id = this.avaibleIds.shift();
         this.usedIds[id] = id;
      
-        return id
+        return id;
     }
 
     returnId(id)

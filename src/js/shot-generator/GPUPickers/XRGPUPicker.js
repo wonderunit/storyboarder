@@ -88,7 +88,6 @@ class XRGPUPicker extends GPUPicker
                 pickableObject.dispose();
                 this.pickingScene.remove(pickingObject);
                 delete this.pickableObjects[i];
-                //delete this.gpuPickerHelper.selectableObjects[pickingObject.pickerId];
                 keys = Object.keys(this.pickableObjects);
                 n = keys.length;
                 i--;
