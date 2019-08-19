@@ -28,7 +28,7 @@ class GPUPickerHelper
         this.reusableVector = new THREE.Vector3();
     }
     
-    pick(cssPosition, scene, camera, renderer, selectables, pickingBones = false, wall)
+    pick(cssPosition, scene, camera, renderer, selectables, pickingBones = false)
     {
         let {pickingTexture, pixelBuffer} = this;
    
@@ -75,16 +75,6 @@ class GPUPickerHelper
             }
         }
         camera.clearViewOffset();
-        if(wall)
-        {
-            this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
-            renderer.setRenderTarget(this.renderTarget);
-            renderer.render(scene, camera);
-            renderer.setRenderTarget(null);
-            wall.material.map = this.renderTarget.texture;
-            wall.needsUpdate = true;
-            wall.material.needsUpdate = true;
-        }
         renderer.vr.enabled = vrEnabled ? true : false;
         
         let returnObject = [];

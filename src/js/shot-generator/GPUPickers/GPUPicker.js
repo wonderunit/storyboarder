@@ -44,9 +44,9 @@ class GPUPicker
         this.pickingPosition.y = y;
     }
 
-    pick(camera, wall)
+    pick(camera)
     {
-        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.gpuPickerHelper.selectableObjects, false, wall);
+        return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, this.renderer, this.gpuPickerHelper.selectableObjects, false);
     }
 
     pickBone(camera)
