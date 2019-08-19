@@ -362,7 +362,7 @@ const SceneContent = ({
     gpuPicker.current.initialize(scene, gl);
     gpuPicker.current.initalizeChildren(intersectArray.current);
     gpuPicker.current.updateObject();
-    gpuPicker.current.setPickingPosition((gl.domElement.width) / 2 + 1, (gl.domElement.height) / 2 + 1);
+    gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
     
     const intersections = gpuPicker.current.pick(selectCamera, wall.current);
     selectionCamera.current.position.set(0, 0, 0);
