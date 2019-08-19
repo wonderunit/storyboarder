@@ -46,7 +46,7 @@ const Character = ({ sceneObject }) => {
   useMemo(() => {
     if (!skeleton) return
 
-    let hasModifications = Object.values(sceneObject.skeleton).length
+    let hasModifications = Object.values(sceneObject.skeleton).length > 0
 
     if (hasModifications) {
       for (bone of skeleton.bones) {
