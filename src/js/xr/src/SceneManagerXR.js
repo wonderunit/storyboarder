@@ -41,6 +41,9 @@ const [useStore] = create(set => ({
   teleportPos: { x: 0, y: 0, z: 0 },
   teleportRot: { x: 0, y: 0, z: 0 },
 
+  didMoveCamera: null,
+  didRotateCamera: null,
+
   set: fn => set(produce(fn))
 }))
 
@@ -85,70 +88,85 @@ const SceneContent = connect(
     }
 
     const onAxesChanged = event => {
-      moveCamera(event)
-      rotateCamera(event)
+      onMoveCamera(event)
+      onRotateCamera(event)
     }
 
-    const moveCamera = event => {
-      if (event.axes[1] === 0) {
-        moveCamRef.current = null
+    const onMoveCamera = event => {
+      if (didMoveCamera != null) {
+        if (event.axes[1] === 0) {
+          set(state => { state.didMoveCamera = null })
+        }
+      } else {
+        if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
+
+        let distance
+        let value = event.axes[1]
+
+        // backward
+        if (value > 0.075) {
+          distance = +1
+        }
+
+        // forward
+        if (value < -0.075) {
+          distance = -1
+        }
+
+        if (distance != null) {
+          set(state => { state.didMoveCamera = distance })
+          moveCamera(distance)
+        }
       }
+    }
 
-      if (moveCamRef.current) return
-      if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
+    const onRotateCamera = event => {
+      if (didRotateCamera != null) {
+        if (event.axes[0] === 0) {
+          set(state => { state.didRotateCamera = null })
+        }
+      } else {
+        if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
+        // right
+        if (event.axes[0] > 0.075) {
+          set(state => { state.didRotateCamera = -45 })
+          rotateCamera(THREE.Math.degToRad(-45))
+        }
+
+        // left
+        if (event.axes[0] < -0.075) {
+          set(state => { state.didRotateCamera = 45 })
+          rotateCamera(THREE.Math.degToRad(45))
+        }
+      }
+    }
+
+    const moveCamera = distance => {
       let center = new THREE.Vector3()
       camera.getWorldPosition(center)
       let gr = camera.rotation.y + teleportRef.current.rotation.y
 
-      if (event.axes[1] > 0.075) {
-        moveCamRef.current = 'Backwards'
-
-        let target = new THREE.Vector3(center.x, 0, center.z + 1)
-        let d = rotatePoint(target, center, -gr)
-        teleport(d.x, null, d.z, null)
-      }
-
-      if (event.axes[1] < -0.075) {
-        moveCamRef.current = 'Forwards'
-
-        let target = new THREE.Vector3(center.x, 0, center.z - 1)
-        let d = rotatePoint(target, center, -gr)
-        teleport(d.x, null, d.z, null)
-      }
+      let target = new THREE.Vector3(center.x, 0, center.z + distance)
+      let d = rotatePoint(target, center, -gr)
+      teleport(d.x, null, d.z, null)
     }
 
-    const rotateCamera = event => {
-      if (event.axes[0] === 0) {
-        rotateCamRef.current = null
-      }
-
-      if (rotateCamRef.current) return
-      if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
-
+    const rotateCamera = radians => {
       let center = new THREE.Vector3()
       camera.getWorldPosition(center)
       let gr = camera.rotation.y + teleportRef.current.rotation.y
 
-      if (event.axes[0] > 0.075) {
-        rotateCamRef.current = 'Right'
-        teleport(null, null, null, gr + THREE.Math.degToRad(-45))
-      }
-
-      if (event.axes[0] < -0.075) {
-        rotateCamRef.current = 'Left'
-        teleport(null, null, null, gr + THREE.Math.degToRad(45))
-      }
+      teleport(null, null, null, gr + radians)
     }
 
     const { gl, camera, scene } = useThree()
 
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
+    const didMoveCamera = useStore(state => state.didMoveCamera)
+    const didRotateCamera = useStore(state => state.didRotateCamera)
     const set = useStore(state => state.set)
-
-    const moveCamRef = useRef()
-    const rotateCamRef = useRef()
 
     // initialize behind the camera, on the floor
     useMemo(() => {
