@@ -1,6 +1,7 @@
 const GPUPicker = require("./GPUPicker");
 const Pickable = require("./PickersContainers/Pickable");
 const XRGPUPickerFactory = require("./XRGPUPickerFactory");
+const IdPool = require("./utils/IdPool");
 class XRGPUPicker extends GPUPicker
 {
     constructor()
@@ -12,6 +13,7 @@ class XRGPUPicker extends GPUPicker
         this.currentGuiController = "";
         this.controllers = [];
         this.gpuPickerFactory = new XRGPUPickerFactory();
+        this.idPool = new IdPool(600);
     }
 
     initalizeChildren(intersectObjects)
@@ -31,10 +33,7 @@ class XRGPUPicker extends GPUPicker
             {
                 if(pickableObject.isObjectChanged())
                 {
-                    
-                    let selectableKey = Object.keys(this.gpuPickerHelper.selectableObjects);
-                    let id = parseInt(selectableKey[selectableKey.length - 1], 10);
-                    pickableObject.applyObjectChanges(id);
+                    pickableObject.applyObjectChanges();
                     if(pickableObject.isContainer)
                     {
                         console.log(pickableObject.listOfChangedObjects);
@@ -44,7 +43,6 @@ class XRGPUPicker extends GPUPicker
                             console.log(pickingMesh.pickerId);
                             this.gpuPickerHelper.selectableObjects[pickingMesh.pickerId] = { originObject: sceneMesh, pickerObject: pickingMesh} ;
                         }
-                        objectsAdded += pickableObject.pickingMeshes.length;
                     }
                 }
                 continue;
@@ -52,14 +50,10 @@ class XRGPUPicker extends GPUPicker
             this.getAllSceneMeshes(intesectable, objects, additionalObjects);
             this.addedGroupsId.push(intesectable.uuid);
         }
-        let selectableKey = Object.keys(this.gpuPickerHelper.selectableObjects);
-        let sceneElementsAmount = !selectableKey[selectableKey.length - 1] ? this.idBonus : parseInt(selectableKey[selectableKey.length - 1], 10);
-        let objectsAdded = 0;
         for(let i = 0, n = objects.length; i < n; i++)
         {
             let object = objects[i];
-            
-            const id = sceneElementsAmount + i + objectsAdded + 1;
+            const id = this.idPool.getAvaibleId();
             if(objects[i] instanceof Pickable)
             {
                 object.initialize(id);
@@ -72,7 +66,6 @@ class XRGPUPicker extends GPUPicker
                         let pickingMesh = object.pickingMeshes[i];
                         this.gpuPickerHelper.selectableObjects[pickingMesh.pickerId] = { originObject: object.sceneMeshes[i], pickerObject: pickingMesh} ;
                     }
-                    objectsAdded += object.pickingMeshes.length;
                 }
                 else
                 {
@@ -104,11 +97,13 @@ class XRGPUPicker extends GPUPicker
         keys = Object.keys( this.gpuPickerHelper.selectableObjects);
         for(let i = 0, n = keys.length; i < n; i++)
         {
-            let selectableObject = this.gpuPickerHelper.selectableObjects[keys[i]].originObject;
+            let id = keys[i];
+            let selectableObject = this.gpuPickerHelper.selectableObjects[id].originObject;
             if(!selectableObject.parent)
             {
-                delete this.gpuPickerHelper.selectableObjects[keys[i]];
+                delete this.gpuPickerHelper.selectableObjects[id];
                 keys = Object.keys( this.gpuPickerHelper.selectableObjects);
+                this.idPool.returnId(id);
                 n = keys.length;
             }
         }
@@ -132,12 +127,12 @@ class XRGPUPicker extends GPUPicker
         }
         if(sceneMesh.userData.type === "virtual-camera" || sceneMesh.userData.type === "light")
         {
-            meshes.push(this.gpuPickerFactory.createContainer( sceneMesh.children[0]));
+            meshes.push(this.gpuPickerFactory.createContainer( sceneMesh.children[0], this.idPool));
             return;
         }
         if(sceneMesh.userData.type === "gui")
         {
-            meshes.push(this.gpuPickerFactory.createGUI(sceneMesh));
+            meshes.push(this.gpuPickerFactory.createGUI(sceneMesh, this.idPool));
         }
     }
 }

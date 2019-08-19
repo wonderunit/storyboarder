@@ -1,7 +1,7 @@
 const Pickable = require("./Pickable");
 class XRPickableObjectContainer extends Pickable
 {
-    constructor(sceneObject)
+    constructor(sceneObject, idPool)
     {
         super(sceneObject);
         this.sceneMeshes = [];
@@ -10,6 +10,7 @@ class XRPickableObjectContainer extends Pickable
         this.getMeshesFromSceneObject();
         this.isContainer = true;
         this.listOfChangedObjects = [];
+        this.idPool = idPool;
     }
 
     getUUID()
@@ -36,7 +37,7 @@ class XRPickableObjectContainer extends Pickable
         this.node.pickingContainer = this;
         for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
         {
-            id += i;
+            id = this.idPool.getAvaibleId();
             let sceneMesh = this.sceneMeshes[i];
             super.initialize(id);
             this.pickingMaterials.push(this.pickingMaterial);
@@ -106,24 +107,21 @@ class XRPickableObjectContainer extends Pickable
         }
     }
 
-      //TODO(): Remove id from here and send it somewhere else
-      applyObjectChanges(id)
-      {
-            id += 1;
-            for(let i = 0, n = this.listOfChangedObjects.length; i < n; i++)
-            {
-                id += i;
-                let sceneMesh = this.listOfChangedObjects[i];
-                super.initialize(id);
-                this.pickingMaterials.push(this.pickingMaterial);
-                this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
-                this.node.add(this.pickingMesh);
-                this.changedIds = [];
-                this.pickingMeshes.push(this.pickingMesh);
-                this.sceneMeshes.push(sceneMesh);
-                this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: this.sceneMesh};
-            }
-           
-      }
+    applyObjectChanges()
+    {
+          for(let i = 0, n = this.listOfChangedObjects.length; i < n; i++)
+          {
+              id = this.idPool.getAvaibleId();
+              let sceneMesh = this.listOfChangedObjects[i];
+              super.initialize(id);
+              this.pickingMaterials.push(this.pickingMaterial);
+              this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
+              this.node.add(this.pickingMesh);
+              this.changedIds = [];
+              this.pickingMeshes.push(this.pickingMesh);
+              this.sceneMeshes.push(sceneMesh);
+              this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: this.sceneMesh};
+          }
+    }
 }
 module.exports = XRPickableObjectContainer;

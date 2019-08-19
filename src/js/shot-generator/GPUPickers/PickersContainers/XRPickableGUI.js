@@ -1,7 +1,7 @@
 const Pickable = require("./Pickable");
 class XRPickableGUI extends Pickable
 {
-    constructor(sceneObject)
+    constructor(sceneObject, idPool)
     {
         super(sceneObject);
         this.sceneMeshes = [];
@@ -10,6 +10,9 @@ class XRPickableGUI extends Pickable
         this.getMeshesFromSceneObject();
         this.isContainer = true;
         this.listOfChangedObjects = [];
+        this.idPool = idPool;
+        //ToDO(): Find a better way to remove deleted objects
+        this.needsRemoval = false;
     }
 
     getMeshesFromSceneObject()
@@ -27,25 +30,24 @@ class XRPickableGUI extends Pickable
 
     initialize(id)
     {
-        super.initialize(id);
-        this.pickingMaterials.side = THREE.DoubleSide;
         this.node.type = this.sceneObject.parent.userData.type;
         this.node.pickerId = id;
         //TODO(): Remove when XRGPUPIcker changed
         this.node.pickingContainer = this;
         for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
         {
-            id += i;
+            id = this.idPool.getAvaibleId();
+            console.log(id);
             let sceneMesh = this.sceneMeshes[i];
             super.initialize(id);
+            this.pickingMaterial.side = THREE.DoubleSide;
             this.pickingMaterials.push(this.pickingMaterial);
             this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
             this.node.add(this.pickingMesh);
             this.pickingMesh.pickerId = id;
             this.pickingMeshes.push(this.pickingMesh);
         }
-        //ToDO(): Find a better way to remove deleted objects
-        this.needsRemoval = false;
+
     }
 
     update()
@@ -106,13 +108,12 @@ class XRPickableGUI extends Pickable
             return true;
         }
     }
-    //TODO(): Remove id from here and send it somewhere else
-    applyObjectChanges(id)
+
+    applyObjectChanges()
     {
-        id += 1;
         for(let i = 0, n = this.listOfChangedObjects.length; i < n; i++)
         {
-            id += i;
+            id = this.idPool.getAvaibleId();
             let sceneMesh = this.listOfChangedObjects[i];
             super.initialize(id);
             this.pickingMaterials.push(this.pickingMaterial);
