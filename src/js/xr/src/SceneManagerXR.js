@@ -44,6 +44,31 @@ const [useStore] = create(set => ({
   didMoveCamera: null,
   didRotateCamera: null,
 
+  teleport: (camera, x, y, z, r) => set(produce(state => {
+    // create virtual parent and child
+    let parent = new THREE.Object3D()
+    parent.position.set(state.teleportPos.x, state.teleportPos.y, state.teleportPos.z)
+    parent.rotation.set(state.teleportRot.x, state.teleportRot.y, state.teleportRot.z)
+
+    let child = new THREE.Object3D()
+    child.position.copy(camera.position)
+    child.rotation.copy(camera.rotation)
+    parent.add(child)
+    parent.updateMatrixWorld()
+
+    // teleport the virtual parent
+    teleportParent(parent, child, x, y, z, r)
+
+    // update state from new position of virtual parent
+    state.teleportPos.x = parent.position.x
+    state.teleportPos.y = parent.position.y
+    state.teleportPos.z = parent.position.z
+
+    state.teleportRot.x = parent.rotation.x
+    state.teleportRot.y = parent.rotation.y
+    state.teleportRot.z = parent.rotation.z
+  })),
+
   set: fn => set(produce(fn))
 }))
 
@@ -60,33 +85,6 @@ const SceneContent = connect(
     sceneObjects, world, activeCamera,
     characterIds
   }) => {
-    const teleport = (x, y, z, r) => {
-      // create virtual parent and child
-      let parent = new THREE.Object3D()
-      parent.position.set(teleportPos.x, teleportPos.y, teleportPos.z)
-      parent.rotation.set(teleportRot.x, teleportRot.y, teleportRot.z)
-
-      let child = new THREE.Object3D()
-      child.position.copy(camera.position)
-      child.rotation.copy(camera.rotation)
-      parent.add(child)
-      parent.updateMatrixWorld()
-
-      // teleport the virtual parent
-      teleportParent(parent, child, x, y, z, r)
-
-      // update state from new position of virtual parent
-      set(state => {
-        state.teleportPos.x = parent.position.x
-        state.teleportPos.y = parent.position.y
-        state.teleportPos.z = parent.position.z
-
-        state.teleportRot.x = parent.rotation.x
-        state.teleportRot.y = parent.rotation.y
-        state.teleportRot.z = parent.rotation.z
-      })
-    }
-
     const onAxesChanged = event => {
       onMoveCamera(event)
       onRotateCamera(event)
@@ -149,7 +147,7 @@ const SceneContent = connect(
 
       let target = new THREE.Vector3(center.x, 0, center.z + distance)
       let d = rotatePoint(target, center, -gr)
-      teleport(d.x, null, d.z, null)
+      teleport(camera, d.x, null, d.z, null)
     }
 
     const rotateCamera = radians => {
@@ -157,7 +155,7 @@ const SceneContent = connect(
       camera.getWorldPosition(center)
       let gr = camera.rotation.y + teleportRef.current.rotation.y
 
-      teleport(null, null, null, gr + radians)
+      teleport(camera, null, null, null, gr + radians)
     }
 
     const { gl, camera, scene } = useThree()
@@ -166,6 +164,7 @@ const SceneContent = connect(
     const teleportRot = useStore(state => state.teleportRot)
     const didMoveCamera = useStore(state => state.didMoveCamera)
     const didRotateCamera = useStore(state => state.didRotateCamera)
+    const teleport = useStore(state => state.teleport)
     const set = useStore(state => state.set)
 
     // initialize behind the camera, on the floor
