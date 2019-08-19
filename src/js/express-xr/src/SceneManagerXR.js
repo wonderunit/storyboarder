@@ -312,7 +312,7 @@ const SceneContent = ({
 
     if(!selectionCamera.current)
     {
-      selectionCamera.current = new THREE.PerspectiveCamera(75, gl.domElement.width / gl.domElement.height, 0.1, 1000 );
+      selectionCamera.current = new THREE.PerspectiveCamera(0.001, gl.domElement.width / gl.domElement.height, 0.1, 1000 );
      
     }
  
