@@ -35,7 +35,6 @@ class XRPickableGUI extends Pickable
         for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
         {
             id = this.idPool.getAvaibleId();
-            console.log(id);
             let sceneMesh = this.sceneMeshes[i];
             super.initialize(id);
             this.pickingMaterial.side = THREE.DoubleSide;

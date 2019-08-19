@@ -124,10 +124,10 @@ class GPUPickerHelper
     readRenderedPixel(renderer, scene, camera, renderTarget, pixelBuffer)
     {
         renderer.setRenderTarget(renderTarget);
-        scene.autoUpdate = false;
+        //scene.autoUpdate = false;
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
-        scene.autoUpdate = true;
+        //scene.autoUpdate = true;
         renderer.readRenderTargetPixels(
             renderTarget,
             0, 

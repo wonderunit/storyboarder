@@ -375,7 +375,7 @@ const SceneContent = ({
       tempMatrix.multiply(tiltControllerMatrix)
       let origin = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
       intersections[0].distance = origin.distanceTo(intersections[0].point);
-
+      console.log();
       let didMakeSelection = onIntersection(controller, intersections)
       if (didMakeSelection) {
         soundSelect.current.play()
@@ -540,7 +540,6 @@ const SceneContent = ({
 
       if (object.userData.type === 'character') {
         if (object.userData.name === 'character-container') object = object.children[0]
-
         const raycastDepth = controller.getObjectByName('raycast-depth')
         raycastDepth.position.z = -intersection.distance
 
@@ -943,9 +942,8 @@ const SceneContent = ({
     }
 
     if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
-      gpuPicker.current.updateCurrentCharacter();
-      gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-      const hits = gpuPicker.current.pickBone(selectionCamera.current);
+      const bonesHelper = selectedObjRef.current.children[1].children[0];
+      const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
       if (hits.length) {
         controller.userData.bone = hits[0].bone
         selectBone(hits[0].bone.uuid)

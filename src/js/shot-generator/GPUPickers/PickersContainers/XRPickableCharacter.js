@@ -50,6 +50,12 @@ class XRPickableCharacter extends Pickable
             this.needsRemoval = true;
             return;
         }
+        else if(this.sceneMesh.parent === null)
+        {
+            this.applyObjectChanges();
+            return;
+        }
+        console.log(this.sceneMesh);
         let parent = this.sceneMesh.parent;
         this.node.position.copy(parent.worldPosition());
         this.node.quaternion.copy(parent.worldQuaternion());

@@ -84,13 +84,11 @@ class XRGPUPicker extends GPUPicker
             pickableObject.update();
             if(pickableObject.needsRemoval)
             {
+                console.log("Removing objects");
                 let pickingObject = pickableObject.node;
                 pickableObject.dispose();
                 this.pickingScene.remove(pickingObject);
                 delete this.pickableObjects[i];
-                keys = Object.keys(this.pickableObjects);
-                n = keys.length;
-                i--;
             }
         }
         keys = Object.keys( this.gpuPickerHelper.selectableObjects);
@@ -101,9 +99,7 @@ class XRGPUPicker extends GPUPicker
             if(!selectableObject.parent)
             {
                 delete this.gpuPickerHelper.selectableObjects[id];
-                keys = Object.keys( this.gpuPickerHelper.selectableObjects);
                 this.idPool.returnId(id);
-                n = keys.length;
             }
         }
     }
