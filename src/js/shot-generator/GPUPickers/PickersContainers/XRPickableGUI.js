@@ -87,6 +87,7 @@ class XRPickableGUI extends Pickable
 
     isObjectChanged()
     {
+        this.listOfChangedObjects = [];
         this.sceneObject.traverse(object => 
         {
             if(!this.isObjectAdded(object) && object.type === "Mesh" 
@@ -121,7 +122,6 @@ class XRPickableGUI extends Pickable
             this.pickingMeshes.push(this.pickingMesh);
             this.sceneMeshes.push(sceneMesh);
         }
-        this.listOfChangedObjects = [];
     }
 }
 module.exports = XRPickableGUI;

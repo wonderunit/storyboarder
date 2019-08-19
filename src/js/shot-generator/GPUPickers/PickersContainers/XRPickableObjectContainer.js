@@ -9,6 +9,12 @@ class XRPickableObjectContainer extends Pickable
         this.pickingMeshes = [];
         this.getMeshesFromSceneObject();
         this.isContainer = true;
+        this.listOfChangedObjects = [];
+    }
+
+    getUUID()
+    {
+        return this.sceneObject.parent.uuid;
     }
 
     getMeshesFromSceneObject()
@@ -28,7 +34,6 @@ class XRPickableObjectContainer extends Pickable
         this.node.pickerId = id;
         //TODO(): Remove when XRGPUPIcker changed
         this.node.pickingContainer = this;
-        this.node.name = 'GUI'
         for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
         {
             id += i;
@@ -55,7 +60,7 @@ class XRPickableObjectContainer extends Pickable
         {
             let sceneMesh = this.sceneMeshes[i];
             let pickingMesh = this.pickingMeshes[i];
-            if(!sceneMesh.parent)
+            if(!sceneMesh)
             {
                 this.node.remove(pickingMesh);
                 delete this.pickingMeshes[i];
@@ -71,7 +76,7 @@ class XRPickableObjectContainer extends Pickable
         }
     }
 
-    isOBjectAdded(object)
+    isObjectAdded(object)
     {
         if(this.sceneMeshes.find(sceneMesh => sceneMesh.uuid === object.uuid))
         {
@@ -82,11 +87,11 @@ class XRPickableObjectContainer extends Pickable
 
     isObjectChanged()
     {
+        this.listOfChangedObjects = [];
         this.sceneObject.traverse(object => 
         {
             if(!this.isObjectAdded(object) && object.type === "Mesh" 
-            && !object.name.includes("_icon") && !object.name !== ""
-            && object.visible)
+                && object.visible)
             {
                 this.listOfChangedObjects.push(object);
             }
@@ -117,7 +122,7 @@ class XRPickableObjectContainer extends Pickable
                 this.pickingMeshes.push(this.pickingMesh);
                 this.sceneMeshes.push(sceneMesh);
             }
-            this.listOfChangedObjects = [];
+           
       }
 }
 module.exports = XRPickableObjectContainer;

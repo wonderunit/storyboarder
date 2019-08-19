@@ -37,6 +37,11 @@ class Pickable
         return this.sceneObject ? false : true;
     }
 
+    getUUID()
+    {
+        return this.sceneObject.uuid;
+    }
+
     dispose()
     {
         this.pickingMaterial.dispose();

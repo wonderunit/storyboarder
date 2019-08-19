@@ -19,30 +19,30 @@ class XRGPUPicker extends GPUPicker
         super.initalizeChildren(intersectObjects);
         let objects = [];
         let additionalObjects = [];
+        console.log(this.pickableObjects);
+        console.log(this.gpuPickerHelper.selectableObjects);
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
+            console.log(intesectable);
             let pickableObjects = this.pickableObjects;
             let pickableObject = pickableObjects[intesectable.uuid];
             if(Object.keys(pickableObjects).length !== 0 && pickableObject)
             {
                 if(pickableObject.isObjectChanged())
                 {
+                    
                     let selectableKey = Object.keys(this.gpuPickerHelper.selectableObjects);
                     let id = parseInt(selectableKey[selectableKey.length - 1], 10);
                     pickableObject.applyObjectChanges(id);
                     if(pickableObject.isContainer)
                     {
-                        for(let i = 0, n = pickableObject.pickingMeshes.length; i < n; i++)
+                        for(let i = 0, n = pickableObject.listOfChangedObjects.length; i < n; i++)
                         {
                             let pickingMesh = pickableObject.pickingMeshes[i];
                             this.gpuPickerHelper.selectableObjects[pickingMesh.pickerId] = { originObject: pickableObject.sceneMeshes[i], pickerObject: pickingMesh} ;
                         }
                         objectsAdded += pickableObject.pickingMeshes.length;
-                    }
-                    else
-                    {
-                        this.gpuPickerHelper.selectableObjects[id] = { originObject: pickableObject.sceneMesh, pickerObject: pickableObject.node} ;
                     }
                 }
                 continue;
@@ -62,7 +62,7 @@ class XRGPUPicker extends GPUPicker
             {
                 object.initialize(id);
                 this.pickingScene.add(object.node);
-                this.pickableObjects[object.sceneObject.uuid] = object;
+                this.pickableObjects[object.getUUID()] = object;
                 if(object.isContainer)
                 {
                     for(let i = 0, n = object.pickingMeshes.length; i < n; i++)

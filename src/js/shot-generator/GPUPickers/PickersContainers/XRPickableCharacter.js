@@ -15,6 +15,12 @@ class XRPickableCharacter extends Pickable
         this.sceneMesh = this.sceneObject.getObjectByProperty("type", "SkinnedMesh");
     }
 
+    //TODO(): Removed get uuid
+    getUUID()
+    {
+        return this.sceneObject.parent.uuid;
+    }
+
     initialize(id)
     {
         super.initialize(id);
@@ -35,6 +41,7 @@ class XRPickableCharacter extends Pickable
         this.node.pickingContainer = this;
         this.node.type = "character";
         this.node.visible = true;
+        this.node.pickerId = id;
         this.pickingMesh.visible = true;
     }
 
@@ -46,9 +53,6 @@ class XRPickableCharacter extends Pickable
             return;
         }
         let parent = this.sceneMesh.parent;
-        console.log(parent);
-        console.log(this.node);
-        console.log(this.node);
         this.node.position.copy(parent.worldPosition());
         this.node.quaternion.copy(parent.worldQuaternion());
         this.node.scale.copy(parent.worldScale());
@@ -56,6 +60,38 @@ class XRPickableCharacter extends Pickable
         let originalRootBone = this.sceneMesh.skeleton.bones[0];
         updateBoneToBone(clonnedRootBone, originalRootBone);
         clonnedRootBone.updateMatrixWorld(true);
+    }
+
+    isObjectChanged()
+    {
+        if(!this.sceneMesh.parent)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    applyObjectChanges()
+    {
+        super.initialize(this.pickingMesh.id);
+        this.pickingMaterial.skinning = true;
+        this.pickingMaterial.morphNormals = true;
+        this.pickingMaterial.morphTargets = true;
+        let parent = this.sceneObject;
+        let node = SkeletonUtils.clone(parent);
+        let lod = this.node.children[0];
+        if(lod.type === "LOD")
+        {
+            node.attach(lod.children[lod.children.length - 1]);
+            node.remove(lod);
+        }
+        this.pickingMesh = this.node.children.find(child => child.type === "SkinnedMesh");
+        this.pickingMesh.material = this.pickingMaterial;
+        //TODO(): Remove when XRGPUPicker changed
+        node.pickingContainer = this;
+        node.type = "character";
+        node.visible = true;
+        this.pickingMesh.visible = true;
     }
 }
 module.exports = XRPickableCharacter;
