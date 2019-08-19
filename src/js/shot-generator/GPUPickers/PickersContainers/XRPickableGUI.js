@@ -121,6 +121,7 @@ class XRPickableGUI extends Pickable
             this.pickingMesh.pickerId = id;
             this.pickingMeshes.push(this.pickingMesh);
             this.sceneMeshes.push(sceneMesh);
+            this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: sceneMesh};
         }
     }
 }

@@ -118,9 +118,10 @@ class XRPickableObjectContainer extends Pickable
                 this.pickingMaterials.push(this.pickingMaterial);
                 this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
                 this.node.add(this.pickingMesh);
-                this.pickingMesh.pickerId = id;
+                this.changedIds = [];
                 this.pickingMeshes.push(this.pickingMesh);
                 this.sceneMeshes.push(sceneMesh);
+                this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: this.sceneMesh};
             }
            
       }

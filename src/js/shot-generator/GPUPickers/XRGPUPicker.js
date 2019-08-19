@@ -37,10 +37,12 @@ class XRGPUPicker extends GPUPicker
                     pickableObject.applyObjectChanges(id);
                     if(pickableObject.isContainer)
                     {
+                        console.log(pickableObject.listOfChangedObjects);
                         for(let i = 0, n = pickableObject.listOfChangedObjects.length; i < n; i++)
                         {
-                            let pickingMesh = pickableObject.pickingMeshes[i];
-                            this.gpuPickerHelper.selectableObjects[pickingMesh.pickerId] = { originObject: pickableObject.sceneMeshes[i], pickerObject: pickingMesh} ;
+                            let {pickingMesh, sceneMesh} = pickableObject.listOfChangedObjects[i];
+                            console.log(pickingMesh.pickerId);
+                            this.gpuPickerHelper.selectableObjects[pickingMesh.pickerId] = { originObject: sceneMesh, pickerObject: pickingMesh} ;
                         }
                         objectsAdded += pickableObject.pickingMeshes.length;
                     }
@@ -102,8 +104,8 @@ class XRGPUPicker extends GPUPicker
         keys = Object.keys( this.gpuPickerHelper.selectableObjects);
         for(let i = 0, n = keys.length; i < n; i++)
         {
-            let selectableObject = this.gpuPickerHelper.selectableObjects[keys[i]];
-            if(!selectableObject)
+            let selectableObject = this.gpuPickerHelper.selectableObjects[keys[i]].originObject;
+            if(!selectableObject.parent)
             {
                 delete this.gpuPickerHelper.selectableObjects[keys[i]];
                 keys = Object.keys( this.gpuPickerHelper.selectableObjects);
