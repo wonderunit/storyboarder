@@ -41,7 +41,7 @@ class UniversalPickableObject extends Pickable
     
     isObjectChanged()
     {
-        if(this.sceneObject && !this.sceneMesh.parent)
+        if(this.sceneObject && !this.sceneMesh.parent && this.sceneObject.children.length !== 0)
         {
             return true;
         }
@@ -51,6 +51,10 @@ class UniversalPickableObject extends Pickable
     applyObjectChanges()
     {
         this.sceneMesh = this.sceneObject.children.find(child => child.type === "Mesh");
+        if(!this.sceneMesh)
+        {
+            this.needsRemoval = true;
+        }
         this.pickingMesh.geometry.dispose();
         this.pickingMesh.geometry = this.sceneMesh.geometry;
         this.pickingMesh.name = this.sceneMesh.name;

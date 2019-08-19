@@ -57,7 +57,7 @@ class GPUPickerHelper
                  (pixelBuffer[1] << 8) |
                  (pixelBuffer[2]);
         const intersectedObject = selectables[id];
-        let canvasPos = null;
+        let canvasPos = this.reusableVector.set(0, 0, 0);
         if(intersectedObject)
         {
             this.pickedObject = intersectedObject.originObject;
@@ -67,15 +67,15 @@ class GPUPickerHelper
                 if(this.pickedObject.type === "SkinnedMesh")
                 {
                     this.pickedSkinnedMesh = intersectedObject;
+                    this.depthScene.attach(selectedObject);
+                    this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
+                    scene.attach(selectedObject);
+                    canvasPos = this.unpackRGBAToScenePosition(pixelBuffer, cssPosition, camera, renderer);
                 }
-                this.depthScene.attach(selectedObject);
-                this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
-                scene.attach(selectedObject);
-                canvasPos = this.unpackRGBAToScenePosition(pixelBuffer, cssPosition, camera, renderer);
             }
         }
         camera.clearViewOffset();
-      /*   if(wall)
+       /*  if(wall)
         {
             this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
             renderer.setRenderTarget(this.renderTarget);
@@ -124,9 +124,10 @@ class GPUPickerHelper
     readRenderedPixel(renderer, scene, camera, renderTarget, pixelBuffer)
     {
         renderer.setRenderTarget(renderTarget);
+        scene.autoUpdate = false;
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
-
+        scene.autoUpdate = true;
         renderer.readRenderTargetPixels(
             renderTarget,
             0, 

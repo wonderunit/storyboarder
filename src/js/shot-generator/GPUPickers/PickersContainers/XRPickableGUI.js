@@ -9,6 +9,7 @@ class XRPickableGUI extends Pickable
         this.pickingMeshes = [];
         this.getMeshesFromSceneObject();
         this.isContainer = true;
+        this.listOfChangedObjects = [];
     }
 
     getMeshesFromSceneObject()
@@ -61,6 +62,7 @@ class XRPickableGUI extends Pickable
             if(!sceneMesh)
             {
                 this.node.remove(pickingMesh);
+                
                 delete this.pickingMeshes[i];
                 delete this.pickingMaterial[i];
                 delete this.sceneMeshes[i];
@@ -76,7 +78,50 @@ class XRPickableGUI extends Pickable
 
     isObjectAdded(object)
     {
-        return this.sceneMeshes.some(sceneMesh => sceneMesh.uuid === object.uuid);
+        if(this.sceneMeshes.some(sceneMesh => sceneMesh.uuid === object.uuid))
+        {
+            return true;
+        }
+        return false;
+    }
+
+    isObjectChanged()
+    {
+        this.sceneObject.traverse(object => 
+        {
+            if(!this.isObjectAdded(object) && object.type === "Mesh" 
+            && !object.name.includes("_icon") && !object.name !== ""
+            && object.visible)
+            {
+                this.listOfChangedObjects.push(object);
+            }
+        })
+        if(this.listOfChangedObjects.length === 0)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+    //TODO(): Remove id from here and send it somewhere else
+    applyObjectChanges(id)
+    {
+        id += 1;
+        for(let i = 0, n = this.listOfChangedObjects.length; i < n; i++)
+        {
+            id += i;
+            let sceneMesh = this.listOfChangedObjects[i];
+            super.initialize(id);
+            this.pickingMaterials.push(this.pickingMaterial);
+            this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
+            this.node.add(this.pickingMesh);
+            this.pickingMesh.pickerId = id;
+            this.pickingMeshes.push(this.pickingMesh);
+            this.sceneMeshes.push(sceneMesh);
+        }
+        this.listOfChangedObjects = [];
     }
 }
 module.exports = XRPickableGUI;

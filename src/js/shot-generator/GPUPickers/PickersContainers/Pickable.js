@@ -44,6 +44,7 @@ class Pickable
 
     isObjectChanged()
     {
+        return false;
     }
 
     applyObjectChanges()

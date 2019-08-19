@@ -22,20 +22,30 @@ class XRGPUPicker extends GPUPicker
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
-            if(this.addedGroupsId.some(group => group === intesectable.uuid))
+            let pickableObjects = this.pickableObjects;
+            let pickableObject = pickableObjects[intesectable.uuid];
+            if(Object.keys(pickableObjects).length !== 0 && pickableObject)
             {
-                if(intesectable.userData.type === "object" && !this.isObjectAdded(intesectable.getObjectByProperty("type", "Mesh")))
+                if(pickableObject.isObjectChanged())
                 {
-                   
+                    let selectableKey = Object.keys(this.gpuPickerHelper.selectableObjects);
+                    let id = parseInt(selectableKey[selectableKey.length - 1], 10);
+                    pickableObject.applyObjectChanges(id);
+                    if(pickableObject.isContainer)
+                    {
+                        for(let i = 0, n = pickableObject.pickingMeshes.length; i < n; i++)
+                        {
+                            let pickingMesh = pickableObject.pickingMeshes[i];
+                            this.gpuPickerHelper.selectableObjects[pickingMesh.pickerId] = { originObject: pickableObject.sceneMeshes[i], pickerObject: pickingMesh} ;
+                        }
+                        objectsAdded += pickableObject.pickingMeshes.length;
+                    }
+                    else
+                    {
+                        this.gpuPickerHelper.selectableObjects[id] = { originObject: pickableObject.sceneMesh, pickerObject: pickableObject.node} ;
+                    }
                 }
-                else if(intesectable.userData.type === "character" && !this.isObjectAdded(intesectable.getObjectByProperty("type", "SkinnedMesh")))
-                {
-
-                }
-                else
-                {
-                    continue;
-                }
+                continue;
             }
             this.getAllSceneMeshes(intesectable, objects, additionalObjects);
             this.addedGroupsId.push(intesectable.uuid);
@@ -82,10 +92,22 @@ class XRGPUPicker extends GPUPicker
                 let pickingObject = pickableObject.node;
                 pickableObject.dispose();
                 this.pickingScene.remove(pickingObject);
-                delete this.gpuPickerHelper.selectableObjects[pickingObject.pickerId];
+                delete this.pickableObjects[i];
+                //delete this.gpuPickerHelper.selectableObjects[pickingObject.pickerId];
                 keys = Object.keys(this.pickableObjects);
                 n = keys.length;
                 i--;
+            }
+        }
+        keys = Object.keys( this.gpuPickerHelper.selectableObjects);
+        for(let i = 0, n = keys.length; i < n; i++)
+        {
+            let selectableObject = this.gpuPickerHelper.selectableObjects[keys[i]];
+            if(!selectableObject)
+            {
+                delete this.gpuPickerHelper.selectableObjects[keys[i]];
+                keys = Object.keys( this.gpuPickerHelper.selectableObjects);
+                n = keys.length;
             }
         }
     }
