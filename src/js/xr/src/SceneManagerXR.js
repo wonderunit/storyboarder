@@ -63,11 +63,16 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
 }
 
 const [useStore] = create((set, get) => ({
+  // values
   teleportPos: { x: 0, y: 0, z: 0 },
   teleportRot: { x: 0, y: 0, z: 0 },
 
   didMoveCamera: null,
   didRotateCamera: null,
+
+  // actions
+  setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
+  setDidRotateCamera: value => set(produce(state => { state.didRotateCamera = value })),
 
   moveCameraByDistance: (camera, distance) => set(produce(state => {
     let center = new THREE.Vector3()
@@ -111,7 +116,7 @@ const SceneContent = connect(
     const onMoveCamera = event => {
       if (didMoveCamera != null) {
         if (event.axes[1] === 0) {
-          set(state => { state.didMoveCamera = null })
+          setDidMoveCamera(null)
         }
       } else {
         if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
@@ -130,7 +135,7 @@ const SceneContent = connect(
         }
 
         if (distance != null) {
-          set(state => { state.didMoveCamera = distance })
+          setDidMoveCamera(distance)
           moveCameraByDistance(camera, distance)
         }
       }
@@ -139,20 +144,20 @@ const SceneContent = connect(
     const onRotateCamera = event => {
       if (didRotateCamera != null) {
         if (event.axes[0] === 0) {
-          set(state => { state.didRotateCamera = null })
+          setDidRotateCamera(null)
         }
       } else {
         if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
         // right
         if (event.axes[0] > 0.075) {
-          set(state => { state.didRotateCamera = -45 })
+          setDidRotateCamera(-45)
           rotateCameraByRadians(camera, THREE.Math.degToRad(-45))
         }
 
         // left
         if (event.axes[0] < -0.075) {
-          set(state => { state.didRotateCamera = 45 })
+          setDidRotateCamera(45)
           rotateCameraByRadians(camera, THREE.Math.degToRad(45))
         }
       }
@@ -160,10 +165,15 @@ const SceneContent = connect(
 
     const { gl, camera, scene } = useThree()
 
+    // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
     const didMoveCamera = useStore(state => state.didMoveCamera)
     const didRotateCamera = useStore(state => state.didRotateCamera)
+
+    // actions
+    const setDidMoveCamera = useStore(state => state.setDidMoveCamera)
+    const setDidRotateCamera = useStore(state => state.setDidRotateCamera)
     const moveCameraByDistance = useStore(state => state.moveCameraByDistance)
     const rotateCameraByRadians = useStore(state => state.rotateCameraByRadians)
     const set = useStore(state => state.set)
