@@ -60,8 +60,8 @@ const SceneContent = connect(
     const teleport = (x, y, z, r) => {
       // create virtual parent and child
       let parent = new THREE.Object3D()
-      parent.position.copy(teleportRef.current.position)
-      parent.rotation.copy(teleportRef.current.rotation)
+      parent.position.set(teleportPos.x, teleportPos.y, teleportPos.z)
+      parent.rotation.set(teleportRot.x, teleportRot.y, teleportRot.z)
 
       let child = new THREE.Object3D()
       child.position.copy(camera.position)
