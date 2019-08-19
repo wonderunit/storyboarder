@@ -73,6 +73,7 @@ class XRPickableCharacter extends Pickable
     applyObjectChanges()
     {
         this.characterContainer = this.sceneObject.children.find(child => child.userData.type === "character");
+        console.log(this.sceneObject);
         this.getMeshFromSceneObject();
         let parent = this.characterContainer;
         let node = SkeletonUtils.clone(parent);

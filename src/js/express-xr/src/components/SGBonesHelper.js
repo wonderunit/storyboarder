@@ -58,7 +58,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   let skeleton_clone
   if (!cache[cacheKey]) {
     console.log('adding to cache', cacheKey)
-    cache[cacheKey] = object3D;//cloneSkinned( object3D )
+    cache[cacheKey] = cloneSkinned( object3D )
   }
   skeleton_clone = cache[cacheKey]
 
@@ -269,6 +269,34 @@ SkinnedMesh.prototype.savePose = function(sknMesh) {
   // }
   // //console.log('saving: ', preset)
   // createPosePreset(preset)
+}
+
+const cloneSkinned = ( source ) => {
+
+  var cloneLookup = new Map()
+  let userData = source.userData;
+  source.userData = null;
+  var clone = source.clone()
+  source.userData = userData;
+  parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
+    cloneLookup.set( sourceNode, clonedNode )
+  } )
+  source.traverse( function ( sourceMesh ) {
+    if ( ! sourceMesh.isSkinnedMesh ) return
+    var sourceBones = sourceMesh.skeleton.bones
+    var clonedMesh = cloneLookup.get( sourceMesh )
+    clonedMesh.skeleton = sourceMesh.skeleton.clone()
+    //console.log('cloned mesh: ', clonedMesh)
+    clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
+      if ( ! cloneLookup.has( sourceBone ) ) {
+        throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
+      }
+      return cloneLookup.get( sourceBone )
+    } )
+    clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
+  } )
+
+  return clone
 }
 
 SkinnedMesh.prototype.repose = function() {

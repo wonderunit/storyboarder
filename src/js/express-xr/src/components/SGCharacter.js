@@ -91,13 +91,10 @@ const characterFactory = data => {
 
    if (lods.length > 1) {
     mesh = new THREE.LOD()
-    for(let i = 0, n = lods.length; i < n; i++)
-    {
-      let lod = lods[i];
-      mesh.addLevel(lod, i * 2);
-      //lod.visible = false;
-    }
-  } else { 
+    lods.forEach((lod, i) => {
+      mesh.addLevel(lod, i * 2)
+    })
+  } else {
     mesh = lods[0]
   }
 
@@ -176,7 +173,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
   const originalSkeleton = useRef(null)
-  const characterBonesHelper = useRef();
   // const doCleanup = () => {
   //   if (object.current) {
   //     console.log(type, id, 'remove')
@@ -208,8 +204,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   useEffect(() => {
     if (!ready && modelData) {
       if (isValidSkinnedMesh(modelData)) {
-        // console.log(type, id, 'got valid mesh')
-
         setReady(true)
       } else {
         alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
@@ -261,18 +255,14 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
 
   const bonesHelper = useMemo(() => {
     if (ready && object.current) {
-      if(!characterBonesHelper.current)
-      {
-        characterBonesHelper.current = new BonesHelper(
-          skeleton.bones[0].parent,
-          object.current,
-          {
-            boneLengthScale,
-            cacheKey: props.model
-          }
-        )
-      }
-      return characterBonesHelper.current;
+      return new BonesHelper(
+        skeleton.bones[0].parent,
+        object.current,
+        {
+          boneLengthScale,
+          cacheKey: props.model
+        }
+      )
     } else {
       return undefined
     }
@@ -404,9 +394,10 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     if (!object.current) return
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected && worldScale === 1) {
-      characterBonesHelper.current.add(characterBonesHelper.current.conesGroup);
+      object.current.bonesHelper.add(object.current.bonesHelper.conesGroup);
     } else {
-      characterBonesHelper.current.remove(characterBonesHelper.current.conesGroup);
+      object.current.bonesHelper.remove(object.current.bonesHelper.conesGroup);
+
     }
 
      if (skinnedMesh.type === 'LOD') {
@@ -458,7 +449,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color(0x242246)
       }
-      characterBonesHelper.current.needsUpdate = true;
     }
   }, [selectedBone, ready])
   
@@ -483,7 +473,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
           <group
             //visible={false}
             ref={object}
-            //bonesHelper={bonesHelper ? bonesHelper : undefined}
+            bonesHelper={bonesHelper ? bonesHelper : undefined}
             userData={{
               id,
               type,
