@@ -20,7 +20,8 @@ const useVrControllers = ({
   // const onGripDownRef = useRef(onGripDown)
   // const onGripUpRef = useRef(onGripUp)
 
-  const onAxesChangedRef = useRef(onAxesChanged)
+  const onAxesChangedRef = useRef()
+  onAxesChangedRef.current = onAxesChanged
 
   useRender(() => {
     THREE.VRController.update()
