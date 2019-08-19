@@ -21,12 +21,12 @@ class XRGPUPicker extends GPUPicker
         super.initalizeChildren(intersectObjects);
         let objects = [];
         let additionalObjects = [];
-        console.log(this.pickableObjects);
-        console.log(this.gpuPickerHelper.selectableObjects);
+        //console.log(this.pickableObjects);
+        //console.log(this.gpuPickerHelper.selectableObjects);
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
-            console.log(intesectable);
+            //console.log(intesectable);
             let pickableObjects = this.pickableObjects;
             let pickableObject = pickableObjects[intesectable.uuid];
             if(Object.keys(pickableObjects).length !== 0 && pickableObject)
@@ -36,13 +36,17 @@ class XRGPUPicker extends GPUPicker
                     pickableObject.applyObjectChanges();
                     if(pickableObject.isContainer)
                     {
-                        console.log(pickableObject.listOfChangedObjects);
+                       // console.log(pickableObject.listOfChangedObjects);
                         for(let i = 0, n = pickableObject.listOfChangedObjects.length; i < n; i++)
                         {
                             let {pickingMesh, sceneMesh} = pickableObject.listOfChangedObjects[i];
-                            console.log(pickingMesh.pickerId);
+                            //console.log(pickingMesh.pickerId);
                             this.gpuPickerHelper.selectableObjects[pickingMesh.pickerId] = { originObject: sceneMesh, pickerObject: pickingMesh} ;
                         }
+                    }
+                    else
+                    {
+                        this.gpuPickerHelper.selectableObjects[pickableObject.node.pickerId].originObject = pickableObject.sceneMesh;
                     }
                 }
                 continue;
@@ -84,7 +88,7 @@ class XRGPUPicker extends GPUPicker
             pickableObject.update();
             if(pickableObject.needsRemoval)
             {
-                console.log("Removing objects");
+                console.log("Removing objects", pickableObject);
                 let pickingObject = pickableObject.node;
                 pickableObject.dispose();
                 this.pickingScene.remove(pickingObject);

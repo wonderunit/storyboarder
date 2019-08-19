@@ -6,7 +6,8 @@ class XRPickableCharacter extends Pickable
     constructor(object)
     {
         super(object);
-        this.sceneObject = object.children.find(child => child.userData.type === "character");
+        this.sceneObject = object;
+        this.characterContainer = object.children.find(child => child.userData.type === "character");
         this.getMeshFromSceneObject();
     }
 
@@ -18,7 +19,7 @@ class XRPickableCharacter extends Pickable
     //TODO(): Removed get uuid
     getUUID()
     {
-        return this.sceneObject.parent.uuid;
+        return this.sceneObject.uuid;
     }
 
     initialize(id)
@@ -27,7 +28,7 @@ class XRPickableCharacter extends Pickable
         this.pickingMaterial.skinning = true;
         this.pickingMaterial.morphNormals = true;
         this.pickingMaterial.morphTargets = true;
-        let parent = this.sceneObject;
+        let parent = this.characterContainer;
         this.node = SkeletonUtils.clone(parent);
         let lod = this.node.children[0];
         if(lod.type === "LOD")
@@ -50,12 +51,6 @@ class XRPickableCharacter extends Pickable
             this.needsRemoval = true;
             return;
         }
-        else if(this.sceneMesh.parent === null)
-        {
-            this.applyObjectChanges();
-            return;
-        }
-        console.log(this.sceneMesh);
         let parent = this.sceneMesh.parent;
         this.node.position.copy(parent.worldPosition());
         this.node.quaternion.copy(parent.worldQuaternion());
@@ -77,22 +72,26 @@ class XRPickableCharacter extends Pickable
 
     applyObjectChanges()
     {
-        super.initialize(this.pickingMesh.id);
-        this.pickingMaterial.skinning = true;
-        this.pickingMaterial.morphNormals = true;
-        this.pickingMaterial.morphTargets = true;
-        let parent = this.sceneObject;
+        this.characterContainer = this.sceneObject.children.find(child => child.userData.type === "character");
+        this.getMeshFromSceneObject();
+        let parent = this.characterContainer;
         let node = SkeletonUtils.clone(parent);
-        let lod = this.node.children[0];
+        let lod = node.children[0];
         if(lod.type === "LOD")
         {
             node.attach(lod.children[lod.children.length - 1]);
             node.remove(lod);
         }
-        this.pickingMesh = this.node.children.find(child => child.type === "SkinnedMesh");
+        this.pickingMesh = node.children.find(child => child.type === "SkinnedMesh");
         this.pickingMesh.material = this.pickingMaterial;
-        node.type = "character";
-        node.visible = true;
+        this.pickingMesh.needsUpdate = true;
+        let i = this.node.children.length;
+        while(i !== 0)
+        {
+            this.node.remove(this.node.children[0]);
+            this.node.add(node.children[0]);
+            i--;
+        }   
         this.pickingMesh.visible = true;
     }
 }

@@ -375,7 +375,6 @@ const SceneContent = ({
       tempMatrix.multiply(tiltControllerMatrix)
       let origin = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
       intersections[0].distance = origin.distanceTo(intersections[0].point);
-      console.log();
       let didMakeSelection = onIntersection(controller, intersections)
       if (didMakeSelection) {
         soundSelect.current.play()
