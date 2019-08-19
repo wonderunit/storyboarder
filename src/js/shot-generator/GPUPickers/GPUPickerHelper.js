@@ -75,7 +75,7 @@ class GPUPickerHelper
             }
         }
         camera.clearViewOffset();
-       /*  if(wall)
+        if(wall)
         {
             this.renderTarget.setSize(renderer.domElement.width, renderer.domElement.height);
             renderer.setRenderTarget(this.renderTarget);
@@ -84,7 +84,7 @@ class GPUPickerHelper
             wall.material.map = this.renderTarget.texture;
             wall.needsUpdate = true;
             wall.material.needsUpdate = true;
-        } */
+        }
         renderer.vr.enabled = vrEnabled ? true : false;
         
         let returnObject = [];

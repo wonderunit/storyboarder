@@ -37,8 +37,6 @@ class XRPickableCharacter extends Pickable
         }
         this.pickingMesh = this.node.children.find(child => child.type === "SkinnedMesh");
         this.pickingMesh.material = this.pickingMaterial;
-        //TODO(): Remove when XRGPUPicker changed
-        this.node.pickingContainer = this;
         this.node.type = "character";
         this.node.visible = true;
         this.node.pickerId = id;
@@ -87,8 +85,6 @@ class XRPickableCharacter extends Pickable
         }
         this.pickingMesh = this.node.children.find(child => child.type === "SkinnedMesh");
         this.pickingMesh.material = this.pickingMaterial;
-        //TODO(): Remove when XRGPUPicker changed
-        node.pickingContainer = this;
         node.type = "character";
         node.visible = true;
         this.pickingMesh.visible = true;

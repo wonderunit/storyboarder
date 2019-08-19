@@ -20,8 +20,6 @@ class UniversalPickableObject extends Pickable
         this.node.add(this.pickingMesh);
         this.node.pickerId = id;
         this.pickingMesh.pickerId = id;
-        //TODO(): Remove when XRGPUPIcker changed
-        this.node.pickingContainer = this;
         //ToDO(): Find a better way to remove deleted objects
         this.needsRemoval = false;
     }

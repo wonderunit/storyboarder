@@ -24,8 +24,6 @@ class EditorPickableCharacter extends Pickable
         this.node = SkeletonUtils.clone(parent);
         this.pickingMesh = this.node.children.find(child => child.type === "SkinnedMesh");
         this.pickingMesh.material = this.pickingMaterial;
-        //TODO(): Remove when XRGPUPIcker changed
-        this.node.pickingContainer = this;
         this.node.type = "character";
     }
 

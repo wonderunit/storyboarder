@@ -33,8 +33,6 @@ class XRPickableObjectContainer extends Pickable
     {
         this.node.type = this.sceneObject.parent.userData.type;
         this.node.pickerId = id;
-        //TODO(): Remove when XRGPUPIcker changed
-        this.node.pickingContainer = this;
         for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
         {
             id = this.idPool.getAvaibleId();
