@@ -114,24 +114,23 @@ class XRGPUPicker extends GPUPicker
         {
             return;
         }
-        if(sceneMesh.userData.type === "object")
+        switch(sceneMesh.userData.type)
         {
-            meshes.push(this.gpuPickerFactory.createObject(sceneMesh));
-            return;
-        }
-        if(sceneMesh.userData.type === "character")
-        {
-            meshes.push(this.gpuPickerFactory.createCharacter(sceneMesh));
-            return;
-        }
-        if(sceneMesh.userData.type === "virtual-camera" || sceneMesh.userData.type === "light")
-        {
-            meshes.push(this.gpuPickerFactory.createContainer( sceneMesh.children[0], this.idPool));
-            return;
-        }
-        if(sceneMesh.userData.type === "gui")
-        {
-            meshes.push(this.gpuPickerFactory.createGUI(sceneMesh, this.idPool));
+            case 'object':
+                meshes.push(this.gpuPickerFactory.createObject(sceneMesh));
+                break;
+            case 'character':
+                meshes.push(this.gpuPickerFactory.createCharacter(sceneMesh));
+                break;
+             case 'virtual-camera':
+             case 'light':
+                meshes.push(this.gpuPickerFactory.createContainer(sceneMesh.children[0], this.idPool));
+                break;
+            case 'gui':
+                meshes.push(this.gpuPickerFactory.createGUI(sceneMesh, this.idPool));
+                break;
+            default:
+                break;
         }
     }
 }
