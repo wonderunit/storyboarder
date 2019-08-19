@@ -1,9 +1,13 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useRender } = require('react-three-fiber')
+const { Canvas, useThree } = require('react-three-fiber')
 
-const { connect, useStore, Provider } = require('react-redux')
-const { useMemo, useState, useRef, Suspense } = React = require('react')
+const { connect, Provider } = require('react-redux')
+const useReduxStore = require('react-redux').useStore
+const { useMemo, useRef, Suspense } = React = require('react')
+
+const { create } = require('zustand')
+const { produce } = require('immer')
 
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
@@ -32,6 +36,13 @@ const getSceneObjectCharacterIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
 )
+
+const [useStore] = create(set => ({
+  teleportPos: { x: 0, y: 0, z: 0 },
+  teleportRot: { x: 0, y: 0, z: 0 },
+
+  set: fn => set(produce(fn))
+}))
 
 const SceneContent = connect(
   state => ({
@@ -62,8 +73,15 @@ const SceneContent = connect(
       teleportParent(parent, child, x, y, z, r)
 
       // update state from new position of virtual parent
-      setTeleportPos(parent.position)
-      setTeleportRot(parent.rotation)
+      set(state => {
+        state.teleportPos.x = parent.position.x
+        state.teleportPos.y = parent.position.y
+        state.teleportPos.z = parent.position.z
+
+        state.teleportRot.x = parent.rotation.x
+        state.teleportRot.y = parent.rotation.y
+        state.teleportRot.z = parent.rotation.z
+      })
     }
 
     const onAxesChanged = event => {
@@ -125,8 +143,9 @@ const SceneContent = connect(
 
     const { gl, camera, scene } = useThree()
 
-    const [teleportPos, setTeleportPos] = useState(null)
-    const [teleportRot, setTeleportRot] = useState(null)
+    const teleportPos = useStore(state => state.teleportPos)
+    const teleportRot = useStore(state => state.teleportRot)
+    const set = useStore(state => state.set)
 
     const moveCamRef = useRef()
     const rotateCamRef = useRef()
@@ -140,8 +159,15 @@ const SceneContent = connect(
         y: Math.cos(rotation)
       }
 
-      setTeleportPos(new THREE.Vector3(x + behindCam.x, 0, y + behindCam.y))
-      setTeleportRot(new THREE.Euler(0, rotation, 0))
+      set(state => {
+        state.teleportPos.x = x + behindCam.x
+        state.teleportPos.y = 0
+        state.teleportPos.z = y + behindCam.y
+
+        state.teleportRot.x = 0
+        state.teleportRot.y = rotation
+        state.teleportRot.z = 0
+      })
     }, [])
 
     useMemo(() => {
@@ -178,8 +204,8 @@ const SceneContent = connect(
       <>
         <group
           ref={teleportRef}
-          position={teleportPos}
-          rotation={teleportRot}
+          position={[teleportPos.x, teleportPos.y, teleportPos.z]}
+          rotation={[teleportRot.x, teleportRot.y, teleportRot.z]}
         >
           <primitive object={camera}>
             <Stats rStats={rStats} position={[0, 0, -1]} />
@@ -238,7 +264,7 @@ const XRStartButton = ({ }) => {
 }
 
 const SceneManagerXR = () => {
-  const store = useStore()
+  const store = useReduxStore()
 
   const loaded = true
 
