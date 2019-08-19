@@ -22,6 +22,7 @@ const Character = require('./components/Character')
 const Controller = require('./components/Controller')
 
 const rotatePoint = require('./helpers/rotate-point')
+const teleportParent = require('./helpers/teleport-parent')
 
 const { createSelector } = require('reselect')
 
@@ -46,50 +47,21 @@ const SceneContent = connect(
     characterIds
   }) => {
     const teleport = (x, y, z, r) => {
-      // create virtual objects
+      // create virtual parent and child
       let parent = new THREE.Object3D()
       parent.position.copy(teleportRef.current.position)
       parent.rotation.copy(teleportRef.current.rotation)
+
       let child = new THREE.Object3D()
       child.position.copy(camera.position)
       child.rotation.copy(camera.rotation)
       parent.add(child)
       parent.updateMatrixWorld()
 
-      // if x and y both present
-      if (x != null && z != null) {
-        let center = new THREE.Vector3()
-        child.getWorldPosition(center)
+      // teleport the virtual parent
+      teleportParent(parent, child, x, y, z, r)
 
-        let dx = parent.position.x - center.x
-        let dz = parent.position.z - center.z
-
-        parent.position.x = x + dx
-        parent.position.z = z + dz
-        parent.updateMatrixWorld()
-      }
-
-      // reset y unless given explicit value
-      if (y != null) {
-        parent.position.y = 0
-      }
-
-      if (r != null) {
-        let center = new THREE.Vector3()
-        child.getWorldPosition(center)
-
-        let gr = child.rotation.y + parent.rotation.y
-
-        let dr = gr - r
-
-        let v = rotatePoint(parent.position, center, dr)
-
-        parent.position.x = v.x
-        parent.position.z = v.z
-        parent.rotation.y = r - child.rotation.y
-      }
-
-      // update state from new position of virtual objects
+      // update state from new position of virtual parent
       setTeleportPos(parent.position)
       setTeleportRot(parent.rotation)
     }
