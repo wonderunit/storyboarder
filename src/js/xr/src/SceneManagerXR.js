@@ -151,6 +151,7 @@ const SceneContent = connect(
       }
 
       let match = null
+      let intersection = null
       let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
 
       // find the positioned controller based on the data controller's gamepad array index
@@ -163,10 +164,22 @@ const SceneContent = connect(
         let child = hits[0].object
         // find either the child or one of its parents on the list of interaction-ables
         match = findMatchingAncestor(child, list)
+        if (match) {
+          intersection = hits[0]
+        }
       }
 
       if (match) {
         console.log('found sceneObject:', sceneObjects[match.userData.id])
+        console.log('intersection', intersection)
+
+        let cursor = positionedObject.getObjectByName('cursor')
+
+        let p = new THREE.Vector3()
+        match.getWorldPosition(p)
+        cursor.parent.worldToLocal(p)
+        cursor.position.copy(p)
+
         selectObject(match.userData.id)
       } else {
         console.log('clearing selection')
@@ -386,11 +399,27 @@ const SceneContent = connect(
         //      e.g.: if scene was changed externally
 
         for (let i = 0; i < controllers.length; i++) {
-          const controller = controllers[i]
+          // via WebVRManager
+          let positionedObject = controllerObjects[i]
+          // via THREE.VRController
+          let dataObject = controllers[i]
+          // we need both
+          if (!(positionedObject && dataObject)) continue
 
-          if (controller.pressed) {
+          if (dataObject.pressed) {
             if (object3d) {
               // TODO position/rotate object3d based on controller3d
+
+              // find the cursor
+              let cursor = positionedObject.getObjectByName('cursor')
+              // make sure its position is exact
+              positionedObject.updateMatrixWorld()
+              // grab its world position
+              let wp = new THREE.Vector3()
+              cursor.getWorldPosition(wp)
+              // set the position
+              object3d.position.copy(wp)
+
             }
           }
         }
