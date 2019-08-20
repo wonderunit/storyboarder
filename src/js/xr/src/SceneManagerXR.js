@@ -370,7 +370,7 @@ const SceneContent = connect(
 
         <TeleportTarget
           api={useStoreApi}
-          visible={true/*teleportMode*/}
+          visible={teleportMode && teleportTargetValid}
           texture={teleportTexture}
         />
       </>
