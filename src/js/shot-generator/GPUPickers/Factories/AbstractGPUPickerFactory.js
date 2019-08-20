@@ -4,7 +4,7 @@ class AbstractGPUPickerFactory
     {
         if(new.target === AbstractGPUPickerFactory)
         {
-            throw new TypeError("Cannot construct abstract Pickable directly");
+            throw new TypeError("Cannot construct abstract AbstractGPUPickerFactory directly");
         }
 
         if(this.createObject === undefined)

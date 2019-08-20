@@ -4,7 +4,7 @@ class IdPool
     {
         this.avaibleIds = [];
         this.usedIds = {};
-        this.startingPoint = 200;
+        this.startingPoint = 1;
         this.poolSize = poolSize + this.startingPoint;
         for(let i = this.startingPoint, n = this.poolSize; i <= n; i++)
         {

@@ -1,26 +1,17 @@
 const GPUPickerController = require("./GPUPickerController");
 const Pickable = require("../PickersObjects/Pickable");
 const XRGPUPickerFactory = require("../Factories/XRGPUPickerFactory");
-const IdPool = require("../utils/IdPool");
 class XRGPUPickerController extends GPUPickerController
 {
     constructor()
     {
         super();
-        this.addedGroupsId = [];
-        this.allowedObjectsTypes = [ "object", "character", "bonesHelper" , "virtual-camera", "light" ];
-        this.idBonus = 400;
-        this.currentGuiController = "";
-        this.controllers = [];
         this.gpuPickerFactory = new XRGPUPickerFactory();
-        this.idPool = new IdPool(600);
     }
 
     initalizeChildren(intersectObjects)
     {
-        super.initalizeChildren(intersectObjects);
         let objects = [];
-        let additionalObjects = [];
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
@@ -46,8 +37,7 @@ class XRGPUPickerController extends GPUPickerController
                 }
                 continue;
             }
-            this.getAllSceneMeshes(intesectable, objects, additionalObjects);
-            this.addedGroupsId.push(intesectable.uuid);
+            this.getAllSceneMeshes(intesectable, objects);
         }
         for(let i = 0, n = objects.length; i < n; i++)
         {
@@ -73,8 +63,8 @@ class XRGPUPickerController extends GPUPickerController
             }
         } 
     }
-    //TODO():Rename to UpdateObjects
-    updateObject()
+
+    updateObjects()
     {
         let keys = Object.keys(this.pickableObjects);
         for(let i = 0, n = keys.length; i < n; i++)
@@ -102,7 +92,7 @@ class XRGPUPickerController extends GPUPickerController
         }
     }
 
-    getAllSceneMeshes(sceneMesh, meshes, additionalObjects)
+    getAllSceneMeshes(sceneMesh, meshes)
     {
         if(!sceneMesh.userData)
         {

@@ -38,7 +38,7 @@ class EditorGPUPickerController extends GPUPickerController
         for(let i = 0, n = objects.length; i < n; i++)
         {
             let object = objects[i];
-            const id = this.pickingScene.children.length + i + this.idBonus;
+            const id = this.idPool.getAvaibleId();
             if(objects[i] instanceof Pickable)
             {
                 object.initialize(id);
@@ -49,7 +49,7 @@ class EditorGPUPickerController extends GPUPickerController
         }
     }
 
-    updateObject()
+    updateObjects()
     {
         let keys = Object.keys(this.pickableObjects);
         for(let i = 0, n = keys.length; i < n; i++)
@@ -62,9 +62,17 @@ class EditorGPUPickerController extends GPUPickerController
                 pickableObject.dispose();
                 this.pickingScene.remove(pickingObject);
                 delete this.gpuPickerHelper.selectableObjects[pickingObject.pickerId];
-                keys = Object.keys(this.pickableObjects);
-                n = keys.length;
-                i--;
+            }
+        }
+        keys = Object.keys( this.gpuPickerHelper.selectableObjects);
+        for(let i = 0, n = keys.length; i < n; i++)
+        {
+            let id = keys[i];
+            let selectableObject = this.gpuPickerHelper.selectableObjects[id].originObject;
+            if(!selectableObject.parent)
+            {
+                delete this.gpuPickerHelper.selectableObjects[id];
+                this.idPool.returnId(id);
             }
         }
     }
@@ -77,13 +85,11 @@ class EditorGPUPickerController extends GPUPickerController
             {
                 let pickerObject = this.gpuPickerFactory.createObject(sceneMesh);
                 meshes.push(pickerObject);
-                return;
             }
-            if(sceneMesh.userData.type === "character")
+            else if(sceneMesh.userData.type === "character")
             {
                 let pickerObject = this.gpuPickerFactory.createCharacter(sceneMesh);
                 meshes.push(pickerObject);
-                return;
             }
         }
     }
