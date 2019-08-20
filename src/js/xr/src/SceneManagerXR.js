@@ -30,6 +30,7 @@ const TeleportTarget = require('./components/TeleportTarget')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
 const getControllerIntersections = require('./helpers/get-controller-intersections')
+const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 
 const { createSelector } = require('reselect')
 
@@ -131,6 +132,22 @@ const SceneContent = connect(
     const onSelectStart = event => {
       if (teleportMode) {
         onTeleport()
+        return
+      }
+
+      // find the positioned controller based on the data controller's gamepad array index
+      let positionedObject = controllerObjects[event.target.gamepad.index]
+      // gather all hits to tracked scene object3ds
+      let hits = getControllerIntersections(positionedObject, scene.__interaction)
+      // if one intersects
+      if (hits.length) {
+        // grab the first intersection
+        let child = hits[0].object
+        // find either the child or one of its parents on the list of interaction-ables
+        let ancestor = findMatchingAncestor(child, scene.__interaction)
+        if (ancestor) {
+          console.log('found sceneObject:', sceneObjects[ancestor.userData.id])
+        }
       }
     }
 

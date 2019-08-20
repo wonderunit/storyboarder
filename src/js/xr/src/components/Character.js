@@ -72,7 +72,16 @@ const Character = React.memo(({ sceneObject }) => {
   }, [skeleton, sceneObject.skeleton])
 
   return lod
-    ? <group position={[sceneObject.x, sceneObject.z, sceneObject.y]}>
+    ? <group
+
+      onController={sceneObject.visible ? () => null : null}
+      userData={{
+        type: 'character',
+        id: sceneObject.id
+      }}
+
+      position={[sceneObject.x, sceneObject.z, sceneObject.y]}
+    >
       <primitive object={lod} />
       <primitive object={armature} />
     </group>

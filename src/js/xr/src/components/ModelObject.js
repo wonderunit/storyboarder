@@ -75,6 +75,13 @@ const ModelObject = React.memo(({ sceneObject, children }) => {
 
   return <group
     ref={ref}
+
+    onController={sceneObject.visible ? () => null : null}
+    userData={{
+      type: 'object',
+      id: sceneObject.id
+    }}
+
     visible={visible}
     position={[x, z, y]}
     scale={[width, height, depth]}
