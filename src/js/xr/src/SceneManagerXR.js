@@ -120,6 +120,8 @@ const SceneContent = connect(
     sceneObjects, world, activeCamera,
     characterIds
   }) => {
+    const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
+
     const onSelectStart = event => {
       if (teleportMode) {
         onTeleport()
@@ -131,6 +133,12 @@ const SceneContent = connect(
     const onGripDown = event => {
       const controller = event.target
       controller.gripped = true
+
+      if (oppositeController(controller).gripped) {
+        console.log('selecting mini mode')
+        setTeleportMode(false)
+        return
+      }
 
       // the target position value will be old until the next gl render
       // so consider it invalid, to hide the mesh, until then
