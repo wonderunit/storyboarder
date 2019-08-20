@@ -1,12 +1,13 @@
-function updateBoneToBone(cloneBone, sourceBone)
+function updateBoneToBone(pickingMesh, sourceMesh)
 {
-    cloneBone.position.copy(sourceBone.position);
-    cloneBone.quaternion.copy(sourceBone.quaternion);
-    cloneBone.scale.copy(sourceBone.scale);
-    cloneBone.updateMatrixWorld(true);
-    for(let i = 0, n = cloneBone.children.length; i < n; i++)
+    let pickingBones = pickingMesh.skeleton.bones;
+    let sourceBones = sourceMesh.skeleton.bones;
+    for(let i = 0, n = pickingBones.length; i < n; i++)
     {
-        updateBoneToBone(cloneBone.children[i], sourceBone.children[i]);
+        pickingBones[i].position.copy(sourceBones[i].position);
+        pickingBones[i].quaternion.copy(sourceBones[i].quaternion);
+        pickingBones[i].scale.copy(sourceBones[i].scale);
+       // updateBoneToBone(cloneBone.children[i], sourceBone.children[i]);
     }
 }
 module.exports = {updateBoneToBone};
