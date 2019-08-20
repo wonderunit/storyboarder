@@ -4,7 +4,7 @@ const { useMemo, useEffect, useRef } = React = require('react')
 const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
 
-const Character = ({ sceneObject }) => {
+const Character = React.memo(({ sceneObject }) => {
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
   const filepath = useMemo(
     () => `/data/system/dummies/gltf/${sceneObject.model}-lod.glb`,
@@ -77,6 +77,6 @@ const Character = ({ sceneObject }) => {
       <primitive object={armature} />
     </group>
     : null
-}
+})
 
 module.exports = Character
