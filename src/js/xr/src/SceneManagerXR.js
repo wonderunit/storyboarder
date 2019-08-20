@@ -23,6 +23,7 @@ const useVrControllers = require('./hooks/use-vr-controllers')
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
 const Character = require('./components/Character')
+const ModelObject = require('./components/ModelObject')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 
@@ -37,6 +38,10 @@ const { createSelector } = require('reselect')
 const getSceneObjectCharacterIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
+)
+const getSceneObjectModelObjectIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
 )
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
@@ -113,12 +118,13 @@ const SceneContent = connect(
     world: getWorld(state),
     activeCamera: getActiveCamera(state),
 
-    characterIds: getSceneObjectCharacterIds(state)
+    characterIds: getSceneObjectCharacterIds(state),
+    modelObjectIds: getSceneObjectModelObjectIds(state)
   })
 )(
   ({
     sceneObjects, world, activeCamera,
-    characterIds
+    characterIds, modelObjectIds
   }) => {
     const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
 
@@ -371,6 +377,14 @@ const SceneContent = connect(
           characterIds.map(id =>
             <Suspense key={id} fallback={null}>
               <Character sceneObject={sceneObjects[id]} />
+            </Suspense>
+          )
+        }
+
+        {
+          modelObjectIds.map(id =>
+            <Suspense key={id} fallback={null}>
+              <ModelObject sceneObject={sceneObjects[id]} />
             </Suspense>
           )
         }
