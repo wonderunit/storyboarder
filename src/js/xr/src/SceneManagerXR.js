@@ -19,7 +19,8 @@ const {
   getSelections,
 
   // action creators
-  selectObject
+  selectObject,
+  updateObject
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
@@ -129,7 +130,8 @@ const SceneContent = connect(
     modelObjectIds: getSceneObjectModelObjectIds(state)
   }),
   {
-    selectObject
+    selectObject,
+    updateObject
   }
 )(
   ({
@@ -137,7 +139,7 @@ const SceneContent = connect(
 
     characterIds, modelObjectIds,
 
-    selectObject
+    selectObject, updateObject
   }) => {
     const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
 
@@ -170,8 +172,8 @@ const SceneContent = connect(
       }
 
       if (match) {
-        console.log('found sceneObject:', sceneObjects[match.userData.id])
-        console.log('intersection', intersection)
+        // console.log('found sceneObject:', sceneObjects[match.userData.id])
+        // console.log('intersection', intersection)
 
         let cursor = positionedObject.getObjectByName('cursor')
 
@@ -182,7 +184,7 @@ const SceneContent = connect(
 
         selectObject(match.userData.id)
       } else {
-        console.log('clearing selection')
+        // console.log('clearing selection')
         selectObject(null)
       }
     }
@@ -190,6 +192,32 @@ const SceneContent = connect(
     const onSelectEnd = event => {
       const controller = event.target
       controller.pressed = false
+
+      if (selections.length) {
+        // find the positioned controller based on the data controller's gamepad array index
+        let positionedObject = controllerObjects[event.target.gamepad.index]
+
+        // find the cursor
+        let cursor = positionedObject.getObjectByName('cursor')
+        // make sure its position is exact
+        positionedObject.updateMatrixWorld()
+        // grab its world position
+        let wp = new THREE.Vector3()
+        cursor.getWorldPosition(wp)
+
+        // TODO worldscale
+        // TODO rotation
+        // TODO soundBeam
+
+        // console.log('updateObject', selections[0], wp.x, wp.y, wp.z)
+
+        updateObject(selections[0], {
+          x: wp.x,
+          y: wp.z,
+          z: wp.y,
+          // rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+        })
+      }
     }
 
     const onGripDown = event => {
@@ -409,6 +437,8 @@ const SceneContent = connect(
           if (dataObject.pressed) {
             if (object3d) {
               // TODO position/rotate object3d based on controller3d
+
+              // TODO constraints, snap
 
               // find the cursor
               let cursor = positionedObject.getObjectByName('cursor')
