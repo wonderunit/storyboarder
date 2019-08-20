@@ -371,6 +371,7 @@ const GUI = ({
     []
   )
   const invertGUI = flipHand ? -1 : 1
+  const fpsText = useRef(null);
   const fpsMeter = useMemo(() =>  
   { 
     if(fpsText.current)
