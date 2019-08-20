@@ -210,6 +210,7 @@ const SceneContent = connect(
     const rStats = useRStats()
 
     const teleportRef = useRef()
+    const groundRef = useRef()
 
     // controller objects via THREE.WebVRManager
     const controllerObjects = useMemo(
@@ -280,7 +281,7 @@ const SceneContent = connect(
           )
         }
 
-        <Ground texture={groundTexture} visible={true/*!world.room.visible && world.ground*/} />
+        <Ground objRef={groundRef} texture={groundTexture} visible={true/*!world.room.visible && world.ground*/} />
       </>
     )
   })
