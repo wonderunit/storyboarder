@@ -13,11 +13,6 @@ class XRPickableObjectContainer extends Pickable
         this.idPool = idPool;
     }
 
-    getUUID()
-    {
-        return this.sceneObject.parent.uuid;
-    }
-
     getMeshesFromSceneObject()
     {
         this.sceneObject.traverse(sceneMesh => 
@@ -31,7 +26,7 @@ class XRPickableObjectContainer extends Pickable
 
     initialize(id)
     {
-        this.node.type = this.sceneObject.parent.userData.type;
+        this.node.type = this.sceneObject.userData.type;
         this.node.pickerId = id;
         for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
         {
@@ -107,19 +102,19 @@ class XRPickableObjectContainer extends Pickable
 
     applyObjectChanges()
     {
-          for(let i = 0, n = this.listOfChangedObjects.length; i < n; i++)
-          {
-              id = this.idPool.getAvaibleId();
-              let sceneMesh = this.listOfChangedObjects[i];
-              super.initialize(id);
-              this.pickingMaterials.push(this.pickingMaterial);
-              this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
-              this.node.add(this.pickingMesh);
-              this.changedIds = [];
-              this.pickingMeshes.push(this.pickingMesh);
-              this.sceneMeshes.push(sceneMesh);
-              this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: this.sceneMesh};
-          }
+        for(let i = 0, n = this.listOfChangedObjects.length; i < n; i++)
+        {
+            id = this.idPool.getAvaibleId();
+            let sceneMesh = this.listOfChangedObjects[i];
+            super.initialize(id);
+            this.pickingMaterials.push(this.pickingMaterial);
+            this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
+            this.node.add(this.pickingMesh);
+            this.changedIds = [];
+            this.pickingMeshes.push(this.pickingMesh);
+            this.sceneMeshes.push(sceneMesh);
+            this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: this.sceneMesh};
+        }
     }
 }
 module.exports = XRPickableObjectContainer;
