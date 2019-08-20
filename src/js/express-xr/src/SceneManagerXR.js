@@ -10,8 +10,6 @@ const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 const { ActionCreators } = require('redux-undo')
 
-const XRGPUPicker = require("../../shot-generator/GPUPickers/Controllers/XRGPUPickerController");
-
 const {
   createObject,
   updateObject,
@@ -53,6 +51,8 @@ require('../../shot-generator/IK/utils/Object3dExtension');
 
 const RStats = require('./lib/rStats')
 require('./lib/rStats.extras')
+
+const GPUPicker = require("../../shot-generator/GPUPickers/GPUPicker");
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
@@ -183,7 +183,7 @@ const SceneContent = ({
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
   const selectionCamera = useRef(null);
-  const gpuPicker = useRef(new XRGPUPicker());
+  const gpuPicker = useRef(null);
   const highlightedBones = useRef([])
   
   // Rotate Bone
@@ -310,51 +310,15 @@ const SceneContent = ({
     if (otherController && otherController.userData.selected) return
     if (controller.gripped) return
 
-    if(!selectionCamera.current)
+    if(!gpuPicker.current)
     {
-      selectionCamera.current = new THREE.PerspectiveCamera(0.001, gl.domElement.width / gl.domElement.height, 0.1, 1000 );
-     
-    }
- 
-    let selectCamera = selectionCamera.current;
-    selectCamera.name = "Cameron";
-  
-    if(!controller.isSelectionAdded)
-    {
-      if(otherController && otherController.isSelectionAdded)
-      {
-        for(let i = 0, n = controller.children.length; i < n; i++)
-        {
-          if(controller.children[i].userData && controller.children[i].userData.id === "controller")
-          {
-             controller.children[i].remove(selectCamera);
-             i = n;
-          }
-        }
-        otherController.isSelectionAdded = false;
-      }
-      controller.isSelectionAdded = true;
-      for(let i = 0, n = controller.children.length; i < n; i++)
-      {
-        if(controller.children[i].userData && controller.children[i].userData.id === "controller")
-        {
-           controller.children[i].add(selectCamera);
-           i = n;
-        }
-      }
-      selectionCamera.current.updateMatrix();
-      selectionCamera.current.updateMatrixWorld(true);
+      gpuPicker.current = new GPUPicker(gl);
     }
 
-    gpuPicker.current.initialize(scene, gl);
-    gpuPicker.current.initalizeChildren(intersectArray.current);
-    gpuPicker.current.updateObject();
-    gpuPicker.current.setPickingPosition((gl.domElement.width) / 2, (gl.domElement.height) / 2);
-    
-    const intersections = gpuPicker.current.pick(selectCamera);
-    selectionCamera.current.position.set(0, 0, 0);
-    selectionCamera.current.quaternion.set(0, 0, 0, 0);
-    selectionCamera.current.updateMatrixWorld(true);
+    // Getting the real controller object which is usually the last one element in VRContoller's children 
+    let controllerChild = controller.children[controller.children.length - 1];
+    gpuPicker.current.setupScene(intersectArray.current);
+    const intersections = gpuPicker.current.pick(controllerChild.worldPosition(), controllerChild.worldQuaternion());
     if (intersections.length > 0) {
       const tempMatrix = new THREE.Matrix4()
       tempMatrix.identity().extractRotation(controller.matrixWorld)

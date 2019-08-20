@@ -21,6 +21,7 @@ class GPUPickerController
         this.allowedObjectsTypes.push(allowedType);
     }
 
+    //TODO(): Remove intialize
     initialize(scene, renderer)
     {
         if(this.isInitialized )
