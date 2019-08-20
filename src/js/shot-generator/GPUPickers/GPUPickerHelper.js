@@ -72,7 +72,7 @@ class GPUPickerHelper
             return [];
         }
 
-        return [{ object: this.pickedObject, point: canvasPos}];
+        return [{ object: this.pickedObject, point: canvasPos, distance: camera.worldPosition().distanceTo(canvasPos)}];
     }
     
     readRenderedPixel(renderer, scene, camera, renderTarget, pixelBuffer)

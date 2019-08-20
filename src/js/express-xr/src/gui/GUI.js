@@ -331,8 +331,7 @@ const GUI = ({
       
       if (delta > 1000) {
         previousTime.current = currentTime
-        let fps = parseInt(rStatsRef.current('FPS').value());
-        setFPS(fps);
+        setFPS(parseInt(rStatsRef.current('FPS').value()))
       }
     }
   }, false, [rStatsRef.current])
@@ -371,7 +370,6 @@ const GUI = ({
     () => [1, 2, 3, 4, 5, 6, 7, 8].map(n => new THREE.TextureLoader().load(`/data/system/xr/help_${n}.png`)),
     []
   )
-  let fpsText = useRef(null);
   const invertGUI = flipHand ? -1 : 1
   const fpsMeter = useMemo(() =>  
   { 

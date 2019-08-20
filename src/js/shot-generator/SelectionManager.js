@@ -1,6 +1,6 @@
 const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
-const EditorGPUPicker  = require('./GPUPickers/Controllers/EditorGPUPickerController');
+
 const {
   selectObject,
   selectObjectToggle,
@@ -13,6 +13,7 @@ const {
   getSelections,
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
+
 function getObjectsFromIcons ( objects ) {
   return objects
       // visible objects
@@ -138,7 +139,7 @@ const getIntersectionTarget = intersect => {
     return intersect.object.parent
   }
 }
-const gpuPicker = new EditorGPUPicker();
+
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
@@ -171,11 +172,8 @@ const SelectionManager = connect(
     updateObjects,
 
     transition,
-    renderer,
-    rendererEffect,
     undoGroupStart,
-    undoGroupEnd,
-    
+    undoGroupEnd
   }) => {
 
   const { scene } = useContext(SceneContext)
@@ -256,7 +254,6 @@ const SelectionManager = connect(
         changes[selection] = { x, y: z }
       }
       updateObjects(changes)
-      //gpuPicker.updateObject();
     }
   }
   const endDrag = () => {
@@ -272,15 +269,7 @@ const SelectionManager = connect(
   const onPointerDown = event => {
     
     event.preventDefault()
-
-    gpuPicker.initalizeChildren(scene);
-
-    const rect = el.getBoundingClientRect();
-    let mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
-    gpuPicker.updateObjects();
-    gpuPicker.setPickingPosition(mousePosition.x, mousePosition.y);
-    let result = gpuPicker.pick(camera, renderer);
-    console.log(result);
+    
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
     

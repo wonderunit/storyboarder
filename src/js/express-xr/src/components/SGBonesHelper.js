@@ -54,11 +54,10 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
     object3D.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
   
 
-  // console.log('new BonesHelper', 'cacheKey:', cacheKey)
   let skeleton_clone
   if (!cache[cacheKey]) {
     console.log('adding to cache', cacheKey)
-    cache[cacheKey] = cloneSkinned( object3D )
+    cache[cacheKey] = object3D;
   }
   skeleton_clone = cache[cacheKey]
 
@@ -160,7 +159,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   
   this.root = object
   this.bones = bones
-  //if (sknMesh.needsRepose) sknMesh.repose()
+  if (sknMesh.needsRepose) sknMesh.repose()
   this.matrix = object.matrixWorld
   this.matrixAutoUpdate = false
   this.needsUpdate = true;
@@ -175,7 +174,7 @@ BonesHelper.prototype.updateMatrixWorld = function () {
   var matrixWorldInv = new Matrix4()
   
   return function updateMatrixWorld( force ) {
-    if(!this.conesGroup.parent)
+    if(!this.conesGroup.parent && !this.needsUpdate)
     {
       return;
     } 
@@ -222,8 +221,6 @@ const getDefaultRotationForBone = (skeleton, bone) => {
 
 SkinnedMesh.prototype.savePose = function(sknMesh) {
   let poseSkeleton = {}
-  
-  // sknMesh.skeleton.pose()
   this.needsRepose = false
 
   for (var i = 0; i< this.skeleton.bones.length; i++)
@@ -258,45 +255,6 @@ SkinnedMesh.prototype.savePose = function(sknMesh) {
   if ( this.needsRepose ) {
     this.userData.initialSkeleton = poseSkeleton
   }
-  //REMOVED SAVING 
-
-  // let preset = {
-  //   id: this.parent.userData.id,
-  //   name: this.name,
-  //   state: {
-  //     skeleton: poseSkeleton || {}
-  //   }
-  // }
-  // //console.log('saving: ', preset)
-  // createPosePreset(preset)
-}
-
-const cloneSkinned = ( source ) => {
-
-  var cloneLookup = new Map()
-  let userData = source.userData;
-  source.userData = null;
-  var clone = source.clone()
-  source.userData = userData;
-  parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
-    cloneLookup.set( sourceNode, clonedNode )
-  } )
-  source.traverse( function ( sourceMesh ) {
-    if ( ! sourceMesh.isSkinnedMesh ) return
-    var sourceBones = sourceMesh.skeleton.bones
-    var clonedMesh = cloneLookup.get( sourceMesh )
-    clonedMesh.skeleton = sourceMesh.skeleton.clone()
-    //console.log('cloned mesh: ', clonedMesh)
-    clonedMesh.skeleton.bones = sourceBones.map( function ( sourceBone ) {
-      if ( ! cloneLookup.has( sourceBone ) ) {
-        throw new Error( 'THREE.AnimationUtils: Required bones are not descendants of the given object.' )
-      }
-      return cloneLookup.get( sourceBone )
-    } )
-    clonedMesh.bind( clonedMesh.skeleton, sourceMesh.bindMatrix )
-  } )
-
-  return clone
 }
 
 SkinnedMesh.prototype.repose = function() {

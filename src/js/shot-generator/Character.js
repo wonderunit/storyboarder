@@ -2,7 +2,6 @@
 const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
 const BoneRotationControl = require("./IK/objects/BoneRotationControl")
 const {AddTransformationControl, createTransformationControls} = require("./IK/utils/IkUtils");
-require("./IK/utils/Object3dExtension");
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -81,8 +80,7 @@ const cloneGltf = (gltf) => {
       const cloneBone = cloneBones[skeleton.bones[i].name];
       orderedCloneBones.push(cloneBone);
     }
-    //cloneSkinnedMesh.bindMode = 'detached';
-    //cloneSkinnedMesh.rotateX(THREE.Math.PI / 2);
+
     cloneSkinnedMesh.bind(
         new THREE.Skeleton(orderedCloneBones, skeleton.boneInverses),
         cloneSkinnedMesh.matrixWorld);
@@ -592,7 +590,6 @@ const Character = React.memo(({
   }, [props.model, props.morphTargets, ready])
 
   useEffect(() => {
-    //console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
     

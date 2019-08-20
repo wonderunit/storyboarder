@@ -182,7 +182,6 @@ const SceneContent = ({
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
-  const selectionCamera = useRef(null);
   const gpuPicker = useRef(null);
   const highlightedBones = useRef([])
   
@@ -314,18 +313,11 @@ const SceneContent = ({
     {
       gpuPicker.current = new GPUPicker(gl);
     }
-
     // Getting the real controller object which is usually the last one element in VRContoller's children 
     let controllerChild = controller.children[controller.children.length - 1];
     gpuPicker.current.setupScene(intersectArray.current);
     const intersections = gpuPicker.current.pick(controllerChild.worldPosition(), controllerChild.worldQuaternion());
     if (intersections.length > 0) {
-      const tempMatrix = new THREE.Matrix4()
-      tempMatrix.identity().extractRotation(controller.matrixWorld)
-      const tiltControllerMatrix = new THREE.Matrix4().makeRotationX((Math.PI / 180) * -45)
-      tempMatrix.multiply(tiltControllerMatrix)
-      let origin = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
-      intersections[0].distance = origin.distanceTo(intersections[0].point);
       let didMakeSelection = onIntersection(controller, intersections)
       if (didMakeSelection) {
         soundSelect.current.play()
@@ -892,8 +884,8 @@ const SceneContent = ({
     }
 
     if (selectedObjRef.current && selectedObjRef.current.userData.type === 'character' && !selectedBone) {
-      const bonesHelper = selectedObjRef.current.children[1].children[0];
-      const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
+      const bonesHelper = selectedObjRef.current.children[0].bonesHelper
+      const hits = boneIntersect(controller, bonesHelper)
       if (hits.length) {
         controller.userData.bone = hits[0].bone
         selectBone(hits[0].bone.uuid)
@@ -1014,10 +1006,9 @@ const SceneContent = ({
         !selectedBone &&
         // has it loaded the skinned mesh yet?
         selectedObjRef.current.children[0] && 
-        selectedObjRef.current.children[1] && 
         !isControllerPressed
       ) {
-        const bonesHelper = selectedObjRef.current.children[1].children[0];
+        const bonesHelper = selectedObjRef.current.children[0].bonesHelper;
         const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
        const selectedBones = highlightedBones.current;
        if (hits.length) {

@@ -153,7 +153,7 @@ const SceneManager = connect(
       // )
 
       largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current, {defaultThickness:0.008} )
-      console.log(largeRenderer.current.getPixelRatio());
+
       smallRenderer.current = new THREE.WebGLRenderer({
         canvas: smallCanvasRef.current,
         antialias: true
@@ -616,8 +616,7 @@ const SceneManager = connect(
           el: largeCanvasRef.current,
           selectOnPointerDown: mainViewCamera !== 'live',
           useIcons: mainViewCamera !== 'live',
-          transition, 
-          renderer: largeRenderer.current
+          transition
         }],
 
         [SelectionManager, {
@@ -627,7 +626,7 @@ const SceneManager = connect(
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',
           useIcons: mainViewCamera === 'live',
-          transition,
+          transition
         }],
 
         // [SelectionsMover, {
