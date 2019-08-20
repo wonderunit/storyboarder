@@ -1,6 +1,6 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree } = require('react-three-fiber')
+const { Canvas, useThree, useRender } = require('react-three-fiber')
 
 const { connect, Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -24,6 +24,7 @@ const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
 const Character = require('./components/Character')
 const Controller = require('./components/Controller')
+const TeleportTarget = require('./components/TeleportTarget')
 
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
@@ -62,7 +63,7 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.z = parent.rotation.z
 }
 
-const [useStore] = create((set, get) => ({
+const [useStore, useStoreApi] = create((set, get) => ({
   // values
   teleportPos: { x: 0, y: 0, z: 0 },
   teleportRot: { x: 0, y: 0, z: 0 },
@@ -70,9 +71,13 @@ const [useStore] = create((set, get) => ({
   didMoveCamera: null,
   didRotateCamera: null,
 
+  teleportMode: false,
+  teleportTargetPos: [0, 0, 0],
+
   // actions
   setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
   setDidRotateCamera: value => set(produce(state => { state.didRotateCamera = value })),
+  setTeleportMode: value => set(state => ({ ...state, teleportMode: value })),
 
   moveCameraByDistance: (camera, distance) => set(produce(state => {
     let center = new THREE.Vector3()
@@ -92,6 +97,10 @@ const [useStore] = create((set, get) => ({
     teleportState(state, camera, null, null, null, gr + radians)
   })),
 
+  teleport: (camera, x, y, z, r) => set(produce(state => {
+    teleportState(state, camera, x, y, z, r)
+  })),
+
   set: fn => set(produce(fn))
 }))
 
@@ -108,6 +117,28 @@ const SceneContent = connect(
     sceneObjects, world, activeCamera,
     characterIds
   }) => {
+    const onSelectStart = event => {
+      if (teleportMode) {
+        onTeleport(event)
+      }
+    }
+
+    const onSelectEnd = event => {}
+
+    const onGripDown = event => {
+      const controller = event.target
+      controller.gripped = true
+
+      setTeleportMode(true)
+    }
+
+    const onGripUp = event => {
+      const controller = event.target
+      controller.gripped = false
+
+      setTeleportMode(false)
+    }
+
     const onAxesChanged = event => {
       onMoveCamera(event)
       onRotateCamera(event)
@@ -163,6 +194,16 @@ const SceneContent = connect(
       }
     }
 
+    const onTeleport = event => {
+      // TODO teleportMaxDist
+      // TODO adjust by worldScale
+      // TODO reset worldScale after teleport
+
+      let pos = useStoreApi.getState().teleportTargetPos
+      teleport(pos[0], 0, pos[2], null)
+      setTeleportMode(false)
+    }
+
     const { gl, camera, scene } = useThree()
 
     // values
@@ -170,12 +211,16 @@ const SceneContent = connect(
     const teleportRot = useStore(state => state.teleportRot)
     const didMoveCamera = useStore(state => state.didMoveCamera)
     const didRotateCamera = useStore(state => state.didRotateCamera)
+    const teleportMode = useStore(state => state.teleportMode)
 
     // actions
     const setDidMoveCamera = useStore(state => state.setDidMoveCamera)
     const setDidRotateCamera = useStore(state => state.setDidRotateCamera)
     const moveCameraByDistance = useStore(state => state.moveCameraByDistance)
     const rotateCameraByRadians = useStore(state => state.rotateCameraByRadians)
+    const teleportFn = useStore(state => state.teleport)
+    const teleport = (x, y, z, r) => teleportFn(camera, x, y, z, r)
+    const setTeleportMode = useStore(state => state.setTeleportMode)
     const set = useStore(state => state.set)
 
     // initialize behind the camera, on the floor
@@ -203,6 +248,9 @@ const SceneContent = connect(
       scene.fog = new THREE.Fog( 0x000000, -10, 40 )
     })
 
+    const teleportTexture = useMemo(
+      () => new THREE.TextureLoader().load('/data/system/xr/teleport.png'), []
+    )
     const groundTexture = useMemo(
       () => new THREE.TextureLoader().load('/data/system/grid_floor_1.png'), []
     )
@@ -226,8 +274,37 @@ const SceneContent = connect(
       onGripUp,
       onAxesChanged
     })
-    const controllerLeft = useMemo(() => controllers.find(c => c.getHandedness() === 'left'), [controllers])
-    const controllerRight = useMemo(() => controllers.find(c => c.getHandedness() === 'right'), [controllers])
+
+    // const controllerLeft = useMemo(() => controllers.find(c => c.getHandedness() === 'left'), [controllers])
+    // const controllerRight = useMemo(() => controllers.find(c => c.getHandedness() === 'right'), [controllers])
+    // navigator.getGamepads()[0].hand
+
+    const getIntersections = (controller, objects) => {
+      let raycaster = new THREE.Raycaster()
+      let tempMatrix = new THREE.Matrix4()
+
+      tempMatrix.identity().extractRotation(controller.matrixWorld)
+
+      raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld)
+      raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix)
+      return raycaster.intersectObjects(objects, true)
+    }
+
+    useRender(() => {
+      // TODO gripped
+      // TODO teleportMaxDist
+      for (let i = 0; i < controllerObjects.length; i++) {
+        let o = controllerObjects[i]
+        if (teleportMode && controllers[i] && controllers[i].gripped) {
+          let hits = getIntersections(o, [groundRef.current])
+          if (hits.length) {
+            let hit = hits[0]
+            let teleportTargetPos = hit.point.toArray()
+            set(state => ({ ...state, teleportTargetPos }))
+          }
+        }
+      }
+    }, false, [set, controllerObjects, controllers, teleportMode])
 
     return (
       <>
@@ -282,6 +359,12 @@ const SceneContent = connect(
         }
 
         <Ground objRef={groundRef} texture={groundTexture} visible={true/*!world.room.visible && world.ground*/} />
+
+        <TeleportTarget
+          api={useStoreApi}
+          visible={true/*teleportMode*/}
+          texture={teleportTexture}
+        />
       </>
     )
   })
