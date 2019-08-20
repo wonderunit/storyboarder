@@ -1,8 +1,8 @@
-const GPUPicker = require("./GPUPicker");
-const Pickable = require("./PickersContainers/Pickable");
-const XRGPUPickerFactory = require("./XRGPUPickerFactory");
-const IdPool = require("./utils/IdPool");
-class XRGPUPicker extends GPUPicker
+const GPUPickerController = require("./GPUPickerController");
+const Pickable = require("../PickersObjects/Pickable");
+const XRGPUPickerFactory = require("../Factories/XRGPUPickerFactory");
+const IdPool = require("../utils/IdPool");
+class XRGPUPickerController extends GPUPickerController
 {
     constructor()
     {
@@ -134,4 +134,4 @@ class XRGPUPicker extends GPUPicker
         }
     }
 }
-module.exports = XRGPUPicker;
+module.exports = XRGPUPickerController;

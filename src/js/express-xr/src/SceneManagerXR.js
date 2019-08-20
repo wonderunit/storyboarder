@@ -10,7 +10,7 @@ const React = require('react')
 const { useEffect, useRef, useMemo, useState, useReducer } = React
 const { ActionCreators } = require('redux-undo')
 
-const XRGPUPicker = require("../../shot-generator/GPUPickers/XRGPUPicker");
+const XRGPUPicker = require("../../shot-generator/GPUPickers/Controllers/XRGPUPickerController");
 
 const {
   createObject,

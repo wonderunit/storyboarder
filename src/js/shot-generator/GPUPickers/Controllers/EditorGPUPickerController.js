@@ -1,7 +1,7 @@
-const GPUPicker = require("./GPUPicker");
-const Pickable = require("../GPUPickers/PickersContainers/Pickable");
-const EditorGPUPickerFactory = require("../GPUPickers/EditorGPUPickerFactory");
-class EditorGPUPicker extends GPUPicker
+const GPUPickerController = require("./GPUPickerController");
+const Pickable = require("../PickersObjects/Pickable");
+const EditorGPUPickerFactory = require("../Factories/EditorGPUPickerFactory");
+class EditorGPUPickerController extends GPUPickerController
 {
     constructor()
     {
@@ -88,4 +88,4 @@ class EditorGPUPicker extends GPUPicker
         }
     }
 }
-module.exports = EditorGPUPicker;
+module.exports = EditorGPUPickerController;

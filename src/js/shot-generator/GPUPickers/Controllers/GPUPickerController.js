@@ -1,7 +1,7 @@
 const THREE = require('three');
-const GPUPickerHelper = require("./GPUPickerHelper");
-require("../IK/utils/Object3dExtension");
-class GPUPicker
+const GPUPickerHelper = require("../GPUPickerHelper");
+require("../../IK/utils/Object3dExtension");
+class GPUPickerController
 {
     constructor()
     {
@@ -153,4 +153,4 @@ class GPUPicker
     }
     //#endregion  
 }
-module.exports = GPUPicker;
+module.exports = GPUPickerController;

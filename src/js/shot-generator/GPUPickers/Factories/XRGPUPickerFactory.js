@@ -1,8 +1,8 @@
 const AbstractGPUPickerFactory = require("./AbstractGPUPickerFactory");
-const UniversalPickerObject = require("./PickersContainers/UniversalPickableObject");
-const XRPickableCharacter = require("./PickersContainers/XRPickableCharacter");
-const XRPickableObjectContainer = require("./PickersContainers/XRPickableObjectContainer");
-const XRPickableGUI = require("./PickersContainers/XRPickableGUI");
+const UniversalPickerObject = require("../PickersObjects/UniversalPickableObject");
+const XRPickableCharacter = require("../PickersObjects/XRPickableCharacter");
+const XRPickableObjectContainer = require("../PickersObjects/XRPickableObjectContainer");
+const XRPickableGUI = require("../PickersObjects/XRPickableGUI");
 class XRGPUPickerFactory extends AbstractGPUPickerFactory
 {
     constructor()

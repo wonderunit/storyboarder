@@ -1,6 +1,6 @@
 const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
-const EditorGPUPicker  = require('./GPUPickers/EditorGPUPicker');
+const EditorGPUPicker  = require('./GPUPickers/Controllers/EditorGPUPickerController');
 const {
   selectObject,
   selectObjectToggle,
