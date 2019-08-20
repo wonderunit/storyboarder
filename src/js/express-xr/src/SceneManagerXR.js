@@ -1014,6 +1014,7 @@ const SceneContent = ({
         !selectedBone &&
         // has it loaded the skinned mesh yet?
         selectedObjRef.current.children[0] && 
+        selectedObjRef.current.children[1] && 
         !isControllerPressed
       ) {
         const bonesHelper = selectedObjRef.current.children[1].children[0];

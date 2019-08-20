@@ -1,14 +1,14 @@
 const Pickable = require("./Pickable");
 const SkeletonUtils = require("../../IK/utils/SkeletonUtils");
 const {updateBoneToBone} = require("../utils/PickableCharacterUtils");
-class XRPickableCharacter extends Pickable
+class UniversalPickableCharacter extends Pickable
 {
     constructor(object)
     {
         super(object);
         this.sceneObject = object;
-        this.characterContainer = object.children.find(child => child.userData.type === "character");
         this.getMeshFromSceneObject();
+        this.characterContainer = this.getCharacterContainer();
     }
 
     getMeshFromSceneObject()
@@ -72,8 +72,8 @@ class XRPickableCharacter extends Pickable
 
     applyObjectChanges()
     {
-        this.characterContainer = this.sceneObject.children.find(child => child.userData.type === "character");
         this.getMeshFromSceneObject();
+        this.characterContainer = this.getCharacterContainer();
         let parent = this.characterContainer;
         let node = SkeletonUtils.clone(parent);
         let lod = node.children[0];
@@ -94,5 +94,14 @@ class XRPickableCharacter extends Pickable
         }   
         this.pickingMesh.visible = true;
     }
+
+    getCharacterContainer()
+    {
+        if(this.sceneMesh.parent.type === "LOD")
+        {
+            return this.sceneMesh.parent.parent;
+        }
+        return this.sceneMesh.parent;
+    }
 }
-module.exports = XRPickableCharacter;
+module.exports = UniversalPickableCharacter;

@@ -1,6 +1,6 @@
 const AbstractGPUPickerFactory = require("./AbstractGPUPickerFactory");
 const UniversalPickerObject = require("../PickersObjects/UniversalPickableObject");
-const XRPickableCharacter = require("../PickersObjects/XRPickableCharacter");
+const UniversalPickableCharacter = require("../PickersObjects/UniversalPickableCharacter");
 const XRPickableObjectContainer = require("../PickersObjects/XRPickableObjectContainer");
 const XRPickableGUI = require("../PickersObjects/XRPickableGUI");
 class XRGPUPickerFactory extends AbstractGPUPickerFactory
@@ -17,7 +17,7 @@ class XRGPUPickerFactory extends AbstractGPUPickerFactory
 
     createCharacter(object)
     {
-        return new XRPickableCharacter(object);
+        return new UniversalPickableCharacter(object);
     }
 
     //TODO(): don't pass idPool

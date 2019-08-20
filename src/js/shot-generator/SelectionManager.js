@@ -273,15 +273,13 @@ const SelectionManager = connect(
     
     event.preventDefault()
 
-    
-    gpuPicker.initialize(scene, renderer);
     gpuPicker.initalizeChildren(scene);
 
     const rect = el.getBoundingClientRect();
     let mousePosition = new THREE.Vector2(event.clientX - rect.left, event.clientY - rect.top);
-    gpuPicker.updateObject();
+    gpuPicker.updateObjects();
     gpuPicker.setPickingPosition(mousePosition.x, mousePosition.y);
-    let result = gpuPicker.pick(camera);
+    let result = gpuPicker.pick(camera, renderer);
     console.log(result);
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')

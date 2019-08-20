@@ -1,6 +1,6 @@
 const AbstractGPUPickerFactory = require("./AbstractGPUPickerFactory");
 const UniversalPickerObject = require("../PickersObjects/UniversalPickableObject");
-const EditorPickableCharacter = require("../PickersObjects/EditorPickableCharacter");
+const UniversalPickableCharacter = require("../PickersObjects/UniversalPickableCharacter");
 class EditorGPUPickerFactory extends AbstractGPUPickerFactory
 {
     constructor()
@@ -15,7 +15,7 @@ class EditorGPUPickerFactory extends AbstractGPUPickerFactory
 
     createCharacter(object)
     {
-        return new EditorPickableCharacter(object);
+        return new UniversalPickableCharacter(object);
     }
 }
 module.exports = EditorGPUPickerFactory;
