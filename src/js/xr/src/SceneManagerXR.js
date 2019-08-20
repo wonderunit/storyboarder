@@ -389,7 +389,10 @@ const SceneContent = connect(
           )
         }
 
-        <Ground objRef={groundRef} texture={groundTexture} visible={true/*!world.room.visible && world.ground*/} />
+        <Ground
+          objRef={groundRef}
+          texture={groundTexture}
+          visible={true/*!world.room.visible && world.ground*/} />
 
         <TeleportTarget
           api={useStoreApi}
