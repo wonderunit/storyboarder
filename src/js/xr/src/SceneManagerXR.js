@@ -297,18 +297,25 @@ const SceneContent = connect(
     // navigator.getGamepads()[0].hand
 
     useRender(() => {
-      // TODO gripped
-      for (let i = 0; i < controllerObjects.length; i++) {
-        let o = controllerObjects[i]
-        if (teleportMode && controllers[i] && controllers[i].gripped) {
-          let hits = getControllerIntersections(o, [groundRef.current])
-          if (hits.length) {
-            let hit = hits[0]
-            if (hit.distance < teleportMaxDist) {
-              let teleportTargetPos = hit.point.toArray()
-              set(state => ({ ...state, teleportTargetPos, teleportTargetValid: true }))
-            } else {
-              set(state => ({ ...state, teleportTargetValid: false }))
+      if (teleportMode) {
+        for (let i = 0; i < controllerObjects.length; i++) {
+          // via WebVRManager
+          let positionedObject = controllerObjects[i]
+          // via THREE.VRController
+          let dataObject = controllers[i]
+          // we need both
+          if (!(positionedObject && dataObject)) continue
+
+          if (dataObject.gripped) {
+            let hits = getControllerIntersections(positionedObject, [groundRef.current])
+            if (hits.length) {
+              let hit = hits[0]
+              if (hit.distance < teleportMaxDist) {
+                let teleportTargetPos = hit.point.toArray()
+                set(state => ({ ...state, teleportTargetPos, teleportTargetValid: true }))
+              } else {
+                set(state => ({ ...state, teleportTargetValid: false }))
+              }
             }
           }
         }
