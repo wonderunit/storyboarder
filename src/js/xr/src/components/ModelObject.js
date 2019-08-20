@@ -1,7 +1,9 @@
 const THREE = require('three')
-const { useMemo, useRef } = React = require('react')
+const { useMemo, useRef, useEffect } = React = require('react')
 
 const useGltf = require('../hooks/use-gltf')
+
+const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
 
 const materialFactory = () => new THREE.MeshLambertMaterial({
   color: 0xcccccc,
@@ -23,7 +25,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const ModelObject = React.memo(({ sceneObject, children }) => {
+const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
   const ref = useRef(null)
 
   // TODO detect user models / custom objects
@@ -69,7 +71,15 @@ const ModelObject = React.memo(({ sceneObject, children }) => {
     return []
   }, [sceneObject.model, gltf])
 
-  // TODO highlight when selected
+  useEffect(() => {
+    let value = isSelected ? 0.15 : 0
+
+    traverseMeshMaterials(ref.current, material => {
+      if (material.emissive) {
+        material.emissive.b = value
+      }
+    })
+  }, [ref.current, isSelected])
 
   const { x, y, z, visible, width, height, depth, rotation } = sceneObject
 

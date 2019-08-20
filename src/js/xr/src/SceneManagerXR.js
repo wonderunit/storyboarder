@@ -12,9 +12,14 @@ const { produce } = require('immer')
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
 const {
+  // selectors
   getSceneObjects,
   getWorld,
-  getActiveCamera
+  getActiveCamera,
+  getSelections,
+
+  // action creators
+  selectObject
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
@@ -118,14 +123,21 @@ const SceneContent = connect(
     sceneObjects: getSceneObjects(state),
     world: getWorld(state),
     activeCamera: getActiveCamera(state),
+    selections: getSelections(state),
 
     characterIds: getSceneObjectCharacterIds(state),
     modelObjectIds: getSceneObjectModelObjectIds(state)
-  })
+  }),
+  {
+    selectObject
+  }
 )(
   ({
-    sceneObjects, world, activeCamera,
-    characterIds, modelObjectIds
+    sceneObjects, world, activeCamera, selections,
+
+    characterIds, modelObjectIds,
+
+    selectObject
   }) => {
     const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
 
@@ -135,6 +147,7 @@ const SceneContent = connect(
         return
       }
 
+      let match = null
       let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
 
       // find the positioned controller based on the data controller's gamepad array index
@@ -146,10 +159,15 @@ const SceneContent = connect(
         // grab the first intersection
         let child = hits[0].object
         // find either the child or one of its parents on the list of interaction-ables
-        let ancestor = findMatchingAncestor(child, list)
-        if (ancestor) {
-          console.log('found sceneObject:', sceneObjects[ancestor.userData.id])
-        }
+        match = findMatchingAncestor(child, list)
+      }
+
+      if (match) {
+        console.log('found sceneObject:', sceneObjects[match.userData.id])
+        selectObject(match.userData.id)
+      } else {
+        console.log('clearing selection')
+        selectObject(null)
       }
     }
 
@@ -403,7 +421,7 @@ const SceneContent = connect(
         {
           modelObjectIds.map(id =>
             <Suspense key={id} fallback={null}>
-              <ModelObject sceneObject={sceneObjects[id]} />
+              <ModelObject sceneObject={sceneObjects[id]} isSelected={selections.includes(id)} />
             </Suspense>
           )
         }
