@@ -71,8 +71,10 @@ const [useStore, useStoreApi] = create((set, get) => ({
   didMoveCamera: null,
   didRotateCamera: null,
 
+  teleportMaxDist: 10,
   teleportMode: false,
   teleportTargetPos: [0, 0, 0],
+  teleportTargetValid: false,
 
   // actions
   setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
@@ -119,7 +121,7 @@ const SceneContent = connect(
   }) => {
     const onSelectStart = event => {
       if (teleportMode) {
-        onTeleport(event)
+        onTeleport()
       }
     }
 
@@ -194,14 +196,15 @@ const SceneContent = connect(
       }
     }
 
-    const onTeleport = event => {
-      // TODO teleportMaxDist
+    const onTeleport = () => {
       // TODO adjust by worldScale
       // TODO reset worldScale after teleport
 
-      let pos = useStoreApi.getState().teleportTargetPos
-      teleport(pos[0], 0, pos[2], null)
-      setTeleportMode(false)
+      if (teleportTargetValid) {
+        let pos = useStoreApi.getState().teleportTargetPos
+        teleport(pos[0], 0, pos[2], null)
+        setTeleportMode(false)
+      }
     }
 
     const { gl, camera, scene } = useThree()
@@ -212,6 +215,8 @@ const SceneContent = connect(
     const didMoveCamera = useStore(state => state.didMoveCamera)
     const didRotateCamera = useStore(state => state.didRotateCamera)
     const teleportMode = useStore(state => state.teleportMode)
+    const teleportTargetValid = useStore(state => state.teleportTargetValid)
+    const teleportMaxDist = useStore(state => state.teleportMaxDist)
 
     // actions
     const setDidMoveCamera = useStore(state => state.setDidMoveCamera)
@@ -292,15 +297,18 @@ const SceneContent = connect(
 
     useRender(() => {
       // TODO gripped
-      // TODO teleportMaxDist
       for (let i = 0; i < controllerObjects.length; i++) {
         let o = controllerObjects[i]
         if (teleportMode && controllers[i] && controllers[i].gripped) {
           let hits = getIntersections(o, [groundRef.current])
           if (hits.length) {
             let hit = hits[0]
-            let teleportTargetPos = hit.point.toArray()
-            set(state => ({ ...state, teleportTargetPos }))
+            if (hit.distance < teleportMaxDist) {
+              let teleportTargetPos = hit.point.toArray()
+              set(state => ({ ...state, teleportTargetPos, teleportTargetValid: true }))
+            } else {
+              set(state => ({ ...state, teleportTargetValid: false }))
+            }
           }
         }
       }
