@@ -14,21 +14,11 @@
 // - https://discourse.threejs.org/t/object-bounds-not-updated-with-animation/3749/12
 
 const THREE = require('three')
-require('three/examples/js/utils/BufferGeometryUtils');
 
-// const ModelLoader = require('../services/model-loader')
-
-// const {
-  
-//   createPosePreset,
-  
-// } = require('../shared/reducers/shot-generator')
 const { Matrix4 } = THREE
 const { Vector3 } = THREE
-const { Vector4 } = THREE
 const { Object3D } = THREE
 const { SkinnedMesh } = THREE
-
 
 function getBoneList( object ) {
   var boneList = []
@@ -49,7 +39,7 @@ let cache = {}
 function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
 
   Object3D.call( this )
-  //ModelLoader.isCustomModel(model)
+
   let sknMesh = object3D.children.find(child => child instanceof THREE.SkinnedMesh) ||
     object3D.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
   
@@ -66,9 +56,8 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   
   zeroedSkinnedMesh.skeleton.pose()
 
-  //sknMesh.savePose(createPosePreset)
   sknMesh.savePose(zeroedSkinnedMesh)
-  
+
   var bbox = new THREE.Box3().setFromObject(object3D);
   let height = bbox.max.y - bbox.min.y
   if (height>2) vertexDistanceMyltiplyFactor = height * 10
@@ -81,15 +70,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
   matrixWorldInv.getInverse( object.matrixWorld )
   let traversedBones = []
 
-
-  let s_material = new THREE.MeshBasicMaterial({
-    color:0x7a72e9,
-    depthTest: false,
-    depthWrite: false,
-    transparent: true,
-    opacity: 0.9,
-    flatShading: true,
-  })
   // If matrix scale is not 1, 1, 1 colliders and bones appear massive
   object.matrixWorld.makeScale(1, 1, 1)
   for (var ii = 0; ii< bones.length; ii++) {
@@ -131,7 +111,16 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       // secondary geometry used for hit testing
       if (bone.name === 'Head') boneLength *= 1.5
 
-      cones[boneIndex] = new THREE.Mesh( geometry, s_material.clone() )
+      let s_material = new THREE.MeshBasicMaterial({
+        color:0x7a72e9,
+        depthTest: false,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.9,
+        flatShading: true,
+      })
+
+      cones[boneIndex] = new THREE.Mesh( geometry.clone(), s_material.clone() )
 
       cones[boneIndex].geometry.applyMatrix(new Matrix4().makeTranslation(0, boneLength/2+boneWidth/60, 0))
 
@@ -141,7 +130,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       cones[boneIndex].userData.segment = 0
 
       cones.matrixAutoUpdate = false;
-
       jj++
     }
   
@@ -149,7 +137,6 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
     let cone = cones[boneIndex];
     if(cone)
     {
-      cone.visible = false;
       this.bonesCones[bone.uuid] = {cone:cone, bone:bone};
       this.conesGroup.add(cone);
       bone.connectedBone = cone;
@@ -181,7 +168,6 @@ BonesHelper.prototype.updateMatrixWorld = function () {
     this.needsUpdate = false;
     var bones = this.bones
     matrixWorldInv.getInverse( this.root.matrixWorld )
-    let geometries = [];
     for ( var ii = 0; ii < bones.length; ii++ )
     {
       var bone = bones [ii]
@@ -192,7 +178,6 @@ BonesHelper.prototype.updateMatrixWorld = function () {
       bone.connectedBone.position.setFromMatrixPosition( boneMatrix )
       bone.connectedBone.quaternion.setFromRotationMatrix( boneMatrix )
       bone.connectedBone.scale.setFromMatrixScale( boneMatrix )
-      geometries.push(bone.connectedBone.geometry);
     }
   
     Object3D.prototype.updateMatrixWorld.call( this, force )
