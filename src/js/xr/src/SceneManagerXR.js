@@ -28,6 +28,7 @@ const TeleportTarget = require('./components/TeleportTarget')
 
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
+const getControllerIntersections = require('./helpers/get-controller-intersections')
 
 const { createSelector } = require('reselect')
 
@@ -284,23 +285,12 @@ const SceneContent = connect(
     // const controllerRight = useMemo(() => controllers.find(c => c.getHandedness() === 'right'), [controllers])
     // navigator.getGamepads()[0].hand
 
-    const getIntersections = (controller, objects) => {
-      let raycaster = new THREE.Raycaster()
-      let tempMatrix = new THREE.Matrix4()
-
-      tempMatrix.identity().extractRotation(controller.matrixWorld)
-
-      raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld)
-      raycaster.ray.direction.set(0, 0, -1).applyMatrix4(tempMatrix)
-      return raycaster.intersectObjects(objects, true)
-    }
-
     useRender(() => {
       // TODO gripped
       for (let i = 0; i < controllerObjects.length; i++) {
         let o = controllerObjects[i]
         if (teleportMode && controllers[i] && controllers[i].gripped) {
-          let hits = getIntersections(o, [groundRef.current])
+          let hits = getControllerIntersections(o, [groundRef.current])
           if (hits.length) {
             let hit = hits[0]
             if (hit.distance < teleportMaxDist) {
