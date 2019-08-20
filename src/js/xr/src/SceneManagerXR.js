@@ -132,6 +132,9 @@ const SceneContent = connect(
       const controller = event.target
       controller.gripped = true
 
+      // the target position value will be old until the next gl render
+      // so consider it invalid, to hide the mesh, until then
+      set(state => ({ ...state, teleportTargetValid: false }))
       setTeleportMode(true)
     }
 
