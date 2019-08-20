@@ -57,7 +57,9 @@ const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ set
 const createDualShockController = require('../../shot-generator/DualshockController')
 
 const XRServer = require('../../xr/app')
+const XRServerOld = require('../../express-xr/app')
 let xrServer
+let xrServerOld
 
 
 window.addEventListener('load', () => {
@@ -110,6 +112,7 @@ ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) 
 
   if (!xrServer) {
     xrServer = new XRServer({ store })
+    xrServerOld = new XRServerOld({ store })
   }
 
 })
@@ -168,7 +171,7 @@ createDualShockController(throttle(updater, 16, { leading: true }))
 //   setInputDown: payload => store.dispatch({ type: 'SET_INPUT_DOWN', payload }),
 //   setInputMouseMode: payload => store.dispatch({ type: 'SET_INPUT_MOUSEMODE', payload }),
 //   setInputOrbitMode: payload => store.dispatch({ type: 'SET_INPUT_ORBITMODE', payload }),
-// 
+//
 //   updateServer: payload => store.dispatch(updateServer(payload))
 // })
 
