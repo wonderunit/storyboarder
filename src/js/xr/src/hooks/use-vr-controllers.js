@@ -33,6 +33,8 @@ const useVrControllers = ({
   const onVRControllerConnected = event => {
     let controller = event.detail
     controller.standingMatrix = gl.vr.getStandingMatrix()
+    controller.pressed = false
+    controller.gripped = false
     setList(THREE.VRController.controllers)
 
     controller.addEventListener('trigger press began', (...rest) => onSelectStartRef.current(...rest))
