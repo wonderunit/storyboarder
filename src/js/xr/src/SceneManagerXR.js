@@ -135,16 +135,18 @@ const SceneContent = connect(
         return
       }
 
+      let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
+
       // find the positioned controller based on the data controller's gamepad array index
       let positionedObject = controllerObjects[event.target.gamepad.index]
       // gather all hits to tracked scene object3ds
-      let hits = getControllerIntersections(positionedObject, scene.__interaction)
+      let hits = getControllerIntersections(positionedObject, list)
       // if one intersects
       if (hits.length) {
         // grab the first intersection
         let child = hits[0].object
         // find either the child or one of its parents on the list of interaction-ables
-        let ancestor = findMatchingAncestor(child, scene.__interaction)
+        let ancestor = findMatchingAncestor(child, list)
         if (ancestor) {
           console.log('found sceneObject:', sceneObjects[ancestor.userData.id])
         }
