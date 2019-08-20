@@ -142,6 +142,9 @@ const SceneContent = connect(
     const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
 
     const onSelectStart = event => {
+      const controller = event.target
+      controller.pressed = true
+
       if (teleportMode) {
         onTeleport()
         return
@@ -171,7 +174,10 @@ const SceneContent = connect(
       }
     }
 
-    const onSelectEnd = event => {}
+    const onSelectEnd = event => {
+      const controller = event.target
+      controller.pressed = false
+    }
 
     const onGripDown = event => {
       const controller = event.target
@@ -263,6 +269,8 @@ const SceneContent = connect(
       }
     }
 
+    const store = useReduxStore()
+
     const { gl, camera, scene } = useThree()
 
     // values
@@ -341,6 +349,12 @@ const SceneContent = connect(
     // navigator.getGamepads()[0].hand
 
     useRender(() => {
+      // don't wait for a React update
+      // read values directly from stores
+      let teleportMode = useStoreApi.getState().teleportMode
+      let selections = getSelections(store.getState())
+      let selectedId = selections.length && selections[0]
+
       if (teleportMode) {
         for (let i = 0; i < controllerObjects.length; i++) {
           // via WebVRManager
@@ -364,7 +378,24 @@ const SceneContent = connect(
           }
         }
       }
-    }, false, [set, controllerObjects, controllers, teleportMode])
+
+      if (selectedId) {
+        let object3d = scene.__interaction.find(o => o.userData.id === selectedId)
+
+        // TODO handle if object3d no longer exists
+        //      e.g.: if scene was changed externally
+
+        for (let i = 0; i < controllers.length; i++) {
+          const controller = controllers[i]
+
+          if (controller.pressed) {
+            if (object3d) {
+              // TODO position/rotate object3d based on controller3d
+            }
+          }
+        }
+      }
+    }, false, [set, controllerObjects, controllers])
 
     return (
       <>
