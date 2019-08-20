@@ -7,7 +7,6 @@ function updateBoneToBone(pickingMesh, sourceMesh)
         pickingBones[i].position.copy(sourceBones[i].position);
         pickingBones[i].quaternion.copy(sourceBones[i].quaternion);
         pickingBones[i].scale.copy(sourceBones[i].scale);
-       // updateBoneToBone(cloneBone.children[i], sourceBone.children[i]);
     }
 }
 module.exports = {updateBoneToBone};

@@ -55,10 +55,7 @@ class UniversalPickableCharacter extends Pickable
         this.node.position.copy(parent.worldPosition());
         this.node.quaternion.copy(parent.worldQuaternion());
         this.node.scale.copy(parent.worldScale());
-        let clonnedRootBone = this.pickingMesh.skeleton.bones[0];
-        let originalRootBone = this.sceneMesh.skeleton.bones[0];
         updateBoneToBone(this.pickingMesh, this.sceneMesh);
-        //clonnedRootBone.updateMatrixWorld(true);
     }
 
     isObjectChanged()
