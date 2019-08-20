@@ -134,7 +134,8 @@ const SceneContent = connect(
       const controller = event.target
       controller.gripped = true
 
-      if (oppositeController(controller).gripped) {
+      let other = oppositeController(controller)
+      if (other && other.gripped) {
         console.log('selecting mini mode')
         setTeleportMode(false)
         return
