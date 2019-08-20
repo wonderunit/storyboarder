@@ -1,10 +1,12 @@
 const THREE = require('three')
+const { useMemo } = React = require('react')
 
-const Ground = ({ objRef, texture, visible }) =>
-{
-  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-  texture.offset.set( 0, 0 );
-  texture.repeat.set( 100, 100 );
+const Ground = React.memo(({ objRef, texture, visible }) => {
+  useMemo(() => {
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+    texture.offset.set(0, 0)
+    texture.repeat.set(100, 100)
+  }, [texture])
 
   return <mesh
     ref={objRef}
@@ -17,6 +19,6 @@ const Ground = ({ objRef, texture, visible }) =>
       <primitive attach='map' object={texture} />
     </meshLambertMaterial>
   </mesh>
-}
+})
 
 module.exports = Ground
