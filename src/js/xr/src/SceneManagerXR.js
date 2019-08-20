@@ -220,10 +220,10 @@ const SceneContent = connect(
 
     // controller state via THREE.VRController
     const controllers = useVrControllers({
-      // onSelectStart,
-      // onSelectEnd,
-      // onGripDown,
-      // onGripUp,
+      onSelectStart,
+      onSelectEnd,
+      onGripDown,
+      onGripUp,
       onAxesChanged
     })
     const controllerLeft = useMemo(() => controllers.find(c => c.getHandedness() === 'left'), [controllers])

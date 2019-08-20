@@ -5,22 +5,25 @@ window.THREE = window.THREE || THREE
 require('../../vendor/VRController')
 
 const useVrControllers = ({
-  // onSelectStart,
-  // onSelectEnd,
-  // onGripDown,
-  // onGripUp,
+  onSelectStart,
+  onSelectEnd,
+  onGripDown,
+  onGripUp,
   onAxesChanged
 }) => {
   const { gl } = useThree()
   const [list, setList] = useState([])
 
-  // const onSelectStartRef = useRef(onSelectStart)
-  // const onSelectEndRef = useRef(onSelectEnd)
-
-  // const onGripDownRef = useRef(onGripDown)
-  // const onGripUpRef = useRef(onGripUp)
-
+  const onSelectStartRef = useRef()
+  const onSelectEndRef = useRef()
+  const onGripDownRef = useRef()
+  const onGripUpRef = useRef()
   const onAxesChangedRef = useRef()
+
+  onSelectStartRef.current = onSelectStart
+  onSelectEndRef.current = onSelectEnd
+  onGripDownRef.current = onGripDown
+  onGripUpRef.current = onGripUp
   onAxesChangedRef.current = onAxesChanged
 
   useRender(() => {
@@ -32,10 +35,10 @@ const useVrControllers = ({
     controller.standingMatrix = gl.vr.getStandingMatrix()
     setList(THREE.VRController.controllers)
 
-    // controller.addEventListener('trigger press began', (...rest) => onSelectStartRef.current(...rest))
-    // controller.addEventListener('trigger press ended', (...rest) => onSelectEndRef.current(...rest))
-    // controller.addEventListener('grip press began', (...rest) => onGripDownRef.current(...rest))
-    // controller.addEventListener('grip press ended', (...rest) => onGripUpRef.current(...rest))
+    controller.addEventListener('trigger press began', (...rest) => onSelectStartRef.current(...rest))
+    controller.addEventListener('trigger press ended', (...rest) => onSelectEndRef.current(...rest))
+    controller.addEventListener('grip press began', (...rest) => onGripDownRef.current(...rest))
+    controller.addEventListener('grip press ended', (...rest) => onGripUpRef.current(...rest))
     controller.addEventListener('thumbstick axes changed', (...rest) => onAxesChangedRef.current(...rest))
     controller.addEventListener('thumbpad axes changed', (...rest) => onAxesChangedRef.current(...rest))
 
