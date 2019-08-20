@@ -31,6 +31,8 @@ const useVrControllers = ({
   })
 
   const onVRControllerConnected = event => {
+    console.log('onVRControllerConnected', event)
+
     let controller = event.detail
     controller.standingMatrix = gl.vr.getStandingMatrix()
     controller.pressed = false
@@ -49,6 +51,8 @@ const useVrControllers = ({
   }
 
   const onVRControllerDisconnected = event => {
+    console.log('onVRControllerDisconnected', event)
+
     let controller = event.detail
     setList(THREE.VRController.controllers)
   }
