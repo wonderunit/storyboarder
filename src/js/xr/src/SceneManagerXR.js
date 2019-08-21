@@ -32,6 +32,7 @@ const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
+const { log, Log } = require('./components/Log')
 
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
@@ -174,6 +175,7 @@ const SceneContent = connect(
       if (match) {
         // console.log('found sceneObject:', sceneObjects[match.userData.id])
         // console.log('intersection', intersection)
+        log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
 
         let cursor = positionedObject.getObjectByName('cursor')
 
@@ -185,6 +187,7 @@ const SceneContent = connect(
         selectObject(match.userData.id)
       } else {
         // console.log('clearing selection')
+        log(`select none`)
         selectObject(null)
       }
     }
@@ -465,6 +468,7 @@ const SceneContent = connect(
         >
           <primitive object={camera}>
             <Stats rStats={rStats} position={[0, 0, -1]} />
+            <Log position={[0, -0.15, -1]} />
           </primitive>
 
           <Suspense fallback={null}>
