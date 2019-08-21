@@ -3,7 +3,7 @@ const { useMemo, useEffect, useRef } = React = require('react')
 
 const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
-
+const BonesHelper = require("./BonesHelper");
 const Character = React.memo(({ sceneObject }) => {
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
   const filepath = useMemo(
@@ -12,6 +12,7 @@ const Character = React.memo(({ sceneObject }) => {
   )
 
   const gltf = useGltf(filepath)
+  const bonesHelper = BonesHelper.getInstance();
 
   const [skeleton, lod, originalSkeleton, armature] = useMemo(
     () => {
@@ -37,7 +38,7 @@ const Character = React.memo(({ sceneObject }) => {
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
       let armature = scene.children[0].children[0]
-
+      bonesHelper.initialize(lod.children[0]);
       return [skeleton, lod, originalSkeleton, armature]
     },
     [gltf]
@@ -66,6 +67,7 @@ const Character = React.memo(({ sceneObject }) => {
           bone.updateMatrixWorld()
         }
       }
+      bonesHelper.update();
     } else {
       skeleton.pose()
     }
@@ -84,6 +86,7 @@ const Character = React.memo(({ sceneObject }) => {
     >
       <primitive object={lod} />
       <primitive object={armature} />
+      <primitive object={bonesHelper}/>
     </group>
     : null
 })
