@@ -261,8 +261,15 @@ const SceneContent = connect(
     }
 
     const onAxesChanged = event => {
-      onMoveCamera(event)
-      onRotateCamera(event)
+      let controllerWithSelection = controllers.find(controller => controller.userData.selected)
+
+      if (controllerWithSelection) {
+        // onMoveObject(event)
+        // onRotateObject(event)
+      } else {
+        onMoveCamera(event)
+        onRotateCamera(event)
+      }
     }
 
     const onMoveCamera = event => {
