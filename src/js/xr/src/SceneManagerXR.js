@@ -182,18 +182,20 @@ const SceneContent = connect(
         log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
 
         let cursor = positionedObject.getObjectByName('cursor')
+        cursor.position.z = -intersection.distance
 
-        let p = new THREE.Vector3()
-        match.getWorldPosition(p)
-        cursor.parent.worldToLocal(p)
-        cursor.position.copy(p)
+        const pos = match.getWorldPosition(new THREE.Vector3())
+        const offset = new THREE.Vector3().subVectors(intersection.point, pos)
 
         controller.userData.selected = match.userData.id
+        controller.userData.selectOffset = offset
+
         selectObject(match.userData.id)
       } else {
         // console.log('clearing selection')
         log(`select none`)
         controller.userData.selected = null
+        controller.userData.selectOffset = null
         selectObject(null)
       }
     }
@@ -213,6 +215,8 @@ const SceneContent = connect(
         // grab its world position
         let wp = new THREE.Vector3()
         cursor.getWorldPosition(wp)
+        // offset it
+        wp.sub(controller.userData.selectOffset)
 
         // TODO worldscale
         // TODO rotation
@@ -229,6 +233,7 @@ const SceneContent = connect(
       }
 
       controller.userData.selected = null
+      controller.userData.selectOffset = null
     }
 
     const onGripDown = event => {
@@ -458,6 +463,8 @@ const SceneContent = connect(
               // grab its world position
               let wp = new THREE.Vector3()
               cursor.getWorldPosition(wp)
+              // offset it
+              wp.sub(dataObject.userData.selectOffset)
               // set the position
               object3d.position.copy(wp)
 
