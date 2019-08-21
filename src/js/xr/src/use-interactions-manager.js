@@ -21,7 +21,10 @@ const {
 const useInteractionsManager = (
   positionedControllers,
   useStore,
-  useStoreApi
+  useStoreApi,
+  {
+    groundRef
+  }
 ) => {
   const { camera, scene } = useThree()
 

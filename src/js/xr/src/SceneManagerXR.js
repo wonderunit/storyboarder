@@ -196,7 +196,10 @@ const SceneContent = connect(
     useInteractionsManager(
       controllers,
       useStore,
-      useStoreApi
+      useStoreApi,
+      {
+        groundRef
+      }
     )
 
     const directionalLightRef = useUpdate(ref => {
