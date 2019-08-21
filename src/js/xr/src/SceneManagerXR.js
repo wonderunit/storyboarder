@@ -1,6 +1,6 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useRender } = require('react-three-fiber')
+const { Canvas, useThree, useRender, useUpdate } = require('react-three-fiber')
 
 const { connect, Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -459,6 +459,16 @@ const SceneContent = connect(
       }
     }, false, [set, controllerObjects, controllers])
 
+    const directionalLightRef = useUpdate(ref => {
+      ref.add(ref.target)
+
+      ref.rotation.x = 0
+      ref.rotation.z = 0
+      ref.rotation.y = world.directional.rotation
+
+      ref.rotateX(world.directional.tilt + Math.PI / 2)
+    }, [world.directional.rotation, world.directional.tilt])
+
     return (
       <>
         <group
@@ -487,17 +497,7 @@ const SceneContent = connect(
         <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
 
         <directionalLight
-          ref={ref => {
-            if (ref) {
-              ref.add(ref.target)
-
-              ref.rotation.x = 0
-              ref.rotation.z = 0
-              ref.rotation.y = world.directional.rotation
-
-              ref.rotateX(world.directional.tilt + Math.PI / 2)
-            }
-          }}
+          ref={directionalLightRef}
           color={0xffffff}
           intensity={world.directional.intensity}
           position={[0, 1.5, 0]}
