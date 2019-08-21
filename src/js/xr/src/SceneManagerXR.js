@@ -359,7 +359,7 @@ const SceneContent = connect(
     useMemo(() => {
       scene.background = new THREE.Color(0x000000)
       scene.fog = new THREE.Fog( 0x000000, -10, 40 )
-    })
+    }, [])
 
     const teleportTexture = useMemo(
       () => new THREE.TextureLoader().load('/data/system/xr/teleport.png'), []
