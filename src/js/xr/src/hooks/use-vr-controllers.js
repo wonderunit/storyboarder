@@ -37,7 +37,7 @@ const useVrControllers = ({
     controller.standingMatrix = gl.vr.getStandingMatrix()
     controller.pressed = false
     controller.gripped = false
-    setList(THREE.VRController.controllers)
+    setList([...THREE.VRController.controllers.filter(Boolean)])
 
     controller.addEventListener('trigger press began', (...rest) => onSelectStartRef.current(...rest))
     controller.addEventListener('trigger press ended', (...rest) => onSelectEndRef.current(...rest))
@@ -45,6 +45,10 @@ const useVrControllers = ({
     controller.addEventListener('grip press ended', (...rest) => onGripUpRef.current(...rest))
     controller.addEventListener('thumbstick axes changed', (...rest) => onAxesChangedRef.current(...rest))
     controller.addEventListener('thumbpad axes changed', (...rest) => onAxesChangedRef.current(...rest))
+    controller.addEventListener('disconnected', event => {
+      console.log('disconnected', event)
+      setList([...THREE.VRController.controllers.filter(Boolean)])
+    })
 
     // controller.addEventListener('A press ended', event => undo())
     // controller.addEventListener('B press ended', event => redo())
@@ -54,7 +58,7 @@ const useVrControllers = ({
     console.log('onVRControllerDisconnected', event)
 
     let controller = event.detail
-    setList(THREE.VRController.controllers)
+    setList([...THREE.VRController.controllers.filter(Boolean)])
   }
 
   useEffect(() => {
