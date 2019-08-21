@@ -153,6 +153,10 @@ const SceneContent = connect(
         return
       }
 
+      const other = oppositeController(controller)
+      if (other && other.pressed) return
+      if (other && other.gripped) return
+
       let match = null
       let intersection = null
       let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
@@ -184,10 +188,12 @@ const SceneContent = connect(
         cursor.parent.worldToLocal(p)
         cursor.position.copy(p)
 
+        controller.userData.selected = match.userData.id
         selectObject(match.userData.id)
       } else {
         // console.log('clearing selection')
         log(`select none`)
+        controller.userData.selected = null
         selectObject(null)
       }
     }
@@ -196,7 +202,7 @@ const SceneContent = connect(
       const controller = event.target
       controller.pressed = false
 
-      if (selections.length) {
+      if (selections.length && controller.userData.selected) {
         // find the positioned controller based on the data controller's gamepad array index
         let positionedObject = controllerObjects[event.target.gamepad.index]
 
@@ -221,6 +227,8 @@ const SceneContent = connect(
           // rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
         })
       }
+
+      controller.userData.selected = null
     }
 
     const onGripDown = event => {
@@ -437,7 +445,7 @@ const SceneContent = connect(
           // we need both
           if (!(positionedObject && dataObject)) continue
 
-          if (dataObject.pressed) {
+          if (dataObject.pressed && dataObject.userData.selected) {
             if (object3d) {
               // TODO position/rotate object3d based on controller3d
 
