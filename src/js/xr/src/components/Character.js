@@ -10,9 +10,15 @@ const Character = React.memo(({ sceneObject }) => {
     () => `/data/system/dummies/gltf/${sceneObject.model}-lod.glb`,
     [sceneObject.model]
   )
+  let boneScene = useGltf("/data/system/objects/bone.glb");
+
 
   const gltf = useGltf(filepath)
-  const bonesHelper = BonesHelper.getInstance();
+  const bonesHelper = useMemo(() => 
+  {
+    let boneMesh = boneScene.scene.children.filter(child => child.isMesh)[0];
+    return BonesHelper.getInstance(boneMesh);
+  },    [boneScene]);
 
   const [skeleton, lod, originalSkeleton, armature] = useMemo(
     () => {

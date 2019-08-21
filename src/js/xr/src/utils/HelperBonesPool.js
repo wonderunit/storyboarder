@@ -1,9 +1,8 @@
 const THREE = require('three')
 require( 'three-instanced-mesh' )(THREE);
-
 class HelperBonesPool
 {
-    constructor(poolSize)
+    constructor(poolSize, boneMesh)
     {
         this.poolSize = poolSize;
         this.avaibleBones = [];
@@ -14,9 +13,9 @@ class HelperBonesPool
             depthWrite: false,
             transparent: true,
             opacity: 0.5,
-            flatShading: true})
-        let bufferGeometry = new THREE.CylinderBufferGeometry( 0.2, 0.2, 0.5, 6 );
-        this.instancedMesh = new THREE.InstancedMesh(bufferGeometry, material, poolSize, true, true, false)
+            flatShading: true});
+
+        this.instancedMesh = new THREE.InstancedMesh(boneMesh.geometry, material, poolSize, true, true, false)
         this.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
         this.defaultColor = new THREE.Color();
         this.defaultColor.setHSL( 0.2 , 0.5 , 0.5 );

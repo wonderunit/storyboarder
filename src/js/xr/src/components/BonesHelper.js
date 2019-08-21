@@ -1,16 +1,18 @@
 const THREE = require("three");
 const HelperBonesPool = require("../utils/HelperBonesPool");
+
 let instance = null;
 class BonesHelper extends THREE.Object3D
 {
-    constructor()
+    constructor(boneMesh)
     {
         super();
         if(!instance)
         {  
             instance = this;
-            instance.helperBonesPool = new HelperBonesPool(300);
+            instance.helperBonesPool = new HelperBonesPool(300, boneMesh);
             instance.helpingBones = [];
+            this.helpingBonesRelation = [];
             instance.reusableVector = new THREE.Vector3();
             instance.currentSkinnedMesh = null;
             this.add(this.helperBonesPool.instancedMesh);
@@ -24,9 +26,9 @@ class BonesHelper extends THREE.Object3D
         return instance;
     }
 
-    static getInstance()
+    static getInstance(boneMesh)
     {
-        return instance ? instance : new BonesHelper();
+        return instance ? instance : new BonesHelper(boneMesh);
     }
 
     get instancedMesh()
@@ -42,6 +44,7 @@ class BonesHelper extends THREE.Object3D
         {
             this.helperBonesPool.returnBones(this.helpingBones);
             this.helpingBones = [];
+            this.helpingBonesRelation = [];
         }
         this.currentSkinnedMesh = skinnedMesh;
         let bones = skinnedMesh.skeleton.bones;
@@ -53,42 +56,35 @@ class BonesHelper extends THREE.Object3D
         for(let i = 0, n = bones.length; i < n; i++)
         {
             bone = bones[i];
+            if(bone.children.length === 0) 
+            {
+                continue;
+            }
             helpingBone = this.helperBonesPool.takeBone();
             childPos = this.reusableVector;
             bone.getWorldPosition(helpingBone.position);
             bone.getWorldQuaternion(helpingBone.quaternion);
-            if(bone.children.length === 0) 
-            {
-                bone.parent.getWorldPosition(childPos);
-                size = childPos.distanceTo(helpingBone.position);
-            }
-            else
-            {
-                bone.children[bone.children.length - 1].getWorldPosition(childPos);
-                size = helpingBone.position.distanceTo(childPos);
-            }
-
+            bone.children[bone.children.length - 1].getWorldPosition(childPos);
+            size = helpingBone.position.distanceTo(childPos);
   
             thickness = Math.min(Math.max(size * 0.8, 0.07), 0.20);
             thickness = Math.min(thickness, size * 3);
 
             helpingBone.scale.set(thickness, size, thickness);
             this.helperBonesPool.updateInstancedBone(helpingBone);
+            this.helpingBonesRelation.push({helpingBone:helpingBone, originalBone:bone});
             this.helpingBones.push(helpingBone);
         }
     }
 
     update()
     {
-        let bones = this.currentSkinnedMesh.skeleton.bones;
-        let bone = null;
-        let helpingBone = null;
-        for(let i = 0, n = bones.length; i < n; i++)
+        //let bones = this.currentSkinnedMesh.skeleton.bones;
+        for(let i = 0, n =  this.helpingBonesRelation.length; i < n; i++)
         {
-            helpingBone =  this.helpingBones[i];
-            bone = bones[i];
-            bone.getWorldPosition(helpingBone.position);
-            bone.getWorldQuaternion(helpingBone.quaternion);
+            let {helpingBone, originalBone} = this.helpingBonesRelation[i];
+            originalBone.getWorldPosition(helpingBone.position);
+            originalBone.getWorldQuaternion(helpingBone.quaternion);
             this.helperBonesPool.updateInstancedBone(helpingBone);
         }
     }
