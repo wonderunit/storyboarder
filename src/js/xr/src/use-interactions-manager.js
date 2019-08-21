@@ -2,12 +2,17 @@ const { useThree, useRender } = require('react-three-fiber')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 
+const { create } = require('zustand')
+const { produce } = require('immer')
+
 const useVrControllers = require('./hooks/use-vr-controllers')
 
 const { log } = require('./components/Log')
 
 const getControllerIntersections = require('./helpers/get-controller-intersections')
 const findMatchingAncestor = require('./helpers/find-matching-ancestor')
+const rotatePoint = require('./helpers/rotate-point')
+const teleportParent = require('./helpers/teleport-parent')
 
 const {
   // selectors
@@ -18,13 +23,77 @@ const {
   updateObject
 } = require('../../shared/reducers/shot-generator')
 
-const useInteractionsManager = (
-  useStore,
-  useStoreApi,
-  {
-    groundRef
-  }
-) => {
+const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
+  // create virtual parent and child
+  let parent = new THREE.Object3D()
+  parent.position.set(teleportPos.x, teleportPos.y, teleportPos.z)
+  parent.rotation.set(teleportRot.x, teleportRot.y, teleportRot.z)
+
+  let child = new THREE.Object3D()
+  child.position.copy(camera.position)
+  child.rotation.copy(camera.rotation)
+  parent.add(child)
+  parent.updateMatrixWorld()
+
+  // teleport the virtual parent
+  teleportParent(parent, child, x, y, z, r)
+
+  // update state from new position of virtual parent
+  teleportPos.x = parent.position.x
+  teleportPos.y = parent.position.y
+  teleportPos.z = parent.position.z
+
+  teleportRot.x = parent.rotation.x
+  teleportRot.y = parent.rotation.y
+  teleportRot.z = parent.rotation.z
+}
+
+const [useStore, useStoreApi] = create((set, get) => ({
+  // values
+  teleportPos: { x: 0, y: 0, z: 0 },
+  teleportRot: { x: 0, y: 0, z: 0 },
+
+  didMoveCamera: null,
+  didRotateCamera: null,
+
+  teleportMaxDist: 10,
+  teleportMode: false,
+  teleportTargetPos: [0, 0, 0],
+  teleportTargetValid: false,
+
+  // actions
+  setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
+  setDidRotateCamera: value => set(produce(state => { state.didRotateCamera = value })),
+  setTeleportMode: value => set(state => ({ ...state, teleportMode: value })),
+
+  moveCameraByDistance: (camera, distance) => set(produce(state => {
+    let center = new THREE.Vector3()
+    camera.getWorldPosition(center)
+    let gr = camera.rotation.y + state.teleportRot.y
+
+    let target = new THREE.Vector3(center.x, 0, center.z + distance)
+    let d = rotatePoint(target, center, -gr)
+    teleportState(state, camera, d.x, null, d.z, null)
+  })),
+
+  rotateCameraByRadians: (camera, radians) => set(produce(state => {
+    let center = new THREE.Vector3()
+    camera.getWorldPosition(center)
+    let gr = camera.rotation.y + state.teleportRot.y
+
+    teleportState(state, camera, null, null, null, gr + radians)
+  })),
+
+  teleport: (camera, x, y, z, r) => set(produce(state => {
+    teleportState(state, camera, x, y, z, r)
+  })),
+
+  set: fn => set(produce(fn))
+}))
+
+const useInteractionsManager = ({
+  groundRef
+}) => {
   const { gl, camera, scene } = useThree()
 
   const selections = useSelector(getSelections)
@@ -155,7 +224,7 @@ const useInteractionsManager = (
       return
     }
 
-     if (controller.userData.selected) return
+    if (controller.userData.selected) return
 
     // the target position value will be old until the next gl render
     // so consider it invalid, to hide the mesh, until then
@@ -322,4 +391,8 @@ const useInteractionsManager = (
   }, false, [set, dataControllers])
 }
 
-module.exports = useInteractionsManager
+module.exports = {
+  useStore,
+  useStoreApi,
+  useInteractionsManager
+}
