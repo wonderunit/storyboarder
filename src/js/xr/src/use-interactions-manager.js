@@ -153,6 +153,8 @@ const useInteractionsManager = (
       return
     }
 
+     if (controller.userData.selected) return
+
     // the target position value will be old until the next gl render
     // so consider it invalid, to hide the mesh, until then
     set(state => ({ ...state, teleportTargetValid: false }))
