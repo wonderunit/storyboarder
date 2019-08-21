@@ -106,7 +106,7 @@ class BonesHelper extends THREE.Object3D
             let helpingBone = this.helpingBones[randomBone] !== this.selectedBone ? this.helpingBones[randomBone] : this.helpingBones[randomBone + 1] ? this.helpingBones[randomBone + 1] : this.helpingBones[randomBone - 1];
             this.selectedBone = helpingBone;
             this.color.setRGB(Math.random() * 256, Math.random() * 256, Math.random() * 256);
-            this.instancedMesh.setColorAt( helpingBone.id , this.color);
+            this.instancedMesh.setColorAt( helpingBone.userData.id , this.color);
             this.instancedMesh.needsUpdate("colors");
             this.currentUpdateColorCount = 0;
         }

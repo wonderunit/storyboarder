@@ -15,7 +15,7 @@ class HelperBonesPool
             transparent: true,
             opacity: 0.5,
             flatShading: true})
-        let bufferGeometry = new THREE.CylinderBufferGeometry( 0.2, 0.2, 0.8, 6 );
+        let bufferGeometry = new THREE.CylinderBufferGeometry( 0.2, 0.2, 0.5, 6 );
         this.instancedMesh = new THREE.InstancedMesh(bufferGeometry, material, poolSize, true, true, false)
         this.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
         this.defaultColor = new THREE.Color();
@@ -32,13 +32,13 @@ class HelperBonesPool
         let rot = new THREE.Euler(0,0,0)
         let quat = new THREE.Quaternion().setFromEuler( rot )
         let scale = 0;
-        this.avaibleBones.push({
-            id: id,
-            position: this.defaultPosition.clone(),
-            rotation: rot,
-            quaternion: quat,
-            scale: new THREE.Vector3( scale, scale, scale )
-        })
+        let bone = new THREE.Object3D();
+        bone.userData.id = id;
+        bone.position.copy(this.defaultPosition.clone());
+        bone.rotation.copy(rot);
+        bone.quaternion.copy(quat);
+        bone.scale.set( scale, scale, scale );
+        this.avaibleBones.push(bone);
         this.updateInstancedBone(this.avaibleBones[ id ], this.defaultColor);
     }
 
@@ -53,7 +53,7 @@ class HelperBonesPool
 
     updateInstancedBone(bone, color = null)
     {
-        let id = bone.id;
+        let id = bone.userData.id;
         this.instancedMesh.setPositionAt( id , bone.position );
         this.instancedMesh.setQuaternionAt( id , bone.quaternion );
         this.instancedMesh.setScaleAt( id , bone.scale );
@@ -71,24 +71,24 @@ class HelperBonesPool
             this.poolSize++;
         }
         let bone = this.avaibleBones.shift();
-        this.usedBones[bone.id] = bone;
+        this.usedBones[bone.userData.id] = bone;
         return bone;
     }
 
     returnBone(bone)
     {
-        if(!bone.id)
+        if(!bone.userData.id)
         {
             return;
         }
-        let usedBone = this.usedBones[bone.id];
+        let usedBone = this.usedBones[bone.userData.id];
         if(!usedBone)
         {
             return;
         }
         this.avaibleBones.unshift(usedBone);
-        this.usedBones[bone.id] = null;
-        delete this.usedBones[bone.id];
+        this.usedBones[bone.userData.id] = null;
+        delete this.usedBones[bone.userData.id];
         
     }
 
