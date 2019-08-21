@@ -91,6 +91,14 @@ THREE.Object3D.prototype.worldScale = function ()
     return scale;
 }
 
+THREE.Object3D.prototype.removeAllChildren = function()
+{
+    while(this.children.length !== 0)
+    {
+        this.remove(this.children[0]);
+    }
+}
+
 // For memes
 THREE.Quaternion.prototype.substract = function(quanternion)
 {

@@ -12,6 +12,7 @@ class XRGPUPickerController extends GPUPickerController
     initalizeChildren(intersectObjects)
     {
         let objects = [];
+        this.pickingScene.removeAllChildren();
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
@@ -19,6 +20,7 @@ class XRGPUPickerController extends GPUPickerController
             let pickableObject = pickableObjects[intesectable.uuid];
             if(Object.keys(pickableObjects).length !== 0 && pickableObject)
             {
+                this.pickingScene.add(pickableObject.node);
                 if(pickableObject.isObjectChanged())
                 {
                     pickableObject.applyObjectChanges();
