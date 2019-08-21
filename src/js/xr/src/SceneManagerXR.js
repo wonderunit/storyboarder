@@ -187,14 +187,7 @@ const SceneContent = connect(
     const teleportRef = useRef()
     const groundRef = useRef()
 
-    // controller objects via THREE.WebVRManager
-    const controllers = useMemo(
-      () => [gl.vr.getController(0), gl.vr.getController(1)],
-      []
-    )
-
     useInteractionsManager(
-      controllers,
       useStore,
       useStoreApi,
       {
@@ -225,13 +218,13 @@ const SceneContent = connect(
           </primitive>
 
           <Suspense fallback={null}>
-            <primitive object={controllers[0]}>
+            <primitive object={gl.vr.getController(0)}>
               <Controller />
             </primitive>
           </Suspense>
 
           <Suspense fallback={null}>
-            <primitive object={controllers[1]}>
+            <primitive object={gl.vr.getController(1)}>
               <Controller />
             </primitive>
           </Suspense>

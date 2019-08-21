@@ -19,14 +19,13 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useInteractionsManager = (
-  positionedControllers,
   useStore,
   useStoreApi,
   {
     groundRef
   }
 ) => {
-  const { camera, scene } = useThree()
+  const { gl, camera, scene } = useThree()
 
   const selections = useSelector(getSelections)
 
@@ -70,7 +69,7 @@ const useInteractionsManager = (
     let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
 
     // find the positioned controller based on the data controller's gamepad array index
-    let positionedObject = positionedControllers[event.target.gamepad.index]
+    let positionedObject = gl.vr.getController(event.target.gamepad.index)
     // gather all hits to tracked scene object3ds
     let hits = getControllerIntersections(positionedObject, list)
     // if one intersects
@@ -115,7 +114,7 @@ const useInteractionsManager = (
 
     if (selections.length && controller.userData.selected) {
       // find the positioned controller based on the data controller's gamepad array index
-      let positionedObject = positionedControllers[event.target.gamepad.index]
+      let positionedObject = gl.vr.getController(event.target.gamepad.index)
 
       // find the cursor
       let cursor = positionedObject.getObjectByName('cursor')
@@ -261,11 +260,11 @@ const useInteractionsManager = (
     let selectedId = selections.length ? selections[0] : null
 
     if (teleportMode) {
-      for (let i = 0; i < positionedControllers.length; i++) {
-        // via WebVRManager
-        let positionedObject = positionedControllers[i]
+      for (let i = 0; i < dataControllers.length; i++) {
         // via THREE.VRController
         let dataObject = dataControllers[i]
+        // via WebVRManager
+        let positionedObject = gl.vr.getController(dataObject.gamepad.index)
         // we need both
         if (!(positionedObject && dataObject)) continue
 
@@ -291,10 +290,10 @@ const useInteractionsManager = (
       //      e.g.: if scene was changed externally
 
       for (let i = 0; i < dataControllers.length; i++) {
-        // via WebVRManager
-        let positionedObject = positionedControllers[i]
         // via THREE.VRController
         let dataObject = dataControllers[i]
+        // via WebVRManager
+        let positionedObject = gl.vr.getController(dataObject.gamepad.index)
         // we need both
         if (!(positionedObject && dataObject)) continue
 
@@ -320,7 +319,7 @@ const useInteractionsManager = (
         }
       }
     }
-  }, false, [set, positionedControllers, dataControllers])
+  }, false, [set, dataControllers])
 }
 
 module.exports = useInteractionsManager
