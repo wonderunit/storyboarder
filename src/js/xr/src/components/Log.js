@@ -8,9 +8,10 @@ const [useLogStore, useLogStoreApi] = create(set => ({
   log: []
 }))
 
-const reducer = (state, value) => {
+const reducer = (state, ...rest) => {
+  let string = rest.join(', ')
   let next = state.log.slice()
-  next.push(value)
+  next.push(string)
   let log = next.slice(-5)
 
   return { ...state, log }
@@ -34,6 +35,6 @@ const Log = ({ position }) => {
 }
 
 module.exports = {
-  log: value => useLogStoreApi.setState(reducer(useLogStoreApi.getState(), value)),
+  log: (...rest) => useLogStoreApi.setState(reducer(useLogStoreApi.getState(), ...rest)),
   Log
 }
