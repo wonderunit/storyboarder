@@ -260,7 +260,7 @@ const useInteractionsManager = (
         // via WebVRManager
         let positionedObject = positionedControllers[i]
         // via THREE.VRController
-        let dataObject = controllers[i]
+        let dataObject = dataControllers[i]
         // we need both
         if (!(positionedObject && dataObject)) continue
 
