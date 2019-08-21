@@ -1,5 +1,5 @@
-VRController from stewdio/THREE.VRController
-https://github.com/stewdio/THREE.VRController/blob/54e2d3e8524e9a7249aaa3142a38b06963687b66/VRController.js
+VRController from stewdio/THREE.VRController with a patch from https://github.com/stewdio/THREE.VRController/pull/22 to fix onGamepadDisconnect
+https://github.com/stewdio/THREE.VRController/blob/00618e94eb83d6d82b69aa9ae609aacf5ac7864a/VRController.js
 
 rstats from aframe
 https://github.com/aframevr/aframe/blob/8c3c1b4a1e332a7d8eb7c1e5c08d6864de3b554e/vendor/rStats.js
