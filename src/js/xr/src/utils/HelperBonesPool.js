@@ -14,40 +14,41 @@ class HelperBonesPool
             transparent: true,
             opacity: 0.5,
             flatShading: true});
-
+        this.boneMesh = boneMesh;
+        this.material = material;
         this.instancedMesh = new THREE.InstancedMesh(boneMesh.geometry, material, poolSize, true, true, false)
         this.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
-        this.defaultColor = new THREE.Color();
-        this.defaultColor.setHSL( 0.2 , 0.5 , 0.5 );
+        this.defaultColor = new THREE.Color().setHSL( 0.2 , 0.5 , 0.5 );
         for ( var i = 0 ; i < poolSize; i ++ )
         {
             this.addBone(i);
         }
     }
     
-    //Private?
     addBone(id)
     {
-        let rot = new THREE.Euler(0,0,0)
-        let quat = new THREE.Quaternion().setFromEuler( rot )
-        let scale = 0;
-        let bone = new THREE.Object3D();
+        let bone = this.boneMesh.clone();
+        bone.material = this.material;
+        bone.material.visible = false;
         bone.userData.id = id;
-        bone.position.copy(this.defaultPosition.clone());
-        bone.rotation.copy(rot);
-        bone.quaternion.copy(quat);
-        bone.scale.set( scale, scale, scale );
+        this.resetBone(bone);
+        bone.matrixAutoUpdate = false;
         this.avaibleBones.push(bone);
-        this.updateInstancedBone(this.avaibleBones[ id ], this.defaultColor);
     }
 
     resetBone(bone)
     {
-        bone.position.copy(thdefault);
+        bone.position.copy(this.defaultPosition);
         bone.rotation.set(0, 0, 0);
         bone.quaternion.set(0, 0, 0, 0);
         bone.scale.set(0, 0, 0);
         this.updateInstancedBone(bone, this.defaultColor);
+    }
+
+    changeBoneColor(bone, color)
+    {
+        this.instancedMesh.setColorAt(bone.userData.id, color );
+        this.instancedMesh.needsUpdate("colors");
     }
 
     updateInstancedBone(bone, color = null)
@@ -58,16 +59,18 @@ class HelperBonesPool
         this.instancedMesh.setScaleAt( id , bone.scale );
         if(color)
         {
-            this.instancedMesh.setColorAt( id , color );
+            this.changeBoneColor(bone, this.defaultColor);
         }
+        this.instancedMesh.needsUpdate("position");
+        this.instancedMesh.needsUpdate("quaternion");
+        this.instancedMesh.needsUpdate("scale");
     }
 
     takeBone()
     {
         if(this.avaibleBones.length === 0)
         {
-            this.addBone(this.poolSizes);
-            this.poolSize++;
+            return;
         }
         let bone = this.avaibleBones.shift();
         this.usedBones[bone.userData.id] = bone;
@@ -85,7 +88,8 @@ class HelperBonesPool
         {
             return;
         }
-        this.avaibleBones.unshift(usedBone);
+        this.resetBone(usedBone);
+        this.avaibleBones.push(usedBone);
         this.usedBones[bone.userData.id] = null;
         delete this.usedBones[bone.userData.id];
         
@@ -109,4 +113,5 @@ class HelperBonesPool
         }
     }
 }
+
 module.exports = HelperBonesPool;

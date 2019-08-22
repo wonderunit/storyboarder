@@ -1,7 +1,9 @@
 const THREE = require("three");
 const HelperBonesPool = require("../utils/HelperBonesPool");
-
+require('../../../shot-generator/ik/utils/Object3dExtension');
 let instance = null;
+let boneMatrix = new THREE.Matrix4();
+let reusableVector = new THREE.Vector3();
 class BonesHelper extends THREE.Object3D
 {
     constructor(boneMesh)
@@ -11,17 +13,11 @@ class BonesHelper extends THREE.Object3D
         {  
             instance = this;
             instance.helperBonesPool = new HelperBonesPool(300, boneMesh);
-            instance.helpingBones = [];
             this.helpingBonesRelation = [];
-            instance.reusableVector = new THREE.Vector3();
-            instance.currentSkinnedMesh = null;
             this.add(this.helperBonesPool.instancedMesh);
-            /// Random color switching stuff 
-            // TODO(): Remove it
-            this.updateColorCount = 30;
-            this.currentUpdateColorCount = 0;
-            this.color = new THREE.Color();
-            this.selectedBone = null;
+            this.bonesGroup = new THREE.Group();
+            this.add(this.bonesGroup)
+            this.intializedSkinnedMeshUuid = null;
         }
         return instance;
     }
@@ -40,19 +36,27 @@ class BonesHelper extends THREE.Object3D
     // And creates InstancedMesh 
     initialize(skinnedMesh)
     {
-        if(this.helpingBones.length > 0)
+        if(this.intializedSkinnedMeshUuid && this.intializedSkinnedMeshUuid === skinnedMesh.uuid)
         {
-            this.helperBonesPool.returnBones(this.helpingBones);
-            this.helpingBones = [];
-            this.helpingBonesRelation = [];
+            return;
         }
-        this.currentSkinnedMesh = skinnedMesh;
+        this.intializedSkinnedMeshUuid = skinnedMesh.uuid;
+        if(this.bonesGroup.children.length > 0)
+        {
+            this.helperBonesPool.returnBones(this.bonesGroup.children);
+            this.helpingBonesRelation = [];
+            while(this.bonesGroup.children.length !== 0)
+            {
+                this.bonesGroup.remove(this.bonesGroup.children[0]);      
+            }
+        }
         let bones = skinnedMesh.skeleton.bones;
         let bone = null;
         let helpingBone = null;
-        let childPos = this.reusableVector;
         let size = 0;
         let thickness = 0;
+        let inverseWorldMatrix = null;
+        let boneMatrix = new THREE.Matrix4();
         for(let i = 0, n = bones.length; i < n; i++)
         {
             bone = bones[i];
@@ -60,12 +64,17 @@ class BonesHelper extends THREE.Object3D
             {
                 continue;
             }
+            if(i === 0)
+            {
+                inverseWorldMatrix = bone.parent.getInverseMatrixWorld();
+            }
             helpingBone = this.helperBonesPool.takeBone();
-            childPos = this.reusableVector;
-            bone.getWorldPosition(helpingBone.position);
-            bone.getWorldQuaternion(helpingBone.quaternion);
-            bone.children[bone.children.length - 1].getWorldPosition(childPos);
-            size = helpingBone.position.distanceTo(childPos);
+            boneMatrix.multiplyMatrices( inverseWorldMatrix, bone.matrixWorld )
+            helpingBone.position.setFromMatrixPosition(boneMatrix);
+            helpingBone.quaternion.setFromRotationMatrix(boneMatrix);
+
+            bone.children[bone.children.length - 1].getWorldPosition(reusableVector);
+            size = bone.worldPosition().distanceTo(reusableVector);
   
             thickness = Math.min(Math.max(size * 0.8, 0.07), 0.20);
             thickness = Math.min(thickness, size * 3);
@@ -73,42 +82,56 @@ class BonesHelper extends THREE.Object3D
             helpingBone.scale.set(thickness, size, thickness);
             this.helperBonesPool.updateInstancedBone(helpingBone);
             this.helpingBonesRelation.push({helpingBone:helpingBone, originalBone:bone});
-            this.helpingBones.push(helpingBone);
+            this.bonesGroup.add(helpingBone)
         }
     }
 
     update()
     {
-        //let bones = this.currentSkinnedMesh.skeleton.bones;
-        for(let i = 0, n =  this.helpingBonesRelation.length; i < n; i++)
+        let inverseWorldMatrix = null;
+        for(let i = 0, n = this.helpingBonesRelation.length; i < n; i++)
         {
             let {helpingBone, originalBone} = this.helpingBonesRelation[i];
-            originalBone.getWorldPosition(helpingBone.position);
-            originalBone.getWorldQuaternion(helpingBone.quaternion);
+            if(i === 0)
+            {
+                inverseWorldMatrix = originalBone.parent.getInverseMatrixWorld();
+            }
+            boneMatrix.multiplyMatrices( inverseWorldMatrix, originalBone.matrixWorld )
+            helpingBone.position.setFromMatrixPosition(boneMatrix);
+            helpingBone.quaternion.setFromRotationMatrix(boneMatrix);
+            
+            helpingBone.updateMatrix();
             this.helperBonesPool.updateInstancedBone(helpingBone);
+            this.instancedMesh.needsUpdate("position");
+            this.instancedMesh.needsUpdate("quaternion");
         }
     }
-    // Random color switching stuff 
-    // TODO(): Remove it
+
+    changeBoneColor(bone, color)
+    {
+        let helpingBone = this.helpingBonesRelation.find(object => object.originalBone.uuid === bone.uuid).helpingBone;
+
+        if(!helpingBone)
+        {
+            return;
+        }
+        this.helperBonesPool.changeBoneColor(helpingBone, color);
+    }
+
     updateMatrixWorld(force)
     {
-        if(this.currentUpdateColorCount === this.updateColorCount)
-        {
-            if(this.selectedBone)
-            {
-                this.instancedMesh.setColorAt( this.selectedBone.id , this.helperBonesPool.defaultColor );
-            }
-            let randomBone = Math.floor(Math.random() * Math.floor(this.helpingBones.length)) ;
-            let helpingBone = this.helpingBones[randomBone] !== this.selectedBone ? this.helpingBones[randomBone] : this.helpingBones[randomBone + 1] ? this.helpingBones[randomBone + 1] : this.helpingBones[randomBone - 1];
-            this.selectedBone = helpingBone;
-            this.color.setRGB(Math.random() * 256, Math.random() * 256, Math.random() * 256);
-            this.instancedMesh.setColorAt( helpingBone.userData.id , this.color);
-            this.instancedMesh.needsUpdate("colors");
-            this.currentUpdateColorCount = 0;
-        }
-        this.currentUpdateColorCount++;
+        this.update();
         super.updateMatrixWorld(force);
     }
 
+    raycast(raycaster, intersects)
+    {
+        let results = raycaster.intersectObjects(this.bonesGroup.children);
+        for (let result of results) 
+        {
+          result.bone = this.helpingBonesRelation.find(object => object.helpingBone.id === result.object.id).originalBone;
+          intersects.push(result);
+        }
+    }
 }
 module.exports = BonesHelper;
