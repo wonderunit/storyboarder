@@ -1,3 +1,4 @@
+const { useMemo } = React = require('react')
 const { useThree, useRender } = require('react-three-fiber')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -15,6 +16,9 @@ const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
 
 const BonesHelper = require('./three/BonesHelper')
+
+const { interpret } = require('xstate/lib/interpreter')
+const interactionMachine = require('./machines/interactionMachine')
 
 const {
   // selectors
@@ -127,7 +131,8 @@ const useInteractionsManager = ({
     controller.pressed = true
 
     if (teleportMode) {
-      onTeleport()
+      interactionService.send({ type: 'TRIGGER_START', controller: event.target })
+      // onTeleport()
       return
     }
 
@@ -149,7 +154,11 @@ const useInteractionsManager = ({
     let bonesHelperHits = getControllerIntersections(controller, [BonesHelper.getInstance()])
     bonesHelperHits.forEach(h => {
       if (h.bone) {
-        log(`bone: ${h.bone.name}`)
+        log(`bone: ${h.bone.uuid.slice(0, 7)}`)
+
+        console.log('trigger_start', event.target, h.bone.uuid)
+        interactionService.send({ type: 'TRIGGER_START', controller: event.target, id: bone.uuid, hitType: 'bone' })
+
       } else {
         // log(h.object.name)
       }
@@ -184,18 +193,33 @@ const useInteractionsManager = ({
       controller.userData.selectOffset = offset
 
       dispatch(selectObject(match.userData.id))
+
+      // this
+      // was selected
+      console.log(interactionService)
+      console.log('now:', interactionService.state.value)
+      console.log(
+        'trying',
+        { type: 'TRIGGER_START', controller: event.target, id: match.userData.id, hitType: match.userData.type }
+      )
+      interactionService.send({ type: 'TRIGGER_START', controller: event.target, id: match.userData.id, hitType: match.userData.type })
     } else {
       // console.log('clearing selection')
       log(`select none`)
       controller.userData.selected = null
       controller.userData.selectOffset = null
       dispatch(selectObject(null))
+
+      console.log('trigger_start', event.target)
+      interactionService.send({ type: 'TRIGGER_START', controller: event.target })
     }
   }
 
   const onTriggerEnd = event => {
     const controller = event.target
     controller.pressed = false
+
+    interactionService.send({ type: 'TRIGGER_END', controller: event.target })
 
     if (selections.length && controller.userData.selected) {
       // find the cursor
@@ -230,6 +254,8 @@ const useInteractionsManager = ({
     const controller = event.target
     controller.gripped = true
 
+    interactionService.send({ type: 'GRIP_DOWN', controller: event.target })
+
     let other = oppositeController(controller)
     if (other && other.gripped) {
       console.log('selecting mini mode')
@@ -248,6 +274,8 @@ const useInteractionsManager = ({
   const onGripUp = event => {
     const controller = event.target
     controller.gripped = false
+
+    interactionService.send({ type: 'GRIP_UP', controller: event.target })
 
     setTeleportMode(false)
   }
@@ -311,17 +339,6 @@ const useInteractionsManager = ({
         setDidRotateCamera(45)
         rotateCameraByRadians(camera, THREE.Math.degToRad(45))
       }
-    }
-  }
-
-  const onTeleport = () => {
-    // TODO adjust by worldScale
-    // TODO reset worldScale after teleport
-
-    if (teleportTargetValid) {
-      let pos = useStoreApi.getState().teleportTargetPos
-      teleport(pos[0], 0, pos[2], null)
-      setTeleportMode(false)
     }
   }
 
@@ -395,6 +412,47 @@ const useInteractionsManager = ({
       }
     }
   }, false, [set, controllers])
+
+  const interactionService = useMemo(() => {
+    // StateNode.withConfig doesn't accept services until xstate 4.6.7
+    const interactionService = interpret(interactionMachine).onTransition((state, event) => {
+      const { value, context } = state
+      const {
+        miniMode,
+        snap,
+        selection,
+        controller
+      } = context
+
+      log(
+`mode: ${value}
+event: ${event.type}
+selection: ${selection}
+controller: ${controller}
+`)
+
+    })
+    interactionService.start()
+
+    return interactionService
+  }, [])
+
+  interactionMachine.options.services = {
+    ...interactionMachine.options.services,
+
+    teleport: (context, event) => new Promise(resolve => {
+
+      // TODO adjust by worldScale
+      // TODO reset worldScale after teleport
+      if (teleportTargetValid) {
+        let pos = useStoreApi.getState().teleportTargetPos
+        teleport(pos[0], 0, pos[2], null)
+        setTeleportMode(false)
+      }
+
+    })
+  }
+
 }
 
 module.exports = {
