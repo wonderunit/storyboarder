@@ -13,8 +13,8 @@ const getList = (controllers, gl) =>
   controllers.filter(Boolean).map(c => gl.vr.getController(c.gamepad.index))
 
 const useVrControllers = ({
-  onSelectStart,
-  onSelectEnd,
+  onTriggerStart,
+  onTriggerEnd,
   onGripDown,
   onGripUp,
   onAxesChanged
@@ -22,14 +22,14 @@ const useVrControllers = ({
   const { gl } = useThree()
   const [list, setList] = useState([])
 
-  const onSelectStartRef = useRef()
-  const onSelectEndRef = useRef()
+  const onTriggerStartRef = useRef()
+  const onTriggerEndRef = useRef()
   const onGripDownRef = useRef()
   const onGripUpRef = useRef()
   const onAxesChangedRef = useRef()
 
-  onSelectStartRef.current = onSelectStart
-  onSelectEndRef.current = onSelectEnd
+  onTriggerStartRef.current = onTriggerStart
+  onTriggerEndRef.current = onTriggerEnd
   onGripDownRef.current = onGripDown
   onGripUpRef.current = onGripUp
   onAxesChangedRef.current = onAxesChanged
@@ -45,8 +45,8 @@ const useVrControllers = ({
     controller.standingMatrix = gl.vr.getStandingMatrix()
     setList(getList(THREE.VRController.controllers, gl))
 
-    controller.addEventListener('trigger press began', event => onSelectStartRef.current(modifyEvent(event, gl)))
-    controller.addEventListener('trigger press ended', event => onSelectEndRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('trigger press began', event => onTriggerStartRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('trigger press ended', event => onTriggerEndRef.current(modifyEvent(event, gl)))
     controller.addEventListener('grip press began', event => onGripDownRef.current(modifyEvent(event, gl)))
     controller.addEventListener('grip press ended', event => onGripUpRef.current(modifyEvent(event, gl)))
     controller.addEventListener('thumbstick axes changed', event => onAxesChangedRef.current(modifyEvent(event, gl)))

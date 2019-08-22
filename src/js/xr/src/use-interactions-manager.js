@@ -122,7 +122,7 @@ const useInteractionsManager = ({
 
   const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
 
-  const onSelectStart = event => {
+  const onTriggerStart = event => {
     const controller = event.target
     controller.pressed = true
 
@@ -193,7 +193,7 @@ const useInteractionsManager = ({
     }
   }
 
-  const onSelectEnd = event => {
+  const onTriggerEnd = event => {
     const controller = event.target
     controller.pressed = false
 
@@ -327,8 +327,8 @@ const useInteractionsManager = ({
 
   // controller state via THREE.VRController
   const controllers = useVrControllers({
-    onSelectStart,
-    onSelectEnd,
+    onTriggerStart,
+    onTriggerEnd,
     onGripDown,
     onGripUp,
     onAxesChanged
