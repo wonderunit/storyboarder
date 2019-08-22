@@ -39,6 +39,7 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
       let armature = scene.children[0].children[0]
+
       return [skeleton, lod, originalSkeleton, armature]
     },
     [gltf]
