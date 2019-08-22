@@ -122,9 +122,9 @@ const SceneContent = connect(
 
     // initialize the BonesHelper
     const boneGltf = useGltf('/data/system/dummies/bone.glb')
-    const bonesHelper = useMemo(() => {
+    useMemo(() => {
       let mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
-      return BonesHelper.getInstance(mesh)
+      BonesHelper.getInstance(mesh)
     }, [boneGltf])
 
     const directionalLightRef = useUpdate(ref => {
@@ -136,6 +136,10 @@ const SceneContent = connect(
 
       ref.rotateX(world.directional.tilt + Math.PI / 2)
     }, [world.directional.rotation, world.directional.tilt])
+
+    const selectedCharacter = selections.length && sceneObjects[selections[0]].type == 'character'
+      ? sceneObjects[selections[0]]
+      : null
 
     return (
       <>
@@ -177,11 +181,19 @@ const SceneContent = connect(
             <Suspense key={id} fallback={null}>
               <Character
                 sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)}
-                bonesHelper={bonesHelper} />
+                isSelected={selections.includes(id)} />
             </Suspense>
           )
         }
+
+        <primitive
+          visible={selectedCharacter != null ? true : false}
+          position={
+            selectedCharacter != null
+              ? [selectedCharacter.x, selectedCharacter.z, selectedCharacter.y]
+              : [0, 0, 0]
+          }
+          object={BonesHelper.getInstance()} />
 
         {
           modelObjectIds.map(id =>

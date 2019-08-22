@@ -1,15 +1,12 @@
 const THREE = require('three')
-const { useMemo, useEffect, useRef } = React = require('react')
+const { useMemo } = React = require('react')
 
 const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
+
 const BonesHelper = require('../three/BonesHelper')
 
-const { log } = require('./Log')
-
-const Character = React.memo(({ sceneObject, isSelected, bonesHelper }) => {
-  console.log('Character update', { bonesHelper })
-
+const Character = React.memo(({ sceneObject, isSelected }) => {
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
   const filepath = useMemo(
     () => `/data/system/dummies/gltf/${sceneObject.model}-lod.glb`,
@@ -70,7 +67,7 @@ const Character = React.memo(({ sceneObject, isSelected, bonesHelper }) => {
           bone.updateMatrixWorld()
         }
       }
-      bonesHelper.update()
+      BonesHelper.getInstance().update()
     } else {
       skeleton.pose()
     }
@@ -78,9 +75,8 @@ const Character = React.memo(({ sceneObject, isSelected, bonesHelper }) => {
 
   useMemo(() => {
     if (isSelected) {
-      log(`showing bonesHelper for ${sceneObject.name}`)
-      bonesHelper.initialize(lod.children[0])
-      bonesHelper.update()
+      BonesHelper.getInstance().initialize(lod.children[0])
+      BonesHelper.getInstance().update()
     }
   }, [isSelected])
 
@@ -98,7 +94,6 @@ const Character = React.memo(({ sceneObject, isSelected, bonesHelper }) => {
     >
       <primitive object={lod} />
       <primitive object={armature} />
-      <primitive object={bonesHelper} />
     </group>
     : null
 })

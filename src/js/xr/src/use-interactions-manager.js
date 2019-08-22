@@ -14,6 +14,8 @@ const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
 
+const BonesHelper = require('./three/BonesHelper')
+
 const {
   // selectors
   getSelections,
@@ -384,6 +386,9 @@ const useInteractionsManager = ({
             // set the position
             object3d.position.copy(wp)
 
+            // DEBUG added to test BonesHelper
+            BonesHelper.getInstance().update()
+            BonesHelper.getInstance().position.copy(wp)
           }
         }
       }
