@@ -135,7 +135,7 @@ const useInteractionsManager = ({
 
     let match = null
     let intersection = null
-    let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
+    let list = scene.__interaction//.filter(object3d => object3d.userData.type != 'character')
 
     // find the positioned controller based on the data controller's gamepad array index
     let positionedObject = gl.vr.getController(event.target.gamepad.index)

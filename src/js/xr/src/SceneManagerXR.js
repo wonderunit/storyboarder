@@ -4,7 +4,7 @@ const { Canvas, useThree, useUpdate } = require('react-three-fiber')
 
 const { connect, Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
-const { useMemo, useRef, Suspense } = React = require('react')
+const { useMemo, useRef, useState, useEffect, Suspense } = React = require('react')
 
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
@@ -21,6 +21,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
+const useGltf = require('./hooks/use-gltf')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
 
@@ -31,6 +32,8 @@ const ModelObject = require('./components/ModelObject')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
+
+const BonesHelper = require('./three/BonesHelper')
 
 const { createSelector } = require('reselect')
 
@@ -117,6 +120,13 @@ const SceneContent = connect(
       groundRef
     })
 
+    // initialize the BonesHelper
+    const boneGltf = useGltf('/data/system/dummies/bone.glb')
+    const bonesHelper = useMemo(() => {
+      let mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
+      return BonesHelper.getInstance(mesh)
+    }, [boneGltf])
+
     const directionalLightRef = useUpdate(ref => {
       ref.add(ref.target)
 
@@ -165,7 +175,10 @@ const SceneContent = connect(
         {
           characterIds.map(id =>
             <Suspense key={id} fallback={null}>
-              <Character sceneObject={sceneObjects[id]} />
+              <Character
+                sceneObject={sceneObjects[id]}
+                isSelected={selections.includes(id)}
+                bonesHelper={bonesHelper} />
             </Suspense>
           )
         }
@@ -173,7 +186,9 @@ const SceneContent = connect(
         {
           modelObjectIds.map(id =>
             <Suspense key={id} fallback={null}>
-              <ModelObject sceneObject={sceneObjects[id]} isSelected={selections.includes(id)} />
+              <ModelObject
+                sceneObject={sceneObjects[id]}
+                isSelected={selections.includes(id)} />
             </Suspense>
           )
         }
@@ -198,10 +213,21 @@ const XRStartButton = ({ }) => {
   return null
 }
 
+const Preloader = ({ loaded, setLoaded }) => {
+  useEffect(() => {
+    setLoaded(false)
+    return function cleanup () {
+      setLoaded(true)
+    }
+  }, [])
+
+  return null
+}
+
 const SceneManagerXR = () => {
   const store = useReduxStore()
 
-  const loaded = true
+  const [loaded, setLoaded] = useState(false)
 
   return (
     <>
@@ -213,7 +239,9 @@ const SceneManagerXR = () => {
           {
             loaded && <XRStartButton />
           }
-          <SceneContent />
+          <Suspense fallback={<Preloader {...{ loaded, setLoaded }} />}>
+            <SceneContent />
+          </ Suspense>
         </Provider>
       </Canvas>
       <div className='scene-overlay' />

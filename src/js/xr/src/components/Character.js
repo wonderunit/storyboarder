@@ -3,22 +3,20 @@ const { useMemo, useEffect, useRef } = React = require('react')
 
 const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
-const BonesHelper = require("./BonesHelper");
-const Character = React.memo(({ sceneObject }) => {
+const BonesHelper = require('../three/BonesHelper')
+
+const { log } = require('./Log')
+
+const Character = React.memo(({ sceneObject, isSelected, bonesHelper }) => {
+  console.log('Character update', { bonesHelper })
+
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
   const filepath = useMemo(
     () => `/data/system/dummies/gltf/${sceneObject.model}-lod.glb`,
     [sceneObject.model]
   )
-  let boneScene = useGltf("/data/system/objects/bone.glb");
-
 
   const gltf = useGltf(filepath)
-  const bonesHelper = useMemo(() => 
-  {
-    let boneMesh = boneScene.scene.children.filter(child => child.isMesh)[0];
-    return BonesHelper.getInstance(boneMesh);
-  },    [boneScene]);
 
   const [skeleton, lod, originalSkeleton, armature] = useMemo(
     () => {
@@ -44,7 +42,6 @@ const Character = React.memo(({ sceneObject }) => {
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
       let armature = scene.children[0].children[0]
-      bonesHelper.initialize(lod.children[0]);
       return [skeleton, lod, originalSkeleton, armature]
     },
     [gltf]
@@ -73,11 +70,19 @@ const Character = React.memo(({ sceneObject }) => {
           bone.updateMatrixWorld()
         }
       }
-      bonesHelper.update();
+      bonesHelper.update()
     } else {
       skeleton.pose()
     }
   }, [skeleton, sceneObject.skeleton])
+
+  useMemo(() => {
+    if (isSelected) {
+      log(`showing bonesHelper for ${sceneObject.name}`)
+      bonesHelper.initialize(lod.children[0])
+      bonesHelper.update()
+    }
+  }, [isSelected])
 
   return lod
     ? <group
@@ -93,7 +98,7 @@ const Character = React.memo(({ sceneObject }) => {
     >
       <primitive object={lod} />
       <primitive object={armature} />
-      <primitive object={bonesHelper}/>
+      <primitive object={bonesHelper} />
     </group>
     : null
 })

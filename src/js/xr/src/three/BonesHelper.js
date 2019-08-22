@@ -1,5 +1,5 @@
 const THREE = require("three");
-const HelperBonesPool = require("../utils/HelperBonesPool");
+const HelperBonesPool = require("./HelperBonesPool");
 require('../../../shot-generator/ik/utils/Object3dExtension');
 let instance = null;
 let boneMatrix = new THREE.Matrix4();
@@ -10,7 +10,7 @@ class BonesHelper extends THREE.Object3D
     {
         super();
         if(!instance)
-        {  
+        {
             instance = this;
             instance.helperBonesPool = new HelperBonesPool(300, boneMesh);
             this.helpingBonesRelation = [];
@@ -33,7 +33,7 @@ class BonesHelper extends THREE.Object3D
     }
 
     // Intializes BonesHelper's bones position, rotation and stuff like that
-    // And creates InstancedMesh 
+    // And creates InstancedMesh
     initialize(skinnedMesh)
     {
         if(this.intializedSkinnedMeshUuid && this.intializedSkinnedMeshUuid === skinnedMesh.uuid)
@@ -47,7 +47,7 @@ class BonesHelper extends THREE.Object3D
             this.helpingBonesRelation = [];
             while(this.bonesGroup.children.length !== 0)
             {
-                this.bonesGroup.remove(this.bonesGroup.children[0]);      
+                this.bonesGroup.remove(this.bonesGroup.children[0]);
             }
         }
         let bones = skinnedMesh.skeleton.bones;
@@ -60,7 +60,7 @@ class BonesHelper extends THREE.Object3D
         for(let i = 0, n = bones.length; i < n; i++)
         {
             bone = bones[i];
-            if(bone.children.length === 0) 
+            if(bone.children.length === 0)
             {
                 continue;
             }
@@ -75,7 +75,7 @@ class BonesHelper extends THREE.Object3D
 
             bone.children[bone.children.length - 1].getWorldPosition(reusableVector);
             size = bone.worldPosition().distanceTo(reusableVector);
-  
+
             thickness = Math.min(Math.max(size * 0.8, 0.07), 0.20);
             thickness = Math.min(thickness, size * 3);
 
@@ -99,7 +99,7 @@ class BonesHelper extends THREE.Object3D
             boneMatrix.multiplyMatrices( inverseWorldMatrix, originalBone.matrixWorld )
             helpingBone.position.setFromMatrixPosition(boneMatrix);
             helpingBone.quaternion.setFromRotationMatrix(boneMatrix);
-            
+
             helpingBone.updateMatrix();
             this.helperBonesPool.updateInstancedBone(helpingBone);
             this.instancedMesh.needsUpdate("position");
@@ -127,7 +127,7 @@ class BonesHelper extends THREE.Object3D
     raycast(raycaster, intersects)
     {
         let results = raycaster.intersectObjects(this.bonesGroup.children);
-        for (let result of results) 
+        for (let result of results)
         {
           result.bone = this.helpingBonesRelation.find(object => object.helpingBone.id === result.object.id).originalBone;
           intersects.push(result);
