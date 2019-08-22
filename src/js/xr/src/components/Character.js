@@ -89,6 +89,7 @@ const Character = React.memo(({ sceneObject }) => {
       }}
 
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
+      rotation-y={sceneObject.rotation}
     >
       <primitive object={lod} />
       <primitive object={armature} />
