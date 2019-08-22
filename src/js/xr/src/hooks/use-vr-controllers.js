@@ -5,7 +5,9 @@ window.THREE = window.THREE || THREE
 require('../../vendor/VRController')
 
 const modifyEvent = (event, gl) => {
+  let gamepad = event.target.gamepad
   event.target = gl.vr.getController(event.target.gamepad.index)
+  event.target.gamepad = gamepad
   return event
 }
 
