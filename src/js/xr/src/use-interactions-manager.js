@@ -14,6 +14,8 @@ const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
 
+const BonesHelper = require('./three/BonesHelper')
+
 const {
   // selectors
   getSelections,
@@ -135,7 +137,10 @@ const useInteractionsManager = ({
 
     let match = null
     let intersection = null
-    let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
+
+    // let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
+    // DEBUG include all interactables so we can test Character
+    let list = scene.__interaction
 
     // find the positioned controller based on the data controller's gamepad array index
     let positionedObject = gl.vr.getController(event.target.gamepad.index)
@@ -384,6 +389,9 @@ const useInteractionsManager = ({
             // set the position
             object3d.position.copy(wp)
 
+            // DEBUG added to test BonesHelper
+            BonesHelper.getInstance().update()
+            BonesHelper.getInstance().position.copy(wp)
           }
         }
       }

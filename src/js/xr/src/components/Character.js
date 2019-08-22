@@ -1,10 +1,12 @@
 const THREE = require('three')
-const { useMemo, useEffect, useRef } = React = require('react')
+const { useMemo } = React = require('react')
 
 const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
 
-const Character = React.memo(({ sceneObject }) => {
+const BonesHelper = require('../three/BonesHelper')
+
+const Character = React.memo(({ sceneObject, isSelected }) => {
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
   const filepath = useMemo(
     () => `/data/system/dummies/gltf/${sceneObject.model}-lod.glb`,
@@ -66,10 +68,18 @@ const Character = React.memo(({ sceneObject }) => {
           bone.updateMatrixWorld()
         }
       }
+      BonesHelper.getInstance().update()
     } else {
       skeleton.pose()
     }
   }, [skeleton, sceneObject.skeleton])
+
+  useMemo(() => {
+    if (isSelected) {
+      BonesHelper.getInstance().initialize(lod.children[0])
+      BonesHelper.getInstance().update()
+    }
+  }, [isSelected])
 
   return lod
     ? <group
