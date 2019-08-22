@@ -146,6 +146,19 @@ const useInteractionsManager = ({
     let positionedObject = gl.vr.getController(event.target.gamepad.index)
     // gather all hits to tracked scene object3ds
     let hits = getControllerIntersections(positionedObject, list)
+
+    // DEBUG test bones helper bone intersections
+    let bonesHelperHits = getControllerIntersections(positionedObject, [BonesHelper.getInstance()])
+    bonesHelperHits.forEach(h => {
+      if (h.bone) {
+        log(`bone: ${h.bone.name}`)
+      } else {
+        // log(h.object.name)
+      }
+    })
+    // stop right here if we hit a bone
+    if (bonesHelperHits.find(o => o.bone != null)) return
+
     // if one intersects
     if (hits.length) {
       // grab the first intersection
