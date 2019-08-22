@@ -120,7 +120,7 @@ const useInteractionsManager = ({
   const store = useReduxStore()
   const dispatch = useDispatch()
 
-  const oppositeController = controller => dataControllers.find(i => i.uuid !== controller.uuid)
+  const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
 
   const onSelectStart = event => {
     const controller = event.target
@@ -142,13 +142,11 @@ const useInteractionsManager = ({
     // DEBUG include all interactables so we can test Character
     let list = scene.__interaction
 
-    // find the positioned controller based on the data controller's gamepad array index
-    let positionedObject = gl.vr.getController(event.target.gamepad.index)
     // gather all hits to tracked scene object3ds
-    let hits = getControllerIntersections(positionedObject, list)
+    let hits = getControllerIntersections(controller, list)
 
     // DEBUG test bones helper bone intersections
-    let bonesHelperHits = getControllerIntersections(positionedObject, [BonesHelper.getInstance()])
+    let bonesHelperHits = getControllerIntersections(controller, [BonesHelper.getInstance()])
     bonesHelperHits.forEach(h => {
       if (h.bone) {
         log(`bone: ${h.bone.name}`)
@@ -176,7 +174,7 @@ const useInteractionsManager = ({
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
       log(`select ${match.userData.id.slice(0, 7)}`)
 
-      let cursor = positionedObject.getObjectByName('cursor')
+      let cursor = controller.getObjectByName('cursor')
       cursor.position.z = -intersection.distance
 
       const pos = match.getWorldPosition(new THREE.Vector3())
@@ -200,13 +198,10 @@ const useInteractionsManager = ({
     controller.pressed = false
 
     if (selections.length && controller.userData.selected) {
-      // find the positioned controller based on the data controller's gamepad array index
-      let positionedObject = gl.vr.getController(event.target.gamepad.index)
-
       // find the cursor
-      let cursor = positionedObject.getObjectByName('cursor')
+      let cursor = controller.getObjectByName('cursor')
       // make sure its position is exact
-      positionedObject.updateMatrixWorld()
+      controller.updateMatrixWorld()
       // grab its world position
       let wp = new THREE.Vector3()
       cursor.getWorldPosition(wp)
@@ -258,7 +253,7 @@ const useInteractionsManager = ({
   }
 
   const onAxesChanged = event => {
-    let controllerWithSelection = dataControllers.find(controller => controller.userData.selected)
+    let controllerWithSelection = controllers.find(controller => controller.userData.selected)
 
     if (controllerWithSelection) {
       // onMoveObject(event)
@@ -331,7 +326,7 @@ const useInteractionsManager = ({
   }
 
   // controller state via THREE.VRController
-  const dataControllers = useVrControllers({
+  const controllers = useVrControllers({
     onSelectStart,
     onSelectEnd,
     onGripDown,
@@ -347,16 +342,11 @@ const useInteractionsManager = ({
     let selectedId = selections.length ? selections[0] : null
 
     if (teleportMode) {
-      for (let i = 0; i < dataControllers.length; i++) {
-        // via THREE.VRController
-        let dataObject = dataControllers[i]
-        // via WebVRManager
-        let positionedObject = gl.vr.getController(dataObject.gamepad.index)
-        // we need both
-        if (!(positionedObject && dataObject)) continue
+      for (let i = 0; i < controllers.length; i++) {
+        let controller = controllers[i]
 
-        if (dataObject.gripped) {
-          let hits = getControllerIntersections(positionedObject, [groundRef.current])
+        if (controller.gripped) {
+          let hits = getControllerIntersections(controller, [groundRef.current])
           if (hits.length) {
             let hit = hits[0]
             if (hit.distance < teleportMaxDist) {
@@ -376,29 +366,24 @@ const useInteractionsManager = ({
       // TODO handle if object3d no longer exists
       //      e.g.: if scene was changed externally
 
-      for (let i = 0; i < dataControllers.length; i++) {
-        // via THREE.VRController
-        let dataObject = dataControllers[i]
-        // via WebVRManager
-        let positionedObject = gl.vr.getController(dataObject.gamepad.index)
-        // we need both
-        if (!(positionedObject && dataObject)) continue
+      for (let i = 0; i < controllers.length; i++) {
+        let controller = controllers[i]
 
-        if (dataObject.pressed && dataObject.userData.selected) {
+        if (controller.pressed && controller.userData.selected) {
           if (object3d) {
             // TODO position/rotate object3d based on controller3d
 
             // TODO constraints, snap
 
             // find the cursor
-            let cursor = positionedObject.getObjectByName('cursor')
+            let cursor = controller.getObjectByName('cursor')
             // make sure its position is exact
-            positionedObject.updateMatrixWorld()
+            controller.updateMatrixWorld()
             // grab its world position
             let wp = new THREE.Vector3()
             cursor.getWorldPosition(wp)
             // offset it
-            wp.sub(dataObject.userData.selectOffset)
+            wp.sub(controller.userData.selectOffset)
             // set the position
             object3d.position.copy(wp)
 
@@ -409,7 +394,7 @@ const useInteractionsManager = ({
         }
       }
     }
-  }, false, [set, dataControllers])
+  }, false, [set, controllers])
 }
 
 module.exports = {

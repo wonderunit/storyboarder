@@ -4,6 +4,14 @@ const { useState, useEffect, useRef } = React = require('react')
 window.THREE = window.THREE || THREE
 require('../../vendor/VRController')
 
+const modifyEvent = (event, gl) => {
+  event.target = gl.vr.getController(event.target.gamepad.index)
+  return event
+}
+
+const getList = (controllers, gl) =>
+  controllers.filter(Boolean).map(c => gl.vr.getController(c.gamepad.index))
+
 const useVrControllers = ({
   onSelectStart,
   onSelectEnd,
@@ -35,19 +43,17 @@ const useVrControllers = ({
 
     let controller = event.detail
     controller.standingMatrix = gl.vr.getStandingMatrix()
-    controller.pressed = false
-    controller.gripped = false
-    setList([...THREE.VRController.controllers.filter(Boolean)])
+    setList(getList(THREE.VRController.controllers, gl))
 
-    controller.addEventListener('trigger press began', (...rest) => onSelectStartRef.current(...rest))
-    controller.addEventListener('trigger press ended', (...rest) => onSelectEndRef.current(...rest))
-    controller.addEventListener('grip press began', (...rest) => onGripDownRef.current(...rest))
-    controller.addEventListener('grip press ended', (...rest) => onGripUpRef.current(...rest))
-    controller.addEventListener('thumbstick axes changed', (...rest) => onAxesChangedRef.current(...rest))
-    controller.addEventListener('thumbpad axes changed', (...rest) => onAxesChangedRef.current(...rest))
+    controller.addEventListener('trigger press began', event => onSelectStartRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('trigger press ended', event => onSelectEndRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('grip press began', event => onGripDownRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('grip press ended', event => onGripUpRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('thumbstick axes changed', event => onAxesChangedRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('thumbpad axes changed', event => onAxesChangedRef.current(modifyEvent(event, gl)))
     controller.addEventListener('disconnected', event => {
       console.log('disconnected', event)
-      setList([...THREE.VRController.controllers.filter(Boolean)])
+      setList(getList(THREE.VRController.controllers, gl))
     })
 
     // controller.addEventListener('A press ended', event => undo())
@@ -57,8 +63,7 @@ const useVrControllers = ({
   const onVRControllerDisconnected = event => {
     console.log('onVRControllerDisconnected', event)
 
-    let controller = event.detail
-    setList([...THREE.VRController.controllers.filter(Boolean)])
+    setList(getList(THREE.VRController.controllers, gl))
   }
 
   useEffect(() => {
