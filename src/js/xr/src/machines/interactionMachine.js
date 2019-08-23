@@ -77,7 +77,7 @@ const machine = Machine({
     },
     drag_object: {
       onEntry: 'onDragObjectEntry',
-      onExit: 'onDragObjectExit',
+      onExit: ['onSnapEnd', 'onDragObjectExit'],
       on: {
         TRIGGER_END: {
           cond: 'controllerSame',
@@ -86,11 +86,16 @@ const machine = Machine({
 
         AXES_CHANGED: {
           actions: ['moveAndRotateObject']
-        }
+        },
 
-        // not allowed to teleport while dragging an object
-        // TODO could allow this using a parallel machine for teleport logic?
-        // GRIP_DOWN: {}
+        GRIP_DOWN: {
+          cond: 'controllerSame',
+          actions: 'onSnapStart'
+        },
+        GRIP_UP: {
+          cond: 'controllerSame',
+          actions: 'onSnapEnd'
+        }
       }
     },
     drag_teleport: {

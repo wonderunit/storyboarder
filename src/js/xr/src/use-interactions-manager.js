@@ -83,8 +83,44 @@ const rotateObjectY = (object, event) => {
   }
 }
 
+// TODO worldScale
+const snapObjectRotation = (object, controller, root, worldScale = 1) => {
+  object.matrix.premultiply(controller.matrixWorld)
+  object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+  object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
+  object.position.multiplyScalar(1 / worldScale)
 
+  object.userData.order = object.rotation.order
+  object.rotation.reorder('YXZ')
 
+  const sign = Math.sign(object.rotation.y)
+  let degreeY = THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
+  degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
+
+  let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
+  degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
+
+  object.rotation.x = 0
+  object.rotation.z = degreeZ
+  object.rotation.y = degreeY
+  object.rotation.order = object.userData.order
+
+  // TODO worldScale
+  // worldScaleGroupRef.current.add(object)
+  root.add(object)
+
+  let intersections = getControllerIntersections(controller, [object])
+  if (intersections.length) {
+    let { distance, point } = intersections[0]
+
+    // TODO DRY? setSelectOffsetMemento?
+    let cursor = controller.getObjectByName('cursor')
+    cursor.position.z = -distance
+    const pos = object.getWorldPosition(new THREE.Vector3())
+    const offset = new THREE.Vector3().subVectors(point, pos)
+    controller.userData.selectOffset = offset
+  }
+}
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   // create virtual parent and child
@@ -125,6 +161,8 @@ const [useStore, useStoreApi] = create((set, get) => ({
   teleportTargetValid: false,
 
   boneRotationMemento: {},
+
+  canSnap: false,
 
   // actions
   setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
@@ -371,7 +409,18 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
+      let shouldMoveWithCursor = false
+
       if (object3d.userData.type == 'character') {
+        shouldMoveWithCursor = true
+      } else {
+        let canSnap = useStoreApi.getState().canSnap
+        if (canSnap) {
+          shouldMoveWithCursor = true
+        }
+      }
+
+      if (shouldMoveWithCursor) {
         // TODO worldscale
         let worldScale = 1
 
@@ -474,6 +523,7 @@ const useInteractionsManager = ({
       let controller = event.controller
       let { object, distance, point } = event.intersection
 
+      // TODO DRY? setSelectOffsetMemento?
       let cursor = controller.getObjectByName('cursor')
       cursor.position.z = -distance
       const pos = object.getWorldPosition(new THREE.Vector3())
@@ -525,17 +575,6 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      if (object.userData.type != 'character') {
-        object.matrix.premultiply(controller.matrixWorld)
-        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-
-        // TODO worldScale
-        // object.scale.set(1, 1, 1)
-        // worldScaleGroupRef.current.add(object)
-        // object.position.multiplyScalar(1 / worldScale)
-        scene.add(object)
-      }
-
       // TODO worldscale
 
       // TODO soundBeam
@@ -550,6 +589,41 @@ const useInteractionsManager = ({
         z: object.position.y,
         rotation
       }))
+    },
+    onSnapStart: (context, event) => {
+      let controller = gl.vr.getController(context.draggingController)
+      let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+      if (object.userData.type != 'character') {
+        // TODO worldScale ref
+        let root = scene
+        snapObjectRotation(object, controller, root)
+
+      }
+
+      set(state => { state.canSnap = true })
+    },
+    onSnapEnd: (context, event) => {
+      let controller = gl.vr.getController(context.draggingController)
+      let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+      if (object.userData.type != 'character') {
+        // TODO worldScale
+        let root = scene
+
+        if (object.parent != root) {
+          object.matrix.premultiply(controller.matrixWorld)
+          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+
+          // TODO worldScale
+          // object.scale.set(1, 1, 1)
+          // worldScaleGroupRef.current.add(object)
+          // object.position.multiplyScalar(1 / worldScale)
+          root.add(object)
+        }
+      }
+
+      set(state => { state.canSnap = false })
     },
 
     moveAndRotateCamera: (context, event) => {
