@@ -166,6 +166,13 @@ const useInteractionsManager = ({
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
       log(`select ${match.userData.id.slice(0, 7)}`)
 
+      // TODO make this a state service action? store offset on context?
+      let cursor = controller.getObjectByName('cursor')
+      cursor.position.z = -intersection.distance
+      const pos = match.getWorldPosition(new THREE.Vector3())
+      const offset = new THREE.Vector3().subVectors(intersection.point, pos)
+      controller.userData.selectOffset = offset
+
       interactionService.send({ type: 'TRIGGER_START', controller: event.target, intersection: { id: match.userData.id, type: match.userData.type }})
     } else {
       // console.log('clearing selection')
@@ -343,7 +350,11 @@ const useInteractionsManager = ({
 
     setTeleportMode(false)
   }
-
+  */
+  const onAxesChanged = event => {
+    // interactionService.send({ type: 'AXES_CHANGED', controller: event.target })
+  }
+  /*
   const onAxesChanged = event => {
     let controllerWithSelection = controllers.find(controller => controller.userData.selected)
 
@@ -412,7 +423,7 @@ const useInteractionsManager = ({
     onTriggerEnd,
     onGripDown,
     onGripUp,
-    onAxesChanged: event => { }
+    onAxesChanged
   })
 
   useRender(() => {
@@ -440,43 +451,38 @@ const useInteractionsManager = ({
       }
     }
 
-    if (selectedId) {
-      let object3d = scene.__interaction.find(o => o.userData.id === selectedId)
+    if (mode === 'drag_object') {
+      let controller = gl.vr.getController(context.controller)
+      let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
       // TODO handle if object3d no longer exists
       //      e.g.: if scene was changed externally
 
-      for (let i = 0; i < controllers.length; i++) {
-        let controller = controllers[i]
+      if (object3d) {
+        // TODO position/rotate object3d based on controller3d
 
-        if (controller.pressed && controller.userData.selected) {
-          if (object3d) {
-            // TODO position/rotate object3d based on controller3d
+        // TODO constraints, snap
 
-            // TODO constraints, snap
+        // find the cursor
+        let cursor = controller.getObjectByName('cursor')
+        // make sure its position is exact
+        controller.updateMatrixWorld()
+        // grab its world position
+        let wp = new THREE.Vector3()
+        cursor.getWorldPosition(wp)
+        // offset it
+        wp.sub(controller.userData.selectOffset)
+        // set the position
+        object3d.position.copy(wp)
 
-            // find the cursor
-            let cursor = controller.getObjectByName('cursor')
-            // make sure its position is exact
-            controller.updateMatrixWorld()
-            // grab its world position
-            let wp = new THREE.Vector3()
-            cursor.getWorldPosition(wp)
-            // offset it
-            wp.sub(controller.userData.selectOffset)
-            // set the position
-            object3d.position.copy(wp)
-
-            // DEBUG added to test BonesHelper
-            BonesHelper.getInstance().update()
-            BonesHelper.getInstance().position.copy(wp)
-          }
-        }
+        // DEBUG added to test BonesHelper
+        BonesHelper.getInstance().update()
+        BonesHelper.getInstance().position.copy(wp)
       }
     }
   }, false, [set, controllers])
 
-  const [interactionContext, setInteractionContext] = useState()
+  const [interactionContext, setInteractionContext] = useState({})
   const interactionService = useMemo(() => {
     // StateNode.withConfig doesn't accept services until xstate 4.6.7
     const interactionService = interpret(interactionMachine)
@@ -508,6 +514,11 @@ const useInteractionsManager = ({
     return interactionService
   }, [])
 
+  useMemo(() => {
+    console.log('selection changed!', interactionContext.selection)
+    dispatch(selectObject(interactionContext.selection))
+  }, [interactionContext.selection])
+
   interactionMachine.options.services = {
     ...interactionMachine.options.services,
 
@@ -519,6 +530,34 @@ const useInteractionsManager = ({
     onDragTeleportEnd: (context, event) => new Promise(resolve => {
       setTeleportMode(false)
       set(state => ({ ...state, teleportTargetValid: false }))
+    }),
+
+    onDragObjectEnd: (context, event) => new Promise(resolve => {
+      let controller = gl.vr.getController(context.controller)
+
+      // find the cursor
+      let cursor = controller.getObjectByName('cursor')
+      // make sure its position is exact
+      controller.updateMatrixWorld()
+      // grab its world position
+      let wp = new THREE.Vector3()
+      cursor.getWorldPosition(wp)
+      // offset it
+      wp.sub(controller.userData.selectOffset)
+
+      // TODO worldscale
+      // TODO rotation
+      // TODO soundBeam
+
+      // console.log('updateObject', selections[0], wp.x, wp.y, wp.z)
+
+      dispatch(updateObject(context.selection, {
+        x: wp.x,
+        y: wp.z,
+        z: wp.y,
+        // rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+      }))
+
     }),
 
     teleport: (context, event) => new Promise(resolve => {

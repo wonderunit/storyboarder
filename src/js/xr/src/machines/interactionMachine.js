@@ -55,7 +55,15 @@ const machine = Machine({
     },
     drag_object: {
       on: {
-        TRIGGER_END: 'selected'
+        TRIGGER_END: 'drag_object_end'
+      }
+    },
+    drag_object_end: {
+      invoke: {
+        src: 'onDragObjectEnd'
+      },
+      on: {
+        '': 'selected'
       }
     },
     drag_teleport: {
