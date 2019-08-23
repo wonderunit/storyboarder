@@ -386,10 +386,6 @@ const useInteractionsManager = ({
             wp.sub(controller.userData.selectOffset)
             // set the position
             object3d.position.copy(wp)
-
-            // DEBUG added to test BonesHelper
-            BonesHelper.getInstance().update()
-            BonesHelper.getInstance().position.copy(wp)
           }
         }
       }
