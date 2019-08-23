@@ -1,6 +1,8 @@
 const { Machine } = require('xstate')
 const { assign } = require('xstate/lib/actions')
 
+const { log } = require('../components/Log')
+
 const machine = Machine({
   id: 'interactions',
   strict: true,
@@ -9,28 +11,32 @@ const machine = Machine({
     miniMode: false,
     snap: false,
     selection: null,
-    controller: null
+    draggingController: null, // TODO draggables[]
+    teleportDragController: null
   },
   states: {
-    invoke: {
-      src: 'onIdle'
-    },
     idle: {
       on: {
+        // TODO move to onEntry?
         // idle always clears the selection if it is present
         '': {
           cond: 'selectionPresent',
-          actions: ['clearController', 'clearSelection']
+          actions: ['clearDraggingController', 'clearSelection', 'onSelectNone']
         },
-        TRIGGER_START: {
-          // skip immediately to the drag behavior
-          cond: 'eventHasIntersection',
-          target: 'drag_object',
-          actions: ['updateController', 'updateSelection']
-        },
+        TRIGGER_START: [
+          // skip immediately to the drag behavior for objects and characters
+          {
+            cond: 'eventHasObjectOrCharacterIntersection',
+            target: 'drag_object',
+            actions: ['updateDraggingController', 'updateSelection', 'onSelected']
+          },
+        ],
         GRIP_DOWN: {
-          target: 'drag_teleport',
-          actions: ['updateController']
+          actions: ['updateTeleportDragController'],
+          target: 'drag_teleport'
+        },
+        AXES_CHANGED: {
+          actions: ['moveAndRotateCamera']
         }
       }
     },
@@ -41,60 +47,88 @@ const machine = Machine({
             target: 'idle',
             cond: 'selectionNil'
           },
+          // if we select a bone, don't try to drag it
           {
-            target: 'drag_object',
-            cond: 'controllerSameAndSelectionChanged',
-            actions: ['updateController', 'updateSelection']
+            cond: 'eventHasBoneIntersection',
+            actions: ['onSelectedBone']
           },
+
+          // anything selected that's not a bone can be dragged
           {
-            target: 'drag_object',
-            cond: 'controllerSameAndselectionSame'
-          }
-        ]
+            actions: ['updateDraggingController', 'updateSelection', 'onSelected'],
+            target: 'drag_object'
+          },
+
+          // TODO
+
+          // {
+          //   cond: 'selectionChanged',
+          //   actions: ['updateDraggingController', 'updateSelection', 'onSelected'],
+          //   target: 'drag_object'
+          // },
+          // {
+          //   cond: 'controllerSameAndselectionSame',
+          //   target: 'drag_object'
+          // }
+        ],
+
+        GRIP_DOWN: {
+          actions: ['updateTeleportDragController'],
+          target: 'drag_teleport'
+        },
+
+        AXES_CHANGED: {
+          actions: (context, event) => { log('TODO moveAndRotateObject') }
+        }
       }
     },
     drag_object: {
       on: {
-        TRIGGER_END: 'drag_object_end'
-      }
-    },
-    drag_object_end: {
-      invoke: {
-        src: 'onDragObjectEnd'
-      },
-      on: {
-        '': 'selected'
+        // TRIGGER_START: {
+          // if you are dragging an object,
+          // but then start dragging something with a different controller,
+                // cond: 'eventHasObjectOrCharacterIntersection',
+          // actions: ['onDragObjectEnd', 'updateDraggingController', 'updateSelection', 'onSelected'],
+          // target: 'drag_object'
+        // },
+
+        TRIGGER_END: {
+          cond: 'controllerSame',
+          actions: ['onDragObjectEnd'],
+          target: 'selected'
+        }
+
+        // can't teleport while selected
+        // TODO allow this using parallel machines?
       }
     },
     drag_teleport: {
-      invoke: {
-        src: 'onDragTeleportStart'
-      },
+      // TODO what causes an error here?
+      onEntry: 'onDragTeleportStart',
       on: {
-        TRIGGER_START: 'teleport',
-        GRIP_UP: 'end_drag_teleport'
+        // if you press the trigger on the teleporting controller
+        TRIGGER_START: {
+          cond: 'eventControllerMatchesTeleportDragController',
+          actions: ['onTeleport']
+        },
+        GRIP_UP: [
+          {
+            cond: 'eventControllerNotTeleportDragController',
+            actions: (context, event) => { log('! ignoring GRIP_UP during drag_teleport') }
+          },
+          {
+            // if there is a selection, go back to the selected state
+            cond: 'selectionPresent',
+            actions: ['onDragTeleportEnd', 'clearTeleportDragController'],
+            target: 'selected'
+          }, {
+            // otherwise, go to the idle state
+            actions: ['onDragTeleportEnd', 'clearTeleportDragController'],
+            target: 'idle'
+          }
+        ]
       }
     },
-    teleport: {
-      invoke: {
-        src: 'teleport'
-      },
-      on: {
-        // keep dragging after a teleport
-        '': 'drag_teleport'
-
-        // uncomment to go idle after a teleport
-        // '': 'idle'
-      }
-    },
-    end_drag_teleport: {
-      invoke: {
-        src: 'onDragTeleportEnd'
-      },
-      on: {
-        '': 'idle'
-      }
-    }
   }
 }, {
   actions: {
@@ -106,12 +140,19 @@ const machine = Machine({
       selection: (context, event) => null
     }),
 
-    updateController: assign({
-      controller: (context, event) => event.controller.gamepad.index
+    updateDraggingController: assign({
+      draggingController: (context, event) => event.controller.gamepad.index
     }),
-    clearController: assign({
-      controller: (context, event) => null
-    })
+    clearDraggingController: assign({
+      draggingController: (context, event) => null
+    }),
+
+    updateTeleportDragController: assign({
+      teleportDragController: (context, event) => event.controller.gamepad.index
+    }),
+    clearTeleportDragController: assign({
+      teleportDragController: (context, event) => null
+    }),
   },
   guards: {
     // TODO simplify these
@@ -120,22 +161,20 @@ const machine = Machine({
     selectionSame: (context, event) => event.intersection.id === context.selection,
     selectionNil: (context, event) => event.intersection == null,
 
-    eventHasIntersection: (context, event) => {
-      console.log('eventHasIntersection?', event)
-      return event.intersection != null
-    },
+    eventHasIntersection: (context, event) => event.intersection != null,
+    eventHasObjectOrCharacterIntersection: (context, event) => event.intersection != null && ['object', 'character'].includes(event.intersection.type),
+    eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.type == 'bone',
 
-    controllerSame: (context, event) => event.controller.gamepad.index === context.controller,
-    controllerChanged: (context, event) => event.controller.gamepad.index !== context.controller,
+    eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,
+    eventControllerNotTeleportDragController: (context, event) => event.controller.gamepad.index !== context.teleportDragController,
 
-    controllerSameAndSelectionChanged: (context, event) =>
-      (event.controller.gamepad.index === context.controller) &&
-      (event.intersection.id !== context.selection),
+    // TODO review these!!!
+    controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController,
+    controllerChanged: (context, event) => event.controller.gamepad.index !== context.draggingController,
 
-    // :/
-    controllerSameAndselectionSame: (context, event) =>
-      (event.controller.gamepad.index === context.controller) &&
-      (event.intersection.id === context.selection)
+    // controllerSameAndselectionSame: (context, event) =>
+    //   (event.controller.gamepad.index === context.draggingController) &&
+    //   (event.intersection.id === context.selection)
   }
 })
 

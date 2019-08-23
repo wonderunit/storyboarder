@@ -143,7 +143,8 @@ const useInteractionsManager = ({
     let bonesHelperHits = getControllerIntersections(controller, [BonesHelper.getInstance()])
     bonesHelperHits.forEach(h => {
       if (h.bone) {
-        interactionService.send({ type: 'TRIGGER_START', controller: event.target, intersection: { id: bone.uuid, hitType: 'bone' }})
+        interactionService.send({ type: 'TRIGGER_START', controller: event.target, intersection: { id: bone.uuid, type: 'bone' /* TODO object, point */ }})
+        return
       }
     })
     // stop right here if we hit a bone
@@ -164,19 +165,22 @@ const useInteractionsManager = ({
       // console.log('found sceneObject:', sceneObjects[match.userData.id])
       // console.log('intersection', intersection)
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
-      log(`select ${match.userData.id.slice(0, 7)}`)
+      log(`trigger start on: ${match.userData.id.slice(0, 7)}`)
 
-      // TODO make this a state service action? store offset on context?
-      let cursor = controller.getObjectByName('cursor')
-      cursor.position.z = -intersection.distance
-      const pos = match.getWorldPosition(new THREE.Vector3())
-      const offset = new THREE.Vector3().subVectors(intersection.point, pos)
-      controller.userData.selectOffset = offset
-
-      interactionService.send({ type: 'TRIGGER_START', controller: event.target, intersection: { id: match.userData.id, type: match.userData.type }})
+      interactionService.send({
+        type: 'TRIGGER_START',
+        controller: event.target,
+        intersection: {
+          id: match.userData.id,
+          type: match.userData.type,
+          object: match,
+          distance: intersection.distance,
+          point: intersection.point
+        }
+      })
     } else {
       // console.log('clearing selection')
-      log(`select none`)
+      log(`trigger start on: none`)
       interactionService.send({ type: 'TRIGGER_START', controller: event.target })
     }
   }
@@ -352,7 +356,7 @@ const useInteractionsManager = ({
   }
   */
   const onAxesChanged = event => {
-    // interactionService.send({ type: 'AXES_CHANGED', controller: event.target })
+    interactionService.send({ type: 'AXES_CHANGED', controller: event.target, axes: event.axes })
   }
   /*
   const onAxesChanged = event => {
@@ -366,6 +370,7 @@ const useInteractionsManager = ({
       onRotateCamera(event)
     }
   }
+  */
 
   const onMoveCamera = event => {
     if (didMoveCamera != null) {
@@ -416,7 +421,7 @@ const useInteractionsManager = ({
       }
     }
   }
-  */
+
   // controller state via THREE.VRController
   const controllers = useVrControllers({
     onTriggerStart,
@@ -437,7 +442,7 @@ const useInteractionsManager = ({
     let context = interactionService.state.context
 
     if (mode === 'drag_teleport') {
-      let controller = gl.vr.getController(context.controller)
+      let controller = gl.vr.getController(context.teleportDragController)
 
       let hits = getControllerIntersections(controller, [groundRef.current])
       if (hits.length) {
@@ -452,7 +457,7 @@ const useInteractionsManager = ({
     }
 
     if (mode === 'drag_object') {
-      let controller = gl.vr.getController(context.controller)
+      let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
       // TODO handle if object3d no longer exists
@@ -483,57 +488,108 @@ const useInteractionsManager = ({
   }, false, [set, controllers])
 
   const [interactionContext, setInteractionContext] = useState({})
+
+  useMemo(() => {
+    // TODO why is this memo called multiple times?
+    console.log('useInteractionManager')
+  }, [])
+
   const interactionService = useMemo(() => {
     // StateNode.withConfig doesn't accept services until xstate 4.6.7
-    const interactionService = interpret(interactionMachine)
-      .onTransition((state, event) => {
-        const { value, context } = state
-        setInteractionContext(context)
+    const interactionService = interpret(
+      interactionMachine
+    ).onEvent(e => {
+      //
+    }).onTransition((state, event) => {
+      const { value, context } = state
 
-        const {
-          selection,
-          controller
-        } = context
+      setInteractionContext(context)
 
-        console.log(value, event, selection, controller)
+      const {
+        selection,
+        draggingController
+      } = context
 
-  log(
-  `mode: ${value}
-  event: ${event.type}
-  selection: ${selection}
-  controller: ${controller}
-  `)
+      // console.log(value, event, selection, draggingController)
 
-      })
-      .onEvent(e => {
-        console.log(e)
-        log(e.type)
-      })
+  // log(
+  // `mode: ${value}
+  // event: ${event.type}
+  // selection: ${selection}
+  // drag ctlr: ${draggingController}
+  // `)
+      log(`${event.type} -> ${value}`)
+
+    })
+
     interactionService.start()
 
     return interactionService
   }, [])
 
-  useMemo(() => {
-    console.log('selection changed!', interactionContext.selection)
-    dispatch(selectObject(interactionContext.selection))
-  }, [interactionContext.selection])
-
-  interactionMachine.options.services = {
-    ...interactionMachine.options.services,
+  interactionMachine.options.actions = {
+    ...interactionMachine.options.actions,
 
     // TODO base hide/show on context and remove teleportMode and teleportTargetValid entirely
-    onDragTeleportStart: (context, event) => new Promise(resolve => {
+    onDragTeleportStart: (context, event) => {
+      log('-- onDragTeleportStart')
       setTeleportMode(true)
-      set(state => ({ ...state, teleportTargetValid: true }))
-    }),
-    onDragTeleportEnd: (context, event) => new Promise(resolve => {
+      // the target position value will be old until the next gl render
+      // so consider teleportTargetValid to be false, to hide the mesh, until then
+      set(state => ({ ...state, teleportTargetValid: false }))
+    },
+    onDragTeleportEnd: (context, event) => {
+      log('-- onDragTeleportEnd')
       setTeleportMode(false)
       set(state => ({ ...state, teleportTargetValid: false }))
-    }),
+    },
+    onTeleport: (context, event) => {
+      log('-- teleport')
+      // TODO adjust by worldScale
+      // TODO reset worldScale after teleport
+      if (teleportTargetValid) {
+        let pos = useStoreApi.getState().teleportTargetPos
+        teleport(pos[0], 0, pos[2], null)
+        // setTeleportMode(false)
+      }
+    },
 
-    onDragObjectEnd: (context, event) => new Promise(resolve => {
-      let controller = gl.vr.getController(context.controller)
+    onSelected: (context, event) => {
+      log('-- onSelected')
+      if (
+        event.intersection &&
+        (event.intersection.type == 'object' || event.intersection.type == 'character'))
+      {
+        let controller = event.controller
+        let { object, distance, point} = event.intersection
+
+        let cursor = controller.getObjectByName('cursor')
+        cursor.position.z = -distance
+        const pos = object.getWorldPosition(new THREE.Vector3())
+        const offset = new THREE.Vector3().subVectors(point, pos)
+        controller.userData.selectOffset = offset
+
+        dispatch(selectObject(context.selection))
+      }
+    },
+    onSelectNone: (context, event) => {
+      let controller = event.controller
+      log('-- onSelectNone', controller)
+      controller.userData.selectOffset = null
+
+      dispatch(selectObject(null))
+    },
+    onSelectedBone: (context, event) => {
+      let controller = event.controller
+      log('-- onSelectBone', controller)
+      controller.userData.selectOffset = null // TODO do we need this?
+
+      console.log(context, event)
+      log('bone')
+    },
+
+    onDragObjectEnd: (context, event) => {
+      let controller = gl.vr.getController(context.draggingController)
 
       // find the cursor
       let cursor = controller.getObjectByName('cursor')
@@ -557,23 +613,22 @@ const useInteractionsManager = ({
         z: wp.y,
         // rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
       }))
+    },
 
-    }),
-
-    teleport: (context, event) => new Promise(resolve => {
-      console.log('teleporting!')
-      // TODO adjust by worldScale
-      // TODO reset worldScale after teleport
-      if (teleportTargetValid) {
-        let pos = useStoreApi.getState().teleportTargetPos
-        teleport(pos[0], 0, pos[2], null)
-        setTeleportMode(false)
-      }
-    })
+    moveAndRotateCamera: (context, event) => {
+      onMoveCamera(event)
+      onRotateCamera(event)
+    }
   }
 
-  log('teleportMode', teleportMode)
-  log('teleportTargetValid', teleportTargetValid)
+  interactionMachine.options.services = {
+    ...interactionMachine.options.services,
+
+    // example: (context, event) => new Promise(resolve => {
+    //   console.log('an example service')
+    //   resolve()
+    // }),
+  }
 }
 
 module.exports = {
