@@ -12,6 +12,9 @@ const machine = Machine({
     controller: null
   },
   states: {
+    invoke: {
+      src: 'onIdle'
+    },
     idle: {
       on: {
         // idle always clears the selection if it is present
@@ -21,11 +24,13 @@ const machine = Machine({
         },
         TRIGGER_START: {
           // skip immediately to the drag behavior
+          cond: 'eventHasIntersection',
           target: 'drag_object',
           actions: ['updateController', 'updateSelection']
         },
         GRIP_DOWN: {
-          target: 'drag_teleport'
+          target: 'drag_teleport',
+          actions: ['updateController']
         }
       }
     },
@@ -54,9 +59,12 @@ const machine = Machine({
       }
     },
     drag_teleport: {
+      invoke: {
+        src: 'onDragTeleportStart'
+      },
       on: {
         TRIGGER_START: 'teleport',
-        GRIP_UP: 'idle'
+        GRIP_UP: 'end_drag_teleport'
       }
     },
     teleport: {
@@ -64,7 +72,19 @@ const machine = Machine({
         src: 'teleport'
       },
       on: {
-        '': 'drag_teleport',
+        // keep dragging after a teleport
+        '': 'drag_teleport'
+
+        // uncomment to go idle after a teleport
+        // '': 'idle'
+      }
+    },
+    end_drag_teleport: {
+      invoke: {
+        src: 'onDragTeleportEnd'
+      },
+      on: {
+        '': 'idle'
       }
     }
   }
@@ -72,14 +92,14 @@ const machine = Machine({
   actions: {
     // TODO simplify these
     updateSelection: assign({
-      selection: (context, event) => event.id
+      selection: (context, event) => event.intersection.id
     }),
     clearSelection: assign({
       selection: (context, event) => null
     }),
 
     updateController: assign({
-      controller: (context, event) => event.controller.gamepad.id
+      controller: (context, event) => event.controller.gamepad.index
     }),
     clearController: assign({
       controller: (context, event) => null
@@ -88,21 +108,26 @@ const machine = Machine({
   guards: {
     // TODO simplify these
     selectionPresent: (context, event) => context.selection != null,
-    selectionChanged: (context, event) => event.id !== context.selection,
-    selectionSame: (context, event) => event.id === context.selection,
-    selectionNil: (context, event) => event.id == null,
+    selectionChanged: (context, event) => event.intersection.id !== context.selection,
+    selectionSame: (context, event) => event.intersection.id === context.selection,
+    selectionNil: (context, event) => event.intersection == null,
 
-    controllerSame: (context, event) => event.controller.gamepad.id === context.controller,
-    controllerChanged: (context, event) => event.controller.gamepad.id !== context.controller,
+    eventHasIntersection: (context, event) => {
+      console.log('eventHasIntersection?', event)
+      return event.intersection != null
+    },
+
+    controllerSame: (context, event) => event.controller.gamepad.index === context.controller,
+    controllerChanged: (context, event) => event.controller.gamepad.index !== context.controller,
 
     controllerSameAndSelectionChanged: (context, event) =>
-      (event.controller.gamepad.id === context.controller) &&
-      (event.id !== context.selection),
+      (event.controller.gamepad.index === context.controller) &&
+      (event.intersection.id !== context.selection),
 
     // :/
     controllerSameAndselectionSame: (context, event) =>
-      (event.controller.gamepad.id === context.controller) &&
-      (event.id === context.selection)
+      (event.controller.gamepad.index === context.controller) &&
+      (event.intersection.id === context.selection)
   }
 })
 

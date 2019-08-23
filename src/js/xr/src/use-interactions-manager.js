@@ -1,4 +1,4 @@
-const { useMemo } = React = require('react')
+const { useMemo, useState } = React = require('react')
 const { useThree, useRender } = require('react-three-fiber')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -128,6 +128,55 @@ const useInteractionsManager = ({
 
   const onTriggerStart = event => {
     const controller = event.target
+
+    let match = null
+    let intersection = null
+
+    // let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
+    // DEBUG include all interactables so we can test Character
+    let list = scene.__interaction
+
+    // gather all hits to tracked scene object3ds
+    let hits = getControllerIntersections(controller, list)
+
+    // DEBUG test bones helper bone intersections
+    let bonesHelperHits = getControllerIntersections(controller, [BonesHelper.getInstance()])
+    bonesHelperHits.forEach(h => {
+      if (h.bone) {
+        interactionService.send({ type: 'TRIGGER_START', controller: event.target, intersection: { id: bone.uuid, hitType: 'bone' }})
+      }
+    })
+    // stop right here if we hit a bone
+    if (bonesHelperHits.find(o => o.bone != null)) return
+
+    // if one intersects
+    if (hits.length) {
+      // grab the first intersection
+      let child = hits[0].object
+      // find either the child or one of its parents on the list of interaction-ables
+      match = findMatchingAncestor(child, list)
+      if (match) {
+        intersection = hits[0]
+      }
+    }
+
+    if (match) {
+      // console.log('found sceneObject:', sceneObjects[match.userData.id])
+      // console.log('intersection', intersection)
+      // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
+      log(`select ${match.userData.id.slice(0, 7)}`)
+
+      interactionService.send({ type: 'TRIGGER_START', controller: event.target, intersection: { id: match.userData.id, type: match.userData.type }})
+    } else {
+      // console.log('clearing selection')
+      log(`select none`)
+      interactionService.send({ type: 'TRIGGER_START', controller: event.target })
+    }
+  }
+
+  /*
+  const onTriggerStart = event => {
+    const controller = event.target
     controller.pressed = true
 
     if (teleportMode) {
@@ -214,7 +263,11 @@ const useInteractionsManager = ({
       interactionService.send({ type: 'TRIGGER_START', controller: event.target })
     }
   }
-
+  */
+  const onTriggerEnd = event => {
+    interactionService.send({ type: 'TRIGGER_END', controller: event.target })
+  }
+  /*
   const onTriggerEnd = event => {
     const controller = event.target
     controller.pressed = false
@@ -249,7 +302,13 @@ const useInteractionsManager = ({
     controller.userData.selected = null
     controller.userData.selectOffset = null
   }
+  */
 
+  const onGripDown = event => {
+    interactionService.send({ type: 'GRIP_DOWN', controller: event.target })
+  }
+
+  /*
   const onGripDown = event => {
     const controller = event.target
     controller.gripped = true
@@ -270,7 +329,12 @@ const useInteractionsManager = ({
     set(state => ({ ...state, teleportTargetValid: false }))
     setTeleportMode(true)
   }
+  */
 
+  const onGripUp = event => {
+    interactionService.send({ type: 'GRIP_UP', controller: event.target })
+  }
+  /*
   const onGripUp = event => {
     const controller = event.target
     controller.gripped = false
@@ -341,14 +405,14 @@ const useInteractionsManager = ({
       }
     }
   }
-
+  */
   // controller state via THREE.VRController
   const controllers = useVrControllers({
     onTriggerStart,
     onTriggerEnd,
     onGripDown,
     onGripUp,
-    onAxesChanged
+    onAxesChanged: event => { }
   })
 
   useRender(() => {
@@ -358,21 +422,20 @@ const useInteractionsManager = ({
     let selections = getSelections(store.getState())
     let selectedId = selections.length ? selections[0] : null
 
-    if (teleportMode) {
-      for (let i = 0; i < controllers.length; i++) {
-        let controller = controllers[i]
+    let mode = interactionService.state.value
+    let context = interactionService.state.context
 
-        if (controller.gripped) {
-          let hits = getControllerIntersections(controller, [groundRef.current])
-          if (hits.length) {
-            let hit = hits[0]
-            if (hit.distance < teleportMaxDist) {
-              let teleportTargetPos = hit.point.toArray()
-              set(state => ({ ...state, teleportTargetPos, teleportTargetValid: true }))
-            } else {
-              set(state => ({ ...state, teleportTargetValid: false }))
-            }
-          }
+    if (mode === 'drag_teleport') {
+      let controller = gl.vr.getController(context.controller)
+
+      let hits = getControllerIntersections(controller, [groundRef.current])
+      if (hits.length) {
+        let hit = hits[0]
+        if (hit.distance < teleportMaxDist) {
+          let teleportTargetPos = hit.point.toArray()
+          set(state => ({ ...state, teleportTargetPos, teleportTargetValid: true }))
+        } else {
+          set(state => ({ ...state, teleportTargetValid: false }))
         }
       }
     }
@@ -413,25 +476,33 @@ const useInteractionsManager = ({
     }
   }, false, [set, controllers])
 
+  const [interactionContext, setInteractionContext] = useState()
   const interactionService = useMemo(() => {
     // StateNode.withConfig doesn't accept services until xstate 4.6.7
-    const interactionService = interpret(interactionMachine).onTransition((state, event) => {
-      const { value, context } = state
-      const {
-        miniMode,
-        snap,
-        selection,
-        controller
-      } = context
+    const interactionService = interpret(interactionMachine)
+      .onTransition((state, event) => {
+        const { value, context } = state
+        setInteractionContext(context)
 
-      log(
-`mode: ${value}
-event: ${event.type}
-selection: ${selection}
-controller: ${controller}
-`)
+        const {
+          selection,
+          controller
+        } = context
 
-    })
+        console.log(value, event, selection, controller)
+
+  log(
+  `mode: ${value}
+  event: ${event.type}
+  selection: ${selection}
+  controller: ${controller}
+  `)
+
+      })
+      .onEvent(e => {
+        console.log(e)
+        log(e.type)
+      })
     interactionService.start()
 
     return interactionService
@@ -440,8 +511,18 @@ controller: ${controller}
   interactionMachine.options.services = {
     ...interactionMachine.options.services,
 
-    teleport: (context, event) => new Promise(resolve => {
+    // TODO base hide/show on context and remove teleportMode and teleportTargetValid entirely
+    onDragTeleportStart: (context, event) => new Promise(resolve => {
+      setTeleportMode(true)
+      set(state => ({ ...state, teleportTargetValid: true }))
+    }),
+    onDragTeleportEnd: (context, event) => new Promise(resolve => {
+      setTeleportMode(false)
+      set(state => ({ ...state, teleportTargetValid: false }))
+    }),
 
+    teleport: (context, event) => new Promise(resolve => {
+      console.log('teleporting!')
       // TODO adjust by worldScale
       // TODO reset worldScale after teleport
       if (teleportTargetValid) {
@@ -449,10 +530,11 @@ controller: ${controller}
         teleport(pos[0], 0, pos[2], null)
         setTeleportMode(false)
       }
-
     })
   }
 
+  log('teleportMode', teleportMode)
+  log('teleportTargetValid', teleportTargetValid)
 }
 
 module.exports = {
