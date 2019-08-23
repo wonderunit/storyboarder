@@ -324,39 +324,20 @@ const useInteractionsManager = ({
     }
   }, false, [set, controllers])
 
-  const [interactionContext, setInteractionContext] = useState({})
-
   useMemo(() => {
     // TODO why is this memo called multiple times?
     console.log('useInteractionManager')
   }, [])
 
   const interactionService = useMemo(() => {
-    // StateNode.withConfig doesn't accept services until xstate 4.6.7
     const interactionService = interpret(
       interactionMachine
     ).onEvent(e => {
       //
     }).onTransition((state, event) => {
-      const { value, context } = state
+      const { value } = state
 
-      setInteractionContext(context)
-
-      const {
-        selection,
-        draggingController
-      } = context
-
-      // console.log(value, event, selection, draggingController)
-
-  // log(
-  // `mode: ${value}
-  // event: ${event.type}
-  // selection: ${selection}
-  // drag ctlr: ${draggingController}
-  // `)
       log(`${event.type} -> ${value}`)
-
     })
 
     interactionService.start()
@@ -458,6 +439,7 @@ const useInteractionsManager = ({
     }
   }
 
+  // StateNode.withConfig doesn't accept services until xstate 4.6.7
   interactionMachine.options.services = {
     ...interactionMachine.options.services,
 
