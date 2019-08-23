@@ -186,15 +186,6 @@ const SceneContent = connect(
           )
         }
 
-        <primitive
-          visible={selectedCharacter != null ? true : false}
-          position={
-            selectedCharacter != null
-              ? [selectedCharacter.x, selectedCharacter.z, selectedCharacter.y]
-              : [0, 0, 0]
-          }
-          object={BonesHelper.getInstance()} />
-
         {
           modelObjectIds.map(id =>
             <Suspense key={id} fallback={null}>

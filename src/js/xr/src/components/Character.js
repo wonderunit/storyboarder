@@ -68,7 +68,6 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
           bone.updateMatrixWorld()
         }
       }
-      BonesHelper.getInstance().update()
     } else {
       skeleton.pose()
     }
@@ -77,7 +76,7 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
   useMemo(() => {
     if (isSelected) {
       BonesHelper.getInstance().initialize(lod.children[0])
-      BonesHelper.getInstance().update()
+      lod.parent.add(BonesHelper.getInstance());
     }
   }, [isSelected])
 

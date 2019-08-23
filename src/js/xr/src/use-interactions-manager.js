@@ -388,8 +388,8 @@ const useInteractionsManager = ({
             object3d.position.copy(wp)
 
             // DEBUG added to test BonesHelper
-            BonesHelper.getInstance().update()
-            BonesHelper.getInstance().position.copy(wp)
+            //BonesHelper.getInstance().update()
+            //BonesHelper.getInstance().position.copy(wp)
           }
         }
       }
