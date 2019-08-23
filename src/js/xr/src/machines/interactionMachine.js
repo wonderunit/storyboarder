@@ -85,7 +85,7 @@ const machine = Machine({
         },
 
         AXES_CHANGED: {
-          actions: (context, event) => { log('TODO moveAndRotateObject') }
+          actions: ['moveAndRotateObject']
         }
 
         // not allowed to teleport while dragging an object

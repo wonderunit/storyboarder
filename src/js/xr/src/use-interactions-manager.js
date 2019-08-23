@@ -57,6 +57,35 @@ const getRotationMemento = (controller, object) => {
   }
 }
 
+
+// TODO test worldScale
+const moveObjectZ = (object, event, controller, worldScale) => {
+  if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
+
+  const amount = event.axes[1] * 0.08
+
+  if (Math.abs(amount) > 0.01) {
+    const worldScaleMult = worldScale === 1 ? 1 : worldScale * 2
+
+    object.position.add(new THREE.Vector3(0, 0, amount * worldScaleMult))
+    object.position.z = Math.min(object.position.z, -0.5 * worldScaleMult)
+  }
+}
+
+// TODO test worldScale
+const rotateObjectY = (object, event) => {
+  if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
+
+  const amount = event.axes[0] * 0.07
+
+  if (Math.abs(amount) > 0.01) {
+    object.rotateY(amount)
+  }
+}
+
+
+
+
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   // create virtual parent and child
   let parent = new THREE.Object3D()
@@ -338,33 +367,25 @@ const useInteractionsManager = ({
       }
     }
 
-    /*
-    if (mode === 'drag_object') {
+    if (mode == 'drag_object') {
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      // TODO handle if object3d no longer exists
-      //      e.g.: if scene was changed externally
+      if (object3d.userData.type == 'character') {
+        // TODO worldscale
+        let worldScale = 1
 
-      if (object3d) {
-        // TODO position/rotate object3d based on controller3d
-
-        // TODO constraints, snap
-
-        // find the cursor
-        let cursor = controller.getObjectByName('cursor')
-        // make sure its position is exact
-        controller.updateMatrixWorld()
-        // grab its world position
-        let wp = new THREE.Vector3()
-        cursor.getWorldPosition(wp)
-        // offset it
+        // update position via cursor
+        const cursor = controller.getObjectByName('cursor')
+        const wp = cursor.getWorldPosition(new THREE.Vector3())
         wp.sub(controller.userData.selectOffset)
-        // set the position
-        object3d.position.copy(wp)
+
+        // constrain object rotation?
+        // object3d.rotation.y = ???
+
+        object3d.position.copy(wp).multiplyScalar(1 / worldScale)
       }
     }
-    */
 
     if (mode == 'rotate_bone') {
       let controller = gl.vr.getController(context.draggingController)
@@ -449,21 +470,17 @@ const useInteractionsManager = ({
 
     onSelected: (context, event) => {
       log('-- onSelected')
-      if (
-        event.intersection &&
-        (event.intersection.type == 'object' || event.intersection.type == 'character'))
-      {
-        let controller = event.controller
-        let { object, distance, point} = event.intersection
 
-        let cursor = controller.getObjectByName('cursor')
-        cursor.position.z = -distance
-        const pos = object.getWorldPosition(new THREE.Vector3())
-        const offset = new THREE.Vector3().subVectors(point, pos)
-        controller.userData.selectOffset = offset
+      let controller = event.controller
+      let { object, distance, point } = event.intersection
 
-        dispatch(selectObject(context.selection))
-      }
+      let cursor = controller.getObjectByName('cursor')
+      cursor.position.z = -distance
+      const pos = object.getWorldPosition(new THREE.Vector3())
+      const offset = new THREE.Vector3().subVectors(point, pos)
+      controller.userData.selectOffset = offset
+
+      dispatch(selectObject(context.selection))
     },
 
     onSelectNone: (context, event) => {
@@ -484,19 +501,22 @@ const useInteractionsManager = ({
 
     onDragObjectEntry: (context, event) => {
       let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-      let worldScale = 1 // TODO
+      let object = event.intersection.object
 
-      const tempMatrix = new THREE.Matrix4()
-      tempMatrix
-        .getInverse(controller.matrixWorld)
-        .multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
+      if (object.userData.type != 'character') {
+        let worldScale = 1 // TODO
 
-      object.matrix.premultiply(tempMatrix)
-      object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-      object.scale.multiplyScalar(worldScale)
+        const tempMatrix = new THREE.Matrix4()
+        tempMatrix
+          .getInverse(controller.matrixWorld)
+          .multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
 
-      controller.add(object)
+        object.matrix.premultiply(tempMatrix)
+        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+        object.scale.multiplyScalar(worldScale)
+
+        controller.add(object)
+      }
 
       // TODO soundBeam
       // soundBeam.current.play()
@@ -505,27 +525,25 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      object.matrix.premultiply(controller.matrixWorld)
-      object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+      if (object.userData.type != 'character') {
+        object.matrix.premultiply(controller.matrixWorld)
+        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
 
-      // TODO
-      // object.scale.set(1, 1, 1)
-      // worldScaleGroupRef.current.add(object)
-      // object.position.multiplyScalar(1 / worldScale)
-      scene.add(object)
+        // TODO worldScale
+        // object.scale.set(1, 1, 1)
+        // worldScaleGroupRef.current.add(object)
+        // object.position.multiplyScalar(1 / worldScale)
+        scene.add(object)
+      }
 
       // TODO worldscale
-      // TODO rotation
 
       // TODO soundBeam
       // soundBeam.current.stop()
 
-      // console.log('updateObject', selections[0], wp.x, wp.y, wp.z)
-
       let rotation = object.userData.type == 'character'
         ? object.rotation.y
         : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-
       dispatch(updateObject(context.selection, {
         x: object.position.x,
         y: object.position.z,
@@ -539,6 +557,19 @@ const useInteractionsManager = ({
       onRotateCamera(event)
     },
 
+    moveAndRotateObject: (context, event) => {
+      let controller = gl.vr.getController(context.draggingController)
+      let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+      // TODO worldScale
+      let worldScale = 1
+      let target = (object.userData.type === 'character')
+        ? controller.getObjectByName('cursor')
+        : object
+
+      moveObjectZ(target, event, controller, worldScale, false)
+      rotateObjectY(object, event, controller)
+    },
 
 
     onRotateBoneEntry: (context, event) => {
