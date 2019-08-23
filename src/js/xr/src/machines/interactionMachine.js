@@ -58,18 +58,6 @@ const machine = Machine({
             actions: ['updateDraggingController', 'updateSelection', 'onSelected'],
             target: 'drag_object'
           },
-
-          // TODO
-
-          // {
-          //   cond: 'selectionChanged',
-          //   actions: ['updateDraggingController', 'updateSelection', 'onSelected'],
-          //   target: 'drag_object'
-          // },
-          // {
-          //   cond: 'controllerSameAndselectionSame',
-          //   target: 'drag_object'
-          // }
         ],
 
         GRIP_DOWN: {
@@ -84,27 +72,18 @@ const machine = Machine({
     },
     drag_object: {
       on: {
-        // TRIGGER_START: {
-          // if you are dragging an object,
-          // but then start dragging something with a different controller,
-                // cond: 'eventHasObjectOrCharacterIntersection',
-          // actions: ['onDragObjectEnd', 'updateDraggingController', 'updateSelection', 'onSelected'],
-          // target: 'drag_object'
-        // },
-
         TRIGGER_END: {
           cond: 'controllerSame',
           actions: ['onDragObjectEnd'],
           target: 'selected'
         }
 
-        // can't teleport while dragging an object
-        // TODO allow this using parallel machines?
+        // not allowed to teleport while dragging an object
+        // TODO could allow this using a parallel machine for teleport logic?
         // GRIP_DOWN: {}
       }
     },
     drag_teleport: {
-      // TODO what causes an error here?
       onEntry: 'onDragTeleportStart',
       on: {
         // if you press the trigger on the teleporting controller
@@ -160,31 +139,18 @@ const machine = Machine({
     }),
   },
   guards: {
-    // TODO simplify these
     selectionPresent: (context, event) => context.selection != null,
-    selectionChanged: (context, event) => event.intersection.id !== context.selection,
-    selectionSame: (context, event) => event.intersection.id === context.selection,
     selectionNil: (context, event) => event.intersection == null,
 
-    eventHasIntersection: (context, event) => event.intersection != null,
     eventHasObjectOrCharacterIntersection: (context, event) => event.intersection != null && ['object', 'character'].includes(event.intersection.type),
     eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.type == 'bone',
 
     eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,
     eventControllerNotTeleportDragController: (context, event) => event.controller.gamepad.index !== context.teleportDragController,
 
-    bothGripsDown: (context, event) => {
-      console.log('are both grips down?', context, event)
-      return event.controller.gamepad.index !== context.teleportDragController
-    },
+    bothGripsDown: (context, event) => event.controller.gamepad.index !== context.teleportDragController,
 
-    // TODO review these!!!
-    controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController,
-    controllerChanged: (context, event) => event.controller.gamepad.index !== context.draggingController,
-
-    // controllerSameAndselectionSame: (context, event) =>
-    //   (event.controller.gamepad.index === context.draggingController) &&
-    //   (event.intersection.id === context.selection)
+    controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController
   }
 })
 
