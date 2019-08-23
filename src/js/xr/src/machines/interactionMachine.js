@@ -71,7 +71,7 @@ const machine = Machine({
         ],
 
         AXES_CHANGED: {
-          actions: (context, event) => { log('TODO moveAndRotateObject') }
+          actions: ['moveAndRotateCamera']
         }
       }
     },
@@ -81,6 +81,10 @@ const machine = Machine({
           cond: 'controllerSame',
           actions: ['onDragObjectEnd'],
           target: 'selected'
+        },
+
+        AXES_CHANGED: {
+          actions: (context, event) => { log('TODO moveAndRotateObject') }
         }
 
         // not allowed to teleport while dragging an object
