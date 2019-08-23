@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo } = React = require('react')
+const { useMemo, useRef } = React = require('react')
 
 const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
@@ -7,6 +7,8 @@ const cloneGltf = require('../helpers/clone-gltf')
 const BonesHelper = require('../three/BonesHelper')
 
 const Character = React.memo(({ sceneObject, isSelected }) => {
+  const ref = useRef()
+
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
   const filepath = useMemo(
     () => `/data/system/dummies/gltf/${sceneObject.model}-lod.glb`,
@@ -76,12 +78,15 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
   useMemo(() => {
     if (isSelected) {
       BonesHelper.getInstance().initialize(lod.children[0])
-      lod.parent.add(BonesHelper.getInstance())
+      ref.current && ref.current.add(BonesHelper.getInstance())
+    } else {
+      ref.current && ref.current.remove(BonesHelper.getInstance())
     }
-  }, [isSelected])
+  }, [ref.current, isSelected])
 
   return lod
     ? <group
+      ref={ref}
 
       onController={sceneObject.visible ? () => null : null}
       userData={{
