@@ -47,10 +47,9 @@ const machine = Machine({
             target: 'idle',
             cond: 'selectionNil'
           },
-          // if we select a bone, don't try to drag it
+          // if we select a bone, don't do anything
           {
-            cond: 'eventHasBoneIntersection',
-            actions: ['onSelectedBone']
+            cond: 'eventHasBoneIntersection'
           },
 
           // anything selected that's not a bone can be dragged
@@ -60,10 +59,16 @@ const machine = Machine({
           },
         ],
 
-        GRIP_DOWN: {
-          actions: ['updateTeleportDragController'],
-          target: 'drag_teleport'
-        },
+        GRIP_DOWN: [
+          {
+            cond: 'eventHasBoneIntersection',
+            target: 'rotate_bone'
+          },
+          {
+            actions: ['updateTeleportDragController'],
+            target: 'drag_teleport'
+          }
+        ],
 
         AXES_CHANGED: {
           actions: (context, event) => { log('TODO moveAndRotateObject') }
@@ -111,8 +116,18 @@ const machine = Machine({
             target: 'idle'
           }
         ]
-      }
+      },
     },
+    rotate_bone: {
+      onEntry: ['updateDraggingController', 'onRotateBoneEntry'],
+      onExit: ['onRotateBoneExit', 'clearDraggingController'],
+      on: {
+        GRIP_UP: {
+          cond: 'controllerSame',
+          target: 'selected'
+        }
+      }
+    }
   }
 }, {
   actions: {
@@ -143,7 +158,7 @@ const machine = Machine({
     selectionNil: (context, event) => event.intersection == null,
 
     eventHasObjectOrCharacterIntersection: (context, event) => event.intersection != null && ['object', 'character'].includes(event.intersection.type),
-    eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.type == 'bone',
+    eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.bone,
 
     eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,
     eventControllerNotTeleportDragController: (context, event) => event.controller.gamepad.index !== context.teleportDragController,

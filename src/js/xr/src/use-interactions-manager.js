@@ -14,6 +14,7 @@ const getControllerIntersections = require('./helpers/get-controller-intersectio
 const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
+const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
 
@@ -23,11 +24,38 @@ const interactionMachine = require('./machines/interactionMachine')
 const {
   // selectors
   getSelections,
+  getSelectedBone,
 
   // action creators
   selectObject,
-  updateObject
+  updateObject,
+  updateCharacterSkeleton,
+
+  selectBone
 } = require('../../shared/reducers/shot-generator')
+
+const getRotationMemento = (controller, object) => {
+  let controllerRot = new THREE.Matrix4().extractRotation(controller.matrixWorld)
+  let startingDeviceRotation = new THREE.Quaternion().setFromRotationMatrix(controllerRot)
+  let startingDeviceOffset = new THREE.Quaternion()
+    .clone()
+    .inverse()
+    .multiply(startingDeviceRotation)
+    .normalize()
+    .inverse()
+
+  let startingObjectQuaternion = object.quaternion.clone()
+  let startingObjectOffset = new THREE.Quaternion()
+    .clone()
+    .inverse()
+    .multiply(startingObjectQuaternion)
+
+  return {
+    startingDeviceOffset,
+    startingObjectOffset,
+    startingObjectQuaternion
+  }
+}
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   // create virtual parent and child
@@ -66,6 +94,8 @@ const [useStore, useStoreApi] = create((set, get) => ({
   teleportMode: false,
   teleportTargetPos: [0, 0, 0],
   teleportTargetValid: false,
+
+  boneRotationMemento: {},
 
   // actions
   setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
@@ -132,6 +162,10 @@ const useInteractionsManager = ({
     let match = null
     let intersection = null
 
+    // TODO GPU picking for character skinned mesh
+
+    // TODO selecting GUI objects
+
     // DEBUG test bones helper bone intersections
     intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
     if (intersection) {
@@ -139,10 +173,11 @@ const useInteractionsManager = ({
         type: 'TRIGGER_START',
         controller: event.target,
         intersection: {
-          id: intersection.bone.uuid,
+          id: intersection.object.userData.id, // TODO
           type: 'bone',
+
           // TODO
-          object: intersection.bone,
+          object: intersection.object,
           distance: intersection.distance,
           point: intersection.point,
 
@@ -198,7 +233,16 @@ const useInteractionsManager = ({
   }
 
   const onGripDown = event => {
-    interactionService.send({ type: 'GRIP_DOWN', controller: event.target })
+    const controller = event.target
+
+    const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+
+    interactionService.send({
+      type: 'GRIP_DOWN',
+      controller: event.target,
+
+      intersection: intersection ? { ...intersection, type: 'bone' } : undefined
+    })
   }
 
   const onGripUp = event => {
@@ -268,6 +312,7 @@ const useInteractionsManager = ({
     onAxesChanged
   })
 
+  // TODO could model these as ... activities? exec:'render' actions?
   useRender(() => {
     // don't wait for a React update
     // read values directly from stores
@@ -321,6 +366,38 @@ const useInteractionsManager = ({
         BonesHelper.getInstance().update()
         BonesHelper.getInstance().position.copy(wp)
       }
+    }
+
+    if (mode == 'rotate_bone') {
+      let controller = gl.vr.getController(context.draggingController)
+      let selectedBone = getSelectedBone(store.getState())
+
+      // find the bone
+      let bone = scene.getObjectByProperty('uuid', selectedBone)
+
+      let {
+        startingDeviceOffset,
+        startingObjectOffset,
+        startingObjectQuaternion
+      } = useStoreApi.getState().boneRotationMemento
+
+      let currControllerRot = new THREE.Matrix4().extractRotation(controller.matrixWorld)
+      let deviceQuaternion = new THREE.Quaternion().setFromRotationMatrix(currControllerRot)
+
+      let objectQuaternion = applyDeviceQuaternion({
+        parent: bone.parent,
+
+        startingDeviceOffset,
+        startingObjectOffset,
+        startingObjectQuaternion,
+
+        deviceQuaternion,
+
+        camera,
+        useCameraOffset: true
+      })
+
+      bone.quaternion.copy(objectQuaternion.normalize())
     }
   }, false, [set, controllers])
 
@@ -390,6 +467,7 @@ const useInteractionsManager = ({
         dispatch(selectObject(context.selection))
       }
     },
+
     onSelectNone: (context, event) => {
       let controller = event.controller
       log('-- onSelectNone', controller)
@@ -436,6 +514,55 @@ const useInteractionsManager = ({
     moveAndRotateCamera: (context, event) => {
       onMoveCamera(event)
       onRotateCamera(event)
+    },
+
+
+
+    onRotateBoneEntry: (context, event) => {
+      let controller = event.controller
+      let bone = event.intersection.bone
+
+      useStoreApi.setState({
+        boneRotationMemento: getRotationMemento(controller, bone)
+      })
+
+      // select by UUID, like shot generator does
+      dispatch(selectBone(bone.uuid))
+    },
+    onRotateBoneExit: (context, event) => {
+      useStoreApi.setState({
+        boneRotationMemento: {}
+      })
+
+      let selectedBone = getSelectedBone(store.getState())
+      let bone = scene.getObjectByProperty('uuid', selectedBone)
+
+      let parent
+      bone.traverseAncestors(ancestor => {
+        if (parent == null && ancestor.userData.type == 'character') {
+          parent = ancestor
+        }
+      })
+
+      let rotation = new THREE.Euler()
+      rotation.setFromQuaternion(bone.quaternion.clone().normalize(), 'XYZ')
+
+      let id = parent.userData.id
+      let name = bone.name
+
+      // TODO wrap in an undo group
+      dispatch(
+        updateCharacterSkeleton({
+          id,
+          name,
+          rotation: {
+            x: rotation.x,
+            y: rotation.y,
+            z: rotation.z
+          }
+        })
+      )
+      dispatch(selectBone(null))
     }
   }
 
