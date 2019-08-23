@@ -112,6 +112,10 @@ const machine = Machine({
           cond: 'eventControllerMatchesTeleportDragController',
           actions: ['onTeleport']
         },
+        GRIP_DOWN: {
+          cond: 'bothGripsDown',
+          actions: (context, event) => { log('MINI MODE!') }
+        },
         GRIP_UP: [
           {
             cond: 'eventControllerNotTeleportDragController',
@@ -168,6 +172,11 @@ const machine = Machine({
 
     eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,
     eventControllerNotTeleportDragController: (context, event) => event.controller.gamepad.index !== context.teleportDragController,
+
+    bothGripsDown: (context, event) => {
+      console.log('are both grips down?', context, event)
+      return event.controller.gamepad.index !== context.teleportDragController
+    },
 
     // TODO review these!!!
     controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController,
