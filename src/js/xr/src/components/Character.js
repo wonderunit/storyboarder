@@ -76,7 +76,7 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
   useMemo(() => {
     if (isSelected) {
       BonesHelper.getInstance().initialize(lod.children[0])
-      lod.parent.add(BonesHelper.getInstance());
+      lod.parent.add(BonesHelper.getInstance())
     }
   }, [isSelected])
 
