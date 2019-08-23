@@ -119,7 +119,10 @@ const machine = Machine({
             actions: ['onDragTeleportEnd', 'clearTeleportDragController'],
             target: 'idle'
           }
-        ]
+        ],
+        AXES_CHANGED: {
+          actions: ['moveAndRotateCamera']
+        }
       },
     },
     rotate_bone: {
