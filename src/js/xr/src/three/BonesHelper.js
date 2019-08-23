@@ -94,7 +94,7 @@ class BonesHelper extends THREE.Object3D
             let {helpingBone, originalBone} = this.helpingBonesRelation[i];
             if(i === 0)
             {
-                inverseWorldMatrix = originalBone.parent.getInverseMatrixWorld();
+                inverseWorldMatrix = this.bonesGroup.getInverseMatrixWorld();
             }
             boneMatrix.multiplyMatrices( inverseWorldMatrix, originalBone.matrixWorld )
             helpingBone.position.setFromMatrixPosition(boneMatrix);
@@ -102,8 +102,6 @@ class BonesHelper extends THREE.Object3D
 
             helpingBone.updateMatrix();
             this.helperBonesPool.updateInstancedBone(helpingBone);
-            this.instancedMesh.needsUpdate("position");
-            this.instancedMesh.needsUpdate("quaternion");
         }
     }
 
@@ -120,8 +118,11 @@ class BonesHelper extends THREE.Object3D
 
     updateMatrixWorld(force)
     {
-        this.update();
-        super.updateMatrixWorld(force);
+        if(this.parent)
+        {
+            super.updateMatrixWorld(force);
+            this.update();
+        }
     }
 
     raycast(raycaster, intersects)
