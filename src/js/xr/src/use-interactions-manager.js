@@ -132,23 +132,31 @@ const useInteractionsManager = ({
     let match = null
     let intersection = null
 
-    // let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
+    // DEBUG test bones helper bone intersections
+    intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+    if (intersection) {
+      interactionService.send({
+        type: 'TRIGGER_START',
+        controller: event.target,
+        intersection: {
+          id: intersection.bone.uuid,
+          type: 'bone',
+          // TODO
+          object: intersection.bone,
+          distance: intersection.distance,
+          point: intersection.point,
+
+          bone: intersection.bone
+        }
+      })
+      return
+    }
+
     // DEBUG include all interactables so we can test Character
     let list = scene.__interaction
 
     // gather all hits to tracked scene object3ds
     let hits = getControllerIntersections(controller, list)
-
-    // DEBUG test bones helper bone intersections
-    let bonesHelperHits = getControllerIntersections(controller, [BonesHelper.getInstance()])
-    bonesHelperHits.forEach(h => {
-      if (h.bone) {
-        interactionService.send({ type: 'TRIGGER_START', controller: event.target, intersection: { id: bone.uuid, type: 'bone' /* TODO object, point */ }})
-        return
-      }
-    })
-    // stop right here if we hit a bone
-    if (bonesHelperHits.find(o => o.bone != null)) return
 
     // if one intersects
     if (hits.length) {
@@ -185,192 +193,21 @@ const useInteractionsManager = ({
     }
   }
 
-  /*
-  const onTriggerStart = event => {
-    const controller = event.target
-    controller.pressed = true
-
-    if (teleportMode) {
-      interactionService.send({ type: 'TRIGGER_START', controller: event.target })
-      // onTeleport()
-      return
-    }
-
-    const other = oppositeController(controller)
-    if (other && other.pressed) return
-    if (other && other.gripped) return
-
-    let match = null
-    let intersection = null
-
-    // let list = scene.__interaction.filter(object3d => object3d.userData.type != 'character')
-    // DEBUG include all interactables so we can test Character
-    let list = scene.__interaction
-
-    // gather all hits to tracked scene object3ds
-    let hits = getControllerIntersections(controller, list)
-
-    // DEBUG test bones helper bone intersections
-    let bonesHelperHits = getControllerIntersections(controller, [BonesHelper.getInstance()])
-    bonesHelperHits.forEach(h => {
-      if (h.bone) {
-        log(`bone: ${h.bone.uuid.slice(0, 7)}`)
-
-        console.log('trigger_start', event.target, h.bone.uuid)
-        interactionService.send({ type: 'TRIGGER_START', controller: event.target, id: bone.uuid, hitType: 'bone' })
-
-      } else {
-        // log(h.object.name)
-      }
-    })
-    // stop right here if we hit a bone
-    if (bonesHelperHits.find(o => o.bone != null)) return
-
-    // if one intersects
-    if (hits.length) {
-      // grab the first intersection
-      let child = hits[0].object
-      // find either the child or one of its parents on the list of interaction-ables
-      match = findMatchingAncestor(child, list)
-      if (match) {
-        intersection = hits[0]
-      }
-    }
-
-    if (match) {
-      // console.log('found sceneObject:', sceneObjects[match.userData.id])
-      // console.log('intersection', intersection)
-      // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
-      log(`select ${match.userData.id.slice(0, 7)}`)
-
-      let cursor = controller.getObjectByName('cursor')
-      cursor.position.z = -intersection.distance
-
-      const pos = match.getWorldPosition(new THREE.Vector3())
-      const offset = new THREE.Vector3().subVectors(intersection.point, pos)
-
-      controller.userData.selected = match.userData.id
-      controller.userData.selectOffset = offset
-
-      dispatch(selectObject(match.userData.id))
-
-      // this
-      // was selected
-      console.log(interactionService)
-      console.log('now:', interactionService.state.value)
-      console.log(
-        'trying',
-        { type: 'TRIGGER_START', controller: event.target, id: match.userData.id, hitType: match.userData.type }
-      )
-      interactionService.send({ type: 'TRIGGER_START', controller: event.target, id: match.userData.id, hitType: match.userData.type })
-    } else {
-      // console.log('clearing selection')
-      log(`select none`)
-      controller.userData.selected = null
-      controller.userData.selectOffset = null
-      dispatch(selectObject(null))
-
-      console.log('trigger_start', event.target)
-      interactionService.send({ type: 'TRIGGER_START', controller: event.target })
-    }
-  }
-  */
   const onTriggerEnd = event => {
     interactionService.send({ type: 'TRIGGER_END', controller: event.target })
   }
-  /*
-  const onTriggerEnd = event => {
-    const controller = event.target
-    controller.pressed = false
-
-    interactionService.send({ type: 'TRIGGER_END', controller: event.target })
-
-    if (selections.length && controller.userData.selected) {
-      // find the cursor
-      let cursor = controller.getObjectByName('cursor')
-      // make sure its position is exact
-      controller.updateMatrixWorld()
-      // grab its world position
-      let wp = new THREE.Vector3()
-      cursor.getWorldPosition(wp)
-      // offset it
-      wp.sub(controller.userData.selectOffset)
-
-      // TODO worldscale
-      // TODO rotation
-      // TODO soundBeam
-
-      // console.log('updateObject', selections[0], wp.x, wp.y, wp.z)
-
-      dispatch(updateObject(selections[0], {
-        x: wp.x,
-        y: wp.z,
-        z: wp.y,
-        // rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-      }))
-    }
-
-    controller.userData.selected = null
-    controller.userData.selectOffset = null
-  }
-  */
 
   const onGripDown = event => {
     interactionService.send({ type: 'GRIP_DOWN', controller: event.target })
   }
 
-  /*
-  const onGripDown = event => {
-    const controller = event.target
-    controller.gripped = true
-
-    interactionService.send({ type: 'GRIP_DOWN', controller: event.target })
-
-    let other = oppositeController(controller)
-    if (other && other.gripped) {
-      console.log('selecting mini mode')
-      setTeleportMode(false)
-      return
-    }
-
-    if (controller.userData.selected) return
-
-    // the target position value will be old until the next gl render
-    // so consider it invalid, to hide the mesh, until then
-    set(state => ({ ...state, teleportTargetValid: false }))
-    setTeleportMode(true)
-  }
-  */
-
   const onGripUp = event => {
     interactionService.send({ type: 'GRIP_UP', controller: event.target })
   }
-  /*
-  const onGripUp = event => {
-    const controller = event.target
-    controller.gripped = false
 
-    interactionService.send({ type: 'GRIP_UP', controller: event.target })
-
-    setTeleportMode(false)
-  }
-  */
   const onAxesChanged = event => {
     interactionService.send({ type: 'AXES_CHANGED', controller: event.target, axes: event.axes })
   }
-  /*
-  const onAxesChanged = event => {
-    let controllerWithSelection = controllers.find(controller => controller.userData.selected)
-
-    if (controllerWithSelection) {
-      // onMoveObject(event)
-      // onRotateObject(event)
-    } else {
-      onMoveCamera(event)
-      onRotateCamera(event)
-    }
-  }
-  */
 
   const onMoveCamera = event => {
     if (didMoveCamera != null) {
