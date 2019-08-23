@@ -338,6 +338,7 @@ const useInteractionsManager = ({
       }
     }
 
+    /*
     if (mode === 'drag_object') {
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
@@ -363,6 +364,7 @@ const useInteractionsManager = ({
         object3d.position.copy(wp)
       }
     }
+    */
 
     if (mode == 'rotate_bone') {
       let controller = gl.vr.getController(context.draggingController)
@@ -480,30 +482,55 @@ const useInteractionsManager = ({
       log('bone')
     },
 
-    onDragObjectEnd: (context, event) => {
+    onDragObjectEntry: (context, event) => {
       let controller = gl.vr.getController(context.draggingController)
+      let object = scene.__interaction.find(o => o.userData.id === context.selection)
+      let worldScale = 1 // TODO
 
-      // find the cursor
-      let cursor = controller.getObjectByName('cursor')
-      // make sure its position is exact
-      controller.updateMatrixWorld()
-      // grab its world position
-      let wp = new THREE.Vector3()
-      cursor.getWorldPosition(wp)
-      // offset it
-      wp.sub(controller.userData.selectOffset)
+      const tempMatrix = new THREE.Matrix4()
+      tempMatrix
+        .getInverse(controller.matrixWorld)
+        .multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
+
+      object.matrix.premultiply(tempMatrix)
+      object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+      object.scale.multiplyScalar(worldScale)
+
+      controller.add(object)
+
+      // TODO soundBeam
+      // soundBeam.current.play()
+    },
+    onDragObjectExit: (context, event) => {
+      let controller = gl.vr.getController(context.draggingController)
+      let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+      object.matrix.premultiply(controller.matrixWorld)
+      object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+
+      // TODO
+      // object.scale.set(1, 1, 1)
+      // worldScaleGroupRef.current.add(object)
+      // object.position.multiplyScalar(1 / worldScale)
+      scene.add(object)
 
       // TODO worldscale
       // TODO rotation
+
       // TODO soundBeam
+      // soundBeam.current.stop()
 
       // console.log('updateObject', selections[0], wp.x, wp.y, wp.z)
 
+      let rotation = object.userData.type == 'character'
+        ? object.rotation.y
+        : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+
       dispatch(updateObject(context.selection, {
-        x: wp.x,
-        y: wp.z,
-        z: wp.y,
-        // rotation: { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y,
+        rotation
       }))
     },
 

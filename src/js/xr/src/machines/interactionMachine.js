@@ -76,10 +76,11 @@ const machine = Machine({
       }
     },
     drag_object: {
+      onEntry: 'onDragObjectEntry',
+      onExit: 'onDragObjectExit',
       on: {
         TRIGGER_END: {
           cond: 'controllerSame',
-          actions: ['onDragObjectEnd'],
           target: 'selected'
         },
 
