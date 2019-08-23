@@ -98,8 +98,9 @@ const machine = Machine({
           target: 'selected'
         }
 
-        // can't teleport while selected
+        // can't teleport while dragging an object
         // TODO allow this using parallel machines?
+        // GRIP_DOWN: {}
       }
     },
     drag_teleport: {
