@@ -316,14 +316,62 @@ const useInteractionsManager = ({
   const onGripDown = event => {
     const controller = event.target
 
-    const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+    if (BonesHelper.getInstance().isSelected) {
+      const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+      if (intersection) {
+        interactionService.send({
+          type: 'GRIP_DOWN',
+          controller: event.target,
 
-    interactionService.send({
-      type: 'GRIP_DOWN',
-      controller: event.target,
+          intersection: intersection ? { ...intersection, type: 'bone' } : undefined
+        })
+        return
+      }
+    }
 
-      intersection: intersection ? { ...intersection, type: 'bone' } : undefined
-    })
+    let match = null
+
+    // include all interactables (Model Object, Character, etc)
+    let list = scene.__interaction
+
+    // setup the GPU picker
+    getGpuPicker().setupScene(list)
+
+    // gather all hits to tracked scene object3ds
+    let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
+
+    // if one intersects
+    if (hits.length) {
+      // grab the first intersection
+      let child = hits[0].object
+      // find either the child or one of its parents on the list of interaction-ables
+      match = findMatchingAncestor(child, list)
+      if (match) {
+        intersection = hits[0]
+      }
+    }
+
+    if (match) {
+      interactionService.send({
+        type: 'GRIP_DOWN',
+        controller: event.target,
+
+        intersection: {
+          id: match.userData.id,
+          type: match.userData.type,
+          object: match,
+          distance: intersection.distance,
+          point: intersection.point
+        }
+      })
+    } else {
+      interactionService.send({
+        type: 'GRIP_DOWN',
+        controller: event.target,
+
+        intersection: undefined
+      })
+    }
   }
 
   const onGripUp = event => {
