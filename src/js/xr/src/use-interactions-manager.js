@@ -1,4 +1,4 @@
-const { useMemo, useState } = React = require('react')
+const { useMemo, useState, useRef } = React = require('react')
 const { useThree, useRender } = require('react-three-fiber')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -17,6 +17,7 @@ const teleportParent = require('./helpers/teleport-parent')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
+const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
 const { interpret } = require('xstate/lib/interpreter')
 const interactionMachine = require('./machines/interactionMachine')
@@ -201,6 +202,15 @@ const useInteractionsManager = ({
 
   const selections = useSelector(getSelections)
 
+  const gpuPicker = useRef(null)
+
+  const getGpuPicker = () => {
+    if (gpuPicker.current === null) {
+      gpuPicker.current = new GPUPicker(gl)
+    }
+    return gpuPicker.current
+  }
+
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)
   const didRotateCamera = useStore(state => state.didRotateCamera)
@@ -229,36 +239,39 @@ const useInteractionsManager = ({
     let match = null
     let intersection = null
 
-    // TODO GPU picking for character skinned mesh
+    // include all interactables (Model Object, Character, etc)
+    let list = scene.__interaction
+
+    // setup the GPU picker
+    getGpuPicker().setupScene(list)
+
+    // gather all hits to tracked scene object3ds
+    let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
 
     // TODO selecting GUI objects
 
-    // DEBUG test bones helper bone intersections
-    intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
-    if (intersection) {
-      interactionService.send({
-        type: 'TRIGGER_START',
-        controller: event.target,
-        intersection: {
-          id: intersection.object.userData.id, // TODO
-          type: 'bone',
+    // if the BonesHelper instance is in the scene ...
+    if ( BonesHelper.getInstance().parent ) {
+      // ... check bones helper bone intersections
+      intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+      if (intersection) {
+        interactionService.send({
+          type: 'TRIGGER_START',
+          controller: event.target,
+          intersection: {
+            id: intersection.object.userData.id,
+            type: 'bone',
 
-          // TODO
-          object: intersection.object,
-          distance: intersection.distance,
-          point: intersection.point,
+            object: intersection.object,
+            distance: intersection.distance,
+            point: intersection.point,
 
-          bone: intersection.bone
-        }
-      })
-      return
+            bone: intersection.bone
+          }
+        })
+        return
+      }
     }
-
-    // DEBUG include all interactables so we can test Character
-    let list = scene.__interaction
-
-    // gather all hits to tracked scene object3ds
-    let hits = getControllerIntersections(controller, list)
 
     // if one intersects
     if (hits.length) {
