@@ -12,7 +12,11 @@ const modifyEvent = (event, gl) => {
 }
 
 const getList = (controllers, gl) =>
-  controllers.filter(Boolean).map(c => gl.vr.getController(c.gamepad.index))
+  controllers.filter(Boolean).map(c => {
+    let object = gl.vr.getController(c.gamepad.index)
+    object.userData.gamepad = { index: c.gamepad.index }
+    return object
+  })
 
 const useVrControllers = ({
   onTriggerStart,

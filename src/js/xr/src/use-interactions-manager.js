@@ -786,6 +786,8 @@ const useInteractionsManager = ({
     //   resolve()
     // }),
   }
+
+  return controllers
 }
 
 module.exports = {
