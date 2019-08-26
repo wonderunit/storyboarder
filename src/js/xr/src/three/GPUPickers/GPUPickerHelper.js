@@ -22,6 +22,7 @@ class GPUPickerHelper
         this.depthScene = new THREE.Scene();
         this.depthScene.overrideMaterial = this.depthMaterial;
         this.depthScene.needsUpdate = true;
+        this.depthScene.autoUpdate = false;
         this.reusableVector = new THREE.Vector3();
     }
     
@@ -56,7 +57,7 @@ class GPUPickerHelper
         {
             this.pickedObject = intersectedObject.originObject;
             let selectedObject = intersectedObject.pickerObject;
-            if(this.pickedObject.type === "SkinnedMesh")
+            //if(this.pickedObject.type === "SkinnedMesh")
             {
                 this.depthScene.attach(selectedObject);
                 this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
