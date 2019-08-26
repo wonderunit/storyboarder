@@ -89,7 +89,7 @@ const characterFactory = data => {
   let lods = data.scene.children.filter(child => child instanceof THREE.SkinnedMesh)
   if (lods.length === 0) lods = data.scene.children[0].children.filter(child => child instanceof THREE.SkinnedMesh)
 
-  if (lods.length > 1) {
+   if (lods.length > 1) {
     mesh = new THREE.LOD()
     lods.forEach((lod, i) => {
       mesh.addLevel(lod, i * 2)
@@ -172,9 +172,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
-
   const originalSkeleton = useRef(null)
-
   // const doCleanup = () => {
   //   if (object.current) {
   //     console.log(type, id, 'remove')
@@ -188,7 +186,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   useRender(
     () => {
       if (object.current && hmdCam && object.current.children[0] instanceof THREE.LOD) {
-        object.current.children[0].update(hmdCam)
+        //object.current.children[0].update(hmdCam)
       }
     },
     false,
@@ -206,8 +204,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   useEffect(() => {
     if (!ready && modelData) {
       if (isValidSkinnedMesh(modelData)) {
-        // console.log(type, id, 'got valid mesh')
-
         setReady(true)
       } else {
         alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')
@@ -238,7 +234,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(
         modelData
       )
-
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
@@ -357,7 +352,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   useEffect(() => {
     if (!ready) return
     if (!object.current) return
-
     // console.log(type, id, 'skeleton')
     updateSkeleton()
   }, [props.model, props.skeleton, ready])
@@ -395,31 +389,30 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   }, [props.model, props.headScale, props.skeleton, ready])
 
   useEffect(() => {
-    // console.log(type, id, 'isSelected', isSelected)
+    //console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
-
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected && worldScale === 1) {
-      for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.add(cone)
+      object.current.add(object.current.bonesHelper.conesGroup);
     } else {
-      for (var cone of object.current.bonesHelper.cones) object.current.bonesHelper.remove(cone)
+      object.current.remove(object.current.bonesHelper.conesGroup);
+
     }
 
-    if (skinnedMesh.type === 'LOD') {
+     if (skinnedMesh.type === 'LOD') {
       skinnedMesh.levels.forEach((level, i) => {
         const worldScaleMult = worldScale === 1 ? 1 : 0.01
         level.distance = i * 2 * worldScaleMult
       })
     }
-
+    object.current.bonesHelper.needsUpdate = true;
     if (isSelected) updateObjectHighlight(object.current, 0.15)
-    else updateObjectHighlight(object.current, 0)
+    else updateObjectHighlight(object.current, 0) 
   }, [props.model, worldScale, isSelected, ready])
 
   useMemo(() => {
     if (!skinnedMesh) return
-
     if (skinnedMesh.type === 'LOD') {
       skinnedMesh.children.forEach(lod => {
         if (lod.morphTargetDictionary && Object.values(lod.morphTargetDictionary).length === 3) {
@@ -440,7 +433,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
   useEffect(() => {
     if (!ready) return
     if (!object.current) return
-
     // if there was a prior selected bone
     if (currentBoneSelected.current) {
       // reset it
@@ -458,8 +450,9 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color(0x242246)
       }
     }
-  }, [selectedBone, ready])
 
+  }, [selectedBone, ready])
+  
   return <group
       //visible={false}
       userData={{
@@ -486,7 +479,6 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
               id,
               type,
               originalHeight,
-              mesh,
               skeleton,
               boneLengthScale,
               parentRotation,
@@ -504,14 +496,20 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
       }
 
       {(skinnedMesh && bonesHelper) && (
-        <group>
+        <group 
+        userData={{
+          type: "bonesHelper"
+        }}> 
+           
           <primitive
             userData={{
-              character: skinnedMesh
+              //character: skinnedMesh,
             }}
             object={bonesHelper}
+            type={"BonesHelper"}
           />
         </group>
+        
       )}
   </group>
 })
