@@ -20,7 +20,7 @@ const BonesHelper = require('./three/BonesHelper')
 
 const { interpret } = require('xstate/lib/interpreter')
 const interactionMachine = require('./machines/interactionMachine')
-const GPUPicker = require("./three/GPUPickers/GPUPicker");
+const GPUPicker = require('./three/GPUPickers/GPUPicker')
 const {
   // selectors
   getSelections,
@@ -201,7 +201,7 @@ const useInteractionsManager = ({
 
   const selections = useSelector(getSelections)
 
-  const gpuPicker = useRef(new GPUPicker(gl));
+  const gpuPicker = useRef(new GPUPicker(gl))
 
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)
@@ -233,8 +233,8 @@ const useInteractionsManager = ({
     // DEBUG include all interactables so we can test Character
     let list = scene.__interaction
     // TODO GPU picking for character skinned mesh
-    gpuPicker.current.setupScene(list);
-    let hits = gpuPicker.current.pick(controller.worldPosition(), controller.worldQuaternion());
+    gpuPicker.current.setupScene(list)
+    let hits = gpuPicker.current.pick(controller.worldPosition(), controller.worldQuaternion())
     // TODO selecting GUI objects
 
     // DEBUG test bones helper bone intersections
