@@ -305,7 +305,6 @@ const useInteractionsManager = ({
     const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
     if(intersection)
     {
-      console.log(intersection)
       BonesHelper.getInstance().selectBone(intersection.bone);
     }
     interactionService.send({
@@ -393,6 +392,21 @@ const useInteractionsManager = ({
 
     let mode = interactionService.state.value
     let context = interactionService.state.context
+    if(mode === "selected" && BonesHelper.getInstance().isSelected)
+    {
+      for(let i = 0, n = controllers.length; i < n; i++)
+      {
+        let controller = controllers[i];
+        if(controller.gamepad)
+        {
+          const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+          if(intersection)
+          {
+            BonesHelper.getInstance().selectBone(intersection.bone);
+          }
+        }
+      }
+    }
 
     if (mode === 'drag_teleport') {
       let controller = gl.vr.getController(context.teleportDragController)
