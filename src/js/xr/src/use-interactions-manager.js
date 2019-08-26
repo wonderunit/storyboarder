@@ -241,8 +241,6 @@ const useInteractionsManager = ({
   const store = useReduxStore()
   const dispatch = useDispatch()
 
-  const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
-
   const onTriggerStart = event => {
     const controller = event.target
 
