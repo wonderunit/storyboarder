@@ -24,6 +24,7 @@ const useRStats = require('./hooks/use-rstats')
 const useGltf = require('./hooks/use-gltf')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
+const { useUiManager } = require('./use-ui-manager')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -121,8 +122,11 @@ const SceneContent = connect(
     const teleportRef = useRef()
     const groundRef = useRef()
 
+    const { uiService, uiState, getCanvasRenderer } = useUiManager()
+
     const controllers = useInteractionsManager({
-      groundRef
+      groundRef,
+      uiService
     })
 
     // initialize the BonesHelper
@@ -167,7 +171,7 @@ const SceneContent = connect(
                   navigator.getGamepads()[controller.userData.gamepad.index] &&
                   navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
                   <Suspense fallback={null}>
-                    <Controls />
+                    <Controls uiState={uiState} getCanvasRenderer={getCanvasRenderer} />
                   </Suspense>
                 }
               </primitive>
