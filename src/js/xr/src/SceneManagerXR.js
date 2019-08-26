@@ -100,7 +100,10 @@ const SceneContent = connect(
     }, [])
 
     useMemo(() => {
-      scene.background = new THREE.Color(0x000000)
+      scene.background = new THREE.Color(world.backgroundColor)
+    }, [world.backgroundColor])
+
+    useMemo(() => {
       scene.fog = new THREE.Fog( 0x000000, -10, 40 )
     }, [])
 
