@@ -250,25 +250,29 @@ const useInteractionsManager = ({
 
     // TODO selecting GUI objects
 
-    // DEBUG test bones helper bone intersections
-    intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
-    if (intersection) {
-      interactionService.send({
-        type: 'TRIGGER_START',
-        controller: event.target,
-        intersection: {
-          id: intersection.object.userData.id, // TODO
-          type: 'bone',
+    // if the BonesHelper instance is in the scene ...
+    if ( BonesHelper.getInstance().parent ) {
+      // ... check bones helper bone intersections
+      intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+      if (intersection) {
+        console.log('got bone intersection', intersection)
+        interactionService.send({
+          type: 'TRIGGER_START',
+          controller: event.target,
+          intersection: {
+            id: intersection.object.userData.id, // TODO
+            type: 'bone',
 
-          // TODO
-          object: intersection.object,
-          distance: intersection.distance,
-          point: intersection.point,
+            // TODO
+            object: intersection.object,
+            distance: intersection.distance,
+            point: intersection.point,
 
-          bone: intersection.bone
-        }
-      })
-      return
+            bone: intersection.bone
+          }
+        })
+        return
+      }
     }
 
     // if one intersects
