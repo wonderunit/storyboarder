@@ -121,11 +121,11 @@ const characterFactory = data => {
 
     return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
   }
-  
+
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
   if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
     armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
-    
+
     if (armatures.length === 0) {  //specifically adult-female - bone structure is inside the skinned mesh
       armatures = mesh.children[0].children.filter(child => child instanceof THREE.Bone)
     }
@@ -140,6 +140,7 @@ const characterFactory = data => {
     parentPosition = armatures[0].position.clone()
     boneLengthScale = 100
   }
+
   skeleton = mesh.skeleton
 
   if (mesh.material.map) {
@@ -292,10 +293,12 @@ const Character = React.memo(({
           z : rotation.z,
         }  
       } );}); 
+      console.log(mesh.name);
       if(!(mesh.name === "female-adult-meso" || mesh.name === "adult-male-lod"
       || mesh.name === "male-adult-meso" || mesh.name === "female-youth-meso"
       || mesh.name === "female-youth-meso"))
       {
+        console.log("custom model");
         return;
       }
       ragDoll.current = new RagDoll();
@@ -590,6 +593,7 @@ const Character = React.memo(({
   }, [props.model, props.morphTargets, ready])
 
   useEffect(() => {
+    console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
     

@@ -51,7 +51,7 @@ const meshFactory = originalMesh => {
   }
 
   let material = materialFactory()
- 
+
   if (mesh.material.map) {
     material.map = mesh.material.map
     material.map.needsUpdate = true
@@ -65,7 +65,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
   const setLoaded = loaded => updateObject(id, { loaded })
 
   const container = useRef()
- 
+
   useEffect(() => {
     console.log(type, id, 'added')
 

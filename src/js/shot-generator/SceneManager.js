@@ -290,10 +290,12 @@ const SceneManager = connect(
 
     useEffect(() => {
       if (camera) {
+        console.log('camera changed')
 
         // state of the active camera
         let cameraState = Object.values(sceneObjects).find(o => o.id === camera.userData.id)
         if (!cameraControlsView.current) {
+          console.log('new CameraControls')
           cameraControlsView.current = new CameraControls(
             CameraControls.objectFromCameraState(cameraState),
             largeCanvasRef.current,
@@ -303,6 +305,7 @@ const SceneManager = connect(
             }
           )
         }
+     
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -357,10 +360,9 @@ const SceneManager = connect(
                 scene.background.set(new THREE.Color( '#FFFFFF' ))
                 smallRendererEffect.current.render( scene, cameraForSmall)
                 scene.background.set(tempColor)
-         
+
               } else {
                 scene.background.set(new THREE.Color( '#FFFFFF' ))
-                
                 largeRendererEffect.current.render(scene, cameraForLarge)
                 scene.background.set(tempColor)
                 smallRendererEffect.current.render( scene, cameraForSmall)
@@ -377,6 +379,7 @@ const SceneManager = connect(
       }
 
       return function cleanup () {
+        console.log('cameraControls setter cleanup')
 
         cancelAnimationFrame(animatorId.current)
         animator.current = () => {}

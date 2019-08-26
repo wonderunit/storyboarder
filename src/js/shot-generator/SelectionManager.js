@@ -172,11 +172,13 @@ const SelectionManager = connect(
     updateObjects,
 
     transition,
+    
     undoGroupStart,
     undoGroupEnd
   }) => {
 
   const { scene } = useContext(SceneContext)
+
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
 
@@ -267,16 +269,13 @@ const SelectionManager = connect(
   }, [dragTarget])
 
   const onPointerDown = event => {
-    
     event.preventDefault()
-    
+
     // make sure we clear focus of any text fields
     transition('TYPING_EXIT')
-    
+
     // get the mouse coords
     const { x, y } = mouse(event)
-
-
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
     let intersects = getIntersects({ x, y }, camera, useIcons)
@@ -453,7 +452,6 @@ const SelectionManager = connect(
 
     const { x, y } = mouse(event)
 
-  
     if (dragTarget)
     {
       if(dragTarget.target.userData.type === 'character')
