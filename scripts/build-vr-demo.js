@@ -15,14 +15,14 @@ fs.mkdirpSync(dstPath)
 
 // source files
 fs.copySync(
-  path.join(srcPath, 'src', 'js', 'express-xr', 'dist'),
+  path.join(srcPath, 'src', 'js', 'xr', 'dist'),
   dstPath
 )
 
 // data
 fs.mkdirpSync(path.join(dstPath, 'data'))
 fs.copySync(
-  path.join(srcPath, 'src', 'js', 'express-xr', 'public', 'snd'),
+  path.join(srcPath, 'src', 'js', 'xr', 'public', 'snd'),
   path.join(dstPath, 'data', 'snd')
 )
 fs.copySync(
