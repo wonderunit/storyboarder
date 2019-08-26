@@ -36,6 +36,7 @@ class BonesHelper extends THREE.Object3D
     // And creates InstancedMesh
     initialize(skinnedMesh)
     {
+        this.resetSelection();
         if(this.intializedSkinnedMeshUuid && this.intializedSkinnedMeshUuid === skinnedMesh.uuid)
         {
             return;
@@ -114,6 +115,22 @@ class BonesHelper extends THREE.Object3D
             return;
         }
         this.helperBonesPool.changeBoneColor(helpingBone, color);
+    }
+
+    selectBone(bone)
+    {
+        this.resetSelection();
+        this.selectedBone = bone;
+        this.changeBoneColor(bone, new THREE.Color(0x242246));
+    }
+
+    resetSelection()
+    {
+        console.log(this.selectedBone);
+        if(this.selectedBone)
+        {
+            this.changeBoneColor(this.selectedBone, this.helperBonesPool.defaultColor);
+        }
     }
 
     updateMatrixWorld(force)
