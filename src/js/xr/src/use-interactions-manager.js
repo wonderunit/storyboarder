@@ -236,7 +236,28 @@ const useInteractionsManager = ({
 
     let intersection = null
 
-    // TODO selecting GUI objects
+    let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+    let intersections = getControllerIntersections(controller, uis)
+    intersection = intersections.length && intersections[0]
+    if (intersection) {
+      log('uv', intersection.uv.toArray().map(n => n.toFixed(3)))
+      interactionService.send({
+        type: 'TRIGGER_START',
+        controller: event.target,
+        intersection: {
+          id: intersection.object.userData.id,
+          type: 'ui',
+
+          object: intersection.object,
+          distance: intersection.distance,
+          point: intersection.point,
+          uv: intersection.uv
+        }
+      })
+      return
+    }
+
+
 
     // if the BonesHelper instance is in the scene ...
     if ( BonesHelper.getInstance().isSelected ) {

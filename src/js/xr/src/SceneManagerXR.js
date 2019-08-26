@@ -33,6 +33,8 @@ const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
 
+const Controls = require('./components/ui/Controls')
+
 const BonesHelper = require('./three/BonesHelper')
 
 const { createSelector } = require('reselect')
@@ -156,17 +158,21 @@ const SceneContent = connect(
             <Log position={[0, -0.15, -1]} />
           </primitive>
 
-          <Suspense fallback={null}>
-            <primitive object={gl.vr.getController(0)}>
-              <Controller />
-            </primitive>
-          </Suspense>
+          {controllers.filter(Boolean).map(controller =>
+            <Suspense key={controller.uuid} fallback={null}>
+              <primitive object={controller} >
+                <Controller />
 
-          <Suspense fallback={null}>
-            <primitive object={gl.vr.getController(1)}>
-              <Controller />
-            </primitive>
-          </Suspense>
+                {
+                  navigator.getGamepads()[controller.userData.gamepad.index] &&
+                  navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
+                  <Suspense fallback={null}>
+                    <Controls />
+                  </Suspense>
+                }
+              </primitive>
+            </Suspense>
+          )}
         </group>
 
         <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
