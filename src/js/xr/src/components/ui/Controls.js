@@ -43,6 +43,7 @@ const Controls = () => {
     if (textureRef.current === null) {
       textureRef.current = new THREE.CanvasTexture(getCanvasRenderer().canvas)
       textureRef.current.flipY = false
+      textureRef.current.minFilter = THREE.LinearFilter
     }
     return textureRef.current
   }
