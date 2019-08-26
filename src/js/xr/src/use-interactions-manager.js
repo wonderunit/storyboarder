@@ -239,7 +239,7 @@ const useInteractionsManager = ({
     let match = null
     let intersection = null
 
-    // DEBUG include all interactables so we can test Character
+    // include all interactables (Model Object, Character, etc)
     let list = scene.__interaction
 
     // setup the GPU picker
