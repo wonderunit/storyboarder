@@ -119,7 +119,7 @@ const SceneContent = connect(
     const teleportRef = useRef()
     const groundRef = useRef()
 
-    useInteractionsManager({
+    const controllers = useInteractionsManager({
       groundRef
     })
 
