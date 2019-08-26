@@ -28,7 +28,7 @@ const Controller = () => {
   return mesh
     ? <group>
       <primitive object={mesh} />
-      <mesh name={'cursor'} visible={true/*false*/}>
+      <mesh name={'cursor'} visible={false}>
         <boxBufferGeometry attach="geometry" args={[0.1, 0.1, 0.1]} />
         <meshBasicMaterial attach="material" />
       </mesh>
