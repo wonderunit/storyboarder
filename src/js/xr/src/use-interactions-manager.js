@@ -255,15 +255,13 @@ const useInteractionsManager = ({
       // ... check bones helper bone intersections
       intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
       if (intersection) {
-        console.log('got bone intersection', intersection)
         interactionService.send({
           type: 'TRIGGER_START',
           controller: event.target,
           intersection: {
-            id: intersection.object.userData.id, // TODO
+            id: intersection.object.userData.id,
             type: 'bone',
 
-            // TODO
             object: intersection.object,
             distance: intersection.distance,
             point: intersection.point,
