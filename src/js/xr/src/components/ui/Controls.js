@@ -4,7 +4,7 @@ const { useRender } = require('react-three-fiber')
 const useGltf = require('../../hooks/use-gltf')
 
 const SCALE = 0.025
-const POSITION = [0, 0, -0.1]
+const POSITION = [0.07, 0.01, -0.1]
 
 class CanvasRenderer {
   constructor (size) {
