@@ -303,10 +303,6 @@ const useInteractionsManager = ({
     const controller = event.target
 
     const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
-    if(intersection)
-    {
-      BonesHelper.getInstance().selectBone(intersection.bone);
-    }
     interactionService.send({
       type: 'GRIP_DOWN',
       controller: event.target,
@@ -392,19 +388,20 @@ const useInteractionsManager = ({
 
     let mode = interactionService.state.value
     let context = interactionService.state.context
-    if(mode === "selected" && BonesHelper.getInstance().isSelected)
-    {
-      for(let i = 0, n = controllers.length; i < n; i++)
-      {
-        let controller = controllers[i];
-        if(controller.gamepad)
-        {
-          const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
-          if(intersection)
-          {
-            BonesHelper.getInstance().selectBone(intersection.bone);
-          }
+
+    // bones selections
+    if (mode == 'selected') {
+      let match
+      for (let i = 0, n = controllers.length; i < n; i++) {
+        let controller = controllers[i]
+        let intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+        if (intersection) {
+          match = intersection
+          BonesHelper.getInstance().selectBone(intersection.bone)
         }
+      }
+      if (!match) {
+        BonesHelper.getInstance().resetSelection()
       }
     }
 
@@ -670,6 +667,7 @@ const useInteractionsManager = ({
 
       // select by UUID, like shot generator does
       dispatch(selectBone(bone.uuid))
+      BonesHelper.getInstance().selectBone(bone)
     },
     onRotateBoneExit: (context, event) => {
       useStoreApi.setState({
@@ -705,6 +703,7 @@ const useInteractionsManager = ({
         })
       )
       dispatch(selectBone(null))
+      BonesHelper.getInstance().resetSelection()
     }
   }
 
