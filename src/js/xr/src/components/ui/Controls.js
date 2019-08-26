@@ -41,7 +41,8 @@ const Controls = () => {
   const textureRef = useRef(null)
   const getTexture = () => {
     if (textureRef.current === null) {
-      textureRef.current = new THREE.Texture(getCanvasRenderer().canvas)
+      textureRef.current = new THREE.CanvasTexture(getCanvasRenderer().canvas)
+      textureRef.current.flipY = false
     }
     return textureRef.current
   }
