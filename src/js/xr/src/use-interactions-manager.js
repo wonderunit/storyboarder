@@ -1,4 +1,4 @@
-const { useMemo, useState } = React = require('react')
+const { useMemo, useState, useRef } = React = require('react')
 const { useThree, useRender } = require('react-three-fiber')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -20,7 +20,7 @@ const BonesHelper = require('./three/BonesHelper')
 
 const { interpret } = require('xstate/lib/interpreter')
 const interactionMachine = require('./machines/interactionMachine')
-
+const GPUPicker = require("./three/GPUPickers/GPUPicker");
 const {
   // selectors
   getSelections,
@@ -201,6 +201,8 @@ const useInteractionsManager = ({
 
   const selections = useSelector(getSelections)
 
+  const gpuPicker = useRef(new GPUPicker(gl));
+
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)
   const didRotateCamera = useStore(state => state.didRotateCamera)
@@ -225,12 +227,14 @@ const useInteractionsManager = ({
 
   const onTriggerStart = event => {
     const controller = event.target
-
     let match = null
     let intersection = null
 
+    // DEBUG include all interactables so we can test Character
+    let list = scene.__interaction
     // TODO GPU picking for character skinned mesh
-
+    gpuPicker.current.setupScene(list);
+    let hits = gpuPicker.current.pick(controller.worldPosition(), controller.worldQuaternion());
     // TODO selecting GUI objects
 
     // DEBUG test bones helper bone intersections
@@ -255,10 +259,10 @@ const useInteractionsManager = ({
     }
 
     // DEBUG include all interactables so we can test Character
-    let list = scene.__interaction
+    //let list = scene.__interaction
 
     // gather all hits to tracked scene object3ds
-    let hits = getControllerIntersections(controller, list)
+    //hits = getControllerIntersections(controller, list)
 
     // if one intersects
     if (hits.length) {
