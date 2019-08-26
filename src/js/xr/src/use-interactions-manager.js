@@ -557,14 +557,8 @@ const useInteractionsManager = ({
       controller.userData.selectOffset = null
 
       dispatch(selectObject(null))
-    },
-    onSelectedBone: (context, event) => {
-      let controller = event.controller
-      log('-- onSelectBone', controller)
-      controller.userData.selectOffset = null // TODO do we need this?
 
-      console.log(context, event)
-      log('bone')
+      BonesHelper.getInstance().resetSelection()
     },
 
     onDragObjectEntry: (context, event) => {
