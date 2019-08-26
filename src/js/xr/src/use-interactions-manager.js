@@ -236,17 +236,7 @@ const useInteractionsManager = ({
   const onTriggerStart = event => {
     const controller = event.target
 
-    let match = null
     let intersection = null
-
-    // include all interactables (Model Object, Character, etc)
-    let list = scene.__interaction
-
-    // setup the GPU picker
-    getGpuPicker().setupScene(list)
-
-    // gather all hits to tracked scene object3ds
-    let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
 
     // TODO selecting GUI objects
 
@@ -272,6 +262,17 @@ const useInteractionsManager = ({
         return
       }
     }
+
+    let match = null
+
+    // include all interactables (Model Object, Character, etc)
+    let list = scene.__interaction
+
+    // setup the GPU picker
+    getGpuPicker().setupScene(list)
+
+    // gather all hits to tracked scene object3ds
+    let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
 
     // if one intersects
     if (hits.length) {
