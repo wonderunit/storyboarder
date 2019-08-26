@@ -251,7 +251,7 @@ const useInteractionsManager = ({
     // TODO selecting GUI objects
 
     // if the BonesHelper instance is in the scene ...
-    if ( BonesHelper.getInstance().parent ) {
+    if ( BonesHelper.getInstance().isSelected ) {
       // ... check bones helper bone intersections
       intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
       if (intersection) {
