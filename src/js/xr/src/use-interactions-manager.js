@@ -17,10 +17,11 @@ const teleportParent = require('./helpers/teleport-parent')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
+const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
 const { interpret } = require('xstate/lib/interpreter')
 const interactionMachine = require('./machines/interactionMachine')
-const GPUPicker = require('./three/GPUPickers/GPUPicker')
+
 const {
   // selectors
   getSelections,
