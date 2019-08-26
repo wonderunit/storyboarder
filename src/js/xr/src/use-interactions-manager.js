@@ -303,6 +303,7 @@ const useInteractionsManager = ({
     const controller = event.target
 
     const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+
     interactionService.send({
       type: 'GRIP_DOWN',
       controller: event.target,
