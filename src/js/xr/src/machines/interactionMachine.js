@@ -31,10 +31,17 @@ const machine = Machine({
             actions: ['updateDraggingController', 'updateSelection', 'onSelected']
           },
         ],
-        GRIP_DOWN: {
-          actions: ['updateTeleportDragController'],
-          target: 'drag_teleport'
-        },
+        GRIP_DOWN: [
+          {
+            cond: 'eventHasObjectOrCharacterIntersection',
+            target: 'selected',
+            actions: ['updateSelection', 'onSelected']
+          },
+          {
+            actions: ['updateTeleportDragController'],
+            target: 'drag_teleport'
+          }
+        ],
         AXES_CHANGED: {
           actions: ['moveAndRotateCamera']
         }
@@ -63,6 +70,11 @@ const machine = Machine({
           {
             cond: 'eventHasBoneIntersection',
             target: 'rotate_bone'
+          },
+          {
+            cond: 'eventHasObjectOrCharacterIntersection',
+            target: 'selected',
+            actions: ['updateSelection', 'onSelected']
           },
           {
             actions: ['updateTeleportDragController'],
