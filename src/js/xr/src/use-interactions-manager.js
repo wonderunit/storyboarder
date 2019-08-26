@@ -227,6 +227,7 @@ const useInteractionsManager = ({
 
   const onTriggerStart = event => {
     const controller = event.target
+
     let match = null
     let intersection = null
 
