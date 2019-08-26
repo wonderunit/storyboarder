@@ -37,7 +37,6 @@ class BonesHelper extends THREE.Object3D
     // And creates InstancedMesh
     initialize(skinnedMesh)
     {
-        this.resetSelection();
         if(this.intializedSkinnedMeshUuid && this.intializedSkinnedMeshUuid === skinnedMesh.uuid)
         {
             return;
@@ -109,11 +108,12 @@ class BonesHelper extends THREE.Object3D
 
     changeBoneColor(bone, color)
     {
-        let helpingBone = this.helpingBonesRelation.find(object => object.originalBone.uuid === bone.uuid).helpingBone;
-        if(!helpingBone)
+        let bonesRelation = this.helpingBonesRelation.find(object => object.originalBone.uuid === bone.uuid)
+        if(!bonesRelation)
         {
             return;
         }
+        let helpingBone = bonesRelation.helpingBone;
         this.helperBonesPool.changeBoneColor(helpingBone, color);
     }
 
