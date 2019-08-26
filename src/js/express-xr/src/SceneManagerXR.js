@@ -52,7 +52,7 @@ require('../../shot-generator/IK/utils/Object3dExtension');
 const RStats = require('./lib/rStats')
 require('./lib/rStats.extras')
 
-const GPUPicker = require("../../shot-generator/GPUPickers/GPUPicker");
+const GPUPicker = require("../../xr/src//three//GPUPickers/GPUPicker");
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})

@@ -1,6 +1,6 @@
 const THREE = require('three');
 const GPUPickerHelper = require("../GPUPickerHelper");
-require("../../IK/utils/Object3dExtension");
+require("../utils/Object3dExtension");
 const IdPool = require("../utils/IdPool");
 class GPUPickerController
 {

@@ -1,5 +1,5 @@
 const Pickable = require("./Pickable");
-class XRPickableObjectContainer extends Pickable
+class XRPickableGUI extends Pickable
 {
     constructor(sceneObject, idPool)
     {
@@ -11,36 +11,40 @@ class XRPickableObjectContainer extends Pickable
         this.isContainer = true;
         this.listOfChangedObjects = [];
         this.idPool = idPool;
+        //ToDO(): Find a better way to remove deleted objects
+        this.needsRemoval = false;
     }
 
     getMeshesFromSceneObject()
     {
-        this.sceneObject.traverse(sceneMesh => 
+        this.sceneObject.traverse(object => 
         {
-            if(sceneMesh.type === "Mesh")
+            if(!this.isObjectAdded(object) && object.type === "Mesh" 
+            && !object.name.includes("_icon") && !object.name !== ""
+            && object.visible)
             {
-                this.sceneMeshes.push(sceneMesh);
+                this.sceneMeshes.push(object);
             }
-        });
+        })
     }
 
     initialize(id)
     {
-        this.node.type = this.sceneObject.userData.type;
+        this.node.type = this.sceneObject.parent.userData.type;
         this.node.pickerId = id;
         for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
         {
             id = this.idPool.getAvaibleId();
             let sceneMesh = this.sceneMeshes[i];
             super.initialize(id);
+            this.pickingMaterial.side = THREE.DoubleSide;
             this.pickingMaterials.push(this.pickingMaterial);
             this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
             this.node.add(this.pickingMesh);
             this.pickingMesh.pickerId = id;
             this.pickingMeshes.push(this.pickingMesh);
         }
-        //ToDO(): Find a better way to remove deleted objects
-        this.needsRemoval = false;
+
     }
 
     update()
@@ -57,6 +61,7 @@ class XRPickableObjectContainer extends Pickable
             if(!sceneMesh)
             {
                 this.node.remove(pickingMesh);
+                
                 delete this.pickingMeshes[i];
                 delete this.pickingMaterial[i];
                 delete this.sceneMeshes[i];
@@ -72,7 +77,7 @@ class XRPickableObjectContainer extends Pickable
 
     isObjectAdded(object)
     {
-        if(this.sceneMeshes.find(sceneMesh => sceneMesh.uuid === object.uuid))
+        if(this.sceneMeshes.some(sceneMesh => sceneMesh.uuid === object.uuid))
         {
             return true;
         }
@@ -85,7 +90,8 @@ class XRPickableObjectContainer extends Pickable
         this.sceneObject.traverse(object => 
         {
             if(!this.isObjectAdded(object) && object.type === "Mesh" 
-                && object.visible)
+            && !object.name.includes("_icon") && !object.name !== ""
+            && object.visible)
             {
                 this.listOfChangedObjects.push(object);
             }
@@ -102,6 +108,7 @@ class XRPickableObjectContainer extends Pickable
 
     applyObjectChanges()
     {
+        let id = 0;
         for(let i = 0, n = this.listOfChangedObjects.length; i < n; i++)
         {
             id = this.idPool.getAvaibleId();
@@ -110,11 +117,11 @@ class XRPickableObjectContainer extends Pickable
             this.pickingMaterials.push(this.pickingMaterial);
             this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
             this.node.add(this.pickingMesh);
-            this.changedIds = [];
+            this.pickingMesh.pickerId = id;
             this.pickingMeshes.push(this.pickingMesh);
             this.sceneMeshes.push(sceneMesh);
-            this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: this.sceneMesh};
+            this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: sceneMesh};
         }
     }
 }
-module.exports = XRPickableObjectContainer;
+module.exports = XRPickableGUI;

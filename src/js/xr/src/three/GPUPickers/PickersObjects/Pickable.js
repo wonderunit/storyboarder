@@ -1,5 +1,5 @@
 const THREE = require( "three");
-require("../../IK/utils/Object3dExtension");
+require("../utils/Object3dExtension");
 class Pickable
 {
     constructor(object)

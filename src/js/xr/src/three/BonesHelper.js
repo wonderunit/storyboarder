@@ -1,6 +1,6 @@
 const THREE = require("three");
 const HelperBonesPool = require("./HelperBonesPool");
-require('../../../shot-generator/ik/utils/Object3dExtension');
+require('./GPUPickers/utils/Object3dExtension');
 let instance = null;
 let boneMatrix = new THREE.Matrix4();
 let reusableVector = new THREE.Vector3();
