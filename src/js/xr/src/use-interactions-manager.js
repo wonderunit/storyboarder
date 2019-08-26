@@ -390,7 +390,7 @@ const useInteractionsManager = ({
     let mode = interactionService.state.value
     let context = interactionService.state.context
 
-    // bones selections
+    // highlight hovered bone
     if (mode == 'selected') {
       let match
       for (let i = 0, n = controllers.length; i < n; i++) {
