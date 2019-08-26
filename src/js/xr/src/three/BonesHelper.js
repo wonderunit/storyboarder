@@ -18,6 +18,7 @@ class BonesHelper extends THREE.Object3D
             this.bonesGroup = new THREE.Group();
             this.add(this.bonesGroup)
             this.intializedSkinnedMeshUuid = null;
+            this.selectedBoneColor = new THREE.Color().setHSL( 0.1 , 0.25 , 0.25 );
         }
         return instance;
     }
@@ -107,13 +108,28 @@ class BonesHelper extends THREE.Object3D
 
     changeBoneColor(bone, color)
     {
-        let helpingBone = this.helpingBonesRelation.find(object => object.originalBone.uuid === bone.uuid).helpingBone;
-
-        if(!helpingBone)
+        let bonesRelation = this.helpingBonesRelation.find(object => object.originalBone.uuid === bone.uuid)
+        if(!bonesRelation)
         {
             return;
         }
+        let helpingBone = bonesRelation.helpingBone;
         this.helperBonesPool.changeBoneColor(helpingBone, color);
+    }
+
+    selectBone(bone)
+    {
+        this.resetSelection();
+        this.selectedBone = bone;
+        this.changeBoneColor(bone, this.selectedBoneColor);
+    }
+
+    resetSelection()
+    {
+        if(this.selectedBone)
+        {
+            this.changeBoneColor(this.selectedBone, this.helperBonesPool.defaultColor);
+        }
     }
 
     updateMatrixWorld(force)
@@ -123,6 +139,11 @@ class BonesHelper extends THREE.Object3D
             super.updateMatrixWorld(force);
             this.update();
         }
+    }
+
+    get isSelected()
+    {
+        return this.parent ? true : false
     }
 
     raycast(raycaster, intersects)

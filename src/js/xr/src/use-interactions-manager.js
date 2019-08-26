@@ -390,6 +390,22 @@ const useInteractionsManager = ({
     let mode = interactionService.state.value
     let context = interactionService.state.context
 
+    // highlight hovered bone
+    if (mode == 'selected') {
+      let match
+      for (let i = 0, n = controllers.length; i < n; i++) {
+        let controller = controllers[i]
+        let intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+        if (intersection) {
+          match = intersection
+          BonesHelper.getInstance().selectBone(intersection.bone)
+        }
+      }
+      if (!match) {
+        BonesHelper.getInstance().resetSelection()
+      }
+    }
+
     if (mode === 'drag_teleport') {
       let controller = gl.vr.getController(context.teleportDragController)
 
@@ -539,14 +555,8 @@ const useInteractionsManager = ({
       controller.userData.selectOffset = null
 
       dispatch(selectObject(null))
-    },
-    onSelectedBone: (context, event) => {
-      let controller = event.controller
-      log('-- onSelectBone', controller)
-      controller.userData.selectOffset = null // TODO do we need this?
 
-      console.log(context, event)
-      log('bone')
+      BonesHelper.getInstance().resetSelection()
     },
 
     onDragObjectEntry: (context, event) => {
@@ -658,6 +668,7 @@ const useInteractionsManager = ({
 
       // select by UUID, like shot generator does
       dispatch(selectBone(bone.uuid))
+      BonesHelper.getInstance().selectBone(bone)
     },
     onRotateBoneExit: (context, event) => {
       useStoreApi.setState({
@@ -693,6 +704,7 @@ const useInteractionsManager = ({
         })
       )
       dispatch(selectBone(null))
+      BonesHelper.getInstance().resetSelection()
     }
   }
 
