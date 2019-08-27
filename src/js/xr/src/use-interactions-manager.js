@@ -662,15 +662,13 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      if (object.userData.type != 'character') {
-        if (object.parent !== controller) {
-          controller.attach(object)
-          object.updateMatrixWorld()
-        }
-        // TODO worldScale ref
-        let root = scene
-        snapObjectRotation(object, controller, root)
+      if (object.parent !== controller) {
+        controller.attach(object)
+        object.updateMatrixWorld()
       }
+      // TODO worldScale ref
+      let root = scene
+      snapObjectRotation(object, controller, root)
 
       set(state => { state.canSnap = true })
     },
@@ -678,19 +676,17 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      if (object.userData.type != 'character') {
-        // TODO worldScale
-        let root = scene
-        if (object.parent != root) {
-          object.matrix.premultiply(controller.matrixWorld)
-          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+      // TODO worldScale
+      let root = scene
+      if (object.parent != root) {
+        object.matrix.premultiply(controller.matrixWorld)
+        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
 
-          // TODO worldScale
-          // object.scale.set(1, 1, 1)
-          // worldScaleGroupRef.current.add(object)
-          // object.position.multiplyScalar(1 / worldScale)
-          root.add(object)
-        }
+        // TODO worldScale
+        // object.scale.set(1, 1, 1)
+        // worldScaleGroupRef.current.add(object)
+        // object.position.multiplyScalar(1 / worldScale)
+        root.add(object)
       }
 
       set(state => { state.canSnap = false })
@@ -709,7 +705,7 @@ const useInteractionsManager = ({
 
       // TODO worldScale
       let worldScale = 1
-      let target = (object.userData.type === 'character') || canSnap
+      let target = canSnap
         ? controller.getObjectByName('cursor')
         : object
 
