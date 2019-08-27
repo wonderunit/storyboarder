@@ -31,12 +31,12 @@ class CanvasRenderer {
 
 const useUiManager = () => {
   const canvasRendererRef = useRef(null)
-  const getCanvasRenderer = () => {
+  const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
       canvasRendererRef.current = new CanvasRenderer(1024)
     }
     return canvasRendererRef.current
-  }
+  }, [canvasRendererRef.current])
 
   const [uiState, setUiState] = useState()
 
