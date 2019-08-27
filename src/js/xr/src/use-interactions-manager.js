@@ -644,7 +644,7 @@ const useInteractionsManager = ({
 
       // TODO soundBeam
       // soundBeam.current.stop()
-      if (object.userData.type !== 'character') {
+      if (object.userData.type !== 'character' && object.parent.uuid != scene.uuid) {
         scene.attach(object)
         object.updateMatrixWorld(true);
       }
@@ -664,6 +664,10 @@ const useInteractionsManager = ({
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
       if (object.userData.type != 'character') {
+        if(object.parent.uuid !== controller.uuid)
+        {
+          controller.attach(object);
+        }
         // TODO worldScale ref
         let root = scene
         snapObjectRotation(object, controller, root)
