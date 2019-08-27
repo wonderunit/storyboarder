@@ -488,7 +488,6 @@ const useInteractionsManager = ({
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
       let shouldMoveWithCursor = false
-
       if (object3d.userData.type == 'character') {
         shouldMoveWithCursor = true
       } else {
@@ -509,7 +508,6 @@ const useInteractionsManager = ({
 
         // constrain object rotation?
         // object3d.rotation.y = ???
-
         object3d.position.copy(wp).multiplyScalar(1 / worldScale)
       }
     }
@@ -600,7 +598,6 @@ const useInteractionsManager = ({
 
       let controller = event.controller
       let { object, distance, point } = event.intersection
-
       // TODO DRY? setSelectOffsetMemento?
       let cursor = controller.getObjectByName('cursor')
       cursor.position.z = -distance
@@ -628,16 +625,9 @@ const useInteractionsManager = ({
       if (object.userData.type != 'character') {
         let worldScale = 1 // TODO
 
-        const tempMatrix = new THREE.Matrix4()
-        tempMatrix
-          .getInverse(controller.matrixWorld)
-          .multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
-
-        object.matrix.premultiply(tempMatrix)
-        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
         object.scale.multiplyScalar(worldScale)
-
-        controller.add(object)
+        controller.attach(object)
+        object.updateMatrixWorld(true);
       }
 
       // TODO soundBeam
@@ -648,9 +638,15 @@ const useInteractionsManager = ({
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
       // TODO worldscale
+      let root = scene
 
       // TODO soundBeam
       // soundBeam.current.stop()
+
+      if (object.userData.type !== 'character' && object.parent != root) {
+        scene.attach(object)
+        object.updateMatrixWorld()
+      }
 
       let rotation = object.userData.type == 'character'
         ? object.rotation.y
@@ -666,12 +662,13 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      if (object.userData.type != 'character') {
-        // TODO worldScale ref
-        let root = scene
-        snapObjectRotation(object, controller, root)
-
+      if (object.parent !== controller) {
+        controller.attach(object)
+        object.updateMatrixWorld()
       }
+      // TODO worldScale ref
+      let root = scene
+      snapObjectRotation(object, controller, root)
 
       set(state => { state.canSnap = true })
     },
@@ -679,20 +676,17 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      if (object.userData.type != 'character') {
+      // TODO worldScale
+      let root = scene
+      if (object.parent != root) {
+        object.matrix.premultiply(controller.matrixWorld)
+        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+
         // TODO worldScale
-        let root = scene
-
-        if (object.parent != root) {
-          object.matrix.premultiply(controller.matrixWorld)
-          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-
-          // TODO worldScale
-          // object.scale.set(1, 1, 1)
-          // worldScaleGroupRef.current.add(object)
-          // object.position.multiplyScalar(1 / worldScale)
-          root.add(object)
-        }
+        // object.scale.set(1, 1, 1)
+        // worldScaleGroupRef.current.add(object)
+        // object.position.multiplyScalar(1 / worldScale)
+        root.add(object)
       }
 
       set(state => { state.canSnap = false })
@@ -711,7 +705,7 @@ const useInteractionsManager = ({
 
       // TODO worldScale
       let worldScale = 1
-      let target = (object.userData.type === 'character') || canSnap
+      let target = canSnap
         ? controller.getObjectByName('cursor')
         : object
 
