@@ -58,6 +58,13 @@ const getRotationMemento = (controller, object) => {
   }
 }
 
+const getSelectOffset = (controller, object, distance, point) => {
+  let cursor = controller.getObjectByName('cursor')
+  cursor.position.z = -distance
+  const pos = object.getWorldPosition(new THREE.Vector3())
+  const offset = new THREE.Vector3().subVectors(point, pos)
+  return offset
+}
 
 // TODO test worldScale
 const moveObjectZ = (object, event, worldScale) => {
@@ -578,12 +585,7 @@ const useInteractionsManager = ({
       let controller = event.controller
       let { object, distance, point } = event.intersection
 
-      // TODO DRY? setSelectOffsetMemento?
-      let cursor = controller.getObjectByName('cursor')
-      cursor.position.z = -distance
-      const pos = object.getWorldPosition(new THREE.Vector3())
-      const offset = new THREE.Vector3().subVectors(point, pos)
-      controller.userData.selectOffset = offset
+      controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
 
       dispatch(selectObject(context.selection))
     },
@@ -652,17 +654,9 @@ const useInteractionsManager = ({
       root.add(object)
 
       let intersections = getControllerIntersections(controller, [object])
-      if (intersections.length) {
-        let { distance, point } = intersections[0]
+      let { distance, point } = intersections[0]
 
-        // TODO DRY? setSelectOffsetMemento?
-        let cursor = controller.getObjectByName('cursor')
-        cursor.position.z = -distance
-        const pos = object.getWorldPosition(new THREE.Vector3())
-        const offset = new THREE.Vector3().subVectors(point, pos)
-        controller.userData.selectOffset = offset
-      }
-
+      controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
       set(state => { state.canSnap = true })
     },
     onSnapEnd: (context, event) => {
