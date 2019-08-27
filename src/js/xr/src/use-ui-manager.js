@@ -1,4 +1,4 @@
-const { useState, useMemo, useRef } = React = require('react')
+const { useState, useMemo, useRef, useCallback } = React = require('react')
 const { interpret } = require('xstate/lib/interpreter')
 
 const { log } = require('./components/Log')
@@ -36,7 +36,7 @@ const useUiManager = () => {
       canvasRendererRef.current = new CanvasRenderer(1024)
     }
     return canvasRendererRef.current
-  }, [canvasRendererRef.current])
+  }, [])
 
   const [uiState, setUiState] = useState()
 
