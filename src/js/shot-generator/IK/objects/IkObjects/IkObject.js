@@ -35,7 +35,6 @@ class IkObject
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
         this.clonedObject = clonedSkeleton;
         this.originalObject = objectSkeleton;
-
         this.ikSwitcher = new IKSwitcher(objectSkeleton, clonedSkeleton);
 
         this.rigMesh = clonedSkeleton.children[1];

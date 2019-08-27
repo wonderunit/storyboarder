@@ -16,11 +16,11 @@
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
     "postinstall": "electron-builder install-app-deps",
-    "xr:watch": "parcel watch --no-hmr src/js/express-xr/src/index.html -d src/js/express-xr/dist",
-    "xr:clean": "trash src/js/express-xr/dist",
-    "xr:build": "parcel build src/js/express-xr/src/index.html -d src/js/express-xr/dist --no-source-maps",
+    "xr:watch": "parcel watch --no-hmr src/js/xr/src/index.html -d src/js/xr/dist",
+    "xr:clean": "trash src/js/xr/dist",
+    "xr:build": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
-    "xr:test-server": "electron src/js/express-xr/test/test-server.js",
+    "xr:test-server": "electron src/js/xr/test/test-server.js",
     "build:thumbnails": "electron test/views/thumbnail-renderer/main.js"
   },
   "repository": {
@@ -106,6 +106,9 @@
       "license": "build/license_en.txt"
     }
   },
+  "browserslist": [
+    "last 1 Chrome version"
+  ],
   "devDependencies": {
     "cross-env": "^5.2.0",
     "electron": "5.0.5",
@@ -129,6 +132,7 @@
     "chokidar": "3.0.1",
     "classnames": "2.2.6",
     "color-js": "^1.0.4",
+    "datguivr": "0.1.6",
     "eases": "1.0.8",
     "electron-google-analytics": "0.0.16",
     "electron-is-dev": "0.3.0",
@@ -164,10 +168,10 @@
     "qr-image": "^3.2.0",
     "qrcode-reader": "^1.0.0",
     "ramda": "0.25.0",
-    "react": "16.8.3",
-    "react-dom": "16.8.3",
-    "react-redux": "6.0.1",
-    "react-three-fiber": "2.2.12",
+    "react": "16.9.0",
+    "react-dom": "16.8.6",
+    "react-redux": "7.1.0",
+    "react-three-fiber": "2.3.5",
     "react-window": "1.5.0",
     "redux": "4.0.1",
     "redux-promise": "0.5.3",
@@ -181,8 +185,9 @@
     "stats.js": "0.17.0",
     "tether": "1.4.0",
     "tether-tooltip": "1.2.0",
-    "three": "0.106.2",
+    "three": "0.107.0",
     "three-bmfont-text": "^2.3.0",
+    "three-instanced-mesh": "^0.96.2",
     "three-rounded-box": "0.1.1",
     "tmp": "0.0.33",
     "tonal": "0.69.9",
@@ -191,6 +196,7 @@
     "wav-encoder": "1.3.0",
     "ws": "6.1.2",
     "xml2js": "0.4.19",
-    "xstate": "4.1.1"
+    "xstate": "4.1.1",
+    "zustand": "1.0.4"
   }
 }

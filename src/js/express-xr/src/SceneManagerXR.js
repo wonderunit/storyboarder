@@ -47,9 +47,12 @@ const { findParent, moveObject, rotateObject, createHideArray, updateObjectHighl
 const { useAttachmentLoader, getFilepathForLoadable } = require('./hooks/useAttachmentLoader')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 require('./lib/VRController')
+require('../../shot-generator/IK/utils/Object3dExtension');
 
 const RStats = require('./lib/rStats')
 require('./lib/rStats.extras')
+
+const GPUPicker = require("../../xr/src//three//GPUPickers/GPUPicker");
 
 // preload audio immediately into cache
 new THREE.AudioLoader().load('data/snd/vr-select.ogg', () => {})
@@ -179,17 +182,19 @@ const SceneContent = ({
   // Why do I need to create ref to access updated state in some functions?
   const guiModeRef = useRef(null)
   const selectedObjRef = useRef(null)
-
+  const gpuPicker = useRef(null);
+  const highlightedBones = useRef([])
+  
   // Rotate Bone
   let isControllerRotatingCurrent = useRef(false)
   let startingObjectQuaternion = useRef(null)
   let startingDeviceOffset = useRef(null)
   let startingObjectOffset = useRef(null)
   let startingDeviceRotation = useRef(null)
-
   guiModeRef.current = guiMode
-
+  
   const { gl, scene, camera, setDefaultCamera } = useThree()
+
 
   useMemo(() => {
     scene.background = new THREE.Color(world.backgroundColor)
@@ -304,8 +309,14 @@ const SceneContent = ({
     if (otherController && otherController.userData.selected) return
     if (controller.gripped) return
 
-    const intersections = getIntersections(controller, intersectArray.current)
-
+    if(!gpuPicker.current)
+    {
+      gpuPicker.current = new GPUPicker(gl);
+    }
+    // Getting the real controller object which is usually the last one element in VRContoller's children 
+    let controllerChild = controller.children[controller.children.length - 1];
+    gpuPicker.current.setupScene(intersectArray.current);
+    const intersections = gpuPicker.current.pick(controllerChild.worldPosition(), controllerChild.worldQuaternion());
     if (intersections.length > 0) {
       let didMakeSelection = onIntersection(controller, intersections)
       if (didMakeSelection) {
@@ -471,7 +482,6 @@ const SceneContent = ({
 
       if (object.userData.type === 'character') {
         if (object.userData.name === 'character-container') object = object.children[0]
-
         const raycastDepth = controller.getObjectByName('raycast-depth')
         raycastDepth.position.z = -intersection.distance
 
@@ -490,7 +500,7 @@ const SceneContent = ({
         const rotVector = new THREE.Vector3(1, 0, 0).applyMatrix4(newMatrix)
         const rotOffset = Math.atan2(rotVector.y, rotVector.x)
         controller.userData.rotOffset = rotOffset
-        setHideArray(createHideArray(scene))
+        //setHideArray(createHideArray(scene))
       } else {
         const tempMatrix = new THREE.Matrix4()
         tempMatrix
@@ -503,10 +513,10 @@ const SceneContent = ({
 
         controller.add(object)
       }
+     
 
       controller.userData.selected = object
       soundBeam.current.play()
-      // updateObjectHighlight(intersection.object, 0.15)
 
       return true
   }
@@ -671,7 +681,6 @@ const SceneContent = ({
         worldScaleGroupRef.current.add(object)
         object.position.multiplyScalar(1 / worldScale)
       }
-
       controller.userData.selected = undefined
       soundBeam.current.stop()
 
@@ -888,7 +897,7 @@ const SceneContent = ({
       const controller = vrControllers[i]
       if (controller.pressed && selectedObjRef.current) return
     }
-
+  
     const intersections = getIntersections(controller, intersectArray.current)
 
     if (intersections.length > 0) {
@@ -985,28 +994,36 @@ const SceneContent = ({
       rStatsRef.current('FPS').frame()
       rStatsRef.current().update()
     }
-
     THREE.VRController.update()
 
     for (let i = 0; i < vrControllers.length; i++) {
     const controller = vrControllers[i]
+    let isControllerPressed = vrControllers.length > 1 ? (vrControllers[0].pressed && vrControllers[1].pressed) :
+    vrControllers[0].pressed
       if (
         selectedObjRef.current &&
         selectedObjRef.current.userData.type === 'character' &&
         !selectedBone &&
         // has it loaded the skinned mesh yet?
-        selectedObjRef.current.children[0]
+        selectedObjRef.current.children[0] && 
+        !isControllerPressed
       ) {
-        const bonesHelper = selectedObjRef.current.children[0].bonesHelper
+        const bonesHelper = selectedObjRef.current.children[0].bonesHelper;
         const hits = bonesHelper ? boneIntersect(controller, bonesHelper) : []
-        if (hits.length) {
-          if (controller.userData.currentBoneHighlight === hits[0].bone) return
-          controller.userData.currentBoneHighlight = hits[0].bone
-          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
-        } else if (controller.userData.currentBoneHighlight) {
-          controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x7a72e9)
-          controller.userData.currentBoneHighlight = null
-        }
+       const selectedBones = highlightedBones.current;
+       if (hits.length) {
+         controller.userData.currentBoneHighlight = hits[0].bone
+         controller.userData.currentBoneHighlight.connectedBone.material.color = new THREE.Color(0x242246)
+         selectedBones.push(hits[0].bone);
+
+       } else if (controller.userData.currentBoneHighlight) {
+         controller.userData.currentBoneHighlight = null
+         for(let highlightedBone of selectedBones)
+         {
+           highlightedBone.connectedBone.material.color = new THREE.Color(0x7a72e9)
+         }
+         highlightedBones.current = [];
+       }
       }
 
       const handedness = controller.getHandedness()

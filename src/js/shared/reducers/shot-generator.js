@@ -1041,12 +1041,12 @@ const mainReducer = (state/* = initialState*/, action) => {
         return
 
       case 'UPDATE_SERVER':
-        if (action.payload.uri) {
-          console.log('%cshot-generator web client at', 'color:blue', action.payload.uri)
-        }
-        if (action.payload.xrUri) {
-          console.log('%cshot-generator XR client at', 'color:blue', action.payload.xrUri)
-        }
+        // if (action.payload.uri) {
+        //   console.log('shot-generator web client at', action.payload.uri)
+        // }
+        // if (action.payload.xrUri) {
+        //   console.log('shot-generator XR client at', action.payload.xrUri)
+        // }
         draft.server = { ...draft.server, ...action.payload }
         return
 

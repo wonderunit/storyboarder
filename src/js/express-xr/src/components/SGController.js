@@ -41,7 +41,6 @@ const SGController = ({ id, model, modelData, x, y, z, width, height, depth, rot
 
     return []
   }, [model, modelData])
-
   return (
     <group
       userData={{ id, type: props.type, forPanel: { width, height, depth } }}

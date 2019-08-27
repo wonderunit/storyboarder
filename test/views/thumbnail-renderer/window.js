@@ -15,7 +15,7 @@ const h = require('../../../src/js/utils/h')
 const { reducer, initialState } = require('../../../src/js/shared/reducers/shot-generator')
 const store = createStore(reducer, initialState)
 
-const { useAttachmentLoader, getFilepathForLoadable } = require('../../../src/js/express-xr/src/hooks/useAttachmentLoader')
+const { useAttachmentLoader, getFilepathForLoadable } = require('../../../src/js/xr/src/hooks/useAttachmentLoader')
 
 const ModelLoader = require('../../../src/js/services/model-loader')
 

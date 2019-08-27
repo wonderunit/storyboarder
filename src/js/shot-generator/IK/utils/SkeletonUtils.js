@@ -539,24 +539,46 @@ const SkeletonUtils = {
         var cloneLookup = new Map();
 
         var clone = source.cloneMesh();
+        let skinnedMeshAdded = false;
+        let nodesToRemove = [];
+        parallelTraverse( source, clone, ( sourceNode, clonedNode ) => {
 
-        parallelTraverse( source, clone, function ( sourceNode, clonedNode ) {
-
+            if(!clonedNode)
+            {
+                return;
+            }
+            if(clonedNode.isSkinnedMesh)
+            {
+                if(skinnedMeshAdded)
+                {
+                    nodesToRemove.push(clonedNode);
+                    return;
+                }
+                else
+                {
+                    skinnedMeshAdded = true;
+                }
+            }
             sourceLookup.set( clonedNode, sourceNode );
             cloneLookup.set( sourceNode, clonedNode );
 
         } );
 
+        for(let i = 0, n = nodesToRemove.length; i < n; i++)
+        {
+            let node = nodesToRemove[i];
+            node.parent.remove(node);
+        }
+
         clone.traverse( function ( node ) {
 
             if ( ! node.isSkinnedMesh ) return;
-
             var clonedMesh = node;
             var sourceMesh = sourceLookup.get( node );
             var sourceBones = sourceMesh.skeleton.bones;
 
             clonedMesh.skeleton = sourceMesh.skeleton.clone();
-            //clonedMesh.bindMatrix.copy( sourceMesh.bindMatrix );
+            clonedMesh.bindMatrix.copy( sourceMesh.bindMatrix );
 
             clonedMesh.skeleton.bones = sourceBones.map( function ( bone ) {
 
@@ -564,20 +586,12 @@ const SkeletonUtils = {
 
             } );
 
-            //clonedMesh.bind( clonedMesh.skeleton, clonedMesh.bindMatrix );
-
+            clonedMesh.bind( clonedMesh.skeleton, clonedMesh.bindMatrix );
         } );
-
         return clone;
-
     }
 
 };
-
-function cloneObject(object)
-{
-
-}
 
 function parallelTraverse( a, b, callback ) {
 

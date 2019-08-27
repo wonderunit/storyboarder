@@ -1,0 +1,291 @@
+{
+  "version": "1.13.0",
+  "aspectRatio": 2.39,
+  "fps": 24,
+  "defaultBoardTiming": 2000,
+  "boards": [
+    {
+      "uid": "UDRF3",
+      "url": "board-1-UDRF3.png",
+      "newShot": false,
+      "lastEdited": 1499375725536,
+      "layers": {
+        "shot-generator": {
+          "url": "board-1-UDRF3-shot-generator.png",
+          "opacity": 1,
+          "thumbnail": "board-1-UDRF3-shot-generator-thumbnail.jpg"
+        }
+      },
+      "number": 1,
+      "shot": "1A",
+      "time": 0,
+      "lineMileage": 821.5682133251058,
+      "sg": {
+        "version": "1.13.0",
+        "data": {
+          "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
+          "sceneObjects": {
+            "26332F12-28FE-444C-B73F-B3F90B8C62A2": {
+              "displayName": "Character 1",
+              "headScale": 1,
+              "height": 1.8,
+              "id": "26332F12-28FE-444C-B73F-B3F90B8C62A2",
+              "model": "adult-male",
+              "morphTargets": {
+                "ectomorphic": 0,
+                "endomorphic": 0,
+                "mesomorphic": 0
+              },
+              "name": "Actor",
+              "posePresetId": "9e547f93-5375-43ed-aa73-af3ee1947d1e",
+              "rotation": 0,
+              "skeleton": {
+                "LeftArm": {
+                  "rotation": {
+                    "x": 1.0708379327832764,
+                    "y": -0.11931130645160759,
+                    "z": -0.1776163624389008
+                  }
+                },
+                "LeftForeArm": {
+                  "rotation": {
+                    "x": 0.09392413349188732,
+                    "y": 0.06624836455319376,
+                    "z": 0.29879477158887485
+                  }
+                },
+                "LeftLeg": {
+                  "rotation": {
+                    "x": -0.19189862865577062,
+                    "y": -0.0002520128706738696,
+                    "z": 0.0170783989336951
+                  }
+                },
+                "LeftShoulder": {
+                  "rotation": {
+                    "x": 1.9368893325714431,
+                    "y": -0.3419417127729632,
+                    "z": -1.6250958605507266
+                  }
+                },
+                "LeftUpLeg": {
+                  "rotation": {
+                    "x": -0.06050499918932021,
+                    "y": 0.08739381397431153,
+                    "z": -2.9950709168227396
+                  }
+                },
+                "RightArm": {
+                  "rotation": {
+                    "x": 0.812882020723978,
+                    "y": 0.2526240747892192,
+                    "z": 0.2966727028519723
+                  }
+                },
+                "RightForeArm": {
+                  "rotation": {
+                    "x": 0.08067946699767344,
+                    "y": 0.39972692120538506,
+                    "z": -0.2725073929210185
+                  }
+                },
+                "RightShoulder": {
+                  "rotation": {
+                    "x": 0.43540098614228584,
+                    "y": 0.34169064008990335,
+                    "z": 1.626716450395367
+                  }
+                },
+                "RightUpLeg": {
+                  "rotation": {
+                    "x": 0.05027213705076402,
+                    "y": -0.01745091271204478,
+                    "z": 3.1172517691140365
+                  }
+                },
+                "Spine": {
+                  "rotation": {
+                    "x": -0.19734148788309672,
+                    "y": -0.12217304763960306,
+                    "z": 0
+                  }
+                }
+              },
+              "type": "character",
+              "visible": true,
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "3F659237-C3B2-42D3-B16C-8E9C1AC4D442": {
+              "depth": 0.5,
+              "displayName": "Object 1",
+              "height": 0.5,
+              "id": "3F659237-C3B2-42D3-B16C-8E9C1AC4D442",
+              "model": "primitive-sphere",
+              "name": "Sphere",
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "type": "object",
+              "visible": true,
+              "width": 0.5,
+              "x": 1,
+              "y": -1,
+              "z": 0
+            },
+            "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F": {
+              "angle": 0.9019689898685954,
+              "decay": 1,
+              "displayName": "Light 1",
+              "distance": 6.649999999999978,
+              "id": "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F",
+              "intensity": 0.5499999999999998,
+              "name": "Light",
+              "penumbra": 0.7249999999999998,
+              "rotation": -3.141592653589793,
+              "tilt": -0.46251225177849803,
+              "type": "light",
+              "visible": true,
+              "x": 0,
+              "y": -0.549999999999999,
+              "z": 4
+            },
+            "6BC46A44-7965-43B5-B290-E3D2B9D15EEE": {
+              "displayName": "Camera 1",
+              "fov": 33.932915758162025,
+              "id": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
+              "name": "Camera",
+              "roll": 0,
+              "rotation": 0,
+              "tilt": 0,
+              "type": "camera",
+              "x": 0,
+              "y": 4,
+              "z": 1
+            },
+            "85F835D3-9414-46A1-ABE0-EB64EB9B9630": {
+              "displayName": "Character 2",
+              "headScale": 1,
+              "height": 1.8,
+              "id": "85F835D3-9414-46A1-ABE0-EB64EB9B9630",
+              "model": "adult-male",
+              "morphTargets": {
+                "ectomorphic": 0,
+                "endomorphic": 0,
+                "mesomorphic": 0
+              },
+              "name": "Second Actor",
+              "posePresetId": "79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE",
+              "rotation": -0.03326302960560049,
+              "skeleton": {
+                "LeftArm": {
+                  "rotation": {
+                    "x": 1.0708379327832764,
+                    "y": -0.11931130645160759,
+                    "z": -0.1776163624389008
+                  }
+                },
+                "LeftForeArm": {
+                  "rotation": {
+                    "x": 0.09392413349188732,
+                    "y": 0.06624836455319376,
+                    "z": 0.29879477158887485
+                  }
+                },
+                "RightArm": {
+                  "rotation": {
+                    "x": 1.057228116003184,
+                    "y": 0.13045102714961612,
+                    "z": 0.1570463626924257
+                  }
+                },
+                "RightForeArm": {
+                  "rotation": {
+                    "x": 0.08067946699767342,
+                    "y": -0.19368502447268662,
+                    "z": -0.2725073929210185
+                  }
+                }
+              },
+              "type": "character",
+              "visible": true,
+              "x": -1.825962433247152,
+              "y": -1.230232403229444,
+              "z": 0
+            },
+            "97F2D438-4FDC-44FF-8570-54A54AF27F79": {
+              "color": 7829367,
+              "depth": 5,
+              "displayName": "Volume 1",
+              "distanceBetweenLayers": 1.5,
+              "height": 5,
+              "id": "97F2D438-4FDC-44FF-8570-54A54AF27F79",
+              "name": "Volume",
+              "numberOfLayers": 4,
+              "opacity": 0.3,
+              "rotation": 0,
+              "type": "volume",
+              "visible": true,
+              "volumeImageAttachmentIds": [
+                "rain2",
+                "rain1"
+              ],
+              "width": 5,
+              "x": 0,
+              "y": 2,
+              "z": 0
+            },
+            "AA58B60E-8DF2-4586-BBB8-CEB50D1EBA35": {
+              "depth": 0.5,
+              "displayName": "Object 2",
+              "height": 0.5,
+              "id": "AA58B60E-8DF2-4586-BBB8-CEB50D1EBA35",
+              "model": "box",
+              "name": "Box",
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
+              "type": "object",
+              "visible": true,
+              "width": 0.5,
+              "x": -1,
+              "y": -1,
+              "z": 0
+            }
+          },
+          "world": {
+            "ambient": {
+              "intensity": 0.1
+            },
+            "backgroundColor": 8355711,
+            "directional": {
+              "intensity": 0.3,
+              "rotation": 2.26,
+              "tilt": -0.43
+            },
+            "environment": {
+              "rotation": 0,
+              "scale": 1,
+              "visible": true,
+              "x": 0,
+              "y": 0,
+              "z": 0
+            },
+            "ground": false,
+            "room": {
+              "height": 3,
+              "length": 10,
+              "visible": true,
+              "width": 10
+            }
+          }
+        }
+      }
+    }
+  ]
+}
