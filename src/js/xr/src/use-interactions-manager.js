@@ -636,14 +636,18 @@ const useInteractionsManager = ({
     onDragObjectExit: (context, event) => {
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
       // TODO worldscale
+      let root = scene
 
       // TODO soundBeam
       // soundBeam.current.stop()
-      if (object.userData.type !== 'character' && object.parent.uuid != scene.uuid) {
-        scene.attach(object);
-        object.updateMatrixWorld();
+
+      if (object.userData.type !== 'character' && object.parent != root) {
+        scene.attach(object)
+        object.updateMatrixWorld()
       }
+
       let rotation = object.userData.type == 'character'
         ? object.rotation.y
         : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
@@ -659,15 +663,13 @@ const useInteractionsManager = ({
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
       if (object.userData.type != 'character') {
-        if(object.parent.uuid !== controller.uuid)
-        {
+        if (object.parent !== controller) {
           controller.attach(object)
-          object.updateMatrixWorld();
+          object.updateMatrixWorld()
         }
         // TODO worldScale ref
         let root = scene
         snapObjectRotation(object, controller, root)
-
       }
 
       set(state => { state.canSnap = true })
@@ -680,7 +682,6 @@ const useInteractionsManager = ({
         // TODO worldScale
         let root = scene
         if (object.parent != root) {
-
           object.matrix.premultiply(controller.matrixWorld)
           object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
 
