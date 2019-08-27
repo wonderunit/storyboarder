@@ -158,10 +158,12 @@ const machine = Machine({
   actions: {
     // TODO simplify these
     updateSelection: assign({
-      selection: (context, event) => event.intersection.id
+      selection: (context, event) => event.intersection.id,
+      selectionType: (context, event) => event.intersection.object.userData.type,
     }),
     clearSelection: assign({
-      selection: (context, event) => null
+      selection: (context, event) => null,
+      selectionType: (context, event) => null
     }),
 
     updateDraggingController: assign({
