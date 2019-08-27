@@ -8,7 +8,7 @@ const { log } = require('../../components/Log')
 const SCALE = 0.025
 const POSITION = [0.07, 0.01, -0.1]
 
-const Controls = React.memo(({ uiState, getCanvasRenderer }) => {
+const Controls = React.memo(({ mode, getCanvasRenderer }) => {
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -43,7 +43,7 @@ const Controls = React.memo(({ uiState, getCanvasRenderer }) => {
     getTexture().needsUpdate = true
   })
 
-  log('Controls mode:', uiState.value)
+  log('Controls mode:', mode)
 
   return mesh
     ? <primitive
