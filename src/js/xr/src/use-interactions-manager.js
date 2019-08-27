@@ -484,11 +484,11 @@ const useInteractionsManager = ({
     }
 
     if (mode == 'drag_object') {
+      console.log("Dragging");
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
       let shouldMoveWithCursor = false
-
       if (object3d.userData.type == 'character') {
         shouldMoveWithCursor = true
       } else {
@@ -509,7 +509,6 @@ const useInteractionsManager = ({
 
         // constrain object rotation?
         // object3d.rotation.y = ???
-
         object3d.position.copy(wp).multiplyScalar(1 / worldScale)
       }
     }
@@ -600,7 +599,7 @@ const useInteractionsManager = ({
 
       let controller = event.controller
       let { object, distance, point } = event.intersection
-
+      console.log("Object selected");
       // TODO DRY? setSelectOffsetMemento?
       let cursor = controller.getObjectByName('cursor')
       cursor.position.z = -distance
@@ -622,36 +621,33 @@ const useInteractionsManager = ({
     },
 
     onDragObjectEntry: (context, event) => {
+      console.log("On drag entry");
       let controller = gl.vr.getController(context.draggingController)
       let object = event.intersection.object
 
       if (object.userData.type != 'character') {
         let worldScale = 1 // TODO
 
-        const tempMatrix = new THREE.Matrix4()
-        tempMatrix
-          .getInverse(controller.matrixWorld)
-          .multiply(new THREE.Matrix4().makeScale(worldScale, worldScale, worldScale))
-
-        object.matrix.premultiply(tempMatrix)
-        object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
         object.scale.multiplyScalar(worldScale)
-
-        controller.add(object)
+        controller.attach(object)
+        object.updateMatrixWorld(true);
       }
 
       // TODO soundBeam
       // soundBeam.current.play()
     },
     onDragObjectExit: (context, event) => {
+      console.log("On drag exit");
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
       // TODO worldscale
 
       // TODO soundBeam
       // soundBeam.current.stop()
-
+      if (object.userData.type !== 'character') {
+        scene.attach(object)
+        object.updateMatrixWorld(true);
+      }
       let rotation = object.userData.type == 'character'
         ? object.rotation.y
         : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
@@ -663,6 +659,7 @@ const useInteractionsManager = ({
       }))
     },
     onSnapStart: (context, event) => {
+      console.log("Snap start");
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
@@ -676,14 +673,15 @@ const useInteractionsManager = ({
       set(state => { state.canSnap = true })
     },
     onSnapEnd: (context, event) => {
+      console.log("Snap End");
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
       if (object.userData.type != 'character') {
         // TODO worldScale
         let root = scene
-
         if (object.parent != root) {
+
           object.matrix.premultiply(controller.matrixWorld)
           object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
 
