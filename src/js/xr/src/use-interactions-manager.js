@@ -484,7 +484,6 @@ const useInteractionsManager = ({
     }
 
     if (mode == 'drag_object') {
-      console.log("Dragging");
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
@@ -599,7 +598,6 @@ const useInteractionsManager = ({
 
       let controller = event.controller
       let { object, distance, point } = event.intersection
-      console.log("Object selected");
       // TODO DRY? setSelectOffsetMemento?
       let cursor = controller.getObjectByName('cursor')
       cursor.position.z = -distance
@@ -621,7 +619,6 @@ const useInteractionsManager = ({
     },
 
     onDragObjectEntry: (context, event) => {
-      console.log("On drag entry");
       let controller = gl.vr.getController(context.draggingController)
       let object = event.intersection.object
 
@@ -637,7 +634,6 @@ const useInteractionsManager = ({
       // soundBeam.current.play()
     },
     onDragObjectExit: (context, event) => {
-      console.log("On drag exit");
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
       // TODO worldscale
@@ -645,8 +641,8 @@ const useInteractionsManager = ({
       // TODO soundBeam
       // soundBeam.current.stop()
       if (object.userData.type !== 'character' && object.parent.uuid != scene.uuid) {
-        scene.attach(object)
-        object.updateMatrixWorld(true);
+        scene.attach(object);
+        object.updateMatrixWorld();
       }
       let rotation = object.userData.type == 'character'
         ? object.rotation.y
@@ -659,14 +655,14 @@ const useInteractionsManager = ({
       }))
     },
     onSnapStart: (context, event) => {
-      console.log("Snap start");
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
       if (object.userData.type != 'character') {
         if(object.parent.uuid !== controller.uuid)
         {
-          controller.attach(object);
+          controller.attach(object)
+          object.updateMatrixWorld();
         }
         // TODO worldScale ref
         let root = scene
@@ -677,7 +673,6 @@ const useInteractionsManager = ({
       set(state => { state.canSnap = true })
     },
     onSnapEnd: (context, event) => {
-      console.log("Snap End");
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
