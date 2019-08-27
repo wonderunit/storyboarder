@@ -534,25 +534,43 @@ const initialState = {
       id: 'adult-female',
       name: 'Adult Female',
       type: 'character',
+      validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.65
     },
     'adult-male': {
       id: 'adult-male',
       name: 'Adult Male',
       type: 'character',
+      validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.8
     },
     'teen-female': {
       id: 'teen-female',
       name: 'Teen Female',
       type: 'character',
+      validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.6
     },
     'teen-male': {
       id: 'teen-male',
       name: 'Teen Male',
       type: 'character',
+      validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.6
+    },
+    'child': {
+      id: 'child',
+      name: 'Child',
+      type: 'character',
+      validMorphTargets: ['mesomorphic', 'endomorphic'],
+      height: 1.2
+    },
+    'baby': {
+      id: 'baby',
+      name: 'Baby',
+      type: 'character',
+      validMorphTargets: [],
+      height: 0.75
     },
 
     'box': {

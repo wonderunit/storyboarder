@@ -101,11 +101,11 @@ const machine = Machine({
         },
 
         GRIP_DOWN: {
-          cond: 'controllerSame',
+          cond: 'sameControllerOnSnappableObject',
           actions: 'onSnapStart'
         },
         GRIP_UP: {
-          cond: 'controllerSame',
+          cond: 'sameControllerOnSnappableObject',
           actions: 'onSnapEnd'
         }
       }
@@ -158,10 +158,12 @@ const machine = Machine({
   actions: {
     // TODO simplify these
     updateSelection: assign({
-      selection: (context, event) => event.intersection.id
+      selection: (context, event) => event.intersection.id,
+      selectionType: (context, event) => event.intersection.object.userData.type,
     }),
     clearSelection: assign({
-      selection: (context, event) => null
+      selection: (context, event) => null,
+      selectionType: (context, event) => null
     }),
 
     updateDraggingController: assign({
@@ -190,7 +192,13 @@ const machine = Machine({
 
     bothGripsDown: (context, event) => event.controller.gamepad.index !== context.teleportDragController,
 
-    controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController
+    controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController,
+
+    sameControllerOnSnappableObject: (context, event) =>
+      // the controller matches the one we're dragging with
+      (event.controller.gamepad.index === context.draggingController) &&
+      // and the selected object is anything but a character
+      (context.selectionType && context.selectionType != 'character')
   }
 })
 

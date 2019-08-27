@@ -127,7 +127,7 @@ const GUI = ({
         case 'mesomorphic':
         case 'ectomorphic':
         case 'endomorphic':
-          const array = ['mesomorphic', 'ectomorphic', 'endomorphic']
+          let array = object.children[0].userData.modelSettings.validMorphTargets
           let character = object.children[0].children[0]
           if (character.type === 'LOD') {
             character.children.forEach(lod => {
@@ -487,7 +487,7 @@ const GUI = ({
           {object && object.userData.type === 'character' && guiSelector === 'character' && (
             <group
               position={[
-                ((uiScale * 2 * selectorScale + bWidth) * 0.5 +
+                ((uiScale * 2 * selectorScale * 1.5 + bWidth) * 0.5 +
                   uiScale * 2.75 * 1 +
                   uiScale * 0.5 +
                   (uiScale * 0.5 + uiScale * 0.5) +
@@ -500,7 +500,7 @@ const GUI = ({
             >
               <primitive
                 position={[
-                  -uiScale * selectorScale + bWidth,
+                  -uiScale * selectorScale * 1.5 + bWidth,
                   (uiScale * 1.25 - uiScale * 0.325) * selectorScale + uiScale * 0.5 + bWidth * 2,
                   0.001
                 ]}
@@ -509,7 +509,7 @@ const GUI = ({
               <GUIElement
                 {...{
                   name: 'selector_ui',
-                  width: uiScale * 2 * selectorScale + bWidth,
+                  width: uiScale * 2 * selectorScale * 1.5 + bWidth,
                   height: (uiScale * 2 * selectorScale) / 0.68 + uiScale * 0.25,
                   radius: bWidth,
                   color: 'black'
@@ -517,35 +517,18 @@ const GUI = ({
               />
 
               <group position={[bWidth * -0.5, bWidth * 2 - uiScale * 0.125, 0.001]} scale={[0.9, 0.9, 0.9]}>
-                {showScroller && (
-                  <group
-                    position={[
-                      uiScale * selectorScale + bWidth * 0.75,
-                      (-(uiScale * 2) / 8 + uiScale) * selectorScale -
-                        ((uiScale * 6) / 4 / (Math.ceil(characterModels.length / 4) - 4)) * selectorOffset * selectorScale,
-                      0
-                    ]}
-                  >
-                    <GUIElement
-                      {...{
-                        name: 'scroll_indicator',
-                        width: bWidth * 0.5,
-                        height: (uiScale * 2) / 4,
-                        radius: bWidth * 0.25,
-                        color: 0x6e6e6e
-                      }}
-                    />
-                  </group>
-                )}
-
                 {characterVisibleAmount.map((character, idx) => {
-                  const x = ((idx % 2) * 1 - 0.5) * selectorScale
-                  const y = ((parseInt(idx / 2) * 1) / 0.68 - 0.5) * -1 * selectorScale
+                  const x = ((idx % 3) * 1 - 0.5) * selectorScale
+                  const y = ((parseInt(idx / 3) * 1) / 0.68 - 0.5) * -1 * selectorScale
                   const texture = characterTextures[idx + selectorOffset * 4]
 
                   if (texture && texture.image) {
                     return (
-                      <group key={idx} position={[uiScale * x, uiScale * y, 0]} scale={[0.9, 0.9, 0.9]}>
+                      <group
+                        key={idx}
+                        position={[uiScale * x - uiScale * selectorScale * 0.5, uiScale * y, 0]}
+                        scale={[0.9, 0.9, 0.9]}
+                      >
                         <GUIElement
                           {...{
                             icon: texture,

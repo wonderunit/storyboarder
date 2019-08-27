@@ -44,7 +44,7 @@ const isValidSkinnedMesh = data => {
 
 const cloneGltf = (gltf) => {
   const clone = {
-    animations: gltf.animations,
+    animations: gltf.animations || [],
     scene: gltf.scene.clone(true)
   };
 
@@ -584,13 +584,17 @@ const Character = React.memo(({
     if (!object.current) return
     let mesh = object.current.userData.mesh
 
+    mesh.material.morphTargets = mesh.material.morphNormals = props.model !== 'baby'
     if (!mesh.morphTargetDictionary) return
-    if (Object.values(mesh.morphTargetDictionary).length != 3) return
-
-    mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
-    mesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
-    mesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
-  }, [props.model, props.morphTargets, ready])
+    if (props.model === 'child') {
+      mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+      mesh.morphTargetInfluences[ 1 ] = props.morphTargets.endomorphic
+    } else {
+      mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+      mesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
+      mesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
+    }
+  }, [props.morphTargets, ready])
 
   useEffect(() => {
     console.log(type, id, 'isSelected', isSelected)
