@@ -120,6 +120,10 @@ export function createSlider({
   valueLabel.position.z = depth * 2.5
   valueLabel.position.y = -0.0325
 
+  // manual centering of fov labels
+  if (prop === 'fov') valueLabel.position.x -= 0.01
+  if (prop === 'guiFOV') valueLabel.position.x -= 0.025
+
   const descriptorLabel = textCreator.create(propertyName)
   descriptorLabel.position.x = 0.15
   descriptorLabel.position.z = depth
@@ -132,10 +136,12 @@ export function createSlider({
   updateSlider()
 
   function updateValueLabel(value) {
+    const appendUnit = prop.toLowerCase().includes('fov') ? 'mm' : ''
+
     if (state.useStep) {
-      valueLabel.updateLabel(roundToDecimal(value, state.precision).toString())
+      valueLabel.updateLabel(roundToDecimal(value, state.precision).toString() + appendUnit)
     } else {
-      valueLabel.updateLabel(value.toString())
+      valueLabel.updateLabel(value.toString() + appendUnit)
     }
   }
 

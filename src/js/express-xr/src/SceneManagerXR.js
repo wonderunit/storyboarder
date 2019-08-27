@@ -860,8 +860,6 @@ const SceneContent = ({
   }
 
   const onGripDown = event => {
-    setTeleportMode(true)
-
     const controller = event.target
     controller.gripped = true
 
@@ -913,6 +911,7 @@ const SceneContent = ({
       setHideArray(createHideArray(scene))
       setGuiMode('selection')
     } else {
+      if (!controller.pressed) setTeleportMode(true)
       setSelectedObject(0)
       selectedObjRef.current = null
       setHideArray(createHideArray(scene))
