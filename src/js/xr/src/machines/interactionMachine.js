@@ -101,11 +101,11 @@ const machine = Machine({
         },
 
         GRIP_DOWN: {
-          cond: 'controllerSame',
+          cond: 'sameControllerOnSnappableObject',
           actions: 'onSnapStart'
         },
         GRIP_UP: {
-          cond: 'controllerSame',
+          cond: 'sameControllerOnSnappableObject',
           actions: 'onSnapEnd'
         }
       }
@@ -192,7 +192,13 @@ const machine = Machine({
 
     bothGripsDown: (context, event) => event.controller.gamepad.index !== context.teleportDragController,
 
-    controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController
+    controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController,
+
+    sameControllerOnSnappableObject: (context, event) =>
+      // the controller matches the one we're dragging with
+      (event.controller.gamepad.index === context.draggingController) &&
+      // and the selected object is anything but a character
+      (context.selectionType && context.selectionType != 'character')
   }
 })
 
