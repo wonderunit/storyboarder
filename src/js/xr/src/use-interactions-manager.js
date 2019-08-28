@@ -342,6 +342,11 @@ const useInteractionsManager = ({
         }
       })
       return
+    } else {
+      uiService.send({
+        type: 'TRIGGER_END',
+        controller: event.target
+      })
     }
 
     interactionService.send({ type: 'TRIGGER_END', controller: event.target })
