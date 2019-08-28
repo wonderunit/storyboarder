@@ -1,4 +1,5 @@
 const { useState, useMemo, useRef, useCallback } = React = require('react')
+const useReduxStore = require('react-redux').useStore
 const { useRender, useThree } = require('react-three-fiber')
 const { interpret } = require('xstate/lib/interpreter')
 
@@ -12,11 +13,29 @@ class CanvasRenderer {
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
 
+    this.state = {
+      selections: [],
+      sceneObjects: {}
+    }
+
     this.needsRender = false
   }
   render () {
     let canvas = this.canvas
     let ctx = this.context
+
+    this.context.fillStyle = 'white'
+    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+    if (this.state.selections.length) {
+      let id = this.state.selections[0]
+      let sceneObject = this.state.sceneObjects[id]
+      let string = `${sceneObject.name || sceneObject.displayName}`
+      ctx.font = '40pt Arial'
+      ctx.textBaseline = 'top'
+      ctx.fillStyle = 'black'
+      ctx.fillText(string, 10, 10)
+    }
   }
 
   drawCircle (u, v) {
@@ -34,11 +53,26 @@ class CanvasRenderer {
   }
 }
 
+const {
+  getSceneObjects,
+  getSelections,
+  selectObject,
+  updateObject
+} = require('../../shared/reducers/shot-generator')
+
 const useUiManager = () => {
+  const store = useReduxStore()
+
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
       canvasRendererRef.current = new CanvasRenderer(1024)
+      canvasRendererRef.current.render()
+      store.subscribe(() => {
+        canvasRendererRef.current.state.selections = getSelections(store.getState())
+        canvasRendererRef.current.state.sceneObjects = getSceneObjects(store.getState())
+        canvasRendererRef.current.needsRender = true
+      })
     }
     return canvasRendererRef.current
   }, [])
