@@ -6,14 +6,12 @@ const machine = Machine({
   id: 'ui',
   strict: true,
   initial: 'idle',
-  context: {
-  },
+  context: {},
   states: {
     idle: {
       on: {
         'TRIGGER_START': {
-          target: 'drawing',
-          actions: 'trigger'
+          target: 'drawing'
         }
       }
     },
@@ -23,6 +21,9 @@ const machine = Machine({
       on: {
         'TRIGGER_END': {
           target: 'idle'
+        },
+        'CONTROLLER_INTERSECTION': {
+          actions: 'draw'
         }
       }
     }

@@ -1,31 +1,36 @@
 const { useState, useMemo, useRef, useCallback } = React = require('react')
+const { useRender, useThree } = require('react-three-fiber')
 const { interpret } = require('xstate/lib/interpreter')
 
 const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
+const getControllerIntersections = require('./helpers/get-controller-intersections')
 
 class CanvasRenderer {
   constructor(size) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
+
+    this.needsRender = false
   }
   render() {
     let canvas = this.canvas
     let ctx = this.context
   }
+
   drawCircle (u, v) {
     let ctx = this.context
 
     let x = u * this.canvas.width
     let y = v * this.canvas.height
 
-    console.log('drawCircle', x, y)
-
     ctx.beginPath()
     ctx.arc(x, y, 5, 0, Math.PI * 2)
     ctx.fillStyle = 'red'
     ctx.fill()
+
+    this.needsRender = true
   }
 }
 
@@ -40,29 +45,49 @@ const useUiManager = () => {
 
   const [uiState, setUiState] = useState()
 
+  const { gl, scene } = useThree()
+
   const uiService = useMemo(
     () => interpret(uiMachine).onTransition(state => setUiState(state)).start(),
     []
   )
 
+  // simple state stuff
+  const drawingController = useRef()
+
   uiMachine.options.actions = {
     ...uiMachine.options.actions,
 
-    trigger (context, event) {
+    onDrawingEntry (context, event) {
+      drawingController.current = event.controller
+    },
+
+    onDrawingExit (context, event) {
+      drawingController.current = null
+    },
+
+    draw (context, event) {
       let u = event.intersection.uv.x
       let v = event.intersection.uv.y
-      log('ui trigger @', u, v)
       getCanvasRenderer().drawCircle(u, v)
-    },
-
-    onDrawingEntry () {
-      log('onDrawingEntry')
-    },
-
-    onDrawingExit () {
-      log('onDrawingExit')
     }
   }
+
+  useRender(() => {
+    let mode = uiService.state.value
+
+    if (mode === 'drawing') {
+      let controller = drawingController.current
+
+      let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+      let intersections = getControllerIntersections(controller, uis)
+      let intersection = intersections.length && intersections[0]
+
+      if (intersection) {
+        uiService.send({ type: 'CONTROLLER_INTERSECTION', controller, intersection })
+      }
+    }
+  }, false, [uiService.state.value, drawingController.current])
 
   return { uiService, uiState, getCanvasRenderer }
 }

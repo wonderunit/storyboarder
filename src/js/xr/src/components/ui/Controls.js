@@ -1,4 +1,4 @@
-const { useMemo, useRef, useEffect } = React = require('react')
+const { useMemo, useRef, useCallback } = React = require('react')
 const { useRender } = require('react-three-fiber')
 
 const useGltf = require('../../hooks/use-gltf')
@@ -12,14 +12,14 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
   const ref = useRef()
 
   const textureRef = useRef(null)
-  const getTexture = () => {
+  const getTexture = useCallback(() => {
     if (textureRef.current === null) {
       textureRef.current = new THREE.CanvasTexture(getCanvasRenderer().canvas)
       textureRef.current.flipY = false
       textureRef.current.minFilter = THREE.LinearFilter
     }
     return textureRef.current
-  }
+  }, [])
 
   const gltf = useGltf('/data/system/xr/ui/controls.glb')
 
@@ -39,11 +39,14 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
   )
 
   useRender((state, delta) => {
-    getCanvasRenderer().render()
-    getTexture().needsUpdate = true
+    if (getCanvasRenderer().needsRender) {
+      getCanvasRenderer().render()
+      getTexture().needsUpdate = true
+    }
+    getCanvasRenderer().needsRender = false
   })
 
-  log('Controls mode:', mode)
+  log(`Controls mode: ${mode}`)
 
   return mesh
     ? <primitive
