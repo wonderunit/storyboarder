@@ -52,7 +52,9 @@ class CanvasRenderer {
       ctx.textBaseline = 'top'
       ctx.fillStyle = 'black'
       ctx.translate(15, 20)
-      ctx.fillText('rotation:'+sceneObject.rotation, 0, 0)
+      sceneObject.rotation.y
+        ? ctx.fillText('rotation:' + (sceneObject.rotation.y * THREE.Math.RAD2DEG).toFixed(2) + '°', 0, 0)
+        : ctx.fillText('rotation:' + (sceneObject.rotation * THREE.Math.RAD2DEG).toFixed(2) + '°', 0, 0)
       ctx.restore()
 
       // button
@@ -99,9 +101,9 @@ class CanvasRenderer {
       this.state.dispatch(
         updateObject(
           this.state.selections[0],
-          {
-            rotation: 45 * THREE.Math.DEG2RAD + sceneObject.rotation
-          }
+          sceneObject.rotation.y
+            ? { rotation: { ...sceneObject.rotation, y: 45 * THREE.Math.DEG2RAD + sceneObject.rotation.y }}
+            : { rotation: 45 * THREE.Math.DEG2RAD + sceneObject.rotation }
         )
       )
     }
