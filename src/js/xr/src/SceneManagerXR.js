@@ -29,6 +29,7 @@ const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
 const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
+const VirtualCamera = require('./components/VirtualCamera')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
@@ -48,6 +49,11 @@ const getSceneObjectModelObjectIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
 )
 
+const getSceneObjectVirtualCamerasIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
+)
+
 const SceneContent = connect(
   state => ({
     sceneObjects: getSceneObjects(state),
@@ -56,7 +62,8 @@ const SceneContent = connect(
     selections: getSelections(state),
 
     characterIds: getSceneObjectCharacterIds(state),
-    modelObjectIds: getSceneObjectModelObjectIds(state)
+    modelObjectIds: getSceneObjectModelObjectIds(state),
+    virtualCameraIds: getSceneObjectVirtualCamerasIds(state)
   }),
   {
     selectObject,
@@ -66,10 +73,10 @@ const SceneContent = connect(
   ({
     sceneObjects, world, activeCamera, selections,
 
-    characterIds, modelObjectIds
+    characterIds, modelObjectIds, virtualCameraIds
   }) => {
     const { gl, camera, scene } = useThree()
-
+    console.log("Virtual camera", virtualCameraIds);
     // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
@@ -197,6 +204,13 @@ const SceneContent = connect(
                 isSelected={selections.includes(id)} />
             </Suspense>
           )
+        }
+        {
+          virtualCameraIds.map(id =>
+            <Suspense key={id} fallback ={null}>
+              <VirtualCamera sceneObject={sceneObjects[id]}
+              isSelected ={selections.includes(id)}/>
+            </Suspense>)
         }
 
         <Ground

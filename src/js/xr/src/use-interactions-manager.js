@@ -235,7 +235,7 @@ const useInteractionsManager = ({
 
   const onTriggerStart = event => {
     const controller = event.target
-
+    console.log(scene);
     let intersection = null
 
     // TODO selecting GUI objects
