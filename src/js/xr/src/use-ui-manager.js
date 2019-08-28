@@ -7,14 +7,14 @@ const uiMachine = require('./machines/uiMachine')
 const getControllerIntersections = require('./helpers/get-controller-intersections')
 
 class CanvasRenderer {
-  constructor(size) {
+  constructor (size) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
 
     this.needsRender = false
   }
-  render() {
+  render () {
     let canvas = this.canvas
     let ctx = this.context
   }
