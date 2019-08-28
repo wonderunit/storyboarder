@@ -237,7 +237,7 @@ const useInteractionsManager = ({
     const controller = event.target
     console.log(scene);
     let intersection = null
-
+    console.log(event);
     // TODO selecting GUI objects
 
     // if the BonesHelper instance is in the scene ...

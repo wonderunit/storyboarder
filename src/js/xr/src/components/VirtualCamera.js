@@ -1,6 +1,7 @@
 const THREE = require('three')
 const { useMemo, useRef } = React = require('react')
 const useGltf = require('../hooks/use-gltf')
+const { useThree, useRender } = require('react-three-fiber')
 
 const materialFactory = () => new THREE.MeshLambertMaterial({
   color: 0xcccccc,
@@ -22,18 +23,50 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ sceneObject, isSelected  }) => {
+const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
 
     const filepath = useMemo(
       () => `/data/system/objects/camera.glb`,
       [sceneObject]
     )
+    const { gl, scene } = useThree()
+    const virtualCamera = useRef(null);
     const gltf = useGltf(filepath)
     const ref = useRef(null);
-    //const [camSliderFOV, setCamSliderFOV] = useState(null)
+    const renderTarget = useRef(null);
+    const previousTime = useRef([null])
     const aspectRatio = 1;
     const size = 1 / 3
-    console.log(sceneObject);
+    const resolution = 512
+
+    const renderCamera = () => {
+      if (virtualCamera.current && renderTarget.current) {
+        gl.vr.enabled = false
+  
+        console.log("Rendering", scene);
+        scene.autoUpdate = false;
+        gl.setRenderTarget(renderTarget.current)
+        gl.render(scene, virtualCamera.current)
+        gl.setRenderTarget(null)
+        scene.autoUpdate = true;
+  
+        gl.vr.enabled = true
+      }
+    }
+
+    useRender(() => {
+      if (!previousTime.current) previousTime.current = 0
+
+      const currentTime = Date.now()
+      const delta = currentTime - previousTime.current
+  
+      if (delta > 500) {
+        previousTime.current = currentTime
+      } else {
+        if (!isSelected) return
+      }
+      renderCamera()
+    })
 
     const mesh = useMemo(() => {
       if (gltf) {
@@ -50,28 +83,34 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected  }) => {
         })
         return children
       }
+
   
       return []
     }, [gltf])
 
-/*     const heightShader = useMemo(
+    useMemo(() => {
+      virtualCamera.current = new THREE.PerspectiveCamera(sceneObject.fov, 1, sceneObject.near, sceneObject.far);
+      renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
+    }, [sceneObject])
+
+    const heightShader = useMemo(
         () => new THREE.MeshBasicMaterial({
           map: renderTarget.current,
           side: THREE.FrontSide,
         }),
         [renderTarget.current]
-      ) */
+      )
 
     const cameraView = useMemo(() =>
     {
         return <group>
-{/*             <mesh
+            <mesh
               userData={{ type: 'view' }}
               position={[0, 0.3, 0]}
               material={heightShader}
             >
               <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
-            </mesh> */}
+            </mesh>
             <mesh
               position={[(size * aspectRatio + 0.009) * -0.5, 0.3, 0]}
               material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}

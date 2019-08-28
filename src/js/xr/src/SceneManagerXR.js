@@ -76,7 +76,6 @@ const SceneContent = connect(
     characterIds, modelObjectIds, virtualCameraIds
   }) => {
     const { gl, camera, scene } = useThree()
-    console.log("Virtual camera", virtualCameraIds);
     // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
@@ -209,7 +208,9 @@ const SceneContent = connect(
           virtualCameraIds.map(id =>
             <Suspense key={id} fallback ={null}>
               <VirtualCamera sceneObject={sceneObjects[id]}
-              isSelected ={selections.includes(id)}/>
+              isSelected ={selections.includes(id)}
+              render = {gl}
+              scene = {scene}/>
             </Suspense>)
         }
 
