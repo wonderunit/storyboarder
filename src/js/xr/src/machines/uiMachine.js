@@ -11,19 +11,19 @@ const machine = Machine({
     idle: {
       on: {
         'TRIGGER_START': {
-          target: 'drawing'
+          target: 'dragging'
         }
       }
     },
-    drawing: {
-      onEntry: 'onDrawingEntry',
-      onExit: 'onDrawingExit',
+    dragging: {
+      onEntry: 'onDraggingEntry',
+      onExit: 'onDraggingExit',
       on: {
         'TRIGGER_END': {
           target: 'idle'
         },
         'CONTROLLER_INTERSECTION': {
-          actions: 'draw'
+          actions: 'drag'
         }
       }
     }

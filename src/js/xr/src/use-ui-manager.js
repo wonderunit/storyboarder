@@ -53,20 +53,20 @@ const useUiManager = () => {
   )
 
   // simple state stuff
-  const drawingController = useRef()
+  const draggingController = useRef()
 
   uiMachine.options.actions = {
     ...uiMachine.options.actions,
 
-    onDrawingEntry (context, event) {
-      drawingController.current = event.controller
+    onDraggingEntry (context, event) {
+      draggingController.current = event.controller
     },
 
-    onDrawingExit (context, event) {
-      drawingController.current = null
+    onDraggingExit (context, event) {
+      draggingController.current = null
     },
 
-    draw (context, event) {
+    drag (context, event) {
       let u = event.intersection.uv.x
       let v = event.intersection.uv.y
       getCanvasRenderer().drawCircle(u, v)
@@ -76,8 +76,8 @@ const useUiManager = () => {
   useRender(() => {
     let mode = uiService.state.value
 
-    if (mode === 'drawing') {
-      let controller = drawingController.current
+    if (mode === 'dragging') {
+      let controller = draggingController.current
 
       let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
       let intersections = getControllerIntersections(controller, uis)
@@ -87,7 +87,7 @@ const useUiManager = () => {
         uiService.send({ type: 'CONTROLLER_INTERSECTION', controller, intersection })
       }
     }
-  }, false, [uiService.state.value, drawingController.current])
+  }, false, [uiService.state.value, draggingController.current])
 
   return { uiService, uiState, getCanvasRenderer }
 }
