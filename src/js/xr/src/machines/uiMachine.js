@@ -11,7 +11,8 @@ const machine = Machine({
     idle: {
       on: {
         'TRIGGER_START': {
-          target: 'dragging'
+          target: 'dragging',
+          actions: 'onTriggerStart'
         }
       }
     },
