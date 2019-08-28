@@ -652,12 +652,14 @@ const useInteractionsManager = ({
       object.updateMatrixWorld()
       snapObjectRotation(object, controller, worldScale)
       root.add(object)
-
       let intersections = getControllerIntersections(controller, [object])
-      let { distance, point } = intersections[0]
+      if(intersections.length > 0)
+      {
+        let { distance, point } = intersections[0]
 
-      controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-      set(state => { state.canSnap = true })
+        controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
+        set(state => { state.canSnap = true })
+      }
     },
     onSnapEnd: (context, event) => {
       let controller = gl.vr.getController(context.draggingController)
