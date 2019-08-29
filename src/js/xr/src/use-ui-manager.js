@@ -7,13 +7,18 @@ const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
 const getControllerIntersections = require('./helpers/get-controller-intersections')
 
-const toRotation = value => value * (Math.PI * 2)
-const fromRotation = value => value / (Math.PI * 2)
+// 0..1 -> -1.570...1.570
+const toRotation = value => (value * 2 - 1) * Math.PI
+// -1.570...1.570...0..1
+const fromRotation = value => (value / (Math.PI) + 1) / 2
 const mappers = {
   toRotation,
   fromRotation
 }
+// round to nearest step value
+const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
+// TODO: step
 function Slider ({ ctx, width, height, state, getLabel }) {
   ctx.save()
   ctx.fillStyle = '#aaa'
@@ -93,8 +98,8 @@ class CanvasRenderer {
       ctx.fillStyle = 'black'
       ctx.translate(15, 20)
       sceneObject.rotation.y
-        ? ctx.fillText('rotation:' + (sceneObject.rotation.y * THREE.Math.RAD2DEG).toFixed(2) + '°', 0, 0)
-        : ctx.fillText('rotation:' + (sceneObject.rotation * THREE.Math.RAD2DEG).toFixed(2) + '°', 0, 0)
+        ? ctx.fillText('rotation:' + (sceneObject.rotation.y * THREE.Math.RAD2DEG).toFixed(4) + '°', 0, 0)
+        : ctx.fillText('rotation:' + (sceneObject.rotation * THREE.Math.RAD2DEG).toFixed(4) + '°', 0, 0)
       ctx.restore()
 
       // spacer
@@ -174,41 +179,84 @@ class CanvasRenderer {
   }
 
   getObjectsForCharacter (sceneObject) {
-    let state = mappers.fromRotation(sceneObject.rotation)
+    const getCharacterRotationSlider = sceneObject => {
+      let characterRotation = mappers.fromRotation(sceneObject.rotation)
 
-    // TODO when dragging, set to a function which modifies local THREE object
-    //      when dropping, set to a function which dispatches to store
-    let setState = value => {
-      let rotation = mappers.toRotation(THREE.Math.clamp(value, 0, 1))
+      // TODO when dragging, set to a function which modifies local THREE object
+      //      when dropping, set to a function which dispatches to store
+      let setCharacterRotation = value => {
+        let rotation = mappers.toRotation(THREE.Math.clamp(value, 0, 1))
+        rotation = steps(rotation, THREE.Math.DEG2RAD)
 
-      this.dispatch(
-        updateObject(
-          sceneObject.id,
-          { rotation }
+        this.dispatch(
+          updateObject(
+            sceneObject.id,
+            { rotation }
+          )
         )
-      )
+      }
+
+      let getLabel = value => 'rotation:' + mappers.toRotation(value).toFixed(3) + ' rad'
+
+      let onDrag = (x, y) => setCharacterRotation(x)
+
+      let onDrop = onDrag
+
+      return {
+        state: characterRotation,
+        getLabel,
+        onDrag,
+        onDrop
+      }
     }
-    let getLabel = value => 'rotation:' + mappers.toRotation(value).toFixed(1) + ' rad'
 
-    let onDrag = (x, y) => setState(x)
+    const getCharacterHeightSlider = sceneObject => {
+      let step = 0.05
+      let min = steps(1.4732, step)
+      let max = steps(2.1336, step)
 
-    let onDrop = onDrag
+      let characterHeight = THREE.Math.mapLinear(sceneObject.height, min, max, 0, 1)
 
+      let setCharacterHeight = n => {
+        let height = THREE.Math.mapLinear(n, 0, 1, min, max)
+        height = steps(height, step)
+
+        this.dispatch(
+          updateObject(
+            sceneObject.id,
+            { height }
+          )
+        )
+      }
+
+      return {
+        state: characterHeight,
+        getLabel: () => `height ${sceneObject.height}`,
+        onDrag: (x, y) => setCharacterHeight(x),
+        onDrop: (x, y) => setCharacterHeight(x)
+      }
+    }
     return {
-      '2': {
-        id: '2',
+      'character-height': {
+        id: 'character-height',
         type: 'slider',
         x: 15,
         y: 195,
         width: 420,
         height: 40,
 
-        state,
-        setState,
-        onDrag,
-        onDrop,
-        getLabel
-      }
+        ...getCharacterHeightSlider(sceneObject)
+      },
+
+      // 'character-rotation': {
+      //   id: 'character-rotation',
+      //   type: 'slider',
+      //   x: 15,
+      //   y: 195 + 60,
+      //   width: 420,
+      //   height: 40,
+      //   ...getCharacterRotationSlider(sceneObject)
+      // }
     }
   }
 
@@ -318,7 +366,7 @@ const useUiManager = () => {
     () =>
       interpret(uiMachine)
         .onTransition((state, event) => {
-          console.log(event.type, '->', JSON.stringify(state.value))
+          // console.log(event.type, '->', JSON.stringify(state.value))
           setUiState(state)
         }).start(),
     []
@@ -342,9 +390,11 @@ const useUiManager = () => {
     },
 
     onDraggingExit (context, event) {
-      let u = event.intersection.uv.x
-      let v = event.intersection.uv.y
-      getCanvasRenderer().onDrop(activeControl.current, u, v)
+      if (event.intersection) {
+        let u = event.intersection.uv.x
+        let v = event.intersection.uv.y
+        getCanvasRenderer().onDrop(activeControl.current, u, v)
+      }
 
       draggingController.current = null
       activeControl.current = null
