@@ -74,12 +74,10 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) 
       {
         objectsToRender[i].traverse(object  => object.layers.enable(1));
       }
-      console.log(objectsToRender);
     }, [objectsToRender])
 
     useMemo(()=>
     {
-      console.log("Camera changes");
       if(virtualCamera.current)
       {
         virtualCamera.current.layers.set(1);

@@ -288,6 +288,7 @@ const useInteractionsManager = ({
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
 
+    console.log(hits);
     // if one intersects
     if (hits.length) {
       // grab the first intersection
