@@ -7,6 +7,37 @@ const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
 const getControllerIntersections = require('./helpers/get-controller-intersections')
 
+const toRotation = value => value * (Math.PI * 2)
+const fromRotation = value => value / (Math.PI * 2)
+const mappers = {
+  toRotation,
+  fromRotation
+}
+
+function Slider ({ ctx, width, height, state, getLabel }) {
+  ctx.save()
+  ctx.fillStyle = '#aaa'
+  ctx.fillRect(0, 0, width, height)
+  ctx.fillStyle = '#eee'
+  ctx.fillRect(5, 5, width - 10, height - 10)
+
+  // value
+  ctx.translate(5, 5)
+  ctx.fillStyle = '#ccc'
+
+  ctx.fillRect(0, 0, (width - 10) * state, height - 10)
+  ctx.translate(-5, -5)
+
+  // label
+  ctx.translate(width / 2, height / 2)
+  ctx.font = '20px Arial'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle = '#333'
+  ctx.fillText(getLabel(state), 0, 0)
+  ctx.restore()
+}
+
 class CanvasRenderer {
   constructor (size, dispatch, service) {
     this.canvas = document.createElement('canvas')
@@ -21,6 +52,8 @@ class CanvasRenderer {
       sceneObjects: {}
     }
 
+    this.objects = {}
+
     this.needsRender = false
   }
   render () {
@@ -33,6 +66,10 @@ class CanvasRenderer {
     if (this.state.selections.length) {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
+
+      if (sceneObject.type == 'character') {
+        this.objects = this.getObjectsForCharacter(sceneObject)
+      }
 
       ctx.save()
 
@@ -78,41 +115,25 @@ class CanvasRenderer {
       ctx.fillText('Rotate 45°', 0, 0)
       ctx.restore()
 
-      // spacer
-      ctx.translate(0, 60)
+      ctx.restore()
 
       // slider
-      ctx.save()
-      ctx.translate(15, 15)
-      ctx.fillStyle = '#aaa'
-      ctx.fillRect(0, 0, 420, 50)
-      ctx.fillStyle = '#eee'
-      ctx.fillRect(5, 5, 420 - 10, 50 - 10)
+      for (let object of Object.values(this.objects)) {
+        let { type, x, y, width, height, ...props } = object
 
-      // log hit state area
-      // let { e, f } = ctx.getTransform()
-      // console.log('hit state:', e, f, 'to', e + 420, f + 50)
+        if (object.type === 'slider') {
+          ctx.save()
+          ctx.translate(x, y)
+          Slider({
+            ctx,
+            width,
+            height,
 
-      // value
-      ctx.translate(5, 5)
-      ctx.fillStyle = '#ccc'
-      let ry = sceneObject.rotation.y
-        ? sceneObject.rotation.y
-        : sceneObject.rotation
-      let v = (ry % (Math.PI * 2)) / (Math.PI * 2)
-      ctx.fillRect(0, 0, 410 * v, 40)
-      ctx.translate(-5, -5)
-
-      // label
-      ctx.translate(420 / 2, 50 / 2)
-      ctx.font = '20px Arial'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillStyle = '#333'
-      ctx.fillText(ry.toFixed(1) + ' rad', 0, 0)
-      ctx.restore()
-
-      ctx.restore()
+            ...props
+          })
+          ctx.restore()
+        }
+      }
 
       // hit state
       ctx.save()
@@ -152,36 +173,68 @@ class CanvasRenderer {
     }
   }
 
-  dragSlider (id, u, v) {
-    if (id == '2') {
-      let id = this.state.selections[0]
-      let sceneObject = this.state.sceneObjects[id]
+  getObjectsForCharacter (sceneObject) {
+    let state = mappers.fromRotation(sceneObject.rotation)
 
-      let tau = Math.PI * 2
-
-      let ry = sceneObject.rotation.y
-        ? sceneObject.rotation.y
-        : sceneObject.rotation
-
-      let x = u * this.canvas.width
-      let y = v * this.canvas.height
-
-      // local x,y
-      let lx = (x - 15)
-      let ly = (y - 195)
-
-      let a = lx / 420
-
-      ry = THREE.Math.clamp(a * tau, 0, tau)
+    // TODO when dragging, set to a function which modifies local THREE object
+    //      when dropping, set to a function which dispatches to store
+    let setState = value => {
+      let rotation = mappers.toRotation(THREE.Math.clamp(value, 0, 1))
 
       this.dispatch(
         updateObject(
-          this.state.selections[0],
-          sceneObject.rotation.y
-            ? { rotation: { ...sceneObject.rotation, y: ry } }
-            : { rotation: ry }
+          sceneObject.id,
+          { rotation }
         )
       )
+    }
+    let getLabel = value => 'rotation:' + mappers.toRotation(value).toFixed(1) + ' rad'
+
+    let onDrag = (x, y) => setState(x)
+
+    let onDrop = onDrag
+
+    return {
+      '2': {
+        id: '2',
+        type: 'slider',
+        x: 15,
+        y: 195,
+        width: 420,
+        height: 40,
+
+        state,
+        setState,
+        onDrag,
+        onDrop,
+        getLabel
+      }
+    }
+  }
+
+  onDrag (id, u, v) {
+    let object = this.objects[id]
+    if (object && object.onDrag) {
+      let x = u * this.canvas.width
+      let y = v * this.canvas.height
+      x -= object.x
+      y -= object.y
+      x = x / object.width
+      y = y / object.height
+      object.onDrag(x, y)
+    }
+  }
+
+  onDrop(id, u, v) {
+    let object = this.objects[id]
+    if (object && object.onDrop) {
+      let x = u * this.canvas.width
+      let y = v * this.canvas.height
+      x -= object.x
+      y -= object.y
+      x = x / object.width
+      y = y / object.height
+      object.onDrop(x, y)
     }
   }
 
@@ -211,12 +264,15 @@ class CanvasRenderer {
       return { id: '1', type: 'button' }
     }
 
-    if (
-      x > 15 && x < 435 &&
-      y > 195 && y < 245
-    ) {
+    for (let object of Object.values(this.objects)) {
+      let { id, type } = object
+      if (
+        x > object.x && x < object.x + object.width &&
+        y > object.y && y < object.y + object.height
+      ) {
       // TODO include local x,y? and u,v?
-      return { id: '2', type: 'slider' }
+        return { id, type }
+      }
     }
 
     return null
@@ -286,6 +342,10 @@ const useUiManager = () => {
     },
 
     onDraggingExit (context, event) {
+      let u = event.intersection.uv.x
+      let v = event.intersection.uv.y
+      getCanvasRenderer().onDrop(activeControl.current, u, v)
+
       draggingController.current = null
       activeControl.current = null
     },
@@ -298,7 +358,7 @@ const useUiManager = () => {
     onDrag (context, event) {
       let u = event.intersection.uv.x
       let v = event.intersection.uv.y
-      getCanvasRenderer().dragSlider(activeControl.current, u, v)
+      getCanvasRenderer().onDrag(activeControl.current, u, v)
     }
   }
 
