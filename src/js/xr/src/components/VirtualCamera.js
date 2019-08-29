@@ -42,8 +42,7 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
     const renderCamera = () => {
       if (virtualCamera.current && renderTarget.current) {
         gl.vr.enabled = false
-  
-        console.log("Rendering", scene);
+
         scene.autoUpdate = false;
         gl.setRenderTarget(renderTarget.current)
         gl.render(scene, virtualCamera.current)
@@ -89,8 +88,11 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
     }, [gltf])
 
     useMemo(() => {
-      virtualCamera.current = new THREE.PerspectiveCamera(sceneObject.fov, 1, sceneObject.near, sceneObject.far);
-      renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
+      if(!virtualCamera.current || renderTarget.current )
+      {
+        virtualCamera.current = new THREE.PerspectiveCamera(sceneObject.fov, 1, sceneObject.near, sceneObject.far);
+        renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution);
+      }
     }, [sceneObject])
 
     const heightShader = useMemo(

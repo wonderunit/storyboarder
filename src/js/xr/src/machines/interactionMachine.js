@@ -182,7 +182,7 @@ const machine = Machine({
     selectionPresent: (context, event) => context.selection != null,
     selectionNil: (context, event) => event.intersection == null,
 
-    eventHasObjectOrCharacterIntersection: (context, event) => event.intersection != null && ['object', 'character'].includes(event.intersection.type),
+    eventHasObjectOrCharacterIntersection: (context, event) => event.intersection != null && ['object', 'character', 'virtual-camera'].includes(event.intersection.type),
     eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.bone,
 
     eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,

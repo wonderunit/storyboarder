@@ -268,6 +268,20 @@ const useInteractionsManager = ({
     // include all interactables (Model Object, Character, etc)
     let list = scene.__interaction
 
+    //ToDO(): Add camera to intesectable list
+    let cameras = scene.children.filter(object => 
+      {
+         if(object.userData.type === "virtual-camera" && !object.wasAdded)
+         {
+            object.wasAdded = true;
+            return true;
+         }
+         return false;
+        } );
+    list = list.concat(cameras);
+    scene.__interaction = list;
+    console.log(list);
+
     // setup the GPU picker
     getGpuPicker().setupScene(list)
 
@@ -651,7 +665,19 @@ const useInteractionsManager = ({
 
       // TODO soundBeam
       // soundBeam.current.stop()
-
+      if(object.userData.type === "virtual-camera")
+      {
+        const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+        dispatch(updateObject(object.userData.id, {
+          x: object.position.x,
+          y: object.position.z,
+          z: object.position.y,
+          rotation: euler.y,
+          roll: euler.z,
+          tilt: euler.x
+        }));
+        return;
+      }
       let rotation = object.userData.type == 'character'
         ? object.rotation.y
         : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
