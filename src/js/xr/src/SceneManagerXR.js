@@ -1,11 +1,11 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate } = require('react-three-fiber')
+const { Canvas, useThree, useUpdate, useRender } = require('react-three-fiber')
 
 const { connect, Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, Suspense } = React = require('react')
-
+require("./three/GPUPickers/utils/Object3dExtension");
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
 const {
@@ -129,13 +129,50 @@ const SceneContent = connect(
       groundRef
     })
 
+    let frustum = new THREE.Frustum();
+    let cameraViewProjectionMatrix = new THREE.Matrix4();
+    let closeDistance = 7;
+    // Checks if virtual camera in view and closest
+    useRender(() =>
+    {
+      camera.updateMatrixWorld(); // make sure the camera matrix is updated
+
+      cameraViewProjectionMatrix.multiplyMatrices( camera.projectionMatrix,  camera.matrixWorldInverse );
+      frustum.setFromMatrix( cameraViewProjectionMatrix );
+      // frustum is now ready to check all the objects you need
+      for(let i = 0, n = scene.children.length; i < n; i++)
+      {
+        let object = scene.children[i];
+        if(object.userData.type === 'virtual-camera')
+        { 
+          let mesh = object.children.filter(child => child.type === 'Mesh')[0];
+          let isInView = frustum.intersectsObject( mesh);
+          if(isInView)
+          {
+            let distance = object.worldPosition().distanceTo(camera.worldPosition());
+            if(distance < closeDistance)
+            {
+              sceneObjects[object.userData.id].isClose = true;
+            }
+            else
+            {
+              sceneObjects[object.userData.id].isClose = false;;
+            }
+          }
+          else
+          {
+            sceneObjects[object.userData.id].isClose = false;
+          }
+        }
+      }
+    });
+
     // initialize the BonesHelper
     const boneGltf = useGltf('/data/system/dummies/bone.glb')
     useMemo(() => {
       let mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
       BonesHelper.getInstance(mesh)
     }, [boneGltf])
-
     const directionalLightRef = useUpdate(ref => {
       ref.add(ref.target)
 

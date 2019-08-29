@@ -1,7 +1,7 @@
 const THREE = require('three')
 const { useMemo, useRef } = React = require('react')
 const useGltf = require('../hooks/use-gltf')
-const { useThree, useRender } = require('react-three-fiber')
+const { useRender, useThree} = require('react-three-fiber')
 require("../three/GPUPickers/utils/Object3dExtension");
 
 const materialFactory = () => new THREE.MeshLambertMaterial({
@@ -23,7 +23,6 @@ const meshFactory = source => {
 
   return mesh
 }
-let cameraRenderScene = null;
 
 const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) => {
 
@@ -36,11 +35,11 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) 
     const gltf = useGltf(filepath)
     const ref = useRef(null);
     const renderTarget = useRef(null);
-    const previousTime = useRef([null])
     const aspectRatio = 1;
     const size = 1 / 3
-    const resolution = 512
-    let cameraHelper = useRef(null);
+    const resolution = 512;
+    const previousTime = useRef([null])
+
 
     const renderCamera = () => {
       if (virtualCamera.current && renderTarget.current) {
@@ -58,15 +57,26 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) 
     useMemo(() => {
       if (isSelected) {
         renderCamera();
-        if(!cameraHelper.current)
-        {
-          cameraHelper.current = new THREE.CameraHelper( virtualCamera.current );
-          scene.add( cameraHelper.current );
-        }
       } else {
 
       }
     }, [ref.current, isSelected])
+
+
+    useRender(() => {
+      if (!previousTime.current) previousTime.current = 0
+  
+      const currentTime = Date.now()
+      const delta = currentTime - previousTime.current
+  
+      if (delta > 500) {
+        previousTime.current = currentTime
+      } else {
+        if ((!isSelected && !sceneObject.isClose)) return
+      }
+  
+      renderCamera()
+    }, false, [isSelected])
 
     useMemo(() => 
     {
@@ -84,7 +94,16 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) 
       }
     }, [virtualCamera.current])
 
-    const mesh = useMemo(() => {
+    useMemo(() => 
+    {
+      if(!renderTarget.current )
+      {
+        renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution);
+      }
+    }, [sceneObject])
+
+    const mesh = useMemo(() => 
+    {
       if (gltf) {
         let children = []
         gltf.scene.traverse(child => {
@@ -102,12 +121,7 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) 
       return []
     }, [gltf])
 
-    useMemo(() => {
-      if(!renderTarget.current )
-      {
-        renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution);
-      }
-    }, [sceneObject])
+
 
     const heightShader = useMemo(
         () =>  new THREE.MeshBasicMaterial({
@@ -127,36 +141,6 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) 
             >
               <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
             </mesh>
-            <mesh
-              position={[(size * aspectRatio + 0.009) * -0.5, 0.3, 0]}
-              material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
-            >
-              <planeGeometry attach="geometry" args={[ 0.009, size]} />
-            </mesh>
-            <mesh
-              position={[(size * aspectRatio + 0.009) * 0.5, 0.3, 0]}
-              material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
-            >
-              <planeGeometry attach="geometry" args={[0.009, size]} />
-            </mesh>
-            <mesh
-              position={[0, 0.3 + (size +  0.009) * -0.5, 0]}
-              material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
-            >
-              <planeGeometry
-                attach="geometry"
-                args={[size * aspectRatio + ( 0.009) * 2, 0.009]}
-              />
-            </mesh>
-            <mesh
-                position={[0, ( 0.3) + (size + (0.009)) * 0.5, 0]}
-                material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
-                >
-                <planeGeometry
-                 attach="geometry"
-                 args={[size * aspectRatio + (0.009) * 2, 0.009]}
-                />
-            </mesh>
         </group>
     }, true);
     
@@ -171,6 +155,7 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) 
         renderCamera = {renderCamera}
         position={[sceneObject.x, sceneObject.z, sceneObject.y]}
         rotation={[sceneObject.tilt, sceneObject.rotation, sceneObject.roll]}
+        
         >   
         {cameraView}
         {mesh}

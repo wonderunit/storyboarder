@@ -27,7 +27,6 @@ const meshFactory = source => {
 
 const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
   const ref = useRef(null)
-
   // TODO detect user models / custom objects
   const filepath = useMemo(
     () => `/data/system/objects/${sceneObject.model}.glb`,

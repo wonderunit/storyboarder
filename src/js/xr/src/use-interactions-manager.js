@@ -235,9 +235,7 @@ const useInteractionsManager = ({
 
   const onTriggerStart = event => {
     const controller = event.target
-    console.log(scene);
     let intersection = null
-    console.log(event);
     // TODO selecting GUI objects
 
     // if the BonesHelper instance is in the scene ...
@@ -280,7 +278,6 @@ const useInteractionsManager = ({
         } );
     list = list.concat(cameras);
     scene.__interaction = list;
-    console.log(list);
 
     // setup the GPU picker
     getGpuPicker().setupScene(list)
@@ -288,7 +285,6 @@ const useInteractionsManager = ({
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
 
-    console.log(hits);
     // if one intersects
     if (hits.length) {
       // grab the first intersection
@@ -503,12 +499,6 @@ const useInteractionsManager = ({
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
       let shouldMoveWithCursor = false
-
-
-      if(object3d.userData.type === 'virtual-camera')
-      {
-        object3d.renderCamera();
-      }
 
       if (object3d.userData.type == 'character') {
         shouldMoveWithCursor = true
