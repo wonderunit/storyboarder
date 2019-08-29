@@ -22,7 +22,7 @@ const GPUPicker = require('./three/GPUPickers/GPUPicker')
 const { interpret } = require('xstate/lib/interpreter')
 const interactionMachine = require('./machines/interactionMachine')
 
-require('./three/GPUPickers/utils/Object3dExtension');
+require('./three/GPUPickers/utils/Object3dExtension')
 
 const {
   // selectors
@@ -93,35 +93,43 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-// TODO worldScale
+// TODO test worldScale
 const snapObjectRotation = (object, controller, worldScale = 1) => {
-  object.matrix.premultiply(controller.matrixWorld);
+  // translate
+  object.matrix.premultiply(controller.matrixWorld)
   object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
   object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
   object.position.multiplyScalar(1 / worldScale)
 
+  // setup for rotation
   object.userData.order = object.rotation.order
   object.rotation.reorder('YXZ')
 
+  // snap rotation y by 22.5°
   const sign = Math.sign(object.rotation.y)
   let degreeY = THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
   degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
 
+  // snap rotation z to 180°
   let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
   degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
 
+  // update rotation
   object.rotation.x = 0
   object.rotation.z = degreeZ
   object.rotation.y = degreeY
   object.rotation.order = object.userData.order
-  object.updateMatrixWorld();
-  object.staticRotation = object.quaternion.clone();
-  object.matrix.premultiply(controller.getInverseMatrixWorld());
+  object.updateMatrixWorld()
+
+  // store snapped quaternion
+  object.userData.staticRotation = object.quaternion.clone()
+
+  // translate back
+  object.matrix.premultiply(controller.getInverseMatrixWorld())
   object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
   object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
   object.position.multiplyScalar(1 / worldScale)
-  object.updateMatrixWorld(true);
-
+  object.updateMatrixWorld(true)
 }
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
@@ -501,20 +509,17 @@ const useInteractionsManager = ({
         const cursor = controller.getObjectByName('cursor')
         const wp = cursor.getWorldPosition(new THREE.Vector3())
         wp.sub(controller.userData.selectOffset)
-        wp.applyMatrix4(object3d.parent.getInverseMatrixWorld());
+        wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
 
-        if(object3d.staticRotation)
-        {
-          let quaternion = object3d.parent.worldQuaternion().conjugate();
-          let rotation = object3d.staticRotation.clone().premultiply(quaternion)
-          object3d.quaternion.copy(rotation);
+        if (object3d.userData.staticRotation) {
+          let quaternion = object3d.parent.worldQuaternion().conjugate()
+          let rotation = object3d.userData.staticRotation.clone().premultiply(quaternion)
+          object3d.quaternion.copy(rotation)
         }
 
-        // constrain object rotation?
-
         object3d.position.copy(wp).multiplyScalar(1 / worldScale)
-        object3d.updateMatrix();
-        object3d.updateMatrixWorld();
+        object3d.updateMatrix()
+        object3d.updateMatrixWorld()
       }
     }
 
@@ -668,11 +673,10 @@ const useInteractionsManager = ({
       let worldScale = 1
 
       snapObjectRotation(object, controller, worldScale)
-      getGpuPicker().setupScene([object]);
-  
+
+      getGpuPicker().setupScene([object])
       let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
-      if(intersections.length > 0)
-      {
+      if (intersections.length) {
         let { distance, point } = intersections[0]
 
         controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
