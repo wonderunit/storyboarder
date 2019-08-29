@@ -9,7 +9,7 @@ const { Canvas, useThree } = require('react-three-fiber')
 
 const { Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
-const { useMemo, Suspense } = React = require('react')
+const { useMemo, useRef, Suspense } = React = require('react')
 
 const ReactDOM = require('react-dom')
 
@@ -26,25 +26,44 @@ const UITestContent = () => {
     scene.background = new THREE.Color(0x000000)
   }, [])
 
-  const fakeController = useMemo(() => new THREE.Group(), [])
+  const fakeController = useRef()
+  const getFakeController = () => {
+    if (!fakeController.current) {
+      fakeController.current = new THREE.Group()
+      fakeController.current.name = 'Mouse (Fake Controller)'
+      scene.add(fakeController.current)
+    }
+    return fakeController.current
+  }
 
   const onPointerDown = event => {
+    let u = event.uv.x
+    let v = event.uv.y
+    let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
     uiService.send({
       type: 'TRIGGER_START',
-      controller: fakeController,
+      controller: getFakeController(),
+      canvasIntersection,
       intersection: {
         uv: event.uv
       }
     })
   }
   const onPointerUp = event => {
+    let u = event.uv.x
+    let v = event.uv.y
+    let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
     uiService.send({
       type: 'TRIGGER_END',
-      controller: fakeController,
+      controller: getFakeController(),
+      canvasIntersection,
       intersection: {
         uv: event.uv
       }
     })
+  }
+  const onPointerMove = event => {
+    getFakeController().position.copy(event.point)
   }
   return (
     <>
@@ -60,6 +79,7 @@ const UITestContent = () => {
             <group
               onPointerDown={onPointerDown}
               onPointerUp={onPointerUp}
+              onPointerMove={onPointerMove}
             >
               <Controls
                 mode={uiState ? uiState.value : null}

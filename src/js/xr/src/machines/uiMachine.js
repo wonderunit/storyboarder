@@ -10,10 +10,20 @@ const machine = Machine({
   states: {
     idle: {
       on: {
-        'TRIGGER_START': {
-          target: 'dragging',
-          actions: 'onTriggerStart'
-        }
+        'TRIGGER_START': [
+          {
+            // ignore if no intersection
+            cond: 'noHit'
+          },
+          {
+            cond: 'wasButton',
+            actions: 'onSelect'
+          },
+          {
+            cond: 'wasSlider',
+            target: 'dragging'
+          }
+        ]
       }
     },
     dragging: {
@@ -24,10 +34,16 @@ const machine = Machine({
           target: 'idle'
         },
         'CONTROLLER_INTERSECTION': {
-          actions: 'drag'
+          actions: 'onDrag'
         }
       }
     }
+  }
+}, {
+  guards: {
+    noHit: (context, event) => event.canvasIntersection == null,
+    wasButton: (context, event) => event.canvasIntersection.type == 'button',
+    wasSlider: (context, event) => event.canvasIntersection.type == 'slider'
   }
 })
 
