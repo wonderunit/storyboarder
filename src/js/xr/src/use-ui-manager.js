@@ -262,7 +262,7 @@ const useUiManager = () => {
     () =>
       interpret(uiMachine)
         .onTransition((state, event) => {
-          // console.log(event.type, '->', state.value)
+          console.log(event.type, '->', JSON.stringify(state.value))
           setUiState(state)
         }).start(),
     []
@@ -305,7 +305,7 @@ const useUiManager = () => {
   useRender(() => {
     let mode = uiService.state.value
 
-    if (mode === 'dragging') {
+    if (mode.controls == 'dragging') {
       let controller = draggingController.current
 
       let uis = scene.__interaction.filter(o => o.userData.type == 'ui')

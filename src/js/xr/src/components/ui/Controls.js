@@ -46,7 +46,7 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
     getCanvasRenderer().needsRender = false
   })
 
-  log(`Controls mode: ${mode}`)
+  log(`Controls mode: ${JSON.stringify(mode)}`)
 
   return mesh
     ? <primitive

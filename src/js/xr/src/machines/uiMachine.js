@@ -5,36 +5,41 @@ const { log } = require('../components/Log')
 const machine = Machine({
   id: 'ui',
   strict: true,
-  initial: 'idle',
+  type: 'parallel',
   context: {},
   states: {
-    idle: {
-      on: {
-        'TRIGGER_START': [
-          {
-            // ignore if no intersection
-            cond: 'noHit'
-          },
-          {
-            cond: 'wasButton',
-            actions: 'onSelect'
-          },
-          {
-            cond: 'wasSlider',
-            target: 'dragging'
+    controls: {
+      initial: 'idle',
+      states: {
+        idle: {
+          on: {
+            'TRIGGER_START': [
+              {
+                // ignore if no intersection
+                cond: 'noHit'
+              },
+              {
+                cond: 'wasButton',
+                actions: 'onSelect'
+              },
+              {
+                cond: 'wasSlider',
+                target: 'dragging'
+              }
+            ]
           }
-        ]
-      }
-    },
-    dragging: {
-      onEntry: 'onDraggingEntry',
-      onExit: 'onDraggingExit',
-      on: {
-        'TRIGGER_END': {
-          target: 'idle'
         },
-        'CONTROLLER_INTERSECTION': {
-          actions: 'onDrag'
+        dragging: {
+          onEntry: 'onDraggingEntry',
+          onExit: 'onDraggingExit',
+          on: {
+            'TRIGGER_END': {
+              target: 'idle'
+            },
+            'CONTROLLER_INTERSECTION': {
+              actions: 'onDrag'
+            }
+          }
         }
       }
     }
