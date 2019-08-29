@@ -503,6 +503,13 @@ const useInteractionsManager = ({
 
       let shouldMoveWithCursor = false
 
+
+      if(object3d.userData.type === 'virtual-camera')
+      {
+        console.log(object3d);
+        object3d.renderCamera();
+      }
+
       if (object3d.userData.type == 'character') {
         shouldMoveWithCursor = true
       } else {

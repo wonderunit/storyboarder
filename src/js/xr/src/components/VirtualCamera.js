@@ -38,34 +38,33 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
     const aspectRatio = 1;
     const size = 1 / 3
     const resolution = 512
+    let cameraHelper = useRef(null);
 
     const renderCamera = () => {
       if (virtualCamera.current && renderTarget.current) {
         gl.vr.enabled = false
-
         scene.autoUpdate = false;
         gl.setRenderTarget(renderTarget.current)
         gl.render(scene, virtualCamera.current)
         gl.setRenderTarget(null)
         scene.autoUpdate = true;
-  
+        
         gl.vr.enabled = true
       }
     }
 
-    useRender(() => {
-      if (!previousTime.current) previousTime.current = 0
-
-      const currentTime = Date.now()
-      const delta = currentTime - previousTime.current
-  
-      if (delta > 500) {
-        previousTime.current = currentTime
+    useMemo(() => {
+      if (isSelected) {
+        renderCamera();
+        if(!cameraHelper.current)
+        {
+          cameraHelper.current = new THREE.CameraHelper( virtualCamera.current );
+          scene.add( cameraHelper.current );
+        }
       } else {
-        if (!isSelected) return
+
       }
-      renderCamera()
-    })
+    }, [ref.current, isSelected])
 
     const mesh = useMemo(() => {
       if (gltf) {
@@ -82,22 +81,19 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
         })
         return children
       }
-
-  
       return []
     }, [gltf])
 
     useMemo(() => {
       if(!virtualCamera.current || renderTarget.current )
       {
-        virtualCamera.current = new THREE.PerspectiveCamera(sceneObject.fov, 1, sceneObject.near, sceneObject.far);
         renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution);
       }
     }, [sceneObject])
 
     const heightShader = useMemo(
-        () => new THREE.MeshBasicMaterial({
-          map: renderTarget.current,
+        () =>  new THREE.MeshBasicMaterial({
+          map: renderTarget.current.texture,
           side: THREE.FrontSide,
         }),
         [renderTarget.current]
@@ -154,12 +150,23 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
           type: 'virtual-camera',
           id: sceneObject.id
         }}
-
+        renderCamera = {renderCamera}
         position={[sceneObject.x, sceneObject.z, sceneObject.y]}
         rotation={[sceneObject.tilt, sceneObject.rotation, sceneObject.roll]}
         >   
         {cameraView}
         {mesh}
+        <group position = {[0, 0, -0.2]}>
+          <perspectiveCamera
+            name={''}
+            ref={virtualCamera}
+            aspect={aspectRatio}
+            fov={sceneObject.fov}
+            near={0.01}
+            far={1000}
+            onUpdate={self => self.updateProjectionMatrix()}
+          />
         </group>
+      </group>
 })
 module.exports = VirtualCamera;
