@@ -2,6 +2,7 @@ const THREE = require('three')
 const { useMemo, useRef } = React = require('react')
 const useGltf = require('../hooks/use-gltf')
 const { useThree, useRender } = require('react-three-fiber')
+require("../three/GPUPickers/utils/Object3dExtension");
 
 const materialFactory = () => new THREE.MeshLambertMaterial({
   color: 0xcccccc,
@@ -22,8 +23,9 @@ const meshFactory = source => {
 
   return mesh
 }
+let cameraRenderScene = null;
 
-const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
+const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) => {
 
     const filepath = useMemo(
       () => `/data/system/objects/camera.glb`,
@@ -66,6 +68,24 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
       }
     }, [ref.current, isSelected])
 
+    useMemo(() => 
+    {
+      for(let i = 0, n = objectsToRender.length; i < n; i++)
+      {
+        objectsToRender[i].traverse(object  => object.layers.enable(1));
+      }
+      console.log(objectsToRender);
+    }, [objectsToRender])
+
+    useMemo(()=>
+    {
+      console.log("Camera changes");
+      if(virtualCamera.current)
+      {
+        virtualCamera.current.layers.set(1);
+      }
+    }, [virtualCamera.current])
+
     const mesh = useMemo(() => {
       if (gltf) {
         let children = []
@@ -85,7 +105,7 @@ const VirtualCamera = React.memo(({ sceneObject, isSelected }) => {
     }, [gltf])
 
     useMemo(() => {
-      if(!virtualCamera.current || renderTarget.current )
+      if(!renderTarget.current )
       {
         renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution);
       }

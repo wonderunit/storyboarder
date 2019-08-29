@@ -506,7 +506,6 @@ const useInteractionsManager = ({
 
       if(object3d.userData.type === 'virtual-camera')
       {
-        console.log(object3d);
         object3d.renderCamera();
       }
 

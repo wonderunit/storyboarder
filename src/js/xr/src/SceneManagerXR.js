@@ -149,7 +149,10 @@ const SceneContent = connect(
     const selectedCharacter = selections.length && sceneObjects[selections[0]].type == 'character'
       ? sceneObjects[selections[0]]
       : null
-
+    let objectsToRender =  useMemo(() => {
+      return scene.children.filter(child => child.userData.type === "Character" || child.userData.type === "object" || child.userData.type === "ground" 
+                                    || child.type === "AmbientLight" || child.type === "DirectionalLight")
+    }, [scene.children]);
     return (
       <>
         <group
@@ -209,8 +212,7 @@ const SceneContent = connect(
             <Suspense key={id} fallback ={null}>
               <VirtualCamera sceneObject={sceneObjects[id]}
               isSelected ={selections.includes(id)}
-              render = {gl}
-              scene = {scene}/>
+              objectsToRender = {objectsToRender} />
             </Suspense>)
         }
 
