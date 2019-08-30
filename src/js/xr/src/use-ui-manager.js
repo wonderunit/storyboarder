@@ -7,18 +7,30 @@ const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
 const getControllerIntersections = require('./helpers/get-controller-intersections')
 
-// 0..1 -> -1.570...1.570
-const toRotation = value => (value * 2 - 1) * Math.PI
-// -1.570...1.570...0..1
-const fromRotation = value => (value / (Math.PI) + 1) / 2
-const mappers = {
-  toRotation,
-  fromRotation
-}
+const SceneObjectCreators = require('../../shared/actions/scene-object-creators')
+
+// const toRotation = value => (value * 2 - 1) * Math.PI
+// const fromRotation = value => (value / (Math.PI) + 1) / 2
+// const mappers = {
+//   toRotation,
+//   fromRotation
+// }
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
-// TODO: step
+function Button ({ ctx, width, height, state, getLabel }) {
+  ctx.save()
+  ctx.fillStyle = '#eee'
+  ctx.fillRect(0, 0, width, height)
+  ctx.translate(width / 2, height / 2)
+  ctx.font = '20px Arial'
+  ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
+  ctx.fillStyle = 'black'
+  ctx.fillText(getLabel(state), 0, 0)
+  ctx.restore()
+}
+
 function Slider ({ ctx, width, height, state, getLabel }) {
   ctx.save()
   ctx.fillStyle = '#aaa'
@@ -44,13 +56,15 @@ function Slider ({ ctx, width, height, state, getLabel }) {
 }
 
 class CanvasRenderer {
-  constructor (size, dispatch, service) {
+  constructor (size, dispatch, service, camera, getRoom) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
 
     this.dispatch = dispatch
     this.service = service
+    this.camera = camera
+    this.getRoom = getRoom
 
     this.state = {
       selections: [],
@@ -68,12 +82,66 @@ class CanvasRenderer {
     this.context.fillStyle = 'white'
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
+    this.objects = {
+      'create-object': {
+        id: 'create-object',
+        type: 'button',
+        x: 15,
+        y: 285,
+        width: 420,
+        height: 40,
+
+        getLabel: () => 'Add Object',
+
+        onSelect: () => {
+          let id = THREE.Math.generateUUID()
+
+          console.log('creating an object in room', this.getRoom())
+
+          // undoGroupStart()
+          this.dispatch(
+            // TODO make a fake camera Object3D
+            //      with the camera + teleport pos integrated
+            SceneObjectCreators.createModelObject(id, this.camera, this.getRoom())
+          )
+          // selectObject(id)
+          // undoGroupEnd()
+        }
+      }
+    }
+
     if (this.state.selections.length) {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
 
+      this.objects = {
+        ...this.objects,
+        'delete-selected-object': {
+          id: 'delete-selected-object',
+          type: 'button',
+          x: 15,
+          y: 195 + 10,
+          width: 420,
+          height: 40,
+
+          getLabel: () => 'Delete Object',
+
+          onSelect: () => {
+            // undoGroupStart()
+            // console.log(deleteObjects([sceneObject.id]))
+            this.dispatch(deleteObjects([sceneObject.id]))
+            this.dispatch(selectObject(null))
+            // selectObject(id)
+            // undoGroupEnd()
+          }
+        }
+      }
+
       if (sceneObject.type == 'character') {
-        this.objects = this.getObjectsForCharacter(sceneObject)
+        this.objects = {
+          ...this.objects,
+          ...this.getObjectsForCharacter(sceneObject)
+        }
       }
 
       ctx.save()
@@ -105,110 +173,76 @@ class CanvasRenderer {
       // spacer
       ctx.translate(0, 60)
 
-      // button
-      ctx.save()
-      ctx.translate(15, 15)
-      ctx.fillStyle = '#eee'
-      ctx.fillRect(0, 0, 420, 50)
-      // let { e, f } = ctx.getTransform()
-      // console.log('hit state:', e, f, 'to', e + 420, f + 50)
-      ctx.translate(420/2, 50/2)
-      ctx.font = '20px Arial'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillStyle = 'black'
-      ctx.fillText('Rotate 45°', 0, 0)
-      ctx.restore()
-
-      ctx.restore()
-
-      // slider
-      for (let object of Object.values(this.objects)) {
-        let { type, x, y, width, height, ...props } = object
-
-        if (object.type === 'slider') {
-          ctx.save()
-          ctx.translate(x, y)
-          Slider({
-            ctx,
-            width,
-            height,
-
-            ...props
-          })
-          ctx.restore()
-        }
-      }
-
-      // hit state
-      ctx.save()
-      ctx.fillStyle = 'red'
-      ctx.globalAlpha = 0.5
-      ctx.fillRect(15, 135, 420, 50)
-      ctx.globalAlpha = 1
       ctx.restore()
     }
+
+    // objects
+    this.renderObjects(ctx, this.objects)
   }
 
-  select (id) {
-    if (id == '1') {
-      let id = this.state.selections[0]
-      let sceneObject = this.state.sceneObjects[id]
+  renderObjects (ctx, objects) {
+    for (let object of Object.values(objects)) {
+      let { type, x, y, width, height, ...props } = object
 
-      let tau = Math.PI * 2
+      if (object.type === 'button') {
+        ctx.save()
+        ctx.translate(x, y)
+        Button({
+          ctx,
+          width,
+          height,
 
-      let ry = sceneObject.rotation.y
-        ? sceneObject.rotation.y
-        : sceneObject.rotation
+          ...props
+        })
+        ctx.restore()
+      }
 
-      let a = 45 * THREE.Math.DEG2RAD
+      if (object.type === 'slider') {
+        ctx.save()
+        ctx.translate(x, y)
+        Slider({
+          ctx,
+          width,
+          height,
 
-      ry += a
-
-      ry = ry % tau
-
-      this.dispatch(
-        updateObject(
-          this.state.selections[0],
-          sceneObject.rotation.y
-            ? { rotation: { ...sceneObject.rotation, y: ry } }
-            : { rotation: ry }
-        )
-      )
+          ...props
+        })
+        ctx.restore()
+      }
     }
   }
 
   getObjectsForCharacter (sceneObject) {
-    const getCharacterRotationSlider = sceneObject => {
-      let characterRotation = mappers.fromRotation(sceneObject.rotation)
+    // const getCharacterRotationSlider = sceneObject => {
+    //   let characterRotation = mappers.fromRotation(sceneObject.rotation)
 
-      // TODO when dragging, set to a function which modifies local THREE object
-      //      when dropping, set to a function which dispatches to store
-      let setCharacterRotation = value => {
-        let rotation = mappers.toRotation(THREE.Math.clamp(value, 0, 1))
-        rotation = steps(rotation, THREE.Math.DEG2RAD)
+    //   // TODO when dragging, set to a function which modifies local THREE object
+    //   //      when dropping, set to a function which dispatches to store
+    //   let setCharacterRotation = value => {
+    //     let rotation = mappers.toRotation(THREE.Math.clamp(value, 0, 1))
+    //     rotation = steps(rotation, THREE.Math.DEG2RAD)
 
-        this.dispatch(
-          updateObject(
-            sceneObject.id,
-            { rotation }
-          )
-        )
-      }
+    //     this.dispatch(
+    //       updateObject(
+    //         sceneObject.id,
+    //         { rotation }
+    //       )
+    //     )
+    //   }
 
-      let getLabel = value => 'rotation:' + mappers.toRotation(value).toFixed(3) + ' rad'
+    //   let getLabel = value => 'rotation:' + mappers.toRotation(value).toFixed(3) + ' rad'
 
-      let onDrag = (x, y) => setCharacterRotation(x)
+    //   let onDrag = (x, y) => setCharacterRotation(x)
 
-      let onDrop = onDrag
+    //   let onDrop = onDrag
 
-      return {
-        state: characterRotation,
-        getLabel,
-        onDrag,
-        onDrop
-      }
-    }
+    //   return {
+    //     state: characterRotation,
+    //     getLabel,
+    //     onDrag,
+    //     onDrop
+    //   }
+    // }
 
     const getCharacterHeightSlider = sceneObject => {
       let step = 0.05
@@ -236,12 +270,15 @@ class CanvasRenderer {
         onDrop: (x, y) => setCharacterHeight(x)
       }
     }
+
+    // TODO for each valid morph target, add a slider
+
     return {
       'character-height': {
         id: 'character-height',
         type: 'slider',
         x: 15,
-        y: 195,
+        y: 145,
         width: 420,
         height: 40,
 
@@ -258,6 +295,39 @@ class CanvasRenderer {
       //   ...getCharacterRotationSlider(sceneObject)
       // }
     }
+  }
+
+  onSelect (id) {
+    let object = this.objects[id]
+    if (object && object.onSelect) {
+      object.onSelect()
+    }
+
+    // if (id == '1') {
+    //   let id = this.state.selections[0]
+    //   let sceneObject = this.state.sceneObjects[id]
+
+    //   let tau = Math.PI * 2
+
+    //   let ry = sceneObject.rotation.y
+    //     ? sceneObject.rotation.y
+    //     : sceneObject.rotation
+
+    //   let a = 45 * THREE.Math.DEG2RAD
+
+    //   ry += a
+
+    //   ry = ry % tau
+
+    //   this.dispatch(
+    //     updateObject(
+    //       this.state.selections[0],
+    //       sceneObject.rotation.y
+    //         ? { rotation: { ...sceneObject.rotation, y: ry } }
+    //         : { rotation: ry }
+    //     )
+    //   )
+    // }
   }
 
   onDrag (id, u, v) {
@@ -304,14 +374,6 @@ class CanvasRenderer {
     let x = u * this.canvas.width
     let y = v * this.canvas.height
 
-    if (
-      x > 15 && x < 435 &&
-      y > 135 && y < 185
-    ) {
-      // TODO include local x,y? and u,v?
-      return { id: '1', type: 'button' }
-    }
-
     for (let object of Object.values(this.objects)) {
       let { id, type } = object
       if (
@@ -331,7 +393,8 @@ const {
   getSceneObjects,
   getSelections,
   selectObject,
-  updateObject
+  updateObject,
+  deleteObjects
 } = require('../../shared/reducers/shot-generator')
 
 const useUiManager = () => {
@@ -343,7 +406,9 @@ const useUiManager = () => {
       canvasRendererRef.current = new CanvasRenderer(
         1024,
         store.dispatch,
-        uiService
+        uiService,
+        camera,
+        () => scene.getObjectByName('room')
       )
       canvasRendererRef.current.render()
 
@@ -360,7 +425,7 @@ const useUiManager = () => {
 
   const [uiState, setUiState] = useState()
 
-  const { gl, scene } = useThree()
+  const { gl, scene, camera } = useThree()
 
   const uiService = useMemo(
     () =>
@@ -402,7 +467,7 @@ const useUiManager = () => {
 
     onSelect (context, event) {
       let { id } = event.canvasIntersection
-      getCanvasRenderer().select(id)
+      getCanvasRenderer().onSelect(id)
     },
 
     onDrag (context, event) {
