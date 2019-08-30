@@ -17,7 +17,7 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
 
   const gltf = useGltf(filepath)
 
-  const [skeleton, lod, originalSkeleton, armature] = useMemo(
+  const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
     () => {
       let lod = new THREE.LOD()
 
@@ -42,7 +42,10 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
 
       let armature = scene.children[0].children[0]
 
-      return [skeleton, lod, originalSkeleton, armature]
+      let bbox = new THREE.Box3().setFromObject(lod)
+      let originalHeight = bbox.max.y - bbox.min.y
+
+      return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
   )
@@ -75,6 +78,14 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
     }
   }, [skeleton, sceneObject.skeleton])
 
+  const scale = useMemo(() => {
+    // for built-in characters
+    return sceneObject.height / originalHeight
+
+    // TODO handle custom characters and use an absolute height
+    // return sceneObject.height
+  }, [sceneObject.height])
+
   useMemo(() => {
     if (isSelected) {
       BonesHelper.getInstance().initialize(lod.children[0])
@@ -96,6 +107,7 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
 
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
       rotation-y={sceneObject.rotation}
+      scale={[scale, scale, scale]}
     >
       <primitive object={lod} />
       <primitive object={armature} />
