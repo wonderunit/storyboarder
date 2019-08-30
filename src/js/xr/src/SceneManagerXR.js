@@ -187,7 +187,7 @@ const SceneContent = connect(
       ? sceneObjects[selections[0]]
       : null
     let objectsToRender =  useMemo(() => {
-      return scene.children.filter(child => child.userData.type === "Character" || child.userData.type === "object" || child.userData.type === "ground" 
+      return scene.children.filter(child => child.userData.type === "character" || child.userData.type === "object" || child.userData.type === "ground" 
                                     || child.type === "AmbientLight" || child.type === "DirectionalLight")
     }, [scene.children]);
     return (
