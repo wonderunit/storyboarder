@@ -28,6 +28,7 @@ const { useUiManager } = require('./use-ui-manager')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
+const Room = require('./components/Room')
 const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
 const Controller = require('./components/Controller')
@@ -213,7 +214,13 @@ const SceneContent = connect(
         <Ground
           objRef={groundRef}
           texture={groundTexture}
-          visible={true/*!world.room.visible && world.ground*/} />
+          visible={world.room.visible && world.ground} />
+
+        <Room
+          width={world.room.width}
+          length={world.room.length}
+          height={world.room.height}
+          visible={world.room.visible} />
 
         <TeleportTarget
           api={useStoreApi}
