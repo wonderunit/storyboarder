@@ -203,7 +203,7 @@ const SceneContent = connect(
         <Ground
           objRef={groundRef}
           texture={groundTexture}
-          visible={world.room.visible && world.ground} />
+          visible={!world.room.visible && world.ground} />
 
         <Room
           width={world.room.width}
