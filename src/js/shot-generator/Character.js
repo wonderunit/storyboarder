@@ -2,6 +2,7 @@
 const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
 const BoneRotationControl = require("./IK/objects/BoneRotationControl")
 const {AddTransformationControl, createTransformationControls} = require("./IK/utils/IkUtils");
+require("./IK/utils/Object3dExtension");
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -90,8 +91,8 @@ const cloneGltf = (gltf) => {
 }
 
 const characterFactory = data => {
+  console.log(data);
   data = cloneGltf(data)
-
   //console.log('factory got data: ', data)
   let boneLengthScale = 1
   let material = new THREE.MeshToonMaterial({
@@ -110,8 +111,10 @@ const characterFactory = data => {
   let armatures
   let parentRotation = new THREE.Quaternion()
   let parentPosition = new THREE.Vector3()
-  mesh = data.scene.children.find(child => child instanceof THREE.SkinnedMesh) ||
-         data.scene.children[0].children.find(child => child instanceof THREE.SkinnedMesh)
+  let parentScale = new THREE.Vector3()
+  let dummyMatrix = new THREE.Matrix4();
+  let inverseDummyMatrix = new THREE.Matrix4();
+  mesh = data.scene.getObjectByProperty("type", "SkinnedMesh");
 
   if (mesh == null) {
     mesh = new THREE.Mesh()
@@ -119,13 +122,13 @@ const characterFactory = data => {
     armatures = null
     let originalHeight = 0
 
-    return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
+    return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition, parentScale }
   }
 
   armatures = data.scene.children[0].children.filter(child => child instanceof THREE.Bone)
   if (armatures.length === 0 ) {  // facebook export is different - bone structure is inside another object3D
     armatures = data.scene.children[0].children[0].children.filter(child => child instanceof THREE.Bone)
-
+    console.log("changing aramtures");
     if (armatures.length === 0) {  //specifically adult-female - bone structure is inside the skinned mesh
       armatures = mesh.children[0].children.filter(child => child instanceof THREE.Bone)
     }
@@ -139,6 +142,23 @@ const characterFactory = data => {
     parentRotation = data.scene.children[0].children[0].quaternion.clone()
     parentPosition = armatures[0].position.clone()
     boneLengthScale = 100
+  }
+  else
+  {
+    let armature = data.scene.getObjectByProperty("name", "Armature")
+    let rootBone = mesh.skeleton.bones[0];
+    console.log(armature.clone());
+    dummyMatrix.compose(armature.worldPosition(), armature.worldQuaternion(), armature.worldScale());
+    console.log(dummyMatrix);
+    console.log(rootBone);
+    rootBone.matrix.premultiply(dummyMatrix);
+    rootBone.matrix.decompose(rootBone.position, rootBone.rotation, rootBone.scale);
+    rootBone.updateMatrixWorld(true);
+    rootBone.updateWorldMatrix(false, true);
+    //armatures[0] = armature;
+    //parentRotation = armature.quaternion.clone()
+    //parentPosition = armature.position.clone()
+    //parentScale = armature.scale.clone()
   }
 
   skeleton = mesh.skeleton
@@ -154,7 +174,7 @@ const characterFactory = data => {
   let bbox = new THREE.Box3().setFromObject(mesh)
   let originalHeight = bbox.max.y - bbox.min.y
 
-  return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition }
+  return { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition, parentScale }
 }
 
 const remap = (x, a, b, c, d) => (x - a) * (d - c) / (b - a) + c
@@ -227,7 +247,7 @@ const Character = React.memo(({
     if (ready) {
       console.log(type, id, 'add')
     
-      const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
+      const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition, parentScale } = characterFactory(modelData)
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
       originalSkeleton.current.bones = originalSkeleton.current.bones.map(bone => bone.clone())
@@ -277,6 +297,7 @@ const Character = React.memo(({
       object.current.userData.boneLengthScale = boneLengthScale
       object.current.userData.parentRotation = parentRotation
       object.current.userData.parentPosition = parentPosition
+      object.current.userData.parentScale = parentScale
       scene.add(object.current.bonesHelper)
 
       let domElement = largeRenderer.current.domElement;
@@ -294,6 +315,7 @@ const Character = React.memo(({
         }  
       } );}); 
       console.log(mesh.name);
+      console.log(mesh);
       if(!(mesh.name === "female-adult-meso" || mesh.name === "adult-male-lod"
       || mesh.name === "male-adult-meso" || mesh.name === "female-youth-meso"
       || mesh.name === "female-youth-meso"))
@@ -496,7 +518,7 @@ const Character = React.memo(({
   }
 
   const fixRootBone = () => {
-    let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
+    let { boneLengthScale, parentRotation, parentPosition, parentScale } = object.current.userData
     let skeleton = object.current.userData.skeleton
 
     // fb converter scaled object
@@ -509,6 +531,12 @@ const Character = React.memo(({
       }
       skeleton.bones[0].position.copy(parentPosition)
     }
+  /*   else{
+      skeleton.bones[0].position.copy(parentPosition)
+      skeleton.bones[0].quaternion.copy(parentRotation)
+      skeleton.bones[0].scale.copy(parentScale)
+      skeleton.bones[0].updateWorldMatrix(false, true);
+    } */
   }
 
   useEffect(() => {
