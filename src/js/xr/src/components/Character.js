@@ -30,7 +30,12 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
         let mesh = meshes[i]
         mesh.matrixAutoUpdate = false
         map = mesh.material.map
-        mesh.material = new THREE.MeshBasicMaterial({map: map, skinning: true, morphTargets: true, color: 0xffffff})
+        mesh.material = new THREE.MeshBasicMaterial({
+          map: map,
+          skinning: true,
+          morphTargets: true,
+          color: 0xffffff
+        })
         lod.addLevel(mesh, d * 4)
       }
 
@@ -53,27 +58,30 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
   useMemo(() => {
     if (!skeleton) return
 
+    // has the user entered data for at least one bone?
     let hasModifications = Object.values(sceneObject.skeleton).length > 0
 
     if (hasModifications) {
+      // go through all the bones in the skeleton
       for (bone of skeleton.bones) {
+        // if user data exists for a bone, use it
         let modified = sceneObject.skeleton[bone.name]
+        // otherwise, use our original skeleton for reference
         let original = originalSkeleton.getBoneByName(bone.name)
 
+        // call this state
         let state = modified || original
 
-        if (
-          bone.rotation.x != state.rotation.x ||
-          bone.rotation.y != state.rotation.y ||
-          bone.rotation.z != state.rotation.z
-        ) {
-          bone.rotation.x = state.rotation.x
-          bone.rotation.y = state.rotation.y
-          bone.rotation.z = state.rotation.z
+        // if the state differs for this bone
+        if (bone.rotation.equals(state.rotation) == false) {
+          // rotate the bone
+          bone.rotation.copy(state.rotation)
+          // and update
           bone.updateMatrixWorld()
         }
       }
     } else {
+      // reset the pose
       skeleton.pose()
     }
   }, [skeleton, sceneObject.skeleton])
