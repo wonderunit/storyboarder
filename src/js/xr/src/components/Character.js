@@ -93,6 +93,17 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
     // TODO handle custom characters and use an absolute height
     // return sceneObject.height
   }, [sceneObject.height])
+  // headScale (0.8...1.2)
+  useMemo(() => {
+    let headBone = skeleton.getBoneByName('Head')
+    if (headBone) {
+      // in prior versions, the head was scaled proportionally to the body
+      // before applying the user's percentage adjustment
+      //
+      // now we just use the user's percentage value directly
+      headBone.scale.setScalar(sceneObject.headScale)
+    }
+  }, [skeleton, sceneObject.headScale])
 
   useMemo(() => {
     if (isSelected) {
