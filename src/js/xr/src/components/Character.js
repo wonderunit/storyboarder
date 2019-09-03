@@ -86,7 +86,7 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
     }
   }, [skeleton, sceneObject.skeleton])
 
-  const scale = useMemo(() => {
+  const bodyScale = useMemo(() => {
     // for built-in characters
     return sceneObject.height / originalHeight
 
@@ -115,7 +115,7 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
 
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
       rotation-y={sceneObject.rotation}
-      scale={[scale, scale, scale]}
+      scale={[bodyScale, bodyScale, bodyScale]}
     >
       <primitive object={lod} />
       <primitive object={armature} />
