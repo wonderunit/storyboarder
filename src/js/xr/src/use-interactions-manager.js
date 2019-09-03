@@ -121,8 +121,7 @@ const snapObjectRotation = (object, controller, worldScale = 1) => {
   object.rotation.order = object.userData.order
   object.updateMatrixWorld()
 
-  // store snapped quaternion
-  object.userData.staticRotation = object.quaternion.clone()
+  let staticRotation = object.quaternion.clone()
 
   // translate back
   object.matrix.premultiply(controller.getInverseMatrixWorld())
@@ -130,6 +129,8 @@ const snapObjectRotation = (object, controller, worldScale = 1) => {
   object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
   object.position.multiplyScalar(1 / worldScale)
   object.updateMatrixWorld(true)
+
+  return staticRotation
 }
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
@@ -672,7 +673,7 @@ const useInteractionsManager = ({
       // TODO worldScale
       let worldScale = 1
 
-      snapObjectRotation(object, controller, worldScale)
+      object.userData.staticRotation = snapObjectRotation(object, controller, worldScale)
 
       getGpuPicker().setupScene([object])
       let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -686,6 +687,10 @@ const useInteractionsManager = ({
     onSnapEnd: (context, event) => {
       let controller = gl.vr.getController(context.draggingController)
       let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+      if (object.userData.staticRotation) {
+        object.userData.staticRotation = null
+      }
 
       // TODO worldScale
       // let worldScale = 1
