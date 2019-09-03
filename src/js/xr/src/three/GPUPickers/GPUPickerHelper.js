@@ -59,9 +59,12 @@ class GPUPickerHelper
             let selectedObject = intersectedObject.pickerObject;
             //if(this.pickedObject.type === "SkinnedMesh")
             {
+                let objectParent = selectedObject.parent;
                 this.depthScene.attach(selectedObject);
+                selectedObject.updateMatrixWorld(true);
                 this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
-                scene.attach(selectedObject);
+                objectParent.attach(selectedObject);
+                selectedObject.updateMatrixWorld(true);
                 unpackRGBAToScenePosition(canvasPos, pixelBuffer, cssPosition, camera, renderer);
             }
         }

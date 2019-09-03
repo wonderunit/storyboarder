@@ -1,6 +1,7 @@
 const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
-
+require("./IK/utils/Object3dExtension");
+const GPUPicker = require("../xr/src/three/GPUPickers/GPUPicker");
 const {
   selectObject,
   selectObjectToggle,
@@ -13,6 +14,7 @@ const {
   getSelections,
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
+
 
 function getObjectsFromIcons ( objects ) {
   return objects
@@ -49,7 +51,7 @@ function getObjectsFromCameraView (objects) {
     if (o.userData.type === 'character') {
       // if the mesh has loaded
       if (o.bonesHelper) {
-        results = results.concat(o.bonesHelper.hit_meshes)
+        results.push(o);//results.concat(o.bonesHelper.hit_meshes)
       }
     }
     if(o.userData.type === 'controlTarget')
@@ -172,6 +174,7 @@ const SelectionManager = connect(
     updateObjects,
 
     transition,
+    gl,
     
     undoGroupStart,
     undoGroupEnd
@@ -181,6 +184,16 @@ const SelectionManager = connect(
 
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
+  const gpuPickerInstance = useRef(null);
+
+  const getGPUPicker = () => {
+    if(gpuPickerInstance.current === null)
+    {
+      gpuPickerInstance.current = new GPUPicker(gl);
+    }
+    return gpuPickerInstance.current;
+  };
+
 
   const intersectables = scene.children.filter(o =>
     o.userData.type === 'object' ||
@@ -200,13 +213,26 @@ const SelectionManager = connect(
     }
   }
 
-  const getIntersects = ({ x, y }, camera, useIcons) => {
+  const getIntersects = (mousePosition, camera, useIcons) => {
     let raycaster = new THREE.Raycaster()
-    raycaster.setFromCamera({ x, y }, camera )
-
-    let intersects = useIcons
-      ? raycaster.intersectObjects( getObjectsFromIcons(intersectables) )
-      : raycaster.intersectObjects( getObjectsFromCameraView(intersectables))
+    let x = mousePosition.x;
+    let y = mousePosition.y;
+    raycaster.setFromCamera({x, y}, camera )
+    let intersects = [];
+    if( useIcons)
+    {
+      intersects = raycaster.intersectObjects( getObjectsFromIcons(intersectables) )
+    }
+    else
+    {
+      console.log("X:", mousePosition.x);
+      console.log("Y:", mousePosition.y);
+      let gpuPicker = getGPUPicker();
+      gpuPicker.setupScene(getObjectsFromCameraView(intersectables));
+      console.log(intersectables);
+      gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y);
+      intersects = gpuPicker.pick(camera, gl);//raycaster.intersectObjects( getObjectsFromCameraView(intersectables))
+    }
     return intersects
   }
 
@@ -219,6 +245,7 @@ const SelectionManager = connect(
   const plane = useRef()
   const intersection = useRef()
   const offsets = useRef()
+  const mousePosition = useRef(new THREE.Vector2());
   const prepareDrag = (target, { x, y, useIcons }) => {
     if (!raycaster.current) raycaster.current = new THREE.Raycaster()
     if (!plane.current) plane.current = new THREE.Plane()
@@ -276,9 +303,16 @@ const SelectionManager = connect(
 
     // get the mouse coords
     const { x, y } = mouse(event)
+    mousePosition.current.set(x, y);
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
-    let intersects = getIntersects({ x, y }, camera, useIcons)
+    if(!useIcons)
+    {
+      const rect = el.getBoundingClientRect();
+      mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
+    }
+
+    let intersects = getIntersects(mousePosition.current, camera, useIcons)
   
     // if no objects intersected
     if (intersects.length === 0) {
@@ -487,7 +521,16 @@ const SelectionManager = connect(
 
     if (event.target === el) {
       if (!selectOnPointerDown) {
-        let intersects = getIntersects({ x, y }, camera, useIcons)
+        mousePosition.current.set(x, y);
+        if(!useIcons)
+        {
+          const rect = el.getBoundingClientRect();
+          mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
+          console.log(mousePosition.current);
+
+        }
+        let intersects = getIntersects(mousePosition.current, camera, useIcons)
+        console.log(intersects);
         if (intersects.length === 0) {
           // selectObject(undefined)
           // selectBone(null)

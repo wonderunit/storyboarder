@@ -8,6 +8,7 @@ class GPUPicker
         this.camera = new THREE.PerspectiveCamera(0.001, renderer.domElement.width / renderer.domElement.height, 0.1, 1000 );
         this.controller = new XRGPUPickerController();
         this.cameraHelper = null;
+        this.activeCamera = this.camera;
     }   
 
     setupScene(objects)
@@ -19,6 +20,7 @@ class GPUPicker
 
     pick(position, rotation)
     {
+        this.activeCamera = this.camera;
         this.camera.position.copy(position);
         if(rotation instanceof THREE.Quaternion)
         {
@@ -32,6 +34,12 @@ class GPUPicker
         return this.controller.pick(this.camera, this.renderer);
     }
 
+    pick(camera, gl)
+    {
+        this.activeCamera = camera;
+        return this.controller.pick(camera, gl);
+    }
+
     // Creates a CameraHeleper which needed to be added to a scene in order to help to figure out
     // where current position of the GPUPicker camera
     getCameraHelper()
@@ -40,7 +48,7 @@ class GPUPicker
         {
             return this.cameraHelper;
         }
-        this.cameraHelper = new THREE.CameraHelper(this.camera);
+        this.cameraHelper = new THREE.CameraHelper(this.activeCamera);
         return this.cameraHelper;
     }
 }
