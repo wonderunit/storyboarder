@@ -50,8 +50,8 @@ function getObjectsFromCameraView (objects) {
 
     if (o.userData.type === 'character') {
       // if the mesh has loaded
+      results.push(o);//results.concat(o.bonesHelper.hit_meshes)
       if (o.bonesHelper) {
-        results.push(o);//results.concat(o.bonesHelper.hit_meshes)
       }
     }
     if(o.userData.type === 'controlTarget')
@@ -124,6 +124,11 @@ const getIntersectionTarget = intersect => {
   if(intersect.object.type === 'gizmo')
   {
     return intersect.object;
+  }
+
+  if(intersect.object.type === 'SkinnedMesh')
+  {
+    return intersect.object.parent;
   }
 
   if(intersect.object.userData.type === 'controlPoint')
