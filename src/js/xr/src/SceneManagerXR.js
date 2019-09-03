@@ -58,6 +58,7 @@ const SceneContent = connect(
     world: getWorld(state),
     activeCamera: getActiveCamera(state),
     selections: getSelections(state),
+    models: state.models,
 
     characterIds: getSceneObjectCharacterIds(state),
     modelObjectIds: getSceneObjectModelObjectIds(state)
@@ -68,7 +69,7 @@ const SceneContent = connect(
   }
 )(
   ({
-    sceneObjects, world, activeCamera, selections,
+    sceneObjects, world, activeCamera, selections, models,
 
     characterIds, modelObjectIds
   }) => {
@@ -196,6 +197,7 @@ const SceneContent = connect(
             <Suspense key={id} fallback={null}>
               <Character
                 sceneObject={sceneObjects[id]}
+                modelSettings={models[sceneObjects[id].model] || undefined}
                 isSelected={selections.includes(id)} />
             </Suspense>
           )

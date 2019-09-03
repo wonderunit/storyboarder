@@ -6,7 +6,7 @@ const cloneGltf = require('../helpers/clone-gltf')
 
 const BonesHelper = require('../three/BonesHelper')
 
-const Character = React.memo(({ sceneObject, isSelected }) => {
+const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
   const ref = useRef()
 
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
@@ -86,13 +86,24 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
     }
   }, [skeleton, sceneObject.skeleton])
 
-  const scale = useMemo(() => {
+  const bodyScale = useMemo(() => {
     // for built-in characters
     return sceneObject.height / originalHeight
 
     // TODO handle custom characters and use an absolute height
     // return sceneObject.height
   }, [sceneObject.height])
+  // headScale (0.8...1.2)
+  useMemo(() => {
+    let headBone = skeleton.getBoneByName('Head')
+    if (headBone) {
+      // in prior versions, the head was scaled proportionally to the body
+      // before applying the user's percentage adjustment
+      //
+      // now we just use the user's percentage value directly
+      headBone.scale.setScalar(sceneObject.headScale)
+    }
+  }, [skeleton, sceneObject.headScale])
 
   useMemo(() => {
     if (isSelected) {
@@ -115,7 +126,7 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
 
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
       rotation-y={sceneObject.rotation}
-      scale={[scale, scale, scale]}
+      scale={[bodyScale, bodyScale, bodyScale]}
     >
       <primitive object={lod} />
       <primitive object={armature} />
