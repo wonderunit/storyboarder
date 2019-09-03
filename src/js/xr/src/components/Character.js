@@ -30,7 +30,12 @@ const Character = React.memo(({ sceneObject, isSelected }) => {
         let mesh = meshes[i]
         mesh.matrixAutoUpdate = false
         map = mesh.material.map
-        mesh.material = new THREE.MeshBasicMaterial({map: map, skinning: true, morphTargets: true, color: 0xffffff})
+        mesh.material = new THREE.MeshBasicMaterial({
+          map: map,
+          skinning: true,
+          morphTargets: true,
+          color: 0xffffff
+        })
         lod.addLevel(mesh, d * 4)
       }
 
