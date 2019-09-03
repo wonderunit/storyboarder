@@ -44,7 +44,10 @@ class Pickable
 
     dispose()
     {
-        this.pickingMaterial.dispose();
+        if(this.pickingMaterial)
+        {
+            this.pickingMaterial.dispose();
+        }
     }
 
     isObjectChanged()

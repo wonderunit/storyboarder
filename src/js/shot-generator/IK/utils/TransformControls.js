@@ -1511,7 +1511,8 @@ TransformControlsPlane.prototype = Object.assign( Object.create( THREE.Mesh.prot
 
 	constructor: TransformControlsPlane,
 
-	isTransformControlsPlane: true
+	isTransformControlsPlane: true,
+	isMesh: false
 
 } );
 module.exports = TransformControls;

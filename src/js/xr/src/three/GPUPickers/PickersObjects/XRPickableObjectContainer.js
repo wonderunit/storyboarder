@@ -15,9 +15,11 @@ class XRPickableObjectContainer extends Pickable
 
     getMeshesFromSceneObject()
     {
+        console.log(this.sceneObject);
         this.sceneObject.traverse(sceneMesh => 
         {
-            if(sceneMesh.type === "Mesh")
+            console.log(sceneMesh);
+            if(sceneMesh.type === "Mesh" || sceneMesh.isMesh)
             {
                 this.sceneMeshes.push(sceneMesh);
             }
@@ -84,7 +86,7 @@ class XRPickableObjectContainer extends Pickable
         this.listOfChangedObjects = [];
         this.sceneObject.traverse(object => 
         {
-            if(!this.isObjectAdded(object) && object.type === "Mesh" 
+            if(!this.isObjectAdded(object) && (object.type === "Mesh" || object.isMesh)
                 && object.visible)
             {
                 this.listOfChangedObjects.push(object);
