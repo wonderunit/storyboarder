@@ -6,7 +6,7 @@ const cloneGltf = require('../helpers/clone-gltf')
 
 const BonesHelper = require('../three/BonesHelper')
 
-const Character = React.memo(({ sceneObject, isSelected }) => {
+const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
   const ref = useRef()
 
   // TODO detect user models, e.g.: `/data/user/characters/${filename}`
