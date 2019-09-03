@@ -77,7 +77,10 @@ const machine = Machine({
             actions: ['updateSelection', 'onSelected']
           },
           {
-            actions: ['updateTeleportDragController'],
+            actions: [
+              'clearDraggingController', 'clearSelection', 'onSelectNone',
+              'updateTeleportDragController'
+            ],
             target: 'drag_teleport'
           }
         ],
