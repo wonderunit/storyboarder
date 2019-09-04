@@ -75,7 +75,7 @@ const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
         // if the state differs for this bone
         if (bone.rotation.equals(state.rotation) == false) {
           // rotate the bone
-          bone.rotation.copy(state.rotation)
+          bone.rotation.setFromVector3(state.rotation)
           // and update
           bone.updateMatrixWorld()
         }
