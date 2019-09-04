@@ -36,7 +36,7 @@ const ModelLoader = require('../services/model-loader')
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 
-const useMachine = require('../hooks/use-machine')
+const { useMachine } = require('@xstate/react')
 const { Machine } = require('xstate')
 const editorMachine = Machine({
   id: 'editor',
@@ -176,7 +176,7 @@ const Editor = connect(
     const scene = useRef()
     let [camera, setCamera ] = useState(null)
     const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
-    const [ machineState, transition ] = useMachine(editorMachine, { log: false })
+    const [ machineState, transition ] = useMachine(editorMachine)
 
     const mainViewContainerRef = useRef(null)
     const largeCanvasSize = useComponentSize(mainViewContainerRef)
