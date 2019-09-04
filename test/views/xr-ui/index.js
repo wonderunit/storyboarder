@@ -1,8 +1,4 @@
-// mkdir -p test/views/xr-ui/dist/data/system/xr/ui
-// cp src/data/shot-generator/xr/ui/controls.glb test/views/xr-ui/dist/data/system/xr/ui/controls.glb
-// cp test/fixtures/xr/xr.storyboarder test/views/xr-ui/dist
-// npx parcel serve --no-hmr test/views/xr-ui/index.html -d test/views/xr-ui/dist -p 9966
-
+// sh scripts/run-xr-ui-canvas-test.sh
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree } = require('react-three-fiber')
