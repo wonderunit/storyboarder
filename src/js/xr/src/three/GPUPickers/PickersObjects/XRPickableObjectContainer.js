@@ -1,4 +1,5 @@
 const Pickable = require("./Pickable");
+require("../utils/Object3dExtension");
 class XRPickableObjectContainer extends Pickable
 {
     constructor(sceneObject, idPool)
@@ -15,10 +16,8 @@ class XRPickableObjectContainer extends Pickable
 
     getMeshesFromSceneObject()
     {
-        console.log(this.sceneObject);
         this.sceneObject.traverse(sceneMesh => 
         {
-            console.log(sceneMesh);
             if(sceneMesh.type === "Mesh" || sceneMesh.isMesh)
             {
                 this.sceneMeshes.push(sceneMesh);
@@ -118,6 +117,19 @@ class XRPickableObjectContainer extends Pickable
             this.sceneMeshes.push(sceneMesh);
             this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: this.sceneMesh};
         }
+    }
+
+    dispose()
+    {
+        super.dispose();
+        for(let i = this.pickingMeshes.length - 1; i === 0; i--)
+        {
+            let pickingMesh = this.pickingMeshes[i];
+            pickingMesh.parent.remove(pickingMesh);
+            delete this.pickingMeshes[i];
+            delete this.pickingMaterials[i];
+        }
+        this.node.removeAllChildren();
     }
 }
 module.exports = XRPickableObjectContainer;

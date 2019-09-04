@@ -230,11 +230,8 @@ const SelectionManager = connect(
     }
     else
     {
-      console.log("X:", mousePosition.x);
-      console.log("Y:", mousePosition.y);
       let gpuPicker = getGPUPicker();
       gpuPicker.setupScene(intersectables);
-      console.log(intersectables);
       gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y);
       intersects = gpuPicker.pick(camera, gl);//raycaster.intersectObjects( getObjectsFromCameraView(intersectables))
     }
@@ -378,13 +375,11 @@ const SelectionManager = connect(
       else 
       {
         let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint' || intersect.object.type === "gizmo");
-        console.log(controlPoint);
         if(controlPoint.length !== 0)
         {
           intersects[0] = controlPoint[0];
         }
         target = getIntersectionTarget(intersects[0])
-        console.log(target);
         if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
         {
           let characterId = target.characterId;
@@ -532,11 +527,8 @@ const SelectionManager = connect(
         {
           const rect = el.getBoundingClientRect();
           mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
-          console.log(mousePosition.current);
-
         }
         let intersects = getIntersects(mousePosition.current, camera, useIcons)
-        console.log(intersects);
         if (intersects.length === 0) {
           // selectObject(undefined)
           // selectBone(null)
