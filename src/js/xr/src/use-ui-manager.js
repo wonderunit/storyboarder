@@ -184,20 +184,22 @@ function drawGrid(ctx, x, y , width, height, items) {
 
 
 class CanvasRenderer {
-  constructor(size, dispatch, service, camera, getRoom, getImageByName) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByName) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
 
     this.dispatch = dispatch
     this.service = service
+    this.send = send
     this.camera = camera
     this.getRoom = getRoom
     this.getImageByName = getImageByName
 
     this.state = {
       selections: [],
-      sceneObjects: {}
+      sceneObjects: {},
+      mode: 'idle'
     }
 
     this.objects = {}
@@ -284,6 +286,28 @@ class CanvasRenderer {
           )
           // selectObject(id)
           // undoGroupEnd()
+        }
+      }
+    }
+
+    this.objects = {
+      ...this.objects,
+      'test-toggle-modes': {
+        id: 'test-toggle-modes',
+        type: 'button',
+        x: 15,
+        y: 500,
+        width: 420,
+        height: 40,
+
+        getLabel: () => `Toggle Mode`,
+
+        onSelect: () => {
+          if (this.state.mode == 'idle') {
+            this.send('SELECT_OBJECT')
+          } else {
+            this.send('DESELECT_OBJECT')
+          }
         }
       }
     }
@@ -578,6 +602,8 @@ const {
 const getImageFilenameByName = name => `/data/system/xr/${name}.png`
 
 const useUiManager = () => {
+  const { scene, camera } = useThree()
+
   const store = useReduxStore()
 
   // preload images to cache
@@ -609,35 +635,6 @@ const useUiManager = () => {
   useImageBitmapLoader(getImageFilenameByName('help_6'))
   useImageBitmapLoader(getImageFilenameByName('help_7'))
   useImageBitmapLoader(getImageFilenameByName('help_8'))
-
-  const canvasRendererRef = useRef(null)
-  const getCanvasRenderer = useCallback(() => {
-    if (canvasRendererRef.current === null) {
-      const getRoom = () => scene.getObjectByName('room')
-      const getImageByName = name => THREE.Cache.get(getImageFilenameByName(name))
-
-      canvasRendererRef.current = new CanvasRenderer(
-        1024,
-        store.dispatch,
-        uiService,
-        camera,
-        getRoom,
-        getImageByName
-      )
-      canvasRendererRef.current.render()
-
-      const update = () => {
-        canvasRendererRef.current.state.selections = getSelections(store.getState())
-        canvasRendererRef.current.state.sceneObjects = getSceneObjects(store.getState())
-        canvasRendererRef.current.needsRender = true
-      }
-      store.subscribe(update)
-      update()
-    }
-    return canvasRendererRef.current
-  }, [])
-
-  const { gl, scene, camera } = useThree()
 
   const [uiCurrent, uiSend, uiService] = useMachine(
     uiMachine,
@@ -683,6 +680,38 @@ const useUiManager = () => {
       }
     }
   )
+
+  const canvasRendererRef = useRef(null)
+  const getCanvasRenderer = useCallback(() => {
+    if (canvasRendererRef.current === null) {
+      const getRoom = () => scene.getObjectByName('room')
+      const getImageByName = name => THREE.Cache.get(getImageFilenameByName(name))
+
+      canvasRendererRef.current = new CanvasRenderer(
+        1024,
+        store.dispatch,
+        uiService,
+        uiSend,
+        camera,
+        getRoom,
+        getImageByName
+      )
+      canvasRendererRef.current.render()
+
+      const update = () => {
+        canvasRendererRef.current.state.selections = getSelections(store.getState())
+        canvasRendererRef.current.state.sceneObjects = getSceneObjects(store.getState())
+        canvasRendererRef.current.needsRender = true
+      }
+      store.subscribe(update)
+      update()
+    }
+    return canvasRendererRef.current
+  }, [])
+
+  useMemo(() => {
+    getCanvasRenderer().state.mode = uiCurrent.value.controls
+  }, [uiCurrent.value.controls])
 
   return { uiService, uiCurrent, getCanvasRenderer }
 }

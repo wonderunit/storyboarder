@@ -8,6 +8,21 @@ const machine = Machine({
   type: 'parallel',
   context: {},
   states: {
+    controls: {
+      initial: 'idle',
+      states: {
+        idle: {
+          on: {
+            'SELECT_OBJECT': 'selected'
+          }
+        },
+        selected: {
+          on: {
+            'DESELECT_OBJECT': 'idle'
+          }
+        }
+      }
+    },
     input: {
       initial: 'idle',
       states: {

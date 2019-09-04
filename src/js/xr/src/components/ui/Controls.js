@@ -24,9 +24,9 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
 
   const gltf = useGltf('/data/system/xr/ui/controls.glb')
 
-  const mesh = useMemo(
-    () => {
-      let mesh = gltf.scene.children[0].clone()
+  const meshes = useMemo(
+    () => gltf.scene.children.map(originalMesh => {
+      let mesh = originalMesh.clone()
 
       let material = new THREE.MeshBasicMaterial({
         map: getTexture(),
@@ -37,9 +37,22 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
       mesh.material = material
 
       return mesh
-    },
+    }),
     [gltf]
   )
+
+  const mesh = useMemo(() => {
+    switch (mode) {
+      case 'idle':
+        return meshes[0]
+
+      case 'selected':
+        return meshes[1]
+
+      default:
+        return meshes[0]
+    }
+  }, [meshes, mode])
 
   useRender((state, delta) => {
     if (getCanvasRenderer().needsRender) {
@@ -49,7 +62,7 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
     getCanvasRenderer().needsRender = false
   })
 
-  log(`Controls mode: ${JSON.stringify(mode)}`)
+  log(`Controls mode: ${mode}`)
 
   return mesh
     ? <primitive

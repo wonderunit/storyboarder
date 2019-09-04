@@ -173,7 +173,9 @@ const SceneContent = connect(
                   navigator.getGamepads()[controller.userData.gamepad.index] &&
                   navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
                   <Suspense fallback={null}>
-                    <Controls mode={uiCurrent.value} getCanvasRenderer={getCanvasRenderer} />
+                    <Controls
+                      mode={uiCurrent.value.controls}
+                      getCanvasRenderer={getCanvasRenderer} />
                   </Suspense>
                 }
               </primitive>

@@ -81,7 +81,7 @@ const UITestContent = () => {
               onPointerMove={onPointerMove}
             >
               <Controls
-                mode={uiCurrent ? uiCurrent.value : null}
+                mode={uiCurrent.value.controls}
                 getCanvasRenderer={getCanvasRenderer}
               />
             </group>
