@@ -113,7 +113,7 @@ class CanvasRenderer {
 
     let ctx = this.context
     this.context.fillStyle = 'rgba(255,0,0,1)'
-   // this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    // this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
     ctx.fillStyle = 'rgba(0,0,0)'
 
     // property
