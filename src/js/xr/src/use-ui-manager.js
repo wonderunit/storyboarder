@@ -193,6 +193,7 @@ class CanvasRenderer {
     this.service = service
     this.camera = camera
     this.getRoom = getRoom
+    this.getImageByName = getImageByName
 
     this.state = {
       selections: [],
