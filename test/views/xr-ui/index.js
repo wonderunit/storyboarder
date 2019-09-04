@@ -17,7 +17,7 @@ const Controls = require('../../../src/js/xr/src/components/ui/Controls')
 const UITestContent = () => {
   const { gl, camera, scene } = useThree()
 
-  const { uiService, uiState, getCanvasRenderer } = useUiManager()
+  const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
 
   const controllers = useInteractionsManager({
     groundRef: null,
@@ -81,7 +81,7 @@ const UITestContent = () => {
               onPointerMove={onPointerMove}
             >
               <Controls
-                mode={uiState ? uiState.value : null}
+                mode={uiCurrent ? uiCurrent.value : null}
                 getCanvasRenderer={getCanvasRenderer}
               />
             </group>

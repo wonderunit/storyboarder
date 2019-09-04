@@ -1,7 +1,7 @@
 const { useState, useMemo, useRef, useCallback } = React = require('react')
 const useReduxStore = require('react-redux').useStore
 const { useRender, useThree } = require('react-three-fiber')
-const { interpret } = require('xstate/lib/interpreter')
+const { useMachine } = require('@xstate/react')
 
 const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
@@ -637,63 +637,54 @@ const useUiManager = () => {
     return canvasRendererRef.current
   }, [])
 
-  const [uiState, setUiState] = useState()
-
   const { gl, scene, camera } = useThree()
 
-  const uiService = useMemo(
-    () =>
-      interpret(uiMachine)
-        .onTransition((state, event) => {
-          // console.log(event.type, '->', JSON.stringify(state.value))
-          setUiState(state)
-        }).start(),
-    []
+  const [uiCurrent, uiSend, uiService] = useMachine(
+    uiMachine,
+    {
+      actions: {
+        onTriggerStart (context, event) {
+          let u = event.intersection.uv.x
+          let v = event.intersection.uv.y
+
+          let cr = getCanvasRenderer()
+
+          let canvasIntersection = cr.getCanvasIntersection(u, v)
+
+          if (canvasIntersection) {
+            let { id } = canvasIntersection
+
+            if (canvasIntersection.type == 'button') {
+              cr.onSelect(id)
+            }
+
+            if (canvasIntersection.type == 'slider') {
+              uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
+            }
+          }
+        },
+
+        onDraggingEntry (context, event) {
+        },
+
+        onDraggingExit (context, event) {
+          if (event.intersection) {
+            let u = event.intersection.uv.x
+            let v = event.intersection.uv.y
+            getCanvasRenderer().onDrop(context.selection, u, v)
+          }
+        },
+
+        onDrag (context, event) {
+          let u = event.intersection.uv.x
+          let v = event.intersection.uv.y
+          getCanvasRenderer().onDrag(context.selection, u, v)
+        }
+      }
+    }
   )
 
-  uiMachine.options.actions = {
-    ...uiMachine.options.actions,
-
-    onTriggerStart (context, event) {
-      let u = event.intersection.uv.x
-      let v = event.intersection.uv.y
-
-      let cr = getCanvasRenderer()
-
-      let canvasIntersection = cr.getCanvasIntersection(u, v)
-
-      if (canvasIntersection) {
-        let { id } = canvasIntersection
-
-        if (canvasIntersection.type == 'button') {
-          cr.onSelect(id)
-        }
-
-        if (canvasIntersection.type == 'slider') {
-          uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
-        }
-      }
-    },
-
-    onDraggingEntry (context, event) {
-    },
-
-    onDraggingExit (context, event) {
-      if (event.intersection) {
-        let u = event.intersection.uv.x
-        let v = event.intersection.uv.y
-        getCanvasRenderer().onDrop(context.selection, u, v)
-      }
-    },
-
-    onDrag (context, event) {
-      let u = event.intersection.uv.x
-      let v = event.intersection.uv.y
-      getCanvasRenderer().onDrag(context.selection, u, v)
-    }
-  }
-
-  return { uiService, uiState, getCanvasRenderer }
+  return { uiService, uiCurrent, getCanvasRenderer }
 }
 
 module.exports = {

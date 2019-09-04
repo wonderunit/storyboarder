@@ -124,7 +124,7 @@ const SceneContent = connect(
     const teleportRef = useRef()
     const groundRef = useRef()
 
-    const { uiService, uiState, getCanvasRenderer } = useUiManager()
+    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
 
     const controllers = useInteractionsManager({
       groundRef,
@@ -173,7 +173,7 @@ const SceneContent = connect(
                   navigator.getGamepads()[controller.userData.gamepad.index] &&
                   navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
                   <Suspense fallback={null}>
-                    <Controls mode={uiState.value} getCanvasRenderer={getCanvasRenderer} />
+                    <Controls mode={uiCurrent.value} getCanvasRenderer={getCanvasRenderer} />
                   </Suspense>
                 }
               </primitive>
