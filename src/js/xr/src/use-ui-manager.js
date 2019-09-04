@@ -55,6 +55,43 @@ function Slider ({ ctx, width, height, state, getLabel }) {
   ctx.restore()
 }
 
+function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
+  if (typeof stroke == 'undefined') {
+    stroke = true;
+  }
+  if (typeof radius === 'undefined') {
+    radius = 5;
+  }
+  if (typeof radius === 'number') {
+    radius = {tl: radius, tr: radius, br: radius, bl: radius};
+  } else {
+    var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
+    for (var side in defaultRadius) {
+      radius[side] = radius[side] || defaultRadius[side];
+    }
+  }
+  ctx.beginPath();
+  ctx.moveTo(x + radius.tl, y);
+  ctx.lineTo(x + width - radius.tr, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
+  ctx.lineTo(x + width, y + height - radius.br);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
+  ctx.lineTo(x + radius.bl, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
+  ctx.lineTo(x, y + radius.tl);
+  ctx.quadraticCurveTo(x, y, x + radius.tl, y);
+  ctx.closePath();
+  if (fill) {
+    ctx.fill();
+  }
+  if (stroke) {
+    ctx.stroke();
+  }
+}
+
+
+
+
 class CanvasRenderer {
   constructor (size, dispatch, service, camera, getRoom) {
     this.canvas = document.createElement('canvas')
@@ -73,14 +110,50 @@ class CanvasRenderer {
 
     this.objects = {}
 
+    let ctx = this.context
+    this.context.fillStyle = 'rgba(255,0,0,1)'
+   // this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    ctx.fillStyle = 'rgba(0,0,0)'
+
+    // property
+    roundRect(ctx, 4, 6, 439, 666, 20, true, false)
+    roundRect(ctx, 554, 6, 439, 666, 20, true, false)
+    roundRect(ctx, 6, 682, 439, 325, 20, true, false)
+
+    roundRect(ctx, 483, 288, 66, 105, 20, true, false)
+
+    // home
+    roundRect(ctx, 667, 684, 200, 200, 20, true, false)
+    roundRect(ctx, 667, 684, 200, 200, 20, true, false)
+
+    roundRect(ctx, 456, 684, 200, 200, 20, true, false)
+
+    roundRect(ctx, 909, 684, 88, 88, 20, true, false)
+
+    // back plane
+    roundRect(ctx, 453, 889, 440, 132, 20, true, false)
+
+    // home buttons
+    ctx.fillStyle = 'rgba(30,30,30)'
+    roundRect(ctx, 667+8, 684+7, 89, 89, 15, true, false)
+    roundRect(ctx, 667+8+88+7, 684+7, 89, 89, 15, true, false)
+    roundRect(ctx, 667+8, 684+7+88+7, 89, 89, 15, true, false)
+    roundRect(ctx, 667+8+88+7, 684+7+88+7, 89, 89, 15, true, false)
+
+    ctx.lineWidth = 5
+    ctx.strokeStyle = 'rgba(255,255,255)'
+    ctx.fillStyle = 'rgba(30,30,30)'
+    roundRect(ctx, 570, 30, 380, 89, 17, true, true)
+
+
     this.needsRender = false
   }
   render () {
     let canvas = this.canvas
     let ctx = this.context
 
-    this.context.fillStyle = 'white'
-    this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    // this.context.fillStyle = 'white'
+    // this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
     this.objects = {
       'create-object': {

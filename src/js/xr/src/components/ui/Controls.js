@@ -6,7 +6,8 @@ const useGltf = require('../../hooks/use-gltf')
 const { log } = require('../../components/Log')
 
 const SCALE = 0.025
-const POSITION = [0.07, 0.01, -0.1]
+const POSITION = [0.07, 0.05, 0.02]
+const ROTATION = [0.8, 0, 0]
 
 const Controls = React.memo(({ mode, getCanvasRenderer }) => {
   const ref = useRef()
@@ -28,7 +29,9 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
       let mesh = gltf.scene.children[0].clone()
 
       let material = new THREE.MeshBasicMaterial({
-        map: getTexture()
+        map: getTexture(),
+        transparent: true,
+        opacity: 0.8
       })
 
       mesh.material = material
@@ -55,6 +58,7 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
 
       position={POSITION}
       scale={[SCALE, SCALE, SCALE]}
+      rotation = {ROTATION}
 
       onController={() => null}
       userData={{

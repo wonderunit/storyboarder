@@ -23,7 +23,7 @@ const UITestContent = () => {
   const { uiService, uiState, getCanvasRenderer } = useUiManager()
 
   useMemo(() => {
-    scene.background = new THREE.Color(0x000000)
+    scene.background = new THREE.Color(0x888888)
   }, [])
 
   const fakeController = useRef()
@@ -74,6 +74,7 @@ const UITestContent = () => {
 
         <group
           position={[0.35, -0.15, 4.55]}
+          rotation={[0.8, 0, 0]}
         >
           <Suspense fallback={null}>
             <group
@@ -140,4 +141,3 @@ fetch('/xr.storyboarder')
       document.getElementById('main')
     )
   })
-
