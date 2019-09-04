@@ -18,7 +18,7 @@ const SceneObjectCreators = require('../../shared/actions/scene-object-creators'
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
-function Button ({ ctx, width, height, state, getLabel }) {
+function drawButton ({ ctx, width, height, state, getLabel }) {
   ctx.save()
   ctx.fillStyle = '#eee'
   ctx.fillRect(0, 0, width, height)
@@ -31,7 +31,7 @@ function Button ({ ctx, width, height, state, getLabel }) {
   ctx.restore()
 }
 
-function Slider ({ ctx, width, height, state, getLabel }) {
+function drawSlider ({ ctx, width, height, state, getLabel }) {
   ctx.save()
   ctx.fillStyle = '#aaa'
   ctx.fillRect(0, 0, width, height)
@@ -260,7 +260,7 @@ class CanvasRenderer {
       if (object.type === 'button') {
         ctx.save()
         ctx.translate(x, y)
-        Button({
+        drawButton({
           ctx,
           width,
           height,
@@ -273,7 +273,7 @@ class CanvasRenderer {
       if (object.type === 'slider') {
         ctx.save()
         ctx.translate(x, y)
-        Slider({
+        drawSlider({
           ctx,
           width,
           height,
