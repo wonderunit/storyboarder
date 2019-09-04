@@ -611,7 +611,7 @@ const useInteractionsManager = ({
 
   // update ui every frame
   useRender(() => {
-    if (uiService.state.value.controls == 'dragging') {
+    if (uiService.state.value.input == 'dragging') {
       let controller = uiService.state.context.draggingController
 
       let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
@@ -628,7 +628,7 @@ const useInteractionsManager = ({
         })
       }
     }
-  }, false, [uiService.state.value.controls])
+  }, false, [uiService.state.value.input])
 
   useMemo(() => {
     // TODO why is this memo called multiple times?

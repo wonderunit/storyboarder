@@ -8,7 +8,7 @@ const machine = Machine({
   type: 'parallel',
   context: {},
   states: {
-    controls: {
+    input: {
       initial: 'idle',
       states: {
         idle: {
