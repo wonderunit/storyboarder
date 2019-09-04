@@ -1,4 +1,4 @@
-// sh scripts/run-xr-ui-canvas-test.sh
+// ./scripts/run-xr-ui-canvas-test.sh
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree } = require('react-three-fiber')
