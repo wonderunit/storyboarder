@@ -25,8 +25,7 @@ const UITestContent = () => {
 
   const controllers = useInteractionsManager({
     groundRef: null,
-    uiService,
-    getCanvasRenderer
+    uiService
   })
 
   useMemo(() => {
@@ -46,11 +45,9 @@ const UITestContent = () => {
   const onPointerDown = event => {
     let u = event.uv.x
     let v = event.uv.y
-    let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
     uiService.send({
       type: 'TRIGGER_START',
       controller: getFakeController(),
-      canvasIntersection,
       intersection: {
         uv: event.uv
       }
@@ -59,11 +56,9 @@ const UITestContent = () => {
   const onPointerUp = event => {
     let u = event.uv.x
     let v = event.uv.y
-    let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
     uiService.send({
       type: 'TRIGGER_END',
       controller: getFakeController(),
-      canvasIntersection,
       intersection: {
         uv: event.uv
       }
