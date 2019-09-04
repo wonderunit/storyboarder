@@ -123,6 +123,10 @@ const getIntersectionTarget = intersect => {
   //Transform control
   if(intersect.object.type === 'gizmo')
   {
+    if(intersect.object.parent.parent.userData.type === "boneControl")
+    {
+      return intersect.object.parent.parent.parent;
+    }
     return intersect.object;
   }
 
@@ -315,6 +319,7 @@ const SelectionManager = connect(
     }
 
     let intersects = getIntersects(mousePosition.current, camera, useIcons)
+    console.log(intersects);
     // if no objects intersected
     if (intersects.length === 0) {
       // cancel any active dragging
@@ -387,10 +392,10 @@ const SelectionManager = connect(
           target = characters[0];
           isSelectedControlPoint = true;
         } 
-        else if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'boneControl')
+        else if(target && target.userData && target.userData.type === 'boneControl')
         {
-          let characterId = target.parent.parent.parent.characterId;
-          let boneId = target.parent.parent.parent.boneId;
+          let characterId = target.characterId;
+          let boneId = target.boneId;
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];
           let bone = target.children.filter(child => child.type === "SkinnedMesh")[0].skeleton.bones.filter(value => value.uuid === boneId);
@@ -403,7 +408,6 @@ const SelectionManager = connect(
           target = characters[0];
           isSelectedControlPoint = true;
         }
-      
       }
       // if there are 1 or more selections
       if (selections.length) {
