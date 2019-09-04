@@ -19,7 +19,7 @@ const applyDeviceQuaternion = require('../../shot-generator/apply-device-quatern
 const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
-const { interpret } = require('xstate')
+const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
 
 require('./three/GPUPickers/utils/Object3dExtension')
@@ -635,232 +635,219 @@ const useInteractionsManager = ({
     console.log('useInteractionManager')
   }, [])
 
-  const interactionService = useMemo(() => {
-    const interactionService = interpret(
-      interactionMachine
-    ).onEvent(e => {
-      //
-    }).onTransition((state, event) => {
-      const { value } = state
 
-      log(`${event.type} -> ${value}`)
-    })
-
-    interactionService.start()
-
-    return interactionService
-  }, [])
-
-  interactionMachine.options.actions = {
-    ...interactionMachine.options.actions,
-
-    // TODO base hide/show on context and remove teleportMode and teleportTargetValid entirely
-    onDragTeleportStart: (context, event) => {
-      log('-- onDragTeleportStart')
-      setTeleportMode(true)
-      // the target position value will be old until the next gl render
-      // so consider teleportTargetValid to be false, to hide the mesh, until then
-      set(state => ({ ...state, teleportTargetValid: false }))
-    },
-    onDragTeleportEnd: (context, event) => {
-      log('-- onDragTeleportEnd')
-      setTeleportMode(false)
-      set(state => ({ ...state, teleportTargetValid: false }))
-    },
-    onTeleport: (context, event) => {
-      log('-- teleport')
-      // TODO adjust by worldScale
-      // TODO reset worldScale after teleport
-      if (teleportTargetValid) {
-        let pos = useStoreApi.getState().teleportTargetPos
-        teleport(pos[0], 0, pos[2], null)
-        // setTeleportMode(false)
-      }
-    },
-
-    onSelected: (context, event) => {
-      log('-- onSelected')
-
-      let controller = event.controller
-      let { object, distance, point } = event.intersection
-
-      controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-
-      dispatch(selectObject(context.selection))
-    },
-
-    onSelectNone: (context, event) => {
-      let controller = event.controller
-      log('-- onSelectNone', controller)
-      controller.userData.selectOffset = null
-
-      dispatch(selectObject(null))
-
-      BonesHelper.getInstance().resetSelection()
-    },
-
-    onDragObjectEntry: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = event.intersection.object
-
-      if (object.userData.type != 'character') {
-        let worldScale = 1 // TODO
-
-        object.scale.multiplyScalar(worldScale)
-        controller.attach(object)
-        object.updateMatrixWorld(true)
-      }
-
-      // TODO soundBeam
-      // soundBeam.current.play()
-    },
-    onDragObjectExit: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
-      // TODO worldscale
-      let root = scene
-
-      // TODO soundBeam
-      // soundBeam.current.stop()
-
-      if (object.parent != root) {
-        root.attach(object)
-        object.updateMatrixWorld()
-      }
-
-      let rotation = object.userData.type == 'character'
-        ? object.rotation.y
-        : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-      dispatch(updateObject(context.selection, {
-        x: object.position.x,
-        y: object.position.z,
-        z: object.position.y,
-        rotation
-      }))
-    },
-    onSnapStart: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
-      // TODO worldScale
-      let worldScale = 1
-
-      object.userData.staticRotation = snapObjectRotation(object, controller, worldScale)
-
-      getGpuPicker().setupScene([object])
-      let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
-      if (intersections.length) {
-        let { distance, point } = intersections[0]
-
-        controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-        set(state => { state.canSnap = true })
-      }
-    },
-    onSnapEnd: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
-      if (object.userData.staticRotation) {
-        object.userData.staticRotation = null
-      }
-
-      // TODO worldScale
-      // let worldScale = 1
-      // let root = scene
-      // object.scale.set(1, 1, 1)
-      // root.add(object)
-      // object.position.multiplyScalar(1 / worldScale)
-
-      controller.userData.selectOffset = null
-
-      set(state => { state.canSnap = false })
-    },
-
-    moveAndRotateCamera: (context, event) => {
-      onMoveCamera(event)
-      onRotateCamera(event)
-    },
-
-    moveAndRotateObject: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
-      // TODO worldScale
-      let worldScale = 1
-
-      let canSnap = useStoreApi.getState().canSnap
-      let shouldMoveWithCursor =
-        (object.userData.type == 'character') || canSnap
-
-      let target = shouldMoveWithCursor
-        ? controller.getObjectByName('cursor')
-        : object
-
-      moveObjectZ(target, event, worldScale)
-      rotateObjectY(object, event, controller)
-    },
-
-
-    onRotateBoneEntry: (context, event) => {
-      let controller = event.controller
-      let bone = event.intersection.bone
-
-      useStoreApi.setState({
-        boneRotationMemento: getRotationMemento(controller, bone)
-      })
-
-      // select by UUID, like shot generator does
-      dispatch(selectBone(bone.uuid))
-      BonesHelper.getInstance().selectBone(bone)
-    },
-    onRotateBoneExit: (context, event) => {
-      useStoreApi.setState({
-        boneRotationMemento: {}
-      })
-
-      let selectedBone = getSelectedBone(store.getState())
-      let bone = scene.getObjectByProperty('uuid', selectedBone)
-
-      let parent
-      bone.traverseAncestors(ancestor => {
-        if (parent == null && ancestor.userData.type == 'character') {
-          parent = ancestor
-        }
-      })
-
-      let rotation = new THREE.Euler()
-      rotation.setFromQuaternion(bone.quaternion.clone().normalize(), 'XYZ')
-
-      let id = parent.userData.id
-      let name = bone.name
-
-      // TODO wrap in an undo group
-      dispatch(
-        updateCharacterSkeleton({
-          id,
-          name,
-          rotation: {
-            x: rotation.x,
-            y: rotation.y,
-            z: rotation.z
+  const [interactionServiceCurrent, interactionServiceSend, interactionService] = useMachine(
+    interactionMachine,
+    {
+      actions: {
+        // TODO base hide/show on context and remove teleportMode and teleportTargetValid entirely
+        onDragTeleportStart: (context, event) => {
+          log('-- onDragTeleportStart')
+          setTeleportMode(true)
+          // the target position value will be old until the next gl render
+          // so consider teleportTargetValid to be false, to hide the mesh, until then
+          set(state => ({ ...state, teleportTargetValid: false }))
+        },
+        onDragTeleportEnd: (context, event) => {
+          log('-- onDragTeleportEnd')
+          setTeleportMode(false)
+          set(state => ({ ...state, teleportTargetValid: false }))
+        },
+        onTeleport: (context, event) => {
+          log('-- teleport')
+          // TODO adjust by worldScale
+          // TODO reset worldScale after teleport
+          if (teleportTargetValid) {
+            let pos = useStoreApi.getState().teleportTargetPos
+            teleport(pos[0], 0, pos[2], null)
+            // setTeleportMode(false)
           }
-        })
-      )
-      dispatch(selectBone(null))
-      BonesHelper.getInstance().resetSelection()
+        },
+
+        onSelected: (context, event) => {
+          log('-- onSelected')
+
+          let controller = event.controller
+          let { object, distance, point } = event.intersection
+
+          controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
+
+          dispatch(selectObject(context.selection))
+        },
+
+        onSelectNone: (context, event) => {
+          let controller = event.controller
+          log('-- onSelectNone', controller)
+          controller.userData.selectOffset = null
+
+          dispatch(selectObject(null))
+
+          BonesHelper.getInstance().resetSelection()
+        },
+
+        onDragObjectEntry: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = event.intersection.object
+
+          if (object.userData.type != 'character') {
+            let worldScale = 1 // TODO
+
+            object.scale.multiplyScalar(worldScale)
+            controller.attach(object)
+            object.updateMatrixWorld(true)
+          }
+
+          // TODO soundBeam
+          // soundBeam.current.play()
+        },
+        onDragObjectExit: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+          // TODO worldscale
+          let root = scene
+
+          // TODO soundBeam
+          // soundBeam.current.stop()
+
+          if (object.parent != root) {
+            root.attach(object)
+            object.updateMatrixWorld()
+          }
+
+          let rotation = object.userData.type == 'character'
+            ? object.rotation.y
+            : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+          dispatch(updateObject(context.selection, {
+            x: object.position.x,
+            y: object.position.z,
+            z: object.position.y,
+            rotation
+          }))
+        },
+        onSnapStart: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+          // TODO worldScale
+          let worldScale = 1
+
+          object.userData.staticRotation = snapObjectRotation(object, controller, worldScale)
+
+          getGpuPicker().setupScene([object])
+          let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
+          if (intersections.length) {
+            let { distance, point } = intersections[0]
+
+            controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
+            set(state => { state.canSnap = true })
+          }
+        },
+        onSnapEnd: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+          if (object.userData.staticRotation) {
+            object.userData.staticRotation = null
+          }
+
+          // TODO worldScale
+          // let worldScale = 1
+          // let root = scene
+          // object.scale.set(1, 1, 1)
+          // root.add(object)
+          // object.position.multiplyScalar(1 / worldScale)
+
+          controller.userData.selectOffset = null
+
+          set(state => { state.canSnap = false })
+        },
+
+        moveAndRotateCamera: (context, event) => {
+          onMoveCamera(event)
+          onRotateCamera(event)
+        },
+
+        moveAndRotateObject: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+          // TODO worldScale
+          let worldScale = 1
+
+          let canSnap = useStoreApi.getState().canSnap
+          let shouldMoveWithCursor =
+            (object.userData.type == 'character') || canSnap
+
+          let target = shouldMoveWithCursor
+            ? controller.getObjectByName('cursor')
+            : object
+
+          moveObjectZ(target, event, worldScale)
+          rotateObjectY(object, event, controller)
+        },
+
+
+        onRotateBoneEntry: (context, event) => {
+          let controller = event.controller
+          let bone = event.intersection.bone
+
+          useStoreApi.setState({
+            boneRotationMemento: getRotationMemento(controller, bone)
+          })
+
+          // select by UUID, like shot generator does
+          dispatch(selectBone(bone.uuid))
+          BonesHelper.getInstance().selectBone(bone)
+        },
+        onRotateBoneExit: (context, event) => {
+          useStoreApi.setState({
+            boneRotationMemento: {}
+          })
+
+          let selectedBone = getSelectedBone(store.getState())
+          let bone = scene.getObjectByProperty('uuid', selectedBone)
+
+          let parent
+          bone.traverseAncestors(ancestor => {
+            if (parent == null && ancestor.userData.type == 'character') {
+              parent = ancestor
+            }
+          })
+
+          let rotation = new THREE.Euler()
+          rotation.setFromQuaternion(bone.quaternion.clone().normalize(), 'XYZ')
+
+          let id = parent.userData.id
+          let name = bone.name
+
+          // TODO wrap in an undo group
+          dispatch(
+            updateCharacterSkeleton({
+              id,
+              name,
+              rotation: {
+                x: rotation.x,
+                y: rotation.y,
+                z: rotation.z
+              }
+            })
+          )
+          dispatch(selectBone(null))
+          BonesHelper.getInstance().resetSelection()
+        }
+      },
+
+      // services: {
+      //   example: (context, event) => new Promise(resolve => {
+      //     console.log('an example service')
+      //     resolve()
+      //   })
+      // },
+
+      logger: log
     }
-  }
-
-  // StateNode.withConfig doesn't accept services until xstate 4.6.7
-  interactionMachine.options.services = {
-    ...interactionMachine.options.services,
-
-    // example: (context, event) => new Promise(resolve => {
-    //   console.log('an example service')
-    //   resolve()
-    // }),
-  }
+  )
 
   return controllers
 }
