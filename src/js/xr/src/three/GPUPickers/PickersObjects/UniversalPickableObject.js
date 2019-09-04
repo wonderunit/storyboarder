@@ -15,7 +15,12 @@ class UniversalPickableObject extends Pickable
     initialize(id)
     {
         super.initialize(id);
-        this.pickingMesh = new THREE.Mesh(this.sceneMesh.geometry, this.pickingMaterial);
+        let pickingMaterial = this.pickingMaterial;
+        pickingMaterial.depthTest = sceneMesh.material.depthTest;
+        pickingMaterial.depthWrite = sceneMesh.material.depthWrite;
+        pickingMaterial.transparent = sceneMesh.material.transparent;  
+        this.pickingMesh = new THREE.Mesh(this.sceneMesh.geometry, pickingMaterial);
+        this.pickingMesh.renderOrder = sceneMesh.renderOrder;
         this.node.type = "object";
         this.node.add(this.pickingMesh);
         this.node.pickerId = id;

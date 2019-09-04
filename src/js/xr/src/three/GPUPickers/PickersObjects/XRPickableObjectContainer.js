@@ -29,13 +29,19 @@ class XRPickableObjectContainer extends Pickable
     {
         this.node.type = this.sceneObject.userData.type;
         this.node.pickerId = id;
+        this.node.renderOrder = this.sceneObject.renderOrder;
         for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
         {
             id = this.idPool.getAvaibleId();
             let sceneMesh = this.sceneMeshes[i];
             super.initialize(id);
-            this.pickingMaterials.push(this.pickingMaterial);
-            this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
+            let pickingMaterial = this.pickingMaterial;
+            this.pickingMaterials.push(pickingMaterial);
+            pickingMaterial.depthTest = sceneMesh.material.depthTest;
+            pickingMaterial.depthWrite = sceneMesh.material.depthWrite;
+            pickingMaterial.transparent = sceneMesh.material.transparent;  
+            this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, pickingMaterial);
+            this.pickingMesh.renderOrder = sceneMesh.renderOrder;
             this.node.add(this.pickingMesh);
             this.pickingMesh.pickerId = id;
             this.pickingMeshes.push(this.pickingMesh);

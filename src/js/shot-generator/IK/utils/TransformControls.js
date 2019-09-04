@@ -944,11 +944,11 @@ const TransformControlsGizmo = function () {
 		};	
 	}
 	// Creates an Object3D with gizmos described in custom hierarchy definition.
-
+	this.renderOrder = 10;
 	var setupGizmo = function( gizmoMap ) {
 
 		var gizmo = new THREE.Object3D();
-
+		gizmo.renderOrder = 10;
 		for ( var name in gizmoMap ) {
 
 			for ( var i = gizmoMap[ name ].length; i --; ) {
@@ -963,6 +963,7 @@ const TransformControlsGizmo = function () {
 				object.name = name;
 				object.tag = tag;
 				object.type = "gizmo";
+				object.renderOrder = 10;
 				if (position) {
 					object.position.set(position[ 0 ], position[ 1 ], position[ 2 ]);
 				}
