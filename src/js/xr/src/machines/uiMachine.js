@@ -30,8 +30,8 @@ const machine = Machine({
           }
         },
         dragging: {
-          onEntry: 'onDraggingEntry',
-          onExit: 'onDraggingExit',
+          onEntry: ['updateDraggingController', 'onDraggingEntry'],
+          onExit: ['clearDraggingController', 'onDraggingExit'],
           on: {
             'TRIGGER_END': {
               target: 'idle'

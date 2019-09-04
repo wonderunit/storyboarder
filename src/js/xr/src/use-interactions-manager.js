@@ -615,6 +615,29 @@ const useInteractionsManager = ({
     }
   }, false, [set, controllers])
 
+  // update ui every frame
+  useRender(() => {
+    if (uiService.state.value.controls == 'dragging') {
+      let controller = uiService.state.context.draggingController
+
+      let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+      let intersections = getControllerIntersections(controller, uis)
+      let intersection = intersections.length && intersections[0]
+
+      if (intersection) {
+        let u = intersection.uv.x
+        let v = intersection.uv.y
+        let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
+        uiService.send({
+          type: 'CONTROLLER_INTERSECTION',
+          controller,
+          canvasIntersection,
+          intersection
+        })
+      }
+    }
+  }, false, [uiService.state.value.controls])
+
   useMemo(() => {
     // TODO why is this memo called multiple times?
     console.log('useInteractionManager')

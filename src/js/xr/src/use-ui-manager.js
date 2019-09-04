@@ -2,6 +2,7 @@ const { useState, useMemo, useRef, useCallback } = React = require('react')
 const useReduxStore = require('react-redux').useStore
 const { useRender, useThree } = require('react-three-fiber')
 const { interpret } = require('xstate/lib/interpreter')
+const { assign } = require('xstate/lib/actions')
 
 const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
@@ -510,20 +511,24 @@ const useUiManager = () => {
     []
   )
 
-  // TODO move this to ui machine context?
   // simple state stuff
-  const draggingController = useRef()
   const activeControl = useRef()
 
   uiMachine.options.actions = {
     ...uiMachine.options.actions,
+
+    updateDraggingController: assign({
+      draggingController: (context, event) => event.controller
+    }),
+    clearDraggingController: assign({
+      draggingController: (context, event) => null
+    }),
 
     onTriggerStart (context, event) {
       console.log('onTriggerStart')
     },
 
     onDraggingEntry (context, event) {
-      draggingController.current = event.controller
       activeControl.current = event.canvasIntersection.id
     },
 
@@ -534,7 +539,6 @@ const useUiManager = () => {
         getCanvasRenderer().onDrop(activeControl.current, u, v)
       }
 
-      draggingController.current = null
       activeControl.current = null
     },
 
@@ -549,30 +553,6 @@ const useUiManager = () => {
       getCanvasRenderer().onDrag(activeControl.current, u, v)
     }
   }
-
-  useRender(() => {
-    let mode = uiService.state.value
-
-    if (mode.controls == 'dragging') {
-      let controller = draggingController.current
-
-      let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
-      let intersections = getControllerIntersections(controller, uis)
-      let intersection = intersections.length && intersections[0]
-
-      if (intersection) {
-        let u = intersection.uv.x
-        let v = intersection.uv.y
-        let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
-        uiService.send({
-          type: 'CONTROLLER_INTERSECTION',
-          controller,
-          canvasIntersection,
-          intersection
-        })
-      }
-    }
-  }, false, [uiService.state.value, draggingController.current])
 
   return { uiService, uiState, getCanvasRenderer }
 }
