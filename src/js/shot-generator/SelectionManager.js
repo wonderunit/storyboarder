@@ -34,6 +34,7 @@ function getObjectsFromIcons ( objects ) {
       )
 }
 
+// TODO() : Remove this
 function getObjectsFromCameraView (objects) {
   let results = []
   for (let o of objects) {
@@ -237,7 +238,7 @@ const SelectionManager = connect(
       let gpuPicker = getGPUPicker();
       gpuPicker.setupScene(intersectables);
       gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y);
-      intersects = gpuPicker.pick(camera, gl);//raycaster.intersectObjects( getObjectsFromCameraView(intersectables))
+      intersects = gpuPicker.pick(camera, gl);
     }
     return intersects
   }
@@ -318,8 +319,7 @@ const SelectionManager = connect(
       mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
     }
 
-    let intersects = getIntersects(mousePosition.current, camera, useIcons)
-    console.log(intersects);
+    let intersects = getIntersects(mousePosition.current, camera, useIcons);
     // if no objects intersected
     if (intersects.length === 0) {
       // cancel any active dragging

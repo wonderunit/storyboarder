@@ -94,8 +94,6 @@ class XRGPUPickerController extends GPUPickerController
                 this.idPool.returnId(id);
             }
         }
-        console.log(this.pickableObjects);
-        console.log(this.gpuPickerHelper.selectableObjects);
     }
 
     getAllSceneMeshes(sceneMesh, meshes)
