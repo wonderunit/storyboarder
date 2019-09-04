@@ -254,6 +254,10 @@ const SceneManagerXR = () => {
 
   const [loaded, setLoaded] = useState(false)
 
+  useMemo(() => {
+    THREE.Cache.enabled = true
+  }, [])
+
   return (
     <>
       {

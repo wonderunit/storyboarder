@@ -102,6 +102,11 @@ const UITestContent = () => {
 
 const UITest = () => {
   const store = useReduxStore()
+
+  useMemo(() => {
+    THREE.Cache.enabled = true
+  }, [])
+
   return (
     <>
       <Canvas>
