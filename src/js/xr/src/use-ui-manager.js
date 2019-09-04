@@ -580,7 +580,34 @@ const useUiManager = () => {
   const store = useReduxStore()
 
   // preload images to cache
+  useImageBitmapLoader(getImageFilenameByName('selection'))
+  useImageBitmapLoader(getImageFilenameByName('duplicate'))
+  useImageBitmapLoader(getImageFilenameByName('add'))
+  useImageBitmapLoader(getImageFilenameByName('erase'))
+  useImageBitmapLoader(getImageFilenameByName('arrow'))
+  useImageBitmapLoader(getImageFilenameByName('hand'))
+  useImageBitmapLoader(getImageFilenameByName('help'))
+  useImageBitmapLoader(getImageFilenameByName('close'))
+
+  useImageBitmapLoader(getImageFilenameByName('camera'))
   useImageBitmapLoader(getImageFilenameByName('eye'))
+
+  useImageBitmapLoader(getImageFilenameByName('icon-toolbar-camera'))
+  useImageBitmapLoader(getImageFilenameByName('icon-toolbar-object'))
+  useImageBitmapLoader(getImageFilenameByName('icon-toolbar-character'))
+  useImageBitmapLoader(getImageFilenameByName('icon-toolbar-light'))
+
+  useImageBitmapLoader(getImageFilenameByName('pose'))
+  useImageBitmapLoader(getImageFilenameByName('object'))
+
+  useImageBitmapLoader(getImageFilenameByName('help_1'))
+  useImageBitmapLoader(getImageFilenameByName('help_2'))
+  useImageBitmapLoader(getImageFilenameByName('help_3'))
+  useImageBitmapLoader(getImageFilenameByName('help_4'))
+  useImageBitmapLoader(getImageFilenameByName('help_5'))
+  useImageBitmapLoader(getImageFilenameByName('help_6'))
+  useImageBitmapLoader(getImageFilenameByName('help_7'))
+  useImageBitmapLoader(getImageFilenameByName('help_8'))
 
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
