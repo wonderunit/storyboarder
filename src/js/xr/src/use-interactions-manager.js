@@ -19,7 +19,7 @@ const applyDeviceQuaternion = require('../../shot-generator/apply-device-quatern
 const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
-const { interpret } = require('xstate/lib/interpreter')
+const { interpret } = require('xstate')
 const interactionMachine = require('./machines/interactionMachine')
 
 require('./three/GPUPickers/utils/Object3dExtension')

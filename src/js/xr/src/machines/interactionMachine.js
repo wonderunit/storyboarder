@@ -1,5 +1,4 @@
-const { Machine } = require('xstate')
-const { assign } = require('xstate/lib/actions')
+const { Machine, assign } = require('xstate')
 
 const { log } = require('../components/Log')
 
