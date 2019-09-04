@@ -90,7 +90,98 @@ function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
   }
 }
 
+function wrapText (context, text, x, y, maxWidth, lineHeight) {
 
+  var words = text.split(' '),
+      line = '',
+      lineCount = 0,
+      i,
+      test,
+      metrics;
+
+  for (i = 0; i < words.length; i++) {
+      test = words[i];
+      metrics = context.measureText(test);
+      while (metrics.width > maxWidth) {
+          // Determine how much of the word will fit
+          test = test.substring(0, test.length - 1);
+          metrics = context.measureText(test);
+      }
+      if (words[i] != test) {
+          words.splice(i + 1, 0,  words[i].substr(test.length))
+          words[i] = test;
+      }
+
+      test = line + words[i] + ' ';
+      metrics = context.measureText(test);
+
+      if (metrics.width > maxWidth && i > 0) {
+          context.fillText(line, x, y);
+          line = words[i] + ' ';
+          y += lineHeight;
+          lineCount++;
+      }
+      else {
+          line = test;
+      }
+  }
+
+  context.fillText(line, x, y);
+}
+
+
+
+function drawGrid(ctx, x, y , width, height, items) {
+  ctx.save()
+  ctx.fillStyle = '#aaa'
+  //ctx.fillRect(x, y, width, height)
+  ctx.beginPath()
+  ctx.rect(x, y, width, height)
+  ctx.clip()
+
+  let cols = 5
+  let itemHeight = 150
+  let gutter = 5
+  let offset = 910
+
+  let itemWidth = (width-gutter*(cols-1)) / cols
+
+  let visibleRows = Math.ceil(height / itemHeight)+1
+
+  let startItem = Math.floor(offset / itemHeight)*cols
+
+  offset = offset % itemHeight
+
+  //let startItem = 0
+
+  ctx.font = '30px Arial'
+  ctx.textBaseline = 'top'
+
+  for (let i2 = 0; i2 < visibleRows; i2++) {
+    for (let i = 0; i < cols; i++) {
+      ctx.fillStyle = '#f00'
+      ctx.fillRect(x+(i*itemWidth)+(i*gutter), y+(itemHeight*i2)-offset, itemWidth, itemHeight-5)
+      ctx.fillStyle = 'white'
+      ctx.font = '30px Arial'
+      ctx.textBaseline = 'top'
+      ctx.fillText(startItem, x+(i*itemWidth)+(i*gutter), y+(itemHeight*i2)-offset)
+
+      ctx.font = '10px Arial'
+      ctx.textBaseline = 'bottom'
+      ctx.fillText('Pose: ' + startItem, x+(i*itemWidth)+(i*gutter), y+(itemHeight*i2)-offset+itemHeight-5)
+
+
+
+
+
+      startItem++
+    }
+  }
+
+
+  ctx.restore()
+
+}
 
 
 class CanvasRenderer {
@@ -117,22 +208,28 @@ class CanvasRenderer {
     ctx.fillStyle = 'rgba(0,0,0)'
 
     // property
-    roundRect(ctx, 4, 6, 439, 666, 20, true, false)
-    roundRect(ctx, 554, 6, 439, 666, 20, true, false)
-    roundRect(ctx, 6, 682, 439, 325, 20, true, false)
+    roundRect(ctx, 4, 6, 439, 666, 25, true, false)
+    roundRect(ctx, 554, 6, 439, 666, 25, true, false)
+    roundRect(ctx, 6, 682, 439, 325, 25, true, false)
 
-    roundRect(ctx, 483, 288, 66, 105, 20, true, false)
+    roundRect(ctx, 483, 288, 66, 105, 25, true, false)
 
     // home
-    roundRect(ctx, 667, 684, 200, 200, 20, true, false)
-    roundRect(ctx, 667, 684, 200, 200, 20, true, false)
+    roundRect(ctx, 667, 684, 200, 200, 25, true, false)
+    roundRect(ctx, 667, 684, 200, 200, 25, true, false)
 
-    roundRect(ctx, 456, 684, 200, 200, 20, true, false)
+    roundRect(ctx, 456, 684, 200, 200, 25, true, false)
 
-    roundRect(ctx, 909, 684, 88, 88, 20, true, false)
+    roundRect(ctx, 909, 684, 88, 88, 25, true, false)
 
     // back plane
-    roundRect(ctx, 453, 889, 440, 132, 20, true, false)
+    roundRect(ctx, 453, 889, 440, 132, 25, true, false)
+
+    ctx.font = '24px/1.4 arial, sans-serif';
+    ctx.fillStyle = 'white';
+    ctx.textBaseline = 'top'
+    wrapText(ctx, '“If You Are Working On Something That You Really Care About, You Don’t Have To Be Pushed. The Vision Pulls You.” – Abraham Lincoln', 463, 899, 422, 26);
+
 
     // home buttons
     ctx.fillStyle = 'rgba(30,30,30)'
@@ -141,10 +238,15 @@ class CanvasRenderer {
     roundRect(ctx, 667+8, 684+7+88+7, 89, 89, 15, true, false)
     roundRect(ctx, 667+8+88+7, 684+7+88+7, 89, 89, 15, true, false)
 
-    ctx.lineWidth = 5
+    ctx.lineWidth = 6
     ctx.strokeStyle = 'rgba(255,255,255)'
     ctx.fillStyle = 'rgba(30,30,30)'
     roundRect(ctx, 570, 30, 380, 89, 17, true, true)
+
+    ctx.fillStyle = 'rgba(60,60,60)'
+    roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
+
+    drawGrid(ctx, 570, 130 , 380, 500, 4)
 
 
     this.needsRender = false
