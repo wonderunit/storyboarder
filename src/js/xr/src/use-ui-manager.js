@@ -5,7 +5,7 @@ const { interpret } = require('xstate/lib/interpreter')
 
 const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
-const getControllerIntersections = require('./helpers/get-controller-intersections')
+const useImageBitmapLoader = require('./hooks/use-imagebitmap-loader')
 
 const SceneObjectCreators = require('../../shared/actions/scene-object-creators')
 
@@ -184,7 +184,7 @@ function drawGrid(ctx, x, y , width, height, items) {
 
 
 class CanvasRenderer {
-  constructor (size, dispatch, service, camera, getRoom) {
+  constructor(size, dispatch, service, camera, getRoom, getImageByName) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -247,6 +247,8 @@ class CanvasRenderer {
 
     drawGrid(ctx, 570, 130 , 380, 500, 4)
 
+    let image = this.getImageByName('eye')
+    ctx.drawImage(image, 570, 30)
 
     this.needsRender = false
   }
@@ -572,18 +574,27 @@ const {
   deleteObjects
 } = require('../../shared/reducers/shot-generator')
 
+const getImageFilenameByName = name => `/data/system/xr/${name}.png`
+
 const useUiManager = () => {
   const store = useReduxStore()
+
+  // preload images to cache
+  useImageBitmapLoader(getImageFilenameByName('eye'))
 
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
+      const getRoom = () => scene.getObjectByName('room')
+      const getImageByName = name => THREE.Cache.get(getImageFilenameByName(name))
+
       canvasRendererRef.current = new CanvasRenderer(
         1024,
         store.dispatch,
         uiService,
         camera,
-        () => scene.getObjectByName('room')
+        getRoom,
+        getImageByName
       )
       canvasRendererRef.current.render()
 
