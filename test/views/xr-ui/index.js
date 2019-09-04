@@ -13,6 +13,7 @@ const { useMemo, useRef, Suspense } = React = require('react')
 
 const ReactDOM = require('react-dom')
 
+const { useStore, useStoreApi, useInteractionsManager } = require('../../../src/js/xr/src/use-interactions-manager')
 const { useUiManager } = require('../../../src/js/xr/src/use-ui-manager')
 const { Log } = require('../../../src/js/xr/src/components/Log')
 const Controls = require('../../../src/js/xr/src/components/ui/Controls')
@@ -21,6 +22,12 @@ const UITestContent = () => {
   const { gl, camera, scene } = useThree()
 
   const { uiService, uiState, getCanvasRenderer } = useUiManager()
+
+  const controllers = useInteractionsManager({
+    groundRef: null,
+    uiService,
+    getCanvasRenderer
+  })
 
   useMemo(() => {
     scene.background = new THREE.Color(0x888888)
