@@ -128,8 +128,7 @@ const SceneContent = connect(
 
     const controllers = useInteractionsManager({
       groundRef,
-      uiService,
-      getCanvasRenderer
+      uiService
     })
 
     // initialize the BonesHelper

@@ -1,4 +1,5 @@
 const { Machine } = require('xstate')
+const { assign } = require('xstate/lib/actions')
 
 const { log } = require('../components/Log')
 
@@ -13,25 +14,15 @@ const machine = Machine({
       states: {
         idle: {
           on: {
-            'TRIGGER_START': [
-              {
-                // ignore if no intersection
-                cond: 'noHit'
-              },
-              {
-                cond: 'wasButton',
-                actions: 'onSelect'
-              },
-              {
-                cond: 'wasSlider',
-                target: 'dragging'
-              }
-            ]
+            'TRIGGER_START': {
+              actions: 'onTriggerStart'
+            },
+            'REQUEST_DRAG': 'dragging'
           }
         },
         dragging: {
-          onEntry: ['updateDraggingController', 'onDraggingEntry'],
-          onExit: ['clearDraggingController', 'onDraggingExit'],
+          onEntry: ['updateSelection', 'updateDraggingController', 'onDraggingEntry'],
+          onExit: ['clearSelection', 'clearDraggingController', 'onDraggingExit'],
           on: {
             'TRIGGER_END': {
               target: 'idle'
@@ -45,10 +36,20 @@ const machine = Machine({
     }
   }
 }, {
-  guards: {
-    noHit: (context, event) => event.canvasIntersection == null,
-    wasButton: (context, event) => event.canvasIntersection.type == 'button',
-    wasSlider: (context, event) => event.canvasIntersection.type == 'slider'
+  actions: {
+    updateSelection: assign({
+      selection: (context, event) => event.id
+    }),
+    clearSelection: assign({
+      selection: (context, event) => null
+    }),
+
+    updateDraggingController: assign({
+      draggingController: (context, event) => event.controller
+    }),
+    clearDraggingController: assign({
+      draggingController: (context, event) => null
+    })
   }
 })
 

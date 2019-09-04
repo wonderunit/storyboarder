@@ -207,8 +207,7 @@ const [useStore, useStoreApi] = create((set, get) => ({
 
 const useInteractionsManager = ({
   groundRef,
-  uiService,
-  getCanvasRenderer
+  uiService
 }) => {
   const { gl, camera, scene } = useThree()
 
@@ -254,11 +253,9 @@ const useInteractionsManager = ({
     if (intersection) {
       let u = intersection.uv.x
       let v = intersection.uv.y
-      let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
       uiService.send({
         type: 'TRIGGER_START',
         controller: event.target,
-        canvasIntersection,
         intersection: {
           id: intersection.object.userData.id,
           type: 'ui',
@@ -354,11 +351,9 @@ const useInteractionsManager = ({
     if (intersection) {
       let u = intersection.uv.x
       let v = intersection.uv.y
-      let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
       uiService.send({
         type: 'TRIGGER_END',
         controller: event.target,
-        canvasIntersection,
         intersection: {
           id: intersection.object.userData.id,
           type: 'ui',
@@ -373,8 +368,7 @@ const useInteractionsManager = ({
     } else {
       uiService.send({
         type: 'TRIGGER_END',
-        controller: event.target,
-        canvasIntersection: null
+        controller: event.target
       })
     }
 
@@ -627,11 +621,9 @@ const useInteractionsManager = ({
       if (intersection) {
         let u = intersection.uv.x
         let v = intersection.uv.y
-        let canvasIntersection = getCanvasRenderer().getCanvasIntersection(u, v)
         uiService.send({
           type: 'CONTROLLER_INTERSECTION',
           controller,
-          canvasIntersection,
           intersection
         })
       }

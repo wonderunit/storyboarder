@@ -2,7 +2,6 @@ const { useState, useMemo, useRef, useCallback } = React = require('react')
 const useReduxStore = require('react-redux').useStore
 const { useRender, useThree } = require('react-three-fiber')
 const { interpret } = require('xstate/lib/interpreter')
-const { assign } = require('xstate/lib/actions')
 
 const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
@@ -511,46 +510,45 @@ const useUiManager = () => {
     []
   )
 
-  // simple state stuff
-  const activeControl = useRef()
-
   uiMachine.options.actions = {
     ...uiMachine.options.actions,
 
-    updateDraggingController: assign({
-      draggingController: (context, event) => event.controller
-    }),
-    clearDraggingController: assign({
-      draggingController: (context, event) => null
-    }),
-
     onTriggerStart (context, event) {
-      console.log('onTriggerStart')
+      let u = event.intersection.uv.x
+      let v = event.intersection.uv.y
+
+      let cr = getCanvasRenderer()
+
+      let canvasIntersection = cr.getCanvasIntersection(u, v)
+
+      if (canvasIntersection) {
+        let { id } = canvasIntersection
+
+        if (canvasIntersection.type == 'button') {
+          cr.onSelect(id)
+        }
+
+        if (canvasIntersection.type == 'slider') {
+          uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
+        }
+      }
     },
 
     onDraggingEntry (context, event) {
-      activeControl.current = event.canvasIntersection.id
     },
 
     onDraggingExit (context, event) {
       if (event.intersection) {
         let u = event.intersection.uv.x
         let v = event.intersection.uv.y
-        getCanvasRenderer().onDrop(activeControl.current, u, v)
+        getCanvasRenderer().onDrop(context.selection, u, v)
       }
-
-      activeControl.current = null
-    },
-
-    onSelect (context, event) {
-      let { id } = event.canvasIntersection
-      getCanvasRenderer().onSelect(id)
     },
 
     onDrag (context, event) {
       let u = event.intersection.uv.x
       let v = event.intersection.uv.y
-      getCanvasRenderer().onDrag(activeControl.current, u, v)
+      getCanvasRenderer().onDrag(context.selection, u, v)
     }
   }
 
