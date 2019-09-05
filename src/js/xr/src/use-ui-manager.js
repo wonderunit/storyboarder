@@ -378,6 +378,7 @@ class CanvasRenderer {
       let setCharacterHeight = n => {
         let height = THREE.Math.mapLinear(n, 0, 1, min, max)
         height = steps(height, step)
+        height = THREE.Math.clamp(height, min, max)
 
         this.dispatch(
           updateObject(
