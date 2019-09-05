@@ -3,15 +3,16 @@ const { useMemo, useRef } = React = require('react')
 
 const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
+const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-type')
+const isUserModel = require('../helpers/is-user-model')
 
 const BonesHelper = require('../three/BonesHelper')
 
 const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
   const ref = useRef()
 
-  // TODO detect user models, e.g.: `/data/user/characters/${filename}`
   const filepath = useMemo(
-    () => `/data/system/dummies/gltf/${sceneObject.model}-lod.glb`,
+    () => getFilepathForModelByType(sceneObject),
     [sceneObject.model]
   )
 
@@ -26,7 +27,14 @@ const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
 
       let map
 
-      for (let i = 1, d = 0; i < meshes.length; i++, d++) {
+      // if there's only 1 mesh
+      let startAt = meshes.length == 1
+        // start at mesh index 0 (for custom characters)
+        ? 0
+        // otherwise start at mesh index 1 (for built-in characters)
+        : 1
+
+      for (let i = startAt, d = 0; i < meshes.length; i++, d++) {
         let mesh = meshes[i]
         mesh.matrixAutoUpdate = false
         map = mesh.material.map
@@ -47,8 +55,14 @@ const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
 
       let armature = scene.children[0].children[0]
 
-      let bbox = new THREE.Box3().setFromObject(lod)
-      let originalHeight = bbox.max.y - bbox.min.y
+      let originalHeight
+      if (isUserModel(sceneObject.model)) {
+        originalHeight = 1
+      } else {
+        let bbox = new THREE.Box3().setFromObject(lod)
+        originalHeight = bbox.max.y - bbox.min.y
+      }
+
 
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
@@ -86,13 +100,11 @@ const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
     }
   }, [skeleton, sceneObject.skeleton])
 
-  const bodyScale = useMemo(() => {
-    // for built-in characters
-    return sceneObject.height / originalHeight
+  const bodyScale = useMemo(
+    () => sceneObject.height / originalHeight,
+    [sceneObject.height]
+  )
 
-    // TODO handle custom characters and use an absolute height
-    // return sceneObject.height
-  }, [sceneObject.height])
   // headScale (0.8...1.2)
   useMemo(() => {
     let headBone = skeleton.getBoneByName('Head')
@@ -104,6 +116,16 @@ const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
       headBone.scale.setScalar(sceneObject.headScale)
     }
   }, [skeleton, sceneObject.headScale])
+
+  useMemo(() => {
+    if (modelSettings && modelSettings.validMorphTargets) {
+      lod.children.forEach(skinnedMesh => {
+        modelSettings.validMorphTargets.forEach((name, index) => {
+          skinnedMesh.morphTargetInfluences[index] = sceneObject.morphTargets[name]
+        })
+      })
+    }
+  }, [modelSettings, sceneObject.morphTargets])
 
   useMemo(() => {
     if (isSelected) {
