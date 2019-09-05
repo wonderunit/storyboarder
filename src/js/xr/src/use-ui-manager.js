@@ -1,5 +1,6 @@
 const { useState, useMemo, useRef, useCallback } = React = require('react')
 const useReduxStore = require('react-redux').useStore
+const { useSelector } = require('react-redux')
 const { useRender, useThree } = require('react-three-fiber')
 const { useMachine } = require('@xstate/react')
 
@@ -766,22 +767,29 @@ const useUiManager = () => {
         getRoom,
         getImageByName
       )
-
-      const update = () => {
-        canvasRendererRef.current.state.selections = getSelections(store.getState())
-        canvasRendererRef.current.state.sceneObjects = getSceneObjects(store.getState())
-        canvasRendererRef.current.needsRender = true
-        if (canvasRendererRef.current.state.selections.length) {
-          uiService.send('GO_PROPERTIES')
-        } else {
-          uiService.send('GO_HOME')
-        }
-      }
-      store.subscribe(update)
-      update()
     }
     return canvasRendererRef.current
   }, [])
+
+  const selections = useSelector(getSelections)
+  const sceneObjects = useSelector(getSceneObjects)
+
+  useMemo(() => {
+    getCanvasRenderer().state.selections = selections
+    getCanvasRenderer().state.sceneObjects = sceneObjects
+    getCanvasRenderer().needsRender = true
+  }, [selections, sceneObjects])
+
+  useMemo(() => {
+    if (!uiService.initialized) return
+
+    if (selections.length) {
+      uiService.send('GO_PROPERTIES')
+    } else {
+      uiService.send('GO_HOME')
+    }
+  }, [uiService.initialized, selections])
+
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
