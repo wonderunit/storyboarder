@@ -306,14 +306,15 @@ function setupAddPane (paneComponents) {
 const lenses = {}
 
 let height_step = 0.05
-let height_min = steps(1.4732, height_step)
-let height_max = steps(2.1336, height_step)
+let height_min = 1.4732
+let height_max = 2.1336
 lenses.characterHeight = R.lens(
   vin => THREE.Math.mapLinear(vin, height_min, height_max, 0, 1),
   vout => {
     let height = mapLinear(vout, 0, 1, height_min, height_max)
     height = steps(height, height_step)
     height = clamp(height, height_min, height_max)
+    return height
   }
 )
 
