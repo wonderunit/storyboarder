@@ -106,6 +106,16 @@ const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
   }, [skeleton, sceneObject.headScale])
 
   useMemo(() => {
+    if (modelSettings.validMorphTargets) {
+      lod.children.forEach(skinnedMesh => {
+        modelSettings.validMorphTargets.forEach((name, index) => {
+          skinnedMesh.morphTargetInfluences[index] = sceneObject.morphTargets[name]
+        })
+      })
+    }
+  }, [sceneObject.morphTargets])
+
+  useMemo(() => {
     if (isSelected) {
       BonesHelper.getInstance().initialize(lod.children[0])
       ref.current && ref.current.add(BonesHelper.getInstance())
