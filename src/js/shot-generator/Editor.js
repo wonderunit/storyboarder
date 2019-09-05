@@ -306,11 +306,19 @@ const Editor = connect(
       })
     }
 
-
+    const getSceneInstance = () =>
+    {
+      if(!scene.current)
+      {
+        scene.current = new THREE.Scene();
+      }
+      return scene.current;
+    };
+    
 
     useEffect(() => {
-      scene.current = new THREE.Scene()
-
+      //scene.current = new THREE.Scene()
+      getSceneInstance();
       // TODO introspect models
       updateModels({})
 
@@ -327,8 +335,10 @@ const Editor = connect(
 
     // render Toolbar with updated camera when scene is ready, or when activeCamera changes
     useEffect(() => {
-      setCamera(scene.current.children.find(o => o.userData.id === activeCamera))
-    }, [ready, activeCamera])
+      if(!camera || camera && camera.userData.id !== activeCamera) {
+        setCamera(scene.current.children.find(o => o.userData.id === activeCamera))
+      }
+    }, [ready, activeCamera, getSceneInstance().children.length])
 
     useEffect(() => {
       window.addEventListener('beforeunload', onBeforeUnload)
