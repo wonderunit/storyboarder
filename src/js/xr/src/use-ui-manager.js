@@ -418,10 +418,10 @@ class CanvasRenderer {
       this.renderObjects(ctx, this.paneComponents['properties'])
 
       // FOR TESTING: draw some images
-      ctx.drawImage(this.getImageByFilepath(getIconFilepathByName('eye')), 570, 130)
-      ctx.drawImage(this.getImageByFilepath(getPoseImageFilepathById('8af56a03-2078-402a-9407-33cfecfcf460')), 770, 130)
-      ctx.drawImage(this.getImageByFilepath(getCharacterImageFilepathById('adult-female')), 570, 430)
-      ctx.drawImage(this.getImageByFilepath(getModelImageFilepathById('box')), 770, 430)
+      // ctx.drawImage(this.getImageByFilepath(getIconFilepathByName('eye')), 570, 130)
+      // ctx.drawImage(this.getImageByFilepath(getPoseImageFilepathById('8af56a03-2078-402a-9407-33cfecfcf460')), 770, 130)
+      // ctx.drawImage(this.getImageByFilepath(getCharacterImageFilepathById('adult-female')), 570, 430)
+      // ctx.drawImage(this.getImageByFilepath(getModelImageFilepathById('box')), 770, 430)
     }
 
 
@@ -821,22 +821,22 @@ const useUiManager = () => {
     ]
   , [models])
 
-  useMemo(() => {
-    poses
-      .map(model => model.id)
-      .map(getPoseImageFilepathById)
-      .map(imageBitmapLoaderResource.read)
+  // useMemo(() => {
+  //   poses
+  //     .map(model => model.id)
+  //     .map(getPoseImageFilepathById)
+  //     .map(imageBitmapLoaderResource.read)
 
-    characterModels
-      .map(model => model.id)
-      .map(getCharacterImageFilepathById)
-      .map(imageBitmapLoaderResource.read)
+  //   characterModels
+  //     .map(model => model.id)
+  //     .map(getCharacterImageFilepathById)
+  //     .map(imageBitmapLoaderResource.read)
 
-    objectModels
-      .map(model => model.id)
-      .map(getModelImageFilepathById)
-      .map(imageBitmapLoaderResource.read)
-  }, [])
+  //   objectModels
+  //     .map(model => model.id)
+  //     .map(getModelImageFilepathById)
+  //     .map(imageBitmapLoaderResource.read)
+  // }, [])
 
   const [uiCurrent, uiSend, uiService] = useMachine(
     uiMachine,
