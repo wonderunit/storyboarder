@@ -670,7 +670,7 @@ const {
   deleteObjects
 } = require('../../shared/reducers/shot-generator')
 
-const getImageFilenameByName = name => `/data/system/xr/${name}.png`
+const getImageFilepathByName = name => `/data/system/xr/${name}.png`
 
 const useUiManager = () => {
   const { scene, camera } = useThree()
@@ -678,34 +678,34 @@ const useUiManager = () => {
   const store = useReduxStore()
 
   // preload images to cache
-  useImageBitmapLoader(getImageFilenameByName('selection'))
-  useImageBitmapLoader(getImageFilenameByName('duplicate'))
-  useImageBitmapLoader(getImageFilenameByName('add'))
-  useImageBitmapLoader(getImageFilenameByName('erase'))
-  useImageBitmapLoader(getImageFilenameByName('arrow'))
-  useImageBitmapLoader(getImageFilenameByName('hand'))
-  useImageBitmapLoader(getImageFilenameByName('help'))
-  useImageBitmapLoader(getImageFilenameByName('close'))
+  useImageBitmapLoader(getImageFilepathByName('selection'))
+  useImageBitmapLoader(getImageFilepathByName('duplicate'))
+  useImageBitmapLoader(getImageFilepathByName('add'))
+  useImageBitmapLoader(getImageFilepathByName('erase'))
+  useImageBitmapLoader(getImageFilepathByName('arrow'))
+  useImageBitmapLoader(getImageFilepathByName('hand'))
+  useImageBitmapLoader(getImageFilepathByName('help'))
+  useImageBitmapLoader(getImageFilepathByName('close'))
 
-  useImageBitmapLoader(getImageFilenameByName('camera'))
-  useImageBitmapLoader(getImageFilenameByName('eye'))
+  useImageBitmapLoader(getImageFilepathByName('camera'))
+  useImageBitmapLoader(getImageFilepathByName('eye'))
 
-  useImageBitmapLoader(getImageFilenameByName('icon-toolbar-camera'))
-  useImageBitmapLoader(getImageFilenameByName('icon-toolbar-object'))
-  useImageBitmapLoader(getImageFilenameByName('icon-toolbar-character'))
-  useImageBitmapLoader(getImageFilenameByName('icon-toolbar-light'))
+  useImageBitmapLoader(getImageFilepathByName('icon-toolbar-camera'))
+  useImageBitmapLoader(getImageFilepathByName('icon-toolbar-object'))
+  useImageBitmapLoader(getImageFilepathByName('icon-toolbar-character'))
+  useImageBitmapLoader(getImageFilepathByName('icon-toolbar-light'))
 
-  useImageBitmapLoader(getImageFilenameByName('pose'))
-  useImageBitmapLoader(getImageFilenameByName('object'))
+  useImageBitmapLoader(getImageFilepathByName('pose'))
+  useImageBitmapLoader(getImageFilepathByName('object'))
 
-  useImageBitmapLoader(getImageFilenameByName('help_1'))
-  useImageBitmapLoader(getImageFilenameByName('help_2'))
-  useImageBitmapLoader(getImageFilenameByName('help_3'))
-  useImageBitmapLoader(getImageFilenameByName('help_4'))
-  useImageBitmapLoader(getImageFilenameByName('help_5'))
-  useImageBitmapLoader(getImageFilenameByName('help_6'))
-  useImageBitmapLoader(getImageFilenameByName('help_7'))
-  useImageBitmapLoader(getImageFilenameByName('help_8'))
+  useImageBitmapLoader(getImageFilepathByName('help_1'))
+  useImageBitmapLoader(getImageFilepathByName('help_2'))
+  useImageBitmapLoader(getImageFilepathByName('help_3'))
+  useImageBitmapLoader(getImageFilepathByName('help_4'))
+  useImageBitmapLoader(getImageFilepathByName('help_5'))
+  useImageBitmapLoader(getImageFilepathByName('help_6'))
+  useImageBitmapLoader(getImageFilepathByName('help_7'))
+  useImageBitmapLoader(getImageFilepathByName('help_8'))
 
   const [uiCurrent, uiSend, uiService] = useMachine(
     uiMachine,
@@ -757,7 +757,7 @@ const useUiManager = () => {
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
       const getRoom = () => scene.getObjectByName('room')
-      const getImageByName = name => THREE.Cache.get(getImageFilenameByName(name))
+      const getImageByName = name => THREE.Cache.get(getImageFilepathByName(name))
 
       canvasRendererRef.current = new CanvasRenderer(
         1024,
