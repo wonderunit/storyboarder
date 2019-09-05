@@ -314,6 +314,7 @@ class CanvasRenderer {
       selections: [],
       sceneObjects: {},
       poses: {},
+      models: {},
       mode: 'home'
     }
 
@@ -400,6 +401,8 @@ class CanvasRenderer {
     if (this.state.mode == 'properties') {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
+
+      let modelSettings = this.state.models[sceneObject.model]
 
       this.paneComponents['properties'] = {
         'character-height': {
@@ -956,6 +959,7 @@ const useUiManager = () => {
     getCanvasRenderer().state.selections = selections
     getCanvasRenderer().state.sceneObjects = sceneObjects
     getCanvasRenderer().state.poses = poses
+    getCanvasRenderer().state.models = models
     getCanvasRenderer().needsRender = true
 
     if (selections.length) {
@@ -963,7 +967,7 @@ const useUiManager = () => {
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses])
+  }, [selections, sceneObjects, poses, models])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
