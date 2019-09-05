@@ -24,18 +24,19 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
 
   const gltf = useGltf('/data/system/xr/ui/controls.glb')
 
+  const material = useMemo(
+    () => new THREE.MeshBasicMaterial({
+      map: getTexture(),
+      transparent: true,
+      opacity: 0.8
+    }),
+    []
+  )
+
   const meshes = useMemo(
     () => gltf.scene.children.map(originalMesh => {
       let mesh = originalMesh.clone()
-
-      let material = new THREE.MeshBasicMaterial({
-        map: getTexture(),
-        transparent: true,
-        opacity: 0.8
-      })
-
       mesh.material = material
-
       return mesh
     }),
     [gltf]

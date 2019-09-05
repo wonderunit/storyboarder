@@ -14,6 +14,8 @@ const { useUiManager } = require('../../../src/js/xr/src/use-ui-manager')
 const { Log } = require('../../../src/js/xr/src/components/Log')
 const Controls = require('../../../src/js/xr/src/components/ui/Controls')
 
+const SimpleText = require('../../../src/js/xr/src/components/SimpleText')
+
 const UITestContent = () => {
   const { gl, camera, scene } = useThree()
 
@@ -101,6 +103,19 @@ const UITestContent = () => {
   )
 }
 
+const LoadingMessage = () => {
+  return <group>
+    <SimpleText
+      label={'Loading ...'}
+      position={[0, 0, 0]}
+      textProps={{
+        color: 0xaaaaaa,
+        scale: 10
+      }}
+    />
+  </group>
+}
+
 const UITest = () => {
   const store = useReduxStore()
 
@@ -112,7 +127,7 @@ const UITest = () => {
     <>
       <Canvas>
         <Provider store={store}>
-          <Suspense fallback={null}>
+          <Suspense fallback={<LoadingMessage />}>
             <UITestContent />
           </ Suspense>
         </Provider>
@@ -131,7 +146,9 @@ fetch('/xr.storyboarder')
   .then(response => response.json())
   .then(scene => {
     const store = configureStore({
-      presets: { poses: {} }
+      aspectRatio: scene.aspectRatio,
+      models: initialState.models,
+      presets: initialState.presets
     })
     store.dispatch({ type: 'LOAD_SCENE', payload: scene.boards[0].sg.data })
     store.dispatch({ type: 'SELECT_OBJECT', payload: '26332F12-28FE-444C-B73F-B3F90B8C62A2' })
