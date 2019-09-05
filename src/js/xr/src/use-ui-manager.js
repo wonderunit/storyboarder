@@ -305,6 +305,18 @@ function setupAddPane (paneComponents) {
 
 const lenses = {}
 
+let height_step = 0.05
+let height_min = steps(1.4732, height_step)
+let height_max = steps(2.1336, height_step)
+lenses.characterHeight = R.lens(
+  vin => THREE.Math.mapLinear(vin, height_min, height_max, 0, 1),
+  vout => {
+    let height = mapLinear(vout, 0, 1, height_min, height_max)
+    height = steps(height, height_step)
+    height = clamp(height, height_min, height_max)
+  }
+)
+
 lenses.headScale = R.lens(
   vin => clamp(mapLinear(vin, 0.8, 1.2, 0, 1), 0, 1),
   vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.8, 1.2), 0.8, 1.2)
@@ -387,34 +399,6 @@ class CanvasRenderer {
 
     console.log("render")
 
-    const getCharacterHeightSlider = sceneObject => {
-      let step = 0.05
-      let min = steps(1.4732, step)
-      let max = steps(2.1336, step)
-
-      let characterHeight = THREE.Math.mapLinear(sceneObject.height, min, max, 0, 1)
-
-      let setCharacterHeight = n => {
-        let height = THREE.Math.mapLinear(n, 0, 1, min, max)
-        height = steps(height, step)
-        height = THREE.Math.clamp(height, min, max)
-
-        this.dispatch(
-          updateObject(
-            sceneObject.id,
-            { height }
-          )
-        )
-      }
-
-      return {
-        state: characterHeight,
-        label: `height ${sceneObject.height}`,
-        onDrag: (x, y) => setCharacterHeight(x),
-        onDrop: (x, y) => setCharacterHeight(x)
-      }
-    }
-
     console.log(this.state.mode)
     if (this.state.mode == 'properties') {
       let id = this.state.selections[0]
@@ -430,9 +414,24 @@ class CanvasRenderer {
           y: 30,
           width: 420,
           height: 40,
-          ...getCharacterHeightSlider(sceneObject)
+
+          label: `height ${sceneObject.height}`,
+
+          state: R.view(lenses.characterHeight, sceneObject.height),
+
+          setState: value => {
+            this.dispatch(
+              updateObject(
+                sceneObject.id,
+                { height: R.set(lenses.characterHeight, value, sceneObject.height) }
+              )
+            )
+          }
         }
       }
+      this.paneComponents['properties']['character-height'].onDrag =
+      this.paneComponents['properties']['character-height'].onDrop =
+      this.paneComponents['properties']['character-height'].setState
 
       this.paneComponents['properties']['character-headScale'] = {
         id: 'character-headScale',
