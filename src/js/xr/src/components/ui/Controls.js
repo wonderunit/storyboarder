@@ -43,11 +43,18 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
 
   const mesh = useMemo(() => {
     switch (mode) {
-      case 'idle':
-        return meshes[0]
+      case 'home':
+        return meshes[6]
 
-      case 'selected':
-        return meshes[1]
+      case 'add':
+        return meshes[5]
+
+      case 'settings':
+        return meshes[4]
+
+      case 'properties':
+        return meshes[2]
+
 
       default:
         return meshes[0]

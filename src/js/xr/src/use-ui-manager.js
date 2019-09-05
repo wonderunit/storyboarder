@@ -7,14 +7,6 @@ const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
 const useImageBitmapLoader = require('./hooks/use-imagebitmap-loader')
 
-const SceneObjectCreators = require('../../shared/actions/scene-object-creators')
-
-// const toRotation = value => (value * 2 - 1) * Math.PI
-// const fromRotation = value => (value / (Math.PI) + 1) / 2
-// const mappers = {
-//   toRotation,
-//   fromRotation
-// }
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
@@ -168,11 +160,6 @@ function drawGrid(ctx, x, y , width, height, items) {
       ctx.font = '10px Arial'
       ctx.textBaseline = 'bottom'
       ctx.fillText('Pose: ' + startItem, x+(i*itemWidth)+(i*gutter), y+(itemHeight*i2)-offset+itemHeight-5)
-
-
-
-
-
       startItem++
     }
   }
@@ -182,6 +169,68 @@ function drawGrid(ctx, x, y , width, height, items) {
 
 }
 
+function drawPaneBGs(ctx) {
+  ctx.fillStyle = 'rgba(0,0,0)'
+  // property
+  roundRect(ctx, 4, 6, 439, 666, 25, true, false)
+  // extended property
+  roundRect(ctx, 554, 6, 439, 666, 25, true, false)
+  roundRect(ctx, 6, 682, 439, 325, 25, true, false)
+  roundRect(ctx, 483, 288, 66, 105, 25, true, false)
+  // home
+  roundRect(ctx, 667, 684, 200, 200, 25, true, false)
+  //roundRect(ctx, 667, 684, 200, 200, 25, true, false)
+  roundRect(ctx, 456, 684, 200, 200, 25, true, false)
+  roundRect(ctx, 909, 684, 88, 88, 25, true, false)
+  // back plane
+  roundRect(ctx, 453, 889, 440, 132, 25, true, false)
+}
+
+function setupHomePane (paneComponents, self) {
+  // 4 image buttons
+  paneComponents['home'] = {
+    'add-button': {
+      id: 'add-button',
+      type: 'button',
+      x: 667+8,
+      y: 684+7,
+      width: 89,
+      height: 89,
+
+      getLabel: () => 'Add Button',
+
+      onSelect: () => {
+        self.send('GO_ADD')
+      }
+    }
+  }
+}
+
+function setupAddPane (paneComponents) {
+  // 4 image buttons
+  paneComponents['add'] = {
+    'add-character': {
+      id: 'add-character',
+      type: 'button',
+      x: 456+8,
+      y: 684+7,
+      width: 89,
+      height: 89,
+
+      getLabel: () => 'Add character',
+
+      onSelect: () => {
+        console.log("Adding Character")
+        // undoGroupStart()
+        // console.log(deleteObjects([sceneObject.id]))
+        // this.dispatch(deleteObjects([sceneObject.id]))
+        // this.dispatch(selectObject(null))
+        // selectObject(id)
+        // undoGroupEnd()
+      }
+    }
+  }
+}
 
 class CanvasRenderer {
   constructor(size, dispatch, service, send, camera, getRoom, getImageByName) {
@@ -192,197 +241,249 @@ class CanvasRenderer {
     this.dispatch = dispatch
     this.service = service
     this.send = send
-    this.camera = camera
-    this.getRoom = getRoom
     this.getImageByName = getImageByName
 
     this.state = {
       selections: [],
       sceneObjects: {},
-      mode: 'idle'
+      mode: 'home'
     }
 
-    this.objects = {}
+    this.paneComponents = {}
 
     let ctx = this.context
-    this.context.fillStyle = 'rgba(255,0,0,1)'
-    // this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
-    ctx.fillStyle = 'rgba(0,0,0)'
-
-    // property
-    roundRect(ctx, 4, 6, 439, 666, 25, true, false)
-    roundRect(ctx, 554, 6, 439, 666, 25, true, false)
-    roundRect(ctx, 6, 682, 439, 325, 25, true, false)
-
-    roundRect(ctx, 483, 288, 66, 105, 25, true, false)
-
-    // home
-    roundRect(ctx, 667, 684, 200, 200, 25, true, false)
-    roundRect(ctx, 667, 684, 200, 200, 25, true, false)
-
-    roundRect(ctx, 456, 684, 200, 200, 25, true, false)
-
-    roundRect(ctx, 909, 684, 88, 88, 25, true, false)
-
-    // back plane
-    roundRect(ctx, 453, 889, 440, 132, 25, true, false)
-
-    ctx.font = '24px/1.4 arial, sans-serif';
-    ctx.fillStyle = 'white';
-    ctx.textBaseline = 'top'
-    wrapText(ctx, '“If You Are Working On Something That You Really Care About, You Don’t Have To Be Pushed. The Vision Pulls You.” – Abraham Lincoln', 463, 899, 422, 26);
+    drawPaneBGs(ctx)
 
 
-    // home buttons
-    ctx.fillStyle = 'rgba(30,30,30)'
-    roundRect(ctx, 667+8, 684+7, 89, 89, 15, true, false)
-    roundRect(ctx, 667+8+88+7, 684+7, 89, 89, 15, true, false)
-    roundRect(ctx, 667+8, 684+7+88+7, 89, 89, 15, true, false)
-    roundRect(ctx, 667+8+88+7, 684+7+88+7, 89, 89, 15, true, false)
 
-    ctx.lineWidth = 6
-    ctx.strokeStyle = 'rgba(255,255,255)'
-    ctx.fillStyle = 'rgba(30,30,30)'
-    roundRect(ctx, 570, 30, 380, 89, 17, true, true)
+    setupHomePane(this.paneComponents, this)
+    setupAddPane(this.paneComponents)
+    this.renderObjects(ctx, this.paneComponents['home'])
+    this.renderObjects(ctx, this.paneComponents['add'])
+    // setupaddpane
+    // setupsettings
 
-    ctx.fillStyle = 'rgba(60,60,60)'
-    roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
 
-    drawGrid(ctx, 570, 130 , 380, 500, 4)
+    // setup each pane
 
-    let image = this.getImageByName('eye')
-    ctx.drawImage(image, 570, 30)
+
+    // ctx.font = '24px/1.4 arial, sans-serif';
+    // ctx.fillStyle = 'white';
+    // ctx.textBaseline = 'top'
+    // wrapText(ctx, '“If You Are Working On Something That You Really Care About, You Don’t Have To Be Pushed. The Vision Pulls You.” – Abraham Lincoln', 463, 899, 422, 26);
+
+
+    // // home buttons
+    // ctx.fillStyle = 'rgba(30,30,30)'
+    // roundRect(ctx, 667+8, 684+7, 89, 89, 15, true, false)
+    // roundRect(ctx, 667+8+88+7, 684+7, 89, 89, 15, true, false)
+    // roundRect(ctx, 667+8, 684+7+88+7, 89, 89, 15, true, false)
+    // roundRect(ctx, 667+8+88+7, 684+7+88+7, 89, 89, 15, true, false)
+
+    // ctx.lineWidth = 6
+    // ctx.strokeStyle = 'rgba(255,255,255)'
+    // ctx.fillStyle = 'rgba(30,30,30)'
+    // roundRect(ctx, 570, 30, 380, 89, 17, true, true)
+
+    // ctx.fillStyle = 'rgba(60,60,60)'
+    // roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
+
+    // drawGrid(ctx, 570, 130 , 380, 500, 4)
+
+    // let image = this.getImageByName('eye')
+    // ctx.drawImage(image, 570, 30)
 
     this.needsRender = false
   }
   render () {
+
+
     let canvas = this.canvas
     let ctx = this.context
 
-    // this.context.fillStyle = 'white'
-    // this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
+    console.log("render")
 
-    this.objects = {
-      'create-object': {
-        id: 'create-object',
-        type: 'button',
-        x: 15,
-        y: 285,
-        width: 420,
-        height: 40,
+    const getCharacterHeightSlider = sceneObject => {
+      let step = 0.05
+      let min = steps(1.4732, step)
+      let max = steps(2.1336, step)
 
-        getLabel: () => 'Add Object',
+      let characterHeight = THREE.Math.mapLinear(sceneObject.height, min, max, 0, 1)
 
-        onSelect: () => {
-          let id = THREE.Math.generateUUID()
+      let setCharacterHeight = n => {
+        let height = THREE.Math.mapLinear(n, 0, 1, min, max)
+        height = steps(height, step)
 
-          console.log('creating an object in room', this.getRoom())
-
-          // undoGroupStart()
-          this.dispatch(
-            // TODO make a fake camera Object3D
-            //      with the camera + teleport pos integrated
-            SceneObjectCreators.createModelObject(id, this.camera, this.getRoom())
+        this.dispatch(
+          updateObject(
+            sceneObject.id,
+            { height }
           )
-          // selectObject(id)
-          // undoGroupEnd()
-        }
+        )
+      }
+
+      return {
+        state: characterHeight,
+        getLabel: () => `height ${sceneObject.height}`,
+        onDrag: (x, y) => setCharacterHeight(x),
+        onDrop: (x, y) => setCharacterHeight(x)
       }
     }
 
-    this.objects = {
-      ...this.objects,
-      'test-toggle-modes': {
-        id: 'test-toggle-modes',
-        type: 'button',
-        x: 15,
-        y: 500,
-        width: 420,
-        height: 40,
-
-        getLabel: () => `Toggle Mode`,
-
-        onSelect: () => {
-          if (this.state.mode == 'idle') {
-            this.send('SELECT_OBJECT')
-          } else {
-            this.send('DESELECT_OBJECT')
-          }
-        }
-      }
-    }
-
-    if (this.state.selections.length) {
+    console.log(this.state.mode)
+    if (this.state.mode == 'properties') {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
 
-      this.objects = {
-        ...this.objects,
-        'delete-selected-object': {
-          id: 'delete-selected-object',
-          type: 'button',
-          x: 15,
-          y: 195 + 10,
+      this.paneComponents['properties'] = {
+        'character-height': {
+          id: 'character-height',
+          type: 'slider',
+          x: 570,
+          y: 30,
           width: 420,
           height: 40,
-
-          getLabel: () => 'Delete Object',
-
-          onSelect: () => {
-            // undoGroupStart()
-            // console.log(deleteObjects([sceneObject.id]))
-            this.dispatch(deleteObjects([sceneObject.id]))
-            this.dispatch(selectObject(null))
-            // selectObject(id)
-            // undoGroupEnd()
-          }
+          ...getCharacterHeightSlider(sceneObject)
         }
+
       }
 
-      if (sceneObject.type == 'character') {
-        this.objects = {
-          ...this.objects,
-          ...this.getObjectsForCharacter(sceneObject)
-        }
-      }
-
-      ctx.save()
-
-      // name
-      ctx.save()
-      let string = `${sceneObject.name || sceneObject.displayName}`
-      ctx.font = '40px Arial'
-      ctx.textBaseline = 'top'
-      ctx.fillStyle = 'black'
-      ctx.translate(15, 20)
-      ctx.fillText(string, 0, 0)
-      ctx.restore()
-
-      // spacer
-      ctx.translate(0, 60)
-
-      //
-      ctx.save()
-      ctx.font = '30px Arial'
-      ctx.textBaseline = 'top'
-      ctx.fillStyle = 'black'
-      ctx.translate(15, 20)
-      sceneObject.rotation.y
-        ? ctx.fillText('rotation:' + (sceneObject.rotation.y * THREE.Math.RAD2DEG).toFixed(4) + '°', 0, 0)
-        : ctx.fillText('rotation:' + (sceneObject.rotation * THREE.Math.RAD2DEG).toFixed(4) + '°', 0, 0)
-      ctx.restore()
-
-      // spacer
-      ctx.translate(0, 60)
-
-      ctx.restore()
+      this.renderObjects(ctx, this.paneComponents['properties'])
     }
 
+
+    /*
+
+    if mode == properties
+      clear paneCompenets['properties']
+      set them
+      render properties
+
+    */
+
+    // // this.context.fillStyle = 'white'
+    // // this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
+
+    // this.objects = {
+    //   'create-object': {
+    //     id: 'create-object',
+    //     type: 'button',
+    //     x: 15,
+    //     y: 285,
+    //     width: 420,
+    //     height: 40,
+
+    //     getLabel: () => 'Add Object',
+
+    //     onSelect: () => {
+    //       let id = THREE.Math.generateUUID()
+    //       // undoGroupStart()
+    //       //this.dispatch(
+    //         console.log("CREATE OBJECT")
+    //         // TODO make a fake camera Object3D
+    //         //      with the camera + teleport pos integrated
+    //         //SceneObjectCreators.createModelObject(id, this.camera, this.getRoom())
+    //       //)
+    //       // selectObject(id)
+    //       // undoGroupEnd()
+    //     }
+    //   }
+    // }
+
+    // this.objects = {
+    //   ...this.objects,
+    //   'test-toggle-modes': {
+    //     id: 'test-toggle-modes',
+    //     type: 'button',
+    //     x: 15,
+    //     y: 500,
+    //     width: 420,
+    //     height: 40,
+
+    //     getLabel: () => `Toggle Mode`,
+
+    //     onSelect: () => {
+    //       if (this.state.mode == 'idle') {
+    //         this.send('SELECT_OBJECT')
+    //       } else {
+    //         this.send('DESELECT_OBJECT')
+    //       }
+    //     }
+    //   }
+    // }
+
+    // if (this.state.selections.length) {
+    //   let id = this.state.selections[0]
+    //   let sceneObject = this.state.sceneObjects[id]
+
+    //   this.objects = {
+    //     ...this.objects,
+    //     'delete-selected-object': {
+    //       id: 'delete-selected-object',
+    //       type: 'button',
+    //       x: 15,
+    //       y: 195 + 10,
+    //       width: 420,
+    //       height: 40,
+
+    //       getLabel: () => 'Delete Object',
+
+    //       onSelect: () => {
+    //         // undoGroupStart()
+    //         // console.log(deleteObjects([sceneObject.id]))
+    //         this.dispatch(deleteObjects([sceneObject.id]))
+    //         this.dispatch(selectObject(null))
+    //         // selectObject(id)
+    //         // undoGroupEnd()
+    //       }
+    //     }
+    //   }
+
+    //   if (sceneObject.type == 'character') {
+    //     this.objects = {
+    //       ...this.objects,
+    //       ...this.getObjectsForCharacter(sceneObject)
+    //     }
+    //   }
+
+    //   ctx.save()
+
+    //   // name
+    //   ctx.save()
+    //   let string = `${sceneObject.name || sceneObject.displayName}`
+    //   ctx.font = '40px Arial'
+    //   ctx.textBaseline = 'top'
+    //   ctx.fillStyle = 'black'
+    //   ctx.translate(15, 20)
+    //   ctx.fillText(string, 0, 0)
+    //   ctx.restore()
+
+    //   // spacer
+    //   ctx.translate(0, 60)
+
+    //   //
+    //   ctx.save()
+    //   ctx.font = '30px Arial'
+    //   ctx.textBaseline = 'top'
+    //   ctx.fillStyle = 'black'
+    //   ctx.translate(15, 20)
+    //   sceneObject.rotation.y
+    //     ? ctx.fillText('rotation:' + (sceneObject.rotation.y * THREE.Math.RAD2DEG).toFixed(4) + '°', 0, 0)
+    //     : ctx.fillText('rotation:' + (sceneObject.rotation * THREE.Math.RAD2DEG).toFixed(4) + '°', 0, 0)
+    //   ctx.restore()
+
+    //   // spacer
+    //   ctx.translate(0, 60)
+
+    //   ctx.restore()
+    // }
+
     // objects
-    this.renderObjects(ctx, this.objects)
+
   }
 
   renderObjects (ctx, objects) {
+    // TODO: render only what is dirty
     for (let object of Object.values(objects)) {
       let { type, x, y, width, height, ...props } = object
 
@@ -414,147 +515,104 @@ class CanvasRenderer {
     }
   }
 
-  getObjectsForCharacter (sceneObject) {
-    // const getCharacterRotationSlider = sceneObject => {
-    //   let characterRotation = mappers.fromRotation(sceneObject.rotation)
+  // getObjectsForCharacter (sceneObject) {
+  //   // const getCharacterRotationSlider = sceneObject => {
+  //   //   let characterRotation = mappers.fromRotation(sceneObject.rotation)
 
-    //   // TODO when dragging, set to a function which modifies local THREE object
-    //   //      when dropping, set to a function which dispatches to store
-    //   let setCharacterRotation = value => {
-    //     let rotation = mappers.toRotation(THREE.Math.clamp(value, 0, 1))
-    //     rotation = steps(rotation, THREE.Math.DEG2RAD)
+  //   //   // TODO when dragging, set to a function which modifies local THREE object
+  //   //   //      when dropping, set to a function which dispatches to store
+  //   //   let setCharacterRotation = value => {
+  //   //     let rotation = mappers.toRotation(THREE.Math.clamp(value, 0, 1))
+  //   //     rotation = steps(rotation, THREE.Math.DEG2RAD)
 
-    //     this.dispatch(
-    //       updateObject(
-    //         sceneObject.id,
-    //         { rotation }
-    //       )
-    //     )
-    //   }
+  //   //     this.dispatch(
+  //   //       updateObject(
+  //   //         sceneObject.id,
+  //   //         { rotation }
+  //   //       )
+  //   //     )
+  //   //   }
 
-    //   let getLabel = value => 'rotation:' + mappers.toRotation(value).toFixed(3) + ' rad'
+  //   //   let getLabel = value => 'rotation:' + mappers.toRotation(value).toFixed(3) + ' rad'
 
-    //   let onDrag = (x, y) => setCharacterRotation(x)
+  //   //   let onDrag = (x, y) => setCharacterRotation(x)
 
-    //   let onDrop = onDrag
+  //   //   let onDrop = onDrag
 
-    //   return {
-    //     state: characterRotation,
-    //     getLabel,
-    //     onDrag,
-    //     onDrop
-    //   }
-    // }
+  //   //   return {
+  //   //     state: characterRotation,
+  //   //     getLabel,
+  //   //     onDrag,
+  //   //     onDrop
+  //   //   }
+  //   // }
 
-    const getCharacterHeightSlider = sceneObject => {
-      let step = 0.05
-      let min = steps(1.4732, step)
-      let max = steps(2.1336, step)
 
-      let characterHeight = THREE.Math.mapLinear(sceneObject.height, min, max, 0, 1)
 
-      let setCharacterHeight = n => {
-        let height = THREE.Math.mapLinear(n, 0, 1, min, max)
-        height = steps(height, step)
+  //   // TODO for each valid morph target, add a slider
 
-        this.dispatch(
-          updateObject(
-            sceneObject.id,
-            { height }
-          )
-        )
+  //   return {
+  //     'character-height': {
+  //       id: 'character-height',
+  //       type: 'slider',
+  //       x: 15,
+  //       y: 145,
+  //       width: 420,
+  //       height: 40,
+
+  //       ...getCharacterHeightSlider(sceneObject)
+  //     },
+
+  //     // 'character-rotation': {
+  //     //   id: 'character-rotation',
+  //     //   type: 'slider',
+  //     //   x: 15,
+  //     //   y: 195 + 60,
+  //     //   width: 420,
+  //     //   height: 40,
+  //     //   ...getCharacterRotationSlider(sceneObject)
+  //     // }
+  //   }
+  // }
+
+  getComponentById (id) {
+    for (let paneId in this.paneComponents) {
+      for (let componentId in this.paneComponents[paneId]) {
+        if (componentId == id) return this.paneComponents[paneId][componentId]
       }
-
-      return {
-        state: characterHeight,
-        getLabel: () => `height ${sceneObject.height}`,
-        onDrag: (x, y) => setCharacterHeight(x),
-        onDrop: (x, y) => setCharacterHeight(x)
-      }
-    }
-
-    // TODO for each valid morph target, add a slider
-
-    return {
-      'character-height': {
-        id: 'character-height',
-        type: 'slider',
-        x: 15,
-        y: 145,
-        width: 420,
-        height: 40,
-
-        ...getCharacterHeightSlider(sceneObject)
-      },
-
-      // 'character-rotation': {
-      //   id: 'character-rotation',
-      //   type: 'slider',
-      //   x: 15,
-      //   y: 195 + 60,
-      //   width: 420,
-      //   height: 40,
-      //   ...getCharacterRotationSlider(sceneObject)
-      // }
     }
   }
 
   onSelect (id) {
-    let object = this.objects[id]
-    if (object && object.onSelect) {
-      object.onSelect()
+    let component = this.getComponentById(id)
+    if (component && component.onSelect) {
+      component.onSelect()
     }
-
-    // if (id == '1') {
-    //   let id = this.state.selections[0]
-    //   let sceneObject = this.state.sceneObjects[id]
-
-    //   let tau = Math.PI * 2
-
-    //   let ry = sceneObject.rotation.y
-    //     ? sceneObject.rotation.y
-    //     : sceneObject.rotation
-
-    //   let a = 45 * THREE.Math.DEG2RAD
-
-    //   ry += a
-
-    //   ry = ry % tau
-
-    //   this.dispatch(
-    //     updateObject(
-    //       this.state.selections[0],
-    //       sceneObject.rotation.y
-    //         ? { rotation: { ...sceneObject.rotation, y: ry } }
-    //         : { rotation: ry }
-    //     )
-    //   )
-    // }
   }
 
   onDrag (id, u, v) {
-    let object = this.objects[id]
-    if (object && object.onDrag) {
+    let component = this.getComponentById(id)
+    if (component && component.onDrag) {
       let x = u * this.canvas.width
       let y = v * this.canvas.height
-      x -= object.x
-      y -= object.y
-      x = x / object.width
-      y = y / object.height
-      object.onDrag(x, y)
+      x -= component.x
+      y -= component.y
+      x = x / component.width
+      y = y / component.height
+      component.onDrag(x, y)
     }
   }
 
   onDrop(id, u, v) {
-    let object = this.objects[id]
-    if (object && object.onDrop) {
+    let component = this.getComponentById(id)
+    if (component && component.onDrop) {
       let x = u * this.canvas.width
       let y = v * this.canvas.height
-      x -= object.x
-      y -= object.y
-      x = x / object.width
-      y = y / object.height
-      object.onDrop(x, y)
+      x -= component.x
+      y -= component.y
+      x = x / component.width
+      y = y / component.height
+      component.onDrop(x, y)
     }
   }
 
@@ -572,21 +630,33 @@ class CanvasRenderer {
   //   this.needsRender = true
   // }
 
+  /*
+  objects = {
+    'home' = {
+      'add-button' = {ksajdka sdajks djk },
+      'delete-button' = {ksajdka sdajks djk },
+
+    }
+  }
+  */
+
   getCanvasIntersection (u, v) {
     let x = u * this.canvas.width
     let y = v * this.canvas.height
 
-    for (let object of Object.values(this.objects)) {
-      let { id, type } = object
-      if (
-        x > object.x && x < object.x + object.width &&
-        y > object.y && y < object.y + object.height
-      ) {
-      // TODO include local x,y? and u,v?
-        return { id, type }
+    for (let paneId in this.paneComponents) {
+      for (let componentId in this.paneComponents[paneId]) {
+        let component = this.paneComponents[paneId][componentId]
+        let { id, type } = component
+        if (
+          x > component.x && x < component.x + component.width &&
+          y > component.y && y < component.y + component.height
+        ) {
+        // TODO include local x,y? and u,v?
+          return { id, type }
+        }
       }
     }
-
     return null
   }
 }
@@ -702,6 +772,7 @@ const useUiManager = () => {
         canvasRendererRef.current.state.selections = getSelections(store.getState())
         canvasRendererRef.current.state.sceneObjects = getSceneObjects(store.getState())
         canvasRendererRef.current.needsRender = true
+        if (canvasRendererRef.current.state.selections.length) uiService.send('GO_PROPERTIES')
       }
       store.subscribe(update)
       update()

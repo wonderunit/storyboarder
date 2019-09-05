@@ -9,16 +9,32 @@ const machine = Machine({
   context: {},
   states: {
     controls: {
-      initial: 'idle',
+      initial: 'home',
       states: {
-        idle: {
+        home: {
           on: {
-            'SELECT_OBJECT': 'selected'
+            'GO_ADD': 'add',
+            'TOGGLE_SETTINGS': 'settings',
+            'GO_PROPERTIES': 'properties'
           }
         },
-        selected: {
+        add: {
           on: {
-            'DESELECT_OBJECT': 'idle'
+            'GO_HOME': 'home',
+            'TOGGLE_SETTINGS': 'settings'
+          }
+        },
+        settings: {
+          on: {
+            'GO_HOME': 'home',
+            'GO_ADD': 'add',
+            'TOGGLE_SETTINGS': 'home',
+
+          }
+        },
+        properties: {
+          on: {
+            'GO_ADD': 'add'
           }
         }
       }
