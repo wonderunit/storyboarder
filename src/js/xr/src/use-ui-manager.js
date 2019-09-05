@@ -305,55 +305,17 @@ function setupAddPane (paneComponents) {
 
 const lenses = {}
 
-lenses.headScale = {}
-lenses.headScale.property = R.lensPath(['headScale'])
-lenses.headScale.value = R.lens(
+lenses.headScale = R.lens(
   vin => clamp(mapLinear(vin, 0.8, 1.2, 0, 1), 0, 1),
   vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.8, 1.2), 0.8, 1.2)
 )
-lenses.headScale.label = R.lens(
-  state => 'head scale: ' + Math.round(state.headScale * 100) + '%',
-  R.identity
-)
-lenses.headScale.dispatch = R.lens(
-  R.identity,
-  (value, sceneObject) => updateObject(
-    sceneObject.id,
-    {
-      headScale: R.set(lenses.headScale.value, value, sceneObject)
-    }
+
+for (let morphTargetName of ['ectomorphic', 'mesomorphic', 'endomorphic']) {
+  lenses[morphTargetName] = R.lens(
+    vin => clamp(vin, 0, 1),
+    vout => clamp(steps(vout, 0.1), 0, 1)
   )
-)
-
-;(['ectomorphic', 'mesomorphic', 'endomorphic']).forEach(morphTargetName => {
-  let propertyLens = R.lensPath(['morphTargets', morphTargetName])
-
-  let valueLens = R.lens(
-    R.identity,
-    value => THREE.Math.clamp(steps(value, 0.1), 0, 1)
-  )
-
-  let labelLens = R.lens(
-    state => morphTargetName + ' : ' + Math.round(R.view(propertyLens, state) * 100) + '%',
-    R.identity
-  )
-
-  let dispatchLens = R.lens(
-    R.identity,
-    (value, sceneObject) => updateObject(
-      sceneObject.id,
-      {
-        morphTargets: {
-          [morphTargetName]: R.set(valueLens, value, sceneObject)
-        }
-      }
-    )
-  )
-
-  lenses[morphTargetName] = {
-    value: valueLens, label: labelLens, property: propertyLens, dispatch: dispatchLens
-  }
-})
+}
 
 class CanvasRenderer {
   constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath) {
@@ -481,32 +443,65 @@ class CanvasRenderer {
         width: 420,
         height: 40,
 
-        label: R.view(lenses.headScale.label, sceneObject),
-        state: R.view(lenses.headScale.value, R.view(lenses.headScale.property, sceneObject)),
-        onDrag: value => this.dispatch(R.set(lenses.headScale.dispatch, value, sceneObject)),
-        onDrop: value => this.dispatch(R.set(lenses.headScale.dispatch, value, sceneObject))
+        label: 'head scale: ' + Math.round(sceneObject.headScale * 100) + '%',
+
+        state: R.view(lenses.headScale, sceneObject.headScale),
+
+        onDrag: value => this.dispatch(
+          updateObject(
+            sceneObject.id,
+            { headScale: R.set(lenses.headScale, value, sceneObject.headScale) }
+          )
+        ),
+        onDrop: value => this.dispatch(
+          updateObject(
+            sceneObject.id,
+            { headScale: R.set(lenses.headScale, value, sceneObject.headScale) }
+          )
+        )
       }
 
       if (modelSettings.validMorphTargets) {
-        this.paneComponents['properties'] = modelSettings.validMorphTargets.reduce(
-          (coll, morphTargetName, n) => {
-            coll[`character-${morphTargetName}`] = {
-              id: `character-${morphTargetName}`,
-              type: 'slider',
-              x: 570,
-              y: 200 + (n * 50),
-              width: 420,
-              height: 40,
+        modelSettings.validMorphTargets.forEach((morphTargetName, n) => {
 
-              label: R.view(lenses[morphTargetName].label, sceneObject),
-              state: R.view(lenses[morphTargetName].property, sceneObject),
-              onDrag: value => this.dispatch(R.set(lenses[morphTargetName].dispatch, value, sceneObject)),
-              onDrop: value => this.dispatch(R.set(lenses[morphTargetName].dispatch, value, sceneObject))
+          this.paneComponents['properties'][`character-${morphTargetName}`] = {
+            id: `character-${morphTargetName}`,
+            type: 'slider',
+            x: 570,
+            y: 200 + (n * 50),
+            width: 420,
+            height: 40,
+
+            label: morphTargetName + ' : ' + Math.round(sceneObject.morphTargets[morphTargetName] * 100) + '%',
+
+            state: R.view(lenses[morphTargetName], sceneObject.morphTargets[morphTargetName]),
+
+            onDrag: value => {
+              this.dispatch(
+                updateObject(
+                  sceneObject.id,
+                  {
+                    morphTargets: {
+                      [morphTargetName]: R.set(lenses[morphTargetName], value, sceneObject.morphTargets[morphTargetName])
+                    }
+                  }
+                )
+              )
+            },
+            onDrop: value => {
+              this.dispatch(
+                updateObject(
+                  sceneObject.id,
+                  {
+                    morphTargets: {
+                      [morphTargetName]: R.set(lenses[morphTargetName], value, sceneObject.morphTargets[morphTargetName])
+                    }
+                  }
+                )
+              )
             }
-            return coll
-          },
-          this.paneComponents['properties']
-        )
+          }
+        })
       }
 
       this.renderObjects(ctx, this.paneComponents['properties'])
