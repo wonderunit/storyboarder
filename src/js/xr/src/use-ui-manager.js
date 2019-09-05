@@ -779,18 +779,13 @@ const useUiManager = () => {
     getCanvasRenderer().state.selections = selections
     getCanvasRenderer().state.sceneObjects = sceneObjects
     getCanvasRenderer().needsRender = true
-  }, [selections, sceneObjects])
-
-  useMemo(() => {
-    if (!uiService.initialized) return
 
     if (selections.length) {
-      uiService.send('GO_PROPERTIES')
+      uiSend('GO_PROPERTIES')
     } else {
-      uiService.send('GO_HOME')
+      uiSend('GO_HOME')
     }
-  }, [uiService.initialized, selections])
-
+  }, [selections, sceneObjects])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
