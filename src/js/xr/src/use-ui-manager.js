@@ -772,7 +772,11 @@ const useUiManager = () => {
         canvasRendererRef.current.state.selections = getSelections(store.getState())
         canvasRendererRef.current.state.sceneObjects = getSceneObjects(store.getState())
         canvasRendererRef.current.needsRender = true
-        if (canvasRendererRef.current.state.selections.length) uiService.send('GO_PROPERTIES')
+        if (canvasRendererRef.current.state.selections.length) {
+          uiService.send('GO_PROPERTIES')
+        } else {
+          uiService.send('GO_HOME')
+        }
       }
       store.subscribe(update)
       update()
