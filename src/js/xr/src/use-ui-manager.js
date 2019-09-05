@@ -10,6 +10,24 @@ const useImageBitmapLoader = require('./hooks/use-imagebitmap-loader')
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
+function drawImageButton ({ ctx, width, height, image }) {
+  console.log(image)
+  ctx.save()
+
+  //let image = this.getImageByName('eye')
+  let imaged = THREE.Cache.get(getImageFilenameByName(image))
+  ctx.drawImage(imaged, 0, 0)
+
+  // ctx.fillStyle = '#eee'
+  // ctx.fillRect(0, 0, width, height)
+  // ctx.translate(width / 2, height / 2)
+  // ctx.font = '20px Arial'
+  // ctx.textAlign = 'center'
+  // ctx.textBaseline = 'middle'
+  // ctx.fillStyle = 'black'
+  ctx.restore()
+}
+
 function drawButton ({ ctx, width, height, state, getLabel }) {
   ctx.save()
   ctx.fillStyle = '#eee'
@@ -22,6 +40,7 @@ function drawButton ({ ctx, width, height, state, getLabel }) {
   ctx.fillText(getLabel(state), 0, 0)
   ctx.restore()
 }
+
 
 function drawSlider ({ ctx, width, height, state, getLabel }) {
   ctx.save()
@@ -189,20 +208,70 @@ function drawPaneBGs(ctx) {
 function setupHomePane (paneComponents, self) {
   // 4 image buttons
   paneComponents['home'] = {
-    'add-button': {
-      id: 'add-button',
-      type: 'button',
+    'select-button': {
+      id: 'select-button',
+      type: 'image-button',
       x: 667+8,
       y: 684+7,
       width: 89,
       height: 89,
-
-      getLabel: () => 'Add Button',
-
+      image: 'selection',
+      onSelect: () => {
+        self.send('GO_HOME')
+      }
+    },
+    'add-button': {
+      id: 'add-button',
+      type: 'image-button',
+      x: 667+8,
+      y: 684+7+88+7,
+      width: 89,
+      height: 89,
+      image: 'add',
       onSelect: () => {
         self.send('GO_ADD')
       }
+    },
+    'duplicate-button': {
+      id: 'duplicate-button',
+      type: 'image-button',
+      x: 667+8+89+7,
+      y: 684+7,
+      width: 89,
+      height: 89,
+      image: 'duplicate',
+      onSelect: () => {
+        console.log('duplicate')
+      }
+    },
+    'delete-button': {
+      id: 'delete-button',
+      type: 'image-button',
+      x: 667+8+89+7,
+      y: 684+7+88+7,
+      width: 89,
+      height: 89,
+      image: 'erase',
+      onSelect: () => {
+        console.log('delete')
+      }
+    },
+    'settings-button': {
+      id: 'settings-button',
+      type: 'image-button',
+      x: 909,
+      y: 684,
+      width: 88,
+      height: 88,
+      image: 'help',
+
+      onSelect: () => {
+        self.send('TOGGLE_SETTINGS')
+        console.log('sup')
+      }
     }
+
+
   }
 }
 
@@ -485,7 +554,7 @@ class CanvasRenderer {
   renderObjects (ctx, objects) {
     // TODO: render only what is dirty
     for (let object of Object.values(objects)) {
-      let { type, x, y, width, height, ...props } = object
+      let { type, x, y, width, height, image, ...props } = object
 
       if (object.type === 'button') {
         ctx.save()
@@ -494,6 +563,20 @@ class CanvasRenderer {
           ctx,
           width,
           height,
+
+          ...props
+        })
+        ctx.restore()
+      }
+
+      if (object.type === 'image-button') {
+        ctx.save()
+        ctx.translate(x, y)
+        drawImageButton({
+          ctx,
+          width,
+          height,
+          image,
 
           ...props
         })
@@ -722,6 +805,10 @@ const useUiManager = () => {
             let { id } = canvasIntersection
 
             if (canvasIntersection.type == 'button') {
+              cr.onSelect(id)
+            }
+
+            if (canvasIntersection.type == 'image-button') {
               cr.onSelect(id)
             }
 

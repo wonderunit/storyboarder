@@ -71,8 +71,9 @@ const UITestContent = () => {
         </primitive>
 
         <group
-          position={[0.35, -0.15, 4.55]}
+          position={[0, 0, 4.30]}
           rotation={[0.8, 0, 0]}
+          scale={[2.4,2.4,2.4]}
         >
           <Suspense fallback={null}>
             <group

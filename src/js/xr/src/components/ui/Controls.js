@@ -5,9 +5,9 @@ const useGltf = require('../../hooks/use-gltf')
 
 const { log } = require('../../components/Log')
 
-const SCALE = 0.025
-const POSITION = [0.07, 0.05, 0.02]
-const ROTATION = [0.8, 0, 0]
+const SCALE = 1
+const POSITION = [0, 0.02, 0.01]
+const ROTATION = [-0.8, 0, 0]
 
 const Controls = React.memo(({ mode, getCanvasRenderer }) => {
   const ref = useRef()
