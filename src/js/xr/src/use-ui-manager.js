@@ -710,6 +710,7 @@ const useUiManager = () => {
   const [uiCurrent, uiSend, uiService] = useMachine(
     uiMachine,
     {
+      immediate: true,
       actions: {
         onTriggerStart (context, event) {
           let u = event.intersection.uv.x
