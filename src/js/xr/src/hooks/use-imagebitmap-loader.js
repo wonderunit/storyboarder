@@ -7,4 +7,7 @@ const resource = unstable_createResource(
 
 const useImageBitmapLoader = filepath => resource.read(filepath)
 
-module.exports = useImageBitmapLoader
+module.exports = {
+  useImageBitmapLoader,
+  imageBitmapLoaderResource: resource
+}

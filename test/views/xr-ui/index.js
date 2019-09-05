@@ -130,7 +130,9 @@ fetch('/xr.storyboarder')
   .then(response => response.json())
   .then(scene => {
     const store = configureStore({
-      presets: { poses: {} }
+      aspectRatio: scene.aspectRatio,
+      models: initialState.models,
+      presets: initialState.presets
     })
     store.dispatch({ type: 'LOAD_SCENE', payload: scene.boards[0].sg.data })
     store.dispatch({ type: 'SELECT_OBJECT', payload: '26332F12-28FE-444C-B73F-B3F90B8C62A2' })

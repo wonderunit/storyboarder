@@ -6,7 +6,7 @@ const { useMachine } = require('@xstate/react')
 
 const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
-const useImageBitmapLoader = require('./hooks/use-imagebitmap-loader')
+const { useImageBitmapLoader, imageBitmapLoaderResource } = require('./hooks/use-imagebitmap-loader')
 
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
@@ -234,7 +234,7 @@ function setupAddPane (paneComponents) {
 }
 
 class CanvasRenderer {
-  constructor(size, dispatch, service, send, camera, getRoom, getImageByName) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -242,7 +242,7 @@ class CanvasRenderer {
     this.dispatch = dispatch
     this.service = service
     this.send = send
-    this.getImageByName = getImageByName
+    this.getImageByFilepath = getImageByFilepath
 
     this.state = {
       selections: [],
@@ -290,9 +290,6 @@ class CanvasRenderer {
     // roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
 
     // drawGrid(ctx, 570, 130 , 380, 500, 4)
-
-    // let image = this.getImageByName('eye')
-    // ctx.drawImage(image, 570, 30)
 
     this.needsRender = false
   }
@@ -350,6 +347,12 @@ class CanvasRenderer {
       }
 
       this.renderObjects(ctx, this.paneComponents['properties'])
+
+      // FOR TESTING: draw some images
+      ctx.drawImage(this.getImageByFilepath(getIconFilepathByName('eye')), 570, 130)
+      ctx.drawImage(this.getImageByFilepath(getPoseImageFilepathById('8af56a03-2078-402a-9407-33cfecfcf460')), 770, 130)
+      ctx.drawImage(this.getImageByFilepath(getCharacterImageFilepathById('adult-female')), 570, 430)
+      ctx.drawImage(this.getImageByFilepath(getModelImageFilepathById('box')), 770, 430)
     }
 
 
@@ -670,42 +673,89 @@ const {
   deleteObjects
 } = require('../../shared/reducers/shot-generator')
 
-const getImageFilepathByName = name => `/data/system/xr/${name}.png`
+// via PosePresetsEditor.js
+const comparePresetNames = (a, b) => {
+  var nameA = a.name.toUpperCase()
+  var nameB = b.name.toUpperCase()
+
+  if (nameA < nameB) {
+    return -1
+  }
+  if (nameA > nameB) {
+    return 1
+  }
+  return 0
+}
+const comparePresetPriority = (a, b) => b.priority - a.priority
+
+const getIconFilepathByName = name => `/data/system/xr/${name}.png`
+const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
+const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
+const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
 const useUiManager = () => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
 
-  // preload images to cache
-  useImageBitmapLoader(getImageFilepathByName('selection'))
-  useImageBitmapLoader(getImageFilepathByName('duplicate'))
-  useImageBitmapLoader(getImageFilepathByName('add'))
-  useImageBitmapLoader(getImageFilepathByName('erase'))
-  useImageBitmapLoader(getImageFilepathByName('arrow'))
-  useImageBitmapLoader(getImageFilepathByName('hand'))
-  useImageBitmapLoader(getImageFilepathByName('help'))
-  useImageBitmapLoader(getImageFilepathByName('close'))
+  // preload icons to THREE.Cache via react-cache
+  useMemo(() => {
+    [
+      'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
+      'close',
 
-  useImageBitmapLoader(getImageFilepathByName('camera'))
-  useImageBitmapLoader(getImageFilepathByName('eye'))
+      'camera', 'eye',
 
-  useImageBitmapLoader(getImageFilepathByName('icon-toolbar-camera'))
-  useImageBitmapLoader(getImageFilepathByName('icon-toolbar-object'))
-  useImageBitmapLoader(getImageFilepathByName('icon-toolbar-character'))
-  useImageBitmapLoader(getImageFilepathByName('icon-toolbar-light'))
+      'icon-toolbar-camera',
+      'icon-toolbar-object',
+      'icon-toolbar-character',
+      'icon-toolbar-light',
 
-  useImageBitmapLoader(getImageFilepathByName('pose'))
-  useImageBitmapLoader(getImageFilepathByName('object'))
+      'pose', 'object',
 
-  useImageBitmapLoader(getImageFilepathByName('help_1'))
-  useImageBitmapLoader(getImageFilepathByName('help_2'))
-  useImageBitmapLoader(getImageFilepathByName('help_3'))
-  useImageBitmapLoader(getImageFilepathByName('help_4'))
-  useImageBitmapLoader(getImageFilepathByName('help_5'))
-  useImageBitmapLoader(getImageFilepathByName('help_6'))
-  useImageBitmapLoader(getImageFilepathByName('help_7'))
-  useImageBitmapLoader(getImageFilepathByName('help_8'))
+      'help_1', 'help_2', 'help_3', 'help_4', 'help_5', 'help_6', 'help_7',
+      'help_8'
+    ].map(getIconFilepathByName)
+      .map(imageBitmapLoaderResource.read)
+  }, [])
+
+  // for now, preload pose, character, and model images to THREE.Cache via react-cache
+  const presets = useSelector(state => state.presets)
+  const models = useSelector(state => state.models)
+
+  const poses = useMemo(() =>
+    Object.values(presets.poses)
+      .sort(comparePresetNames)
+      .sort(comparePresetPriority)
+  , [presets.poses])
+
+  const [characterModels, objectModels] = useMemo(() =>
+    [
+      Object.values(models)
+        .filter(model => model.type === 'character'),
+      Object.values(models)
+        .filter(model => model.type === 'object')
+    ]
+  , [models])
+
+  useMemo(() => {
+    poses
+      .map(model => model.id)
+      .map(getPoseImageFilepathById)
+      .map(imageBitmapLoaderResource.read)
+
+    characterModels
+      .map(model => model.id)
+      .map(getCharacterImageFilepathById)
+      .map(imageBitmapLoaderResource.read)
+
+    objectModels
+      .map(model => model.id)
+      .map(getModelImageFilepathById)
+      .map(imageBitmapLoaderResource.read)
+
+      console.log(poses[0].id, characterModels[0].id, objectModels[0].id)
+  }, [])
 
   const [uiCurrent, uiSend, uiService] = useMachine(
     uiMachine,
@@ -757,7 +807,7 @@ const useUiManager = () => {
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
       const getRoom = () => scene.getObjectByName('room')
-      const getImageByName = name => THREE.Cache.get(getImageFilepathByName(name))
+      const getImageByFilepath = filepath => THREE.Cache.get(filepath)
 
       canvasRendererRef.current = new CanvasRenderer(
         1024,
@@ -766,7 +816,7 @@ const useUiManager = () => {
         uiSend,
         camera,
         getRoom,
-        getImageByName
+        getImageByFilepath
       )
     }
     return canvasRendererRef.current
