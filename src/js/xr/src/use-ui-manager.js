@@ -313,6 +313,7 @@ class CanvasRenderer {
     this.state = {
       selections: [],
       sceneObjects: {},
+      poses: {},
       mode: 'home'
     }
 
@@ -419,8 +420,37 @@ class CanvasRenderer {
       // ctx.drawImage(this.getImageByFilepath(getPoseImageFilepathById('8af56a03-2078-402a-9407-33cfecfcf460')), 770, 130)
       // ctx.drawImage(this.getImageByFilepath(getCharacterImageFilepathById('adult-female')), 570, 430)
       // ctx.drawImage(this.getImageByFilepath(getModelImageFilepathById('box')), 770, 430)
-    }
 
+      // FOR TESTING: draw a loadable image
+      // let list = this.state.poses.slice(0, 6)
+      // list.forEach((pose, n) => {
+      //   let filepath = getPoseImageFilepathById(pose.id)
+
+      //   let r = n % 3
+      //   let c = Math.floor(n / 3)
+
+      //   let x = 570 + (r * 140)
+      //   let y = 130 + (c * 205)
+      //   this.drawLoadableImage(
+      //     filepath,
+
+      //     image => {
+      //       // loaded state
+      //       // object should allow selection
+      //       ctx.drawImage(image, x, y)
+      //     },
+
+      //     () => {
+      //       // loading state
+      //       // object should not allow selection
+      //       ctx.save()
+      //       ctx.fillStyle = '#222'
+      //       ctx.fillRect(x, y, 135, 200)
+      //       ctx.restore()
+      //     }
+      //   )
+      // })
+    }
 
     /*
 
@@ -550,6 +580,20 @@ class CanvasRenderer {
 
     // objects
 
+  }
+
+  drawLoadableImage (filepath, onSuccess, onFail) {
+    let image = THREE.Cache.get(filepath)
+    if (image) {
+      onSuccess(image)
+    } else {
+      new THREE.ImageBitmapLoader().load(filepath, this.requestRender.bind(this))
+      onFail()
+    }
+  }
+
+  requestRender () {
+    this.needsRender = true
   }
 
   renderObjects (ctx, objects) {
@@ -910,6 +954,7 @@ const useUiManager = () => {
   useMemo(() => {
     getCanvasRenderer().state.selections = selections
     getCanvasRenderer().state.sceneObjects = sceneObjects
+    getCanvasRenderer().state.poses = poses
     getCanvasRenderer().needsRender = true
 
     if (selections.length) {
@@ -917,7 +962,7 @@ const useUiManager = () => {
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects])
+  }, [selections, sceneObjects, poses])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
