@@ -818,22 +818,22 @@ const useUiManager = () => {
     ]
   , [models])
 
-  // useMemo(() => {
-  //   poses
-  //     .map(model => model.id)
-  //     .map(getPoseImageFilepathById)
-  //     .map(imageBitmapLoaderResource.read)
+  useMemo(() => {
+    // poses
+    //   .map(model => model.id)
+    //   .map(getPoseImageFilepathById)
+    //   .map(imageBitmapLoaderResource.read)
 
-  //   characterModels
-  //     .map(model => model.id)
-  //     .map(getCharacterImageFilepathById)
-  //     .map(imageBitmapLoaderResource.read)
+    characterModels
+      .map(model => model.id)
+      .map(getCharacterImageFilepathById)
+      .map(imageBitmapLoaderResource.read)
 
-  //   objectModels
-  //     .map(model => model.id)
-  //     .map(getModelImageFilepathById)
-  //     .map(imageBitmapLoaderResource.read)
-  // }, [])
+    objectModels
+      .map(model => model.id)
+      .map(getModelImageFilepathById)
+      .map(imageBitmapLoaderResource.read)
+  }, [])
 
   const [uiCurrent, uiSend, uiService] = useMachine(
     uiMachine,
