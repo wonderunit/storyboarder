@@ -14,6 +14,8 @@ const { useUiManager } = require('../../../src/js/xr/src/use-ui-manager')
 const { Log } = require('../../../src/js/xr/src/components/Log')
 const Controls = require('../../../src/js/xr/src/components/ui/Controls')
 
+const SimpleText = require('../../../src/js/xr/src/components/SimpleText')
+
 const UITestContent = () => {
   const { gl, camera, scene } = useThree()
 
@@ -100,6 +102,19 @@ const UITestContent = () => {
   )
 }
 
+const LoadingMessage = () => {
+  return <group>
+    <SimpleText
+      label={'Loading ...'}
+      position={[0, 0, 0]}
+      textProps={{
+        color: 0xaaaaaa,
+        scale: 10
+      }}
+    />
+  </group>
+}
+
 const UITest = () => {
   const store = useReduxStore()
 
@@ -111,7 +126,7 @@ const UITest = () => {
     <>
       <Canvas>
         <Provider store={store}>
-          <Suspense fallback={null}>
+          <Suspense fallback={<LoadingMessage />}>
             <UITestContent />
           </ Suspense>
         </Provider>
