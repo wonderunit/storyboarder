@@ -461,7 +461,7 @@ class CanvasRenderer {
         )
       }
 
-      if (modelSettings.validMorphTargets) {
+      if (modelSettings && modelSettings.validMorphTargets) {
         modelSettings.validMorphTargets.forEach((morphTargetName, n) => {
 
           this.paneComponents['properties'][`character-${morphTargetName}`] = {
