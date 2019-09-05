@@ -1,3 +1,5 @@
+const THREE = require('three')
+const { clamp, mapLinear } = require('three').Math
 const { useState, useMemo, useRef, useCallback } = React = require('react')
 const useReduxStore = require('react-redux').useStore
 const { useSelector } = require('react-redux')
@@ -302,6 +304,27 @@ function setupAddPane (paneComponents) {
 }
 
 const lenses = {}
+
+lenses.headScale = {}
+lenses.headScale.property = R.lensPath(['headScale'])
+lenses.headScale.value = R.lens(
+  vin => clamp(mapLinear(vin, 0.8, 1.2, 0, 1), 0, 1),
+  vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.8, 1.2), 0.8, 1.2)
+)
+lenses.headScale.label = R.lens(
+  state => 'head scale: ' + Math.round(state.headScale * 100) + '%',
+  R.identity
+)
+lenses.headScale.dispatch = R.lens(
+  R.identity,
+  (value, sceneObject) => updateObject(
+    sceneObject.id,
+    {
+      headScale: R.set(lenses.headScale.value, value, sceneObject)
+    }
+  )
+)
+
 ;(['ectomorphic', 'mesomorphic', 'endomorphic']).forEach(morphTargetName => {
   let propertyLens = R.lensPath(['morphTargets', morphTargetName])
 
@@ -449,6 +472,21 @@ class CanvasRenderer {
         }
       }
 
+      this.paneComponents['properties']['character-headScale'] = {
+        id: 'character-headScale',
+        type: 'slider',
+
+        x: 570,
+        y: 100,
+        width: 420,
+        height: 40,
+
+        label: R.view(lenses.headScale.label, sceneObject),
+        state: R.view(lenses.headScale.value, R.view(lenses.headScale.property, sceneObject)),
+        onDrag: value => this.dispatch(R.set(lenses.headScale.dispatch, value, sceneObject)),
+        onDrop: value => this.dispatch(R.set(lenses.headScale.dispatch, value, sceneObject))
+      }
+
       if (modelSettings.validMorphTargets) {
         this.paneComponents['properties'] = modelSettings.validMorphTargets.reduce(
           (coll, morphTargetName, n) => {
@@ -456,7 +494,7 @@ class CanvasRenderer {
               id: `character-${morphTargetName}`,
               type: 'slider',
               x: 570,
-              y: 100 + (n * 50),
+              y: 200 + (n * 50),
               width: 420,
               height: 40,
 
