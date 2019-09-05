@@ -8,6 +8,8 @@ const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
 const { useImageBitmapLoader, imageBitmapLoaderResource } = require('./hooks/use-imagebitmap-loader')
 
+const R = require('ramda')
+
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
@@ -414,7 +416,52 @@ class CanvasRenderer {
           height: 40,
           ...getCharacterHeightSlider(sceneObject)
         }
+      }
 
+      if (modelSettings.validMorphTargets) {
+        this.paneComponents['properties'] = modelSettings.validMorphTargets.reduce(
+          (coll, morphTargetName, n) => {
+            let propertyLens = R.lensPath(['morphTargets', morphTargetName])
+
+            let labelLens = R.lens(
+              state => morphTargetName + ' : ' + Math.round(R.view(propertyLens, state) * 100) + '%',
+              R.identity
+            )
+
+            let valueLens = R.lens(
+              state => state,
+              value => THREE.Math.clamp(steps(value, 0.1), 0, 1)
+            )
+
+            let dispatchLens = R.lens(
+              R.identity,
+              (value, sceneObject) => updateObject(
+                sceneObject.id,
+                {
+                  morphTargets: {
+                    [morphTargetName]: R.set(valueLens, value, sceneObject)
+                  }
+                }
+              )
+            )
+
+            coll[`character-${morphTargetName}`] = {
+              id: `character-${morphTargetName}`,
+              type: 'slider',
+              x: 570,
+              y: 100 + (n * 50),
+              width: 420,
+              height: 40,
+
+              label: R.view(labelLens, sceneObject),
+              state: R.view(propertyLens, sceneObject),
+              onDrag: value => this.dispatch(R.set(dispatchLens, value, sceneObject)),
+              onDrop: value => this.dispatch(R.set(dispatchLens, value, sceneObject))
+            }
+            return coll
+          },
+          this.paneComponents['properties']
+        )
       }
 
       this.renderObjects(ctx, this.paneComponents['properties'])
