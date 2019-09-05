@@ -14,4 +14,4 @@ cp src/data/shot-generator/objects/*.jpg test/views/xr-ui/dist/data/system/objec
 mkdir -p test/views/xr-ui/dist/data/system/dummies/gltf/
 cp src/data/shot-generator/dummies/gltf/*.jpg test/views/xr-ui/dist/data/system/dummies/gltf/
 
-npx parcel serve --no-source-maps test/views/xr-ui/index.html -d test/views/xr-ui/dist -p 9966
+npx parcel serve test/views/xr-ui/index.html -d test/views/xr-ui/dist -p 9966

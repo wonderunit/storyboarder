@@ -16,7 +16,7 @@
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
     "postinstall": "electron-builder install-app-deps",
-    "xr:watch": "parcel watch --no-source-maps src/js/xr/src/index.html -d src/js/xr/dist",
+    "xr:watch": "parcel watch src/js/xr/src/index.html -d src/js/xr/dist",
     "xr:clean": "trash src/js/xr/dist",
     "xr:build": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
