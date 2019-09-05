@@ -766,7 +766,6 @@ const useUiManager = () => {
         getRoom,
         getImageByName
       )
-      canvasRendererRef.current.render()
 
       const update = () => {
         canvasRendererRef.current.state.selections = getSelections(store.getState())
