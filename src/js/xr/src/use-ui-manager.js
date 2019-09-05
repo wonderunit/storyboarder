@@ -836,8 +836,6 @@ const useUiManager = () => {
       .map(model => model.id)
       .map(getModelImageFilepathById)
       .map(imageBitmapLoaderResource.read)
-
-      console.log(poses[0].id, characterModels[0].id, objectModels[0].id)
   }, [])
 
   const [uiCurrent, uiSend, uiService] = useMachine(
