@@ -301,6 +301,37 @@ function setupAddPane (paneComponents) {
   }
 }
 
+const lenses = {}
+;(['ectomorphic', 'mesomorphic', 'endomorphic']).forEach(morphTargetName => {
+  let propertyLens = R.lensPath(['morphTargets', morphTargetName])
+
+  let valueLens = R.lens(
+    R.identity,
+    value => THREE.Math.clamp(steps(value, 0.1), 0, 1)
+  )
+
+  let labelLens = R.lens(
+    state => morphTargetName + ' : ' + Math.round(R.view(propertyLens, state) * 100) + '%',
+    R.identity
+  )
+
+  let dispatchLens = R.lens(
+    R.identity,
+    (value, sceneObject) => updateObject(
+      sceneObject.id,
+      {
+        morphTargets: {
+          [morphTargetName]: R.set(valueLens, value, sceneObject)
+        }
+      }
+    )
+  )
+
+  lenses[morphTargetName] = {
+    value: valueLens, label: labelLens, property: propertyLens, dispatch: dispatchLens
+  }
+})
+
 class CanvasRenderer {
   constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath) {
     this.canvas = document.createElement('canvas')
@@ -421,30 +452,6 @@ class CanvasRenderer {
       if (modelSettings.validMorphTargets) {
         this.paneComponents['properties'] = modelSettings.validMorphTargets.reduce(
           (coll, morphTargetName, n) => {
-            let propertyLens = R.lensPath(['morphTargets', morphTargetName])
-
-            let labelLens = R.lens(
-              state => morphTargetName + ' : ' + Math.round(R.view(propertyLens, state) * 100) + '%',
-              R.identity
-            )
-
-            let valueLens = R.lens(
-              state => state,
-              value => THREE.Math.clamp(steps(value, 0.1), 0, 1)
-            )
-
-            let dispatchLens = R.lens(
-              R.identity,
-              (value, sceneObject) => updateObject(
-                sceneObject.id,
-                {
-                  morphTargets: {
-                    [morphTargetName]: R.set(valueLens, value, sceneObject)
-                  }
-                }
-              )
-            )
-
             coll[`character-${morphTargetName}`] = {
               id: `character-${morphTargetName}`,
               type: 'slider',
@@ -453,10 +460,10 @@ class CanvasRenderer {
               width: 420,
               height: 40,
 
-              label: R.view(labelLens, sceneObject),
-              state: R.view(propertyLens, sceneObject),
-              onDrag: value => this.dispatch(R.set(dispatchLens, value, sceneObject)),
-              onDrop: value => this.dispatch(R.set(dispatchLens, value, sceneObject))
+              label: R.view(lenses[morphTargetName].label, sceneObject),
+              state: R.view(lenses[morphTargetName].property, sceneObject),
+              onDrag: value => this.dispatch(R.set(lenses[morphTargetName].dispatch, value, sceneObject)),
+              onDrop: value => this.dispatch(R.set(lenses[morphTargetName].dispatch, value, sceneObject))
             }
             return coll
           },
