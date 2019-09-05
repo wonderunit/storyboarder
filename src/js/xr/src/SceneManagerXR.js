@@ -22,6 +22,7 @@ const {
 
 const useRStats = require('./hooks/use-rstats')
 const useGltf = require('./hooks/use-gltf')
+const useTextureLoader = require('./hooks/use-texture-loader')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
 const { useUiManager } = require('./use-ui-manager')
@@ -112,12 +113,8 @@ const SceneContent = connect(
       scene.fog = new THREE.Fog( 0x000000, -10, 40 )
     }, [])
 
-    const teleportTexture = useMemo(
-      () => new THREE.TextureLoader().load('/data/system/xr/teleport.png'), []
-    )
-    const groundTexture = useMemo(
-      () => new THREE.TextureLoader().load('/data/system/grid_floor_1.png'), []
-    )
+    const teleportTexture = useTextureLoader('/data/system/xr/teleport.png')
+    const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
 
     const rStats = useRStats()
 
