@@ -26,7 +26,7 @@ function drawImageButton ({ ctx, width, height, image }) {
   ctx.restore()
 }
 
-function drawButton ({ ctx, width, height, state, getLabel }) {
+function drawButton ({ ctx, width, height, state, label }) {
   ctx.save()
   ctx.fillStyle = '#eee'
   ctx.fillRect(0, 0, width, height)
@@ -35,12 +35,12 @@ function drawButton ({ ctx, width, height, state, getLabel }) {
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = 'black'
-  ctx.fillText(getLabel(state), 0, 0)
+  ctx.fillText(label, 0, 0)
   ctx.restore()
 }
 
 
-function drawSlider ({ ctx, width, height, state, getLabel }) {
+function drawSlider ({ ctx, width, height, state, label }) {
   ctx.save()
   ctx.fillStyle = '#aaa'
   ctx.fillRect(0, 0, width, height)
@@ -60,7 +60,7 @@ function drawSlider ({ ctx, width, height, state, getLabel }) {
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = '#333'
-  ctx.fillText(getLabel(state), 0, 0)
+  ctx.fillText(label, 0, 0)
   ctx.restore()
 }
 
@@ -284,7 +284,7 @@ function setupAddPane (paneComponents) {
       width: 89,
       height: 89,
 
-      getLabel: () => 'Add character',
+      label: 'Add character',
 
       onSelect: () => {
         console.log("Adding Character")
@@ -389,7 +389,7 @@ class CanvasRenderer {
 
       return {
         state: characterHeight,
-        getLabel: () => `height ${sceneObject.height}`,
+        label: `height ${sceneObject.height}`,
         onDrag: (x, y) => setCharacterHeight(x),
         onDrop: (x, y) => setCharacterHeight(x)
       }
@@ -473,7 +473,7 @@ class CanvasRenderer {
     //     width: 420,
     //     height: 40,
 
-    //     getLabel: () => 'Add Object',
+    //     label: 'Add Object',
 
     //     onSelect: () => {
     //       let id = THREE.Math.generateUUID()
@@ -500,7 +500,7 @@ class CanvasRenderer {
     //     width: 420,
     //     height: 40,
 
-    //     getLabel: () => `Toggle Mode`,
+    //     label: `Toggle Mode`,
 
     //     onSelect: () => {
     //       if (this.state.mode == 'idle') {
@@ -526,7 +526,7 @@ class CanvasRenderer {
     //       width: 420,
     //       height: 40,
 
-    //       getLabel: () => 'Delete Object',
+    //       label: 'Delete Object',
 
     //       onSelect: () => {
     //         // undoGroupStart()
@@ -661,7 +661,7 @@ class CanvasRenderer {
   //   //     )
   //   //   }
 
-  //   //   let getLabel = value => 'rotation:' + mappers.toRotation(value).toFixed(3) + ' rad'
+  //   //   let label = 'rotation:' + mappers.toRotation(value).toFixed(3) + ' rad'
 
   //   //   let onDrag = (x, y) => setCharacterRotation(x)
 
@@ -669,7 +669,7 @@ class CanvasRenderer {
 
   //   //   return {
   //   //     state: characterRotation,
-  //   //     getLabel,
+  //   //     label,
   //   //     onDrag,
   //   //     onDrop
   //   //   }
