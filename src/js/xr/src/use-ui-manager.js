@@ -12,12 +12,9 @@ const { useImageBitmapLoader, imageBitmapLoaderResource } = require('./hooks/use
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
 function drawImageButton ({ ctx, width, height, image }) {
-  console.log(image)
   ctx.save()
 
-  //let image = this.getImageByName('eye')
-  let imaged = THREE.Cache.get(getImageFilenameByName(image))
-  ctx.drawImage(imaged, 0, 0)
+  ctx.drawImage(image, 0, 0)
 
   // ctx.fillStyle = '#eee'
   // ctx.fillRect(0, 0, width, height)
@@ -580,7 +577,7 @@ class CanvasRenderer {
           ctx,
           width,
           height,
-          image,
+          image: this.getImageByFilepath(getIconFilepathByName(image)),
 
           ...props
         })
