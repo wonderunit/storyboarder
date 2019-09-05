@@ -34,7 +34,7 @@ class GPUPicker
         return this.controller.pick(this.camera, this.renderer);
     }
 
-    pick(camera, gl)
+    pickWithCamera(camera, gl)
     {
         this.activeCamera = camera;
         return this.controller.pick(camera, gl);
