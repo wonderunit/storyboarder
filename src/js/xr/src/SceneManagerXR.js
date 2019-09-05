@@ -107,11 +107,8 @@ const SceneContent = connect(
 
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
+      scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
     }, [world.backgroundColor])
-
-    useMemo(() => {
-      scene.fog = new THREE.Fog( 0x000000, -10, 40 )
-    }, [])
 
     const teleportTexture = useTextureLoader('/data/system/xr/teleport.png')
     const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
