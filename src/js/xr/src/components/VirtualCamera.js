@@ -32,7 +32,17 @@ const meshFactory = source => {
 const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
   const { gl, scene, camera } = useThree()
 
-  const ref = useRef(null)
+  const ref = useUpdate(
+    self => {
+      self.rotation.x = 0
+      self.rotation.z = 0
+      self.rotation.y = sceneObject.rotation || 0
+
+      self.rotateX(sceneObject.tilt || 0)
+      self.rotateZ(sceneObject.roll || 0)
+    },
+    [sceneObject.rotation, sceneObject.tilt, sceneObject.roll]
+  )
 
   const virtualCamera = useUpdate(self => {
     self.updateProjectionMatrix()
@@ -194,8 +204,6 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
       id: sceneObject.id
     }}
     position={[sceneObject.x, sceneObject.z, sceneObject.y]}
-    rotation={[sceneObject.tilt, sceneObject.rotation, sceneObject.roll]}
-
   >
     {cameraView}
     {meshChildren}
