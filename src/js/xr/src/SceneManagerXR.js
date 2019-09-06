@@ -1,11 +1,11 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate } = require('react-three-fiber')
+const { Canvas, useThree, useUpdate, useRender } = require('react-three-fiber')
 
 const { connect, Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, Suspense } = React = require('react')
-
+require('./three/GPUPickers/utils/Object3dExtension')
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
 const {
@@ -30,6 +30,7 @@ const Ground = require('./components/Ground')
 const Room = require('./components/Room')
 const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
+const VirtualCamera = require('./components/VirtualCamera')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
@@ -49,8 +50,14 @@ const getSceneObjectModelObjectIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
 )
 
+const getSceneObjectVirtualCamerasIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
+)
+
 const SceneContent = connect(
   state => ({
+    aspectRatio: state.aspectRatio,
     sceneObjects: getSceneObjects(state),
     world: getWorld(state),
     activeCamera: getActiveCamera(state),
@@ -58,7 +65,8 @@ const SceneContent = connect(
     models: state.models,
 
     characterIds: getSceneObjectCharacterIds(state),
-    modelObjectIds: getSceneObjectModelObjectIds(state)
+    modelObjectIds: getSceneObjectModelObjectIds(state),
+    virtualCameraIds: getSceneObjectVirtualCamerasIds(state)
   }),
   {
     selectObject,
@@ -66,12 +74,11 @@ const SceneContent = connect(
   }
 )(
   ({
-    sceneObjects, world, activeCamera, selections, models,
+    aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds
+    characterIds, modelObjectIds, virtualCameraIds
   }) => {
     const { gl, camera, scene } = useThree()
-
     // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
@@ -106,7 +113,7 @@ const SceneContent = connect(
     }, [world.backgroundColor])
 
     useMemo(() => {
-      scene.fog = new THREE.Fog( 0x000000, -10, 40 )
+      scene.fog = new THREE.Fog(0x000000, -10, 40)
     }, [])
 
     const teleportTexture = useMemo(
@@ -119,7 +126,11 @@ const SceneContent = connect(
     const rStats = useRStats()
 
     const teleportRef = useRef()
-    const groundRef = useRef()
+    const groundRef = useUpdate(
+      self => {
+        self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+      }
+    )
 
     const controllers = useInteractionsManager({
       groundRef
@@ -128,9 +139,13 @@ const SceneContent = connect(
     // initialize the BonesHelper
     const boneGltf = useGltf('/data/system/dummies/bone.glb')
     useMemo(() => {
-      let mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
+      const mesh = boneGltf.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
     }, [boneGltf])
+
+    const ambientLightRef = useUpdate(self => {
+      self.layers.set(VirtualCamera.VIRTUAL_CAMERA_LAYER)
+    })
 
     const directionalLightRef = useUpdate(ref => {
       ref.add(ref.target)
@@ -140,6 +155,8 @@ const SceneContent = connect(
       ref.rotation.y = world.directional.rotation
 
       ref.rotateX(world.directional.tilt + Math.PI / 2)
+
+      ref.layers.set(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
     const selectedCharacter = selections.length && sceneObjects[selections[0]].type == 'character'
@@ -171,7 +188,10 @@ const SceneContent = connect(
           </Suspense>
         </group>
 
-        <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
+        <ambientLight
+          ref={ambientLightRef}
+          color={0xffffff}
+          intensity={world.ambient.intensity} />
 
         <directionalLight
           ref={directionalLightRef}
@@ -200,6 +220,15 @@ const SceneContent = connect(
                 isSelected={selections.includes(id)} />
             </Suspense>
           )
+        }
+        {
+          virtualCameraIds.map(id =>
+            <Suspense key={id} fallback={null}>
+              <VirtualCamera
+                aspectRatio={aspectRatio}
+                sceneObject={sceneObjects[id]}
+                isSelected={selections.includes(id)} />
+            </Suspense>)
         }
 
         <Ground
@@ -256,7 +285,7 @@ const SceneManagerXR = () => {
           }
           <Suspense fallback={<Preloader {...{ loaded, setLoaded }} />}>
             <SceneContent />
-          </ Suspense>
+          </Suspense>
         </Provider>
       </Canvas>
       <div className='scene-overlay' />

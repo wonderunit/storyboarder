@@ -243,9 +243,7 @@ const useInteractionsManager = ({
 
   const onTriggerStart = event => {
     const controller = event.target
-
     let intersection = null
-
     // TODO selecting GUI objects
 
     // if the BonesHelper instance is in the scene ...
@@ -273,7 +271,7 @@ const useInteractionsManager = ({
 
     let match = null
 
-    // include all interactables (Model Object, Character, etc)
+    // include all interactables (Model Object, Character, Virtual Camera, etc)
     let list = scene.__interaction
 
     // setup the GPU picker
@@ -654,15 +652,27 @@ const useInteractionsManager = ({
         object.updateMatrixWorld()
       }
 
-      let rotation = object.userData.type == 'character'
-        ? object.rotation.y
-        : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-      dispatch(updateObject(context.selection, {
-        x: object.position.x,
-        y: object.position.z,
-        z: object.position.y,
-        rotation
-      }))
+      if (object.userData.type === "virtual-camera") {
+        const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+        dispatch(updateObject(context.selection, {
+          x: object.position.x,
+          y: object.position.z,
+          z: object.position.y,
+          rotation: euler.y,
+          roll: euler.z,
+          tilt: euler.x
+        }))
+      } else {
+        let rotation = object.userData.type == 'character'
+          ? object.rotation.y
+          : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+        dispatch(updateObject(context.selection, {
+          x: object.position.x,
+          y: object.position.z,
+          z: object.position.y,
+          rotation
+        }))
+      }
     },
     onSnapStart: (context, event) => {
       let controller = gl.vr.getController(context.draggingController)

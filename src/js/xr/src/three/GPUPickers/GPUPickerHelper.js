@@ -16,20 +16,19 @@ class GPUPickerHelper
                 skinning: true,
                 morphTargets: true,
                 depthPacking: THREE.RGBADepthPacking,
-                side: THREE.FrontSide,
+                side: THREE.DoubleSide,
                 blending: THREE.NoBlending
             });
         this.depthScene = new THREE.Scene();
         this.depthScene.overrideMaterial = this.depthMaterial;
         this.depthScene.needsUpdate = true;
-        this.depthScene.autoUpdate = false;
+        this.depthScene.autoUpdate = true;
         this.reusableVector = new THREE.Vector3();
     }
     
     pick(cssPosition, scene, camera, renderer, selectables)
     {
         let {pickingTexture, pixelBuffer} = this;
-   
         if(this.pickedObject)
         {
             this.pickedObject = undefined;
@@ -59,9 +58,12 @@ class GPUPickerHelper
             let selectedObject = intersectedObject.pickerObject;
             //if(this.pickedObject.type === "SkinnedMesh")
             {
+                let objectParent = selectedObject.parent;
                 this.depthScene.attach(selectedObject);
+                selectedObject.updateMatrixWorld(true);
                 this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
-                scene.attach(selectedObject);
+                objectParent.attach(selectedObject);
+                selectedObject.updateMatrixWorld(true);
                 unpackRGBAToScenePosition(canvasPos, pixelBuffer, cssPosition, camera, renderer);
             }
         }
