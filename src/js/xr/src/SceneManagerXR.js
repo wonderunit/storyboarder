@@ -139,7 +139,7 @@ const SceneContent = connect(
     // initialize the BonesHelper
     const boneGltf = useGltf('/data/system/dummies/bone.glb')
     useMemo(() => {
-      const mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
+      const mesh = boneGltf.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
     }, [boneGltf])
 
