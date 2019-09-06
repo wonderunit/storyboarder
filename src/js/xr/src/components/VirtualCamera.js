@@ -4,6 +4,8 @@ const useGltf = require('../hooks/use-gltf')
 const { useRender, useThree } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
 
+const CLOSE_DISTANCE = 7
+
 const materialFactory = () => new THREE.MeshLambertMaterial({
   color: 0xcccccc,
   emissive: 0x0,
@@ -29,7 +31,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
     () => `/data/system/objects/camera.glb`,
     [sceneObject]
   )
-  const { gl, scene } = useThree()
+  const { gl, scene, camera } = useThree()
   const virtualCamera = useRef(null)
   const gltf = useGltf(filepath)
   const ref = useRef(null)
@@ -59,21 +61,6 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
     }
   }, [ref.current, isSelected])
 
-  useRender(() => {
-    if (!previousTime.current) previousTime.current = 0
-
-    const currentTime = Date.now()
-    const delta = currentTime - previousTime.current
-
-    if (delta > 500) {
-      previousTime.current = currentTime
-    } else {
-      if ((!isSelected && !sceneObject.isClose)) return
-    }
-
-    renderCamera()
-  }, false, [isSelected])
-
   useMemo(() => {
     for (let i = 0, n = objectsToRender.length; i < n; i++) {
       objectsToRender[i].traverse(object => object.layers.enable(1))
@@ -92,7 +79,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
     }
   }, [sceneObject])
 
-  const mesh = useMemo(() => {
+  const meshes = useMemo(() => {
     if (gltf) {
       const children = []
       gltf.scene.traverse(child => {
@@ -130,6 +117,48 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
     </group>
   }, true)
 
+  useRender(() => {
+    let isClose = false
+
+    if (ref.current) {
+      // check if virtual camera in view and close
+
+      const frustum = new THREE.Frustum()
+      const cameraViewProjectionMatrix = new THREE.Matrix4()
+
+      camera.updateMatrixWorld() // make sure the camera matrix is updated
+      cameraViewProjectionMatrix.multiplyMatrices(
+        camera.projectionMatrix,
+        camera.matrixWorldInverse
+      )
+      frustum.setFromMatrix(cameraViewProjectionMatrix)
+      // frustum is now ready to check all the objects you need
+
+      const mesh = ref.current.children.find(c => c.isMesh)
+      const isInView = frustum.intersectsObject(mesh)
+
+      if (isInView) {
+        const distance = ref.current.worldPosition().distanceTo(camera.worldPosition())
+        isClose = distance < CLOSE_DISTANCE ? true : false
+      } else {
+        isClose = false
+      }
+    }
+
+    if (!previousTime.current) previousTime.current = 0
+
+    const currentTime = Date.now()
+    const delta = currentTime - previousTime.current
+
+    if (delta > 500) {
+      previousTime.current = currentTime
+    } else {
+      if ((!isSelected && !isClose)) return
+    }
+
+    renderCamera()
+  }, false, [isSelected, ref.current, meshes])
+
   return <group
     ref={ref}
     onController={() => null}
@@ -143,7 +172,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
 
   >
     {cameraView}
-    {mesh}
+    {meshes}
     <group position={[0, 0, -0.2]}>
       <perspectiveCamera
         name={''}

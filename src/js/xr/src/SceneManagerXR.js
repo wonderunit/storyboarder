@@ -132,35 +132,6 @@ const SceneContent = connect(
       groundRef
     })
 
-    const frustum = new THREE.Frustum()
-    const cameraViewProjectionMatrix = new THREE.Matrix4()
-    const closeDistance = 7
-    // Checks if virtual camera in view and closest
-    useRender(() => {
-      camera.updateMatrixWorld() // make sure the camera matrix is updated
-
-      cameraViewProjectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
-      frustum.setFromMatrix(cameraViewProjectionMatrix)
-      // frustum is now ready to check all the objects you need
-      for (let i = 0, n = scene.children.length; i < n; i++) {
-        const object = scene.children[i]
-        if (object.userData.type === 'virtual-camera') {
-          const mesh = object.children.filter(child => child.type === 'Mesh')[0]
-          const isInView = frustum.intersectsObject(mesh)
-          if (isInView) {
-            const distance = object.worldPosition().distanceTo(camera.worldPosition())
-            if (distance < closeDistance) {
-              sceneObjects[object.userData.id].isClose = true
-            } else {
-              sceneObjects[object.userData.id].isClose = false
-            }
-          } else {
-            sceneObjects[object.userData.id].isClose = false
-          }
-        }
-      }
-    })
-
     // initialize the BonesHelper
     const boneGltf = useGltf('/data/system/dummies/bone.glb')
     useMemo(() => {
