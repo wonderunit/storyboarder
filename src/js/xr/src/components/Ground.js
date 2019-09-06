@@ -14,7 +14,7 @@ const Ground = React.memo(({ objRef, texture, visible }) => {
     position={[0, -0.03, 0]}
     rotation={[-Math.PI / 2, 0, 0]}
     userData={{
-      type: 'ground',
+      type: 'ground'
     }}
   >
     <planeBufferGeometry attach='geometry' args={[100, 100]} />

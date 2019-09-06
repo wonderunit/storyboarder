@@ -1,10 +1,11 @@
 const THREE = require('three')
 const { useMemo, useRef } = React = require('react')
 const useGltf = require('../hooks/use-gltf')
-const { useRender, useThree } = require('react-three-fiber')
+const { useRender, useThree, useUpdate } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
 
 const CLOSE_DISTANCE = 7
+const VIRTUAL_CAMERA_LAYER = 1
 
 const materialFactory = () => new THREE.MeshLambertMaterial({
   color: 0xcccccc,
@@ -26,13 +27,15 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, objectsToRender }) => {
+const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
   const filepath = useMemo(
     () => `/data/system/objects/camera.glb`,
     [sceneObject]
   )
   const { gl, scene, camera } = useThree()
-  const virtualCamera = useRef(null)
+  const virtualCamera = useUpdate(self => {
+    self.layers.set(VIRTUAL_CAMERA_LAYER)
+  })
   const gltf = useGltf(filepath)
   const ref = useRef(null)
   const renderTarget = useRef(null)
@@ -60,18 +63,6 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
 
     }
   }, [ref.current, isSelected])
-
-  useMemo(() => {
-    for (let i = 0, n = objectsToRender.length; i < n; i++) {
-      objectsToRender[i].traverse(object => object.layers.enable(1))
-    }
-  }, [objectsToRender])
-
-  useMemo(() => {
-    if (virtualCamera.current) {
-      virtualCamera.current.layers.set(1)
-    }
-  }, [virtualCamera.current])
 
   useMemo(() => {
     if (!renderTarget.current) {
@@ -186,4 +177,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
     </group>
   </group>
 })
+
+VirtualCamera.VIRTUAL_CAMERA_LAYER = VIRTUAL_CAMERA_LAYER
+
 module.exports = VirtualCamera

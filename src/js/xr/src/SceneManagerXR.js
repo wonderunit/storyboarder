@@ -126,7 +126,11 @@ const SceneContent = connect(
     const rStats = useRStats()
 
     const teleportRef = useRef()
-    const groundRef = useRef()
+    const groundRef = useUpdate(
+      self => {
+        self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+      }
+    )
 
     const controllers = useInteractionsManager({
       groundRef
@@ -138,6 +142,11 @@ const SceneContent = connect(
       const mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
       BonesHelper.getInstance(mesh)
     }, [boneGltf])
+
+    const ambientLightRef = useUpdate(self => {
+      self.layers.set(VirtualCamera.VIRTUAL_CAMERA_LAYER)
+    })
+
     const directionalLightRef = useUpdate(ref => {
       ref.add(ref.target)
 
@@ -146,22 +155,13 @@ const SceneContent = connect(
       ref.rotation.y = world.directional.rotation
 
       ref.rotateX(world.directional.tilt + Math.PI / 2)
+
+      ref.layers.set(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
     const selectedCharacter = selections.length && sceneObjects[selections[0]].type == 'character'
       ? sceneObjects[selections[0]]
       : null
-    const objectsToRender = useMemo(
-      () => scene.children.filter(
-        child =>
-          child.userData.type === 'character' ||
-          child.userData.type === 'object' ||
-          child.userData.type === 'ground' ||
-          child.type === 'AmbientLight' ||
-          child.type === 'DirectionalLight'
-      ),
-      [scene.children]
-    )
 
     return (
       <>
@@ -188,7 +188,10 @@ const SceneContent = connect(
           </Suspense>
         </group>
 
-        <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
+        <ambientLight
+          ref={ambientLightRef}
+          color={0xffffff}
+          intensity={world.ambient.intensity} />
 
         <directionalLight
           ref={directionalLightRef}
@@ -224,8 +227,7 @@ const SceneContent = connect(
               <VirtualCamera
                 aspectRatio={aspectRatio}
                 sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)}
-                objectsToRender={objectsToRender} />
+                isSelected={selections.includes(id)} />
             </Suspense>)
         }
 
