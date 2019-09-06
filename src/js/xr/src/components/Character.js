@@ -1,15 +1,22 @@
 const THREE = require('three')
-const { useMemo, useRef } = React = require('react')
+const { useMemo } = React = require('react')
+const { useUpdate } = require('react-three-fiber')
 
 const useGltf = require('../hooks/use-gltf')
 const cloneGltf = require('../helpers/clone-gltf')
 const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-type')
 const isUserModel = require('../helpers/is-user-model')
 
+const VirtualCamera = require('../components/VirtualCamera')
+
 const BonesHelper = require('../three/BonesHelper')
 
 const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
-  const ref = useRef()
+  const ref = useUpdate(
+    self => {
+      self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+    }
+  )
 
   const filepath = useMemo(
     () => getFilepathForModelByType(sceneObject),

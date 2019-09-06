@@ -25,14 +25,14 @@ const machine = Machine({
         TRIGGER_START: [
           // skip immediately to the drag behavior for objects and characters
           {
-            cond: 'eventHasObjectOrCharacterIntersection',
+            cond: 'eventHasSceneObjectIntersection',
             target: 'drag_object',
             actions: ['updateDraggingController', 'updateSelection', 'onSelected']
           },
         ],
         GRIP_DOWN: [
           {
-            cond: 'eventHasObjectOrCharacterIntersection',
+            cond: 'eventHasSceneObjectIntersection',
             target: 'selected',
             actions: ['updateSelection', 'onSelected']
           },
@@ -71,7 +71,7 @@ const machine = Machine({
             target: 'rotate_bone'
           },
           {
-            cond: 'eventHasObjectOrCharacterIntersection',
+            cond: 'eventHasSceneObjectIntersection',
             target: 'selected',
             actions: ['updateSelection', 'onSelected']
           },
@@ -186,7 +186,7 @@ const machine = Machine({
     selectionPresent: (context, event) => context.selection != null,
     selectionNil: (context, event) => event.intersection == null,
 
-    eventHasObjectOrCharacterIntersection: (context, event) => event.intersection != null && ['object', 'character'].includes(event.intersection.type),
+    eventHasSceneObjectIntersection: (context, event) => event.intersection != null && ['object', 'character', 'virtual-camera'].includes(event.intersection.type),
     eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.bone,
 
     eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,

@@ -28,6 +28,7 @@ class Pickable
             specular: 0x0,
             shininess: 0,
             flatShading: true,
+            side: THREE.DoubleSide
           });
           
     }

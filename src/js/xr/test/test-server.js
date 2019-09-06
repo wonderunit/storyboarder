@@ -72,9 +72,16 @@ let xrServer
 const fs = require('fs')
 // const path = require('path')
 
-let storyboarderFilePath = path.join(
-  __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'xr', 'xr.storyboarder'
-)
+// via https://github.com/electron/electron/issues/4690#issuecomment-217435222
+const argv = process.defaultApp ? process.argv.slice(2) : process.argv
+
+const storyboarderFilePath =
+  // use filename, if passed
+  argv[0] ||
+  // or, default
+  path.join(__dirname, '..', '..', '..', '..', 'test', 'fixtures', 'xr', 'xr.storyboarder')
+
+console.log('Loading', storyboarderFilePath, '\n')
 
 let boardData = JSON.parse(fs.readFileSync(storyboarderFilePath))
 let board = boardData.boards[0]

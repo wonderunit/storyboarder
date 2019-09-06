@@ -67,6 +67,7 @@ class XRPickableObjectContainer extends Pickable
             pickingMesh.position.copy(sceneMesh.worldPosition());
             pickingMesh.quaternion.copy(sceneMesh.worldQuaternion());
             pickingMesh.scale.copy(sceneMesh.worldScale());
+            pickingMesh.updateMatrixWorld();
         }
     }
 
