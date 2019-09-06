@@ -31,6 +31,7 @@ const Room = require('./components/Room')
 const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
 const VirtualCamera = require('./components/VirtualCamera')
+const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
@@ -230,6 +231,10 @@ const SceneContent = connect(
                 isSelected={selections.includes(id)} />
             </Suspense>)
         }
+
+        <Environment
+          environment={world.environment}
+          visible={world.environment.visible} />
 
         <Ground
           objRef={groundRef}
