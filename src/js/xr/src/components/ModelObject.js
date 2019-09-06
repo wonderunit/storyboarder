@@ -51,7 +51,7 @@ const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
       return [
         <mesh key={sceneObject.id}>
           <boxBufferGeometry
-            ref={ref => ref.translate(0, 0.5, 0)}
+            ref={ref => ref && ref.translate(0, 0.5, 0)}
             attach='geometry'
             args={[1, 1, 1]} />
           <primitive

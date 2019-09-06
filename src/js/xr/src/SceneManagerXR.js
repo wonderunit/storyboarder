@@ -22,8 +22,10 @@ const {
 
 const useRStats = require('./hooks/use-rstats')
 const useGltf = require('./hooks/use-gltf')
+const useTextureLoader = require('./hooks/use-texture-loader')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
+const { useUiManager } = require('./use-ui-manager')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -35,6 +37,8 @@ const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
+
+const Controls = require('./components/ui/Controls')
 
 const BonesHelper = require('./three/BonesHelper')
 
@@ -111,18 +115,11 @@ const SceneContent = connect(
 
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
+      scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
     }, [world.backgroundColor])
 
-    useMemo(() => {
-      scene.fog = new THREE.Fog(0x000000, -10, 40)
-    }, [])
-
-    const teleportTexture = useMemo(
-      () => new THREE.TextureLoader().load('/data/system/xr/teleport.png'), []
-    )
-    const groundTexture = useMemo(
-      () => new THREE.TextureLoader().load('/data/system/grid_floor_1.png'), []
-    )
+    const teleportTexture = useTextureLoader('/data/system/xr/teleport.png')
+    const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
 
     const rStats = useRStats()
 
@@ -133,8 +130,11 @@ const SceneContent = connect(
       }
     )
 
+    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
+
     const controllers = useInteractionsManager({
-      groundRef
+      groundRef,
+      uiService
     })
 
     // initialize the BonesHelper
@@ -176,17 +176,23 @@ const SceneContent = connect(
             <Log position={[0, -0.15, -1]} />
           </primitive>
 
-          <Suspense fallback={null}>
-            <primitive object={gl.vr.getController(0)}>
-              <Controller />
-            </primitive>
-          </Suspense>
+          {controllers.filter(Boolean).map(controller =>
+            <Suspense key={controller.uuid} fallback={null}>
+              <primitive object={controller} >
+                <Controller />
 
-          <Suspense fallback={null}>
-            <primitive object={gl.vr.getController(1)}>
-              <Controller />
-            </primitive>
-          </Suspense>
+                {
+                  navigator.getGamepads()[controller.userData.gamepad.index] &&
+                  navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
+                  <Suspense fallback={null}>
+                    <Controls
+                      mode={uiCurrent.value.controls}
+                      getCanvasRenderer={getCanvasRenderer} />
+                  </Suspense>
+                }
+              </primitive>
+            </Suspense>
+          )}
         </group>
 
         <ambientLight
@@ -277,6 +283,10 @@ const SceneManagerXR = () => {
   const store = useReduxStore()
 
   const [loaded, setLoaded] = useState(false)
+
+  useMemo(() => {
+    THREE.Cache.enabled = true
+  }, [])
 
   return (
     <>
