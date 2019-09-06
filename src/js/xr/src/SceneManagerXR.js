@@ -250,9 +250,11 @@ const SceneContent = connect(
         {
           virtualCameraIds.map(id =>
             <Suspense key={id} fallback ={null}>
-              <VirtualCamera sceneObject={sceneObjects[id]}
-              isSelected ={selections.includes(id)}
-              objectsToRender = {objectsToRender} />
+              <VirtualCamera
+                aspectRatio={1}
+                sceneObject={sceneObjects[id]}
+                isSelected={selections.includes(id)}
+                objectsToRender={objectsToRender} />
             </Suspense>)
         }
 

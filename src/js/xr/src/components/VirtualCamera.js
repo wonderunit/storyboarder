@@ -24,7 +24,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ sceneObject, isSelected, objectsToRender }) => {
+const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, objectsToRender }) => {
 
     const filepath = useMemo(
       () => `/data/system/objects/camera.glb`,
