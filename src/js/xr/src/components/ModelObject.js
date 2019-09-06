@@ -85,7 +85,7 @@ const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
     traverseMeshMaterials(ref.current, material => {
       if (material.emissive) {
         material.emissive.r = 0x9a / 0xff * amp
-        material.emissive.b = 0x72 / 0xff * amp
+        // material.emissive.g = 0x72 / 0xff * amp
         material.emissive.b = 0xe9 / 0xff * amp
       }
     })
