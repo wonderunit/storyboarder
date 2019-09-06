@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo, useRef } = React = require('react')
+const { useMemo, useRef, useCallback } = React = require('react')
 const useGltf = require('../hooks/use-gltf')
 const { useRender, useThree, useUpdate } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
@@ -28,26 +28,37 @@ const meshFactory = source => {
 }
 
 const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
+  const { gl, scene, camera } = useThree()
+
+  const ref = useRef(null)
+
+  const virtualCamera = useUpdate(self => {
+    self.layers.set(VIRTUAL_CAMERA_LAYER)
+  })
+
   const filepath = useMemo(
     () => `/data/system/objects/camera.glb`,
     [sceneObject]
   )
-  const { gl, scene, camera } = useThree()
-  const virtualCamera = useUpdate(self => {
-    self.layers.set(VIRTUAL_CAMERA_LAYER)
-  })
   const gltf = useGltf(filepath)
-  const ref = useRef(null)
-  const renderTarget = useRef(null)
+
+  const renderTarget = useRef()
   const size = 1 / 3
   const resolution = 512
   const previousTime = useRef([null])
 
+  const getRenderTarget = useCallback(() => {
+    if (!renderTarget.current) {
+      renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
+    }
+    return renderTarget.current
+  }, [resolution, aspectRatio])
+
   const renderCamera = () => {
-    if (virtualCamera.current && renderTarget.current) {
+    if (virtualCamera.current && getRenderTarget()) {
       gl.vr.enabled = false
       scene.autoUpdate = false
-      gl.setRenderTarget(renderTarget.current)
+      gl.setRenderTarget(getRenderTarget())
       gl.render(scene, virtualCamera.current)
       gl.setRenderTarget(null)
       scene.autoUpdate = true
@@ -59,16 +70,8 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
   useMemo(() => {
     if (isSelected) {
       renderCamera()
-    } else {
-
     }
   }, [ref.current, isSelected])
-
-  useMemo(() => {
-    if (!renderTarget.current) {
-      renderTarget.current = new THREE.WebGLRenderTarget(resolution * aspectRatio, resolution)
-    }
-  }, [sceneObject])
 
   const meshes = useMemo(() => {
     if (gltf) {
@@ -90,10 +93,10 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
 
   const heightShader = useMemo(
     () => new THREE.MeshBasicMaterial({
-      map: renderTarget.current.texture,
+      map: getRenderTarget().texture,
       side: THREE.FrontSide
     }),
-    [renderTarget.current]
+    [getRenderTarget]
   )
 
   const cameraView = useMemo(() => {
@@ -106,7 +109,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
         <planeGeometry attach='geometry' args={[size * aspectRatio, size]} />
       </mesh>
     </group>
-  }, true)
+  }, [])
 
   useRender(() => {
     let isClose = false
@@ -157,7 +160,6 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
       type: 'virtual-camera',
       id: sceneObject.id
     }}
-    renderCamera={renderCamera}
     position={[sceneObject.x, sceneObject.z, sceneObject.y]}
     rotation={[sceneObject.tilt, sceneObject.rotation, sceneObject.roll]}
 
