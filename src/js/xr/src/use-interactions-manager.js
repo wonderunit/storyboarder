@@ -271,21 +271,8 @@ const useInteractionsManager = ({
 
     let match = null
 
-    // include all interactables (Model Object, Character, etc)
+    // include all interactables (Model Object, Character, Virtual Camera, etc)
     let list = scene.__interaction
-
-    //ToDO(): Add camera to intesectable list
-    let cameras = scene.children.filter(object =>
-      {
-         if(object.userData.type === "virtual-camera" && !object.wasAdded)
-         {
-            object.wasAdded = true;
-            return true;
-         }
-         return false;
-        } );
-    list = list.concat(cameras);
-    scene.__interaction = list;
 
     // setup the GPU picker
     getGpuPicker().setupScene(list)

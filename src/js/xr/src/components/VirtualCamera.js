@@ -132,7 +132,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
 
   return <group
     ref={ref}
-    onController={sceneObject.visible ? () => null : null}
+    onController={() => null}
     userData={{
       type: 'virtual-camera',
       id: sceneObject.id
