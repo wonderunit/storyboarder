@@ -57,6 +57,7 @@ const getSceneObjectVirtualCamerasIds = createSelector(
 
 const SceneContent = connect(
   state => ({
+    aspectRatio: state.aspectRatio,
     sceneObjects: getSceneObjects(state),
     world: getWorld(state),
     activeCamera: getActiveCamera(state),
@@ -73,7 +74,7 @@ const SceneContent = connect(
   }
 )(
   ({
-    sceneObjects, world, activeCamera, selections, models,
+    aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
     characterIds, modelObjectIds, virtualCameraIds
   }) => {
@@ -251,7 +252,7 @@ const SceneContent = connect(
           virtualCameraIds.map(id =>
             <Suspense key={id} fallback ={null}>
               <VirtualCamera
-                aspectRatio={1}
+                aspectRatio={aspectRatio}
                 sceneObject={sceneObjects[id]}
                 isSelected={selections.includes(id)}
                 objectsToRender={objectsToRender} />
