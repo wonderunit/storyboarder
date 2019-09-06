@@ -47,6 +47,7 @@ class UniversalPickableObject extends Pickable
     {
         if(this.sceneObject && !this.sceneMesh.parent && this.sceneObject.children.length !== 0)
         {
+            console.log("Object changed");
             return true;
         }
         return false;

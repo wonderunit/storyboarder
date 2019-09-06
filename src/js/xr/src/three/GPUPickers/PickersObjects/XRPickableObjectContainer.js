@@ -57,18 +57,16 @@ class XRPickableObjectContainer extends Pickable
             this.needsRemoval = true;
             return;
         }
-        for(let i = 0, n = this.sceneMeshes.length; i < n; i++)
+        for(let i = this.sceneMeshes.length - 1; i > -1; i--)
         {
             let sceneMesh = this.sceneMeshes[i];
             let pickingMesh = this.pickingMeshes[i];
-            if(!sceneMesh)
+            if(!sceneMesh.parent)
             {
                 this.node.remove(pickingMesh);
-                delete this.pickingMeshes[i];
-                delete this.pickingMaterial[i];
-                delete this.sceneMeshes[i];
-                n = this.sceneMeshes.length;
-                i--;
+                this.pickingMeshes.splice(i, 1);
+                this.pickingMaterials.splice(i, 1);
+                this.sceneMeshes.splice(i, 1);
                 continue;
             }
             pickingMesh.position.copy(sceneMesh.worldPosition());
@@ -121,19 +119,20 @@ class XRPickableObjectContainer extends Pickable
             this.changedIds = [];
             this.pickingMeshes.push(this.pickingMesh);
             this.sceneMeshes.push(sceneMesh);
-            this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: this.sceneMesh};
+            this.pickingMesh.pickerId = id;
+            this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: sceneMesh};
         }
     }
 
     dispose()
     {
         super.dispose();
-        for(let i = this.pickingMeshes.length - 1; i === 0; i--)
+        for(let i = this.pickingMeshes.length - 1; i > -1; i--)
         {
             let pickingMesh = this.pickingMeshes[i];
             pickingMesh.parent.remove(pickingMesh);
-            delete this.pickingMeshes[i];
-            delete this.pickingMaterials[i];
+            this.pickingMeshes.splice(i, 1);
+            this.pickingMaterials.splice(i, 1);
         }
         this.node.removeAllChildren();
     }
