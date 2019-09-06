@@ -363,7 +363,6 @@ const useInteractionsManager = ({
           uv: intersection.uv
         }
       })
-      return
     } else {
       uiService.send({
         type: 'TRIGGER_END',
