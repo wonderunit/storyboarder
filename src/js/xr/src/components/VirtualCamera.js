@@ -33,6 +33,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
   const ref = useRef(null)
 
   const virtualCamera = useUpdate(self => {
+    self.updateProjectionMatrix()
     self.layers.set(VIRTUAL_CAMERA_LAYER)
   })
 
@@ -59,10 +60,11 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
       gl.vr.enabled = false
       scene.autoUpdate = false
       gl.setRenderTarget(getRenderTarget())
+
       gl.render(scene, virtualCamera.current)
+
       gl.setRenderTarget(null)
       scene.autoUpdate = true
-
       gl.vr.enabled = true
     }
   }
@@ -168,13 +170,11 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
     {meshes}
     <group position={[0, 0, -0.2]}>
       <perspectiveCamera
-        name={''}
         ref={virtualCamera}
         aspect={aspectRatio}
         fov={sceneObject.fov}
         near={0.01}
         far={1000}
-        onUpdate={self => self.updateProjectionMatrix()}
       />
     </group>
   </group>
