@@ -27,6 +27,7 @@ const { useStore, useStoreApi, useInteractionsManager } = require('./use-interac
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
+const Room = require('./components/Room')
 const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
 const VirtualCamera = require('./components/VirtualCamera')
@@ -60,6 +61,7 @@ const SceneContent = connect(
     world: getWorld(state),
     activeCamera: getActiveCamera(state),
     selections: getSelections(state),
+    models: state.models,
 
     characterIds: getSceneObjectCharacterIds(state),
     modelObjectIds: getSceneObjectModelObjectIds(state),
@@ -71,7 +73,7 @@ const SceneContent = connect(
   }
 )(
   ({
-    sceneObjects, world, activeCamera, selections,
+    sceneObjects, world, activeCamera, selections, models,
 
     characterIds, modelObjectIds, virtualCameraIds
   }) => {
@@ -125,7 +127,7 @@ const SceneContent = connect(
     const teleportRef = useRef()
     const groundRef = useRef()
 
-    useInteractionsManager({
+    const controllers = useInteractionsManager({
       groundRef
     })
 
@@ -230,6 +232,7 @@ const SceneContent = connect(
             <Suspense key={id} fallback={null}>
               <Character
                 sceneObject={sceneObjects[id]}
+                modelSettings={models[sceneObjects[id].model] || undefined}
                 isSelected={selections.includes(id)} />
             </Suspense>
           )
@@ -256,7 +259,13 @@ const SceneContent = connect(
         <Ground
           objRef={groundRef}
           texture={groundTexture}
-          visible={true/*!world.room.visible && world.ground*/} />
+          visible={!world.room.visible && world.ground} />
+
+        <Room
+          width={world.room.width}
+          length={world.room.length}
+          height={world.room.height}
+          visible={world.room.visible} />
 
         <TeleportTarget
           api={useStoreApi}

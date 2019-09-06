@@ -408,24 +408,36 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
     }
     object.current.bonesHelper.needsUpdate = true;
     if (isSelected) updateObjectHighlight(object.current, 0.15)
-    else updateObjectHighlight(object.current, 0) 
+    else updateObjectHighlight(object.current, 0)
   }, [props.model, worldScale, isSelected, ready])
 
   useMemo(() => {
     if (!skinnedMesh) return
     if (skinnedMesh.type === 'LOD') {
       skinnedMesh.children.forEach(lod => {
-        if (lod.morphTargetDictionary && Object.values(lod.morphTargetDictionary).length === 3) {
-          lod.morphTargetInfluences[0] = props.morphTargets.mesomorphic
-          lod.morphTargetInfluences[1] = props.morphTargets.ectomorphic
-          lod.morphTargetInfluences[2] = props.morphTargets.endomorphic
+        lod.material.morphTargets = lod.material.morphNormals = props.model !== 'baby'
+        if (lod.morphTargetDictionary) {
+          if (props.model === 'child') {
+            lod.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+            lod.morphTargetInfluences[ 1 ] = props.morphTargets.endomorphic
+          } else {
+            lod.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+            lod.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
+            lod.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
+          }
         }
       })
     } else {
-      if (skinnedMesh.morphTargetDictionary && Object.values(skinnedMesh.morphTargetDictionary).length === 3) {
-        skinnedMesh.morphTargetInfluences[0] = props.morphTargets.mesomorphic
-        skinnedMesh.morphTargetInfluences[1] = props.morphTargets.ectomorphic
-        skinnedMesh.morphTargetInfluences[2] = props.morphTargets.endomorphic
+      if (skinnedMesh.morphTargetDictionary) {
+        mesh.material.morphTargets = mesh.material.morphNormals = props.model !== 'baby'
+        if (props.model === 'child') {
+          skinnedMesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+          skinnedMesh.morphTargetInfluences[ 1 ] = props.morphTargets.endomorphic
+        } else {
+          skinnedMesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
+          skinnedMesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
+          skinnedMesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
+        }
       }
     }
   }, [modelData, props.morphTargets])
@@ -450,9 +462,22 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color(0x242246)
       }
     }
-
   }, [selectedBone, ready])
-  
+
+  const forPanel = {
+    height: props.height,
+    headScale: props.headScale
+  }
+
+  if (props.model !== 'baby') {
+    forPanel['mesomorphic'] = props.morphTargets.mesomorphic
+    forPanel['endomorphic'] = props.morphTargets.endomorphic
+  }
+
+  if (props.model.includes('adult') || props.model.includes('teen')) {
+    forPanel['ectomorphic'] = props.morphTargets.ectomorphic
+  }
+
   return <group
       //visible={false}
       userData={{
@@ -460,13 +485,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
         type,
         name: 'character-container',
         displayName: props.name || props.displayName,
-        forPanel: {
-          height: props.height,
-          headScale: props.headScale,
-          mesomorphic: props.morphTargets.mesomorphic,
-          ectomorphic: props.morphTargets.ectomorphic,
-          endomorphic: props.morphTargets.endomorphic
-        }
+        forPanel
       }}
     >
       {
@@ -496,11 +515,11 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
       }
 
       {(skinnedMesh && bonesHelper) && (
-        <group 
+        <group
         userData={{
           type: "bonesHelper"
-        }}> 
-           
+        }}>
+
           <primitive
             userData={{
               //character: skinnedMesh,
@@ -509,7 +528,7 @@ const SGCharacter = React.memo(({ id, type, worldScale, isSelected, updateObject
             type={"BonesHelper"}
           />
         </group>
-        
+
       )}
   </group>
 })

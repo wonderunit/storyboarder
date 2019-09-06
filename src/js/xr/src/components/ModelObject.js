@@ -2,6 +2,7 @@ const THREE = require('three')
 const { useMemo, useRef, useEffect } = React = require('react')
 
 const useGltf = require('../hooks/use-gltf')
+const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-type')
 
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
 
@@ -27,9 +28,9 @@ const meshFactory = source => {
 
 const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
   const ref = useRef(null)
-  // TODO detect user models / custom objects
+
   const filepath = useMemo(
-    () => `/data/system/objects/${sceneObject.model}.glb`,
+    () => getFilepathForModelByType(sceneObject),
     [sceneObject.model]
   )
 
@@ -58,7 +59,7 @@ const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
         if (child.isMesh) {
           children.push(
             <primitive
-              key={sceneObject.id}
+              key={`${sceneObject.id}-${child.uuid}`}
               object={meshFactory(child)}
             />
           )
