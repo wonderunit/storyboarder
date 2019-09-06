@@ -712,7 +712,7 @@ const useInteractionsManager = ({
             object.updateMatrixWorld()
           }
 
-          if (object.userData.type === "virtual-camera") {
+          if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
             const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
             dispatch(updateObject(context.selection, {
               x: object.position.x,
