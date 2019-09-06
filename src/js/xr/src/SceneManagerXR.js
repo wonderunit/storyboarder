@@ -5,7 +5,7 @@ const { Canvas, useThree, useUpdate, useRender } = require('react-three-fiber')
 const { connect, Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, Suspense } = React = require('react')
-require("./three/GPUPickers/utils/Object3dExtension");
+require('./three/GPUPickers/utils/Object3dExtension')
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
 const {
@@ -113,7 +113,7 @@ const SceneContent = connect(
     }, [world.backgroundColor])
 
     useMemo(() => {
-      scene.fog = new THREE.Fog( 0x000000, -10, 40 )
+      scene.fog = new THREE.Fog(0x000000, -10, 40)
     }, [])
 
     const teleportTexture = useMemo(
@@ -132,48 +132,39 @@ const SceneContent = connect(
       groundRef
     })
 
-    let frustum = new THREE.Frustum();
-    let cameraViewProjectionMatrix = new THREE.Matrix4();
-    let closeDistance = 7;
+    const frustum = new THREE.Frustum()
+    const cameraViewProjectionMatrix = new THREE.Matrix4()
+    const closeDistance = 7
     // Checks if virtual camera in view and closest
-    useRender(() =>
-    {
-      camera.updateMatrixWorld(); // make sure the camera matrix is updated
+    useRender(() => {
+      camera.updateMatrixWorld() // make sure the camera matrix is updated
 
-      cameraViewProjectionMatrix.multiplyMatrices( camera.projectionMatrix,  camera.matrixWorldInverse );
-      frustum.setFromMatrix( cameraViewProjectionMatrix );
+      cameraViewProjectionMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse)
+      frustum.setFromMatrix(cameraViewProjectionMatrix)
       // frustum is now ready to check all the objects you need
-      for(let i = 0, n = scene.children.length; i < n; i++)
-      {
-        let object = scene.children[i];
-        if(object.userData.type === 'virtual-camera')
-        { 
-          let mesh = object.children.filter(child => child.type === 'Mesh')[0];
-          let isInView = frustum.intersectsObject( mesh);
-          if(isInView)
-          {
-            let distance = object.worldPosition().distanceTo(camera.worldPosition());
-            if(distance < closeDistance)
-            {
-              sceneObjects[object.userData.id].isClose = true;
+      for (let i = 0, n = scene.children.length; i < n; i++) {
+        const object = scene.children[i]
+        if (object.userData.type === 'virtual-camera') {
+          const mesh = object.children.filter(child => child.type === 'Mesh')[0]
+          const isInView = frustum.intersectsObject(mesh)
+          if (isInView) {
+            const distance = object.worldPosition().distanceTo(camera.worldPosition())
+            if (distance < closeDistance) {
+              sceneObjects[object.userData.id].isClose = true
+            } else {
+              sceneObjects[object.userData.id].isClose = false
             }
-            else
-            {
-              sceneObjects[object.userData.id].isClose = false;;
-            }
-          }
-          else
-          {
-            sceneObjects[object.userData.id].isClose = false;
+          } else {
+            sceneObjects[object.userData.id].isClose = false
           }
         }
       }
-    });
+    })
 
     // initialize the BonesHelper
     const boneGltf = useGltf('/data/system/dummies/bone.glb')
     useMemo(() => {
-      let mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
+      const mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
       BonesHelper.getInstance(mesh)
     }, [boneGltf])
     const directionalLightRef = useUpdate(ref => {
@@ -189,10 +180,18 @@ const SceneContent = connect(
     const selectedCharacter = selections.length && sceneObjects[selections[0]].type == 'character'
       ? sceneObjects[selections[0]]
       : null
-    let objectsToRender =  useMemo(() => {
-      return scene.children.filter(child => child.userData.type === "character" || child.userData.type === "object" || child.userData.type === "ground" 
-                                    || child.type === "AmbientLight" || child.type === "DirectionalLight")
-    }, [scene.children]);
+    const objectsToRender = useMemo(
+      () => scene.children.filter(
+        child =>
+          child.userData.type === 'character' ||
+          child.userData.type === 'object' ||
+          child.userData.type === 'ground' ||
+          child.type === 'AmbientLight' ||
+          child.type === 'DirectionalLight'
+      ),
+      [scene.children]
+    )
+
     return (
       <>
         <group
@@ -250,7 +249,7 @@ const SceneContent = connect(
         }
         {
           virtualCameraIds.map(id =>
-            <Suspense key={id} fallback ={null}>
+            <Suspense key={id} fallback={null}>
               <VirtualCamera
                 aspectRatio={aspectRatio}
                 sceneObject={sceneObjects[id]}
@@ -313,7 +312,7 @@ const SceneManagerXR = () => {
           }
           <Suspense fallback={<Preloader {...{ loaded, setLoaded }} />}>
             <SceneContent />
-          </ Suspense>
+          </Suspense>
         </Provider>
       </Canvas>
       <div className='scene-overlay' />
