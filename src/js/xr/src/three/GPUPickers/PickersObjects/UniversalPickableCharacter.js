@@ -6,7 +6,7 @@ class UniversalPickableCharacter extends Pickable
     constructor(object)
     {
         super(object);
-        this.sceneObject = object;
+        this.sceneObject = object.type === "SkinnedMesh" ? object.parent : object;
         this.getMeshFromSceneObject();
         this.characterContainer = this.getCharacterContainer();
     }
@@ -56,9 +56,15 @@ class UniversalPickableCharacter extends Pickable
         this.node.quaternion.copy(parent.worldQuaternion());
         this.node.scale.copy(parent.worldScale());
         updateBoneToBone(this.pickingMesh, this.sceneMesh);
-        this.pickingMesh.morphTargetInfluences[ 0 ] = this.sceneMesh.morphTargetInfluences[ 0 ]
-        this.pickingMesh.morphTargetInfluences[ 1 ] = this.sceneMesh.morphTargetInfluences[ 1 ]
-        this.pickingMesh.morphTargetInfluences[ 2 ] = this.sceneMesh.morphTargetInfluences[ 2 ]
+        if(this.sceneMesh.morphTargetInfluences)
+        {
+            let mesomorphic = this.sceneMesh.morphTargetInfluences[ 0 ];
+            let ectomorphic = this.sceneMesh.morphTargetInfluences[ 1 ];
+            let endomorphic = this.sceneMesh.morphTargetInfluences[ 2 ];
+            if(mesomorphic) this.pickingMesh.morphTargetInfluences[ 0 ] = mesomorphic;
+            if(ectomorphic) this.pickingMesh.morphTargetInfluences[ 1 ] = ectomorphic;
+            if(endomorphic) this.pickingMesh.morphTargetInfluences[ 2 ] = endomorphic;
+        }
     }
 
     isObjectChanged()
@@ -103,5 +109,7 @@ class UniversalPickableCharacter extends Pickable
         }
         return this.sceneMesh.parent;
     }
+
+
 }
 module.exports = UniversalPickableCharacter;
