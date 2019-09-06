@@ -249,6 +249,7 @@ const useInteractionsManager = ({
   const teleportFn = useStore(state => state.teleport)
   const teleport = (x, y, z, r) => teleportFn(camera, x, y, z, r)
   const setTeleportMode = useStore(state => state.setTeleportMode)
+  const toggleWorldScale = useStore(state => state.toggleWorldScale)
   const set = useStore(state => state.set)
 
   const store = useReduxStore()
