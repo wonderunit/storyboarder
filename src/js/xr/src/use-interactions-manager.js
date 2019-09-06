@@ -158,10 +158,15 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.z = parent.rotation.z
 }
 
+const WORLD_SCALE_LARGE = 1
+const WORLD_SCALE_SMALL = 0.1
+
 const [useStore, useStoreApi] = create((set, get) => ({
   // values
   teleportPos: { x: 0, y: 0, z: 0 },
   teleportRot: { x: 0, y: 0, z: 0 },
+
+  worldScale: WORLD_SCALE_LARGE,
 
   didMoveCamera: null,
   didRotateCamera: null,
@@ -202,11 +207,18 @@ const [useStore, useStoreApi] = create((set, get) => ({
     teleportState(state, camera, x, y, z, r)
   })),
 
+  toggleWorldScale: () => set(produce(state => {
+    state.worldScale = state.worldScale == WORLD_SCALE_LARGE
+      ? WORLD_SCALE_SMALL
+      : WORLD_SCALE_LARGE
+  })),
+
   set: fn => set(produce(fn))
 }))
 
 const useInteractionsManager = ({
   groundRef,
+  rootRef,
   uiService
 }) => {
   const { gl, camera, scene } = useThree()
@@ -844,6 +856,10 @@ const useInteractionsManager = ({
           )
           dispatch(selectBone(null))
           BonesHelper.getInstance().resetSelection()
+        },
+
+        onToggleMiniMode: (context, event) => {
+          toggleWorldScale()
         }
       },
 
