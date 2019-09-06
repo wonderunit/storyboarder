@@ -94,7 +94,7 @@ const rotateObjectY = (object, event) => {
 }
 
 // TODO test worldScale
-const snapObjectRotation = (object, controller, worldScale = 1) => {
+const snapObjectRotation = (object, controller, root, worldScale) => {
   // translate
   object.matrix.premultiply(controller.matrixWorld)
   object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
@@ -751,9 +751,7 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          // TODO worldScale
-          let worldScale = 1
-
+          let worldScale = useStoreApi.getState().worldScale
           object.userData.staticRotation = snapObjectRotation(object, controller, worldScale)
 
           getGpuPicker().setupScene([object])
