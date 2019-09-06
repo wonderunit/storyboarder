@@ -35,7 +35,6 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected, object
     const gltf = useGltf(filepath)
     const ref = useRef(null);
     const renderTarget = useRef(null);
-    const aspectRatio = 1;
     const size = 1 / 3
     const resolution = 512;
     const previousTime = useRef([null])
