@@ -1,8 +1,10 @@
 const THREE = require('three')
 const { useMemo, useRef, useCallback } = React = require('react')
-const useGltf = require('../hooks/use-gltf')
 const { useRender, useThree, useUpdate } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
+
+const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
+const useGltf = require('../hooks/use-gltf')
 
 const CLOSE_DISTANCE = 7
 const VIRTUAL_CAMERA_LAYER = 1
@@ -73,25 +75,47 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
     if (isSelected) {
       renderCamera()
     }
-  }, [ref.current, isSelected])
+  }, [isSelected])
 
   const meshes = useMemo(() => {
-    if (gltf) {
-      const children = []
-      gltf.scene.traverse(child => {
-        if (child.isMesh) {
-          children.push(
-            <primitive
-              key={sceneObject.id}
-              object={meshFactory(child)}
-            />
-          )
+    if (!gltf) return []
+
+    let children = []
+
+    gltf.scene.traverse(child => {
+      if (child.isMesh) {
+        children.push(
+          meshFactory(child)
+        )
+      }
+    })
+
+    return children
+  }, [gltf])
+
+  const meshChildren = useMemo(
+    () =>
+      meshes.map(
+        mesh => <primitive key={mesh.uuid} object={mesh} />
+      ),
+    [meshes]
+  )
+
+  useMemo(() => {
+    if (!ref.current) return
+
+    let amp = isSelected ? 0.2 : 0
+
+    meshes.forEach(mesh =>
+      traverseMeshMaterials(mesh, material => {
+        if (material.emissive) {
+          material.emissive.r = 0x9a / 0xff * amp
+          material.emissive.b = 0x72 / 0xff * amp
+          material.emissive.b = 0xe9 / 0xff * amp
         }
       })
-      return children
-    }
-    return []
-  }, [gltf])
+    )
+  }, [ref.current, meshes, isSelected])
 
   const heightShader = useMemo(
     () => new THREE.MeshBasicMaterial({
@@ -174,7 +198,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
 
   >
     {cameraView}
-    {meshes}
+    {meshChildren}
     <group position={[0, 0, -0.2]}>
       <perspectiveCamera
         ref={virtualCamera}
