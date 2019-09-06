@@ -149,10 +149,10 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
     if (delta > 500) {
       previousTime.current = currentTime
     } else {
-      if ((!isSelected && !isClose)) return
       // time hasn't elapsed yet
       // so if this virtual camera is not selected or close, don't render
       // if it's not in view, it's considered not close, and also will not render
+      if ( !(isSelected || isClose) ) return
     }
 
     renderCamera()
