@@ -114,31 +114,31 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
   }, [])
 
   useRender(() => {
+    if (!ref.current) return
+
     let isClose = false
 
-    if (ref.current) {
-      // check if virtual camera in view and close
+    // check if virtual camera in view and close
 
-      const frustum = new THREE.Frustum()
-      const cameraViewProjectionMatrix = new THREE.Matrix4()
+    const frustum = new THREE.Frustum()
+    const cameraViewProjectionMatrix = new THREE.Matrix4()
 
-      camera.updateMatrixWorld() // make sure the camera matrix is updated
-      cameraViewProjectionMatrix.multiplyMatrices(
-        camera.projectionMatrix,
-        camera.matrixWorldInverse
-      )
-      frustum.setFromMatrix(cameraViewProjectionMatrix)
-      // frustum is now ready to check all the objects you need
+    camera.updateMatrixWorld() // make sure the camera matrix is updated
+    cameraViewProjectionMatrix.multiplyMatrices(
+      camera.projectionMatrix,
+      camera.matrixWorldInverse
+    )
+    frustum.setFromMatrix(cameraViewProjectionMatrix)
+    // frustum is now ready to check all the objects you need
 
-      const mesh = ref.current.children.find(c => c.isMesh)
-      const isInView = frustum.intersectsObject(mesh)
+    const mesh = ref.current.children.find(c => c.isMesh)
+    const isInView = frustum.intersectsObject(mesh)
 
-      if (isInView) {
-        const distance = ref.current.worldPosition().distanceTo(camera.worldPosition())
-        isClose = distance < CLOSE_DISTANCE ? true : false
-      } else {
-        isClose = false
-      }
+    if (isInView) {
+      const distance = ref.current.worldPosition().distanceTo(camera.worldPosition())
+      isClose = distance < CLOSE_DISTANCE ? true : false
+    } else {
+      isClose = false
     }
 
     if (!previousTime.current) previousTime.current = 0
