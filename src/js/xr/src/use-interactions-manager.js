@@ -814,10 +814,8 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          // TODO worldScale
-          let worldScale = useStoreApi.getState().worldScale
+          let { worldScale, canSnap } = useStoreApi.getState().worldScale
 
-          let canSnap = useStoreApi.getState().canSnap
           let shouldMoveWithCursor =
             (object.userData.type == 'character') || canSnap
 
