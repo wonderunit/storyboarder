@@ -851,7 +851,13 @@ const useInteractionsManager = ({
         },
 
         onToggleMiniMode: (context, event) => {
-          let { worldScale, setMiniMode, teleport, standingMemento } = useStoreApi.getState()
+          let {
+            worldScale,
+            standingMemento,
+
+            setMiniMode,
+            teleport,
+          } = useStoreApi.getState()
 
           if (worldScale === WORLD_SCALE_LARGE) {
             // remember where we were standing
