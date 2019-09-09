@@ -202,8 +202,12 @@ const [useStore, useStoreApi] = create((set, get) => ({
       // switch to mini mode
       state.worldScale = WORLD_SCALE_SMALL
 
-      // TODO alter camera position
-      // teleportState(state, camera, ????)
+      // alter the camera position
+      teleportState(state, camera,
+        (state.teleportPos.x * state.worldScale),
+        -(camera.position.y - 0.75),
+        (state.teleportPos.z * state.worldScale)
+      )
     } else {
       // set the world scale
       state.worldScale = WORLD_SCALE_LARGE
