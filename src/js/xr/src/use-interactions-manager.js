@@ -208,20 +208,34 @@ const [useStore, useStoreApi] = create((set, get) => ({
   })),
 
   // remember where we were standing
-  saveStandingMemento: () => set(state => ({ ...state,
-    standingMemento: {
-      position: { ...state.teleportPos },
-      rotation: { ...state.teleportRot }
+  saveStandingMemento: camera => set(state => {
+    // child (camera)
+    camera.parent.updateMatrixWorld()
+    let v = new THREE.Vector3()
+    camera.getWorldPosition(v)
+
+    console.log('save user pos @', v.x, v.y, v.z)
+
+    return {
+      ...state,
+      standingMemento: {
+        position: {
+          x: v.x,
+          y: 0,
+          z: v.z
+        }
+      }
     }
-  })),
+  }),
 
   // return to where we were standing
   restoreStandingMemento: camera => set(state => produce(state, draft => {
     if (state.standingMemento) {
       let { x, y, z } = state.standingMemento.position
-      let r = state.standingMemento.rotation.y
 
-      teleportState(draft, camera, x, y, z, r)
+      console.log('restore use pos @', x, y, z)
+
+      teleportState(draft, camera, x, y, z, null)
     }
   })),
 
@@ -880,7 +894,7 @@ const useInteractionsManager = ({
           let { worldScale } = useStoreApi.getState()
 
           if (worldScale === WORLD_SCALE_LARGE) {
-            saveStandingMemento()
+            saveStandingMemento(camera)
 
             setMiniMode(true, camera)
           } else {
