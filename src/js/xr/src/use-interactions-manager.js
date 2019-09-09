@@ -209,15 +209,12 @@ const [useStore, useStoreApi] = create((set, get) => ({
 
   // remember where we were standing
   saveStandingMemento: camera => set(state => {
-    // child (camera)
-    camera.parent.updateMatrixWorld()
     let v = new THREE.Vector3()
     camera.getWorldPosition(v)
 
-    console.log('save user pos @', v.x, v.y, v.z)
-
     return {
       ...state,
+
       standingMemento: {
         position: {
           x: v.x,
@@ -231,11 +228,9 @@ const [useStore, useStoreApi] = create((set, get) => ({
   // return to where we were standing
   restoreStandingMemento: camera => set(state => produce(state, draft => {
     if (state.standingMemento) {
-      let { x, y, z } = state.standingMemento.position
+      let { x, z } = state.standingMemento.position
 
-      console.log('restore use pos @', x, y, z)
-
-      teleportState(draft, camera, x, y, z, null)
+      teleportState(draft, camera, x, 0, z, null)
     }
   })),
 
