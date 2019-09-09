@@ -94,7 +94,7 @@ const rotateObjectY = (object, event) => {
 }
 
 // TODO test worldScale
-const snapObjectRotation = (object, controller, root, worldScale) => {
+const snapObjectRotation = (object, controller, worldScale) => {
   // translate
   object.matrix.premultiply(controller.matrixWorld)
   object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
@@ -715,7 +715,7 @@ const useInteractionsManager = ({
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           // TODO worldscale
-          let root = scene
+          let root = rootRef.current
 
           // TODO soundBeam
           // soundBeam.current.stop()
