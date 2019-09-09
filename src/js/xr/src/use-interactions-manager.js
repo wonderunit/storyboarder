@@ -204,9 +204,9 @@ const [useStore, useStoreApi] = create((set, get) => ({
 
       // alter the camera position
       teleportState(state, camera,
-        (state.teleportPos.x * state.worldScale),
+        (state.teleportPos.x + camera.position.x) * state.worldScale,
         -(camera.position.y - 0.75),
-        (state.teleportPos.z * state.worldScale)
+        (state.teleportPos.z + camera.position.z) * state.worldScale
       )
     } else {
       // set the world scale
@@ -800,7 +800,7 @@ const useInteractionsManager = ({
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           // TODO worldScale
-          let worldScale = 1
+          let worldScale = useStoreApi.getState().worldScale
 
           let canSnap = useStoreApi.getState().canSnap
           let shouldMoveWithCursor =
