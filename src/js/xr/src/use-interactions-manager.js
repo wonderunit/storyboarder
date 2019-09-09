@@ -93,15 +93,7 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-// TODO test worldScale
-// seems like translate not needed here because object is not a child of the controller
 const snapObjectRotation = (object, controller, worldScale) => {
-  // translate
-  // object.matrix.premultiply(controller.matrixWorld)
-  // object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-  // object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-  // object.position.multiplyScalar(1 / worldScale)
-
   // setup for rotation
   object.userData.order = object.rotation.order
   object.rotation.reorder('YXZ')
@@ -121,17 +113,6 @@ const snapObjectRotation = (object, controller, worldScale) => {
   object.rotation.y = degreeY
   object.rotation.order = object.userData.order
   object.updateMatrixWorld()
-
-  let staticRotation = object.quaternion.clone()
-
-  // translate back
-  // object.matrix.premultiply(controller.getInverseMatrixWorld())
-  // object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-  // object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-  // object.position.multiplyScalar(1 / worldScale)
-  // object.updateMatrixWorld(true)
-
-  return staticRotation
 }
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
@@ -753,7 +734,9 @@ const useInteractionsManager = ({
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           let worldScale = useStoreApi.getState().worldScale
-          object.userData.staticRotation = snapObjectRotation(object, controller, worldScale)
+          snapObjectRotation(object, controller, worldScale)
+
+          object.userData.staticRotation = object.quaternion.clone()
 
           getGpuPicker().setupScene([object])
           let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -771,13 +754,6 @@ const useInteractionsManager = ({
           if (object.userData.staticRotation) {
             object.userData.staticRotation = null
           }
-
-          // TODO worldScale
-          // let worldScale = 1
-          // let root = scene
-          // object.scale.set(1, 1, 1)
-          // root.add(object)
-          // object.position.multiplyScalar(1 / worldScale)
 
           controller.userData.selectOffset = null
 
