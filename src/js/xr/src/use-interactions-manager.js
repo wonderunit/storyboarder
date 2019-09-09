@@ -733,9 +733,6 @@ const useInteractionsManager = ({
           let object = event.intersection.object
 
           if (object.userData.type != 'character') {
-            let worldScale = 1 // TODO
-
-            object.scale.multiplyScalar(worldScale)
             controller.attach(object)
             object.updateMatrixWorld(true)
           }
@@ -744,19 +741,16 @@ const useInteractionsManager = ({
           // soundBeam.current.play()
         },
         onDragObjectExit: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          // TODO worldscale
           let root = rootRef.current
-
-          // TODO soundBeam
-          // soundBeam.current.stop()
-
           if (object.parent != root) {
             root.attach(object)
             object.updateMatrixWorld()
           }
+
+          // TODO soundBeam
+          // soundBeam.current.stop()
 
           if (object.userData.type === "virtual-camera") {
             const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
