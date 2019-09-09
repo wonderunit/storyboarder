@@ -682,6 +682,7 @@ const useInteractionsManager = ({
           if (teleportTargetValid) {
             let pos = useStoreApi.getState().teleportTargetPos
             teleport(pos[0], 0, pos[2], null)
+            if (useStoreApi.getState().worldScale === WORLD_SCALE_SMALL) toggleWorldScale(camera)
             // setTeleportMode(false)
           }
         },
