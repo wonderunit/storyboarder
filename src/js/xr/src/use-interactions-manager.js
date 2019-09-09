@@ -190,15 +190,8 @@ const [useStore, useStoreApi] = create((set, get) => ({
     teleportState(state, camera, x, y, z, r)
   })),
 
-  toggleWorldScale: camera => set(produce(state => {
-    if (state.worldScale === WORLD_SCALE_LARGE) {
-      // remember where we were standing
-      state.standingMemento = {
-        position: { ...state.teleportPos },
-        rotation: { ...state.teleportRot }
-      }
-      console.log('saved standingMemento', state.standingMemento)
-
+  setMiniMode: (value, camera) => set(produce(state => {
+    if (value) {
       // switch to mini mode
       state.worldScale = WORLD_SCALE_SMALL
 
@@ -211,17 +204,6 @@ const [useStore, useStoreApi] = create((set, get) => ({
     } else {
       // set the world scale
       state.worldScale = WORLD_SCALE_LARGE
-
-      // return to where we were standing
-      console.log('restore standingMemento', state.standingMemento)
-      let { x, y, z } = state.standingMemento.position
-      let r = state.standingMemento.rotation.y
-      teleportState(state, camera, x, y, z, r)
-      state.standingMemento = null
-
-      // clear the memento
-      console.log('clear standingMemento', state.standingMemento)
-      state.standingMemento = null
     }
   })),
 
@@ -258,10 +240,9 @@ const useInteractionsManager = ({
   const setDidRotateCamera = useStore(state => state.setDidRotateCamera)
   const moveCameraByDistance = useStore(state => state.moveCameraByDistance)
   const rotateCameraByRadians = useStore(state => state.rotateCameraByRadians)
-  const teleportFn = useStore(state => state.teleport)
-  const teleport = (x, y, z, r) => teleportFn(camera, x, y, z, r)
+  const teleport = useStore(state => state.teleport)
   const setTeleportMode = useStore(state => state.setTeleportMode)
-  const toggleWorldScale = useStore(state => state.toggleWorldScale)
+  const setMiniMode = useStore(state => state.setMiniMode)
   const set = useStore(state => state.set)
 
   const store = useReduxStore()
@@ -677,13 +658,17 @@ const useInteractionsManager = ({
         },
         onTeleport: (context, event) => {
           log('-- teleport')
-          // TODO adjust by worldScale
-          // TODO reset worldScale after teleport
           if (teleportTargetValid) {
             let pos = useStoreApi.getState().teleportTargetPos
-            teleport(pos[0], 0, pos[2], null)
-            if (useStoreApi.getState().worldScale === WORLD_SCALE_SMALL) toggleWorldScale(camera)
-            // setTeleportMode(false)
+
+            // world scale is always reset to large
+            setMiniMode(false, camera)
+
+            // reposition
+            teleport(camera, pos[0], 0, pos[2], null)
+
+            // clear any prior memento
+            set(state => ({ ...state, standingMemento: null }))
           }
         },
 
@@ -866,7 +851,33 @@ const useInteractionsManager = ({
         },
 
         onToggleMiniMode: (context, event) => {
-          toggleWorldScale(camera)
+          let { worldScale, setMiniMode, teleport, standingMemento } = useStoreApi.getState()
+
+          if (worldScale === WORLD_SCALE_LARGE) {
+            // remember where we were standing
+            set(state => ({
+              ...state,
+              standingMemento: {
+                position: { ...state.teleportPos },
+                rotation: { ...state.teleportRot }
+              }
+            }))
+
+            setMiniMode(true, camera)
+          } else {
+            setMiniMode(false, camera)
+
+            // return to where we were standing
+            if (standingMemento) {
+              let { x, y, z } = standingMemento.position
+              let r = standingMemento.rotation.y
+
+              teleport(camera, x, y, z, r)
+
+              // clear the memento
+              set(state => ({ ...state, standingMemento: null }))
+            }
+          }
         }
       },
 
