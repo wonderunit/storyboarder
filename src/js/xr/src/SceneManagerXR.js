@@ -258,14 +258,13 @@ const SceneContent = connect(
             length={world.room.length}
             height={world.room.height}
             visible={world.room.visible} />
-        </group>
 
-        <TeleportTarget
-          api={useStoreApi}
-          worldScale={worldScale}
-          visible={teleportMode && teleportTargetValid}
-          texture={teleportTexture}
-        />
+          <TeleportTarget
+            api={useStoreApi}
+            visible={teleportMode && teleportTargetValid}
+            texture={teleportTexture}
+          />
+        </group>
       </>
     )
   })

@@ -1,7 +1,7 @@
 const THREE = require('three')
 const { useRef, useEffect } = React = require('react')
 
-const TeleportTarget = ({ api, texture, worldScale, visible }) => {
+const TeleportTarget = ({ api, texture, visible }) => {
   const ref = useRef()
 
   useEffect(
@@ -12,11 +12,11 @@ const TeleportTarget = ({ api, texture, worldScale, visible }) => {
     []
   )
 
-  return <group position={[0, 0.5 * worldScale, 0]}>
+  return <group position={[0, 0.5, 0]}>
     <mesh
       ref={ref}
       visible={visible}>
-      <cylinderGeometry attach="geometry" args={[0.5 * worldScale, 0.5 * worldScale, 1 * worldScale, 32, 1, true]} />
+      <cylinderGeometry attach="geometry" args={[0.5, 0.5, 1, 32, 1, true]} />
       <meshBasicMaterial
         attach="material"
         opacity={0.25}

@@ -574,7 +574,10 @@ const useInteractionsManager = ({
       if (hits.length) {
         let hit = hits[0]
         if (hit.distance < teleportMaxDist) {
-          let teleportTargetPos = hit.point.toArray()
+          let worldScale = useStoreApi.getState().worldScale
+
+          let teleportTargetPos = hit.point.multiplyScalar(1 / worldScale).toArray()
+
           set(state => ({ ...state, teleportTargetPos, teleportTargetValid: true }))
         } else {
           set(state => ({ ...state, teleportTargetValid: false }))
