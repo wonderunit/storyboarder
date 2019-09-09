@@ -161,8 +161,6 @@ const [useStore, useStoreApi] = create((set, get) => ({
 
   boneRotationMemento: {},
 
-  canSnap: false,
-
   // actions
   setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
   setDidRotateCamera: value => set(produce(state => { state.didRotateCamera = value })),
@@ -588,8 +586,9 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      if (object3d.userData.type == 'character') {
-        let worldScale = 1 // useStoreApi.getState().worldScale
+      let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
+      if (shouldMoveWithCursor) {
+        // let worldScale = useStoreApi.getState().worldScale
 
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
@@ -597,19 +596,15 @@ const useInteractionsManager = ({
         wp.sub(controller.userData.selectOffset)
         wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
 
-        object3d.position.copy(wp)//.multiplyScalar(1 / worldScale)
-        object3d.updateMatrix()
-        object3d.updateMatrixWorld()
-
-      } else {
         if (object3d.userData.staticRotation) {
           let quaternion = object3d.parent.worldQuaternion().conjugate()
           let rotation = object3d.userData.staticRotation.clone().premultiply(quaternion)
           object3d.quaternion.copy(rotation)
-
-          object3d.updateMatrix()
-          object3d.updateMatrixWorld()
         }
+
+        object3d.position.copy(wp)//.multiplyScalar(1 / worldScale)
+        object3d.updateMatrix()
+        object3d.updateMatrixWorld()
       }
     }
 
@@ -799,7 +794,6 @@ const useInteractionsManager = ({
             let { distance, point } = intersections[0]
 
             controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-            set(state => { state.canSnap = true })
           } else {
             log('WARNING GPU picker lost object')
           }
@@ -813,8 +807,6 @@ const useInteractionsManager = ({
           }
 
           controller.userData.selectOffset = null
-
-          set(state => { state.canSnap = false })
         },
 
         moveAndRotateCamera: (context, event) => {
@@ -826,16 +818,14 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          let { worldScale, canSnap } = useStoreApi.getState()
+          let { worldScale } = useStoreApi.getState()
 
-          let shouldMoveWithCursor =
-            (object.userData.type == 'character') || canSnap
-
+          let shouldMoveWithCursor = (object.userData.type == 'character') || object.userData.staticRotation
           let target = shouldMoveWithCursor
             ? controller.getObjectByName('cursor')
             : object
-
           moveObjectZ(target, event, worldScale)
+
           rotateObjectY(object, event, controller)
         },
 
