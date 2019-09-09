@@ -254,9 +254,11 @@ const SceneContent = connect(
             </Suspense>)
         }
 
-        <Environment
-          environment={world.environment}
-          visible={world.environment.visible} />
+        {world.environment.file && (        
+          <Environment
+            environment={world.environment}
+            visible={world.environment.visible} />
+        )}
 
         <Ground
           objRef={groundRef}

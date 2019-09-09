@@ -14,10 +14,7 @@ const Light = React.memo(({ sceneObject, isSelected, children }) => {
 
   const spotLight = useUpdate(
     self => {
-      // TODO
-      // self.target.position.set(0, 0, sceneObject.distance)
-      // self.target.position.set(0, 0, sceneObject.intensity)
-
+      self.target.position.set(0, 0, sceneObject.distance)
       self.add(self.target)
     },
     [sceneObject.intensity, sceneObject.distance]
@@ -34,7 +31,7 @@ const Light = React.memo(({ sceneObject, isSelected, children }) => {
       }}
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
     >
-      {/*
+      
       <spotLight
         ref={spotLight}
         color={0xffffff}
@@ -46,7 +43,7 @@ const Light = React.memo(({ sceneObject, isSelected, children }) => {
         penumbra={sceneObject.penumbra}
         decay={sceneObject.decay}
       />
-      */}
+     
       <mesh>
         <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
         <meshLambertMaterial
