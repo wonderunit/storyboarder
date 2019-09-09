@@ -207,6 +207,29 @@ const [useStore, useStoreApi] = create((set, get) => ({
     }
   })),
 
+  // remember where we were standing
+  saveStandingMemento: () => set(state => ({ ...state,
+    standingMemento: {
+      position: { ...state.teleportPos },
+      rotation: { ...state.teleportRot }
+    }
+  })),
+
+  // return to where we were standing
+  restoreStandingMemento: camera => set(state => produce(state, draft => {
+    if (state.standingMemento) {
+      let { x, y, z } = state.standingMemento.position
+      let r = state.standingMemento.rotation.y
+
+      teleportState(draft, camera, x, y, z, r)
+    }
+  })),
+
+  // clear the memento
+  clearStandingMemento: () => set(state => ({ ...state,
+    standingMemento: null
+  })),
+
   set: fn => set(produce(fn))
 }))
 
@@ -243,6 +266,9 @@ const useInteractionsManager = ({
   const teleport = useStore(state => state.teleport)
   const setTeleportMode = useStore(state => state.setTeleportMode)
   const setMiniMode = useStore(state => state.setMiniMode)
+  const saveStandingMemento = useStore(state => state.saveStandingMemento)
+  const restoreStandingMemento = useStore(state => state.restoreStandingMemento)
+  const clearStandingMemento = useStore(state => state.clearStandingMemento)
   const set = useStore(state => state.set)
 
   const store = useReduxStore()
@@ -668,7 +694,7 @@ const useInteractionsManager = ({
             teleport(camera, pos[0], 0, pos[2], null)
 
             // clear any prior memento
-            set(state => ({ ...state, standingMemento: null }))
+            clearStandingMemento()
           }
         },
 
@@ -851,38 +877,17 @@ const useInteractionsManager = ({
         },
 
         onToggleMiniMode: (context, event) => {
-          let {
-            worldScale,
-            standingMemento,
-
-            setMiniMode,
-            teleport,
-          } = useStoreApi.getState()
+          let { worldScale } = useStoreApi.getState()
 
           if (worldScale === WORLD_SCALE_LARGE) {
-            // remember where we were standing
-            set(state => ({
-              ...state,
-              standingMemento: {
-                position: { ...state.teleportPos },
-                rotation: { ...state.teleportRot }
-              }
-            }))
+            saveStandingMemento()
 
             setMiniMode(true, camera)
           } else {
             setMiniMode(false, camera)
 
-            // return to where we were standing
-            if (standingMemento) {
-              let { x, y, z } = standingMemento.position
-              let r = standingMemento.rotation.y
-
-              teleport(camera, x, y, z, r)
-
-              // clear the memento
-              set(state => ({ ...state, standingMemento: null }))
-            }
+            restoreStandingMemento(camera)
+            clearStandingMemento()
           }
         }
       },
