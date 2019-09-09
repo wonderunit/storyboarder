@@ -94,12 +94,13 @@ const rotateObjectY = (object, event) => {
 }
 
 // TODO test worldScale
+// seems like translate not needed here because object is not a child of the controller
 const snapObjectRotation = (object, controller, worldScale) => {
   // translate
-  object.matrix.premultiply(controller.matrixWorld)
-  object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-  object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-  object.position.multiplyScalar(1 / worldScale)
+  // object.matrix.premultiply(controller.matrixWorld)
+  // object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+  // object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
+  // object.position.multiplyScalar(1 / worldScale)
 
   // setup for rotation
   object.userData.order = object.rotation.order
@@ -124,11 +125,11 @@ const snapObjectRotation = (object, controller, worldScale) => {
   let staticRotation = object.quaternion.clone()
 
   // translate back
-  object.matrix.premultiply(controller.getInverseMatrixWorld())
-  object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-  object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-  object.position.multiplyScalar(1 / worldScale)
-  object.updateMatrixWorld(true)
+  // object.matrix.premultiply(controller.getInverseMatrixWorld())
+  // object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+  // object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
+  // object.position.multiplyScalar(1 / worldScale)
+  // object.updateMatrixWorld(true)
 
   return staticRotation
 }
