@@ -93,7 +93,7 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-const snapObjectRotation = (object, controller, worldScale) => {
+const snapObjectRotation = object => {
   // setup for rotation
   object.userData.order = object.rotation.order
   object.rotation.reorder('YXZ')
@@ -588,14 +588,8 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      let canSnap = useStoreApi.getState().canSnap
-
-      let shouldMoveWithCursor =
-        (object3d.userData.type == 'character') || canSnap
-
-      if (shouldMoveWithCursor) {
-        // TODO worldscale
-        let worldScale = 1
+      if (object3d.userData.type == 'character') {
+        let worldScale = 1 // useStoreApi.getState().worldScale
 
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
@@ -603,15 +597,19 @@ const useInteractionsManager = ({
         wp.sub(controller.userData.selectOffset)
         wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
 
+        object3d.position.copy(wp)//.multiplyScalar(1 / worldScale)
+        object3d.updateMatrix()
+        object3d.updateMatrixWorld()
+
+      } else {
         if (object3d.userData.staticRotation) {
           let quaternion = object3d.parent.worldQuaternion().conjugate()
           let rotation = object3d.userData.staticRotation.clone().premultiply(quaternion)
           object3d.quaternion.copy(rotation)
-        }
 
-        object3d.position.copy(wp).multiplyScalar(1 / worldScale)
-        object3d.updateMatrix()
-        object3d.updateMatrixWorld()
+          object3d.updateMatrix()
+          object3d.updateMatrixWorld()
+        }
       }
     }
 
@@ -708,23 +706,20 @@ const useInteractionsManager = ({
         },
 
         onSelected: (context, event) => {
-          log('-- onSelected')
-
           let controller = event.controller
           let { object, distance, point } = event.intersection
+          log('-- onSelected')
 
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-
           dispatch(selectObject(context.selection))
         },
 
         onSelectNone: (context, event) => {
           let controller = event.controller
           log('-- onSelectNone', controller)
+
           controller.userData.selectOffset = null
-
           dispatch(selectObject(null))
-
           BonesHelper.getInstance().resetSelection()
         },
 
@@ -778,10 +773,25 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          let worldScale = useStoreApi.getState().worldScale
-          snapObjectRotation(object, controller, worldScale)
+          let worldScale = 1 // useStoreApi.getState().worldScale
 
+          // translate
+          object.matrix.premultiply(controller.matrixWorld)
+          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+          // object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
+          // object.position.multiplyScalar(1 / worldScale)
+
+          // rotate
+          snapObjectRotation(object)
           object.userData.staticRotation = object.quaternion.clone()
+
+          // translate back
+          object.matrix.premultiply(controller.getInverseMatrixWorld())
+          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+          // object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
+          // object.position.multiplyScalar(1 / worldScale)
+
+          object.updateMatrixWorld(true)
 
           getGpuPicker().setupScene([object])
           let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -790,6 +800,8 @@ const useInteractionsManager = ({
 
             controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
             set(state => { state.canSnap = true })
+          } else {
+            log('WARNING GPU picker lost object')
           }
         },
         onSnapEnd: (context, event) => {
