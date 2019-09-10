@@ -243,9 +243,10 @@ const SceneContent = connect(
           }
 
           {
-            world.environment.file && <Environment
-              environment={world.environment}
-              visible={world.environment.visible} />
+            world.environment.file &&
+              <Environment
+                environment={world.environment}
+                visible={world.environment.visible} />
           }
 
           <Ground
