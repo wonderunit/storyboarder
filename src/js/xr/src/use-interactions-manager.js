@@ -798,6 +798,7 @@ const useInteractionsManager = ({
 
             controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
           } else {
+            controller.userData.selectOffset = new THREE.Vector3()
             log('WARNING GPU picker lost object')
           }
         },
