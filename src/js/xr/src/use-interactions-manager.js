@@ -141,8 +141,6 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.z = parent.rotation.z
 }
 
-const reusableVector = new THREE.Vector3();
-
 const [useStore, useStoreApi] = create((set, get) => ({
   // values
   teleportPos: { x: 0, y: 0, z: 0 },
@@ -540,6 +538,14 @@ const useInteractionsManager = ({
     onAxesChanged
   })
 
+  const reusableVector = useRef()
+  const getReusableVector = () => {
+    if (!reusableVector.current) {
+      reusableVector.current = new THREE.Vector3()
+    }
+    return reusableVector.current
+  }
+
   // TODO could model these as ... activities? exec:'render' actions?
   useRender(() => {
     // don't wait for a React update
@@ -592,7 +598,7 @@ const useInteractionsManager = ({
       if (shouldMoveWithCursor) {
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
-        const wp = cursor.getWorldPosition(reusableVector)
+        const wp = cursor.getWorldPosition(getReusableVector())
         wp.sub(controller.userData.selectOffset)
         wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
 
