@@ -664,7 +664,7 @@ const useInteractionsManager = ({
 
   useMemo(() => {
     // TODO why is this memo called multiple times?
-    console.log('useInteractionManager')
+    console.log('useInteractionsManager')
   }, [])
 
   const [interactionServiceCurrent, interactionServiceSend, interactionService] = useMachine(
