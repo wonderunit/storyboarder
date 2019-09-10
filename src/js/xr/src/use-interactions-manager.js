@@ -37,6 +37,9 @@ const {
   selectBone
 } = require('../../shared/reducers/shot-generator')
 
+const WORLD_SCALE_LARGE = 1
+const WORLD_SCALE_SMALL = 0.1
+
 const getRotationMemento = (controller, object) => {
   let controllerRot = new THREE.Matrix4().extractRotation(controller.matrixWorld)
   let startingDeviceRotation = new THREE.Quaternion().setFromRotationMatrix(controllerRot)
@@ -140,8 +143,6 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.z = parent.rotation.z
 }
 
-const WORLD_SCALE_LARGE = 1
-const WORLD_SCALE_SMALL = 0.1
 const reusableVector = new THREE.Vector3();
 
 const [useStore, useStoreApi] = create((set, get) => ({
