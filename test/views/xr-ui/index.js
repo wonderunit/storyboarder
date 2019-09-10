@@ -21,7 +21,7 @@ const UITestContent = () => {
 
   const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
 
-  const controllers = useInteractionsManager({
+  const { controllers, interactionServiceCurrent } = useInteractionsManager({
     groundRef: null,
     uiService
   })

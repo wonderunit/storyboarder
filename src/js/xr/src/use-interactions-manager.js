@@ -155,7 +155,6 @@ const [useStore, useStoreApi] = create((set, get) => ({
   didRotateCamera: null,
 
   teleportMaxDist: 10,
-  teleportMode: false,
   teleportTargetPos: [0, 0, 0],
   teleportTargetValid: false,
 
@@ -164,7 +163,6 @@ const [useStore, useStoreApi] = create((set, get) => ({
   // actions
   setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
   setDidRotateCamera: value => set(produce(state => { state.didRotateCamera = value })),
-  setTeleportMode: value => set(state => ({ ...state, teleportMode: value })),
 
   moveCameraByDistance: (camera, distance) => set(produce(state => {
     let center = new THREE.Vector3()
@@ -265,7 +263,6 @@ const useInteractionsManager = ({
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)
   const didRotateCamera = useStore(state => state.didRotateCamera)
-  const teleportMode = useStore(state => state.teleportMode)
   const teleportTargetValid = useStore(state => state.teleportTargetValid)
   const teleportMaxDist = useStore(state => state.teleportMaxDist)
 
@@ -275,7 +272,6 @@ const useInteractionsManager = ({
   const moveCameraByDistance = useStore(state => state.moveCameraByDistance)
   const rotateCameraByRadians = useStore(state => state.rotateCameraByRadians)
   const teleport = useStore(state => state.teleport)
-  const setTeleportMode = useStore(state => state.setTeleportMode)
   const setMiniMode = useStore(state => state.setMiniMode)
   const saveStandingMemento = useStore(state => state.saveStandingMemento)
   const restoreStandingMemento = useStore(state => state.restoreStandingMemento)
@@ -548,7 +544,6 @@ const useInteractionsManager = ({
   useRender(() => {
     // don't wait for a React update
     // read values directly from stores
-    let teleportMode = useStoreApi.getState().teleportMode
     let selections = getSelections(store.getState())
     let selectedId = selections.length ? selections[0] : null
 
@@ -676,17 +671,14 @@ const useInteractionsManager = ({
     interactionMachine,
     {
       actions: {
-        // TODO base hide/show on context and remove teleportMode and teleportTargetValid entirely
         onDragTeleportStart: (context, event) => {
           log('-- onDragTeleportStart')
-          setTeleportMode(true)
           // the target position value will be old until the next gl render
           // so consider teleportTargetValid to be false, to hide the mesh, until then
           set(state => ({ ...state, teleportTargetValid: false }))
         },
         onDragTeleportEnd: (context, event) => {
           log('-- onDragTeleportEnd')
-          setTeleportMode(false)
           set(state => ({ ...state, teleportTargetValid: false }))
         },
         onTeleport: (context, event) => {
@@ -906,7 +898,7 @@ const useInteractionsManager = ({
     }
   )
 
-  return controllers
+  return { controllers, interactionServiceCurrent }
 }
 
 module.exports = {

@@ -87,7 +87,6 @@ const SceneContent = connect(
     // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
-    const teleportMode = useStore(state => state.teleportMode)
     const teleportTargetValid = useStore(state => state.teleportTargetValid)
     const worldScale = useStore(state => state.worldScale)
 
@@ -134,7 +133,7 @@ const SceneContent = connect(
 
     const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
 
-    const controllers = useInteractionsManager({
+    const { controllers, interactionServiceCurrent } = useInteractionsManager({
       groundRef,
       rootRef,
       uiService
@@ -262,7 +261,7 @@ const SceneContent = connect(
 
           <TeleportTarget
             api={useStoreApi}
-            visible={teleportMode && teleportTargetValid}
+            visible={interactionServiceCurrent.value.match('drag_teleport') && teleportTargetValid}
             texture={teleportTexture}
           />
         </group>
