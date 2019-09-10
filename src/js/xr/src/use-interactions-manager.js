@@ -595,8 +595,6 @@ const useInteractionsManager = ({
 
       let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
       if (shouldMoveWithCursor) {
-        // let worldScale = useStoreApi.getState().worldScale
-
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
         const wp = cursor.getWorldPosition(reusableVector)
@@ -609,7 +607,7 @@ const useInteractionsManager = ({
           object3d.quaternion.copy(rotation)
         }
 
-        object3d.position.copy(wp)//.multiplyScalar(1 / worldScale)
+        object3d.position.copy(wp)
         object3d.updateMatrix()
         object3d.updateMatrixWorld()
       }
@@ -775,13 +773,9 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          let worldScale = 1 // useStoreApi.getState().worldScale
-
           // translate
           object.matrix.premultiply(controller.matrixWorld)
           object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-          // object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-          // object.position.multiplyScalar(1 / worldScale)
 
           // rotate
           snapObjectRotation(object)
@@ -790,8 +784,6 @@ const useInteractionsManager = ({
           // translate back
           object.matrix.premultiply(controller.getInverseMatrixWorld())
           object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-          // object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-          // object.position.multiplyScalar(1 / worldScale)
 
           object.updateMatrixWorld(true)
 
