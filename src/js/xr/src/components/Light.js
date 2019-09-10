@@ -53,7 +53,11 @@ const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
         />
       </mesh>
 
-      <mesh position={[0, (sceneObject.distance + 0.14) * -0.5, 0]} scale={[1, -1, 1]}>
+      <mesh
+        onController={null}
+        position={[0, (sceneObject.distance + 0.14) * -0.5, 0]}
+        scale={[1, -1, 1]}
+      >
         <cylinderBufferGeometry
           attach="geometry"
           args={[sceneObject.distance * Math.tan(sceneObject.angle), 0.05, sceneObject.distance, 64, 1, true]}

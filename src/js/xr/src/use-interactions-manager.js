@@ -309,7 +309,7 @@ const useInteractionsManager = ({
       // grab the first intersection
       let child = hits[0].object
       // find either the child or one of its parents on the list of interaction-ables
-      match = findMatchingAncestor(child, list)
+      match = child.onController === null ? null : findMatchingAncestor(child, list)
       if (match) {
         intersection = hits[0]
       }
@@ -405,7 +405,7 @@ const useInteractionsManager = ({
       // grab the first intersection
       let child = hits[0].object
       // find either the child or one of its parents on the list of interaction-ables
-      match = findMatchingAncestor(child, list)
+      match = child.onController === null ? null : findMatchingAncestor(child, list)
       if (match) {
         intersection = hits[0]
       }
