@@ -87,8 +87,8 @@ const SceneContent = connect(
     // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
-    const teleportMode = useStore(state => state.teleportMode)
     const teleportTargetValid = useStore(state => state.teleportTargetValid)
+    const worldScale = useStore(state => state.worldScale)
 
     // actions
     const set = useStore(state => state.set)
@@ -129,11 +129,13 @@ const SceneContent = connect(
         self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
       }
     )
+    const rootRef = useRef()
 
     const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
 
-    const controllers = useInteractionsManager({
+    const { controllers, interactionServiceCurrent } = useInteractionsManager({
       groundRef,
+      rootRef,
       uiService
     })
 
@@ -195,72 +197,74 @@ const SceneContent = connect(
           )}
         </group>
 
-        <ambientLight
-          ref={ambientLightRef}
-          color={0xffffff}
-          intensity={world.ambient.intensity} />
+        <group ref={rootRef} scale={[worldScale, worldScale, worldScale]}>
+          <ambientLight
+            ref={ambientLightRef}
+            color={0xffffff}
+            intensity={world.ambient.intensity} />
 
-        <directionalLight
-          ref={directionalLightRef}
-          color={0xffffff}
-          intensity={world.directional.intensity}
-          position={[0, 1.5, 0]}
-          target-position={[0, 0, 0.4]}
-        />
+          <directionalLight
+            ref={directionalLightRef}
+            color={0xffffff}
+            intensity={world.directional.intensity}
+            position={[0, 1.5, 0]}
+            target-position={[0, 0, 0.4]}
+          />
 
-        {
-          characterIds.map(id =>
-            <Suspense key={id} fallback={null}>
-              <Character
-                sceneObject={sceneObjects[id]}
-                modelSettings={models[sceneObjects[id].model] || undefined}
-                isSelected={selections.includes(id)} />
-            </Suspense>
-          )
-        }
+          {
+            characterIds.map(id =>
+              <Suspense key={id} fallback={null}>
+                <Character
+                  sceneObject={sceneObjects[id]}
+                  modelSettings={models[sceneObjects[id].model] || undefined}
+                  isSelected={selections.includes(id)} />
+              </Suspense>
+            )
+          }
 
-        {
-          modelObjectIds.map(id =>
-            <Suspense key={id} fallback={null}>
-              <ModelObject
-                sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)} />
-            </Suspense>
-          )
-        }
-        {
-          virtualCameraIds.map(id =>
-            <Suspense key={id} fallback={null}>
-              <VirtualCamera
-                aspectRatio={aspectRatio}
-                sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)} />
-            </Suspense>)
-        }
+          {
+            modelObjectIds.map(id =>
+              <Suspense key={id} fallback={null}>
+                <ModelObject
+                  sceneObject={sceneObjects[id]}
+                  isSelected={selections.includes(id)} />
+              </Suspense>
+            )
+          }
+          {
+            virtualCameraIds.map(id =>
+              <Suspense key={id} fallback={null}>
+                <VirtualCamera
+                  aspectRatio={aspectRatio}
+                  sceneObject={sceneObjects[id]}
+                  isSelected={selections.includes(id)} />
+              </Suspense>)
+          }
 
-        {
-          world.environment.file &&
-            <Environment
-              environment={world.environment}
-              visible={world.environment.visible} />
-        }
+          {
+            world.environment.file &&
+              <Environment
+                environment={world.environment}
+                visible={world.environment.visible} />
+          }
 
-        <Ground
-          objRef={groundRef}
-          texture={groundTexture}
-          visible={!world.room.visible && world.ground} />
+          <Ground
+            objRef={groundRef}
+            texture={groundTexture}
+            visible={!world.room.visible && world.ground} />
 
-        <Room
-          width={world.room.width}
-          length={world.room.length}
-          height={world.room.height}
-          visible={world.room.visible} />
+          <Room
+            width={world.room.width}
+            length={world.room.length}
+            height={world.room.height}
+            visible={world.room.visible} />
 
-        <TeleportTarget
-          api={useStoreApi}
-          visible={teleportMode && teleportTargetValid}
-          texture={teleportTexture}
-        />
+          <TeleportTarget
+            api={useStoreApi}
+            visible={interactionServiceCurrent.value.match('drag_teleport') && teleportTargetValid}
+            texture={teleportTexture}
+          />
+        </group>
       </>
     )
   })

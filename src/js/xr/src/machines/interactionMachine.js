@@ -122,7 +122,7 @@ const machine = Machine({
         },
         GRIP_DOWN: {
           cond: 'bothGripsDown',
-          actions: (context, event) => { log('MINI MODE!') }
+          actions: 'onToggleMiniMode'
         },
         GRIP_UP: [
           {

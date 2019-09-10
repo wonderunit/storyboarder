@@ -12,7 +12,6 @@ const TeleportTarget = ({ api, texture, visible }) => {
     []
   )
 
-  // TODO worldScale
   return <group position={[0, 0.5, 0]}>
     <mesh
       ref={ref}
