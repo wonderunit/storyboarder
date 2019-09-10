@@ -53,6 +53,11 @@ const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
         />
       </mesh>
 
+      <mesh name="hitter_light" userData={{ type: 'hitter_light' }}>
+        <sphereBufferGeometry attach="geometry" args={[0.125]} />
+        <meshLambertMaterial attach="material" visible={false} />
+      </mesh>
+
       <mesh
         onController={null}
         position={[0, (sceneObject.distance + 0.14) * -0.5, 0]}
