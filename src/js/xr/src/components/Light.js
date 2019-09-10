@@ -1,6 +1,6 @@
 const { useUpdate } = require('react-three-fiber')
 
-const Light = React.memo(({ sceneObject, isSelected, children }) => {
+const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
   const ref = useUpdate(self => {
     self.rotation.x = 0
     self.rotation.z = 0
@@ -12,13 +12,13 @@ const Light = React.memo(({ sceneObject, isSelected, children }) => {
     // spotLight.target.position.set(0, 0, sceneObject.distance)
   }, [sceneObject.rotation, sceneObject.tilt, sceneObject.roll, sceneObject.distance])
 
-  const spotLight = useUpdate(
-    self => {
-      self.target.position.set(0, 0, sceneObject.distance)
-      self.add(self.target)
-    },
-    [sceneObject.intensity, sceneObject.distance]
-  )
+  // const spotLight = useUpdate(
+  //   self => {
+  //     self.target.position.set(0, 0, sceneObject.distance)
+  //     self.add(self.target)
+  //   },
+  //   [sceneObject.intensity, sceneObject.distance]
+  // )
 
   return (
     <group
@@ -32,7 +32,7 @@ const Light = React.memo(({ sceneObject, isSelected, children }) => {
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
     >
       
-      <spotLight
+      {/* <spotLight
         ref={spotLight}
         color={0xffffff}
         intensity={sceneObject.intensity}
@@ -42,7 +42,7 @@ const Light = React.memo(({ sceneObject, isSelected, children }) => {
         distance={sceneObject.distance}
         penumbra={sceneObject.penumbra}
         decay={sceneObject.decay}
-      />
+      /> */}
      
       <mesh>
         <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
@@ -51,6 +51,16 @@ const Light = React.memo(({ sceneObject, isSelected, children }) => {
           color={0xffff66}
           emissive-b={isSelected ? 0.15 : 0}
         />
+      </mesh>
+
+      <mesh position={[0, (sceneObject.distance + 0.14) * -0.5, 0]} scale={[1, -1, 1]}>
+        <cylinderBufferGeometry
+          attach="geometry"
+          args={[sceneObject.distance * Math.tan(sceneObject.angle), 0.05, sceneObject.distance, 64, 1, true]}
+        />
+        <meshBasicMaterial attach="material" transparent={true} color={0xffffff} opacity={sceneObject.intensity * 0.5}>
+          <primitive attach="map" object={texture} />
+        </meshBasicMaterial>
       </mesh>
       {children}
     </group>

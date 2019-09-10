@@ -239,7 +239,8 @@ const SceneContent = connect(
             <Suspense key={id} fallback={null}>
               <Light
                 sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)} />
+                isSelected={selections.includes(id)}
+                texture={teleportTexture} />
               {/* TODO sound beam when selected */}
             </Suspense>
           )
