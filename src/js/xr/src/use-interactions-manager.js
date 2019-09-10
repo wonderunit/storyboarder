@@ -152,7 +152,7 @@ const [useStore, useStoreApi] = create((set, get) => ({
   didMoveCamera: null,
   didRotateCamera: null,
 
-  teleportMaxDist: 10,
+  teleportMaxDist: 20,
   teleportTargetPos: [0, 0, 0],
   teleportTargetValid: false,
 
@@ -492,12 +492,12 @@ const useInteractionsManager = ({
 
       // backward
       if (value > 0.075) {
-        distance = +1
+        distance = +0.5
       }
 
       // forward
       if (value < -0.075) {
-        distance = -1
+        distance = -0.5
       }
 
       if (distance != null) {
