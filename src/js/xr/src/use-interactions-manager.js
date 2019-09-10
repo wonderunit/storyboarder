@@ -71,7 +71,6 @@ const getSelectOffset = (controller, object, distance, point) => {
   return offset
 }
 
-// TODO test worldScale
 const moveObjectZ = (object, event, worldScale) => {
   if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
@@ -85,7 +84,6 @@ const moveObjectZ = (object, event, worldScale) => {
   }
 }
 
-// TODO test worldScale
 const rotateObjectY = (object, event) => {
   if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
