@@ -142,6 +142,7 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
 
 const WORLD_SCALE_LARGE = 1
 const WORLD_SCALE_SMALL = 0.1
+const reusableVector = new THREE.Vector3();
 
 const [useStore, useStoreApi] = create((set, get) => ({
   // values
@@ -595,13 +596,13 @@ const useInteractionsManager = ({
 
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
-        const wp = cursor.getWorldPosition(new THREE.Vector3())
+        const wp = cursor.getWorldPosition(reusableVector)
         wp.sub(controller.userData.selectOffset)
         wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
 
         if (object3d.userData.staticRotation) {
           let quaternion = object3d.parent.worldQuaternion().conjugate()
-          let rotation = object3d.userData.staticRotation.clone().premultiply(quaternion)
+          let rotation = quaternion.multiply(object3d.userData.staticRotation)
           object3d.quaternion.copy(rotation)
         }
 
