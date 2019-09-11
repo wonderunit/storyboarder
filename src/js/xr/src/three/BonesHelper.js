@@ -54,10 +54,7 @@ class BonesHelper extends THREE.Object3D
         let bones = skinnedMesh.skeleton.bones;
         let bone = null;
         let helpingBone = null;
-        let size = 0;
-        let thickness = 0;
         let inverseWorldMatrix = null;
-        let boneMatrix = new THREE.Matrix4();
         for(let i = 0, n = bones.length; i < n; i++)
         {
             bone = bones[i];
@@ -70,17 +67,9 @@ class BonesHelper extends THREE.Object3D
                 inverseWorldMatrix = bone.parent.getInverseMatrixWorld();
             }
             helpingBone = this.helperBonesPool.takeBone();
-            boneMatrix.multiplyMatrices( inverseWorldMatrix, bone.matrixWorld )
-            helpingBone.position.setFromMatrixPosition(boneMatrix);
-            helpingBone.quaternion.setFromRotationMatrix(boneMatrix);
+            this.setHelpingBone(inverseWorldMatrix, helpingBone, bone);
 
-            bone.children[bone.children.length - 1].getWorldPosition(reusableVector);
-            size = bone.worldPosition().distanceTo(reusableVector);
-
-            thickness = Math.min(Math.max(size * 0.8, 0.07), 0.20);
-            thickness = Math.min(thickness, size * 3);
-
-            helpingBone.scale.set(thickness, size, thickness);
+            helpingBone.name = bone.name;
             this.helperBonesPool.updateInstancedBone(helpingBone);
             this.helpingBonesRelation.push({helpingBone:helpingBone, originalBone:bone});
             this.bonesGroup.add(helpingBone)
@@ -97,13 +86,36 @@ class BonesHelper extends THREE.Object3D
             {
                 inverseWorldMatrix = this.bonesGroup.getInverseMatrixWorld();
             }
-            boneMatrix.multiplyMatrices( inverseWorldMatrix, originalBone.matrixWorld )
-            helpingBone.position.setFromMatrixPosition(boneMatrix);
-            helpingBone.quaternion.setFromRotationMatrix(boneMatrix);
-
-            helpingBone.updateMatrix();
+            this.setHelpingBone(inverseWorldMatrix, helpingBone, originalBone);
             this.helperBonesPool.updateInstancedBone(helpingBone);
         }
+    }
+    
+    //Private method
+    setHelpingBone(originalInverseMatrix, helpingBone, originalBone)
+    {
+        let size = 0;
+        let thickness = 0;
+         //Extracts original bone matrx from parents matrix
+        //So to take it world position in world space
+        boneMatrix.multiplyMatrices( originalInverseMatrix, originalBone.matrixWorld );
+        helpingBone.position.setFromMatrixPosition(boneMatrix);
+        helpingBone.quaternion.setFromRotationMatrix(boneMatrix);
+
+        if(originalBone.children.length !== 0)
+        {
+            //Extracts child bone matrx from parents matrix
+            //So to take it world position in world space
+            boneMatrix.multiplyMatrices( originalInverseMatrix, originalBone.children[originalBone.children.length - 1].matrixWorld );
+            reusableVector.setFromMatrixPosition(boneMatrix);
+            size = helpingBone.position.distanceTo(reusableVector);
+    
+            thickness = Math.min(Math.max(size * 0.8, 0.07), 0.20);
+            thickness = Math.min(thickness, size * 3);
+    
+            helpingBone.scale.set(thickness * originalBone.scale.x, size * originalBone.scale.y, thickness * originalBone.scale.z);
+        }
+        helpingBone.updateMatrix();
     }
 
     changeBoneColor(bone, color)
