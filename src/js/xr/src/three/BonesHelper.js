@@ -42,6 +42,9 @@ class BonesHelper extends THREE.Object3D
             return;
         }
         this.intializedSkinnedMeshUuid = skinnedMesh.uuid;
+        // Returns current in-use bones 
+        // The logic behind initialize is that it called once for new object
+        // So we need to release previous Character bones and initialize new ones
         if(this.bonesGroup.children.length > 0)
         {
             this.helperBonesPool.returnBones(this.bonesGroup.children);
@@ -91,21 +94,21 @@ class BonesHelper extends THREE.Object3D
         }
     }
     
-    //Private method
+    // Private method
     setHelpingBone(originalInverseMatrix, helpingBone, originalBone)
     {
         let size = 0;
         let thickness = 0;
-         //Extracts original bone matrx from parents matrix
-        //So to take it world position in world space
+        // Extracts original bone matrx from parents matrix
+        // So to take it world position in world space
         boneMatrix.multiplyMatrices( originalInverseMatrix, originalBone.matrixWorld );
         helpingBone.position.setFromMatrixPosition(boneMatrix);
         helpingBone.quaternion.setFromRotationMatrix(boneMatrix);
 
         if(originalBone.children.length !== 0)
         {
-            //Extracts child bone matrx from parents matrix
-            //So to take it world position in world space
+            // Extracts child bone matrx from parents matrix
+            // So to take it world position in world space
             boneMatrix.multiplyMatrices( originalInverseMatrix, originalBone.children[originalBone.children.length - 1].matrixWorld );
             reusableVector.setFromMatrixPosition(boneMatrix);
             size = helpingBone.position.distanceTo(reusableVector);
@@ -146,7 +149,7 @@ class BonesHelper extends THREE.Object3D
 
     updateMatrixWorld(force)
     {
-        if(this.parent)
+        if(this.parent && this.matrixAutoUpdate)
         {
             super.updateMatrixWorld(force);
             this.update();
