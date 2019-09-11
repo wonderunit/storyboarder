@@ -148,7 +148,7 @@ const SceneContent = connect(
     }, [boneGltf])
 
     const ambientLightRef = useUpdate(self => {
-      self.layers.set(VirtualCamera.VIRTUAL_CAMERA_LAYER)
+      self.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     })
 
     const directionalLightRef = useUpdate(ref => {
@@ -160,7 +160,7 @@ const SceneContent = connect(
 
       ref.rotateX(world.directional.tilt + Math.PI / 2)
 
-      ref.layers.set(VirtualCamera.VIRTUAL_CAMERA_LAYER)
+      ref.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
     const selectedCharacter = selections.length && sceneObjects[selections[0]].type == 'character'
