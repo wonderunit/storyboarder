@@ -84,12 +84,17 @@ const SceneContent = connect(
     characterIds, modelObjectIds, virtualCameraIds
   }) => {
     const { gl, camera, scene } = useThree()
+
+    // loaders
+    const teleportTexture = useTextureLoader('/data/system/xr/teleport.png')
+    const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
+    const boneGltf = useGltf('/data/system/dummies/bone.glb')
+
     // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
     const teleportTargetValid = useStore(state => state.teleportTargetValid)
     const worldScale = useStore(state => state.worldScale)
-
     // actions
     const set = useStore(state => state.set)
 
@@ -118,9 +123,6 @@ const SceneContent = connect(
       scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
     }, [world.backgroundColor])
 
-    const teleportTexture = useTextureLoader('/data/system/xr/teleport.png')
-    const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
-
     const rStats = useRStats()
 
     const teleportRef = useRef()
@@ -140,7 +142,6 @@ const SceneContent = connect(
     })
 
     // initialize the BonesHelper
-    const boneGltf = useGltf('/data/system/dummies/bone.glb')
     useMemo(() => {
       const mesh = boneGltf.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
