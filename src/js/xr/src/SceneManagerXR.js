@@ -1,11 +1,11 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate } = require('react-three-fiber')
+const { Canvas, useThree, useUpdate, useRender } = require('react-three-fiber')
 
 const { connect, Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, Suspense } = React = require('react')
-
+require('./three/GPUPickers/utils/Object3dExtension')
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
 const {
@@ -22,16 +22,23 @@ const {
 
 const useRStats = require('./hooks/use-rstats')
 const useGltf = require('./hooks/use-gltf')
+const useTextureLoader = require('./hooks/use-texture-loader')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
+const { useUiManager } = require('./use-ui-manager')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
+const Room = require('./components/Room')
 const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
+const VirtualCamera = require('./components/VirtualCamera')
+const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
+
+const Controls = require('./components/ui/Controls')
 
 const BonesHelper = require('./three/BonesHelper')
 
@@ -48,15 +55,23 @@ const getSceneObjectModelObjectIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
 )
 
+const getSceneObjectVirtualCamerasIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
+)
+
 const SceneContent = connect(
   state => ({
+    aspectRatio: state.aspectRatio,
     sceneObjects: getSceneObjects(state),
     world: getWorld(state),
     activeCamera: getActiveCamera(state),
     selections: getSelections(state),
+    models: state.models,
 
     characterIds: getSceneObjectCharacterIds(state),
-    modelObjectIds: getSceneObjectModelObjectIds(state)
+    modelObjectIds: getSceneObjectModelObjectIds(state),
+    virtualCameraIds: getSceneObjectVirtualCamerasIds(state)
   }),
   {
     selectObject,
@@ -64,18 +79,22 @@ const SceneContent = connect(
   }
 )(
   ({
-    sceneObjects, world, activeCamera, selections,
+    aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds
+    characterIds, modelObjectIds, virtualCameraIds
   }) => {
     const { gl, camera, scene } = useThree()
+
+    // loaders
+    const teleportTexture = useTextureLoader('/data/system/xr/teleport.png')
+    const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
+    const boneGltf = useGltf('/data/system/dummies/bone.glb')
 
     // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
-    const teleportMode = useStore(state => state.teleportMode)
     const teleportTargetValid = useStore(state => state.teleportTargetValid)
-
+    const worldScale = useStore(state => state.worldScale)
     // actions
     const set = useStore(state => state.set)
 
@@ -101,34 +120,36 @@ const SceneContent = connect(
 
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
+      scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
     }, [world.backgroundColor])
-
-    useMemo(() => {
-      scene.fog = new THREE.Fog( 0x000000, -10, 40 )
-    }, [])
-
-    const teleportTexture = useMemo(
-      () => new THREE.TextureLoader().load('/data/system/xr/teleport.png'), []
-    )
-    const groundTexture = useMemo(
-      () => new THREE.TextureLoader().load('/data/system/grid_floor_1.png'), []
-    )
 
     const rStats = useRStats()
 
     const teleportRef = useRef()
-    const groundRef = useRef()
+    const groundRef = useUpdate(
+      self => {
+        self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+      }
+    )
+    const rootRef = useRef()
 
-    useInteractionsManager({
-      groundRef
+    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
+
+    const { controllers, interactionServiceCurrent } = useInteractionsManager({
+      groundRef,
+      rootRef,
+      uiService
     })
 
     // initialize the BonesHelper
-    const boneGltf = useGltf('/data/system/dummies/bone.glb')
     useMemo(() => {
-      let mesh = boneGltf.scene.children.filter(child => child.isMesh)[0]
+      const mesh = boneGltf.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
     }, [boneGltf])
+
+    const ambientLightRef = useUpdate(self => {
+      self.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
+    })
 
     const directionalLightRef = useUpdate(ref => {
       ref.add(ref.target)
@@ -138,6 +159,8 @@ const SceneContent = connect(
       ref.rotation.y = world.directional.rotation
 
       ref.rotateX(world.directional.tilt + Math.PI / 2)
+
+      ref.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
     const selectedCharacter = selections.length && sceneObjects[selections[0]].type == 'character'
@@ -156,59 +179,93 @@ const SceneContent = connect(
             <Log position={[0, -0.15, -1]} />
           </primitive>
 
-          <Suspense fallback={null}>
-            <primitive object={gl.vr.getController(0)}>
-              <Controller />
-            </primitive>
-          </Suspense>
+          {controllers.filter(Boolean).map(controller =>
+            <Suspense key={controller.uuid} fallback={null}>
+              <primitive object={controller} >
+                <Controller />
 
-          <Suspense fallback={null}>
-            <primitive object={gl.vr.getController(1)}>
-              <Controller />
-            </primitive>
-          </Suspense>
+                {
+                  navigator.getGamepads()[controller.userData.gamepad.index] &&
+                  navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
+                  <Suspense fallback={null}>
+                    <Controls
+                      mode={uiCurrent.value.controls}
+                      getCanvasRenderer={getCanvasRenderer} />
+                  </Suspense>
+                }
+              </primitive>
+            </Suspense>
+          )}
         </group>
 
-        <ambientLight color={0xffffff} intensity={world.ambient.intensity} />
+        <group ref={rootRef} scale={[worldScale, worldScale, worldScale]}>
+          <ambientLight
+            ref={ambientLightRef}
+            color={0xffffff}
+            intensity={world.ambient.intensity} />
 
-        <directionalLight
-          ref={directionalLightRef}
-          color={0xffffff}
-          intensity={world.directional.intensity}
-          position={[0, 1.5, 0]}
-          target-position={[0, 0, 0.4]}
-        />
+          <directionalLight
+            ref={directionalLightRef}
+            color={0xffffff}
+            intensity={world.directional.intensity}
+            position={[0, 1.5, 0]}
+            target-position={[0, 0, 0.4]}
+          />
 
-        {
-          characterIds.map(id =>
-            <Suspense key={id} fallback={null}>
-              <Character
-                sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)} />
-            </Suspense>
-          )
-        }
+          {
+            characterIds.map(id =>
+              <Suspense key={id} fallback={null}>
+                <Character
+                  sceneObject={sceneObjects[id]}
+                  modelSettings={models[sceneObjects[id].model] || undefined}
+                  isSelected={selections.includes(id)} />
+              </Suspense>
+            )
+          }
 
-        {
-          modelObjectIds.map(id =>
-            <Suspense key={id} fallback={null}>
-              <ModelObject
-                sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)} />
-            </Suspense>
-          )
-        }
+          {
+            modelObjectIds.map(id =>
+              <Suspense key={id} fallback={null}>
+                <ModelObject
+                  sceneObject={sceneObjects[id]}
+                  isSelected={selections.includes(id)} />
+              </Suspense>
+            )
+          }
+          {
+            virtualCameraIds.map(id =>
+              <Suspense key={id} fallback={null}>
+                <VirtualCamera
+                  aspectRatio={aspectRatio}
+                  sceneObject={sceneObjects[id]}
+                  isSelected={selections.includes(id)} />
+              </Suspense>)
+          }
 
-        <Ground
-          objRef={groundRef}
-          texture={groundTexture}
-          visible={true/*!world.room.visible && world.ground*/} />
+          {
+            world.environment.file &&
+              <Environment
+                environment={world.environment}
+                visible={world.environment.visible} />
+          }
 
-        <TeleportTarget
-          api={useStoreApi}
-          visible={teleportMode && teleportTargetValid}
-          texture={teleportTexture}
-        />
+          <Ground
+            objRef={groundRef}
+            texture={groundTexture}
+            visible={!world.room.visible && world.ground} />
+
+          <Room
+            width={world.room.width}
+            length={world.room.length}
+            height={world.room.height}
+            visible={world.room.visible} />
+
+          <TeleportTarget
+            api={useStoreApi}
+            visible={interactionServiceCurrent.value.match('drag_teleport') && teleportTargetValid}
+            texture={teleportTexture}
+          />
+        </group>
       </>
     )
   })
@@ -235,6 +292,10 @@ const SceneManagerXR = () => {
 
   const [loaded, setLoaded] = useState(false)
 
+  useMemo(() => {
+    THREE.Cache.enabled = true
+  }, [])
+
   return (
     <>
       {
@@ -247,7 +308,7 @@ const SceneManagerXR = () => {
           }
           <Suspense fallback={<Preloader {...{ loaded, setLoaded }} />}>
             <SceneContent />
-          </ Suspense>
+          </Suspense>
         </Provider>
       </Canvas>
       <div className='scene-overlay' />

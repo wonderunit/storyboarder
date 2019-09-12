@@ -1,14 +1,31 @@
 const THREE = require('three')
-const { useMemo, useRef, useEffect } = React = require('react')
+const { useMemo, useEffect } = React = require('react')
+const { useUpdate } = require('react-three-fiber')
 
 const useGltf = require('../hooks/use-gltf')
+const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-type')
 
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
 
-const materialFactory = () => new THREE.MeshLambertMaterial({
+const VirtualCamera = require('../components/VirtualCamera')
+
+// old material
+// const materialFactory = () => new THREE.MeshLambertMaterial({
+//   color: 0xcccccc,
+//   emissive: 0x0,
+//   flatShading: false
+// })
+
+const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
-  flatShading: false
+  specular: 0x0,
+  reflectivity: 0x0,
+  skinning: false,
+  shininess: 0,
+  flatShading: false,
+  morphNormals: false,
+  morphTargets: false
 })
 
 const meshFactory = source => {
@@ -26,11 +43,15 @@ const meshFactory = source => {
 }
 
 const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
-  const ref = useRef(null)
+  const ref = useUpdate(
+    self => {
+      self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+    }
+  )
 
-  // TODO detect user models / custom objects
+
   const filepath = useMemo(
-    () => `/data/system/objects/${sceneObject.model}.glb`,
+    () => getFilepathForModelByType(sceneObject),
     [sceneObject.model]
   )
 
@@ -43,7 +64,7 @@ const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
       return [
         <mesh key={sceneObject.id}>
           <boxBufferGeometry
-            ref={ref => ref.translate(0, 0.5, 0)}
+            ref={ref => ref && ref.translate(0, 0.5, 0)}
             attach='geometry'
             args={[1, 1, 1]} />
           <primitive
@@ -59,7 +80,7 @@ const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
         if (child.isMesh) {
           children.push(
             <primitive
-              key={sceneObject.id}
+              key={`${sceneObject.id}-${child.uuid}`}
               object={meshFactory(child)}
             />
           )
@@ -77,7 +98,7 @@ const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
     traverseMeshMaterials(ref.current, material => {
       if (material.emissive) {
         material.emissive.r = 0x9a / 0xff * amp
-        material.emissive.b = 0x72 / 0xff * amp
+        // material.emissive.g = 0x72 / 0xff * amp
         material.emissive.b = 0xe9 / 0xff * amp
       }
     })

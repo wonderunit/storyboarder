@@ -19,8 +19,10 @@ const applyDeviceQuaternion = require('../../shot-generator/apply-device-quatern
 const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
-const { interpret } = require('xstate/lib/interpreter')
+const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
+
+require('./three/GPUPickers/utils/Object3dExtension')
 
 const {
   // selectors
@@ -34,6 +36,9 @@ const {
 
   selectBone
 } = require('../../shared/reducers/shot-generator')
+
+const WORLD_SCALE_LARGE = 1
+const WORLD_SCALE_SMALL = 0.1
 
 const getRotationMemento = (controller, object) => {
   let controllerRot = new THREE.Matrix4().extractRotation(controller.matrixWorld)
@@ -66,7 +71,6 @@ const getSelectOffset = (controller, object, distance, point) => {
   return offset
 }
 
-// TODO test worldScale
 const moveObjectZ = (object, event, worldScale) => {
   if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
@@ -80,7 +84,6 @@ const moveObjectZ = (object, event, worldScale) => {
   }
 }
 
-// TODO test worldScale
 const rotateObjectY = (object, event) => {
   if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
@@ -91,27 +94,26 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-// TODO worldScale
-const snapObjectRotation = (object, controller, worldScale = 1) => {
-  object.matrix.premultiply(controller.matrixWorld)
-  object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-  object.scale.set(object.scale.x / worldScale, object.scale.y / worldScale, object.scale.z / worldScale)
-  object.position.multiplyScalar(1 / worldScale)
-
+const snapObjectRotation = object => {
+  // setup for rotation
   object.userData.order = object.rotation.order
   object.rotation.reorder('YXZ')
 
+  // snap rotation y by 22.5°
   const sign = Math.sign(object.rotation.y)
   let degreeY = THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
   degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
 
+  // snap rotation z to 180°
   let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
   degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
 
+  // update rotation
   object.rotation.x = 0
   object.rotation.z = degreeZ
   object.rotation.y = degreeY
   object.rotation.order = object.userData.order
+  object.updateMatrixWorld()
 }
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
@@ -144,22 +146,21 @@ const [useStore, useStoreApi] = create((set, get) => ({
   teleportPos: { x: 0, y: 0, z: 0 },
   teleportRot: { x: 0, y: 0, z: 0 },
 
+  worldScale: WORLD_SCALE_LARGE,
+  standingMemento: null,
+
   didMoveCamera: null,
   didRotateCamera: null,
 
-  teleportMaxDist: 10,
-  teleportMode: false,
+  teleportMaxDist: 20,
   teleportTargetPos: [0, 0, 0],
   teleportTargetValid: false,
 
   boneRotationMemento: {},
 
-  canSnap: false,
-
   // actions
   setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
   setDidRotateCamera: value => set(produce(state => { state.didRotateCamera = value })),
-  setTeleportMode: value => set(state => ({ ...state, teleportMode: value })),
 
   moveCameraByDistance: (camera, distance) => set(produce(state => {
     let center = new THREE.Vector3()
@@ -183,11 +184,66 @@ const [useStore, useStoreApi] = create((set, get) => ({
     teleportState(state, camera, x, y, z, r)
   })),
 
+  setMiniMode: (value, camera) => set(produce(state => {
+    if (value) {
+      // switch to mini mode
+      state.worldScale = WORLD_SCALE_SMALL
+
+      // alter the camera position
+      let offsetVector = new THREE.Vector3(0, 0, 0.5)
+      offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(camera.matrixWorld))
+      offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1))
+
+      teleportState(state, camera,
+        (state.teleportPos.x + camera.position.x) * state.worldScale + offsetVector.x,
+        -(camera.position.y - 0.75),
+        (state.teleportPos.z + camera.position.z) * state.worldScale + offsetVector.z
+      )
+    } else {
+      // set the world scale
+      state.worldScale = WORLD_SCALE_LARGE
+    }
+  })),
+
+  // remember where we were standing
+  saveStandingMemento: camera => set(state => {
+    let v = new THREE.Vector3()
+    camera.getWorldPosition(v)
+
+    return {
+      ...state,
+
+      standingMemento: {
+        position: {
+          x: v.x,
+          y: 0,
+          z: v.z
+        }
+      }
+    }
+  }),
+
+  // return to where we were standing
+  restoreStandingMemento: camera => set(state => produce(state, draft => {
+    if (state.standingMemento) {
+      let { x, z } = state.standingMemento.position
+
+      teleportState(draft, camera, x, 0, z, null)
+    }
+  })),
+
+  // clear the memento
+  clearStandingMemento: () => set(state => ({ ...state,
+    standingMemento: null
+  })),
+
   set: fn => set(produce(fn))
 }))
 
 const useInteractionsManager = ({
-  groundRef
+  groundRef,
+  rootRef,
+  uiService
 }) => {
   const { gl, camera, scene } = useThree()
 
@@ -205,7 +261,6 @@ const useInteractionsManager = ({
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)
   const didRotateCamera = useStore(state => state.didRotateCamera)
-  const teleportMode = useStore(state => state.teleportMode)
   const teleportTargetValid = useStore(state => state.teleportTargetValid)
   const teleportMaxDist = useStore(state => state.teleportMaxDist)
 
@@ -214,22 +269,43 @@ const useInteractionsManager = ({
   const setDidRotateCamera = useStore(state => state.setDidRotateCamera)
   const moveCameraByDistance = useStore(state => state.moveCameraByDistance)
   const rotateCameraByRadians = useStore(state => state.rotateCameraByRadians)
-  const teleportFn = useStore(state => state.teleport)
-  const teleport = (x, y, z, r) => teleportFn(camera, x, y, z, r)
-  const setTeleportMode = useStore(state => state.setTeleportMode)
+  const teleport = useStore(state => state.teleport)
+  const setMiniMode = useStore(state => state.setMiniMode)
+  const saveStandingMemento = useStore(state => state.saveStandingMemento)
+  const restoreStandingMemento = useStore(state => state.restoreStandingMemento)
+  const clearStandingMemento = useStore(state => state.clearStandingMemento)
   const set = useStore(state => state.set)
 
   const store = useReduxStore()
   const dispatch = useDispatch()
 
-  const oppositeController = controller => controllers.find(i => i.uuid !== controller.uuid)
-
   const onTriggerStart = event => {
     const controller = event.target
-
     let intersection = null
 
-    // TODO selecting GUI objects
+    let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+    let intersections = getControllerIntersections(controller, uis)
+    intersection = intersections.length && intersections[0]
+    if (intersection) {
+      let u = intersection.uv.x
+      let v = intersection.uv.y
+      uiService.send({
+        type: 'TRIGGER_START',
+        controller: event.target,
+        intersection: {
+          id: intersection.object.userData.id,
+          type: 'ui',
+
+          object: intersection.object,
+          distance: intersection.distance,
+          point: intersection.point,
+          uv: intersection.uv
+        }
+      })
+      return
+    }
+
+
 
     // if the BonesHelper instance is in the scene ...
     if ( BonesHelper.getInstance().isSelected ) {
@@ -256,7 +332,7 @@ const useInteractionsManager = ({
 
     let match = null
 
-    // include all interactables (Model Object, Character, etc)
+    // include all interactables (Model Object, Character, Virtual Camera, etc)
     let list = scene.__interaction
 
     // setup the GPU picker
@@ -301,6 +377,36 @@ const useInteractionsManager = ({
   }
 
   const onTriggerEnd = event => {
+    const controller = event.target
+
+    let intersection = null
+
+    let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+    let intersections = getControllerIntersections(controller, uis)
+    intersection = intersections.length && intersections[0]
+    if (intersection) {
+      let u = intersection.uv.x
+      let v = intersection.uv.y
+      uiService.send({
+        type: 'TRIGGER_END',
+        controller: event.target,
+        intersection: {
+          id: intersection.object.userData.id,
+          type: 'ui',
+
+          object: intersection.object,
+          distance: intersection.distance,
+          point: intersection.point,
+          uv: intersection.uv
+        }
+      })
+    } else {
+      uiService.send({
+        type: 'TRIGGER_END',
+        controller: event.target
+      })
+    }
+
     interactionService.send({ type: 'TRIGGER_END', controller: event.target })
   }
 
@@ -386,12 +492,12 @@ const useInteractionsManager = ({
 
       // backward
       if (value > 0.075) {
-        distance = +1
+        distance = +0.5
       }
 
       // forward
       if (value < -0.075) {
-        distance = -1
+        distance = -0.5
       }
 
       if (distance != null) {
@@ -432,11 +538,18 @@ const useInteractionsManager = ({
     onAxesChanged
   })
 
+  const reusableVector = useRef()
+  const getReusableVector = () => {
+    if (!reusableVector.current) {
+      reusableVector.current = new THREE.Vector3()
+    }
+    return reusableVector.current
+  }
+
   // TODO could model these as ... activities? exec:'render' actions?
   useRender(() => {
     // don't wait for a React update
     // read values directly from stores
-    let teleportMode = useStoreApi.getState().teleportMode
     let selections = getSelections(store.getState())
     let selectedId = selections.length ? selections[0] : null
 
@@ -466,7 +579,10 @@ const useInteractionsManager = ({
       if (hits.length) {
         let hit = hits[0]
         if (hit.distance < teleportMaxDist) {
-          let teleportTargetPos = hit.point.toArray()
+          let worldScale = useStoreApi.getState().worldScale
+
+          let teleportTargetPos = hit.point.multiplyScalar(1 / worldScale).toArray()
+
           set(state => ({ ...state, teleportTargetPos, teleportTargetValid: true }))
         } else {
           set(state => ({ ...state, teleportTargetValid: false }))
@@ -478,23 +594,23 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      let canSnap = useStoreApi.getState().canSnap
-
-      let shouldMoveWithCursor =
-        (object3d.userData.type == 'character') || canSnap
-
+      let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
       if (shouldMoveWithCursor) {
-        // TODO worldscale
-        let worldScale = 1
-
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
-        const wp = cursor.getWorldPosition(new THREE.Vector3())
+        const wp = cursor.getWorldPosition(getReusableVector())
         wp.sub(controller.userData.selectOffset)
+        wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
 
-        // constrain object rotation?
-        // object3d.rotation.y = ???
-        object3d.position.copy(wp).multiplyScalar(1 / worldScale)
+        if (object3d.userData.staticRotation) {
+          let quaternion = object3d.parent.worldQuaternion().conjugate()
+          let rotation = quaternion.multiply(object3d.userData.staticRotation)
+          object3d.quaternion.copy(rotation)
+        }
+
+        object3d.position.copy(wp)
+        object3d.updateMatrix()
+        object3d.updateMatrixWorld()
       }
     }
 
@@ -531,235 +647,264 @@ const useInteractionsManager = ({
     }
   }, false, [set, controllers])
 
+  // update ui every frame
+  useRender(() => {
+    if (uiService.state.value.input == 'dragging') {
+      let controller = uiService.state.context.draggingController
+
+      let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+      let intersections = getControllerIntersections(controller, uis)
+      let intersection = intersections.length && intersections[0]
+
+      if (intersection) {
+        let u = intersection.uv.x
+        let v = intersection.uv.y
+        uiService.send({
+          type: 'CONTROLLER_INTERSECTION',
+          controller,
+          intersection
+        })
+      }
+    }
+  }, false, [uiService.state.value.input])
+
   useMemo(() => {
     // TODO why is this memo called multiple times?
-    console.log('useInteractionManager')
+    console.log('useInteractionsManager')
   }, [])
 
-  const interactionService = useMemo(() => {
-    const interactionService = interpret(
-      interactionMachine
-    ).onEvent(e => {
-      //
-    }).onTransition((state, event) => {
-      const { value } = state
+  const [interactionServiceCurrent, interactionServiceSend, interactionService] = useMachine(
+    interactionMachine,
+    {
+      actions: {
+        onDragTeleportStart: (context, event) => {
+          log('-- onDragTeleportStart')
+          // the target position value will be old until the next gl render
+          // so consider teleportTargetValid to be false, to hide the mesh, until then
+          set(state => ({ ...state, teleportTargetValid: false }))
+        },
+        onDragTeleportEnd: (context, event) => {
+          log('-- onDragTeleportEnd')
+          set(state => ({ ...state, teleportTargetValid: false }))
+        },
+        onTeleport: (context, event) => {
+          log('-- teleport')
+          if (teleportTargetValid) {
+            let pos = useStoreApi.getState().teleportTargetPos
 
-      log(`${event.type} -> ${value}`)
-    })
+            // world scale is always reset to large
+            setMiniMode(false, camera)
 
-    interactionService.start()
+            // reposition
+            teleport(camera, pos[0], 0, pos[2], null)
 
-    return interactionService
-  }, [])
-
-  interactionMachine.options.actions = {
-    ...interactionMachine.options.actions,
-
-    // TODO base hide/show on context and remove teleportMode and teleportTargetValid entirely
-    onDragTeleportStart: (context, event) => {
-      log('-- onDragTeleportStart')
-      setTeleportMode(true)
-      // the target position value will be old until the next gl render
-      // so consider teleportTargetValid to be false, to hide the mesh, until then
-      set(state => ({ ...state, teleportTargetValid: false }))
-    },
-    onDragTeleportEnd: (context, event) => {
-      log('-- onDragTeleportEnd')
-      setTeleportMode(false)
-      set(state => ({ ...state, teleportTargetValid: false }))
-    },
-    onTeleport: (context, event) => {
-      log('-- teleport')
-      // TODO adjust by worldScale
-      // TODO reset worldScale after teleport
-      if (teleportTargetValid) {
-        let pos = useStoreApi.getState().teleportTargetPos
-        teleport(pos[0], 0, pos[2], null)
-        // setTeleportMode(false)
-      }
-    },
-
-    onSelected: (context, event) => {
-      log('-- onSelected')
-
-      let controller = event.controller
-      let { object, distance, point } = event.intersection
-
-      controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-
-      dispatch(selectObject(context.selection))
-    },
-
-    onSelectNone: (context, event) => {
-      let controller = event.controller
-      log('-- onSelectNone', controller)
-      controller.userData.selectOffset = null
-
-      dispatch(selectObject(null))
-
-      BonesHelper.getInstance().resetSelection()
-    },
-
-    onDragObjectEntry: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = event.intersection.object
-
-      if (object.userData.type != 'character') {
-        let worldScale = 1 // TODO
-
-        object.scale.multiplyScalar(worldScale)
-        controller.attach(object)
-        object.updateMatrixWorld(true)
-      }
-
-      // TODO soundBeam
-      // soundBeam.current.play()
-    },
-    onDragObjectExit: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
-      // TODO worldscale
-      let root = scene
-
-      // TODO soundBeam
-      // soundBeam.current.stop()
-
-      if (object.parent != root) {
-        root.attach(object)
-        object.updateMatrixWorld()
-      }
-
-      let rotation = object.userData.type == 'character'
-        ? object.rotation.y
-        : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-      dispatch(updateObject(context.selection, {
-        x: object.position.x,
-        y: object.position.z,
-        z: object.position.y,
-        rotation
-      }))
-    },
-    onSnapStart: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
-      // TODO worldScale
-      let worldScale = 1
-      let root = scene
-
-      controller.attach(object)
-      object.updateMatrixWorld()
-      snapObjectRotation(object, controller, worldScale)
-      root.add(object)
-
-      let intersections = getControllerIntersections(controller, [object])
-      let { distance, point } = intersections[0]
-
-      controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-      set(state => { state.canSnap = true })
-    },
-    onSnapEnd: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
-      // TODO worldScale
-      // let worldScale = 1
-      // let root = scene
-      // object.scale.set(1, 1, 1)
-      // root.add(object)
-      // object.position.multiplyScalar(1 / worldScale)
-
-      controller.attach(object)
-      controller.userData.selectOffset = null
-
-      set(state => { state.canSnap = false })
-    },
-
-    moveAndRotateCamera: (context, event) => {
-      onMoveCamera(event)
-      onRotateCamera(event)
-    },
-
-    moveAndRotateObject: (context, event) => {
-      let controller = gl.vr.getController(context.draggingController)
-      let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
-      // TODO worldScale
-      let worldScale = 1
-
-      let canSnap = useStoreApi.getState().canSnap
-      let shouldMoveWithCursor =
-        (object.userData.type == 'character') || canSnap
-
-      let target = shouldMoveWithCursor
-        ? controller.getObjectByName('cursor')
-        : object
-
-      moveObjectZ(target, event, worldScale)
-      rotateObjectY(object, event, controller)
-    },
-
-
-    onRotateBoneEntry: (context, event) => {
-      let controller = event.controller
-      let bone = event.intersection.bone
-
-      useStoreApi.setState({
-        boneRotationMemento: getRotationMemento(controller, bone)
-      })
-
-      // select by UUID, like shot generator does
-      dispatch(selectBone(bone.uuid))
-      BonesHelper.getInstance().selectBone(bone)
-    },
-    onRotateBoneExit: (context, event) => {
-      useStoreApi.setState({
-        boneRotationMemento: {}
-      })
-
-      let selectedBone = getSelectedBone(store.getState())
-      let bone = scene.getObjectByProperty('uuid', selectedBone)
-
-      let parent
-      bone.traverseAncestors(ancestor => {
-        if (parent == null && ancestor.userData.type == 'character') {
-          parent = ancestor
-        }
-      })
-
-      let rotation = new THREE.Euler()
-      rotation.setFromQuaternion(bone.quaternion.clone().normalize(), 'XYZ')
-
-      let id = parent.userData.id
-      let name = bone.name
-
-      // TODO wrap in an undo group
-      dispatch(
-        updateCharacterSkeleton({
-          id,
-          name,
-          rotation: {
-            x: rotation.x,
-            y: rotation.y,
-            z: rotation.z
+            // clear any prior memento
+            clearStandingMemento()
           }
-        })
-      )
-      dispatch(selectBone(null))
-      BonesHelper.getInstance().resetSelection()
+        },
+
+        onSelected: (context, event) => {
+          let controller = event.controller
+          let { object, distance, point } = event.intersection
+          log('-- onSelected')
+
+          controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
+          dispatch(selectObject(context.selection))
+        },
+
+        onSelectNone: (context, event) => {
+          let controller = event.controller
+          log('-- onSelectNone', controller)
+
+          controller.userData.selectOffset = null
+          dispatch(selectObject(null))
+          BonesHelper.getInstance().resetSelection()
+        },
+
+        onDragObjectEntry: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = event.intersection.object
+
+          if (object.userData.type != 'character') {
+            controller.attach(object)
+            object.updateMatrixWorld(true)
+          }
+
+          // TODO soundBeam
+          // soundBeam.current.play()
+        },
+        onDragObjectExit: (context, event) => {
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+          let root = rootRef.current
+          if (object.parent != root) {
+            root.attach(object)
+            object.updateMatrixWorld()
+          }
+
+          // TODO soundBeam
+          // soundBeam.current.stop()
+
+          if (object.userData.type === "virtual-camera") {
+            const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+            dispatch(updateObject(context.selection, {
+              x: object.position.x,
+              y: object.position.z,
+              z: object.position.y,
+              rotation: euler.y,
+              roll: euler.z,
+              tilt: euler.x
+            }))
+          } else {
+            let rotation = object.userData.type == 'character'
+              ? object.rotation.y
+              : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+            dispatch(updateObject(context.selection, {
+              x: object.position.x,
+              y: object.position.z,
+              z: object.position.y,
+              rotation
+            }))
+          }
+        },
+        onSnapStart: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+          // translate
+          object.matrix.premultiply(controller.matrixWorld)
+          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+
+          // rotate
+          snapObjectRotation(object)
+          object.userData.staticRotation = object.quaternion.clone()
+
+          // translate back
+          object.matrix.premultiply(controller.getInverseMatrixWorld())
+          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+
+          object.updateMatrixWorld(true)
+
+          getGpuPicker().setupScene([object])
+          let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
+          if (intersections.length) {
+            let { distance, point } = intersections[0]
+
+            controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
+          } else {
+            controller.userData.selectOffset = new THREE.Vector3()
+            log('WARNING GPU picker lost object')
+          }
+        },
+        onSnapEnd: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+          if (object.userData.staticRotation) {
+            object.userData.staticRotation = null
+          }
+
+          controller.userData.selectOffset = null
+        },
+
+        moveAndRotateCamera: (context, event) => {
+          onMoveCamera(event)
+          onRotateCamera(event)
+        },
+
+        moveAndRotateObject: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+
+          let { worldScale } = useStoreApi.getState()
+
+          let shouldMoveWithCursor = (object.userData.type == 'character') || object.userData.staticRotation
+          let target = shouldMoveWithCursor
+            ? controller.getObjectByName('cursor')
+            : object
+          moveObjectZ(target, event, worldScale)
+
+          rotateObjectY(object, event, controller)
+        },
+
+
+        onRotateBoneEntry: (context, event) => {
+          let controller = event.controller
+          let bone = event.intersection.bone
+
+          useStoreApi.setState({
+            boneRotationMemento: getRotationMemento(controller, bone)
+          })
+
+          // select by UUID, like shot generator does
+          dispatch(selectBone(bone.uuid))
+          BonesHelper.getInstance().selectBone(bone)
+        },
+        onRotateBoneExit: (context, event) => {
+          useStoreApi.setState({
+            boneRotationMemento: {}
+          })
+
+          let selectedBone = getSelectedBone(store.getState())
+          let bone = scene.getObjectByProperty('uuid', selectedBone)
+
+          let parent
+          bone.traverseAncestors(ancestor => {
+            if (parent == null && ancestor.userData.type == 'character') {
+              parent = ancestor
+            }
+          })
+
+          let rotation = new THREE.Euler()
+          rotation.setFromQuaternion(bone.quaternion.clone().normalize(), 'XYZ')
+
+          let id = parent.userData.id
+          let name = bone.name
+
+          // TODO wrap in an undo group
+          dispatch(
+            updateCharacterSkeleton({
+              id,
+              name,
+              rotation: {
+                x: rotation.x,
+                y: rotation.y,
+                z: rotation.z
+              }
+            })
+          )
+          dispatch(selectBone(null))
+          BonesHelper.getInstance().resetSelection()
+        },
+
+        onToggleMiniMode: (context, event) => {
+          let { worldScale } = useStoreApi.getState()
+
+          if (worldScale === WORLD_SCALE_LARGE) {
+            saveStandingMemento(camera)
+
+            setMiniMode(true, camera)
+          } else {
+            setMiniMode(false, camera)
+
+            restoreStandingMemento(camera)
+            clearStandingMemento()
+          }
+        }
+      },
+
+      // services: {
+      //   example: (context, event) => new Promise(resolve => {
+      //     console.log('an example service')
+      //     resolve()
+      //   })
+      // },
+
+      logger: log
     }
-  }
+  )
 
-  // StateNode.withConfig doesn't accept services until xstate 4.6.7
-  interactionMachine.options.services = {
-    ...interactionMachine.options.services,
-
-    // example: (context, event) => new Promise(resolve => {
-    //   console.log('an example service')
-    //   resolve()
-    // }),
-  }
+  return { controllers, interactionServiceCurrent }
 }
 
 module.exports = {
