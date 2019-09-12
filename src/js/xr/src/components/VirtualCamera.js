@@ -135,6 +135,26 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
     [getRenderTarget]
   )
 
+  const instancedBorderGroup = useMemo(() => {
+    const geometry = new THREE.PlaneBufferGeometry(1, 1)
+    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })
+    const instancedBorderMesh = new THREE.InstancedMesh(geometry, material, 4, false, false, false)
+    const instancedBorderGroup = new THREE.Group()
+
+    for (let i = 0; i < 4; i++) {
+      instancedBorderGroup.add(instancedBorderMesh)
+      if (i < 2) {
+        instancedBorderMesh.setPositionAt(i, new THREE.Vector3((size * aspectRatio + 0.009) * (i % 2 === 0 ? 0.5 : -0.5), 0.3, 0))
+        instancedBorderMesh.setScaleAt(i, new THREE.Vector3(0.009, size, 0))
+      } else {
+        instancedBorderMesh.setPositionAt(i, new THREE.Vector3(0, 0.3 + (size + 0.009) * (i % 2 === 0 ? 0.5 : -0.5), 0))
+        instancedBorderMesh.setScaleAt(i, new THREE.Vector3(size * aspectRatio + 0.009 * 2, 0.009, 0))
+      }
+    }
+
+    return instancedBorderGroup
+  }, [])
+
   const cameraView = useMemo(() => {
     return <group>
       <mesh
@@ -152,38 +172,7 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
       >
         <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
       </mesh>
-      <group>
-        <mesh
-          position={[(size * aspectRatio + 0.009) * -0.5, 0.3, 0]}
-          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
-        >
-          <planeGeometry attach="geometry" args={[0.009, size]} />
-        </mesh>
-        <mesh
-          position={[(size * aspectRatio + 0.009) * 0.5, 0.3, 0]}
-          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
-        >
-          <planeGeometry attach="geometry" args={[0.009, size]} />
-        </mesh>
-        <mesh
-          position={[0, (0.3) + (size + 0.009) * -0.5, 0]}
-          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
-        >
-          <planeGeometry
-            attach="geometry"
-            args={[size * aspectRatio + 0.009 * 2, 0.009]}
-          />
-        </mesh>
-        <mesh
-          position={[0, (0.3) + (size + 0.009) * 0.5, 0]}
-          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
-        >
-          <planeGeometry
-            attach="geometry"
-            args={[size * aspectRatio + 0.009 * 2, 0.009]}
-          />
-        </mesh>
-      </group>
+      <primitive object={instancedBorderGroup} />
     </group>
   }, [])
 
