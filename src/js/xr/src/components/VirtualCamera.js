@@ -152,6 +152,38 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
       >
         <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
       </mesh>
+      <group>
+        <mesh
+          position={[(size * aspectRatio + 0.009) * -0.5, 0.3, 0]}
+          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
+        >
+          <planeGeometry attach="geometry" args={[0.009, size]} />
+        </mesh>
+        <mesh
+          position={[(size * aspectRatio + 0.009) * 0.5, 0.3, 0]}
+          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
+        >
+          <planeGeometry attach="geometry" args={[0.009, size]} />
+        </mesh>
+        <mesh
+          position={[0, (0.3) + (size + 0.009) * -0.5, 0]}
+          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
+        >
+          <planeGeometry
+            attach="geometry"
+            args={[size * aspectRatio + 0.009 * 2, 0.009]}
+          />
+        </mesh>
+        <mesh
+          position={[0, (0.3) + (size + 0.009) * 0.5, 0]}
+          material={new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })}
+        >
+          <planeGeometry
+            attach="geometry"
+            args={[size * aspectRatio + 0.009 * 2, 0.009]}
+          />
+        </mesh>
+      </group>
     </group>
   }, [])
 
