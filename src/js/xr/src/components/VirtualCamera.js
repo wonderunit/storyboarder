@@ -158,14 +158,12 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
   const cameraView = useMemo(() => {
     return <group>
       <mesh
-        userData={{ type: 'view' }}
         position={[0, 0.3, 0]}
         material={heightShader}
       >
         <planeGeometry attach='geometry' args={[size * aspectRatio, size]} />
       </mesh>
       <mesh
-        userData={{ type: 'view' }}
         position={[0, 0.3, 0]}
         rotation={[0, Math.PI, 0]}
         material={heightShader}
