@@ -8,7 +8,6 @@ const { useMachine } = require('@xstate/react')
 
 const { log } = require('./components/Log')
 const uiMachine = require('./machines/uiMachine')
-const { useImageBitmapLoader, imageBitmapLoaderResource } = require('./hooks/use-imagebitmap-loader')
 
 const R = require('ramda')
 
@@ -913,28 +912,7 @@ const useUiManager = () => {
 
   const store = useReduxStore()
 
-  // preload icons to THREE.Cache via react-cache
-  useMemo(() => {
-    [
-      'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
-      'close',
-
-      'camera', 'eye',
-
-      'icon-toolbar-camera',
-      'icon-toolbar-object',
-      'icon-toolbar-character',
-      'icon-toolbar-light',
-
-      'pose', 'object',
-
-      'help_1', 'help_2', 'help_3', 'help_4', 'help_5', 'help_6', 'help_7',
-      'help_8'
-    ].map(getIconFilepathByName)
-      .map(imageBitmapLoaderResource.read)
-  }, [])
-
-  // for now, preload pose, character, and model images to THREE.Cache via react-cache
+  // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
   const models = useSelector(state => state.models)
 
@@ -957,17 +935,17 @@ const useUiManager = () => {
     // poses
     //   .map(model => model.id)
     //   .map(getPoseImageFilepathById)
-    //   .map(imageBitmapLoaderResource.read)
+    //   .map(THREE.ImageBitmapLoader.load)
 
     characterModels
       .map(model => model.id)
       .map(getCharacterImageFilepathById)
-      .map(imageBitmapLoaderResource.read)
+      .map(filepath => new THREE.ImageBitmapLoader().load(filepath))
 
     objectModels
       .map(model => model.id)
       .map(getModelImageFilepathById)
-      .map(imageBitmapLoaderResource.read)
+      .map(filepath => new THREE.ImageBitmapLoader().load(filepath))
   }, [])
 
   const [uiCurrent, uiSend, uiService] = useMachine(
@@ -1063,6 +1041,26 @@ const useUiManager = () => {
   return { uiService, uiCurrent, getCanvasRenderer }
 }
 
+const UI_ICON_NAMES = [
+  'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
+  'close',
+
+  'camera', 'eye',
+
+  'icon-toolbar-camera',
+  'icon-toolbar-object',
+  'icon-toolbar-character',
+  'icon-toolbar-light',
+
+  'pose', 'object',
+
+  'help_1', 'help_2', 'help_3', 'help_4', 'help_5', 'help_6', 'help_7',
+  'help_8'
+]
+
+const UI_ICON_FILEPATHS = UI_ICON_NAMES.map(getIconFilepathByName)
+
 module.exports = {
-  useUiManager
+  useUiManager,
+  UI_ICON_FILEPATHS
 }
