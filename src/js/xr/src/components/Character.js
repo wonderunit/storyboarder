@@ -45,12 +45,27 @@ const Character = React.memo(({ sceneObject, modelSettings, isSelected }) => {
         let mesh = meshes[i]
         mesh.matrixAutoUpdate = false
         map = mesh.material.map
-        mesh.material = new THREE.MeshBasicMaterial({
+
+        mesh.material = new THREE.MeshToonMaterial({
           map: map,
+          color: 0xffffff,
+          emissive: 0x0,
+          specular: 0x0,
+          reflectivity: 0x0,
           skinning: true,
-          morphTargets: true,
-          color: 0xffffff
+          shininess: 0,
+          flatShading: false,
+          morphNormals: true,
+          morphTargets: true
         })
+
+        // // basic material
+        // mesh.material = new THREE.MeshBasicMaterial({
+        //   map: map,
+        //   skinning: true,
+        //   morphTargets: true,
+        //   color: 0xffffff
+        // })
         lod.addLevel(mesh, d * 4)
       }
 

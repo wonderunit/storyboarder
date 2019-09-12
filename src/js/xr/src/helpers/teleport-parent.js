@@ -14,9 +14,9 @@ const teleportParent = (parent, child, x, y, z, r) => {
     parent.updateMatrixWorld()
   }
 
-  // reset y unless given explicit value
+  // if z is present
   if (y != null) {
-    parent.position.y = 0
+    parent.position.y = y
   }
 
   if (r != null) {

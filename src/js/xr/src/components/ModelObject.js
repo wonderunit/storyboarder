@@ -9,10 +9,23 @@ const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const materialFactory = () => new THREE.MeshLambertMaterial({
+// old material
+// const materialFactory = () => new THREE.MeshLambertMaterial({
+//   color: 0xcccccc,
+//   emissive: 0x0,
+//   flatShading: false
+// })
+
+const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
-  flatShading: false
+  specular: 0x0,
+  reflectivity: 0x0,
+  skinning: false,
+  shininess: 0,
+  flatShading: false,
+  morphNormals: false,
+  morphTargets: false
 })
 
 const meshFactory = source => {

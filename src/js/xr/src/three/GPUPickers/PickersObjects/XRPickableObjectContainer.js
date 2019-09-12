@@ -1,27 +1,16 @@
 const Pickable = require("./Pickable");
 class XRPickableObjectContainer extends Pickable
 {
-    constructor(sceneObject, idPool)
+    constructor(sceneObject, idPool, excludingList)
     {
         super(sceneObject);
         this.sceneMeshes = [];
         this.pickingMaterials = [];
         this.pickingMeshes = [];
-        this.getMeshesFromSceneObject();
+        this.getMeshes(this.sceneObject, this.sceneMeshes, excludingList);
         this.isContainer = true;
         this.listOfChangedObjects = [];
         this.idPool = idPool;
-    }
-
-    getMeshesFromSceneObject()
-    {
-        this.sceneObject.traverse(sceneMesh => 
-        {
-            if(sceneMesh.type === "Mesh")
-            {
-                this.sceneMeshes.push(sceneMesh);
-            }
-        });
     }
 
     initialize(id)
@@ -80,24 +69,33 @@ class XRPickableObjectContainer extends Pickable
         return false;
     }
 
-    isObjectChanged()
+    isObjectChanged(excludingList)
     {
         this.listOfChangedObjects = [];
-        this.sceneObject.traverse(object => 
+        this.getMeshes(this.sceneObject, this.listOfChangedObjects, excludingList);
+        return this.listOfChangedObjects.length === 0 ? false : true;
+    }
+
+    getMeshes(object, listOfMeshes, excludingList)
+    {
+        if(object.isMesh && !this.isObjectAdded(object) && object.visible)
         {
-            if(!this.isObjectAdded(object) && object.type === "Mesh" 
-                && object.visible)
-            {
-                this.listOfChangedObjects.push(object);
-            }
-        })
-        if(this.listOfChangedObjects.length === 0)
-        {
-            return false;
+            listOfMeshes.push(object);
         }
         else
         {
-            return true;
+            if(excludingList.some(obj => obj.uuid === object.uuid))
+            {
+                return;
+            }
+            for(let i = 0; i < object.children.length; i++)
+            {
+                let child = object.children[i];
+                if(!excludingList.some(obj => obj.uuid === child.uuid))
+                {
+                    this.getMeshes(child, listOfMeshes, excludingList)
+                }
+            }
         }
     }
 

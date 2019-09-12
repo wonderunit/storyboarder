@@ -8,25 +8,29 @@ const useRStats = () => {
   const { gl } = useThree()
   const ref = useRef()
 
-  useMemo(() => {
-    ref.current = new rStats({
-      css: [],
-      values: {
-        fps: { caption: "fps", below: 30 }
-      },
-      groups: [{ caption: "Framerate", values: ["fps", "raf"] }],
-      plugins: [new threeStats(gl)]
-    })
-    ref.current().element.style.color = '#eee'
-  }, [])
+  const getRStats = () => {
+    if (!ref.current) {
+      ref.current = new rStats({
+        css: [],
+        values: {
+          fps: { caption: 'fps', below: 30 }
+        },
+        groups: [{ caption: 'Framerate', values: ['fps', 'raf'] }],
+        plugins: [new threeStats(gl)]
+      })
+      ref.current().element.style.color = '#eee'
+    }
+    return ref.current
+  }
 
   useRender(() => {
-    ref.current("rAF").tick()
-    ref.current("FPS").frame()
-    ref.current().update()
+    let r = getRStats()
+    r('rAF').tick()
+    r('FPS').frame()
+    r().update()
   })
 
-  return ref.current
+  return getRStats()
 }
 
 module.exports = useRStats
