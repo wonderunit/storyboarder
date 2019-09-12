@@ -336,7 +336,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list);
+    getGpuPicker().setupScene(list)
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
