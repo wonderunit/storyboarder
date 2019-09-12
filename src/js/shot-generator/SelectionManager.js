@@ -236,7 +236,7 @@ const SelectionManager = connect(
     else
     {
       let gpuPicker = getGPUPicker();
-      gpuPicker.setupScene(intersectables);
+      gpuPicker.setupScene(intersectables.filter(object => object.userData.type !== 'volume'));
       gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y);
       intersects = gpuPicker.pickWithCamera(camera, gl);
     }
