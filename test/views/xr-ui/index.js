@@ -119,16 +119,16 @@ const LoadingMessage = () => {
 }
 
 const UITest = () => {
+  useMemo(() => {
+    THREE.Cache.enabled = true
+  }, [])
+
   const store = useReduxStore()
 
   const controlsGltf = useGltfLoader('/data/system/xr/ui/controls.glb')
   const icons = UI_ICON_FILEPATHS.map(useImageBitmapLoader)
 
   const [ready, setReady] = useState(false)
-
-  useEffect(() => {
-    THREE.Cache.enabled = true
-  })
 
   useEffect(() => {
     if (!ready) {
