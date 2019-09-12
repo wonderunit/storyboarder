@@ -172,7 +172,7 @@
     "react": "16.9.0",
     "react-dom": "16.8.6",
     "react-redux": "7.1.0",
-    "react-three-fiber": "2.3.5",
+    "react-three-fiber": "2.4.3",
     "react-window": "1.5.0",
     "redux": "4.0.1",
     "redux-promise": "0.5.3",
