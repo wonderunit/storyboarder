@@ -4,13 +4,9 @@ const { useState, useReducer, useMemo, useCallback } = React
 
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader')
 
-THREE.Cache.enabled = true
-
 const reducer = (state, action) => {
   const { type, payload } = action
   const { id, progress, value, error } = payload
-
-  console.log('[ASSETS]', id, type)
 
   switch (type) {
     case 'PENDING':
