@@ -10,9 +10,9 @@ class GPUPicker
         this.cameraHelper = null;
     }   
 
-    setupScene(objects)
+    setupScene(objects, excludingList = [])
     {
-        this.controller.initalizeChildren(objects);
+        this.controller.initalizeChildren(objects, excludingList);
         this.controller.updateObjects();
         this.controller.setPickingPosition((this.renderer.domElement.width) / 2, (this.renderer.domElement.height) / 2);
     }

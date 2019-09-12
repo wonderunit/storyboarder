@@ -3,17 +3,38 @@ const SkeletonUtils = require("../../../../../shot-generator/IK/utils/SkeletonUt
 const {updateBoneToBone} = require("../utils/PickableCharacterUtils");
 class UniversalPickableCharacter extends Pickable
 {
-    constructor(object)
+    constructor(object, excludingList)
     {
         super(object);
         this.sceneObject = object;
-        this.getMeshFromSceneObject();
+        this.getMeshFromSceneObject(excludingList);
         this.characterContainer = this.getCharacterContainer();
+        this.excludingList = excludingList;
     }
 
-    getMeshFromSceneObject()
+    getMeshFromSceneObject(excludingList)
     {
-        this.sceneMesh = this.sceneObject.getObjectByProperty("type", "SkinnedMesh");
+        this.sceneMesh = this.getSkinnedMesh(this.sceneObject, excludingList);
+    }
+
+    getSkinnedMesh(object, excludingList)
+    {
+        if(object.isSkinnedMesh && !excludingList.some(obj => obj.uuid === object.uuid))
+        {
+            return object;
+        }
+        else
+        {
+            for(let i = 0; i < object.children.length; i++)
+            {
+                let child = object.children[i];
+                let result = this.getSkinnedMesh(child, excludingList)
+                if(result)
+                {
+                    return result;
+                }
+            }
+        }
     }
 
     //TODO(): Removed get uuid
@@ -79,7 +100,7 @@ class UniversalPickableCharacter extends Pickable
             node.attach(lod.children[lod.children.length - 1]);
             node.remove(lod);
         }
-        this.pickingMesh = node.children.find(child => child.type === "SkinnedMesh");
+        this.pickingMesh = this.getSkinnedMesh(node, this.excludingList );
         this.pickingMesh.material = this.pickingMaterial;
         this.pickingMesh.needsUpdate = true;
         let i = this.node.children.length;

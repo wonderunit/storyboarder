@@ -1,13 +1,13 @@
 const Pickable = require("./Pickable");
 class XRPickableGUI extends Pickable
 {
-    constructor(sceneObject, idPool)
+    constructor(sceneObject, idPool, excludingList)
     {
         super(sceneObject);
         this.sceneMeshes = [];
         this.pickingMaterials = [];
         this.pickingMeshes = [];
-        this.getMeshesFromSceneObject();
+        this.getMeshesFromSceneObject(excludingList);
         this.isContainer = true;
         this.listOfChangedObjects = [];
         this.idPool = idPool;
@@ -15,13 +15,13 @@ class XRPickableGUI extends Pickable
         this.needsRemoval = false;
     }
 
-    getMeshesFromSceneObject()
+    getMeshesFromSceneObject(excludingList)
     {
         this.sceneObject.traverse(object => 
         {
             if(!this.isObjectAdded(object) && object.type === "Mesh" 
             && !object.name.includes("_icon") && !object.name !== ""
-            && object.visible)
+            && object.visible && !excludingList.any((object) => object.uuid === sceneMesh.uuid))
             {
                 this.sceneMeshes.push(object);
             }
@@ -85,14 +85,14 @@ class XRPickableGUI extends Pickable
         return false;
     }
 
-    isObjectChanged()
+    isObjectChanged(excludingList)
     {
         this.listOfChangedObjects = [];
         this.sceneObject.traverse(object => 
         {
             if(!this.isObjectAdded(object) && object.type === "Mesh" 
             && !object.name.includes("_icon") && !object.name !== ""
-            && object.visible)
+            && object.visible && !excludingList.some((object) => object.uuid === sceneMesh.uuid))
             {
                 this.listOfChangedObjects.push(object);
             }
