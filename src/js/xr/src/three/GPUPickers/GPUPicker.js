@@ -5,7 +5,7 @@ class GPUPicker
     constructor(renderer)
     {
         this.renderer = renderer;
-        this.camera = new THREE.PerspectiveCamera(0.001, renderer.domElement.width / renderer.domElement.height, 0.1, 1000 );
+        this.camera = new THREE.PerspectiveCamera(1, renderer.domElement.width / renderer.domElement.height, 0.1, 1000 );
         this.controller = new XRGPUPickerController();
         this.cameraHelper = null;
     }   
