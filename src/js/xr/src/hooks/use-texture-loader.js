@@ -1,10 +1,22 @@
+// via https://github.com/react-spring/react-three-fiber/blob/bb38fe9/src/hooks.ts#L76
+
 const THREE = require('three')
-const { unstable_createResource } = require('../../vendor/react-cache')
+const { useState, useEffect, useMemo } = React = require('react')
 
-const resource = unstable_createResource(
-  file => new Promise(async res => new THREE.TextureLoader().load(file, res))
-)
-
-const useTextureLoader = filepath => resource.read(filepath)
+const useTextureLoader = filepath => {
+  const key = useMemo(() => ({}), [filepath])
+  const [cache] = useState(() => new WeakMap())
+  const [loader] = useState(() => new THREE.TextureLoader())
+  const [_, forceUpdate] = useState(false)
+  useEffect(() => {
+    if (!cache.has(key)) {
+      loader.load(filepath, gltf => {
+        cache.set(key, gltf)
+        forceUpdate(i => !i)
+      })
+    }
+  }, [filepath])
+  return cache.get(key) || null
+}
 
 module.exports = useTextureLoader
