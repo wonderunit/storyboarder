@@ -272,33 +272,26 @@ const SceneContent = connect(
               : null
           }
 
-          {
-            resources.groundTexture && <Ground
-              objRef={groundRef}
-              texture={resources.groundTexture}
-              visible={!world.room.visible && world.ground} />
-          }
+          <Ground
+            objRef={groundRef}
+            texture={resources.groundTexture}
+            visible={!world.room.visible && world.ground} />
 
-          {
-            resources.roomTexture && <Room
-              texture={resources.roomTexture}
-              width={world.room.width}
-              length={world.room.length}
-              height={world.room.height}
-              visible={world.room.visible} />
-          }
+          <Room
+            texture={resources.roomTexture}
+            width={world.room.width}
+            length={world.room.length}
+            height={world.room.height}
+            visible={world.room.visible} />
 
-          {
-            resources.teleportTexture &&
-            <TeleportTarget
-              api={useStoreApi}
-              texture={resources.teleportTexture}
-              visible={
-                interactionServiceCurrent.value.match('drag_teleport') &&
-                teleportTargetValid
-              }
-            />
-          }
+          <TeleportTarget
+            api={useStoreApi}
+            texture={resources.teleportTexture}
+            visible={
+              interactionServiceCurrent.value.match('drag_teleport') &&
+              teleportTargetValid
+            }
+          />
         </group>
       </>
     )
