@@ -92,11 +92,6 @@ const SceneContent = connect(
 
     const teleportRef = useRef()
 
-    // values
-    const teleportPos = useStore(state => state.teleportPos)
-    const teleportRot = useStore(state => state.teleportRot)
-    const teleportTargetValid = useStore(state => state.teleportTargetValid)
-    const worldScale = useStore(state => state.worldScale)
     // actions
     const set = useStore(state => state.set)
 
@@ -118,7 +113,13 @@ const SceneContent = connect(
         state.teleportRot.y = rotation
         state.teleportRot.z = 0
       })
-    }, [teleportRef])
+    }, [])
+
+    // values
+    const teleportPos = useStore(state => state.teleportPos)
+    const teleportRot = useStore(state => state.teleportRot)
+    const teleportTargetValid = useStore(state => state.teleportTargetValid)
+    const worldScale = useStore(state => state.worldScale)
 
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
