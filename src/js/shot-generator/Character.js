@@ -294,12 +294,17 @@ const Character = React.memo(({
           z : rotation.z,
         }  
       } );}); 
+      console.log(mesh);
       //TODO(): Make a better way to identify built in model
-      if(isCustomModel(mesh.name))
+      if(!(mesh.name === "female-adult-meso" || mesh.name === "adult-male-lod"
+      || mesh.name === "male-adult-meso" || mesh.name === "male-youth-meso"
+      || mesh.name === "female-youth-meso" || mesh.name === "child-LOD0"
+      || mesh.name === "baby-LOD0"))
       {
         console.log("custom model");
         return;
       }
+      console.log("Built-in model")
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
 
