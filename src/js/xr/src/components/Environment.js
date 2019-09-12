@@ -2,7 +2,6 @@ const THREE = require('three')
 const { useMemo } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
 
-const useGltf = require('../hooks/use-gltf')
 const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-type')
 
 const VirtualCamera = require('../components/VirtualCamera')
@@ -15,19 +14,12 @@ const materialFactory = () => new THREE.MeshLambertMaterial({
   flatShading: false
 })
 
-const Environment = React.memo(({ environment }) => {
+const Environment = React.memo(({ gltf, environment }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
     }
   )
-
-  const filepath = useMemo(
-    () => getFilepathForModelByType({ type: 'environment', model: environment.file }),
-    [environment.file]
-  )
-
-  const gltf = useGltf(filepath)
 
   const group = useMemo(() => {
     if (!gltf) return null
