@@ -1041,7 +1041,26 @@ const useUiManager = () => {
   return { uiService, uiCurrent, getCanvasRenderer }
 }
 
+const UI_ICON_NAMES = [
+  'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
+  'close',
+
+  'camera', 'eye',
+
+  'icon-toolbar-camera',
+  'icon-toolbar-object',
+  'icon-toolbar-character',
+  'icon-toolbar-light',
+
+  'pose', 'object',
+
+  'help_1', 'help_2', 'help_3', 'help_4', 'help_5', 'help_6', 'help_7',
+  'help_8'
+]
+
+const UI_ICON_FILEPATHS = UI_ICON_NAMES.map(getIconFilepathByName)
+
 module.exports = {
   useUiManager,
-  getIconFilepathByName
+  UI_ICON_FILEPATHS
 }

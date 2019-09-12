@@ -25,7 +25,7 @@ const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
-const { useUiManager, getIconFilepathByName } = require('./use-ui-manager')
+const { useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
@@ -309,24 +309,6 @@ const XRStartButton = ({ }) => {
   return null
 }
 
-const UI_ICON_NAMES = [
-  'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
-  'close',
-
-  'camera', 'eye',
-
-  'icon-toolbar-camera',
-  'icon-toolbar-object',
-  'icon-toolbar-character',
-  'icon-toolbar-light',
-
-  'pose', 'object',
-
-  'help_1', 'help_2', 'help_3', 'help_4', 'help_5', 'help_6', 'help_7',
-  'help_8'
-]
-const UI_ICON_FILES = UI_ICON_NAMES.map(getIconFilepathByName)
-
 const APP_GLTFS = [
   '/data/system/xr/sgcontroller.glb',
   '/data/system/xr/ui/controls.glb',
@@ -335,6 +317,10 @@ const APP_GLTFS = [
 ]
 
 const SceneManagerXR = () => {
+  useMemo(() => {
+    THREE.Cache.enabled = true
+  }, [])
+
   const store = useReduxStore()
 
   const [appAssetsLoaded, setAppAssetsLoaded] = useState(false)
@@ -347,7 +333,7 @@ const SceneManagerXR = () => {
   const teleportTexture = useTextureLoader('/data/system/xr/teleport.png')
 
   // preload icons
-  const uiResources = UI_ICON_FILES.map(useImageBitmapLoader)
+  const uiResources = UI_ICON_FILEPATHS.map(useImageBitmapLoader)
 
   // preload app gltfs
   useEffect(

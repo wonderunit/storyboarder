@@ -5,18 +5,21 @@ const { Canvas, useThree } = require('react-three-fiber')
 
 const { Provider } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
-const { useMemo, useRef, Suspense } = React = require('react')
+const { useMemo, useRef, useState, useEffect } = React = require('react')
 
 const ReactDOM = require('react-dom')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('../../../src/js/xr/src/use-interactions-manager')
-const { useUiManager } = require('../../../src/js/xr/src/use-ui-manager')
+const { useUiManager, UI_ICON_FILEPATHS } = require('../../../src/js/xr/src/use-ui-manager')
 const { Log } = require('../../../src/js/xr/src/components/Log')
 const Controls = require('../../../src/js/xr/src/components/ui/Controls')
 
 const SimpleText = require('../../../src/js/xr/src/components/SimpleText')
 
-const UITestContent = () => {
+const useGltfLoader = require('../../../src/js/xr/src/hooks/use-gltf-loader')
+const useImageBitmapLoader = require('../../../src/js/xr/src/hooks/use-imagebitmap-loader')
+
+const UITestContent = ({ resources }) => {
   const { gl, camera, scene } = useThree()
 
   const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
@@ -77,18 +80,17 @@ const UITestContent = () => {
           rotation={[0.8, 0, 0]}
           scale={[2.4,2.4,2.4]}
         >
-          <Suspense fallback={null}>
-            <group
-              onPointerDown={onPointerDown}
-              onPointerUp={onPointerUp}
-              onPointerMove={onPointerMove}
-            >
-              <Controls
-                mode={uiCurrent.value.controls}
-                getCanvasRenderer={getCanvasRenderer}
-              />
-            </group>
-          </Suspense>
+          <group
+            onPointerDown={onPointerDown}
+            onPointerUp={onPointerUp}
+            onPointerMove={onPointerMove}
+          >
+            <Controls
+              gltf={resources.controlsGltf}
+              mode={uiCurrent.value.controls}
+              getCanvasRenderer={getCanvasRenderer}
+            />
+          </group>
         </group>
       </group>
 
@@ -119,17 +121,33 @@ const LoadingMessage = () => {
 const UITest = () => {
   const store = useReduxStore()
 
-  useMemo(() => {
+  const controlsGltf = useGltfLoader('/data/system/xr/ui/controls.glb')
+  const icons = UI_ICON_FILEPATHS.map(useImageBitmapLoader)
+
+  const [ready, setReady] = useState(false)
+
+  useEffect(() => {
     THREE.Cache.enabled = true
-  }, [])
+  })
+
+  useEffect(() => {
+    if (!ready) {
+      if (icons.some(n => n == null)) return
+      if (!controlsGltf) return
+
+      setReady(true)
+    }
+  }, [ready, icons, controlsGltf])
 
   return (
     <>
       <Canvas>
         <Provider store={store}>
-          <Suspense fallback={<LoadingMessage />}>
-            <UITestContent />
-          </ Suspense>
+          {
+            ready
+              ? <UITestContent resources={{ controlsGltf }} />
+              : <LoadingMessage />
+          }
         </Provider>
       </Canvas>
     </>
