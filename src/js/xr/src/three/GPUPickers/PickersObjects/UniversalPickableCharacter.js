@@ -6,7 +6,7 @@ class UniversalPickableCharacter extends Pickable
     constructor(object, excludingList)
     {
         super(object);
-        this.sceneObject = object;
+        this.sceneObject = object.type === "SkinnedMesh" ? object.parent : object;
         this.getMeshFromSceneObject(excludingList);
         this.characterContainer = this.getCharacterContainer();
         this.excludingList = excludingList;
