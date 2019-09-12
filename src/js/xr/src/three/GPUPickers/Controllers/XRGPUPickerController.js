@@ -13,7 +13,6 @@ class XRGPUPickerController extends GPUPickerController
     {
         let objects = [];
         this.pickingScene.removeAllChildren();
-        console.log(excludingList);
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
@@ -50,7 +49,6 @@ class XRGPUPickerController extends GPUPickerController
         {
             let object = objects[i];
             const id = this.idPool.getAvaibleId();
-            console.log(object);
             if(objects[i] instanceof Pickable)
             {
                 object.initialize(id);

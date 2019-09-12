@@ -335,10 +335,8 @@ const useInteractionsManager = ({
     // include all interactables (Model Object, Character, Virtual Camera, etc)
     let list = scene.__interaction
 
-    let camera = list.filter(obj => obj.userData.type === "virtual-camera")[0];
     // setup the GPU picker
-    console.log(camera);
-    getGpuPicker().setupScene(list, [camera.children[1]]);
+    getGpuPicker().setupScene(list);
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
