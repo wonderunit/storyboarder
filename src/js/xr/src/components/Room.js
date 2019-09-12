@@ -26,7 +26,7 @@ const Room = React.memo(({ width, length, height, visible }) => {
         }
       )
       mesh.position.y = -0.03
-      mesh.layers.enable(0)
+      mesh.layers.enable(1)
       return mesh
     },
     [texture, width, length, height]
