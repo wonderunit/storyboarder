@@ -279,6 +279,13 @@ const useInteractionsManager = ({
   const store = useReduxStore()
   const dispatch = useDispatch()
 
+  const excludeList = []
+  scene.traverse(child => {
+    if (child.userData.excludeList) {
+      excludeList.push(child)
+    }
+  })
+
   const onTriggerStart = event => {
     const controller = event.target
     let intersection = null
@@ -336,7 +343,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list)
+    getGpuPicker().setupScene(list, excludeList)
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -346,7 +353,7 @@ const useInteractionsManager = ({
       // grab the first intersection
       let child = hits[0].object
       // find either the child or one of its parents on the list of interaction-ables
-      match = child.onController === null ? null : findMatchingAncestor(child, list)
+      match = findMatchingAncestor(child, list)
       if (match) {
         intersection = hits[0]
       }
@@ -432,7 +439,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list)
+    getGpuPicker().setupScene(list, excludeList)
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -442,7 +449,7 @@ const useInteractionsManager = ({
       // grab the first intersection
       let child = hits[0].object
       // find either the child or one of its parents on the list of interaction-ables
-      match = child.onController === null ? null : findMatchingAncestor(child, list)
+      match = findMatchingAncestor(child, list)
       if (match) {
         intersection = hits[0]
       }
@@ -782,7 +789,7 @@ const useInteractionsManager = ({
 
           object.updateMatrixWorld(true)
 
-          getGpuPicker().setupScene([object])
+          getGpuPicker().setupScene([object], excludeList)
           let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
           if (intersections.length) {
             let { distance, point } = intersections[0]
