@@ -79,7 +79,7 @@ class HelperBonesPool
 
     returnBone(bone)
     {
-        if(!bone.userData.id)
+        if(bone.userData.id === undefined)
         {
             return;
         }
@@ -92,7 +92,6 @@ class HelperBonesPool
         this.avaibleBones.push(usedBone);
         this.usedBones[bone.userData.id] = null;
         delete this.usedBones[bone.userData.id];
-        
     }
 
     takeBones(amountOfBones)
