@@ -126,11 +126,7 @@ const SceneContent = connect(
     const rStats = useRStats()
 
     const teleportRef = useRef()
-    const groundRef = useUpdate(
-      self => {
-        self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
-      }
-    )
+    const groundRef = useRef()
     const rootRef = useRef()
 
     const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()

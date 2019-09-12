@@ -1,6 +1,8 @@
 const THREE = require('three')
 const { useMemo } = React = require('react')
 
+const VirtualCamera = require('../components/VirtualCamera')
+
 const Ground = React.memo(({ objRef, texture, visible }) => {
   useMemo(() => {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
@@ -16,6 +18,7 @@ const Ground = React.memo(({ objRef, texture, visible }) => {
     userData={{
       type: 'ground'
     }}
+    onUpdate={self => (self.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))}
   >
     <planeBufferGeometry attach='geometry' args={[100, 100]} />
     <meshLambertMaterial attach='material' side={THREE.FrontSide} visible={visible}>
