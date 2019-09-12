@@ -258,10 +258,10 @@ const SceneContent = connect(
 
           {
             world.environment.file &&
-              getAsset(getFilepathForModelByType({
-                type: 'environment',
-                model: world.environment.file
-              }))
+            getAsset(getFilepathForModelByType({
+              type: 'environment',
+              model: world.environment.file
+            }))
               ? <Environment
                 gltf={getAsset(getFilepathForModelByType({
                   type: 'environment',
