@@ -6,6 +6,8 @@ const useReduxStore = require('react-redux').useStore
 const { create } = require('zustand')
 const { produce } = require('immer')
 
+const { ActionCreators } = require('redux-undo')
+
 const useVrControllers = require('./hooks/use-vr-controllers')
 
 const { log } = require('./components/Log')
@@ -489,6 +491,20 @@ const useInteractionsManager = ({
     interactionService.send({ type: 'AXES_CHANGED', controller: event.target, axes: event.axes })
   }
 
+  const onPressEndA = event => {
+    // to relay through state machine instead:
+    // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
+
+    dispatch(ActionCreators.undo())
+  }
+
+  const onPressEndB = event => {
+    // to relay through state machine instead:
+    // interactionService.send({ type: 'PRESS_END_B', controller: event.target })
+
+    dispatch(ActionCreators.redo())
+  }
+
   const onMoveCamera = event => {
     if (didMoveCamera != null) {
       if (event.axes[1] === 0) {
@@ -545,7 +561,9 @@ const useInteractionsManager = ({
     onTriggerEnd,
     onGripDown,
     onGripUp,
-    onAxesChanged
+    onAxesChanged,
+    onPressEndA,
+    onPressEndB
   })
 
   const reusableVector = useRef()

@@ -1,13 +1,19 @@
 const THREE = require('three')
-const { unstable_createResource } = require('../../vendor/react-cache')
+const { useState, useEffect } = React = require('react')
 
-const resource = unstable_createResource(
-  file => new Promise(async res => new THREE.ImageBitmapLoader().load(file, res))
-)
+const useImageBitmapLoader = filepath => {
+  const [_, forceUpdate] = useState(false)
 
-const useImageBitmapLoader = filepath => resource.read(filepath)
+  useEffect(() => {
+    if (!THREE.Cache.get(filepath)) {
+      new THREE.ImageBitmapLoader().load(
+        filepath,
+        () => forceUpdate(i => !i)
+      )
+    }
+  }, [filepath])
 
-module.exports = {
-  useImageBitmapLoader,
-  imageBitmapLoaderResource: resource
+  return THREE.Cache.get(filepath) || null
 }
+
+module.exports = useImageBitmapLoader

@@ -27,6 +27,7 @@ fetch('/state.json')
     const store = configureStore({
       aspectRatio,
       undoable: {
+        ...initialState.undoable,
         sceneObjects,
         world,
         activeCamera

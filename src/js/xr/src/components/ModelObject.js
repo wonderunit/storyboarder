@@ -2,7 +2,6 @@ const THREE = require('three')
 const { useMemo, useEffect } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
 
-const useGltf = require('../hooks/use-gltf')
 const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-type')
 
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
@@ -42,22 +41,12 @@ const meshFactory = source => {
   return mesh
 }
 
-const ModelObject = React.memo(({ sceneObject, isSelected, children }) => {
+const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
     }
   )
-
-
-  const filepath = useMemo(
-    () => getFilepathForModelByType(sceneObject),
-    [sceneObject.model]
-  )
-
-  const gltf = sceneObject.model === 'box'
-    ? null
-    : useGltf(filepath)
 
   const meshes = useMemo(() => {
     if (sceneObject.model === 'box') {

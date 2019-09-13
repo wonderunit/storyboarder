@@ -4,7 +4,6 @@ const { useRender, useThree, useUpdate } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
 
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
-const useGltf = require('../hooks/use-gltf')
 
 const CLOSE_DISTANCE = 7
 const VIRTUAL_CAMERA_LAYER = 1
@@ -29,7 +28,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -48,12 +47,6 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
     self.updateProjectionMatrix()
     self.layers.set(VIRTUAL_CAMERA_LAYER)
   })
-
-  const filepath = useMemo(
-    () => `/data/system/objects/camera.glb`,
-    [sceneObject]
-  )
-  const gltf = useGltf(filepath)
 
   const renderTarget = useRef()
   const size = 1 / 3

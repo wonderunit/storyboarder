@@ -1,15 +1,13 @@
 const { useMemo, useRef, useCallback } = React = require('react')
 const { useRender } = require('react-three-fiber')
 
-const useGltf = require('../../hooks/use-gltf')
-
 const { log } = require('../../components/Log')
 
 const SCALE = 1
 const POSITION = [0, 0.02, 0.01]
 const ROTATION = [-0.8, 0, 0]
 
-const Controls = React.memo(({ mode, getCanvasRenderer }) => {
+const Controls = React.memo(({ gltf, mode, getCanvasRenderer }) => {
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -21,8 +19,6 @@ const Controls = React.memo(({ mode, getCanvasRenderer }) => {
     }
     return textureRef.current
   }, [])
-
-  const gltf = useGltf('/data/system/xr/ui/controls.glb')
 
   const material = useMemo(
     () => new THREE.MeshBasicMaterial({
