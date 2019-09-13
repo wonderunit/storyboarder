@@ -255,7 +255,8 @@ const getExcludeList = parent => {
 const useInteractionsManager = ({
   groundRef,
   rootRef,
-  uiService
+  uiService,
+  playSound
 }) => {
   const { gl, camera, scene } = useThree()
 
@@ -728,6 +729,8 @@ const useInteractionsManager = ({
 
             // clear any prior memento
             clearStandingMemento()
+
+            playSound('teleport')
           }
         },
 

@@ -4,7 +4,7 @@ const { Canvas, useThree, useUpdate } = require('react-three-fiber')
 
 const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
-const { useMemo, useRef, useState, useEffect } = React = require('react')
+const { useMemo, useRef, useState, useEffect, useCallback } = React = require('react')
 require('./three/GPUPickers/utils/Object3dExtension')
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
@@ -157,6 +157,16 @@ const SceneContent = connect(
       // audio.add(new THREE.PositionalAudioHelper(audio))
       return audio
     }, [])
+    const teleportAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.teleportAudioBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    })
+
     const isVrPresenting = useIsVrPresenting()
     useEffect(() => {
       if (isVrPresenting) {
@@ -167,6 +177,14 @@ const SceneContent = connect(
       }
     }, [isVrPresenting])
 
+    const playSound = useCallback(name => {
+      switch (name) {
+        case 'teleport':
+          teleportAudio.play()
+          break
+      }
+    }, [])
+
     const groundRef = useRef()
     const rootRef = useRef()
 
@@ -175,7 +193,8 @@ const SceneContent = connect(
     const { controllers, interactionServiceCurrent } = useInteractionsManager({
       groundRef,
       rootRef,
-      uiService
+      uiService,
+      playSound
     })
 
     // initialize the BonesHelper
@@ -392,6 +411,7 @@ const SceneManagerXR = () => {
   const atmosphereAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-atmosphere.mp3')
   const selectAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-select.ogg')
   const beamAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-beam2.mp3')
+  const teleportAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-teleport.ogg')
 
   // scene
   const sceneObjects = useSelector(getSceneObjects)
@@ -427,7 +447,8 @@ const SceneManagerXR = () => {
     if (!appAssetsLoaded) {
       let appResources = [groundTexture, roomTexture, teleportTexture]
       let soundResources = [
-        welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer
+        welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
+        teleportAudioBuffer
       ]
 
       // fail if any app resources are missing
@@ -480,7 +501,8 @@ const SceneManagerXR = () => {
                   welcomeAudioBuffer,
                   atmosphereAudioBuffer,
                   selectAudioBuffer,
-                  beamAudioBuffer
+                  beamAudioBuffer,
+                  teleportAudioBuffer
                 }}
                 getAsset={getAsset} />
               : null
