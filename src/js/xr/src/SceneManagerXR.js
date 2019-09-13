@@ -154,6 +154,7 @@ const SceneContent = connect(
       audio.setVolume(1)
       audio.play()
       audio.stop()
+      // audio.add(new THREE.PositionalAudioHelper(audio))
       return audio
     }, [])
     const isVrPresenting = useIsVrPresenting()
@@ -228,8 +229,6 @@ const SceneContent = connect(
         </group>
 
         <group ref={rootRef} scale={[worldScale, worldScale, worldScale]}>
-          <primitive object={atmosphereAudio} position={[0, 2, 0]} />
-
           <ambientLight
             ref={ambientLightRef}
             color={0xffffff}
@@ -298,7 +297,14 @@ const SceneContent = connect(
                 gltf={resources.virtualCameraGltf}
                 aspectRatio={aspectRatio}
                 sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)} />
+                isSelected={selections.includes(id)}
+                isActive={activeCamera === id}
+                audio={
+                  activeCamera === id
+                    ? atmosphereAudio
+                    : null
+                }
+              />
             )
           }
 
