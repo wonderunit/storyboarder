@@ -361,6 +361,13 @@ lenses.headScale = R.lens(
   vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.8, 1.2), 0.8, 1.2)
 )
 
+for (let propertyName of ['width', 'height', 'depth']) {
+  lenses[propertyName] = R.lens(
+    vin => clamp(mapLinear(vin, 0.1, 5, 0, 1), 0, 1),
+    vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.1, 5), 0.1, 5)
+  )
+}
+
 for (let morphTargetName of ['ectomorphic', 'mesomorphic', 'endomorphic']) {
   lenses[morphTargetName] = R.lens(
     vin => clamp(vin, 0, 1),
@@ -445,58 +452,43 @@ class CanvasRenderer {
 
       let modelSettings = this.state.models[sceneObject.model]
 
-      this.paneComponents['properties'] = {
-        'character-height': {
-          id: 'character-height',
+      // Earlier sliders stay visible if not overridden with this
+      ctx.fillStyle = 'rgba(0,0,0)'
+      roundRect(ctx, 554, 6, 439, 666, 25, true, false)
+
+      const propertyArray = []
+      if (sceneObject.type === 'object') {
+        if (sceneObject.model === 'box') propertyArray.push({ name: 'width' }, { name: 'height' }, { name: 'depth' })
+        else propertyArray.push({ name: 'height' })
+      }
+
+      if (sceneObject.type === 'character') {
+        propertyArray.push({ name: 'height', lens: 'characterHeight' }, { name: 'headScale' })
+      }
+
+      this.paneComponents['properties'] = {}
+      for (let [i, property] of propertyArray.entries()) {
+        const { name } = property
+        this.paneComponents['properties'][name] = {
+          id: name,
           type: 'slider',
           x: 570,
-          y: 30,
+          y: 30 + 50 * i,
           width: 420,
           height: 40,
 
-          label: `height ${sceneObject.height}`,
+          label: `${name} ${sceneObject[name]}`,
 
-          state: R.view(lenses.characterHeight, sceneObject.height),
+          state: R.view(lenses[property.lens || name], sceneObject[name]),
 
           setState: value => {
-            this.dispatch(
-              updateObject(
-                sceneObject.id,
-                { height: R.set(lenses.characterHeight, value, sceneObject.height) }
-              )
-            )
+            this.dispatch(updateObject(sceneObject.id, { [name]: R.set(lenses[property.lens || name], value, sceneObject[name]) }))
           }
         }
-      }
-      this.paneComponents['properties']['character-height'].onDrag =
-      this.paneComponents['properties']['character-height'].onDrop =
-      this.paneComponents['properties']['character-height'].setState
 
-      this.paneComponents['properties']['character-headScale'] = {
-        id: 'character-headScale',
-        type: 'slider',
-
-        x: 570,
-        y: 100,
-        width: 420,
-        height: 40,
-
-        label: 'head scale: ' + Math.round(sceneObject.headScale * 100) + '%',
-
-        state: R.view(lenses.headScale, sceneObject.headScale),
-
-        onDrag: value => this.dispatch(
-          updateObject(
-            sceneObject.id,
-            { headScale: R.set(lenses.headScale, value, sceneObject.headScale) }
-          )
-        ),
-        onDrop: value => this.dispatch(
-          updateObject(
-            sceneObject.id,
-            { headScale: R.set(lenses.headScale, value, sceneObject.headScale) }
-          )
-        )
+        this.paneComponents['properties'][name].onDrag =
+        this.paneComponents['properties'][name].onDrop =
+        this.paneComponents['properties'][name].setState
       }
 
       if (modelSettings && modelSettings.validMorphTargets) {
@@ -506,7 +498,7 @@ class CanvasRenderer {
             id: `character-${morphTargetName}`,
             type: 'slider',
             x: 570,
-            y: 200 + (n * 50),
+            y: 130 + (n * 50),
             width: 420,
             height: 40,
 
