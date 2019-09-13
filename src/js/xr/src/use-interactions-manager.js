@@ -752,6 +752,9 @@ const useInteractionsManager = ({
             object.updateMatrixWorld()
           }
 
+          // TODO soundBeam
+          // soundBeam.current.stop()
+
           if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
             const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
             dispatch(updateObject(context.selection, {
