@@ -192,10 +192,6 @@ const SceneContent = connect(
       ref.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
-    const selectedCharacter = selections.length && sceneObjects[selections[0]].type == 'character'
-      ? sceneObjects[selections[0]]
-      : null
-
     return (
       <>
         <group
