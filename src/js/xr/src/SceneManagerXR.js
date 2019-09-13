@@ -23,6 +23,7 @@ const {
 const useRStats = require('./hooks/use-rstats')
 const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
+const useAudioLoader = require('./hooks/use-audio-loader')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
 const { useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
@@ -335,6 +336,12 @@ const SceneManagerXR = () => {
     []
   )
 
+  // preload audio
+  const welcomeSound = useAudioLoader('/data/system/xr/snd/vr-welcome.ogg')
+  const atmosphereSound = useAudioLoader('/data/system/xr/snd/vr-atmosphere.mp3')
+  const selectSound = useAudioLoader('/data/system/xr/snd/vr-select.ogg')
+  const beamSound = useAudioLoader('/data/system/xr/snd/vr-beam2.mp3')
+
   // scene
   const sceneObjects = useSelector(getSceneObjects)
   const world = useSelector(getWorld)
@@ -368,9 +375,10 @@ const SceneManagerXR = () => {
   useEffect(() => {
     if (!appAssetsLoaded) {
       let appResources = [groundTexture, roomTexture, teleportTexture]
+      let soundResources = [welcomeSound, atmosphereSound, selectSound, beamSound]
 
       // fail if any app resources are missing
-      if ([ ...appResources, ...uiResources].some(n => n == null)) return
+      if ([...appResources, ...soundResources, ...uiResources].some(n => n == null)) return
       if (APP_GLTFS.map(getAsset).some(n => n == null)) return
 
       setAppAssetsLoaded(true)
@@ -410,10 +418,16 @@ const SceneManagerXR = () => {
                   groundTexture,
                   roomTexture,
                   teleportTexture,
+
                   controllerGltf: getAsset('/data/system/xr/sgcontroller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
-                  virtualCameraGltf: getAsset(`/data/system/objects/camera.glb`)
+                  virtualCameraGltf: getAsset(`/data/system/objects/camera.glb`),
+
+                  welcomeSound,
+                  atmosphereSound,
+                  selectSound,
+                  beamSound
                 }}
                 getAsset={getAsset} />
               : null
