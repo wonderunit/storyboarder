@@ -242,6 +242,16 @@ const [useStore, useStoreApi] = create((set, get) => ({
   set: fn => set(produce(fn))
 }))
 
+const getExcludeList = parent => {
+  const list = []
+  parent.traverse(child => {
+    if (child.userData.preventInteraction) {
+      list.push(child)
+    }
+  })
+  return list
+}
+
 const useInteractionsManager = ({
   groundRef,
   rootRef,
@@ -338,7 +348,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list)
+    getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -434,7 +444,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list)
+    getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -763,7 +773,7 @@ const useInteractionsManager = ({
           // TODO soundBeam
           // soundBeam.current.stop()
 
-          if (object.userData.type === "virtual-camera") {
+          if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
             const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
             dispatch(updateObject(context.selection, {
               x: object.position.x,
@@ -803,7 +813,7 @@ const useInteractionsManager = ({
 
           object.updateMatrixWorld(true)
 
-          getGpuPicker().setupScene([object])
+          getGpuPicker().setupScene([object], getExcludeList(scene))
           let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
           if (intersections.length) {
             let { distance, point } = intersections[0]

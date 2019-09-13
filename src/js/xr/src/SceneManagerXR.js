@@ -35,6 +35,7 @@ const Ground = require('./components/Ground')
 const Room = require('./components/Room')
 const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
+const Light = require('./components/Light')
 const VirtualCamera = require('./components/VirtualCamera')
 const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
@@ -58,6 +59,11 @@ const getSceneObjectModelObjectIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
 )
 
+const getSceneObjectLightIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'light').map(o => o.id)
+)
+
 const getSceneObjectVirtualCamerasIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
@@ -74,7 +80,8 @@ const SceneContent = connect(
 
     characterIds: getSceneObjectCharacterIds(state),
     modelObjectIds: getSceneObjectModelObjectIds(state),
-    virtualCameraIds: getSceneObjectVirtualCamerasIds(state)
+    lightIds: getSceneObjectLightIds(state),
+    virtualCameraIds: getSceneObjectVirtualCamerasIds(state),
   }),
   {
     selectObject,
@@ -84,7 +91,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, virtualCameraIds,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds,
 
     resources, getAsset
   }) => {
@@ -241,6 +248,17 @@ const SceneContent = connect(
             })
           }
 
+          {
+            lightIds.map(id =>
+              <Suspense key={id} fallback={null}>
+                <Light
+                  sceneObject={sceneObjects[id]}
+                  isSelected={selections.includes(id)}
+                  texture={teleportTexture} />
+                {/* TODO sound beam when selected */}
+              </Suspense>
+            )
+          }
           {
             virtualCameraIds.map(id =>
               <VirtualCamera

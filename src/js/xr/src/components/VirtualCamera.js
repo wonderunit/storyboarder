@@ -163,7 +163,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected }
       >
         <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
       </mesh>
-      <primitive object={instancedBorderGroup} />
+      <primitive object={instancedBorderGroup} userData={{ preventInteraction: true }} />
     </group>
   }, [])
 
