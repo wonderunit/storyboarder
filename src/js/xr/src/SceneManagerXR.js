@@ -21,6 +21,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
+const useIsVrPresenting = require('./hooks/use-is-vr-presenting')
 const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
@@ -129,6 +130,25 @@ const SceneContent = connect(
 
     const rStats = useRStats()
 
+    const [cameraAudioListener] = useState(() => new THREE.AudioListener())
+    const welcomeAudio = useMemo(() => {
+      const welcome = new THREE.Audio(cameraAudioListener)
+      welcome.setBuffer(resources.welcomeAudioBuffer)
+      welcome.setLoop(false)
+      welcome.setVolume(0.35)
+      welcome.play()
+      welcome.stop()
+      return welcome
+    }, [])
+    const isVrPresenting = useIsVrPresenting()
+    useEffect(() => {
+      if (isVrPresenting) {
+        welcomeAudio.play()
+      } else {
+        welcomeAudio.isPlaying && welcomeAudio.stop()
+      }
+    }, [isVrPresenting])
+
     const groundRef = useRef()
     const rootRef = useRef()
 
@@ -176,6 +196,7 @@ const SceneContent = connect(
           <primitive object={camera}>
             <Stats rStats={rStats} position={[0, 0, -1]} />
             <Log position={[0, -0.15, -1]} />
+            <primitive object={cameraAudioListener} />
           </primitive>
 
           {controllers.filter(Boolean).map(controller =>
