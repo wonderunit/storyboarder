@@ -14,7 +14,8 @@ const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
     // TODO
     // spotLight.target.position.set(0, 0, sceneObject.distance)
 
-    self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+    // render the SpotLight in the VirtualCamera
+    spotLight.current.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
   }, [sceneObject.rotation, sceneObject.tilt, sceneObject.roll, sceneObject.distance])
 
   const spotLight = useRef()
