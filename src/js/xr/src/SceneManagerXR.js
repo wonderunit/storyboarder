@@ -337,10 +337,10 @@ const SceneManagerXR = () => {
   )
 
   // preload audio
-  const welcomeSound = useAudioLoader('/data/system/xr/snd/vr-welcome.ogg')
-  const atmosphereSound = useAudioLoader('/data/system/xr/snd/vr-atmosphere.mp3')
-  const selectSound = useAudioLoader('/data/system/xr/snd/vr-select.ogg')
-  const beamSound = useAudioLoader('/data/system/xr/snd/vr-beam2.mp3')
+  const welcomeAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-welcome.ogg')
+  const atmosphereAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-atmosphere.mp3')
+  const selectAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-select.ogg')
+  const beamAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-beam2.mp3')
 
   // scene
   const sceneObjects = useSelector(getSceneObjects)
@@ -375,7 +375,7 @@ const SceneManagerXR = () => {
   useEffect(() => {
     if (!appAssetsLoaded) {
       let appResources = [groundTexture, roomTexture, teleportTexture]
-      let soundResources = [welcomeSound, atmosphereSound, selectSound, beamSound]
+      let soundResources = [welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer]
 
       // fail if any app resources are missing
       if ([...appResources, ...soundResources, ...uiResources].some(n => n == null)) return
@@ -424,10 +424,10 @@ const SceneManagerXR = () => {
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
                   virtualCameraGltf: getAsset(`/data/system/objects/camera.glb`),
 
-                  welcomeSound,
-                  atmosphereSound,
-                  selectSound,
-                  beamSound
+                  welcomeAudioBuffer,
+                  atmosphereAudioBuffer,
+                  selectAudioBuffer,
+                  beamAudioBuffer
                 }}
                 getAsset={getAsset} />
               : null
