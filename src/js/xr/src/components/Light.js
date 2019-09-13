@@ -1,5 +1,4 @@
 const { useUpdate } = require('react-three-fiber')
-const { useRef } = require('React')
 
 const VirtualCamera = require('../components/VirtualCamera')
 

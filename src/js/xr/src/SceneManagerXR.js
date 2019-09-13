@@ -284,13 +284,11 @@ const SceneContent = connect(
 
           {
             lightIds.map(id =>
-              <Suspense key={id} fallback={null}>
-                <Light
-                  sceneObject={sceneObjects[id]}
-                  isSelected={selections.includes(id)}
-                  texture={teleportTexture} />
-                {/* TODO sound beam when selected */}
-              </Suspense>
+              <Light
+                key={id}
+                sceneObject={sceneObjects[id]}
+                isSelected={selections.includes(id)}
+                texture={resources.teleportTexture} />
             )
           }
           {
