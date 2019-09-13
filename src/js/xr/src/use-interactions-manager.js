@@ -240,6 +240,16 @@ const [useStore, useStoreApi] = create((set, get) => ({
   set: fn => set(produce(fn))
 }))
 
+const getExcludeList = parent => {
+  const list = []
+  parent.traverse(child => {
+    if (child.userData.preventInteraction) {
+      list.push(child)
+    }
+  })
+  return list
+}
+
 const useInteractionsManager = ({
   groundRef,
   rootRef,
@@ -278,13 +288,6 @@ const useInteractionsManager = ({
 
   const store = useReduxStore()
   const dispatch = useDispatch()
-
-  const excludeList = []
-  scene.traverse(child => {
-    if (child.userData.excludeList) {
-      excludeList.push(child)
-    }
-  })
 
   const onTriggerStart = event => {
     const controller = event.target
@@ -343,7 +346,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list, excludeList)
+    getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -439,7 +442,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list, excludeList)
+    getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -789,7 +792,7 @@ const useInteractionsManager = ({
 
           object.updateMatrixWorld(true)
 
-          getGpuPicker().setupScene([object], excludeList)
+          getGpuPicker().setupScene([object], getExcludeList(scene))
           let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
           if (intersections.length) {
             let { distance, point } = intersections[0]

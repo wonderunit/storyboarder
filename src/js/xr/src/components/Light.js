@@ -61,7 +61,7 @@ const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
       <mesh
         position={[0, (sceneObject.distance + 0.14) * -0.5, 0]}
         scale={[1, -1, 1]}
-        userData={{ excludeList: true }}
+        userData={{ preventInteraction: true }}
       >
         <cylinderBufferGeometry
           attach="geometry"
