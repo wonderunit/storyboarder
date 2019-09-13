@@ -1,13 +1,12 @@
 const THREE = require('three')
 const { useMemo, useRef } = React = require('react')
 
-const useTextureLoader = require('../hooks/use-texture-loader')
+const VirtualCamera = require('../components/VirtualCamera')
+
 const buildSquareRoom = require('../../../shot-generator/build-square-room')
 
-const Room = React.memo(({ width, length, height, visible }) => {
+const Room = React.memo(({ texture, width, length, height, visible }) => {
   const ref = useRef()
-
-  const texture = useTextureLoader('/data/system/grid_wall2.png')
 
   const mesh = useMemo(
     () => {
@@ -26,7 +25,7 @@ const Room = React.memo(({ width, length, height, visible }) => {
         }
       )
       mesh.position.y = -0.03
-      mesh.layers.enable(0)
+      mesh.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
       return mesh
     },
     [texture, width, length, height]

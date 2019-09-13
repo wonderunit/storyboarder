@@ -10,25 +10,26 @@ class XRGPUPickerFactory extends AbstractGPUPickerFactory
         super();
     }
 
-    createObject(object)
+    createObject(object, excludingList)
     {
-        return new UniversalPickerObject(object);
+        return new UniversalPickerObject(object, excludingList);
     }
 
-    createCharacter(object)
+    createCharacter(object, excludingList)
     {
-        return new UniversalPickableCharacter(object);
+        return new UniversalPickableCharacter(object, excludingList);
     }
 
     //TODO(): don't pass idPool
-    createContainer(object, idPool)
+    createContainer(object, idPool, excludingList)
     {
-        return new XRPickableObjectContainer(object, idPool);
+        return new XRPickableObjectContainer(object, idPool, excludingList);
     }
+    
     //TODO(): don't pass idPool
-    createGUI(object, idPool)
+    createGUI(object, idPool, excludingList)
     {
-        return new XRPickableGUI(object, idPool);
+        return new XRPickableGUI(object, idPool, excludingList);
     }
 }
 module.exports = XRGPUPickerFactory;

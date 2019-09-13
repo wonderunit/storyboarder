@@ -5,15 +5,15 @@ class GPUPicker
     constructor(renderer)
     {
         this.renderer = renderer;
-        this.camera = new THREE.PerspectiveCamera(0.001, renderer.domElement.width / renderer.domElement.height, 0.1, 1000 );
+        this.camera = new THREE.PerspectiveCamera(1, renderer.domElement.width / renderer.domElement.height, 0.1, 1000 );
         this.controller = new XRGPUPickerController();
         this.cameraHelper = null;
         this.activeCamera = this.camera;
     }   
 
-    setupScene(objects)
+    setupScene(objects, excludingList = [])
     {
-        this.controller.initalizeChildren(objects);
+        this.controller.initalizeChildren(objects, excludingList);
         this.controller.updateObjects();
         this.controller.setPickingPosition((this.renderer.domElement.width) / 2, (this.renderer.domElement.height) / 2);
     }

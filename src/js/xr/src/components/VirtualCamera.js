@@ -4,7 +4,6 @@ const { useRender, useThree, useUpdate } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
 
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
-const useGltf = require('../hooks/use-gltf')
 
 const CLOSE_DISTANCE = 7
 const VIRTUAL_CAMERA_LAYER = 1
@@ -29,7 +28,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -48,12 +47,6 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
     self.updateProjectionMatrix()
     self.layers.set(VIRTUAL_CAMERA_LAYER)
   })
-
-  const filepath = useMemo(
-    () => `/data/system/objects/camera.glb`,
-    [sceneObject]
-  )
-  const gltf = useGltf(filepath)
 
   const renderTarget = useRef()
   const size = 1 / 3
@@ -135,15 +128,42 @@ const VirtualCamera = React.memo(({ aspectRatio, sceneObject, isSelected }) => {
     [getRenderTarget]
   )
 
+  const instancedBorderGroup = useMemo(() => {
+    const geometry = new THREE.PlaneBufferGeometry(1, 1)
+    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })
+    const instancedBorderMesh = new THREE.InstancedMesh(geometry, material, 4, false, false, false)
+    const instancedBorderGroup = new THREE.Group()
+
+    for (let i = 0; i < 4; i++) {
+      instancedBorderGroup.add(instancedBorderMesh)
+      if (i < 2) {
+        instancedBorderMesh.setPositionAt(i, new THREE.Vector3((size * aspectRatio + 0.009) * (i % 2 === 0 ? 0.5 : -0.5), 0.3, 0))
+        instancedBorderMesh.setScaleAt(i, new THREE.Vector3(0.009, size, 0))
+      } else {
+        instancedBorderMesh.setPositionAt(i, new THREE.Vector3(0, 0.3 + (size + 0.009) * (i % 2 === 0 ? 0.5 : -0.5), 0))
+        instancedBorderMesh.setScaleAt(i, new THREE.Vector3(size * aspectRatio + 0.009 * 2, 0.009, 0))
+      }
+    }
+
+    return instancedBorderGroup
+  }, [])
+
   const cameraView = useMemo(() => {
     return <group>
       <mesh
-        userData={{ type: 'view' }}
         position={[0, 0.3, 0]}
         material={heightShader}
       >
         <planeGeometry attach='geometry' args={[size * aspectRatio, size]} />
       </mesh>
+      <mesh
+        position={[0, 0.3, 0]}
+        rotation={[0, Math.PI, 0]}
+        material={heightShader}
+      >
+        <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
+      </mesh>
+      <primitive object={instancedBorderGroup} />
     </group>
   }, [])
 

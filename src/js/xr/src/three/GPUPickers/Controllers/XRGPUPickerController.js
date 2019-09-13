@@ -9,7 +9,7 @@ class XRGPUPickerController extends GPUPickerController
         this.gpuPickerFactory = new XRGPUPickerFactory();
     }
 
-    initalizeChildren(intersectObjects)
+    initalizeChildren(intersectObjects, excludingList)
     {
         let objects = [];
         this.pickingScene.removeAllChildren();
@@ -18,10 +18,14 @@ class XRGPUPickerController extends GPUPickerController
             let intesectable = intersectObjects[i];
             let pickableObjects = this.pickableObjects;
             let pickableObject = pickableObjects[intesectable.uuid];
+            if(excludingList.some(obj => obj.uuid === intesectable.uuid))
+            {
+                continue;
+            }
             if(Object.keys(pickableObjects).length !== 0 && pickableObject)
             {
                 this.pickingScene.add(pickableObject.node);
-                if(pickableObject.isObjectChanged())
+                if(pickableObject.isObjectChanged(excludingList))
                 {
                     pickableObject.applyObjectChanges();
                     if(pickableObject.isContainer)
@@ -39,7 +43,7 @@ class XRGPUPickerController extends GPUPickerController
                 }
                 continue;
             }
-            this.getAllSceneMeshes(intesectable, objects);
+            this.getAllSceneMeshes(intesectable, objects, excludingList);
         }
         for(let i = 0, n = objects.length; i < n; i++)
         {
@@ -96,7 +100,7 @@ class XRGPUPickerController extends GPUPickerController
         }
     }
 
-    getAllSceneMeshes(sceneMesh, meshes)
+    getAllSceneMeshes(sceneMesh, meshes, excludingList)
     {
         if(!sceneMesh.userData)
         {
@@ -104,11 +108,17 @@ class XRGPUPickerController extends GPUPickerController
         }
         switch(sceneMesh.userData.type)
         {
+<<<<<<< HEAD
+=======
+            case 'object':
+                meshes.push(this.gpuPickerFactory.createObject(sceneMesh, excludingList));
+                break;
+>>>>>>> master
             case 'character':
-                meshes.push(this.gpuPickerFactory.createCharacter(sceneMesh));
+                meshes.push(this.gpuPickerFactory.createCharacter(sceneMesh, excludingList));
                 break;
             case 'gui':
-                meshes.push(this.gpuPickerFactory.createGUI(sceneMesh, this.idPool));
+                meshes.push(this.gpuPickerFactory.createGUI(sceneMesh, this.idPool, excludingList));
                 break;
             case 'object':
                 meshes.push(this.gpuPickerFactory.createObject(sceneMesh));
@@ -116,7 +126,7 @@ class XRGPUPickerController extends GPUPickerController
             case 'virtual-camera':
             case 'light':
             default:
-                meshes.push(this.gpuPickerFactory.createContainer(sceneMesh, this.idPool));
+                meshes.push(this.gpuPickerFactory.createContainer(sceneMesh, this.idPool, excludingList));
                 break;
         }
     }
