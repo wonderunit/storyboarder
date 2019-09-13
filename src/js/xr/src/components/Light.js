@@ -28,6 +28,10 @@ const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
   //   [sceneObject.intensity, sceneObject.distance]
   // )
 
+  const r = isSelected ? 0x35 : 0x56
+  const g = isSelected ? 0x00 : 0x56
+  const b = isSelected ? 0x52 : 0x21
+
   return (
     <group
       ref={ref}
@@ -44,8 +48,10 @@ const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
         <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
         <meshLambertMaterial
           attach="material"
-          color={0xffff66}
-          emissive-b={isSelected ? 0.15 : 0}
+          color={0xffffff}
+          emissive-r={r / 0xff}
+          emissive-g={g / 0xff}
+          emissive-b={b / 0xff}
         />
       </mesh>
 
