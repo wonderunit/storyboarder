@@ -17,7 +17,7 @@ const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step
 function drawImageButton ({ ctx, width, height, image }) {
   ctx.save()
 
-  ctx.drawImage(image, 0, 0)
+  ctx.drawImage(image, 0, 0, width, height)
 
   // ctx.fillStyle = '#eee'
   // ctx.fillRect(0, 0, width, height)
@@ -212,10 +212,10 @@ function setupHomePane (paneComponents, self) {
     'select-button': {
       id: 'select-button',
       type: 'image-button',
-      x: 667+8,
-      y: 684+7,
-      width: 89,
-      height: 89,
+      x: 667 + 10 + 10,
+      y: 684 + 10 + 10,
+      width: 64,
+      height: 64,
       image: 'selection',
       onSelect: () => {
         self.send('GO_HOME')
@@ -224,10 +224,10 @@ function setupHomePane (paneComponents, self) {
     'add-button': {
       id: 'add-button',
       type: 'image-button',
-      x: 667+8,
-      y: 684+7+88+7,
-      width: 89,
-      height: 89,
+      x: 667 + 10 + 10,
+      y: 684 + 105 + 10,
+      width: 64,
+      height: 64,
       image: 'add',
       onSelect: () => {
         self.send('GO_ADD')
@@ -236,10 +236,10 @@ function setupHomePane (paneComponents, self) {
     'duplicate-button': {
       id: 'duplicate-button',
       type: 'image-button',
-      x: 667+8+89+7,
-      y: 684+7,
-      width: 89,
-      height: 89,
+      x: 667 + 105 + 10,
+      y: 684 + 10 + 10,
+      width: 64,
+      height: 64,
       image: 'duplicate',
       onSelect: () => {
         console.log('duplicate')
@@ -248,10 +248,10 @@ function setupHomePane (paneComponents, self) {
     'delete-button': {
       id: 'delete-button',
       type: 'image-button',
-      x: 667+8+89+7,
-      y: 684+7+88+7,
-      width: 89,
-      height: 89,
+      x: 667 + 105 + 10,
+      y: 684 + 105 + 10,
+      width: 64,
+      height: 64,
       image: 'erase',
       onSelect: () => {
         console.log('delete')
@@ -260,10 +260,10 @@ function setupHomePane (paneComponents, self) {
     'settings-button': {
       id: 'settings-button',
       type: 'image-button',
-      x: 909,
-      y: 684,
-      width: 88,
-      height: 88,
+      x: 909 + 10,
+      y: 684 + 10,
+      width: 64,
+      height: 64,
       image: 'help',
 
       onSelect: () => {
@@ -271,32 +271,71 @@ function setupHomePane (paneComponents, self) {
         console.log('sup')
       }
     }
-
-
   }
 }
 
 function setupAddPane (paneComponents) {
   // 4 image buttons
   paneComponents['add'] = {
-    'add-character': {
-      id: 'add-character',
-      type: 'button',
-      x: 456+8,
-      y: 684+7,
-      width: 89,
-      height: 89,
-
-      label: 'Add character',
+    'add-camera': {
+      id: 'add-camera',
+      type: 'image-button',
+      x: 456 + 10 + 10,
+      y: 684 + 10 + 10,
+      width: 64,
+      height: 64,
+      image: 'icon-toolbar-camera',
 
       onSelect: () => {
-        console.log("Adding Character")
+        console.log('Adding Camera')
+      }
+    },
+
+    'add-object': {
+      id: 'add-object',
+      type: 'image-button',
+      x: 456 + 105 + 10,
+      y: 684 + 10 + 10,
+      width: 64,
+      height: 64,
+      image: 'icon-toolbar-object',
+
+      onSelect: () => {
+        console.log('Adding Object')
+      }
+    },
+
+    'add-character': {
+      id: 'add-character',
+      type: 'image-button',
+      x: 456 + 10 + 10,
+      y: 684 + 105 + 10,
+      width: 64,
+      height: 64,
+      image: 'icon-toolbar-character',
+
+      onSelect: () => {
+        console.log('Adding Character')
         // undoGroupStart()
         // console.log(deleteObjects([sceneObject.id]))
         // this.dispatch(deleteObjects([sceneObject.id]))
         // this.dispatch(selectObject(null))
         // selectObject(id)
         // undoGroupEnd()
+      }
+    },
+
+    'add-light': {
+      id: 'add-light',
+      type: 'image-button',
+      x: 456 + 105 + 10,
+      y: 684 + 105 + 10,
+      width: 64,
+      height: 64,
+      image: 'icon-toolbar-light',
+
+      onSelect: () => {
+        console.log('Adding Light')
       }
     }
   }
