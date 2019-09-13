@@ -243,7 +243,7 @@ const [useStore, useStoreApi] = create((set, get) => ({
 }))
 
 const getExcludeList = parent => {
-  const list = []
+  let list = []
   parent.traverse(child => {
     if (child.userData.preventInteraction) {
       list.push(child)
