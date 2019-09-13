@@ -408,7 +408,9 @@ const SceneManagerXR = () => {
   useEffect(() => {
     if (!appAssetsLoaded) {
       let appResources = [groundTexture, roomTexture, teleportTexture]
-      let soundResources = [welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer]
+      let soundResources = [
+        welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer
+      ]
 
       // fail if any app resources are missing
       if ([...appResources, ...soundResources, ...uiResources].some(n => n == null)) return
