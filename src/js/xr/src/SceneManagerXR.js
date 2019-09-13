@@ -132,18 +132,28 @@ const SceneContent = connect(
 
     const [cameraAudioListener] = useState(() => new THREE.AudioListener())
     const welcomeAudio = useMemo(() => {
-      const welcome = new THREE.Audio(cameraAudioListener)
-      welcome.setBuffer(resources.welcomeAudioBuffer)
-      welcome.setLoop(false)
-      welcome.setVolume(0.35)
-      welcome.play()
-      welcome.stop()
-      return welcome
+      const audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.welcomeAudioBuffer)
+      audio.setLoop(false)
+      audio.setVolume(0.35)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+    const atmosphereAudio = useMemo(() => {
+      const audio = new THREE.PositionalAudio(cameraAudioListener)
+      audio.setBuffer(resources.atmosphereAudioBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
     }, [])
     const isVrPresenting = useIsVrPresenting()
     useEffect(() => {
       if (isVrPresenting) {
         welcomeAudio.play()
+        if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
       } else {
         welcomeAudio.isPlaying && welcomeAudio.stop()
       }
@@ -215,6 +225,8 @@ const SceneContent = connect(
         </group>
 
         <group ref={rootRef} scale={[worldScale, worldScale, worldScale]}>
+          <primitive object={atmosphereAudio} position={[0, 2, 0]} />
+
           <ambientLight
             ref={ambientLightRef}
             color={0xffffff}
