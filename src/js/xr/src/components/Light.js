@@ -11,22 +11,11 @@ const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
     self.rotateX(sceneObject.tilt || 0)
     self.rotateZ(sceneObject.roll || 0)
 
-    // TODO
-    // spotLight.target.position.set(0, 0, sceneObject.distance)
-
     // render the SpotLight in the VirtualCamera
     spotLight.current.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
   }, [sceneObject.rotation, sceneObject.tilt, sceneObject.roll, sceneObject.distance])
 
   const spotLight = useRef()
-  // const spotLight = useUpdate(
-  //   self => {
-  //     // TODO
-  //     // self.target.position.set(0, 0, sceneObject.distance)
-  //     // self.add(self.target)
-  //   },
-  //   [sceneObject.intensity, sceneObject.distance]
-  // )
 
   const r = isSelected ? 0x35 : 0x56
   const g = isSelected ? 0x00 : 0x56
