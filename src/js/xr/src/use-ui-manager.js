@@ -44,26 +44,22 @@ function drawButton ({ ctx, width, height, state, label }) {
 
 
 function drawSlider ({ ctx, width, height, state, label }) {
-  ctx.save()
-  ctx.fillStyle = '#aaa'
-  ctx.fillRect(0, 0, width, height)
-  ctx.fillStyle = '#eee'
-  ctx.fillRect(5, 5, width - 10, height - 10)
-
   // value
-  ctx.translate(5, 5)
-  ctx.fillStyle = '#ccc'
+  ctx.save()
+  ctx.fillStyle = '#6E6E6E'
+  if (state !== 0) roundRect(ctx, 0, 0, (width - 10) * state, height, 12, true, false)
 
-  ctx.fillRect(0, 0, (width - 10) * state, height - 10)
-  ctx.translate(-5, -5)
+  ctx.strokeStyle = '#fff'
+  ctx.lineWidth = 3
+  roundRect(ctx, 0, 0, width - 10, height, 12, false, true)
 
   // label
   ctx.translate(width / 2, height / 2)
-  ctx.font = '20px Arial'
+  ctx.font = '24px Arial'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = '#333'
-  ctx.fillText(label, 0, 0)
+  ctx.fillStyle = '#fff'
+  ctx.fillText(label.charAt(0).toUpperCase() + label.slice(1), 0, 0)
   ctx.restore()
 }
 
@@ -483,7 +479,7 @@ class CanvasRenderer {
           else propertyArray.push({ name: 'height', label: 'size' })
           break
         case 'character':
-          propertyArray.push({ name: 'height', lens: 'characterHeight' }, { name: 'headScale' })
+          propertyArray.push({ name: 'height', lens: 'characterHeight' }, { name: 'headScale', label: 'head' })
           break
         case 'light':
           propertyArray.push({ name: 'intensity' }, { name: 'angle' }, { name: 'penumbra' })
@@ -492,7 +488,8 @@ class CanvasRenderer {
 
       if (modelSettings && modelSettings.validMorphTargets) {
         modelSettings.validMorphTargets.forEach((morphTargetName, n) => {
-          propertyArray.push({ name: morphTargetName })
+          const label = morphTargetName === 'endomorphic' ? 'obese' : morphTargetName.replace('morphic', '')
+          propertyArray.push({ name: morphTargetName, label })
         })
       }
 
@@ -506,15 +503,15 @@ class CanvasRenderer {
           id: name,
           type: 'slider',
           x: 570,
-          y: 30 + 50 * i,
+          y: 30 + 90 * i,
           width: 420,
-          height: 40,
+          height: 80,
 
-          label: `${label || name} ${labelValue}`,
+          label: `${label || name} - ${labelValue}`,
           state: R.view(lenses[lens || name], name.includes('morphic') ? sceneObject.morphTargets[name] : sceneObject[name]),
 
           setState: value => {
-            
+
             // Object sizes
             if (label === 'size') {
               this.dispatch(
