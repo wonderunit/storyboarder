@@ -490,9 +490,18 @@ class CanvasRenderer {
           break
       }
 
+      if (modelSettings && modelSettings.validMorphTargets) {
+        modelSettings.validMorphTargets.forEach((morphTargetName, n) => {
+          propertyArray.push({ name: morphTargetName })
+        })
+      }
+
       this.paneComponents['properties'] = {}
       for (let [i, property] of propertyArray.entries()) {
         const { name, label, lens, rounding } = property
+        let labelValue = Math.round(sceneObject[name] * (rounding || 100)) / (rounding || 100)
+        if (name.includes('morphic')) labelValue = Math.round(sceneObject.morphTargets[name] * 100) + '%'
+
         this.paneComponents['properties'][name] = {
           id: name,
           type: 'slider',
@@ -501,11 +510,12 @@ class CanvasRenderer {
           width: 420,
           height: 40,
 
-          label: `${label || name} ${Math.round(sceneObject[name] * (rounding || 100)) / (rounding || 100)}`,
-
-          state: R.view(lenses[lens || name], sceneObject[name]),
+          label: `${label || name} ${labelValue}`,
+          state: R.view(lenses[lens || name], name.includes('morphic') ? sceneObject.morphTargets[name] : sceneObject[name]),
 
           setState: value => {
+            
+            // Object sizes
             if (label === 'size') {
               this.dispatch(
                 updateObject(sceneObject.id, {
@@ -514,59 +524,24 @@ class CanvasRenderer {
                   depth: R.set(lenses[name], value, sceneObject[name])
                 })
               )
-            }
-            else this.dispatch(
-              updateObject(sceneObject.id, { [name]: R.set(lenses[lens || name], value, sceneObject[name]) })
-            )
+            } 
+
+            // MorphTargets
+            else if (name.includes('morphic'))
+              this.dispatch(
+                updateObject(sceneObject.id, {
+                  morphTargets: { [name]: R.set(lenses[name], value, sceneObject.morphTargets[name]) }
+                })
+              )
+
+            // Everything else
+            else this.dispatch(updateObject(sceneObject.id, { [name]: R.set(lenses[lens || name], value, sceneObject[name]) }))
           }
         }
 
         this.paneComponents['properties'][name].onDrag =
         this.paneComponents['properties'][name].onDrop =
         this.paneComponents['properties'][name].setState
-      }
-
-      if (modelSettings && modelSettings.validMorphTargets) {
-        modelSettings.validMorphTargets.forEach((morphTargetName, n) => {
-
-          this.paneComponents['properties'][`character-${morphTargetName}`] = {
-            id: `character-${morphTargetName}`,
-            type: 'slider',
-            x: 570,
-            y: 130 + (n * 50),
-            width: 420,
-            height: 40,
-
-            label: morphTargetName + ' : ' + Math.round(sceneObject.morphTargets[morphTargetName] * 100) + '%',
-
-            state: R.view(lenses[morphTargetName], sceneObject.morphTargets[morphTargetName]),
-
-            onDrag: value => {
-              this.dispatch(
-                updateObject(
-                  sceneObject.id,
-                  {
-                    morphTargets: {
-                      [morphTargetName]: R.set(lenses[morphTargetName], value, sceneObject.morphTargets[morphTargetName])
-                    }
-                  }
-                )
-              )
-            },
-            onDrop: value => {
-              this.dispatch(
-                updateObject(
-                  sceneObject.id,
-                  {
-                    morphTargets: {
-                      [morphTargetName]: R.set(lenses[morphTargetName], value, sceneObject.morphTargets[morphTargetName])
-                    }
-                  }
-                )
-              )
-            }
-          }
-        })
       }
 
       this.renderObjects(ctx, this.paneComponents['properties'])
