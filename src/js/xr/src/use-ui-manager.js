@@ -923,7 +923,8 @@ const {
   selectObject,
   updateObject,
   deleteObjects,
-  duplicateObjects
+  duplicateObjects,
+  getActiveCamera
 } = require('../../shared/reducers/shot-generator')
 
 // via PosePresetsEditor.js
@@ -960,6 +961,8 @@ const useUiManager = () => {
       .sort(comparePresetNames)
       .sort(comparePresetPriority)
   , [presets.poses])
+
+  const activeCamera = useMemo(() => getActiveCamera(store.getState()), [])
 
   const [characterModels, objectModels] = useMemo(() =>
     [
@@ -1042,7 +1045,7 @@ const useUiManager = () => {
 
         onDelete (context, event) {
           const { selections } = event
-          if (selections.length) store.dispatch(deleteObjects([selections[0]]))
+          if (selections.length && selections[0] !== activeCamera) store.dispatch(deleteObjects([selections[0]]))
         }
       }
     }
