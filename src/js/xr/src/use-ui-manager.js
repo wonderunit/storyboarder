@@ -11,6 +11,11 @@ const uiMachine = require('./machines/uiMachine')
 
 const R = require('ramda')
 
+// all pose presets (so we can use `stand` for new characters)
+const defaultPosePresets = require('../../shared/reducers/shot-generator-presets/poses.json')
+// id of the pose preset used for new characters
+const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
+
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
@@ -270,7 +275,7 @@ function setupHomePane (paneComponents, self) {
   }
 }
 
-function setupAddPane (paneComponents) {
+function setupAddPane (paneComponents, self) {
   // 4 image buttons
   paneComponents['add'] = {
     'add-camera': {
@@ -283,7 +288,7 @@ function setupAddPane (paneComponents) {
       image: 'icon-toolbar-camera',
 
       onSelect: () => {
-        console.log('Adding Camera')
+        self.send('ADD_OBJECT', { object: 'camera' })
       }
     },
 
@@ -297,7 +302,7 @@ function setupAddPane (paneComponents) {
       image: 'icon-toolbar-object',
 
       onSelect: () => {
-        console.log('Adding Object')
+        self.send('ADD_OBJECT', { object: 'object' })
       }
     },
 
@@ -311,7 +316,7 @@ function setupAddPane (paneComponents) {
       image: 'icon-toolbar-character',
 
       onSelect: () => {
-        console.log('Adding Character')
+        self.send('ADD_OBJECT', { object: 'character' })
         // undoGroupStart()
         // console.log(deleteObjects([sceneObject.id]))
         // this.dispatch(deleteObjects([sceneObject.id]))
@@ -331,7 +336,7 @@ function setupAddPane (paneComponents) {
       image: 'icon-toolbar-light',
 
       onSelect: () => {
-        console.log('Adding Light')
+        self.send('ADD_OBJECT', { object: 'light' })
       }
     }
   }
@@ -415,7 +420,7 @@ class CanvasRenderer {
 
 
     setupHomePane(this.paneComponents, this)
-    setupAddPane(this.paneComponents)
+    setupAddPane(this.paneComponents, this)
     this.renderObjects(ctx, this.paneComponents['home'])
     this.renderObjects(ctx, this.paneComponents['add'])
     // setupaddpane
@@ -920,6 +925,7 @@ class CanvasRenderer {
 const {
   getSceneObjects,
   getSelections,
+  createObject,
   selectObject,
   updateObject,
   deleteObjects,
@@ -1035,6 +1041,103 @@ const useUiManager = () => {
           let u = event.intersection.uv.x
           let v = event.intersection.uv.y
           getCanvasRenderer().onDrag(context.selection, u, v)
+        },
+
+        onAddObject (context, event) {
+          const { object } = event
+          const id = THREE.Math.generateUUID()
+
+          let offsetVector = new THREE.Vector3(0, 0, -2)
+          if (object === 'camera') offsetVector.normalize()
+
+          // TODO WorldScale multipliers
+          offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(camera.matrixWorld))
+          offsetVector.multiply(new THREE.Vector3(1, 0, 1))
+          const newPos = camera.parent.position
+            .clone()
+            .add(camera.position)
+            .add(offsetVector)
+
+          const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
+
+          switch (object) {
+            case 'camera':
+              store.dispatch(
+                createObject({
+                  id,
+                  type: 'camera',
+                  fov: 22.25,
+                  x: newPos.x,
+                  y: newPos.z,
+                  z: newPos.y,
+                  rotation: rotation,
+                  tilt: 0,
+                  roll: 0
+                })
+              )
+              break
+            case 'object':
+              store.dispatch(
+                createObject({
+                  id,
+                  type: 'object',
+                  model: 'box',
+                  width: 1,
+                  height: 1,
+                  depth: 1,
+                  x: newPos.x,
+                  y: newPos.z,
+                  z: 0,
+                  rotation: { x: 0, y: rotation, z: 0 },
+                  visible: true
+                })
+              )
+              break
+            case 'character':
+              store.dispatch(
+                createObject({
+                  id,
+                  type: 'character',
+                  height: 1.8,
+                  model: 'adult-male',
+                  x: newPos.x,
+                  y: newPos.z,
+                  z: 0,
+                  rotation: rotation,
+                  headScale: 1,
+
+                  morphTargets: {
+                    mesomorphic: 0,
+                    ectomorphic: 0,
+                    endomorphic: 0
+                  },
+
+                  posePresetId: DEFAULT_POSE_PRESET_ID,
+                  skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
+                  visible: true
+                })
+              )
+              break
+            case 'light':
+              store.dispatch(
+                createObject({
+                  id,
+                  type: 'light',
+                  x: newPos.x,
+                  y: newPos.z,
+                  z: newPos.y,
+                  intensity: 0.8,
+                  angle: 1.04,
+                  distance: 5,
+                  penumbra: 1.0,
+                  decay: 1,
+                  rotation: 0,
+                  tilt: 0,
+                  visible: true
+                })
+              )
+              break
+          }
         },
 
         onDuplicate (context, event) {

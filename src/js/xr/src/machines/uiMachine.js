@@ -50,6 +50,7 @@ const machine = Machine({
               actions: 'onTriggerStart'
             },
             'REQUEST_DRAG': 'dragging',
+            'ADD_OBJECT': { actions: 'onAddObject' },
             'REQUEST_DUPLICATE': { actions: 'onDuplicate' },
             'REQUEST_DELETE': { actions: 'onDelete' }
           }
