@@ -49,7 +49,9 @@ const machine = Machine({
             'TRIGGER_START': {
               actions: 'onTriggerStart'
             },
-            'REQUEST_DRAG': 'dragging'
+            'REQUEST_DRAG': 'dragging',
+            'REQUEST_DUPLICATE': { actions: 'onDuplicate' },
+            'REQUEST_DELETE': { actions: 'onDelete' }
           }
         },
         dragging: {

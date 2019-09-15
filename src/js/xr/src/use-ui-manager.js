@@ -238,9 +238,7 @@ function setupHomePane (paneComponents, self) {
       height: 64,
       image: 'duplicate',
       onSelect: () => {
-        const id = THREE.Math.generateUUID()
-        const { selections } = self.state
-        if (selections.length) self.dispatch(duplicateObjects([selections[0]], [id]))
+        self.send('REQUEST_DUPLICATE', { selections: self.state.selections })
       }
     },
     'delete-button': {
@@ -252,8 +250,7 @@ function setupHomePane (paneComponents, self) {
       height: 64,
       image: 'erase',
       onSelect: () => {
-        const { selections } = self.state
-        if (selections.length) self.dispatch(deleteObjects([selections[0]]))
+        self.send('REQUEST_DELETE', { selections: self.state.selections })
       }
     },
     'settings-button': {
@@ -1035,6 +1032,17 @@ const useUiManager = () => {
           let u = event.intersection.uv.x
           let v = event.intersection.uv.y
           getCanvasRenderer().onDrag(context.selection, u, v)
+        },
+
+        onDuplicate (context, event) {
+          const { selections } = event
+          const id = THREE.Math.generateUUID()
+          if (selections.length) store.dispatch(duplicateObjects([selections[0]], [id]))
+        },
+
+        onDelete (context, event) {
+          const { selections } = event
+          if (selections.length) store.dispatch(deleteObjects([selections[0]]))
         }
       }
     }
