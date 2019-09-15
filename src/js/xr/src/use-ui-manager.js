@@ -238,7 +238,9 @@ function setupHomePane (paneComponents, self) {
       height: 64,
       image: 'duplicate',
       onSelect: () => {
-        console.log('duplicate')
+        const id = THREE.Math.generateUUID()
+        const { selections } = self.state
+        if (selections.length) self.dispatch(duplicateObjects([selections[0]], [id]))
       }
     },
     'delete-button': {
@@ -250,7 +252,8 @@ function setupHomePane (paneComponents, self) {
       height: 64,
       image: 'erase',
       onSelect: () => {
-        console.log('delete')
+        const { selections } = self.state
+        if (selections.length) self.dispatch(deleteObjects([selections[0]]))
       }
     },
     'settings-button': {
@@ -922,7 +925,8 @@ const {
   getSelections,
   selectObject,
   updateObject,
-  deleteObjects
+  deleteObjects,
+  duplicateObjects
 } = require('../../shared/reducers/shot-generator')
 
 // via PosePresetsEditor.js
