@@ -361,6 +361,23 @@ lenses.headScale = R.lens(
   vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.8, 1.2), 0.8, 1.2)
 )
 
+for (let propertyName of ['intensity', 'penumbra']) {
+  lenses[propertyName] = R.lens(
+  vin => clamp(vin, 0, 1),
+  vout => clamp(steps(vout, 0.1), 0, 1)
+  )
+}
+
+lenses.angle = R.lens(
+  vin => clamp(mapLinear(vin, 0, 1.57, 0, 1), 0, 1),
+  vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0, 1.57), 0, 1.57)
+)
+
+lenses.fov = R.lens(
+  vin => clamp(mapLinear(vin, 3, 71, 0, 1), 0, 1),
+  vout => clamp(mapLinear(steps(vout, 0.01), 0, 1, 3, 71), 3, 71)
+)
+
 for (let propertyName of ['width', 'height', 'depth']) {
   lenses[propertyName] = R.lens(
     vin => clamp(mapLinear(vin, 0.1, 5, 0, 1), 0, 1),
@@ -457,18 +474,25 @@ class CanvasRenderer {
       roundRect(ctx, 554, 6, 439, 666, 25, true, false)
 
       const propertyArray = []
-      if (sceneObject.type === 'object') {
-        if (sceneObject.model === 'box') propertyArray.push({ name: 'width' }, { name: 'height' }, { name: 'depth' })
-        else propertyArray.push({ name: 'height' })
-      }
-
-      if (sceneObject.type === 'character') {
-        propertyArray.push({ name: 'height', lens: 'characterHeight' }, { name: 'headScale' })
+      switch (sceneObject.type) {
+        case 'camera':
+          propertyArray.push({ name: 'fov', label: 'F.O.V', rounding: 1 })
+          break
+        case 'object':
+          if (sceneObject.model === 'box') propertyArray.push({ name: 'width' }, { name: 'height' }, { name: 'depth' })
+          else propertyArray.push({ name: 'height', label: 'size' })
+          break
+        case 'character':
+          propertyArray.push({ name: 'height', lens: 'characterHeight' }, { name: 'headScale' })
+          break
+        case 'light':
+          propertyArray.push({ name: 'intensity' }, { name: 'angle' }, { name: 'penumbra' })
+          break
       }
 
       this.paneComponents['properties'] = {}
       for (let [i, property] of propertyArray.entries()) {
-        const { name } = property
+        const { name, label, lens, rounding } = property
         this.paneComponents['properties'][name] = {
           id: name,
           type: 'slider',
@@ -477,12 +501,23 @@ class CanvasRenderer {
           width: 420,
           height: 40,
 
-          label: `${name} ${sceneObject[name]}`,
+          label: `${label || name} ${Math.round(sceneObject[name] * (rounding || 100)) / (rounding || 100)}`,
 
-          state: R.view(lenses[property.lens || name], sceneObject[name]),
+          state: R.view(lenses[lens || name], sceneObject[name]),
 
           setState: value => {
-            this.dispatch(updateObject(sceneObject.id, { [name]: R.set(lenses[property.lens || name], value, sceneObject[name]) }))
+            if (label === 'size') {
+              this.dispatch(
+                updateObject(sceneObject.id, {
+                  width: R.set(lenses[name], value, sceneObject[name]),
+                  height: R.set(lenses[name], value, sceneObject[name]),
+                  depth: R.set(lenses[name], value, sceneObject[name])
+                })
+              )
+            }
+            else this.dispatch(
+              updateObject(sceneObject.id, { [name]: R.set(lenses[lens || name], value, sceneObject[name]) })
+            )
           }
         }
 
