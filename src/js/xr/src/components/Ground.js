@@ -21,9 +21,9 @@ const Ground = React.memo(({ objRef, texture, visible }) => {
     onUpdate={self => (self.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))}
   >
     <planeBufferGeometry attach='geometry' args={[100, 100]} />
-    <meshLambertMaterial attach='material' side={THREE.FrontSide} visible={visible}>
+    <meshToonMaterial attach='material' side={THREE.FrontSide} visible={visible}>
       <primitive attach='map' object={texture} />
-    </meshLambertMaterial>
+    </meshToonMaterial>
   </mesh>
 })
 

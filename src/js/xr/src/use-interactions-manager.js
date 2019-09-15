@@ -6,6 +6,8 @@ const useReduxStore = require('react-redux').useStore
 const { create } = require('zustand')
 const { produce } = require('immer')
 
+const { ActionCreators } = require('redux-undo')
+
 const useVrControllers = require('./hooks/use-vr-controllers')
 
 const { log } = require('./components/Log')
@@ -240,6 +242,16 @@ const [useStore, useStoreApi] = create((set, get) => ({
   set: fn => set(produce(fn))
 }))
 
+const getExcludeList = parent => {
+  const list = []
+  parent.traverse(child => {
+    if (child.userData.preventInteraction) {
+      list.push(child)
+    }
+  })
+  return list
+}
+
 const useInteractionsManager = ({
   groundRef,
   rootRef,
@@ -336,7 +348,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list)
+    getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -432,7 +444,7 @@ const useInteractionsManager = ({
     let list = scene.__interaction
 
     // setup the GPU picker
-    getGpuPicker().setupScene(list)
+    getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
@@ -477,6 +489,20 @@ const useInteractionsManager = ({
 
   const onAxesChanged = event => {
     interactionService.send({ type: 'AXES_CHANGED', controller: event.target, axes: event.axes })
+  }
+
+  const onPressEndA = event => {
+    // to relay through state machine instead:
+    // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
+
+    dispatch(ActionCreators.undo())
+  }
+
+  const onPressEndB = event => {
+    // to relay through state machine instead:
+    // interactionService.send({ type: 'PRESS_END_B', controller: event.target })
+
+    dispatch(ActionCreators.redo())
   }
 
   const onMoveCamera = event => {
@@ -535,7 +561,9 @@ const useInteractionsManager = ({
     onTriggerEnd,
     onGripDown,
     onGripUp,
-    onAxesChanged
+    onAxesChanged,
+    onPressEndA,
+    onPressEndB
   })
 
   const reusableVector = useRef()
@@ -745,7 +773,7 @@ const useInteractionsManager = ({
           // TODO soundBeam
           // soundBeam.current.stop()
 
-          if (object.userData.type === "virtual-camera") {
+          if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
             const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
             dispatch(updateObject(context.selection, {
               x: object.position.x,
@@ -785,7 +813,7 @@ const useInteractionsManager = ({
 
           object.updateMatrixWorld(true)
 
-          getGpuPicker().setupScene([object])
+          getGpuPicker().setupScene([object], getExcludeList(scene))
           let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
           if (intersections.length) {
             let { distance, point } = intersections[0]
