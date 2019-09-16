@@ -328,6 +328,7 @@ const SceneContent = connect(
             lightIds.map(id =>
               <Light
                 key={id}
+                gltf={resources.lightGltf}
                 sceneObject={sceneObjects[id]}
                 isSelected={selections.includes(id)}
                 texture={resources.teleportTexture} />
@@ -402,7 +403,8 @@ const APP_GLTFS = [
   '/data/system/xr/sgcontroller.glb',
   '/data/system/xr/ui/controls.glb',
   '/data/system/dummies/bone.glb',
-  `/data/system/objects/camera.glb`
+  '/data/system/objects/camera.glb',
+  '/data/system/xr/light.glb'
 ]
 
 const SceneManagerXR = () => {
@@ -520,7 +522,8 @@ const SceneManagerXR = () => {
                   controllerGltf: getAsset('/data/system/xr/sgcontroller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
-                  virtualCameraGltf: getAsset(`/data/system/objects/camera.glb`),
+                  virtualCameraGltf: getAsset('/data/system/objects/camera.glb'),
+                  lightGltf: getAsset('/data/system/xr/light.glb'),
 
                   welcomeAudioBuffer,
                   atmosphereAudioBuffer,
