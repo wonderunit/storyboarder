@@ -19,6 +19,16 @@ const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
+function drawText({ ctx, label, size, align = 'left', baseline = 'top', color = '#fff' }) {
+  ctx.save()
+  ctx.font = `${size}px Arial`
+  ctx.textAlign = align
+  ctx.textBaseline = baseline
+  ctx.fillStyle = color
+  ctx.fillText(label, 0, 0)
+  ctx.restore()
+}
+
 function drawImageButton ({ ctx, width, height, image }) {
   ctx.save()
 
@@ -342,6 +352,37 @@ function setupAddPane (paneComponents, self) {
   }
 }
 
+function setupSettingsPane(paneComponents, self) {
+  paneComponents['settings'] = {
+    settings: {
+      id: 'settings',
+      type: 'text',
+      x: 0 + 30,
+      y: 684 + 20,
+      label: 'Settings',
+      size: 36
+    },
+
+    'switch-hand': {
+      id: 'switch-hand',
+      type: 'text',
+      x: 0 + 30,
+      y: 684 + 20 * 3 + 36,
+      label: 'Switch Hand',
+      size: 36
+    },
+
+    'show-cameras': {
+      id: 'show-camera',
+      type: 'text',
+      x: 0 + 30,
+      y: 684 + 20 * 5 + 36 * 2,
+      label: 'Show Cameras',
+      size: 36
+    }
+  }
+}
+
 const lenses = {}
 
 let height_step = 0.05
@@ -421,8 +462,10 @@ class CanvasRenderer {
 
     setupHomePane(this.paneComponents, this)
     setupAddPane(this.paneComponents, this)
+    setupSettingsPane(this.paneComponents, this)
     this.renderObjects(ctx, this.paneComponents['home'])
     this.renderObjects(ctx, this.paneComponents['add'])
+    this.renderObjects(ctx, this.paneComponents['settings'])
     // setupaddpane
     // setupsettings
 
@@ -733,6 +776,17 @@ class CanvasRenderer {
     // TODO: render only what is dirty
     for (let object of Object.values(objects)) {
       let { type, x, y, width, height, image, ...props } = object
+
+      if (object.type === 'text') {
+        ctx.save()
+        ctx.translate(x, y)
+        drawText({
+          ctx,
+
+          ...props
+        })
+        ctx.restore()
+      }
 
       if (object.type === 'button') {
         ctx.save()
