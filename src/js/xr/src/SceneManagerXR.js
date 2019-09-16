@@ -157,6 +157,15 @@ const SceneContent = connect(
       // audio.add(new THREE.PositionalAudioHelper(audio))
       return audio
     }, [])
+    const beamAudio = useMemo(() => {
+      let audio = new THREE.PositionalAudio(cameraAudioListener)
+      audio.setBuffer(resources.beamAudioBuffer)
+      audio.setLoop(true)
+      audio.setVolume(2)
+      audio.play()
+      audio.stop()
+      return audio
+    })
     const teleportAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.teleportAudioBuffer)
@@ -177,10 +186,24 @@ const SceneContent = connect(
       }
     }, [isVrPresenting])
 
-    const playSound = useCallback(name => {
+    const playSound = useCallback((name, object3d = null) => {
       switch (name) {
         case 'teleport':
+          object3d.add(beamAudio)
           teleportAudio.play()
+          break
+        case 'beam':
+          object3d.add(beamAudio)
+          beamAudio.play()
+          break
+      }
+    }, [])
+
+    const stopSound = useCallback((name, object3d = null) => {
+      switch (name) {
+        case 'beam':
+          object3d.remove(beamAudio)
+          beamAudio.stop()
           break
       }
     }, [])
@@ -194,7 +217,8 @@ const SceneContent = connect(
       groundRef,
       rootRef,
       uiService,
-      playSound
+      playSound,
+      stopSound
     })
 
     // initialize the BonesHelper

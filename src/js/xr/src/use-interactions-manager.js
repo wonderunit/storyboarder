@@ -256,7 +256,8 @@ const useInteractionsManager = ({
   groundRef,
   rootRef,
   uiService,
-  playSound
+  playSound,
+  stopSound
 }) => {
   const { gl, camera, scene } = useThree()
 
@@ -761,8 +762,7 @@ const useInteractionsManager = ({
             object.updateMatrixWorld(true)
           }
 
-          // TODO soundBeam
-          // soundBeam.current.play()
+          playSound('beam', object)
         },
         onDragObjectExit: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
@@ -773,8 +773,7 @@ const useInteractionsManager = ({
             object.updateMatrixWorld()
           }
 
-          // TODO soundBeam
-          // soundBeam.current.stop()
+          stopSound('beam', object)
 
           if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
             const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
