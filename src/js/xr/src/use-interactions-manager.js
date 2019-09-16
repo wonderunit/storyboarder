@@ -19,7 +19,6 @@ const teleportParent = require('./helpers/teleport-parent')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
-const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
@@ -255,20 +254,20 @@ const getExcludeList = parent => {
 const useInteractionsManager = ({
   groundRef,
   rootRef,
-  uiService
+  uiService,
+  getGpuPicker
 }) => {
   const { gl, camera, scene } = useThree()
 
   const selections = useSelector(getSelections)
 
-  const gpuPicker = useRef(null)
-
-  const getGpuPicker = () => {
+  /* const getGpuPicker = () => {
     if (gpuPicker.current === null) {
       gpuPicker.current = new GPUPicker(gl)
     }
     return gpuPicker.current
-  }
+  } */
+
 
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)

@@ -41,6 +41,7 @@ const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
+const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
 const Controls = require('./components/ui/Controls')
 
@@ -68,6 +69,16 @@ const getSceneObjectVirtualCamerasIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
 )
+
+const getExcludeList = parent => {
+  const list = []
+  parent.traverse(child => {
+    if (child.userData.preventInteraction) {
+      list.push(child)
+    }
+  })
+  return list
+}
 
 const SceneContent = connect(
   state => ({
@@ -98,7 +109,7 @@ const SceneContent = connect(
     const { gl, camera, scene } = useThree()
 
     const teleportRef = useRef()
-
+    const gpuPicker = useRef(null)
     // actions
     const set = useStore(state => state.set)
 
@@ -133,6 +144,19 @@ const SceneContent = connect(
       scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
     }, [world.backgroundColor])
 
+    const getGpuPicker = () => {
+      if (gpuPicker.current === null) {
+        gpuPicker.current = new GPUPicker(gl)
+      }
+      return gpuPicker.current
+    }
+
+    useEffect(() => {
+      let gpuPicker = getGpuPicker()
+      gpuPicker.setupScene(scene.__interaction, getExcludeList(scene))
+      gpuPicker.pick(camera.worldPosition(), camera.worldQuaternion())
+    }, [])
+
     const rStats = useRStats()
 
     const groundRef = useRef()
@@ -143,7 +167,8 @@ const SceneContent = connect(
     const { controllers, interactionServiceCurrent } = useInteractionsManager({
       groundRef,
       rootRef,
-      uiService
+      uiService,
+      getGpuPicker
     })
 
     // initialize the BonesHelper
