@@ -150,8 +150,8 @@ const SceneContent = connect(
     const atmosphereAudio = useMemo(() => {
       const audio = new THREE.PositionalAudio(cameraAudioListener)
       audio.setBuffer(resources.atmosphereAudioBuffer)
-      audio.setLoop(false)
-      audio.setVolume(1)
+      audio.setLoop(true)
+      audio.setVolume(0.3)
       audio.play()
       audio.stop()
       // audio.add(new THREE.PositionalAudioHelper(audio))
@@ -432,7 +432,7 @@ const SceneManagerXR = () => {
 
   // preload audio
   const welcomeAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-welcome.ogg')
-  const atmosphereAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-atmosphere.mp3')
+  const atmosphereAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-drone.ogg')
   const selectAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-select.ogg')
   const beamAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-beam2.mp3')
   const teleportAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-teleport.ogg')
