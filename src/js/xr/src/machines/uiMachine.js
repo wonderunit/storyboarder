@@ -6,7 +6,9 @@ const machine = Machine({
   id: 'ui',
   strict: true,
   type: 'parallel',
-  context: {},
+  context: {
+    locked: false
+  },
   states: {
     controls: {
       initial: 'home',
@@ -56,6 +58,13 @@ const machine = Machine({
             'TOGGLE_SWITCH': { actions: 'onToggleSwitch' }
           }
         },
+        locked: {
+          onEntry: 'lock',
+          onExit: 'unlock',
+          on: {
+            UNLOCK: 'idle'
+          }
+        },
         dragging: {
           onEntry: ['updateSelection', 'updateDraggingController', 'onDraggingEntry'],
           onExit: ['clearSelection', 'clearDraggingController', 'onDraggingExit'],
@@ -68,11 +77,25 @@ const machine = Machine({
             }
           }
         }
+      },
+      on: {
+        LOCK: '.locked'
       }
     }
   }
 }, {
+  guards: {
+    locked: (context, event) => context.locked === true,
+    unlocked: (context, event) => context.locked === false
+  },
   actions: {
+    lock: assign({
+      locked: (context, event) => true
+    }),
+    unlock: assign({
+      locked: (context, event) => false
+    }),
+
     updateSelection: assign({
       selection: (context, event) => event.id
     }),
