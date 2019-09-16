@@ -1033,7 +1033,9 @@ const {
   updateObject,
   deleteObjects,
   duplicateObjects,
-  getActiveCamera
+  getActiveCamera,
+  undoGroupStart,
+  undoGroupEnd
 } = require('../../shared/reducers/shot-generator')
 
 // via PosePresetsEditor.js
@@ -1256,8 +1258,12 @@ const useUiManager = () => {
         onDelete (context, event) {
           const { selections } = event
           // deselect object before deleting
-          uiService.send({ type: 'TRIGGER_END', controller: event.controller })
-          if (selections.length && selections[0] !== activeCamera) store.dispatch(deleteObjects([selections[0]]))
+          if (selections.length && selections[0] !== activeCamera) {
+            store.dispatch(undoGroupStart())
+            store.dispatch(selectObject(null))
+            store.dispatch(deleteObjects([selections[0]]))
+            store.dispatch(undoGroupEnd())
+          }
         },
 
         onToggleSwitch (context, event) {
