@@ -52,7 +52,8 @@ const machine = Machine({
             'REQUEST_DRAG': 'dragging',
             'ADD_OBJECT': { actions: 'onAddObject' },
             'REQUEST_DUPLICATE': { actions: 'onDuplicate' },
-            'REQUEST_DELETE': { actions: 'onDelete' }
+            'REQUEST_DELETE': { actions: 'onDelete' },
+            'TOGGLE_SWITCH': { actions: 'onToggleSwitch' }
           }
         },
         dragging: {

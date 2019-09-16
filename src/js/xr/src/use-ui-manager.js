@@ -78,6 +78,18 @@ function drawSlider ({ ctx, width, height, state, label }) {
   ctx.restore()
 }
 
+function drawToggleButton ({ ctx, width, height }) {
+  // value
+  ctx.save()
+  ctx.fillStyle = '#6E6E6E'
+  roundRect(ctx, 0, 0, (width - 10) * 0.5, height, 36, true, false)
+
+  ctx.strokeStyle = '#fff'
+  ctx.lineWidth = 3
+  roundRect(ctx, 0, 0, width - 10, height, 36, false, true)
+  ctx.restore()
+}
+
 function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
   if (typeof stroke == 'undefined') {
     stroke = true;
@@ -360,25 +372,49 @@ function setupSettingsPane(paneComponents, self) {
       x: 0 + 30,
       y: 684 + 20,
       label: 'Settings',
-      size: 36
+      size: 48
     },
 
     'switch-hand': {
       id: 'switch-hand',
       type: 'text',
       x: 0 + 30,
-      y: 684 + 20 * 3 + 36,
+      y: 684 + 20 + 48 + 30 + 40 - 12,
       label: 'Switch Hand',
-      size: 36
+      size: 24
     },
 
     'show-cameras': {
-      id: 'show-camera',
+      id: 'show-cameras',
       type: 'text',
       x: 0 + 30,
-      y: 684 + 20 * 5 + 36 * 2,
+      y: 684 + 20 + 48 + 30 + 80 + 30 + 40 - 12,
       label: 'Show Cameras',
-      size: 36
+      size: 24,
+    },
+
+    'switch-hand-toggle': {
+      id: 'switch-hand-toggle',
+      type: 'toggle-button',
+      x: 0 + 30 + 200,
+      y: 684 + 20 + 48 + 30,
+      width: 200,
+      height: 80,
+      onSelect: () => {
+        self.send('TOGGLE_SWITCH', { toggle: 'hand' })
+      }
+    },
+
+    'show-cameras-toggle': {
+      id: 'show-cameras-toggle',
+      type: 'toggle-button',
+      x: 0 + 30 + 200,
+      y: 684 + 20 + 48 + 30 + 80 + 30,
+      width: 200,
+      height: 80,
+      onSelect: () => {
+        self.send('TOGGLE_SWITCH', { toggle: 'camera' })
+      }
     }
   }
 }
@@ -788,6 +824,19 @@ class CanvasRenderer {
         ctx.restore()
       }
 
+      if (object.type === 'toggle-button') {
+        ctx.save()
+        ctx.translate(x, y)
+        drawToggleButton({
+          ctx,
+          width,
+          height,
+
+          ...props
+        })
+        ctx.restore()
+      }
+
       if (object.type === 'button') {
         ctx.save()
         ctx.translate(x, y)
@@ -1074,6 +1123,10 @@ const useUiManager = () => {
               cr.onSelect(id)
             }
 
+            if (canvasIntersection.type == 'toggle-button') {
+              cr.onSelect(id)
+            }
+
             if (canvasIntersection.type == 'slider') {
               uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
             }
@@ -1205,6 +1258,11 @@ const useUiManager = () => {
           // deselect object before deleting
           uiService.send({ type: 'TRIGGER_END', controller: event.controller })
           if (selections.length && selections[0] !== activeCamera) store.dispatch(deleteObjects([selections[0]]))
+        },
+
+        onToggleSwitch (context, event) {
+          const { toggle } = event
+          console.log(`toggle ${toggle}`)
         }
       }
     }
