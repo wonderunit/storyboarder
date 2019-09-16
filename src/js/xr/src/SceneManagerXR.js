@@ -189,11 +189,11 @@ const SceneContent = connect(
     const playSound = useCallback((name, object3d = null) => {
       switch (name) {
         case 'teleport':
-          object3d.add(beamAudio)
+          if (object3d) { object3d.add(beamAudio) }
           teleportAudio.play()
           break
         case 'beam':
-          object3d.add(beamAudio)
+          if (object3d) { object3d.add(beamAudio) }
           beamAudio.play()
           break
       }
