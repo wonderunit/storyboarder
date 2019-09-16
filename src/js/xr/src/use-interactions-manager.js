@@ -94,7 +94,7 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-const snapObjectRotation = object => {
+const snapObjectRotation = (object, point) => {
   // setup for rotation
   object.userData.order = object.rotation.order
   object.rotation.reorder('YXZ')
@@ -103,15 +103,20 @@ const snapObjectRotation = object => {
   const sign = Math.sign(object.rotation.y)
   let degreeY = THREE.Math.radToDeg(Math.abs(object.rotation.y)) / 22.5
   degreeY = THREE.Math.degToRad(Math.round(degreeY) * 22.5) * sign
-
   // snap rotation z to 180°
   let degreeZ = THREE.Math.radToDeg(Math.abs(object.rotation.z)) / 180
   degreeZ = THREE.Math.degToRad(Math.round(degreeZ) * 180)
 
+  let euler = new THREE.Euler(0, degreeY, 0);
+  euler.reorder('YXZ')
+/*   object.parent.localToWorld(object.position)
+  object.position.sub(point)
+  object.position.applyEuler(euler)
+  object.position.add(point)
+  object.parent.worldToLocal(object.position) */
+
   // update rotation
-  object.rotation.x = 0
-  object.rotation.z = degreeZ
-  object.rotation.y = degreeY
+  object.rotation.copy(euler)
   object.rotation.order = object.userData.order
   object.updateMatrixWorld()
 }
@@ -603,8 +608,9 @@ const useInteractionsManager = ({
         wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
 
         if (object3d.userData.staticRotation) {
-          let quaternion = object3d.parent.worldQuaternion().conjugate()
+          let quaternion = object3d.parent.worldQuaternion().inverse()
           let rotation = quaternion.multiply(object3d.userData.staticRotation)
+          console.log(object3d.userData.staticRotation)
           object3d.quaternion.copy(rotation)
         }
 
@@ -772,17 +778,26 @@ const useInteractionsManager = ({
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           // translate
-          object.matrix.premultiply(controller.matrixWorld)
-          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-
-          // rotate
+          object.applyMatrix(controller.matrixWorld)
+          
+          //object.matrix.premultiply(controller.getInverseMatrixWorld())
+          //object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+          
           snapObjectRotation(object)
-          object.userData.staticRotation = object.quaternion.clone()
-
+          object.userData.staticRotation = object.userData.staticRotation 
+          ? object.userData.staticRotation.copy(object.quaternion) 
+          : object.quaternion.clone()
+          // rotate
+          if(event.intersection)
+          {
+            
+          }
+          
           // translate back
-          object.matrix.premultiply(controller.getInverseMatrixWorld())
-          object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-
+          object.applyMatrix(controller.getInverseMatrixWorld())
+          //object.matrix.premultiply(controller.matrixWorld)
+          //object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
+          
           object.updateMatrixWorld(true)
 
           getGpuPicker().setupScene([object])
