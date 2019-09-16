@@ -96,7 +96,7 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-const snapObjectRotation = (object, point) => {
+const snapObjectRotation = (object,  n) => {
   // setup for rotation
   object.userData.order = object.rotation.order
   object.rotation.reorder('YXZ')
@@ -429,7 +429,7 @@ const useInteractionsManager = ({
 
   const onGripDown = event => {
     const controller = event.target
-
+    console.log(event)
     if (BonesHelper.getInstance().isSelected) {
       const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
       if (intersection) {
@@ -448,12 +448,17 @@ const useInteractionsManager = ({
     // include all interactables (Model Object, Character, etc)
     let list = scene.__interaction
 
+    // Checks if any object is dragged 
+    // There's no reason to pick any other object except for dragged one
+    if(controller.userData.draggedObject)
+    {
+      list = list.filter(object => object.uuid === controller.userData.draggedObject)
+    }
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
-
     // if one intersects
     if (hits.length) {
       // grab the first intersection
@@ -638,7 +643,6 @@ const useInteractionsManager = ({
         if (object3d.userData.staticRotation) {
           let quaternion = object3d.parent.worldQuaternion().inverse()
           let rotation = quaternion.multiply(object3d.userData.staticRotation)
-          console.log(object3d.userData.staticRotation)
           object3d.quaternion.copy(rotation)
         }
 
@@ -741,7 +745,7 @@ const useInteractionsManager = ({
           let controller = event.controller
           let { object, distance, point } = event.intersection
           log('-- onSelected')
-
+          console.log(event.intersection)
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
           dispatch(selectObject(context.selection))
         },
@@ -758,7 +762,8 @@ const useInteractionsManager = ({
         onDragObjectEntry: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
           let object = event.intersection.object
-
+          controller.userData.draggedObject = object.uuid
+          
           if (object.userData.type != 'character') {
             controller.attach(object)
             object.updateMatrixWorld(true)
@@ -768,6 +773,7 @@ const useInteractionsManager = ({
           // soundBeam.current.play()
         },
         onDragObjectExit: (context, event) => {
+          let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           let root = rootRef.current
@@ -775,7 +781,7 @@ const useInteractionsManager = ({
             root.attach(object)
             object.updateMatrixWorld()
           }
-
+          controller.userData.draggedObject == null
           // TODO soundBeam
           // soundBeam.current.stop()
 
@@ -805,26 +811,21 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
+          // checks if intersection exist to ensure that object is selected
+          // sometimes after rapid snapping intersection might disappear but object will be still selected
+          if(!event.intersection) return
+          console.log(event.intersection)
           // translate
           object.applyMatrix(controller.matrixWorld)
-          
-          //object.matrix.premultiply(controller.getInverseMatrixWorld())
-          //object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
-          
+
+          // rotate
           snapObjectRotation(object)
           object.userData.staticRotation = object.userData.staticRotation 
-          ? object.userData.staticRotation.copy(object.quaternion) 
-          : object.quaternion.clone()
-          // rotate
-          if(event.intersection)
-          {
-            
-          }
+            ? object.userData.staticRotation.copy(object.quaternion) 
+            : object.quaternion.clone()
           
           // translate back
           object.applyMatrix(controller.getInverseMatrixWorld())
-          //object.matrix.premultiply(controller.matrixWorld)
-          //object.matrix.decompose(object.position, object.quaternion, new THREE.Vector3())
           
           object.updateMatrixWorld(true)
 
