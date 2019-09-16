@@ -345,7 +345,8 @@ class CanvasRenderer {
       sceneObjects: {},
       poses: {},
       models: {},
-      mode: 'home'
+      mode: 'home',
+      context: {}
     }
 
     this.paneComponents = {}
@@ -398,6 +399,12 @@ class CanvasRenderer {
     let ctx = this.context
 
     console.log("render")
+
+    if (this.state.context.locked) {
+      console.log('rendering a locked ui')
+    } else {
+      console.log('rendering an unlocked ui')
+    }
 
     console.log(this.state.mode)
     if (this.state.mode == 'properties') {
@@ -1036,7 +1043,13 @@ const useUiManager = () => {
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
+    getCanvasRenderer().needsRender = true
   }, [uiCurrent.value.controls])
+
+  useMemo(() => {
+    getCanvasRenderer().state.context = uiCurrent.context
+    getCanvasRenderer().needsRender = true
+  }, [uiCurrent.context])
 
   return { uiService, uiCurrent, getCanvasRenderer }
 }
