@@ -41,10 +41,6 @@ const machine = Machine({
             'TOGGLE_SETTINGS': 'settings',
           }
         }
-      },
-      on: {
-        LOCK: { actions: 'lock' },
-        UNLOCK: { actions: 'unlock' }
       }
     },
     input: {
@@ -53,13 +49,18 @@ const machine = Machine({
         idle: {
           on: {
             'TRIGGER_START': {
-              cond: 'unlocked',
               actions: 'onTriggerStart'
             },
             'REQUEST_DRAG': {
-              cond: 'unlocked',
               target: 'dragging'
             }
+          }
+        },
+        locked: {
+          onEntry: 'lock',
+          onExit: 'unlock',
+          on: {
+            UNLOCK: 'idle'
           }
         },
         dragging: {
@@ -74,6 +75,9 @@ const machine = Machine({
             }
           }
         }
+      },
+      on: {
+        LOCK: '.locked'
       }
     }
   }
