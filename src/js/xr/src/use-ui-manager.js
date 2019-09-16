@@ -968,7 +968,7 @@ const useUiManager = () => {
       .sort(comparePresetPriority)
   , [presets.poses])
 
-  const activeCamera = useMemo(() => getActiveCamera(store.getState()), [])
+  const activeCamera = useSelector(getActiveCamera)
 
   const [characterModels, objectModels] = useMemo(() =>
     [
@@ -1148,6 +1148,8 @@ const useUiManager = () => {
 
         onDelete (context, event) {
           const { selections } = event
+          // deselect object before deleting
+          uiService.send({ type: 'TRIGGER_END', controller: event.controller })
           if (selections.length && selections[0] !== activeCamera) store.dispatch(deleteObjects([selections[0]]))
         }
       }
