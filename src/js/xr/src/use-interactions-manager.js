@@ -531,6 +531,7 @@ const useInteractionsManager = ({
       if (distance != null) {
         setDidMoveCamera(distance)
         moveCameraByDistance(camera, distance)
+        playSound('teleport-move')
       }
     }
   }
@@ -546,12 +547,14 @@ const useInteractionsManager = ({
       // right
       if (event.axes[0] > 0.075) {
         setDidRotateCamera(-45)
+        playSound('teleport-rotate')
         rotateCameraByRadians(camera, THREE.Math.degToRad(-45))
       }
 
       // left
       if (event.axes[0] < -0.075) {
         setDidRotateCamera(45)
+        playSound('teleport-rotate')
         rotateCameraByRadians(camera, THREE.Math.degToRad(45))
       }
     }
@@ -594,11 +597,16 @@ const useInteractionsManager = ({
         let intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
         if (intersection) {
           match = intersection
-          BonesHelper.getInstance().selectBone(intersection.bone)
+          if (BonesHelper.getInstance().selectedBone !== intersection.bone) {
+            playSound('bone-hover')
+            BonesHelper.getInstance().selectBone(intersection.bone)
+          }
         }
       }
       if (!match) {
         BonesHelper.getInstance().resetSelection()
+        // TODO should .resetSelection set .selectedBone to null?
+        BonesHelper.getInstance().selectedBone = null
       }
     }
 
@@ -742,6 +750,8 @@ const useInteractionsManager = ({
 
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
           dispatch(selectObject(context.selection))
+
+          playSound('select')
         },
 
         onSelectNone: (context, event) => {
@@ -873,6 +883,9 @@ const useInteractionsManager = ({
           // select by UUID, like shot generator does
           dispatch(selectBone(bone.uuid))
           BonesHelper.getInstance().selectBone(bone)
+
+          playSound('bone-click')
+          playSound('bone-drone')
         },
         onRotateBoneExit: (context, event) => {
           useStoreApi.setState({
@@ -909,6 +922,8 @@ const useInteractionsManager = ({
           )
           dispatch(selectBone(null))
           BonesHelper.getInstance().resetSelection()
+
+          stopSound('bone-drone')
         },
 
         onToggleMiniMode: (context, event) => {

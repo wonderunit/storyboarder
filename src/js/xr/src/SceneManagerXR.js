@@ -175,6 +175,15 @@ const SceneContent = connect(
       audio.stop()
       return audio
     })
+    const selectAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.selectAudioBuffer)
+      audio.setLoop(false)
+      audio.setVolume(0.5)
+      audio.play()
+      audio.stop()
+      return audio
+    })
 
     const isVrPresenting = useIsVrPresenting()
     useEffect(() => {
@@ -193,8 +202,17 @@ const SceneContent = connect(
           teleportAudio.play()
           break
         case 'beam':
+        case 'bone-drone':
           if (object3d) { object3d.add(beamAudio) }
           beamAudio.play()
+          break
+        case 'select':
+        case 'teleport-move':
+        case 'teleport-rotate':
+        case 'bone-hover':
+        case 'bone-click':
+          if (object3d) { object3d.add(selectAudio) }
+          selectAudio.play()
           break
       }
     }, [])
@@ -202,7 +220,8 @@ const SceneContent = connect(
     const stopSound = useCallback((name, object3d = null) => {
       switch (name) {
         case 'beam':
-          object3d.remove(beamAudio)
+        case 'bone-drone':
+          if (object3d) { object3d.remove(beamAudio) }
           beamAudio.stop()
           break
       }
