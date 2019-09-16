@@ -23,7 +23,9 @@ const useVrControllers = ({
   onTriggerEnd,
   onGripDown,
   onGripUp,
-  onAxesChanged
+  onAxesChanged,
+  onPressEndA,
+  onPressEndB
 }) => {
   const { gl } = useThree()
   const [list, setList] = useState([])
@@ -33,12 +35,16 @@ const useVrControllers = ({
   const onGripDownRef = useRef()
   const onGripUpRef = useRef()
   const onAxesChangedRef = useRef()
+  const onPressEndARef = useRef()
+  const onPressEndBRef = useRef()
 
   onTriggerStartRef.current = onTriggerStart
   onTriggerEndRef.current = onTriggerEnd
   onGripDownRef.current = onGripDown
   onGripUpRef.current = onGripUp
   onAxesChangedRef.current = onAxesChanged
+  onPressEndARef.current = onPressEndA
+  onPressEndBRef.current = onPressEndB
 
   useRender(() => {
     THREE.VRController.update()
@@ -57,13 +63,12 @@ const useVrControllers = ({
     controller.addEventListener('grip press ended', event => onGripUpRef.current(modifyEvent(event, gl)))
     controller.addEventListener('thumbstick axes changed', event => onAxesChangedRef.current(modifyEvent(event, gl)))
     controller.addEventListener('thumbpad axes changed', event => onAxesChangedRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('A press ended', event => onPressEndARef.current(modifyEvent(event, gl)))
+    controller.addEventListener('B press ended', event => onPressEndBRef.current(modifyEvent(event, gl)))
     controller.addEventListener('disconnected', event => {
       console.log('disconnected', event)
       setList(getList(THREE.VRController.controllers, gl))
     })
-
-    // controller.addEventListener('A press ended', event => undo())
-    // controller.addEventListener('B press ended', event => redo())
   }
 
   const onVRControllerDisconnected = event => {
