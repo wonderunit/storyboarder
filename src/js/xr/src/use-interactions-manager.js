@@ -760,6 +760,8 @@ const useInteractionsManager = ({
 
           // TODO soundBeam
           // soundBeam.current.play()
+
+          uiService.send({ type: 'LOCK' })
         },
         onDragObjectExit: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
@@ -794,6 +796,8 @@ const useInteractionsManager = ({
               rotation
             }))
           }
+
+          uiService.send({ type: 'UNLOCK' })
         },
         onSnapStart: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
