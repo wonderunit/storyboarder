@@ -57,11 +57,11 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, texture, children }) 
         />
       </primitive>
 
-      {/* hit target */}
-      <mesh>
+      {/* hit target, not needed with new larger model */}
+      {/* <mesh>
         <sphereBufferGeometry attach="geometry" args={[0.125]} />
-        <meshLambertMaterial attach="material" visible={false} />
-      </mesh>
+        <meshLambertMaterial attach="material" visible={true} />
+      </mesh> */}
 
       <spotLight
         ref={spotLight}
