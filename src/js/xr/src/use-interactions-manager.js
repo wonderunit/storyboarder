@@ -263,6 +263,9 @@ const useInteractionsManager = ({
 
   const selections = useSelector(getSelections)
 
+  const canUndo = useSelector(state => state.undoable.past.length > 0)
+  const canRedo = useSelector(state => state.undoable.future.length > 0)
+
   const gpuPicker = useRef(null)
 
   const getGpuPicker = () => {
@@ -497,16 +500,20 @@ const useInteractionsManager = ({
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
 
-    dispatch(ActionCreators.undo())
-    playSound('undo')
+    if (canUndo) {
+      dispatch(ActionCreators.undo())
+      playSound('undo')
+    }
   }
 
   const onPressEndB = event => {
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_B', controller: event.target })
 
-    dispatch(ActionCreators.redo())
-    playSound('redo')
+    if (canRedo) {
+      dispatch(ActionCreators.redo())
+      playSound('redo')
+    }
   }
 
   const onMoveCamera = event => {
