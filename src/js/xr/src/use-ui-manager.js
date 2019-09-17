@@ -16,6 +16,22 @@ const defaultPosePresets = require('../../shared/reducers/shot-generator-presets
 // id of the pose preset used for new characters
 const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
+const { create } = require('zustand')
+const { produce } = require('immer')
+const { setCookie, getCookie } = require('./helpers/cookies')
+
+const [useUiStore] = create((set, get) => ({
+  // values
+  switchHand: getCookie('switchHand') == true,
+  showCameras: getCookie('showCameras') == true,
+
+  // actions
+  setSwitchHand: value => set(produce(state => { state.switchHand = value })),
+  setShowCameras: value => set(produce(state => { state.showCameras = value })),
+
+  set: fn => set(produce(fn))
+}))
+
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
@@ -78,11 +94,13 @@ function drawSlider ({ ctx, width, height, state, label }) {
   ctx.restore()
 }
 
-function drawToggleButton ({ ctx, width, height }) {
-  // value
+function drawToggleButton({ ctx, width, height, cookieBoolean }) {
   ctx.save()
+  ctx.fillStyle = '#000'
+  roundRect(ctx, 0, 0, width - 10, height, 36, true, false)
+
   ctx.fillStyle = '#6E6E6E'
-  roundRect(ctx, 0, 0, (width - 10) * 0.5, height, 36, true, false)
+  roundRect(ctx, (width - 10) * (cookieBoolean ? 0.5 : 0), 0, (width - 10) * 0.5, height, 36, true, false)
 
   ctx.strokeStyle = '#fff'
   ctx.lineWidth = 3
@@ -396,24 +414,26 @@ function setupSettingsPane(paneComponents, self) {
     'switch-hand-toggle': {
       id: 'switch-hand-toggle',
       type: 'toggle-button',
+      toggle: 'switchHand',
       x: 0 + 30 + 200,
       y: 684 + 20 + 48 + 30,
       width: 200,
       height: 80,
       onSelect: () => {
-        self.send('TOGGLE_SWITCH', { toggle: 'hand' })
+        self.send('TOGGLE_SWITCH', { toggle: 'switchHand' })
       }
     },
 
     'show-cameras-toggle': {
       id: 'show-cameras-toggle',
       type: 'toggle-button',
+      toggle: 'showCameras',
       x: 0 + 30 + 200,
       y: 684 + 20 + 48 + 30 + 80 + 30,
       width: 200,
       height: 80,
       onSelect: () => {
-        self.send('TOGGLE_SWITCH', { toggle: 'camera' })
+        self.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
       }
     }
   }
@@ -612,7 +632,7 @@ class CanvasRenderer {
                   depth: R.set(lenses[name], value, sceneObject[name])
                 })
               )
-            } 
+            }
 
             // MorphTargets
             else if (name.includes('morphic'))
@@ -669,6 +689,10 @@ class CanvasRenderer {
       //     }
       //   )
       // })
+    }
+
+    if (this.state.mode == 'settings') {
+      this.renderObjects(ctx, this.paneComponents['settings'])
     }
 
     /*
@@ -832,12 +856,15 @@ class CanvasRenderer {
       }
 
       if (object.type === 'toggle-button') {
+        const cookieBoolean = getCookie(object.toggle) == 'true'
+
         ctx.save()
         ctx.translate(x, y)
         drawToggleButton({
           ctx,
           width,
           height,
+          cookieBoolean,
 
           ...props
         })
@@ -1070,6 +1097,9 @@ const useUiManager = () => {
 
   const store = useReduxStore()
 
+  const setSwitchHand = useUiStore(state => state.setSwitchHand)
+  const setShowCameras = useUiStore(state => state.setShowCameras)
+
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
   const models = useSelector(state => state.models)
@@ -1275,7 +1305,13 @@ const useUiManager = () => {
 
         onToggleSwitch (context, event) {
           const { toggle } = event
-          console.log(`toggle ${toggle}`)
+          const cookie = getCookie(toggle)
+          const value = !(cookie == 'true')
+          setCookie(toggle, value, 90)
+
+          if (toggle === 'switchHand') setSwitchHand(value)
+          if (toggle === 'showCameras') setShowCameras(value)
+          getCanvasRenderer().needsRender = true
         }
       }
     }
@@ -1350,6 +1386,7 @@ const UI_ICON_NAMES = [
 const UI_ICON_FILEPATHS = UI_ICON_NAMES.map(getIconFilepathByName)
 
 module.exports = {
+  useUiStore,
   useUiManager,
   UI_ICON_FILEPATHS
 }
