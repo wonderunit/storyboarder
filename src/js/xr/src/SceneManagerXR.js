@@ -225,7 +225,7 @@ const SceneContent = connect(
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.fastSwooshBuffer)
       audio.setLoop(false)
-      audio.setVolume(0.5)
+      audio.setVolume(0.3)
       audio.play()
       audio.stop()
       return audio
