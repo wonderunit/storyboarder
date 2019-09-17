@@ -498,6 +498,7 @@ const useInteractionsManager = ({
     // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
 
     dispatch(ActionCreators.undo())
+    playSound('undo')
   }
 
   const onPressEndB = event => {
@@ -505,6 +506,7 @@ const useInteractionsManager = ({
     // interactionService.send({ type: 'PRESS_END_B', controller: event.target })
 
     dispatch(ActionCreators.redo())
+    playSound('redo')
   }
 
   const onMoveCamera = event => {
@@ -885,7 +887,7 @@ const useInteractionsManager = ({
           BonesHelper.getInstance().selectBone(bone)
 
           playSound('bone-click')
-          playSound('bone-drone')
+          playSound('bone-drone', bone)
         },
         onRotateBoneExit: (context, event) => {
           useStoreApi.setState({
@@ -923,7 +925,7 @@ const useInteractionsManager = ({
           dispatch(selectBone(null))
           BonesHelper.getInstance().resetSelection()
 
-          stopSound('bone-drone')
+          stopSound('bone-drone', bone)
         },
 
         onToggleMiniMode: (context, event) => {

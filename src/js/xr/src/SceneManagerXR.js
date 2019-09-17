@@ -185,6 +185,52 @@ const SceneContent = connect(
       return audio
     })
 
+    const undoAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.undoBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    })
+    const redoAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.redoBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    })
+    const boneHoverAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.boneHoverBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    })
+    const boneDroneAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.boneDroneBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1.5)
+      audio.play()
+      audio.stop()
+      return audio
+    })
+    const fastSwooshAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.fastSwooshBuffer)
+      audio.setLoop(false)
+      audio.setVolume(0.5)
+      audio.play()
+      audio.stop()
+      return audio
+    })
+
     const isVrPresenting = useIsVrPresenting()
     useEffect(() => {
       if (isVrPresenting) {
@@ -195,24 +241,44 @@ const SceneContent = connect(
       }
     }, [isVrPresenting])
 
+
     const playSound = useCallback((name, object3d = null) => {
       switch (name) {
-        case 'teleport':
-          if (object3d) { object3d.add(beamAudio) }
-          teleportAudio.play()
-          break
         case 'beam':
-        case 'bone-drone':
           if (object3d) { object3d.add(beamAudio) }
-          beamAudio.play()
+          beamAudio.stop()
+          beamAudio.play(0)
+          break
+        case 'bone-drone':
+          if (object3d) { object3d.add(boneDroneAudio) }
+          boneDroneAudio.stop()
+          boneDroneAudio.play(0)
           break
         case 'select':
+        case 'bone-click':
+          selectAudio.stop()
+          selectAudio.play(0)
+          break
+        case 'teleport':
+          teleportAudio.stop()
+          teleportAudio.play(0)
+          break
         case 'teleport-move':
         case 'teleport-rotate':
+          fastSwooshAudio.stop()
+          fastSwooshAudio.play(0)
+          break
         case 'bone-hover':
-        case 'bone-click':
-          if (object3d) { object3d.add(selectAudio) }
-          selectAudio.play()
+          boneHoverAudio.stop()
+          boneHoverAudio.play(0)
+          break
+        case 'undo':
+          undoAudio.stop()
+          undoAudio.play(0)
+          break
+        case 'redo':
+          redoAudio.stop()
+          redoAudio.play(0)
           break
       }
     }, [])
@@ -220,9 +286,12 @@ const SceneContent = connect(
     const stopSound = useCallback((name, object3d = null) => {
       switch (name) {
         case 'beam':
-        case 'bone-drone':
           if (object3d) { object3d.remove(beamAudio) }
           beamAudio.stop()
+          break
+        case 'bone-drone':
+          if (object3d) { object3d.remove(boneDroneAudio) }
+          boneDroneAudio.stop()
           break
       }
     }, [])
@@ -458,6 +527,12 @@ const SceneManagerXR = () => {
   const beamAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-beam2.mp3')
   const teleportAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-teleport.ogg')
 
+  const undoBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-undo.ogg')
+  const redoBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-redo.ogg')
+  const boneHoverBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-hover.ogg')
+  const boneDroneBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-drone.ogg')
+  const fastSwooshBuffer = useAudioLoader('/data/system/xr/snd/vr-fast-swoosh.ogg')
+
   // scene
   const sceneObjects = useSelector(getSceneObjects)
   const world = useSelector(getWorld)
@@ -493,7 +568,8 @@ const SceneManagerXR = () => {
       let appResources = [groundTexture, roomTexture, teleportTexture]
       let soundResources = [
         welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
-        teleportAudioBuffer
+        teleportAudioBuffer,
+        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer
       ]
 
       // fail if any app resources are missing
@@ -548,7 +624,13 @@ const SceneManagerXR = () => {
                   atmosphereAudioBuffer,
                   selectAudioBuffer,
                   beamAudioBuffer,
-                  teleportAudioBuffer
+                  teleportAudioBuffer,
+
+                  undoBuffer,
+                  redoBuffer,
+                  boneHoverBuffer,
+                  boneDroneBuffer,
+                  fastSwooshBuffer
                 }}
                 getAsset={getAsset} />
               : null
