@@ -704,6 +704,12 @@ class CanvasRenderer {
       // })
     }
 
+    if (this.state.mode == 'grid') {
+      let id = this.state.selections[0]
+      let sceneObject = this.state.sceneObjects[id]
+      drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, 4)
+    }
+
     if (this.state.mode == 'settings') {
       this.renderObjects(ctx, this.paneComponents['settings'])
     }
