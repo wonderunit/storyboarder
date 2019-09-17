@@ -1,4 +1,4 @@
-const { useMemo, useState, useRef } = React = require('react')
+const { useMemo, useState, useRef, useEffect } = React = require('react')
 const { useThree, useRender } = require('react-three-fiber')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -22,7 +22,7 @@ const BonesHelper = require('./three/BonesHelper')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
-
+const GPUPicker = require('./three/GPUPickers/GPUPicker')
 require('./three/GPUPickers/utils/Object3dExtension')
 
 const {
@@ -254,20 +254,25 @@ const getExcludeList = parent => {
 const useInteractionsManager = ({
   groundRef,
   rootRef,
-  uiService,
-  getGpuPicker
+  uiService
 }) => {
   const { gl, camera, scene } = useThree()
 
+  
   const selections = useSelector(getSelections)
-
-  /* const getGpuPicker = () => {
+  const gpuPicker = useRef(null)
+  const getGpuPicker = () => {
     if (gpuPicker.current === null) {
       gpuPicker.current = new GPUPicker(gl)
     }
     return gpuPicker.current
-  } */
+  }
 
+  useEffect(() => {
+    let gpuPicker = getGpuPicker()
+    gpuPicker.setupScene(scene.__interaction, getExcludeList(scene))
+    gpuPicker.pick(camera.worldPosition(), camera.worldQuaternion())
+  }, [])
 
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)
