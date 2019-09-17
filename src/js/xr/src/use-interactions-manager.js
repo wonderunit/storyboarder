@@ -892,7 +892,14 @@ const useInteractionsManager = ({
           BonesHelper.getInstance().selectBone(bone)
 
           playSound('bone-click')
-          playSound('bone-drone', bone)
+
+          let parent
+          bone.traverseAncestors(ancestor => {
+            if (parent == null && ancestor.userData.type == 'character') {
+              parent = ancestor
+            }
+          })
+          playSound('bone-drone', parent)
         },
         onRotateBoneExit: (context, event) => {
           useStoreApi.setState({
@@ -930,7 +937,7 @@ const useInteractionsManager = ({
           dispatch(selectBone(null))
           BonesHelper.getInstance().resetSelection()
 
-          stopSound('bone-drone', bone)
+          stopSound('bone-drone', parent)
         },
 
         onToggleMiniMode: (context, event) => {

@@ -216,10 +216,10 @@ const SceneContent = connect(
       return audio
     })
     const boneDroneAudio = useMemo(() => {
-      let audio = new THREE.Audio(cameraAudioListener)
+      let audio = new THREE.PositionalAudio(cameraAudioListener)
       audio.setBuffer(resources.boneDroneBuffer)
       audio.setLoop(false)
-      audio.setVolume(1.5)
+      audio.setVolume(2)
       audio.play()
       audio.stop()
       return audio
