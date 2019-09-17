@@ -23,7 +23,7 @@ const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
-
+const GetClosestVertexToPosition = require('./utils/closestVertexToPosition')
 require('./three/GPUPickers/utils/Object3dExtension')
 
 const {
