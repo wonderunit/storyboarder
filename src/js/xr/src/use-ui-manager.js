@@ -22,8 +22,8 @@ const { setCookie, getCookie } = require('./helpers/cookies')
 
 const [useUiStore] = create((set, get) => ({
   // values
-  switchHand: getCookie('switchHand') == true,
-  showCameras: getCookie('showCameras') == true,
+  switchHand: getCookie('switchHand') == 'true',
+  showCameras: getCookie('showCameras') == 'true',
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),

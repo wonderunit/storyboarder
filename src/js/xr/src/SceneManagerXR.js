@@ -188,7 +188,7 @@ const SceneContent = connect(
               <Controller gltf={resources.controllerGltf} />
               {
                 navigator.getGamepads()[controller.userData.gamepad.index] &&
-                navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
+                navigator.getGamepads()[controller.userData.gamepad.index].hand === (switchHand ? 'left' : 'right') &&
                 <Controls
                   gltf={resources.controlsGltf}
                   mode={uiCurrent.value.controls}
