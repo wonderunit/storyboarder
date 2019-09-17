@@ -614,8 +614,6 @@ const useInteractionsManager = ({
       }
       if (!match) {
         BonesHelper.getInstance().resetSelection()
-        // TODO should .resetSelection set .selectedBone to null?
-        BonesHelper.getInstance().selectedBone = null
       }
     }
 
