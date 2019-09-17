@@ -10,8 +10,8 @@ const useAudioLoader = filepath => {
   const [_, forceUpdate] = useState(false)
   useEffect(() => {
     if (!cache.has(key)) {
-      loader.load(filepath, gltf => {
-        cache.set(key, gltf)
+      loader.load(filepath, buffer => {
+        cache.set(key, buffer)
         forceUpdate(i => !i)
       })
     }
