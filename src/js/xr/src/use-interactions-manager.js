@@ -277,10 +277,14 @@ const useInteractionsManager = ({
     mesh.position.z -= 1
     scene.add(mesh)
     let interactions = scene.__interaction.concat([mesh])
-    
     gpuPicker.setupScene(interactions, getExcludeList(scene))
+    let gpuCamera = gpuPicker.camera
+    gpuCamera.fov = 360
+    gpuCamera.updateProjectionMatrix()
     gpuPicker.pick(camera.worldPosition(), camera.worldQuaternion())
     scene.remove(mesh)
+    gpuCamera.fov = 1
+    gpuCamera.updateProjectionMatrix()
   }, [])
 
   // values
