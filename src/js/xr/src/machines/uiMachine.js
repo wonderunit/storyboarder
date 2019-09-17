@@ -39,6 +39,14 @@ const machine = Machine({
             'GO_ADD': 'add',
             'GO_HOME': 'home',
             'TOGGLE_SETTINGS': 'settings',
+            'TOGGLE_GRID': 'grid',
+          }
+        },
+        grid: {
+          on: {
+            'GO_ADD': 'add',
+            'TOGGLE_SETTINGS': 'settings',
+            'GO_PROPERTIES': 'properties'
           }
         }
       }
@@ -51,9 +59,11 @@ const machine = Machine({
             'TRIGGER_START': {
               actions: 'onTriggerStart'
             },
-            'REQUEST_DRAG': {
-              target: 'dragging'
-            }
+            'REQUEST_DRAG': 'dragging',
+            'ADD_OBJECT': { actions: 'onAddObject' },
+            'REQUEST_DUPLICATE': { actions: 'onDuplicate' },
+            'REQUEST_DELETE': { actions: 'onDelete' },
+            'TOGGLE_SWITCH': { actions: 'onToggleSwitch' }
           }
         },
         locked: {

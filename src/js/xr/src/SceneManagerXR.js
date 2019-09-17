@@ -25,7 +25,7 @@ const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
-const { useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
+const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
@@ -128,6 +128,9 @@ const SceneContent = connect(
     const teleportTargetValid = useStore(state => state.teleportTargetValid)
     const worldScale = useStore(state => state.worldScale)
 
+    const switchHand = useUiStore(state => state.switchHand)
+    const showCameras = useUiStore(state => state.showCameras)
+
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
       scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
@@ -185,7 +188,7 @@ const SceneContent = connect(
               <Controller gltf={resources.controllerGltf} />
               {
                 navigator.getGamepads()[controller.userData.gamepad.index] &&
-                navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
+                navigator.getGamepads()[controller.userData.gamepad.index].hand === (switchHand ? 'left' : 'right') &&
                 <Controls
                   gltf={resources.controlsGltf}
                   mode={uiCurrent.value.controls}
@@ -259,7 +262,7 @@ const SceneContent = connect(
             )
           }
           {
-            virtualCameraIds.map(id =>
+            showCameras && virtualCameraIds.map(id =>
               <VirtualCamera
                 key={id}
                 gltf={resources.virtualCameraGltf}
