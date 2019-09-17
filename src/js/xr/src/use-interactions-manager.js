@@ -270,8 +270,17 @@ const useInteractionsManager = ({
 
   useEffect(() => {
     let gpuPicker = getGpuPicker()
-    gpuPicker.setupScene(scene.__interaction, getExcludeList(scene))
+    let geometry = new THREE.BoxBufferGeometry(2, 2, 2)
+    let material = new THREE.MeshBasicMaterial();
+    let mesh = new THREE.Mesh(geometry, material)
+    mesh.position.copy(camera.worldPosition())
+    mesh.position.z -= 1
+    scene.add(mesh)
+    let interactions = scene.__interaction.concat([mesh])
+    
+    gpuPicker.setupScene(interactions, getExcludeList(scene))
     gpuPicker.pick(camera.worldPosition(), camera.worldQuaternion())
+    scene.remove(mesh)
   }, [])
 
   // values
