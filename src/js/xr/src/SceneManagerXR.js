@@ -233,6 +233,24 @@ const SceneContent = connect(
       audio.stop()
       return audio
     })
+    const uiCreateAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.uiCreateBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    })
+    const uiDeleteAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.uiDeleteBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    })
 
     const isVrPresenting = useIsVrPresenting()
     useEffect(() => {
@@ -282,6 +300,13 @@ const SceneContent = connect(
         case 'redo':
           redoAudio.stop()
           redoAudio.play()
+        case 'create':
+          uiCreateAudio.stop()
+          uiCreateAudio.play()
+          break
+        case 'delete':
+          uiDeleteAudio.stop()
+          uiDeleteAudio.play()
           break
       }
     }, [])
@@ -302,7 +327,7 @@ const SceneContent = connect(
     const groundRef = useRef()
     const rootRef = useRef()
 
-    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
+    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({ playSound, stopSound })
 
     const { controllers, interactionServiceCurrent } = useInteractionsManager({
       groundRef,
@@ -535,6 +560,8 @@ const SceneManagerXR = () => {
   const boneHoverBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-hover.ogg')
   const boneDroneBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-drone.ogg')
   const fastSwooshBuffer = useAudioLoader('/data/system/xr/snd/vr-fast-swoosh.ogg')
+  const uiCreateBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-create.ogg')
+  const uiDeleteBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-delete.ogg')
 
   // scene
   const sceneObjects = useSelector(getSceneObjects)
@@ -572,7 +599,8 @@ const SceneManagerXR = () => {
       let soundResources = [
         welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
         teleportAudioBuffer,
-        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer
+        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer,
+        uiCreateBuffer, uiDeleteBuffer
       ]
 
       // fail if any app resources are missing
@@ -633,7 +661,9 @@ const SceneManagerXR = () => {
                   redoBuffer,
                   boneHoverBuffer,
                   boneDroneBuffer,
-                  fastSwooshBuffer
+                  fastSwooshBuffer,
+                  uiCreateBuffer,
+                  uiDeleteBuffer
                 }}
                 getAsset={getAsset} />
               : null
