@@ -1,8 +1,14 @@
 const { useUpdate } = require('react-three-fiber')
+const { useMemo } = require('react')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
+const Light = React.memo(({ gltf, sceneObject, isSelected, texture, children }) => {
+  const mesh = useMemo(
+    () => gltf.scene.children[0].clone(),
+    [gltf]
+  )
+
   const ref = useUpdate(self => {
     self.rotation.x = 0
     self.rotation.z = 0
@@ -37,17 +43,19 @@ const Light = React.memo(({ sceneObject, isSelected, texture, children }) => {
       }}
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
     >
-      {/* selectable cone */}
-      <mesh>
-        <cylinderBufferGeometry attach="geometry" args={[0.0, 0.05, 0.14]} />
+      <primitive
+        object={mesh}
+        rotation={[-Math.PI/2, Math.PI, 0]}
+      >
         <meshLambertMaterial
           attach="material"
           color={0xffffff}
+          flatShading={false}
           emissive-r={r / 0xff}
           emissive-g={g / 0xff}
           emissive-b={b / 0xff}
         />
-      </mesh>
+      </primitive>
 
       {/* hit target */}
       <mesh>

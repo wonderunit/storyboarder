@@ -159,6 +159,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected }
       <mesh
         position={[0, 0.3, 0]}
         rotation={[0, Math.PI, 0]}
+        scale={[-1,1,1]}
         material={heightShader}
       >
         <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
