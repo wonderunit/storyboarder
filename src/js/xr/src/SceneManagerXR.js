@@ -250,38 +250,38 @@ const SceneContent = connect(
         case 'beam':
           if (object3d) { object3d.add(beamAudio) }
           beamAudio.stop()
-          beamAudio.play(0)
+          beamAudio.play()
           break
         case 'bone-drone':
           if (object3d) { object3d.add(boneDroneAudio) }
           boneDroneAudio.stop()
-          boneDroneAudio.play(0)
+          boneDroneAudio.play()
           break
         case 'select':
         case 'bone-click':
           selectAudio.stop()
-          selectAudio.play(0)
+          selectAudio.play()
           break
         case 'teleport':
           teleportAudio.stop()
-          teleportAudio.play(0)
+          teleportAudio.play()
           break
         case 'teleport-move':
         case 'teleport-rotate':
           fastSwooshAudio.stop()
-          fastSwooshAudio.play(0)
+          fastSwooshAudio.play()
           break
         case 'bone-hover':
           boneHoverAudio.stop()
-          boneHoverAudio.play(0)
+          boneHoverAudio.play()
           break
         case 'undo':
           undoAudio.stop()
-          undoAudio.play(0)
+          undoAudio.play()
           break
         case 'redo':
           redoAudio.stop()
-          redoAudio.play(0)
+          redoAudio.play()
           break
       }
     }, [])
