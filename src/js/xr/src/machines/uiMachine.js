@@ -39,6 +39,14 @@ const machine = Machine({
             'GO_ADD': 'add',
             'GO_HOME': 'home',
             'TOGGLE_SETTINGS': 'settings',
+            'TOGGLE_GRID': 'grid',
+          }
+        },
+        grid: {
+          on: {
+            'GO_ADD': 'add',
+            'TOGGLE_SETTINGS': 'settings',
+            'GO_PROPERTIES': 'properties'
           }
         }
       }

@@ -311,6 +311,19 @@ function setupHomePane (paneComponents, self) {
         self.send('TOGGLE_SETTINGS')
         console.log('sup')
       }
+    },
+    'extend-button': {
+      id: 'extend-button',
+      type: 'image-button',
+      x: 483 - 32 + 66 * 0.5,
+      y: 288 - 32 + 105 * 0.5,
+      width: 64,
+      height: 64,
+      image: 'arrow',
+
+      onSelect: () => {
+        self.send('TOGGLE_GRID')
+      }
     }
   }
 }
