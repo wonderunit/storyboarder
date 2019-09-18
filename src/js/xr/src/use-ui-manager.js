@@ -1054,10 +1054,16 @@ class CanvasRenderer {
     }
   }
 
-  onSelect (id) {
+  onSelect (id, u, v) {
     let component = this.getComponentById(id)
     if (component && component.onSelect) {
-      component.onSelect()
+      let x = u * this.canvas.width
+      let y = v * this.canvas.height
+      x -= component.x
+      y -= component.y
+      x = x / component.width
+      y = y / component.height
+      component.onSelect(x, y)
     }
   }
 
@@ -1228,16 +1234,16 @@ const useUiManager = () => {
             let { id } = canvasIntersection
 
             if (canvasIntersection.type == 'button') {
-              // cr.onSelect(id)
+              cr.onSelect(id, u, v)
               uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
             }
 
             if (canvasIntersection.type == 'image-button') {
-              cr.onSelect(id)
+              cr.onSelect(id, u, v)
             }
 
             if (canvasIntersection.type == 'toggle-button') {
-              cr.onSelect(id)
+              cr.onSelect(id, u, v)
             }
 
             if (canvasIntersection.type == 'slider') {
