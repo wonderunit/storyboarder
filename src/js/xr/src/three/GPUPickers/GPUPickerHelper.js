@@ -13,10 +13,8 @@ class GPUPickerHelper
             { 
                 depthTest: true,
                 depthWrite: true,
-                skinning: true,
-                morphTargets: true,
                 depthPacking: THREE.RGBADepthPacking,
-                side: THREE.DoubleSide,
+                side: THREE.FrontSide,
                 blending: THREE.NoBlending
             });
         this.depthScene = new THREE.Scene();
@@ -56,16 +54,23 @@ class GPUPickerHelper
         {
             this.pickedObject = intersectedObject.originObject;
             let selectedObject = intersectedObject.pickerObject;
-            //if(this.pickedObject.type === "SkinnedMesh")
+            if(this.pickedObject.type === "SkinnedMesh")
             {
-                let objectParent = selectedObject.parent;
-                this.depthScene.attach(selectedObject);
-                selectedObject.updateMatrixWorld(true);
-                this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
-                objectParent.attach(selectedObject);
-                selectedObject.updateMatrixWorld(true);
-                unpackRGBAToScenePosition(canvasPos, pixelBuffer, cssPosition, camera, renderer);
+                this.depthScene.overrideMaterial.skinning = true;
+                this.depthScene.overrideMaterial.morphTargets = true;
             }
+            else
+            {
+                this.depthScene.overrideMaterial.skinning = false;
+                this.depthScene.overrideMaterial.morphTargets = false;
+            }
+            let objectParent = selectedObject.parent;
+            this.depthScene.attach(selectedObject);
+            selectedObject.updateMatrixWorld(true);
+            this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
+            objectParent.attach(selectedObject);
+            selectedObject.updateMatrixWorld(true);
+            unpackRGBAToScenePosition(canvasPos, pixelBuffer, cssPosition, camera, renderer);
         }
         camera.clearViewOffset();
         renderer.vr.enabled = vrEnabled ? true : false;
@@ -74,6 +79,8 @@ class GPUPickerHelper
         {
             return [];
         }
+        console.log("Camera worldPosition", camera.worldPosition())
+        console.log(canvasPos)
 
         return [{ object: this.pickedObject, point: canvasPos, distance: camera.worldPosition().distanceTo(canvasPos)}];
     }
@@ -81,6 +88,7 @@ class GPUPickerHelper
     readRenderedPixel(renderer, scene, camera, renderTarget, pixelBuffer)
     {
         renderer.setRenderTarget(renderTarget);
+        renderer.render(scene, camera);
         renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         renderer.readRenderTargetPixels(
