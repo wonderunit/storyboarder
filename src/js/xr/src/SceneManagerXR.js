@@ -162,8 +162,8 @@ const SceneContent = connect(
       return audio
     }, [])
     const beamVoicer = useMemo(() => {
-      let voicer = new Voicer(cameraAudioListener, 3, resources.beamAudioBuffer, {
-        releaseTime: 0.2
+      let voicer = new Voicer(cameraAudioListener, 6, resources.beamAudioBuffer, {
+        releaseTime: 0.05
       })
       voicer.setVolume(1)
       return voicer
