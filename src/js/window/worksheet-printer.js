@@ -7,25 +7,26 @@ const pdfDocument = require('pdfkit')
 const qr = require('qr-image')
 const moment = require('moment')
 const app = require('electron').remote.app
-const os = require('os')
-const dns = require('dns')
+
+const getIpAddress = require('../utils/getIpAddress')
 
 /* TODO
 
   Add scene information and synopsis
-  
+
 */
 
 class WorksheetPrinter extends EventEmitter {
 
   constructor () {
     super()
-    let hostname = os.hostname()
-    
-    let that = this
-    dns.lookup(hostname, function (err, add, fam) {
-      that.ipString = "http://" + add + ":1888"
-    })
+
+    let ip = getIpAddress()
+    if (ip) {
+      this.ipString = "http://" + ip + ":1888"
+    } else {
+      console.error('Could not determine IP address')
+    }
   }
 
   generate (paperSize, aspectRatio, rows, cols, spacing, sceneNumber, tipString, scriptData) {
