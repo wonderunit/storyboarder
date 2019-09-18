@@ -1,4 +1,5 @@
-const SHOW_STATS = true
+const SHOW_STATS = false
+const SHOW_LOG = false
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -141,12 +142,16 @@ const SceneContent = connect(
       scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
     }, [world.backgroundColor])
 
-    let stats = null
+    let statsComponent = null
     if (SHOW_STATS) {
       const rStats = useRStats()
-      stats = (
+      statsComponent = (
         <Stats rStats={rStats} position={[0, 0, -1]} />
       )
+    }
+    let logComponent = null
+    if (SHOW_LOG) {
+      logComponent = <Log position={[0, -0.15, -1]} />
     }
 
     const [cameraAudioListener] = useState(() => new THREE.AudioListener())
@@ -387,8 +392,8 @@ const SceneContent = connect(
           rotation={[teleportRot.x, teleportRot.y, teleportRot.z]}
         >
           <primitive object={camera}>
-            {stats}
-            <Log position={[0, -0.15, -1]} />
+            {statsComponent}
+            {logComponent}
             <primitive object={cameraAudioListener} />
           </primitive>
 
