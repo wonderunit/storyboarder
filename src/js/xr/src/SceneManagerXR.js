@@ -214,7 +214,7 @@ const SceneContent = connect(
       let voicer = new Voicer(cameraAudioListener, 8, resources.boneDroneBuffer, {
         releaseTime: 0.2
       })
-      voicer.setVolume(1)
+      voicer.setVolume(0.6)
       return voicer
     }, [])
     const fastSwooshAudio = useMemo(() => {
