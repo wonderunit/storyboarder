@@ -168,7 +168,7 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
+    }, [])
     const teleportAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.teleportAudioBuffer)
@@ -177,7 +177,7 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
+    }, [])
     const selectAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.selectAudioBuffer)
@@ -186,7 +186,7 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
+    }, [])
 
     const undoAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
@@ -196,7 +196,7 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
+    }, [])
     const redoAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.redoBuffer)
@@ -215,6 +215,7 @@ const SceneContent = connect(
       audio.stop()
       return audio
     })
+    }, [])
     const boneDroneAudio = useMemo(() => {
       let audio = new THREE.PositionalAudio(cameraAudioListener)
       audio.setBuffer(resources.boneDroneBuffer)
@@ -223,7 +224,7 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
+    }, [])
     const fastSwooshAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.fastSwooshBuffer)
@@ -232,7 +233,7 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
+    }, [])
     const uiCreateAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiCreateBuffer)
@@ -241,7 +242,7 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
+    }, [])
     const uiDeleteAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiDeleteBuffer)
@@ -250,7 +251,7 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
+    }, [])
 
     const isVrPresenting = useIsVrPresenting()
     useEffect(() => {
