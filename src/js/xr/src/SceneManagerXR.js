@@ -161,14 +161,12 @@ const SceneContent = connect(
       // audio.add(new THREE.PositionalAudioHelper(audio))
       return audio
     }, [])
-    const beamAudio = useMemo(() => {
-      let audio = new THREE.PositionalAudio(cameraAudioListener)
-      audio.setBuffer(resources.beamAudioBuffer)
-      audio.setLoop(true)
-      audio.setVolume(1)
-      audio.play()
-      audio.stop()
-      return audio
+    const beamVoicer = useMemo(() => {
+      let voicer = new Voicer(cameraAudioListener, 3, resources.beamAudioBuffer, {
+        releaseTime: 0.2
+      })
+      voicer.setVolume(1)
+      return voicer
     }, [])
     const teleportAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
@@ -261,9 +259,7 @@ const SceneContent = connect(
     const playSound = useCallback((name, object3d = null) => {
       switch (name) {
         case 'beam':
-          if (object3d) { object3d.add(beamAudio) }
-          beamAudio.stop()
-          beamAudio.play()
+          beamVoicer.noteOn(object3d)
           break
         case 'bone-drone':
           boneDroneVoicer.noteOn(object3d)
@@ -306,8 +302,7 @@ const SceneContent = connect(
     const stopSound = useCallback((name, object3d = null) => {
       switch (name) {
         case 'beam':
-          if (object3d) { object3d.remove(beamAudio) }
-          beamAudio.stop()
+          beamVoicer.allNotesOff()
           break
         case 'bone-drone':
           boneDroneVoicer.allNotesOff()

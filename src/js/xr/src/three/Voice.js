@@ -6,6 +6,7 @@ class Voice {
     this.audio = new THREE.PositionalAudio(listener)
     this.releaseTime = 0.05
     this.isReleasing = false
+    this.timeout = null
   }
   setBuffer (buffer) {
     this.audio.setBuffer(buffer)
@@ -15,6 +16,14 @@ class Voice {
   }
   noteOn (target, volume = 1) {
     let ctx = THREE.AudioContext.getContext()
+    if (this.timeout) {
+      this.onReleaseEnd()
+      clearTimeout(this.timeout)
+    }
+    if (this.audio.isPlaying) {
+      // rewind
+      this.audio.stop()
+    }
     this.audio.gain.gain.setTargetAtTime(volume, ctx.currentTime, 0.001)
     this.audio.play()
     this.target = target
@@ -27,17 +36,18 @@ class Voice {
       this.isReleasing = true
       let ctx = THREE.AudioContext.getContext()
       this.audio.gain.gain.setTargetAtTime(0, ctx.currentTime, this.releaseTime)
-      setTimeout(
-        () => {
-          this.audio.stop()
-          if (this.target) {
-            this.target.remove(this.audio)
-          }
-          this.isReleasing = false
-        },
+      this.timeout = setTimeout(
+        () => this.onReleaseEnd(),
         this.releaseTime * 5 * 1000
       )
     }
+  }
+  onReleaseEnd () {
+    this.audio.stop()
+    if (this.target) {
+      this.target.remove(this.audio)
+    }
+    this.isReleasing = false
   }
 }
 
