@@ -26,7 +26,9 @@ const UITestContent = ({ resources }) => {
 
   const { controllers, interactionServiceCurrent } = useInteractionsManager({
     groundRef: null,
-    uiService
+    uiService,
+    playSound: () => {},
+    stopSound: () => {}
   })
 
   useMemo(() => {

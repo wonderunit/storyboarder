@@ -1111,7 +1111,7 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const useUiManager = () => {
+const useUiManager = ({ playSound, stopSound }) => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
@@ -1174,18 +1174,22 @@ const useUiManager = () => {
             let { id } = canvasIntersection
 
             if (canvasIntersection.type == 'button') {
+              playSound('select')
               cr.onSelect(id)
             }
 
             if (canvasIntersection.type == 'image-button') {
+              playSound('select')
               cr.onSelect(id)
             }
 
             if (canvasIntersection.type == 'toggle-button') {
+              playSound('select')
               cr.onSelect(id)
             }
 
             if (canvasIntersection.type == 'slider') {
+              playSound('select')
               uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
             }
           }
@@ -1303,12 +1307,17 @@ const useUiManager = () => {
               )
               break
           }
+
+          playSound('create')
         },
 
         onDuplicate (context, event) {
           const { selections } = event
           const id = THREE.Math.generateUUID()
-          if (selections.length) store.dispatch(duplicateObjects([selections[0]], [id]))
+          if (selections.length) {
+            store.dispatch(duplicateObjects([selections[0]], [id]))
+            playSound('create')
+          }
         },
 
         onDelete (context, event) {
@@ -1319,6 +1328,7 @@ const useUiManager = () => {
             store.dispatch(selectObject(null))
             store.dispatch(deleteObjects([selections[0]]))
             store.dispatch(undoGroupEnd())
+            playSound('delete')
           }
         },
 
@@ -1331,6 +1341,7 @@ const useUiManager = () => {
           if (toggle === 'switchHand') setSwitchHand(value)
           if (toggle === 'showCameras') setShowCameras(value)
           getCanvasRenderer().needsRender = true
+          playSound('select')
         }
       }
     }
