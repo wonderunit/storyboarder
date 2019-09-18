@@ -973,5 +973,7 @@ const useInteractionsManager = ({
 module.exports = {
   useStore,
   useStoreApi,
-  useInteractionsManager
+  useInteractionsManager,
+  WORLD_SCALE_LARGE,
+  WORLD_SCALE_SMALL
 }

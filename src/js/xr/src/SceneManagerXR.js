@@ -26,7 +26,7 @@ const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
 
-const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
+const { WORLD_SCALE_LARGE, WORLD_SCALE_SMALL, useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
 const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
@@ -142,6 +142,31 @@ const SceneContent = connect(
     const rStats = useRStats()
 
     const [cameraAudioListener] = useState(() => new THREE.AudioListener())
+    const [atmosphereAudioFilter] = useState(() => {
+      const audioContext = THREE.AudioContext.getContext()
+      let biquadFilter = audioContext.createBiquadFilter()
+      biquadFilter.type = 'highpass'
+      biquadFilter.frequency.value = 0
+      return biquadFilter
+    })
+    useEffect(() => {
+      // atmosphere sound highpass filter on/off
+      const audioContext = THREE.AudioContext.getContext()
+      if (worldScale === WORLD_SCALE_LARGE) {
+        atmosphereAudioFilter.frequency.setTargetAtTime(0, audioContext.currentTime, 0.04)
+      } else {
+        atmosphereAudioFilter.frequency.setTargetAtTime(400, audioContext.currentTime, 0.04)
+      }
+
+      // all sounds get a little quieter
+      cameraAudioListener.gain.gain.setTargetAtTime(
+        worldScale === WORLD_SCALE_LARGE
+          ? 1
+          : 0.4,
+        audioContext.currentTime,
+        0.04
+      )
+    }, [worldScale])
     const welcomeAudio = useMemo(() => {
       const audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.welcomeAudioBuffer)
@@ -154,6 +179,7 @@ const SceneContent = connect(
     const atmosphereAudio = useMemo(() => {
       const audio = new THREE.PositionalAudio(cameraAudioListener)
       audio.setBuffer(resources.atmosphereAudioBuffer)
+      audio.setFilter(atmosphereAudioFilter)
       audio.setLoop(true)
       audio.setVolume(0.3)
       audio.play()
