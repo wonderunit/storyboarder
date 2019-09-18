@@ -61,16 +61,16 @@ function drawImageButton ({ ctx, width, height, image, flip = false }) {
   ctx.restore()
 }
 
-function drawButton ({ ctx, width, height, state, label }) {
+function drawButton ({ ctx, width, height, label, fill = 'rgba(0, 0, 0, 0)' }) {
   ctx.save()
-  ctx.fillStyle = '#eee'
+  ctx.fillStyle = fill
   ctx.fillRect(0, 0, width, height)
   ctx.translate(width / 2, height / 2)
   ctx.font = '20px Arial'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillStyle = 'black'
-  ctx.fillText(label, 0, 0)
+  ctx.fillText(label || '', 0, 0)
   ctx.restore()
 }
 
@@ -182,12 +182,10 @@ function wrapText (context, text, x, y, maxWidth, lineHeight) {
   context.fillText(line, x, y);
 }
 
-
-
 function drawGrid(ctx, x, y , width, height, items) {
   ctx.save()
   ctx.fillStyle = '#aaa'
-  //ctx.fillRect(x, y, width, height)
+  // ctx.fillRect(x, y, width, height)
   ctx.beginPath()
   ctx.rect(x, y, width, height)
   ctx.clip()
@@ -208,7 +206,7 @@ function drawGrid(ctx, x, y , width, height, items) {
 
   for (let i2 = 0; i2 < visibleRows; i2++) {
     for (let i = 0; i < cols; i++) {
-      if (startItem >= items.length) return
+      if (startItem >= items.length) break
       const item = items[startItem]
 
       let filepath = getPoseImageFilepathById(item.id)
@@ -231,6 +229,22 @@ function drawGrid(ctx, x, y , width, height, items) {
         }
       )
 
+      this.paneComponents['grid'][item.name] = {
+        id: item.name,
+        type: 'button',
+        x: x + i * itemWidth + i * gutter,
+        y: y + itemHeight * i2 - offset,
+        width: itemWidth,
+        height: itemHeight - gutter,
+        // onDrag: (x, y, component) => {
+        //   if (!component.dragStart) component.dragStart = { x, y }
+        //   const offset = Math.floor((y - component.dragStart.y) * height)
+        // },
+        // onDrop: (x, y, component) => {
+        //   delete component.dragStart
+        // }
+      }
+
       ctx.fillStyle = 'white'
       ctx.font = '30px Arial'
       ctx.textBaseline = 'top'
@@ -243,9 +257,25 @@ function drawGrid(ctx, x, y , width, height, items) {
     }
   }
 
+  this.paneComponents['grid']['grid-background'] = {
+    id: 'grid-background',
+    type: 'button',
+    x,
+    y,
+    width,
+    height,
+    onDrag: (x, y, component) => {
+      if (!component.dragStart) component.dragStart = { x, y }
+      const offset = Math.floor((y - component.dragStart.y) * height)
+      // console.log(`${offset} pixels`)
+      console.log(y, component.dragStart.y, height)
+    },
+    onDrop: (x, y, component) => {
+      delete component.dragStart
+    }
+  }
 
   ctx.restore()
-
 }
 
 function drawPaneBGs(ctx) {
@@ -583,8 +613,6 @@ class CanvasRenderer {
     // ctx.fillStyle = 'rgba(60,60,60)'
     // roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
 
-    // drawGrid(ctx, 570, 130 , 380, 500, 4)
-
     this.needsRender = false
   }
   render () {
@@ -729,7 +757,11 @@ class CanvasRenderer {
       
       let list = this.state.poses.slice(0, 10)
 
-      drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, list)
+      if (sceneObject.type == 'character') {
+        this.paneComponents['grid'] = {}
+        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, list)
+        this.renderObjects(ctx, this.paneComponents['grid'])
+      }
     }
 
     if (this.state.mode == 'settings') {
@@ -1038,7 +1070,7 @@ class CanvasRenderer {
       y -= component.y
       x = x / component.width
       y = y / component.height
-      component.onDrag(x, y)
+      component.onDrag(x, y, component)
     }
   }
 
@@ -1051,7 +1083,7 @@ class CanvasRenderer {
       y -= component.y
       x = x / component.width
       y = y / component.height
-      component.onDrop(x, y)
+      component.onDrop(x, y, component)
     }
   }
 
@@ -1196,7 +1228,8 @@ const useUiManager = () => {
             let { id } = canvasIntersection
 
             if (canvasIntersection.type == 'button') {
-              cr.onSelect(id)
+              // cr.onSelect(id)
+              uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
             }
 
             if (canvasIntersection.type == 'image-button') {
