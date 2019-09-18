@@ -113,11 +113,11 @@ const snapObjectRotation = (object,  point) => {
   let euler = new THREE.Euler(0, degreeY, 0)
   euler.reorder('YXZ')
 
-  object.parent.worldToLocal(point)
+/*   object.parent.worldToLocal(point)
   object.position.sub(point)
   object.position.applyEuler(euler)
   object.position.add(point)
-  object.parent.localToWorld(point)
+  object.parent.localToWorld(point) */
 
   // update rotation
   object.rotation.copy(euler)
@@ -457,7 +457,6 @@ const useInteractionsManager = ({
     if(controller.userData.draggedObject)
     {
       list = list.filter(object => object.uuid === controller.userData.draggedObject)
-      console.log(list[0].worldPosition())
     }
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
@@ -817,22 +816,16 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          // checks if intersection exist to ensure that object is selected
-          // sometimes after rapid snapping intersection might disappear but object will be still selected
-          if(!event.intersection) return
           let root = rootRef.current
+          // put object in root space 
           root.attach(object)
           object.updateMatrixWorld(true)
-          // translate
-          //object.applyMatrix(controller.matrixWorld)
 
           // rotate
-          snapObjectRotation(object, event.intersection.point)
+          snapObjectRotation(object/* , event.intersection.point */)
           object.userData.staticRotation = object.quaternion.clone()
           
-          // translate back
-          //object.applyMatrix(controller.getInverseMatrixWorld())
-          //object.updateMatrixWorld(true)
+          // put object in controller space
           controller.attach(object)
           object.updateMatrixWorld(true)
         },
