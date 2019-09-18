@@ -7,11 +7,7 @@ class UniversalPickableCharacter extends Pickable
     {
         super(object);
         this.sceneObject = object.type === "SkinnedMesh" ? object.parent : object;
-<<<<<<< HEAD
-        this.getMeshFromSceneObject();
-=======
         this.getMeshFromSceneObject(excludingList);
->>>>>>> master
         this.characterContainer = this.getCharacterContainer();
         this.excludingList = excludingList;
     }

@@ -108,12 +108,9 @@ class XRGPUPickerController extends GPUPickerController
         }
         switch(sceneMesh.userData.type)
         {
-<<<<<<< HEAD
-=======
             case 'object':
                 meshes.push(this.gpuPickerFactory.createObject(sceneMesh, excludingList));
                 break;
->>>>>>> master
             case 'character':
                 meshes.push(this.gpuPickerFactory.createCharacter(sceneMesh, excludingList));
                 break;
