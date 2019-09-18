@@ -12,7 +12,10 @@ const useVrControllers = require('./hooks/use-vr-controllers')
 
 const { log } = require('./components/Log')
 
-const getControllerIntersections = require('./helpers/get-controller-intersections')
+const {
+  getControllerRaycaster,
+  getControllerIntersections
+} = require('./helpers/get-controller-intersections')
 const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
@@ -322,7 +325,11 @@ const useInteractionsManager = ({
     // if the BonesHelper instance is in the scene ...
     if ( BonesHelper.getInstance().isSelected ) {
       // ... check bones helper bone intersections
-      intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+
+      let intersects = []
+      BonesHelper.getInstance().raycast(getControllerRaycaster(controller), intersects)
+      intersection = intersects.find(h => h.bone)
+
       if (intersection) {
         interactionService.send({
           type: 'TRIGGER_START',
@@ -426,7 +433,11 @@ const useInteractionsManager = ({
     const controller = event.target
 
     if (BonesHelper.getInstance().isSelected) {
-      const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+
+      let intersects = []
+      BonesHelper.getInstance().raycast(getControllerRaycaster(controller), intersects)
+      intersection = intersects.find(h => h.bone)
+
       if (intersection) {
         interactionService.send({
           type: 'GRIP_DOWN',
@@ -589,7 +600,11 @@ const useInteractionsManager = ({
       let match
       for (let i = 0, n = controllers.length; i < n; i++) {
         let controller = controllers[i]
-        let intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+
+        let intersects = []
+        BonesHelper.getInstance().raycast(getControllerRaycaster(controller), intersects)
+        intersection = intersects.find(h => h.bone)
+
         if (intersection) {
           match = intersection
           BonesHelper.getInstance().selectBone(intersection.bone)
