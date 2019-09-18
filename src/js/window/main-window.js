@@ -2,8 +2,6 @@ const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
 const { app } = require('electron').remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
-const os = require('os')
-const dns = require('dns')
 const path = require('path')
 const menu = require('../menu')
 const util = require('../utils/index')
@@ -70,6 +68,8 @@ const AudioPlayback = require('./audio-playback')
 const AudioFileControlView = require('./audio-file-control-view')
 
 const LinkedFileManager = require('./linked-file-manager')
+
+const getIpAddress = require('../utils/getIpAddress')
 
 const pkg = require('../../../package.json')
 
@@ -6812,13 +6812,13 @@ ipcRenderer.on('importFromWorksheet', (event, args) => {
 })
 
 ipcRenderer.on('importNotification', () => {
-  let hostname = os.hostname()
   let that = this
-  dns.lookup(hostname, function (err, add, fam) {
-    add = add != null ? add : hostname
-    let message =  "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + add + ":1888"
+
+  let ip = getIpAddress()
+  if (ip) {
+    let message = "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + ip + ":1888"
     notifications.notify({message: message, timing: 60})
-  })
+  }
 })
 
 ipcRenderer.on('importWorksheets', (event, args) => {
