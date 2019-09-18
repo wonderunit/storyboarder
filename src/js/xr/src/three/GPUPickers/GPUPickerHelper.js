@@ -9,6 +9,16 @@ class GPUPickerHelper
         this.pixelBuffer = new Uint8Array(4);
         this.pickedObject = null;
         this.selectableObjects = {};
+        this.skinningDepthMaterial = new THREE.MeshDepthMaterial(
+            { 
+                skinning: true,
+                morphTargets: true,
+                depthTest: true,
+                depthWrite: true,
+                depthPacking: THREE.RGBADepthPacking,
+                side: THREE.FrontSide,
+                blending: THREE.NoBlending
+            });
         this.depthMaterial = new THREE.MeshDepthMaterial(
             { 
                 depthTest: true,
@@ -56,13 +66,11 @@ class GPUPickerHelper
             let selectedObject = intersectedObject.pickerObject;
             if(this.pickedObject.type === "SkinnedMesh")
             {
-                this.depthScene.overrideMaterial.skinning = true;
-                this.depthScene.overrideMaterial.morphTargets = true;
+                this.depthScene.overrideMaterial = this.skinningDepthMaterial;
             }
             else
             {
-                this.depthScene.overrideMaterial.skinning = false;
-                this.depthScene.overrideMaterial.morphTargets = false;
+                this.depthScene.overrideMaterial = this.depthMaterial;
             }
             let objectParent = selectedObject.parent;
             this.depthScene.attach(selectedObject);

@@ -97,10 +97,6 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-const pivotGeometry = new THREE.BoxBufferGeometry( 0.2, 0.2, 0.2 );
-const pivotMaterial = new THREE.MeshBasicMaterial( { color: 0xffff00 } );
-const pivotMesh = new THREE.Mesh( pivotGeometry, pivotMaterial );
-
 const snapObjectRotation = (object,  point) => {
   // setup for rotation
   object.userData.order = object.rotation.order
@@ -116,59 +112,18 @@ const snapObjectRotation = (object,  point) => {
 
   let euler = new THREE.Euler(0, degreeY, 0)
   euler.reorder('YXZ')
-  let quaternion = new THREE.Quaternion().setFromEuler(euler)
-  let oldMatrix = object.matrix.clone()
-  let localPoint = point.clone()
-  object.worldToLocal(localPoint)
-  let {angle, axis} = quaternion.toAngleAxis()
-  let objectPosition = object.position.clone()
-/*   if(!pivotMesh.parent)
-  {
-    pivotMesh.position.copy(point)
-    object.parent.attach(pivotMesh)
-  }
-  else
-  {
-    object.parent.worldToLocal(point)
-    pivotMesh.position.copy(point)
-  }
-  pivotMesh.updateMatrixWorld(true)
-  pivotMesh.add(object)
-  pivotMesh.rotation.reorder('YXZ')
-  object.position.set(0, 0, 0)
-  object.rotation.set(0, 0, 0) */
-  //console.log(pivot.parent.clone())
-  object.parent.localToWorld(object.position)
+
+  object.parent.worldToLocal(point)
   object.position.sub(point)
   object.position.applyEuler(euler)
   object.position.add(point)
-  object.parent.worldToLocal(object.position)
+  object.parent.localToWorld(point)
 
   // update rotation
-  //pivotMesh.setRotationFromAxisAngle (axis, angle)
-  //object.setRotationFromAxisAngle (axis, angle)
   object.rotation.copy(euler)
-  //pivotMesh.rotation.order = object.userData.order
   object.rotation.order = object.userData.order
   object.updateMatrix()
   object.updateMatrixWorld()
-
-  //pivotMesh.parent.attach(object)
-  //object.position.copy(objectPosition)
-  //pivot.parent.remove(pivot)
-  //object.updateMatrix()
-  //object.updateMatrixWorld()
-/* 
-  let transformationMatrix = object.matrix.inverse()
-  transformationMatrix.multiply(oldMatrix)
-  let newPoint = localPoint.clone().applyMatrix4(transformationMatrix)
-  let pointDifference = new THREE.Vector3().subVectors(localPoint, newPoint)
-  object.position.sub(pointDifference)
-  object.updateMatrix()
-  object.updateMatrixWorld()
-  console.log("localPoint", localPoint)
-  console.log("newPoint", newPoint)
-  console.log("Point difference", pointDifference) */
 }
 
 
@@ -502,7 +457,7 @@ const useInteractionsManager = ({
     if(controller.userData.draggedObject)
     {
       list = list.filter(object => object.uuid === controller.userData.draggedObject)
-      //console.log(list)
+      console.log(list[0].worldPosition())
     }
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
@@ -511,7 +466,6 @@ const useInteractionsManager = ({
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
     // if one intersects
     if (hits.length) {
-      console.log(hits)
       // grab the first intersection
       let child = hits[0].object
       // find either the child or one of its parents on the list of interaction-ables
@@ -522,7 +476,6 @@ const useInteractionsManager = ({
     }
 
     if (match) {
-      console.log(match)
       interactionService.send({
         type: 'GRIP_DOWN',
         controller: event.target,
@@ -689,8 +642,7 @@ const useInteractionsManager = ({
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
         const wp = cursor.getWorldPosition(getReusableVector())
-        if(controller.userData.selectOffset)
-        {
+        if(controller.userData.selectOffset) {
           wp.sub(controller.userData.selectOffset)
           wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
           object3d.position.copy(wp)
@@ -867,28 +819,22 @@ const useInteractionsManager = ({
 
           // checks if intersection exist to ensure that object is selected
           // sometimes after rapid snapping intersection might disappear but object will be still selected
-          //if(!event.intersection) return
+          if(!event.intersection) return
+          let root = rootRef.current
+          root.attach(object)
+          object.updateMatrixWorld(true)
           // translate
-          object.applyMatrix(controller.matrixWorld)
+          //object.applyMatrix(controller.matrixWorld)
 
           // rotate
           snapObjectRotation(object, event.intersection.point)
           object.userData.staticRotation = object.quaternion.clone()
           
           // translate back
-          object.applyMatrix(controller.getInverseMatrixWorld())
+          //object.applyMatrix(controller.getInverseMatrixWorld())
+          //object.updateMatrixWorld(true)
+          controller.attach(object)
           object.updateMatrixWorld(true)
-
-     /*      getGpuPicker().setupScene([object], getExcludeList(scene))
-          let intersections = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
-          if (intersections.length) {
-            let { distance, point } = intersections[0]
-            console.log(intersection)
-            controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-          } else {
-            //controller.userData.selectOffset = new THREE//getSelectOffset(controller, object, distance, point)
-            log('WARNING GPU picker lost object')
-          } */
         },
         onSnapEnd: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
