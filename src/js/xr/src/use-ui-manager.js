@@ -1174,14 +1174,17 @@ const useUiManager = ({ playSound, stopSound }) => {
             let { id } = canvasIntersection
 
             if (canvasIntersection.type == 'button') {
+              playSound('select')
               cr.onSelect(id)
             }
 
             if (canvasIntersection.type == 'image-button') {
+              playSound('select')
               cr.onSelect(id)
             }
 
             if (canvasIntersection.type == 'toggle-button') {
+              playSound('select')
               cr.onSelect(id)
             }
 
