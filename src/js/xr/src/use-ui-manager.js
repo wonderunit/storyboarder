@@ -45,10 +45,11 @@ function drawText({ ctx, label, size, align = 'left', baseline = 'top', color = 
   ctx.restore()
 }
 
-function drawImageButton ({ ctx, width, height, image }) {
+function drawImageButton ({ ctx, width, height, image, flip = false }) {
   ctx.save()
 
-  ctx.drawImage(image, 0, 0, width, height)
+  if (flip) ctx.scale(-1, 1)
+  ctx.drawImage(image, flip ? -width : 0, 0, width, height)
 
   // ctx.fillStyle = '#eee'
   // ctx.fillRect(0, 0, width, height)
@@ -320,6 +321,7 @@ function setupHomePane (paneComponents, self) {
       width: 64,
       height: 64,
       image: 'arrow',
+      flip: true,
 
       onSelect: () => {
         self.send('TOGGLE_GRID')
