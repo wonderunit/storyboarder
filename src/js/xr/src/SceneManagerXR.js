@@ -1,3 +1,5 @@
+const SHOW_STATS = true
+
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree, useUpdate } = require('react-three-fiber')
@@ -139,7 +141,13 @@ const SceneContent = connect(
       scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
     }, [world.backgroundColor])
 
-    const rStats = useRStats()
+    let stats = null
+    if (SHOW_STATS) {
+      const rStats = useRStats()
+      stats = (
+        <Stats rStats={rStats} position={[0, 0, -1]} />
+      )
+    }
 
     const [cameraAudioListener] = useState(() => new THREE.AudioListener())
     const [atmosphereAudioFilter] = useState(() => {
@@ -379,7 +387,7 @@ const SceneContent = connect(
           rotation={[teleportRot.x, teleportRot.y, teleportRot.z]}
         >
           <primitive object={camera}>
-            <Stats rStats={rStats} position={[0, 0, -1]} />
+            {stats}
             <Log position={[0, -0.15, -1]} />
             <primitive object={cameraAudioListener} />
           </primitive>
