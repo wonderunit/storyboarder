@@ -212,14 +212,12 @@ const SceneContent = connect(
       voicer.setVolume(1)
       return voicer
     }, [])
-    const boneDroneAudio = useMemo(() => {
-      let audio = new THREE.PositionalAudio(cameraAudioListener)
-      audio.setBuffer(resources.boneDroneBuffer)
-      audio.setLoop(false)
-      audio.setVolume(1)
-      audio.play()
-      audio.stop()
-      return audio
+    const boneDroneVoicer = useMemo(() => {
+      let voicer = new Voicer(cameraAudioListener, 8, resources.boneDroneBuffer, {
+        releaseTime: 0.2
+      })
+      voicer.setVolume(1)
+      return voicer
     }, [])
     const fastSwooshAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
@@ -268,9 +266,7 @@ const SceneContent = connect(
           beamAudio.play()
           break
         case 'bone-drone':
-          if (object3d) { object3d.add(boneDroneAudio) }
-          boneDroneAudio.stop()
-          boneDroneAudio.play()
+          boneDroneVoicer.noteOn(object3d)
           break
         case 'select':
         case 'bone-click':
@@ -314,8 +310,7 @@ const SceneContent = connect(
           beamAudio.stop()
           break
         case 'bone-drone':
-          if (object3d) { object3d.remove(boneDroneAudio) }
-          boneDroneAudio.stop()
+          boneDroneVoicer.allNotesOff()
           break
       }
     }, [])
