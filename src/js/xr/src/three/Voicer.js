@@ -1,5 +1,3 @@
-const THREE = require('three')
-
 const Voice = require('./Voice')
 
 class Voicer {
@@ -12,13 +10,17 @@ class Voicer {
       this.voices.push(voice)
     }
     this.curr = 0
+    this.volume = 1
   }
-  noteOn () {
+  setVolume (value) {
+    this.volume = value
+  }
+  noteOn (target) {
     this.noteOff(this.curr)
 
     this.curr = (this.curr + 1) % this.max
     let voice = this.voices[this.curr]
-    voice.noteOn()
+    voice.noteOn(target, this.volume)
     return this.curr
   }
   noteOff (index) {

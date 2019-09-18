@@ -47,6 +47,7 @@ const { Log } = require('./components/Log')
 const Controls = require('./components/ui/Controls')
 
 const BonesHelper = require('./three/BonesHelper')
+const Voicer = require('./three/Voicer')
 
 const { createSelector } = require('reselect')
 
@@ -205,16 +206,11 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
-    })
-    const boneHoverAudio = useMemo(() => {
-      let audio = new THREE.Audio(cameraAudioListener)
-      audio.setBuffer(resources.boneHoverBuffer)
-      audio.setLoop(false)
-      audio.setVolume(1)
-      audio.play()
-      audio.stop()
-      return audio
-    })
+    }, [])
+    const boneHoverVoicer = useMemo(() => {
+      let voicer = new Voicer(cameraAudioListener, 8, resources.boneHoverBuffer)
+      voicer.setVolume(1)
+      return voicer
     }, [])
     const boneDroneAudio = useMemo(() => {
       let audio = new THREE.PositionalAudio(cameraAudioListener)
@@ -291,8 +287,7 @@ const SceneContent = connect(
           fastSwooshAudio.play()
           break
         case 'bone-hover':
-          boneHoverAudio.stop()
-          boneHoverAudio.play()
+          boneHoverVoicer.noteOn()
           break
         case 'undo':
           undoAudio.stop()
