@@ -192,36 +192,53 @@ function drawGrid(ctx, x, y , width, height, items) {
   ctx.rect(x, y, width, height)
   ctx.clip()
 
-  let cols = 5
-  let itemHeight = 150
+  let cols = 4
+  let itemHeight = width / cols / 0.68
   let gutter = 5
-  let offset = 910
+  let offset = 0
 
-  let itemWidth = (width-gutter*(cols-1)) / cols
-
-  let visibleRows = Math.ceil(height / itemHeight)+1
-
-  let startItem = Math.floor(offset / itemHeight)*cols
+  let itemWidth = (width - gutter * (cols - 1)) / cols
+  let visibleRows = Math.min(Math.ceil(height / itemHeight) + 1, items.length / cols)
+  let startItem = Math.floor(offset / itemHeight) * cols
 
   offset = offset % itemHeight
-
-  //let startItem = 0
 
   ctx.font = '30px Arial'
   ctx.textBaseline = 'top'
 
   for (let i2 = 0; i2 < visibleRows; i2++) {
     for (let i = 0; i < cols; i++) {
-      ctx.fillStyle = '#f00'
-      ctx.fillRect(x+(i*itemWidth)+(i*gutter), y+(itemHeight*i2)-offset, itemWidth, itemHeight-5)
+      if (startItem >= items.length) return
+      const item = items[startItem]
+
+      let filepath = getPoseImageFilepathById(item.id)
+      this.drawLoadableImage(
+        filepath,
+
+        image => {
+          // loaded state
+          // object should allow selection
+          ctx.drawImage(image, x + i * itemWidth + i * gutter, y + itemHeight * i2 - offset, itemWidth, itemHeight - gutter)
+        },
+
+        () => {
+          // loading state
+          // object should not allow selection
+          ctx.save()
+          ctx.fillStyle = '#222'
+          ctx.fillRect(x, y, 135, 200)
+          ctx.restore()
+        }
+      )
+
       ctx.fillStyle = 'white'
       ctx.font = '30px Arial'
       ctx.textBaseline = 'top'
-      ctx.fillText(startItem, x+(i*itemWidth)+(i*gutter), y+(itemHeight*i2)-offset)
+      ctx.fillText(startItem, x + i * itemWidth + i * gutter, y + itemHeight * i2 - offset)
 
       ctx.font = '10px Arial'
       ctx.textBaseline = 'bottom'
-      ctx.fillText('Pose: ' + startItem, x+(i*itemWidth)+(i*gutter), y+(itemHeight*i2)-offset+itemHeight-5)
+      ctx.fillText(item.name, x + i * itemWidth + i * gutter, y + itemHeight * i2 - offset + itemHeight - gutter)
       startItem++
     }
   }
@@ -530,7 +547,7 @@ class CanvasRenderer {
     let ctx = this.context
     drawPaneBGs(ctx)
 
-
+    drawGrid = drawGrid.bind(this)
 
     setupHomePane(this.paneComponents, this)
     setupAddPane(this.paneComponents, this)
@@ -709,7 +726,10 @@ class CanvasRenderer {
     if (this.state.mode == 'grid') {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
-      drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, 4)
+      
+      let list = this.state.poses.slice(0, 10)
+
+      drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, list)
     }
 
     if (this.state.mode == 'settings') {
