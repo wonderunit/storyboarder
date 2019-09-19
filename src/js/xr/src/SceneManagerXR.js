@@ -471,7 +471,7 @@ const SceneContent = connect(
                 key={id}
                 gltf={resources.lightGltf}
                 sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)}
+                isSelected={selections.includes(id)} />
             )
           }
           {
