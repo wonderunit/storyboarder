@@ -636,15 +636,19 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
+      let shouldMoveWithCursor = (object3d.userData.type == 'character') || controller.userData.selectOffset
       if (shouldMoveWithCursor) {
+
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
         const wp = cursor.getWorldPosition(getReusableVector())
         if(controller.userData.selectOffset) {
           wp.sub(controller.userData.selectOffset)
-          wp.applyMatrix4(object3d.parent.getInverseMatrixWorld())
+          object3d.updateMatrixWorld()
+
+          object3d.applyMatrix(object3d.parent.matrixWorld)
           object3d.position.copy(wp)
+          object3d.applyMatrix(object3d.parent.getInverseMatrixWorld())
         }
           
         if (object3d.userData.staticRotation) {
@@ -652,9 +656,9 @@ const useInteractionsManager = ({
           let rotation = quaternion.multiply(object3d.userData.staticRotation)
           object3d.quaternion.copy(rotation)
         }
-
-        object3d.updateMatrix()
         object3d.updateMatrixWorld()
+
+        //object3d.updateMatrix()
       }
     }
 
@@ -837,7 +841,6 @@ const useInteractionsManager = ({
             object.userData.staticRotation = null
           }
 
-          controller.userData.selectOffset = null
         },
 
         moveAndRotateCamera: (context, event) => {
@@ -848,10 +851,9 @@ const useInteractionsManager = ({
         moveAndRotateObject: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
-
           let { worldScale } = useStoreApi.getState()
 
-          let shouldMoveWithCursor = (object.userData.type == 'character') || object.userData.staticRotation
+          let shouldMoveWithCursor = (object.userData.type == 'character') || controller.userData.selectOffset
           let target = shouldMoveWithCursor
             ? controller.getObjectByName('cursor')
             : object
