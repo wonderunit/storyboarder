@@ -3,7 +3,7 @@ const { useMemo } = require('react')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
+const Light = React.memo(({ gltf, sceneObject, isSelected, worldScale, children }) => {
   const mesh = useMemo(
     () => gltf.scene.children[0].clone(),
     [gltf]
@@ -22,10 +22,10 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
 
   const spotLight = useUpdate(
     self => {
-      self.target.position.set(0, 0, sceneObject.distance)
+      self.target.position.set(0, 0, sceneObject.distance * worldScale)
       self.add(self.target)
     },
-    [sceneObject.distance]
+    [sceneObject.distance, worldScale]
   )
 
   const r = isSelected ? 0x35 : 0x56
@@ -70,7 +70,7 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
         position={[0, 0, 0]}
         rotation={[Math.PI / 2, 0, 0]}
         angle={sceneObject.angle}
-        distance={sceneObject.distance}
+        distance={sceneObject.distance * worldScale}
         penumbra={sceneObject.penumbra}
         decay={sceneObject.decay}
       />
