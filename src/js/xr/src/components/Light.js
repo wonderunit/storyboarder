@@ -15,15 +15,15 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, worldScale, children 
     self.rotation.y = sceneObject.rotation || 0
     self.rotateX(sceneObject.tilt || 0)
     self.rotateZ(sceneObject.roll || 0)
-
-    // render the SpotLight in the VirtualCamera
-    spotLight.current.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
-  }, [sceneObject.rotation, sceneObject.tilt, sceneObject.roll, sceneObject.distance])
+  }, [sceneObject.rotation, sceneObject.tilt, sceneObject.roll])
 
   const spotLight = useUpdate(
     self => {
       self.target.position.set(0, 0, sceneObject.distance * worldScale)
       self.add(self.target)
+
+      // render the SpotLight in the VirtualCamera
+      self.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     },
     [sceneObject.distance, worldScale]
   )
