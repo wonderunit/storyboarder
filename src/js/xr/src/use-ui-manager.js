@@ -229,24 +229,15 @@ function drawGrid(ctx, x, y , width, height, items) {
         }
       )
 
-      // this.paneComponents['grid'][item.name] = {
-      //   id: item.name,
-      //   type: 'button',
-      //   x: x + i * itemWidth + i * gutter,
-      //   y: y + itemHeight * i2 - offset,
-      //   width: itemWidth,
-      //   height: itemHeight - gutter,
-      //   onSelect: (x, y) => {
-      //     this.state.grids.dragStart = { x, y }
-      //   },
-      //   onDrag: (x, y, component) => {
-      //     const { grids } = this.state
-      //     const offset = Math.floor((y - grids.dragStart.y) * height * (component.height / height * 0.5))
-      //     grids.poses.scrollTop = Math.max(grids.poses.scrollTop + offset, 0)
-      //     grids.dragStart = { x, y }
-      //     this.needsRender = true
-      //   }
-      // }
+      this.paneComponents['grid'][item.name] = {
+        id: item.name,
+        type: 'button',
+        x: x + i * itemWidth + i * gutter,
+        y: y + itemHeight * i2 - offset,
+        width: itemWidth,
+        height: itemHeight - gutter,
+        invisible: true
+      }
 
       ctx.fillStyle = 'white'
       ctx.font = '30px Arial'
@@ -268,17 +259,22 @@ function drawGrid(ctx, x, y , width, height, items) {
     width,
     height,
     onSelect: (x, y) => {
-      this.state.grids.dragStart = { x, y }
+      this.state.grids.startCoords = this.state.grids.prevCoords = { x, y }
     },
-    onDrag: (x, y, component) => {
+    onDrag: (x, y) => {
       const { grids } = this.state
-      const offset = Math.floor((grids.dragStart.y - y) * height)
+      const offset = Math.floor((grids.prevCoords.y - y) * height)
       grids.poses.scrollTop = Math.max(grids.poses.scrollTop + offset, 0)
-      grids.dragStart = { x, y }
+      grids.prevCoords = { x, y }
       this.needsRender = true
     },
-    onDrop: () => {
-      console.log("DROP")
+    onDrop: (x, y, u, v) => {
+      const { startCoords } = this.state.grids
+      const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
+      if (distance < 0.01) {
+        let canvasIntersection = this.getCanvasIntersection(u, v, false)
+        console.log('POSE: ' + canvasIntersection)
+      }
     }
   }
 
@@ -578,7 +574,8 @@ class CanvasRenderer {
       mode: 'home',
       context: {},
       grids: {
-        dragStart: {},
+        startCoords: {},
+        prevCoords: {},
         'poses': {
           scrollTop: 0
         }
@@ -1092,7 +1089,7 @@ class CanvasRenderer {
       y -= component.y
       x = x / component.width
       y = y / component.height
-      component.onDrag(x, y, component)
+      component.onDrag(x, y)
     }
   }
 
@@ -1105,7 +1102,7 @@ class CanvasRenderer {
       y -= component.y
       x = x / component.width
       y = y / component.height
-      component.onDrop(x, y)
+      component.onDrop(x, y, u, v)
     }
   }
 
@@ -1133,13 +1130,14 @@ class CanvasRenderer {
   }
   */
 
-  getCanvasIntersection (u, v) {
+  getCanvasIntersection (u, v, ignoreInvisible = true) {
     let x = u * this.canvas.width
     let y = v * this.canvas.height
 
     for (let paneId in this.paneComponents) {
       for (let componentId in this.paneComponents[paneId]) {
         let component = this.paneComponents[paneId][componentId]
+        if (ignoreInvisible && component.invisible) continue
         let { id, type } = component
         if (
           x > component.x && x < component.x + component.width &&
