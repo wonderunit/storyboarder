@@ -406,6 +406,7 @@ const SceneContent = connect(
                 <Controls
                   gltf={resources.controlsGltf}
                   mode={uiCurrent.value.controls}
+                  hand={switchHand ? 'left' : 'right'}
                   getCanvasRenderer={getCanvasRenderer} />
               }
             </primitive>
