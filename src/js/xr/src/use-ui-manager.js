@@ -184,8 +184,8 @@ function wrapText (context, text, x, y, maxWidth, lineHeight) {
 
 function drawGrid(ctx, x, y , width, height, items) {
   ctx.save()
-  ctx.fillStyle = '#aaa'
-  // ctx.fillRect(x, y, width, height)
+  ctx.fillStyle = '#000'
+  ctx.fillRect(x, y, width, height)
   ctx.beginPath()
   ctx.rect(x, y, width, height)
   ctx.clip()
@@ -193,7 +193,7 @@ function drawGrid(ctx, x, y , width, height, items) {
   let cols = 4
   let itemHeight = width / cols / 0.68
   let gutter = 5
-  let offset = 0
+  let offset = this.state.grids.poses.scrollTop || 0
 
   let itemWidth = (width - gutter * (cols - 1)) / cols
   let visibleRows = Math.min(Math.ceil(height / itemHeight) + 1, items.length / cols)
@@ -229,21 +229,24 @@ function drawGrid(ctx, x, y , width, height, items) {
         }
       )
 
-      this.paneComponents['grid'][item.name] = {
-        id: item.name,
-        type: 'button',
-        x: x + i * itemWidth + i * gutter,
-        y: y + itemHeight * i2 - offset,
-        width: itemWidth,
-        height: itemHeight - gutter,
-        // onDrag: (x, y, component) => {
-        //   if (!component.dragStart) component.dragStart = { x, y }
-        //   const offset = Math.floor((y - component.dragStart.y) * height)
-        // },
-        // onDrop: (x, y, component) => {
-        //   delete component.dragStart
-        // }
-      }
+      // this.paneComponents['grid'][item.name] = {
+      //   id: item.name,
+      //   type: 'button',
+      //   x: x + i * itemWidth + i * gutter,
+      //   y: y + itemHeight * i2 - offset,
+      //   width: itemWidth,
+      //   height: itemHeight - gutter,
+      //   onSelect: (x, y) => {
+      //     this.state.grids.dragStart = { x, y }
+      //   },
+      //   onDrag: (x, y, component) => {
+      //     const { grids } = this.state
+      //     const offset = Math.floor((y - grids.dragStart.y) * height * (component.height / height * 0.5))
+      //     grids.poses.scrollTop = Math.max(grids.poses.scrollTop + offset, 0)
+      //     grids.dragStart = { x, y }
+      //     this.needsRender = true
+      //   }
+      // }
 
       ctx.fillStyle = 'white'
       ctx.font = '30px Arial'
@@ -264,14 +267,18 @@ function drawGrid(ctx, x, y , width, height, items) {
     y,
     width,
     height,
-    onDrag: (x, y, component) => {
-      if (!component.dragStart) component.dragStart = { x, y }
-      const offset = Math.floor((y - component.dragStart.y) * height)
-      // console.log(`${offset} pixels`)
-      console.log(y, component.dragStart.y, height)
+    onSelect: (x, y) => {
+      this.state.grids.dragStart = { x, y }
     },
-    onDrop: (x, y, component) => {
-      delete component.dragStart
+    onDrag: (x, y, component) => {
+      const { grids } = this.state
+      const offset = Math.floor((grids.dragStart.y - y) * height)
+      grids.poses.scrollTop = Math.max(grids.poses.scrollTop + offset, 0)
+      grids.dragStart = { x, y }
+      this.needsRender = true
+    },
+    onDrop: () => {
+      console.log("DROP")
     }
   }
 
@@ -569,7 +576,13 @@ class CanvasRenderer {
       poses: {},
       models: {},
       mode: 'home',
-      context: {}
+      context: {},
+      grids: {
+        dragStart: {},
+        'poses': {
+          scrollTop: 0
+        }
+      }
     }
 
     this.paneComponents = {}
@@ -757,7 +770,10 @@ class CanvasRenderer {
       
       let list = this.state.poses.slice(0, 10)
 
-      if (sceneObject.type == 'character') {
+      ctx.fillStyle = '#000'
+      roundRect(ctx, 4, 6, 439, 666, 25, true, false)
+
+      if (sceneObject && sceneObject.type == 'character') {
         this.paneComponents['grid'] = {}
         drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, list)
         this.renderObjects(ctx, this.paneComponents['grid'])
@@ -1089,7 +1105,7 @@ class CanvasRenderer {
       y -= component.y
       x = x / component.width
       y = y / component.height
-      component.onDrop(x, y, component)
+      component.onDrop(x, y)
     }
   }
 
