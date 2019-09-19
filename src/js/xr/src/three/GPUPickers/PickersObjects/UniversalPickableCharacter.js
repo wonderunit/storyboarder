@@ -37,6 +37,15 @@ class UniversalPickableCharacter extends Pickable
         }
     }
 
+    getCharacterContainer()
+    {
+        if(this.sceneMesh.parent.type === "LOD")
+        {
+            return this.sceneMesh.parent.parent;
+        }
+        return this.sceneMesh.parent;
+    }
+
     //TODO(): Removed get uuid
     getUUID()
     {
@@ -121,16 +130,5 @@ class UniversalPickableCharacter extends Pickable
         }   
         this.pickingMesh.visible = true;
     }
-
-    getCharacterContainer()
-    {
-        if(this.sceneMesh.parent.type === "LOD")
-        {
-            return this.sceneMesh.parent.parent;
-        }
-        return this.sceneMesh.parent;
-    }
-
-
 }
 module.exports = UniversalPickableCharacter;
