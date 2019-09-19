@@ -28,7 +28,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected }) => {
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, audio }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -159,11 +159,12 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected }
       <mesh
         position={[0, 0.3, 0]}
         rotation={[0, Math.PI, 0]}
+        scale={[-1,1,1]}
         material={heightShader}
       >
         <planeGeometry attach="geometry" args={[size * aspectRatio, size]} />
       </mesh>
-      <primitive object={instancedBorderGroup} />
+      <primitive object={instancedBorderGroup} userData={{ preventInteraction: true }} />
     </group>
   }, [])
 
@@ -236,6 +237,13 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected }
         far={1000}
       />
     </group>
+
+    {
+      audio &&
+        <primitive
+          position={[0, 0, -2]}
+          object={audio} />
+    }
   </group>
 })
 

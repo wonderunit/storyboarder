@@ -1,6 +1,4 @@
-const os = require('os')
 const path = require('path')
-const dns = require('dns')
 
 const express = require('express')
 const electron = require('electron')
@@ -14,6 +12,7 @@ const log = require('electron-log')
 const portNumber = 1234
 
 const { getSerializedState, updateServer } = require('../shared/reducers/shot-generator')
+const getIpAddress = require('../utils/getIpAddress')
 
 class XRServer {
   constructor ({ store }) {
@@ -67,49 +66,21 @@ class XRServer {
       console.error(err)
     })
 
-    http.listen(portNumber, function() {
+    http.listen(portNumber, function () {
       let desc = `XRServer running at`
 
-      new Promise(resolve => {
-        let hostname = os.hostname()
-        dns.lookup(hostname, function (err, addr) {
-          if (err) {
-            // use IP address instead of .local
-            let ip
-            if (hostname.match(/\.local$/)) {
-              ip = Object.values(os.networkInterfaces()).reduce(
-                (r, list) =>
-                  r.concat(
-                    list.reduce(
-                      (rr, i) =>
-                        rr.concat((i.family === "IPv4" && !i.internal && i.address) || []),
-                      []
-                    )
-                  ),
-                []
-              )
-            }
-            if (ip) {
-              resolve(ip)
-            } else {
-              log.error(err)
-              resolve(hostname)
-            }
-            return
-          }
+      let ip = getIpAddress()
 
-          resolve(addr)
-        })
-      })
-      .then(result => {
-        log.info(`${desc} http://${result}:${portNumber}`)
+      if (ip) {
+        log.info(`${desc} http://${ip}:${portNumber}`)
 
         // there are two servers:
         // createServer creates one on :8000/8001 which is the old default remote input server
         // XRServer creates one on :1234 for XR/VR
-        store.dispatch(updateServer({ xrUri: `http://${result}:${portNumber}` }))
-      })
-      .catch(err => log.error(err))
+        store.dispatch(updateServer({ xrUri: `http://${ip}:${portNumber}` }))
+      } else {
+        log.error('Could not determine IP address')
+      }
     })
   }
 }

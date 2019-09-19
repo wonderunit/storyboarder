@@ -52,6 +52,8 @@ const Controls = React.memo(({ gltf, mode, getCanvasRenderer }) => {
       case 'properties':
         return meshes[2]
 
+      case 'grid':
+        return meshes[3]
 
       default:
         return meshes[0]

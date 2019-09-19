@@ -11,13 +11,44 @@ const uiMachine = require('./machines/uiMachine')
 
 const R = require('ramda')
 
+// all pose presets (so we can use `stand` for new characters)
+const defaultPosePresets = require('../../shared/reducers/shot-generator-presets/poses.json')
+// id of the pose preset used for new characters
+const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
+
+const { create } = require('zustand')
+const { produce } = require('immer')
+const { setCookie, getCookie } = require('./helpers/cookies')
+
+const [useUiStore] = create((set, get) => ({
+  // values
+  switchHand: getCookie('switchHand') == 'true',
+  showCameras: getCookie('showCameras') == 'true',
+
+  // actions
+  setSwitchHand: value => set(produce(state => { state.switchHand = value })),
+  setShowCameras: value => set(produce(state => { state.showCameras = value })),
+
+  set: fn => set(produce(fn))
+}))
+
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
+
+function drawText({ ctx, label, size, align = 'left', baseline = 'top', color = '#fff' }) {
+  ctx.save()
+  ctx.font = `${size}px Arial`
+  ctx.textAlign = align
+  ctx.textBaseline = baseline
+  ctx.fillStyle = color
+  ctx.fillText(label, 0, 0)
+  ctx.restore()
+}
 
 function drawImageButton ({ ctx, width, height, image }) {
   ctx.save()
 
-  ctx.drawImage(image, 0, 0)
+  ctx.drawImage(image, 0, 0, width, height)
 
   // ctx.fillStyle = '#eee'
   // ctx.fillRect(0, 0, width, height)
@@ -44,26 +75,36 @@ function drawButton ({ ctx, width, height, state, label }) {
 
 
 function drawSlider ({ ctx, width, height, state, label }) {
-  ctx.save()
-  ctx.fillStyle = '#aaa'
-  ctx.fillRect(0, 0, width, height)
-  ctx.fillStyle = '#eee'
-  ctx.fillRect(5, 5, width - 10, height - 10)
-
   // value
-  ctx.translate(5, 5)
-  ctx.fillStyle = '#ccc'
+  ctx.save()
+  ctx.fillStyle = '#6E6E6E'
+  if (state !== 0) roundRect(ctx, 0, 0, (width - 10) * state, height, 12, true, false)
 
-  ctx.fillRect(0, 0, (width - 10) * state, height - 10)
-  ctx.translate(-5, -5)
+  ctx.strokeStyle = '#fff'
+  ctx.lineWidth = 3
+  roundRect(ctx, 0, 0, width - 10, height, 12, false, true)
 
   // label
   ctx.translate(width / 2, height / 2)
-  ctx.font = '20px Arial'
+  ctx.font = '24px Arial'
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = '#333'
-  ctx.fillText(label, 0, 0)
+  ctx.fillStyle = '#fff'
+  ctx.fillText(label.charAt(0).toUpperCase() + label.slice(1), 0, 0)
+  ctx.restore()
+}
+
+function drawToggleButton({ ctx, width, height, cookieBoolean }) {
+  ctx.save()
+  ctx.fillStyle = '#000'
+  roundRect(ctx, 0, 0, width - 10, height, 36, true, false)
+
+  ctx.fillStyle = '#6E6E6E'
+  roundRect(ctx, (width - 10) * (cookieBoolean ? 0.5 : 0), 0, (width - 10) * 0.5, height, 36, true, false)
+
+  ctx.strokeStyle = '#fff'
+  ctx.lineWidth = 3
+  roundRect(ctx, 0, 0, width - 10, height, 36, false, true)
   ctx.restore()
 }
 
@@ -212,10 +253,10 @@ function setupHomePane (paneComponents, self) {
     'select-button': {
       id: 'select-button',
       type: 'image-button',
-      x: 667+8,
-      y: 684+7,
-      width: 89,
-      height: 89,
+      x: 667 + 10 + 10,
+      y: 684 + 10 + 10,
+      width: 64,
+      height: 64,
       image: 'selection',
       onSelect: () => {
         self.send('GO_HOME')
@@ -224,10 +265,10 @@ function setupHomePane (paneComponents, self) {
     'add-button': {
       id: 'add-button',
       type: 'image-button',
-      x: 667+8,
-      y: 684+7+88+7,
-      width: 89,
-      height: 89,
+      x: 667 + 10 + 10,
+      y: 684 + 105 + 10,
+      width: 64,
+      height: 64,
       image: 'add',
       onSelect: () => {
         self.send('GO_ADD')
@@ -236,67 +277,176 @@ function setupHomePane (paneComponents, self) {
     'duplicate-button': {
       id: 'duplicate-button',
       type: 'image-button',
-      x: 667+8+89+7,
-      y: 684+7,
-      width: 89,
-      height: 89,
+      x: 667 + 105 + 10,
+      y: 684 + 10 + 10,
+      width: 64,
+      height: 64,
       image: 'duplicate',
       onSelect: () => {
-        console.log('duplicate')
+        self.send('REQUEST_DUPLICATE', { selections: self.state.selections })
       }
     },
     'delete-button': {
       id: 'delete-button',
       type: 'image-button',
-      x: 667+8+89+7,
-      y: 684+7+88+7,
-      width: 89,
-      height: 89,
+      x: 667 + 105 + 10,
+      y: 684 + 105 + 10,
+      width: 64,
+      height: 64,
       image: 'erase',
       onSelect: () => {
-        console.log('delete')
+        self.send('REQUEST_DELETE', { selections: self.state.selections })
       }
     },
     'settings-button': {
       id: 'settings-button',
       type: 'image-button',
-      x: 909,
-      y: 684,
-      width: 88,
-      height: 88,
+      x: 909 + 10,
+      y: 684 + 10,
+      width: 64,
+      height: 64,
       image: 'help',
 
       onSelect: () => {
         self.send('TOGGLE_SETTINGS')
         console.log('sup')
       }
+    },
+    'extend-button': {
+      id: 'extend-button',
+      type: 'image-button',
+      x: 483 - 32 + 66 * 0.5,
+      y: 288 - 32 + 105 * 0.5,
+      width: 64,
+      height: 64,
+      image: 'arrow',
+
+      onSelect: () => {
+        self.send('TOGGLE_GRID')
+      }
     }
-
-
   }
 }
 
-function setupAddPane (paneComponents) {
+function setupAddPane (paneComponents, self) {
   // 4 image buttons
   paneComponents['add'] = {
-    'add-character': {
-      id: 'add-character',
-      type: 'button',
-      x: 456+8,
-      y: 684+7,
-      width: 89,
-      height: 89,
-
-      label: 'Add character',
+    'add-camera': {
+      id: 'add-camera',
+      type: 'image-button',
+      x: 456 + 10 + 10,
+      y: 684 + 10 + 10,
+      width: 64,
+      height: 64,
+      image: 'icon-toolbar-camera',
 
       onSelect: () => {
-        console.log("Adding Character")
+        self.send('ADD_OBJECT', { object: 'camera' })
+      }
+    },
+
+    'add-object': {
+      id: 'add-object',
+      type: 'image-button',
+      x: 456 + 105 + 10,
+      y: 684 + 10 + 10,
+      width: 64,
+      height: 64,
+      image: 'icon-toolbar-object',
+
+      onSelect: () => {
+        self.send('ADD_OBJECT', { object: 'object' })
+      }
+    },
+
+    'add-character': {
+      id: 'add-character',
+      type: 'image-button',
+      x: 456 + 10 + 10,
+      y: 684 + 105 + 10,
+      width: 64,
+      height: 64,
+      image: 'icon-toolbar-character',
+
+      onSelect: () => {
+        self.send('ADD_OBJECT', { object: 'character' })
         // undoGroupStart()
         // console.log(deleteObjects([sceneObject.id]))
         // this.dispatch(deleteObjects([sceneObject.id]))
         // this.dispatch(selectObject(null))
         // selectObject(id)
         // undoGroupEnd()
+      }
+    },
+
+    'add-light': {
+      id: 'add-light',
+      type: 'image-button',
+      x: 456 + 105 + 10,
+      y: 684 + 105 + 10,
+      width: 64,
+      height: 64,
+      image: 'icon-toolbar-light',
+
+      onSelect: () => {
+        self.send('ADD_OBJECT', { object: 'light' })
+      }
+    }
+  }
+}
+
+function setupSettingsPane(paneComponents, self) {
+  paneComponents['settings'] = {
+    settings: {
+      id: 'settings',
+      type: 'text',
+      x: 0 + 30,
+      y: 684 + 20,
+      label: 'Settings',
+      size: 48
+    },
+
+    'switch-hand': {
+      id: 'switch-hand',
+      type: 'text',
+      x: 0 + 30,
+      y: 684 + 20 + 48 + 30 + 40 - 12,
+      label: 'Switch Hand',
+      size: 24
+    },
+
+    'show-cameras': {
+      id: 'show-cameras',
+      type: 'text',
+      x: 0 + 30,
+      y: 684 + 20 + 48 + 30 + 80 + 30 + 40 - 12,
+      label: 'Show Cameras',
+      size: 24,
+    },
+
+    'switch-hand-toggle': {
+      id: 'switch-hand-toggle',
+      type: 'toggle-button',
+      toggle: 'switchHand',
+      x: 0 + 30 + 200,
+      y: 684 + 20 + 48 + 30,
+      width: 200,
+      height: 80,
+      onSelect: () => {
+        self.send('TOGGLE_SWITCH', { toggle: 'switchHand' })
+      }
+    },
+
+    'show-cameras-toggle': {
+      id: 'show-cameras-toggle',
+      type: 'toggle-button',
+      toggle: 'showCameras',
+      x: 0 + 30 + 200,
+      y: 684 + 20 + 48 + 30 + 80 + 30,
+      width: 200,
+      height: 80,
+      onSelect: () => {
+        self.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
       }
     }
   }
@@ -322,6 +472,30 @@ lenses.headScale = R.lens(
   vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.8, 1.2), 0.8, 1.2)
 )
 
+for (let propertyName of ['intensity', 'penumbra']) {
+  lenses[propertyName] = R.lens(
+  vin => clamp(vin, 0, 1),
+  vout => clamp(steps(vout, 0.1), 0, 1)
+  )
+}
+
+lenses.angle = R.lens(
+  vin => clamp(mapLinear(vin, 0, 1.57, 0, 1), 0, 1),
+  vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0, 1.57), 0, 1.57)
+)
+
+lenses.fov = R.lens(
+  vin => clamp(mapLinear(vin, 3, 71, 0, 1), 0, 1),
+  vout => clamp(mapLinear(steps(vout, 0.01), 0, 1, 3, 71), 3, 71)
+)
+
+for (let propertyName of ['width', 'height', 'depth']) {
+  lenses[propertyName] = R.lens(
+    vin => clamp(mapLinear(vin, 0.1, 5, 0, 1), 0, 1),
+    vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.1, 5), 0.1, 5)
+  )
+}
+
 for (let morphTargetName of ['ectomorphic', 'mesomorphic', 'endomorphic']) {
   lenses[morphTargetName] = R.lens(
     vin => clamp(vin, 0, 1),
@@ -345,7 +519,8 @@ class CanvasRenderer {
       sceneObjects: {},
       poses: {},
       models: {},
-      mode: 'home'
+      mode: 'home',
+      context: {}
     }
 
     this.paneComponents = {}
@@ -356,9 +531,11 @@ class CanvasRenderer {
 
 
     setupHomePane(this.paneComponents, this)
-    setupAddPane(this.paneComponents)
+    setupAddPane(this.paneComponents, this)
+    setupSettingsPane(this.paneComponents, this)
     this.renderObjects(ctx, this.paneComponents['home'])
     this.renderObjects(ctx, this.paneComponents['add'])
+    this.renderObjects(ctx, this.paneComponents['settings'])
     // setupaddpane
     // setupsettings
 
@@ -399,6 +576,12 @@ class CanvasRenderer {
 
     console.log("render")
 
+    if (this.state.context.locked) {
+      console.log('rendering a locked ui')
+    } else {
+      console.log('rendering an unlocked ui')
+    }
+
     console.log(this.state.mode)
     if (this.state.mode == 'properties') {
       let id = this.state.selections[0]
@@ -406,101 +589,80 @@ class CanvasRenderer {
 
       let modelSettings = this.state.models[sceneObject.model]
 
-      this.paneComponents['properties'] = {
-        'character-height': {
-          id: 'character-height',
-          type: 'slider',
-          x: 570,
-          y: 30,
-          width: 420,
-          height: 40,
+      // Earlier sliders stay visible if not overridden with this
+      ctx.fillStyle = 'rgba(0,0,0)'
+      roundRect(ctx, 554, 6, 439, 666, 25, true, false)
 
-          label: `height ${sceneObject.height}`,
-
-          state: R.view(lenses.characterHeight, sceneObject.height),
-
-          setState: value => {
-            this.dispatch(
-              updateObject(
-                sceneObject.id,
-                { height: R.set(lenses.characterHeight, value, sceneObject.height) }
-              )
-            )
-          }
-        }
-      }
-      this.paneComponents['properties']['character-height'].onDrag =
-      this.paneComponents['properties']['character-height'].onDrop =
-      this.paneComponents['properties']['character-height'].setState
-
-      this.paneComponents['properties']['character-headScale'] = {
-        id: 'character-headScale',
-        type: 'slider',
-
-        x: 570,
-        y: 100,
-        width: 420,
-        height: 40,
-
-        label: 'head scale: ' + Math.round(sceneObject.headScale * 100) + '%',
-
-        state: R.view(lenses.headScale, sceneObject.headScale),
-
-        onDrag: value => this.dispatch(
-          updateObject(
-            sceneObject.id,
-            { headScale: R.set(lenses.headScale, value, sceneObject.headScale) }
-          )
-        ),
-        onDrop: value => this.dispatch(
-          updateObject(
-            sceneObject.id,
-            { headScale: R.set(lenses.headScale, value, sceneObject.headScale) }
-          )
-        )
+      const propertyArray = []
+      switch (sceneObject.type) {
+        case 'camera':
+          propertyArray.push({ name: 'fov', label: 'F.O.V', rounding: 1 })
+          break
+        case 'object':
+          if (sceneObject.model === 'box') propertyArray.push({ name: 'width' }, { name: 'height' }, { name: 'depth' })
+          else propertyArray.push({ name: 'height', label: 'size' })
+          break
+        case 'character':
+          propertyArray.push({ name: 'height', lens: 'characterHeight' }, { name: 'headScale', label: 'head' })
+          break
+        case 'light':
+          propertyArray.push({ name: 'intensity' }, { name: 'angle' }, { name: 'penumbra' })
+          break
       }
 
       if (modelSettings && modelSettings.validMorphTargets) {
         modelSettings.validMorphTargets.forEach((morphTargetName, n) => {
+          const label = morphTargetName === 'endomorphic' ? 'obese' : morphTargetName.replace('morphic', '')
+          propertyArray.push({ name: morphTargetName, label })
+        })
+      }
 
-          this.paneComponents['properties'][`character-${morphTargetName}`] = {
-            id: `character-${morphTargetName}`,
-            type: 'slider',
-            x: 570,
-            y: 200 + (n * 50),
-            width: 420,
-            height: 40,
+      this.paneComponents['properties'] = {}
+      for (let [i, property] of propertyArray.entries()) {
+        const { name, label, lens, rounding } = property
+        let labelValue = Math.round(sceneObject[name] * (rounding || 100)) / (rounding || 100)
+        if (name.includes('morphic')) labelValue = Math.round(sceneObject.morphTargets[name] * 100) + '%'
 
-            label: morphTargetName + ' : ' + Math.round(sceneObject.morphTargets[morphTargetName] * 100) + '%',
+        this.paneComponents['properties'][name] = {
+          id: name,
+          type: 'slider',
+          x: 570,
+          y: 30 + 90 * i,
+          width: 420,
+          height: 80,
 
-            state: R.view(lenses[morphTargetName], sceneObject.morphTargets[morphTargetName]),
+          label: `${label || name} - ${labelValue}`,
+          state: R.view(lenses[lens || name], name.includes('morphic') ? sceneObject.morphTargets[name] : sceneObject[name]),
 
-            onDrag: value => {
+          setState: value => {
+
+            // Object sizes
+            if (label === 'size') {
               this.dispatch(
-                updateObject(
-                  sceneObject.id,
-                  {
-                    morphTargets: {
-                      [morphTargetName]: R.set(lenses[morphTargetName], value, sceneObject.morphTargets[morphTargetName])
-                    }
-                  }
-                )
-              )
-            },
-            onDrop: value => {
-              this.dispatch(
-                updateObject(
-                  sceneObject.id,
-                  {
-                    morphTargets: {
-                      [morphTargetName]: R.set(lenses[morphTargetName], value, sceneObject.morphTargets[morphTargetName])
-                    }
-                  }
-                )
+                updateObject(sceneObject.id, {
+                  width: R.set(lenses[name], value, sceneObject[name]),
+                  height: R.set(lenses[name], value, sceneObject[name]),
+                  depth: R.set(lenses[name], value, sceneObject[name])
+                })
               )
             }
+
+            // MorphTargets
+            else if (name.includes('morphic'))
+              this.dispatch(
+                updateObject(sceneObject.id, {
+                  morphTargets: { [name]: R.set(lenses[name], value, sceneObject.morphTargets[name]) }
+                })
+              )
+
+            // Everything else
+            else this.dispatch(updateObject(sceneObject.id, { [name]: R.set(lenses[lens || name], value, sceneObject[name]) }))
           }
-        })
+        }
+
+        this.paneComponents['properties'][name].onDrag =
+        this.paneComponents['properties'][name].onDrop =
+        this.paneComponents['properties'][name].setState
       }
 
       this.renderObjects(ctx, this.paneComponents['properties'])
@@ -540,6 +702,16 @@ class CanvasRenderer {
       //     }
       //   )
       // })
+    }
+
+    if (this.state.mode == 'grid') {
+      let id = this.state.selections[0]
+      let sceneObject = this.state.sceneObjects[id]
+      drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, 4)
+    }
+
+    if (this.state.mode == 'settings') {
+      this.renderObjects(ctx, this.paneComponents['settings'])
     }
 
     /*
@@ -690,6 +862,33 @@ class CanvasRenderer {
     // TODO: render only what is dirty
     for (let object of Object.values(objects)) {
       let { type, x, y, width, height, image, ...props } = object
+
+      if (object.type === 'text') {
+        ctx.save()
+        ctx.translate(x, y)
+        drawText({
+          ctx,
+
+          ...props
+        })
+        ctx.restore()
+      }
+
+      if (object.type === 'toggle-button') {
+        const cookieBoolean = getCookie(object.toggle) == 'true'
+
+        ctx.save()
+        ctx.translate(x, y)
+        drawToggleButton({
+          ctx,
+          width,
+          height,
+          cookieBoolean,
+
+          ...props
+        })
+        ctx.restore()
+      }
 
       if (object.type === 'button') {
         ctx.save()
@@ -882,9 +1081,14 @@ class CanvasRenderer {
 const {
   getSceneObjects,
   getSelections,
+  createObject,
   selectObject,
   updateObject,
-  deleteObjects
+  deleteObjects,
+  duplicateObjects,
+  getActiveCamera,
+  undoGroupStart,
+  undoGroupEnd
 } = require('../../shared/reducers/shot-generator')
 
 // via PosePresetsEditor.js
@@ -907,10 +1111,13 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const useUiManager = () => {
+const useUiManager = ({ playSound, stopSound }) => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
+
+  const setSwitchHand = useUiStore(state => state.setSwitchHand)
+  const setShowCameras = useUiStore(state => state.setShowCameras)
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
@@ -921,6 +1128,8 @@ const useUiManager = () => {
       .sort(comparePresetNames)
       .sort(comparePresetPriority)
   , [presets.poses])
+
+  const activeCamera = useSelector(getActiveCamera)
 
   const [characterModels, objectModels] = useMemo(() =>
     [
@@ -965,14 +1174,22 @@ const useUiManager = () => {
             let { id } = canvasIntersection
 
             if (canvasIntersection.type == 'button') {
+              playSound('select')
               cr.onSelect(id)
             }
 
             if (canvasIntersection.type == 'image-button') {
+              playSound('select')
+              cr.onSelect(id)
+            }
+
+            if (canvasIntersection.type == 'toggle-button') {
+              playSound('select')
               cr.onSelect(id)
             }
 
             if (canvasIntersection.type == 'slider') {
+              playSound('select')
               uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
             }
           }
@@ -993,6 +1210,138 @@ const useUiManager = () => {
           let u = event.intersection.uv.x
           let v = event.intersection.uv.y
           getCanvasRenderer().onDrag(context.selection, u, v)
+        },
+
+        onAddObject (context, event) {
+          const { object } = event
+          const id = THREE.Math.generateUUID()
+
+          let offsetVector = new THREE.Vector3(0, 0, -2)
+          if (object === 'camera') offsetVector.normalize()
+
+          // TODO WorldScale multipliers
+          offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(camera.matrixWorld))
+          offsetVector.multiply(new THREE.Vector3(1, 0, 1))
+          const newPos = camera.parent.position
+            .clone()
+            .add(camera.position)
+            .add(offsetVector)
+
+          const rotation = new THREE.Vector2(offsetVector.x, offsetVector.z).normalize().angle() * -1 - Math.PI / 2
+
+          switch (object) {
+            case 'camera':
+              store.dispatch(
+                createObject({
+                  id,
+                  type: 'camera',
+                  fov: 22.25,
+                  x: newPos.x,
+                  y: newPos.z,
+                  z: newPos.y,
+                  rotation: rotation,
+                  tilt: 0,
+                  roll: 0
+                })
+              )
+              break
+            case 'object':
+              store.dispatch(
+                createObject({
+                  id,
+                  type: 'object',
+                  model: 'box',
+                  width: 1,
+                  height: 1,
+                  depth: 1,
+                  x: newPos.x,
+                  y: newPos.z,
+                  z: 0,
+                  rotation: { x: 0, y: rotation, z: 0 },
+                  visible: true
+                })
+              )
+              break
+            case 'character':
+              store.dispatch(
+                createObject({
+                  id,
+                  type: 'character',
+                  height: 1.8,
+                  model: 'adult-male',
+                  x: newPos.x,
+                  y: newPos.z,
+                  z: 0,
+                  rotation: rotation,
+                  headScale: 1,
+
+                  morphTargets: {
+                    mesomorphic: 0,
+                    ectomorphic: 0,
+                    endomorphic: 0
+                  },
+
+                  posePresetId: DEFAULT_POSE_PRESET_ID,
+                  skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
+                  visible: true
+                })
+              )
+              break
+            case 'light':
+              store.dispatch(
+                createObject({
+                  id,
+                  type: 'light',
+                  x: newPos.x,
+                  y: newPos.z,
+                  z: newPos.y,
+                  intensity: 0.8,
+                  angle: 1.04,
+                  distance: 5,
+                  penumbra: 1.0,
+                  decay: 1,
+                  rotation: 0,
+                  tilt: 0,
+                  visible: true
+                })
+              )
+              break
+          }
+
+          playSound('create')
+        },
+
+        onDuplicate (context, event) {
+          const { selections } = event
+          const id = THREE.Math.generateUUID()
+          if (selections.length) {
+            store.dispatch(duplicateObjects([selections[0]], [id]))
+            playSound('create')
+          }
+        },
+
+        onDelete (context, event) {
+          const { selections } = event
+          // deselect object before deleting
+          if (selections.length && selections[0] !== activeCamera) {
+            store.dispatch(undoGroupStart())
+            store.dispatch(selectObject(null))
+            store.dispatch(deleteObjects([selections[0]]))
+            store.dispatch(undoGroupEnd())
+            playSound('delete')
+          }
+        },
+
+        onToggleSwitch (context, event) {
+          const { toggle } = event
+          const cookie = getCookie(toggle)
+          const value = !(cookie == 'true')
+          setCookie(toggle, value, 90)
+
+          if (toggle === 'switchHand') setSwitchHand(value)
+          if (toggle === 'showCameras') setShowCameras(value)
+          getCanvasRenderer().needsRender = true
+          playSound('select')
         }
       }
     }
@@ -1036,7 +1385,13 @@ const useUiManager = () => {
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
+    getCanvasRenderer().needsRender = true
   }, [uiCurrent.value.controls])
+
+  useMemo(() => {
+    getCanvasRenderer().state.context = uiCurrent.context
+    getCanvasRenderer().needsRender = true
+  }, [uiCurrent.context])
 
   return { uiService, uiCurrent, getCanvasRenderer }
 }
@@ -1061,6 +1416,7 @@ const UI_ICON_NAMES = [
 const UI_ICON_FILEPATHS = UI_ICON_NAMES.map(getIconFilepathByName)
 
 module.exports = {
+  useUiStore,
   useUiManager,
   UI_ICON_FILEPATHS
 }
