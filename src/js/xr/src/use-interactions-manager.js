@@ -25,7 +25,7 @@ const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
 const GetClosestVertexToPosition = require('./utils/closestVertexToPosition')
 require('./three/GPUPickers/utils/Object3dExtension')
-const dropObject = require('./utils/dropObject')
+const {dropObject, dropCharacter } = require('./utils/dropToObjects')
 const {
   // selectors
   getSelections,
@@ -461,7 +461,7 @@ const useInteractionsManager = ({
     }
 
     if (match) {
-      console.log(dropObject(match, list, scene))
+      console.log(dropCharacter(match, list))
       interactionService.send({
         type: 'GRIP_DOWN',
         controller: event.target,
