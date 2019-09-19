@@ -230,7 +230,8 @@ function drawGrid(ctx, x, y , width, height, items) {
       )
 
       this.paneComponents['grid'][item.name] = {
-        id: item.name,
+        id: item.id,
+        name: item.name,
         type: 'button',
         x: x + i * itemWidth + i * gutter,
         y: y + itemHeight * i2 - offset,
@@ -271,9 +272,22 @@ function drawGrid(ctx, x, y , width, height, items) {
     onDrop: (x, y, u, v) => {
       const { startCoords } = this.state.grids
       const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
-      if (distance < 0.01) {
+
+      if (distance < 0.025) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
-        console.log('POSE: ' + canvasIntersection)
+
+        if (canvasIntersection) {
+          const posePresetId = canvasIntersection.id
+          const pose = this.state.poses.find(pose => {
+            return pose.id === posePresetId
+          })
+
+          const skeleton = pose.state.skeleton
+
+          let id = this.state.selections[0]
+          let sceneObject = this.state.sceneObjects[id]
+          this.dispatch(updateObject(sceneObject.id, { posePresetId, skeleton }))
+        }
       }
     }
   }
@@ -765,7 +779,8 @@ class CanvasRenderer {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
       
-      let list = this.state.poses.slice(0, 10)
+      // let list = this.state.poses.slice(0, 10)
+      let list = this.state.poses
 
       ctx.fillStyle = '#000'
       roundRect(ctx, 4, 6, 439, 666, 25, true, false)
