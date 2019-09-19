@@ -457,11 +457,10 @@ const useInteractionsManager = ({
     // include all interactables (Model Object, Character, etc)
     let list = scene.__interaction
 
-    // Checks if any object is dragged 
+    // Checks if any object is dragged
     // There's no reason to pick any other object except for dragged one
-    if(controller.userData.draggedObject)
-    {
-      list = list.filter(object => object.uuid === controller.userData.draggedObject)
+    if (interactionService.state.context.selection) {
+      list = list.filter(object => object.uuid === interactionService.state.context.selection)
     }
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
@@ -791,8 +790,7 @@ const useInteractionsManager = ({
         onDragObjectEntry: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
           let object = event.intersection.object
-          controller.userData.draggedObject = object.uuid
-          
+
           if (object.userData.type != 'character') {
             controller.attach(object)
             object.updateMatrixWorld(true)
