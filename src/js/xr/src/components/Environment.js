@@ -8,7 +8,7 @@ const VirtualCamera = require('../components/VirtualCamera')
 
 const onlyOfTypes = require('../../../shot-generator/only-of-types')
 
-const materialFactory = () => new THREE.MeshLambertMaterial({
+const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
   emissive: 0x0,
   flatShading: false
