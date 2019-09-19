@@ -30,7 +30,14 @@ const Environment = React.memo(({ gltf, environment }) => {
 
     sceneData.traverse(child => {
       if (child.isMesh) {
-        child.material = materialFactory()
+        let material = materialFactory()
+
+        if (child.material.map) {
+          material.map = child.material.map
+          material.map.needsUpdate = true
+        }
+
+        child.material = material
       }
     })
 

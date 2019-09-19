@@ -1,10 +1,13 @@
+const SHOW_STATS = false
+const SHOW_LOG = false
+
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree, useUpdate } = require('react-three-fiber')
 
 const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
-const { useMemo, useRef, useState, useEffect } = React = require('react')
+const { useMemo, useRef, useState, useEffect, useCallback } = React = require('react')
 require('./three/GPUPickers/utils/Object3dExtension')
 const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 
@@ -21,11 +24,13 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
+const useIsVrPresenting = require('./hooks/use-is-vr-presenting')
 const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
+const useAudioLoader = require('./hooks/use-audio-loader')
 
-const { useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
-const { useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
+const { WORLD_SCALE_LARGE, WORLD_SCALE_SMALL, useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
+const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
@@ -45,6 +50,7 @@ const { Log } = require('./components/Log')
 const Controls = require('./components/ui/Controls')
 
 const BonesHelper = require('./three/BonesHelper')
+const Voicer = require('./three/Voicer')
 
 const { createSelector } = require('reselect')
 
@@ -128,22 +134,232 @@ const SceneContent = connect(
     const teleportTargetValid = useStore(state => state.teleportTargetValid)
     const worldScale = useStore(state => state.worldScale)
 
+    const switchHand = useUiStore(state => state.switchHand)
+    const showCameras = useUiStore(state => state.showCameras)
+
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
       scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
     }, [world.backgroundColor])
 
-    const rStats = useRStats()
+    let statsComponent = null
+    if (SHOW_STATS) {
+      const rStats = useRStats()
+      statsComponent = (
+        <Stats rStats={rStats} position={[0, 0, -1]} />
+      )
+    }
+    let logComponent = null
+    if (SHOW_LOG) {
+      logComponent = <Log position={[0, -0.15, -1]} />
+    }
+
+    const [cameraAudioListener] = useState(() => new THREE.AudioListener())
+    const [atmosphereAudioFilter] = useState(() => {
+      const audioContext = THREE.AudioContext.getContext()
+      let biquadFilter = audioContext.createBiquadFilter()
+      biquadFilter.type = 'highpass'
+      biquadFilter.frequency.value = 0
+      return biquadFilter
+    })
+    useEffect(() => {
+      // atmosphere sound highpass filter on/off
+      const audioContext = THREE.AudioContext.getContext()
+      if (worldScale === WORLD_SCALE_LARGE) {
+        atmosphereAudioFilter.frequency.setTargetAtTime(0, audioContext.currentTime, 0.04)
+      } else {
+        atmosphereAudioFilter.frequency.setTargetAtTime(400, audioContext.currentTime, 0.04)
+      }
+
+      // all sounds get a little quieter
+      cameraAudioListener.gain.gain.setTargetAtTime(
+        worldScale === WORLD_SCALE_LARGE
+          ? 1
+          : 0.4,
+        audioContext.currentTime,
+        0.04
+      )
+    }, [worldScale])
+    const welcomeAudio = useMemo(() => {
+      const audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.welcomeAudioBuffer)
+      audio.setLoop(false)
+      audio.setVolume(0.35)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+    const atmosphereAudio = useMemo(() => {
+      const audio = new THREE.PositionalAudio(cameraAudioListener)
+      audio.setBuffer(resources.atmosphereAudioBuffer)
+      audio.setFilter(atmosphereAudioFilter)
+      audio.setLoop(true)
+      audio.setVolume(0.3)
+      audio.play()
+      audio.stop()
+      // audio.add(new THREE.PositionalAudioHelper(audio))
+      return audio
+    }, [])
+    const beamVoicer = useMemo(() => {
+      let voicer = new Voicer(cameraAudioListener, 6, resources.beamAudioBuffer, {
+        releaseTime: 0.05
+      })
+      voicer.setVolume(1)
+      return voicer
+    }, [])
+    const teleportAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.teleportAudioBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+    const selectAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.selectAudioBuffer)
+      audio.setLoop(false)
+      audio.setVolume(0.5)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+
+    const undoAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.undoBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+    const redoAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.redoBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+    const boneHoverVoicer = useMemo(() => {
+      let voicer = new Voicer(cameraAudioListener, 8, resources.boneHoverBuffer)
+      voicer.setVolume(1)
+      return voicer
+    }, [])
+    const boneDroneVoicer = useMemo(() => {
+      let voicer = new Voicer(cameraAudioListener, 8, resources.boneDroneBuffer, {
+        releaseTime: 0.2
+      })
+      voicer.setVolume(0.6)
+      return voicer
+    }, [])
+    const fastSwooshAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.fastSwooshBuffer)
+      audio.setLoop(false)
+      audio.setVolume(0.1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+    const uiCreateAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.uiCreateBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+    const uiDeleteAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.uiDeleteBuffer)
+      audio.setLoop(false)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+
+    const isVrPresenting = useIsVrPresenting()
+    useEffect(() => {
+      if (isVrPresenting) {
+        welcomeAudio.play()
+        if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
+      } else {
+        welcomeAudio.isPlaying && welcomeAudio.stop()
+      }
+    }, [isVrPresenting])
+
+
+    const playSound = useCallback((name, object3d = null) => {
+      switch (name) {
+        case 'beam':
+          beamVoicer.noteOn(object3d)
+          break
+        case 'bone-drone':
+          boneDroneVoicer.noteOn(object3d)
+          break
+        case 'select':
+        case 'bone-click':
+          selectAudio.stop()
+          selectAudio.play()
+          break
+        case 'teleport':
+          teleportAudio.stop()
+          teleportAudio.play()
+          break
+        case 'teleport-move':
+        case 'teleport-rotate':
+          fastSwooshAudio.stop()
+          fastSwooshAudio.play()
+          break
+        case 'bone-hover':
+          boneHoverVoicer.noteOn()
+          break
+        case 'undo':
+          undoAudio.stop()
+          undoAudio.play()
+          break
+        case 'redo':
+          redoAudio.stop()
+          redoAudio.play()
+        case 'create':
+          uiCreateAudio.stop()
+          uiCreateAudio.play()
+          break
+        case 'delete':
+          uiDeleteAudio.stop()
+          uiDeleteAudio.play()
+          break
+      }
+    }, [])
+
+    const stopSound = useCallback((name, object3d = null) => {
+      switch (name) {
+        case 'beam':
+          beamVoicer.allNotesOff()
+          break
+        case 'bone-drone':
+          boneDroneVoicer.allNotesOff()
+          break
+      }
+    }, [])
 
     const groundRef = useRef()
     const rootRef = useRef()
 
-    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
+    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({ playSound, stopSound })
 
     const { controllers, interactionServiceCurrent } = useInteractionsManager({
       groundRef,
       rootRef,
-      uiService
+      uiService,
+      playSound,
+      stopSound
     })
 
     // initialize the BonesHelper
@@ -176,8 +392,9 @@ const SceneContent = connect(
           rotation={[teleportRot.x, teleportRot.y, teleportRot.z]}
         >
           <primitive object={camera}>
-            <Stats rStats={rStats} position={[0, 0, -1]} />
-            <Log position={[0, -0.15, -1]} />
+            {statsComponent}
+            {logComponent}
+            <primitive object={cameraAudioListener} />
           </primitive>
 
           {controllers.filter(Boolean).map(controller =>
@@ -185,7 +402,7 @@ const SceneContent = connect(
               <Controller gltf={resources.controllerGltf} />
               {
                 navigator.getGamepads()[controller.userData.gamepad.index] &&
-                navigator.getGamepads()[controller.userData.gamepad.index].hand === 'right' &&
+                navigator.getGamepads()[controller.userData.gamepad.index].hand === (switchHand ? 'left' : 'right') &&
                 <Controls
                   gltf={resources.controlsGltf}
                   mode={uiCurrent.value.controls}
@@ -252,19 +469,27 @@ const SceneContent = connect(
             lightIds.map(id =>
               <Light
                 key={id}
+                gltf={resources.lightGltf}
                 sceneObject={sceneObjects[id]}
                 isSelected={selections.includes(id)}
                 texture={resources.teleportTexture} />
             )
           }
           {
-            virtualCameraIds.map(id =>
+            showCameras && virtualCameraIds.map(id =>
               <VirtualCamera
                 key={id}
                 gltf={resources.virtualCameraGltf}
                 aspectRatio={aspectRatio}
                 sceneObject={sceneObjects[id]}
-                isSelected={selections.includes(id)} />
+                isSelected={selections.includes(id)}
+                isActive={activeCamera === id}
+                audio={
+                  activeCamera === id
+                    ? atmosphereAudio
+                    : null
+                }
+              />
             )
           }
 
@@ -319,7 +544,8 @@ const APP_GLTFS = [
   '/data/system/xr/sgcontroller.glb',
   '/data/system/xr/ui/controls.glb',
   '/data/system/dummies/bone.glb',
-  `/data/system/objects/camera.glb`
+  '/data/system/objects/camera.glb',
+  '/data/system/xr/light.glb'
 ]
 
 const SceneManagerXR = () => {
@@ -346,6 +572,21 @@ const SceneManagerXR = () => {
     () => APP_GLTFS.forEach(requestAsset),
     []
   )
+
+  // preload audio
+  const welcomeAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-welcome.ogg')
+  const atmosphereAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-drone.ogg')
+  const selectAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-select.ogg')
+  const beamAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-drag-drone.ogg')
+  const teleportAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-teleport.ogg')
+
+  const undoBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-undo.ogg')
+  const redoBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-redo.ogg')
+  const boneHoverBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-hover.ogg')
+  const boneDroneBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-drone.ogg')
+  const fastSwooshBuffer = useAudioLoader('/data/system/xr/snd/vr-fast-swoosh.ogg')
+  const uiCreateBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-create.ogg')
+  const uiDeleteBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-delete.ogg')
 
   // scene
   const sceneObjects = useSelector(getSceneObjects)
@@ -380,9 +621,15 @@ const SceneManagerXR = () => {
   useEffect(() => {
     if (!appAssetsLoaded) {
       let appResources = [groundTexture, roomTexture, teleportTexture]
+      let soundResources = [
+        welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
+        teleportAudioBuffer,
+        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer,
+        uiCreateBuffer, uiDeleteBuffer
+      ]
 
       // fail if any app resources are missing
-      if ([ ...appResources, ...uiResources].some(n => n == null)) return
+      if ([...appResources, ...soundResources, ...uiResources].some(n => n == null)) return
       if (APP_GLTFS.map(getAsset).some(n => n == null)) return
 
       setAppAssetsLoaded(true)
@@ -422,10 +669,26 @@ const SceneManagerXR = () => {
                   groundTexture,
                   roomTexture,
                   teleportTexture,
+
                   controllerGltf: getAsset('/data/system/xr/sgcontroller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
-                  virtualCameraGltf: getAsset(`/data/system/objects/camera.glb`)
+                  virtualCameraGltf: getAsset('/data/system/objects/camera.glb'),
+                  lightGltf: getAsset('/data/system/xr/light.glb'),
+
+                  welcomeAudioBuffer,
+                  atmosphereAudioBuffer,
+                  selectAudioBuffer,
+                  beamAudioBuffer,
+                  teleportAudioBuffer,
+
+                  undoBuffer,
+                  redoBuffer,
+                  boneHoverBuffer,
+                  boneDroneBuffer,
+                  fastSwooshBuffer,
+                  uiCreateBuffer,
+                  uiDeleteBuffer
                 }}
                 getAsset={getAsset} />
               : null

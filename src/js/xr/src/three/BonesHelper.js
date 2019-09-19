@@ -144,6 +144,7 @@ class BonesHelper extends THREE.Object3D
         if(this.selectedBone)
         {
             this.changeBoneColor(this.selectedBone, this.helperBonesPool.defaultColor);
+            this.selectedBone = null;
         }
     }
 

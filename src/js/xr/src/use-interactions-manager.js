@@ -253,7 +253,7 @@ const [useStore, useStoreApi] = create((set, get) => ({
 }))
 
 const getExcludeList = parent => {
-  const list = []
+  let list = []
   parent.traverse(child => {
     if (child.userData.preventInteraction) {
       list.push(child)
@@ -265,11 +265,16 @@ const getExcludeList = parent => {
 const useInteractionsManager = ({
   groundRef,
   rootRef,
-  uiService
+  uiService,
+  playSound,
+  stopSound
 }) => {
   const { gl, camera, scene } = useThree()
 
   const selections = useSelector(getSelections)
+
+  const canUndo = useSelector(state => state.undoable.past.length > 0)
+  const canRedo = useSelector(state => state.undoable.future.length > 0)
 
   const gpuPicker = useRef(null)
 
@@ -509,14 +514,20 @@ const useInteractionsManager = ({
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
 
-    dispatch(ActionCreators.undo())
+    if (canUndo) {
+      dispatch(ActionCreators.undo())
+      playSound('undo')
+    }
   }
 
   const onPressEndB = event => {
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_B', controller: event.target })
 
-    dispatch(ActionCreators.redo())
+    if (canRedo) {
+      dispatch(ActionCreators.redo())
+      playSound('redo')
+    }
   }
 
   const onMoveCamera = event => {
@@ -543,6 +554,7 @@ const useInteractionsManager = ({
       if (distance != null) {
         setDidMoveCamera(distance)
         moveCameraByDistance(camera, distance)
+        playSound('teleport-move')
       }
     }
   }
@@ -558,12 +570,14 @@ const useInteractionsManager = ({
       // right
       if (event.axes[0] > 0.075) {
         setDidRotateCamera(-45)
+        playSound('teleport-rotate')
         rotateCameraByRadians(camera, THREE.Math.degToRad(-45))
       }
 
       // left
       if (event.axes[0] < -0.075) {
         setDidRotateCamera(45)
+        playSound('teleport-rotate')
         rotateCameraByRadians(camera, THREE.Math.degToRad(45))
       }
     }
@@ -606,7 +620,10 @@ const useInteractionsManager = ({
         let intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
         if (intersection) {
           match = intersection
-          BonesHelper.getInstance().selectBone(intersection.bone)
+          if (BonesHelper.getInstance().selectedBone !== intersection.bone) {
+            playSound('bone-hover')
+            BonesHelper.getInstance().selectBone(intersection.bone)
+          }
         }
       }
       if (!match) {
@@ -747,6 +764,8 @@ const useInteractionsManager = ({
 
             // clear any prior memento
             clearStandingMemento()
+
+            playSound('teleport')
           }
         },
 
@@ -756,6 +775,8 @@ const useInteractionsManager = ({
           log('-- onSelected')
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
           dispatch(selectObject(context.selection))
+
+          playSound('select')
         },
 
         onSelectNone: (context, event) => {
@@ -777,8 +798,9 @@ const useInteractionsManager = ({
             object.updateMatrixWorld(true)
           }
 
-          // TODO soundBeam
-          // soundBeam.current.play()
+          playSound('beam', object)
+
+          uiService.send({ type: 'LOCK' })
         },
         onDragObjectExit: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
@@ -789,9 +811,8 @@ const useInteractionsManager = ({
             root.attach(object)
             object.updateMatrixWorld()
           }
-          controller.userData.draggedObject == null
-          // TODO soundBeam
-          // soundBeam.current.stop()
+
+          stopSound('beam', object)
 
           if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
             const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
@@ -814,6 +835,8 @@ const useInteractionsManager = ({
               rotation
             }))
           }
+
+          uiService.send({ type: 'UNLOCK' })
         },
         onSnapStart: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
@@ -873,6 +896,16 @@ const useInteractionsManager = ({
           // select by UUID, like shot generator does
           dispatch(selectBone(bone.uuid))
           BonesHelper.getInstance().selectBone(bone)
+
+          playSound('bone-click')
+
+          let parent
+          bone.traverseAncestors(ancestor => {
+            if (parent == null && ancestor.userData.type == 'character') {
+              parent = ancestor
+            }
+          })
+          playSound('bone-drone', parent)
         },
         onRotateBoneExit: (context, event) => {
           useStoreApi.setState({
@@ -909,6 +942,8 @@ const useInteractionsManager = ({
           )
           dispatch(selectBone(null))
           BonesHelper.getInstance().resetSelection()
+
+          stopSound('bone-drone', parent)
         },
 
         onToggleMiniMode: (context, event) => {
@@ -944,5 +979,7 @@ const useInteractionsManager = ({
 module.exports = {
   useStore,
   useStoreApi,
-  useInteractionsManager
+  useInteractionsManager,
+  WORLD_SCALE_LARGE,
+  WORLD_SCALE_SMALL
 }
