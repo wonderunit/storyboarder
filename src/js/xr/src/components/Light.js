@@ -3,7 +3,7 @@ const { useMemo } = require('react')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const Light = React.memo(({ gltf, sceneObject, isSelected, texture, children }) => {
+const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
   const mesh = useMemo(
     () => gltf.scene.children[0].clone(),
     [gltf]

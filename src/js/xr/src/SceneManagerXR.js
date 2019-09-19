@@ -472,7 +472,6 @@ const SceneContent = connect(
                 gltf={resources.lightGltf}
                 sceneObject={sceneObjects[id]}
                 isSelected={selections.includes(id)}
-                texture={resources.teleportTexture} />
             )
           }
           {
