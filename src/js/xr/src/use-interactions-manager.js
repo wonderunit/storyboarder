@@ -636,18 +636,17 @@ const useInteractionsManager = ({
       let controller = gl.vr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      let shouldMoveWithCursor = (object3d.userData.type == 'character') || controller.userData.selectOffset
+      let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
       if (shouldMoveWithCursor) {
 
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
-        const wp = cursor.getWorldPosition(getReusableVector())
-        if(controller.userData.selectOffset) {
+        let wp = cursor.getWorldPosition(getReusableVector())
+        if(controller.userData.selectOffset && object3d.userData.type == 'character') {
           wp.sub(controller.userData.selectOffset)
-          object3d.updateMatrixWorld()
-
           object3d.applyMatrix(object3d.parent.matrixWorld)
           object3d.position.copy(wp)
+          object3d.updateMatrixWorld()
           object3d.applyMatrix(object3d.parent.getInverseMatrixWorld())
         }
           
@@ -853,7 +852,7 @@ const useInteractionsManager = ({
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let { worldScale } = useStoreApi.getState()
 
-          let shouldMoveWithCursor = (object.userData.type == 'character') || controller.userData.selectOffset
+          let shouldMoveWithCursor = (object.userData.type == 'character')
           let target = shouldMoveWithCursor
             ? controller.getObjectByName('cursor')
             : object
