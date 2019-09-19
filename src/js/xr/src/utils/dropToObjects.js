@@ -22,7 +22,6 @@ const dropCharacter = (character, dropToObjects) =>
         skinnedMesh = skinnedMesh.getObjectByProperty("type", "SkinnedMesh")
     }
     let lowestBone = findLowestBone(skinnedMesh)
-    console.log(lowestBone)
     lowestBone.getWorldPosition(worldPositionLowestBone)
     raycaster.ray.origin.copy(worldPositionLowestBone)
     return raycaster.intersectObjects(dropToObjects, true)

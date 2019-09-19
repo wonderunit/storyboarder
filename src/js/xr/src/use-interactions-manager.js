@@ -23,7 +23,6 @@ const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
-const GetClosestVertexToPosition = require('./utils/closestVertexToPosition')
 require('./three/GPUPickers/utils/Object3dExtension')
 const {dropObject, dropCharacter } = require('./utils/dropToObjects')
 const {
@@ -461,7 +460,15 @@ const useInteractionsManager = ({
     }
 
     if (match) {
-      console.log(dropCharacter(match, list))
+      // Simple test to check how drop works
+      if(match.userData.type === "character")
+      {
+        console.log(dropCharacter(match, list))
+      }
+      else
+      {
+        console.log(dropObject(match, list))
+      }
       interactionService.send({
         type: 'GRIP_DOWN',
         controller: event.target,
