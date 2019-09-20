@@ -85,6 +85,32 @@ const moveObjectZ = (object, event, worldScale) => {
   }
 }
 
+let box3 = new THREE.Box3()
+let vector = new THREE.Vector3()
+let objectCenter = new THREE.Vector3()
+const dropDraggable = (object, placesForDrop) =>
+{
+  let dropPlace = null
+  if(object.userData.type === "character")
+  {
+    dropPlace = dropCharacter(object, placesForDrop)[0]
+  }
+  else
+  {
+    dropPlace = dropObject(object, placesForDrop)[0]
+    box3.setFromObject(object)
+    box3.getCenter(objectCenter)
+    vector.set(objectCenter.x, box3.min.y, objectCenter.z)
+    object.parent.worldToLocal(vector)
+    vector.sub(object.position)
+    object.parent.worldToLocal(dropPlace.point)
+    object.position.copy(dropPlace.point)
+    object.position.sub(vector)
+  }
+
+
+}
+
 const rotateObjectY = (object, event) => {
   if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
@@ -779,6 +805,8 @@ const useInteractionsManager = ({
             root.attach(object)
             object.updateMatrixWorld()
           }
+          //let placeForDrop = scene.g
+          dropDraggable(object, [groundRef.current])
 
           // TODO soundBeam
           // soundBeam.current.stop()
