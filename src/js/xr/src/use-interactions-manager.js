@@ -97,7 +97,7 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-const snapObjectRotation = (object,  point) => {
+const snapObjectRotation = (object) => {
   // setup for rotation
   object.userData.order = object.rotation.order
   object.rotation.reorder('YXZ')
@@ -112,12 +112,6 @@ const snapObjectRotation = (object,  point) => {
 
   let euler = new THREE.Euler(0, degreeY, 0)
   euler.reorder('YXZ')
-
-/*   object.parent.worldToLocal(point)
-  object.position.sub(point)
-  object.position.applyEuler(euler)
-  object.position.add(point)
-  object.parent.localToWorld(point) */
 
   // update rotation
   object.rotation.copy(euler)
@@ -846,7 +840,7 @@ const useInteractionsManager = ({
           object.updateMatrixWorld(true)
 
           // rotate
-          snapObjectRotation(object/* , event.intersection.point */)
+          snapObjectRotation(object)
           object.userData.staticRotation = object.quaternion.clone()
           
           // put object in controller space
