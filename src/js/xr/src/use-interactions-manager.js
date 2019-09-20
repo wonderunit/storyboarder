@@ -766,6 +766,7 @@ const useInteractionsManager = ({
           let controller = event.controller
           let { object, distance, point } = event.intersection
           log('-- onSelected')
+          // selectOffset is used for Character
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
           dispatch(selectObject(context.selection))
 
@@ -854,7 +855,6 @@ const useInteractionsManager = ({
           if (object.userData.staticRotation) {
             object.userData.staticRotation = null
           }
-          controller.userData.selectOffset = null
         },
 
         moveAndRotateCamera: (context, event) => {
