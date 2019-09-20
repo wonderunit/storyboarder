@@ -95,7 +95,6 @@ class GPUPickerHelper
     {
         renderer.setRenderTarget(renderTarget);
         renderer.render(scene, camera);
-        renderer.render(scene, camera);
         renderer.setRenderTarget(null);
         renderer.readRenderTargetPixels(
             renderTarget,
