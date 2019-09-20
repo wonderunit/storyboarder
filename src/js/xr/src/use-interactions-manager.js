@@ -807,8 +807,9 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
 
+          const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+
           if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
-            const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
             dispatch(updateObject(context.selection, {
               x: object.position.x,
               y: object.position.z,
@@ -819,7 +820,7 @@ const useInteractionsManager = ({
             }))
           } else {
             let rotation = object.userData.type == 'character'
-              ? object.rotation.y
+              ? euler.y
               : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
             dispatch(updateObject(context.selection, {
               x: object.position.x,
