@@ -46,6 +46,7 @@ const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
+const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
 
 const Controls = require('./components/ui/Controls')
 
@@ -430,12 +431,14 @@ const SceneContent = connect(
           {
             characterIds.map(id =>
               getAsset(getFilepathForModelByType(sceneObjects[id]))
-                ? <Character
-                  key={id}
-                  gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
-                  sceneObject={sceneObjects[id]}
-                  modelSettings={models[sceneObjects[id].model] || undefined}
-                  isSelected={selections.includes(id)} />
+                ? <SimpleErrorBoundary key={id}>
+                  <Character
+                    key={id}
+                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
+                    sceneObject={sceneObjects[id]}
+                    modelSettings={models[sceneObjects[id].model] || undefined}
+                    isSelected={selections.includes(id)} />
+                </SimpleErrorBoundary>
                 : null
             )
           }
