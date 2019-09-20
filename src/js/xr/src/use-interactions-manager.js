@@ -791,8 +791,8 @@ const useInteractionsManager = ({
             root.attach(object)
             object.updateMatrixWorld()
           }
-          //let placeForDrop = scene.g
-          dropDraggable(object, [groundRef.current])
+          let placesForDrop = scene.__interaction.concat([groundRef.current])
+          dropDraggable(object, placesForDrop)
 
           // TODO soundBeam
           // soundBeam.current.stop()
