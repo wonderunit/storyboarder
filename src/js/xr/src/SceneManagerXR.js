@@ -50,6 +50,7 @@ const { Log } = require('./components/Log')
 const Controls = require('./components/ui/Controls')
 
 const BonesHelper = require('./three/BonesHelper')
+const IKHelper = require('./three/IkHelper')
 const Voicer = require('./three/Voicer')
 
 const { createSelector } = require('reselect')
@@ -366,6 +367,7 @@ const SceneContent = connect(
     useMemo(() => {
       const mesh = resources.boneGltf.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
+      IKHelper.getInstance(mesh)
     }, [resources.boneGltf])
 
     const ambientLightRef = useUpdate(self => {

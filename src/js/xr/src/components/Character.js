@@ -8,6 +8,7 @@ const isUserModel = require('../helpers/is-user-model')
 const VirtualCamera = require('../components/VirtualCamera')
 
 const BonesHelper = require('../three/BonesHelper')
+const IKHelper = require('../three/IkHelper')
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) => {
   const ref = useUpdate(
@@ -143,9 +144,12 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
   useMemo(() => {
     if (isSelected) {
       BonesHelper.getInstance().initialize(lod.children[0])
+      IKHelper.getInstance().initialize(lod.children[0])
       ref.current && ref.current.add(BonesHelper.getInstance())
+      ref.current && ref.current.add(IKHelper.getInstance())
     } else {
       ref.current && ref.current.remove(BonesHelper.getInstance())
+      ref.current && ref.current.remove(IKHelper.getInstance())
     }
   }, [ref.current, isSelected])
 
