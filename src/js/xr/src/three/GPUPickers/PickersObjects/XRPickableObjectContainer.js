@@ -139,12 +139,9 @@ class XRPickableObjectContainer extends Pickable
         super.dispose();
         for(let i = this.pickingMeshes.length - 1; i > -1; i--)
         {
-            let pickingMesh = this.pickingMeshes[i];
-            pickingMesh.parent.remove(pickingMesh);
             this.pickingMeshes.splice(i, 1);
             this.pickingMaterials.splice(i, 1);
         }
-        this.node.removeAllChildren();
     }
 }
 module.exports = XRPickableObjectContainer;

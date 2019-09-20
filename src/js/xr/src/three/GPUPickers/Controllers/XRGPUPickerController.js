@@ -13,6 +13,7 @@ class XRGPUPickerController extends GPUPickerController
     {
         let objects = [];
         this.pickingScene.removeAllChildren();
+        console.log(this.pickableObjects)
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
@@ -86,7 +87,6 @@ class XRGPUPickerController extends GPUPickerController
             pickableObject.update();
             if(pickableObject.needsRemoval)
             {
-                console.log("Pickable object removed", pickableObject);
                 let pickingObject = pickableObject.node;
                 pickableObject.dispose();
                 this.pickingScene.remove(pickingObject);
@@ -97,11 +97,9 @@ class XRGPUPickerController extends GPUPickerController
         for(let i = 0, n = keys.length; i < n; i++)
         {
             let id = keys[i];
-            let pickingMesh = this.gpuPickerHelper.selectableObjects[id].pickerObject;
             let selectableObject = this.gpuPickerHelper.selectableObjects[id].originObject;
             if(!selectableObject || !selectableObject.parent)
             {
-                console.log("Selectable object removed", selectableObject, !selectableObject, !selectableObject.parent, !pickingMesh.parent);
                 delete this.gpuPickerHelper.selectableObjects[id];
                 this.idPool.returnId(id);
             }
@@ -123,8 +121,8 @@ class XRGPUPickerController extends GPUPickerController
                 meshes.push(this.gpuPickerFactory.createGUI(sceneMesh, this.idPool, excludingList));
                 break;
             case 'object':
-                //meshes.push(this.gpuPickerFactory.createObject(sceneMesh, excludingList));
-                //break;
+                meshes.push(this.gpuPickerFactory.createObject(sceneMesh, excludingList));
+                break;
             case 'virtual-camera':
             case 'light':
             default:

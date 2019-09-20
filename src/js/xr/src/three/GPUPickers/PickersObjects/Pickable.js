@@ -45,6 +45,7 @@ class Pickable
 
     dispose()
     {
+        this.node.removeAllChildren();
         if(this.pickingMaterial)
         {
             this.pickingMaterial.dispose();

@@ -9,7 +9,7 @@ class UniversalPickableObject extends Pickable
     
     getMeshFromSceneObject()
     {
-        this.sceneMesh = this.sceneObject.children.find(child => child.type === "Mesh")
+        this.sceneMesh = this.sceneObject.getObjectByProperty("type", "Mesh");
     }
 
     initialize(id)
