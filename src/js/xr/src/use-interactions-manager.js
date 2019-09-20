@@ -93,7 +93,8 @@ const dropDraggable = (object, placesForDrop) =>
   let dropPlace = null
   if(object.userData.type === "character")
   {
-    dropPlace = dropCharacter(object, placesForDrop)[0]
+    dropPlace = dropCharacter(object, placesForDrop)
+
   }
   else
   {

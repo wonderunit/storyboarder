@@ -24,7 +24,15 @@ const dropCharacter = (character, dropToObjects) =>
     let lowestBone = findLowestBone(skinnedMesh)
     lowestBone.getWorldPosition(worldPositionLowestBone)
     raycaster.ray.origin.copy(worldPositionLowestBone)
-    return raycaster.intersectObjects(dropToObjects, true)
+    let dropPlace = raycaster.intersectObjects(dropToObjects, true)[0]
+    if(!dropPlace || dropPlace.length === 0) return 
+    
+    let lowestBonePosition = lowestBone.worldPosition()
+    character.parent.worldToLocal(lowestBonePosition)
+    character.parent.worldToLocal(dropPlace.point)
+    let offset = new THREE.Vector3().subVectors(character.position, lowestBonePosition)
+    character.position.copy(dropPlace.point)
+    character.position.add(offset)
 }
 
 
