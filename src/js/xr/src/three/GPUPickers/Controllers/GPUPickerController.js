@@ -44,7 +44,6 @@ class GPUPickerController
 
     pick(camera, renderer)
     {
-        console.log(this.pickingScene)
         return this.gpuPickerHelper.pick(this.pickingPosition, this.pickingScene, camera, renderer, this.gpuPickerHelper.selectableObjects, false);
     }
 }

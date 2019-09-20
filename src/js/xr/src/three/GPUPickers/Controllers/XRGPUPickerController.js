@@ -13,7 +13,6 @@ class XRGPUPickerController extends GPUPickerController
     {
         let objects = [];
         this.pickingScene.removeAllChildren();
-        console.log(this.pickableObjects)
         for(let i = 0, n = intersectObjects.length; i < n; i++)
         {
             let intesectable = intersectObjects[i];
