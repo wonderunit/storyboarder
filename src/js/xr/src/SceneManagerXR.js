@@ -646,6 +646,16 @@ const SceneManagerXR = () => {
     if (isLoading && !sceneObjectsPreloaded && remaining.length === 0) {
       setSceneObjectsPreloaded(true)
       setIsLoading(false)
+
+      let assetsWithErrors = Object.entries(assets).reduce((arr, [key, asset]) => {
+        if (asset.status == 'Error') {
+          arr[key] = asset
+        }
+        return arr
+      }, {})
+      Object.entries(assetsWithErrors).forEach(([uri, asset]) => {
+        console.error('Could not load', uri)
+      })
     } else if (remaining.length > 0) {
       setIsLoading(true)
     }
