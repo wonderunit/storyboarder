@@ -652,14 +652,14 @@ const useInteractionsManager = ({
         // update position via cursor
         const cursor = controller.getObjectByName('cursor')
         let wp = cursor.getWorldPosition(getReusableVector())
-        if(controller.userData.selectOffset && object3d.userData.type == 'character') {
+        if (controller.userData.selectOffset && object3d.userData.type == 'character') {
           wp.sub(controller.userData.selectOffset)
           object3d.applyMatrix(object3d.parent.matrixWorld)
           object3d.position.copy(wp)
           object3d.updateMatrixWorld()
           object3d.applyMatrix(object3d.parent.getInverseMatrixWorld())
         }
-          
+
         if (object3d.userData.staticRotation) {
           let quaternion = object3d.parent.worldQuaternion().inverse()
           let rotation = quaternion.multiply(object3d.userData.staticRotation)
@@ -836,14 +836,14 @@ const useInteractionsManager = ({
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           let root = rootRef.current
-          // put object in root space 
+          // put object in root space
           root.attach(object)
           object.updateMatrixWorld(true)
 
           // rotate
           snapObjectRotation(object)
           object.userData.staticRotation = object.quaternion.clone()
-          
+
           // put object in controller space
           controller.attach(object)
           object.updateMatrixWorld(true)
