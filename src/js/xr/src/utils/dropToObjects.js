@@ -5,13 +5,20 @@ let lowerCenter = new THREE.Vector3()
 let worldPositionLowestBone = new THREE.Vector3()
 let boneWorldPosition = new THREE.Vector3()
 raycaster.ray.direction.set(0, -1, 0)
+
 const dropObject = (object, dropToObjects) =>
 {
     objectBox.setFromObject(object)
     objectBox.getCenter(objectCenter)
     lowerCenter.set(objectCenter.x, objectBox.min.y, objectCenter.z)
     raycaster.ray.origin.copy(lowerCenter)
-    return raycaster.intersectObjects(dropToObjects, true)
+    let dropPlace =  raycaster.intersectObjects(dropToObjects, true)[0]
+    if(!dropPlace ) return 
+    object.parent.worldToLocal(lowerCenter)
+    lowerCenter.sub(object.position)
+    object.parent.worldToLocal(dropPlace.point)
+    object.position.copy(dropPlace.point)
+    object.position.sub(lowerCenter)
 }
 
 const dropCharacter = (character, dropToObjects) =>
@@ -25,7 +32,7 @@ const dropCharacter = (character, dropToObjects) =>
     lowestBone.getWorldPosition(worldPositionLowestBone)
     raycaster.ray.origin.copy(worldPositionLowestBone)
     let dropPlace = raycaster.intersectObjects(dropToObjects, true)[0]
-    if(!dropPlace || dropPlace.length === 0) return 
+    if(!dropPlace ) return 
     
     let lowestBonePosition = lowestBone.worldPosition()
     character.parent.worldToLocal(lowestBonePosition)
