@@ -618,7 +618,7 @@ class CanvasRenderer {
           let label = 'Morph Target'
           if (morphTargetName == 'ectomorphic') label = 'Skinny'
           if (morphTargetName == 'mesomorphic') label = 'Muscular'
-          if (morphTargetName == 'endomorphic') label = 'Obsese'
+          if (morphTargetName == 'endomorphic') label = 'Obese'
           propertyArray.push({
             name: morphTargetName,
             label
