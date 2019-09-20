@@ -195,6 +195,7 @@ function drawGrid(ctx, x, y , width, height, items) {
   let gutter = 5
   let offset = this.state.grids.poses.scrollTop || 0
 
+  const gridHeight = (items.length / cols) * itemHeight
   let itemWidth = (width - gutter * (cols - 1)) / cols
   let visibleRows = Math.min(Math.ceil(height / itemHeight) + 1, items.length / cols)
   let startItem = Math.floor(offset / itemHeight) * cols
@@ -265,7 +266,7 @@ function drawGrid(ctx, x, y , width, height, items) {
     onDrag: (x, y) => {
       const { grids } = this.state
       const offset = Math.floor((grids.prevCoords.y - y) * height)
-      grids.poses.scrollTop = Math.max(grids.poses.scrollTop + offset, 0)
+      grids.poses.scrollTop = Math.min(Math.max(grids.poses.scrollTop + offset, 0), gridHeight - height)
       grids.prevCoords = { x, y }
       this.needsRender = true
     },
@@ -292,7 +293,19 @@ function drawGrid(ctx, x, y , width, height, items) {
     }
   }
 
+  // Indicator
   ctx.restore()
+  const scrollPosition = this.state.grids.poses.scrollTop / (gridHeight - height)
+
+  ctx.fillStyle = '#000'
+  roundRect(ctx, width + 37, 30, 12, height, 6, true, false)
+
+  ctx.fillStyle = '#6E6E6E'
+  roundRect(ctx, width + 37, 30 + scrollPosition * height * 0.75, 12, height * 0.25, 6, true, false)
+
+  ctx.strokeStyle = '#fff'
+  ctx.lineWidth = 1
+  roundRect(ctx, width + 37, 30, 12, height, 6, false, true)
 }
 
 function drawPaneBGs(ctx) {
@@ -779,8 +792,8 @@ class CanvasRenderer {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
       
-      // let list = this.state.poses.slice(0, 10)
-      let list = this.state.poses
+      let list = this.state.poses.slice(0, 48)
+      // let list = this.state.poses
 
       ctx.fillStyle = '#000'
       roundRect(ctx, 4, 6, 439, 666, 25, true, false)
