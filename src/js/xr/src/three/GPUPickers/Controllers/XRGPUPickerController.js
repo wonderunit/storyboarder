@@ -86,6 +86,7 @@ class XRGPUPickerController extends GPUPickerController
             pickableObject.update();
             if(pickableObject.needsRemoval)
             {
+                console.log("Pickable object removed", pickableObject);
                 let pickingObject = pickableObject.node;
                 pickableObject.dispose();
                 this.pickingScene.remove(pickingObject);
@@ -98,8 +99,9 @@ class XRGPUPickerController extends GPUPickerController
             let id = keys[i];
             let pickingMesh = this.gpuPickerHelper.selectableObjects[id].pickerObject;
             let selectableObject = this.gpuPickerHelper.selectableObjects[id].originObject;
-            if(!selectableObject || !selectableObject.parent || !pickingMesh.parent)
+            if(!selectableObject || !selectableObject.parent)
             {
+                console.log("Selectable object removed", selectableObject, !selectableObject, !selectableObject.parent, !pickingMesh.parent);
                 delete this.gpuPickerHelper.selectableObjects[id];
                 this.idPool.returnId(id);
             }
