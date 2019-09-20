@@ -854,7 +854,7 @@ const useInteractionsManager = ({
           if (object.userData.staticRotation) {
             object.userData.staticRotation = null
           }
-
+          controller.userData.selectOffset = null
         },
 
         moveAndRotateCamera: (context, event) => {
