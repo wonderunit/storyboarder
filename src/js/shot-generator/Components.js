@@ -54,6 +54,7 @@ const {
   updateWorld,
   updateWorldRoom,
   updateWorldEnvironment,
+  updateWorldFog,
 
   // markSaved,
 
@@ -259,6 +260,7 @@ const Inspector = ({
   updateWorld,
   updateWorldRoom,
   updateWorldEnvironment,
+  updateWorldFog,
   storyboarderFilePath,
   selections
 }) => {
@@ -317,14 +319,15 @@ const Inspector = ({
 
             updateWorld,
             updateWorldRoom,
-            updateWorldEnvironment
+            updateWorldEnvironment,
+            updateWorldFog
           }
         ],
       // [ServerInspector]
   ])
 }
 
-const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updateWorldEnvironment }) => {
+const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog }) => {
   const onGroundClick = event => {
     event.preventDefault()
     updateWorld({ ground: !world.ground })
@@ -555,6 +558,42 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
           }]
         ]
       ]
+    ],
+
+    [
+      'div', { style: { marginBottom: 12 } },
+      [
+        ['h5', { style: { margin: 0 } }, 'Fog'],
+
+        [
+          'div.row',
+          { style: { alignItems: 'center', margin: '6px 0 3px 0' } }, [
+            ['div', { style: { width: 50 } }, 'visible'],
+            ['input', {
+              type: 'checkbox',
+              checked: world.fog.visible,
+              readOnly: true
+            }],
+            ['label', {
+              onClick: preventDefault(event => {
+                updateWorldFog({ visible: !world.fog.visible })
+              }),
+            }, [
+              'span'
+            ]]
+          ]
+        ],
+
+        [NumberSlider, {
+          label: 'Distance',
+          value: world.fog.far,
+          min: 0,
+          max: 500,
+          step: 1,
+          formatter: value => Math.round(value).toString() + 'm',
+          onSetValue: far => updateWorldFog({ far }) }
+        ]
+      ]
     ]
   ])
 }
@@ -604,11 +643,12 @@ const ElementsPanel = connect(
     updateWorld,
     updateWorldRoom,
     updateWorldEnvironment,
+    updateWorldFog,
     undoGroupStart,
     undoGroupEnd
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -703,6 +743,7 @@ const ElementsPanel = connect(
             updateWorld,
             updateWorldRoom,
             updateWorldEnvironment,
+            updateWorldFog,
 
             storyboarderFilePath,
 

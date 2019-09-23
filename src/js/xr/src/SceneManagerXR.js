@@ -139,8 +139,10 @@ const SceneContent = connect(
 
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
-      scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
-    }, [world.backgroundColor])
+      scene.fog = scene.fog.visible
+        ? new THREE.Fog(world.backgroundColor, -10, world.fog.far)
+        : null
+    }, [world.backgroundColor, world.fog.visible, world.fog.far])
 
     let statsComponent = null
     if (SHOW_STATS) {

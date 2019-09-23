@@ -170,6 +170,11 @@ const migrateWorldLights = world => ({
   directional: world.directional || initialScene.world.directional
 })
 
+const migrateWorldFog = world => ({
+  ...world,
+  fog: world.fog || initialScene.world.fog
+})
+
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
 
@@ -393,6 +398,10 @@ const defaultScenePreset = {
       intensity: 0.5,
       rotation: -0.9,
       tilt: 0.75
+    },
+    fog: {
+      visible: true,
+      far: 40
     }
   },
   sceneObjects: {
@@ -516,6 +525,10 @@ const initialScene = {
       intensity: 0.5,
       rotation: -0.9,
       tilt: 0.75
+    },
+    fog: {
+      visible: true,
+      far: 40
     }
   },
   sceneObjects: {
@@ -894,7 +907,9 @@ const worldReducer = (state = initialState.undoable.world, action) => {
     switch (action.type) {
       case 'LOAD_SCENE':
         return migrateWorldLights(
+          migrateWorldFog(
             action.payload.world
+          )
         )
 
       case 'UPDATE_WORLD':
@@ -946,6 +961,15 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         }
         if (action.payload.tiltDirectional != null) {
           draft.directional.tilt = action.payload.tiltDirectional
+        }
+        return
+
+      case 'UPDATE_WORLD_FOG':
+        if (action.payload.hasOwnProperty('visible')) {
+          draft.fog.visible = action.payload.visible
+        }
+        if (action.payload.hasOwnProperty('far')) {
+          draft.fog.far = action.payload.far
         }
         return
 
@@ -1267,6 +1291,7 @@ module.exports = {
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
   updateWorldEnvironment: payload => ({ type: 'UPDATE_WORLD_ENVIRONMENT', payload }),
+  updateWorldFog: payload => ({ type: 'UPDATE_WORLD_FOG', payload }),
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
 
