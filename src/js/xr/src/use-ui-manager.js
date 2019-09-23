@@ -548,7 +548,7 @@ lenses.characterHeight = R.lens(
 
 lenses.headScale = R.lens(
   vin => clamp(mapLinear(vin, 0.8, 1.2, 0, 1), 0, 1),
-  vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.8, 1.2), 0.8, 1.2)
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0.8, 1.2), 0.01), 0.8, 1.2)
 )
 
 for (let propertyName of ['intensity', 'penumbra']) {
@@ -560,7 +560,7 @@ for (let propertyName of ['intensity', 'penumbra']) {
 
 lenses.angle = R.lens(
   vin => clamp(mapLinear(vin, 0, 1.57, 0, 1), 0, 1),
-  vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0, 1.57), 0, 1.57)
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0, 1.57), 0.01), 0, 1.57)
 )
 
 lenses.fov = R.lens(
@@ -571,7 +571,7 @@ lenses.fov = R.lens(
 for (let propertyName of ['width', 'height', 'depth']) {
   lenses[propertyName] = R.lens(
     vin => clamp(mapLinear(vin, 0.1, 5, 0, 1), 0, 1),
-    vout => clamp(mapLinear(steps(vout, 0.1), 0, 1, 0.1, 5), 0.1, 5)
+    vout => clamp(steps(mapLinear(vout, 0, 1, 0.1, 5), 0.1), 0.1, 5)
   )
 }
 
