@@ -304,7 +304,7 @@ const SceneManager = connect(
             }
           )
         }
-     
+
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -325,7 +325,7 @@ const SceneManager = connect(
                 }
 
                 cameraControlsView.current.object = CameraControls.objectFromCameraState(cameraState)
-              
+
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
 
