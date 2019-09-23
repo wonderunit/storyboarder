@@ -40,12 +40,10 @@ class XrIkObject
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
         let rigMesh = this.rigMesh;
         this.controlTargets = controlTargets;
-        console.log(controlTargets)
         this.addParentToControl(objectSkeleton.uuid);
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.hipsControlTarget = this.controlTargets[5];
-        console.log(this.hipsControlTarget);
 
         chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
@@ -120,6 +118,9 @@ class XrIkObject
         // Adds skeleton helper to scene
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
+        //const helper = new THREE.IKHelper(this.ik);
+        //scene.attach(helper);
+        //helper.applyMatrix(scene.matrixWorld);
     }
 
     // Updates chains
@@ -154,7 +155,7 @@ class XrIkObject
         {
             let backTarget = this.chainObjects[0].controlTarget;
             let hipsPosition = hipsTarget.position.clone();
-           // let result = hipsPosition.add(this.backOffset);
+            //let result = hipsPosition.add(this.backOffset);
             //backTarget.position.copy(result);
         }
     }
@@ -201,7 +202,7 @@ class XrIkObject
     {
         let backPosition = this.chainObjects[0].controlTarget.position.clone();
         let hipsPosition = this.hipsControlTarget.position.clone();
-        this.backOffset = backPosition.sub(hipsPosition);
+        //this.backOffset = backPosition.sub(hipsPosition);
     }
     //#endregion
 }

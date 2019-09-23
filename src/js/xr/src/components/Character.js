@@ -145,8 +145,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     if (isSelected) {
       BonesHelper.getInstance().initialize(lod.children[0])
       IKHelper.getInstance().initialize(lod.children[0])
-      ref.current && ref.current.add(BonesHelper.getInstance())
       ref.current && ref.current.add(IKHelper.getInstance())
+      ref.current && ref.current.add(BonesHelper.getInstance())
     } else {
       ref.current && ref.current.remove(BonesHelper.getInstance())
       ref.current && ref.current.remove(IKHelper.getInstance())

@@ -34,11 +34,11 @@ class XRRagdoll extends XRIKObject
         //this.ragdollEvents = new RagdollEvents(this);
         // Adds events to Back control
         //this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
-        //this.createPoleTargets();
+        this.createPoleTargets();
      /*    this.ragdollEvents.addHipsEvent();
         this.ragdollEvents.setUpControlsEvents(); */
         this.setUpControlTargetsInitialPosition();
-        this.resetTargets();
+
     }
 
     updateSkeleton(updateCharacterSkeleton)
@@ -59,6 +59,7 @@ class XRRagdoll extends XRIKObject
     // Runs cycle which is updating object
     update()
     {
+        //this.resetTargets();
         super.update();
         if(IK.firstRun)
         {
@@ -70,7 +71,7 @@ class XRRagdoll extends XRIKObject
             {
                 //this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.rotation)
             }
-            for(let i = 1; i < 5; i++) 
+/*             for(let i = 1; i < 5; i++) 
             {
                 let chainObject = this.chainObjects[i];
                 let joints = chainObject.chain.joints;
@@ -89,9 +90,10 @@ class XRRagdoll extends XRIKObject
                 //    result.isRotationChanged = false;
                 //}
             }
-        
-            this.resetTargets()
-            this.ikSwitcher.applyToIk();
+         */
+        this.ikSwitcher.applyToIk();
+        this.resetTargets()
+           // this.ikSwitcher.applyToIk();
         }
         else
         {
@@ -104,6 +106,7 @@ class XRRagdoll extends XRIKObject
             //this.updateReact();
             this.relativeFixedAngle();
         }
+        
         this.moveRagdoll();
     }
 
@@ -126,7 +129,7 @@ class XRRagdoll extends XRIKObject
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
             this.originalObject.position.copy(this.clonedObject.position);
-            this.updateCharPosition(this.clonedObject.position);
+            //this.updateCharPosition(this.clonedObject.position);
         }
     }
 

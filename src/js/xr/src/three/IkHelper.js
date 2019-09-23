@@ -47,11 +47,13 @@ class IKHelper extends THREE.Object3D
                 
             }
         }
-        ragDoll.initObject(this,  skinnedMesh.parent.parent, Object.values(this.controlPoints));
+        console.log(skinnedMesh.parent.parent);
+        ragDoll.initObject(this, skinnedMesh.parent.parent, Object.values(this.controlPoints));
     }
 
     selectControlPoint(name)
     {
+        this.ragDoll.update();
         this.ragDoll.isEnabledIk = true;
         this.selectedControlPoint = this.controlPoints[name];
     }
@@ -73,6 +75,12 @@ class IKHelper extends THREE.Object3D
 
     update()
     {
+        //this.ragDoll.update();
+    }
+
+    updateMatrixWorld(value)
+    {
+        super.updateMatrixWorld(value);
         this.ragDoll.update();
     }
 
