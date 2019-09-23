@@ -109,7 +109,11 @@ const machine = Machine({
         GRIP_UP: {
           cond: 'sameControllerOnSnappableObject',
           actions: 'onSnapEnd'
-        }
+        },
+        PRESS_END_X: {
+          cond: 'sameControllerOnSnappableObject',
+          actions: 'onPressEndX'
+        },
       }
     },
     drag_teleport: {

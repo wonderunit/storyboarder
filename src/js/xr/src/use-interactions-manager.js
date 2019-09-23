@@ -525,6 +525,12 @@ const useInteractionsManager = ({
     dispatch(ActionCreators.redo())
   }
 
+  const onPressEndX = event => {
+    // to relay through state machine instead:
+    interactionService.send({ type: 'PRESS_END_X', controller: event.target })
+
+  }
+
   const onMoveCamera = event => {
     if (didMoveCamera != null) {
       if (event.axes[1] === 0) {
@@ -583,7 +589,8 @@ const useInteractionsManager = ({
     onGripUp,
     onAxesChanged,
     onPressEndA,
-    onPressEndB
+    onPressEndB,
+    onPressEndX
   })
 
   const reusableVector = useRef()
@@ -750,7 +757,12 @@ const useInteractionsManager = ({
             clearStandingMemento()
           }
         },
-
+        onPressEndX: (context, event) =>
+        {
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+          let placesForDrop = scene.__interaction.concat([groundRef.current])
+          dropDraggable(object, placesForDrop)
+        },
         onSelected: (context, event) => {
           let controller = event.controller
           let { object, distance, point } = event.intersection
@@ -791,8 +803,6 @@ const useInteractionsManager = ({
             root.attach(object)
             object.updateMatrixWorld()
           }
-          let placesForDrop = scene.__interaction.concat([groundRef.current])
-          dropDraggable(object, placesForDrop)
 
           // TODO soundBeam
           // soundBeam.current.stop()
