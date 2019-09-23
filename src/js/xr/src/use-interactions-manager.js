@@ -481,9 +481,12 @@ const useInteractionsManager = ({
     // include all interactables (Model Object, Character, etc)
     let list = scene.__interaction
 
-    // Checks if any object is dragged
-    // There's no reason to pick any other object except for dragged one
-    if (interactionService.state.context.selection) {
+    // checks if any object is being actively dragged
+    // if so, there's no reason to pick any other object except for dragged one
+    if (
+      interactionService.state.context.draggingController &&
+      interactionService.state.context.selection
+    ) {
       list = list.filter(object => object.uuid === interactionService.state.context.selection)
     }
     // setup the GPU picker
