@@ -57,7 +57,10 @@ const machine = Machine({
           {
             cond: 'eventHasBoneIntersection'
           },
-
+          {
+            cond: 'eventHasControlPointIntersection',
+            target: 'drag_control_point'
+          },
           // anything selected that's not a bone can be dragged
           {
             actions: ['updateDraggingController', 'updateSelection', 'onSelected'],
@@ -88,6 +91,17 @@ const machine = Machine({
           actions: ['moveAndRotateCamera']
         }
       }
+    },
+    drag_control_point :
+    {
+      onEntry: 'onDragControlPointEntry',
+      onExit: 'onDragControlPointExit',
+      on: {
+        TRIGGER_END: {
+          cond: 'controllerSame',
+          target: 'selected'
+        }
+      },
     },
     drag_object: {
       onEntry: 'onDragObjectEntry',
@@ -188,6 +202,8 @@ const machine = Machine({
 
     eventHasSceneObjectIntersection: (context, event) => event.intersection != null && ['object', 'character', 'light', 'virtual-camera'].includes(event.intersection.type),
     eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.bone,
+
+    eventHasControlPointIntersection: (context, event) => event.intersection != null && event.intersection.controlPoint,
 
     eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,
     eventControllerNotTeleportDragController: (context, event) => event.controller.gamepad.index !== context.teleportDragController,

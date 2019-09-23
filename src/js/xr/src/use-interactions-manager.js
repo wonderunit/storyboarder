@@ -20,6 +20,7 @@ const applyDeviceQuaternion = require('../../shot-generator/apply-device-quatern
 
 const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
+const IKHelper = require('./three/IkHelper')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
@@ -345,6 +346,24 @@ const useInteractionsManager = ({
         })
         return
       }
+
+      intersection = getControllerIntersections(controller, [IKHelper.getInstance()])[0]
+      if (intersection) {
+        console.log(intersection)
+        interactionService.send({
+          type: 'TRIGGER_START',
+          controller: event.target,
+          intersection: {
+            id: intersection.object.uuid,
+            type: 'controlPoint',
+            object: intersection.object,
+            distance: intersection.distance,
+            point: intersection.point,
+            controlPoint: intersection.object
+          }
+        })
+        return
+      }
     }
 
     let match = null
@@ -577,7 +596,7 @@ const useInteractionsManager = ({
     onGripUp,
     onAxesChanged,
     onPressEndA,
-    onPressEndB
+    onPressEndB,
   })
 
   const reusableVector = useRef()
@@ -690,6 +709,13 @@ const useInteractionsManager = ({
 
       bone.quaternion.copy(objectQuaternion.normalize())
     }
+
+    if(mode == 'drag_control_point')
+    {
+      //TODO() Manipulate selected control point here
+      // make a function out of render and just call it
+      //console.log('dragging control point', context)
+    }
   }, false, [set, controllers])
 
   // update ui every frame
@@ -768,6 +794,23 @@ const useInteractionsManager = ({
           controller.userData.selectOffset = null
           dispatch(selectObject(null))
           BonesHelper.getInstance().resetSelection()
+        },
+
+        onDragControlPointEntry: (context, event) =>
+        {
+          let controller = gl.vr.getController(context.draggingController)
+          //TODO(): Select control point in ikHelper from here
+          let object = event.intersection.object
+          IKHelper.getInstance().selectControlPoint(object.name)
+          controller.attach(object)
+          console.log("Entered")
+
+        },
+        onDragControlPointExit: (context, event) =>
+        {
+          //TODO(): Deselect control point in IKHelper from here
+          IKHelper.getInstance().deselectControlPoint()
+          console.log("Exited")
         },
 
         onDragObjectEntry: (context, event) => {

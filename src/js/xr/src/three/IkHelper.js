@@ -13,6 +13,7 @@ class IKHelper extends THREE.Object3D
             super();
             instance = this;
             instance.controlPoints = {};
+            this.selectedContolPoint = null;
             //instance.ragDoll = new RagDoll();
             intializeInstancedMesh(mesh);
         }
@@ -36,12 +37,29 @@ class IKHelper extends THREE.Object3D
             bone.name === "Head" || bone.name === "Hips")
             {
                 boneMatrix.multiplyMatrices( originalInverseMatrix, bone.matrixWorld );
-                this.controlPoints[bone.name].position.setFromMatrixPosition(boneMatrix);
-                this.controlPoints[bone.name].position.y -= 0.05;
-                this.controlPoints[bone.name].scale.set(0.5, 0.1, 0.5)
+                let controlPoint = this.controlPoints[bone.name];
+                controlPoint.position.setFromMatrixPosition(boneMatrix);
+                controlPoint.position.y -= 0.05;
+                controlPoint.scale.set(0.5, 0.1, 0.5)
+                controlPoint.userData.id = skinnedMesh.uuid;
+                controlPoint.name = bone.name;
+
             }
         }
-        console.log(this.controlPoints);
+    }
+
+    selectControlPoint(name)
+    {
+        this.selectedControlPoint = this.controlPoints[name];
+    }
+
+    deselectControlPoint()
+    {
+        if(this.selectedControlPoint)
+        {
+            instance.attach(this.selectedControlPoint);
+            this.selectedControlPoint = null;
+        }
     }
 
     updateControlPoint(controlPoint)
@@ -52,6 +70,18 @@ class IKHelper extends THREE.Object3D
     update()
     {
         this.ragDoll.update();
+    }
+
+    raycast(raycaster, intersects)
+    {
+        let values = Object.values(this.controlPoints);
+        let results = raycaster.intersectObjects(values);
+        console.log(results);
+        for (let result of results)
+        {
+          //result.bone = this.helpingBonesRelation.find(object => object.helpingBone.id === result.object.id).originalBone;
+          intersects.push(result);
+        }
     }
 }
 
