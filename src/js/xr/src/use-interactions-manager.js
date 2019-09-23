@@ -269,6 +269,7 @@ const useInteractionsManager = ({
   }
 
   useEffect(() => {
+    // create a temporary mesh object to initialize the GPUPicker
     let gpuPicker = getGpuPicker()
     let geometry = new THREE.BoxBufferGeometry(2, 2, 2)
     let material = new THREE.MeshBasicMaterial();
