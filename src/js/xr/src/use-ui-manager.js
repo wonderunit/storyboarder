@@ -195,7 +195,7 @@ function drawGrid(ctx, x, y , width, height, items, type) {
   let gutter = 5
   let offset = this.state.grids.poses.scrollTop || 0
 
-  const gridHeight = (items.length / cols) * itemHeight
+  const gridHeight = Math.ceil(items.length / cols) * itemHeight
   let itemWidth = (width - gutter * (cols - 1)) / cols
   let visibleRows = Math.min(Math.ceil(height / itemHeight) + 1, items.length / cols)
   let startItem = Math.floor(offset / itemHeight) * cols
@@ -242,13 +242,13 @@ function drawGrid(ctx, x, y , width, height, items, type) {
       }
 
       ctx.fillStyle = 'white'
-      ctx.font = '30px Arial'
+      ctx.font = '24px Arial'
       ctx.textBaseline = 'top'
-      ctx.fillText(startItem, x + i * itemWidth + i * gutter, y + itemHeight * i2 - offset)
+      ctx.fillText(startItem + 1, x + i * itemWidth + i * gutter + 8, y + itemHeight * i2 - offset + 8)
 
-      ctx.font = '10px Arial'
+      ctx.font = '12px Arial'
       ctx.textBaseline = 'bottom'
-      ctx.fillText(item.name, x + i * itemWidth + i * gutter, y + itemHeight * i2 - offset + itemHeight - gutter)
+      ctx.fillText(item.name.slice(0, 15), x + i * itemWidth + i * gutter + 2, y + itemHeight * i2 - offset + itemHeight - gutter - 2)
       startItem++
     }
   }
