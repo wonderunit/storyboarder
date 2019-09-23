@@ -587,7 +587,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
         [NumberSlider, {
           label: 'Distance',
           value: world.fog.far,
-          min: 0,
+          min: 10,
           max: 500,
           step: 1,
           formatter: value => Math.round(value).toString() + 'm',
