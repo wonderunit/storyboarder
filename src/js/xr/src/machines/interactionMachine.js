@@ -86,7 +86,11 @@ const machine = Machine({
 
         AXES_CHANGED: {
           actions: ['moveAndRotateCamera']
-        }
+        },
+        PRESS_END_X: {
+          cond: 'sameControllerOnSnappableObject',
+          actions: 'onPressEndX'
+        },
       }
     },
     drag_object: {
@@ -108,7 +112,8 @@ const machine = Machine({
         },
         GRIP_UP: {
           cond: 'sameControllerOnSnappableObject',
-          actions: 'onSnapEnd'
+          actions: 'onSnapEnd',
+          target: 'selected'
         },
         PRESS_END_X: {
           cond: 'sameControllerOnSnappableObject',
