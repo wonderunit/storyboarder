@@ -575,12 +575,15 @@ for (let propertyName of ['width', 'height', 'depth']) {
   )
 }
 
-for (let morphTargetName of ['ectomorphic', 'mesomorphic', 'endomorphic']) {
-  lenses[morphTargetName] = R.lens(
-    vin => clamp(vin, 0, 1),
-    vout => clamp(steps(vout, 0.1), 0, 1)
-  )
-}
+lenses.morphTargets = R.lens(
+  // from morphTarget value to slider internal value
+  from => clamp(from, 0, 1),
+  // from slider internal value to morphTarget value
+  to => clamp(steps(to, 0.1), 0, 1)
+)
+lenses.ectomorphic = lenses.morphTargets
+lenses.mesomorphic = lenses.morphTargets
+lenses.endomorphic = lenses.morphTargets
 
 class CanvasRenderer {
   constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath) {
@@ -701,9 +704,15 @@ class CanvasRenderer {
       }
 
       if (modelSettings && modelSettings.validMorphTargets) {
-        modelSettings.validMorphTargets.forEach((morphTargetName, n) => {
-          const label = morphTargetName === 'endomorphic' ? 'obese' : morphTargetName.replace('morphic', '')
-          propertyArray.push({ name: morphTargetName, label })
+        modelSettings.validMorphTargets.forEach((morphTargetName) => {
+          let label = 'Morph Target'
+          if (morphTargetName == 'ectomorphic') label = 'Skinny'
+          if (morphTargetName == 'mesomorphic') label = 'Muscular'
+          if (morphTargetName == 'endomorphic') label = 'Obese'
+          propertyArray.push({
+            name: morphTargetName,
+            label
+          })
         })
       }
 
@@ -1220,7 +1229,7 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const useUiManager = () => {
+const useUiManager = ({ playSound, stopSound }) => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
@@ -1283,19 +1292,23 @@ const useUiManager = () => {
             let { id } = canvasIntersection
 
             if (canvasIntersection.type == 'button') {
+              playSound('select')
               cr.onSelect(id, u, v)
               uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
             }
 
             if (canvasIntersection.type == 'image-button') {
+              playSound('select')
               cr.onSelect(id, u, v)
             }
 
             if (canvasIntersection.type == 'toggle-button') {
+              playSound('select')
               cr.onSelect(id, u, v)
             }
 
             if (canvasIntersection.type == 'slider') {
+              playSound('select')
               uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
             }
           }
@@ -1413,12 +1426,17 @@ const useUiManager = () => {
               )
               break
           }
+
+          playSound('create')
         },
 
         onDuplicate (context, event) {
           const { selections } = event
           const id = THREE.Math.generateUUID()
-          if (selections.length) store.dispatch(duplicateObjects([selections[0]], [id]))
+          if (selections.length) {
+            store.dispatch(duplicateObjects([selections[0]], [id]))
+            playSound('create')
+          }
         },
 
         onDelete (context, event) {
@@ -1429,6 +1447,7 @@ const useUiManager = () => {
             store.dispatch(selectObject(null))
             store.dispatch(deleteObjects([selections[0]]))
             store.dispatch(undoGroupEnd())
+            playSound('delete')
           }
         },
 
@@ -1441,6 +1460,7 @@ const useUiManager = () => {
           if (toggle === 'switchHand') setSwitchHand(value)
           if (toggle === 'showCameras') setShowCameras(value)
           getCanvasRenderer().needsRender = true
+          playSound('select')
         }
       }
     }

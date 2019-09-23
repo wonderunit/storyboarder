@@ -74,11 +74,10 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
-    let [camera, setCamera] = useState(null)
     const [shouldRaf, setShouldRaf] = useState(true)
 
     let largeRenderer = useRef(null)
@@ -305,7 +304,7 @@ const SceneManager = connect(
             }
           )
         }
-     
+
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -326,7 +325,7 @@ const SceneManager = connect(
                 }
 
                 cameraControlsView.current.object = CameraControls.objectFromCameraState(cameraState)
-              
+
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
 

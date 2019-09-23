@@ -2,10 +2,9 @@ const express = require('express')
 const WebSocket = require('ws')
 const path = require('path')
 
-const os = require('os')
-const dns = require('dns')
-
 const log = require('electron-log')
+
+const getIpAddress = require('../utils/getIpAddress')
 
 const web = express()
 const port = 8001
@@ -45,7 +44,7 @@ module.exports = function ({
         setInputMouseMode(values.mouseMode)
       }
 
-      if (values.orbitMode != null) {        
+      if (values.orbitMode != null) {
         setInputOrbitMode(values.orbitMode)
       }
     })
@@ -66,41 +65,16 @@ module.exports = function ({
   })
 
   web.listen(port, () => {
-    let hostname = os.hostname()
-
-    dns.lookup(hostname, function (err, addr, fam) {
-      if (err) {
-        // use IP address instead of .local
-        let ip
-        if (hostname.match(/\.local$/)) {
-          ip = Object.values(os.networkInterfaces()).reduce(
-            (r, list) =>
-              r.concat(
-                list.reduce(
-                  (rr, i) =>
-                    rr.concat((i.family === "IPv4" && !i.internal && i.address) || []),
-                  []
-                )
-              ),
-            []
-          )
-        }
-        if (ip) {
-          updateServer({
-            uri: `http://${ip}:${port}`
-          })
-        } else {
-          log.error(err)
-          updateServer({
-            uri: `http://${hostname}:${port}`
-          })
-        }
-        return
-      }
-
+    let ip = getIpAddress()
+    if (ip) {
       updateServer({
-        uri: `http://${addr}:${port}`
+        uri: `http://${ip}:${port}`
       })
-    })
+    } else {
+      log.error(err)
+      updateServer({
+        uri: `http://localhost:${port}`
+      })
+    }
   })
 }
