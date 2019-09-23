@@ -209,7 +209,19 @@ function drawGrid(ctx, x, y , width, height, items, type) {
     for (let i = 0; i < cols; i++) {
       if (startItem >= items.length) break
       const item = items[startItem]
-      let filepath = type === 'object' ? getModelImageFilepathById(item.id) : getPoseImageFilepathById(item.id)
+
+      let filepath
+      switch (type) {
+        case 'pose':
+          filepath = getPoseImageFilepathById(item.id)
+          break
+        case 'character':
+          filepath = getCharacterImageFilepathById(item.id)
+          break
+        case 'object':
+          filepath = getModelImageFilepathById(item.id)
+          break
+      }
 
       this.drawLoadableImage(
         filepath,
@@ -266,7 +278,7 @@ function drawGrid(ctx, x, y , width, height, items, type) {
     onDrag: (x, y) => {
       const { grids } = this.state
       const offset = Math.floor((grids.prevCoords.y - y) * height)
-      grids[type].scrollTop = Math.min(Math.max(grids[type].scrollTop + offset, 0), gridHeight - height)
+      grids[type].scrollTop = Math.min(Math.max(grids[type].scrollTop + offset, 0), Math.max(gridHeight - height, 0))
       grids.prevCoords = { x, y }
       this.needsRender = true
     },
@@ -281,12 +293,17 @@ function drawGrid(ctx, x, y , width, height, items, type) {
           const name = canvasIntersection.id
           const id = this.state.selections[0]
 
-          if (type === 'object') {
-            this.dispatch(updateObject(id, { model: name, depth: 1, height: 1, width: 1 }))
-          } else {
+          if (type === 'pose') {
             const pose = this.state.poses.find(pose => pose.id === name)
             const skeleton = pose.state.skeleton
             this.dispatch(updateObject(id, { name, skeleton }))
+          } else if (type === 'character') {
+            this.dispatch(undoGroupStart())
+            this.dispatch(selectObject(null))
+            this.dispatch(updateObject(id, { model: name, height: initialState.models[name].height }))
+            this.dispatch(undoGroupEnd())
+          } else if (type === 'object') {
+            this.dispatch(updateObject(id, { model: name, depth: 1, height: 1, width: 1 }))
           }
         }
       }
@@ -298,14 +315,14 @@ function drawGrid(ctx, x, y , width, height, items, type) {
   const scrollPosition = this.state.grids[type].scrollTop / (gridHeight - height)
 
   ctx.fillStyle = '#000'
-  roundRect(ctx, width + 37, 30, 12, height, 6, true, false)
+  roundRect(ctx, width + 37, y, 12, height, 6, true, false)
 
   ctx.fillStyle = '#6E6E6E'
-  roundRect(ctx, width + 37, 30 + scrollPosition * height * 0.75, 12, height * 0.25, 6, true, false)
+  roundRect(ctx, width + 37, y + scrollPosition * height * 0.75, 12, height * 0.25, 6, true, false)
 
   ctx.strokeStyle = '#fff'
   ctx.lineWidth = 1
-  roundRect(ctx, width + 37, 30, 12, height, 6, false, true)
+  roundRect(ctx, width + 37, y, 12, height, 6, false, true)
 }
 
 function drawPaneBGs(ctx) {
@@ -604,6 +621,7 @@ class CanvasRenderer {
       mode: 'home',
       context: {},
       grids: {
+        tab: 'pose',
         startCoords: {},
         prevCoords: {},
         character: {
@@ -806,19 +824,65 @@ class CanvasRenderer {
     if (this.state.mode == 'grid') {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
+      let titleHeight = 90
 
       ctx.fillStyle = '#000'
       roundRect(ctx, 4, 6, 439, 666, 25, true, false)
 
       this.paneComponents['grid'] = {}
       if (sceneObject && sceneObject.type == 'character') {
+        const { grids } = this.state
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
-        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, this.state.poses, 'pose')
-        this.renderObjects(ctx, this.paneComponents['grid'])
+
+        const list = grids.tab === 'pose' ? this.state.poses : characterModels
+        drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab)
+
+        this.paneComponents['grid']['poses-title'] = {
+          id: 'poses-title',
+          type: 'slider',
+          x: 30,
+          y: 30,
+          width: (440 - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Poses',
+          state: grids.tab === 'pose',
+          onSelect: () => {
+            grids.tab = 'pose'
+            this.needsRender = true
+          }
+        }
+
+        this.paneComponents['grid']['characters-title'] = {
+          id: 'characters-title',
+          type: 'slider',
+          x: 30 + (440 - 45) / 2,
+          y: 30,
+          width: (440 - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Characters',
+          state: grids.tab === 'character',
+          onSelect: () => {
+            grids.tab = 'character'
+            this.needsRender = true
+          }
+        }
       } else if (sceneObject && sceneObject.type == 'object') {
         const objectModels = Object.values(this.state.models).filter(model => model.type === 'object')
-        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, objectModels, 'object')
+        drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, objectModels, 'object')
+
+        this.paneComponents['grid']['objects-title'] = {
+          id: 'objects-title',
+          type: 'slider',
+          x: 30,
+          y: 30,
+          width: 440 - 45,
+          height: titleHeight - 10,
+          label: 'Objects',
+          state: 1
+        }
       }
+
+      this.renderObjects(ctx, this.paneComponents['grid'])
     }
 
     if (this.state.mode == 'settings') {
@@ -1206,7 +1270,8 @@ const {
   duplicateObjects,
   getActiveCamera,
   undoGroupStart,
-  undoGroupEnd
+  undoGroupEnd,
+  initialState
 } = require('../../shared/reducers/shot-generator')
 
 // via PosePresetsEditor.js
@@ -1309,6 +1374,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
             if (canvasIntersection.type == 'slider') {
               playSound('select')
+              cr.onSelect(id, u, v)
               uiService.send({ type: 'REQUEST_DRAG', controller: event.controller, id })
             }
           }
