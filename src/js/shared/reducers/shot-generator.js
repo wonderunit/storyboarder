@@ -719,7 +719,9 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'LOAD_SCENE':
         return withDisplayNames(
           resetLoadingStatus(
-            migrateRotations(action.payload.sceneObjects)
+            migrateRotations(
+              action.payload.sceneObjects
+            )
           )
         )
 
