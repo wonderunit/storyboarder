@@ -182,7 +182,7 @@ function wrapText (context, text, x, y, maxWidth, lineHeight) {
   context.fillText(line, x, y);
 }
 
-function drawGrid(ctx, x, y , width, height, items) {
+function drawGrid(ctx, x, y , width, height, items, type) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -209,8 +209,8 @@ function drawGrid(ctx, x, y , width, height, items) {
     for (let i = 0; i < cols; i++) {
       if (startItem >= items.length) break
       const item = items[startItem]
+      let filepath = type === 'object' ? getModelImageFilepathById(item.id) : getPoseImageFilepathById(item.id)
 
-      let filepath = getPoseImageFilepathById(item.id)
       this.drawLoadableImage(
         filepath,
 
@@ -274,20 +274,20 @@ function drawGrid(ctx, x, y , width, height, items) {
       const { startCoords } = this.state.grids
       const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
 
-      if (distance < 0.025) {
+      if (distance < 0.1) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
 
         if (canvasIntersection) {
-          const posePresetId = canvasIntersection.id
-          const pose = this.state.poses.find(pose => {
-            return pose.id === posePresetId
-          })
+          const name = canvasIntersection.id
+          const id = this.state.selections[0]
 
-          const skeleton = pose.state.skeleton
-
-          let id = this.state.selections[0]
-          let sceneObject = this.state.sceneObjects[id]
-          this.dispatch(updateObject(sceneObject.id, { posePresetId, skeleton }))
+          if (type === 'object') {
+            this.dispatch(updateObject(id, { model: name, depth: 1, height: 1, width: 1 }))
+          } else {
+            const pose = this.state.poses.find(pose => pose.id === name)
+            const skeleton = pose.state.skeleton
+            this.dispatch(updateObject(id, { name, skeleton }))
+          }
         }
       }
     }
@@ -791,17 +791,18 @@ class CanvasRenderer {
     if (this.state.mode == 'grid') {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
-      
-      let list = this.state.poses.slice(0, 48)
-      // let list = this.state.poses
 
       ctx.fillStyle = '#000'
       roundRect(ctx, 4, 6, 439, 666, 25, true, false)
 
+      this.paneComponents['grid'] = {}
       if (sceneObject && sceneObject.type == 'character') {
-        this.paneComponents['grid'] = {}
-        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, list)
+        const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
+        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, this.state.poses, sceneObject.type)
         this.renderObjects(ctx, this.paneComponents['grid'])
+      } else if (sceneObject && sceneObject.type == 'object') {
+        const objectModels = Object.values(this.state.models).filter(model => model.type === 'object')
+        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, objectModels, sceneObject.type)
       }
     }
 
