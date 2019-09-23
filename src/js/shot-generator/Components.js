@@ -590,7 +590,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
           min: 10,
           max: 500,
           step: 1,
-          formatter: value => Math.round(value).toString() + 'm',
+          formatter: value => Math.round(value).toString(),
           onSetValue: far => updateWorldFog({ far }) }
         ]
       ]
