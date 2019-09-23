@@ -47,15 +47,18 @@ class IKHelper extends THREE.Object3D
                 
             }
         }
-        console.log(skinnedMesh.parent.parent);
         ragDoll.initObject(this, skinnedMesh.parent.parent, Object.values(this.controlPoints));
+        ragDoll.reinitialize();
     }
 
     selectControlPoint(name)
     {
-        this.ragDoll.update();
         this.ragDoll.isEnabledIk = true;
         this.selectedControlPoint = this.controlPoints[name];
+        if(name === "Hips")
+        {
+            this.ragDoll.hipsMouseDown = true;
+        }
     }
 
     deselectControlPoint()
@@ -64,6 +67,10 @@ class IKHelper extends THREE.Object3D
         {
             this.ragDoll.isEnabledIk = false;
             instance.attach(this.selectedControlPoint);
+            if(this.selectedControlPoint.name === "Hips")
+            {
+                this.ragDoll.hipsMouseDown = false;
+            }
             this.selectedControlPoint = null;
         }
     }
@@ -75,7 +82,7 @@ class IKHelper extends THREE.Object3D
 
     update()
     {
-        //this.ragDoll.update();
+    
     }
 
     updateMatrixWorld(value)

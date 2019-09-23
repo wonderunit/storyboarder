@@ -59,7 +59,6 @@ class XRRagdoll extends XRIKObject
     // Runs cycle which is updating object
     update()
     {
-        //this.resetTargets();
         super.update();
         if(IK.firstRun)
         {
@@ -117,17 +116,14 @@ class XRRagdoll extends XRIKObject
         if(this.hipsMouseDown)
         {
             let hipsTarget = this.hipsControlTarget;
-            let targetPosition = hipsTarget.position.clone();
+            hipsTarget.applyMatrix(hipsTarget.parent.matrixWorld);
             let targetPos = hipsTarget.position.clone();
-            
+            hipsTarget.applyMatrix(hipsTarget.parent.getInverseMatrixWorld());
             targetPos.sub(this.objectTargetDiff);
             this.clonedObject.position.copy(targetPos);
             this.clonedObject.updateMatrix();
             this.clonedObject.updateMatrixWorld(true);
             
-            this.hips.parent.worldToLocal(targetPosition);
-            this.hips.position.copy(targetPosition);
-            this.hips.updateMatrix();
             this.originalObject.position.copy(this.clonedObject.position);
             //this.updateCharPosition(this.clonedObject.position);
         }
@@ -138,13 +134,20 @@ class XRRagdoll extends XRIKObject
     reinitialize()
     {    
         let chainObjects = this.chainObjects;
-        this.clonedObject.scale.copy(this.originalObject.scale);
-        this.clonedObject.position.copy(this.originalObject.position);
+        this.clonedObject.scale.copy(this.originalObject.worldScale());
+        this.clonedObject.position.copy(this.originalObject.worldPosition());
         this.clonedObject.updateMatrixWorld(true);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.position);
+    
+            let boneWp = chain.joints[chain.joints.length - 1].bone.worldPosition();
+            //boneWp.applyMatrix4(this.clonedObject.matrixWorld);
+            //chainObjects[i].controlTarget.parent.worldToLocal(boneWp);
+            chainObjects[i].controlTarget.applyMatrix(chainObjects[i].controlTarget.parent.matrixWorld);
+            chainObjects[i].controlTarget.position.copy(boneWp);
+            chainObjects[i].controlTarget.applyMatrix(chainObjects[i].controlTarget.parent.getInverseMatrixWorld());
+            chainObjects[i].controlTarget.updateMatrixWorld(true);
 
             let poleConstraints = this.chainObjects[i].poleConstraint;
             if(poleConstraints != null)
@@ -159,19 +162,28 @@ class XRRagdoll extends XRIKObject
             }
             chain.reinitializeJoints();
         }
-        this.hips.getWorldPosition(this.hipsControlTarget.position);
+        let boneWp = this.hips.worldPosition();
+        this.hipsControlTarget.parent.worldToLocal(boneWp);
+        this.hipsControlTarget.position.copy(boneWp);
         this.calculteBackOffset();
         this.ikSwitcher.applyToIk();
         let hipsTarget = this.hipsControlTarget;
-        this.objectTargetDiff = new THREE.Vector3().subVectors(hipsTarget.position, this.originalObject.position);
+        hipsTarget.applyMatrix(hipsTarget.parent.matrixWorld);
+        let hipsWP = hipsTarget.position.clone();
+        hipsTarget.applyMatrix(hipsTarget.parent.getInverseMatrixWorld());
+        
+        this.originalObject.applyMatrix( this.originalObject.parent.matrixWorld);
+        let originalObjectWp = this.originalObject.position.clone();
+        this.originalObject.applyMatrix( this.originalObject.parent.getInverseMatrixWorld());
+        this.objectTargetDiff = new THREE.Vector3().subVectors(hipsWP, originalObjectWp);
         this.setUpControlTargetsInitialPosition();
     }
 
     // Moves ragdoll hips when original object moved
     moveRagdoll()
     {
-        this.clonedObject.position.copy(this.originalObject.position);
-        this.clonedObject.updateMatrixWorld(true, true);
+        //this.clonedObject.position.copy(this.originalObject.position);
+        //this.clonedObject.updateMatrixWorld(true, true);
     }
     //#endregion
 

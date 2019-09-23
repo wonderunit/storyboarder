@@ -36,7 +36,6 @@ class XrIkObject
         this.clonedObject = clonedSkeleton;
         this.originalObject = objectSkeleton;
         this.ikSwitcher = new XRIKSwitcher(objectSkeleton, clonedSkeleton);
-
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
         let rigMesh = this.rigMesh;
         this.controlTargets = controlTargets;
@@ -74,6 +73,8 @@ class XrIkObject
                     this.hips = object;
                     //this.hipsControlTarget.setBone(object);
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
+                    //rigMesh.bind(rigMesh.skeleton)
+
                 }
                 // Goes through all chain objects to find with which we are working
                 chainObjects.forEach((chainObject) =>
@@ -118,8 +119,6 @@ class XrIkObject
         // Adds skeleton helper to scene
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
-        //const helper = new THREE.IKHelper(this.ik);
-        //scene.attach(helper);
         //helper.applyMatrix(scene.matrixWorld);
     }
 
@@ -155,8 +154,8 @@ class XrIkObject
         {
             let backTarget = this.chainObjects[0].controlTarget;
             let hipsPosition = hipsTarget.position.clone();
-            //let result = hipsPosition.add(this.backOffset);
-            //backTarget.position.copy(result);
+            let result = hipsPosition.add(this.backOffset);
+            backTarget.position.copy(result);
         }
     }
 
@@ -202,7 +201,7 @@ class XrIkObject
     {
         let backPosition = this.chainObjects[0].controlTarget.position.clone();
         let hipsPosition = this.hipsControlTarget.position.clone();
-        //this.backOffset = backPosition.sub(hipsPosition);
+        this.backOffset = backPosition.sub(hipsPosition);
     }
     //#endregion
 }
