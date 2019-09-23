@@ -144,6 +144,7 @@ class BonesHelper extends THREE.Object3D
         if(this.selectedBone)
         {
             this.changeBoneColor(this.selectedBone, this.helperBonesPool.defaultColor);
+            this.selectedBone = null;
         }
     }
 
@@ -163,6 +164,11 @@ class BonesHelper extends THREE.Object3D
 
     raycast(raycaster, intersects)
     {
+        if(!this.isSelected)
+        {
+            intersects = [];
+            return;
+        }
         let results = raycaster.intersectObjects(this.bonesGroup.children);
         for (let result of results)
         {

@@ -1,6 +1,5 @@
 const EventEmitter = require('events').EventEmitter
 
-const os = require('os')
 const path = require('path')
 
 const express = require('express')
@@ -9,6 +8,8 @@ const http = require('http').Server(app)
 const io = require('socket.io')(http, { wsEngine: 'ws' })
 
 const log = require('electron-log')
+
+const getIpAddress = require('../utils/getIpAddress')
 
 const portNumber = 1888
 
@@ -46,11 +47,12 @@ class MobileServer extends EventEmitter {
     })
 
     http.listen(portNumber, function() {
-      let hostname = os.hostname()
-      log.info("http://" + hostname + ":" + portNumber)
-      require('dns').lookup(hostname, function (err, add, fam) {
-        log.info("http://" + add + ":" + portNumber)
-      })
+      let ip = getIpAddress()
+      if (ip) {
+        log.info("http://" + ip + ":" + portNumber)
+      } else {
+        log.error('Could not determine IP address')
+      }
     })
 
     io.on('connection', function (socket) {

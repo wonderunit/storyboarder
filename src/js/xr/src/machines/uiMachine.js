@@ -6,7 +6,9 @@ const machine = Machine({
   id: 'ui',
   strict: true,
   type: 'parallel',
-  context: {},
+  context: {
+    locked: false
+  },
   states: {
     controls: {
       initial: 'home',
@@ -37,6 +39,14 @@ const machine = Machine({
             'GO_ADD': 'add',
             'GO_HOME': 'home',
             'TOGGLE_SETTINGS': 'settings',
+            'TOGGLE_GRID': 'grid',
+          }
+        },
+        grid: {
+          on: {
+            'GO_ADD': 'add',
+            'TOGGLE_SETTINGS': 'settings',
+            'GO_PROPERTIES': 'properties'
           }
         }
       }
@@ -49,7 +59,18 @@ const machine = Machine({
             'TRIGGER_START': {
               actions: 'onTriggerStart'
             },
-            'REQUEST_DRAG': 'dragging'
+            'REQUEST_DRAG': 'dragging',
+            'ADD_OBJECT': { actions: 'onAddObject' },
+            'REQUEST_DUPLICATE': { actions: 'onDuplicate' },
+            'REQUEST_DELETE': { actions: 'onDelete' },
+            'TOGGLE_SWITCH': { actions: 'onToggleSwitch' }
+          }
+        },
+        locked: {
+          onEntry: 'lock',
+          onExit: 'unlock',
+          on: {
+            UNLOCK: 'idle'
           }
         },
         dragging: {
@@ -64,11 +85,25 @@ const machine = Machine({
             }
           }
         }
+      },
+      on: {
+        LOCK: '.locked'
       }
     }
   }
 }, {
+  guards: {
+    locked: (context, event) => context.locked === true,
+    unlocked: (context, event) => context.locked === false
+  },
   actions: {
+    lock: assign({
+      locked: (context, event) => true
+    }),
+    unlock: assign({
+      locked: (context, event) => false
+    }),
+
     updateSelection: assign({
       selection: (context, event) => event.id
     }),
