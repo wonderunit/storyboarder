@@ -22,11 +22,16 @@ const useImageBitmapLoader = require('../../../src/js/xr/src/hooks/use-imagebitm
 const UITestContent = ({ resources }) => {
   const { gl, camera, scene } = useThree()
 
-  const { uiService, uiCurrent, getCanvasRenderer } = useUiManager()
+  const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({
+    playSound: () => { },
+    stopSound: () => { }
+  })
 
   const { controllers, interactionServiceCurrent } = useInteractionsManager({
     groundRef: null,
-    uiService
+    uiService,
+    playSound: () => {},
+    stopSound: () => {}
   })
 
   useMemo(() => {

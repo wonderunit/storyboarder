@@ -584,15 +584,12 @@ const Character = React.memo(({
     if (!object.current) return
     let mesh = object.current.userData.mesh
 
-    mesh.material.morphTargets = mesh.material.morphNormals = props.model !== 'baby'
-    if (!mesh.morphTargetDictionary) return
-    if (props.model === 'child') {
-      mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
-      mesh.morphTargetInfluences[ 1 ] = props.morphTargets.endomorphic
-    } else {
-      mesh.morphTargetInfluences[ 0 ] = props.morphTargets.mesomorphic
-      mesh.morphTargetInfluences[ 1 ] = props.morphTargets.ectomorphic
-      mesh.morphTargetInfluences[ 2 ] = props.morphTargets.endomorphic
+    let modelSettings = initialState.models[props.model]
+
+    if (modelSettings && modelSettings.validMorphTargets) {
+      modelSettings.validMorphTargets.forEach((name, index) => {
+        mesh.morphTargetInfluences[ index ] = props.morphTargets[ name ]
+      })
     }
   }, [props.morphTargets, ready])
 

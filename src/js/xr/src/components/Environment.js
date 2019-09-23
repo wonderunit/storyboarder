@@ -8,7 +8,7 @@ const VirtualCamera = require('../components/VirtualCamera')
 
 const onlyOfTypes = require('../../../shot-generator/only-of-types')
 
-const materialFactory = () => new THREE.MeshLambertMaterial({
+const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
   emissive: 0x0,
   flatShading: false
@@ -30,7 +30,14 @@ const Environment = React.memo(({ gltf, environment }) => {
 
     sceneData.traverse(child => {
       if (child.isMesh) {
-        child.material = materialFactory()
+        let material = materialFactory()
+
+        if (child.material.map) {
+          material.map = child.material.map
+          material.map.needsUpdate = true
+        }
+
+        child.material = material
       }
     })
 
