@@ -46,6 +46,7 @@ const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
+const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
 
 const Controls = require('./components/ui/Controls')
 
@@ -408,6 +409,7 @@ const SceneContent = connect(
                 <Controls
                   gltf={resources.controlsGltf}
                   mode={uiCurrent.value.controls}
+                  hand={switchHand ? 'left' : 'right'}
                   getCanvasRenderer={getCanvasRenderer} />
               }
             </primitive>
@@ -431,12 +433,14 @@ const SceneContent = connect(
           {
             characterIds.map(id =>
               getAsset(getFilepathForModelByType(sceneObjects[id]))
-                ? <Character
-                  key={id}
-                  gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
-                  sceneObject={sceneObjects[id]}
-                  modelSettings={models[sceneObjects[id].model] || undefined}
-                  isSelected={selections.includes(id)} />
+                ? <SimpleErrorBoundary key={id}>
+                  <Character
+                    key={id}
+                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
+                    sceneObject={sceneObjects[id]}
+                    modelSettings={models[sceneObjects[id].model] || undefined}
+                    isSelected={selections.includes(id)} />
+                </SimpleErrorBoundary>
                 : null
             )
           }
@@ -474,7 +478,7 @@ const SceneContent = connect(
                 gltf={resources.lightGltf}
                 sceneObject={sceneObjects[id]}
                 isSelected={selections.includes(id)}
-                texture={resources.teleportTexture} />
+                worldScale={worldScale} />
             )
           }
           {
@@ -647,6 +651,16 @@ const SceneManagerXR = () => {
     if (isLoading && !sceneObjectsPreloaded && remaining.length === 0) {
       setSceneObjectsPreloaded(true)
       setIsLoading(false)
+
+      let assetsWithErrors = Object.entries(assets).reduce((arr, [key, asset]) => {
+        if (asset.status == 'Error') {
+          arr[key] = asset
+        }
+        return arr
+      }, {})
+      Object.entries(assetsWithErrors).forEach(([uri, asset]) => {
+        console.error('Could not load', uri)
+      })
     } else if (remaining.length > 0) {
       setIsLoading(true)
     }

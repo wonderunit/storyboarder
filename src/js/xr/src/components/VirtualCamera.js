@@ -217,6 +217,13 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     renderCamera()
   }, false, [isSelected, ref.current, meshes])
 
+  let activeIndicator = isActive
+    ? <mesh position={[0, size + 0.075 + 0.15, 0]}>
+      <cylinderBufferGeometry attach="geometry" args={[0.075, 0, 0.075]} />
+      <meshLambertMaterial attach="material" color={0xffff00} />
+    </mesh>
+    : null
+
   return <group
     ref={ref}
     onController={() => null}
@@ -226,6 +233,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }}
     position={[sceneObject.x, sceneObject.z, sceneObject.y]}
   >
+    {activeIndicator}
     {cameraView}
     {meshChildren}
     <group position={[0, 0, -0.2]}>

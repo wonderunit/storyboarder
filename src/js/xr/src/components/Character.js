@@ -164,7 +164,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       }}
 
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
-      rotation-y={sceneObject.rotation}
+      rotation={[0, sceneObject.rotation, 0]}
       scale={[bodyScale, bodyScale, bodyScale]}
     >
       <primitive object={lod} />

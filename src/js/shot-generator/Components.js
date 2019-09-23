@@ -919,9 +919,9 @@ const CharacterPresetsEditor = connect(
 
 
 const MORPH_TARGET_LABELS = {
-  'mesomorphic': 'meso',
-  'ectomorphic': 'ecto',
-  'endomorphic': 'obese',
+  'mesomorphic': 'Muscular',
+  'ectomorphic': 'Skinny',
+  'endomorphic': 'Obese',
 }
 const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })

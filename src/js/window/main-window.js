@@ -3401,6 +3401,14 @@ const renderShotGeneratorPanel = () => {
   let onOpen = event => {
     event.preventDefault()
 
+    // briefly show loading cursor while we load the Shot Generator window
+    let el = document.querySelector('#shot-generator-container a')
+    let prev = el.style.cursor
+    el.style.cursor = 'wait'
+    setTimeout(() => {
+      el.style.cursor = prev
+    }, 2000)
+
     ipcRenderer.send('shot-generator:open', {
       storyboarderFilePath: boardFilename,
       boardData: {
