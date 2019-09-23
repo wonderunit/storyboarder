@@ -762,6 +762,27 @@ const useInteractionsManager = ({
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let placesForDrop = scene.__interaction.concat([groundRef.current])
           dropDraggable(object, placesForDrop)
+          if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
+            const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+            dispatch(updateObject(context.selection, {
+              x: object.position.x,
+              y: object.position.z,
+              z: object.position.y,
+              rotation: euler.y,
+              roll: euler.z,
+              tilt: euler.x
+            }))
+          } else {
+            let rotation = object.userData.type == 'character'
+              ? object.rotation.y
+              : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+            dispatch(updateObject(context.selection, {
+              x: object.position.x,
+              y: object.position.z,
+              z: object.position.y,
+              rotation
+            }))
+          }
         },
         onSelected: (context, event) => {
           let controller = event.controller
