@@ -788,7 +788,9 @@ const Editor = connect(
               transition,
               largeCanvasSize,
               attachments,
-              orthoCamera
+              orthoCamera,
+              camera,
+              setCamera
             }
           ],
 
