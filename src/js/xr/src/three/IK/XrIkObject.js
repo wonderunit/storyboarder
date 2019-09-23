@@ -154,8 +154,8 @@ class XrIkObject
         {
             let backTarget = this.chainObjects[0].controlTarget;
             let hipsPosition = hipsTarget.position.clone();
-            let result = hipsPosition.add(this.backOffset);
-            backTarget.position.copy(result);
+           // let result = hipsPosition.add(this.backOffset);
+            //backTarget.position.copy(result);
         }
     }
 
@@ -193,21 +193,6 @@ class XrIkObject
     // After IK has been turned off and on
     resetTargets()
     {
-        let chainObjects = this.chainObjects;
-        this.hips.getWorldPosition(this.hipsControlTarget.position);
-        for(let i = 0; i < chainObjects.length; i++)
-        {
-            let chain = chainObjects[i].chain;
-            let jointBone = chain.joints[chain.joints.length - 1].bone;
-            // Sets target position to ik last joints in each chain 
-        /*     if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
-            jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
-            jointBone.name === "Head" || jointBone.name === "Hips")
-            {
-                let targetPosition = chainObjects[i].controlTarget.position;
-                jointBone.getWorldPosition(targetPosition);
-            } */
-        }
         this.calculteBackOffset();
     }
 
