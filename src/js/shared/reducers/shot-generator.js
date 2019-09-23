@@ -355,7 +355,7 @@ const withDisplayNames = draft => {
 
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
- 
+
 // reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
 const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
 
@@ -870,7 +870,7 @@ const activeCameraReducer = (state = initialScene.activeCamera, action) => {
 
       case 'SET_ACTIVE_CAMERA':
         return action.payload
-      
+
       default:
         return
     }
@@ -1029,24 +1029,24 @@ const mainReducer = (state/* = initialState*/, action) => {
       // case 'SET_INPUT_ACCEL':
       //   draft.input.accel = action.payload
       //   return
-      // 
+      //
       //   case 'SET_INPUT_MAG':
       //   draft.input.mag = action.payload
       //   return
-      // 
+      //
       //   case 'SET_INPUT_SENSOR':
       //   draft.input.sensor = action.payload
       //   return
-      // 
+      //
       // case 'SET_INPUT_DOWN':
       //   draft.input.down = action.payload
       //   return
-      // 
+      //
       // case 'SET_INPUT_MOUSEMODE':
       //   draft.input.mouseMode = action.payload
       //   return
-      // 
-      // case 'SET_INPUT_ORBITMODE':          
+      //
+      // case 'SET_INPUT_ORBITMODE':
       //   draft.input.orbitMode = action.payload
       //   return
 
@@ -1247,7 +1247,7 @@ module.exports = {
 
   // batch update
   updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
-  
+
   deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
 
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
@@ -1261,7 +1261,7 @@ module.exports = {
     payload: { id, name, rotation }
   }),
 
-  updateCharacterIkSkeleton: ({ id, skeleton }) => 
+  updateCharacterIkSkeleton: ({ id, skeleton }) =>
   ({
     type: 'UPDATE_CHARACTER_IK_SKELETON',
     payload: { id, skeleton }
@@ -1298,7 +1298,7 @@ module.exports = {
   updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
 
   setBoard: payload => ({ type: 'SET_BOARD', payload }),
-  
+
   markSaved: () => ({ type: 'MARK_SAVED' }),
 
   toggleWorkspaceGuide: payload => ({ type: 'TOGGLE_WORKSPACE_GUIDE', payload }),
