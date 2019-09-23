@@ -1318,6 +1318,11 @@ const loadBoardUI = async () => {
     // always update the sketchpane
     let layer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
     storyboarderSketchPane.setLayerOpacity(layer.index, params.value)
+    // shot-generator (if it exists) opacity mirrors reference opacity
+    let sgLayer = storyboarderSketchPane.sketchPane.layers.findByName('shot-generator')
+    if (sgLayer) {
+      storyboarderSketchPane.setLayerOpacity(sgLayer.index, params.value)
+    }
 
     // if board has a reference layer ...
     if (board.layers && board.layers.reference) {
@@ -1325,6 +1330,13 @@ const loadBoardUI = async () => {
       if (board.layers.reference.opacity !== params.value) {
         // ... update the opacity value ...
         board.layers.reference.opacity = params.value
+
+        // ... and if there is a shot generator layer ...
+        if (board.layers['shot-generator']) {
+          // ... set its opacity as well ...
+          board.layers['shot-generator'].opacity = params.value
+        }
+
         // ... and save the board file
         markBoardFileDirty()
 
