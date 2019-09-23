@@ -400,7 +400,10 @@ const SceneContent = connect(
 
           {controllers.filter(Boolean).map(controller =>
             <primitive key={controller.uuid} object={controller} >
-              <Controller gltf={resources.controllerGltf} />
+              <Controller
+                gltf={resources.controllerGltf}
+                hand={navigator.getGamepads()[controller.userData.gamepad.index].hand}
+              />
               {
                 navigator.getGamepads()[controller.userData.gamepad.index] &&
                 navigator.getGamepads()[controller.userData.gamepad.index].hand === (switchHand ? 'left' : 'right') &&
