@@ -349,7 +349,6 @@ const useInteractionsManager = ({
 
       intersection = getControllerIntersections(controller, [IKHelper.getInstance()])[0]
       if (intersection) {
-        console.log(intersection)
         interactionService.send({
           type: 'TRIGGER_START',
           controller: event.target,
@@ -714,6 +713,7 @@ const useInteractionsManager = ({
     {
       //TODO() Manipulate selected control point here
       // make a function out of render and just call it
+       IKHelper.getInstance().update()
       //console.log('dragging control point', context)
     }
   }, false, [set, controllers])

@@ -1,15 +1,14 @@
-const {IK}  = require("../../core/three-ik");
-const IkObject = require( "./IkObject");
+const {IK}  = require("../../../../shot-generator/IK/core/three-ik");
+const XRIKObject = require( "./XrIkObject");
 const THREE = require( "three");
-const PoleConstraint = require( "../../constraints/PoleConstraint");
-const PoleTarget = require( "../PoleTarget");
-const CopyRotation = require( "../../constraints/CopyRotation");
-//const RagdollEvents = require( "./RagdollEvents");
-require("../../utils/Object3dExtension");
-c//onst {calculatePoleAngle, normalizeTo180} = require("../../utils/axisUtils");
+const PoleConstraint = require( "../../../../shot-generator/IK/constraints/PoleConstraint");
+const PoleTarget = require( "../../../../shot-generator/IK/objects/PoleTarget");
+const CopyRotation = require( "../../../../shot-generator/IK/constraints/CopyRotation");
+require("../../../../shot-generator/IK/utils/Object3dExtension");
+//const {calculatePoleAngle, normalizeTo180} = require("../../utils/axisUtils");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
-class XRRagdoll extends IkObject
+class XRRagdoll extends XRIKObject
 {
     constructor()
     {
@@ -35,10 +34,11 @@ class XRRagdoll extends IkObject
         //this.ragdollEvents = new RagdollEvents(this);
         // Adds events to Back control
         //this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
-        this.createPoleTargets();
+        //this.createPoleTargets();
      /*    this.ragdollEvents.addHipsEvent();
         this.ragdollEvents.setUpControlsEvents(); */
         this.setUpControlTargetsInitialPosition();
+        this.resetTargets();
     }
 
     updateSkeleton(updateCharacterSkeleton)
@@ -66,9 +66,9 @@ class XRRagdoll extends IkObject
         }
         if(!this.isEnabledIk)
         {
-            if(this.hipsControlTarget.control.mode === "rotate" && this.attached)
+            //if(this.hipsControlTarget.mode === "rotate" && this.attached)
             {
-                this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation)
+                //this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.rotation)
             }
             for(let i = 1; i < 5; i++) 
             {
@@ -101,9 +101,10 @@ class XRRagdoll extends IkObject
             }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
-            this.updateReact();
+            //this.updateReact();
             this.relativeFixedAngle();
         }
+        this.moveRagdoll();
     }
 
     // Runs after update to apply changes to object after ik solved
@@ -112,7 +113,7 @@ class XRRagdoll extends IkObject
         super.lateUpdate();
         if(this.hipsMouseDown)
         {
-            let hipsTarget = this.hipsControlTarget.target;
+            let hipsTarget = this.hipsControlTarget;
             let targetPosition = hipsTarget.position.clone();
             let targetPos = hipsTarget.position.clone();
             
@@ -140,7 +141,7 @@ class XRRagdoll extends IkObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
+            chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.position);
 
             let poleConstraints = this.chainObjects[i].poleConstraint;
             if(poleConstraints != null)
@@ -155,60 +156,12 @@ class XRRagdoll extends IkObject
             }
             chain.reinitializeJoints();
         }
-        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
+        this.hips.getWorldPosition(this.hipsControlTarget.position);
         this.calculteBackOffset();
         this.ikSwitcher.applyToIk();
-        let hipsTarget = this.hipsControlTarget.target;
+        let hipsTarget = this.hipsControlTarget;
         this.objectTargetDiff = new THREE.Vector3().subVectors(hipsTarget.position, this.originalObject.position);
         this.setUpControlTargetsInitialPosition();
-    }
-
-    // Removes object and all it's meshes from scene
-    removeFromScene()
-     {
-         let scene = this.scene;
-         super.removeFromScene(scene);
-         this.controlTargetSelection.dispose();
-         this.chainObjects.forEach((chainObject)=>
-         {
-             let constraint = chainObject.poleConstraint;
-             if(constraint)
-             {
-                 scene.remove(constraint.poleTarget.mesh);
-             }
-         });
-/*          this.ragdollEvents.removeEventsFromBackControl();
-         this.ragdollEvents.removeHipsEvent();
-         this.ragdollEvents.removeControlsEvents(); */
-    }
-
-    // Selects/Deselects ragdoll and adds/removes it's elements to/from scene
-    selectedSkeleton(selected)
-    {
-        let visible = selected;
-        let chainObjects = this.chainObjects;
-        for (let i = 0; i < chainObjects.length; i++)
-        {
-            let chain = chainObjects[i];
-            if(visible)
-            {
-                chain.controlTarget.addToScene();
-            }
-            else
-            {
-                chain.controlTarget.removeFromScene();
-            }
-        }
-        if(visible)
-        {
-            this.controlTargetSelection.initialize();
-            this.hipsControlTarget.addToScene();
-        }
-        else
-        {
-            this.controlTargetSelection.dispose();
-            this.hipsControlTarget.removeFromScene();
-        }
     }
 
     // Moves ragdoll hips when original object moved
@@ -275,7 +228,7 @@ class XRRagdoll extends IkObject
     resetPoleTarget()
     {
          let chainObjects = this.chainObjects;
-         let hipsTarget = this.hipsControlTarget.target;
+         let hipsTarget = this.hipsControlTarget;
          let {angle, axis} = this.hips.quaternion.toAngleAxis();
          let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
          let armsAngleAxis = spineWorldQuat.toAngleAxis();
@@ -309,7 +262,7 @@ class XRRagdoll extends IkObject
         {
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
-            let target = this.controlTargets[i].target;
+            let target = this.controlTargets[i];
             target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.worldQuaternion().inverse()));
             target.inverseInitialQuaternion = bone.worldQuaternion().inverse().multiply(this.hips.worldQuaternion());
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
@@ -329,7 +282,7 @@ class XRRagdoll extends IkObject
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
             let controlTarget = this.chainObjects[i].controlTarget;
-            let boneTarget = controlTarget.target;
+            let boneTarget = controlTarget;
             let inverseWorldQuaternion = bone.worldQuaternion().inverse();
             let quaternion =  bone.worldQuaternion();
 
@@ -362,7 +315,7 @@ class XRRagdoll extends IkObject
     updateReact()
     {        
         let ikBones = [];
-        for (let bone of this.originalObject.children[1].skeleton.bones)
+        for (let bone of this.originalObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones)
         {
             if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName ))
             {
@@ -377,14 +330,14 @@ class XRRagdoll extends IkObject
     // Sets limbs rotation to control target rotation
     limbsFollowRotation()
     {
-        let originalbones = this.clonedObject.children[1].skeleton.bones;
+        let originalbones = this.clonedObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones;
         for(let i = 0; i < this.chainObjects.length; i++)
         {
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length -1].bone;
 
             let controlTarget = this.chainObjects[i].controlTarget;
-            let boneTarget = controlTarget.target;
+            let boneTarget = controlTarget;
             let target = this.getTargetForSolve();
             if((target && boneTarget.uuid !== target.uuid))
             {
