@@ -193,7 +193,7 @@ function drawGrid(ctx, x, y , width, height, items, type) {
   let cols = 4
   let itemHeight = width / cols / 0.68
   let gutter = 5
-  let offset = this.state.grids.poses.scrollTop || 0
+  let offset = this.state.grids[type].scrollTop || 0
 
   const gridHeight = Math.ceil(items.length / cols) * itemHeight
   let itemWidth = (width - gutter * (cols - 1)) / cols
@@ -266,7 +266,7 @@ function drawGrid(ctx, x, y , width, height, items, type) {
     onDrag: (x, y) => {
       const { grids } = this.state
       const offset = Math.floor((grids.prevCoords.y - y) * height)
-      grids.poses.scrollTop = Math.min(Math.max(grids.poses.scrollTop + offset, 0), gridHeight - height)
+      grids[type].scrollTop = Math.min(Math.max(grids[type].scrollTop + offset, 0), gridHeight - height)
       grids.prevCoords = { x, y }
       this.needsRender = true
     },
@@ -295,7 +295,7 @@ function drawGrid(ctx, x, y , width, height, items, type) {
 
   // Indicator
   ctx.restore()
-  const scrollPosition = this.state.grids.poses.scrollTop / (gridHeight - height)
+  const scrollPosition = this.state.grids[type].scrollTop / (gridHeight - height)
 
   ctx.fillStyle = '#000'
   roundRect(ctx, width + 37, 30, 12, height, 6, true, false)
@@ -603,13 +603,13 @@ class CanvasRenderer {
       grids: {
         startCoords: {},
         prevCoords: {},
-        characters: {
+        character: {
           scrollTop: 0
         },
-        models: {
+        object: {
           scrollTop: 0
         },
-        poses: {
+        pose: {
           scrollTop: 0
         }
       }
@@ -804,11 +804,11 @@ class CanvasRenderer {
       this.paneComponents['grid'] = {}
       if (sceneObject && sceneObject.type == 'character') {
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
-        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, this.state.poses, sceneObject.type)
+        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, this.state.poses, 'pose')
         this.renderObjects(ctx, this.paneComponents['grid'])
       } else if (sceneObject && sceneObject.type == 'object') {
         const objectModels = Object.values(this.state.models).filter(model => model.type === 'object')
-        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, objectModels, sceneObject.type)
+        drawGrid(ctx, 30, 30, 440 - 55, 670 - 55, objectModels, 'object')
       }
     }
 

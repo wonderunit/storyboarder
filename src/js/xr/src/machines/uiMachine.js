@@ -47,6 +47,7 @@ const machine = Machine({
           on: {
             'GO_ADD': 'add',
             'GO_HOME': 'home',
+            'GO_PROPERTIES': 'properties',
             'TOGGLE_SETTINGS': 'settings'
           }
         }
