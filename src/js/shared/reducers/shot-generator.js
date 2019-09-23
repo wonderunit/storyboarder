@@ -162,6 +162,14 @@ const migrateRotations = sceneObjects =>
       return o
     }, {})
 
+const migrateWorldLights = world => ({
+  ...world,
+
+  // migrate older scenes which were missing ambient and directional light settings
+  ambient: world.ambient || initialScene.world.ambient,
+  directional: world.directional || initialScene.world.directional
+})
+
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
 
@@ -883,14 +891,9 @@ const worldReducer = (state = initialState.undoable.world, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
-        let result = {
-          ...action.payload.world,
-
-          // migrate older scenes which were missing ambient and directional light settings
-          ambient: action.payload.world.ambient || initialScene.world.ambient,
-          directional: action.payload.world.directional || initialScene.world.directional
-        }
-        return result
+        return migrateWorldLights(
+            action.payload.world
+        )
 
       case 'UPDATE_WORLD':
         if (action.payload.hasOwnProperty('ground')) {
