@@ -994,7 +994,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
-  
+
   return h([
     'div',
       [
@@ -2390,7 +2390,7 @@ const LoadingStatus = connect(
 //         }))
 //       }
 //     },
-// 
+//
 //     createScenePreset: () => (dispatch, getState) => {
 //       // show a prompt to get the desired preset name
 //       let id = THREE.Math.generateUUID()
@@ -2418,12 +2418,12 @@ const LoadingStatus = connect(
 //         console.error(err)
 //       })
 //     },
-// 
+//
 //     updateScenePreset: (id, values) => (dispatch, getState) => {
 //       dispatch(updateScenePreset(id, values))
 //       saveScenePresets(getState())
 //     },
-// 
+//
 //     deleteScenePreset: id => (dispatch, getState) => {
 //       let choice = dialog.showMessageBox(null, {
 //         type: 'question',
@@ -2443,34 +2443,34 @@ const LoadingStatus = connect(
 //     event.preventDefault()
 //     loadScenePreset(preset.id)
 //   }
-// 
+//
 //   const onSaveClick = event => {
 //     event.preventDefault()
 //     createScenePreset()
 //   }
-// 
+//
 //   const onDeleteClick = id => {
 //     event.preventDefault()
 //     deleteScenePreset(id)
 //   }
-// 
+//
 //   const onEditClick = (preset, event) => {
 //     event.preventDefault()
 //     updateScenePreset(preset.id, { name: 'ok'})
 //   }
-// 
+//
 //   const onFocus = event => transition('TYPING_ENTER')
 //   const onBlur = event => transition('TYPING_EXIT')
-// 
+//
 //   return h([
 //     'div', { style: { padding: 6 } }, [
 //       ['h3', { style: { margin: '24px 0 12px 0' } }, 'Preset Scenes'],
-// 
+//
 //       ['ul', Object.values(presets.scenes).map(preset =>
 //         ['li.element', { style: { display: 'flex', justifyContent: 'space-between' } },
-// 
+//
 //           ['a.select[href=#]', { style: { color: 'white', textDecoration: 'none', display: 'flex', alignSelf: 'center', top: -3, position: 'relative', width: '1.5rem' }, onClick: onLoadClick.bind(this, preset) }, '⇧'],
-// 
+//
 //           [
 //             'span',
 //             { style: { flex: 1 } },
@@ -2489,12 +2489,12 @@ const LoadingStatus = connect(
 //               }
 //             ]
 //           ],
-// 
-// 
+//
+//
 //           ['a.delete[href=#]', { onClick: onDeleteClick.bind(this, preset.id) }, 'X']
 //         ] )
 //       ],
-// 
+//
 //       ['button', { style: { marginTop: 20, padding: '9px 12px', fontSize: 16 }, onClick: onSaveClick }, '+ Preset'],
 //     ]
 //   ])
