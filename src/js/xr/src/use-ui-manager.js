@@ -225,7 +225,7 @@ function drawGrid(ctx, x, y , width, height, items, type) {
           // object should not allow selection
           ctx.save()
           ctx.fillStyle = '#222'
-          ctx.fillRect(x, y, 135, 200)
+          ctx.fillRect(x + i * itemWidth + i * gutter, y + itemHeight * i2 - offset, itemWidth, itemHeight - gutter)
           ctx.restore()
         }
       )
@@ -603,7 +603,13 @@ class CanvasRenderer {
       grids: {
         startCoords: {},
         prevCoords: {},
-        'poses': {
+        characters: {
+          scrollTop: 0
+        },
+        models: {
+          scrollTop: 0
+        },
+        poses: {
           scrollTop: 0
         }
       }
@@ -667,7 +673,7 @@ class CanvasRenderer {
     }
 
     console.log(this.state.mode)
-    if (this.state.mode == 'properties') {
+    if (this.state.mode == 'properties' || this.state.mode == 'grid') {
       let id = this.state.selections[0]
       let sceneObject = this.state.sceneObjects[id]
 
