@@ -461,11 +461,13 @@ const SceneContent = connect(
                 ? getAsset(getFilepathForModelByType(sceneObject))
                 : null
 
-              return <ModelObject
-                key={id}
-                gltf={gltf}
-                sceneObject={sceneObject}
-                isSelected={selections.includes(id)} />
+              return <SimpleErrorBoundary key={id}>
+                <ModelObject
+                  key={id}
+                  gltf={gltf}
+                  sceneObject={sceneObject}
+                  isSelected={selections.includes(id)} />
+              </SimpleErrorBoundary>
             })
           }
 
@@ -503,13 +505,15 @@ const SceneContent = connect(
               type: 'environment',
               model: world.environment.file
             }))
-              ? <Environment
-                gltf={getAsset(getFilepathForModelByType({
-                  type: 'environment',
-                  model: world.environment.file
-                }))}
-                environment={world.environment}
-                visible={world.environment.visible} />
+              ? <SimpleErrorBoundary>
+                <Environment
+                  gltf={getAsset(getFilepathForModelByType({
+                    type: 'environment',
+                    model: world.environment.file
+                  }))}
+                  environment={world.environment}
+                  visible={world.environment.visible} />
+              </SimpleErrorBoundary>
               : null
           }
 
