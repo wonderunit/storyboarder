@@ -1,4 +1,4 @@
- const { useMemo, useRef } = React = require('react')
+const { useMemo, useRef, useEffect } = React = require('react')
 const { useThree, useRender } = require('react-three-fiber')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -22,11 +22,10 @@ const teleportParent = require('./helpers/teleport-parent')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
-const GPUPicker = require('./three/GPUPickers/GPUPicker')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
-
+const GPUPicker = require('./three/GPUPickers/GPUPicker')
 require('./three/GPUPickers/utils/Object3dExtension')
 require('../../shot-generator/IK/utils/axisUtils')
 
@@ -268,19 +267,39 @@ const useInteractionsManager = ({
 }) => {
   const { gl, camera, scene } = useThree()
 
+
   const selections = useSelector(getSelections)
 
   const canUndo = useSelector(state => state.undoable.past.length > 0)
   const canRedo = useSelector(state => state.undoable.future.length > 0)
 
   const gpuPicker = useRef(null)
-
   const getGpuPicker = () => {
     if (gpuPicker.current === null) {
       gpuPicker.current = new GPUPicker(gl)
     }
     return gpuPicker.current
   }
+
+  useEffect(() => {
+    // create a temporary mesh object to initialize the GPUPicker
+    let gpuPicker = getGpuPicker()
+    let geometry = new THREE.BoxBufferGeometry(2, 2, 2)
+    let material = new THREE.MeshBasicMaterial();
+    let mesh = new THREE.Mesh(geometry, material)
+    mesh.position.copy(camera.worldPosition())
+    mesh.position.z -= 1
+    scene.add(mesh)
+    let interactions = scene.__interaction.concat([mesh])
+    gpuPicker.setupScene(interactions, getExcludeList(scene))
+    let gpuCamera = gpuPicker.camera
+    gpuCamera.fov = 360
+    gpuCamera.updateProjectionMatrix()
+    gpuPicker.pick(camera.worldPosition(), camera.worldQuaternion())
+    scene.remove(mesh)
+    gpuCamera.fov = 1
+    gpuCamera.updateProjectionMatrix()
+  }, [])
 
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)

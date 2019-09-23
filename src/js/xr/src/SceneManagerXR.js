@@ -105,7 +105,6 @@ const SceneContent = connect(
     const { gl, camera, scene } = useThree()
 
     const teleportRef = useRef()
-
     // actions
     const set = useStore(state => state.set)
 
