@@ -362,7 +362,7 @@ const defaultCharacterPreset = {
 const defaultScenePreset = {
   world: {
     ground: false,
-    backgroundColor: 0xFFFFFF,
+    backgroundColor: 0xE5E5E5,
     room: {
       visible: true,
       width: 10,
@@ -485,7 +485,7 @@ const defaultScenePreset = {
 const initialScene = {
   world: {
     ground: true,
-    backgroundColor: 0xFFFFFF,
+    backgroundColor: 0xE5E5E5,
     room: {
       visible: false,
       width: 10,
