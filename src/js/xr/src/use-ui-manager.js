@@ -79,7 +79,7 @@ function drawSlider ({ ctx, width, height, state, label }) {
   // value
   ctx.save()
   ctx.fillStyle = '#6E6E6E'
-  if (state !== 0) roundRect(ctx, 0, 0, (width - 10) * state, height, 12, true, false)
+  if (state > 0) roundRect(ctx, 0, 0, (width - 10) * state, height, 12, true, false)
 
   ctx.strokeStyle = '#fff'
   ctx.lineWidth = 3
@@ -354,6 +354,7 @@ function setupHomePane (paneComponents, self) {
       height: 64,
       image: 'selection',
       onSelect: () => {
+        self.dispatch(selectObject(null))
         self.send('GO_HOME')
       }
     },
