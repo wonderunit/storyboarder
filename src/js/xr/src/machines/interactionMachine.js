@@ -88,8 +88,7 @@ const machine = Machine({
           actions: ['moveAndRotateCamera']
         },
         PRESS_END_X: {
-
-          actions: ['onPressEndX']
+          actions: ['updateDraggingController', 'onPressEndX']
         },
       }
     },
