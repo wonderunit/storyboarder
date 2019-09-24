@@ -1,7 +1,7 @@
 const THREE = require('three')
 const { useMemo } = React = require('react')
 
-const Controller = ({ gltf }) => {
+const Controller = React.memo(({ gltf, hand }) => {
   const mesh = useMemo(
     () => {
       let child = gltf.scene.children[0].clone()
@@ -20,15 +20,19 @@ const Controller = ({ gltf }) => {
     [gltf]
   )
 
+  const scale = hand === 'left'
+    ? [1, 1, 1]
+    : [-1, 1, 1]
+
   return mesh
     ? <group>
-      <primitive object={mesh} />
+      <primitive object={mesh} scale={scale} />
       <mesh name={'cursor'} visible={false}>
         <boxBufferGeometry attach="geometry" args={[0.1, 0.1, 0.1]} />
         <meshBasicMaterial attach="material" />
       </mesh>
     </group>
     : null
-}
+})
 
 module.exports = Controller

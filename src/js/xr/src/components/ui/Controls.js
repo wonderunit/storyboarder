@@ -7,7 +7,7 @@ const SCALE = 1
 const POSITION = [0, 0.02, 0.01]
 const ROTATION = [-0.8, 0, 0]
 
-const Controls = React.memo(({ gltf, mode, getCanvasRenderer }) => {
+const Controls = React.memo(({ gltf, mode, hand = 'right', getCanvasRenderer }) => {
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -39,24 +39,27 @@ const Controls = React.memo(({ gltf, mode, getCanvasRenderer }) => {
   )
 
   const mesh = useMemo(() => {
+    let offset = hand == 'right' ? 0 : 0 // 6
     switch (mode) {
       case 'home':
-        return meshes[6]
+        return meshes[6 + offset]
 
       case 'add':
-        return meshes[5]
+        return meshes[5 + offset]
 
       case 'settings':
-        return meshes[4]
+        return meshes[4 + offset]
 
       case 'properties':
-        return meshes[2]
+        return meshes[2 + offset]
 
+      case 'grid':
+        return meshes[3 + offset]
 
       default:
-        return meshes[0]
+        return meshes[0 + offset]
     }
-  }, [meshes, mode])
+  }, [meshes, mode, hand])
 
   useRender((state, delta) => {
     if (getCanvasRenderer().needsRender) {
@@ -75,7 +78,7 @@ const Controls = React.memo(({ gltf, mode, getCanvasRenderer }) => {
 
       position={POSITION}
       scale={[SCALE, SCALE, SCALE]}
-      rotation = {ROTATION}
+      rotation={ROTATION}
 
       onController={() => null}
       userData={{

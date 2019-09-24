@@ -192,7 +192,16 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
 
       // update all Mesh textures
       sceneData.traverse(child => {
-        if (child.isMesh) { child.material = materialFactory() }
+        if (child.isMesh) {
+          let material = materialFactory()
+
+          if (child.material.map) {
+            material.map = child.material.map
+            material.map.needsUpdate = true
+          }
+
+          child.material = material
+        }
       })
 
       g.add( ...sceneData.children )

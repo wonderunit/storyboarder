@@ -2,8 +2,6 @@ const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
 const { app } = require('electron').remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
-const os = require('os')
-const dns = require('dns')
 const path = require('path')
 const menu = require('../menu')
 const util = require('../utils/index')
@@ -70,6 +68,8 @@ const AudioPlayback = require('./audio-playback')
 const AudioFileControlView = require('./audio-file-control-view')
 
 const LinkedFileManager = require('./linked-file-manager')
+
+const getIpAddress = require('../utils/getIpAddress')
 
 const pkg = require('../../../package.json')
 
@@ -1318,6 +1318,11 @@ const loadBoardUI = async () => {
     // always update the sketchpane
     let layer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
     storyboarderSketchPane.setLayerOpacity(layer.index, params.value)
+    // shot-generator (if it exists) opacity mirrors reference opacity
+    let sgLayer = storyboarderSketchPane.sketchPane.layers.findByName('shot-generator')
+    if (sgLayer) {
+      storyboarderSketchPane.setLayerOpacity(sgLayer.index, params.value)
+    }
 
     // if board has a reference layer ...
     if (board.layers && board.layers.reference) {
@@ -1325,6 +1330,13 @@ const loadBoardUI = async () => {
       if (board.layers.reference.opacity !== params.value) {
         // ... update the opacity value ...
         board.layers.reference.opacity = params.value
+
+        // ... and if there is a shot generator layer ...
+        if (board.layers['shot-generator']) {
+          // ... set its opacity as well ...
+          board.layers['shot-generator'].opacity = params.value
+        }
+
         // ... and save the board file
         markBoardFileDirty()
 
@@ -3400,6 +3412,14 @@ const renderShotGeneratorPanel = () => {
 
   let onOpen = event => {
     event.preventDefault()
+
+    // briefly show loading cursor while we load the Shot Generator window
+    let el = document.querySelector('#shot-generator-container a')
+    let prev = el.style.cursor
+    el.style.cursor = 'wait'
+    setTimeout(() => {
+      el.style.cursor = prev
+    }, 2000)
 
     ipcRenderer.send('shot-generator:open', {
       storyboarderFilePath: boardFilename,
@@ -6812,13 +6832,13 @@ ipcRenderer.on('importFromWorksheet', (event, args) => {
 })
 
 ipcRenderer.on('importNotification', () => {
-  let hostname = os.hostname()
   let that = this
-  dns.lookup(hostname, function (err, add, fam) {
-    add = add != null ? add : hostname
-    let message =  "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + add + ":1888"
+
+  let ip = getIpAddress()
+  if (ip) {
+    let message = "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + ip + ":1888"
     notifications.notify({message: message, timing: 60})
-  })
+  }
 })
 
 ipcRenderer.on('importWorksheets', (event, args) => {
