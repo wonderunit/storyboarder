@@ -127,6 +127,10 @@ class LayersEditor extends EventEmitter {
     this.setReferenceOpacity(value)
   }
 
+  getReferenceOpacity () {
+    return this.storyboarderSketchPane.sketchPane.layers.findByName('reference').getOpacity()
+  }
+
   setReferenceOpacity (value) {
     console.log('LayersEditor#setReferenceOpacity', value)
     this.storyboarderSketchPane.sketchPane.layers.findByName('reference').setOpacity(value)

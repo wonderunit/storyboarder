@@ -2356,8 +2356,7 @@ let saveImageFile = async () => {
           url: filename,
 
           // special case for reference layer
-          // initialize the opacity from the LayersEditor's current value
-          // TODO keep the temp ref opacity val somewhere useful (see: #1116)
+          // match whatever the slider says
           opacity: (index === storyboarderSketchPane.sketchPane.layers.findByName('reference').index)
             ? layersEditor.getReferenceOpacity()
             : undefined
