@@ -94,11 +94,11 @@ const moveObjectZ = (object, event, worldScale) => {
 // we need ot pass controller to changed it's offset for character
 // So we are dropping offset which when, in useRender, applies to character position
 // Which definitely not good 
-const dropDraggable = (object, placesForDrop, controller) =>
+const dropDraggable = (object, placesForDrop, controller, worldScale) =>
 {
   if(object.userData.type === "character")
   { 
-    dropCharacter(object, placesForDrop, controller)
+    dropCharacter(object, placesForDrop, controller, worldScale)
   }
   else
   {
@@ -836,7 +836,8 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let placesForDrop = scene.__interaction.concat([groundRef.current])
-          dropDraggable(object, placesForDrop, controller)
+          let { worldScale } = useStoreApi.getState()
+          dropDraggable(object, placesForDrop, controller, worldScale)
           if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
             const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
             dispatch(updateObject(context.selection, {
