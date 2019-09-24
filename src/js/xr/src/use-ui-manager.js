@@ -23,7 +23,7 @@ const { setCookie, getCookie } = require('./helpers/cookies')
 const [useUiStore] = create((set, get) => ({
   // values
   switchHand: getCookie('switchHand') == 'true',
-  showCameras: getCookie('showCameras') == 'true',
+  showCameras: getCookie('showCameras') !== 'false',
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
@@ -1050,7 +1050,8 @@ class CanvasRenderer {
       }
 
       if (object.type === 'toggle-button') {
-        const cookieBoolean = getCookie(object.toggle) == 'true'
+        const cookieBoolean =
+          object.toggle === 'switchHand' ? getCookie(object.toggle) == 'true' : getCookie(object.toggle) !== 'false'
 
         ctx.save()
         ctx.translate(x, y)
@@ -1520,7 +1521,7 @@ const useUiManager = ({ playSound, stopSound }) => {
         onToggleSwitch (context, event) {
           const { toggle } = event
           const cookie = getCookie(toggle)
-          const value = !(cookie == 'true')
+          const value = !('switchHand' ? cookie == 'true' : cookie !== 'false')
           setCookie(toggle, value, 90)
 
           if (toggle === 'switchHand') setSwitchHand(value)
