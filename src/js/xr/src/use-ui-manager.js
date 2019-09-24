@@ -418,7 +418,9 @@ function setupHomePane (paneComponents, self) {
       flip: true,
 
       onSelect: () => {
-        self.send('TOGGLE_GRID')
+        const id = self.state.selections[0]
+        const sceneObject = self.state.sceneObjects[id]
+        if (sceneObject.type === 'character' || sceneObject.type === 'object') self.send('TOGGLE_GRID')
       }
     }
   }
