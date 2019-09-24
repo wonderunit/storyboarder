@@ -140,14 +140,7 @@ class XRRagdoll extends XRIKObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-    
-            let boneWp = chain.joints[chain.joints.length - 1].bone.worldPosition();
-            //boneWp.applyMatrix4(this.clonedObject.matrixWorld);
-            //chainObjects[i].controlTarget.parent.worldToLocal(boneWp);
-            chainObjects[i].controlTarget.applyMatrix(chainObjects[i].controlTarget.parent.matrixWorld);
-            chainObjects[i].controlTarget.position.copy(boneWp);
-            chainObjects[i].controlTarget.applyMatrix(chainObjects[i].controlTarget.parent.getInverseMatrixWorld());
-            chainObjects[i].controlTarget.updateMatrixWorld(true);
+
 
             let poleConstraints = this.chainObjects[i].poleConstraint;
             if(poleConstraints != null)
@@ -162,9 +155,6 @@ class XRRagdoll extends XRIKObject
             }
             chain.reinitializeJoints();
         }
-        let boneWp = this.hips.worldPosition();
-        this.hipsControlTarget.parent.worldToLocal(boneWp);
-        this.hipsControlTarget.position.copy(boneWp);
         this.calculteBackOffset();
         this.ikSwitcher.applyToIk();
         let hipsTarget = this.hipsControlTarget;
