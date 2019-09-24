@@ -496,12 +496,15 @@ for (let propertyName of ['width', 'height', 'depth']) {
   )
 }
 
-for (let morphTargetName of ['ectomorphic', 'mesomorphic', 'endomorphic']) {
-  lenses[morphTargetName] = R.lens(
-    vin => clamp(vin, 0, 1),
-    vout => clamp(steps(vout, 0.1), 0, 1)
-  )
-}
+lenses.morphTargets = R.lens(
+  // from morphTarget value to slider internal value
+  from => clamp(from, 0, 1),
+  // from slider internal value to morphTarget value
+  to => clamp(steps(to, 0.1), 0, 1)
+)
+lenses.ectomorphic = lenses.morphTargets
+lenses.mesomorphic = lenses.morphTargets
+lenses.endomorphic = lenses.morphTargets
 
 class CanvasRenderer {
   constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath) {
@@ -611,9 +614,15 @@ class CanvasRenderer {
       }
 
       if (modelSettings && modelSettings.validMorphTargets) {
-        modelSettings.validMorphTargets.forEach((morphTargetName, n) => {
-          const label = morphTargetName === 'endomorphic' ? 'obese' : morphTargetName.replace('morphic', '')
-          propertyArray.push({ name: morphTargetName, label })
+        modelSettings.validMorphTargets.forEach((morphTargetName) => {
+          let label = 'Morph Target'
+          if (morphTargetName == 'ectomorphic') label = 'Skinny'
+          if (morphTargetName == 'mesomorphic') label = 'Muscular'
+          if (morphTargetName == 'endomorphic') label = 'Obese'
+          propertyArray.push({
+            name: morphTargetName,
+            label
+          })
         })
       }
 

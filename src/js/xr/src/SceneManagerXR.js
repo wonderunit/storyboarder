@@ -46,6 +46,7 @@ const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
+const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
 
 const Controls = require('./components/ui/Controls')
 
@@ -104,7 +105,6 @@ const SceneContent = connect(
     const { gl, camera, scene } = useThree()
 
     const teleportRef = useRef()
-
     // actions
     const set = useStore(state => state.set)
 
@@ -399,13 +399,17 @@ const SceneContent = connect(
 
           {controllers.filter(Boolean).map(controller =>
             <primitive key={controller.uuid} object={controller} >
-              <Controller gltf={resources.controllerGltf} />
+              <Controller
+                gltf={resources.controllerGltf}
+                hand={navigator.getGamepads()[controller.userData.gamepad.index].hand}
+              />
               {
                 navigator.getGamepads()[controller.userData.gamepad.index] &&
                 navigator.getGamepads()[controller.userData.gamepad.index].hand === (switchHand ? 'left' : 'right') &&
                 <Controls
                   gltf={resources.controlsGltf}
                   mode={uiCurrent.value.controls}
+                  hand={switchHand ? 'left' : 'right'}
                   getCanvasRenderer={getCanvasRenderer} />
               }
             </primitive>
@@ -429,12 +433,14 @@ const SceneContent = connect(
           {
             characterIds.map(id =>
               getAsset(getFilepathForModelByType(sceneObjects[id]))
-                ? <Character
-                  key={id}
-                  gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
-                  sceneObject={sceneObjects[id]}
-                  modelSettings={models[sceneObjects[id].model] || undefined}
-                  isSelected={selections.includes(id)} />
+                ? <SimpleErrorBoundary key={id}>
+                  <Character
+                    key={id}
+                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
+                    sceneObject={sceneObjects[id]}
+                    modelSettings={models[sceneObjects[id].model] || undefined}
+                    isSelected={selections.includes(id)} />
+                </SimpleErrorBoundary>
                 : null
             )
           }
@@ -457,11 +463,13 @@ const SceneContent = connect(
                 ? getAsset(getFilepathForModelByType(sceneObject))
                 : null
 
-              return <ModelObject
-                key={id}
-                gltf={gltf}
-                sceneObject={sceneObject}
-                isSelected={selections.includes(id)} />
+              return <SimpleErrorBoundary key={id}>
+                <ModelObject
+                  key={id}
+                  gltf={gltf}
+                  sceneObject={sceneObject}
+                  isSelected={selections.includes(id)} />
+              </SimpleErrorBoundary>
             })
           }
 
@@ -472,7 +480,7 @@ const SceneContent = connect(
                 gltf={resources.lightGltf}
                 sceneObject={sceneObjects[id]}
                 isSelected={selections.includes(id)}
-                texture={resources.teleportTexture} />
+                worldScale={worldScale} />
             )
           }
           {
@@ -499,13 +507,15 @@ const SceneContent = connect(
               type: 'environment',
               model: world.environment.file
             }))
-              ? <Environment
-                gltf={getAsset(getFilepathForModelByType({
-                  type: 'environment',
-                  model: world.environment.file
-                }))}
-                environment={world.environment}
-                visible={world.environment.visible} />
+              ? <SimpleErrorBoundary>
+                <Environment
+                  gltf={getAsset(getFilepathForModelByType({
+                    type: 'environment',
+                    model: world.environment.file
+                  }))}
+                  environment={world.environment}
+                  visible={world.environment.visible} />
+              </SimpleErrorBoundary>
               : null
           }
 
@@ -645,6 +655,16 @@ const SceneManagerXR = () => {
     if (isLoading && !sceneObjectsPreloaded && remaining.length === 0) {
       setSceneObjectsPreloaded(true)
       setIsLoading(false)
+
+      let assetsWithErrors = Object.entries(assets).reduce((arr, [key, asset]) => {
+        if (asset.status == 'Error') {
+          arr[key] = asset
+        }
+        return arr
+      }, {})
+      Object.entries(assetsWithErrors).forEach(([uri, asset]) => {
+        console.error('Could not load', uri)
+      })
     } else if (remaining.length > 0) {
       setIsLoading(true)
     }

@@ -34,7 +34,7 @@ class LayersEditor extends EventEmitter {
         this.clearLayer('reference')
         sfx.down(-1, 0)
         sfx.playEffect('trash')
-        notifications.notify({ message: 'Cleared light layer.', timing: 5 })
+        notifications.notify({ message: 'Cleared reference layer.', timing: 5 })
       })
     // document.querySelector('.layers-ui-main-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 1))
     document
@@ -57,7 +57,7 @@ class LayersEditor extends EventEmitter {
         sfx.negative()
         notifications.notify({
           message:
-            'Merged the light layer up to the fill layer. The light layer is now baked into the fill layer. If this is not what you want, undo now!',
+            'Merged the reference layer up to the fill layer. The reference layer is now baked into the fill layer. If this is not what you want, undo now!',
           timing: 5
         })
       })
