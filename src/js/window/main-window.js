@@ -1312,47 +1312,51 @@ const loadBoardUI = async () => {
   }, true)
 
   layersEditor = new LayersEditor(storyboarderSketchPane, sfx, notifications)
-  layersEditor.on('opacity', async params => {
+  layersEditor.on('opacity', async () => {
     let board = boardData.boards[currentBoard]
 
-    // always update the sketchpane
-    let layer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
-    storyboarderSketchPane.setLayerOpacity(layer.index, params.value)
-    // shot-generator (if it exists) opacity mirrors reference opacity
-    let sgLayer = storyboarderSketchPane.sketchPane.layers.findByName('shot-generator')
-    if (sgLayer) {
-      storyboarderSketchPane.setLayerOpacity(sgLayer.index, params.value)
-    }
+    if (board.layers) {
+      // if board has a reference layer ...
+      if (board.layers.reference) {
+        let refLayer = storyboarderSketchPane.sketchPane.layers.findByName('reference')
+        // ... and the opacity value is stale ...
+        if (board.layers.reference.opacity !== refLayer.getOpacity()) {
+          // ... update the opacity value ...
+          board.layers.reference.opacity = refLayer.getOpacity()
 
-    // if board has a reference layer ...
-    if (board.layers && board.layers.reference) {
-      // ... and the opacity value is stale ...
-      if (board.layers.reference.opacity !== params.value) {
-        // ... update the opacity value ...
-        board.layers.reference.opacity = params.value
+          // ... and save the board file
+          markBoardFileDirty()
 
-        // ... and if there is a shot generator layer ...
-        if (board.layers['shot-generator']) {
-          // ... set its opacity as well ...
-          board.layers['shot-generator'].opacity = params.value
+          // update posterframe and thumbnail
+          markImageFileDirty([refLayer.index])
         }
+      }
 
-        // ... and save the board file
-        markBoardFileDirty()
+      // if board has a shot generator layer ...
+      if (board.layers['shot-generator']) {
+        let sgLayer = storyboarderSketchPane.sketchPane.layers.findByName('shot-generator')
+        // ... and the opacity value is stale ...
+        if (board.layers['shot-generator'].opacity !== sgLayer.getOpacity()) {
+          // ... update the opacity value ...
+          board.layers['shot-generator'].opacity = sgLayer.getOpacity()
 
-        // update posterframe and thumbnail
-        markImageFileDirty([layer.index])
+          // ... and save the board file
+          markBoardFileDirty()
 
-        // alternately, to immediately update ONLY posterframe and thumbnail:
-        /*
-        // update the posterframe
-        await savePosterFrame(board, false)
-        // update the thumbnail
-        let index = await saveThumbnailFile(boardData.boards.indexOf(board))
-        await updateThumbnailDisplayFromFile(index)
-        */
+          // update posterframe and thumbnail
+          markImageFileDirty([sgLayer.index])
+        }
       }
     }
+
+    // alternately, to immediately update ONLY posterframe and thumbnail:
+    /*
+    // update the posterframe
+    await savePosterFrame(board, false)
+    // update the thumbnail
+    let index = await saveThumbnailFile(boardData.boards.indexOf(board))
+    await updateThumbnailDisplayFromFile(index)
+    */
   })
   storyboarderSketchPane.on('requestPointerDown', () => {
     // if artist is drawing on the reference layer, ensure it has opacity
@@ -3812,13 +3816,8 @@ function * loadSketchPaneLayers (signal, board, indexToLoad) {
   // if a link exists, lock the board
   storyboarderSketchPane.setIsLocked(board.link != null)
 
-  // load opacity from data, if data exists
-  let referenceOpacity = board.layers &&
-                         board.layers.reference &&
-                         typeof board.layers.reference.opacity !== 'undefined'
-    ? board.layers.reference.opacity
-    : exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
-  layersEditor.setReferenceOpacity(referenceOpacity)
+  // set layer opacity
+  layersEditor.loadReferenceOpacity(board)
 
   clearPosterFrame()
 
@@ -6995,6 +6994,8 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
       data
     }
   }
+  // force the reference layer opacity to be 100
+  layersEditor.setReferenceOpacity(1)
 
   // update the reference
   board = boardData.boards[index]
