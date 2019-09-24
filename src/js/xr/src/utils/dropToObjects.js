@@ -22,7 +22,7 @@ const dropObject = (object, dropToObjects) =>
     object.updateMatrixWorld(true);
 }
 
-const dropCharacter = (character, dropToObjects, controller) =>
+const dropCharacter = (character, dropToObjects) =>
 {
     let skinnedMesh = character
     if(!skinnedMesh.isSkinnedMesh)
@@ -43,8 +43,8 @@ const dropCharacter = (character, dropToObjects, controller) =>
     character.position.copy(dropPlace.point)
     character.position.add(offset)
     positionDifference.sub(character.worldPosition())
-    controller.userData.selectOffset.add(positionDifference)
     character.updateMatrixWorld(true)
+    return positionDifference
 }
 
 

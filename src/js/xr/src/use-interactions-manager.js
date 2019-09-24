@@ -94,14 +94,13 @@ const moveObjectZ = (object, event, worldScale) => {
 // we need ot pass controller to changed it's offset for character
 // So we are dropping offset which when, in useRender, applies to character position
 // Which definitely not good 
-const dropDraggable = (object, placesForDrop, controller) =>
-{
-  if(object.userData.type === "character")
-  { 
-    dropCharacter(object, placesForDrop, controller)
-  }
-  else
-  {
+const dropDraggable = (object, placesForDrop, controller) => {
+  if (object.userData.type === 'character') {
+    let positionDifference = dropCharacter(object, placesForDrop, controller)
+    if (controller.userData.selectOffset) {
+      controller.userData.selectOffset.add(positionDifference)
+    }
+  } else {
     dropObject(object, placesForDrop)
   }
 }
