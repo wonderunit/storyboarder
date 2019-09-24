@@ -620,6 +620,9 @@ class LineDrawingStrategy {
   }
 
   _onPointerDown (e) {
+    // trigger layer opacity check
+    this.context.emit('beforePointerDown')
+
     let nextEvent
 
     if (this.state.started) {
@@ -672,9 +675,6 @@ class LineDrawingStrategy {
 
     // audible event for Sonifier
     this.context.emit('pointerdown', this.context.sketchPane.localizePoint(nextEvent))
-
-    // just triggers layer opacity check
-    this.context.emit('requestPointerDown')
   }
 
   _onPointerMove (e) {
@@ -787,6 +787,9 @@ class DrawingStrategy {
 
   // TODO could store multiErase status / erase layer array in a reducer?
   _onPointerDown (e) {
+    // trigger layer opacity check
+    this.context.emit('beforePointerDown')
+
     this._idleTimer && this._idleTimer.reset()
 
     this.context.store.dispatch({ type: 'TOOLBAR_MODE_STATUS_SET', payload: 'busy', meta: { scope: 'local' } })
@@ -837,9 +840,6 @@ class DrawingStrategy {
 
     // audible event for Sonifier
     this.context.emit('pointerdown', this.context.sketchPane.localizePoint(e))
-
-    // just triggers layer opacity check
-    this.context.emit('requestPointerDown')
   }
 
   _onPointerMove (e) {
