@@ -106,7 +106,6 @@ class LayersEditor extends EventEmitter {
   }
 
   loadReferenceOpacity (board) {
-    console.log('LayersEditor#loadReferenceOpacity')
     let value = DEFAULT_REFERENCE_LAYER_OPACITY
 
     // if there is layer data ...
@@ -114,13 +113,9 @@ class LayersEditor extends EventEmitter {
       // ... prefer the reference layer opacity ...
       if (board.layers.reference && board.layers.reference.opacity != null) {
         value = board.layers.reference.opacity
-        console.log('...from reference', value)
-
       // ... otherwise, try for the shot-generator opacity ...
       } else if (board.layers['shot-generator'] && board.layers['shot-generator'].opacity != null) {
         value = board.layers['shot-generator'].opacity
-        console.log('...from shot-generator', value)
-
       }
     }
 
@@ -132,7 +127,6 @@ class LayersEditor extends EventEmitter {
   }
 
   setReferenceOpacity (value) {
-    console.log('LayersEditor#setReferenceOpacity', value)
     this.storyboarderSketchPane.sketchPane.layers.findByName('reference').setOpacity(value)
     this.storyboarderSketchPane.sketchPane.layers.findByName('shot-generator').setOpacity(value)
     this.render()
@@ -141,7 +135,6 @@ class LayersEditor extends EventEmitter {
 
   render () {
     let value = this.storyboarderSketchPane.sketchPane.layers.findByName('reference').getOpacity()
-    console.log('LayersEditor#render', value)
     document.querySelector('.layers-ui-reference-opacity').value = value * 100
   }
 }
