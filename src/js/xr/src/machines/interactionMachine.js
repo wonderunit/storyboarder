@@ -88,7 +88,6 @@ const machine = Machine({
           actions: ['moveAndRotateCamera']
         },
         PRESS_END_X: {
-          cond: 'sameControllerOnSnappableObject',
           actions: 'onPressEndX'
         },
       }
@@ -116,7 +115,6 @@ const machine = Machine({
           target: 'selected'
         },
         PRESS_END_X: {
-          cond: 'sameControllerOnSnappableObject',
           actions: 'onPressEndX'
         },
       }
