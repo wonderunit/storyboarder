@@ -310,6 +310,20 @@ function drawGrid(ctx, x, y , width, height, items, type) {
     }
   }
 
+  this.paneComponents['grid']['scrollbar'] = {
+    id: 'scrollbar',
+    type: 'button',
+    x: width + 37 - 6,
+    y,
+    width: 24,
+    height,
+    onDrag: (x, y) => {
+      const { grids } = this.state
+      grids[type].scrollTop = Math.min(Math.max((gridHeight - height) * y, 0), Math.max(gridHeight - height, 0))
+      this.needsRender = true
+    }
+  }
+
   // Indicator
   ctx.restore()
   const scrollPosition = this.state.grids[type].scrollTop / (gridHeight - height)
