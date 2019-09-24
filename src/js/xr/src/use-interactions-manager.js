@@ -94,11 +94,11 @@ const moveObjectZ = (object, event, worldScale) => {
 // we need ot pass controller to changed it's offset for character
 // So we are dropping offset which when, in useRender, applies to character position
 // Which definitely not good 
-const dropDraggable = (object, placesForDrop, controller, worldScale) =>
+const dropDraggable = (object, placesForDrop, controller) =>
 {
   if(object.userData.type === "character")
   { 
-    dropCharacter(object, placesForDrop, controller, worldScale)
+    dropCharacter(object, placesForDrop, controller)
   }
   else
   {
@@ -837,7 +837,7 @@ const useInteractionsManager = ({
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let placesForDrop = scene.__interaction.concat([groundRef.current])
           let { worldScale } = useStoreApi.getState()
-          dropDraggable(object, placesForDrop, controller, worldScale)
+          dropDraggable(object, placesForDrop, controller)
           if(interactionService.state.value === 'selected')
           {
             if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
