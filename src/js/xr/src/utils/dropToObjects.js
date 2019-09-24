@@ -19,9 +19,10 @@ const dropObject = (object, dropToObjects) =>
     object.parent.worldToLocal(dropPlace.point)
     object.position.copy(dropPlace.point)
     object.position.sub(lowerCenter)
+    object.updateMatrixWorld(true);
 }
 
-const dropCharacter = (character, dropToObjects, controller, worldScale) =>
+const dropCharacter = (character, dropToObjects, controller) =>
 {
     let skinnedMesh = character
     if(!skinnedMesh.isSkinnedMesh)
@@ -32,7 +33,6 @@ const dropCharacter = (character, dropToObjects, controller, worldScale) =>
     lowestBone.getWorldPosition(worldPositionLowestBone)
     raycaster.ray.origin.copy(worldPositionLowestBone)
     let dropPlace = raycaster.intersectObjects(dropToObjects, true)[0]
-    console.log(dropPlace)
     if(!dropPlace ) return 
     
     let lowestBonePosition = lowestBone.worldPosition()

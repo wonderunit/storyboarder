@@ -88,7 +88,8 @@ const machine = Machine({
           actions: ['moveAndRotateCamera']
         },
         PRESS_END_X: {
-          actions: 'onPressEndX'
+
+          actions: ['onPressEndX']
         },
       }
     },
@@ -192,6 +193,7 @@ const machine = Machine({
   guards: {
     selectionPresent: (context, event) => context.selection != null,
     selectionNil: (context, event) => event.intersection == null,
+    //setRediractedModeSelect : (context, event) => 
 
     eventHasSceneObjectIntersection: (context, event) => event.intersection != null && ['object', 'character', 'light', 'virtual-camera'].includes(event.intersection.type),
     eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.bone,
