@@ -823,9 +823,8 @@ const useInteractionsManager = ({
             playSound('teleport')
           }
         },
-        onPressEndX: (context, event) =>
-        {
-          let controller = gl.vr.getController(context.draggingController)
+        onDropLowest: (context, event) => {
+          let controller = gl.vr.getController(event.controller)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let placesForDrop = scene.__interaction.concat([groundRef.current])
           let { worldScale } = useStoreApi.getState()

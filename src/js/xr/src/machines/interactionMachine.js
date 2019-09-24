@@ -88,7 +88,7 @@ const machine = Machine({
           actions: ['moveAndRotateCamera']
         },
         PRESS_END_X: {
-          actions: ['updateDraggingController', 'onPressEndX']
+          actions: 'onDropLowest'
         },
       }
     },
@@ -115,7 +115,7 @@ const machine = Machine({
           target: 'selected'
         },
         PRESS_END_X: {
-          actions: 'onPressEndX'
+          actions: 'onDropLowest'
         },
       }
     },
