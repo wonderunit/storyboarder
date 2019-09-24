@@ -524,14 +524,6 @@ const useInteractionsManager = ({
 
     if (match) {
       // Simple test to check how drop works
-      if(match.userData.type === "character")
-      {
-        console.log(dropCharacter(match, list))
-      }
-      else
-      {
-        console.log(dropObject(match, list))
-      }
       interactionService.send({
         type: 'GRIP_DOWN',
         controller: event.target,
