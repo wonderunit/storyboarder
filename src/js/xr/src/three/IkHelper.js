@@ -1,9 +1,7 @@
 const THREE = require("three");
 const RagDoll = require("../three/IK/XrRagdoll");
-const {createTransformationControls} = require("../../../shot-generator/IK/utils/axisUtils");
 require('./GPUPickers/utils/Object3dExtension');
 let instance = null;
-let boneMatrix = new THREE.Matrix4();
 class IKHelper extends THREE.Object3D
 {
     constructor(mesh)
@@ -27,9 +25,8 @@ class IKHelper extends THREE.Object3D
 
     initialize(skinnedMesh)
     {
-        let bones = skinnedMesh.skeleton.bones;
-        let originalInverseMatrix = bones[0].parent.getInverseMatrixWorld();
         let ragDoll = instance.ragDoll;
+        let bones = skinnedMesh.skeleton.bones;
         for(let i = 0; i < bones.length; i++)
         {
             let bone = bones[i];
@@ -37,14 +34,10 @@ class IKHelper extends THREE.Object3D
             bone.name === "LeftHand" || bone.name === "RightHand" ||
             bone.name === "Head" || bone.name === "Hips")
             {
-                boneMatrix.multiplyMatrices( originalInverseMatrix, bone.matrixWorld );
                 let controlPoint = this.controlPoints[bone.name];
-                controlPoint.position.setFromMatrixPosition(boneMatrix);
-                controlPoint.position.y -= 0.05;
                 controlPoint.scale.set(0.5, 0.1, 0.5)
                 controlPoint.userData.id = skinnedMesh.uuid;
                 controlPoint.name = bone.name;
-                
             }
         }
         ragDoll.initObject(this, skinnedMesh.parent.parent, Object.values(this.controlPoints));
@@ -55,6 +48,7 @@ class IKHelper extends THREE.Object3D
     {
         this.ragDoll.isEnabledIk = true;
         this.selectedControlPoint = this.controlPoints[name];
+        console.log(this.selectedControlPoint.clone());
         if(name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
@@ -64,7 +58,8 @@ class IKHelper extends THREE.Object3D
     deselectControlPoint()
     {
         if(this.selectedControlPoint)
-        {
+        {  
+            console.log(this.selectedControlPoint.clone());
             this.ragDoll.isEnabledIk = false;
             instance.attach(this.selectedControlPoint);
             if(this.selectedControlPoint.name === "Hips")

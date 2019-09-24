@@ -725,7 +725,7 @@ const useInteractionsManager = ({
     {
       //TODO() Manipulate selected control point here
       // make a function out of render and just call it
-       IKHelper.getInstance().update()
+       //IKHelper.getInstance().update()
       //console.log('dragging control point', context)
     }
   }, false, [set, controllers])

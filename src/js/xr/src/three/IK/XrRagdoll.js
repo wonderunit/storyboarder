@@ -8,6 +8,15 @@ require("../../../../shot-generator/IK/utils/Object3dExtension");
 //const {calculatePoleAngle, normalizeTo180} = require("../../utils/axisUtils");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
+let boneMatrix = new THREE.Matrix4();
+let tempMatrix = new THREE.Matrix4();
+let armatureInverseMatrixWorld = new THREE.Matrix4();
+const takeBoneOutOfMeshSpace = (mesh, bone) =>
+{
+    armatureInverseMatrixWorld = mesh.skeleton.bones[0].parent.getInverseMatrixWorld();
+    tempMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
+    return tempMatrix;
+}
 class XRRagdoll extends XRIKObject
 {
     constructor()
@@ -30,11 +39,11 @@ class XRRagdoll extends XRIKObject
     initObject(scene, object, controlTargets )
     {
         super.initObject(scene, object, controlTargets );
-        
+
         //this.ragdollEvents = new RagdollEvents(this);
         // Adds events to Back control
         //this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
-        this.createPoleTargets();
+       // this.createPoleTargets();
      /*    this.ragdollEvents.addHipsEvent();
         this.ragdollEvents.setUpControlsEvents(); */
         this.setUpControlTargetsInitialPosition();
@@ -91,14 +100,15 @@ class XRRagdoll extends XRIKObject
             }
          */
         this.ikSwitcher.applyToIk();
-        this.resetTargets()
+        //this.resetTargets()
+        this.resetControlPoints();
            // this.ikSwitcher.applyToIk();
         }
         else
         {
             if(this.applyingOffset)
             {
-                this.resetPoleTarget();
+               // this.resetPoleTarget();
             }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
@@ -106,7 +116,7 @@ class XRRagdoll extends XRIKObject
             this.relativeFixedAngle();
         }
         
-        this.moveRagdoll();
+        //this.moveRagdoll();
     }
 
     // Runs after update to apply changes to object after ik solved
@@ -155,6 +165,7 @@ class XRRagdoll extends XRIKObject
             }
             chain.reinitializeJoints();
         }
+        this.resetControlPoints();
         this.calculteBackOffset();
         this.ikSwitcher.applyToIk();
         let hipsTarget = this.hipsControlTarget;
@@ -227,6 +238,29 @@ class XRRagdoll extends XRIKObject
         hipsOffset.add(this.hips.position);
         hipsOffset.add(offset);
         poleTarget.poleOffset = hipsOffset;
+    }
+
+    resetControlPoints()
+    {
+        let chainObjects = this.chainObjects;
+
+        boneMatrix = takeBoneOutOfMeshSpace(this.rigMesh, this.hips);
+        this.hipsControlTarget.position.setFromMatrixPosition(boneMatrix);
+
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i].chain;
+            let jointBone = chain.joints[chain.joints.length - 1].bone;
+            // Sets target position to ik last joints in each chain 
+            if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
+            jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
+            jointBone.name === "Head")
+            {
+                boneMatrix = takeBoneOutOfMeshSpace(this.rigMesh, jointBone);
+                chainObjects[i].controlTarget.position.setFromMatrixPosition(boneMatrix);
+            }
+        }
+        this.calculteBackOffset();
     }
 
     // Resets pole target position when object moved his hips position changed

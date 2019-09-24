@@ -119,6 +119,12 @@ class XrIkObject
         // Adds skeleton helper to scene
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
+/*         let matrix = new THREE.Matrix4();
+        let originalInverseMatrix = objectSkeleton.getInverseMatrixWorld(); */
+        const helper = new THREE.IKHelper(this.ik);
+        //objectSkeleton.parent.add(helper);
+/*         matrix.multiplyMatrices( originalInverseMatrix, helper.matrixWorld );
+        helper.position.setFromMatrixPosition(matrix); */
         //helper.applyMatrix(scene.matrixWorld);
     }
 

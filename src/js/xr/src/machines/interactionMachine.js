@@ -59,6 +59,7 @@ const machine = Machine({
           },
           {
             cond: 'eventHasControlPointIntersection',
+            actions: ['updateDraggingController'],
             target: 'drag_control_point'
           },
           // anything selected that's not a bone can be dragged
