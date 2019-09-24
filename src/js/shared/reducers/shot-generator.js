@@ -162,6 +162,19 @@ const migrateRotations = sceneObjects =>
       return o
     }, {})
 
+const migrateWorldLights = world => ({
+  ...world,
+
+  // migrate older scenes which were missing ambient and directional light settings
+  ambient: world.ambient || initialScene.world.ambient,
+  directional: world.directional || initialScene.world.directional
+})
+
+const migrateWorldFog = world => ({
+  ...world,
+  fog: world.fog || initialScene.world.fog
+})
+
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
 
@@ -342,7 +355,7 @@ const withDisplayNames = draft => {
 
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
- 
+
 // reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
 const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
 
@@ -385,6 +398,10 @@ const defaultScenePreset = {
       intensity: 0.5,
       rotation: -0.9,
       tilt: 0.75
+    },
+    fog: {
+      visible: true,
+      far: 40
     }
   },
   sceneObjects: {
@@ -508,6 +525,10 @@ const initialScene = {
       intensity: 0.5,
       rotation: -0.9,
       tilt: 0.75
+    },
+    fog: {
+      visible: true,
+      far: 40
     }
   },
   sceneObjects: {
@@ -711,7 +732,9 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'LOAD_SCENE':
         return withDisplayNames(
           resetLoadingStatus(
-            migrateRotations(action.payload.sceneObjects)
+            migrateRotations(
+              action.payload.sceneObjects
+            )
           )
         )
 
@@ -847,7 +870,7 @@ const activeCameraReducer = (state = initialScene.activeCamera, action) => {
 
       case 'SET_ACTIVE_CAMERA':
         return action.payload
-      
+
       default:
         return
     }
@@ -883,14 +906,11 @@ const worldReducer = (state = initialState.undoable.world, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
-        let result = {
-          ...action.payload.world,
-
-          // migrate older scenes which were missing ambient and directional light settings
-          ambient: action.payload.world.ambient || initialScene.world.ambient,
-          directional: action.payload.world.directional || initialScene.world.directional
-        }
-        return result
+        return migrateWorldLights(
+          migrateWorldFog(
+            action.payload.world
+          )
+        )
 
       case 'UPDATE_WORLD':
         if (action.payload.hasOwnProperty('ground')) {
@@ -941,6 +961,15 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         }
         if (action.payload.tiltDirectional != null) {
           draft.directional.tilt = action.payload.tiltDirectional
+        }
+        return
+
+      case 'UPDATE_WORLD_FOG':
+        if (action.payload.hasOwnProperty('visible')) {
+          draft.fog.visible = action.payload.visible
+        }
+        if (action.payload.hasOwnProperty('far')) {
+          draft.fog.far = action.payload.far
         }
         return
 
@@ -1000,24 +1029,24 @@ const mainReducer = (state/* = initialState*/, action) => {
       // case 'SET_INPUT_ACCEL':
       //   draft.input.accel = action.payload
       //   return
-      // 
+      //
       //   case 'SET_INPUT_MAG':
       //   draft.input.mag = action.payload
       //   return
-      // 
+      //
       //   case 'SET_INPUT_SENSOR':
       //   draft.input.sensor = action.payload
       //   return
-      // 
+      //
       // case 'SET_INPUT_DOWN':
       //   draft.input.down = action.payload
       //   return
-      // 
+      //
       // case 'SET_INPUT_MOUSEMODE':
       //   draft.input.mouseMode = action.payload
       //   return
-      // 
-      // case 'SET_INPUT_ORBITMODE':          
+      //
+      // case 'SET_INPUT_ORBITMODE':
       //   draft.input.orbitMode = action.payload
       //   return
 
@@ -1218,7 +1247,7 @@ module.exports = {
 
   // batch update
   updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
-  
+
   deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
 
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
@@ -1232,7 +1261,7 @@ module.exports = {
     payload: { id, name, rotation }
   }),
 
-  updateCharacterIkSkeleton: ({ id, skeleton }) => 
+  updateCharacterIkSkeleton: ({ id, skeleton }) =>
   ({
     type: 'UPDATE_CHARACTER_IK_SKELETON',
     payload: { id, skeleton }
@@ -1262,13 +1291,14 @@ module.exports = {
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
   updateWorldEnvironment: payload => ({ type: 'UPDATE_WORLD_ENVIRONMENT', payload }),
+  updateWorldFog: payload => ({ type: 'UPDATE_WORLD_FOG', payload }),
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
 
   updateServer: payload => ({ type: 'UPDATE_SERVER', payload }),
 
   setBoard: payload => ({ type: 'SET_BOARD', payload }),
-  
+
   markSaved: () => ({ type: 'MARK_SAVED' }),
 
   toggleWorkspaceGuide: payload => ({ type: 'TOGGLE_WORKSPACE_GUIDE', payload }),

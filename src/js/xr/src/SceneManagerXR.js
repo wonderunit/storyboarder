@@ -137,10 +137,23 @@ const SceneContent = connect(
     const switchHand = useUiStore(state => state.switchHand)
     const showCameras = useUiStore(state => state.showCameras)
 
+    const fog = useRef()
+    const getFog = () => {
+      if (!fog.current) {
+        fog.current = new THREE.Fog(world.backgroundColor, -10, world.fog.far)
+      }
+      return fog.current
+    }
+
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
-      scene.fog = new THREE.Fog(world.backgroundColor, -10, 40)
-    }, [world.backgroundColor])
+
+      getFog().backgroundColor = world.backgroundColor
+      getFog().far = world.fog.far
+      scene.fog = world.fog.visible
+        ? getFog()
+        : null
+    }, [world.backgroundColor, world.fog.visible, world.fog.far])
 
     let statsComponent = null
     if (SHOW_STATS) {
