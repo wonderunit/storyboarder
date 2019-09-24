@@ -39,12 +39,9 @@ const dropCharacter = (character, dropToObjects) =>
     character.parent.worldToLocal(lowestBonePosition)
     character.parent.worldToLocal(dropPlace.point)
     let offset = new THREE.Vector3().subVectors(character.position, lowestBonePosition)
-    let positionDifference = character.worldPosition().clone()
     character.position.copy(dropPlace.point)
     character.position.add(offset)
-    positionDifference.sub(character.worldPosition())
     character.updateMatrixWorld(true)
-    return positionDifference
 }
 
 

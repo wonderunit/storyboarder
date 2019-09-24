@@ -90,20 +90,6 @@ const moveObjectZ = (object, event, worldScale) => {
     object.position.z = Math.min(object.position.z, -0.5 * worldScaleMult)
   }
 }
-// NOTE() : Currently character depends on selectOffset for that reason
-// we need ot pass controller to changed it's offset for character
-// So we are dropping offset which when, in useRender, applies to character position
-// Which definitely not good 
-const dropDraggable = (object, placesForDrop, controller) => {
-  if (object.userData.type === 'character') {
-    let positionDifference = dropCharacter(object, placesForDrop, controller)
-    if (controller.userData.selectOffset) {
-      controller.userData.selectOffset.add(positionDifference)
-    }
-  } else {
-    dropObject(object, placesForDrop)
-  }
-}
 
 const rotateObjectY = (object, event) => {
   if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
@@ -847,12 +833,27 @@ const useInteractionsManager = ({
           }
         },
         onDropLowest: (context, event) => {
-          let controller = gl.vr.getController(event.controller)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let placesForDrop = scene.__interaction.concat([groundRef.current])
           let { worldScale } = useStoreApi.getState()
-          dropDraggable(object, placesForDrop, controller)
 
+          if (object.userData.type === 'character') {
+            let positionDifference = object.worldPosition().clone()
+            dropCharacter(object, placesForDrop)
+            positionDifference.sub(object.worldPosition())
+
+            // if a controller is dragging the character ...
+            if (context.draggingController != null) {
+              // ... find out which controller it is
+              let controller = gl.vr.getController(context.draggingController)
+              // ... and add the difference to that controller's selectOffset
+              controller.userData.selectOffset.add(positionDifference)
+            }
+          } else {
+            dropObject(object, placesForDrop)
+          }
+
+          // if we're in `selected` mode, we can commit the change immediately
           if (interactionService.state.value === 'selected') {
             commit(context.selection, object)
           }
