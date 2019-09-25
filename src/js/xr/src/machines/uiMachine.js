@@ -68,7 +68,8 @@ const machine = Machine({
             'ADD_OBJECT': { actions: 'onAddObject' },
             'REQUEST_DUPLICATE': { actions: 'onDuplicate' },
             'REQUEST_DELETE': { actions: 'onDelete' },
-            'TOGGLE_SWITCH': { actions: 'onToggleSwitch' }
+            'TOGGLE_SWITCH': { actions: 'onToggleSwitch' },
+            'TOGGLE_HELP': { actions: 'onToggleHelp' }
           }
         },
         locked: {

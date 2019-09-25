@@ -37,10 +37,12 @@ const [useUiStore] = create((set, get) => ({
   // values
   switchHand: getCookie('switchHand') == 'true',
   showCameras: getCookie('showCameras') !== 'false',
+  showHelp: false,
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
+  setShowHelp: value => set(produce(state => { state.showHelp = !state.showHelp })),
 
   set: fn => set(produce(fn))
 }))
@@ -612,6 +614,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
   const setShowCameras = useUiStore(state => state.setShowCameras)
+  const setShowHelp = useUiStore(state => state.setShowHelp)
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
@@ -838,6 +841,10 @@ const useUiManager = ({ playSound, stopSound }) => {
           if (toggle === 'showCameras') setShowCameras(value)
           getCanvasRenderer().needsRender = true
           playSound('select')
+        },
+
+        onToggleHelp (context, event) {
+          setShowHelp()
         }
       }
     }
@@ -894,7 +901,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
 const UI_ICON_NAMES = [
   'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
-  'close',
+  'close', 'settings',
 
   'camera', 'eye',
 

@@ -55,15 +55,14 @@ const setupHomePane = (paneComponents, self) => {
     'settings-button': {
       id: 'settings-button',
       type: 'image-button',
-      x: 909 + 10,
-      y: 684 + 10,
+      x: 909 + 12,
+      y: 684 + 12,
       width: 64,
       height: 64,
-      image: 'help',
+      image: 'settings',
 
       onSelect: () => {
         self.send('TOGGLE_SETTINGS')
-        console.log('sup')
       }
     },
     'extend-button': {
@@ -158,16 +157,16 @@ const setupSettingsPane = (paneComponents, self) => {
       id: 'settings',
       type: 'text',
       x: 0 + 30,
-      y: 684 + 20,
+      y: 684 + 30,
       label: 'Settings',
-      size: 48
+      size: 36
     },
 
     'switch-hand': {
       id: 'switch-hand',
       type: 'text',
       x: 0 + 30,
-      y: 684 + 20 + 48 + 30 + 40 - 12,
+      y: 684 + 325 - 80 - 25 - 80 - 25 + 40 - 12,
       label: 'Switch Hand',
       size: 24
     },
@@ -176,7 +175,7 @@ const setupSettingsPane = (paneComponents, self) => {
       id: 'show-cameras',
       type: 'text',
       x: 0 + 30,
-      y: 684 + 20 + 48 + 30 + 80 + 30 + 40 - 12,
+      y: 684 + 325 - 80 - 25 + 40 - 12,
       label: 'Show Cameras',
       size: 24
     },
@@ -186,7 +185,7 @@ const setupSettingsPane = (paneComponents, self) => {
       type: 'toggle-button',
       toggle: 'switchHand',
       x: 0 + 30 + 200,
-      y: 684 + 20 + 48 + 30,
+      y: 684 + 325 - 80 - 25 - 80 - 25,
       width: 200,
       height: 80,
       onSelect: () => {
@@ -199,11 +198,27 @@ const setupSettingsPane = (paneComponents, self) => {
       type: 'toggle-button',
       toggle: 'showCameras',
       x: 0 + 30 + 200,
-      y: 684 + 20 + 48 + 30 + 80 + 30,
+      y: 684 + 325 - 80 - 25,
       width: 200,
       height: 80,
       onSelect: () => {
         self.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
+      }
+    },
+
+    'help-button': {
+      id: 'help-button',
+      type: 'image-button',
+      x: 439 - 64 - 15,
+      y: 684 + 20,
+      width: 64,
+      height: 64,
+      image: 'help',
+      drawBG: true,
+      padding: 6,
+
+      onSelect: () => {
+        self.send('TOGGLE_HELP')
       }
     }
   }
