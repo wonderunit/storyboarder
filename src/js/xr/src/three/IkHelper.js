@@ -186,6 +186,8 @@ const intializeInstancedMesh = (mesh) =>
     instance.instancedMesh = new THREE.InstancedMesh(mesh.geometry, material, sizeOfTargets, true, true, false);
     instance.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
     instance.defaultColor = new THREE.Color().setHSL( 0.2 , 0.5 , 0.5 );
+    instance.instancedMesh.userData.preventInteraction = true;
+    instance.instancedMesh.userData.type = "instancedMesh";
     for(let i = 0; i < 6; i++)
     {
         let controlPoint = new THREE.Mesh(mesh.geometry, material);

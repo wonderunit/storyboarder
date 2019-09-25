@@ -352,7 +352,8 @@ const useInteractionsManager = ({
       }
 
       intersection = getControllerIntersections(controller, [IKHelper.getInstance()])[0]
-      if (intersection) {
+      if (intersection && intersection.object.userData.type !== "instancedMesh") {
+        console.log(intersection)
         interactionService.send({
           type: 'TRIGGER_START',
           controller: event.target,
@@ -814,6 +815,7 @@ const useInteractionsManager = ({
           //TODO(): Select control point in ikHelper from here
           let object = event.intersection.object
           IKHelper.getInstance().selectControlPoint(object.name)
+          console.log(object)
           controller.attach(object)
           console.log("Entered")
 
