@@ -33,6 +33,7 @@ class IKHelper extends THREE.Object3D
     {
         let ragDoll = instance.ragDoll;
         let meshes = this.targetPoints;
+
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
@@ -106,6 +107,10 @@ class IKHelper extends THREE.Object3D
             this.updateInstancedTargetPoint(this.selectedControlPoint, null, false);
             parent.attach(this.selectedControlPoint);
         }
+        else
+        {
+            this.updateAllTargetPoints();
+        }
     }
 
     raycast(raycaster, intersects)
@@ -132,7 +137,6 @@ class IKHelper extends THREE.Object3D
     {
         for(let i = 0; i < this.targetPoints.length; i++)
         {
-            console.log(this.targetPoints[i]);
             this.updateInstancedTargetPoint(this.targetPoints[i]);
         }
     }

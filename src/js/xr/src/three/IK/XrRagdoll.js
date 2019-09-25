@@ -104,9 +104,9 @@ class XRRagdoll extends XRIKObject
                 //}
             }
          */
-        this.ikSwitcher.applyToIk();
-        this.resetTargets()
-        this.resetControlPoints();
+            this.ikSwitcher.applyToIk();
+            this.resetTargets()
+            this.resetControlPoints();
            // this.ikSwitcher.applyToIk();
         }
         else
@@ -121,7 +121,7 @@ class XRRagdoll extends XRIKObject
             this.relativeFixedAngle();
         }
         
-        //this.moveRagdoll();
+        this.moveRagdoll();
     }
 
     // Runs after update to apply changes to object after ik solved
@@ -151,6 +151,7 @@ class XRRagdoll extends XRIKObject
         let chainObjects = this.chainObjects;
         this.clonedObject.scale.copy(this.originalObject.worldScale());
         this.clonedObject.position.copy(this.originalObject.worldPosition());
+        this.clonedObject.quaternion.copy(this.originalObject.worldQuaternion());
         this.clonedObject.updateMatrixWorld(true);
         for(let i = 0; i < chainObjects.length; i++)
         {
@@ -188,8 +189,8 @@ class XRRagdoll extends XRIKObject
     // Moves ragdoll hips when original object moved
     moveRagdoll()
     {
-        //this.clonedObject.position.copy(this.originalObject.position);
-        //this.clonedObject.updateMatrixWorld(true, true);
+        this.clonedObject.position.copy(this.originalObject.position);
+        this.clonedObject.quaternion.copy(this.originalObject.quaternion);
     }
     //#endregion
 
