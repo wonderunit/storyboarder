@@ -1,35 +1,40 @@
-const THREE = require('three')
 const { useRef, useEffect } = React = require('react')
+const { useMemoOne } = require('use-memo-one')
 
-const TeleportTarget = ({ api, texture, visible }) => {
+const selector = state => ({
+  teleportTargetPos: state.teleportTargetPos,
+  teleportTargetValid: state.teleportTargetValid
+})
+
+const TeleportTarget = ({ api, gltf, isDragging }) => {
   const ref = useRef()
 
+  // for performance reasons,
+  // subscribe to state changes immediately,
+  // and update the ref directly
   useEffect(
-    () => api.subscribe(
-      state => (ref.current.position.set(...state)),
-      { selector: state => state.teleportTargetPos }
-    ),
-    []
+    () => {
+      ref.current.visible = false
+
+      return api.subscribe(
+        state => {
+          ref.current.position.set(...state.teleportTargetPos)
+
+          let visible = isDragging != null && state.teleportTargetValid == true
+          ref.current.visible = visible
+        },
+        { selector })
+    },
+    [isDragging]
   )
 
-  return <group position={[0, 0.5, 0]}>
-    <mesh
-      ref={ref}
-      visible={visible}>
-      <cylinderGeometry attach="geometry" args={[0.5, 0.5, 1, 32, 1, true]} />
-      <meshBasicMaterial
-        attach="material"
-        opacity={0.25}
-        color={0x7a72e9}
-        transparent={true}
-        depthTest={false}
-        depthWrite={false}
-        side={THREE.DoubleSide}
-        visible={visible}
-      >
-        <primitive attach="map" object={texture} />
-      </meshBasicMaterial>
-    </mesh>
+  const mesh = useMemoOne(
+    () => gltf.scene.children[0].clone(),
+    [gltf]
+  )
+
+  return <group ref={ref}>
+    <primitive object={mesh} />
   </group>
 }
 
