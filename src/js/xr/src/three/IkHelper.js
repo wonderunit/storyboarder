@@ -37,7 +37,7 @@ class IKHelper extends THREE.Object3D
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
-            mesh.scale.set(0.5, 0.5, 0.5)
+            mesh.scale.set(0.5, 0.1, 0.5)
         }
         ragDoll.initObject(this, skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
         ragDoll.reinitialize();
