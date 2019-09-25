@@ -11,7 +11,7 @@ const log = require('electron-log')
 
 const portNumber = 1235
 
-const { getSerializedState, updateServer } = require('../shared/reducers/shot-generator')
+const { getSerializedState, updateServer, updateSceneFromXR } = require('../shared/reducers/shot-generator')
 const getIpAddress = require('../utils/getIpAddress')
 
 class XRServer {
@@ -58,7 +58,7 @@ class XRServer {
 
     app.post('/state.json', (req, res) => {
       let payload = req.body
-      store.dispatch({ type: 'LOAD_SCENE', payload })
+      store.dispatch(updateSceneFromXR(payload))
       res.status(200).send({ ok: true })
     })
 

@@ -686,6 +686,7 @@ const selectionsReducer = (state = [], action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
+      case 'UPDATE_SCENE_FROM_XR':
         // clear selections
         return []
 
@@ -730,6 +731,7 @@ const sceneObjectsReducer = (state = {}, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
+      case 'UPDATE_SCENE_FROM_XR':
         return withDisplayNames(
           resetLoadingStatus(
             migrateRotations(
@@ -847,6 +849,10 @@ const metaReducer = (state = {}, action, appState) => {
       case 'LOAD_SCENE':
         draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
         return
+      case 'UPDATE_SCENE_FROM_XR':
+        // don't update lastSavedHash
+        // SG will detect the unsaved changes and prompt user to save
+        return
 
       case 'MARK_SAVED':
         draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
@@ -866,6 +872,7 @@ const activeCameraReducer = (state = initialScene.activeCamera, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
+      case 'UPDATE_SCENE_FROM_XR':
         return action.payload.activeCamera
 
       case 'SET_ACTIVE_CAMERA':
@@ -881,6 +888,7 @@ const selectedBoneReducer = (state = null, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
+      case 'UPDATE_SCENE_FROM_XR':
         // clear selections
         return null
 
@@ -906,6 +914,7 @@ const worldReducer = (state = initialState.undoable.world, action) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
+      case 'UPDATE_SCENE_FROM_XR':
         return migrateWorldLights(
           migrateWorldFog(
             action.payload.world
@@ -1024,6 +1033,9 @@ const mainReducer = (state/* = initialState*/, action) => {
     switch (action.type) {
       case 'LOAD_SCENE':
         draft.mainViewCamera = 'live'
+        return
+      case 'UPDATE_SCENE_FROM_XR':
+        // don't swap the camera
         return
 
       // case 'SET_INPUT_ACCEL':
@@ -1255,6 +1267,7 @@ module.exports = {
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
 
   loadScene: data => ({ type: 'LOAD_SCENE', payload: data }),
+  updateSceneFromXR: data => ({ type: 'UPDATE_SCENE_FROM_XR', payload: data }),
 
   updateCharacterSkeleton: ({ id, name, rotation }) => ({
     type: 'UPDATE_CHARACTER_SKELETON',
