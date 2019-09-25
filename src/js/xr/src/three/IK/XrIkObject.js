@@ -37,6 +37,8 @@ class XrIkObject
         this.originalObject = objectSkeleton;
         this.ikSwitcher = new XRIKSwitcher(objectSkeleton, clonedSkeleton);
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
+        this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
+        
         let rigMesh = this.rigMesh;
         this.controlTargets = controlTargets;
         this.addParentToControl(objectSkeleton.uuid);

@@ -13,6 +13,8 @@ class IKHelper extends THREE.Object3D
             instance.controlPoints = {};
             this.selectedContolPoint = null;
             instance.ragDoll = new RagDoll();
+            this.poleTargets = new THREE.Group();
+            this.add(this.poleTargets);
             intializeInstancedMesh(mesh);
         }
         return instance;
@@ -26,21 +28,15 @@ class IKHelper extends THREE.Object3D
     initialize(skinnedMesh)
     {
         let ragDoll = instance.ragDoll;
-        let bones = skinnedMesh.skeleton.bones;
-        for(let i = 0; i < bones.length; i++)
+        let controlPointsValues = Object.values(this.controlPoints);
+        let meshes = this.poleTargets.children.concat(controlPointsValues);
+        for(let i = 0; i < meshes.length; i++)
         {
-            let bone = bones[i];
-            if(bone.name === "LeftFoot" || bone.name === "RightFoot" ||
-            bone.name === "LeftHand" || bone.name === "RightHand" ||
-            bone.name === "Head" || bone.name === "Hips")
-            {
-                let controlPoint = this.controlPoints[bone.name];
-                controlPoint.scale.set(0.5, 0.1, 0.5)
-                controlPoint.userData.id = skinnedMesh.uuid;
-                controlPoint.name = bone.name;
-            }
+            let mesh = meshes[i];
+            mesh.scale.set(0.5, 0.1, 0.5)
+            mesh.userData.id = skinnedMesh.uuid;
         }
-        ragDoll.initObject(this, skinnedMesh.parent.parent, Object.values(this.controlPoints));
+        ragDoll.initObject(this, skinnedMesh.parent.parent, controlPointsValues, this.poleTargets.children);
         ragDoll.reinitialize();
     }
 
@@ -115,8 +111,16 @@ const intializeInstancedMesh = (mesh) =>
     for(let i = 0; i < 6; i++)
     {
         let controlPoint = new THREE.Mesh(mesh.geometry, material);
-        instance.controlPoints[listOfControlPoints.shift()] = controlPoint;
+        controlPoint.name = listOfControlPoints.shift();
+        instance.controlPoints[controlPoint.name] = controlPoint;
         instance.add(controlPoint);
+    }
+    let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
+    for(let i = 0; i < 4; i++)
+    {
+        let poleTarget = new THREE.Mesh(mesh.geometry, material);
+        poleTarget.name = listOfControlTargets.shift();
+        instance.poleTargets.add(poleTarget);
     }
     
 }

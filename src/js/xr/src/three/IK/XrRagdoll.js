@@ -36,14 +36,19 @@ class XRRagdoll extends XRIKObject
     
     //#region External Methods
     // Initializes ragdoll set up all neccessary information 
-    initObject(scene, object, controlTargets )
+    initObject(scene, object, controlTargets, poleTargets )
     {
         super.initObject(scene, object, controlTargets );
 
         //this.ragdollEvents = new RagdollEvents(this);
         // Adds events to Back control
         //this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
-       // this.createPoleTargets();
+        this.createPoleTargets(poleTargets);
+      /*   for(let i = 1; i < this.chainObjects.length; i++)
+        {
+            let poleMesh = this.chainObjects[i].poleConstraint.poleTarget.mesh;
+            object.attach(poleMesh);
+        } */
      /*    this.ragdollEvents.addHipsEvent();
         this.ragdollEvents.setUpControlsEvents(); */
         this.setUpControlTargetsInitialPosition();
@@ -100,7 +105,7 @@ class XRRagdoll extends XRIKObject
             }
          */
         this.ikSwitcher.applyToIk();
-        //this.resetTargets()
+        this.resetTargets()
         this.resetControlPoints();
            // this.ikSwitcher.applyToIk();
         }
@@ -108,7 +113,7 @@ class XRRagdoll extends XRIKObject
         {
             if(this.applyingOffset)
             {
-               // this.resetPoleTarget();
+                this.resetPoleTarget();
             }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
@@ -190,7 +195,7 @@ class XRRagdoll extends XRIKObject
 
     //#region Internal methods
 
-    createPoleTargets()
+    createPoleTargets(poleTargetMeshes)
     {
         let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
         let polePositions = [
@@ -199,11 +204,13 @@ class XRRagdoll extends XRIKObject
             new THREE.Vector3(0, 0.4, 0.8),
             new THREE.Vector3(0, 0.4, 0.8)
         ];
+        
         let backChain = this.ik.chains[0];        
         for(let i = 1; i < 5; i++)
         {
+            let poleTargetMesh = poleTargetMeshes[i - 1];
             let chain = this.ik.chains[i];
-            let poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1]);
+            let poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1], poleTargetMesh);
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
             this.chainObjects[i].poleConstraint = poleConstraint;
@@ -216,9 +223,10 @@ class XRRagdoll extends XRIKObject
     }
 
     // Initiallizes pole target for pole contraints
-    initPoleTargets(chain, offset, name)
+    initPoleTargets(chain, offset, name, poleTargetMesh)
     {
         let poleTarget = new PoleTarget();
+        poleTarget.mesh = poleTargetMesh;
         poleTarget.initialOffset = offset;
         this.calculatePoleTargetOffset(poleTarget, chain);
         poleTarget.initialize(poleTarget.poleOffset);
@@ -266,32 +274,36 @@ class XRRagdoll extends XRIKObject
     // Resets pole target position when object moved his hips position changed
     resetPoleTarget()
     {
-         let chainObjects = this.chainObjects;
-         let hipsTarget = this.hipsControlTarget;
-         let {angle, axis} = this.hips.quaternion.toAngleAxis();
-         let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
-         let armsAngleAxis = spineWorldQuat.toAngleAxis();
-         for(let i = 0; i < chainObjects.length; i++)
-         {
-             let constraint = this.chainObjects[i].poleConstraint;
-             if(!constraint)
-             {
-                 continue;
-             }
-             let targetPosition = new THREE.Vector3();
-             hipsTarget.getWorldPosition(targetPosition);
-             let poleOffset = constraint.poleTarget.poleOffset;
-             let mesh = constraint.poleTarget.mesh;
-             mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
-             if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
-             {
-                 mesh.rotateAroundPoint(targetPosition, armsAngleAxis.axis, armsAngleAxis.angle);
-             }
-             else
-             {
-                 mesh.rotateAroundPoint(targetPosition, axis, angle);
-             }
-         }
+        let chainObjects = this.chainObjects;
+        let hipsTarget = this.hipsControlTarget;
+        let {angle, axis} = this.hips.quaternion.toAngleAxis();
+        let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
+        let armsAngleAxis = spineWorldQuat.toAngleAxis();
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let constraint = this.chainObjects[i].poleConstraint;
+            if(!constraint)
+            {
+                continue;
+            }
+            let targetPosition = new THREE.Vector3();
+            hipsTarget.getWorldPosition(targetPosition);
+            let poleOffset = constraint.poleTarget.poleOffset;
+            let mesh = constraint.poleTarget.mesh;
+            mesh.applyMatrix(mesh.parent.matrixWorld);
+            mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
+            if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
+            {
+                mesh.rotateAroundPoint(targetPosition, armsAngleAxis.axis, armsAngleAxis.angle);
+            }
+            else
+            {
+                mesh.rotateAroundPoint(targetPosition, axis, angle);
+            
+            }
+            mesh.applyMatrix(mesh.parent.getInverseMatrixWorld());
+            mesh.updateMatrixWorld(true);
+        }
     }
 
 
