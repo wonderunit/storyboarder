@@ -1,9 +1,9 @@
 const THREE = require('three')
 const { clamp, mapLinear } = require('three').Math
-const { useState, useMemo, useRef, useCallback } = React = require('react')
+const { useMemo, useRef, useCallback } = React = require('react')
 const useReduxStore = require('react-redux').useStore
 const { useSelector } = require('react-redux')
-const { useRender, useThree } = require('react-three-fiber')
+const { useThree } = require('react-three-fiber')
 const { useMachine } = require('@xstate/react')
 
 const { log } = require('./components/Log')
@@ -19,6 +19,19 @@ const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 const { create } = require('zustand')
 const { produce } = require('immer')
 const { setCookie, getCookie } = require('./helpers/cookies')
+const {
+  drawText,
+  drawImageButton,
+  drawButton,
+  drawSlider,
+  drawToggleButton,
+  roundRect,
+  wrapText,
+  drawPaneBGs,
+  drawGrid
+} = require('./helpers/draw-ui')
+
+const { setupHomePane, setupAddPane, setupSettingsPane } = require('./helpers/setup-ui')
 
 const [useUiStore] = create((set, get) => ({
   // values
@@ -34,536 +47,6 @@ const [useUiStore] = create((set, get) => ({
 
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
-
-function drawText({ ctx, label, size, align = 'left', baseline = 'top', color = '#fff' }) {
-  ctx.save()
-  ctx.font = `${size}px Arial`
-  ctx.textAlign = align
-  ctx.textBaseline = baseline
-  ctx.fillStyle = color
-  ctx.fillText(label, 0, 0)
-  ctx.restore()
-}
-
-function drawImageButton ({ ctx, width, height, image, flip = false }) {
-  ctx.save()
-
-  if (flip) ctx.scale(-1, 1)
-  ctx.drawImage(image, flip ? -width : 0, 0, width, height)
-
-  // ctx.fillStyle = '#eee'
-  // ctx.fillRect(0, 0, width, height)
-  // ctx.translate(width / 2, height / 2)
-  // ctx.font = '20px Arial'
-  // ctx.textAlign = 'center'
-  // ctx.textBaseline = 'middle'
-  // ctx.fillStyle = 'black'
-  ctx.restore()
-}
-
-function drawButton ({ ctx, width, height, label, fill = 'rgba(0, 0, 0, 0)' }) {
-  ctx.save()
-  ctx.fillStyle = fill
-  ctx.fillRect(0, 0, width, height)
-  ctx.translate(width / 2, height / 2)
-  ctx.font = '20px Arial'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillStyle = 'black'
-  ctx.fillText(label || '', 0, 0)
-  ctx.restore()
-}
-
-
-function drawSlider ({ ctx, width, height, state, label }) {
-  // value
-  ctx.save()
-  ctx.fillStyle = '#6E6E6E'
-  if (state > 0) roundRect(ctx, 0, 0, (width - 10) * state, height, 12, true, false)
-
-  ctx.strokeStyle = '#fff'
-  ctx.lineWidth = 3
-  roundRect(ctx, 0, 0, width - 10, height, 12, false, true)
-
-  // label
-  ctx.translate(width / 2, height / 2)
-  ctx.font = '24px Arial'
-  ctx.textAlign = 'center'
-  ctx.textBaseline = 'middle'
-  ctx.fillStyle = '#fff'
-  ctx.fillText(label.charAt(0).toUpperCase() + label.slice(1), 0, 0)
-  ctx.restore()
-}
-
-function drawToggleButton({ ctx, width, height, cookieBoolean }) {
-  ctx.save()
-  ctx.fillStyle = '#000'
-  roundRect(ctx, 0, 0, width - 10, height, 36, true, false)
-
-  ctx.fillStyle = '#6E6E6E'
-  roundRect(ctx, (width - 10) * (cookieBoolean ? 0.5 : 0), 0, (width - 10) * 0.5, height, 36, true, false)
-
-  ctx.strokeStyle = '#fff'
-  ctx.lineWidth = 3
-  roundRect(ctx, 0, 0, width - 10, height, 36, false, true)
-  ctx.restore()
-}
-
-function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
-  if (typeof stroke == 'undefined') {
-    stroke = true;
-  }
-  if (typeof radius === 'undefined') {
-    radius = 5;
-  }
-  if (typeof radius === 'number') {
-    radius = {tl: radius, tr: radius, br: radius, bl: radius};
-  } else {
-    var defaultRadius = {tl: 0, tr: 0, br: 0, bl: 0};
-    for (var side in defaultRadius) {
-      radius[side] = radius[side] || defaultRadius[side];
-    }
-  }
-  ctx.beginPath();
-  ctx.moveTo(x + radius.tl, y);
-  ctx.lineTo(x + width - radius.tr, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius.tr);
-  ctx.lineTo(x + width, y + height - radius.br);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius.br, y + height);
-  ctx.lineTo(x + radius.bl, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius.bl);
-  ctx.lineTo(x, y + radius.tl);
-  ctx.quadraticCurveTo(x, y, x + radius.tl, y);
-  ctx.closePath();
-  if (fill) {
-    ctx.fill();
-  }
-  if (stroke) {
-    ctx.stroke();
-  }
-}
-
-function wrapText (context, text, x, y, maxWidth, lineHeight) {
-
-  var words = text.split(' '),
-      line = '',
-      lineCount = 0,
-      i,
-      test,
-      metrics;
-
-  for (i = 0; i < words.length; i++) {
-      test = words[i];
-      metrics = context.measureText(test);
-      while (metrics.width > maxWidth) {
-          // Determine how much of the word will fit
-          test = test.substring(0, test.length - 1);
-          metrics = context.measureText(test);
-      }
-      if (words[i] != test) {
-          words.splice(i + 1, 0,  words[i].substr(test.length))
-          words[i] = test;
-      }
-
-      test = line + words[i] + ' ';
-      metrics = context.measureText(test);
-
-      if (metrics.width > maxWidth && i > 0) {
-          context.fillText(line, x, y);
-          line = words[i] + ' ';
-          y += lineHeight;
-          lineCount++;
-      }
-      else {
-          line = test;
-      }
-  }
-
-  context.fillText(line, x, y);
-}
-
-function drawGrid(ctx, x, y , width, height, items, type) {
-  ctx.save()
-  ctx.fillStyle = '#000'
-  ctx.fillRect(x, y, width, height)
-  ctx.beginPath()
-  ctx.rect(x, y, width, height)
-  ctx.clip()
-
-  let cols = 4
-  let itemHeight = width / cols / 0.68
-  let gutter = 5
-  let offset = this.state.grids[type].scrollTop || 0
-
-  const gridHeight = Math.ceil(items.length / cols) * itemHeight
-  let itemWidth = (width - gutter * (cols - 1)) / cols
-  let visibleRows = Math.min(Math.ceil(height / itemHeight) + 1, items.length / cols)
-  let startItem = Math.floor(offset / itemHeight) * cols
-
-  offset = offset % itemHeight
-
-  ctx.font = '30px Arial'
-  ctx.textBaseline = 'top'
-
-  for (let i2 = 0; i2 < visibleRows; i2++) {
-    for (let i = 0; i < cols; i++) {
-      if (startItem >= items.length) break
-      const item = items[startItem]
-
-      let filepath
-      switch (type) {
-        case 'pose':
-          filepath = getPoseImageFilepathById(item.id)
-          break
-        case 'character':
-          filepath = getCharacterImageFilepathById(item.id)
-          break
-        case 'object':
-          filepath = getModelImageFilepathById(item.id)
-          break
-      }
-
-      this.drawLoadableImage(
-        filepath,
-
-        image => {
-          // loaded state
-          // object should allow selection
-          ctx.drawImage(image, x + i * itemWidth + i * gutter, y + itemHeight * i2 - offset, itemWidth, itemHeight - gutter)
-        },
-
-        () => {
-          // loading state
-          // object should not allow selection
-          ctx.save()
-          ctx.fillStyle = '#222'
-          ctx.fillRect(x + i * itemWidth + i * gutter, y + itemHeight * i2 - offset, itemWidth, itemHeight - gutter)
-          ctx.restore()
-        }
-      )
-
-      this.paneComponents['grid'][item.name] = {
-        id: item.id,
-        name: item.name,
-        type: 'button',
-        x: x + i * itemWidth + i * gutter,
-        y: y + itemHeight * i2 - offset,
-        width: itemWidth,
-        height: itemHeight - gutter,
-        invisible: true
-      }
-
-      ctx.fillStyle = 'white'
-      ctx.font = '24px Arial'
-      ctx.textBaseline = 'top'
-      ctx.fillText(startItem + 1, x + i * itemWidth + i * gutter + 8, y + itemHeight * i2 - offset + 8)
-
-      ctx.font = '12px Arial'
-      ctx.textBaseline = 'bottom'
-      ctx.fillText(item.name.slice(0, 15), x + i * itemWidth + i * gutter + 2, y + itemHeight * i2 - offset + itemHeight - gutter - 2)
-      startItem++
-    }
-  }
-
-  this.paneComponents['grid']['grid-background'] = {
-    id: 'grid-background',
-    type: 'button',
-    x,
-    y,
-    width,
-    height,
-    onSelect: (x, y) => {
-      this.state.grids.startCoords = this.state.grids.prevCoords = { x, y }
-    },
-    onDrag: (x, y) => {
-      const { grids } = this.state
-      const offset = Math.floor((grids.prevCoords.y - y) * height)
-      grids[type].scrollTop = Math.min(Math.max(grids[type].scrollTop + offset, 0), Math.max(gridHeight - height, 0))
-      grids.prevCoords = { x, y }
-      this.needsRender = true
-    },
-    onDrop: (x, y, u, v) => {
-      const { startCoords } = this.state.grids
-      const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
-
-      if (distance < 0.1) {
-        let canvasIntersection = this.getCanvasIntersection(u, v, false)
-
-        if (canvasIntersection) {
-          const name = canvasIntersection.id
-          const id = this.state.selections[0]
-
-          if (type === 'pose') {
-            const pose = this.state.poses.find(pose => pose.id === name)
-            const skeleton = pose.state.skeleton
-            this.dispatch(updateObject(id, { name, skeleton }))
-          } else if (type === 'character') {
-            this.dispatch(undoGroupStart())
-            this.dispatch(selectObject(null))
-            this.dispatch(updateObject(id, { model: name, height: initialState.models[name].height }))
-            this.dispatch(undoGroupEnd())
-          } else if (type === 'object') {
-            this.dispatch(updateObject(id, { model: name, depth: 1, height: 1, width: 1 }))
-          }
-        }
-      }
-    }
-  }
-
-  this.paneComponents['grid']['scrollbar'] = {
-    id: 'scrollbar',
-    type: 'button',
-    x: width + 37 - 6,
-    y,
-    width: 24,
-    height,
-    onDrag: (x, y) => {
-      const { grids } = this.state
-      grids[type].scrollTop = Math.min(Math.max((gridHeight - height) * y, 0), Math.max(gridHeight - height, 0))
-      this.needsRender = true
-    }
-  }
-
-  // Indicator
-  ctx.restore()
-  const scrollPosition = this.state.grids[type].scrollTop / (gridHeight - height)
-
-  ctx.fillStyle = '#000'
-  roundRect(ctx, width + 37, y, 12, height, 6, true, false)
-
-  ctx.fillStyle = '#6E6E6E'
-  roundRect(ctx, width + 37, y + scrollPosition * height * 0.75, 12, height * 0.25, 6, true, false)
-
-  ctx.strokeStyle = '#fff'
-  ctx.lineWidth = 1
-  roundRect(ctx, width + 37, y, 12, height, 6, false, true)
-}
-
-function drawPaneBGs(ctx) {
-  ctx.fillStyle = 'rgba(0,0,0)'
-  // property
-  roundRect(ctx, 4, 6, 439, 666, 25, true, false)
-  // extended property
-  roundRect(ctx, 554, 6, 439, 666, 25, true, false)
-  roundRect(ctx, 6, 682, 439, 325, 25, true, false)
-  roundRect(ctx, 483, 288, 66, 105, 25, true, false)
-  // home
-  roundRect(ctx, 667, 684, 200, 200, 25, true, false)
-  //roundRect(ctx, 667, 684, 200, 200, 25, true, false)
-  roundRect(ctx, 456, 684, 200, 200, 25, true, false)
-  roundRect(ctx, 909, 684, 88, 88, 25, true, false)
-  // back plane
-  roundRect(ctx, 453, 889, 440, 132, 25, true, false)
-}
-
-function setupHomePane (paneComponents, self) {
-  // 4 image buttons
-  paneComponents['home'] = {
-    'select-button': {
-      id: 'select-button',
-      type: 'image-button',
-      x: 667 + 10 + 10,
-      y: 684 + 10 + 10,
-      width: 64,
-      height: 64,
-      image: 'selection',
-      onSelect: () => {
-        self.dispatch(selectObject(null))
-        self.send('GO_HOME')
-      }
-    },
-    'add-button': {
-      id: 'add-button',
-      type: 'image-button',
-      x: 667 + 10 + 10,
-      y: 684 + 105 + 10,
-      width: 64,
-      height: 64,
-      image: 'add',
-      onSelect: () => {
-        self.send('GO_ADD')
-      }
-    },
-    'duplicate-button': {
-      id: 'duplicate-button',
-      type: 'image-button',
-      x: 667 + 105 + 10,
-      y: 684 + 10 + 10,
-      width: 64,
-      height: 64,
-      image: 'duplicate',
-      onSelect: () => {
-        self.send('REQUEST_DUPLICATE', { selections: self.state.selections })
-      }
-    },
-    'delete-button': {
-      id: 'delete-button',
-      type: 'image-button',
-      x: 667 + 105 + 10,
-      y: 684 + 105 + 10,
-      width: 64,
-      height: 64,
-      image: 'erase',
-      onSelect: () => {
-        self.send('REQUEST_DELETE', { selections: self.state.selections })
-      }
-    },
-    'settings-button': {
-      id: 'settings-button',
-      type: 'image-button',
-      x: 909 + 10,
-      y: 684 + 10,
-      width: 64,
-      height: 64,
-      image: 'help',
-
-      onSelect: () => {
-        self.send('TOGGLE_SETTINGS')
-        console.log('sup')
-      }
-    },
-    'extend-button': {
-      id: 'extend-button',
-      type: 'image-button',
-      x: 483 - 32 + 66 * 0.5,
-      y: 288 - 32 + 105 * 0.5,
-      width: 64,
-      height: 64,
-      image: 'arrow',
-      flip: true,
-
-      onSelect: () => {
-        const id = self.state.selections[0]
-        const sceneObject = self.state.sceneObjects[id]
-        if (sceneObject.type === 'character' || sceneObject.type === 'object') self.send('TOGGLE_GRID')
-      }
-    }
-  }
-}
-
-function setupAddPane (paneComponents, self) {
-  // 4 image buttons
-  paneComponents['add'] = {
-    'add-camera': {
-      id: 'add-camera',
-      type: 'image-button',
-      x: 456 + 10 + 10,
-      y: 684 + 10 + 10,
-      width: 64,
-      height: 64,
-      image: 'icon-toolbar-camera',
-
-      onSelect: () => {
-        self.send('ADD_OBJECT', { object: 'camera' })
-      }
-    },
-
-    'add-object': {
-      id: 'add-object',
-      type: 'image-button',
-      x: 456 + 105 + 10,
-      y: 684 + 10 + 10,
-      width: 64,
-      height: 64,
-      image: 'icon-toolbar-object',
-
-      onSelect: () => {
-        self.send('ADD_OBJECT', { object: 'object' })
-      }
-    },
-
-    'add-character': {
-      id: 'add-character',
-      type: 'image-button',
-      x: 456 + 10 + 10,
-      y: 684 + 105 + 10,
-      width: 64,
-      height: 64,
-      image: 'icon-toolbar-character',
-
-      onSelect: () => {
-        self.send('ADD_OBJECT', { object: 'character' })
-        // undoGroupStart()
-        // console.log(deleteObjects([sceneObject.id]))
-        // this.dispatch(deleteObjects([sceneObject.id]))
-        // this.dispatch(selectObject(null))
-        // selectObject(id)
-        // undoGroupEnd()
-      }
-    },
-
-    'add-light': {
-      id: 'add-light',
-      type: 'image-button',
-      x: 456 + 105 + 10,
-      y: 684 + 105 + 10,
-      width: 64,
-      height: 64,
-      image: 'icon-toolbar-light',
-
-      onSelect: () => {
-        self.send('ADD_OBJECT', { object: 'light' })
-      }
-    }
-  }
-}
-
-function setupSettingsPane(paneComponents, self) {
-  paneComponents['settings'] = {
-    settings: {
-      id: 'settings',
-      type: 'text',
-      x: 0 + 30,
-      y: 684 + 20,
-      label: 'Settings',
-      size: 48
-    },
-
-    'switch-hand': {
-      id: 'switch-hand',
-      type: 'text',
-      x: 0 + 30,
-      y: 684 + 20 + 48 + 30 + 40 - 12,
-      label: 'Switch Hand',
-      size: 24
-    },
-
-    'show-cameras': {
-      id: 'show-cameras',
-      type: 'text',
-      x: 0 + 30,
-      y: 684 + 20 + 48 + 30 + 80 + 30 + 40 - 12,
-      label: 'Show Cameras',
-      size: 24,
-    },
-
-    'switch-hand-toggle': {
-      id: 'switch-hand-toggle',
-      type: 'toggle-button',
-      toggle: 'switchHand',
-      x: 0 + 30 + 200,
-      y: 684 + 20 + 48 + 30,
-      width: 200,
-      height: 80,
-      onSelect: () => {
-        self.send('TOGGLE_SWITCH', { toggle: 'switchHand' })
-      }
-    },
-
-    'show-cameras-toggle': {
-      id: 'show-cameras-toggle',
-      type: 'toggle-button',
-      toggle: 'showCameras',
-      x: 0 + 30 + 200,
-      y: 684 + 20 + 48 + 30 + 80 + 30,
-      width: 200,
-      height: 80,
-      onSelect: () => {
-        self.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
-      }
-    }
-  }
-}
 
 const lenses = {}
 
@@ -658,7 +141,7 @@ class CanvasRenderer {
     let ctx = this.context
     drawPaneBGs(ctx)
 
-    drawGrid = drawGrid.bind(this)
+    this.drawGrid = drawGrid.bind(this)
 
     setupHomePane(this.paneComponents, this)
     setupAddPane(this.paneComponents, this)
@@ -800,42 +283,6 @@ class CanvasRenderer {
       }
 
       this.renderObjects(ctx, this.paneComponents['properties'])
-
-      // FOR TESTING: draw some images
-      // ctx.drawImage(this.getImageByFilepath(getIconFilepathByName('eye')), 570, 130)
-      // ctx.drawImage(this.getImageByFilepath(getPoseImageFilepathById('8af56a03-2078-402a-9407-33cfecfcf460')), 770, 130)
-      // ctx.drawImage(this.getImageByFilepath(getCharacterImageFilepathById('adult-female')), 570, 430)
-      // ctx.drawImage(this.getImageByFilepath(getModelImageFilepathById('box')), 770, 430)
-
-      // FOR TESTING: draw a loadable image
-      // let list = this.state.poses.slice(0, 6)
-      // list.forEach((pose, n) => {
-      //   let filepath = getPoseImageFilepathById(pose.id)
-
-      //   let r = n % 3
-      //   let c = Math.floor(n / 3)
-
-      //   let x = 570 + (r * 140)
-      //   let y = 130 + (c * 205)
-      //   this.drawLoadableImage(
-      //     filepath,
-
-      //     image => {
-      //       // loaded state
-      //       // object should allow selection
-      //       ctx.drawImage(image, x, y)
-      //     },
-
-      //     () => {
-      //       // loading state
-      //       // object should not allow selection
-      //       ctx.save()
-      //       ctx.fillStyle = '#222'
-      //       ctx.fillRect(x, y, 135, 200)
-      //       ctx.restore()
-      //     }
-      //   )
-      // })
     }
 
     if (this.state.mode == 'grid') {
@@ -852,7 +299,7 @@ class CanvasRenderer {
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
 
         const list = grids.tab === 'pose' ? this.state.poses : characterModels
-        drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab)
+        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab)
 
         this.paneComponents['grid']['poses-title'] = {
           id: 'poses-title',
@@ -885,7 +332,7 @@ class CanvasRenderer {
         }
       } else if (sceneObject && sceneObject.type == 'object') {
         const objectModels = Object.values(this.state.models).filter(model => model.type === 'object')
-        drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, objectModels, 'object')
+        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, objectModels, 'object')
 
         this.paneComponents['grid']['objects-title'] = {
           id: 'objects-title',
@@ -905,135 +352,6 @@ class CanvasRenderer {
     if (this.state.mode == 'settings') {
       this.renderObjects(ctx, this.paneComponents['settings'])
     }
-
-    /*
-
-    if mode == properties
-      clear paneCompenets['properties']
-      set them
-      render properties
-
-    */
-
-    // // this.context.fillStyle = 'white'
-    // // this.context.fillRect(0, 0, this.canvas.width, this.canvas.height)
-
-    // this.objects = {
-    //   'create-object': {
-    //     id: 'create-object',
-    //     type: 'button',
-    //     x: 15,
-    //     y: 285,
-    //     width: 420,
-    //     height: 40,
-
-    //     label: 'Add Object',
-
-    //     onSelect: () => {
-    //       let id = THREE.Math.generateUUID()
-    //       // undoGroupStart()
-    //       //this.dispatch(
-    //         console.log("CREATE OBJECT")
-    //         // TODO make a fake camera Object3D
-    //         //      with the camera + teleport pos integrated
-    //         //SceneObjectCreators.createModelObject(id, this.camera, this.getRoom())
-    //       //)
-    //       // selectObject(id)
-    //       // undoGroupEnd()
-    //     }
-    //   }
-    // }
-
-    // this.objects = {
-    //   ...this.objects,
-    //   'test-toggle-modes': {
-    //     id: 'test-toggle-modes',
-    //     type: 'button',
-    //     x: 15,
-    //     y: 500,
-    //     width: 420,
-    //     height: 40,
-
-    //     label: `Toggle Mode`,
-
-    //     onSelect: () => {
-    //       if (this.state.mode == 'idle') {
-    //         this.send('SELECT_OBJECT')
-    //       } else {
-    //         this.send('DESELECT_OBJECT')
-    //       }
-    //     }
-    //   }
-    // }
-
-    // if (this.state.selections.length) {
-    //   let id = this.state.selections[0]
-    //   let sceneObject = this.state.sceneObjects[id]
-
-    //   this.objects = {
-    //     ...this.objects,
-    //     'delete-selected-object': {
-    //       id: 'delete-selected-object',
-    //       type: 'button',
-    //       x: 15,
-    //       y: 195 + 10,
-    //       width: 420,
-    //       height: 40,
-
-    //       label: 'Delete Object',
-
-    //       onSelect: () => {
-    //         // undoGroupStart()
-    //         // console.log(deleteObjects([sceneObject.id]))
-    //         this.dispatch(deleteObjects([sceneObject.id]))
-    //         this.dispatch(selectObject(null))
-    //         // selectObject(id)
-    //         // undoGroupEnd()
-    //       }
-    //     }
-    //   }
-
-    //   if (sceneObject.type == 'character') {
-    //     this.objects = {
-    //       ...this.objects,
-    //       ...this.getObjectsForCharacter(sceneObject)
-    //     }
-    //   }
-
-    //   ctx.save()
-
-    //   // name
-    //   ctx.save()
-    //   let string = `${sceneObject.name || sceneObject.displayName}`
-    //   ctx.font = '40px Arial'
-    //   ctx.textBaseline = 'top'
-    //   ctx.fillStyle = 'black'
-    //   ctx.translate(15, 20)
-    //   ctx.fillText(string, 0, 0)
-    //   ctx.restore()
-
-    //   // spacer
-    //   ctx.translate(0, 60)
-
-    //   //
-    //   ctx.save()
-    //   ctx.font = '30px Arial'
-    //   ctx.textBaseline = 'top'
-    //   ctx.fillStyle = 'black'
-    //   ctx.translate(15, 20)
-    //   sceneObject.rotation.y
-    //     ? ctx.fillText('rotation:' + (sceneObject.rotation.y * THREE.Math.RAD2DEG).toFixed(4) + '°', 0, 0)
-    //     : ctx.fillText('rotation:' + (sceneObject.rotation * THREE.Math.RAD2DEG).toFixed(4) + '°', 0, 0)
-    //   ctx.restore()
-
-    //   // spacer
-    //   ctx.translate(0, 60)
-
-    //   ctx.restore()
-    // }
-
-    // objects
-
   }
 
   drawLoadableImage (filepath, onSuccess, onFail) {
@@ -1232,30 +550,6 @@ class CanvasRenderer {
     }
   }
 
-  // drawCircle (u, v) {
-  //   let ctx = this.context
-
-  //   let x = u * this.canvas.width
-  //   let y = v * this.canvas.height
-
-  //   ctx.beginPath()
-  //   ctx.arc(x, y, 20, 0, Math.PI * 2)
-  //   ctx.fillStyle = 'red'
-  //   ctx.fill()
-
-  //   this.needsRender = true
-  // }
-
-  /*
-  objects = {
-    'home' = {
-      'add-button' = {ksajdka sdajks djk },
-      'delete-button' = {ksajdka sdajks djk },
-
-    }
-  }
-  */
-
   getCanvasIntersection (u, v, ignoreInvisible = true) {
     let x = u * this.canvas.width
     let y = v * this.canvas.height
@@ -1288,8 +582,7 @@ const {
   duplicateObjects,
   getActiveCamera,
   undoGroupStart,
-  undoGroupEnd,
-  initialState
+  undoGroupEnd
 } = require('../../shared/reducers/shot-generator')
 
 // via PosePresetsEditor.js
