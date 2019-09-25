@@ -397,6 +397,9 @@ const SceneContent = connect(
       ref.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
+    const gamepads = navigator.getGamepads()
+    const gamepadFor = controller => gamepads[controller.userData.gamepad.index]
+
     return (
       <>
         <group
@@ -410,15 +413,13 @@ const SceneContent = connect(
             <primitive object={cameraAudioListener} />
           </primitive>
 
-          {controllers.filter(Boolean).map(controller =>
+          {controllers.filter(gamepadFor).map(controller =>
             <primitive key={controller.uuid} object={controller} >
               <Controller
                 gltf={resources.controllerGltf}
-                hand={navigator.getGamepads()[controller.userData.gamepad.index].hand}
+                hand={gamepadFor(controller).hand}
               />
-              {
-                navigator.getGamepads()[controller.userData.gamepad.index] &&
-                navigator.getGamepads()[controller.userData.gamepad.index].hand === (switchHand ? 'left' : 'right') &&
+              {gamepadFor(controller).hand === (switchHand ? 'left' : 'right') &&
                 <Controls
                   gltf={resources.controlsGltf}
                   mode={uiCurrent.value.controls}
