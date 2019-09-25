@@ -10,7 +10,7 @@ const { useMemo, useRef, useState, useEffect } = React = require('react')
 const ReactDOM = require('react-dom')
 
 const { useStore, useStoreApi, useInteractionsManager } = require('../../../src/js/xr/src/use-interactions-manager')
-const { useUiManager, UI_ICON_FILEPATHS } = require('../../../src/js/xr/src/use-ui-manager')
+const { useUiManager, UI_ICON_FILEPATHS } = require('../../../src/js/xr/src/hooks/ui-manager')
 const { Log } = require('../../../src/js/xr/src/components/Log')
 const Controls = require('../../../src/js/xr/src/components/ui/Controls')
 

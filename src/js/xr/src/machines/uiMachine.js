@@ -7,6 +7,7 @@ const machine = Machine({
   strict: true,
   type: 'parallel',
   context: {
+    selection: null,
     locked: false
   },
   states: {
@@ -45,8 +46,8 @@ const machine = Machine({
         grid: {
           on: {
             'GO_ADD': 'add',
-            'TOGGLE_SETTINGS': 'settings',
-            'GO_PROPERTIES': 'properties'
+            'GO_HOME': 'home',
+            'TOGGLE_SETTINGS': 'settings'
           }
         }
       }
@@ -55,6 +56,10 @@ const machine = Machine({
       initial: 'idle',
       states: {
         idle: {
+          '': {
+            cond: 'selectionPresent',
+            actions: ['clearSelection',]
+          },
           on: {
             'TRIGGER_START': {
               actions: 'onTriggerStart'
@@ -75,7 +80,7 @@ const machine = Machine({
         },
         dragging: {
           onEntry: ['updateSelection', 'updateDraggingController', 'onDraggingEntry'],
-          onExit: ['clearSelection', 'clearDraggingController', 'onDraggingExit'],
+          onExit: ['onDraggingExit', 'clearDraggingController'],
           on: {
             'TRIGGER_END': {
               target: 'idle'
@@ -94,7 +99,8 @@ const machine = Machine({
 }, {
   guards: {
     locked: (context, event) => context.locked === true,
-    unlocked: (context, event) => context.locked === false
+    unlocked: (context, event) => context.locked === false,
+    selectionPresent: (context, event) => context.selection != null
   },
   actions: {
     lock: assign({
