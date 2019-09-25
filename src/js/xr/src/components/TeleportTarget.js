@@ -57,7 +57,7 @@ const TeleportTarget = ({ api, gltf, isDragging }) => {
     [gltf]
   )
 
-  return <group ref={ref}>
+  return <group ref={ref} visible={false}>
     <primitive object={mesh} />
   </group>
 }
