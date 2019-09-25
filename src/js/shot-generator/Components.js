@@ -474,10 +474,11 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
                   CustomModelHelpButton,
                   {
                     style: {
-                      width: 15,
-                      height: 15
                       color: '#eee',
                       backgroundColor: '#333',
+                      width: 16,
+                      height: 16,
+                      fontSize: '10px'
                     }
                   }
                 ]
