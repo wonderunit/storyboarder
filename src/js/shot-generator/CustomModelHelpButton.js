@@ -4,7 +4,8 @@ const h = require('../utils/h')
 
 const CustomModelHelpButton = ({ style = {
   color: '#eee',
-  backgroundColor: '#444'
+  backgroundColor: '#444',
+  padding: '2px 0 0 0'
 }}) => {
   const url = 'https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator'
 
@@ -38,8 +39,7 @@ const CustomModelHelpButton = ({ style = {
         style: {
           textAlign: 'center',
           display: 'inline-block',
-          width: '100%',
-          marginTop: '1px' // optical
+          width: '100%'
         }
       },
       '?'

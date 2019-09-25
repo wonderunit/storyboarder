@@ -498,7 +498,7 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
                   backgroundColor: 'rgba(255, 255, 255, 0.05)'
                 }
               },
-              ['div', { style: { flex: 1, margin: '0 0 0 9px' } },
+              ['div', { style: { flex: 1, margin: '-3px 0 0 9px' } },
                 [
                   'a[href=#]',
                   {
