@@ -224,7 +224,7 @@ const ModelSelect = connect(
             : ['div.column', { style: { alignSelf: 'center', padding: 6, lineHeight: 1 } }, 'or'],
           [FileSelect, { model: sceneObject.model, onSelectFile }],
           [
-            'div.column', { style: { width: 40, padding: '0 0 0 6px' } }, [
+            'div.column', { style: { width: 20, margin: '0 0 0 6px', alignSelf: 'center', alignItems: 'flex-end' } }, [
               CustomModelHelpButton
             ]
           ]
