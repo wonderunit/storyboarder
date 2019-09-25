@@ -835,7 +835,6 @@ const useInteractionsManager = ({
         onDropLowest: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let placesForDrop = scene.__interaction.concat([groundRef.current])
-          let { worldScale } = useStoreApi.getState()
 
           if (object.userData.type === 'character') {
             let positionDifference = object.worldPosition().clone()
