@@ -14,6 +14,8 @@ const ModelLoader = require('../services/model-loader')
 const h = require('../utils/h')
 const { truncateMiddle } = require('../utils')
 
+const CustomModelHelpButton = require('./CustomModelHelpButton')
+
 const GUTTER_SIZE = 5
 const ITEM_WIDTH = 68
 const ITEM_HEIGHT = 132
@@ -220,7 +222,12 @@ const ModelSelect = connect(
           isCustom
             ? ['div.column', { style: { padding: 2 } }]
             : ['div.column', { style: { alignSelf: 'center', padding: 6, lineHeight: 1 } }, 'or'],
-          [FileSelect, { model: sceneObject.model, onSelectFile }]
+          [FileSelect, { model: sceneObject.model, onSelectFile }],
+          [
+            'div.column', { style: { width: 40, padding: '0 0 0 6px' } }, [
+              CustomModelHelpButton
+            ]
+          ]
         ]],
 
         ['div.thumbnail-search__list', [
