@@ -105,7 +105,6 @@ class XRRagdoll extends XRIKObject
             }
          */
             this.ikSwitcher.applyToIk();
-            this.resetTargets()
             this.resetControlPoints();
            // this.ikSwitcher.applyToIk();
         }
@@ -113,7 +112,6 @@ class XRRagdoll extends XRIKObject
         {
             if(this.applyingOffset)
             {
-                this.resetPoleTarget();
             }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
@@ -272,42 +270,6 @@ class XRRagdoll extends XRIKObject
         this.calculteBackOffset();
     }
 
-    // Resets pole target position when object moved his hips position changed
-    resetPoleTarget()
-    {
-        let chainObjects = this.chainObjects;
-        let hipsTarget = this.hipsControlTarget;
-        let {angle, axis} = this.hips.quaternion.toAngleAxis();
-        let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
-        let armsAngleAxis = spineWorldQuat.toAngleAxis();
-        for(let i = 0; i < chainObjects.length; i++)
-        {
-            let constraint = this.chainObjects[i].poleConstraint;
-            if(!constraint)
-            {
-                continue;
-            }
-            let targetPosition = new THREE.Vector3();
-            hipsTarget.getWorldPosition(targetPosition);
-            let poleOffset = constraint.poleTarget.poleOffset;
-            let mesh = constraint.poleTarget.mesh;
-            mesh.applyMatrix(mesh.parent.matrixWorld);
-            mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
-            if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
-            {
-                mesh.rotateAroundPoint(targetPosition, armsAngleAxis.axis, armsAngleAxis.angle);
-            }
-            else
-            {
-                mesh.rotateAroundPoint(targetPosition, axis, angle);
-            
-            }
-            mesh.applyMatrix(mesh.parent.getInverseMatrixWorld());
-            mesh.updateMatrixWorld(true);
-        }
-    }
-
-
     setUpControlTargetsInitialPosition()
     {
         for(let i = 0; i < this.chainObjects.length; i++)
@@ -361,7 +323,6 @@ class XRRagdoll extends XRIKObject
     resetTargets()
     {
         super.resetTargets();
-        this.resetPoleTarget();
     }
 
     updateReact()
