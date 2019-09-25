@@ -30,7 +30,7 @@ const useImageBitmapLoader = require('./hooks/use-texture-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
 
 const { WORLD_SCALE_LARGE, WORLD_SCALE_SMALL, useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
-const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
+const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-manager')
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')

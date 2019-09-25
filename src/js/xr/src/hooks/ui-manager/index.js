@@ -6,19 +6,19 @@ const { useSelector } = require('react-redux')
 const { useThree } = require('react-three-fiber')
 const { useMachine } = require('@xstate/react')
 
-const { log } = require('./components/Log')
-const uiMachine = require('./machines/uiMachine')
+const { log } = require('../../components/Log')
+const uiMachine = require('../../machines/uiMachine')
 
 const R = require('ramda')
 
 // all pose presets (so we can use `stand` for new characters)
-const defaultPosePresets = require('../../shared/reducers/shot-generator-presets/poses.json')
+const defaultPosePresets = require('../../../../shared/reducers/shot-generator-presets/poses.json')
 // id of the pose preset used for new characters
 const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
 const { create } = require('zustand')
 const { produce } = require('immer')
-const { setCookie, getCookie } = require('./helpers/cookies')
+const { setCookie, getCookie } = require('../../helpers/cookies')
 const {
   drawText,
   drawImageButton,
@@ -29,9 +29,9 @@ const {
   wrapText,
   drawPaneBGs,
   drawGrid
-} = require('./helpers/draw-ui')
+} = require('./draw')
 
-const { setupHomePane, setupAddPane, setupSettingsPane } = require('./helpers/setup-ui')
+const { setupHomePane, setupAddPane, setupSettingsPane } = require('./setup')
 
 const [useUiStore] = create((set, get) => ({
   // values
@@ -583,7 +583,7 @@ const {
   getActiveCamera,
   undoGroupStart,
   undoGroupEnd
-} = require('../../shared/reducers/shot-generator')
+} = require('../../../../shared/reducers/shot-generator')
 
 // via PosePresetsEditor.js
 const comparePresetNames = (a, b) => {

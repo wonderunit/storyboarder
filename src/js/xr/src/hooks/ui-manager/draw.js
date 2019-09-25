@@ -4,7 +4,7 @@ const {
   undoGroupStart,
   undoGroupEnd,
   initialState
-} = require('../../../shared/reducers/shot-generator')
+} = require('../../../../shared/reducers/shot-generator')
 
 const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
