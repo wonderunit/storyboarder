@@ -62,6 +62,7 @@ const setupHomePane = (paneComponents, self) => {
       image: 'settings',
 
       onSelect: () => {
+        if (self.state.mode === 'settings') self.send('TOGGLE_HELP', { value: false })
         self.send('TOGGLE_SETTINGS')
       }
     },

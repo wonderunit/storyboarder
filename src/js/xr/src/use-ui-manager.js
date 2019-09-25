@@ -42,7 +42,7 @@ const [useUiStore] = create((set, get) => ({
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
-  setShowHelp: value => set(produce(state => { state.showHelp = !state.showHelp })),
+  setShowHelp: value => set(produce(state => { state.showHelp = value })),
 
   set: fn => set(produce(fn))
 }))
@@ -615,6 +615,7 @@ const useUiManager = ({ playSound, stopSound }) => {
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
   const setShowCameras = useUiStore(state => state.setShowCameras)
   const setShowHelp = useUiStore(state => state.setShowHelp)
+  const showHelp = useUiStore().showHelp
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
@@ -844,7 +845,8 @@ const useUiManager = ({ playSound, stopSound }) => {
         },
 
         onToggleHelp (context, event) {
-          setShowHelp()
+          const { value } = event
+          setShowHelp(value || !showHelp)
         }
       }
     }
@@ -882,6 +884,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     if (selections.length) {
       uiSend('GO_PROPERTIES')
     } else {
+      if (showHelp) uiSend('TOGGLE_HELP')
       uiSend('GO_HOME')
     }
   }, [selections, sceneObjects, poses, models])
