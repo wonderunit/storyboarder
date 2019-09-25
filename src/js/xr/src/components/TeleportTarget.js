@@ -28,8 +28,32 @@ const TeleportTarget = ({ api, gltf, isDragging }) => {
     [isDragging]
   )
 
+  const materialFactory = () => new THREE.MeshToonMaterial({
+    color: 0xcccccc,
+    emissive: 0x0,
+    specular: 0x0,
+    reflectivity: 0x0,
+    skinning: false,
+    shininess: 0,
+    flatShading: false,
+    morphNormals: false,
+    morphTargets: false
+  })
+
   const mesh = useMemoOne(
-    () => gltf.scene.children[0].clone(),
+    () => {
+      let mesh = gltf.scene.children[0].clone()
+
+      let material = materialFactory()
+
+      if (mesh.material.map) {
+        material.map = mesh.material.map
+        material.map.needsUpdate = true
+      }
+      mesh.material = material
+
+      return mesh
+    },
     [gltf]
   )
 
