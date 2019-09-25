@@ -14,10 +14,12 @@ class IKHelper extends THREE.Object3D
             this.selectedContolPoint = null;
             instance.ragDoll = new RagDoll();
             this.poleTargets = new THREE.Group();
+            this.selectedControlPoint = null;
             this.add(this.poleTargets);
             this.add(this.controlPoints);
             intializeInstancedMesh(mesh);
-            this.targets = this.poleTargets.children.concat(this.controlPoints.children);
+            this.add(this.instancedMesh);
+            this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
         }
         return instance;
     }
@@ -30,22 +32,22 @@ class IKHelper extends THREE.Object3D
     initialize(skinnedMesh)
     {
         let ragDoll = instance.ragDoll;
-        let meshes = this.targets;
+        let meshes = this.targetPoints;
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
-            mesh.scale.set(0.5, 0.1, 0.5)
-            mesh.userData.id = skinnedMesh.uuid;
+            mesh.scale.set(0.5, 0.5, 0.5)
         }
         ragDoll.initObject(this, skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
         ragDoll.reinitialize();
+        this.updateAllTargetPoints();
     }
 
     selectControlPoint(name)
     {
-        let targets = this.poleTargets.children.concat(this.controlPoints.children);
-        this.selectedControlPoint = targets.find(object => object.name === name);
-        if(!this.selectControlPoint) return;
+        let targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
+        this.selectedControlPoint = targetPoints.find(object => object.name === name);
+        if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
         console.log(this.selectedControlPoint.clone());
         if(name === "Hips")
@@ -90,6 +92,20 @@ class IKHelper extends THREE.Object3D
     {
         super.updateMatrixWorld(value);
         this.ragDoll.update();
+        if(this.selectedControlPoint)
+        {
+            let parent = this.selectedControlPoint.parent;
+            if(this.selectedControlPoint.userData.type === "controlPoint")
+            {
+                this.controlPoints.attach(this.selectedControlPoint);
+            }
+            else
+            {
+                this.poleTargets.attach(this.selectedControlPoint);
+            }
+            this.updateInstancedTargetPoint(this.selectedControlPoint, null, false);
+            parent.attach(this.selectedControlPoint);
+        }
     }
 
     raycast(raycaster, intersects)
@@ -103,22 +119,45 @@ class IKHelper extends THREE.Object3D
         }
     }
 
-    resetTargetPoints(targetPoint)
+    resetTargetPoint(targetPoint)
     {
-        targetPoints.position.copy(this.defaultPosition);
-        targetPoints.rotation.set(0, 0, 0);
-        targetPoints.quaternion.set(0, 0, 0, 0);
-        targetPoints.scale.set(0, 0, 0);
-        this.updateInstancedBone(targetPoints, this.defaultColor);
+        targetPoint.position.copy(this.defaultPosition);
+        targetPoint.rotation.set(0, 0, 0);
+        targetPoint.quaternion.set(0, 0, 0, 0);
+        targetPoint.scale.set(0, 0, 0);
+        this.updateInstancedTargetPoint(targetPoint, this.defaultColor);
     }
 
-    updateInstancedTargetPoint(targetPoint, color = null)
+    updateAllTargetPoints()
+    {
+        for(let i = 0; i < this.targetPoints.length; i++)
+        {
+            console.log(this.targetPoints[i]);
+            this.updateInstancedTargetPoint(this.targetPoints[i]);
+        }
+    }
+
+    updateInstancedTargetPoint(targetPoint, color = null, useWorld = false)
     {
         let id = targetPoint.userData.id;
-        this.instancedMesh.setPositionAt( id , targetPoint.position );
-        this.instancedMesh.setQuaternionAt( id , targetPoint.quaternion );
-        this.instancedMesh.setScaleAt( id , targetPoint.scale );
-
+        if(useWorld)
+        {
+            this.instancedMesh.setPositionAt( id , targetPoint.worldPosition() );
+            this.instancedMesh.setQuaternionAt( id , targetPoint.worldQuaternion() );
+            this.instancedMesh.setScaleAt( id , targetPoint.worldScale() );
+        }
+        else
+        {
+            this.instancedMesh.setPositionAt( id , targetPoint.position );
+            this.instancedMesh.setQuaternionAt( id , targetPoint.quaternion );
+            this.instancedMesh.setScaleAt( id , targetPoint.scale );
+        }
+        
+        if(color)
+        {
+            this.instancedMesh.setColorAt(id, color );
+            this.instancedMesh.needsUpdate("colors");
+        }
         this.instancedMesh.needsUpdate("position");
         this.instancedMesh.needsUpdate("quaternion");
         this.instancedMesh.needsUpdate("scale");
@@ -130,7 +169,8 @@ const intializeInstancedMesh = (mesh) =>
     let instance = IKHelper.getInstance();
     let listOfControlPoints = ["Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot", "Hips"];
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
-    let sizeOfTargets = listOfControlTargets.concat(listOfControlTargets).length;
+    let sizeOfTargets = listOfControlPoints.concat(listOfControlTargets).length;
+    console.log(sizeOfTargets);
     let material = new THREE.MeshBasicMaterial({
         color: 0x008888,    
         depthTest: false,
@@ -139,25 +179,29 @@ const intializeInstancedMesh = (mesh) =>
         opacity: 0.5,
         flatShading: true});
     instance.material = material;
-    instance.instancedControlPoints = new THREE.InstancedMesh(mesh.geometry, material, sizeOfTargets, true, true, false);
+    instance.instancedMesh = new THREE.InstancedMesh(mesh.geometry, material, sizeOfTargets, true, true, false);
     instance.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
+    instance.defaultColor = new THREE.Color().setHSL( 0.2 , 0.5 , 0.5 );
     for(let i = 0; i < 6; i++)
     {
         let controlPoint = new THREE.Mesh(mesh.geometry, material);
         controlPoint.userData.id = --sizeOfTargets;
+        console.log(sizeOfTargets);
+        controlPoint.material.visible = false;
         controlPoint.userData.type = "controlPoint";
         controlPoint.name = listOfControlPoints.shift();
         instance.controlPoints.add(controlPoint);
-        //instance.add(controlPoint);
+        instance.resetTargetPoint(controlPoint);
     }
     for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(mesh.geometry, material);
+        poleTarget.material.visible = false;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
         instance.poleTargets.add(poleTarget);
+        instance.resetTargetPoint(poleTarget);
     }
-    
 }
 module.exports = IKHelper;
