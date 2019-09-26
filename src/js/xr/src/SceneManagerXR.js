@@ -703,7 +703,13 @@ const SceneManagerXR = () => {
       {
         !ready && <div className='loading-button'>LOADING …</div>
       }
-      <Canvas vr>
+      <Canvas
+        // initialize camera for browser view at a standing height off the floor
+        // (this will change once the HMD initializes)
+        camera={{ 'position-y': 1.6, 'position-z': 0 }}
+        // enable VR
+        vr
+      >
         <Provider store={store}>
           {
             ready && <XRStartButton />
