@@ -287,7 +287,7 @@ class CanvasRenderer {
         ...(sceneObject.type === 'light') &&
           {
             intensity: {
-              label: `Intensity - ${sceneObject.intensity}`,
+              label: `Intensity - ${rounded(sceneObject.intensity)}`,
               lens: R.compose(R.lensPath(['intensity']), lenses.intensity)
             },
             angle: {
@@ -295,7 +295,7 @@ class CanvasRenderer {
               lens: R.compose(R.lensPath(['angle']), lenses.angle)
             },
             penumbra: {
-              label: `Penumbra - ${percent(sceneObject.penumbra)}%`,
+              label: `Penumbra - ${rounded(percent(sceneObject.penumbra), 1)}%`,
               lens: R.compose(R.lensPath(['penumbra']), lenses.penumbra)
             }
           }
