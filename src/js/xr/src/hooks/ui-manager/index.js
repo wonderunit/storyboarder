@@ -108,8 +108,10 @@ const rounded = (value, n = 100) => Math.round(value * n) / n
 
 const percent = value => `${value * 100}`
 
+const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
+
 class CanvasRenderer {
-  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -117,6 +119,7 @@ class CanvasRenderer {
     this.dispatch = dispatch
     this.service = service
     this.send = send
+    this.cameraAspectRatio = cameraAspectRatio
     this.getImageByFilepath = getImageByFilepath
 
     this.state = {
@@ -214,8 +217,7 @@ class CanvasRenderer {
         ...(sceneObject.type === 'camera') &&
           {
             fov: {
-              // TODO F.O.V. in mm
-              label: `F.O.V. - ${rounded(sceneObject.fov, 1)}°`,
+              label: `F.O.V. - ${rounded(getFovAsFocalLength(sceneObject.fov, this.cameraAspectRatio), 1)}mm`,
               lens: R.compose(R.lensPath(['fov']), lenses.fov)
             }
           },
@@ -708,6 +710,7 @@ const useUiManager = ({ playSound, stopSound }) => {
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
   const models = useSelector(state => state.models)
+  const cameraAspectRatio = useSelector(state => state.aspectRatio)
 
   const poses = useMemo(() =>
     Object.values(presets.poses)
@@ -948,7 +951,8 @@ const useUiManager = ({ playSound, stopSound }) => {
         uiSend,
         camera,
         getRoom,
-        getImageByFilepath
+        getImageByFilepath,
+        cameraAspectRatio
       )
     }
     return canvasRendererRef.current
