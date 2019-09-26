@@ -140,6 +140,7 @@ class XRRagdoll extends XRIKObject
                 let polePosition = poleConstraints.poleTarget.mesh.position;
                 poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
                 let poleTarget = poleConstraints.poleTarget;
+                if(poleTarget.mesh.userData.isInitialized) continue;
                 this.calculatePoleTargetOffset(poleTarget, chain);
                 poleTarget.initialize(poleTarget.poleOffset);
             }
@@ -184,7 +185,19 @@ class XRRagdoll extends XRIKObject
         {
             let poleTargetMesh = poleTargetMeshes[i - 1];
             let chain = this.ik.chains[i];
-            let poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1], poleTargetMesh);
+            let poleTarget = null;
+            if(poleTargetMesh.userData.isInitialized)
+            {
+                poleTarget = new PoleTarget();
+                poleTarget.mesh = poleTargetMesh;
+                poleTarget.name = name;
+
+                console.log("Already intialized", poleTargetMesh);
+            }
+            else
+            {
+                poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1], poleTargetMesh);
+            }
             let poleConstraint = new XrPoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
             this.chainObjects[i].poleConstraint = poleConstraint;
@@ -205,7 +218,7 @@ class XRRagdoll extends XRIKObject
         this.calculatePoleTargetOffset(poleTarget, chain);
         poleTarget.initialize(poleTarget.poleOffset);
         poleTarget.name = name;
-    
+        
         return poleTarget;
     }
 

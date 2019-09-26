@@ -15,6 +15,7 @@ class IKHelper extends THREE.Object3D
             instance.ragDoll = new RagDoll();
             this.poleTargets = new THREE.Group();
             this.selectedControlPoint = null;
+            this.intializedSkinnedMesh = null;
             this.add(this.poleTargets);
             this.isPoleTargetsVisible = true;
             this.add(this.controlPoints);
@@ -32,12 +33,24 @@ class IKHelper extends THREE.Object3D
 
     initialize(skinnedMesh)
     {
+        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        this.intializedSkinnedMesh = skinnedMesh;
         let ragDoll = instance.ragDoll;
         let meshes = this.targetPoints;
         //skinnedMesh.parent.parent.parent.attach(this.poleTargets);
+        let intializedMeshes = skinnedMesh.userData.poleTargets ? skinnedMesh.userData.poleTargets : [];
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
+
+            let intializedMesh = intializedMeshes[mesh.name];
+            if(intializedMesh)
+            {
+                let pos = intializedMesh.position;
+                mesh.position.set(pos.x, pos.y, pos.z);
+                mesh.updateMatrixWorld();
+                mesh.userData.isInitialized = true;
+            }
             mesh.scale.set(0.5, 0.1, 0.5)
         }
         ragDoll.initObject(this, skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
@@ -72,6 +85,19 @@ class IKHelper extends THREE.Object3D
             }
             else
             {
+                if(!this.intializedSkinnedMesh.userData.poleTargets)
+                {
+                    this.intializedSkinnedMesh.userData.poleTargets = {};
+                }
+                this.intializedSkinnedMesh.userData.poleTargets[this.selectedControlPoint.name] = 
+                {
+                    position: 
+                    {
+                        x: this.selectedControlPoint.position.x,
+                        y: this.selectedControlPoint.position.y,
+                        z: this.selectedControlPoint.position.z,
+                    }
+                };
                 this.poleTargets.attach(this.selectedControlPoint);
             }
             if(this.selectedControlPoint.name === "Hips")
@@ -109,7 +135,9 @@ class IKHelper extends THREE.Object3D
             }
             else
             {
+
                 this.poleTargets.attach(this.selectedControlPoint);
+
             }
             this.updateInstancedTargetPoint(this.selectedControlPoint, null, false);
             parent.attach(this.selectedControlPoint);
