@@ -278,6 +278,13 @@ const SceneContent = connect(
       audio.stop()
       return audio
     }, [])
+    const dropAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.dropBuffer)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
     const uiCreateAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiCreateBuffer)
@@ -329,6 +336,10 @@ const SceneContent = connect(
         case 'teleport-rotate':
           fastSwooshAudio.stop()
           fastSwooshAudio.play()
+          break
+        case 'drop':
+          dropAudio.stop()
+          dropAudio.play()
           break
         case 'bone-hover':
           boneHoverVoicer.noteOn()
@@ -609,6 +620,7 @@ const SceneManagerXR = () => {
   const boneHoverBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-hover.ogg')
   const boneDroneBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-drone.ogg')
   const fastSwooshBuffer = useAudioLoader('/data/system/xr/snd/vr-fast-swoosh.ogg')
+  const dropBuffer = useAudioLoader('/data/system/xr/snd/vr-drop.ogg')
   const uiCreateBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-create.ogg')
   const uiDeleteBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-delete.ogg')
 
@@ -648,7 +660,7 @@ const SceneManagerXR = () => {
       let soundResources = [
         welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
         teleportAudioBuffer,
-        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer,
+        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
         uiCreateBuffer, uiDeleteBuffer
       ]
 
@@ -721,6 +733,7 @@ const SceneManagerXR = () => {
                   boneHoverBuffer,
                   boneDroneBuffer,
                   fastSwooshBuffer,
+                  dropBuffer,
                   uiCreateBuffer,
                   uiDeleteBuffer
                 }}
