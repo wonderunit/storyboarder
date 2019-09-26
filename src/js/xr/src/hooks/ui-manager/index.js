@@ -466,7 +466,7 @@ class CanvasRenderer {
       id: 'help-image',
       type: 'image-button',
       x: 0,
-      y: 1024 - 1024 * 0.775,
+      y: 1024 - 1024 * 0.775 - (230 - 6 - 22 - 48 + 6),
       width: 1024,
       height: 1024 * 0.775,
       image: `help_${this.state.helpIndex + 1}`,
@@ -967,9 +967,7 @@ const useUiManager = ({ playSound, stopSound }) => {
         },
 
         onToggleHelp (context, event) {
-          const { value } = event
-          if (typeof value === "undefined") setShowHelp(!showHelp)
-          else setShowHelp(value)
+          setShowHelp(!showHelp)
         },
 
         onIncrementHelp (context, event) {
@@ -1023,7 +1021,6 @@ const useUiManager = ({ playSound, stopSound }) => {
     if (selections.length) {
       uiSend('GO_PROPERTIES')
     } else {
-      if (showHelp) uiSend('TOGGLE_HELP')
       uiSend('GO_HOME')
     }
   }, [selections, sceneObjects, poses, models])

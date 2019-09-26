@@ -62,7 +62,6 @@ const setupHomePane = (paneComponents, self) => {
       image: 'settings',
 
       onSelect: () => {
-        if (self.state.mode === 'settings') self.send('TOGGLE_HELP', { value: false })
         self.send('TOGGLE_SETTINGS')
       }
     },
@@ -217,6 +216,7 @@ const setupSettingsPane = (paneComponents, self) => {
       image: 'help',
       drawBG: true,
       padding: 6,
+      fill: "#6E6E6E",
 
       onSelect: () => {
         self.send('TOGGLE_HELP')
@@ -231,9 +231,9 @@ const setupHelpPane = (paneComponents, self) => {
       id: 'prev-help',
       type: 'image-button',
       x: 6,
-      y: 230 - 6 - 22 - 96,
-      width: 96,
-      height: 96,
+      y: 6,
+      width: 48,
+      height: 48,
       image: 'arrow',
       flip: true,
       drawBG: true,
@@ -243,19 +243,36 @@ const setupHelpPane = (paneComponents, self) => {
         self.send('INCREMENT_HELP', { direction: 'decrement' })
       }
     },
+
     'next-help': {
       id: 'next-help',
       type: 'image-button',
-      x: 6 + 96 + 28 + 6,
-      y: 230 - 6 - 22 - 96,
-      width: 96,
-      height: 96,
+      x: 6 + 48 + 28 + 6,
+      y: 6,
+      width: 48,
+      height: 48,
       image: 'arrow',
       drawBG: true,
       padding: 6,
 
       onSelect: () => {
         self.send('INCREMENT_HELP', { direction: 'increment' })
+      }
+    },
+
+    'close-help': {
+      id: 'close-help',
+      type: 'image-button',
+      x: 1024 - 48 - 6,
+      y: 6,
+      width: 48,
+      height: 48,
+      image: 'close',
+      drawBG: true,
+      padding: 6,
+
+      onSelect: () => {
+        self.send('TOGGLE_HELP')
       }
     }
   }
