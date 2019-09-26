@@ -12,7 +12,7 @@ const Help = React.memo(({ mode, getCanvasRenderer }) => {
   const getTexture = useCallback(() => {
     if (textureRef.current === null) {
       textureRef.current = new THREE.CanvasTexture(getCanvasRenderer().helpCanvas)
-      // textureRef.current.flipY = false
+      textureRef.current.flipY = false
       textureRef.current.minFilter = THREE.LinearFilter
     }
     return textureRef.current

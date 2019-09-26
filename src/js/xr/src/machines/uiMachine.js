@@ -69,7 +69,8 @@ const machine = Machine({
             'REQUEST_DUPLICATE': { actions: 'onDuplicate' },
             'REQUEST_DELETE': { actions: 'onDelete' },
             'TOGGLE_SWITCH': { actions: 'onToggleSwitch' },
-            'TOGGLE_HELP': { actions: 'onToggleHelp' }
+            'TOGGLE_HELP': { actions: 'onToggleHelp' },
+            'INCREMENT_HELP': { actions: 'onIncrementHelp' }
           }
         },
         locked: {

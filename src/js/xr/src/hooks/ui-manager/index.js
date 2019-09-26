@@ -465,10 +465,11 @@ class CanvasRenderer {
       id: 'help-image',
       type: 'image-button',
       x: 0,
-      y: 0,
+      y: 1024 - 1024 * 0.775,
       width: 1024,
       height: 1024 * 0.775,
-      image: 'help_1'
+      image: 'help_1',
+      flipY: true
     }
 
     this.renderObjects(ctx, this.paneComponents['help'])
@@ -670,11 +671,12 @@ class CanvasRenderer {
     }
   }
 
-  getCanvasIntersection (u, v, ignoreInvisible = true) {
+  getCanvasIntersection (u, v, ignoreInvisible = true, intersectHelp = false) {
     let x = u * this.canvas.width
     let y = v * this.canvas.height
 
     for (let paneId in this.paneComponents) {
+      if (paneId === 'help' && !intersectHelp) continue
       for (let componentId in this.paneComponents[paneId]) {
         let component = this.paneComponents[paneId][componentId]
         if (ignoreInvisible && component.invisible) continue
@@ -785,7 +787,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
           let cr = getCanvasRenderer()
 
-          let canvasIntersection = cr.getCanvasIntersection(u, v)
+          let canvasIntersection = cr.getCanvasIntersection(u, v, true, showHelp)
 
           if (canvasIntersection) {
             let { id } = canvasIntersection
@@ -967,6 +969,10 @@ const useUiManager = ({ playSound, stopSound }) => {
           const { value } = event
           if (typeof value === "undefined") setShowHelp(!showHelp)
           else setShowHelp(value)
+        },
+
+        onIncrementHelp (context, event) {
+          const { value } = event
         }
       }
     }
