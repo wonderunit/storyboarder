@@ -300,7 +300,6 @@ class CanvasRenderer {
 
           // Object sizes
           if (key === 'size') {
-            // TODO
             this.dispatch(
               updateObject(sceneObject.id, {
                 width: result.height,
