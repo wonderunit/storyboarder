@@ -44,14 +44,15 @@ const TeleportTarget = ({ api, gltf, isDragging }) => {
     () => {
       let mesh = gltf.scene.children[0].clone()
 
-      let material = materialFactory()
+      let material = new THREE.MeshBasicMaterial({depthTest: false, depthWrite: false, opacity: 0.7, flatShading: true, toneMapped: false})
 
       if (mesh.material.map) {
-        material.map = mesh.material.map
-        material.map.needsUpdate = true
+        let map = mesh.material.map
+        material.color = new THREE.Color( 0x8c78f1 ) // 0x755bf9) // 0x856dff )
+        material.alphaMap = map
+        material.transparent = true
       }
       mesh.material = material
-
       return mesh
     },
     [gltf]
