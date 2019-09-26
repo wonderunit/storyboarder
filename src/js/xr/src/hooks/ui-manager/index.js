@@ -259,13 +259,12 @@ class CanvasRenderer {
                 height: {
                   label: `Height - ${rounded(sceneObject.height)}m`,
                   lens: R.compose(R.lensPath(['height']), lenses.characterHeight)
+                },
+                headScale: {
+                  label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
+                  lens: R.compose(R.lensPath(['headScale']), lenses.headScale)
                 }
               },
-
-            headScale: {
-              label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
-              lens: R.compose(R.lensPath(['headScale']), lenses.headScale)
-            },
 
             ...(
               modelSettings &&
