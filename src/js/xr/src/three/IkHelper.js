@@ -50,10 +50,13 @@ class IKHelper extends THREE.Object3D
         this.selectedControlPoint = targetPoints.find(object => object.name === name);
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
-        console.log(this.selectedControlPoint.clone());
         if(name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
+        }
+        if(name === "Head")
+        {
+            this.ragDoll.applyingOffset = true;
         }
     }
 
@@ -61,7 +64,6 @@ class IKHelper extends THREE.Object3D
     {
         if(this.selectedControlPoint)
         {  
-            console.log(this.selectedControlPoint.clone());
             this.ragDoll.isEnabledIk = false;
             if(this.selectedControlPoint.userData.type === "controlPoint")
             {
@@ -74,6 +76,10 @@ class IKHelper extends THREE.Object3D
             if(this.selectedControlPoint.name === "Hips")
             {
                 this.ragDoll.hipsMouseDown = false;
+            }
+            if(this.selectedControlPoint.name === "Head")
+            {
+                this.ragDoll.applyingOffset = false;
             }
             this.selectedControlPoint = null;
         }

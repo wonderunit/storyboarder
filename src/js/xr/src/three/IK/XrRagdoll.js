@@ -44,11 +44,6 @@ class XRRagdoll extends XRIKObject
         // Adds events to Back control
         //this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
         this.createPoleTargets(poleTargets);
-      /*   for(let i = 1; i < this.chainObjects.length; i++)
-        {
-            let poleMesh = this.chainObjects[i].poleConstraint.poleTarget.mesh;
-            object.attach(poleMesh);
-        } */
      /*    this.ragdollEvents.addHipsEvent();
         this.ragdollEvents.setUpControlsEvents(); */
         this.setUpControlTargetsInitialPosition();
