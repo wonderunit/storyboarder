@@ -19,6 +19,7 @@ const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 const { create } = require('zustand')
 const { produce } = require('immer')
 const { setCookie, getCookie } = require('../../helpers/cookies')
+const isUserModel = require('../../helpers/is-user-model')
 const {
   drawText,
   drawImageButton,
@@ -61,6 +62,10 @@ lenses.characterHeight = R.lens(
     height = clamp(height, height_min, height_max)
     return height
   }
+)
+lenses.characterScale = R.lens(
+  from => clamp(mapLinear(from, 0.3, 3, 0, 1), 0, 1),
+  to => mapLinear(clamp(to, 0, 1), 0, 1, 0.3, 3)
 )
 
 lenses.headScale = R.lens(
@@ -241,11 +246,19 @@ class CanvasRenderer {
 
         ...(sceneObject.type === 'character') &&
           {
-            height: {
-              // TODO if custom model object, use "size" (not "height")
-              label: `Height - ${rounded(sceneObject.height)}m`,
-              lens: R.compose(R.lensPath(['height']), lenses.characterHeight)
-            },
+            ...(isUserModel(sceneObject.model))
+              ? {
+                scale: {
+                  label: `Scale - ${rounded(percent(sceneObject.height), 1)}%`,
+                  lens: R.compose(R.lensPath(['height']), lenses.characterScale)
+                }
+              }
+              : {
+                height: {
+                  label: `Height - ${rounded(sceneObject.height)}m`,
+                  lens: R.compose(R.lensPath(['height']), lenses.characterHeight)
+                }
+              },
 
             headScale: {
               label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
@@ -306,6 +319,14 @@ class CanvasRenderer {
                 width: result.height,
                 height: result.height,
                 depth: result.height
+              })
+            )
+
+          // character scale
+          } else if (key === 'scale') {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                height: result.height,
               })
             )
 
