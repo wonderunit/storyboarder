@@ -57,9 +57,7 @@ const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ set
 const createDualShockController = require('../../shot-generator/DualshockController')
 
 const XRServer = require('../../xr/server')
-const XRServerOld = require('../../express-xr/app')
 let xrServer
-let xrServerOld
 
 
 window.addEventListener('load', () => {
@@ -112,7 +110,6 @@ ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) 
 
   if (!xrServer) {
     xrServer = new XRServer({ store })
-    xrServerOld = new XRServerOld({ store })
   }
 
 })
