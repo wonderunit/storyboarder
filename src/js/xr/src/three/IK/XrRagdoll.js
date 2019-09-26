@@ -105,9 +105,6 @@ class XRRagdoll extends XRIKObject
         }
         else
         {
-            if(this.applyingOffset)
-            {
-            }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
             //this.updateReact();
@@ -125,13 +122,18 @@ class XRRagdoll extends XRIKObject
         {
             let hipsTarget = this.hipsControlTarget;
             hipsTarget.applyMatrix(hipsTarget.parent.matrixWorld);
+            let targetPosition = hipsTarget.position.clone();
             let targetPos = hipsTarget.position.clone();
             hipsTarget.applyMatrix(hipsTarget.parent.getInverseMatrixWorld());
             targetPos.sub(this.objectTargetDiff);
+            //this.originalObject.worldToLocal(targetPos);
             this.clonedObject.position.copy(targetPos);
             this.clonedObject.updateMatrix();
             this.clonedObject.updateMatrixWorld(true);
             
+            this.hips.parent.worldToLocal(targetPosition);
+            this.hips.position.copy(targetPosition);
+            this.hips.updateMatrix();
             this.originalObject.position.copy(this.clonedObject.position);
             //this.updateCharPosition(this.clonedObject.position);
         }
@@ -168,10 +170,10 @@ class XRRagdoll extends XRIKObject
         this.calculteBackOffset();
         this.ikSwitcher.applyToIk();
         let hipsTarget = this.hipsControlTarget;
-        hipsTarget.applyMatrix(hipsTarget.parent.matrixWorld);
+
+        hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
         let hipsWP = hipsTarget.position.clone();
-        hipsTarget.applyMatrix(hipsTarget.parent.getInverseMatrixWorld());
-        
+        hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.getInverseMatrixWorld());
         this.originalObject.applyMatrix( this.originalObject.parent.matrixWorld);
         let originalObjectWp = this.originalObject.position.clone();
         this.originalObject.applyMatrix( this.originalObject.parent.getInverseMatrixWorld());
