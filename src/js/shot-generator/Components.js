@@ -99,6 +99,7 @@ const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
+const CustomModelHelpButton = require('./CustomModelHelpButton')
 
 require('../vendor/OutlineEffect.js')
 
@@ -448,33 +449,90 @@ const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updat
           ]
         ],
 
-        ['div.row', [
-          ['div', { style: { width: 50 } }, 'file'],
-          ['div', [
-            'a[href=#]',
-            {
-              onClick: preventDefault(event => {
-                let filepaths = dialog.showOpenDialog(null, {})
-                if (filepaths) {
-                  let filepath = filepaths[0]
-                  updateWorldEnvironment({ file: filepath })
-                } else {
-                  updateWorldEnvironment({ file: undefined })
+        ['div.column',
+          ['div.number-slider', [
+
+            [
+              'div.number-slider__label',
+              [
+                'div',
+                'File'
+              ],
+              [
+                'div',
+                {
+                  style: {
+                    alignSelf: 'center',
+                    alignItems: 'center',
+                    display: 'flex',
+                    padding: '0 0 0 6px',
+                    width: 15,
+                    height: 26
+                  }
+                },
+                [
+                  CustomModelHelpButton,
+                  {
+                    style: {
+                      color: '#eee',
+                      backgroundColor: '#333',
+                      width: 16,
+                      height: 16,
+                      fontSize: '10px'
+                    }
+                  }
+                ]
+              ]
+            ],
+
+            // number-slider__control
+            [
+              'div',
+              {
+                style: {
+                  display: 'flex',
+                  borderRadius: 4,
+                  width: 137,
+                  alignItems: 'center',
+                  alignContent: 'flex-end',
+                  backgroundColor: 'rgba(255, 255, 255, 0.05)'
                 }
-                // automatically blur to return keyboard control
-                document.activeElement.blur()
-                transition('TYPING_EXIT')
-              }),
-              style: {
-                fontStyle: 'italic',
-                textDecoration: 'none',
-                borderBottomWidth: '1px',
-                borderBottomStyle: 'dashed'
-              }
-            },
-            world.environment.file ? path.basename(world.environment.file) : '(none)'
+              },
+              ['div', { style: { flex: 1, margin: '-3px 0 0 9px' } },
+                [
+                  'a[href=#]',
+                  {
+                    onClick: preventDefault(event => {
+                      let filepaths = dialog.showOpenDialog(null, {})
+                      if (filepaths) {
+                        let filepath = filepaths[0]
+                        updateWorldEnvironment({ file: filepath })
+                      } else {
+                        updateWorldEnvironment({ file: undefined })
+                      }
+                      // automatically blur to return keyboard control
+                      document.activeElement.blur()
+                      transition('TYPING_EXIT')
+                    }),
+
+                    style: {
+                      fontStyle: 'italic',
+                      textDecoration: 'none',
+                      borderBottomWidth: '1px',
+                      borderBottomStyle: 'dashed',
+                      fontSize: 13,
+                      lineHeight: 1,
+                      color: '#aaa',
+                      textTransform: 'none'
+                    }
+                  },
+
+                  world.environment.file ? path.basename(world.environment.file) : '(none)'
+                ],
+              ]
+            ]
           ]]
-        ]],
+        ],
 
         ['div.column', [
           [NumberSlider, { label: 'x', value: world.environment.x, min: -30, max: 30, onSetValue: value => updateWorldEnvironment({ x: value }) } ],
@@ -1298,29 +1356,38 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
               ],
             ]],
 
-            ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
-
-            ['div', { style: { flex: 1 } },
-              Object.entries(sceneObject.morphTargets)
-              .filter(m => initialState.models[sceneObject.model].validMorphTargets.includes(m[0])).map(([ key, value ]) =>
-                [
-                  NumberSlider,
-                  {
-                    label: MORPH_TARGET_LABELS[key],
-                    min: 0,
-                    max: 100,
-                    step: 1,
-                    value: value * 100,
-                    onSetValue: value => updateObject(
-                      sceneObject.id,
-                      { morphTargets: { [key]: value / 100 }
-                    }),
-                    formatter: NumberSliderFormatter.percent
-                  }
-                ]
-              )
+          Object.values(initialState.models[sceneObject.model].validMorphTargets).length
+            ? [
+              'div',
+              { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } },
+              'morphs'
             ]
-          ]
+            : [],
+
+          Object.values(initialState.models[sceneObject.model].validMorphTargets).length
+            ? [
+              'div',
+              { style: { flex: 1 } },
+              Object.entries(sceneObject.morphTargets)
+                .filter(m => initialState.models[sceneObject.model].validMorphTargets.includes(m[0])).map(([ key, value ]) =>
+                  [
+                    NumberSlider,
+                    {
+                      label: MORPH_TARGET_LABELS[key],
+                      min: 0,
+                      max: 100,
+                      step: 1,
+                      value: value * 100,
+                      onSetValue: value => updateObject(
+                        sceneObject.id,
+                        { morphTargets: { [key]: value / 100 }}
+                      ),
+                      formatter: NumberSliderFormatter.percent
+                    }
+                  ])
+            ]
+            : [],
+        ]
       ),
 
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [

@@ -13,7 +13,7 @@ app._setDefaultAppPaths(path.join(__dirname, '..', '..', '..', '..', 'package.js
 
 
 
-const XRServer = require('../app')
+const XRServer = require('../server')
 const XRServerOld = require('../../express-xr/app')
 
 const { ActionCreators } = require('redux-undo')

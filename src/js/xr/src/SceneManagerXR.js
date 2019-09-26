@@ -30,7 +30,7 @@ const useImageBitmapLoader = require('./hooks/use-texture-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
 
 const { WORLD_SCALE_LARGE, WORLD_SCALE_SMALL, useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
-const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./use-ui-manager')
+const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-manager')
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
@@ -280,6 +280,13 @@ const SceneContent = connect(
       audio.stop()
       return audio
     }, [])
+    const dropAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.dropBuffer)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
     const uiCreateAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiCreateBuffer)
@@ -331,6 +338,10 @@ const SceneContent = connect(
         case 'teleport-rotate':
           fastSwooshAudio.stop()
           fastSwooshAudio.play()
+          break
+        case 'drop':
+          dropAudio.stop()
+          dropAudio.play()
           break
         case 'bone-hover':
           boneHoverVoicer.noteOn()
@@ -399,6 +410,9 @@ const SceneContent = connect(
       ref.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
+    const gamepads = navigator.getGamepads()
+    const gamepadFor = controller => gamepads[controller.userData.gamepad.index]
+
     return (
       <>
         <group
@@ -412,15 +426,13 @@ const SceneContent = connect(
             <primitive object={cameraAudioListener} />
           </primitive>
 
-          {controllers.filter(Boolean).map(controller =>
+          {controllers.filter(gamepadFor).map(controller =>
             <primitive key={controller.uuid} object={controller} >
               <Controller
                 gltf={resources.controllerGltf}
-                hand={navigator.getGamepads()[controller.userData.gamepad.index].hand}
+                hand={gamepadFor(controller).hand}
               />
-              {
-                navigator.getGamepads()[controller.userData.gamepad.index] &&
-                navigator.getGamepads()[controller.userData.gamepad.index].hand === (switchHand ? 'left' : 'right') &&
+              {gamepadFor(controller).hand === (switchHand ? 'left' : 'right') &&
                 <group>
                   <Controls
                     gltf={resources.controlsGltf}
@@ -616,6 +628,7 @@ const SceneManagerXR = () => {
   const boneHoverBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-hover.ogg')
   const boneDroneBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-drone.ogg')
   const fastSwooshBuffer = useAudioLoader('/data/system/xr/snd/vr-fast-swoosh.ogg')
+  const dropBuffer = useAudioLoader('/data/system/xr/snd/vr-drop.ogg')
   const uiCreateBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-create.ogg')
   const uiDeleteBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-delete.ogg')
 
@@ -655,7 +668,7 @@ const SceneManagerXR = () => {
       let soundResources = [
         welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
         teleportAudioBuffer,
-        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer,
+        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
         uiCreateBuffer, uiDeleteBuffer
       ]
 
@@ -728,6 +741,7 @@ const SceneManagerXR = () => {
                   boneHoverBuffer,
                   boneDroneBuffer,
                   fastSwooshBuffer,
+                  dropBuffer,
                   uiCreateBuffer,
                   uiDeleteBuffer
                 }}

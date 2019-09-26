@@ -1,4 +1,4 @@
-const { selectObject } = require('../../../shared/reducers/shot-generator')
+const { selectObject } = require('../../../../shared/reducers/shot-generator')
 
 const setupHomePane = (paneComponents, self) => {
   // 4 image buttons
