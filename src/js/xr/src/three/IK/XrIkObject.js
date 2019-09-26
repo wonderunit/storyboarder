@@ -23,6 +23,7 @@ class XrIkObject
         this.applyingOffset = false;
         this.isRotation = false;
         this.scene = null;  
+        this.hipsMouseDown = false;
     }
 
     //#region External Methods
@@ -157,10 +158,13 @@ class XrIkObject
         let hipsTarget = this.hipsControlTarget;
         // Sets back position when offset is not changing
         // When we are changing back position offset between hips and back shouldn't be applied
-        if(!this.applyingOffset)
+        if(!this.applyingOffset && this.hipsMouseDown)
         {
             let backTarget = this.chainObjects[0].controlTarget;
+
             let hipsPosition = hipsTarget.position.clone();
+            hipsTarget.parent.localToWorld(hipsPosition);
+            backTarget.parent.worldToLocal(hipsPosition);
             let result = hipsPosition.add(this.backOffset);
             backTarget.position.copy(result);
         }

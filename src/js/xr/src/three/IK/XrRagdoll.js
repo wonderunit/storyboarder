@@ -24,7 +24,7 @@ class XRRagdoll extends XRIKObject
     constructor()
     {
         super();
-        this.hipsMouseDown = false;
+
         this.poseChanged = false;
         this.controlTargetSelection = null;
         this.updatingReactPosition = [];
