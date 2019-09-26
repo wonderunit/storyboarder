@@ -9,7 +9,7 @@ const http = require('http').Server(app)
 
 const log = require('electron-log')
 
-const portNumber = 1235
+const portNumber = 1234
 
 const { getSerializedState, updateServer, updateSceneFromXR } = require('../shared/reducers/shot-generator')
 const getIpAddress = require('../utils/getIpAddress')
