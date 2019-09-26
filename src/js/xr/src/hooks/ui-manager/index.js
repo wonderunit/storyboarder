@@ -291,7 +291,7 @@ class CanvasRenderer {
               lens: R.compose(R.lensPath(['intensity']), lenses.intensity)
             },
             angle: {
-              label: `Angle - ${rounded(sceneObject.angle)}`,
+              label: `Angle - ${rounded(THREE.Math.radToDeg(sceneObject.angle), 1)}°`,
               lens: R.compose(R.lensPath(['angle']), lenses.angle)
             },
             penumbra: {
