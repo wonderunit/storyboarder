@@ -269,7 +269,7 @@ class CanvasRenderer {
             )
           },
 
-        ...(sceneObject.model === 'light') &&
+        ...(sceneObject.type === 'light') &&
           {
             intensity: {
               label: 'intensity',
