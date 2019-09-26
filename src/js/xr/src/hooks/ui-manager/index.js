@@ -88,8 +88,8 @@ lenses.angle = R.lens(
 )
 
 lenses.fov = R.lens(
-  vin => clamp(mapLinear(vin, 3, 71, 0, 1), 0, 1),
-  vout => clamp(mapLinear(steps(vout, 0.01), 0, 1, 3, 71), 3, 71)
+  from => mapLinear(clamp(from, 3, 71), 3, 71, 1, 0),
+  to => mapLinear(clamp(steps(to, 0.01), 0, 1), 1, 0, 3, 71)
 )
 
 for (let propertyName of ['width', 'height', 'depth']) {
@@ -225,7 +225,7 @@ class CanvasRenderer {
         ...(sceneObject.type === 'camera') &&
           {
             fov: {
-              label: `F.O.V. - ${rounded(getFovAsFocalLength(sceneObject.fov, this.cameraAspectRatio), 1)}mm`,
+              label: `Focal Length - ${rounded(getFovAsFocalLength(sceneObject.fov, this.cameraAspectRatio), 1)}mm`,
               lens: R.compose(R.lensPath(['fov']), lenses.fov)
             }
           },
