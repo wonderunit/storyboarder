@@ -19,6 +19,7 @@ const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 const { create } = require('zustand')
 const { produce } = require('immer')
 const { setCookie, getCookie } = require('../../helpers/cookies')
+const isUserModel = require('../../helpers/is-user-model')
 const {
   drawText,
   drawImageButton,
@@ -62,6 +63,10 @@ lenses.characterHeight = R.lens(
     return height
   }
 )
+lenses.characterScale = R.lens(
+  from => clamp(mapLinear(from, 0.3, 3, 0, 1), 0, 1),
+  to => mapLinear(clamp(to, 0, 1), 0, 1, 0.3, 3)
+)
 
 lenses.headScale = R.lens(
   vin => clamp(mapLinear(vin, 0.8, 1.2, 0, 1), 0, 1),
@@ -76,8 +81,8 @@ for (let propertyName of ['intensity', 'penumbra']) {
 }
 
 lenses.angle = R.lens(
-  vin => clamp(mapLinear(vin, 0, 1.57, 0, 1), 0, 1),
-  vout => clamp(steps(mapLinear(vout, 0, 1, 0, 1.57), 0.01), 0, 1.57)
+  vin => clamp(mapLinear(vin, 0.025, Math.PI / 2, 0, 1), 0, 1),
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0.025, Math.PI / 2), 0.01), 0.025, Math.PI / 2)
 )
 
 lenses.fov = R.lens(
@@ -98,12 +103,15 @@ lenses.morphTargets = R.lens(
   // from slider internal value to morphTarget value
   to => clamp(steps(to, 0.1), 0, 1)
 )
-lenses.ectomorphic = lenses.morphTargets
-lenses.mesomorphic = lenses.morphTargets
-lenses.endomorphic = lenses.morphTargets
+
+const rounded = (value, n = 100) => Math.round(value * n) / n
+
+const percent = value => `${value * 100}`
+
+const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
 
 class CanvasRenderer {
-  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -111,6 +119,7 @@ class CanvasRenderer {
     this.dispatch = dispatch
     this.service = service
     this.send = send
+    this.cameraAspectRatio = cameraAspectRatio
     this.getImageByFilepath = getImageByFilepath
 
     this.state = {
@@ -204,83 +213,167 @@ class CanvasRenderer {
       ctx.fillStyle = 'rgba(0,0,0)'
       roundRect(ctx, 554, 6, 439, 666, 25, true, false)
 
-      const propertyArray = []
-      switch (sceneObject.type) {
-        case 'camera':
-          propertyArray.push({ name: 'fov', label: 'F.O.V', rounding: 1 })
-          break
-        case 'object':
-          if (sceneObject.model === 'box') propertyArray.push({ name: 'width' }, { name: 'height' }, { name: 'depth' })
-          else propertyArray.push({ name: 'height', label: 'size' })
-          break
-        case 'character':
-          propertyArray.push({ name: 'height', lens: 'characterHeight' }, { name: 'headScale', label: 'head' })
-          break
-        case 'light':
-          propertyArray.push({ name: 'intensity' }, { name: 'angle' }, { name: 'penumbra' })
-          break
+      this.paneComponents['properties'] = {
+        ...(sceneObject.type === 'camera') &&
+          {
+            fov: {
+              label: `F.O.V. - ${rounded(getFovAsFocalLength(sceneObject.fov, this.cameraAspectRatio), 1)}mm`,
+              lens: R.compose(R.lensPath(['fov']), lenses.fov)
+            }
+          },
+
+        ...(sceneObject.type === 'object') && {
+          ...(sceneObject.model === 'box')
+            ? {
+              width: {
+                label: `Width - ${sceneObject.width}m`,
+                lens: R.compose(R.lensPath(['width']), lenses.width)
+              },
+              height: {
+                label: `Height - ${sceneObject.height}m`,
+                lens: R.compose(R.lensPath(['height']), lenses.height)
+              },
+              depth: {
+                label: `Depth - ${sceneObject.depth}m`,
+                lens: R.compose(R.lensPath(['depth']), lenses.depth)
+              }
+            }
+            : {
+              size: {
+                label: `Size - ${sceneObject.height}m`,
+                lens: R.compose(R.lensPath(['height']), lenses.height)
+              }
+            }
+        },
+
+        ...(sceneObject.type === 'character') &&
+          {
+            ...(isUserModel(sceneObject.model))
+              ? {
+                scale: {
+                  label: `Scale - ${rounded(percent(sceneObject.height), 1)}%`,
+                  lens: R.compose(R.lensPath(['height']), lenses.characterScale)
+                }
+              }
+              : {
+                height: {
+                  label: `Height - ${rounded(sceneObject.height)}m`,
+                  lens: R.compose(R.lensPath(['height']), lenses.characterHeight)
+                },
+                headScale: {
+                  label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
+                  lens: R.compose(R.lensPath(['headScale']), lenses.headScale)
+                }
+              },
+
+            ...(
+              modelSettings &&
+              modelSettings.validMorphTargets &&
+              modelSettings.validMorphTargets.reduce((components, morphTargetName) => {
+                let name = 'Morph Target'
+                if (morphTargetName == 'ectomorphic') name = 'Skinny'
+                if (morphTargetName == 'mesomorphic') name = 'Muscular'
+                if (morphTargetName == 'endomorphic') name = 'Obese'
+                let pathLens = R.lensPath(['morphTargets', morphTargetName])
+                components[morphTargetName] = {
+                  label: `${name} - ${Math.round(R.view(pathLens, sceneObject) * 100)}%`,
+                  lens: R.compose(pathLens, lenses.morphTargets)
+                }
+                return components
+              }, {})
+            )
+          },
+
+        ...(sceneObject.type === 'light') &&
+          {
+            intensity: {
+              label: `Intensity - ${sceneObject.intensity}`,
+              lens: R.compose(R.lensPath(['intensity']), lenses.intensity)
+            },
+            angle: {
+              label: `Angle - ${rounded(sceneObject.angle)}`,
+              lens: R.compose(R.lensPath(['angle']), lenses.angle)
+            },
+            penumbra: {
+              label: `Penumbra - ${sceneObject.penumbra}`,
+              lens: R.compose(R.lensPath(['penumbra']), lenses.penumbra)
+            }
+          }
       }
 
-      if (modelSettings && modelSettings.validMorphTargets) {
-        modelSettings.validMorphTargets.forEach((morphTargetName) => {
-          let label = 'Morph Target'
-          if (morphTargetName == 'ectomorphic') label = 'Skinny'
-          if (morphTargetName == 'mesomorphic') label = 'Muscular'
-          if (morphTargetName == 'endomorphic') label = 'Obese'
-          propertyArray.push({
-            name: morphTargetName,
-            label
-          })
-        })
-      }
 
-      this.paneComponents['properties'] = {}
-      for (let [i, property] of propertyArray.entries()) {
-        const { name, label, lens, rounding } = property
-        let labelValue = Math.round(sceneObject[name] * (rounding || 100)) / (rounding || 100)
-        if (name.includes('morphic')) labelValue = Math.round(sceneObject.morphTargets[name] * 100) + '%'
+      let i = -1
+      this.paneComponents['properties'] = Object.entries(this.paneComponents['properties']).reduce((components, [key, component]) => {
+        i++
 
-        this.paneComponents['properties'][name] = {
-          id: name,
+        let label = component.label
+
+        let state = R.view(component.lens, sceneObject)
+
+        let setState = value => {
+          let result = R.set(component.lens, value, sceneObject)
+
+          // Object sizes
+          if (key === 'size') {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                width: result.height,
+                height: result.height,
+                depth: result.height
+              })
+            )
+
+          // character scale
+          } else if (key === 'scale') {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                height: result.height,
+              })
+            )
+
+          // MorphTargets
+          } else if (key.includes('morphic')) {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                morphTargets: {
+                  [key]: result.morphTargets[key]
+                }
+              })
+            )
+
+          // Everything else
+          } else {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                [key]: result[key]
+              })
+            )
+          }
+        }
+
+        let onDrag = setState
+        let onDrop = setState
+
+        components[key] = {
+          ...component,
+
+          id: key,
+
           type: 'slider',
           x: 570,
           y: 30 + 90 * i,
           width: 420,
           height: 80,
 
-          label: `${label || name} - ${labelValue}`,
-          state: R.view(lenses[lens || name], name.includes('morphic') ? sceneObject.morphTargets[name] : sceneObject[name]),
+          label,
+          state,
 
-          setState: value => {
-
-            // Object sizes
-            if (label === 'size') {
-              this.dispatch(
-                updateObject(sceneObject.id, {
-                  width: R.set(lenses[name], value, sceneObject[name]),
-                  height: R.set(lenses[name], value, sceneObject[name]),
-                  depth: R.set(lenses[name], value, sceneObject[name])
-                })
-              )
-            }
-
-            // MorphTargets
-            else if (name.includes('morphic'))
-              this.dispatch(
-                updateObject(sceneObject.id, {
-                  morphTargets: { [name]: R.set(lenses[name], value, sceneObject.morphTargets[name]) }
-                })
-              )
-
-            // Everything else
-            else this.dispatch(updateObject(sceneObject.id, { [name]: R.set(lenses[lens || name], value, sceneObject[name]) }))
-          }
+          setState,
+          onDrag,
+          onDrop
         }
-
-        this.paneComponents['properties'][name].onDrag =
-        this.paneComponents['properties'][name].onDrop =
-        this.paneComponents['properties'][name].setState
-      }
+        return components
+      }, {})
 
       this.renderObjects(ctx, this.paneComponents['properties'])
     }
@@ -616,6 +709,7 @@ const useUiManager = ({ playSound, stopSound }) => {
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
   const models = useSelector(state => state.models)
+  const cameraAspectRatio = useSelector(state => state.aspectRatio)
 
   const poses = useMemo(() =>
     Object.values(presets.poses)
@@ -856,7 +950,8 @@ const useUiManager = ({ playSound, stopSound }) => {
         uiSend,
         camera,
         getRoom,
-        getImageByFilepath
+        getImageByFilepath,
+        cameraAspectRatio
       )
     }
     return canvasRendererRef.current
