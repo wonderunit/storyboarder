@@ -253,6 +253,7 @@ class CanvasRenderer {
             },
 
             ...(
+              modelSettings &&
               modelSettings.validMorphTargets &&
               modelSettings.validMorphTargets.reduce((components, morphTargetName) => {
                 let name = 'Morph Target'
