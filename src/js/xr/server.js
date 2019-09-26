@@ -17,7 +17,7 @@ const getIpAddress = require('../utils/getIpAddress')
 class XRServer {
   constructor ({ store }) {
     app.use(express.json({
-      limit: '1mb'
+      limit: '5mb'
     }))
 
     app.use('/', express.static(

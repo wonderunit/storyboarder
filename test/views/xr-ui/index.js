@@ -3,7 +3,7 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree } = require('react-three-fiber')
 
-const { Provider } = require('react-redux')
+const { Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect } = React = require('react')
 
@@ -161,7 +161,7 @@ const UITest = () => {
 
 const { createStore, applyMiddleware } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
-const { reducer, initialState } = require('../../../src/js/shared/reducers/shot-generator')
+const { reducer, initialState, getSelections, getSceneObjects } = require('../../../src/js/shared/reducers/shot-generator')
 
 const configureStore = state => createStore(reducer, state, applyMiddleware(thunkMiddleware))
 
@@ -174,13 +174,51 @@ fetch('/xr.storyboarder')
       presets: initialState.presets
     })
     store.dispatch({ type: 'LOAD_SCENE', payload: scene.boards[0].sg.data })
-    store.dispatch({ type: 'SELECT_OBJECT', payload: '26332F12-28FE-444C-B73F-B3F90B8C62A2' })
+
+    const selectFirstObjectByType = type => {
+      let sceneObject =
+        Object.values(scene.boards[0].sg.data.sceneObjects).find(o => o.type === type)
+      store.dispatch({ type: 'SELECT_OBJECT', payload: sceneObject.id })
+    }
 
     window.$r = { store }
 
+    selectFirstObjectByType('character')
+
+    const Selector = () => {
+      let selections = useSelector(getSelections)
+      let selection = selections.length > 0 && selections[0]
+      let sceneObjects = useSelector(getSceneObjects)
+      let sceneObject = selection && sceneObjects[selection]
+
+      const onChange = event => {
+        if (event.target.value == '') {
+          store.dispatch({ type: 'SELECT_OBJECT', payload: null })
+        } else {
+          selectFirstObjectByType(event.target.value)
+        }
+      }
+
+      return (
+        <div style={{ height: '33vh', padding: 12, backgroundColor: '#eee' }}>
+          Select first:&nbsp;
+          <select onChange={onChange} value={sceneObject.type || ''}>
+            <option value="">(null)</option>
+            <option value="character">Character</option>
+            <option value="object">ModelObject</option>
+            <option value="light">Light</option>
+            <option value="camera">Camera</option>
+          </select>
+        </div>
+      )
+    }
+
     ReactDOM.render(
       <Provider store={store}>
-        <UITest />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <UITest />
+          <Selector />
+        </div>
       </Provider>,
       document.getElementById('main')
     )

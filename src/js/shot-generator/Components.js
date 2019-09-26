@@ -1356,29 +1356,38 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
               ],
             ]],
 
-            ['div', { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } }, 'morphs'],
-
-            ['div', { style: { flex: 1 } },
-              Object.entries(sceneObject.morphTargets)
-              .filter(m => initialState.models[sceneObject.model].validMorphTargets.includes(m[0])).map(([ key, value ]) =>
-                [
-                  NumberSlider,
-                  {
-                    label: MORPH_TARGET_LABELS[key],
-                    min: 0,
-                    max: 100,
-                    step: 1,
-                    value: value * 100,
-                    onSetValue: value => updateObject(
-                      sceneObject.id,
-                      { morphTargets: { [key]: value / 100 }
-                    }),
-                    formatter: NumberSliderFormatter.percent
-                  }
-                ]
-              )
+          Object.values(initialState.models[sceneObject.model].validMorphTargets).length
+            ? [
+              'div',
+              { style: { margin: '6px 0 3px 0', fontStyle: 'italic' } },
+              'morphs'
             ]
-          ]
+            : [],
+
+          Object.values(initialState.models[sceneObject.model].validMorphTargets).length
+            ? [
+              'div',
+              { style: { flex: 1 } },
+              Object.entries(sceneObject.morphTargets)
+                .filter(m => initialState.models[sceneObject.model].validMorphTargets.includes(m[0])).map(([ key, value ]) =>
+                  [
+                    NumberSlider,
+                    {
+                      label: MORPH_TARGET_LABELS[key],
+                      min: 0,
+                      max: 100,
+                      step: 1,
+                      value: value * 100,
+                      onSetValue: value => updateObject(
+                        sceneObject.id,
+                        { morphTargets: { [key]: value / 100 }}
+                      ),
+                      formatter: NumberSliderFormatter.percent
+                    }
+                  ])
+            ]
+            : [],
+        ]
       ),
 
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [
