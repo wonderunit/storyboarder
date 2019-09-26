@@ -815,9 +815,15 @@ const useInteractionsManager = ({
           //TODO(): Select control point in ikHelper from here
           let object = event.intersection.object
           IKHelper.getInstance().selectControlPoint(object.name)
-          console.log(object)
           controller.attach(object)
           console.log("Entered")
+
+        },
+        moveAndRotateControlPoint: (context, event) =>
+        {
+          let selectedControlTarget = IKHelper.getInstance().selectedControlPoint
+          let { worldScale } = useStoreApi.getState()
+          moveObjectZ(selectedControlTarget, event, worldScale)
 
         },
         onDragControlPointExit: (context, event) =>

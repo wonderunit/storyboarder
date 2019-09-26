@@ -101,7 +101,11 @@ const machine = Machine({
         TRIGGER_END: {
           cond: 'controllerSame',
           target: 'selected'
-        }
+        },
+        AXES_CHANGED: {
+          actions: ['moveAndRotateControlPoint']
+        },
+
       },
     },
     drag_object: {
