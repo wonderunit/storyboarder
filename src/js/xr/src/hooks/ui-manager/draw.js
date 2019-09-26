@@ -22,10 +22,11 @@ const drawText = ({ ctx, label, size, align = 'left', baseline = 'top', color = 
 
 const drawImageButton = ({ ctx, width, height, image, flip = false, drawBG = false, padding = 0 }) => {
   ctx.save()
-  if (flip) ctx.scale(-1, 1)
 
   ctx.fillStyle = '#6E6E6E'
   if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, 25, true, false)
+
+  if (flip) ctx.scale(-1, 1)
 
   ctx.drawImage(image, flip ? -width : 0, 0, width, height)
   ctx.restore()

@@ -226,7 +226,31 @@ const setupSettingsPane = (paneComponents, self) => {
 }
 
 const setupHelpPane = (paneComponents, self) => {
-  paneComponents['help'] = {}
+  paneComponents['help'] = {
+    'prev-help': {
+      id: 'prev-help',
+      type: 'image-button',
+      x: 6,
+      y: 1024 - 230 + 6 + 22,
+      width: 96,
+      height: 96,
+      image: 'arrow',
+      flip: true,
+      drawBG: true,
+      padding: 6
+    },
+    'next-help': {
+      id: 'next-help',
+      type: 'image-button',
+      x: 6 + 96 + 28 + 6,
+      y: 1024 - 230 + 6 + 22,
+      width: 96,
+      height: 96,
+      image: 'arrow',
+      drawBG: true,
+      padding: 6
+    }
+  }
 }
 
 module.exports = {

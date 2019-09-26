@@ -1,8 +1,8 @@
 const { useMemo, useRef, useCallback } = React = require('react')
 const { useRender } = require('react-three-fiber')
 
-const SCALE = 0.2
-const POSITION = [-0.05, 0.02 + 0.1, 0.01 - 0.1]
+const SCALE = 0.19
+const POSITION = [-0.05, 0.02 + 0.115, 0.01 - 0.115]
 const ROTATION = [-0.8, 0, 0]
 
 const Help = React.memo(({ mode, getCanvasRenderer }) => {
@@ -20,7 +20,7 @@ const Help = React.memo(({ mode, getCanvasRenderer }) => {
 
   const mesh = useMemo(() => {
     return new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 0.775, 1),
+      new THREE.PlaneGeometry(1, 1, 1),
       new THREE.MeshBasicMaterial({ map: getTexture(), transparent: true, opacity: 0.8 })
     )
   }, [mode])

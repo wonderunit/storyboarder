@@ -466,8 +466,8 @@ class CanvasRenderer {
       type: 'image-button',
       x: 0,
       y: 0,
-      width: 1024 - 128,
-      height: 1024 - 128,
+      width: 1024,
+      height: 1024 * 0.775,
       image: 'help_1'
     }
 
