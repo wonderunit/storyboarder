@@ -16,6 +16,7 @@ class IKHelper extends THREE.Object3D
             this.poleTargets = new THREE.Group();
             this.selectedControlPoint = null;
             this.add(this.poleTargets);
+            this.isPoleTargetsVisible = true;
             this.add(this.controlPoints);
             intializeInstancedMesh(mesh);
             this.add(this.instancedMesh);
@@ -121,7 +122,8 @@ class IKHelper extends THREE.Object3D
 
     raycast(raycaster, intersects)
     {
-        let values = this.controlPoints.children.concat(this.poleTargets.children);
+        
+        let values = this.isPoleTargetsVisible ? this.targetPoints : this.controlPoints.children;
         let results = raycaster.intersectObjects(values);
         for (let result of results)
         {
@@ -150,11 +152,9 @@ class IKHelper extends THREE.Object3D
     updateInstancedTargetPoint(targetPoint, color = null, useWorld = false)
     {
         let id = targetPoint.userData.id;
-        if(useWorld)
+        if(targetPoint.userData.type === "poleTarget" && !this.isPoleTargetsVisible)
         {
-            this.instancedMesh.setPositionAt( id , targetPoint.worldPosition() );
-            this.instancedMesh.setQuaternionAt( id , targetPoint.worldQuaternion() );
-            this.instancedMesh.setScaleAt( id , targetPoint.worldScale() );
+            this.instancedMesh.setPositionAt( id , this.defaultPosition );
         }
         else
         {
@@ -208,7 +208,7 @@ const intializeInstancedMesh = (mesh) =>
     for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(mesh.geometry, material);
-        poleTarget.material.visible = true;
+        poleTarget.material.visible = false;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
