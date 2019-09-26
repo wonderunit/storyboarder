@@ -576,10 +576,10 @@ const XRStartButton = ({ }) => {
 }
 
 const APP_GLTFS = [
-  '/data/system/xr/sgcontroller.glb',
+  '/data/system/xr/controller.glb',
   '/data/system/xr/ui/controls.glb',
   '/data/system/dummies/bone.glb',
-  '/data/system/objects/camera.glb',
+  '/data/system/xr/virtual-camera.glb',
   '/data/system/xr/light.glb'
 ]
 
@@ -722,10 +722,10 @@ const SceneManagerXR = () => {
                   roomTexture,
                   teleportTexture,
 
-                  controllerGltf: getAsset('/data/system/xr/sgcontroller.glb'),
+                  controllerGltf: getAsset('/data/system/xr/controller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
-                  virtualCameraGltf: getAsset('/data/system/objects/camera.glb'),
+                  virtualCameraGltf: getAsset('/data/system/xr/virtual-camera.glb'),
                   lightGltf: getAsset('/data/system/xr/light.glb'),
 
                   welcomeAudioBuffer,
