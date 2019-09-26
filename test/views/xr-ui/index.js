@@ -175,19 +175,33 @@ fetch('/xr.storyboarder')
     })
     store.dispatch({ type: 'LOAD_SCENE', payload: scene.boards[0].sg.data })
 
-    // set a target
-    let type = 'character' // character, object, camera, light
-    let sceneObject =
-      Object.values(scene.boards[0].sg.data.sceneObjects).find(o => o.type === type)
-    store.dispatch({ type: 'SELECT_OBJECT', payload: sceneObject.id })
-
-    // store.dispatch({ type: 'SELECT_OBJECT', payload: '26332F12-28FE-444C-B73F-B3F90B8C62A2' })
+    const selectFirstObjectByType = type => {
+      let sceneObject =
+        Object.values(scene.boards[0].sg.data.sceneObjects).find(o => o.type === type)
+      store.dispatch({ type: 'SELECT_OBJECT', payload: sceneObject.id })
+    }
 
     window.$r = { store }
 
+    const onChange = event => {
+      selectFirstObjectByType(event.target.value)
+    }
+    selectFirstObjectByType('character')
+
     ReactDOM.render(
       <Provider store={store}>
-        <UITest />
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <UITest />
+          <div style={{ height: '33vh', padding: 12, backgroundColor: '#eee' }}>
+            Select first:&nbsp;
+            <select onChange={onChange}>
+              <option value="character">Character</option>
+              <option value="object">ModelObject</option>
+              <option value="light">Light</option>
+              <option value="camera">Camera</option>
+            </select>
+          </div>
+        </div>
       </Provider>,
       document.getElementById('main')
     )
