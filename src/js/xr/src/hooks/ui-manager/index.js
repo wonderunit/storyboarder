@@ -295,7 +295,7 @@ class CanvasRenderer {
               lens: R.compose(R.lensPath(['angle']), lenses.angle)
             },
             penumbra: {
-              label: `Penumbra - ${sceneObject.penumbra}`,
+              label: `Penumbra - ${percent(sceneObject.penumbra)}%`,
               lens: R.compose(R.lensPath(['penumbra']), lenses.penumbra)
             }
           }
