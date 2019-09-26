@@ -225,8 +225,13 @@ const setupSettingsPane = (paneComponents, self) => {
   }
 }
 
+const setupHelpPane = (paneComponents, self) => {
+  paneComponents['help'] = {}
+}
+
 module.exports = {
   setupHomePane,
   setupAddPane,
-  setupSettingsPane
+  setupSettingsPane,
+  setupHelpPane
 }

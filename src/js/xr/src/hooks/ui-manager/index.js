@@ -32,7 +32,7 @@ const {
   drawGrid
 } = require('./draw')
 
-const { setupHomePane, setupAddPane, setupSettingsPane } = require('./setup')
+const { setupHomePane, setupAddPane, setupSettingsPane, setupHelpPane } = require('./setup')
 
 const [useUiStore] = create((set, get) => ({
   // values
@@ -118,6 +118,10 @@ class CanvasRenderer {
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
 
+    this.helpCanvas = document.createElement('canvas')
+    this.helpCanvas.width = this.helpCanvas.height = size
+    this.helpContext = this.helpCanvas.getContext('2d')
+
     this.dispatch = dispatch
     this.service = service
     this.send = send
@@ -163,6 +167,7 @@ class CanvasRenderer {
     // setupaddpane
     // setupsettings
 
+    setupHelpPane(this.paneComponents, this)
 
     // setup each pane
 
@@ -447,6 +452,26 @@ class CanvasRenderer {
     if (this.state.mode == 'settings') {
       this.renderObjects(ctx, this.paneComponents['settings'])
     }
+  }
+
+  renderHelp () {
+
+    let canvas = this.helpCanvas
+    let ctx = this.helpContext
+
+    console.log('render help')
+
+    this.paneComponents['help']['help-image'] = {
+      id: 'help-image',
+      type: 'image-button',
+      x: 0,
+      y: 0,
+      width: 1024 - 128,
+      height: 1024 - 128,
+      image: 'help_1'
+    }
+
+    this.renderObjects(ctx, this.paneComponents['help'])
   }
 
   drawLoadableImage (filepath, onSuccess, onFail) {
@@ -940,7 +965,8 @@ const useUiManager = ({ playSound, stopSound }) => {
 
         onToggleHelp (context, event) {
           const { value } = event
-          setShowHelp(value || !showHelp)
+          if (typeof value === "undefined") setShowHelp(!showHelp)
+          else setShowHelp(value)
         }
       }
     }
@@ -975,6 +1001,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().state.poses = poses
     getCanvasRenderer().state.models = models
     getCanvasRenderer().needsRender = true
+    getCanvasRenderer().helpNeedsRender = true
 
     if (selections.length) {
       uiSend('GO_PROPERTIES')
