@@ -174,7 +174,14 @@ fetch('/xr.storyboarder')
       presets: initialState.presets
     })
     store.dispatch({ type: 'LOAD_SCENE', payload: scene.boards[0].sg.data })
-    store.dispatch({ type: 'SELECT_OBJECT', payload: '26332F12-28FE-444C-B73F-B3F90B8C62A2' })
+
+    // set a target
+    let type = 'character' // character, object, camera, light
+    let sceneObject =
+      Object.values(scene.boards[0].sg.data.sceneObjects).find(o => o.type === type)
+    store.dispatch({ type: 'SELECT_OBJECT', payload: sceneObject.id })
+
+    // store.dispatch({ type: 'SELECT_OBJECT', payload: '26332F12-28FE-444C-B73F-B3F90B8C62A2' })
 
     window.$r = { store }
 
