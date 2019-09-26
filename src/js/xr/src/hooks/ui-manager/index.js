@@ -76,8 +76,8 @@ for (let propertyName of ['intensity', 'penumbra']) {
 }
 
 lenses.angle = R.lens(
-  vin => clamp(mapLinear(vin, 0, 1.57, 0, 1), 0, 1),
-  vout => clamp(steps(mapLinear(vout, 0, 1, 0, 1.57), 0.01), 0, 1.57)
+  vin => clamp(mapLinear(vin, 0.025, Math.PI / 2, 0, 1), 0, 1),
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0.025, Math.PI / 2), 0.01), 0.025, Math.PI / 2)
 )
 
 lenses.fov = R.lens(
