@@ -98,9 +98,10 @@ lenses.morphTargets = R.lens(
   // from slider internal value to morphTarget value
   to => clamp(steps(to, 0.1), 0, 1)
 )
-lenses.ectomorphic = lenses.morphTargets
-lenses.mesomorphic = lenses.morphTargets
-lenses.endomorphic = lenses.morphTargets
+
+const rounded = (value, n = 100) => Math.round(value * n) / n
+
+const percent = value => `${value * 100}`
 
 class CanvasRenderer {
   constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath) {
@@ -204,83 +205,153 @@ class CanvasRenderer {
       ctx.fillStyle = 'rgba(0,0,0)'
       roundRect(ctx, 554, 6, 439, 666, 25, true, false)
 
-      const propertyArray = []
-      switch (sceneObject.type) {
-        case 'camera':
-          propertyArray.push({ name: 'fov', label: 'F.O.V', rounding: 1 })
-          break
-        case 'object':
-          if (sceneObject.model === 'box') propertyArray.push({ name: 'width' }, { name: 'height' }, { name: 'depth' })
-          else propertyArray.push({ name: 'height', label: 'size' })
-          break
-        case 'character':
-          propertyArray.push({ name: 'height', lens: 'characterHeight' }, { name: 'headScale', label: 'head' })
-          break
-        case 'light':
-          propertyArray.push({ name: 'intensity' }, { name: 'angle' }, { name: 'penumbra' })
-          break
+      this.paneComponents['properties'] = {
+        ...(sceneObject.type === 'camera') &&
+          {
+            fov: {
+              // TODO F.O.V. tweaks
+              label: `F.O.V. - ${rounded(sceneObject.fov, 1)}mm`,
+              lens: R.compose(R.lensPath(['fov']), lenses.fov)
+            }
+          },
+
+        ...(sceneObject.type === 'object') && {
+          ...(sceneObject.model === 'box')
+            ? {
+              width: {
+                label: `Width - ${sceneObject.width}m`,
+                lens: R.compose(R.lensPath(['width']), lenses.width)
+              },
+              height: {
+                label: `Height - ${sceneObject.height}m`,
+                lens: R.compose(R.lensPath(['height']), lenses.height)
+              },
+              depth: {
+                label: `Depth - ${sceneObject.depth}m`,
+                lens: R.compose(R.lensPath(['depth']), lenses.depth)
+              }
+            }
+            : {
+              size: {
+                label: `Size - ${sceneObject.height}m`,
+                lens: R.compose(R.lensPath(['height']), lenses.height)
+              }
+            }
+        },
+
+        ...(sceneObject.type === 'character') &&
+          {
+            height: {
+              // TODO if custom model object, use "size" (not "height")
+              label: `Height - ${rounded(sceneObject.height)}m`,
+              lens: R.compose(R.lensPath(['height']), lenses.characterHeight)
+            },
+
+            headScale: {
+              label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
+              lens: R.compose(R.lensPath(['headScale']), lenses.headScale)
+            },
+
+            ...(
+              modelSettings.validMorphTargets &&
+              modelSettings.validMorphTargets.reduce((components, morphTargetName) => {
+                let name = 'Morph Target'
+                if (morphTargetName == 'ectomorphic') name = 'Skinny'
+                if (morphTargetName == 'mesomorphic') name = 'Muscular'
+                if (morphTargetName == 'endomorphic') name = 'Obese'
+                let pathLens = R.lensPath(['morphTargets', morphTargetName])
+                components[morphTargetName] = {
+                  label: `${name} - ${Math.round(R.view(pathLens, sceneObject) * 100)}%`,
+                  lens: R.compose(pathLens, lenses.morphTargets)
+                }
+                return components
+              }, {})
+            )
+          },
+
+        ...(sceneObject.model === 'light') &&
+          {
+            intensity: {
+              label: 'intensity',
+              lens: R.compose(R.lensPath(['intensity']), lenses.intensity)
+            },
+            angle: {
+              label: 'angle',
+              lens: R.compose(R.lensPath(['angle']), lenses.angle)
+            },
+            penumbra: {
+              label: 'penumbra',
+              lens: R.compose(R.lensPath(['penumbra']), lenses.penumbra)
+            }
+          }
       }
 
-      if (modelSettings && modelSettings.validMorphTargets) {
-        modelSettings.validMorphTargets.forEach((morphTargetName) => {
-          let label = 'Morph Target'
-          if (morphTargetName == 'ectomorphic') label = 'Skinny'
-          if (morphTargetName == 'mesomorphic') label = 'Muscular'
-          if (morphTargetName == 'endomorphic') label = 'Obese'
-          propertyArray.push({
-            name: morphTargetName,
-            label
-          })
-        })
-      }
 
-      this.paneComponents['properties'] = {}
-      for (let [i, property] of propertyArray.entries()) {
-        const { name, label, lens, rounding } = property
-        let labelValue = Math.round(sceneObject[name] * (rounding || 100)) / (rounding || 100)
-        if (name.includes('morphic')) labelValue = Math.round(sceneObject.morphTargets[name] * 100) + '%'
+      let i = -1
+      this.paneComponents['properties'] = Object.entries(this.paneComponents['properties']).reduce((components, [key, component]) => {
+        i++
 
-        this.paneComponents['properties'][name] = {
-          id: name,
+        let label = component.label
+
+        let state = R.view(component.lens, sceneObject)
+
+        let setState = value => {
+          let result = R.set(component.lens, value, sceneObject)
+
+          // Object sizes
+          if (key === 'size') {
+            // TODO
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                width: result.height,
+                height: result.height,
+                depth: result.height
+              })
+            )
+
+          // MorphTargets
+          } else if (key.includes('morphic')) {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                morphTargets: {
+                  [key]: result.morphTargets[key]
+                }
+              })
+            )
+
+          // Everything else
+          } else {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                [key]: result[key]
+              })
+            )
+          }
+        }
+
+        let onDrag = setState
+        let onDrop = setState
+
+        components[key] = {
+          ...component,
+
+          id: key,
+
           type: 'slider',
           x: 570,
           y: 30 + 90 * i,
           width: 420,
           height: 80,
 
-          label: `${label || name} - ${labelValue}`,
-          state: R.view(lenses[lens || name], name.includes('morphic') ? sceneObject.morphTargets[name] : sceneObject[name]),
+          label,
+          state,
 
-          setState: value => {
-
-            // Object sizes
-            if (label === 'size') {
-              this.dispatch(
-                updateObject(sceneObject.id, {
-                  width: R.set(lenses[name], value, sceneObject[name]),
-                  height: R.set(lenses[name], value, sceneObject[name]),
-                  depth: R.set(lenses[name], value, sceneObject[name])
-                })
-              )
-            }
-
-            // MorphTargets
-            else if (name.includes('morphic'))
-              this.dispatch(
-                updateObject(sceneObject.id, {
-                  morphTargets: { [name]: R.set(lenses[name], value, sceneObject.morphTargets[name]) }
-                })
-              )
-
-            // Everything else
-            else this.dispatch(updateObject(sceneObject.id, { [name]: R.set(lenses[lens || name], value, sceneObject[name]) }))
-          }
+          setState,
+          onDrag,
+          onDrop
         }
-
-        this.paneComponents['properties'][name].onDrag =
-        this.paneComponents['properties'][name].onDrop =
-        this.paneComponents['properties'][name].setState
-      }
+        return components
+      }, {})
 
       this.renderObjects(ctx, this.paneComponents['properties'])
     }
