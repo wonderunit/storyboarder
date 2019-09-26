@@ -272,15 +272,15 @@ class CanvasRenderer {
         ...(sceneObject.type === 'light') &&
           {
             intensity: {
-              label: 'intensity',
+              label: `Intensity - ${sceneObject.intensity}`,
               lens: R.compose(R.lensPath(['intensity']), lenses.intensity)
             },
             angle: {
-              label: 'angle',
+              label: `Angle - ${rounded(sceneObject.angle)}`,
               lens: R.compose(R.lensPath(['angle']), lenses.angle)
             },
             penumbra: {
-              label: 'penumbra',
+              label: `Penumbra - ${sceneObject.penumbra}`,
               lens: R.compose(R.lensPath(['penumbra']), lenses.penumbra)
             }
           }
