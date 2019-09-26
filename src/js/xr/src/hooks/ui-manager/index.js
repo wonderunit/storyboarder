@@ -135,6 +135,7 @@ class CanvasRenderer {
       models: {},
       mode: 'home',
       context: {},
+      helpIndex: 0,
       grids: {
         tab: 'pose',
         startCoords: {},
@@ -468,7 +469,7 @@ class CanvasRenderer {
       y: 1024 - 1024 * 0.775,
       width: 1024,
       height: 1024 * 0.775,
-      image: 'help_1',
+      image: `help_${this.state.helpIndex + 1}`,
       flipY: true
     }
 
@@ -972,7 +973,17 @@ const useUiManager = ({ playSound, stopSound }) => {
         },
 
         onIncrementHelp (context, event) {
-          const { value } = event
+          const slideCount = 8
+          const { direction } = event
+          const { helpIndex } = getCanvasRenderer().state
+
+          if (direction === 'increment') getCanvasRenderer().state.helpIndex = (helpIndex + 1) % slideCount
+          else {
+            const value = helpIndex - 1
+            getCanvasRenderer().state.helpIndex = value < 0 ? slideCount - 1 : value
+          }
+
+          getCanvasRenderer().helpNeedsRender = true
         }
       }
     }

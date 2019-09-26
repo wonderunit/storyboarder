@@ -240,7 +240,7 @@ const setupHelpPane = (paneComponents, self) => {
       padding: 6,
 
       onSelect: () => {
-        self.send('INCREMENT_HELP', { value: 'decrement' })
+        self.send('INCREMENT_HELP', { direction: 'decrement' })
       }
     },
     'next-help': {
@@ -255,7 +255,7 @@ const setupHelpPane = (paneComponents, self) => {
       padding: 6,
 
       onSelect: () => {
-        self.send('INCREMENT_HELP', { value: 'increment' })
+        self.send('INCREMENT_HELP', { direction: 'increment' })
       }
     }
   }
