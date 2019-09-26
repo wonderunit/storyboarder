@@ -209,8 +209,8 @@ class CanvasRenderer {
         ...(sceneObject.type === 'camera') &&
           {
             fov: {
-              // TODO F.O.V. tweaks
-              label: `F.O.V. - ${rounded(sceneObject.fov, 1)}mm`,
+              // TODO F.O.V. in mm
+              label: `F.O.V. - ${rounded(sceneObject.fov, 1)}°`,
               lens: R.compose(R.lensPath(['fov']), lenses.fov)
             }
           },
