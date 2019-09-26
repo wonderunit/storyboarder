@@ -33,7 +33,7 @@ class IKHelper extends THREE.Object3D
     {
         let ragDoll = instance.ragDoll;
         let meshes = this.targetPoints;
-
+        //skinnedMesh.parent.parent.parent.attach(this.poleTargets);
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
@@ -208,7 +208,7 @@ const intializeInstancedMesh = (mesh) =>
     for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(mesh.geometry, material);
-        poleTarget.material.visible = false;
+        poleTarget.material.visible = true;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();

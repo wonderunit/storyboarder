@@ -824,7 +824,6 @@ const useInteractionsManager = ({
           let selectedControlTarget = IKHelper.getInstance().selectedControlPoint
           let { worldScale } = useStoreApi.getState()
           moveObjectZ(selectedControlTarget, event, worldScale)
-
         },
         onDragControlPointExit: (context, event) =>
         {

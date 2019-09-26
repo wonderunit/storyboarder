@@ -1,7 +1,7 @@
 const {IK}  = require("../../../../shot-generator/IK/core/three-ik");
 const XRIKObject = require( "./XrIkObject");
 const THREE = require( "three");
-const PoleConstraint = require( "../../../../shot-generator/IK/constraints/PoleConstraint");
+const XrPoleConstraint = require( "./Constraints/XrPoleConstraint");
 const PoleTarget = require( "../../../../shot-generator/IK/objects/PoleTarget");
 const CopyRotation = require( "../../../../shot-generator/IK/constraints/CopyRotation");
 require("../../../../shot-generator/IK/utils/Object3dExtension");
@@ -173,8 +173,8 @@ class XRRagdoll extends XRIKObject
     {
         let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
         let polePositions = [
-            new THREE.Vector3(0.3, 1, 0.5),
-            new THREE.Vector3(-0.3, 1, 0.5),
+            new THREE.Vector3(0.3, 1, -0.5),
+            new THREE.Vector3(-0.3, 1, -0.5),
             new THREE.Vector3(0, 0.4, 0.8),
             new THREE.Vector3(0, 0.4, 0.8)
         ];
@@ -185,7 +185,7 @@ class XRRagdoll extends XRIKObject
             let poleTargetMesh = poleTargetMeshes[i - 1];
             let chain = this.ik.chains[i];
             let poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1], poleTargetMesh);
-            let poleConstraint = new PoleConstraint(chain, poleTarget);
+            let poleConstraint = new XrPoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
             this.chainObjects[i].poleConstraint = poleConstraint;
         }
