@@ -106,22 +106,22 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		outlineAlpha: { value: defaultAlpha }
 	};
 
-	var vertexShaderChunk = [
+  var vertexShaderChunk = [
 
-		"uniform float outlineThickness;",
+    "uniform float outlineThickness;",
 
-		"vec4 calculateOutline( vec4 pos, vec3 objectNormal, vec4 skinned ) {",
+    "vec4 calculateOutline( vec4 pos, vec3 objectNormal, vec4 skinned ) {",
 
-		"	float thickness = outlineThickness;",
-		"	const float ratio = 1.0;", // TODO: support outline thickness ratio for each vertex
-		"	vec4 pos2 = projectionMatrix * modelViewMatrix * vec4( skinned.xyz + objectNormal, 1.0 );",
-		// NOTE: subtract pos2 from pos because BackSide objectNormal is negative
-		"	vec4 norm = normalize( pos - pos2 );",
-		"	return pos + norm * thickness * pos.w * ratio;",
+    "	float thickness = outlineThickness;",
+    "	const float ratio = 1.0;", // TODO: support outline thickness ratio for each vertex
+    "	vec4 pos2 = projectionMatrix * modelViewMatrix * vec4( skinned.xyz + objectNormal, 1.0 );",
+    // NOTE: subtract pos2 from pos because BackSide objectNormal is negative
+    "	vec4 norm = normalize( pos - pos2 );",
+    "	return pos + norm * thickness * pos.w * ratio;",
 
-		"}"
+    "}"
 
-	].join( "\n" );
+  ].join( "\n" );
 
 	var vertexShaderChunk2 = [
 
