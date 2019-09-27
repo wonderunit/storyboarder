@@ -290,7 +290,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type) {
       if (distance < 0.1) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
 
-        if (canvasIntersection) {
+        if (canvasIntersection && canvasIntersection.id !== 'grid-background') {
           const name = canvasIntersection.id
           const id = this.state.selections[0]
 
