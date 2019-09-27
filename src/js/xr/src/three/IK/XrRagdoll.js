@@ -262,11 +262,16 @@ class XRRagdoll extends XRIKObject
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
             let target = this.controlTargets[i];
+            //let boneGlobalQuat = 
+            target.quaternion.multiply(target.worldQuaternion().inverse());
             target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.worldQuaternion().inverse()));
-            target.inverseInitialQuaternion = bone.worldQuaternion().inverse().multiply(this.hips.worldQuaternion());
+           
+            //target.inverseInitialQuaternion = bone.worldQuaternion().inverse().multiply(this.hips.worldQuaternion());
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
         }
         this.controlTargets[0].isRotationLocked = true;
+        this.controlTargets[1].isRotationLocked = true;
+        this.controlTargets[2].isRotationLocked = true;
         this.controlTargets[3].isRotationLocked = true;
         this.controlTargets[4].isRotationLocked = true;
         this.relativeFixedAngle();
@@ -353,7 +358,6 @@ class XRRagdoll extends XRIKObject
                 let quaternion = bone.worldQuaternion().inverse();
                 let rotation = followBone.worldQuaternion();
                 bone.quaternion.multiply(quaternion);
-                targetQuat.premultiply(boneTarget.inverseInitialQuaternion);
                 targetQuat.premultiply(rotation);
                 bone.quaternion.multiply(targetQuat);
             }
@@ -370,10 +374,7 @@ class XRRagdoll extends XRIKObject
     {
         let targetQuat = boneTarget.worldQuaternion();
         let quaternion = bone.worldQuaternion().inverse();
-        let rotation = this.originalObject.children[0].worldQuaternion();
         bone.quaternion.multiply(quaternion);
-        targetQuat.premultiply(rotation);
-
         bone.quaternion.multiply(targetQuat);
     }
     //#endregion
