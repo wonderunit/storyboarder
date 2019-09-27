@@ -48,7 +48,6 @@ class XRRagdoll extends XRIKObject
         this.createPoleTargets(poleTargets);
      /*    this.ragdollEvents.addHipsEvent();
         this.ragdollEvents.setUpControlsEvents(); */
-        this.setUpControlTargetsInitialPosition();
 
     }
 
@@ -84,6 +83,7 @@ class XRRagdoll extends XRIKObject
             this.ikSwitcher.applyToIk();
             this.resetControlPoints();
             this.moveRagdoll();
+            this.setUpControlTargetsInitialPosition();
         }
         else
         {
@@ -155,7 +155,7 @@ class XRRagdoll extends XRIKObject
         let originalObjectWp = this.originalObject.position.clone();
         this.originalObject.applyMatrix( this.originalObject.parent.getInverseMatrixWorld());
         this.objectTargetDiff = new THREE.Vector3().subVectors(hipsWP, originalObjectWp);
-        this.setUpControlTargetsInitialPosition();
+        //this.setUpControlTargetsInitialPosition();
     }
 
     // Moves ragdoll hips when original object moved
