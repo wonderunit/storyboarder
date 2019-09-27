@@ -655,7 +655,8 @@ const SceneManager = connect(
           el: largeCanvasRef.current,
           selectOnPointerDown: mainViewCamera !== 'live',
           useIcons: mainViewCamera !== 'live',
-          transition
+          transition,
+          gl: largeRenderer.current
         }],
 
         [SelectionManager, {
@@ -665,7 +666,8 @@ const SceneManager = connect(
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',
           useIcons: mainViewCamera === 'live',
-          transition
+          transition,
+          gl: smallRenderer.current
         }],
 
         // [SelectionsMover, {
