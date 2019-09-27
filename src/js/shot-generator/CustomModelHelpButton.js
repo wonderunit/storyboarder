@@ -30,7 +30,7 @@ const CustomModelHelpButton = ({ style = {
 
         ...style
       },
-      title: `How to Create 3D Models for Custom Objects (${url})`,
+      title: `How to Create 3D Models for Custom Objects\n\n${url}`,
       onPointerUp
     },
     [

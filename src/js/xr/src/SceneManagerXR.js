@@ -584,10 +584,10 @@ const XRStartButton = ({ }) => {
 }
 
 const APP_GLTFS = [
-  '/data/system/xr/sgcontroller.glb',
+  '/data/system/xr/controller.glb',
   '/data/system/xr/ui/controls.glb',
   '/data/system/dummies/bone.glb',
-  '/data/system/objects/camera.glb',
+  '/data/system/xr/virtual-camera.glb',
   '/data/system/xr/light.glb'
 ]
 
@@ -711,7 +711,13 @@ const SceneManagerXR = () => {
       {
         !ready && <div className='loading-button'>LOADING …</div>
       }
-      <Canvas vr>
+      <Canvas
+        // initialize camera for browser view at a standing height off the floor
+        // (this will change once the HMD initializes)
+        camera={{ 'position-y': 1.6, 'position-z': 0 }}
+        // enable VR
+        vr
+      >
         <Provider store={store}>
           {
             ready && <XRStartButton />
@@ -724,10 +730,10 @@ const SceneManagerXR = () => {
                   roomTexture,
                   teleportTexture,
 
-                  controllerGltf: getAsset('/data/system/xr/sgcontroller.glb'),
+                  controllerGltf: getAsset('/data/system/xr/controller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
-                  virtualCameraGltf: getAsset('/data/system/objects/camera.glb'),
+                  virtualCameraGltf: getAsset('/data/system/xr/virtual-camera.glb'),
                   lightGltf: getAsset('/data/system/xr/light.glb'),
 
                   welcomeAudioBuffer,
