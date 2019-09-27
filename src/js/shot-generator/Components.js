@@ -101,7 +101,7 @@ const PosePresetsEditor = require('./PosePresetsEditor')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
 
-require('../vendor/OutlineEffect.js')
+
 
 
 window.THREE = THREE

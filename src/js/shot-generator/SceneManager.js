@@ -2,6 +2,10 @@ const { Provider, connect } = require('react-redux')
 const React = require('react')
 const { useState, useEffect, useRef, useContext, useMemo } = React
 
+const THREE = require('three')
+window.THREE = window.THREE || THREE
+require('three/examples/js/effects/OutlineEffect')
+
 const h = require('../utils/h')
 
 const {

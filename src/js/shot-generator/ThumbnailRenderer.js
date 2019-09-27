@@ -1,7 +1,7 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 
-require('../vendor/OutlineEffect.js')
+require('three/examples/js/effects/OutlineEffect')
 
 const IMAGE_WIDTH = 68
 const IMAGE_HEIGHT = 100
