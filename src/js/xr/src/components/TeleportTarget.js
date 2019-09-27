@@ -37,8 +37,7 @@ const TeleportTarget = ({ api, gltf, isDragging }) => {
         depthTest: false,
         depthWrite: false,
         opacity: 0.7,
-        flatShading: true,
-        toneMapped: false
+        flatShading: true
       })
 
       if (mesh.material.map) {
