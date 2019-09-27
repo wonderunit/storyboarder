@@ -131,7 +131,6 @@ const SceneContent = connect(
     // values
     const teleportPos = useStore(state => state.teleportPos)
     const teleportRot = useStore(state => state.teleportRot)
-    const teleportTargetValid = useStore(state => state.teleportTargetValid)
     const worldScale = useStore(state => state.worldScale)
 
     const switchHand = useUiStore(state => state.switchHand)
@@ -620,11 +619,8 @@ const SceneContent = connect(
 
           <TeleportTarget
             api={useStoreApi}
-            texture={resources.teleportTexture}
-            visible={
-              interactionServiceCurrent.value.match('drag_teleport') &&
-              teleportTargetValid
-            }
+            gltf={resources.teleportTargetGltf}
+            isDragging={interactionServiceCurrent.value.match('drag_teleport')}
           />
         </group>
       </>
@@ -642,7 +638,8 @@ const APP_GLTFS = [
   '/data/system/xr/ui/controls.glb',
   '/data/system/dummies/bone.glb',
   '/data/system/xr/virtual-camera.glb',
-  '/data/system/xr/light.glb'
+  '/data/system/xr/light.glb',
+  '/data/system/xr/teleport-target.glb'
 ]
 
 const SceneManagerXR = () => {
@@ -659,7 +656,6 @@ const SceneManagerXR = () => {
   // preload textures
   const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
   const roomTexture = useTextureLoader('/data/system/grid_wall2.png')
-  const teleportTexture = useTextureLoader('/data/system/xr/teleport.png')
 
   // preload icons
   const uiResources = UI_ICON_FILEPATHS.map(useImageBitmapLoader)
@@ -729,7 +725,7 @@ const SceneManagerXR = () => {
 
   useEffect(() => {
     if (!appAssetsLoaded) {
-      let appResources = [groundTexture, roomTexture, teleportTexture]
+      let appResources = [groundTexture, roomTexture]
       let soundResources = [
         welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
         teleportAudioBuffer,
@@ -744,7 +740,7 @@ const SceneManagerXR = () => {
 
       setAppAssetsLoaded(true)
     }
-  }, [appAssetsLoaded, groundTexture, roomTexture, teleportTexture, uiResources, APP_GLTFS, assets])
+  }, [appAssetsLoaded, groundTexture, roomTexture, uiResources, APP_GLTFS, assets])
 
   const [isLoading, setIsLoading] = useState(false)
   const [sceneObjectsPreloaded, setSceneObjectsPreloaded] = useState(false)
@@ -794,13 +790,13 @@ const SceneManagerXR = () => {
                 resources={{
                   groundTexture,
                   roomTexture,
-                  teleportTexture,
 
                   controllerGltf: getAsset('/data/system/xr/controller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
                   virtualCameraGltf: getAsset('/data/system/xr/virtual-camera.glb'),
                   lightGltf: getAsset('/data/system/xr/light.glb'),
+                  teleportTargetGltf: getAsset('/data/system/xr/teleport-target.glb'),
 
                   welcomeAudioBuffer,
                   atmosphereAudioBuffer,

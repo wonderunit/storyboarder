@@ -82,13 +82,15 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => 
   }, [sceneObject.model, gltf])
 
   useEffect(() => {
-    let amp = isSelected ? 0.2 : 0
-
     traverseMeshMaterials(ref.current, material => {
       if (material.emissive) {
-        material.emissive.r = 0x9a / 0xff * amp
-        // material.emissive.g = 0x72 / 0xff * amp
-        material.emissive.b = 0xe9 / 0xff * amp
+        if (isSelected) {
+          material.emissive = new THREE.Color( 0x755bf9 )
+          material.color = new THREE.Color( 0x222222 )
+        } else {
+          material.emissive = new THREE.Color( 0x000000 )
+          material.color = new THREE.Color( 0xcccccc )
+        }
       }
     })
   }, [ref.current, isSelected])
