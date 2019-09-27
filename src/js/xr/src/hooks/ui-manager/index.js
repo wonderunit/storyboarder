@@ -134,6 +134,7 @@ class CanvasRenderer {
     this.getImageByFilepath = getImageByFilepath
 
     this.state = {
+      activeCamera: null,
       selections: [],
       sceneObjects: {},
       poses: {},
@@ -394,6 +395,29 @@ class CanvasRenderer {
         return components
       }, {})
 
+      if (sceneObject.type === 'camera') {
+        const isActive = sceneObject.id === this.state.activeCamera
+
+        console.log(this.state.activeCamera, 'moi')
+
+        this.paneComponents['properties']['active-camera'] = {
+          id: 'active-camera',
+          type: 'slider',
+          x: 570,
+          y: 30 + 90,
+          width: 420,
+          height: 80,
+          label: isActive ? 'Active Camera' : 'Set as Active Camera',
+          state: Number(isActive),
+          onSelect: () => {
+            if (!isActive) {
+              this.dispatch(setActiveCamera(sceneObject.id))
+              this.needsRender = true
+            }
+          }
+        }
+      }
+      
       this.renderObjects(ctx, this.paneComponents['properties'])
     }
 
@@ -716,6 +740,7 @@ const {
   deleteObjects,
   duplicateObjects,
   getActiveCamera,
+  setActiveCamera,
   undoGroupStart,
   undoGroupEnd
 } = require('../../../../shared/reducers/shot-generator')
@@ -1027,6 +1052,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().state.sceneObjects = sceneObjects
     getCanvasRenderer().state.poses = poses
     getCanvasRenderer().state.models = models
+    getCanvasRenderer().state.activeCamera = activeCamera
     getCanvasRenderer().needsRender = true
     getCanvasRenderer().helpNeedsRender = true
 
@@ -1035,7 +1061,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses, models])
+  }, [selections, sceneObjects, poses, models, activeCamera])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
