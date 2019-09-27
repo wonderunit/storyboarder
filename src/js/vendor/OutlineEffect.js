@@ -113,11 +113,12 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
     "vec4 calculateOutline( vec4 pos, vec3 objectNormal, vec4 skinned ) {",
 
     "	float thickness = outlineThickness;",
+    " float aspect = projectionMatrix[0][0]/projectionMatrix[1][1];",
     "	const float ratio = 1.0;", // TODO: support outline thickness ratio for each vertex
     "	vec4 pos2 = projectionMatrix * modelViewMatrix * vec4( skinned.xyz + objectNormal, 1.0 );",
     // NOTE: subtract pos2 from pos because BackSide objectNormal is negative
     "	vec4 norm = normalize( pos - pos2 );",
-    "	return pos + norm * thickness * pos.w * ratio;",
+    "	return pos + norm * thickness * pos.w * ratio * vec4(aspect,1,1,1);",
 
     "}"
 
