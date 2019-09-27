@@ -82,6 +82,11 @@ for (let propertyName of ['intensity', 'penumbra']) {
   )
 }
 
+lenses.distance = R.lens(
+  vin => clamp(mapLinear(vin, 0, 100, 0, 1), 0, 1),
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0, 100), 0.1), 0, 100)
+)
+
 lenses.angle = R.lens(
   vin => clamp(mapLinear(vin, 0.025, Math.PI / 2, 0, 1), 0, 1),
   vout => clamp(steps(mapLinear(vout, 0, 1, 0.025, Math.PI / 2), 0.01), 0.025, Math.PI / 2)
@@ -303,6 +308,10 @@ class CanvasRenderer {
             angle: {
               label: `Angle - ${rounded(THREE.Math.radToDeg(sceneObject.angle), 1)}°`,
               lens: R.compose(R.lensPath(['angle']), lenses.angle)
+            },
+            distance: {
+              label: `Distance - ${rounded(sceneObject.distance)}`,
+              lens: R.compose(R.lensPath(['distance']), lenses.distance)
             },
             penumbra: {
               label: `Penumbra - ${rounded(percent(sceneObject.penumbra), 1)}%`,
