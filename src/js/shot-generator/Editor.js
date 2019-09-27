@@ -13,7 +13,7 @@ const log = require('electron-log')
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-require('three/examples/js/effects/OutlineEffect')
+require('../vendor/OutlineEffect')
 
 const {
   SceneContext,

@@ -4,7 +4,7 @@ const { useState, useEffect, useRef, useContext, useMemo } = React
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-require('three/examples/js/effects/OutlineEffect')
+require('../vendor/OutlineEffect')
 
 const h = require('../utils/h')
 
