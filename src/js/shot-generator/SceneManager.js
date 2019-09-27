@@ -154,8 +154,7 @@ const SceneManager = connect(
       //   largeCanvasSize.width,
       //   largeCanvasSize.height
       // )
-
-      largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current, {defaultThickness:0.008} )
+      setOutlineEffectParams('large')
 
       smallRenderer.current = new THREE.WebGLRenderer({
         canvas: smallCanvasRef.current,
@@ -165,9 +164,32 @@ const SceneManager = connect(
         300,
         300,
       )
-      smallRendererEffect.current = new THREE.OutlineEffect( smallRenderer.current, {defaultThickness:0.02, defaultAlpha:0.5, defaultColor: [ 0.4, 0.4, 0.4 ], ignoreMaterial: true} )
+      setOutlineEffectParams('small')
     }, [])
 
+    const setOutlineEffectParams = (type, params) => {
+      if (type === 'large') {
+        largeRendererEffect.current = new THREE.OutlineEffect(
+          largeRenderer.current,
+          {
+            defaultThickness: 0.008,
+            ...params
+          }
+        )
+      }
+      if (type === 'small') {
+        smallRendererEffect.current = new THREE.OutlineEffect(
+          smallRenderer.current,
+          {
+            defaultThickness: 0.02,
+            defaultAlpha: 0.5,
+            defaultColor: [0.4, 0.4, 0.4],
+            ignoreMaterial: true,
+            ...params
+          }
+        )
+      }
+    }
 
     // autofit ortho camera for scene
     useMemo(() => {
@@ -251,39 +273,50 @@ const SceneManager = connect(
       if (mainViewCamera === 'live') {
         // ortho camera is small
         smallRenderer.current.setSize(300, 300)
-        smallRendererEffect.current.setParams({
-          defaultThickness:0.02,
-          ignoreMaterial: true,
-          defaultColor: [ 0.4, 0.4, 0.4 ]
-        })
+        setOutlineEffectParams(
+          'small',
+          {
+            defaultThickness: 0.02,
+            ignoreMaterial: true,
+            defaultColor: [0.4, 0.4, 0.4]
+          }
+        )
 
         // perspective camera is large
         largeRenderer.current.setSize(width, height)
-
-        largeRendererEffect.current.setParams({
-          defaultThickness:0.008,
-          ignoreMaterial: false,
-          defaultColor: [0, 0, 0]
-        })
+        setOutlineEffectParams(
+          'large',
+          {
+            defaultThickness: 0.008,
+            ignoreMaterial: false,
+            defaultColor: [0, 0, 0]
+          }
+        )
 
       } else {
         // ortho camera is large
         largeRenderer.current.setSize(width, height)
-        largeRendererEffect.current.setParams({
-          defaultThickness:0.013,
-          ignoreMaterial: true,
-          defaultColor: [ 0.4, 0.4, 0.4 ]
-        })
+        setOutlineEffectParams(
+          'large',
+          {
+            defaultThickness: 0.013,
+            ignoreMaterial: true,
+            defaultColor: [ 0.4, 0.4, 0.4 ]
+          }
+        )
         // perspective camera is small
         smallRenderer.current.setSize(
           Math.floor(300),
           Math.floor(300 / aspectRatio)
         )
-        smallRendererEffect.current.setParams({
-          defaultThickness:0.008,
-          ignoreMaterial: false,
-          defaultColor: [0, 0, 0]
-        })
+        setOutlineEffectParams(
+          'small',
+          {
+            defaultThickness: 0.008,
+            ignoreMaterial: false,
+            defaultColor: [0, 0, 0]
+          }
+        )
       }
     }, [largeCanvasSize, mainViewCamera, aspectRatio])
 
