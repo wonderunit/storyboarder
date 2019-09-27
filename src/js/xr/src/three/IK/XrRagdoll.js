@@ -77,20 +77,18 @@ class XRRagdoll extends XRIKObject
         }
         if(!this.isEnabledIk)
         {
-            //if(this.hipsControlTarget.mode === "rotate" && this.attached)
+            if(this.hipsControlTarget.mode === "rotate" && this.attached)
             {
-                //this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.rotation)
+                this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.rotation)
             }
             this.ikSwitcher.applyToIk();
             this.resetControlPoints();
-           // this.ikSwitcher.applyToIk();
             this.moveRagdoll();
         }
         else
         {
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
-            //this.updateReact();
             this.relativeFixedAngle();
         }
     }
@@ -114,7 +112,6 @@ class XRRagdoll extends XRIKObject
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
             this.originalObject.position.copy(this.clonedObject.position);
-            //this.updateCharPosition(this.clonedObject.position);
         }
     }
 

@@ -102,6 +102,7 @@ class IKHelper extends THREE.Object3D
             }
             if(this.selectedControlPoint.name === "Hips")
             {
+                this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
                 this.ragDoll.hipsMouseDown = false;
             }
             if(this.selectedControlPoint.name === "Head")
@@ -109,6 +110,7 @@ class IKHelper extends THREE.Object3D
                 this.ragDoll.applyingOffset = false;
             }
             this.selectedControlPoint = null;
+            this.ragDoll.updateReact();
         }
     }
 
@@ -158,6 +160,13 @@ class IKHelper extends THREE.Object3D
           //result.bone = this.helpingBonesRelation.find(object => object.helpingBone.id === result.object.id).originalBone;
           intersects.push(result);
         }
+    }
+
+    setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos)
+    {
+        this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
+        this.ragDoll.updateSkeleton(updateSkeleton);
+        this.ragDoll.updateCharacterPos(updateCharacterPos);
     }
 
     resetTargetPoint(targetPoint)

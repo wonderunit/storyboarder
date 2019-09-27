@@ -37,6 +37,7 @@ const {
   selectObject,
   updateObject,
   updateCharacterSkeleton,
+  updateCharacterIkSkeleton,
 
   selectBone
 } = require('../../shared/reducers/shot-generator')
@@ -278,6 +279,40 @@ const useInteractionsManager = ({
       gpuPicker.current = new GPUPicker(gl)
     }
     return gpuPicker.current
+  }
+
+  const ikHelper = useRef(null)
+  const getIkHelper = () => {
+    if(ikHelper.current === null) {
+      ikHelper.current = IKHelper.getInstance()
+      const updateCharacterSkeleton = (name, rotation) => { dispatch(updateCharacterSkeleton({
+        id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+        name : name,
+        rotation: 
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }  
+      } ))}
+
+      const updateSkeleton = (skeleton) => { dispatch(updateCharacterIkSkeleton({
+        id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+        skeleton: skeleton  
+      } ))}
+
+      const updateCharacterPos = ({ x, y, z}) => dispatch(updateObject(
+        ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+        { x, y: z, z: y }
+      ))
+
+      ikHelper.current.setUpdate(
+        updateCharacterSkeleton,
+        updateSkeleton,
+        updateCharacterPos
+      )
+    }
+    return ikHelper.current 
   }
 
   // values
@@ -814,21 +849,21 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           //TODO(): Select control point in ikHelper from here
           let object = event.intersection.object
-          IKHelper.getInstance().selectControlPoint(object.name)
+          getIkHelper().selectControlPoint(object.name)
           controller.attach(object)
           console.log("Entered")
 
         },
         moveAndRotateControlPoint: (context, event) =>
         {
-          let selectedControlTarget = IKHelper.getInstance().selectedControlPoint
+          let selectedControlTarget = getIkHelper().selectedControlPoint
           let { worldScale } = useStoreApi.getState()
           moveObjectZ(selectedControlTarget, event, worldScale)
         },
         onDragControlPointExit: (context, event) =>
         {
           //TODO(): Deselect control point in IKHelper from here
-          IKHelper.getInstance().deselectControlPoint()
+          getIkHelper().deselectControlPoint()
           console.log("Exited")
         },
 
