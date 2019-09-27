@@ -417,12 +417,35 @@ class CanvasRenderer {
           }
         }
       }
+
+      if (sceneObject.type === 'character' || sceneObject.type === 'object') {
+        roundRect(ctx, 483, 288, 66, 105, 25, true, false)
+        this.paneComponents['properties']['extend-button'] = {
+          id: 'extend-button',
+          type: 'image-button',
+          x: 483 - 32 + 66 * 0.5,
+          y: 288 - 32 + 105 * 0.5,
+          width: 64,
+          height: 64,
+          image: 'arrow',
+          flip: true,
+
+          onSelect: () => {
+            this.send('TOGGLE_GRID')
+          }
+        }
+      } else {
+        ctx.clearRect(483, 288, 66, 105)
+      }
       
       this.renderObjects(ctx, this.paneComponents['properties'])
     }
 
     if (this.state.mode == 'grid') {
-      if (!sceneObject) return
+      if (!sceneObject || (sceneObject.type !== 'character' && sceneObject.type !== 'object')) {
+        ctx.clearRect(4, 6, 439, 666, 25)
+        return
+      }
 
       let titleHeight = 90
 

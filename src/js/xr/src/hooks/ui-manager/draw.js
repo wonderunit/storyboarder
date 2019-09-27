@@ -169,7 +169,7 @@ const drawPaneBGs = (ctx) => {
   // extended property
   roundRect(ctx, 554, 6, 439, 666, 25, true, false)
   roundRect(ctx, 6, 682, 439, 325 - 114, 25, true, false)
-  roundRect(ctx, 483, 288, 66, 105, 25, true, false)
+  // roundRect(ctx, 483, 288, 66, 105, 25, true, false)
   // home
   roundRect(ctx, 667, 684, 200, 200, 25, true, false)
   //roundRect(ctx, 667, 684, 200, 200, 25, true, false)
