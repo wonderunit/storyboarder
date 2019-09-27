@@ -504,12 +504,13 @@ const SceneContent = connect(
                     mode={uiCurrent.value.controls}
                     hand={switchHand ? 'left' : 'right'}
                     getCanvasRenderer={getCanvasRenderer} />
-                    { showHelp && <Help
+                  { showHelp &&
+                    <Help
                       mode={uiCurrent.value.controls}
                       getCanvasRenderer={getCanvasRenderer} />
-                    }
+                  }
                 </group>
-                }
+              }
             </primitive>
           )}
         </group>
