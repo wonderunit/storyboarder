@@ -83,6 +83,7 @@ class XrIKSwitcher
             }
             this.cloneToOriginRotation(cloneBone, originalBone);
         }
+        originalBones[0].position.copy(clonedBones[0].position);
         this.recalculateDifference();
     }
 

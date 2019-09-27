@@ -102,16 +102,17 @@ class XRRagdoll extends XRIKObject
             let hipsTarget = this.hipsControlTarget;
             let targetPosition = hipsTarget.worldPosition();
             let targetPos = hipsTarget.worldPosition();
-            targetPos.sub(this.objectTargetDiff);
+/*             targetPos.sub(this.objectTargetDiff);
 
             this.clonedObject.position.copy(targetPos);
             this.clonedObject.updateMatrix();
-            this.clonedObject.updateMatrixWorld(true);
-            
+            this.clonedObject.updateMatrixWorld(true); */
+        
             this.hips.parent.worldToLocal(targetPosition);
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
-            this.originalObject.position.copy(this.clonedObject.position);
+            //this.originalObject.position.copy(this.clonedObject.position);
+            //this.updateCharPosition(this.clonedObject.position);
         }
     }
 
