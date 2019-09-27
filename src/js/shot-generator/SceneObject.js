@@ -186,13 +186,13 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
     container.current.children[0].material.userData.outlineParameters =
       isSelected
         ? {
-          thickness: 0.008,
+          thickness: 0.004,
           color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
         }
-       : {
-         thickness: 0.008,
-         color: [ 0, 0, 0 ],
-       }
+        : {
+          thickness: 0.004,
+          color: [ 0, 0, 0 ],
+        }
 
     container.current.orthoIcon.setSelected(isSelected)
   }, [isSelected, loaded])
