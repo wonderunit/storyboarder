@@ -2,7 +2,7 @@
 const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
 const BoneRotationControl = require("./IK/objects/BoneRotationControl")
 const {AddTransformationControl, createTransformationControls} = require("./IK/utils/IkUtils");
-const {isCustomModel} = require('../services/model-loader')
+const { isCustomModel } = require('../services/model-loader')
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -292,19 +292,16 @@ const Character = React.memo(({
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
-        }  
-      } );}); 
-      console.log(mesh);
-      //TODO(): Make a better way to identify built in model
-      if(!(mesh.name === "female-adult-meso" || mesh.name === "adult-male-lod"
-      || mesh.name === "male-adult-meso" || mesh.name === "male-youth-meso"
-      || mesh.name === "female-youth-meso" || mesh.name === "child-LOD0"
-      || mesh.name === "baby-LOD0"))
-      {
-        console.log("custom model");
-        return;
+        }
+      } );});
+
+
+      if ( isCustomModel(props.model) ) {
+        console.log('Custom model. No IK.')
+        return
       }
-      console.log("Built-in model")
+
+      console.log('Built-in model. Setting up IK.')
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
 
