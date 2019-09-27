@@ -1,12 +1,12 @@
 const Voice = require('./Voice')
 
 class Voicer {
-  constructor(listener, max, buffer, options = { releaseTime: 0.05 }) {
+  constructor(listener, max, buffer, options = { releaseTime: 0.05, voiceOptions: { positional: true } }) {
     this.max = max
     this.voices = []
     this.volume = 1
     for (let i = 0; i < this.max; i++) {
-      let voice = new Voice(i, listener)
+      let voice = new Voice(i, listener, options.voiceOptions)
       voice.setBuffer(buffer)
       voice.setReleaseTime(options.releaseTime)
       this.voices.push(voice)
