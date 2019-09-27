@@ -202,6 +202,9 @@ class CanvasRenderer {
     let canvas = this.canvas
     let ctx = this.context
 
+    let id = this.state.selections[0]
+    let sceneObject = this.state.sceneObjects[id]
+
     console.log("render")
 
     if (this.state.context.locked) {
@@ -212,8 +215,7 @@ class CanvasRenderer {
 
     console.log(this.state.mode)
     if (this.state.mode == 'properties' || this.state.mode == 'grid') {
-      let id = this.state.selections[0]
-      let sceneObject = this.state.sceneObjects[id]
+      if (!sceneObject) return
 
       let modelSettings = this.state.models[sceneObject.model]
 
@@ -387,8 +389,8 @@ class CanvasRenderer {
     }
 
     if (this.state.mode == 'grid') {
-      let id = this.state.selections[0]
-      let sceneObject = this.state.sceneObjects[id]
+      if (!sceneObject) return
+
       let titleHeight = 90
 
       ctx.fillStyle = '#000'
@@ -470,7 +472,8 @@ class CanvasRenderer {
       width: 1024,
       height: 1024 * 0.775,
       image: `help_${this.state.helpIndex + 1}`,
-      flipY: true
+      flipY: true,
+      invisible: true
     }
 
     this.renderObjects(ctx, this.paneComponents['help'])
