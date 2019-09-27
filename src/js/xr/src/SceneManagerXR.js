@@ -306,10 +306,13 @@ const SceneContent = connect(
       return audio
     }, [])
     const helpVoicer = useMemo(() => {
-      let voicer = new Voicer(cameraAudioListener, 10, null, {
-        releaseTime: 0.2
+      let voicer = new Voicer(getCameraAudioListener(), 10, null, {
+        releaseTime: 0.2,
+        voiceOptions: {
+          positional: false
+        }
       })
-      voicer.setVolume(1)
+      voicer.setVolume(0.2)
       return voicer
     }, [])
 
