@@ -305,6 +305,13 @@ const SceneContent = connect(
       audio.stop()
       return audio
     }, [])
+    const helpVoicer = useMemo(() => {
+      let voicer = new Voicer(cameraAudioListener, 10, null, {
+        releaseTime: 0.2
+      })
+      voicer.setVolume(1)
+      return voicer
+    }, [])
 
     const isVrPresenting = useIsVrPresenting()
     useEffect(() => {
@@ -361,6 +368,47 @@ const SceneContent = connect(
           uiDeleteAudio.stop()
           uiDeleteAudio.play()
           break
+
+        case 'help1':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp1 })
+          break
+        case 'help2':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp2 })
+          break
+        case 'help3':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp3 })
+          break
+        case 'help4':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp4 })
+          break
+        case 'help5':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp5 })
+          break
+        case 'help6':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp6 })
+          break
+        case 'help7':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp7 })
+          break
+        case 'help8':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp8 })
+          break
+        case 'help9':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp9 })
+          break
+        case 'help10':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp10 })
+          break
       }
     }, [])
 
@@ -371,6 +419,20 @@ const SceneContent = connect(
           break
         case 'bone-drone':
           boneDroneVoicer.allNotesOff()
+          break
+
+        case 'help':
+        case 'help1':
+        case 'help2':
+        case 'help3':
+        case 'help4':
+        case 'help5':
+        case 'help6':
+        case 'help7':
+        case 'help8':
+        case 'help9':
+        case 'help10':
+          helpVoicer.allNotesOff()
           break
       }
     }, [])
@@ -632,6 +694,17 @@ const SceneManagerXR = () => {
   const uiCreateBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-create.ogg')
   const uiDeleteBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-delete.ogg')
 
+  const vrHelp1 = useAudioLoader('/data/system/xr/snd/vr-help-1.ogg')
+  const vrHelp2 = useAudioLoader('/data/system/xr/snd/vr-help-2.ogg')
+  const vrHelp3 = useAudioLoader('/data/system/xr/snd/vr-help-3.ogg')
+  const vrHelp4 = useAudioLoader('/data/system/xr/snd/vr-help-4.ogg')
+  const vrHelp5 = useAudioLoader('/data/system/xr/snd/vr-help-5.ogg')
+  const vrHelp6 = useAudioLoader('/data/system/xr/snd/vr-help-6.ogg')
+  const vrHelp7 = useAudioLoader('/data/system/xr/snd/vr-help-7.ogg')
+  const vrHelp8 = useAudioLoader('/data/system/xr/snd/vr-help-8.ogg')
+  const vrHelp9 = useAudioLoader('/data/system/xr/snd/vr-help-9.ogg')
+  const vrHelp10 = useAudioLoader('/data/system/xr/snd/vr-help-10.ogg')
+
   // scene
   const sceneObjects = useSelector(getSceneObjects)
   const world = useSelector(getWorld)
@@ -669,7 +742,8 @@ const SceneManagerXR = () => {
         welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
         teleportAudioBuffer,
         undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
-        uiCreateBuffer, uiDeleteBuffer
+        uiCreateBuffer, uiDeleteBuffer,
+        vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
       ]
 
       // fail if any app resources are missing
@@ -749,7 +823,9 @@ const SceneManagerXR = () => {
                   fastSwooshBuffer,
                   dropBuffer,
                   uiCreateBuffer,
-                  uiDeleteBuffer
+                  uiDeleteBuffer,
+
+                  vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
                 }}
                 getAsset={getAsset} />
               : null
