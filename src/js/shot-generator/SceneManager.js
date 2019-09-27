@@ -145,28 +145,6 @@ const SceneManager = connect(
       }
     }, [])
 
-    useMemo(() => {
-      largeRenderer.current = new THREE.WebGLRenderer({
-        canvas: largeCanvasRef.current,
-        antialias: true
-      })
-      // largeRenderer.current.setSize(
-      //   largeCanvasSize.width,
-      //   largeCanvasSize.height
-      // )
-      setOutlineEffectParams('large')
-
-      smallRenderer.current = new THREE.WebGLRenderer({
-        canvas: smallCanvasRef.current,
-        antialias: true
-      })
-      smallRenderer.current.setSize(
-        300,
-        300,
-      )
-      setOutlineEffectParams('small')
-    }, [])
-
     const setOutlineEffectParams = (type, params) => {
       if (type === 'large') {
         largeRendererEffect.current = new THREE.OutlineEffect(
@@ -190,6 +168,28 @@ const SceneManager = connect(
         )
       }
     }
+
+    useMemo(() => {
+      largeRenderer.current = new THREE.WebGLRenderer({
+        canvas: largeCanvasRef.current,
+        antialias: true
+      })
+      // largeRenderer.current.setSize(
+      //   largeCanvasSize.width,
+      //   largeCanvasSize.height
+      // )
+      setOutlineEffectParams('large')
+
+      smallRenderer.current = new THREE.WebGLRenderer({
+        canvas: smallCanvasRef.current,
+        antialias: true
+      })
+      smallRenderer.current.setSize(
+        300,
+        300,
+      )
+      setOutlineEffectParams('small')
+    }, [])
 
     // autofit ortho camera for scene
     useMemo(() => {
