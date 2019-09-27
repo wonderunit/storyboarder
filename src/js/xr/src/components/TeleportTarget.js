@@ -43,11 +43,13 @@ const TeleportTarget = ({ api, gltf, isDragging }) => {
 
       if (mesh.material.map) {
         let map = mesh.material.map
-        material.color = new THREE.Color( 0x8c78f1 ) // 0x755bf9) // 0x856dff )
+        material.color = new THREE.Color( 0x8c78f1 ) // or 0x755bf9 or 0x856dff
         material.alphaMap = map
         material.transparent = true
       }
+
       mesh.material = material
+
       return mesh
     },
     [gltf]
