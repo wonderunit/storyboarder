@@ -240,9 +240,9 @@ const ModelSelect = connect(
             rowHeight: ITEM_HEIGHT,
 
             width: 288,
-            height: rows === 1
-              ? 132
-              : rows * 121,
+            height: rows === 2
+              ? 248 // built-in Characters list
+              : rows * ITEM_HEIGHT, // built-in Models list
 
             innerElementType,
 

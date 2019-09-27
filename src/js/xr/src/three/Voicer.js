@@ -16,11 +16,14 @@ class Voicer {
   setVolume (value) {
     this.volume = value
   }
-  noteOn (target) {
+  noteOn (target, options = {}) {
     this.noteOff(this.curr)
 
     this.curr = (this.curr + 1) % this.max
     let voice = this.voices[this.curr]
+    if (options.buffer) {
+      voice.setBuffer(options.buffer)
+    }
     voice.noteOn(target, this.volume)
     return this.curr
   }

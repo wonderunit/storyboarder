@@ -2,7 +2,7 @@ const fs = require('fs-extra')
 const path = require('path')
 const pkg = require('../package.json')
 const { exec } = require('child_process')
-const { reducer, getSerializedState } = require('../src/js/shared/reducers/shot-generator')
+const { reducer, initialState, getSerializedState } = require('../src/js/shared/reducers/shot-generator')
 
 const srcPath = path.join(__dirname, '..')
 
@@ -22,10 +22,6 @@ fs.copySync(
 // data
 fs.mkdirpSync(path.join(dstPath, 'data'))
 fs.copySync(
-  path.join(srcPath, 'src', 'js', 'xr', 'public', 'snd'),
-  path.join(dstPath, 'data', 'snd')
-)
-fs.copySync(
   path.join(srcPath, 'src', 'data', 'shot-generator'),
   path.join(dstPath, 'data', 'system')
 )
@@ -41,7 +37,9 @@ const board = scene.boards[0]
 const state = reducer({}, { type: 'LOAD_SCENE', payload: board.sg.data })
 const data = {
   ...getSerializedState(state),
-  aspectRatio: scene.aspectRatio
+  aspectRatio: scene.aspectRatio,
+  models: initialState.models,
+  presets: initialState.presets
 }
 fs.writeFileSync(
   path.join(dstPath, 'state.json'),

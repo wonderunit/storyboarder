@@ -856,6 +856,8 @@ const useInteractionsManager = ({
           if (interactionService.state.value === 'selected') {
             commit(context.selection, object)
           }
+
+          playSound('drop')
         },
         onSelected: (context, event) => {
           let controller = event.controller

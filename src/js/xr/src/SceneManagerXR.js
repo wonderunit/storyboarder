@@ -277,6 +277,13 @@ const SceneContent = connect(
       audio.stop()
       return audio
     }, [])
+    const dropAudio = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.dropBuffer)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
     const uiCreateAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiCreateBuffer)
@@ -294,6 +301,13 @@ const SceneContent = connect(
       audio.play()
       audio.stop()
       return audio
+    }, [])
+    const helpVoicer = useMemo(() => {
+      let voicer = new Voicer(cameraAudioListener, 10, null, {
+        releaseTime: 0.2
+      })
+      voicer.setVolume(1)
+      return voicer
     }, [])
 
     const isVrPresenting = useIsVrPresenting()
@@ -329,6 +343,10 @@ const SceneContent = connect(
           fastSwooshAudio.stop()
           fastSwooshAudio.play()
           break
+        case 'drop':
+          dropAudio.stop()
+          dropAudio.play()
+          break
         case 'bone-hover':
           boneHoverVoicer.noteOn()
           break
@@ -347,6 +365,47 @@ const SceneContent = connect(
           uiDeleteAudio.stop()
           uiDeleteAudio.play()
           break
+
+        case 'help1':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp1 })
+          break
+        case 'help2':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp2 })
+          break
+        case 'help3':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp3 })
+          break
+        case 'help4':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp4 })
+          break
+        case 'help5':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp5 })
+          break
+        case 'help6':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp6 })
+          break
+        case 'help7':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp7 })
+          break
+        case 'help8':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp8 })
+          break
+        case 'help9':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp9 })
+          break
+        case 'help10':
+          helpVoicer.allNotesOff()
+          helpVoicer.noteOn(null, { buffer: resources.vrHelp10 })
+          break
       }
     }, [])
 
@@ -357,6 +416,20 @@ const SceneContent = connect(
           break
         case 'bone-drone':
           boneDroneVoicer.allNotesOff()
+          break
+
+        case 'help':
+        case 'help1':
+        case 'help2':
+        case 'help3':
+        case 'help4':
+        case 'help5':
+        case 'help6':
+        case 'help7':
+        case 'help8':
+        case 'help9':
+        case 'help10':
+          helpVoicer.allNotesOff()
           break
       }
     }, [])
@@ -561,12 +634,12 @@ const XRStartButton = ({ }) => {
 }
 
 const APP_GLTFS = [
-  '/data/system/xr/sgcontroller.glb',
+  '/data/system/xr/controller.glb',
   '/data/system/xr/ui/controls.glb',
   '/data/system/dummies/bone.glb',
-  '/data/system/objects/camera.glb',
+  '/data/system/xr/virtual-camera.glb',
   '/data/system/xr/light.glb',
-  '/data/system/xr/teleport-target.glb',
+  '/data/system/xr/teleport-target.glb'
 ]
 
 const SceneManagerXR = () => {
@@ -605,8 +678,20 @@ const SceneManagerXR = () => {
   const boneHoverBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-hover.ogg')
   const boneDroneBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-drone.ogg')
   const fastSwooshBuffer = useAudioLoader('/data/system/xr/snd/vr-fast-swoosh.ogg')
+  const dropBuffer = useAudioLoader('/data/system/xr/snd/vr-drop.ogg')
   const uiCreateBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-create.ogg')
   const uiDeleteBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-delete.ogg')
+
+  const vrHelp1 = useAudioLoader('/data/system/xr/snd/vr-help-1.ogg')
+  const vrHelp2 = useAudioLoader('/data/system/xr/snd/vr-help-2.ogg')
+  const vrHelp3 = useAudioLoader('/data/system/xr/snd/vr-help-3.ogg')
+  const vrHelp4 = useAudioLoader('/data/system/xr/snd/vr-help-4.ogg')
+  const vrHelp5 = useAudioLoader('/data/system/xr/snd/vr-help-5.ogg')
+  const vrHelp6 = useAudioLoader('/data/system/xr/snd/vr-help-6.ogg')
+  const vrHelp7 = useAudioLoader('/data/system/xr/snd/vr-help-7.ogg')
+  const vrHelp8 = useAudioLoader('/data/system/xr/snd/vr-help-8.ogg')
+  const vrHelp9 = useAudioLoader('/data/system/xr/snd/vr-help-9.ogg')
+  const vrHelp10 = useAudioLoader('/data/system/xr/snd/vr-help-10.ogg')
 
   // scene
   const sceneObjects = useSelector(getSceneObjects)
@@ -644,8 +729,9 @@ const SceneManagerXR = () => {
       let soundResources = [
         welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
         teleportAudioBuffer,
-        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer,
-        uiCreateBuffer, uiDeleteBuffer
+        undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
+        uiCreateBuffer, uiDeleteBuffer,
+        vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
       ]
 
       // fail if any app resources are missing
@@ -687,7 +773,13 @@ const SceneManagerXR = () => {
       {
         !ready && <div className='loading-button'>LOADING …</div>
       }
-      <Canvas vr>
+      <Canvas
+        // initialize camera for browser view at a standing height off the floor
+        // (this will change once the HMD initializes)
+        camera={{ 'position-y': 1.6, 'position-z': 0 }}
+        // enable VR
+        vr
+      >
         <Provider store={store}>
           {
             ready && <XRStartButton />
@@ -699,10 +791,10 @@ const SceneManagerXR = () => {
                   groundTexture,
                   roomTexture,
 
-                  controllerGltf: getAsset('/data/system/xr/sgcontroller.glb'),
+                  controllerGltf: getAsset('/data/system/xr/controller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
-                  virtualCameraGltf: getAsset('/data/system/objects/camera.glb'),
+                  virtualCameraGltf: getAsset('/data/system/xr/virtual-camera.glb'),
                   lightGltf: getAsset('/data/system/xr/light.glb'),
                   teleportTargetGltf: getAsset('/data/system/xr/teleport-target.glb'),
 
@@ -717,8 +809,11 @@ const SceneManagerXR = () => {
                   boneHoverBuffer,
                   boneDroneBuffer,
                   fastSwooshBuffer,
+                  dropBuffer,
                   uiCreateBuffer,
-                  uiDeleteBuffer
+                  uiDeleteBuffer,
+
+                  vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
                 }}
                 getAsset={getAsset} />
               : null
