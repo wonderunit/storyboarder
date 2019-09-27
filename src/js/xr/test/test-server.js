@@ -13,8 +13,7 @@ app._setDefaultAppPaths(path.join(__dirname, '..', '..', '..', '..', 'package.js
 
 
 
-const XRServer = require('../app')
-const XRServerOld = require('../../express-xr/app')
+const XRServer = require('../server')
 
 const { ActionCreators } = require('redux-undo')
 
@@ -98,4 +97,3 @@ store.dispatch(loadScene(shot.data))
 store.dispatch(ActionCreators.clearHistory())
 
 xrServer = new XRServer({ store })
-xrServerOld = new XRServerOld({ store })

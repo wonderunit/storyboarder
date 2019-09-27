@@ -25,6 +25,8 @@ const BonesHelper = require('./three/BonesHelper')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
+const {dropObject, dropCharacter } = require('./utils/dropToObjects')
+
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
 require('./three/GPUPickers/utils/Object3dExtension')
 require('../../shot-generator/IK/utils/axisUtils')
@@ -322,6 +324,31 @@ const useInteractionsManager = ({
   const store = useReduxStore()
   const dispatch = useDispatch()
 
+  const commit = (id, object) => {
+    const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+
+    if (object.userData.type == 'light' || object.userData.type == 'virtual-camera') {
+      dispatch(updateObject(id, {
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y,
+        rotation: euler.y,
+        roll: euler.z,
+        tilt: euler.x
+      }))
+    } else {
+      let rotation = object.userData.type == 'character'
+        ? euler.y
+        : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+      dispatch(updateObject(id, {
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y,
+        rotation
+      }))
+    }
+  }
+
   const onTriggerStart = event => {
     const controller = event.target
     let intersection = null
@@ -506,6 +533,7 @@ const useInteractionsManager = ({
     }
 
     if (match) {
+      // Simple test to check how drop works
       interactionService.send({
         type: 'GRIP_DOWN',
         controller: event.target,
@@ -554,6 +582,11 @@ const useInteractionsManager = ({
       dispatch(ActionCreators.redo())
       playSound('redo')
     }
+  }
+
+  const onPressEndX = event => {
+    // relay through state machine
+    interactionService.send({ type: 'PRESS_END_X', controller: event.target })
   }
 
   const onMoveCamera = event => {
@@ -617,7 +650,8 @@ const useInteractionsManager = ({
     onGripUp,
     onAxesChanged,
     onPressEndA,
-    onPressEndB
+    onPressEndB,
+    onPressEndX
   })
 
   const reusableVector = useRef()
@@ -798,7 +832,33 @@ const useInteractionsManager = ({
             playSound('teleport')
           }
         },
+        onDropLowest: (context, event) => {
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+          let placesForDrop = scene.__interaction.concat([groundRef.current])
 
+          if (object.userData.type === 'character') {
+            let positionDifference = object.worldPosition().clone()
+            dropCharacter(object, placesForDrop)
+            positionDifference.sub(object.worldPosition())
+
+            // if a controller is dragging the character ...
+            if (context.draggingController != null) {
+              // ... find out which controller it is
+              let controller = gl.vr.getController(context.draggingController)
+              // ... and add the difference to that controller's selectOffset
+              controller.userData.selectOffset.add(positionDifference)
+            }
+          } else {
+            dropObject(object, placesForDrop)
+          }
+
+          // if we're in `selected` mode, we can commit the change immediately
+          if (interactionService.state.value === 'selected') {
+            commit(context.selection, object)
+          }
+
+          playSound('drop')
+        },
         onSelected: (context, event) => {
           let controller = event.controller
           let { object, distance, point } = event.intersection
@@ -844,28 +904,7 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
 
-          const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
-
-          if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
-            dispatch(updateObject(context.selection, {
-              x: object.position.x,
-              y: object.position.z,
-              z: object.position.y,
-              rotation: euler.y,
-              roll: euler.z,
-              tilt: euler.x
-            }))
-          } else {
-            let rotation = object.userData.type == 'character'
-              ? euler.y
-              : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-            dispatch(updateObject(context.selection, {
-              x: object.position.x,
-              y: object.position.z,
-              z: object.position.y,
-              rotation
-            }))
-          }
+          commit(context.selection, object)
 
           uiService.send({ type: 'UNLOCK' })
         },

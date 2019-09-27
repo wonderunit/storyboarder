@@ -25,7 +25,8 @@ const useVrControllers = ({
   onGripUp,
   onAxesChanged,
   onPressEndA,
-  onPressEndB
+  onPressEndB,
+  onPressEndX
 }) => {
   const { gl } = useThree()
   const [list, setList] = useState([])
@@ -37,6 +38,7 @@ const useVrControllers = ({
   const onAxesChangedRef = useRef()
   const onPressEndARef = useRef()
   const onPressEndBRef = useRef()
+  const onPressEndXRef = useRef()
 
   onTriggerStartRef.current = onTriggerStart
   onTriggerEndRef.current = onTriggerEnd
@@ -45,6 +47,7 @@ const useVrControllers = ({
   onAxesChangedRef.current = onAxesChanged
   onPressEndARef.current = onPressEndA
   onPressEndBRef.current = onPressEndB
+  onPressEndXRef.current = onPressEndX
 
   useRender(() => {
     THREE.VRController.update()
@@ -65,6 +68,7 @@ const useVrControllers = ({
     controller.addEventListener('thumbpad axes changed', event => onAxesChangedRef.current(modifyEvent(event, gl)))
     controller.addEventListener('A press ended', event => onPressEndARef.current(modifyEvent(event, gl)))
     controller.addEventListener('B press ended', event => onPressEndBRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('X press ended', event => onPressEndXRef.current(modifyEvent(event, gl)))
     controller.addEventListener('disconnected', event => {
       console.log('disconnected', event)
       setList(getList(THREE.VRController.controllers, gl))

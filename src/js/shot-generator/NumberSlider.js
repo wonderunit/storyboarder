@@ -44,7 +44,7 @@ const formatters = {
   identity: value => value,
 
   degrees: value => Math.round(value).toString() + '°',
-  percent: value => Math.round(value).toString() + '%',  
+  percent: value => Math.round(value).toString() + '%'
 }
 
 const NumberSlider = ({

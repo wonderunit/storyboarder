@@ -9,14 +9,6 @@ class LayersEditor extends EventEmitter {
     this.sfx = sfx
     this.notifications = notifications
 
-    this.model = {
-      layers: {
-        [this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index]: {
-          opacity: DEFAULT_REFERENCE_LAYER_OPACITY
-        }
-      }
-    }
-
     // document.querySelector('.layers-ui-notes-visible').addEventListener('pointerdown', this.toggleLayer.bind(this, 3))
     document
       .querySelector('.layers-ui-notes-clear')
@@ -69,7 +61,7 @@ class LayersEditor extends EventEmitter {
         this.setReferenceOpacity(event.target.value / 100)
       })
 
-    this.render(this.model)
+    this.render()
   }
 
   // NOT USED
@@ -113,27 +105,36 @@ class LayersEditor extends EventEmitter {
     )
   }
 
-  present (data) {
-    if (data.opacity) {
-      this.model.layers[data.opacity.index].opacity = data.opacity.value
-      this.render(this.model)
-      this.emit('opacity', data.opacity)
-    }
-  }
+  loadReferenceOpacity (board) {
+    let value = DEFAULT_REFERENCE_LAYER_OPACITY
 
-  // public method
-  // value = 0...1.0
-  setReferenceOpacity (value) {
-    this.present({ opacity: { index: this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index, value } })
+    // if there is layer data ...
+    if (board.layers) {
+      // ... prefer the reference layer opacity ...
+      if (board.layers.reference && board.layers.reference.opacity != null) {
+        value = board.layers.reference.opacity
+      // ... otherwise, try for the shot-generator opacity ...
+      } else if (board.layers['shot-generator'] && board.layers['shot-generator'].opacity != null) {
+        value = board.layers['shot-generator'].opacity
+      }
+    }
+
+    this.setReferenceOpacity(value)
   }
 
   getReferenceOpacity () {
-    return this.model.layers[this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index].opacity
+    return this.storyboarderSketchPane.sketchPane.layers.findByName('reference').getOpacity()
   }
 
-  render (model) {
-    let index = this.storyboarderSketchPane.sketchPane.layers.findByName('reference').index
-    let value = model.layers[index].opacity
+  setReferenceOpacity (value) {
+    this.storyboarderSketchPane.sketchPane.layers.findByName('reference').setOpacity(value)
+    this.storyboarderSketchPane.sketchPane.layers.findByName('shot-generator').setOpacity(value)
+    this.render()
+    this.emit('opacity')
+  }
+
+  render () {
+    let value = this.storyboarderSketchPane.sketchPane.layers.findByName('reference').getOpacity()
     document.querySelector('.layers-ui-reference-opacity').value = value * 100
   }
 }
