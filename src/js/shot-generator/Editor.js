@@ -11,6 +11,10 @@ const { dialog } = remote
 
 const log = require('electron-log')
 
+const THREE = require('three')
+window.THREE = window.THREE || THREE
+require('../vendor/OutlineEffect')
+
 const {
   SceneContext,
   ElementsPanel,

@@ -622,10 +622,10 @@ const Character = React.memo(({
               thickness: 0.009,
               color: [ 122/256.0, 114/256.0, 233/256.0 ]
             }
-           : {
-             thickness: 0.009,
-             color: [ 0, 0, 0 ],
-           }
+            : {
+              thickness: 0.009,
+              color: [ 0, 0, 0 ],
+            }
       })
     } else {
       mesh.material.userData.outlineParameters =
@@ -634,10 +634,10 @@ const Character = React.memo(({
             thickness: 0.009,
             color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
           }
-         : {
-           thickness: 0.009,
-           color: [ 0, 0, 0 ],
-         }
+          : {
+            thickness: 0.009,
+            color: [ 0, 0, 0 ],
+          }
     }
 
     object.current.orthoIcon.setSelected(isSelected)
