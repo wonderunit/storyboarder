@@ -220,6 +220,7 @@ const setupSettingsPane = (paneComponents, self) => {
 
       onSelect: () => {
         self.send('TOGGLE_HELP')
+        self.send('GO_HOME')
       }
     }
   }
