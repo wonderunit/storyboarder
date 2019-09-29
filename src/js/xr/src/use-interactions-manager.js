@@ -122,8 +122,6 @@ const snapObjectRotation = (object) => {
   object.updateMatrixWorld()
 }
 
-
-
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   // create virtual parent and child
   let parent = new THREE.Object3D()
@@ -1031,8 +1029,10 @@ const useInteractionsManager = ({
             saveStandingMemento(camera)
 
             setMiniMode(true, camera)
+            getIkHelper().isInMiniMode(true)
           } else {
             setMiniMode(false, camera)
+            getIkHelper().isInMiniMode(false)
 
             restoreStandingMemento(camera)
             clearStandingMemento()

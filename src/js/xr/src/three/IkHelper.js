@@ -16,6 +16,7 @@ class IKHelper extends THREE.Object3D
             this.poleTargets = new THREE.Group();
             this.selectedControlPoint = null;
             this.intializedSkinnedMesh = null;
+            this.isIkDisabled = false;
             this.add(this.poleTargets);
             this.isPoleTargetsVisible = true;
             this.add(this.controlPoints);
@@ -154,7 +155,7 @@ class IKHelper extends THREE.Object3D
 
     raycast(raycaster, intersects)
     {
-        if(!this.isSelected()) return;
+        if(!this.isSelected() &&  !this.isIkDisabled) return;
         let values = this.isPoleTargetsVisible ? this.targetPoints : this.controlPoints.children;
         let results = raycaster.intersectObjects(values);
         for (let result of results)
@@ -214,6 +215,15 @@ class IKHelper extends THREE.Object3D
     isSelected()
     {
         return this.parent ? true : false;
+    }
+
+    isInMiniMode(value)
+    {
+        this.isIkDisabled = value;
+        if(this.isSelected() && this.isIkDisabled)
+        {
+            this.parent.remove(this);
+        }
     }
 }
 
