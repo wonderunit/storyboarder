@@ -126,6 +126,8 @@ class IKHelper extends THREE.Object3D
 
     updateMatrixWorld(value)
     {
+        if(!this.isSelected()) return;
+
         super.updateMatrixWorld(value);
         this.ragDoll.update();
         if(this.selectedControlPoint)
@@ -152,12 +154,11 @@ class IKHelper extends THREE.Object3D
 
     raycast(raycaster, intersects)
     {
-        
+        if(!this.isSelected()) return;
         let values = this.isPoleTargetsVisible ? this.targetPoints : this.controlPoints.children;
         let results = raycaster.intersectObjects(values);
         for (let result of results)
         {
-          //result.bone = this.helpingBonesRelation.find(object => object.helpingBone.id === result.object.id).originalBone;
           intersects.push(result);
         }
     }
@@ -208,6 +209,11 @@ class IKHelper extends THREE.Object3D
         this.instancedMesh.needsUpdate("position");
         this.instancedMesh.needsUpdate("quaternion");
         this.instancedMesh.needsUpdate("scale");
+    }
+
+    isSelected()
+    {
+        return this.parent ? true : false;
     }
 }
 
