@@ -40,18 +40,30 @@ class XrIkObject
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
         let rigMesh = this.rigMesh;
-        this.controlTargets = controlTargets;
         this.addParentToControl(objectSkeleton.uuid);
         let chainObjects = [];
         this.chainObjects = chainObjects;
-        this.hipsControlTarget = this.controlTargets[5];
-
-        chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
-        chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
-        chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
-        chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
-        chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
-
+        this.controlTargets = [];
+        
+        //TODO(): Currently this logic of identifying the control point is just hoping 
+        // that passed controlTarget is belong to current "limb"
+        // Just pass empty controlPoints and initialize them here
+        // So to remove this "strongly typed logic" where we depend on some names
+        
+        let headControl = controlTargets.find(point => point.name === "Head");
+        let leftArmControl = controlTargets.find(point => point.name === "LeftHand");
+        let rightArmControl = controlTargets.find(point => point.name === "RightHand");
+        let leftLegControl = controlTargets.find(point => point.name === "LeftFoot");
+        let rightLegControl = controlTargets.find(point => point.name === "RightFoot");
+        let hipsControl = controlTargets.find(point => point.name === "Hips");
+        
+        this.hipsControlTarget = hipsControl;
+        chainObjects.push(new ChainObject("Spine", "Head", headControl));
+        chainObjects.push(new ChainObject("LeftArm", "LeftHand", leftArmControl));
+        chainObjects.push(new ChainObject("RightArm", "RightHand", rightArmControl));
+        chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", leftLegControl));
+        chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", rightLegControl));
+        this.controlTargets = [headControl, leftArmControl, rightArmControl, leftLegControl, rightLegControl, hipsControl];
         //Fixing female-adult spine deformation
         if(rigMesh.name === "female-adult-meso")
         {
