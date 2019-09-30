@@ -2,7 +2,7 @@ const { useMemo, useRef, useCallback } = React = require('react')
 const { useRender } = require('react-three-fiber')
 
 const SCALE = 0.4
-const POSITION = [0, 0.02 + 0.25, 0.01 - 0.25]
+const POSITION = [0, 0.02 + 0.30, 0.01 - 0.25]
 const ROTATION = [-0.4, 0, 0]
 
 const Help = React.memo(({ mode, locked, getCanvasRenderer }) => {
