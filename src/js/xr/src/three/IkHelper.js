@@ -160,7 +160,8 @@ class IKHelper extends THREE.Object3D
         let results = raycaster.intersectObjects(values);
         for (let result of results)
         {
-          intersects.push(result);
+            result.isControlTarget = true;
+            intersects.push(result);
         }
     }
 
@@ -233,7 +234,6 @@ const intializeInstancedMesh = (mesh) =>
     let listOfControlPoints = ["Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot", "Hips"];
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
     let sizeOfTargets = listOfControlPoints.concat(listOfControlTargets).length;
-    console.log(sizeOfTargets);
     let material = new THREE.MeshBasicMaterial({
         color: 0x008888,    
         depthTest: false,
@@ -251,7 +251,6 @@ const intializeInstancedMesh = (mesh) =>
     {
         let controlPoint = new THREE.Mesh(mesh.geometry, material);
         controlPoint.userData.id = --sizeOfTargets;
-        console.log(sizeOfTargets);
         controlPoint.material.visible = false;
         controlPoint.userData.type = "controlPoint";
         controlPoint.name = listOfControlPoints.shift();

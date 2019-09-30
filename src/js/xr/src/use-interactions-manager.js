@@ -384,9 +384,8 @@ const useInteractionsManager = ({
         return
       }
 
-      intersection = getControllerIntersections(controller, [IKHelper.getInstance()])[0]
-      if (intersection && intersection.object.userData.type !== "instancedMesh") {
-        console.log(intersection)
+      intersection = getControllerIntersections(controller, [IKHelper.getInstance()]).find(h => h.isControlTarget)
+      if (intersection) {
         interactionService.send({
           type: 'TRIGGER_START',
           controller: event.target,
