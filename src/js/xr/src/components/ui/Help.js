@@ -5,7 +5,7 @@ const SCALE = 0.4
 const POSITION = [0, 0.02 + 0.25, 0.01 - 0.25]
 const ROTATION = [-0.4, 0, 0]
 
-const Help = React.memo(({ mode, getCanvasRenderer }) => {
+const Help = React.memo(({ mode, guiLocked, getCanvasRenderer }) => {
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -24,6 +24,10 @@ const Help = React.memo(({ mode, getCanvasRenderer }) => {
       new THREE.MeshBasicMaterial({ map: getTexture(), transparent: true, opacity: 0.8 })
     )
   }, [mode])
+
+  useMemo(() => {
+    if (mesh) mesh.material.opacity = guiLocked ? 0.15 : 0.8
+  }, [guiLocked])
 
   useRender((state, delta) => {
     if (getCanvasRenderer().helpNeedsRender) {

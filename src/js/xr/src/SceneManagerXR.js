@@ -137,6 +137,7 @@ const SceneContent = connect(
     const switchHand = useUiStore(state => state.switchHand)
     const showCameras = useUiStore(state => state.showCameras)
     const showHelp = useUiStore(state => state.showHelp)
+    const guiLocked = useUiStore(state => state.guiLocked)
 
     const fog = useRef()
     const getFog = () => {
@@ -502,10 +503,12 @@ const SceneContent = connect(
                     gltf={resources.controlsGltf}
                     mode={uiCurrent.value.controls}
                     hand={switchHand ? 'left' : 'right'}
+                    guiLocked={guiLocked}
                     getCanvasRenderer={getCanvasRenderer} />
                   { showHelp &&
                     <Help
                       mode={uiCurrent.value.controls}
+                      guiLocked={guiLocked}
                       getCanvasRenderer={getCanvasRenderer} />
                   }
                 </group>

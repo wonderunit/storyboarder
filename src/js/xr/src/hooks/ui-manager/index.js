@@ -39,11 +39,13 @@ const [useUiStore] = create((set, get) => ({
   switchHand: getCookie('switchHand') == 'true',
   showCameras: getCookie('showCameras') !== 'false',
   showHelp: false,
+  guiLocked: false,
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
   setShowHelp: value => set(produce(state => { state.showHelp = value })),
+  setGuiLocked: value => set(produce(state => { state.guiLocked = value })),
 
   set: fn => set(produce(fn))
 }))
@@ -803,6 +805,7 @@ const useUiManager = ({ playSound, stopSound }) => {
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
   const setShowCameras = useUiStore(state => state.setShowCameras)
   const setShowHelp = useUiStore(state => state.setShowHelp)
+  const setGuiLocked = useUiStore(state => state.setGuiLocked)
   const showHelp = useUiStore().showHelp
 
   // for now, preload pose, character, and model images to THREE.Cache
@@ -1109,6 +1112,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
   useMemo(() => {
     getCanvasRenderer().state.context = uiCurrent.context
+    setGuiLocked(uiCurrent.context.locked)
     getCanvasRenderer().needsRender = true
   }, [uiCurrent.context])
 
