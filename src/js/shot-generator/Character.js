@@ -588,6 +588,7 @@ const Character = React.memo(({
     let modelSettings = initialState.models[props.model]
 
     if (modelSettings && modelSettings.validMorphTargets) {
+      mesh.material.morphTargets = mesh.material.morphNormals = props.model !== 'baby'
       modelSettings.validMorphTargets.forEach((name, index) => {
         mesh.morphTargetInfluences[ index ] = props.morphTargets[ name ]
       })
