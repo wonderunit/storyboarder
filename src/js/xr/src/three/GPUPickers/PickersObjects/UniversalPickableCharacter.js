@@ -93,8 +93,9 @@ class UniversalPickableCharacter extends Pickable
         }
     }
 
-    isObjectChanged()
+    isObjectChanged(excludingList)
     {
+        this.excludingList = excludingList;
         if(!this.sceneMesh.parent)
         {
             return true;
@@ -104,7 +105,7 @@ class UniversalPickableCharacter extends Pickable
 
     applyObjectChanges()
     {
-        this.getMeshFromSceneObject();
+        this.getMeshFromSceneObject(this.excludingList);
         this.characterContainer = this.getCharacterContainer();
         let parent = this.characterContainer;
         let node = SkeletonUtils.clone(parent);
