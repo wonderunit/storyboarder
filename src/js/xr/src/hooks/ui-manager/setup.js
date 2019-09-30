@@ -70,7 +70,7 @@ const setupHomePane = (paneComponents, self) => {
       type: 'text',
       x: 453 + 20,
       y: 889 + 20,
-      label: `"You never change things by fighting the existing reality.`,
+      label: `“You never change things by fighting the existing reality.`,
       size: 16
     },
     'quote-2': {
