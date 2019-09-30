@@ -38,14 +38,13 @@ class IKHelper extends THREE.Object3D
         this.intializedSkinnedMesh = skinnedMesh;
         let ragDoll = instance.ragDoll;
         let meshes = this.targetPoints;
-        //skinnedMesh.parent.parent.parent.attach(this.poleTargets);
         let initializedMeshes = skinnedMesh.parent.parent.userData.poleTargets ? skinnedMesh.parent.parent.userData.poleTargets : [];
-        console.log(initializedMeshes);
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
-
             let intializedMesh = initializedMeshes[mesh.name];
+            // Checks if there's already info for current mesh
+            // Info like position
             if(intializedMesh)
             {
                 let pos = intializedMesh.position;
@@ -95,24 +94,26 @@ class IKHelper extends THREE.Object3D
                 this.selectedControlPoint.updateMatrixWorld();
                 let worldPosition = this.selectedControlPoint.position;
                 let character = this.intializedSkinnedMesh.parent.parent;
-                console.log(character);
-                if(!character.userData.poleTargets)
+                let poleTarget = character.userData.poleTargets[this.selectedControlPoint.name];
+                if(!poleTarget)
                 {
-                    character.userData.poleTargets = {};
-                }
-                console.log(this.selectedControlPoint.name);
-                console.log(this.selectedControlPoint.clone());
-                character.userData.poleTargets[this.selectedControlPoint.name] = 
-                {
-                    position: 
+                    poleTarget = 
                     {
-                        x: worldPosition.x,
-                        y: worldPosition.y,
-                        z: worldPosition.z,
-                    }
-                };
+                        position: 
+                        {
+                            x: worldPosition.x,
+                            y: worldPosition.y,
+                            z: worldPosition.z,
+                        }
+                    };
+                }
+                else
+                {
+                    poleTarget.position.x = worldPosition.x;
+                    poleTarget.position.y = worldPosition.y;
+                    poleTarget.position.z = worldPosition.z;
+                }
                 this.updatePoleTargets(character.userData.poleTargets);
-                console.log(character.userData);
             }
             if(this.selectedControlPoint.name === "Hips")
             {
