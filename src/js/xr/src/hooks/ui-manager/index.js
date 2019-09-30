@@ -321,7 +321,6 @@ class CanvasRenderer {
           }
       }
 
-
       let i = -1
       this.paneComponents['properties'] = Object.entries(this.paneComponents['properties']).reduce((components, [key, component]) => {
         i++
@@ -381,7 +380,7 @@ class CanvasRenderer {
 
           type: 'slider',
           x: 570,
-          y: 30 + 90 * i,
+          y: 30 + 90 * (i + 1),
           width: 420,
           height: 80,
 
@@ -395,16 +394,24 @@ class CanvasRenderer {
         return components
       }, {})
 
+      this.paneComponents['properties']['title'] = {
+        id: 'title',
+        type: 'text',
+        x: 570,
+        y: 30 + 16,
+        label: `${sceneObject.name || sceneObject.displayName}`,
+        size: 40,
+        weight: 'bold'
+      }
+
       if (sceneObject.type === 'camera') {
         const isActive = sceneObject.id === this.state.activeCamera
-
-        console.log(this.state.activeCamera, 'moi')
 
         this.paneComponents['properties']['active-camera'] = {
           id: 'active-camera',
           type: 'slider',
           x: 570,
-          y: 30 + 90,
+          y: 30 + 90 * 2,
           width: 420,
           height: 80,
           label: isActive ? 'Active Camera' : 'Set as Active Camera',

@@ -10,9 +10,9 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const drawText = ({ ctx, label, size, align = 'left', baseline = 'top', color = '#fff' }) => {
+const drawText = ({ ctx, label, size, weight = '', align = 'left', baseline = 'top', color = '#fff' }) => {
   ctx.save()
-  ctx.font = `${size}px Arial`
+  ctx.font = `${weight} ${size}px Arial`
   ctx.textAlign = align
   ctx.textBaseline = baseline
   ctx.fillStyle = color
