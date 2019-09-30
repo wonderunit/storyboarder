@@ -131,7 +131,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
   }, [skeleton, sceneObject.headScale])
 
   useMemo(() => {
-    if (modelSettings && modelSettings.validMorphTargets) {
+    if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
       lod.children.forEach(skinnedMesh => {
         modelSettings.validMorphTargets.forEach((name, index) => {
           skinnedMesh.morphTargetInfluences[index] = sceneObject.morphTargets[name]

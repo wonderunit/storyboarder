@@ -587,7 +587,7 @@ const Character = React.memo(({
 
     let modelSettings = initialState.models[props.model]
 
-    if (modelSettings && modelSettings.validMorphTargets) {
+    if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
       modelSettings.validMorphTargets.forEach((name, index) => {
         mesh.morphTargetInfluences[ index ] = props.morphTargets[ name ]
       })
