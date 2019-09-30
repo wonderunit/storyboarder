@@ -244,7 +244,7 @@ class XRRagdoll extends XRIKObject
             let bone = joints[joints.length-1].bone;
             let target = this.controlTargets[i];
             target.quaternion.multiply(target.worldQuaternion().inverse());
-            target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.worldQuaternion().inverse()));
+            target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.parent.worldQuaternion().inverse()));
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
             target.isRotationLocked = true;
         }
