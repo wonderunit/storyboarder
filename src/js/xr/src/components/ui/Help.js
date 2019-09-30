@@ -25,9 +25,11 @@ const Help = React.memo(({ mode, locked, getCanvasRenderer }) => {
     )
   }, [mode])
 
-  useMemo(() => {
-    if (mesh) mesh.material.opacity = locked ? 0.15 : 0.8
-  }, [locked])
+  // to hide help when locked, uncomment this:
+  //
+  // useMemo(() => {
+  //   if (mesh) mesh.material.opacity = locked ? 0.15 : 0.8
+  // }, [locked])
 
   useRender((state, delta) => {
     if (getCanvasRenderer().helpNeedsRender) {
