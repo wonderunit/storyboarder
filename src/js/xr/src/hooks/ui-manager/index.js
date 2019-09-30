@@ -83,8 +83,8 @@ for (let propertyName of ['intensity', 'penumbra']) {
 }
 
 lenses.distance = R.lens(
-  vin => clamp(mapLinear(vin, 0, 100, 0, 1), 0, 1),
-  vout => clamp(steps(mapLinear(vout, 0, 1, 0, 100), 0.1), 0, 100)
+  vin => clamp(mapLinear(vin, 0.1, 100, 0, 1), 0, 1),
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0.1, 100), 0.1), 0.1, 100)
 )
 
 lenses.angle = R.lens(
