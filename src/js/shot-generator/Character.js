@@ -588,9 +588,12 @@ const Character = React.memo(({
     let modelSettings = initialState.models[props.model]
 
     if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
+      mesh.material.morphTargets = mesh.material.morphNormals = true
       modelSettings.validMorphTargets.forEach((name, index) => {
         mesh.morphTargetInfluences[ index ] = props.morphTargets[ name ]
       })
+    } else {
+      mesh.material.morphTargets = mesh.material.morphNormals = false
     }
   }, [props.morphTargets, ready])
 

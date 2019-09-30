@@ -86,6 +86,8 @@ class UniversalPickableCharacter extends Pickable
         this.node.quaternion.copy(parent.worldQuaternion());
         this.node.scale.copy(parent.worldScale());
         updateBoneToBone(this.pickingMesh, this.sceneMesh);
+        this.pickingMaterial.morphNormals = this.sceneMesh.material.morphNormals;
+        this.pickingMaterial.morphTargets = this.sceneMesh.material.morphTargets;
         if(!this.sceneMesh.morphTargetInfluences) return;
         for( let i = 0; i < this.sceneMesh.morphTargetInfluences.length; i ++)
         {
