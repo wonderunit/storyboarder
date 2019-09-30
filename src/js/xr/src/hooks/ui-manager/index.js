@@ -1,6 +1,6 @@
 const THREE = require('three')
 const { clamp, mapLinear } = require('three').Math
-const { useMemo, useRef, useCallback } = React = require('react')
+const { useMemo, useRef, useCallback, useEffect } = React = require('react')
 const useReduxStore = require('react-redux').useStore
 const { useSelector } = require('react-redux')
 const { useThree } = require('react-three-fiber')
@@ -803,7 +803,8 @@ const useUiManager = ({ playSound, stopSound }) => {
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
   const setShowCameras = useUiStore(state => state.setShowCameras)
   const setShowHelp = useUiStore(state => state.setShowHelp)
-  const showHelp = useUiStore().showHelp
+
+  const showHelp = useUiStore(state => state.showHelp)
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
@@ -1111,6 +1112,20 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().state.context = uiCurrent.context
     getCanvasRenderer().needsRender = true
   }, [uiCurrent.context])
+
+  useEffect(() => {
+    // if the user hasn't seen help before
+    if (getCookie('sawHelp') !== 'true') {
+      // HACK wait 3s so controllers can attach and scene can render
+      setTimeout(() => {
+        if (!showHelp) {
+          setShowHelp(true)
+          playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
+          setCookie('sawHelp', 'true', 365)
+        }
+      }, 3000)
+    }
+  }, [])
 
   return { uiService, uiCurrent, getCanvasRenderer }
 }
