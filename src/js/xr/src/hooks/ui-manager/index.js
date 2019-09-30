@@ -803,7 +803,8 @@ const useUiManager = ({ playSound, stopSound }) => {
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
   const setShowCameras = useUiStore(state => state.setShowCameras)
   const setShowHelp = useUiStore(state => state.setShowHelp)
-  const showHelp = useUiStore().showHelp
+
+  const showHelp = useUiStore(state => state.showHelp)
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
