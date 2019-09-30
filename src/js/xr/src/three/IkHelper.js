@@ -93,27 +93,17 @@ class IKHelper extends THREE.Object3D
                 this.poleTargets.attach(this.selectedControlPoint);
                 this.selectedControlPoint.updateMatrixWorld();
                 let worldPosition = this.selectedControlPoint.position;
-                let character = this.intializedSkinnedMesh.parent.parent;
-                let poleTargets = character.userData.poleTargets;
-                if(!poleTargets[this.selectedControlPoint.name])
+                let poleTargets = {};
+                poleTargets[this.selectedControlPoint.name] = 
                 {
-                    poleTargets[this.selectedControlPoint.name] = 
+                    position: 
                     {
-                        position: 
-                        {
-                            x: worldPosition.x,
-                            y: worldPosition.y,
-                            z: worldPosition.z,
-                        }
-                    };
-                }
-                else
-                {
-                    poleTargets[this.selectedControlPoint.name].position.x = worldPosition.x;
-                    poleTargets[this.selectedControlPoint.name].position.y = worldPosition.y;
-                    poleTargets[this.selectedControlPoint.name].position.z = worldPosition.z;
-                }
-                this.updatePoleTargets(character.userData.poleTargets);
+                        x: worldPosition.x,
+                        y: worldPosition.y,
+                        z: worldPosition.z,
+                    }
+                };
+                this.updatePoleTargets(poleTargets);
             }
             if(this.selectedControlPoint.name === "Hips")
             {
