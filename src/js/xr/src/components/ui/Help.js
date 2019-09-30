@@ -5,7 +5,7 @@ const SCALE = 0.4
 const POSITION = [0, 0.02 + 0.25, 0.01 - 0.25]
 const ROTATION = [-0.4, 0, 0]
 
-const Help = React.memo(({ mode, guiLocked, getCanvasRenderer }) => {
+const Help = React.memo(({ mode, locked, getCanvasRenderer }) => {
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -26,8 +26,8 @@ const Help = React.memo(({ mode, guiLocked, getCanvasRenderer }) => {
   }, [mode])
 
   useMemo(() => {
-    if (mesh) mesh.material.opacity = guiLocked ? 0.15 : 0.8
-  }, [guiLocked])
+    if (mesh) mesh.material.opacity = locked ? 0.15 : 0.8
+  }, [locked])
 
   useRender((state, delta) => {
     if (getCanvasRenderer().helpNeedsRender) {
