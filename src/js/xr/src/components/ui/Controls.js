@@ -1,6 +1,8 @@
 const { useMemo, useRef, useCallback } = React = require('react')
 const { useRender } = require('react-three-fiber')
 
+const { useSpring, animated } = require('react-spring/three')
+
 const { log } = require('../../components/Log')
 
 const SCALE = 1
@@ -23,8 +25,7 @@ const Controls = React.memo(({ gltf, mode, hand = 'right', locked, getCanvasRend
   const material = useMemo(
     () => new THREE.MeshBasicMaterial({
       map: getTexture(),
-      transparent: true,
-      opacity: 0.8
+      transparent: true
     }),
     []
   )
@@ -61,10 +62,6 @@ const Controls = React.memo(({ gltf, mode, hand = 'right', locked, getCanvasRend
     }
   }, [meshes, mode, hand])
 
-  useMemo(() => {
-    if (material) material.opacity = locked ? 0.15 : 0.8
-  }, [locked])
-
   useRender((state, delta) => {
     if (getCanvasRenderer().needsRender) {
       getCanvasRenderer().render()
@@ -75,8 +72,16 @@ const Controls = React.memo(({ gltf, mode, hand = 'right', locked, getCanvasRend
 
   log(`Controls mode: ${mode}`)
 
+  const { opacity } = useSpring({
+    opacity: locked ? 0.15 : 0.8,
+    delay: 200,
+    config: {
+      clamp: true
+    }
+  })
+
   return mesh
-    ? <primitive
+    ? <animated.primitive
       ref={ref}
       object={mesh}
 
@@ -84,12 +89,14 @@ const Controls = React.memo(({ gltf, mode, hand = 'right', locked, getCanvasRend
       scale={[SCALE, SCALE, SCALE]}
       rotation={ROTATION}
 
+      material-opacity={opacity}
+
       onController={() => null}
       userData={{
         type: 'ui',
         id: 'controls'
       }}>
-    </primitive>
+    </animated.primitive>
     : null
 })
 
