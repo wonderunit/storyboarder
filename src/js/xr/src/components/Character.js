@@ -164,7 +164,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       onController={sceneObject.visible ? () => null : null}
       userData={{
         type: 'character',
-        id: sceneObject.id
+        id: sceneObject.id,
+        poleTargets: sceneObject.poleTargets
       }}
 
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}

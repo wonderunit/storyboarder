@@ -39,18 +39,24 @@ class IKHelper extends THREE.Object3D
         let ragDoll = instance.ragDoll;
         let meshes = this.targetPoints;
         //skinnedMesh.parent.parent.parent.attach(this.poleTargets);
-        let intializedMeshes = skinnedMesh.userData.poleTargets ? skinnedMesh.userData.poleTargets : [];
+        let initializedMeshes = skinnedMesh.parent.parent.userData.poleTargets ? skinnedMesh.parent.parent.userData.poleTargets : [];
+        console.log(initializedMeshes);
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
 
-            let intializedMesh = intializedMeshes[mesh.name];
+            let intializedMesh = initializedMeshes[mesh.name];
             if(intializedMesh)
             {
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
+                console.log(mesh.clone());
                 mesh.updateMatrixWorld();
                 mesh.userData.isInitialized = true;
+            }
+            else
+            {
+                mesh.userData.isInitialized = false;
             }
             mesh.scale.set(0.5, 0.1, 0.5)
         }
@@ -86,20 +92,36 @@ class IKHelper extends THREE.Object3D
             }
             else
             {
-                if(!this.intializedSkinnedMesh.userData.poleTargets)
+                console.log("saving pole target");
+                console.log(this.selectedControlPoint.position.clone());
+                console.log(this.selectedControlPoint.worldPosition());
+                this.poleTargets.attach(this.selectedControlPoint);
+                this.selectedControlPoint.updateMatrixWorld();
+                console.log(this.selectedControlPoint.worldPosition());
+                console.log(this.selectedControlPoint.position.clone());
+                let worldPosition = this.selectedControlPoint.position;//worldPosition();
+                //this.poleTargets.worldToLocal(worldPosition);
+                let character = this.intializedSkinnedMesh.parent.parent;
+                console.log(character);
+                if(!character.userData.poleTargets)
                 {
-                    this.intializedSkinnedMesh.userData.poleTargets = {};
+                    console.log("adding pole targets")
+                    character.userData.poleTargets = {};
                 }
-                this.intializedSkinnedMesh.userData.poleTargets[this.selectedControlPoint.name] = 
+                console.log(this.selectedControlPoint.name);
+                console.log(this.selectedControlPoint.clone());
+                character.userData.poleTargets[this.selectedControlPoint.name] = 
                 {
                     position: 
                     {
-                        x: this.selectedControlPoint.position.x,
-                        y: this.selectedControlPoint.position.y,
-                        z: this.selectedControlPoint.position.z,
+                        x: worldPosition.x,
+                        y: worldPosition.y,
+                        z: worldPosition.z,
                     }
                 };
-                this.poleTargets.attach(this.selectedControlPoint);
+                this.updatePoleTargets(character.userData.poleTargets);
+                console.log(character.userData);
+                //this.selectedControlPoint.updateMatrixWorld();
             }
             if(this.selectedControlPoint.name === "Hips")
             {
@@ -165,11 +187,12 @@ class IKHelper extends THREE.Object3D
         }
     }
 
-    setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos)
+    setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos, updatePoleTargets)
     {
         this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
         this.ragDoll.updateSkeleton(updateSkeleton);
         this.ragDoll.updateCharacterPos(updateCharacterPos);
+        this.updatePoleTargets = updatePoleTargets;
     }
 
     resetTargetPoint(targetPoint)

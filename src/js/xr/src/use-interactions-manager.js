@@ -38,7 +38,7 @@ const {
   updateObject,
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
-
+  updateCharacterPoleTargets,
   selectBone
 } = require('../../shared/reducers/shot-generator')
 
@@ -304,10 +304,18 @@ const useInteractionsManager = ({
         { x, y: z, z: y }
       ))
 
+      const updatePoleTarget = (poleTargets) => dispatch(updateCharacterPoleTargets({
+          id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+          poleTargets: poleTargets
+
+        }
+      ))
+
       ikHelper.current.setUpdate(
         updateCharacterSkeleton,
         updateSkeleton,
-        updateCharacterPos
+        updateCharacterPos,
+        updatePoleTarget
       )
     }
     return ikHelper.current 
