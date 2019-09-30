@@ -592,6 +592,12 @@ const Character = React.memo(({
         mesh.morphTargetInfluences[ index ] = props.morphTargets[ name ]
       })
     }
+
+    if(!modelSettings.validMorphTargets || modelSettings.validMorphTargets.length === 0)
+    {
+      object.current.getObjectByProperty("type", "SkinnedMesh").material.morphTargets = false;
+      object.current.getObjectByProperty("type", "SkinnedMesh").material.morphNormals = false;
+    }
   }, [props.morphTargets, ready])
 
   useEffect(() => {
