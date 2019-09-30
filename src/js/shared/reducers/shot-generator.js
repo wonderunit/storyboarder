@@ -802,6 +802,7 @@ const sceneObjectsReducer = (state = {}, action) => {
         return
 
       case 'UPDATE_CHARACTER_IK_POLETARGETS':
+      draft[action.payload.id].poleTargets = draft[action.payload.id].poleTargets || {}
       for (let [ key, value ] of Object.entries(action.payload.poleTargets)) {
         draft[action.payload.id].poleTargets[key] = value
       }

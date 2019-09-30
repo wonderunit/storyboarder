@@ -5,7 +5,6 @@ const XrPoleConstraint = require( "./Constraints/XrPoleConstraint");
 const PoleTarget = require( "../../../../shot-generator/IK/objects/PoleTarget");
 const CopyRotation = require( "../../../../shot-generator/IK/constraints/CopyRotation");
 require("../../../../shot-generator/IK/utils/Object3dExtension");
-//const {calculatePoleAngle, normalizeTo180} = require("../../utils/axisUtils");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
 let boneMatrix = new THREE.Matrix4();
@@ -41,14 +40,7 @@ class XRRagdoll extends XRIKObject
     initObject(scene, object, controlTargets, poleTargets )
     {
         super.initObject(scene, object, controlTargets );
-
-        //this.ragdollEvents = new RagdollEvents(this);
-        // Adds events to Back control
-        //this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
         this.createPoleTargets(poleTargets);
-     /*    this.ragdollEvents.addHipsEvent();
-        this.ragdollEvents.setUpControlsEvents(); */
-
     }
 
     updateSkeleton(updateCharacterSkeleton)
@@ -101,18 +93,10 @@ class XRRagdoll extends XRIKObject
         {
             let hipsTarget = this.hipsControlTarget;
             let targetPosition = hipsTarget.worldPosition();
-            let targetPos = hipsTarget.worldPosition();
-/*             targetPos.sub(this.objectTargetDiff);
-
-            this.clonedObject.position.copy(targetPos);
-            this.clonedObject.updateMatrix();
-            this.clonedObject.updateMatrixWorld(true); */
         
             this.hips.parent.worldToLocal(targetPosition);
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
-            //this.originalObject.position.copy(this.clonedObject.position);
-            //this.updateCharPosition(this.clonedObject.position);
         }
     }
 
@@ -156,7 +140,6 @@ class XRRagdoll extends XRIKObject
         let originalObjectWp = this.originalObject.position.clone();
         this.originalObject.applyMatrix( this.originalObject.parent.getInverseMatrixWorld());
         this.objectTargetDiff = new THREE.Vector3().subVectors(hipsWP, originalObjectWp);
-        //this.setUpControlTargetsInitialPosition();
     }
 
     // Moves ragdoll hips when original object moved
@@ -260,18 +243,11 @@ class XRRagdoll extends XRIKObject
             let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
             let target = this.controlTargets[i];
-            //let boneGlobalQuat = 
             target.quaternion.multiply(target.worldQuaternion().inverse());
             target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.worldQuaternion().inverse()));
-           
-            //target.inverseInitialQuaternion = bone.worldQuaternion().inverse().multiply(this.hips.worldQuaternion());
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
+            target.isRotationLocked = true;
         }
-        this.controlTargets[0].isRotationLocked = true;
-        this.controlTargets[1].isRotationLocked = true;
-        this.controlTargets[2].isRotationLocked = true;
-        this.controlTargets[3].isRotationLocked = true;
-        this.controlTargets[4].isRotationLocked = true;
         this.relativeFixedAngle();
         this.poseChanged = true;
     }

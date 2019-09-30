@@ -40,7 +40,6 @@ class XrIkObject
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
         let rigMesh = this.rigMesh;
-        this.addParentToControl(objectSkeleton.uuid);
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.controlTargets = [];
@@ -133,13 +132,6 @@ class XrIkObject
         // Adds skeleton helper to scene
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
-/*         let matrix = new THREE.Matrix4();
-        let originalInverseMatrix = objectSkeleton.getInverseMatrixWorld(); */
-        const helper = new THREE.IKHelper(this.ik);
-        //objectSkeleton.parent.add(helper);
-/*         matrix.multiplyMatrices( originalInverseMatrix, helper.matrixWorld );
-        helper.position.setFromMatrixPosition(matrix); */
-        //helper.applyMatrix(scene.matrixWorld);
     }
 
     // Updates chains
@@ -185,19 +177,6 @@ class XrIkObject
     //#endregion
 
     //#region Internal methods
-    // Sets character id to controls and points to identify them in SelectionManager
-    addParentToControl(parentId)
-    {
-        let controlTarget = this.controlTargets;
-        for (let i = 0; i < controlTarget.length; i++)
-        {
-            //let control = controlTarget[i];
-            let target = controlTarget[i];
-            //control.characterId = parentId;
-            target.characterId = parentId;
-        }
-    }
-
     getTargetForSolve()
     {
         let controlTargets = this.controlTargets;

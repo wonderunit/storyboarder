@@ -761,14 +761,6 @@ const useInteractionsManager = ({
 
       bone.quaternion.copy(objectQuaternion.normalize())
     }
-
-    if(mode == 'drag_control_point')
-    {
-      //TODO() Manipulate selected control point here
-      // make a function out of render and just call it
-       //IKHelper.getInstance().update()
-      //console.log('dragging control point', context)
-    }
   }, false, [set, controllers])
 
   // update ui every frame
@@ -852,12 +844,9 @@ const useInteractionsManager = ({
         onDragControlPointEntry: (context, event) =>
         {
           let controller = gl.vr.getController(context.draggingController)
-          //TODO(): Select control point in ikHelper from here
           let object = event.intersection.object
           getIkHelper().selectControlPoint(object.name)
           controller.attach(object)
-          console.log("Entered")
-
         },
         moveAndRotateControlPoint: (context, event) =>
         {
@@ -867,9 +856,7 @@ const useInteractionsManager = ({
         },
         onDragControlPointExit: (context, event) =>
         {
-          //TODO(): Deselect control point in IKHelper from here
           getIkHelper().deselectControlPoint()
-          console.log("Exited")
         },
 
         onDragObjectEntry: (context, event) => {

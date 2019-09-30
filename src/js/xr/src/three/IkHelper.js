@@ -50,7 +50,6 @@ class IKHelper extends THREE.Object3D
             {
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
-                console.log(mesh.clone());
                 mesh.updateMatrixWorld();
                 mesh.userData.isInitialized = true;
             }
@@ -92,20 +91,13 @@ class IKHelper extends THREE.Object3D
             }
             else
             {
-                console.log("saving pole target");
-                console.log(this.selectedControlPoint.position.clone());
-                console.log(this.selectedControlPoint.worldPosition());
                 this.poleTargets.attach(this.selectedControlPoint);
                 this.selectedControlPoint.updateMatrixWorld();
-                console.log(this.selectedControlPoint.worldPosition());
-                console.log(this.selectedControlPoint.position.clone());
-                let worldPosition = this.selectedControlPoint.position;//worldPosition();
-                //this.poleTargets.worldToLocal(worldPosition);
+                let worldPosition = this.selectedControlPoint.position;
                 let character = this.intializedSkinnedMesh.parent.parent;
                 console.log(character);
                 if(!character.userData.poleTargets)
                 {
-                    console.log("adding pole targets")
                     character.userData.poleTargets = {};
                 }
                 console.log(this.selectedControlPoint.name);
@@ -121,7 +113,6 @@ class IKHelper extends THREE.Object3D
                 };
                 this.updatePoleTargets(character.userData.poleTargets);
                 console.log(character.userData);
-                //this.selectedControlPoint.updateMatrixWorld();
             }
             if(this.selectedControlPoint.name === "Hips")
             {
@@ -137,21 +128,9 @@ class IKHelper extends THREE.Object3D
         }
     }
 
-    updateControlPoint(controlPoint)
-    {
-        //console.log(controlPoint)
-    }
-
     update()
     {
-    
-    }
-
-    updateMatrixWorld(value)
-    {
         if(!this.isSelected()) return;
-
-        super.updateMatrixWorld(value);
         this.ragDoll.update();
         if(this.selectedControlPoint)
         {
@@ -173,6 +152,12 @@ class IKHelper extends THREE.Object3D
         {
             this.updateAllTargetPoints();
         }
+    }
+
+    updateMatrixWorld(value)
+    {
+        super.updateMatrixWorld(value); 
+        this.update();
     }
 
     raycast(raycaster, intersects)
