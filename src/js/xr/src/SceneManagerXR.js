@@ -306,9 +306,12 @@ const SceneContent = connect(
     }, [])
     const helpVoicer = useMemo(() => {
       let voicer = new Voicer(cameraAudioListener, 10, null, {
-        releaseTime: 0.2
+        releaseTime: 0.2,
+        voiceOptions: {
+          positional: false
+        }
       })
-      voicer.setVolume(1)
+      voicer.setVolume(0.5)
       return voicer
     }, [])
 
@@ -500,12 +503,13 @@ const SceneContent = connect(
                     mode={uiCurrent.value.controls}
                     hand={switchHand ? 'left' : 'right'}
                     getCanvasRenderer={getCanvasRenderer} />
-                    { showHelp && <Help
+                  { showHelp &&
+                    <Help
                       mode={uiCurrent.value.controls}
                       getCanvasRenderer={getCanvasRenderer} />
-                    }
+                  }
                 </group>
-                }
+              }
             </primitive>
           )}
         </group>

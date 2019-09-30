@@ -979,19 +979,28 @@ const useUiManager = ({ playSound, stopSound }) => {
         },
 
         onToggleHelp (context, event) {
+          // if show help is being shown ...
+          if (showHelp) {
+            // ... we're about to hide it, so stop the help sounds
+            stopSound('help')
+          } else {
+            playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
+          }
           setShowHelp(!showHelp)
         },
 
         onIncrementHelp (context, event) {
-          const slideCount = 8
+          const slideCount = 10
           const { direction } = event
           const { helpIndex } = getCanvasRenderer().state
 
-          if (direction === 'increment') getCanvasRenderer().state.helpIndex = (helpIndex + 1) % slideCount
-          else {
+          if (direction === 'increment') {
+            getCanvasRenderer().state.helpIndex = (helpIndex + 1) % slideCount
+          } else {
             const value = helpIndex - 1
             getCanvasRenderer().state.helpIndex = value < 0 ? slideCount - 1 : value
           }
+          playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
 
           getCanvasRenderer().helpNeedsRender = true
         }
@@ -1064,7 +1073,7 @@ const UI_ICON_NAMES = [
   'pose', 'object',
 
   'help_1', 'help_2', 'help_3', 'help_4', 'help_5', 'help_6', 'help_7',
-  'help_8'
+  'help_8', 'help_9', 'help_10'
 ]
 
 const UI_ICON_FILEPATHS = UI_ICON_NAMES.map(getIconFilepathByName)
