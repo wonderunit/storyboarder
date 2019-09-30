@@ -1,4 +1,4 @@
- const { useMemo, useRef } = React = require('react')
+const { useMemo, useRef, useEffect } = React = require('react')
 const { useThree, useRender } = require('react-three-fiber')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -12,7 +12,10 @@ const useVrControllers = require('./hooks/use-vr-controllers')
 
 const { log } = require('./components/Log')
 
-const getControllerIntersections = require('./helpers/get-controller-intersections')
+const {
+  getControllerRaycaster,
+  getControllerIntersections
+} = require('./helpers/get-controller-intersections')
 const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
@@ -24,6 +27,7 @@ const IKHelper = require('./three/IkHelper')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
+const {dropObject, dropCharacter } = require('./utils/dropToObjects')
 
 require('./three/GPUPickers/utils/Object3dExtension')
 require('../../shot-generator/IK/utils/axisUtils')
@@ -265,13 +269,13 @@ const useInteractionsManager = ({
 }) => {
   const { gl, camera, scene } = useThree()
 
+
   const selections = useSelector(getSelections)
 
   const canUndo = useSelector(state => state.undoable.past.length > 0)
   const canRedo = useSelector(state => state.undoable.future.length > 0)
 
   const gpuPicker = useRef(null)
-
   const getGpuPicker = () => {
     if (gpuPicker.current === null) {
       gpuPicker.current = new GPUPicker(gl)
@@ -320,6 +324,26 @@ const useInteractionsManager = ({
     }
     return ikHelper.current 
   }
+  
+  useEffect(() => {
+    // create a temporary mesh object to initialize the GPUPicker
+    let gpuPicker = getGpuPicker()
+    let geometry = new THREE.BoxBufferGeometry(2, 2, 2)
+    let material = new THREE.MeshBasicMaterial();
+    let mesh = new THREE.Mesh(geometry, material)
+    mesh.position.copy(camera.worldPosition())
+    mesh.position.z -= 1
+    scene.add(mesh)
+    let interactions = scene.__interaction.concat([mesh])
+    gpuPicker.setupScene(interactions, getExcludeList(scene))
+    let gpuCamera = gpuPicker.camera
+    gpuCamera.fov = 360
+    gpuCamera.updateProjectionMatrix()
+    gpuPicker.pick(camera.worldPosition(), camera.worldQuaternion())
+    scene.remove(mesh)
+    gpuCamera.fov = 1
+    gpuCamera.updateProjectionMatrix()
+  }, [])
 
   // values
   const didMoveCamera = useStore(state => state.didMoveCamera)
@@ -341,6 +365,31 @@ const useInteractionsManager = ({
 
   const store = useReduxStore()
   const dispatch = useDispatch()
+
+  const commit = (id, object) => {
+    const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+
+    if (object.userData.type == 'light' || object.userData.type == 'virtual-camera') {
+      dispatch(updateObject(id, {
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y,
+        rotation: euler.y,
+        roll: euler.z,
+        tilt: euler.x
+      }))
+    } else {
+      let rotation = object.userData.type == 'character'
+        ? euler.y
+        : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+      dispatch(updateObject(id, {
+        x: object.position.x,
+        y: object.position.z,
+        z: object.position.y,
+        rotation
+      }))
+    }
+  }
 
   const onTriggerStart = event => {
     const controller = event.target
@@ -373,7 +422,11 @@ const useInteractionsManager = ({
     // if the BonesHelper instance is in the scene ...
     if ( BonesHelper.getInstance().isSelected ) {
       // ... check bones helper bone intersections
-      intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+
+      let intersects = []
+      BonesHelper.getInstance().raycast(getControllerRaycaster(controller), intersects)
+      intersection = intersects.find(h => h.bone)
+
       if (intersection) {
         interactionService.send({
           type: 'TRIGGER_START',
@@ -493,7 +546,11 @@ const useInteractionsManager = ({
   const onGripDown = event => {
     const controller = event.target
     if (BonesHelper.getInstance().isSelected) {
-      const intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+
+      let intersects = []
+      BonesHelper.getInstance().raycast(getControllerRaycaster(controller), intersects)
+      intersection = intersects.find(h => h.bone)
+
       if (intersection) {
         interactionService.send({
           type: 'GRIP_DOWN',
@@ -510,9 +567,12 @@ const useInteractionsManager = ({
     // include all interactables (Model Object, Character, etc)
     let list = scene.__interaction
 
-    // Checks if any object is dragged
-    // There's no reason to pick any other object except for dragged one
-    if (interactionService.state.context.selection) {
+    // checks if any object is being actively dragged
+    // if so, there's no reason to pick any other object except for dragged one
+    if (
+      interactionService.state.context.draggingController &&
+      interactionService.state.context.selection
+    ) {
       list = list.filter(object => object.uuid === interactionService.state.context.selection)
     }
     // setup the GPU picker
@@ -532,6 +592,7 @@ const useInteractionsManager = ({
     }
 
     if (match) {
+      // Simple test to check how drop works
       interactionService.send({
         type: 'GRIP_DOWN',
         controller: event.target,
@@ -580,6 +641,11 @@ const useInteractionsManager = ({
       dispatch(ActionCreators.redo())
       playSound('redo')
     }
+  }
+
+  const onPressEndX = event => {
+    // relay through state machine
+    interactionService.send({ type: 'PRESS_END_X', controller: event.target })
   }
 
   const onMoveCamera = event => {
@@ -644,6 +710,7 @@ const useInteractionsManager = ({
     onAxesChanged,
     onPressEndA,
     onPressEndB,
+    onPressEndX
   })
 
   const reusableVector = useRef()
@@ -669,7 +736,11 @@ const useInteractionsManager = ({
       let match
       for (let i = 0, n = controllers.length; i < n; i++) {
         let controller = controllers[i]
-        let intersection = getControllerIntersections(controller, [BonesHelper.getInstance()]).find(h => h.bone)
+
+        let intersects = []
+        BonesHelper.getInstance().raycast(getControllerRaycaster(controller), intersects)
+        intersection = intersects.find(h => h.bone)
+
         if (intersection) {
           match = intersection
           if (BonesHelper.getInstance().selectedBone !== intersection.bone) {
@@ -820,7 +891,33 @@ const useInteractionsManager = ({
             playSound('teleport')
           }
         },
+        onDropLowest: (context, event) => {
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+          let placesForDrop = scene.__interaction.concat([groundRef.current])
 
+          if (object.userData.type === 'character') {
+            let positionDifference = object.worldPosition().clone()
+            dropCharacter(object, placesForDrop)
+            positionDifference.sub(object.worldPosition())
+
+            // if a controller is dragging the character ...
+            if (context.draggingController != null) {
+              // ... find out which controller it is
+              let controller = gl.vr.getController(context.draggingController)
+              // ... and add the difference to that controller's selectOffset
+              controller.userData.selectOffset.add(positionDifference)
+            }
+          } else {
+            dropObject(object, placesForDrop)
+          }
+
+          // if we're in `selected` mode, we can commit the change immediately
+          if (interactionService.state.value === 'selected') {
+            commit(context.selection, object)
+          }
+
+          playSound('drop')
+        },
         onSelected: (context, event) => {
           let controller = event.controller
           let { object, distance, point } = event.intersection
@@ -884,28 +981,7 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
 
-          const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
-
-          if (object.userData.type == 'light' || object.userData.type == "virtual-camera") {
-            dispatch(updateObject(context.selection, {
-              x: object.position.x,
-              y: object.position.z,
-              z: object.position.y,
-              rotation: euler.y,
-              roll: euler.z,
-              tilt: euler.x
-            }))
-          } else {
-            let rotation = object.userData.type == 'character'
-              ? euler.y
-              : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-            dispatch(updateObject(context.selection, {
-              x: object.position.x,
-              y: object.position.z,
-              z: object.position.y,
-              rotation
-            }))
-          }
+          commit(context.selection, object)
 
           uiService.send({ type: 'UNLOCK' })
         },

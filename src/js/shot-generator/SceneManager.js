@@ -2,6 +2,10 @@ const { Provider, connect } = require('react-redux')
 const React = require('react')
 const { useState, useEffect, useRef, useContext, useMemo } = React
 
+const THREE = require('three')
+window.THREE = window.THREE || THREE
+require('../vendor/OutlineEffect')
+
 const h = require('../utils/h')
 
 const {
@@ -74,11 +78,10 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
-    let [camera, setCamera] = useState(null)
     const [shouldRaf, setShouldRaf] = useState(true)
 
     let largeRenderer = useRef(null)
@@ -142,6 +145,30 @@ const SceneManager = connect(
       }
     }, [])
 
+    const setOutlineEffectParams = (type, params) => {
+      if (type === 'large') {
+        largeRendererEffect.current = new THREE.OutlineEffect(
+          largeRenderer.current,
+          {
+            defaultThickness: 0.008,
+            ...params
+          }
+        )
+      }
+      if (type === 'small') {
+        smallRendererEffect.current = new THREE.OutlineEffect(
+          smallRenderer.current,
+          {
+            defaultThickness: 0.02,
+            defaultAlpha: 0.5,
+            defaultColor: [0.4, 0.4, 0.4],
+            ignoreMaterial: true,
+            ...params
+          }
+        )
+      }
+    }
+
     useMemo(() => {
       largeRenderer.current = new THREE.WebGLRenderer({
         canvas: largeCanvasRef.current,
@@ -151,8 +178,7 @@ const SceneManager = connect(
       //   largeCanvasSize.width,
       //   largeCanvasSize.height
       // )
-
-      largeRendererEffect.current = new THREE.OutlineEffect( largeRenderer.current, {defaultThickness:0.008} )
+      setOutlineEffectParams('large')
 
       smallRenderer.current = new THREE.WebGLRenderer({
         canvas: smallCanvasRef.current,
@@ -162,9 +188,8 @@ const SceneManager = connect(
         300,
         300,
       )
-      smallRendererEffect.current = new THREE.OutlineEffect( smallRenderer.current, {defaultThickness:0.02, defaultAlpha:0.5, defaultColor: [ 0.4, 0.4, 0.4 ], ignoreMaterial: true} )
+      setOutlineEffectParams('small')
     }, [])
-
 
     // autofit ortho camera for scene
     useMemo(() => {
@@ -248,39 +273,50 @@ const SceneManager = connect(
       if (mainViewCamera === 'live') {
         // ortho camera is small
         smallRenderer.current.setSize(300, 300)
-        smallRendererEffect.current.setParams({
-          defaultThickness:0.02,
-          ignoreMaterial: true,
-          defaultColor: [ 0.4, 0.4, 0.4 ]
-        })
+        setOutlineEffectParams(
+          'small',
+          {
+            defaultThickness: 0.02,
+            ignoreMaterial: true,
+            defaultColor: [0.4, 0.4, 0.4]
+          }
+        )
 
         // perspective camera is large
         largeRenderer.current.setSize(width, height)
-
-        largeRendererEffect.current.setParams({
-          defaultThickness:0.008,
-          ignoreMaterial: false,
-          defaultColor: [0, 0, 0]
-        })
+        setOutlineEffectParams(
+          'large',
+          {
+            defaultThickness: 0.008,
+            ignoreMaterial: false,
+            defaultColor: [0, 0, 0]
+          }
+        )
 
       } else {
         // ortho camera is large
         largeRenderer.current.setSize(width, height)
-        largeRendererEffect.current.setParams({
-          defaultThickness:0.013,
-          ignoreMaterial: true,
-          defaultColor: [ 0.4, 0.4, 0.4 ]
-        })
+        setOutlineEffectParams(
+          'large',
+          {
+            defaultThickness: 0.013,
+            ignoreMaterial: true,
+            defaultColor: [ 0.4, 0.4, 0.4 ]
+          }
+        )
         // perspective camera is small
         smallRenderer.current.setSize(
           Math.floor(300),
           Math.floor(300 / aspectRatio)
         )
-        smallRendererEffect.current.setParams({
-          defaultThickness:0.008,
-          ignoreMaterial: false,
-          defaultColor: [0, 0, 0]
-        })
+        setOutlineEffectParams(
+          'small',
+          {
+            defaultThickness: 0.008,
+            ignoreMaterial: false,
+            defaultColor: [0, 0, 0]
+          }
+        )
       }
     }, [largeCanvasSize, mainViewCamera, aspectRatio])
 
@@ -305,7 +341,7 @@ const SceneManager = connect(
             }
           )
         }
-     
+
         animator.current = () => {
           if (stats) { stats.begin() }
           if (scene && camera) {
@@ -326,7 +362,7 @@ const SceneManager = connect(
                 }
 
                 cameraControlsView.current.object = CameraControls.objectFromCameraState(cameraState)
-              
+
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
 
@@ -619,7 +655,8 @@ const SceneManager = connect(
           el: largeCanvasRef.current,
           selectOnPointerDown: mainViewCamera !== 'live',
           useIcons: mainViewCamera !== 'live',
-          transition
+          transition,
+          gl: largeRenderer.current
         }],
 
         [SelectionManager, {
@@ -629,7 +666,8 @@ const SceneManager = connect(
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',
           useIcons: mainViewCamera === 'live',
-          transition
+          transition,
+          gl: smallRenderer.current
         }],
 
         // [SelectionsMover, {

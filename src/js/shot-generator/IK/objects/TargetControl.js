@@ -38,7 +38,7 @@ class TargetControl
         let movingTarget = new THREE.Mesh(geometry, material);
         movingTarget.position.copy(position);
         movingTarget.scale.set(0.4, 0.4, 0.4);
-        movingTarget.renderOrder = 1;
+        movingTarget.renderOrder = 9;
         scene.add(movingTarget);
         movingTarget.userData.type = "controlPoint";
         movingTarget.name = "controlPoint";

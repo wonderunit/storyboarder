@@ -18,7 +18,7 @@ class BonesHelper extends THREE.Object3D
             this.bonesGroup = new THREE.Group();
             this.add(this.bonesGroup)
             this.intializedSkinnedMeshUuid = null;
-            this.selectedBoneColor = new THREE.Color().setHSL( 0.1 , 0.25 , 0.25 );
+            this.selectedBoneColor = new THREE.Color(0xffffff)
         }
         return instance;
     }
@@ -42,7 +42,7 @@ class BonesHelper extends THREE.Object3D
             return;
         }
         this.intializedSkinnedMeshUuid = skinnedMesh.uuid;
-        // Returns current in-use bones 
+        // Returns current in-use bones
         // The logic behind initialize is that it called once for new object
         // So we need to release previous Character bones and initialize new ones
         if(this.bonesGroup.children.length > 0)
@@ -93,7 +93,7 @@ class BonesHelper extends THREE.Object3D
             this.helperBonesPool.updateInstancedBone(helpingBone);
         }
     }
-    
+
     // Private method
     setHelpingBone(originalInverseMatrix, helpingBone, originalBone)
     {
@@ -112,10 +112,10 @@ class BonesHelper extends THREE.Object3D
             boneMatrix.multiplyMatrices( originalInverseMatrix, originalBone.children[originalBone.children.length - 1].matrixWorld );
             reusableVector.setFromMatrixPosition(boneMatrix);
             size = helpingBone.position.distanceTo(reusableVector);
-    
+
             thickness = Math.min(Math.max(size * 0.8, 0.07), 0.20);
             thickness = Math.min(thickness, size * 3);
-    
+
             helpingBone.scale.set(thickness * originalBone.scale.x, size * originalBone.scale.y, thickness * originalBone.scale.z);
         }
         helpingBone.updateMatrix();
@@ -164,6 +164,11 @@ class BonesHelper extends THREE.Object3D
 
     raycast(raycaster, intersects)
     {
+        if(!this.isSelected)
+        {
+            intersects = [];
+            return;
+        }
         let results = raycaster.intersectObjects(this.bonesGroup.children);
         for (let result of results)
         {

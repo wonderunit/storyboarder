@@ -90,7 +90,10 @@ const machine = Machine({
 
         AXES_CHANGED: {
           actions: ['moveAndRotateCamera']
-        }
+        },
+        PRESS_END_X: {
+          actions: 'onDropLowest'
+        },
       }
     },
     drag_control_point :
@@ -127,8 +130,12 @@ const machine = Machine({
         },
         GRIP_UP: {
           cond: 'sameControllerOnSnappableObject',
-          actions: 'onSnapEnd'
-        }
+          actions: 'onSnapEnd',
+          target: 'selected'
+        },
+        PRESS_END_X: {
+          actions: 'onDropLowest'
+        },
       }
     },
     drag_teleport: {
@@ -204,6 +211,7 @@ const machine = Machine({
   guards: {
     selectionPresent: (context, event) => context.selection != null,
     selectionNil: (context, event) => event.intersection == null,
+    //setRediractedModeSelect : (context, event) => 
 
     eventHasSceneObjectIntersection: (context, event) => event.intersection != null && ['object', 'character', 'light', 'virtual-camera'].includes(event.intersection.type),
     eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.bone,

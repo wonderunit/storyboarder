@@ -4,25 +4,21 @@
 .tooltip-element *,
 .tooltip-element *:after,
 .tooltip-element *:before {
-  box-sizing: border-box; 
+  box-sizing: border-box;
 }
 
 .tooltip-element {
   position: absolute;
-  display: none; 
+  display: none;
   z-index: 999;
 }
   .tooltip-element.tooltip-open {
-    display: block; 
+    display: block;
   }
-
-.tooltip-element.tooltip-open .tooltip-content {
-  animation-name: appear;
-}
 
 .tooltip-element {
   max-width: 100%;
-  max-height: 100%; 
+  max-height: 100%;
 }
   .tooltip-element .tooltip-content {
     position: relative;
@@ -38,13 +34,8 @@
 
     opacity: 0;
 
-    animation-duration: 0.25s;
-    animation-timing-function: ease-out;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-
     float: left;
-    
+
     line-height: 1.3;
     }
     .tooltip-element .tooltip-content:before {
@@ -196,21 +187,25 @@
   color: rgba(255,255,255,0.5);
 }
 
+.tooltip-element .tooltip-content {
+  animation-duration: 0.15s;
+  animation-timing-function: ease-out;
+  animation-iteration-count: 1;
+  animation-fill-mode: forwards;
+}
+.tooltip-element.tooltip-open .tooltip-content {
+  animation-name: appear;
+}
 @keyframes appear {
   0% {
-    transform: scale(0.7,0.7);
-    opacity: 0;
+    transform: scale(0.8);
+    opacity: 0.5;
   }
-  60% {
-    opacity: 1;
-    transform: scale(1.1,1.1);
-  }
-  85% {
-    opacity: 1;
-    transform: scale(0.9,0.9);
+  80% {
+    transform: scale(1.015);
   }
   100% {
     opacity: 1;
-    transform: scale(1,1);
+    transform: scale(1);
   }
 }

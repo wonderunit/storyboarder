@@ -1,6 +1,7 @@
 const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
-
+require("./IK/utils/Object3dExtension");
+const GPUPicker = require("../xr/src/three/GPUPickers/GPUPicker");
 const {
   selectObject,
   selectObjectToggle,
@@ -13,6 +14,7 @@ const {
   getSelections,
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
+
 
 function getObjectsFromIcons ( objects ) {
   return objects
@@ -30,77 +32,6 @@ function getObjectsFromIcons ( objects ) {
           .filter(o => o.visible)
           .map(o => o.children[0])
       )
-}
-
-function getObjectsFromCameraView (objects) {
-  let results = []
-  for (let o of objects) {
-
-    if (o.userData.type === 'object') {
-      if (o.type === 'Group' && o.children[0].isMesh) {
-        if (o.visible) results.push(o.children[0])
-      }
-    }
-
-    if (o.userData.type === 'light') {
-      results.push(o.hitter)
-    }
-
-    if (o.userData.type === 'character') {
-      // if the mesh has loaded
-      if (o.bonesHelper) {
-        results = results.concat(o.bonesHelper.hit_meshes)
-      }
-    }
-    if(o.userData.type === 'controlTarget')
-    {
-      if(o.children.length !== 0)
-      {
-        let gizmo = o.children[0];
-        let gizmoChildren = gizmo.children;
-        for(let i = 0; i < gizmoChildren.length; i++)
-        {
-          if(gizmoChildren[i].name === "Helper")
-          {
-              let children = gizmoChildren[i].children;
-              for (let i = 0; i < children.length; i++)
-              {
-                results.push(children[i]);
-              }
-          }
-        }
-      }
-    }
-
-    if(o.userData.type === 'boneControl')
-    {
-      if(o.children.length !== 0)
-      {
-        let gizmo = o.children[0];
-        let gizmoChildren = gizmo.children;
-        for(let i = 0; i < gizmoChildren.length; i++)
-        {
-          if(gizmoChildren[i].name === "Helper")
-          {
-              let children = gizmoChildren[i].children;
-              for (let i = 0; i < children.length; i++)
-              {
-                children[i].userData.type = "boneControl";
-                results.push(children[i]);
-              }
-          }
-        }
-      }
-    }
-
-    if(o.userData.type === 'controlPoint')
-    {
-      results.push(o);
-    }
-    // don't allow selection of: camera, volume
-  }
-
-  return results
 }
 
 const getIntersectionTarget = intersect => {
@@ -121,7 +52,16 @@ const getIntersectionTarget = intersect => {
   //Transform control
   if(intersect.object.type === 'gizmo')
   {
+    if(intersect.object.parent.parent.userData.type === "boneControl")
+    {
+      return intersect.object.parent.parent.parent;
+    }
     return intersect.object;
+  }
+
+  if(intersect.object.type === 'SkinnedMesh')
+  {
+    return intersect.object.parent;
   }
 
   if(intersect.object.userData.type === 'controlPoint')
@@ -172,6 +112,7 @@ const SelectionManager = connect(
     updateObjects,
 
     transition,
+    gl,
     
     undoGroupStart,
     undoGroupEnd
@@ -181,6 +122,16 @@ const SelectionManager = connect(
 
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
+  const gpuPickerInstance = useRef(null);
+
+  const getGPUPicker = () => {
+    if(gpuPickerInstance.current === null)
+    {
+      gpuPickerInstance.current = new GPUPicker(gl);
+    }
+    return gpuPickerInstance.current;
+  };
+
 
   const intersectables = scene.children.filter(o =>
     o.userData.type === 'object' ||
@@ -200,13 +151,23 @@ const SelectionManager = connect(
     }
   }
 
-  const getIntersects = ({ x, y }, camera, useIcons) => {
+  const getIntersects = (mousePosition, camera, useIcons) => {
     let raycaster = new THREE.Raycaster()
-    raycaster.setFromCamera({ x, y }, camera )
-
-    let intersects = useIcons
-      ? raycaster.intersectObjects( getObjectsFromIcons(intersectables) )
-      : raycaster.intersectObjects( getObjectsFromCameraView(intersectables))
+    let x = mousePosition.x;
+    let y = mousePosition.y;
+    raycaster.setFromCamera({x, y}, camera )
+    let intersects = [];
+    if( useIcons)
+    {
+      intersects = raycaster.intersectObjects( getObjectsFromIcons(intersectables) )
+    }
+    else
+    {
+      let gpuPicker = getGPUPicker();
+      gpuPicker.setupScene(intersectables.filter(object => object.userData.type !== 'volume'));
+      gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y);
+      intersects = gpuPicker.pickWithCamera(camera, gl);
+    }
     return intersects
   }
 
@@ -219,6 +180,7 @@ const SelectionManager = connect(
   const plane = useRef()
   const intersection = useRef()
   const offsets = useRef()
+  const mousePosition = useRef(new THREE.Vector2());
   const prepareDrag = (target, { x, y, useIcons }) => {
     if (!raycaster.current) raycaster.current = new THREE.Raycaster()
     if (!plane.current) plane.current = new THREE.Plane()
@@ -276,10 +238,16 @@ const SelectionManager = connect(
 
     // get the mouse coords
     const { x, y } = mouse(event)
+    mousePosition.current.set(x, y);
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
-    let intersects = getIntersects({ x, y }, camera, useIcons)
-  
+    if(!useIcons)
+    {
+      const rect = el.getBoundingClientRect();
+      mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
+    }
+
+    let intersects = getIntersects(mousePosition.current, camera, useIcons);
     // if no objects intersected
     if (intersects.length === 0) {
       // cancel any active dragging
@@ -352,10 +320,10 @@ const SelectionManager = connect(
           target = characters[0];
           isSelectedControlPoint = true;
         } 
-        else if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'boneControl')
+        else if(target && target.userData && target.userData.type === 'boneControl')
         {
-          let characterId = target.parent.parent.parent.characterId;
-          let boneId = target.parent.parent.parent.boneId;
+          let characterId = target.characterId;
+          let boneId = target.boneId;
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];
           let bone = target.children.filter(child => child.type === "SkinnedMesh")[0].skeleton.bones.filter(value => value.uuid === boneId);
@@ -368,7 +336,6 @@ const SelectionManager = connect(
           target = characters[0];
           isSelectedControlPoint = true;
         }
-      
       }
       // if there are 1 or more selections
       if (selections.length) {
@@ -487,7 +454,13 @@ const SelectionManager = connect(
 
     if (event.target === el) {
       if (!selectOnPointerDown) {
-        let intersects = getIntersects({ x, y }, camera, useIcons)
+        mousePosition.current.set(x, y);
+        if(!useIcons)
+        {
+          const rect = el.getBoundingClientRect();
+          mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
+        }
+        let intersects = getIntersects(mousePosition.current, camera, useIcons)
         if (intersects.length === 0) {
           // selectObject(undefined)
           // selectBone(null)

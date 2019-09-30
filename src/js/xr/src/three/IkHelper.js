@@ -95,6 +95,7 @@ class IKHelper extends THREE.Object3D
                 let worldPosition = this.selectedControlPoint.position;
                 let character = this.intializedSkinnedMesh.parent.parent;
                 let poleTarget = character.userData.poleTargets[this.selectedControlPoint.name];
+                console.log(poleTarget);
                 if(!poleTarget)
                 {
                     poleTarget = 
@@ -113,6 +114,7 @@ class IKHelper extends THREE.Object3D
                     poleTarget.position.y = worldPosition.y;
                     poleTarget.position.z = worldPosition.z;
                 }
+                console.log(poleTarget);
                 this.updatePoleTargets(character.userData.poleTargets);
             }
             if(this.selectedControlPoint.name === "Hips")

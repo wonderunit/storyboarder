@@ -14,6 +14,8 @@ const ModelLoader = require('../services/model-loader')
 const h = require('../utils/h')
 const { truncateMiddle } = require('../utils')
 
+const CustomModelHelpButton = require('./CustomModelHelpButton')
+
 const GUTTER_SIZE = 5
 const ITEM_WIDTH = 68
 const ITEM_HEIGHT = 132
@@ -23,7 +25,7 @@ const IMAGE_HEIGHT = 100
 
 const NUM_COLS = 4
 
-const filepathFor = model => 
+const filepathFor = model =>
   ModelLoader.getFilepathForModel(
     { model: model.id, type: model.type },
     { storyboarderFilePath: null })
@@ -45,12 +47,12 @@ const ModelFileItem = React.memo(({
     onSelectItem(sceneObject.id, { model: model.id })
   }
 
-  let className = classNames({
+  const className = classNames({
     'thumbnail-search__item--selected': sceneObject.model === model.id
   })
 
   // allow a little text overlap
-  let slop = GUTTER_SIZE
+  const slop = GUTTER_SIZE
 
   return h(['div.thumbnail-search__item', {
     style,
@@ -59,28 +61,27 @@ const ModelFileItem = React.memo(({
     'data-id': model.id,
     title: model.name
   }, [
-    ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}, [
-      ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}]
+    ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }, [
+      ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }]
     ]],
     ['div.thumbnail-search__name', {
       style: {
         width: ITEM_WIDTH + slop,
         height: (ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE) + slop
-      },
+      }
     }, model.name]
   ]])
 })
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  let { sceneObject } = data
-  let model = data.models[columnIndex + (rowIndex * NUM_COLS)]
-  let onSelectItem = data.onSelectItem
+  const { sceneObject } = data
+  const model = data.models[columnIndex + (rowIndex * NUM_COLS)]
+  const onSelectItem = data.onSelectItem
 
   if (!model) return h(['div', { style }])
 
-
-  let filepath = (model.id !== 'box') && filepathFor(model)
-  let modelData = data.attachments[filepath] && data.attachments[filepath].value
+  const filepath = (model.id !== 'box') && filepathFor(model)
+  const modelData = data.attachments[filepath] && data.attachments[filepath].value
 
   return h([
     ModelFileItem, {
@@ -102,12 +103,12 @@ const FileSelect = ({ model, onSelectFile }) => {
   const basenameWithoutExt = path.basename(model, ext)
   const displayName = truncateMiddle(basenameWithoutExt, 13)
 
-  let className = classNames({
+  const className = classNames({
     'button__file--selected': isCustom
   })
 
   return h(
-    ['div.column', { style: { width: 106 }}, [
+    ['div.column', { style: { width: 106 } }, [
       [
         'a.button__file[href=#]', {
           style: { flex: 1, width: '100%', height: 34, whiteSpace: 'nowrap', overflow: 'hidden' },
@@ -133,127 +134,132 @@ const ModelSelect = connect(
     updateObject
   }
 )(
-React.memo(({
-  sceneObject,
+  React.memo(({
+    sceneObject,
 
-  attachments,
+    attachments,
 
-  allModels,
+    allModels,
 
-  updateObject,
-  transition,
+    updateObject,
+    transition,
 
-  rows = 3
-}) => {
-  const [terms, setTerms] = useState(null)
-  
-  const models = useMemo(
-    () => Object.values(allModels).filter(m => m.type === sceneObject.type),
-    [allModels, sceneObject.type]
-  )
+    rows = 3
+  }) => {
+    const [terms, setTerms] = useState(null)
 
-  const onChange = event => {
-    event.preventDefault()
-    setTerms(event.currentTarget.value)
-  }
+    const models = useMemo(
+      () => Object.values(allModels).filter(m => m.type === sceneObject.type),
+      [allModels, sceneObject.type]
+    )
 
-  const onSelectFile = event => {
-    event.preventDefault()
-
-    let filepaths = dialog.showOpenDialog(null, {})
-
-    if (filepaths) {
-      let filepath = filepaths[0]
-      updateObject(sceneObject.id, { model: filepath })
+    const onChange = event => {
+      event.preventDefault()
+      setTerms(event.currentTarget.value)
     }
 
-    // automatically blur to return keyboard control
-    document.activeElement.blur()
-    transition('TYPING_EXIT')
-  }
+    const onSelectFile = event => {
+      event.preventDefault()
 
-  const onSelectItem = (id, { model }) => {
-    updateObject(id, { model })
-  }
+      const filepaths = dialog.showOpenDialog(null, {})
 
-  const results = useMemo(() => {
-    const matchAll = terms == null || terms.length === 0
+      if (filepaths) {
+        const filepath = filepaths[0]
+        updateObject(sceneObject.id, { model: filepath })
+      }
 
-    return models
-      .filter(model =>
-        matchAll
-          ? true
-          : LiquidMetal.score(
+      // automatically blur to return keyboard control
+      document.activeElement.blur()
+      transition('TYPING_EXIT')
+    }
+
+    const onSelectItem = (id, { model }) => {
+      updateObject(id, { model })
+    }
+
+    const results = useMemo(() => {
+      const matchAll = terms == null || terms.length === 0
+
+      return models
+        .filter(model =>
+          matchAll
+            ? true
+            : LiquidMetal.score(
               [model.name, model.keywords].filter(Boolean).join(' '),
               terms
             ) > 0.8
-      )
-  }, [terms])
+        )
+    }, [terms])
 
-  // via https://reactjs.org/docs/forwarding-refs.html
-  const innerElementType = forwardRef(({ style, ...rest }, ref) => {
-    return h([
-      'div',
-      {
-        ref,
-        style: {
-          ...style,
-          width: 288, // cut off the right side gutter
-          position: 'relative',
-          overflow: 'hidden'
-        },
-        ...rest
-      },
-    ])
-  })
-
-  const isCustom = ModelLoader.isCustomModel(sceneObject.model)
-
-  return h(
-    ['div.thumbnail-search.column', [
-      ['div.row', { style: { padding: '6px 0' } }, [
-        ['div.column', { style: { flex: 1 }}, [
-          ['input', {
-            placeholder: 'Search models …',
-            onChange
-          }],
-        ]],
-        isCustom
-          ? ['div.column', { style: { padding: 2 }}]
-          : ['div.column', { style: { alignSelf: 'center', padding: 6, lineHeight: 1 } }, 'or'],
-        [FileSelect, { model: sceneObject.model, onSelectFile }]
-      ]],
-
-      ['div.thumbnail-search__list', [
-        FixedSizeGrid,
+    // via https://reactjs.org/docs/forwarding-refs.html
+    const innerElementType = forwardRef(({ style, ...rest }, ref) => {
+      return h([
+        'div',
         {
-          columnCount: NUM_COLS,
-          columnWidth: ITEM_WIDTH + GUTTER_SIZE,
-
-          rowCount: Math.ceil(results.length / NUM_COLS),
-          rowHeight: ITEM_HEIGHT,
-
-          width: 288,
-          height: rows === 1
-            ? 132
-            : rows * 121,
-
-          innerElementType,
-
-          itemData: {
-            models: results,
-            attachments,
-
-            sceneObject,
-
-            onSelectItem
+          ref,
+          style: {
+            ...style,
+            width: 288, // cut off the right side gutter
+            position: 'relative',
+            overflow: 'hidden'
           },
-          children: ListItem
+          ...rest
         }
-      ]]
+      ])
+    })
 
-    ]]
-  )
-}))
+    const isCustom = ModelLoader.isCustomModel(sceneObject.model)
+
+    return h(
+      ['div.thumbnail-search.column', [
+        ['div.row', { style: { padding: '6px 0' } }, [
+          ['div.column', { style: { flex: 1 } }, [
+            ['input', {
+              placeholder: 'Search models …',
+              onChange
+            }]
+          ]],
+          isCustom
+            ? ['div.column', { style: { padding: 2 } }]
+            : ['div.column', { style: { alignSelf: 'center', padding: 6, lineHeight: 1 } }, 'or'],
+          [FileSelect, { model: sceneObject.model, onSelectFile }],
+          [
+            'div.column', { style: { width: 20, margin: '0 0 0 6px', alignSelf: 'center', alignItems: 'flex-end' } }, [
+              CustomModelHelpButton
+            ]
+          ]
+        ]],
+
+        ['div.thumbnail-search__list', [
+          FixedSizeGrid,
+          {
+            columnCount: NUM_COLS,
+            columnWidth: ITEM_WIDTH + GUTTER_SIZE,
+
+            rowCount: Math.ceil(results.length / NUM_COLS),
+            rowHeight: ITEM_HEIGHT,
+
+            width: 288,
+            height: rows === 2
+              ? 248 // built-in Characters list
+              : rows * ITEM_HEIGHT, // built-in Models list
+
+            innerElementType,
+
+            itemData: {
+              models: results,
+              attachments,
+
+              sceneObject,
+
+              onSelectItem
+            },
+            children: ListItem
+          }
+        ]]
+
+      ]]
+    )
+  }))
 
 module.exports = ModelSelect
