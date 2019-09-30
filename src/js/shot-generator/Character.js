@@ -2,6 +2,7 @@
 const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
 const BoneRotationControl = require("./IK/objects/BoneRotationControl")
 const {AddTransformationControl, createTransformationControls} = require("./IK/utils/IkUtils");
+const { isCustomModel } = require('../services/model-loader')
 //#endregion
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -291,16 +292,16 @@ const Character = React.memo(({
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
-        }  
-      } );}); 
-      console.log(mesh.name);
-      if(!(mesh.name === "female-adult-meso" || mesh.name === "adult-male-lod"
-      || mesh.name === "male-adult-meso" || mesh.name === "female-youth-meso"
-      || mesh.name === "female-youth-meso"))
-      {
-        console.log("custom model");
-        return;
+        }
+      } );});
+
+
+      if ( isCustomModel(props.model) ) {
+        console.log('Custom model. No IK.')
+        return
       }
+
+      console.log('Built-in model. Setting up IK.')
       ragDoll.current = new RagDoll();
       let skeletonRig = ragDoll.current;
 
@@ -622,10 +623,10 @@ const Character = React.memo(({
               thickness: 0.009,
               color: [ 122/256.0, 114/256.0, 233/256.0 ]
             }
-           : {
-             thickness: 0.009,
-             color: [ 0, 0, 0 ],
-           }
+            : {
+              thickness: 0.009,
+              color: [ 0, 0, 0 ],
+            }
       })
     } else {
       mesh.material.userData.outlineParameters =
@@ -634,10 +635,10 @@ const Character = React.memo(({
             thickness: 0.009,
             color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
           }
-         : {
-           thickness: 0.009,
-           color: [ 0, 0, 0 ],
-         }
+          : {
+            thickness: 0.009,
+            color: [ 0, 0, 0 ],
+          }
     }
 
     object.current.orthoIcon.setSelected(isSelected)

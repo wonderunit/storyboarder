@@ -37,6 +37,15 @@ class UniversalPickableCharacter extends Pickable
         }
     }
 
+    getCharacterContainer()
+    {
+        if(this.sceneMesh.parent.type === "LOD")
+        {
+            return this.sceneMesh.parent.parent;
+        }
+        return this.sceneMesh.parent;
+    }
+
     //TODO(): Removed get uuid
     getUUID()
     {
@@ -77,6 +86,11 @@ class UniversalPickableCharacter extends Pickable
         this.node.quaternion.copy(parent.worldQuaternion());
         this.node.scale.copy(parent.worldScale());
         updateBoneToBone(this.pickingMesh, this.sceneMesh);
+        if(!this.sceneMesh.morphTargetInfluences) return;
+        for( let i = 0; i < this.sceneMesh.morphTargetInfluences.length; i ++)
+        {
+            this.pickingMesh.morphTargetInfluences[i] = this.sceneMesh.morphTargetInfluences[i];
+        }
     }
 
     isObjectChanged()
@@ -111,15 +125,6 @@ class UniversalPickableCharacter extends Pickable
             i--;
         }   
         this.pickingMesh.visible = true;
-    }
-
-    getCharacterContainer()
-    {
-        if(this.sceneMesh.parent.type === "LOD")
-        {
-            return this.sceneMesh.parent.parent;
-        }
-        return this.sceneMesh.parent;
     }
 }
 module.exports = UniversalPickableCharacter;

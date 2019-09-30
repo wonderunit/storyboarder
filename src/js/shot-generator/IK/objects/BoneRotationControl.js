@@ -9,6 +9,9 @@ class BoneRotationControl
         this.control.size = 0.2;
         this.domElement = domElement;
         this.control.userData.type = "boneControl";
+        this.control.traverse(child => {
+            child.userData.type = "boneControl";
+        });
         this.bone = null;
         this.scene = scene;
         this.control.characterId = characterId;
