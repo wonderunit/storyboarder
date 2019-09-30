@@ -7,24 +7,25 @@ class HelperBonesPool
         this.poolSize = poolSize;
         this.avaibleBones = [];
         this.usedBones = {};
+        //0x856dff
         let material = new THREE.MeshBasicMaterial({
-            color: 0x008888,    
+            color: 0x856dff,
             depthTest: false,
             depthWrite: false,
             transparent: true,
-            opacity: 0.5,
+            opacity: 0.65,
             flatShading: true});
         this.boneMesh = boneMesh;
         this.material = material;
         this.instancedMesh = new THREE.InstancedMesh(boneMesh.geometry, material, poolSize, true, true, false)
         this.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
-        this.defaultColor = new THREE.Color().setHSL( 0.2 , 0.5 , 0.5 );
+        this.defaultColor = new THREE.Color(0x856dff);
         for ( var i = 0 ; i < poolSize; i ++ )
         {
             this.addBone(i);
         }
     }
-    
+
     addBone(id)
     {
         let bone = this.boneMesh.clone();
