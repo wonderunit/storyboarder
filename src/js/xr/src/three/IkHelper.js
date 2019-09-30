@@ -94,11 +94,10 @@ class IKHelper extends THREE.Object3D
                 this.selectedControlPoint.updateMatrixWorld();
                 let worldPosition = this.selectedControlPoint.position;
                 let character = this.intializedSkinnedMesh.parent.parent;
-                let poleTarget = character.userData.poleTargets[this.selectedControlPoint.name];
-                console.log(poleTarget);
-                if(!poleTarget)
+                let poleTargets = character.userData.poleTargets;
+                if(!poleTargets[this.selectedControlPoint.name])
                 {
-                    poleTarget = 
+                    poleTargets[this.selectedControlPoint.name] = 
                     {
                         position: 
                         {
@@ -110,11 +109,10 @@ class IKHelper extends THREE.Object3D
                 }
                 else
                 {
-                    poleTarget.position.x = worldPosition.x;
-                    poleTarget.position.y = worldPosition.y;
-                    poleTarget.position.z = worldPosition.z;
+                    poleTargets[this.selectedControlPoint.name].position.x = worldPosition.x;
+                    poleTargets[this.selectedControlPoint.name].position.y = worldPosition.y;
+                    poleTargets[this.selectedControlPoint.name].position.z = worldPosition.z;
                 }
-                console.log(poleTarget);
                 this.updatePoleTargets(character.userData.poleTargets);
             }
             if(this.selectedControlPoint.name === "Hips")

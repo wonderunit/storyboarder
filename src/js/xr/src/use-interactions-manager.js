@@ -311,7 +311,6 @@ const useInteractionsManager = ({
       const updatePoleTarget = (poleTargets) => dispatch(updateCharacterPoleTargets({
           id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
           poleTargets: poleTargets
-
         }
       ))
 
