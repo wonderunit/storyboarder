@@ -64,6 +64,38 @@ const setupHomePane = (paneComponents, self) => {
       onSelect: () => {
         self.send('TOGGLE_SETTINGS')
       }
+    },
+    'quote-1': {
+      id: 'quote-1',
+      type: 'text',
+      x: 453 + 20,
+      y: 889 + 20,
+      label: `"You never change things by fighting the existing reality.`,
+      size: 16
+    },
+    'quote-2': {
+      id: 'quote-2',
+      type: 'text',
+      x: 453 + 20,
+      y: 889 + 20 + 27,
+      label: `To change something, build a new model`,
+      size: 16
+    },
+    'quote-3': {
+      id: 'quote-3',
+      type: 'text',
+      x: 453 + 20,
+      y: 889 + 20 + 27 * 2,
+      label: `that makes the existing model obsolete.”`,
+      size: 16
+    },
+    'quote-4': {
+      id: 'quote-4',
+      type: 'text',
+      x: 453 + 20,
+      y: 889 + 20 + 27 * 3,
+      label: `― Richard Buckminster Fuller`,
+      size: 16
     }
   }
 }
