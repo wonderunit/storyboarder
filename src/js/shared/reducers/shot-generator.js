@@ -827,11 +827,11 @@ const sceneObjectsReducer = (state = {}, action) => {
         return
 
       case 'UPDATE_CHARACTER_IK_POLETARGETS':
-      draft[action.payload.id].poleTargets = draft[action.payload.id].poleTargets || {}
-      for (let [ key, value ] of Object.entries(action.payload.poleTargets)) {
-        draft[action.payload.id].poleTargets[key] = value
-      }
-      return
+        draft[action.payload.id].poleTargets = draft[action.payload.id].poleTargets || {}
+        for (let [ key, value ] of Object.entries(action.payload.poleTargets)) {
+          draft[action.payload.id].poleTargets[key] = value
+        }
+        return
 
       case 'ATTACHMENTS_RELOCATE':
         let { src, dst } = action.payload
@@ -1281,13 +1281,12 @@ module.exports = {
     payload: { id, name, rotation }
   }),
 
-  updateCharacterIkSkeleton: ({ id, skeleton }) =>
-  ({
+  updateCharacterIkSkeleton: ({ id, skeleton }) => ({
     type: 'UPDATE_CHARACTER_IK_SKELETON',
     payload: { id, skeleton }
   }),
-  updateCharacterPoleTargets: ({ id, poleTargets }) => 
-  ({
+
+  updateCharacterPoleTargets: ({ id, poleTargets }) => ({
     type: 'UPDATE_CHARACTER_IK_POLETARGETS',
     payload: { id, poleTargets }
   }),
