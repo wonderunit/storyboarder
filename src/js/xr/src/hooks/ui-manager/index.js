@@ -52,17 +52,20 @@ const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step
 const lenses = {}
 
 let height_step = 0.05
-let height_min = 1.4732
-let height_max = 2.1336
-lenses.characterHeight = R.lens(
-  vin => THREE.Math.mapLinear(vin, height_min, height_max, 0, 1),
-  vout => {
-    let height = mapLinear(vout, 0, 1, height_min, height_max)
-    height = steps(height, height_step)
-    height = clamp(height, height_min, height_max)
-    return height
-  }
-)
+let height_min = [1.4732, 1.003, 0.492]
+let height_max = [2.1336, 1.384, 0.94]
+for (let [id, propertyName] of ['characterHeight', 'childHeight', 'babyHeight'].entries()) {
+  lenses[propertyName] = R.lens(
+    vin => THREE.Math.mapLinear(vin, height_min[id], height_max[id], 0, 1),
+    vout => {
+      let height = mapLinear(vout, 0, 1, height_min[id], height_max[id])
+      height = steps(height, height_step)
+      height = clamp(height, height_min[id], height_max[id])
+      return height
+    }
+  )
+}
+
 lenses.characterScale = R.lens(
   from => clamp(mapLinear(from, 0.3, 3, 0, 1), 0, 1),
   to => mapLinear(clamp(to, 0, 1), 0, 1, 0.3, 3)
@@ -213,6 +216,10 @@ class CanvasRenderer {
       ctx.fillStyle = 'rgba(0,0,0)'
       roundRect(ctx, 554, 6, 439, 666, 25, true, false)
 
+      let characterHeightLens = lenses.characterHeight
+      if (sceneObject.model === 'child') characterHeightLens = lenses.childHeight
+      if (sceneObject.model === 'baby') characterHeightLens = lenses.babyHeight
+      
       this.paneComponents['properties'] = {
         ...(sceneObject.type === 'camera') &&
           {
@@ -258,7 +265,7 @@ class CanvasRenderer {
               : {
                 height: {
                   label: `Height - ${rounded(sceneObject.height)}m`,
-                  lens: R.compose(R.lensPath(['height']), lenses.characterHeight)
+                  lens: R.compose(R.lensPath(['height']), characterHeightLens)
                 },
                 headScale: {
                   label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
