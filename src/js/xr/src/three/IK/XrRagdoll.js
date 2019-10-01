@@ -4,14 +4,14 @@ const THREE = require( "three");
 const XrPoleConstraint = require( "./Constraints/XrPoleConstraint");
 const PoleTarget = require( "../../../../shot-generator/IK/objects/PoleTarget");
 const CopyRotation = require( "../../../../shot-generator/IK/constraints/CopyRotation");
+const ResourceManager = require("./ResourceManager");
 require("../../../../shot-generator/IK/utils/Object3dExtension");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
 let boneMatrix = new THREE.Matrix4();
 let tempMatrix = new THREE.Matrix4();
 let armatureInverseMatrixWorld = new THREE.Matrix4();
-let reusableVector = new THREE.Vector3();
-let reusableQuaternion = new THREE.Quaternion();
+
 const takeBoneInTheMeshSpace = (mesh, bone) =>
 {
     armatureInverseMatrixWorld = mesh.skeleton.bones[0].parent.getInverseMatrixWorld();
@@ -23,7 +23,6 @@ class XRRagdoll extends XRIKObject
     constructor()
     {
         super();
-
         this.poseChanged = false;
         this.controlTargetSelection = null;
         this.updatingReactPosition = [];
@@ -33,6 +32,7 @@ class XRRagdoll extends XRIKObject
         this.originalObjectTargetBone.push(35);
         this.originalObjectTargetBone.push(58);
         this.originalObjectTargetBone.push(63);
+        this.resourceManager = ResourceManager.getInstance();
     }
     
     //#region External Methods
@@ -92,8 +92,9 @@ class XRRagdoll extends XRIKObject
         if(this.hipsMouseDown)
         {
             let hipsTarget = this.hipsControlTarget;
-            let targetPosition = hipsTarget.worldPosition();
-        
+            let targetPosition = this.resourceManager.getVector3();
+            hipsTarget.getWorldPosition(vector);
+            this.resourceManager.release(targetPosition);
             this.hips.parent.worldToLocal(targetPosition);
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
@@ -112,17 +113,15 @@ class XRRagdoll extends XRIKObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-
-
             let poleConstraints = this.chainObjects[i].poleConstraint;
             if(poleConstraints != null)
             {
+                let poleTarget = poleConstraints.poleTarget;
+                let polePosition = poleConstraints.poleTarget.mesh.position;
                 let targetPosition = new THREE.Vector3();
                 if(poleConstraints.poleTarget.mesh.userData.isInitialized) continue;
                 chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
-                let polePosition = poleConstraints.poleTarget.mesh.position;
                 poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
-                let poleTarget = poleConstraints.poleTarget;
                 this.calculatePoleTargetOffset(poleTarget, chain);
                 poleTarget.initialize(poleTarget.poleOffset);
             }
@@ -150,7 +149,6 @@ class XRRagdoll extends XRIKObject
     //#endregion
 
     //#region Internal methods
-
     createPoleTargets(poleTargetMeshes)
     {
         let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
@@ -164,9 +162,9 @@ class XRRagdoll extends XRIKObject
         let backChain = this.ik.chains[0];        
         for(let i = 1; i < 5; i++)
         {
-            let poleTargetMesh = poleTargetMeshes[i - 1];
             let chain = this.ik.chains[i];
             let poleTarget = null;
+            let poleTargetMesh = poleTargetMeshes[i - 1];
             if(poleTargetMesh.userData.isInitialized)
             {
                 poleTarget = new PoleTarget();
@@ -180,11 +178,10 @@ class XRRagdoll extends XRIKObject
             chain.joints[0].addIkConstraint(poleConstraint);
             this.chainObjects[i].poleConstraint = poleConstraint;
         }
-    
+
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
         copyRotation.influence = 50;
         backChain.joints[3].addIkConstraint(copyRotation);
-        
     }
 
     // Initiallizes pole target for pole contraints
@@ -241,8 +238,8 @@ class XRRagdoll extends XRIKObject
     {
         for(let i = 0; i < this.chainObjects.length; i++)
         {
-            let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
+            let joints = this.ik.chains[i].joints;
             let target = this.controlTargets[i];
             target.quaternion.multiply(target.worldQuaternion().inverse());
             target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.parent.worldQuaternion().inverse()));
@@ -258,27 +255,33 @@ class XRRagdoll extends XRIKObject
         this.relativeFixedAngleDelta = {};
         for(let i = 0; i < this.chainObjects.length; i++)
         {
-            let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length-1].bone;
-            let controlTarget = this.chainObjects[i].controlTarget;
+            let joints = this.ik.chains[i].joints;
+            let quaternion = this.resourceManager.getQuaternion();
+            bone.getWorldQuaternion(quaternion);
+
+            let targetQuat = this.resourceManager.getQuaternion();
+            boneTarget.getWorldQuaternion(targetQuat);
             let boneTarget = controlTarget;
+            let controlTarget = this.chainObjects[i].controlTarget;
             let inverseWorldQuaternion = bone.worldQuaternion().inverse();
-            let quaternion =  bone.worldQuaternion();
 
-            let targetQuat = boneTarget.worldQuaternion();
-
-            let targetToObj = new THREE.Quaternion();
+            let targetToObj = this.resourceManager.getQuaternion();
             targetToObj.multiply(targetQuat.inverse());
             targetToObj.multiply(quaternion);
 
-            let objToTarget = new THREE.Quaternion();
+            let objToTarget = this.resourceManager.getQuaternion();
             objToTarget.multiply(inverseWorldQuaternion);
             objToTarget.multiply(targetQuat);
 
             this.relativeFixedAngleDelta[i] = {};
-    
             this.relativeFixedAngleDelta[i].targetToObject = targetToObj;
             this.relativeFixedAngleDelta[i].objectToTarget = objToTarget;
+
+            this.resourceManager.release(quaternion);
+            this.resourceManager.release(targetQuat);
+            this.resourceManager.release(targetToObj);
+            this.resourceManager.release(objToTarget);
         }
     }
 
@@ -301,7 +304,6 @@ class XRRagdoll extends XRIKObject
             }
             ikBones.push(bone);
         }
-        this.updatingReactSkeleton = true;
         this.updateCharacterSkeleton(ikBones);
     }
 
@@ -311,12 +313,12 @@ class XRRagdoll extends XRIKObject
         let originalbones = this.clonedObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones;
         for(let i = 0; i < this.chainObjects.length; i++)
         {
-            let joints = this.ik.chains[i].joints;
             let bone = joints[joints.length -1].bone;
+            let joints = this.ik.chains[i].joints;
 
-            let controlTarget = this.chainObjects[i].controlTarget;
-            let boneTarget = controlTarget;
             let target = this.getTargetForSolve();
+            let boneTarget = controlTarget;
+            let controlTarget = this.chainObjects[i].controlTarget;
             if((target && boneTarget.uuid !== target.uuid))
             {
               continue;
@@ -328,13 +330,17 @@ class XRRagdoll extends XRIKObject
             }
             else
             {
+                let rotation = this.resourceManager.getQuaternion();
+                followBone.getWorldQuaternion(rotation);
                 let followBone = originalbones[this.originalObjectTargetBone[i]];
-                let targetQuat = boneTarget.worldQuaternion();
+                let targetQuat = this.resourceManager.getQuaternion();
+                boneTarget.getWorldQuaternion(targetQuat);
                 let quaternion = bone.worldQuaternion().inverse();
-                let rotation = followBone.worldQuaternion();
                 bone.quaternion.multiply(quaternion);
                 targetQuat.premultiply(rotation);
                 bone.quaternion.multiply(targetQuat);
+                this.resourceManger.release(targetQuat);
+                this.resourceManger.release(rotation);
             }
             bone.updateMatrix();
             bone.updateMatrixWorld(true, true);
@@ -347,10 +353,12 @@ class XRRagdoll extends XRIKObject
     // Effect like flat foot to earth can be achieved
     rotateBoneQuaternion(bone, boneTarget, followBone)
     {
-        let targetQuat = boneTarget.worldQuaternion();
+        let targetQuat = this.resourceManager.getQuaternion();
+        boneTarget.getWorldQuaternion(targetQuat);
         let quaternion = bone.worldQuaternion().inverse();
         bone.quaternion.multiply(quaternion);
         bone.quaternion.multiply(targetQuat);
+        this.resourceManager.release(targetQuat);
     }
     //#endregion
 }
