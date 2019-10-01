@@ -110,7 +110,6 @@ class IKHelper extends THREE.Object3D
             }
             if(this.selectedControlPoint.name === "Hips")
             {
-                this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
                 this.ragDoll.hipsMouseDown = false;
             }
             if(this.selectedControlPoint.name === "Head")
@@ -166,11 +165,10 @@ class IKHelper extends THREE.Object3D
         }
     }
 
-    setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos, updatePoleTargets)
+    setUpdate(updateCharacterSkeleton, updateSkeleton, updatePoleTargets)
     {
         this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
         this.ragDoll.updateSkeleton(updateSkeleton);
-        this.ragDoll.updateCharacterPos(updateCharacterPos);
         this.updatePoleTargets = updatePoleTargets;
     }
 

@@ -23,15 +23,7 @@ class XRRagdoll extends XRIKObject
     constructor()
     {
         super();
-        this.poseChanged = false;
-        this.controlTargetSelection = null;
         this.updatingReactPosition = [];
-        this.originalObjectTargetBone = [];
-        this.originalObjectTargetBone.push(4);
-        this.originalObjectTargetBone.push(11);
-        this.originalObjectTargetBone.push(35);
-        this.originalObjectTargetBone.push(58);
-        this.originalObjectTargetBone.push(63);
         this.resourceManager = ResourceManager.getInstance();
     }
     
@@ -46,11 +38,6 @@ class XRRagdoll extends XRIKObject
     updateSkeleton(updateCharacterSkeleton)
     {
         this.updateCharacterSkeleton = updateCharacterSkeleton;
-    }
-
-    updateCharacterPos(updateCharPosition)
-    {
-        this.updateCharPosition = updateCharPosition;
     }
 
     updateCharacterRotation(updateCharacterRotation)
@@ -93,11 +80,11 @@ class XRRagdoll extends XRIKObject
         {
             let hipsTarget = this.hipsControlTarget;
             let targetPosition = this.resourceManager.getVector3();
-            hipsTarget.getWorldPosition(vector);
-            this.resourceManager.release(targetPosition);
+            hipsTarget.getWorldPosition(targetPosition);
             this.hips.parent.worldToLocal(targetPosition);
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
+            this.resourceManager.release(targetPosition);
         }
     }
 
@@ -238,16 +225,14 @@ class XRRagdoll extends XRIKObject
     {
         for(let i = 0; i < this.chainObjects.length; i++)
         {
-            let bone = joints[joints.length-1].bone;
             let joints = this.ik.chains[i].joints;
+            let bone = joints[joints.length-1].bone;
             let target = this.controlTargets[i];
             target.quaternion.multiply(target.worldQuaternion().inverse());
             target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.parent.worldQuaternion().inverse()));
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
-            target.isRotationLocked = true;
         }
         this.relativeFixedAngle();
-        this.poseChanged = true;
     }
 
     relativeFixedAngle()
@@ -255,15 +240,15 @@ class XRRagdoll extends XRIKObject
         this.relativeFixedAngleDelta = {};
         for(let i = 0; i < this.chainObjects.length; i++)
         {
-            let bone = joints[joints.length-1].bone;
             let joints = this.ik.chains[i].joints;
+            let bone = joints[joints.length-1].bone;
             let quaternion = this.resourceManager.getQuaternion();
             bone.getWorldQuaternion(quaternion);
 
             let targetQuat = this.resourceManager.getQuaternion();
-            boneTarget.getWorldQuaternion(targetQuat);
-            let boneTarget = controlTarget;
             let controlTarget = this.chainObjects[i].controlTarget;
+            let boneTarget = controlTarget;
+            boneTarget.getWorldQuaternion(targetQuat);
             let inverseWorldQuaternion = bone.worldQuaternion().inverse();
 
             let targetToObj = this.resourceManager.getQuaternion();
@@ -313,37 +298,17 @@ class XRRagdoll extends XRIKObject
         let originalbones = this.clonedObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones;
         for(let i = 0; i < this.chainObjects.length; i++)
         {
-            let bone = joints[joints.length -1].bone;
             let joints = this.ik.chains[i].joints;
+            let bone = joints[joints.length -1].bone;
 
             let target = this.getTargetForSolve();
-            let boneTarget = controlTarget;
             let controlTarget = this.chainObjects[i].controlTarget;
+            let boneTarget = controlTarget;
             if((target && boneTarget.uuid !== target.uuid))
             {
               continue;
             }
-            // Checks if rotation locked and apply rotation 
-            if(controlTarget.isRotationLocked)
-            {
-                this.rotateBoneQuaternion(bone, boneTarget, originalbones[this.originalObjectTargetBone[i]]);   
-            }
-            else
-            {
-                let rotation = this.resourceManager.getQuaternion();
-                followBone.getWorldQuaternion(rotation);
-                let followBone = originalbones[this.originalObjectTargetBone[i]];
-                let targetQuat = this.resourceManager.getQuaternion();
-                boneTarget.getWorldQuaternion(targetQuat);
-                let quaternion = bone.worldQuaternion().inverse();
-                bone.quaternion.multiply(quaternion);
-                targetQuat.premultiply(rotation);
-                bone.quaternion.multiply(targetQuat);
-                this.resourceManger.release(targetQuat);
-                this.resourceManger.release(rotation);
-            }
-            bone.updateMatrix();
-            bone.updateMatrixWorld(true, true);
+            this.rotateBoneQuaternion(bone, boneTarget);   
         }
     }
 
