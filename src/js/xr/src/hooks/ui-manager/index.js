@@ -465,8 +465,9 @@ class CanvasRenderer {
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
 
         const list = grids.tab === 'pose' ? this.state.poses : characterModels
-        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab)
-
+        const rowCount = grids.tab === 'pose' ? 4 : 2
+        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount)
+        
         this.paneComponents['grid']['poses-title'] = {
           id: 'poses-title',
           type: 'slider',

@@ -179,7 +179,7 @@ const drawPaneBGs = (ctx) => {
   roundRect(ctx, 453, 889, 440, 132, 25, true, false)
 }
 
-const drawGrid = function drawGrid(ctx, x, y, width, height, items, type) {
+const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCount = 4) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -187,7 +187,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type) {
   ctx.rect(x, y, width, height)
   ctx.clip()
 
-  let cols = 4
+  let cols = rowCount
   let itemHeight = width / cols / 0.68
   let gutter = 5
   let offset = this.state.grids[type].scrollTop || 0
