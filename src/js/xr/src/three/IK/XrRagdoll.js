@@ -91,7 +91,7 @@ class XRRagdoll extends XRIKObject
         super.lateUpdate();
         if(this.hipsMouseDown)
         {
-            let originalParent = chainObjects[0].controlTarget.parent;
+            let originalParent = this.chainObjects[0].controlTarget.parent;
             this.changeControlPointsParent(this.originalObject.parent);
             let hipsTarget = this.hipsControlTarget;
             let targetPosition = hipsTarget.worldPosition();            
@@ -226,6 +226,7 @@ class XRRagdoll extends XRIKObject
 
     changeControlPointsParent(parent)
     {
+        let chainObjects = this.chainObjects;
         for(let i = 0; i < chainObjects.length; i++)
         {
             parent.attach(chainObjects[i].controlTarget);
