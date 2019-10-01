@@ -10,9 +10,9 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const drawText = ({ ctx, label, size, align = 'left', baseline = 'top', color = '#fff' }) => {
+const drawText = ({ ctx, label, size, weight = '', align = 'left', baseline = 'top', color = '#fff' }) => {
   ctx.save()
-  ctx.font = `${size}px Arial`
+  ctx.font = `${weight} ${size}px Arial`
   ctx.textAlign = align
   ctx.textBaseline = baseline
   ctx.fillStyle = color
@@ -20,10 +20,26 @@ const drawText = ({ ctx, label, size, align = 'left', baseline = 'top', color = 
   ctx.restore()
 }
 
-const drawImageButton = ({ ctx, width, height, image, flip = false }) => {
+const drawImageButton = ({
+  ctx,
+  width,
+  height,
+  image,
+  fill = '#000',
+  flip = false,
+  flipY = false,
+  drawBG = false,
+  padding = 0
+}) => {
   ctx.save()
+
+  ctx.fillStyle = fill
+  if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, 25, true, false)
+
   if (flip) ctx.scale(-1, 1)
-  ctx.drawImage(image, flip ? -width : 0, 0, width, height)
+  if (flipY) ctx.scale(1, -1)
+
+  ctx.drawImage(image, flip ? -width : 0, flipY ? -height : 0, width, height)
   ctx.restore()
 }
 
@@ -152,8 +168,8 @@ const drawPaneBGs = (ctx) => {
   roundRect(ctx, 4, 6, 439, 666, 25, true, false)
   // extended property
   roundRect(ctx, 554, 6, 439, 666, 25, true, false)
-  roundRect(ctx, 6, 682, 439, 325 - 120, 25, true, false)
-  roundRect(ctx, 483, 288, 66, 105, 25, true, false)
+  roundRect(ctx, 6, 682, 439, 325 - 114, 25, true, false)
+  // roundRect(ctx, 483, 288, 66, 105, 25, true, false)
   // home
   roundRect(ctx, 667, 684, 200, 200, 25, true, false)
   //roundRect(ctx, 667, 684, 200, 200, 25, true, false)
@@ -163,7 +179,7 @@ const drawPaneBGs = (ctx) => {
   roundRect(ctx, 453, 889, 440, 132, 25, true, false)
 }
 
-const drawGrid = function drawGrid(ctx, x, y, width, height, items, type) {
+const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCount = 4) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -171,7 +187,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type) {
   ctx.rect(x, y, width, height)
   ctx.clip()
 
-  let cols = 4
+  let cols = rowCount
   let itemHeight = width / cols / 0.68
   let gutter = 5
   let offset = this.state.grids[type].scrollTop || 0
@@ -274,7 +290,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type) {
       if (distance < 0.1) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
 
-        if (canvasIntersection) {
+        if (canvasIntersection && canvasIntersection.id !== 'grid-background') {
           const name = canvasIntersection.id
           const id = this.state.selections[0]
 

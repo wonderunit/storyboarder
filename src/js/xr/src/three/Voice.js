@@ -1,9 +1,13 @@
 const THREE = require('three')
 
 class Voice {
-  constructor (index, listener) {
+  constructor (index, listener, options = { positional: true }) {
     this.index = index
-    this.audio = new THREE.PositionalAudio(listener)
+    if (options.positional) {
+      this.audio = new THREE.PositionalAudio(listener)
+    } else {
+      this.audio = new THREE.Audio(listener)
+    }
     this.releaseTime = 0.05
     this.isReleasing = false
     this.timeout = null
