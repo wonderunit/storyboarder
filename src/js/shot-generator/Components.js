@@ -1016,6 +1016,11 @@ const CharacterPresetsEditor = connect(
   })
 )
 
+const CHARACTER_HEIGHT_RANGE = {
+  character: { min: 1.4732, max: 2.1336 },
+  child: { min: 1.003, max: 1.384 },
+  baby: { min: 0.492, max: 0.94 }
+}
 
 const MORPH_TARGET_LABELS = {
   'mesomorphic': 'Muscular',
@@ -1052,6 +1057,10 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
+
+  const heightRange = ['adult', 'teen'].some(el => sceneObject.model.includes(el))
+    ? CHARACTER_HEIGHT_RANGE['character']
+    : CHARACTER_HEIGHT_RANGE[sceneObject.model]
 
   return h([
     'div',
@@ -1330,8 +1339,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
             ['div', { style: { flex: 1, paddingBottom: 6 } }, [
               [NumberSlider, {
                 label: 'height',
-                min: 1.4732,
-                max: 2.1336,
+                min: heightRange.min,
+                max: heightRange.max,
                 step: 0.0254,
                 value: sceneObject.height,
                 onSetValue: createOnSetValue(sceneObject.id, 'height'),

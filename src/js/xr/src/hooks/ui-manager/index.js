@@ -52,15 +52,19 @@ const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step
 const lenses = {}
 
 let height_step = 0.05
-let height_min = [1.4732, 1.003, 0.492]
-let height_max = [2.1336, 1.384, 0.94]
-for (let [id, propertyName] of ['characterHeight', 'childHeight', 'babyHeight'].entries()) {
-  lenses[propertyName] = R.lens(
-    vin => THREE.Math.mapLinear(vin, height_min[id], height_max[id], 0, 1),
+const HEIGHT_RANGE = {
+  character: { min: 1.4732, max: 2.1336 },
+  child: { min: 1.003, max: 1.384 },
+  baby: { min: 0.492, max: 0.94 }
+}
+
+for (let name of ['character', 'child', 'baby']) {
+  lenses[`${name}Height`] = R.lens(
+    vin => THREE.Math.mapLinear(vin, HEIGHT_RANGE[name].min, HEIGHT_RANGE[name].max, 0, 1),
     vout => {
-      let height = mapLinear(vout, 0, 1, height_min[id], height_max[id])
+      let height = mapLinear(vout, 0, 1, HEIGHT_RANGE[name].min, HEIGHT_RANGE[name].max)
       height = steps(height, height_step)
-      height = clamp(height, height_min[id], height_max[id])
+      height = clamp(height, HEIGHT_RANGE[name].min, HEIGHT_RANGE[name].max)
       return height
     }
   )
