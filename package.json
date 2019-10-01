@@ -46,7 +46,9 @@
       "!test",
       "!.cache",
       "!.github",
-      "!.vscode"
+      "!.vscode",
+      "!dist",
+      "!scripts"
     ],
     "mac": {
       "icon": "build/icon.icns"
