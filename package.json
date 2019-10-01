@@ -39,17 +39,6 @@
     "buildDependenciesFromSource": true,
     "compression": "maximum",
     "files": [
-      {
-        "from": "node_modules/three/examples",
-        "to": "node_modules/three/examples",
-        "filter": [
-          "!**/*",
-          "js/loaders/GLTFLoader.js",
-          "js/utils/SkeletonUtils.js",
-          "jsm/loaders/GLTFLoader.js",
-          "jsm/vr/WebVR.js"
-        ]
-      },
       "**/*",
       "!*.md",
       "!DEVELOPERS.md",
