@@ -217,6 +217,7 @@ class XRRagdoll extends XRIKObject
     {
         let chainObjects = this.chainObjects;
 
+        
         boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
         this.hipsControlTarget.position.setFromMatrixPosition(boneMatrix);
 

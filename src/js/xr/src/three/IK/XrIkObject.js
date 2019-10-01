@@ -43,7 +43,6 @@ class XrIkObject
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.controlTargets = [];
-        
         //TODO(): Currently this logic of identifying the control point is just hoping 
         // that passed controlTarget is belong to current "limb"
         // Just pass empty controlPoints and initialize them here

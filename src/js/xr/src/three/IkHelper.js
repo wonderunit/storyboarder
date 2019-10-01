@@ -58,7 +58,7 @@ class IKHelper extends THREE.Object3D
             {
                 mesh.userData.isInitialized = false;
             }
-            mesh.scale.set(0.5, 0.1, 0.5).multiplyScalar(scaleAspect);
+            mesh.scale.set(0.4, 0.08, 0.4).multiplyScalar(scaleAspect);
             mesh.userData.scaleAspect = scaleAspect;
         }
         ragDoll.initObject(this, skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
@@ -237,16 +237,16 @@ const intializeInstancedMesh = (mesh) =>
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
     let sizeOfTargets = listOfControlPoints.concat(listOfControlTargets).length;
     let material = new THREE.MeshBasicMaterial({
-        color: 0x008888,    
+        color: 0x6a4dff,    
         depthTest: false,
         depthWrite: false,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.7,
         flatShading: true});
     instance.material = material;
     instance.instancedMesh = new THREE.InstancedMesh(mesh.geometry, material, sizeOfTargets, true, true, false);
     instance.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
-    instance.defaultColor = new THREE.Color().setHSL( 0.2 , 0.5 , 0.5 );
+    instance.defaultColor = new THREE.Color(0x6a4dff);
     instance.instancedMesh.userData.preventInteraction = true;
     instance.instancedMesh.userData.type = "instancedMesh";
     for(let i = 0; i < 6; i++)
