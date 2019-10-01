@@ -39,6 +39,17 @@
     "buildDependenciesFromSource": true,
     "compression": "maximum",
     "files": [
+      {
+        "from": "node_modules/three/examples",
+        "to": "node_modules/three/examples",
+        "filter": [
+          "!**/*",
+          "js/loaders/GLTFLoader.js",
+          "js/utils/SkeletonUtils.js",
+          "jsm/loaders/GLTFLoader.js",
+          "jsm/vr/WebVR.js"
+        ]
+      },
       "**/*",
       "!*.md",
       "!DEVELOPERS.md",
@@ -46,8 +57,8 @@
       "!notes",
       "!test",
       "!.cache",
-      ".github",
-      ".vscode"
+      "!.github",
+      "!.vscode"
     ],
     "mac": {
       "icon": "build/icon.icns"
@@ -169,7 +180,7 @@
     "qr-image": "^3.2.0",
     "qrcode-reader": "^1.0.0",
     "ramda": "0.25.0",
-    "react": "^16.9.0",
+    "react": "^16.10.1",
     "react-dom": "16.8.6",
     "react-redux": "7.1.0",
     "react-three-fiber": "2.4.3",

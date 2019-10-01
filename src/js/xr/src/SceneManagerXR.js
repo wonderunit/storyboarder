@@ -49,8 +49,10 @@ const { Log } = require('./components/Log')
 const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
 
 const Controls = require('./components/ui/Controls')
+const Help = require('./components/ui/Help')
 
 const BonesHelper = require('./three/BonesHelper')
+const IKHelper = require('./three/IkHelper')
 const Voicer = require('./three/Voicer')
 
 const { createSelector } = require('reselect')
@@ -135,6 +137,7 @@ const SceneContent = connect(
 
     const switchHand = useUiStore(state => state.switchHand)
     const showCameras = useUiStore(state => state.showCameras)
+    const showHelp = useUiStore(state => state.showHelp)
 
     const fog = useRef()
     const getFog = () => {
@@ -304,9 +307,12 @@ const SceneContent = connect(
     }, [])
     const helpVoicer = useMemo(() => {
       let voicer = new Voicer(cameraAudioListener, 10, null, {
-        releaseTime: 0.2
+        releaseTime: 0.01,
+        voiceOptions: {
+          positional: false
+        }
       })
-      voicer.setVolume(1)
+      voicer.setVolume(0.5)
       return voicer
     }, [])
 
@@ -451,6 +457,7 @@ const SceneContent = connect(
     useMemo(() => {
       const mesh = resources.boneGltf.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
+      IKHelper.getInstance(mesh)
     }, [resources.boneGltf])
 
     const ambientLightRef = useUpdate(self => {
@@ -492,11 +499,20 @@ const SceneContent = connect(
                 hand={gamepadFor(controller).hand}
               />
               {gamepadFor(controller).hand === (switchHand ? 'left' : 'right') &&
-                <Controls
-                  gltf={resources.controlsGltf}
-                  mode={uiCurrent.value.controls}
-                  hand={switchHand ? 'left' : 'right'}
-                  getCanvasRenderer={getCanvasRenderer} />
+                <group>
+                  <Controls
+                    gltf={resources.controlsGltf}
+                    mode={uiCurrent.value.controls}
+                    hand={switchHand ? 'left' : 'right'}
+                    locked={uiCurrent.context.locked}
+                    getCanvasRenderer={getCanvasRenderer} />
+                  { showHelp &&
+                    <Help
+                      mode={uiCurrent.value.controls}
+                      locked={uiCurrent.context.locked}
+                      getCanvasRenderer={getCanvasRenderer} />
+                  }
+                </group>
               }
             </primitive>
           )}

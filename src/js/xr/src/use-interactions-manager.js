@@ -22,12 +22,13 @@ const teleportParent = require('./helpers/teleport-parent')
 const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
+const GPUPicker = require('./three/GPUPickers/GPUPicker')
+const IKHelper = require('./three/IkHelper')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
 const {dropObject, dropCharacter } = require('./utils/dropToObjects')
 
-const GPUPicker = require('./three/GPUPickers/GPUPicker')
 require('./three/GPUPickers/utils/Object3dExtension')
 require('../../shot-generator/IK/utils/axisUtils')
 
@@ -40,7 +41,8 @@ const {
   selectObject,
   updateObject,
   updateCharacterSkeleton,
-
+  updateCharacterIkSkeleton,
+  updateCharacterPoleTargets,
   selectBone
 } = require('../../shared/reducers/shot-generator')
 
@@ -123,8 +125,6 @@ const snapObjectRotation = (object) => {
   object.updateMatrix()
   object.updateMatrixWorld()
 }
-
-
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   // create virtual parent and child
@@ -283,6 +283,47 @@ const useInteractionsManager = ({
     return gpuPicker.current
   }
 
+  const ikHelper = useRef(null)
+  const getIkHelper = () => {
+    if(ikHelper.current === null) {
+      ikHelper.current = IKHelper.getInstance()
+      const updateCharacterSkeleton = (name, rotation) => { dispatch(updateCharacterSkeleton({
+        id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+        name : name,
+        rotation: 
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }  
+      } ))}
+
+      const updateSkeleton = (skeleton) => { dispatch(updateCharacterIkSkeleton({
+        id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+        skeleton: skeleton  
+      } ))}
+
+      const updateCharacterPos = ({ x, y, z}) => dispatch(updateObject(
+        ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+        { x, y: z, z: y }
+      ))
+
+      const updatePoleTarget = (poleTargets) => dispatch(updateCharacterPoleTargets({
+          id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+          poleTargets: poleTargets
+        }
+      ))
+
+      ikHelper.current.setUpdate(
+        updateCharacterSkeleton,
+        updateSkeleton,
+        updateCharacterPos,
+        updatePoleTarget
+      )
+    }
+    return ikHelper.current 
+  }
+  
   useEffect(() => {
     // create a temporary mesh object to initialize the GPUPicker
     let gpuPicker = getGpuPicker()
@@ -398,6 +439,23 @@ const useInteractionsManager = ({
             point: intersection.point,
 
             bone: intersection.bone
+          }
+        })
+        return
+      }
+
+      intersection = getControllerIntersections(controller, [IKHelper.getInstance()]).find(h => h.isControlTarget)
+      if (intersection) {
+        interactionService.send({
+          type: 'TRIGGER_START',
+          controller: event.target,
+          intersection: {
+            id: intersection.object.uuid,
+            type: 'controlPoint',
+            object: intersection.object,
+            distance: intersection.distance,
+            point: intersection.point,
+            controlPoint: intersection.object
           }
         })
         return
@@ -879,6 +937,24 @@ const useInteractionsManager = ({
           BonesHelper.getInstance().resetSelection()
         },
 
+        onDragControlPointEntry: (context, event) =>
+        {
+          let controller = gl.vr.getController(context.draggingController)
+          let object = event.intersection.object
+          getIkHelper().selectControlPoint(object.name)
+          controller.attach(object)
+        },
+        moveAndRotateControlPoint: (context, event) =>
+        {
+          let selectedControlTarget = getIkHelper().selectedControlPoint
+          let { worldScale } = useStoreApi.getState()
+          moveObjectZ(selectedControlTarget, event, worldScale)
+        },
+        onDragControlPointExit: (context, event) =>
+        {
+          getIkHelper().deselectControlPoint()
+        },
+
         onDragObjectEntry: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
           let object = event.intersection.object
@@ -1022,8 +1098,10 @@ const useInteractionsManager = ({
             saveStandingMemento(camera)
 
             setMiniMode(true, camera)
+            getIkHelper().isInMiniMode(true)
           } else {
             setMiniMode(false, camera)
+            getIkHelper().isInMiniMode(false)
 
             restoreStandingMemento(camera)
             clearStandingMemento()

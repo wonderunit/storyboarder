@@ -28,9 +28,11 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, worldScale, children 
     [sceneObject.distance, worldScale]
   )
 
-  const r = isSelected ? 0x35 : 0x56
-  const g = isSelected ? 0x00 : 0x56
-  const b = isSelected ? 0x52 : 0x21
+  let lightColor = 0x8c78f1
+
+  if (isSelected) {
+    lightColor = 0x7256ff
+  }
 
   return (
     <group
@@ -47,13 +49,10 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, worldScale, children 
         object={mesh}
         rotation={[-Math.PI/2, Math.PI, 0]}
       >
-        <meshLambertMaterial
+        <meshBasicMaterial
           attach="material"
-          color={0xffffff}
+          color={lightColor}
           flatShading={false}
-          emissive-r={r / 0xff}
-          emissive-g={g / 0xff}
-          emissive-b={b / 0xff}
         />
       </primitive>
 

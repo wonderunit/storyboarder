@@ -8,6 +8,7 @@ const isUserModel = require('../helpers/is-user-model')
 const VirtualCamera = require('../components/VirtualCamera')
 
 const BonesHelper = require('../three/BonesHelper')
+const IKHelper = require('../three/IkHelper')
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) => {
   const ref = useUpdate(
@@ -147,10 +148,17 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
 
   useMemo(() => {
     if (isSelected) {
+      
       BonesHelper.getInstance().initialize(lod.children[0])
+      if(!isUserModel(sceneObject.model) && !IKHelper.getInstance().isIkDisabled)
+      {
+        IKHelper.getInstance().initialize(lod.children[0], sceneObject.height)
+        ref.current && ref.current.add(IKHelper.getInstance())
+      }
       ref.current && ref.current.add(BonesHelper.getInstance())
     } else {
       ref.current && ref.current.remove(BonesHelper.getInstance())
+      ref.current && ref.current.remove(IKHelper.getInstance())
     }
   }, [ref.current, isSelected])
 
@@ -161,7 +169,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       onController={sceneObject.visible ? () => null : null}
       userData={{
         type: 'character',
-        id: sceneObject.id
+        id: sceneObject.id,
+        poleTargets: sceneObject.poleTargets || {}
       }}
 
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
