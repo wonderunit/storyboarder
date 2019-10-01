@@ -39,7 +39,6 @@
     "buildDependenciesFromSource": true,
     "compression": "maximum",
     "files": [
-      "**/*",
       "!*.md",
       "!DEVELOPERS.md",
       "!README.md",
