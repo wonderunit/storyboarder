@@ -23,6 +23,7 @@ class IKHelper extends THREE.Object3D
             intializeInstancedMesh(mesh);
             this.add(this.instancedMesh);
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
+            this.regularHeight = 1.8;
         }
         return instance;
     }
@@ -32,13 +33,14 @@ class IKHelper extends THREE.Object3D
         return instance ? instance : new IKHelper(mesh)
     }
 
-    initialize(skinnedMesh)
+    initialize(skinnedMesh, height)
     {
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
         this.intializedSkinnedMesh = skinnedMesh;
         let ragDoll = instance.ragDoll;
         let meshes = this.targetPoints;
         let initializedMeshes = skinnedMesh.parent.parent.userData.poleTargets ? skinnedMesh.parent.parent.userData.poleTargets : [];
+        let scaleAspect = height / this.regularHeight;
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
@@ -56,7 +58,7 @@ class IKHelper extends THREE.Object3D
             {
                 mesh.userData.isInitialized = false;
             }
-            mesh.scale.set(0.5, 0.1, 0.5)
+            mesh.scale.set(0.5, 0.1, 0.5).multiplyScalar(scaleAspect);
         }
         ragDoll.initObject(this, skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
         ragDoll.reinitialize();
