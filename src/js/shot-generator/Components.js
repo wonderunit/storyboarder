@@ -1058,9 +1058,12 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
 
-  const heightRange = ['adult', 'teen'].some(el => sceneObject.model.includes(el))
-    ? CHARACTER_HEIGHT_RANGE['character']
-    : CHARACTER_HEIGHT_RANGE[sceneObject.model]
+  const heightRange =
+    sceneObject.type == 'character' && !ModelLoader.isCustomModel(sceneObject.model)
+      ? ['adult', 'teen'].some(el => sceneObject.model.includes(el))
+        ? CHARACTER_HEIGHT_RANGE['character']
+        : CHARACTER_HEIGHT_RANGE[sceneObject.model]
+      : undefined
 
   return h([
     'div',
