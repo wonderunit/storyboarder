@@ -51,26 +51,21 @@ const [useUiStore] = create((set, get) => ({
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
+const lensFactory = (min, max, step = 0.05) => R.lens(
+  from => THREE.Math.mapLinear(from, min, max, 0, 1),
+  to => {
+    let value = mapLinear(to, 0, 1, min, max)
+    value = steps(value, step)
+    value = clamp(value, min, max)
+    return value
+  }
+)
+
 const lenses = {}
 
-let height_step = 0.05
-const HEIGHT_RANGE = {
-  character: { min: 1.4732, max: 2.1336 },
-  child: { min: 1.003, max: 1.384 },
-  baby: { min: 0.492, max: 0.94 }
-}
-
-for (let name of ['character', 'child', 'baby']) {
-  lenses[`${name}Height`] = R.lens(
-    vin => THREE.Math.mapLinear(vin, HEIGHT_RANGE[name].min, HEIGHT_RANGE[name].max, 0, 1),
-    vout => {
-      let height = mapLinear(vout, 0, 1, HEIGHT_RANGE[name].min, HEIGHT_RANGE[name].max)
-      height = steps(height, height_step)
-      height = clamp(height, HEIGHT_RANGE[name].min, HEIGHT_RANGE[name].max)
-      return height
-    }
-  )
-}
+lenses.characterHeight = lensFactory(1.4732, 2.1336)
+lenses.childHeight = lensFactory(1.003, 1.384)
+lenses.babyHeight = lensFactory(0.492, 0.94)
 
 lenses.characterScale = R.lens(
   from => clamp(mapLinear(from, 0.3, 3, 0, 1), 0, 1),
