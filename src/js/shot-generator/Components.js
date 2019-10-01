@@ -1329,7 +1329,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           ? [
             ['div', { style: { flex: 1, paddingBottom: 6 } }, [
               [NumberSlider, {
-                label: 'height',
+                label: 'scale',
                 min: 0.3,
                 max: 3.05,
                 step: 0.0254,
