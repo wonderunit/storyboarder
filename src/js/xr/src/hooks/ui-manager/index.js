@@ -211,15 +211,15 @@ class CanvasRenderer {
     let id = this.state.selections[0]
     let sceneObject = this.state.sceneObjects[id]
 
-    console.log("render")
+    // console.log("render")
 
     if (this.state.context.locked) {
-      console.log('rendering a locked ui')
+      // console.log('rendering a locked ui')
     } else {
-      console.log('rendering an unlocked ui')
+      // console.log('rendering an unlocked ui')
     }
 
-    console.log(this.state.mode)
+    // console.log(this.state.mode)
     if (this.state.mode == 'properties' || this.state.mode == 'grid') {
       if (!sceneObject) return
 
@@ -526,7 +526,7 @@ class CanvasRenderer {
     let canvas = this.helpCanvas
     let ctx = this.helpContext
 
-    console.log('render help')
+    // console.log('render help')
 
     this.paneComponents['help']['help-image'] = {
       id: 'help-image',
