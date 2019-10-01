@@ -167,7 +167,7 @@ const SceneContext = React.createContext()
 
 
 
-require('three/examples/js/loaders/GLTFLoader')
+require('../vendor/three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
