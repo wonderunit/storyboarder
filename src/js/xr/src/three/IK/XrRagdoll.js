@@ -155,10 +155,10 @@ class XRRagdoll extends XRIKObject
     {
         let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
         let polePositions = [
-            new THREE.Vector3(0.3, 1, -0.5),
-            new THREE.Vector3(-0.3, 1, -0.5),
-            new THREE.Vector3(0, 0.4, 0.8),
-            new THREE.Vector3(0, 0.4, 0.8)
+            new THREE.Vector3(0.3, 0.7, -0.5),
+            new THREE.Vector3(-0.3, 0.7, -0.5),
+            new THREE.Vector3(0, 0.4, 0.6),
+            new THREE.Vector3(0, 0.4, 0.6)
         ];
         
         let backChain = this.ik.chains[0];        
@@ -192,7 +192,7 @@ class XRRagdoll extends XRIKObject
     {
         let poleTarget = new PoleTarget();
         poleTarget.mesh = poleTargetMesh;
-        poleTarget.initialOffset = offset;
+        poleTarget.initialOffset = offset.multiplyScalar(poleTargetMesh.userData.scaleAspect);
         this.calculatePoleTargetOffset(poleTarget, chain);
         poleTarget.initialize(poleTarget.poleOffset);
         poleTarget.name = name;
@@ -207,7 +207,7 @@ class XRRagdoll extends XRIKObject
     {
         let offset = poleTarget.initialOffset;
         let position = chain.joints[chain.joints.length - 2].bone.worldPosition();
-        let hipsOffset = position.clone().sub(this.hips.worldPosition());
+        let hipsOffset = position.clone().sub(this.hips.worldPosition())
         hipsOffset.add(this.hips.position);
         hipsOffset.add(offset);
         poleTarget.poleOffset = hipsOffset;
