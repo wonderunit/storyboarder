@@ -51,20 +51,22 @@ const [useUiStore] = create((set, get) => ({
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
-const lenses = {}
-
-let height_step = 0.05
-let height_min = 1.4732
-let height_max = 2.1336
-lenses.characterHeight = R.lens(
-  vin => THREE.Math.mapLinear(vin, height_min, height_max, 0, 1),
-  vout => {
-    let height = mapLinear(vout, 0, 1, height_min, height_max)
-    height = steps(height, height_step)
-    height = clamp(height, height_min, height_max)
-    return height
+const lensFactory = (min, max, step = 0.05) => R.lens(
+  from => THREE.Math.mapLinear(from, min, max, 0, 1),
+  to => {
+    let value = mapLinear(to, 0, 1, min, max)
+    value = steps(value, step)
+    value = clamp(value, min, max)
+    return value
   }
 )
+
+const lenses = {}
+
+lenses.characterHeight = lensFactory(1.4732, 2.1336)
+lenses.childHeight = lensFactory(1.003, 1.384)
+lenses.babyHeight = lensFactory(0.492, 0.94)
+
 lenses.characterScale = R.lens(
   from => clamp(mapLinear(from, 0.3, 3, 0, 1), 0, 1),
   to => mapLinear(clamp(to, 0, 1), 0, 1, 0.3, 3)
@@ -229,6 +231,10 @@ class CanvasRenderer {
       ctx.fillStyle = 'rgba(0,0,0)'
       roundRect(ctx, 554, 6, 439, 666, 25, true, false)
 
+      let characterHeightLens = lenses.characterHeight
+      if (sceneObject.model === 'child') characterHeightLens = lenses.childHeight
+      if (sceneObject.model === 'baby') characterHeightLens = lenses.babyHeight
+      
       this.paneComponents['properties'] = {
         ...(sceneObject.type === 'camera') &&
           {
@@ -274,7 +280,7 @@ class CanvasRenderer {
               : {
                 height: {
                   label: `Height - ${rounded(sceneObject.height)}m`,
-                  lens: R.compose(R.lensPath(['height']), lenses.characterHeight)
+                  lens: R.compose(R.lensPath(['height']), characterHeightLens)
                 },
                 headScale: {
                   label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
