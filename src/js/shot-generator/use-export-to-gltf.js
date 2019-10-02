@@ -9,11 +9,16 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/three/examples/js/exporters/GLTFExporter.js')
 
+const {
+  getSceneObjects
+} = require('../shared/reducers/shot-generator')
+
 const notifications = require('../window/notifications')
 
 const useExportToGltf = (sceneRef) => {
   const meta = useSelector(state => state.meta)
   const board = useSelector(state => state.board)
+  const sceneObjects = useSelector(getSceneObjects)
 
   useEffect(() => {
     if (board && meta && meta.storyboarderFilePath) {
@@ -26,16 +31,25 @@ const useExportToGltf = (sceneRef) => {
         console.log('Preparing GLTF…')
         let scene = new THREE.Scene()
         for (let child of sceneRef.current.children) {
-          console.log('\tScene contains:', child)
+          // console.log('\tScene contains:', child)
           // HACK test to avoid IconSprites, which fail to .clone
           if (!child.icon) {
-            // for now, just add the Groups
-            if (child.type === 'Group') {
-              console.log('\tAdding to GLTF:', child)
-              scene.add(child.clone())
+            if (child.userData.id && sceneObjects[child.userData.id]) {
+              let sceneObject = sceneObjects[child.userData.id]
+              // TODO skip volumetric?
+              if (sceneObject.type === 'character') {
+                // TODO prevent out-of-memory error when cloning Character
+                // scene.add(child.clone())
+              } else {
+                console.log('\tCloning for GLTF:', sceneObject.name)
+                scene.add(child.clone())
+              }
+              console.log('\t\tOK')
             }
           }
         }
+
+        console.log('\tExporting Scene:', scene)
 
         let exporter = new THREE.GLTFExporter()
         let options = {
@@ -71,7 +85,7 @@ const useExportToGltf = (sceneRef) => {
       console.log('cleanup shot-generator:export-gltf')
       ipcRenderer.removeAllListeners('shot-generator:export-gltf')
     }
-  }, [board, meta])
+  }, [board, meta, sceneObjects])
 }
 
 module.exports = useExportToGltf
