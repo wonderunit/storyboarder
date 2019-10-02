@@ -9,6 +9,8 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/three/examples/js/exporters/GLTFExporter.js')
 
+const cloneGltf = require('../xr/src/helpers/clone-gltf')
+
 const {
   getSceneObjects
 } = require('../shared/reducers/shot-generator')
@@ -38,10 +40,27 @@ const useExportToGltf = (sceneRef) => {
               let sceneObject = sceneObjects[child.userData.id]
               // TODO skip volumetric?
               if (sceneObject.type === 'character') {
-                // TODO prevent out-of-memory error when cloning Character
-                // scene.add(child.clone())
-              } else {
-                console.log('\tCloning for GLTF:', sceneObject.name)
+                console.log('\Cloning', sceneObject.type)
+
+                let memento = {
+                  bonesHelper: child.bonesHelper,
+                  ikRig: child.userData.ikRig
+                }
+                child.bonesHelper = null
+                child.userData.ikRig = null
+
+                // workaround for skinned mesh clone w/ skeleton
+                // (cloneGltf knows how to add bones back to skinned mesh skeleton)
+                let cloned = cloneGltf({ scene: child })
+                for (child of cloned.scene.children) {
+                  scene.add(child)
+                }
+
+                child.bonesHelper = memento.bonesHelper
+                child.userData.ikRig = memento.ikRig
+
+              } else if (sceneObject) {
+                console.log('\Cloning', sceneObject.type)
                 scene.add(child.clone())
               }
               console.log('\t\tOK')
