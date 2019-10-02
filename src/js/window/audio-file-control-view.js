@@ -54,14 +54,30 @@ class AudioFileControlView {
 
     this.setState(this.state) // render
 
-    this.recorder = new Recorder()
-    this.recorder.initialize().then(() => {
-      this.setState({ mode: 'stopped' })
-    }).catch(err => {
-      console.error(err)
-      // this.onNotify({ message: 'An error prevented the audio recorder from initializing' })
-      // this.onNotify({ message: err.toString() })
-      this.setState({ mode: 'failed' })
+    // skip right to `stopped`
+    // if we need to record input, we'll go through the `initializing` state
+    // via prepareToRecord
+    this.setState({ mode: 'stopped' })
+  }
+
+  prepareToRecord () {
+    return new Promise((resolve, reject) => {
+      this.recorder = new Recorder()
+
+      this.setState({ mode: 'initializing' })
+
+      this.recorder.initialize().then(() => {
+        this.setState({ mode: 'stopped' })
+        resolve()
+
+      }).catch(err => {
+        // this.onNotify({ message: 'An error prevented the audio recorder from initializing' })
+        // this.onNotify({ message: err.toString() })
+        console.error(err)
+        this.setState({ mode: 'failed' })
+        reject(err)
+
+      })
     })
   }
 
@@ -98,20 +114,35 @@ class AudioFileControlView {
   startCountdown ({ onComplete }) {
     if (this.state.mode === 'countdown' || this.countdown) return
 
-    this.countdown = new Countdown()
-    this.countdown.start({
-      onComplete: onComplete.bind(this),
-      onTick: ({ counter }) => {
-        this.setState({ counter, mode: 'countdown' })
-        this.onCounterTickCallback(counter)
-      }
-    })
+    // the countdown task
+    const countdown = () => {
+      this.recorder.monitor({
+        onAudioData: ({ lastAudioData, lastMeter }) => {
+          this.setState({ lastAudioData, lastMeter })
+        }
+      })
 
-    this.recorder.monitor({
-      onAudioData: ({ lastAudioData, lastMeter }) => {
-        this.setState({ lastAudioData, lastMeter })
-      }
-    })
+      this.countdown = new Countdown()
+      this.countdown.start({
+        onComplete: onComplete.bind(this),
+        onTick: ({ counter }) => {
+          this.setState({ counter, mode: 'countdown' })
+          this.onCounterTickCallback(counter)
+        }
+      })
+    }
+
+    // if recorder isn't ready yet
+    if (!this.recorder) {
+      // we gotta prepare it first
+      this.prepareToRecord()
+        // and then do the countdown task
+        .then(countdown)
+        .catch(err => console.error(err))
+    } else {
+      // we can just do the countdown task
+      countdown()
+    }
   }
 
   startRecording ({ boardAudio }) {
@@ -332,7 +363,8 @@ class Recorder {
     this.monitorInterval = undefined
     this.isFinalizing = false
 
-    await this.userMedia.open()
+    let result = await this.userMedia.open()
+    console.log('userMedia.open:', result)
 
     this.userMedia.connect(this.analyser)
     this.userMedia.connect(this.meter)
