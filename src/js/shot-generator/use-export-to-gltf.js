@@ -54,7 +54,7 @@ const useExportToGltf = (sceneRef) => {
             )
 
             fs.ensureDirSync(path.dirname(filepath))
-            fs.writeFileSync(filepath, glb)
+            fs.writeFileSync(filepath, Buffer.from(glb))
 
             notifications.notify({
               message: `Exported to:\n${filename}`,
