@@ -42,28 +42,20 @@ const useExportToGltf = (sceneRef) => {
               if (sceneObject.type === 'character') {
                 console.log('\Cloning', sceneObject.type)
 
-                let memento = {
-                  bonesHelper: child.bonesHelper,
-                  ikRig: child.userData.ikRig
-                }
-                child.bonesHelper = null
-                child.userData.ikRig = null
+                for (node of child.children) {
+                  if (node.isSkinnedMesh) {
 
-                // workaround for skinned mesh clone w/ skeleton
-                // (cloneGltf knows how to add bones back to skinned mesh skeleton)
-                let cloned = cloneGltf({ scene: child })
-                for (child of cloned.scene.children) {
-                  scene.add(child)
-                }
+                    let cloned = cloneGltf({ scene: node })
+                    let clone = cloned.scene
 
-                child.bonesHelper = memento.bonesHelper
-                child.userData.ikRig = memento.ikRig
+                    scene.add(clone)
+                  }
+                }
 
               } else if (sceneObject) {
                 console.log('\Cloning', sceneObject.type)
                 scene.add(child.clone())
               }
-              console.log('\t\tOK')
             }
           }
         }
