@@ -18,6 +18,8 @@ const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 
 const { create } = require('zustand')
 const { produce } = require('immer')
+
+const useIsVrPresenting = require('../../hooks/use-is-vr-presenting')
 const { setCookie, getCookie } = require('../../helpers/cookies')
 const isUserModel = require('../../helpers/is-user-model')
 const {
@@ -1120,7 +1122,10 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().needsRender = true
   }, [uiCurrent.context])
 
+  const isVrPresenting = useIsVrPresenting()
   useEffect(() => {
+    if (!isVrPresenting) return
+
     // if the user hasn't seen help before
     if (getCookie('sawHelp') !== 'true') {
       // HACK wait 3s so controllers can attach and scene can render
@@ -1132,7 +1137,7 @@ const useUiManager = ({ playSound, stopSound }) => {
         }
       }, 3000)
     }
-  }, [])
+  }, [isVrPresenting])
 
   return { uiService, uiCurrent, getCanvasRenderer }
 }
