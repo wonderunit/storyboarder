@@ -42,26 +42,15 @@ class XrIkObject
         let rigMesh = this.rigMesh;
         let chainObjects = [];
         this.chainObjects = chainObjects;
-        this.controlTargets = [];
-        //TODO(): Currently this logic of identifying the control point is just hoping 
-        // that passed controlTarget is belong to current "limb"
-        // Just pass empty controlPoints and initialize them here
-        // So to remove this "strongly typed logic" where we depend on some names
-        
-        let headControl = controlTargets.find(point => point.name === "Head");
-        let leftArmControl = controlTargets.find(point => point.name === "LeftHand");
-        let rightArmControl = controlTargets.find(point => point.name === "RightHand");
-        let leftLegControl = controlTargets.find(point => point.name === "LeftFoot");
-        let rightLegControl = controlTargets.find(point => point.name === "RightFoot");
-        let hipsControl = controlTargets.find(point => point.name === "Hips");
-        
-        this.hipsControlTarget = hipsControl;
-        chainObjects.push(new ChainObject("Spine", "Head", headControl));
-        chainObjects.push(new ChainObject("LeftArm", "LeftHand", leftArmControl));
-        chainObjects.push(new ChainObject("RightArm", "RightHand", rightArmControl));
-        chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", leftLegControl));
-        chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", rightLegControl));
-        this.controlTargets = [headControl, leftArmControl, rightArmControl, leftLegControl, rightLegControl, hipsControl];
+        this.controlTargets = controlTargets;
+
+        this.hipsControlTarget = controlTargets[0];
+        controlTargets[0].name = "Hips";
+        chainObjects.push(new ChainObject("Spine", "Head", controlTargets[1]));
+        chainObjects.push(new ChainObject("LeftArm", "LeftHand", controlTargets[2]));
+        chainObjects.push(new ChainObject("RightArm", "RightHand", controlTargets[3]));
+        chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", controlTargets[4]));
+        chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", controlTargets[5]));
         //Fixing female-adult spine deformation
         if(rigMesh.name === "female-adult-meso")
         {
@@ -83,9 +72,8 @@ class XrIkObject
                 if(object.name === "Hips")
                 {
                     this.hips = object;
-                    //this.hipsControlTarget.setBone(object);
+
                     setZDirecion(object, new THREE.Vector3(0, 0, 1));
-                    //rigMesh.bind(rigMesh.skeleton)
 
                 }
                 // Goes through all chain objects to find with which we are working
@@ -110,8 +98,8 @@ class XrIkObject
                         if(object.name === chainObject.lastObjectName)
                         {
                             target = chainObject.controlTarget;
+                            target.name = object.name;
                             chainObject.isChainObjectStarted = false;
-                            //chainObject.controlTarget.setBone(object);
                         }
                         this.ikSwitcher.ikBonesName.push(object.name);
                         // Creates joint by passing current bone and its constraint

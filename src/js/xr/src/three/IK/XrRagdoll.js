@@ -69,7 +69,6 @@ class XRRagdoll extends XRIKObject
             //this.resetControlPoints();
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
-            this.relativeFixedAngle();
         }
     }
 
@@ -142,6 +141,7 @@ class XRRagdoll extends XRIKObject
     //#endregion
 
     //#region Internal methods
+    //#region Pole targets manipulations
     createPoleTargets(poleTargetMeshes)
     {
         let polePositions = {
@@ -215,15 +215,14 @@ class XRRagdoll extends XRIKObject
             chainObjects[i].controlTarget.updateMatrixWorld();
         }
     }
-
+    
+    //#endregion
+    //#region Control points manipulations 
     resetControlPoints()
     {
-        
-        
+        let chainObjects = this.chainObjects;
         boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
         this.hipsControlTarget.position.setFromMatrixPosition(boneMatrix);
-        
-        let chainObjects = this.chainObjects;
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
@@ -251,43 +250,8 @@ class XRRagdoll extends XRIKObject
             target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.parent.worldQuaternion().inverse()));
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
         }
-        this.relativeFixedAngle();
     }
-
-    relativeFixedAngle()
-    {
-        this.relativeFixedAngleDelta = {};
-        for(let i = 0; i < this.chainObjects.length; i++)
-        {
-            let joints = this.ik.chains[i].joints;
-            let bone = joints[joints.length-1].bone;
-            let quaternion = this.resourceManager.getQuaternion();
-            bone.getWorldQuaternion(quaternion);
-
-            let targetQuat = this.resourceManager.getQuaternion();
-            let controlTarget = this.chainObjects[i].controlTarget;
-            let boneTarget = controlTarget;
-            boneTarget.getWorldQuaternion(targetQuat);
-            let inverseWorldQuaternion = bone.worldQuaternion().inverse();
-
-            let targetToObj = this.resourceManager.getQuaternion();
-            targetToObj.multiply(targetQuat.inverse());
-            targetToObj.multiply(quaternion);
-
-            let objToTarget = this.resourceManager.getQuaternion();
-            objToTarget.multiply(inverseWorldQuaternion);
-            objToTarget.multiply(targetQuat);
-
-            this.relativeFixedAngleDelta[i] = {};
-            this.relativeFixedAngleDelta[i].targetToObject = targetToObj;
-            this.relativeFixedAngleDelta[i].objectToTarget = objToTarget;
-
-            this.resourceManager.release(quaternion);
-            this.resourceManager.release(targetQuat);
-            this.resourceManager.release(targetToObj);
-            this.resourceManager.release(objToTarget);
-        }
-    }
+    //#endregion
 
     // Resets targets position
     // After ik has been turned off and on resets
@@ -321,12 +285,11 @@ class XRRagdoll extends XRIKObject
 
             let target = this.getTargetForSolve();
             let controlTarget = this.chainObjects[i].controlTarget;
-            let boneTarget = controlTarget;
-            if((target && boneTarget.uuid !== target.uuid))
+            if((target && controlTarget.uuid !== target.uuid))
             {
               continue;
             }
-            this.rotateBoneQuaternion(bone, boneTarget);   
+            this.rotateBoneQuaternion(bone, controlTarget);   
         }
     }
 
@@ -334,7 +297,7 @@ class XRRagdoll extends XRIKObject
     // Give the result of bone always faces direction set by euler
     // Affected by hips rotation
     // Effect like flat foot to earth can be achieved
-    rotateBoneQuaternion(bone, boneTarget, followBone)
+    rotateBoneQuaternion(bone, boneTarget)
     {
         let targetQuat = this.resourceManager.getQuaternion();
         boneTarget.getWorldQuaternion(targetQuat);
