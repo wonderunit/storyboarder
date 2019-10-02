@@ -5,7 +5,7 @@
  * Based on @tojiro's vr-samples-utils.js
  */
 
-var WEBVR = {
+THREE.WEBVR = {
 
 	createButton: function ( renderer, options ) {
 
@@ -27,8 +27,17 @@ var WEBVR = {
 
 			button.textContent = 'ENTER SHOT GENERATOR VR';
 
-			button.onmouseenter = function () { button.style.opacity = '1.0'; };
-			button.onmouseleave = function () { button.style.opacity = '0.5'; };
+			button.onmouseenter = function () {
+
+				button.style.opacity = '1.0';
+
+			};
+
+			button.onmouseleave = function () {
+
+				button.style.opacity = '0.5';
+
+			};
 
 			button.onclick = function () {
 
@@ -40,7 +49,7 @@ var WEBVR = {
 
 		}
 
-		function showEnterXR( device ) {
+		function showEnterXR( /*device*/ ) {
 
 			var currentSession = null;
 
@@ -55,7 +64,7 @@ var WEBVR = {
 
 			}
 
-			function onSessionEnded( event ) {
+			function onSessionEnded( /*event*/ ) {
 
 				currentSession.removeEventListener( 'end', onSessionEnded );
 
@@ -76,8 +85,17 @@ var WEBVR = {
 
 			button.textContent = 'ENTER XR';
 
-			button.onmouseenter = function () { button.style.opacity = '1.0'; };
-			button.onmouseleave = function () { button.style.opacity = '0.5'; };
+			button.onmouseenter = function () {
+
+				button.style.opacity = '1.0';
+
+			};
+
+			button.onmouseleave = function () {
+
+				button.style.opacity = '0.5';
+
+			};
 
 			button.onclick = function () {
 
@@ -95,7 +113,7 @@ var WEBVR = {
 
 		}
 
-		function showVRNotFound() {
+		function disableButton() {
 
 			button.style.display = '';
 
@@ -103,14 +121,28 @@ var WEBVR = {
 			button.style.left = 'calc(50% - 75px)';
 			button.style.width = '150px';
 
-			button.textContent = 'VR NOT FOUND';
-
 			button.onmouseenter = null;
 			button.onmouseleave = null;
 
 			button.onclick = null;
 
+		}
+
+		function showVRNotFound() {
+
+			disableButton();
+
+			button.textContent = 'VR NOT FOUND';
+
 			renderer.vr.setDevice( null );
+
+		}
+
+		function showXRNotFound() {
+
+			disableButton();
+
+			button.textContent = 'VR NOT FOUND';
 
 		}
 
@@ -141,7 +173,7 @@ var WEBVR = {
 
 			stylizeElement( button );
 
-			navigator.xr.supportsSession( 'immersive-vr' ).then( showEnterXR );
+			navigator.xr.supportsSession( 'immersive-vr' ).then( showEnterXR ).catch( showXRNotFound );
 
 			return button;
 
@@ -158,7 +190,7 @@ var WEBVR = {
 
 			}, false );
 
-			window.addEventListener( 'vrdisplaydisconnect', function ( event ) {
+			window.addEventListener( 'vrdisplaydisconnect', function ( /*event*/ ) {
 
 				showVRNotFound();
 
@@ -209,31 +241,6 @@ var WEBVR = {
 
 		}
 
-	},
-
-	// DEPRECATED
-
-	checkAvailability: function () {
-		console.warn( 'WEBVR.checkAvailability has been deprecated.' );
-		return new Promise( function () {} );
-	},
-
-	getMessageContainer: function () {
-		console.warn( 'WEBVR.getMessageContainer has been deprecated.' );
-		return document.createElement( 'div' );
-	},
-
-	getButton: function () {
-		console.warn( 'WEBVR.getButton has been deprecated.' );
-		return document.createElement( 'div' );
-	},
-
-	getVRDisplay: function () {
-		console.warn( 'WEBVR.getVRDisplay has been deprecated.' );
 	}
 
 };
-
-module.exports = {
-  WEBVR
-}

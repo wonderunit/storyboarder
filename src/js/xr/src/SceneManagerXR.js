@@ -9,7 +9,14 @@ const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, useCallback } = React = require('react')
 require('./three/GPUPickers/utils/Object3dExtension')
-const { WEBVR } = require('three/examples/jsm/vr/WebVR')
+
+// to use three's version:
+// const { WEBVR } = require('three/examples/jsm/vr/WebVR')
+//
+// use vendor'd version
+require('../../vendor/three/examples/js/vr/WebVR')
+const WEBVR = THREE.WEBVR
+
 
 const {
   // selectors
