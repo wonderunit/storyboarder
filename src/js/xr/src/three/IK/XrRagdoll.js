@@ -160,18 +160,22 @@ class XRRagdoll extends XRIKObject
 
     createPoleTargets(poleTargetMeshes)
     {
-        let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
-        let polePositions = [
-            new THREE.Vector3(0.3, 0.7, -0.5),
-            new THREE.Vector3(-0.3, 0.7, -0.5),
-            new THREE.Vector3(0, 0.4, 0.6),
-            new THREE.Vector3(0, 0.4, 0.6)
-        ];
-        
+        let polePositions = {
+            "leftArmPole": new THREE.Vector3(0.3, 0.7, -0.5),
+            "rightArmPole": new THREE.Vector3(-0.3, 0.7, -0.5),
+            "leftLegPole": new THREE.Vector3(0, 0.4, 0.6),
+            "rightLegPole": new THREE.Vector3(0, 0.4, 0.6)
+        };
+
+        let leftArmPole = poleTargetMeshes.find(point => point.name === "leftArmPole");
+        let rightArmPole = poleTargetMeshes.find(point => point.name === "rightArmPole");
+        let leftLegPole = poleTargetMeshes.find(point => point.name === "leftLegPole");
+        let rightLegPole = poleTargetMeshes.find(point => point.name === "rightLegPole");
+        let poleMeshes = [leftArmPole, rightArmPole, leftLegPole, rightLegPole];
         let backChain = this.ik.chains[0];        
         for(let i = 1; i < 5; i++)
         {
-            let poleTargetMesh = poleTargetMeshes[i - 1];
+            let poleTargetMesh = poleMeshes[i - 1];
             let chain = this.ik.chains[i];
             let poleTarget = null;
             if(poleTargetMesh.userData.isInitialized)
@@ -181,7 +185,7 @@ class XRRagdoll extends XRIKObject
             }
             else
             {
-                poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1], poleTargetMesh);
+                poleTarget = this.initPoleTargets(chain, polePositions[poleTargetMesh.name], poleTargetMesh);
             }
             let poleConstraint = new XrPoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
@@ -195,14 +199,13 @@ class XRRagdoll extends XRIKObject
     }
 
     // Initiallizes pole target for pole contraints
-    initPoleTargets(chain, offset, name, poleTargetMesh)
+    initPoleTargets(chain, offset, poleTargetMesh)
     {
         let poleTarget = new PoleTarget();
         poleTarget.mesh = poleTargetMesh;
         poleTarget.initialOffset = offset.multiplyScalar(poleTargetMesh.userData.scaleAspect);
         this.calculatePoleTargetOffset(poleTarget, chain);
         poleTarget.initialize(poleTarget.poleOffset);
-        poleTarget.name = name;
         
         return poleTarget;
     }
