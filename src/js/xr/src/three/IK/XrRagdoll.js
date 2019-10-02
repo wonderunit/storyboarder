@@ -79,6 +79,7 @@ class XRRagdoll extends XRIKObject
         }
         else
         {
+            //this.resetControlPoints();
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
             this.relativeFixedAngle();
@@ -91,8 +92,6 @@ class XRRagdoll extends XRIKObject
         super.lateUpdate();
         if(this.hipsMouseDown)
         {
-            let originalParent = this.chainObjects[0].controlTarget.parent;
-            this.changeControlPointsParent(this.originalObject.parent);
             let hipsTarget = this.hipsControlTarget;
             let targetPosition = hipsTarget.worldPosition();            
             let targetPos = this.hipsControlTarget.worldPosition();
@@ -104,10 +103,7 @@ class XRRagdoll extends XRIKObject
             this.hips.parent.worldToLocal(targetPosition);
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
-            this.hips.updateMatrixWorld(); 
             this.originalObject.position.copy(this.clonedObject.position);
-            this.changeControlPointsParent(originalParent);
-            //this.updateCharPosition(this.clonedObject.position);
         }
     }
 
@@ -230,17 +226,18 @@ class XRRagdoll extends XRIKObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             parent.attach(chainObjects[i].controlTarget);
+            chainObjects[i].controlTarget.updateMatrixWorld();
         }
     }
 
     resetControlPoints()
     {
-        let chainObjects = this.chainObjects;
-
+        
         
         boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
         this.hipsControlTarget.position.setFromMatrixPosition(boneMatrix);
-
+        
+        let chainObjects = this.chainObjects;
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
