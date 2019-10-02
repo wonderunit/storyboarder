@@ -96,7 +96,6 @@ class IKHelper extends THREE.Object3D
             else
             {
                 this.poleTargets.attach(this.selectedControlPoint);
-                //this.selectedControlPoint.updateMatrixWorld();
                 let worldPosition = this.selectedControlPoint.position;
                 let poleTargets = {};
                 poleTargets[this.selectedControlPoint.name] = 
@@ -112,11 +111,8 @@ class IKHelper extends THREE.Object3D
             }
             if(this.selectedControlPoint.name === "Hips")
             {
-<<<<<<< HEAD
-=======
                 this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
                 this.ragDoll.changeControlPointsParent(this.controlPoints);
->>>>>>> xr-ik-fixes
                 this.ragDoll.hipsMouseDown = false;
             }
             if(this.selectedControlPoint.name === "Head")

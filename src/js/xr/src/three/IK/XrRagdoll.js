@@ -162,7 +162,6 @@ class XRRagdoll extends XRIKObject
             let poleTargetMesh = poleMeshes[i - 1];
             let chain = this.ik.chains[i];
             let poleTarget = null;
-            let poleTargetMesh = poleTargetMeshes[i - 1];
             if(poleTargetMesh.userData.isInitialized)
             {
                 poleTarget = new PoleTarget();
@@ -315,7 +314,6 @@ class XRRagdoll extends XRIKObject
     // Sets limbs rotation to control target rotation
     limbsFollowRotation()
     {
-        let originalbones = this.clonedObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones;
         for(let i = 0; i < this.chainObjects.length; i++)
         {
             let joints = this.ik.chains[i].joints;
