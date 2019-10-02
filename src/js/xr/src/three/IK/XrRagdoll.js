@@ -119,20 +119,6 @@ class XRRagdoll extends XRIKObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-
-
-            let poleConstraints = this.chainObjects[i].poleConstraint;
-            if(poleConstraints != null)
-            {
-                let targetPosition = new THREE.Vector3();
-                if(poleConstraints.poleTarget.mesh.userData.isInitialized) continue;
-                chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
-                let polePosition = poleConstraints.poleTarget.mesh.position;
-                poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
-                let poleTarget = poleConstraints.poleTarget;
-                this.calculatePoleTargetOffset(poleTarget, chain);
-                poleTarget.initialize(poleTarget.poleOffset);
-            }
             chain.reinitializeJoints();
         }
         this.resetControlPoints();
