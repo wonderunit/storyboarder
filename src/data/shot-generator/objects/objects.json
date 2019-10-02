@@ -107,6 +107,18 @@
     "type": "object",
     "height": 1
   },
+  "window-1": {
+    "id": "window-1",
+    "name": "Window: 1 Pane",
+    "type": "object",
+    "height": 1
+  },
+  "railing-1": {
+    "id": "railing-1",
+    "name": "Railing: 1 Unit",
+    "type": "object",
+    "height": 1
+  },
   "primitive-cylinder-hollow": {
     "id": "primitive-cylinder-hollow",
     "name": "Primitive: Cylinder, Hollow",
@@ -185,6 +197,12 @@
     "type": "object",
     "height": 1
   },
+  "table-desk": {
+    "id": "table-desk",
+    "name": "Table: Desk",
+    "type": "object",
+    "height": 1
+  },
   "table-sit-rectangle": {
     "id": "table-sit-rectangle",
     "name": "Table: Sit, Rectangle",
@@ -207,6 +225,54 @@
   "vehicle-car": {
     "id": "vehicle-car",
     "name": "Vehicle: Car",
+    "type": "object",
+    "height": 1
+  },
+  "vehicle-suv": {
+    "id": "vehicle-suv",
+    "name": "Vehicle: SUV",
+    "type": "object",
+    "height": 1
+  },
+  "object-lamp": {
+    "id": "object-lamp",
+    "name": "Object: Lamp",
+    "type": "object",
+    "height": 1
+  },
+  "object-pistol": {
+    "id": "object-pistol",
+    "name": "Object: Pistol Gun",
+    "type": "object",
+    "height": 1
+  },
+  "rock-1": {
+    "id": "rock-1",
+    "name": "Rock: 1",
+    "type": "object",
+    "height": 1
+  },
+  "rock-2": {
+    "id": "rock-2",
+    "name": "Rock: 2",
+    "type": "object",
+    "height": 1
+  },
+  "rock-3": {
+    "id": "rock-3",
+    "name": "Rock: 3",
+    "type": "object",
+    "height": 1
+  },
+  "tree-bushy": {
+    "id": "tree-bushy",
+    "name": "Tree: Bushy",
+    "type": "object",
+    "height": 1
+  },
+  "tree-no-leaves": {
+    "id": "tree-no-leaves",
+    "name": "Tree: No Leaves",
     "type": "object",
     "height": 1
   }
