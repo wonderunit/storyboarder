@@ -10,6 +10,7 @@ window.THREE = window.THREE || THREE
 require('../vendor/three/examples/js/exporters/GLTFExporter.js')
 
 const cloneGltf = require('../xr/src/helpers/clone-gltf')
+const cloneSkinnedMesh = require('../xr/src/three/clone-skinned-mesh')
 
 const {
   getSceneObjects
@@ -38,23 +39,43 @@ const useExportToGltf = (sceneRef) => {
           if (!child.icon) {
             if (child.userData.id && sceneObjects[child.userData.id]) {
               let sceneObject = sceneObjects[child.userData.id]
-              // TODO skip volumetric?
-              if (sceneObject.type === 'character') {
-                console.log('\Cloning', sceneObject.type)
+              if (sceneObject.type === 'volume') {
+                console.log('\tSkipping', sceneObject.type)
+
+              } else if (sceneObject.type === 'character') {
+                console.log('\tCloning', sceneObject.type)
 
                 for (node of child.children) {
                   if (node.isSkinnedMesh) {
 
-                    let cloned = cloneGltf({ scene: node })
-                    let clone = cloned.scene
+                    let rootBone = child.children.find(n => n.isBone)
+                    let [clone, bones] = cloneSkinnedMesh(node, rootBone)
+                    clone.remove(clone.children[0]) // remove the Bone
+
+                    clone.userData = {}
+
+                    clone.material = new THREE.MeshStandardMaterial()
+                    clone.name = sceneObject.name || sceneObject.displayName
+
+                    let root = bones[clone.skeleton.bones[0].name]
+                    clone.add(root)
 
                     scene.add(clone)
+                  } else {
+                    console.log('\t\tSkipping node', node)
                   }
                 }
 
               } else if (sceneObject) {
-                console.log('\Cloning', sceneObject.type)
-                scene.add(child.clone())
+                console.log('\tCloning', sceneObject.type)
+                let clone = child.clone()
+
+                clone.userData = {}
+
+                clone.material = new THREE.MeshStandardMaterial()
+                clone.name = sceneObject.name || sceneObject.displayName
+
+                scene.add(clone)
               }
             }
           }
