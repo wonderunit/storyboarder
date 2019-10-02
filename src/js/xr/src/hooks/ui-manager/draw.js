@@ -297,7 +297,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
           if (type === 'pose') {
             const pose = this.state.poses.find(pose => pose.id === name)
             const skeleton = pose.state.skeleton
-            this.dispatch(updateObject(id, { name, skeleton }))
+            this.dispatch(updateObject(id, { posePresetId: name, skeleton }))
           } else if (type === 'character') {
             this.dispatch(undoGroupStart())
             this.dispatch(selectObject(null))
