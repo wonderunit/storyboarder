@@ -1128,14 +1128,14 @@ const useUiManager = ({ playSound, stopSound }) => {
 
     // if the user hasn't seen help before
     if (getCookie('sawHelp') !== 'true') {
-      // HACK wait 3s so controllers can attach and scene can render
+      // HACK wait 2s so controllers can attach and scene can render
       setTimeout(() => {
         if (!showHelp) {
           setShowHelp(true)
           playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
           setCookie('sawHelp', 'true', 365)
         }
-      }, 3000)
+      }, 2000)
     }
   }, [isVrPresenting])
 
