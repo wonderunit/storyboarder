@@ -173,7 +173,7 @@ class IKHelper extends THREE.Object3D
 
     raycast(raycaster, intersects)
     {
-        if(!this.isSelected() &&  !this.isIkDisabled) return;
+        if(!this.isSelected() && this.isIkDisabled) return;
         let values = this.isPoleTargetsVisible ? this.targetPoints : this.controlPoints.children;
         let results = raycaster.intersectObjects(values);
         for (let result of results)
