@@ -39,15 +39,16 @@
     "buildDependenciesFromSource": true,
     "compression": "maximum",
     "files": [
-      "**/*",
       "!*.md",
       "!DEVELOPERS.md",
       "!README.md",
       "!notes",
       "!test",
       "!.cache",
-      ".github",
-      ".vscode"
+      "!.github",
+      "!.vscode",
+      "!dist",
+      "!scripts"
     ],
     "mac": {
       "icon": "build/icon.icns"

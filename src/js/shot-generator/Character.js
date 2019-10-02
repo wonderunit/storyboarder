@@ -24,7 +24,7 @@ const applyDeviceQuaternion = require('./apply-device-quaternion')
 //   bone structure - ideally Mixamo standard bones
 //
 
-require('three/examples/js/loaders/GLTFLoader')
+require('../vendor/three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')
 const loadingManager = new THREE.LoadingManager()
 const objLoader = new THREE.OBJLoader2(loadingManager)
@@ -587,10 +587,13 @@ const Character = React.memo(({
 
     let modelSettings = initialState.models[props.model]
 
-    if (modelSettings && modelSettings.validMorphTargets) {
+    if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
+      mesh.material.morphTargets = mesh.material.morphNormals = true
       modelSettings.validMorphTargets.forEach((name, index) => {
         mesh.morphTargetInfluences[ index ] = props.morphTargets[ name ]
       })
+    } else {
+      mesh.material.morphTargets = mesh.material.morphNormals = false
     }
   }, [props.morphTargets, ready])
 

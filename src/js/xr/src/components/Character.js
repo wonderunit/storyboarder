@@ -22,9 +22,21 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       let lod = new THREE.LOD()
 
       let { scene } = cloneGltf(gltf)
-      let meshes = scene.children.filter(child => child.isSkinnedMesh)
 
       let map
+
+      // for built-in Characters
+      // SkinnedMeshes are immediate children
+      let meshes = scene.children.filter(child => child.isSkinnedMesh)
+
+      // if no SkinnedMeshes are found there, this may be a custom model file
+      if (meshes.length === 0 && scene.children.length && scene.children[0].children) {
+        // try to find the first SkinnedMesh in the first child object's children
+        let mesh = scene.children[0].children.find(child => child.isSkinnedMesh)
+        if (mesh) {
+          meshes = [mesh]
+        }
+      }
 
       // if there's only 1 mesh
       let startAt = meshes.length == 1
@@ -132,11 +144,16 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
   }, [skeleton, sceneObject.headScale])
 
   useMemo(() => {
-    if (modelSettings && modelSettings.validMorphTargets) {
+    if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
       lod.children.forEach(skinnedMesh => {
+        skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = true
         modelSettings.validMorphTargets.forEach((name, index) => {
           skinnedMesh.morphTargetInfluences[index] = sceneObject.morphTargets[name]
         })
+      })
+    } else {
+      lod.children.forEach(skinnedMesh => {
+        skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = false
       })
     }
   }, [modelSettings, sceneObject.morphTargets])

@@ -55,32 +55,47 @@ const setupHomePane = (paneComponents, self) => {
     'settings-button': {
       id: 'settings-button',
       type: 'image-button',
-      x: 909 + 10,
-      y: 684 + 10,
+      x: 909 + 12,
+      y: 684 + 12,
       width: 64,
       height: 64,
-      image: 'help',
+      image: 'settings',
 
       onSelect: () => {
         self.send('TOGGLE_SETTINGS')
-        console.log('sup')
       }
     },
-    'extend-button': {
-      id: 'extend-button',
-      type: 'image-button',
-      x: 483 - 32 + 66 * 0.5,
-      y: 288 - 32 + 105 * 0.5,
-      width: 64,
-      height: 64,
-      image: 'arrow',
-      flip: true,
-
-      onSelect: () => {
-        const id = self.state.selections[0]
-        const sceneObject = self.state.sceneObjects[id]
-        if (sceneObject.type === 'character' || sceneObject.type === 'object') self.send('TOGGLE_GRID')
-      }
+    'quote-1': {
+      id: 'quote-1',
+      type: 'text',
+      x: 453 + 20,
+      y: 889 + 20,
+      label: `“You never change things by fighting the existing reality.`,
+      size: 16
+    },
+    'quote-2': {
+      id: 'quote-2',
+      type: 'text',
+      x: 453 + 20,
+      y: 889 + 20 + 27,
+      label: `To change something, build a new model`,
+      size: 16
+    },
+    'quote-3': {
+      id: 'quote-3',
+      type: 'text',
+      x: 453 + 20,
+      y: 889 + 20 + 27 * 2,
+      label: `that makes the existing model obsolete.”`,
+      size: 16
+    },
+    'quote-4': {
+      id: 'quote-4',
+      type: 'text',
+      x: 453 + 20,
+      y: 889 + 20 + 27 * 3,
+      label: `― Richard Buckminster Fuller`,
+      size: 16
     }
   }
 }
@@ -158,9 +173,9 @@ const setupSettingsPane = (paneComponents, self) => {
       id: 'settings',
       type: 'text',
       x: 0 + 30,
-      y: 684 + 20,
+      y: 684 + 30,
       label: 'Settings',
-      size: 48
+      size: 36
     },
 
     // 'switch-hand': {
@@ -176,7 +191,7 @@ const setupSettingsPane = (paneComponents, self) => {
       id: 'show-cameras',
       type: 'text',
       x: 0 + 30,
-      y: 684 + 20 + 48 + 30 + 40 - 12,
+      y: 684 + 20 + 48 + 40 + 40 - 12,
       label: 'Show Cameras',
       size: 24
     },
@@ -199,11 +214,82 @@ const setupSettingsPane = (paneComponents, self) => {
       type: 'toggle-button',
       toggle: 'showCameras',
       x: 0 + 30 + 200,
-      y: 684 + 20 + 48 + 30,
+      y: 684 + 20 + 48 + 40,
       width: 200,
       height: 80,
       onSelect: () => {
         self.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
+      }
+    },
+
+    'help-button': {
+      id: 'help-button',
+      type: 'image-button',
+      x: 439 - 64 - 15,
+      y: 684 + 20,
+      width: 64,
+      height: 64,
+      image: 'help',
+      drawBG: true,
+      padding: 6,
+      fill: '#6E6E6E',
+
+      onSelect: () => {
+        self.send('TOGGLE_HELP')
+        self.send('GO_HOME')
+      }
+    }
+  }
+}
+
+const setupHelpPane = (paneComponents, self) => {
+  paneComponents['help'] = {
+    'prev-help': {
+      id: 'prev-help',
+      type: 'image-button',
+      x: 6,
+      y: 6,
+      width: 48,
+      height: 48,
+      image: 'arrow',
+      flip: true,
+      drawBG: true,
+      padding: 6,
+
+      onSelect: () => {
+        self.send('INCREMENT_HELP', { direction: 'decrement' })
+      }
+    },
+
+    'next-help': {
+      id: 'next-help',
+      type: 'image-button',
+      x: 6 + 48 + 28 + 6,
+      y: 6,
+      width: 48,
+      height: 48,
+      image: 'arrow',
+      drawBG: true,
+      padding: 6,
+
+      onSelect: () => {
+        self.send('INCREMENT_HELP', { direction: 'increment' })
+      }
+    },
+
+    'close-help': {
+      id: 'close-help',
+      type: 'image-button',
+      x: 1024 - 48 - 6,
+      y: 6,
+      width: 48,
+      height: 48,
+      image: 'close',
+      drawBG: true,
+      padding: 6,
+
+      onSelect: () => {
+        self.send('TOGGLE_HELP')
       }
     }
   }
@@ -212,5 +298,6 @@ const setupSettingsPane = (paneComponents, self) => {
 module.exports = {
   setupHomePane,
   setupAddPane,
-  setupSettingsPane
+  setupSettingsPane,
+  setupHelpPane
 }

@@ -8,9 +8,8 @@ const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
 const CLOSE_DISTANCE = 7
 const VIRTUAL_CAMERA_LAYER = 1
 
-const materialFactory = () => new THREE.MeshLambertMaterial({
-  color: 0xcccccc,
-  emissive: 0x0,
+const materialFactory = () => new THREE.MeshBasicMaterial({
+  color: 0x8c78f1,
   flatShading: false
 })
 
@@ -107,15 +106,18 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   useMemo(() => {
     if (!ref.current) return
 
-    let amp = isSelected ? 0.2 : 0
+    //let amp = isSelected ? 0.2 : 0
+
+    let lightColor = 0x8c78f1
+
+    if (isSelected) {
+      lightColor = 0x7256ff
+    }
+
 
     meshes.forEach(mesh =>
       traverseMeshMaterials(mesh, material => {
-        if (material.emissive) {
-          material.emissive.r = 0x9a / 0xff * amp
-          // material.emissive.g = 0x72 / 0xff * amp
-          material.emissive.b = 0xe9 / 0xff * amp
-        }
+        material.color = new THREE.Color(lightColor)
       })
     )
   }, [ref.current, meshes, isSelected])
@@ -129,8 +131,9 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   )
 
   const instancedBorderGroup = useMemo(() => {
+
     const geometry = new THREE.PlaneBufferGeometry(1, 1)
-    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0x7a72e9, opacity: 0.5, transparent: true })
+    const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xcccccc, opacity: 0.8, transparent: true })
     const instancedBorderMesh = new THREE.InstancedMesh(geometry, material, 4, false, false, false)
     const instancedBorderGroup = new THREE.Group()
 
@@ -217,10 +220,15 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     renderCamera()
   }, false, [isSelected, ref.current, meshes])
 
+  let lightColor = 0x8c78f1
+  if (isSelected) {
+    lightColor = 0x7256ff
+  }
+
   let activeIndicator = isActive
     ? <mesh position={[0, size + 0.075 + 0.15, 0]}>
       <cylinderBufferGeometry attach="geometry" args={[0.075, 0, 0.075]} />
-      <meshLambertMaterial attach="material" color={0xffff00} />
+      <meshBasicMaterial attach="material" color={lightColor} />
     </mesh>
     : null
 

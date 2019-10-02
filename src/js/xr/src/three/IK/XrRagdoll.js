@@ -78,13 +78,23 @@ class XRRagdoll extends XRIKObject
         super.lateUpdate();
         if(this.hipsMouseDown)
         {
+            let originalParent = this.chainObjects[0].controlTarget.parent;
+            this.changeControlPointsParent(this.originalObject.parent);
             let hipsTarget = this.hipsControlTarget;
-            let targetPosition = this.resourceManager.getVector3();
-            hipsTarget.getWorldPosition(targetPosition);
+            let targetPosition = hipsTarget.worldPosition();            
+            let targetPos = this.hipsControlTarget.worldPosition();
+            
+            targetPos.sub(this.objectTargetDiff);
+            this.clonedObject.position.copy(targetPos);
+            this.clonedObject.updateMatrixWorld(true); 
+            
             this.hips.parent.worldToLocal(targetPosition);
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
-            this.resourceManager.release(targetPosition);
+            this.hips.updateMatrixWorld(); 
+            this.originalObject.position.copy(this.clonedObject.position);
+            this.changeControlPointsParent(originalParent);
+            //this.updateCharPosition(this.clonedObject.position);
         }
     }
 
@@ -121,10 +131,10 @@ class XRRagdoll extends XRIKObject
 
         hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
         let hipsWP = hipsTarget.position.clone();
+        //hipsTarget.parent.localToWorld(hipsWP)
         hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.getInverseMatrixWorld());
-        this.originalObject.applyMatrix( this.originalObject.parent.matrixWorld);
+
         let originalObjectWp = this.originalObject.position.clone();
-        this.originalObject.applyMatrix( this.originalObject.parent.getInverseMatrixWorld());
         this.objectTargetDiff = new THREE.Vector3().subVectors(hipsWP, originalObjectWp);
     }
 
@@ -195,6 +205,15 @@ class XRRagdoll extends XRIKObject
         hipsOffset.add(this.hips.position);
         hipsOffset.add(offset);
         poleTarget.poleOffset = hipsOffset;
+    }
+
+    changeControlPointsParent(parent)
+    {
+        let chainObjects = this.chainObjects;
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            parent.attach(chainObjects[i].controlTarget);
+        }
     }
 
     resetControlPoints()

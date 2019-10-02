@@ -58,7 +58,7 @@ class IKHelper extends THREE.Object3D
             {
                 mesh.userData.isInitialized = false;
             }
-            mesh.scale.set(0.4, 0.08, 0.4).multiplyScalar(scaleAspect);
+            mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
             mesh.userData.scaleAspect = scaleAspect;
         }
         ragDoll.initObject(this, skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
@@ -230,6 +230,7 @@ class IKHelper extends THREE.Object3D
 
 const intializeInstancedMesh = (mesh) =>
 {
+    let sphereGeometry = new THREE.SphereBufferGeometry( 0.5, 8, 6 );
     let instance = IKHelper.getInstance();
     let listOfControlPoints = ["Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot", "Hips"];
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
@@ -241,15 +242,16 @@ const intializeInstancedMesh = (mesh) =>
         transparent: true,
         opacity: 0.7,
         flatShading: true});
+    let newMesh = new THREE.Mesh(sphereGeometry, material);
     instance.material = material;
-    instance.instancedMesh = new THREE.InstancedMesh(mesh.geometry, material, sizeOfTargets, true, true, false);
+    instance.instancedMesh = new THREE.InstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
     instance.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
     instance.defaultColor = new THREE.Color(0x6a4dff);
     instance.instancedMesh.userData.preventInteraction = true;
     instance.instancedMesh.userData.type = "instancedMesh";
     for(let i = 0; i < 6; i++)
     {
-        let controlPoint = new THREE.Mesh(mesh.geometry, material);
+        let controlPoint = new THREE.Mesh(newMesh.geometry, material);
         controlPoint.userData.id = --sizeOfTargets;
         controlPoint.material.visible = false;
         controlPoint.userData.type = "controlPoint";
@@ -259,7 +261,7 @@ const intializeInstancedMesh = (mesh) =>
     }
     for(let i = 0; i < 4; i++)
     {
-        let poleTarget = new THREE.Mesh(mesh.geometry, material);
+        let poleTarget = new THREE.Mesh(newMesh.geometry, material);
         poleTarget.material.visible = false;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";

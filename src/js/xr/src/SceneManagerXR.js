@@ -9,7 +9,14 @@ const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, useCallback } = React = require('react')
 require('./three/GPUPickers/utils/Object3dExtension')
-const { WEBVR } = require('three/examples/jsm/vr/WebVR')
+
+// to use three's version:
+// const { WEBVR } = require('three/examples/jsm/vr/WebVR')
+//
+// use vendor'd version
+require('../../vendor/three/examples/js/vr/WebVR')
+const WEBVR = THREE.WEBVR
+
 
 const {
   // selectors
@@ -49,6 +56,7 @@ const { Log } = require('./components/Log')
 const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
 
 const Controls = require('./components/ui/Controls')
+const Help = require('./components/ui/Help')
 
 const BonesHelper = require('./three/BonesHelper')
 const IKHelper = require('./three/IkHelper')
@@ -136,6 +144,7 @@ const SceneContent = connect(
 
     const switchHand = useUiStore(state => state.switchHand)
     const showCameras = useUiStore(state => state.showCameras)
+    const showHelp = useUiStore(state => state.showHelp)
 
     const fog = useRef()
     const getFog = () => {
@@ -305,9 +314,12 @@ const SceneContent = connect(
     }, [])
     const helpVoicer = useMemo(() => {
       let voicer = new Voicer(cameraAudioListener, 10, null, {
-        releaseTime: 0.2
+        releaseTime: 0.01,
+        voiceOptions: {
+          positional: false
+        }
       })
-      voicer.setVolume(1)
+      voicer.setVolume(0.5)
       return voicer
     }, [])
 
@@ -494,11 +506,20 @@ const SceneContent = connect(
                 hand={gamepadFor(controller).hand}
               />
               {gamepadFor(controller).hand === (switchHand ? 'left' : 'right') &&
-                <Controls
-                  gltf={resources.controlsGltf}
-                  mode={uiCurrent.value.controls}
-                  hand={switchHand ? 'left' : 'right'}
-                  getCanvasRenderer={getCanvasRenderer} />
+                <group>
+                  <Controls
+                    gltf={resources.controlsGltf}
+                    mode={uiCurrent.value.controls}
+                    hand={switchHand ? 'left' : 'right'}
+                    locked={uiCurrent.context.locked}
+                    getCanvasRenderer={getCanvasRenderer} />
+                  { showHelp &&
+                    <Help
+                      mode={uiCurrent.value.controls}
+                      locked={uiCurrent.context.locked}
+                      getCanvasRenderer={getCanvasRenderer} />
+                  }
+                </group>
               }
             </primitive>
           )}

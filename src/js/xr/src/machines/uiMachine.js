@@ -24,7 +24,8 @@ const machine = Machine({
         add: {
           on: {
             'GO_HOME': 'home',
-            'TOGGLE_SETTINGS': 'settings'
+            'TOGGLE_SETTINGS': 'settings',
+            'GO_PROPERTIES': 'properties'
           }
         },
         settings: {
@@ -68,7 +69,9 @@ const machine = Machine({
             'ADD_OBJECT': { actions: 'onAddObject' },
             'REQUEST_DUPLICATE': { actions: 'onDuplicate' },
             'REQUEST_DELETE': { actions: 'onDelete' },
-            'TOGGLE_SWITCH': { actions: 'onToggleSwitch' }
+            'TOGGLE_SWITCH': { actions: 'onToggleSwitch' },
+            'TOGGLE_HELP': { actions: 'onToggleHelp' },
+            'INCREMENT_HELP': { actions: 'onIncrementHelp' }
           }
         },
         locked: {

@@ -1,6 +1,6 @@
 const THREE = require('three')
 const { clamp, mapLinear } = require('three').Math
-const { useMemo, useRef, useCallback } = React = require('react')
+const { useMemo, useRef, useCallback, useEffect } = React = require('react')
 const useReduxStore = require('react-redux').useStore
 const { useSelector } = require('react-redux')
 const { useThree } = require('react-three-fiber')
@@ -32,16 +32,18 @@ const {
   drawGrid
 } = require('./draw')
 
-const { setupHomePane, setupAddPane, setupSettingsPane } = require('./setup')
+const { setupHomePane, setupAddPane, setupSettingsPane, setupHelpPane } = require('./setup')
 
 const [useUiStore] = create((set, get) => ({
   // values
   switchHand: getCookie('switchHand') == 'true',
   showCameras: getCookie('showCameras') !== 'false',
+  showHelp: false,
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
+  setShowHelp: value => set(produce(state => { state.showHelp = value })),
 
   set: fn => set(produce(fn))
 }))
@@ -49,20 +51,22 @@ const [useUiStore] = create((set, get) => ({
 // round to nearest step value
 const steps = (value, step) => parseFloat((Math.round(value * (1 / step)) * step).toFixed(6))
 
-const lenses = {}
-
-let height_step = 0.05
-let height_min = 1.4732
-let height_max = 2.1336
-lenses.characterHeight = R.lens(
-  vin => THREE.Math.mapLinear(vin, height_min, height_max, 0, 1),
-  vout => {
-    let height = mapLinear(vout, 0, 1, height_min, height_max)
-    height = steps(height, height_step)
-    height = clamp(height, height_min, height_max)
-    return height
+const lensFactory = (min, max, step = 0.05) => R.lens(
+  from => THREE.Math.mapLinear(from, min, max, 0, 1),
+  to => {
+    let value = mapLinear(to, 0, 1, min, max)
+    value = steps(value, step)
+    value = clamp(value, min, max)
+    return value
   }
 )
+
+const lenses = {}
+
+lenses.characterHeight = lensFactory(1.4732, 2.1336)
+lenses.childHeight = lensFactory(1.003, 1.384)
+lenses.babyHeight = lensFactory(0.492, 0.94)
+
 lenses.characterScale = R.lens(
   from => clamp(mapLinear(from, 0.3, 3, 0, 1), 0, 1),
   to => mapLinear(clamp(to, 0, 1), 0, 1, 0.3, 3)
@@ -79,6 +83,11 @@ for (let propertyName of ['intensity', 'penumbra']) {
   vout => clamp(steps(vout, 0.1), 0, 1)
   )
 }
+
+lenses.distance = R.lens(
+  vin => clamp(mapLinear(vin, 0.1, 100, 0, 1), 0, 1),
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0.1, 100), 0.1), 0.1, 100)
+)
 
 lenses.angle = R.lens(
   vin => clamp(mapLinear(vin, 0.025, Math.PI / 2, 0, 1), 0, 1),
@@ -116,6 +125,10 @@ class CanvasRenderer {
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
 
+    this.helpCanvas = document.createElement('canvas')
+    this.helpCanvas.width = this.helpCanvas.height = size
+    this.helpContext = this.helpCanvas.getContext('2d')
+
     this.dispatch = dispatch
     this.service = service
     this.send = send
@@ -123,12 +136,14 @@ class CanvasRenderer {
     this.getImageByFilepath = getImageByFilepath
 
     this.state = {
+      activeCamera: null,
       selections: [],
       sceneObjects: {},
       poses: {},
       models: {},
       mode: 'home',
       context: {},
+      helpIndex: 0,
       grids: {
         tab: 'pose',
         startCoords: {},
@@ -161,6 +176,7 @@ class CanvasRenderer {
     // setupaddpane
     // setupsettings
 
+    setupHelpPane(this.paneComponents, this)
 
     // setup each pane
 
@@ -194,18 +210,20 @@ class CanvasRenderer {
     let canvas = this.canvas
     let ctx = this.context
 
-    console.log("render")
+    let id = this.state.selections[0]
+    let sceneObject = this.state.sceneObjects[id]
+
+    // console.log("render")
 
     if (this.state.context.locked) {
-      console.log('rendering a locked ui')
+      // console.log('rendering a locked ui')
     } else {
-      console.log('rendering an unlocked ui')
+      // console.log('rendering an unlocked ui')
     }
 
-    console.log(this.state.mode)
+    // console.log(this.state.mode)
     if (this.state.mode == 'properties' || this.state.mode == 'grid') {
-      let id = this.state.selections[0]
-      let sceneObject = this.state.sceneObjects[id]
+      if (!sceneObject) return
 
       let modelSettings = this.state.models[sceneObject.model]
 
@@ -213,6 +231,10 @@ class CanvasRenderer {
       ctx.fillStyle = 'rgba(0,0,0)'
       roundRect(ctx, 554, 6, 439, 666, 25, true, false)
 
+      let characterHeightLens = lenses.characterHeight
+      if (sceneObject.model === 'child') characterHeightLens = lenses.childHeight
+      if (sceneObject.model === 'baby') characterHeightLens = lenses.babyHeight
+      
       this.paneComponents['properties'] = {
         ...(sceneObject.type === 'camera') &&
           {
@@ -258,7 +280,7 @@ class CanvasRenderer {
               : {
                 height: {
                   label: `Height - ${rounded(sceneObject.height)}m`,
-                  lens: R.compose(R.lensPath(['height']), lenses.characterHeight)
+                  lens: R.compose(R.lensPath(['height']), characterHeightLens)
                 },
                 headScale: {
                   label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
@@ -294,13 +316,16 @@ class CanvasRenderer {
               label: `Angle - ${rounded(THREE.Math.radToDeg(sceneObject.angle), 1)}°`,
               lens: R.compose(R.lensPath(['angle']), lenses.angle)
             },
+            distance: {
+              label: `Distance - ${rounded(sceneObject.distance)}`,
+              lens: R.compose(R.lensPath(['distance']), lenses.distance)
+            },
             penumbra: {
               label: `Penumbra - ${rounded(percent(sceneObject.penumbra), 1)}%`,
               lens: R.compose(R.lensPath(['penumbra']), lenses.penumbra)
             }
           }
       }
-
 
       let i = -1
       this.paneComponents['properties'] = Object.entries(this.paneComponents['properties']).reduce((components, [key, component]) => {
@@ -361,7 +386,7 @@ class CanvasRenderer {
 
           type: 'slider',
           x: 570,
-          y: 30 + 90 * i,
+          y: 30 + 90 * (i + 1),
           width: 420,
           height: 80,
 
@@ -375,12 +400,66 @@ class CanvasRenderer {
         return components
       }, {})
 
+      this.paneComponents['properties']['title'] = {
+        id: 'title',
+        type: 'text',
+        x: 570,
+        y: 30 + 16,
+        label: `${sceneObject.name || sceneObject.displayName}`,
+        size: 40,
+        weight: 'bold'
+      }
+
+      if (sceneObject.type === 'camera') {
+        const isActive = sceneObject.id === this.state.activeCamera
+
+        this.paneComponents['properties']['active-camera'] = {
+          id: 'active-camera',
+          type: 'slider',
+          x: 570,
+          y: 30 + 90 * 2,
+          width: 420,
+          height: 80,
+          label: isActive ? 'Active Camera' : 'Set as Active Camera',
+          state: Number(isActive),
+          onSelect: () => {
+            if (!isActive) {
+              this.dispatch(setActiveCamera(sceneObject.id))
+              this.needsRender = true
+            }
+          }
+        }
+      }
+
+      if (sceneObject.type === 'character' || sceneObject.type === 'object') {
+        roundRect(ctx, 483, 288, 66, 105, 25, true, false)
+        this.paneComponents['properties']['extend-button'] = {
+          id: 'extend-button',
+          type: 'image-button',
+          x: 483 - 32 + 66 * 0.5,
+          y: 288 - 32 + 105 * 0.5,
+          width: 64,
+          height: 64,
+          image: 'arrow',
+          flip: true,
+
+          onSelect: () => {
+            this.send('TOGGLE_GRID')
+          }
+        }
+      } else {
+        ctx.clearRect(483, 288, 66, 105)
+      }
+      
       this.renderObjects(ctx, this.paneComponents['properties'])
     }
 
     if (this.state.mode == 'grid') {
-      let id = this.state.selections[0]
-      let sceneObject = this.state.sceneObjects[id]
+      if (!sceneObject || (sceneObject.type !== 'character' && sceneObject.type !== 'object')) {
+        ctx.clearRect(4, 6, 439, 666, 25)
+        return
+      }
+
       let titleHeight = 90
 
       ctx.fillStyle = '#000'
@@ -392,8 +471,9 @@ class CanvasRenderer {
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
 
         const list = grids.tab === 'pose' ? this.state.poses : characterModels
-        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab)
-
+        const rowCount = grids.tab === 'pose' ? 4 : 2
+        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount)
+        
         this.paneComponents['grid']['poses-title'] = {
           id: 'poses-title',
           type: 'slider',
@@ -445,6 +525,28 @@ class CanvasRenderer {
     if (this.state.mode == 'settings') {
       this.renderObjects(ctx, this.paneComponents['settings'])
     }
+  }
+
+  renderHelp () {
+
+    let canvas = this.helpCanvas
+    let ctx = this.helpContext
+
+    // console.log('render help')
+
+    this.paneComponents['help']['help-image'] = {
+      id: 'help-image',
+      type: 'image-button',
+      x: 0,
+      y: 1024 - 1024 * 0.775 - (230 - 6 - 22 - 48 + 6),
+      width: 1024,
+      height: 1024 * 0.775,
+      image: `help_${this.state.helpIndex + 1}`,
+      flipY: true,
+      invisible: true
+    }
+
+    this.renderObjects(ctx, this.paneComponents['help'])
   }
 
   drawLoadableImage (filepath, onSuccess, onFail) {
@@ -643,11 +745,12 @@ class CanvasRenderer {
     }
   }
 
-  getCanvasIntersection (u, v, ignoreInvisible = true) {
+  getCanvasIntersection (u, v, ignoreInvisible = true, intersectHelp = false) {
     let x = u * this.canvas.width
     let y = v * this.canvas.height
 
     for (let paneId in this.paneComponents) {
+      if (paneId === 'help' && !intersectHelp) continue
       for (let componentId in this.paneComponents[paneId]) {
         let component = this.paneComponents[paneId][componentId]
         if (ignoreInvisible && component.invisible) continue
@@ -674,6 +777,7 @@ const {
   deleteObjects,
   duplicateObjects,
   getActiveCamera,
+  setActiveCamera,
   undoGroupStart,
   undoGroupEnd
 } = require('../../../../shared/reducers/shot-generator')
@@ -705,6 +809,9 @@ const useUiManager = ({ playSound, stopSound }) => {
 
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
   const setShowCameras = useUiStore(state => state.setShowCameras)
+  const setShowHelp = useUiStore(state => state.setShowHelp)
+
+  const showHelp = useUiStore(state => state.showHelp)
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
@@ -756,7 +863,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
           let cr = getCanvasRenderer()
 
-          let canvasIntersection = cr.getCanvasIntersection(u, v)
+          let canvasIntersection = cr.getCanvasIntersection(u, v, true, showHelp)
 
           if (canvasIntersection) {
             let { id } = canvasIntersection
@@ -932,6 +1039,33 @@ const useUiManager = ({ playSound, stopSound }) => {
           if (toggle === 'showCameras') setShowCameras(value)
           getCanvasRenderer().needsRender = true
           playSound('select')
+        },
+
+        onToggleHelp (context, event) {
+          // if show help is being shown ...
+          if (showHelp) {
+            // ... we're about to hide it, so stop the help sounds
+            stopSound('help')
+          } else {
+            playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
+          }
+          setShowHelp(!showHelp)
+        },
+
+        onIncrementHelp (context, event) {
+          const slideCount = 10
+          const { direction } = event
+          const { helpIndex } = getCanvasRenderer().state
+
+          if (direction === 'increment') {
+            getCanvasRenderer().state.helpIndex = (helpIndex + 1) % slideCount
+          } else {
+            const value = helpIndex - 1
+            getCanvasRenderer().state.helpIndex = value < 0 ? slideCount - 1 : value
+          }
+          playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
+
+          getCanvasRenderer().helpNeedsRender = true
         }
       }
     }
@@ -965,14 +1099,16 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().state.sceneObjects = sceneObjects
     getCanvasRenderer().state.poses = poses
     getCanvasRenderer().state.models = models
+    getCanvasRenderer().state.activeCamera = activeCamera
     getCanvasRenderer().needsRender = true
+    getCanvasRenderer().helpNeedsRender = true
 
     if (selections.length) {
       uiSend('GO_PROPERTIES')
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses, models])
+  }, [selections, sceneObjects, poses, models, activeCamera])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
@@ -984,12 +1120,26 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().needsRender = true
   }, [uiCurrent.context])
 
+  useEffect(() => {
+    // if the user hasn't seen help before
+    if (getCookie('sawHelp') !== 'true') {
+      // HACK wait 3s so controllers can attach and scene can render
+      setTimeout(() => {
+        if (!showHelp) {
+          setShowHelp(true)
+          playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
+          setCookie('sawHelp', 'true', 365)
+        }
+      }, 3000)
+    }
+  }, [])
+
   return { uiService, uiCurrent, getCanvasRenderer }
 }
 
 const UI_ICON_NAMES = [
   'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
-  'close',
+  'close', 'settings',
 
   'camera', 'eye',
 
@@ -1001,7 +1151,7 @@ const UI_ICON_NAMES = [
   'pose', 'object',
 
   'help_1', 'help_2', 'help_3', 'help_4', 'help_5', 'help_6', 'help_7',
-  'help_8'
+  'help_8', 'help_9', 'help_10'
 ]
 
 const UI_ICON_FILEPATHS = UI_ICON_NAMES.map(getIconFilepathByName)

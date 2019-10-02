@@ -7,7 +7,7 @@ const SCALE = 1
 const POSITION = [0, 0.02, 0.01]
 const ROTATION = [-0.8, 0, 0]
 
-const Controls = React.memo(({ gltf, mode, hand = 'right', getCanvasRenderer }) => {
+const Controls = React.memo(({ gltf, mode, hand = 'right', locked, getCanvasRenderer }) => {
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -60,6 +60,10 @@ const Controls = React.memo(({ gltf, mode, hand = 'right', getCanvasRenderer }) 
         return meshes[0 + offset]
     }
   }, [meshes, mode, hand])
+
+  useMemo(() => {
+    if (material) material.opacity = locked ? 0.15 : 0.8
+  }, [locked])
 
   useRender((state, delta) => {
     if (getCanvasRenderer().needsRender) {
