@@ -24,6 +24,7 @@ class IKHelper extends THREE.Object3D
             this.add(this.instancedMesh);
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
             this.regularHeight = 1.8;
+            this.updateStarted = false;
         }
         return instance;
     }
@@ -75,6 +76,7 @@ class IKHelper extends THREE.Object3D
         if(name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
+            this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent.parent.parent);
         }
         if(name === "Head")
         {
@@ -94,7 +96,7 @@ class IKHelper extends THREE.Object3D
             else
             {
                 this.poleTargets.attach(this.selectedControlPoint);
-                this.selectedControlPoint.updateMatrixWorld();
+                //this.selectedControlPoint.updateMatrixWorld();
                 let worldPosition = this.selectedControlPoint.position;
                 let poleTargets = {};
                 poleTargets[this.selectedControlPoint.name] = 
@@ -110,6 +112,11 @@ class IKHelper extends THREE.Object3D
             }
             if(this.selectedControlPoint.name === "Hips")
             {
+<<<<<<< HEAD
+=======
+                this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
+                this.ragDoll.changeControlPointsParent(this.controlPoints);
+>>>>>>> xr-ik-fixes
                 this.ragDoll.hipsMouseDown = false;
             }
             if(this.selectedControlPoint.name === "Head")
@@ -138,7 +145,19 @@ class IKHelper extends THREE.Object3D
                 this.poleTargets.attach(this.selectedControlPoint);
 
             }
-            this.updateInstancedTargetPoint(this.selectedControlPoint, null, false);
+            if(this.selectedControlPoint.name === "Hips")
+            {
+                this.instancedMesh.updateMatrixWorld(true);
+                this.updateInstancedTargetPoint(this.selectedControlPoint, null, false);
+                for(let i = 0; i < this.ragDoll.chainObjects.length; i++)
+                {
+                    this.updateInstancedTargetPoint( this.ragDoll.chainObjects[i].controlTarget, null, true);
+                }
+            }
+            else
+            {
+                this.updateInstancedTargetPoint(this.selectedControlPoint, null, false);
+            }
             parent.attach(this.selectedControlPoint);
         }
         else
@@ -150,7 +169,10 @@ class IKHelper extends THREE.Object3D
     updateMatrixWorld(value)
     {
         super.updateMatrixWorld(value); 
+        if(this.updateStarted) return;
+        this.updateStarted = true;
         this.update();
+        this.updateStarted = false;
     }
 
     raycast(raycaster, intersects)
@@ -196,11 +218,19 @@ class IKHelper extends THREE.Object3D
         {
             this.instancedMesh.setPositionAt( id , this.defaultPosition );
         }
-        else
+        else if(!useWorld)
         {
             this.instancedMesh.setPositionAt( id , targetPoint.position );
             this.instancedMesh.setQuaternionAt( id , targetPoint.quaternion );
             this.instancedMesh.setScaleAt( id , targetPoint.scale );
+        }
+        else
+        {
+            targetPoint.applyMatrix(this.instancedMesh.parent.parent.getInverseMatrixWorld());
+            this.instancedMesh.setPositionAt( id , targetPoint.position );
+            this.instancedMesh.setQuaternionAt( id , targetPoint.quaternion );
+            this.instancedMesh.setScaleAt( id , targetPoint.scale);
+            targetPoint.applyMatrix(this.instancedMesh.parent.parent.matrixWorld);
         }
         
         if(color)

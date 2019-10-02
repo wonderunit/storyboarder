@@ -66,6 +66,7 @@ class XRRagdoll extends XRIKObject
         }
         else
         {
+            //this.resetControlPoints();
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
             this.relativeFixedAngle();
@@ -78,8 +79,6 @@ class XRRagdoll extends XRIKObject
         super.lateUpdate();
         if(this.hipsMouseDown)
         {
-            let originalParent = this.chainObjects[0].controlTarget.parent;
-            this.changeControlPointsParent(this.originalObject.parent);
             let hipsTarget = this.hipsControlTarget;
             let targetPosition = hipsTarget.worldPosition();            
             let targetPos = this.hipsControlTarget.worldPosition();
@@ -91,10 +90,7 @@ class XRRagdoll extends XRIKObject
             this.hips.parent.worldToLocal(targetPosition);
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
-            this.hips.updateMatrixWorld(); 
             this.originalObject.position.copy(this.clonedObject.position);
-            this.changeControlPointsParent(originalParent);
-            //this.updateCharPosition(this.clonedObject.position);
         }
     }
 
@@ -148,17 +144,22 @@ class XRRagdoll extends XRIKObject
     //#region Internal methods
     createPoleTargets(poleTargetMeshes)
     {
-        let poleNames = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
-        let polePositions = [
-            new THREE.Vector3(0.3, 0.7, -0.5),
-            new THREE.Vector3(-0.3, 0.7, -0.5),
-            new THREE.Vector3(0, 0.4, 0.6),
-            new THREE.Vector3(0, 0.4, 0.6)
-        ];
-        
+        let polePositions = {
+            "leftArmPole": new THREE.Vector3(0.3, 0.7, -0.5),
+            "rightArmPole": new THREE.Vector3(-0.3, 0.7, -0.5),
+            "leftLegPole": new THREE.Vector3(0, 0.4, 0.6),
+            "rightLegPole": new THREE.Vector3(0, 0.4, 0.6)
+        };
+
+        let leftArmPole = poleTargetMeshes.find(point => point.name === "leftArmPole");
+        let rightArmPole = poleTargetMeshes.find(point => point.name === "rightArmPole");
+        let leftLegPole = poleTargetMeshes.find(point => point.name === "leftLegPole");
+        let rightLegPole = poleTargetMeshes.find(point => point.name === "rightLegPole");
+        let poleMeshes = [leftArmPole, rightArmPole, leftLegPole, rightLegPole];
         let backChain = this.ik.chains[0];        
         for(let i = 1; i < 5; i++)
         {
+            let poleTargetMesh = poleMeshes[i - 1];
             let chain = this.ik.chains[i];
             let poleTarget = null;
             let poleTargetMesh = poleTargetMeshes[i - 1];
@@ -169,7 +170,7 @@ class XRRagdoll extends XRIKObject
             }
             else
             {
-                poleTarget = this.initPoleTargets(chain, polePositions[i-1], poleNames[i-1], poleTargetMesh);
+                poleTarget = this.initPoleTargets(chain, polePositions[poleTargetMesh.name], poleTargetMesh);
             }
             let poleConstraint = new XrPoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
@@ -182,14 +183,13 @@ class XRRagdoll extends XRIKObject
     }
 
     // Initiallizes pole target for pole contraints
-    initPoleTargets(chain, offset, name, poleTargetMesh)
+    initPoleTargets(chain, offset, poleTargetMesh)
     {
         let poleTarget = new PoleTarget();
         poleTarget.mesh = poleTargetMesh;
         poleTarget.initialOffset = offset.multiplyScalar(poleTargetMesh.userData.scaleAspect);
         this.calculatePoleTargetOffset(poleTarget, chain);
         poleTarget.initialize(poleTarget.poleOffset);
-        poleTarget.name = name;
         
         return poleTarget;
     }
@@ -213,17 +213,18 @@ class XRRagdoll extends XRIKObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             parent.attach(chainObjects[i].controlTarget);
+            chainObjects[i].controlTarget.updateMatrixWorld();
         }
     }
 
     resetControlPoints()
     {
-        let chainObjects = this.chainObjects;
-
+        
         
         boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
         this.hipsControlTarget.position.setFromMatrixPosition(boneMatrix);
-
+        
+        let chainObjects = this.chainObjects;
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;

@@ -159,18 +159,19 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
   }, [modelSettings, sceneObject.morphTargets])
 
   useMemo(() => {
+    if(!ref.current) return
     if (isSelected) {
       
       BonesHelper.getInstance().initialize(lod.children[0])
       if(!isUserModel(sceneObject.model) && !IKHelper.getInstance().isIkDisabled)
       {
         IKHelper.getInstance().initialize(lod.children[0], sceneObject.height)
-        ref.current && ref.current.add(IKHelper.getInstance())
+         ref.current.add(IKHelper.getInstance())
       }
-      ref.current && ref.current.add(BonesHelper.getInstance())
+      ref.current.add(BonesHelper.getInstance())
     } else {
-      ref.current && ref.current.remove(BonesHelper.getInstance())
-      ref.current && ref.current.remove(IKHelper.getInstance())
+      ref.current.remove(BonesHelper.getInstance())
+      ref.current.remove(IKHelper.getInstance())
     }
   }, [ref.current, isSelected])
 
