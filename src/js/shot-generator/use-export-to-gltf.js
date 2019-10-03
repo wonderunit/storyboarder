@@ -30,6 +30,7 @@ const useExportToGltf = (sceneRef) => {
         })
 
         console.log('Preparing GLTF…')
+        let mementos = []
         let scene = new THREE.Scene()
         for (let child of sceneRef.current.children) {
           // console.log('\tScene contains:', child)
@@ -46,32 +47,22 @@ const useExportToGltf = (sceneRef) => {
                 for (node of child.children) {
                   if (node.isSkinnedMesh) {
 
-                    let oldBonesHelper = node.parent.bonesHelper
-                    let oldikRig = node.parent.userData.ikRig
+                    mementos.push({
+                      parent: node.parent,
+                      bonesHelper: node.parent.bonesHelper,
+                      ikRig: node.parent.userData.ikRig,
+
+                      mesh: node,
+                      name: node.name,
+                      userData: node.userData
+                    })
+
                     node.parent.bonesHelper = null
                     node.parent.userData.ikRig = null
+                    node.name = sceneObject.name || sceneObject.displayName
+                    node.userData = {}
+                    scene.add( node.parent )
 
-                    let clone = THREE.SkeletonUtils.clone( node.parent )
-
-                    let bone = clone.children[0]
-                    let mesh = clone.children[1]
-
-                    mesh.name = sceneObject.name || sceneObject.displayName
-                    mesh.userData = {}
-
-                    scene.add( bone )
-                    scene.add( mesh )
-
-                    console.log('\n\n\n\n')
-                    console.log('-------------')
-                    console.log('mesh', mesh)
-                    console.log('bone', bone)
-                    console.log('original .skeleton.boneMatrices', node.skeleton.boneMatrices)
-                    console.log('cloned   .skeleton.boneMatrices', mesh.skeleton.boneMatrices)
-                    console.log('\n\n\n\n')
-
-                    node.parent.bonesHelper = oldBonesHelper
-                    node.parent.userData.ikRig = oldikRig
                   } else {
                     console.log('\t\tSkipping node', node)
                   }
@@ -100,6 +91,17 @@ const useExportToGltf = (sceneRef) => {
           embedImages: true
         }
         exporter.parse(scene, function (glb) {
+
+          for (let memento of mementos) {
+            memento.parent.bonesHelper = memento.bonesHelper
+            memento.parent.userData.ikRig = memento.ikRig
+
+            memento.mesh.name = memento.name
+            memento.mesh.userData = memento.userData
+
+            sceneRef.current.add(memento.parent)
+          }
+
           if (meta.storyboarderFilePath) {
 
             let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
