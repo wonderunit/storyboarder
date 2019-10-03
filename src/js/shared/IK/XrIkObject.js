@@ -95,18 +95,17 @@ class XrIkObject
     // Ik solver overrides all changes if applied before it's fired
     lateUpdate()
     {
-        let hipsTarget = this.hipsControlTarget;
         // Sets back position when offset is not changing
         // When we are changing back position offset between hips and back shouldn't be applied
         if(!this.applyingOffset && this.hipsMouseDown)
         {
             let backTarget = this.chainObjects["Head"].controlTarget;
-
-            let hipsPosition = hipsTarget.position.clone();
-            hipsTarget.parent.localToWorld(hipsPosition);
+            
+            let hipsTarget = this.hipsControlTarget;
+            let hipsPosition = hipsTarget.worldPosition();
+            hipsPosition.add(this.backOffset);
             backTarget.parent.worldToLocal(hipsPosition);
-            let result = hipsPosition.add(this.backOffset);
-            backTarget.position.copy(result);
+            backTarget.position.copy(hipsPosition);
         }
     }
 
@@ -137,8 +136,8 @@ class XrIkObject
     // Calculates back's offset in order to move with hips
     calculteBackOffset()
     {
-        let backPosition = this.chainObjects["Head"].controlTarget.position.clone();
-        let hipsPosition = this.hipsControlTarget.position.clone();
+        let backPosition = this.chainObjects["Head"].controlTarget.worldPosition();
+        let hipsPosition = this.hipsControlTarget.worldPosition();
         this.backOffset = backPosition.sub(hipsPosition);
     }
     //#endregion
