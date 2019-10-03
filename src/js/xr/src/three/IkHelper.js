@@ -145,9 +145,9 @@ class IKHelper extends THREE.Object3D
             {
                 this.instancedMesh.updateMatrixWorld(true);
                 this.updateInstancedTargetPoint(this.selectedControlPoint, null, false);
-                for(let i = 0; i < this.ragDoll.chainObjects.length; i++)
+                for(let i = 0; i < this.ragDoll.chainObjectsValues.length; i++)
                 {
-                    this.updateInstancedTargetPoint( this.ragDoll.chainObjects[i].controlTarget, null, true);
+                    this.updateInstancedTargetPoint( this.ragDoll.chainObjectsValues[i].controlTarget, null, true);
                 }
             }
             else
@@ -259,9 +259,9 @@ const intializeInstancedMesh = (mesh) =>
 {
     let sphereGeometry = new THREE.SphereBufferGeometry( 0.5, 8, 6 );
     let instance = IKHelper.getInstance();
-    let listOfControlPoints = ["Head", "LeftHand", "RightHand", "LeftFoot", "RightFoot", "Hips"];
+    let controlPointsAmount = 6;
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
-    let sizeOfTargets = listOfControlPoints.concat(listOfControlTargets).length;
+    let sizeOfTargets = listOfControlTargets.length + controlPointsAmount;
     let material = new THREE.MeshBasicMaterial({
         color: 0x6a4dff,    
         depthTest: false,
@@ -282,7 +282,6 @@ const intializeInstancedMesh = (mesh) =>
         controlPoint.userData.id = --sizeOfTargets;
         controlPoint.material.visible = false;
         controlPoint.userData.type = "controlPoint";
-        controlPoint.name = listOfControlPoints.shift();
         instance.controlPoints.add(controlPoint);
         instance.resetTargetPoint(controlPoint);
     }

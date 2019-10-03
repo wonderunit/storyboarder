@@ -14,7 +14,6 @@ class XrIkObject
         {
             throw new TypeError("Cannot construct abstract IkObject directly");
         }
-        this.bonesDelta = {};
         this.ikSwitcher = null;
         this.isEnabledIk = false;
         this.clonedObject = null;
@@ -40,16 +39,18 @@ class XrIkObject
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
         let rigMesh = this.rigMesh;
-        let chainObjects = [];
+        let chainObjects = {};
         this.chainObjects = chainObjects;
         this.controlTargets = controlTargets;
+
         this.hipsControlTarget = controlTargets[0];
         controlTargets[0].name = "Hips";
-        chainObjects.push(new ChainObject("Spine", "Head", controlTargets[1]));
-        chainObjects.push(new ChainObject("LeftArm", "LeftHand", controlTargets[2]));
-        chainObjects.push(new ChainObject("RightArm", "RightHand", controlTargets[3]));
-        chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", controlTargets[4]));
-        chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", controlTargets[5]));
+        chainObjects["Head"] = new ChainObject("Spine", "Head", controlTargets[1]);
+        chainObjects['LeftHand'] = new ChainObject("LeftArm", "LeftHand", controlTargets[2]);
+        chainObjects['RightHand'] = new ChainObject("RightArm", "RightHand", controlTargets[3]);
+        chainObjects['LeftFoot'] = new ChainObject("LeftUpLeg", "LeftFoot", controlTargets[4]);
+        chainObjects['RightFoot'] = new ChainObject("RightUpLeg", "RightFoot", controlTargets[5]);
+
         //Fixing female-adult spine deformation
         if(rigMesh.name === "female-adult-meso")
         {
@@ -57,9 +58,7 @@ class XrIkObject
             rigMesh.skeleton.bones[2].updateMatrix();
             rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
         }
-       
-        initializeChainObject(this);
-
+        initializeChainObject(this, chains);
         this.ikSwitcher.ikBonesName.push("Hips");
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
@@ -69,6 +68,11 @@ class XrIkObject
         // Adds skeleton helper to scene
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
+    }
+
+    get chainObjectsValues()
+    {
+        return Object.values(this.chainObjects);
     }
 
     // Updates chains
@@ -101,7 +105,7 @@ class XrIkObject
         // When we are changing back position offset between hips and back shouldn't be applied
         if(!this.applyingOffset && this.hipsMouseDown)
         {
-            let backTarget = this.chainObjects[0].controlTarget;
+            let backTarget = this.chainObjects["Head"].controlTarget;
 
             let hipsPosition = hipsTarget.position.clone();
             hipsTarget.parent.localToWorld(hipsPosition);
@@ -138,17 +142,17 @@ class XrIkObject
     // Calculates back's offset in order to move with hips
     calculteBackOffset()
     {
-        let backPosition = this.chainObjects[0].controlTarget.position.clone();
+        let backPosition = this.chainObjects["Head"].controlTarget.position.clone();
         let hipsPosition = this.hipsControlTarget.position.clone();
         this.backOffset = backPosition.sub(hipsPosition);
     }
     //#endregion
 }
 
-const initializeChainObject = ikObject =>
+const initializeChainObject = (ikObject, chains) =>
 {
     // Goes through all scene objects
-    ikObject.clonedSkeleton.traverse((object) =>
+    ikObject.clonedObject.traverse((object) =>
     {
         // Searches only bones object
         if(object instanceof THREE.Bone)
@@ -159,18 +163,17 @@ const initializeChainObject = ikObject =>
             // By default Models axis is -Z while Three ik works with +Z
             if(object.name === "Hips")
             {
-                this.hips = object;
+                ikObject.hips = object;
                 setZDirecion(object, new THREE.Vector3(0, 0, 1));
             }
             // Goes through all chain objects to find with which we are working
-            ikObject.chainObjects.forEach((chainObject) =>
+            ikObject.chainObjectsValues.forEach((chainObject) =>
             {
                 // Finds base Object Name or an object from which chain starting
                 // Also checks if chain is started
                 if(object.name == chainObject.baseObjectName || chainObject.isChainObjectStarted)
-                {
+                { 
                     let chain = chainObject.chain;
-
                     // Checks if root object
                     if(object.name === chainObject.baseObjectName)
                     {

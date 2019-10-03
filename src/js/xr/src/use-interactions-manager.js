@@ -303,6 +303,11 @@ const useInteractionsManager = ({
         skeleton: skeleton  
       } ))}
 
+      const updateCharacterPos = ({ x, y, z}) => dispatch(updateObject(
+        ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
+        { x, y: z, z: y }
+      ))
+
       const updatePoleTarget = (poleTargets) => dispatch(updateCharacterPoleTargets({
           id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
           poleTargets: poleTargets
@@ -312,6 +317,7 @@ const useInteractionsManager = ({
       ikHelper.current.setUpdate(
         updateCharacterSkeleton,
         updateSkeleton,
+        updateCharacterPos,
         updatePoleTarget
       )
     }

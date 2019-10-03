@@ -102,7 +102,7 @@ class XRRagdoll extends XRIKObject
     // Changing character height, head size will fire reinitialization
     reinitialize()
     {    
-        let chainObjects = this.chainObjects;
+        let chainObjects = this.chainObjectsValues;
         this.clonedObject.scale.copy(this.originalObject.worldScale());
         this.clonedObject.position.copy(this.originalObject.worldPosition());
         this.clonedObject.quaternion.copy(this.originalObject.worldQuaternion());
@@ -137,22 +137,19 @@ class XRRagdoll extends XRIKObject
     createPoleTargets(poleTargetMeshes)
     {
         let polePositions = {
-            "leftArmPole": new THREE.Vector3(0.3, 0.7, -0.5),
-            "rightArmPole": new THREE.Vector3(-0.3, 0.7, -0.5),
-            "leftLegPole": new THREE.Vector3(0, 0.4, 0.6),
-            "rightLegPole": new THREE.Vector3(0, 0.4, 0.6)
+            "LeftHand": new THREE.Vector3(0.3, 0.7, -0.5),
+            "RightHand": new THREE.Vector3(-0.3, 0.7, -0.5),
+            "LeftFoot": new THREE.Vector3(0, 0.4, 0.6),
+            "RightFoot": new THREE.Vector3(0, 0.4, 0.6)
         };
 
-        let leftArmPole = poleTargetMeshes.find(point => point.name === "leftArmPole");
-        let rightArmPole = poleTargetMeshes.find(point => point.name === "rightArmPole");
-        let leftLegPole = poleTargetMeshes.find(point => point.name === "leftLegPole");
-        let rightLegPole = poleTargetMeshes.find(point => point.name === "rightLegPole");
-        let poleMeshes = [leftArmPole, rightArmPole, leftLegPole, rightLegPole];
-        let backChain = this.ik.chains[0];        
-        for(let i = 1; i < 5; i++)
+        let chainObjects = this.chainObjectsValues;
+        let backChain = this.chainObjects["Head"].chain;        
+        for(let i = 0; i < poleTargetMeshes.length; i++)
         {
-            let poleTargetMesh = poleMeshes[i - 1];
-            let chain = this.ik.chains[i];
+            let poleTargetMesh = poleTargetMeshes[i];
+            let chainName = interpretatedPoleTargetsName(poleTargetMesh.name);
+            let chain = this.chainObjects[chainName].chain;
             let poleTarget = null;
             if(poleTargetMesh.userData.isInitialized)
             {
@@ -161,11 +158,11 @@ class XRRagdoll extends XRIKObject
             }
             else
             {
-                poleTarget = this.initPoleTargets(chain, polePositions[poleTargetMesh.name], poleTargetMesh);
+                poleTarget = this.initPoleTargets(chain, polePositions[chainName], poleTargetMesh);
             }
             let poleConstraint = new XrPoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
-            this.chainObjects[i].poleConstraint = poleConstraint;
+            chainObjects[i].poleConstraint = poleConstraint;
         }
 
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
@@ -200,7 +197,7 @@ class XRRagdoll extends XRIKObject
 
     changeControlPointsParent(parent)
     {
-        let chainObjects = this.chainObjects;
+        let chainObjects = this.chainObjectsValues;
         for(let i = 0; i < chainObjects.length; i++)
         {
             parent.attach(chainObjects[i].controlTarget);
@@ -212,46 +209,33 @@ class XRRagdoll extends XRIKObject
     //#region Control points manipulations 
     resetControlPoints()
     {
-        let chainObjects = this.chainObjects;
+        let chainObjects = this.chainObjectsValues;
         boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
         this.hipsControlTarget.position.setFromMatrixPosition(boneMatrix);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
-            // Sets target position to ik last joints in each chain 
-            if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
-            jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
-            jointBone.name === "Head")
-            {
-                boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, jointBone);
-                chainObjects[i].controlTarget.position.setFromMatrixPosition(boneMatrix);
-            }
+            boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, jointBone);
+            chainObjects[i].controlTarget.position.setFromMatrixPosition(boneMatrix);
         }
         this.calculteBackOffset();
     }
 
     setUpControlTargetsInitialPosition()
     {
-        for(let i = 0; i < this.chainObjects.length; i++)
+        let chainObjects = this.chainObjectsValues;
+        for(let i = 0; i < chainObjects.length; i++)
         {
-            let joints = this.ik.chains[i].joints;
+            let joints = chainObjects[i].chain.joints;
             let bone = joints[joints.length-1].bone;
-            let target = this.controlTargets[i];
+            let target = chainObjects[i].controlTarget;
             target.quaternion.multiply(target.worldQuaternion().inverse());
             target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.parent.worldQuaternion().inverse()));
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
         }
     }
     //#endregion
-
-    // Resets targets position
-    // After ik has been turned off and on resets
-    // pole position with consideration of offset
-    resetTargets()
-    {
-        super.resetTargets();
-    }
 
     updateReact()
     {        
@@ -270,13 +254,14 @@ class XRRagdoll extends XRIKObject
     // Sets limbs rotation to control target rotation
     limbsFollowRotation()
     {
-        for(let i = 0; i < this.chainObjects.length; i++)
+        let chainObjects = this.chainObjectsValues;
+        for(let i = 0; i < chainObjects.length; i++)
         {
-            let joints = this.ik.chains[i].joints;
+            let joints = chainObjects[i].chain.joints;
             let bone = joints[joints.length -1].bone;
 
             let target = this.getTargetForSolve();
-            let controlTarget = this.chainObjects[i].controlTarget;
+            let controlTarget = chainObjects[i].controlTarget;
             if((target && controlTarget.uuid !== target.uuid))
             {
               continue;
@@ -300,4 +285,20 @@ class XRRagdoll extends XRIKObject
     }
     //#endregion
 }
+
+const interpretatedPoleTargetsName = name =>
+{
+    switch(name)
+    {
+        case "leftArmPole":
+            return "LeftHand";
+        case "rightArmPole":
+            return "RightHand";
+        case "leftLegPole":
+            return "LeftFoot";
+        case "rightLegPole":
+            return "RightFoot";
+    }
+}
+
 module.exports =  XRRagdoll;
