@@ -49,17 +49,21 @@ const useExportToGltf = (sceneRef) => {
                 mementos.push({
                   parent: skinnedMesh.parent,
                   bonesHelper: skinnedMesh.parent.bonesHelper,
-                  ikRig: skinnedMesh.parent.userData.ikRig,
+                  userData: skinnedMesh.parent.userData,
                   name: skinnedMesh.parent.name,
 
                   mesh: skinnedMesh,
-                  userData: skinnedMesh.userData
+                  meshUserData: skinnedMesh.userData
                 })
 
                 skinnedMesh.parent.bonesHelper = null
-                skinnedMesh.parent.userData.ikRig = null
                 skinnedMesh.parent.name = sceneObject.name || sceneObject.displayName
+                skinnedMesh.parent.userData = {}
+
                 skinnedMesh.userData = {}
+
+                console.log('\t\tAdded', skinnedMesh.parent)
+
                 scene.add( skinnedMesh.parent )
 
               } else if (sceneObject) {
@@ -88,10 +92,10 @@ const useExportToGltf = (sceneRef) => {
 
           for (let memento of mementos) {
             memento.parent.bonesHelper = memento.bonesHelper
-            memento.parent.userData.ikRig = memento.ikRig
+            memento.parent.userData = memento.userData
             memento.parent.name = memento.name
 
-            memento.mesh.userData = memento.userData
+            memento.mesh.userData = memento.meshUserData
 
             sceneRef.current.add(memento.parent)
           }
