@@ -62,7 +62,7 @@ class IKHelper extends THREE.Object3D
             mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
             mesh.userData.scaleAspect = scaleAspect;
         }
-        ragDoll.initObject(this, skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
+        ragDoll.initObject(skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
         ragDoll.reinitialize();
         this.updateAllTargetPoints();
     }

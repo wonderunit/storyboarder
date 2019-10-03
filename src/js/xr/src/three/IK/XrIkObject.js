@@ -21,16 +21,15 @@ class XrIkObject
         this.originalObject = null;
         this.applyingOffset = false;
         this.isRotation = false;
-        this.scene = null;  
         this.hipsMouseDown = false;
+        this.chainObjects = {};
     }
 
     //#region External Methods
     // Take ns skeleton and target for it's limbs
-    initObject(scene, objectSkeleton, controlTargets)
+    initObject(objectSkeleton, controlTargets)
     {
         this.ik = new IK();
-        this.scene = scene;
         let chains = [];
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
         this.clonedObject = clonedSkeleton;
@@ -38,34 +37,30 @@ class XrIkObject
         this.ikSwitcher = new XRIKSwitcher(objectSkeleton, clonedSkeleton);
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
-        let rigMesh = this.rigMesh;
-        let chainObjects = {};
-        this.chainObjects = chainObjects;
         this.controlTargets = controlTargets;
 
         this.hipsControlTarget = controlTargets[0];
         controlTargets[0].name = "Hips";
-        chainObjects["Head"] = new ChainObject("Spine", "Head", controlTargets[1]);
-        chainObjects['LeftHand'] = new ChainObject("LeftArm", "LeftHand", controlTargets[2]);
-        chainObjects['RightHand'] = new ChainObject("RightArm", "RightHand", controlTargets[3]);
-        chainObjects['LeftFoot'] = new ChainObject("LeftUpLeg", "LeftFoot", controlTargets[4]);
-        chainObjects['RightFoot'] = new ChainObject("RightUpLeg", "RightFoot", controlTargets[5]);
+        this.chainObjects["Head"] = new ChainObject("Spine", "Head", controlTargets[1]);
+        this.chainObjects['LeftHand'] = new ChainObject("LeftArm", "LeftHand", controlTargets[2]);
+        this.chainObjects['RightHand'] = new ChainObject("RightArm", "RightHand", controlTargets[3]);
+        this.chainObjects['LeftFoot'] = new ChainObject("LeftUpLeg", "LeftFoot", controlTargets[4]);
+        this.chainObjects['RightFoot'] = new ChainObject("RightUpLeg", "RightFoot", controlTargets[5]);
 
         //Fixing female-adult spine deformation
-        if(rigMesh.name === "female-adult-meso")
+        if(this.rigMesh.name === "female-adult-meso")
         {
-            rigMesh.skeleton.bones[2].rotation.set(0, 0, 0);
-            rigMesh.skeleton.bones[2].updateMatrix();
-            rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
+            this.rigMesh.skeleton.bones[2].rotation.set(0, 0, 0);
+            this.rigMesh.skeleton.bones[2].updateMatrix();
+            this.rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
         }
         initializeChainObject(this, chains);
-        this.ikSwitcher.ikBonesName.push("Hips");
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
         {
             this.ik.add(chain);
         });
-        // Adds skeleton helper to scene
+        this.ikSwitcher.ikBonesName.push("Hips");
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
     }
@@ -151,7 +146,7 @@ class XrIkObject
 
 const initializeChainObject = (ikObject, chains) =>
 {
-    // Goes through all scene objects
+    // Goes through all sceneObjects
     ikObject.clonedObject.traverse((object) =>
     {
         // Searches only bones object

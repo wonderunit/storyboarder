@@ -29,9 +29,9 @@ class XRRagdoll extends XRIKObject
     
     //#region External Methods
     // Initializes ragdoll set up all neccessary information 
-    initObject(scene, object, controlTargets, poleTargets )
+    initObject(object, controlTargets, poleTargets )
     {
-        super.initObject(scene, object, controlTargets );
+        super.initObject(object, controlTargets );
         this.createPoleTargets(poleTargets);
     }
 
