@@ -43,7 +43,6 @@ class XrIkObject
         let chainObjects = [];
         this.chainObjects = chainObjects;
         this.controlTargets = controlTargets;
-
         this.hipsControlTarget = controlTargets[0];
         controlTargets[0].name = "Hips";
         chainObjects.push(new ChainObject("Spine", "Head", controlTargets[1]));
@@ -59,57 +58,8 @@ class XrIkObject
             rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
         }
        
-        // Goes through all scene objects
-        clonedSkeleton.traverse((object) =>
-        {
-            // Searches only bones object
-            if(object instanceof THREE.Bone)
-            {
-                object.matrixAutoUpdate = false;
-                object.matrixWorldNeedsUpdate = false;
-                // Flips a model's forward from -Z to +Z
-                // By default Models axis is -Z while Three ik works with +Z
-                if(object.name === "Hips")
-                {
-                    this.hips = object;
+        initializeChainObject(this);
 
-                    setZDirecion(object, new THREE.Vector3(0, 0, 1));
-
-                }
-                // Goes through all chain objects to find with which we are working
-                chainObjects.forEach((chainObject) =>
-                {
-                    // Finds base Object Name or an object from which chain starting
-                    // Also checks if chain is started
-                    if(object.name == chainObject.baseObjectName || chainObject.isChainObjectStarted)
-                    {
-                        let chain = chainObject.chain;
-
-                        // Checks if root object
-                        if(object.name === chainObject.baseObjectName)
-                        {
-                            chainObject.isChainObjectStarted = true;
-                            chains.push(chain);
-                        }
-                        // Declares target
-                        // Target(Effector) is object to which chain is trying to get
-                        let target =  null;
-                        // Checks if object is last
-                        if(object.name === chainObject.lastObjectName)
-                        {
-                            target = chainObject.controlTarget;
-                            target.name = object.name;
-                            chainObject.isChainObjectStarted = false;
-                        }
-                        this.ikSwitcher.ikBonesName.push(object.name);
-                        // Creates joint by passing current bone and its constraint
-                        let joint = new IKJoint(object, {});
-                        // Adds joint to chain and sets target
-                        chain.add(joint, {target});
-                    }
-                });
-            }
-        });
         this.ikSwitcher.ikBonesName.push("Hips");
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
@@ -193,6 +143,59 @@ class XrIkObject
         this.backOffset = backPosition.sub(hipsPosition);
     }
     //#endregion
+}
+
+const initializeChainObject = ikObject =>
+{
+    // Goes through all scene objects
+    ikObject.clonedSkeleton.traverse((object) =>
+    {
+        // Searches only bones object
+        if(object instanceof THREE.Bone)
+        {
+            object.matrixAutoUpdate = false;
+            object.matrixWorldNeedsUpdate = false;
+            // Flips a model's forward from -Z to +Z
+            // By default Models axis is -Z while Three ik works with +Z
+            if(object.name === "Hips")
+            {
+                this.hips = object;
+                setZDirecion(object, new THREE.Vector3(0, 0, 1));
+            }
+            // Goes through all chain objects to find with which we are working
+            ikObject.chainObjects.forEach((chainObject) =>
+            {
+                // Finds base Object Name or an object from which chain starting
+                // Also checks if chain is started
+                if(object.name == chainObject.baseObjectName || chainObject.isChainObjectStarted)
+                {
+                    let chain = chainObject.chain;
+
+                    // Checks if root object
+                    if(object.name === chainObject.baseObjectName)
+                    {
+                        chainObject.isChainObjectStarted = true;
+                        chains.push(chain);
+                    }
+                    // Declares target
+                    // Target(Effector) is object to which chain is trying to get
+                    let target =  null;
+                    // Checks if object is last
+                    if(object.name === chainObject.lastObjectName)
+                    {
+                        target = chainObject.controlTarget;
+                        target.name = object.name;
+                        chainObject.isChainObjectStarted = false;
+                    }
+                    ikObject.ikSwitcher.ikBonesName.push(object.name);
+                    // Creates joint by passing current bone and its constraint
+                    let joint = new IKJoint(object, {});
+                    // Adds joint to chain and sets target
+                    chain.add(joint, {target});
+                }
+            });
+        }
+    });
 }
 
 module.exports =  XrIkObject;

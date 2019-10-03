@@ -183,10 +183,11 @@ class IKHelper extends THREE.Object3D
         }
     }
 
-    setUpdate(updateCharacterSkeleton, updateSkeleton, updatePoleTargets)
+    setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos, updatePoleTargets)
     {
         this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
         this.ragDoll.updateSkeleton(updateSkeleton);
+        this.ragDoll.updateCharacterPos(updateCharacterPos);
         this.updatePoleTargets = updatePoleTargets;
     }
 

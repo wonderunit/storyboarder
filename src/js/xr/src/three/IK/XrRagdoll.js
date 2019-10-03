@@ -45,6 +45,11 @@ class XRRagdoll extends XRIKObject
         this.updateCharacterRotation = updateCharacterRotation;
     }
 
+    updateCharacterPos(updateCharPosition)
+    {
+        this.updateCharPosition = updateCharPosition;
+    }
+
     // Runs cycle which is updating object
     update()
     {
@@ -277,6 +282,8 @@ class XRRagdoll extends XRIKObject
               continue;
             }
             this.rotateBoneQuaternion(bone, controlTarget);   
+            bone.updateMatrix();
+            bone.updateMatrixWorld(true, true);
         }
     }
 
@@ -286,12 +293,10 @@ class XRRagdoll extends XRIKObject
     // Effect like flat foot to earth can be achieved
     rotateBoneQuaternion(bone, boneTarget)
     {
-        let targetQuat = this.resourceManager.getQuaternion();
-        boneTarget.getWorldQuaternion(targetQuat);
+        let targetQuat = boneTarget.worldQuaternion();
         let quaternion = bone.worldQuaternion().inverse();
         bone.quaternion.multiply(quaternion);
         bone.quaternion.multiply(targetQuat);
-        this.resourceManager.release(targetQuat);
     }
     //#endregion
 }
