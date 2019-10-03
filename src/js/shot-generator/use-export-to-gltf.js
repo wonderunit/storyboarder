@@ -8,9 +8,7 @@ const moment = require('moment')
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/three/examples/js/exporters/GLTFExporter.js')
-
-const cloneGltf = require('../xr/src/helpers/clone-gltf')
-const cloneSkinnedMesh = require('../xr/src/three/clone-skinned-mesh')
+require('../vendor/three/examples/js/utils/SkeletonUtils')
 
 const {
   getSceneObjects
@@ -48,19 +46,32 @@ const useExportToGltf = (sceneRef) => {
                 for (node of child.children) {
                   if (node.isSkinnedMesh) {
 
-                    let rootBone = child.children.find(n => n.isBone)
-                    let [clone, bones] = cloneSkinnedMesh(node, rootBone)
-                    clone.remove(clone.children[0]) // remove the Bone
+                    let oldBonesHelper = node.parent.bonesHelper
+                    let oldikRig = node.parent.userData.ikRig
+                    node.parent.bonesHelper = null
+                    node.parent.userData.ikRig = null
 
-                    clone.userData = {}
+                    let clone = THREE.SkeletonUtils.clone( node.parent )
 
-                    clone.material = new THREE.MeshStandardMaterial()
-                    clone.name = sceneObject.name || sceneObject.displayName
+                    let bone = clone.children[0]
+                    let mesh = clone.children[1]
 
-                    let root = bones[clone.skeleton.bones[0].name]
-                    clone.add(root)
+                    mesh.name = sceneObject.name || sceneObject.displayName
+                    mesh.userData = {}
 
-                    scene.add(clone)
+                    scene.add( bone )
+                    scene.add( mesh )
+
+                    console.log('\n\n\n\n')
+                    console.log('-------------')
+                    console.log('mesh', mesh)
+                    console.log('bone', bone)
+                    console.log('original .skeleton.boneMatrices', node.skeleton.boneMatrices)
+                    console.log('cloned   .skeleton.boneMatrices', mesh.skeleton.boneMatrices)
+                    console.log('\n\n\n\n')
+
+                    node.parent.bonesHelper = oldBonesHelper
+                    node.parent.userData.ikRig = oldikRig
                   } else {
                     console.log('\t\tSkipping node', node)
                   }
