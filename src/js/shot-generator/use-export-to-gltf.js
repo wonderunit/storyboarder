@@ -44,29 +44,23 @@ const useExportToGltf = (sceneRef) => {
               } else if (sceneObject.type === 'character') {
                 console.log('\tCloning', sceneObject.type)
 
-                for (node of child.children) {
-                  if (node.isSkinnedMesh) {
+                let skinnedMesh = child.getObjectByProperty('type', 'SkinnedMesh')
 
-                    mementos.push({
-                      parent: node.parent,
-                      bonesHelper: node.parent.bonesHelper,
-                      ikRig: node.parent.userData.ikRig,
+                mementos.push({
+                  parent: skinnedMesh.parent,
+                  bonesHelper: skinnedMesh.parent.bonesHelper,
+                  ikRig: skinnedMesh.parent.userData.ikRig,
 
-                      mesh: node,
-                      name: node.name,
-                      userData: node.userData
-                    })
+                  mesh: skinnedMesh,
+                  name: skinnedMesh.name,
+                  userData: skinnedMesh.userData
+                })
 
-                    node.parent.bonesHelper = null
-                    node.parent.userData.ikRig = null
-                    node.name = sceneObject.name || sceneObject.displayName
-                    node.userData = {}
-                    scene.add( node.parent )
-
-                  } else {
-                    console.log('\t\tSkipping node', node)
-                  }
-                }
+                skinnedMesh.parent.bonesHelper = null
+                skinnedMesh.parent.userData.ikRig = null
+                skinnedMesh.name = sceneObject.name || sceneObject.displayName
+                skinnedMesh.userData = {}
+                scene.add( skinnedMesh.parent )
 
               } else if (sceneObject) {
                 console.log('\tCloning', sceneObject.type)
