@@ -1,6 +1,6 @@
 const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
-require("./IK/utils/Object3dExtension");
+require("../shared/IK/utils/Object3dExtension");
 const GPUPicker = require("../xr/src/three/GPUPickers/GPUPicker");
 const {
   selectObject,

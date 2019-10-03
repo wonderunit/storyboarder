@@ -1,10 +1,10 @@
-const {IK, IKJoint}  = require("../../../../shot-generator/IK/core/three-ik");
+const {IK, IKJoint}  = require("./core/three-ik");
 const THREE = require( "three");
-const {setZDirecion} = require( "../../../../shot-generator/IK/utils/axisUtils");
-const ChainObject = require( "../../../../shot-generator/IK/objects/IkObjects/ChainObject");
-const SkeletonUtils = require("../../../../shot-generator/IK/utils/SkeletonUtils");
+const {setZDirecion} = require( "./utils/axisUtils");
+const ChainObject = require( "./objects/IkObjects/ChainObject");
+const SkeletonUtils = require("./utils/SkeletonUtils");
 const XRIKSwitcher = require("./XrIKSwitcher");
-require("../../../../shot-generator/IK/utils/Object3dExtension");
+require("./utils/Object3dExtension");
 
 class XrIkObject
 {

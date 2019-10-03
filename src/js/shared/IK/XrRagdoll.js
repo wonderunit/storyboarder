@@ -1,11 +1,11 @@
 
-const {IK}  = require("../../../../shot-generator/IK/core/three-ik");
+const {IK}  = require("./core/three-ik");
 const XRIKObject = require( "./XrIkObject");
-const XrPoleConstraint = require( "./Constraints/XrPoleConstraint");
-const PoleTarget = require( "../../../../shot-generator/IK/objects/PoleTarget");
-const CopyRotation = require( "../../../../shot-generator/IK/constraints/CopyRotation");
+const XrPoleConstraint = require( "./constraints/XrPoleConstraint");
+const PoleTarget = require( "./objects/PoleTarget");
+const CopyRotation = require( "./constraints/CopyRotation");
 const ResourceManager = require("./ResourceManager");
-require("../../../../shot-generator/IK/utils/Object3dExtension");
+require("./utils/Object3dExtension");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
 class XRRagdoll extends XRIKObject

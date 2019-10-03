@@ -1,6 +1,6 @@
 const THREE = require( "three");
-const IkConstraint = require( "../../../../../shot-generator/IK/constraints/IkConstraint");
-const {normalizeTo180} = require("../../../../../shot-generator/IK//utils/axisUtils");
+const IkConstraint = require( "../constraints/IkConstraint");
+const {normalizeTo180} = require("../utils/axisUtils");
 let reusableVector = new THREE.Vector3();
 // PoleConstraint is class which is closely interviened with three-ik.js IkChain
 // it initializes lambda for IkChain which is executes in backward calculations method

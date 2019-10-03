@@ -1,5 +1,5 @@
 const Pickable = require("./Pickable");
-const SkeletonUtils = require("../../../../../shot-generator/IK/utils/SkeletonUtils");
+const SkeletonUtils = require("../../../../../shared/IK/utils/SkeletonUtils");
 const {updateBoneToBone} = require("../utils/PickableCharacterUtils");
 class UniversalPickableCharacter extends Pickable
 {

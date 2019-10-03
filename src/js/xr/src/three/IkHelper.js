@@ -1,5 +1,5 @@
 const THREE = require("three");
-const RagDoll = require("../three/IK/XrRagdoll");
+const RagDoll = require("../../../shared/IK/XrRagdoll");
 require('./GPUPickers/utils/Object3dExtension');
 let instance = null;
 class IKHelper extends THREE.Object3D

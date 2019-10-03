@@ -30,7 +30,6 @@ const interactionMachine = require('./machines/interactionMachine')
 const {dropObject, dropCharacter } = require('./utils/dropToObjects')
 
 require('./three/GPUPickers/utils/Object3dExtension')
-require('../../shot-generator/IK/utils/axisUtils')
 
 const {
   // selectors

@@ -1,7 +1,7 @@
 //#region ragdoll's import
-const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
-const BoneRotationControl = require("./IK/objects/BoneRotationControl")
-const {AddTransformationControl, createTransformationControls} = require("./IK/utils/IkUtils");
+const RagDoll = require("../shared/IK/objects/IkObjects/Ragdoll");
+const BoneRotationControl = require("../shared/IK/objects/BoneRotationControl")
+const {AddTransformationControl, createTransformationControls} = require("../shared/IK/utils/IkUtils");
 const { isCustomModel } = require('../services/model-loader')
 //#endregion
 const THREE = require('three')
