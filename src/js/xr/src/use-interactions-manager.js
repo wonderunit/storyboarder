@@ -23,7 +23,7 @@ const applyDeviceQuaternion = require('../../shot-generator/apply-device-quatern
 
 const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
-const IKHelper = require('./three/IkHelper')
+const IKHelper = require('../../shared/IK/IkHelper')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')

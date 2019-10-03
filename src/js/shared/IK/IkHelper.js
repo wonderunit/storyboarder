@@ -1,6 +1,6 @@
 const THREE = require("three");
-const RagDoll = require("../../../shared/IK/XrRagdoll");
-require('./GPUPickers/utils/Object3dExtension');
+const RagDoll = require("./XrRagdoll");
+require('./utils/Object3dExtension');
 let instance = null;
 class IKHelper extends THREE.Object3D
 {
@@ -269,7 +269,7 @@ const intializeInstancedMesh = (mesh) =>
         transparent: true,
         opacity: 0.7,
         flatShading: true});
-    let newMesh = new THREE.Mesh(sphereGeometry, material);
+    let newMesh = mesh ? mesh : new THREE.Mesh(sphereGeometry, material);
     instance.material = material;
     instance.instancedMesh = new THREE.InstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
     instance.defaultPosition = new THREE.Vector3(5000, 5000, 5000);

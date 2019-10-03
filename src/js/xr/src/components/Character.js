@@ -8,7 +8,7 @@ const isUserModel = require('../helpers/is-user-model')
 const VirtualCamera = require('../components/VirtualCamera')
 
 const BonesHelper = require('../three/BonesHelper')
-const IKHelper = require('../three/IkHelper')
+const IKHelper = require('../../../shared/IK/IkHelper')
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) => {
   const ref = useUpdate(
