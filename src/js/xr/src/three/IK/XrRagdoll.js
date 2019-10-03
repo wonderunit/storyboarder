@@ -1,6 +1,6 @@
+
 const {IK}  = require("../../../../shot-generator/IK/core/three-ik");
 const XRIKObject = require( "./XrIkObject");
-const THREE = require( "three");
 const XrPoleConstraint = require( "./Constraints/XrPoleConstraint");
 const PoleTarget = require( "../../../../shot-generator/IK/objects/PoleTarget");
 const CopyRotation = require( "../../../../shot-generator/IK/constraints/CopyRotation");
@@ -8,22 +8,11 @@ const ResourceManager = require("./ResourceManager");
 require("../../../../shot-generator/IK/utils/Object3dExtension");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
-let boneMatrix = new THREE.Matrix4();
-let tempMatrix = new THREE.Matrix4();
-let armatureInverseMatrixWorld = new THREE.Matrix4();
-
-const takeBoneInTheMeshSpace = (mesh, bone) =>
-{
-    armatureInverseMatrixWorld = mesh.skeleton.bones[0].parent.getInverseMatrixWorld();
-    tempMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
-    return tempMatrix;
-}
 class XRRagdoll extends XRIKObject
 {
     constructor()
     {
         super();
-        this.updatingReactPosition = [];
         this.resourceManager = ResourceManager.getInstance();
     }
     
@@ -114,7 +103,6 @@ class XRRagdoll extends XRIKObject
         }
         this.resetControlPoints();
         this.calculteBackOffset();
-        this.ikSwitcher.applyToIk();
         let hipsTarget = this.hipsControlTarget;
 
         hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
@@ -299,6 +287,17 @@ const interpretatedPoleTargetsName = name =>
         case "rightLegPole":
             return "RightFoot";
     }
+}
+
+let boneMatrix = new THREE.Matrix4();
+let tempMatrix = new THREE.Matrix4();
+let armatureInverseMatrixWorld = new THREE.Matrix4();
+
+const takeBoneInTheMeshSpace = (mesh, bone) =>
+{
+    armatureInverseMatrixWorld = mesh.skeleton.bones[0].parent.getInverseMatrixWorld();
+    tempMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
+    return tempMatrix;
 }
 
 module.exports =  XRRagdoll;

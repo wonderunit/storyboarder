@@ -1,6 +1,6 @@
 const {IK, IKJoint}  = require("../../../../shot-generator/IK/core/three-ik");
 const THREE = require( "three");
-const {setZDirecion, setReverseZ} = require( "../../../../shot-generator/IK/utils/axisUtils");
+const {setZDirecion} = require( "../../../../shot-generator/IK/utils/axisUtils");
 const ChainObject = require( "../../../../shot-generator/IK/objects/IkObjects/ChainObject");
 const SkeletonUtils = require("../../../../shot-generator/IK/utils/SkeletonUtils");
 const XRIKSwitcher = require("./XrIKSwitcher");
@@ -15,14 +15,14 @@ class XrIkObject
             throw new TypeError("Cannot construct abstract IkObject directly");
         }
         this.ikSwitcher = null;
+        this.isRotation = false;
         this.isEnabledIk = false;
+        this.chainObjects = {};
         this.clonedObject = null;
-        this.controlTargets = [];
+        this.hipsMouseDown = false;
         this.originalObject = null;
         this.applyingOffset = false;
-        this.isRotation = false;
-        this.hipsMouseDown = false;
-        this.chainObjects = {};
+        this.controlTargets = [];
     }
 
     //#region External Methods
