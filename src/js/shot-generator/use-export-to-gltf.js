@@ -50,15 +50,15 @@ const useExportToGltf = (sceneRef) => {
                   parent: skinnedMesh.parent,
                   bonesHelper: skinnedMesh.parent.bonesHelper,
                   ikRig: skinnedMesh.parent.userData.ikRig,
+                  name: skinnedMesh.parent.name,
 
                   mesh: skinnedMesh,
-                  name: skinnedMesh.name,
                   userData: skinnedMesh.userData
                 })
 
                 skinnedMesh.parent.bonesHelper = null
                 skinnedMesh.parent.userData.ikRig = null
-                skinnedMesh.name = sceneObject.name || sceneObject.displayName
+                skinnedMesh.parent.name = sceneObject.name || sceneObject.displayName
                 skinnedMesh.userData = {}
                 scene.add( skinnedMesh.parent )
 
@@ -89,8 +89,8 @@ const useExportToGltf = (sceneRef) => {
           for (let memento of mementos) {
             memento.parent.bonesHelper = memento.bonesHelper
             memento.parent.userData.ikRig = memento.ikRig
+            memento.parent.name = memento.name
 
-            memento.mesh.name = memento.name
             memento.mesh.userData = memento.userData
 
             sceneRef.current.add(memento.parent)
