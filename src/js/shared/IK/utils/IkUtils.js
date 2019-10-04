@@ -16,6 +16,6 @@ module.exports.createTransformationControls = function createTransformationContr
   {
     controls.push(AddTransformationControl(new THREE.Vector3(0, 0, 0), camera, domElement, scene, controlsName[i]));
   }
-  let controlTargetSelection = new ControlTargetSelection(domElement, scene, camera, controls);
+  let controlTargetSelection = new ControlTargetSelection(domElement, camera, controls);
   return {controls: controls, controlTargetSelection: controlTargetSelection };
 }

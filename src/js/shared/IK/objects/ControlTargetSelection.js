@@ -2,13 +2,13 @@
 // on control points in order to start selection
 class ControlTargetSelection
 {
-    constructor(domElement, scene, camera, controlTargets)
+    constructor(domElement, camera, controlTargets)
     {
         this.ray = new THREE.Raycaster();
         this.rayControl = new THREE.Raycaster();
         this.camera = camera;
-        this.scene = scene;
         this.domElement = domElement;
+      
         this.controlTargets = controlTargets;
         this.meshes = controlTargets.map((controlTarget) => controlTarget.target);
         this.controls = controlTargets.map((controlTarget) => controlTarget.control);
