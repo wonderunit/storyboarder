@@ -15,7 +15,7 @@ const { getSerializedState, updateServer, updateSceneFromXR } = require('../shar
 const getIpAddress = require('../utils/getIpAddress')
 
 class XRServer {
-  constructor ({ store }) {
+  constructor ({ store, service }) {
     app.use(express.json({
       limit: '5mb'
     }))
@@ -56,6 +56,11 @@ class XRServer {
           poses: state.presets.poses
         }
       })
+    })
+
+    app.get('/boards.json', async (req, res) => {
+      let boards = await service.getBoards()
+      res.json(boards)
     })
 
     app.post('/state.json', (req, res) => {

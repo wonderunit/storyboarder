@@ -96,4 +96,10 @@ store.dispatch(setBoard( board ))
 store.dispatch(loadScene(shot.data))
 store.dispatch(ActionCreators.clearHistory())
 
-xrServer = new XRServer({ store })
+const service = {}
+service.getBoards = () => new Promise(resolve => {
+  resolve(boardData.boards.map(board => ({
+    uid: board.uid
+  })))
+})
+xrServer = new XRServer({ store, service })

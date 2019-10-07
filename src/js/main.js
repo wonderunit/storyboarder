@@ -1467,6 +1467,14 @@ ipcMain.on('saveShot',
 
 ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
+ipcMain.on('storyboarder:list-boards',
+  event => mainWindow.webContents.send('storyboarder:list-boards'))
+ipcMain.on('shot-generator:list-boards', (event, data) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('shot-generator:list-boards', data)
+  }
+})
 
 ipcMain.on('registration:open', event => registration.show())
 

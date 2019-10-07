@@ -88,7 +88,14 @@ const store = configureStore({
   },
 })
 
-
+const service = {}
+service.getBoards = () =>
+  new Promise(resolve => {
+    ipcRenderer.once('shot-generator:list-boards', (event, { boards }) => {
+      resolve(boards)
+    })
+    ipcRenderer.send('storyboarder:list-boards')
+  })
 
 ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) => {
   let shot = board.sg
@@ -109,9 +116,8 @@ ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) 
   }
 
   if (!xrServer) {
-    xrServer = new XRServer({ store })
+    xrServer = new XRServer({ store, service })
   }
-
 })
 ipcRenderer.on('update', (event, { board }) => {
   store.dispatch(setBoard( board ))
@@ -194,6 +200,12 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
   // send storyboarderFilePath immediately so XRServer has access to it
   store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
 
-  xrServer = new XRServer({ store })
+  const service = {}
+  service.getBoards = () => new Promise(resolve => {
+    resolve(boardData.boards.map(board => ({
+      uid: board.uid
+    })))
+  })
+  xrServer = new XRServer({ store, service })
 }
 
