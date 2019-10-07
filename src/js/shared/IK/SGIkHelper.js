@@ -3,6 +3,8 @@ require( 'three-instanced-mesh' )(THREE);
 const RagDoll = require("./objects/IkObjects/Ragdoll");
 require('./utils/Object3dExtension');
 const {createTransformationControls} = require("./utils/IkUtils")
+const TargetControl = require("./objects/TargetControl");
+const ControlTargetSelection = require( "./objects/ControlTargetSelection");
 let instance = null;
 class SGIKHelper extends THREE.Object3D
 {
@@ -16,63 +18,62 @@ class SGIKHelper extends THREE.Object3D
             this.selectedContolPoint = null;
             instance.ragDoll = new RagDoll();
             this.poleTargets = new THREE.Group();
+            this.targetControls = [];
             this.selectedControlPoint = null;
             this.intializedSkinnedMesh = null;
             this.isIkDisabled = false;
-            //this.add(this.poleTargets);
+            this.add(this.poleTargets);
             this.isPoleTargetsVisible = true;
-            //this.add(this.controlPoints);
-            //intializeInstancedMesh(mesh);
-            //this.add(this.instancedMesh);
+            this.add(this.controlPoints);
+            intializeInstancedMesh(mesh, camera, domElement, scene);
+            this.add(this.instancedMesh);
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
             this.regularHeight = 1.8;
             this.updateStarted = false;
-            let {controls, controlTargetSelection} = createTransformationControls(camera, domElement, scene);
-            this.controlPoints = controls;
-            this.ragDoll.controlTargetSelection = controlTargetSelection;
         }
         return instance;
     }
     
     static getInstance(mesh, scene, camera, domElement) 
     {
+        console.log(instance);
         return instance ? instance : new SGIKHelper(mesh, scene, camera, domElement)
     }
 
-    initialize(scene, object)
+    initialize(scene, object, height)
     {
         let ragDoll = instance.ragDoll;
         this.characterObject = object;
               
 
- /*        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
-        this.intializedSkinnedMesh = skinnedMesh;
+        //if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        //this.intializedSkinnedMesh = skinnedMesh;
     
         let meshes = this.targetPoints;
-        let initializedMeshes = skinnedMesh.parent.parent.userData.poleTargets ? skinnedMesh.parent.parent.userData.poleTargets : [];
+        //let initializedMeshes = skinnedMesh.parent.parent.userData.poleTargets ? skinnedMesh.parent.parent.userData.poleTargets : [];
         let scaleAspect = height / this.regularHeight;
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
-            let intializedMesh = initializedMeshes[mesh.name];
+            //let intializedMesh = initializedMeshes[mesh.name];
             // Checks if there's already info for current mesh
             // Info like position
-            if(intializedMesh)
-            {
-                let pos = intializedMesh.position;
-                mesh.position.set(pos.x, pos.y, pos.z);
-                mesh.updateMatrixWorld();
-                mesh.userData.isInitialized = true;
-            }
-            else
-            {
-                mesh.userData.isInitialized = false;
-            }
+            //if(intializedMesh)
+            //{
+            //    let pos = intializedMesh.position;
+            //    mesh.position.set(pos.x, pos.y, pos.z);
+            //    mesh.updateMatrixWorld();
+            //    mesh.userData.isInitialized = true;
+            //}
+            //else
+            //{
+            //    mesh.userData.isInitialized = false;
+            //}
             mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
             mesh.userData.scaleAspect = scaleAspect;
-        } */
-        ragDoll.initObject(scene, object, this.controlPoints);
-        ragDoll.reinitialize();
+        }
+        ragDoll.initObject(scene, object, this.targetControls);
+        //ragDoll.reinitialize();
         this.updateAllTargetPoints();
     }
 
@@ -85,7 +86,7 @@ class SGIKHelper extends THREE.Object3D
         if(name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
-            //this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent.parent.parent);
+            this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent.parent.parent);
         }
         if(name === "Head")
         {
@@ -121,7 +122,7 @@ class SGIKHelper extends THREE.Object3D
             if(this.selectedControlPoint.name === "Hips")
             {
                 this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
-                //this.ragDoll.changeControlPointsParent(this.controlPoints);
+                this.ragDoll.changeControlPointsParent(this.controlPoints);
                 this.ragDoll.hipsMouseDown = false;
             }
             if(this.selectedControlPoint.name === "Head")
@@ -171,15 +172,21 @@ class SGIKHelper extends THREE.Object3D
         }
     }
 
-    updateMatrixWorld(value)
+    clone()
     {
-        super.updateMatrixWorld(value); 
-        if(this.updateStarted) return;
-        this.updateStarted = true;
-        this.update();
-        this.updateStarted = false;
+        return this;
     }
 
+    updateMatrixWorld(value)
+    {
+        //console.log(values.update.velue)
+        super.updateMatrixWorld(value); 
+        this.update();
+       /*  
+        if(this.updateStarted) return;
+        this.updateStarted = true;
+        this.updateStarted = false; */
+    }
     raycast(raycaster, intersects)
     {
         if(!this.isSelected() && this.isIkDisabled) return;
@@ -204,8 +211,8 @@ class SGIKHelper extends THREE.Object3D
     {
         targetPoint.position.copy(this.defaultPosition);
         targetPoint.rotation.set(0, 0, 0);
-        targetPoint.quaternion.set(0, 0, 0, 0);
-        targetPoint.scale.set(0, 0, 0);
+        targetPoint.quaternion.set(0, 0, 0, 1);
+        targetPoint.scale.set(1, 1, 1);
         this.updateInstancedTargetPoint(targetPoint, this.defaultColor);
     }
 
@@ -253,22 +260,14 @@ class SGIKHelper extends THREE.Object3D
     {
         return this.parent ? true : false;
     }
-
-    isInMiniMode(value)
-    {
-        this.isIkDisabled = value;
-        if(this.isSelected() && this.isIkDisabled)
-        {
-            this.parent.remove(this);
-        }
-    }
 }
 
-const intializeInstancedMesh = (mesh) =>
+const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
 {
     let sphereGeometry = new THREE.SphereBufferGeometry( 0.5, 8, 6 );
     let instance = SGIKHelper.getInstance();
     let controlPointsAmount = 6;
+    let controlsName = ["hips", "back", "leftHand", "rightHand", "leftLeg", "rightLeg"];
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
     let sizeOfTargets = listOfControlTargets.length + controlPointsAmount;
     let material = new THREE.MeshBasicMaterial({
@@ -291,18 +290,23 @@ const intializeInstancedMesh = (mesh) =>
         controlPoint.userData.id = --sizeOfTargets;
         controlPoint.material.visible = false;
         controlPoint.userData.type = "controlPoint";
+        let targetControl = new TargetControl(camera, domElement, controlsName.shift());
+        targetControl.initialize(scene, new THREE.Vector3(0, 0, 0), controlPoint);
         instance.controlPoints.add(controlPoint);
+        instance.targetControls.push(targetControl);
         instance.resetTargetPoint(controlPoint);
+        console.log("Initializing control points", controlPoint.clone());
     }
     for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(newMesh.geometry, material);
-        poleTarget.material.visible = false;
+        poleTarget.material.visible = true;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
         instance.poleTargets.add(poleTarget);
         instance.resetTargetPoint(poleTarget);
     }
+    
 }
 module.exports = SGIKHelper;

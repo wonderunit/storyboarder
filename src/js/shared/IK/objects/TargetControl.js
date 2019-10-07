@@ -23,10 +23,10 @@ class TargetControl
     onControlKeyUp = event => this.deselectControlTarget();
     //#endregion
 
-    initialize(position, scene)
+    initialize(scene, position, mesh)
     {
         this.scene = scene;
-        let material = new THREE.MeshBasicMaterial({ 
+  /*       let material = new THREE.MeshBasicMaterial({ 
             color: 0x46428a,
             opacity: 0.4, 
             depthTest: false, 
@@ -34,12 +34,12 @@ class TargetControl
             transparent: true,
             opacity: 1,
             flatShading: true });
-        let geometry = new THREE.SphereGeometry(0.05);
-        let movingTarget = new THREE.Mesh(geometry, material);
+        let geometry = new THREE.SphereGeometry(0.05); */
+        let movingTarget = mesh;//new THREE.Mesh(geometry, material);
         movingTarget.position.copy(position);
         movingTarget.scale.set(0.4, 0.4, 0.4);
         movingTarget.renderOrder = 9;
-        scene.add(movingTarget);
+        //this.add(movingTarget);
         movingTarget.userData.type = "controlPoint";
         movingTarget.name = "controlPoint";
         movingTarget.scope = this;
@@ -58,14 +58,12 @@ class TargetControl
 
     addToScene()
     {
-        let scene = this.scene;
-        scene.add(this.target);
+        //this.scene.add(this.target);
     }
 
     removeFromScene()
     {
-        let scene = this.scene;
-        scene.remove(this.target);
+        //this.scene.remove(this.target);
         this.deselectControlPoint();
     }
 
@@ -101,7 +99,7 @@ class TargetControl
         if(!this.isControlPointSelected && !this.bone.isRotated)
         {
             this.isControlPointSelected = true;
-            this.scene.add(this.control);
+            //this.scene.add(this.control);
             this.control.addToScene();
             this.addEventsToControlTarget();
             this.domElement.focus();
@@ -110,10 +108,10 @@ class TargetControl
 
     deselectControlPoint()
     {
-        let scene = this.scene;
+        //let scene = this.scene;
         this.isControlPointSelected = false;
         this.isControlTargetSelected = false;
-        scene.remove(this.control);
+        //this.scene.remove(this.control);
         this.control.dispose();
         this.removeEventsFromControlTarget();
     }

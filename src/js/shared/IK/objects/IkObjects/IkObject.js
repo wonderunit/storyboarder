@@ -166,13 +166,10 @@ class IkObject
         this.chainObjects.forEach((chainObject) =>
         {
             let control = chainObject.controlTarget.control;
-            let target = chainObject.controlTarget.target;
             control.detach();
-            scene.remove(target);
             scene.remove(control);
         });
         this.hipsControlTarget.control.detach(this.hipsControlTarget.target);
-        scene.remove(this.hipsControlTarget.target);
         scene.remove(this.hipsControlTarget.control);
     }
     //#endregion

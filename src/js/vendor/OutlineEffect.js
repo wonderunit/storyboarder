@@ -289,7 +289,10 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 		} else {
 
-			object.material = getOutlineMaterial( object.material );
+			let outlineMaterial = getOutlineMaterial( object.material );
+			if(object.userData.type !== "instancedMesh") {
+				object.material = outlineMaterial;
+			}
 
 		}
 
@@ -312,7 +315,9 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 		} else {
 
-			object.material = originalMaterials[ object.material.uuid ];
+			if(object.userData.type !== "instancedMesh") {
+				object.material = originalMaterials[ object.material.uuid ];
+			}
 
 		}
 

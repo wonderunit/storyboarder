@@ -148,7 +148,6 @@ const SceneManager = connect(
     useEffect(() => {
       if(!(scene && camera) || ikHelper.current) return;
       
-      let domElement = largeRenderer.current.domElement;
       let sgIkHelper = SGIkHelper.getInstance(null, scene, camera, largeRenderer.current.domElement)
       ikHelper.current = sgIkHelper
       const updateCharacterSkeleton = (name, rotation) => { updateCharacterSkeleton({
@@ -730,7 +729,7 @@ function updateCharacterIk(scene)
   {
     if(object.userData.ikRig !== undefined)
     {
-        object.userData.ikRig.update();
+        //object.userData.ikRig.update();
     }
   });
 
