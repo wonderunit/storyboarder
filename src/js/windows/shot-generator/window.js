@@ -93,8 +93,6 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
 
-  console.log('reload says', board)
-
   let shot = board.sg
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
