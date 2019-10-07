@@ -30,7 +30,10 @@ class SGIKHelper extends THREE.Object3D
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
             this.regularHeight = 1.8;
             this.updateStarted = false;
+            this.isInitialized = false;
             this.userData.type = "IkHelper";
+            let controlTargetSelection = new ControlTargetSelection(domElement, camera, this.targetControls);
+            this.ragDoll.controlTargetSelection = controlTargetSelection;
         }
         return instance;
     }
@@ -45,7 +48,7 @@ class SGIKHelper extends THREE.Object3D
     {
         let ragDoll = instance.ragDoll;
         this.characterObject = object;
-              
+        this.isInitialized = true;
 
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === object.uuid) return;
         this.intializedSkinnedMesh = object;
@@ -77,18 +80,19 @@ class SGIKHelper extends THREE.Object3D
         this.updateAllTargetPoints();
     }
 
-    selectControlPoint(name)
+    selectControlPoint(uuid)
     {
         let targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
-        this.selectedControlPoint = targetPoints.find(object => object.name === name);
+        this.selectedControlPoint = targetPoints.find(object => object.uuid === uuid);
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
-        if(name === "Hips")
+        this.selectedControlPoint.scope.selectControlPoint();
+        if(this.selectedControlPoint.userData.name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
-            this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent.parent.parent);
+            //this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent.parent.parent);
         }
-        if(name === "Head")
+        if(this.selectedControlPoint.userData.name === "Head")
         {
             this.ragDoll.applyingOffset = true;
         }
@@ -119,6 +123,7 @@ class SGIKHelper extends THREE.Object3D
                 };
                 this.updatePoleTargets(poleTargets);
             }
+            this.selectedControlPoint.scope.deselectControlPoint();
             if(this.selectedControlPoint.name === "Hips")
             {
                 this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
@@ -129,8 +134,10 @@ class SGIKHelper extends THREE.Object3D
             {
                 this.ragDoll.applyingOffset = false;
             }
+            
             this.selectedControlPoint = null;
             this.ragDoll.updateReact();
+
         }
     }
 
@@ -186,7 +193,8 @@ class SGIKHelper extends THREE.Object3D
     }
     raycast(raycaster, intersects)
     {
-        if(!this.isSelected() && this.isIkDisabled) return;
+
+        if(!this.isSelected() || this.isIkDisabled) return;
         let values = this.isPoleTargetsVisible ? this.targetPoints : this.controlPoints.children;
         let results = raycaster.intersectObjects(values);
         for (let result of results)
@@ -264,7 +272,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     let sphereGeometry = new THREE.SphereBufferGeometry( 0.5, 8, 6 );
     let instance = SGIKHelper.getInstance();
     let controlPointsAmount = 6;
-    let controlsName = ["hips", "back", "leftHand", "rightHand", "leftLeg", "rightLeg"];
+    let controlsName = ["hips", "leftHand", "rightHand", "leftLeg", "rightLeg", "back" ];
     let listOfControlTargets = [];//["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
     let sizeOfTargets = listOfControlTargets.length + controlPointsAmount;
     let material = new THREE.MeshBasicMaterial({
@@ -281,7 +289,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     instance.defaultColor = new THREE.Color(0x6a4dff);
     instance.instancedMesh.userData.preventInteraction = true;
     instance.instancedMesh.userData.type = "instancedMesh";
-
+    instance.instancedMesh.visible = true;
     instance.instancedMesh.layers.disable(0)
     instance.instancedMesh.layers.enable(1)
     instance.instancedMesh.layers.disable(2)
@@ -291,8 +299,9 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         controlPoint.userData.id = --sizeOfTargets;
         controlPoint.material.visible = false;
         controlPoint.userData.type = "controlPoint";
-        controlPoint.name = controlsName.shift();
-        let targetControl = new TargetControl(camera, domElement, controlPoint.name);
+        controlPoint.name = "controlPoint";
+        controlPoint.userData.name = controlsName.shift();
+        let targetControl = new TargetControl(camera, domElement, "controlPoint");
         targetControl.initialize(scene, new THREE.Vector3(0, 0, 0), controlPoint);
         instance.controlPoints.add(controlPoint);
         instance.targetControls.push(targetControl);

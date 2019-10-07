@@ -92,6 +92,7 @@ class Ragdoll extends IkObject
         
             this.resetTargets()
             this.ikSwitcher.applyToIk();
+            //this.resetControlPoints();
         }
         else
         {
@@ -155,6 +156,7 @@ class Ragdoll extends IkObject
             }
             chain.reinitializeJoints();
         }
+        //this.resetControlPoints();
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         this.calculteBackOffset();
         this.ikSwitcher.applyToIk();
@@ -359,6 +361,21 @@ class Ragdoll extends IkObject
         this.resetPoleTarget();
     }
 
+    resetControlPoints()
+    {
+        let chainObjects = this.chainObjects;
+        boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
+        this.hipsControlTarget.target.position.setFromMatrixPosition(boneMatrix);
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let chain = chainObjects[i].chain;
+            let jointBone = chain.joints[chain.joints.length - 1].bone;
+            boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, jointBone);
+            chainObjects[i].controlTarget.target.position.setFromMatrixPosition(boneMatrix);
+        }
+        this.calculteBackOffset();
+    }
+
     updateReact()
     {        
         let ikBones = [];
@@ -427,4 +444,16 @@ class Ragdoll extends IkObject
     }
     //#endregion
 }
+
+let boneMatrix = new THREE.Matrix4();
+let tempMatrix = new THREE.Matrix4();
+let armatureInverseMatrixWorld = new THREE.Matrix4();
+
+const takeBoneInTheMeshSpace = (mesh, bone) =>
+{
+    armatureInverseMatrixWorld = mesh.skeleton.bones[0].parent.getInverseMatrixWorld();
+    tempMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
+    return tempMatrix;
+}
+
 module.exports =  Ragdoll;

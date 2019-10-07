@@ -35,6 +35,7 @@ class ControlTargetSelection
         let intersectControlTarget = false;
         let controlTarget = null;
         intersectMeshes = ray.intersectObjects(this.meshes)[ 0 ] || false;
+        console.log(intersectMeshes)
         intersectMeshes = intersectMeshes === false 
         ? intersectMeshes 
         : Object.keys(selectedMeshes).length === 0 
@@ -48,8 +49,8 @@ class ControlTargetSelection
             intersectControlTarget = ray.intersectObjects(rotationalGizmoHelpers)[ 0 ] || false;
             controlTarget = intersectControlTarget !== false ? intersectControlTarget.object.parent.parent : false;
         }
- 
-        // Checks if meshes intersected and if they do select them
+        console.log(intersectMeshes)
+        // Checks if meshes intersected and if they do then select them
         if ( intersectMeshes ) 
         {
             let object = intersectMeshes.object;

@@ -45,7 +45,10 @@ class TargetControl
         movingTarget.scope = this;
         this.control.attach(movingTarget);
         this.target = movingTarget;
-
+        this.scene.add(this.control);
+        this.control.addToScene();
+        this.addEventsToControlTarget();
+        this.domElement.focus();
         movingTarget.layers.disable(0)
         movingTarget.layers.enable(1)
         movingTarget.layers.disable(2)
@@ -99,20 +102,19 @@ class TargetControl
         if(!this.isControlPointSelected && !this.bone.isRotated)
         {
             this.isControlPointSelected = true;
-            //this.scene.add(this.control);
-            this.control.addToScene();
-            this.addEventsToControlTarget();
-            this.domElement.focus();
+       
+          
+ 
         }
     }
 
     deselectControlPoint()
     {
-        //let scene = this.scene;
+        let scene = this.scene;
         this.isControlPointSelected = false;
         this.isControlTargetSelected = false;
         //this.scene.remove(this.control);
-        this.control.dispose();
+        //this.control.dispose();
         this.removeEventsFromControlTarget();
     }
     //#endregion

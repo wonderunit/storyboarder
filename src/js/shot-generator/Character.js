@@ -516,14 +516,14 @@ const Character = React.memo(({
 
         let heightChanged = object.current.scale.x !== scale ? true : false;
         object.current.scale.set( scale, scale, scale )
-        if(heightChanged)
+        if(heightChanged && SGIkHelper.getInstance().isInitialized)
         {
-         // SGIkHelper.getInstance().ragDoll.reinitialize();
+          SGIkHelper.getInstance().ragDoll.reinitialize();
         }
       } else {
         object.current.scale.setScalar( props.height )
       }
-      //object.current.bonesHelper.updateMatrixWorld()
+      object.current.bonesHelper.updateMatrixWorld()
     }
   }, [props.model, props.height, props.skeleton, ready])
 
@@ -566,14 +566,17 @@ const Character = React.memo(({
     console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
-    
-    //SGIkHelper.getInstance().ragDoll.selectedSkeleton(isSelected);
+    if(SGIkHelper.getInstance().isInitialized)
+    {
+      SGIkHelper.getInstance().ragDoll.selectedSkeleton(isSelected);
+    }
 
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected)
     {
       SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height);
       object.current.add(SGIkHelper.getInstance());
+      SGIkHelper.getInstance().updateMatrixWorld(true);
       
       for (var cone of object.current.bonesHelper.cones)
       
