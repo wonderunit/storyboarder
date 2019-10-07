@@ -1,4 +1,4 @@
-const {IK, IKJoint}  = require("../../core/three-ik");
+const {IK, IKJoint, IKHelper}  = require("../../core/three-ik");
 const THREE = require( "three");
 const {setZDirecion, setReverseZ} = require( "../../utils/axisUtils");
 const ChainObject = require( "./ChainObject");
@@ -59,6 +59,7 @@ class IkObject
             rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
         }
        
+        let skeleton = null;
         // Goes through all scene objects
         clonedSkeleton.traverse((object) =>
         {
@@ -67,6 +68,19 @@ class IkObject
             {
                 object.matrixAutoUpdate = false;
                 object.matrixWorldNeedsUpdate = false;
+
+                // Finds skeleton for skeletonHelper
+                if(skeleton === null)
+                {
+                    let parent = object.parent;
+                    // Goes up the parent list to find out not a bone
+                    // If parent of Bone not a Bone than it's skeleton
+                    while (parent instanceof THREE.Bone)
+                    {
+                        parent = parent.parent;
+                    }
+                    skeleton = parent;
+                }
                 // Flips a model's forward from -Z to +Z
                 // By default Models axis is -Z while Three ik works with +Z
                 if(object.name === "Hips")
@@ -118,6 +132,13 @@ class IkObject
         // Adds skeleton helper to scene
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
+        // Sets skeleton helper for showing bones
+        this.skeletonHelper = new THREE.SkeletonHelper( skeleton );
+        // Sets line width of skeleton helper
+        this.skeletonHelper.material.linewidth = 7;
+  
+        // Adds skeleton helper to scene
+        scene.add( this.skeletonHelper );
     }
 
     // Updates chains

@@ -303,8 +303,8 @@ const Character = React.memo(({
       console.log('Built-in model. Setting up IK.')
       //ragDoll.current = new RagDoll();
 
-      let sgIkHelper = SGIkHelper.getInstance();
-      object.current.userData.ikRig = sgIkHelper.ragDoll;
+     // let sgIkHelper = SGIkHelper.getInstance();
+      //object.current.userData.ikRig = sgIkHelper.ragDoll;
      
     }
 
@@ -573,7 +573,8 @@ const Character = React.memo(({
     if (isSelected)
     {
       SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height);
-      object.current.attach(SGIkHelper.getInstance());
+      object.current.add(SGIkHelper.getInstance());
+      
       for (var cone of object.current.bonesHelper.cones)
       
       object.current.bonesHelper.add(cone)

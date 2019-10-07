@@ -727,10 +727,10 @@ function updateCharacterIk(scene)
 {
   scene.traverse((object) =>
   {
-    if(object.userData.ikRig !== undefined)
-    {
-        //object.userData.ikRig.update();
-    }
+    //if(object.userData.ikRig !== undefined)
+    //{
+    //    //object.userData.ikRig.update();
+    //}
   });
 
 }
