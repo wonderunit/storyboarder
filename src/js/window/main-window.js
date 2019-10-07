@@ -3425,14 +3425,7 @@ const renderShotGeneratorPanel = () => {
       el.style.cursor = prev
     }, 2000)
 
-    ipcRenderer.send('shot-generator:open', {
-      storyboarderFilePath: boardFilename,
-      boardData: {
-        version: boardData.version,
-        aspectRatio: boardData.aspectRatio
-      },
-      board: boardData.boards[currentBoard]
-    })
+    ipcRenderer.send('shot-generator:open')
   }
 
   ReactDOM.render(
@@ -7093,6 +7086,26 @@ ipcRenderer.on('storyboarder:get-board', (event, uid) => {
   ipcRenderer.send(
     'shot-generator:get-board',
     boardData.boards.find(board => board.uid === uid)
+  )
+})
+ipcRenderer.on('storyboarder:get-storyboarder-file-data', (event, uid) => {
+  ipcRenderer.send(
+    'shot-generator:get-storyboarder-file-data',
+    {
+      storyboarderFilePath: boardFilename,
+      boardData: {
+        version: boardData.version,
+        aspectRatio: boardData.aspectRatio
+      }
+    }
+  )
+})
+ipcRenderer.on('storyboarder:get-state', (event, uid) => {
+  ipcRenderer.send(
+    'shot-generator:get-state',
+    {
+      board: boardData.boards[currentBoard]
+    }
   )
 })
 

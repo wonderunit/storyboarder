@@ -57,6 +57,8 @@ const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ set
 const createDualShockController = require('../../shot-generator/DualshockController')
 
 const XRServer = require('../../xr/server')
+const service = require('./service')
+
 let xrServer
 
 
@@ -88,30 +90,39 @@ const store = configureStore({
   },
 })
 
-const service = require('./service')
+ipcRenderer.on('shot-generator:reload', async (event) => {
+  const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
+  const { board } = await service.getStoryboarderState()
 
-ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) => {
+  console.log('reload says', board)
+
   let shot = board.sg
-
-  store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
-
   let aspectRatio = parseFloat(boardData.aspectRatio)
-  store.dispatch({ type: 'SET_ASPECT_RATIO', payload: aspectRatio })
 
-  store.dispatch(setBoard( board ))
+  store.dispatch({
+    type: 'SET_META_STORYBOARDER_FILE_PATH',
+    payload: storyboarderFilePath
+  })
+  store.dispatch({
+    type: 'SET_ASPECT_RATIO',
+    payload: aspectRatio
+  })
+  store.dispatch(
+    setBoard(board)
+  )
 
   if (shot) {
     store.dispatch(loadScene(shot.data))
-    store.dispatch(ActionCreators.clearHistory())
   } else {
     store.dispatch(resetScene())
-    store.dispatch(ActionCreators.clearHistory())
   }
+  store.dispatch(ActionCreators.clearHistory())
 
   if (!xrServer) {
     xrServer = new XRServer({ store, service })
   }
 })
+
 ipcRenderer.on('update', (event, { board }) => {
   store.dispatch(setBoard( board ))
 })

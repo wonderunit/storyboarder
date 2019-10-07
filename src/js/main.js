@@ -1475,17 +1475,28 @@ ipcMain.on('shot-generator:get-board', (event, board) => {
     win.send('shot-generator:get-board', board)
   }
 })
-
-ipcMain.on('registration:open', event => registration.show())
-
-ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardData }) => {
-  shotGeneratorWindow.show(win => {
-    win.webContents.send('loadBoard', { storyboarderFilePath, boardData, board })
-  })
-
+ipcMain.on('storyboarder:get-storyboarder-file-data',
+  (event, uid) => mainWindow.webContents.send('storyboarder:get-storyboarder-file-data'))
+ipcMain.on('shot-generator:get-storyboarder-file-data', (event, data) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('shot-generator:get-storyboarder-file-data', data)
+  }
+})
+ipcMain.on('storyboarder:get-state',
+  (event, uid) => mainWindow.webContents.send('storyboarder:get-state'))
+ipcMain.on('shot-generator:get-state', (event, data) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('shot-generator:get-state', data)
+  }
+})
+ipcMain.on('shot-generator:open', () => {
   // TODO analytics?
-  //
   // analytics.screenView('shot-generator')
+  shotGeneratorWindow.show(win => {
+    win.webContents.send('shot-generator:reload')
+  })
 })
 ipcMain.on('shot-generator:update', (event, { board }) => {
   let win = shotGeneratorWindow.getWindow()
@@ -1493,7 +1504,8 @@ ipcMain.on('shot-generator:update', (event, { board }) => {
     win.webContents.send('update', { board })
   }
 })
-
 ipcMain.on('shot-generator:menu:help:tutorial', () => {
   tutorialMain.show(() => {})
 })
+
+ipcMain.on('registration:open', event => registration.show())
