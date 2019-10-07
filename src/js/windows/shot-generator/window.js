@@ -13,7 +13,6 @@ log.catchErrors()
 
 
 
-// TODO use the main Storyboarder store instead of a special one for Shot Generator
 //
 // configureStore:
 const { createStore, applyMiddleware, compose } = require('redux')
