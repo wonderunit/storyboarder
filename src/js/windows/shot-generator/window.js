@@ -88,14 +88,7 @@ const store = configureStore({
   },
 })
 
-const service = {}
-service.getBoards = () =>
-  new Promise(resolve => {
-    ipcRenderer.once('shot-generator:list-boards', (event, { boards }) => {
-      resolve(boards)
-    })
-    ipcRenderer.send('storyboarder:list-boards')
-  })
+const service = require('./service')
 
 ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) => {
   let shot = board.sg
@@ -205,6 +198,9 @@ if (process.env.SHOT_GENERATOR_STANDALONE) {
     resolve(boardData.boards.map(board => ({
       uid: board.uid
     })))
+  })
+  service.getBoard = () => new Promise(resolve => {
+    resolve(boardData.boards.find(board => board.uid === uid))
   })
   xrServer = new XRServer({ store, service })
 }

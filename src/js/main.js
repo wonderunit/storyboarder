@@ -1475,6 +1475,14 @@ ipcMain.on('shot-generator:list-boards', (event, data) => {
     win.send('shot-generator:list-boards', data)
   }
 })
+ipcMain.on('storyboarder:get-board',
+  (event, uid) => mainWindow.webContents.send('storyboarder:get-board', uid))
+ipcMain.on('shot-generator:get-board', (event, board) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('shot-generator:get-board', board)
+  }
+})
 
 ipcMain.on('registration:open', event => registration.show())
 

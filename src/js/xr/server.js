@@ -63,6 +63,16 @@ class XRServer {
       res.json(boards)
     })
 
+    app.get('/boards/:uid.json', async (req, res, next) => {
+      let { uid } = req.params
+      let board = await service.getBoard(uid)
+      if (board) {
+        res.json(board)
+      } else {
+        next()
+      }
+    })
+
     app.get('/state.json', (req, res) => {
       const state = store.getState()
       res.json(
@@ -74,6 +84,10 @@ class XRServer {
       let payload = req.body
       store.dispatch(updateSceneFromXR(payload))
       res.status(200).send({ ok: true })
+    })
+
+    app.use(function (req, res, next) {
+      res.status(404).send('Not found')
     })
 
     http.on('error', err => {

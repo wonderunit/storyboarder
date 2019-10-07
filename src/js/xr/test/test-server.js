@@ -102,4 +102,7 @@ service.getBoards = () => new Promise(resolve => {
     uid: board.uid
   })))
 })
+service.getBoard = () => new Promise(resolve => {
+  resolve(boardData.boards.find(board => board.uid === uid))
+})
 xrServer = new XRServer({ store, service })

@@ -7089,6 +7089,12 @@ ipcRenderer.on('storyboarder:list-boards', event => {
     }))
   })
 })
+ipcRenderer.on('storyboarder:get-board', (event, uid) => {
+  ipcRenderer.send(
+    'shot-generator:get-board',
+    boardData.boards.find(board => board.uid === uid)
+  )
+})
 
 const logToView = opt => ipcRenderer.send('log', opt)
 
