@@ -1459,12 +1459,12 @@ ipcMain.on('saveShot',
 
 ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
-ipcMain.on('storyboarder:list-boards',
-  event => mainWindow.webContents.send('storyboarder:list-boards'))
-ipcMain.on('shot-generator:list-boards', (event, data) => {
+ipcMain.on('storyboarder:get-boards',
+  event => mainWindow.webContents.send('storyboarder:get-boards'))
+ipcMain.on('shot-generator:get-boards', (event, data) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
-    win.send('shot-generator:list-boards', data)
+    win.send('shot-generator:get-boards', data)
   }
 })
 ipcMain.on('storyboarder:get-board',

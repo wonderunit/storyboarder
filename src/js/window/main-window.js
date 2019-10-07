@@ -7075,8 +7075,8 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
     board: boardData.boards[index]
   })
 })
-ipcRenderer.on('storyboarder:list-boards', event => {
-  ipcRenderer.send('shot-generator:list-boards', {
+ipcRenderer.on('storyboarder:get-boards', event => {
+  ipcRenderer.send('shot-generator:get-boards', {
     boards: boardData.boards.map(board => ({
       uid: board.uid
     }))

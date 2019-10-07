@@ -20,10 +20,10 @@ service.getStoryboarderState = () =>
 
 service.getBoards = () =>
   new Promise(resolve => {
-    ipcRenderer.once('shot-generator:list-boards', (event, { boards }) => {
+    ipcRenderer.once('shot-generator:get-boards', (event, { boards }) => {
       resolve(boards)
     })
-    ipcRenderer.send('storyboarder:list-boards')
+    ipcRenderer.send('storyboarder:get-boards')
   })
 
 service.getBoard = uid =>
