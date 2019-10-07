@@ -3409,8 +3409,8 @@ const renderShotGeneratorPanel = () => {
   )
 
   let thumbnail = fs.existsSync(src)
-      ? src + '?' + cacheKey(src)
-      : null
+    ? src + '?' + cacheKey(src)
+    : null
 
   let aspectRatio = boardData.aspectRatio
 
