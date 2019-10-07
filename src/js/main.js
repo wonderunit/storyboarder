@@ -232,14 +232,6 @@ app.on('ready', async () => {
 
   await attemptLicenseVerification()
 
-  // are we testing locally?
-  // SHOT_GENERATOR_STANDALONE=true npm start
-  if (process.env.SHOT_GENERATOR_STANDALONE) {
-    log.info('Running Shot Generator Standalone')
-    shotGeneratorWindow.show(() => {})
-    return
-  }
-
   // open the welcome window when the app loads up first
   openWelcomeWindow()
 
