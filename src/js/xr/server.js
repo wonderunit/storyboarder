@@ -44,23 +44,30 @@ class XRServer {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'))
     })
 
-    app.get('/state.json', (req, res) => {
+    app.get('/sg.json', (req, res) => {
       const state = store.getState()
       const { aspectRatio } = state
 
       res.json({
-        ...getSerializedState(state),
-
-        aspectRatio,
-        presets: {
-          poses: state.presets.poses
-        }
+        aspectRatio
       })
+    })
+
+    app.get('/presets/poses.json', (req, res) => {
+      const { presets } = store.getState()
+      res.json(presets.poses)
     })
 
     app.get('/boards.json', async (req, res) => {
       let boards = await service.getBoards()
       res.json(boards)
+    })
+
+    app.get('/state.json', (req, res) => {
+      const state = store.getState()
+      res.json(
+        getSerializedState(state)
+      )
     })
 
     app.post('/state.json', (req, res) => {

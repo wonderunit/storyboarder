@@ -20,49 +20,8 @@ const configureStore = preloadedState => {
 
 const SceneManagerXR = require('./SceneManagerXR')
 
-fetch('/state.json')
-  .then(response => response.json())
-  .then(result => {
-    const { aspectRatio, activeCamera, sceneObjects, world, presets } = result
-    const store = configureStore({
-      aspectRatio,
-      undoable: {
-        ...initialState.undoable,
-        sceneObjects,
-        world,
-        activeCamera
-      },
-      models: initialState.models,
-      presets: {
-        poses: presets.poses,
-        characters: {},
-        scenes: {}
-      }
-    })
-
-    if (!process.env.XR_STANDALONE_DEMO) {
-      // after 5s, start POST'ing changes back
-      setTimeout(() => {
-        store.subscribe(() => {
-          let state = {
-            ...getSerializedState(store.getState()),
-            // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
-          }
-          sendStateToServer({ state })
-        })
-      }, 5000)
-    }
-
-    ReactDOM.render(
-      <Provider store={store}>
-        <SceneManagerXR />
-      </Provider>,
-      document.getElementById('main')
-    )
-  })
-
-const sendStateToServer = ({ state }) => {
-  fetch(
+const sendStateToServer = async ({ state }) => {
+  await fetch(
     '/state.json',
     {
       method: 'POST',
@@ -72,10 +31,48 @@ const sendStateToServer = ({ state }) => {
       },
     }
   )
-    .then(response => response.json())
-    .then(result => {
-    })
-    .catch(err => {
-      console.error(err)
-    })
 }
+
+const init = async () => {
+  // get the shot generator window state
+  let { aspectRatio } = await(await fetch('/sg.json')).json()
+  // get pose preset data
+  let poses = await(await fetch('/presets/poses.json')).json()
+  // get the shot generator shot state
+  const { activeCamera, sceneObjects, world } = await (await fetch('/state.json')).json()
+
+  const store = configureStore({
+    aspectRatio,
+    undoable: {
+      ...initialState.undoable,
+      sceneObjects,
+      world,
+      activeCamera
+    },
+    models: initialState.models,
+    presets: {
+      poses,
+      characters: {},
+      scenes: {}
+    }
+  })
+
+  if (!process.env.XR_STANDALONE_DEMO) {
+    // after 5s, start POST'ing changes back
+    setTimeout(() => {
+      store.subscribe(async () => {
+        let state = getSerializedState(store.getState())
+        await sendStateToServer({ state })
+      })
+    }, 5000)
+  }
+
+  ReactDOM.render(
+    <Provider store={store}>
+      <SceneManagerXR />
+    </Provider>,
+    document.getElementById('main')
+  )
+}
+
+init()
