@@ -1421,7 +1421,55 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
       ],
 
       sceneObject.type == 'character' &&
-        selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }]
+        selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }],
+
+        sceneObject.type == 'image' && [
+        [
+          'div.column',
+
+          ['div.number-slider', [
+            ['div.number-slider__label', 'Image Files'],
+            ['div.number-slider__control', { style: { width: 137 }}, [
+              AttachmentsSelect, {
+                style: { flex: 1 },
+
+                ids: sceneObject.imageAttachmentIds,
+                options: [
+                  { name: 'example', value: 'rain1,rain2' }
+                ],
+                copyFiles: filepaths => {
+                  let projectDir = path.dirname(storyboarderFilePath)
+                  let assetsDir = path.join(projectDir, 'models', 'volumes')
+                  fs.ensureDirSync(assetsDir)
+
+                  let dsts = []
+                  for (let src of filepaths) {
+                    let dst = path.join(assetsDir, path.basename(src))
+                    console.log('copying from', src, 'to', dst)
+                    try {
+                      fs.copySync(src, dst)
+                      dsts.push(dst)
+                    } catch (err) {
+                      console.error('could not copy', src)
+                      alert('could not copy ' + src)
+                    }
+                  }
+
+                  let ids = dsts.map(filepath => path.relative(projectDir, filepath))
+                  console.log('setting attachment ids', ids)
+
+                  return ids
+                },
+                onChange: volumeImageAttachmentIds => {
+                  updateObject(sceneObject.id, { volumeImageAttachmentIds })
+                },
+                onBlur: () => transition('TYPING_EXIT')
+              }
+            ]
+          ]]]
+        ],
+      ],
+
     ]
   )
 }
