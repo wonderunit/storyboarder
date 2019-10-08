@@ -627,7 +627,9 @@ const SceneManager = connect(
               Image, {
                 key: props.id,
                 scene,
-                aspectRatio,
+
+                storyboarderFilePath: meta.storyboarderFilePath,
+                imageAttachmentIds: props.imageAttachmentIds,
                 ...props
               }
             ]

@@ -1,14 +1,54 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 
+const path = require('path')
+
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
+const textureLoader = new THREE.TextureLoader()
+
 const IconSprites = require('./IconSprites')
 
-const Image = React.memo(({scene, id, type, ...props}) => {
+const { isUserFile } = require('../services/model-loader')
+const pathToShotGeneratorData = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
+const pathToBuiltInVolumeImages = path.join(pathToShotGeneratorData, 'images')
+
+const materialFactory = () => new THREE.MeshToonMaterial({
+  color: 0xcccccc,
+  emissive: 0x0,
+  specular: 0x0,
+  shininess: 0,
+  flatShading: false,
+  transparent: true,
+  side: THREE.DoubleSide
+})
+
+const Image = React.memo(({scene, id, type, storyboarderFilePath, imageAttachmentIds, ...props}) => {
 
   let image = useRef(null)
+  const loadingImageSet = useRef(false)
+  const discard = useRef(false)
+
+  const loadImage = (imgArray) => {
+    const promises = imgArray.map(link => loadMaterialPromise(link))
+    return Promise.all(promises).then((materials) => {
+      return new Promise(resolve => {
+        resolve({materials, imgArray})
+      })
+    })
+  }
+
+  const loadMaterialPromise = (link) => {
+    return new Promise((resolve, reject) => {
+      textureLoader.load(link, (texture) => {
+        let imageMaterial = materialFactory()
+        imageMaterial.map = texture
+        imageMaterial.userData.outlineParameters = { thickness: 0, alpha: 0.0 }
+        resolve(imageMaterial)
+      })
+    })
+  }
 
   useEffect(() => {
     if (image.current) {
@@ -16,30 +56,39 @@ const Image = React.memo(({scene, id, type, ...props}) => {
     }
   }, [props.displayName, props.name])
 
-  if (image.current) {
-  } else {
+  const create = () => {
     console.log(type, id, 'added')
     let geo = new THREE.PlaneBufferGeometry(1, 1)
-    let mat = new THREE.MeshBasicMaterial({
-      color: 0xffff66,
-      side: THREE.DoubleSide
-    })
+    let mat = materialFactory()
     let mesh = new THREE.Mesh(geo, mat)
 
-    let container = new THREE.Object3D()
-    container.add(mesh)
-
-    image.current = container
+    image.current = mesh
     image.current.userData.id = id
     image.current.userData.type = type
 
     image.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, image.current)
+    image.current.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
+    image.current.position.set(props.x, props.z, props.y)
 
     scene.add(image.current)
     scene.add(image.current.orthoIcon)
+
+    let imgArray = imageAttachmentIds.map(relpath => {
+      if (isUserFile(relpath)) {
+        return path.join(path.dirname(storyboarderFilePath), relpath)
+      } else {
+        return path.join(pathToBuiltInVolumeImages, relpath + '.jpg')
+      }
+    })
+
+    loadingImageSet.current = true
+    loadImage(imgArray).then((result) => {
+      image.current.material = result.materials[0]
+    })
   }
 
   useEffect(() => {
+    create()
     return function cleanup() {
       if (image.current) {
         console.log(type, id, 'removed')
@@ -78,6 +127,16 @@ const Image = React.memo(({scene, id, type, ...props}) => {
     }
   }, [props.visible])
 
+  useEffect(() => {
+  if (image.current) {
+    scene.remove(image.current.orthoIcon)
+    scene.remove(image.current)
+    image.current = null
+    if (loadingImageSet.current) discard.current = true
+    create()
+  }
+
+}, [imageAttachmentIds])
 
   return null
 })

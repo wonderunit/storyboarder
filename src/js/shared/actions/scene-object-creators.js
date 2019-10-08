@@ -164,12 +164,12 @@ const createImage = (id, camera, room) => {
     id,
     type: 'image',
 
-    x, y, z,
+    x, y, z: 1,
 
     rotation: { x: 0, y: rotation, z: 0 },
 
     visible: true,
-    imageAttachmentIds: ['rain2', 'rain1']
+    imageAttachmentIds: ['example']
   })
 }
 

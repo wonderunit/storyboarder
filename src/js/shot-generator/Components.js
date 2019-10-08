@@ -1435,11 +1435,11 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
                 ids: sceneObject.imageAttachmentIds,
                 options: [
-                  { name: 'example', value: 'rain1,rain2' }
+                  { name: 'example', value: 'example' }
                 ],
                 copyFiles: filepaths => {
                   let projectDir = path.dirname(storyboarderFilePath)
-                  let assetsDir = path.join(projectDir, 'models', 'volumes')
+                  let assetsDir = path.join(projectDir, 'models', 'images')
                   fs.ensureDirSync(assetsDir)
 
                   let dsts = []
@@ -1460,8 +1460,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
                   return ids
                 },
-                onChange: volumeImageAttachmentIds => {
-                  updateObject(sceneObject.id, { volumeImageAttachmentIds })
+                onChange: imageAttachmentIds => {
+                  updateObject(sceneObject.id, { imageAttachmentIds })
                 },
                 onBlur: () => transition('TYPING_EXIT')
               }

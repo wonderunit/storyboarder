@@ -297,7 +297,10 @@ const updateObject = (draft, state, props, { models }) => {
     draft.volumeImageAttachmentIds = props.volumeImageAttachmentIds
   }
 
-
+  // for images
+  if (props.imageAttachmentIds != null) {
+    draft.imageAttachmentIds = props.imageAttachmentIds
+  }
 
   if (props.hasOwnProperty('characterPresetId')) {
     draft.characterPresetId = props.characterPresetId
