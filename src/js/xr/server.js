@@ -4,6 +4,8 @@ const express = require('express')
 const electron = require('electron')
 const electronApp = electron.app ? electron.app : electron.remote.app
 
+const isDev = require('electron-is-dev')
+
 const app = express()
 const http = require('http').Server(app)
 
@@ -19,6 +21,22 @@ class XRServer {
     app.use(express.json({
       limit: '5mb'
     }))
+
+    // Enable CORS for testing in development
+    if (isDev) {
+      app.use((req, res, next) => {
+        res.header('Access-Control-Allow-Origin', '*')
+        res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept')
+        res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE')
+
+        // intercept OPTIONS method
+        if (req.method == 'OPTIONS') {
+          res.send(200)
+        } else {
+          next()
+        }
+      })
+    }
 
     app.use('/', express.static(
       path.join(__dirname, 'dist')
