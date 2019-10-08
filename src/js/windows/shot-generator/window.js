@@ -119,6 +119,11 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
 ipcRenderer.on('update', (event, { board }) => {
   store.dispatch(setBoard(board))
 })
+
+// load via server request (e.g.: triggered by VR)
+ipcRenderer.on('loadBoardByUid', async (event, uid) => {
+  let board = await service.getBoard(uid)
+  loadBoard(board)
 })
 
 ipcRenderer.on('shot-generator:edit:undo', () => {

@@ -52,6 +52,35 @@ class XRServer {
         aspectRatio
       })
     })
+    /*
+    To test changing the current board:
+
+        npm start test/fixtures/example/example.storyboarder
+
+        curl -X POST \
+          -H "Content-Type: application/json" \
+          -d '{"uid":"RRO6K"}' \
+          http://localhost:1234/sg.json
+
+    */
+    app.post('/sg.json', async (req, res) => {
+      let { uid } = req.body
+      if (uid) {
+        let boards = await service.getBoards()
+        if (boards.find(board => board.uid === uid)) {
+          // trigger Shot Generator to update its board
+          // TODO could wait for SG update to succeed before updating VR?
+          await service.setBoardByUid(uid)
+          // get the board data
+          let board = await service.getBoard(uid)
+          // send it to VR
+          res.json(board)
+          return
+        }
+      }
+
+      res.status(500).send('Error')
+    })
 
     app.get('/presets/poses.json', (req, res) => {
       const { presets } = store.getState()

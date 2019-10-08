@@ -34,4 +34,8 @@ service.getBoard = uid =>
     ipcRenderer.send('storyboarder:get-board', uid)
   })
 
+service.setBoardByUid = async uid => {
+  ipcRenderer.send('shot-generator:loadBoardByUid', uid)
+}
+
 module.exports = service

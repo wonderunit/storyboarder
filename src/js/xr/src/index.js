@@ -11,6 +11,7 @@ const thunkMiddleware = require('redux-thunk').default
 
 const h = require('../../utils/h')
 const { reducer, initialState, getSerializedState } = require('../../shared/reducers/shot-generator')
+const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 
 const configureStore = preloadedState => {
   const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware))
@@ -31,6 +32,27 @@ const sendStateToServer = async ({ state }) => {
       },
     }
   )
+}
+
+const loadBoardByUid = async uid => {
+  let body = JSON.stringify({
+    uid
+  })
+  let board = await(
+    await fetch(
+      '/sg.json',
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body
+      }
+    )
+  ).json()
+
+  loadBoardFromData(board, store.dispatch)
 }
 
 const init = async () => {
@@ -57,6 +79,8 @@ const init = async () => {
     }
   })
 
+  // TODO don't send to server if data change was just a new board loaded from the server
+  //      (avoid re-sending what SG already knows about)
   if (!process.env.XR_STANDALONE_DEMO) {
     // after 5s, start POST'ing changes back
     setTimeout(() => {
