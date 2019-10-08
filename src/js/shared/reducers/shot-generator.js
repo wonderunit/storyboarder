@@ -1099,7 +1099,16 @@ const mainReducer = (state/* = initialState*/, action) => {
         return
 
       case 'SET_BOARD':
-        draft.board = action.payload
+        const { uid, shot, dialogue, notes } = action.payload
+        draft.board = {
+          uid,
+
+          // used by BoardInspector
+          shot,
+          dialogue,
+          action: action.payload.action,
+          notes
+        }
         return
 
       case 'TOGGLE_WORKSPACE_GUIDE':
