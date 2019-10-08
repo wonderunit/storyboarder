@@ -40,6 +40,10 @@ class XRServer {
       path.join(electronApp.getPath('userData'), 'presets', 'poses')
     ))
 
+    app.use('/boards/images', express.static(
+      path.join(path.dirname(store.getState().meta.storyboarderFilePath), 'images')
+    ))
+
     app.get('/', function(req, res) {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'))
     })
