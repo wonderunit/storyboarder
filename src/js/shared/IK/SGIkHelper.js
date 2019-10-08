@@ -41,13 +41,13 @@ class SGIKHelper extends THREE.Object3D
             instance.instancedMesh.layers.disable(0)
             instance.instancedMesh.layers.enable(1)
             instance.instancedMesh.layers.disable(2)
+            //this.instancedMesh.scale.set(0.1, 0.1, 0.1)
         }
         return instance;
     }
     
     static getInstance(mesh, scene, camera, domElement) 
     {
-        console.log(instance);
         return instance ? instance : new SGIKHelper(mesh, scene, camera, domElement)
     }
 
@@ -79,7 +79,7 @@ class SGIKHelper extends THREE.Object3D
             //{
             //    mesh.userData.isInitialized = false;
             //}
-            mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
+            mesh.scale.set(0.001, 0.001, 0.001).multiplyScalar(scaleAspect);
             mesh.userData.scaleAspect = scaleAspect;
         }
         ragDoll.initObject(this, object, this.targetControls);
@@ -91,6 +91,7 @@ class SGIKHelper extends THREE.Object3D
     {
         let targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
         this.selectedControlPoint = targetPoints.find(object => object.uuid === uuid);
+        console.log(this.selectedControlPoint);
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
         this.selectedControlPoint.scope.selectControlPoint();
@@ -200,7 +201,6 @@ class SGIKHelper extends THREE.Object3D
     }
     raycast(raycaster, intersects)
     {
-
         if(!this.isSelected() || this.isIkDisabled) return;
         let values = this.isPoleTargetsVisible ? this.targetPoints : this.controlPoints.children;
         let results = raycaster.intersectObjects(values);
@@ -309,7 +309,9 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         controlPoint.name = "controlPoint";
         controlPoint.userData.name = controlsName.shift();
         let targetControl = new TargetControl(camera, domElement, "controlPoint");
-        targetControl.initialize(instance.transformControls, new THREE.Vector3(0, 0, 0), controlPoint);
+        targetControl.initialize(scene, new THREE.Vector3(0, 0, 0), controlPoint);
+        console.log()
+        //targetControl.control.scale.set(0.01, 0.01, 0.01);
         instance.controlPoints.add(controlPoint);
         instance.targetControls.push(targetControl);
         instance.resetTargetPoint(controlPoint);

@@ -62,7 +62,7 @@ class UniversalPickableCharacter extends Pickable
         let ikHelper = parent.children.find(child => child.userData.type === "IkHelper");
         if(ikHelper) parent.remove(ikHelper);
         this.node = SkeletonUtils.clone(parent);
-        if(ikHelper) parent.attach(ikHelper);
+        if(ikHelper) parent.add(ikHelper);
         let lod = this.node.children[0];
         if(lod.type === "LOD")
         {

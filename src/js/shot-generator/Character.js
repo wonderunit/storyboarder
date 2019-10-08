@@ -423,9 +423,9 @@ const Character = React.memo(({
   //#region Camera changing 
   useEffect(() => {
     if(!ready) return
-    //let skeletonRig = SGIkHelper.getInstance().ragDoll;
+    let skeletonRig = SGIkHelper.getInstance().ragDoll;
     //skeletonRig.controlTargetSelection.camera = camera;
-    boneRotationControl.current.setCamera(camera);
+    //boneRotationControl.current.setCamera(camera);
    //for(let controlTarget of skeletonRig.controlTargets)
    //{
    //  controlTarget.setCamera(camera);
@@ -438,7 +438,6 @@ const Character = React.memo(({
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
-      //SGIkHelper.getInstance().ragDoll.moveRagdoll()
       object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, ready])
@@ -566,11 +565,6 @@ const Character = React.memo(({
     console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
-/*     if(SGIkHelper.getInstance().isInitialized)
-    {
-      SGIkHelper.getInstance().ragDoll.selectedSkeleton(isSelected);
-    } */
-
     // handle selection/deselection - add/remove the bone stucture
     if (isSelected)
     {
