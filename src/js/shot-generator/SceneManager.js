@@ -43,6 +43,7 @@ const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
 const Camera = require('./Camera')
+const Image = require('./Image')
 
 const WorldObject = require('./World')
 
@@ -621,6 +622,15 @@ const SceneManager = connect(
                 }
               ]
 
+          case 'image':
+            return [
+              Image, {
+                key: props.id,
+                scene,
+                aspectRatio,
+                ...props
+              }
+            ]
         }
     })
 

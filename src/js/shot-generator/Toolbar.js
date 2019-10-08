@@ -43,7 +43,8 @@ const Toolbar = connect(
       createModelObject: SceneObjectCreators.createModelObject,
       createCharacter: SceneObjectCreators.createCharacter,
       createLight: SceneObjectCreators.createLight,
-      createVolume: SceneObjectCreators.createVolume
+      createVolume: SceneObjectCreators.createVolume,
+      createImage: SceneObjectCreators.createImage
     }
 )(
   ({
@@ -63,6 +64,7 @@ const Toolbar = connect(
     createCharacter,
     createLight,
     createVolume,
+    createImage,
 
     // props
     camera,
@@ -134,6 +136,15 @@ const Toolbar = connect(
 
       undoGroupStart()
       createVolume(id)
+      selectObject(id)
+      undoGroupEnd()
+    }
+
+    const onCreateImageClick = () => {
+      let id = THREE.Math.generateUUID()
+
+      undoGroupStart()
+      createImage(id, camera, room.visible && roomObject3d)
       selectObject(id)
       undoGroupEnd()
     }
@@ -231,7 +242,8 @@ const Toolbar = connect(
           ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
           ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
           ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
-          ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']]
+          ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']],
+          ['a[href=#]', { onClick: preventDefault(onCreateImageClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Image']]
         ]],
         // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
