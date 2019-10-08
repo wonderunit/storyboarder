@@ -25,36 +25,20 @@ class RagdollEvents
     addHipsEvent()
     {
         let hipsControl = this.ragdoll.hipsControlTarget.control;
-        hipsControl.addEventListener("pointerdown", this.onHipsControlMouseDown, false);
-        hipsControl.addEventListener("transformMoved", this.onHipsControlTransformMoved, false);
+       // hipsControl.addEventListener("pointerdown", this.onHipsControlMouseDown, false);
+        //hipsControl.addEventListener("transformMoved", this.onHipsControlTransformMoved, false);
         hipsControl.addEventListener("dragging-changed", this.onHipsControlDraggingChanged, false);
-        hipsControl.addEventListener("pointerup", this.onHipsControlMouseUp, false);
+       // hipsControl.addEventListener("pointerup", this.onHipsControlMouseUp, false);
     }
 
     removeHipsEvent()
     {
         let hipsControl = this.ragdoll.hipsControlTarget.control;
  
-        hipsControl.removeEventListener("pointerdown", this.onHipsControlMouseDown);
-        hipsControl.removeEventListener("transformMoved", this.onHipsControlTransformMoved);
+        //hipsControl.removeEventListener("pointerdown", this.onHipsControlMouseDown);
+        //hipsControl.removeEventListener("transformMoved", this.onHipsControlTransformMoved);
         hipsControl.removeEventListener("dragging-changed", this.onHipsControlDraggingChanged);
-        hipsControl.removeEventListener("pointerup", this.onHipsControlMouseUp);
-    }
-
-    // Applies events to back control
-    applyEventsToBackControl(backControl)
-    {
-        backControl.addEventListener("pointerdown", this.onBackControlMouseDown);
-        backControl.addEventListener("dragging-changed", this.onBackControlDraggingChanged);
-        backControl.addEventListener("pointerup", this.onBackControlMouseUp);
-    }
-
-    removeEventsFromBackControl()
-    {
-        let backControl = this.ragdoll.controlTargets[0].control;
-        backControl.removeEventListener("pointerdown", this.onBackControlMouseDown);
-        backControl.removeEventListener("dragging-changed", this.onBackControlDraggingChanged);
-        backControl.removeEventListener("pointerup", this.onBackControlMouseUp);
+       // hipsControl.removeEventListener("pointerup", this.onHipsControlMouseUp);
     }
 
     // Sets up control event for mouse down and up to enable and disable ik on mouse click
@@ -64,8 +48,8 @@ class RagdollEvents
         for (let i = 0; i < chainObject.length; i++)
         {
             let control = chainObject[i].controlTarget.control;
-            control.addEventListener("pointerdown", this.onControlsMouseDown);
-            control.addEventListener("pointerup", this.onControlsMouseUp);
+           // control.addEventListener("pointerdown", this.onControlsMouseDown);
+           // control.addEventListener("pointerup", this.onControlsMouseUp);
         }
     }
 
@@ -75,8 +59,8 @@ class RagdollEvents
         for (let i = 0; i < chainObject.length; i++)
         {
             let control = chainObject[i].controlTarget.control;
-            control.removeEventListener("pointerdown", this.onControlsMouseDown);
-            control.removeEventListener("pointerup", this.onControlsMouseUp);
+           // control.removeEventListener("pointerdown", this.onControlsMouseDown);
+           // control.removeEventListener("pointerup", this.onControlsMouseUp);
         }
     }
 
@@ -120,21 +104,6 @@ class RagdollEvents
         ragdoll.applyingOffset = false;
         ragdoll.hipsMouseDown = false;
         ragdoll.isEnabledIk = false;
-    }
-
-    backControlMouseDown(event)
-    {
-        this.ragdoll.applyingOffset = true;
-    }
-
-    backControlDraggingChanged(event)
-    {
-        this.ragdoll.calculteBackOffset();
-    }
-
-    backControlMouseUp(event)
-    {
-        this.ragdoll.applyingOffset = false;
     }
 
     controlsMouseDown(event)

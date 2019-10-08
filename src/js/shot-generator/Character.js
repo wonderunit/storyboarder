@@ -515,10 +515,6 @@ const Character = React.memo(({
 
         let heightChanged = object.current.scale.x !== scale ? true : false;
         object.current.scale.set( scale, scale, scale )
-        if(heightChanged && SGIkHelper.getInstance().isInitialized)
-        {
-          SGIkHelper.getInstance().ragDoll.reinitialize();
-        }
       } else {
         object.current.scale.setScalar( props.height )
       }
@@ -570,8 +566,6 @@ const Character = React.memo(({
     {
       SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height);
       object.current.add(SGIkHelper.getInstance());
-      SGIkHelper.getInstance().updateMatrixWorld(true);
-      object.current.updateWorldMatrix(false, true);
       for (var cone of object.current.bonesHelper.cones)
       
       object.current.bonesHelper.add(cone)

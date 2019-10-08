@@ -330,7 +330,7 @@ const SelectionManager = connect(
         if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
         {
           let characterId = target.characterId;
-          SGIkHelper.getInstance().selectControlPoint(target.uuid);
+          SGIkHelper.getInstance().selectControlPoint(target.uuid, event);
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];
           isSelectedControlPoint = true;
@@ -466,7 +466,7 @@ const SelectionManager = connect(
 
       undoGroupEnd()
     }
-    SGIkHelper.getInstance().deselectControlPoint();
+    SGIkHelper.getInstance().deselectControlPoint(event);
     if (event.target === el) {
       if (!selectOnPointerDown) {
         mousePosition.current.set(x, y);

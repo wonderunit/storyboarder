@@ -146,14 +146,15 @@ class IkObject
     // Ik solver overrides all changes if applied before it's fired
     lateUpdate()
     {
-        let hipsTarget = this.hipsControlTarget.target;
         // Sets back position when offset is not changing
         // When we are changing back position offset between hips and back shouldn't be applied
         if(!this.applyingOffset)
         {
+            let hipsTarget = this.hipsControlTarget.target;
             let backTarget = this.chainObjects[0].controlTarget.target;
-            let hipsPosition = hipsTarget.position.clone();
+            let hipsPosition = hipsTarget.worldPosition();;
             let result = hipsPosition.add(this.backOffset);
+            backTarget.parent.worldToLocal(hipsPosition);
             backTarget.position.copy(result);
         }
     }
@@ -208,7 +209,7 @@ class IkObject
     resetTargets()
     {
         let chainObjects = this.chainObjects;
-        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
+ /*        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
@@ -221,15 +222,15 @@ class IkObject
                 let targetPosition = chainObjects[i].controlTarget.target.position;
                 jointBone.getWorldPosition(targetPosition);
             }
-        }
-        this.calculteBackOffset();
+        } */
+       // this.calculteBackOffset();
     }
 
     // Calculates back's offset in order to move with hips
     calculteBackOffset()
     {
-        let backPosition = this.chainObjects[0].controlTarget.target.position.clone();
-        let hipsPosition = this.hipsControlTarget.target.position.clone();
+        let backPosition = this.chainObjects[0].controlTarget.target.worldPosition();
+        let hipsPosition = this.hipsControlTarget.target.worldPosition();
         this.backOffset = backPosition.sub(hipsPosition);
     }
     //#endregion
