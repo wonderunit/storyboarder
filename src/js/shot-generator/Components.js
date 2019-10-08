@@ -725,6 +725,7 @@ const ElementsPanel = connect(
       ...types.camera,
       ...types.character,
       ...types.object,
+      ...types.image,
       ...types.light,
       ...types.volume
     }
@@ -1551,7 +1552,8 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
     'character': [Icon, { src: 'icon-item-character' }],
     'object': [Icon, { src: 'icon-item-object' }],
     'light': [Icon, { src: 'icon-item-light' }],
-    'volume': [Icon, { src: 'icon-item-volume' }]
+    'volume': [Icon, { src: 'icon-item-volume' }],
+    'image': [Icon, { src: 'icon-toolbar-save-to-board' }]
   }
 
   let className = classNames({
@@ -2224,6 +2226,8 @@ const canDelete = (sceneObject, activeCamera) =>
   sceneObject.type === 'volume' ||
   // allow lights
   sceneObject.type === 'light' ||
+  // allow images
+  sceneObject.type === 'image' ||
   // allow cameras which are not the active camera
   (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 
