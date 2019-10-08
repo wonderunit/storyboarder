@@ -199,7 +199,7 @@ const updateObject = (draft, state, props, { models }) => {
     draft.fov = props.fov
   }
   if (props.rotation != null) {
-    if (draft.type === 'object') {
+    if (draft.type === 'object' || draft.type === 'image') {
       // MERGE
       draft.rotation = {
         ...state.rotation,

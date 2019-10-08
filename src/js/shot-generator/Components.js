@@ -1233,7 +1233,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         ],
       ],
 
-      sceneObject.type == 'object'
+      sceneObject.type == 'object' || sceneObject.type == 'image'
         ? [
             ['div',
               [NumberSlider, {
