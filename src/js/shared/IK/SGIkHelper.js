@@ -304,7 +304,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     {
         let controlPoint = new THREE.Mesh(newMesh.geometry, material);
         controlPoint.userData.id = --sizeOfTargets;
-        controlPoint.material.visible = false;
+        controlPoint.material.visible = true;
         controlPoint.userData.type = "controlPoint";
         controlPoint.name = "controlPoint";
         controlPoint.userData.name = controlsName.shift();
