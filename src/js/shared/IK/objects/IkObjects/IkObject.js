@@ -207,7 +207,7 @@ class IkObject
     // After IK has been turned off and on
     resetTargets()
     {
-  /*       let chainObjects = this.chainObjects;
+        let chainObjects = this.chainObjects;
         this.hips.getWorldPosition(this.hipsControlTarget.target.position);
         for(let i = 0; i < chainObjects.length; i++)
         {
@@ -221,7 +221,7 @@ class IkObject
                 let targetPosition = chainObjects[i].controlTarget.target.position;
                 jointBone.getWorldPosition(targetPosition);
             }
-        } */
+        }
         this.calculteBackOffset();
     }
 
