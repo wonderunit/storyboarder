@@ -18,6 +18,7 @@ class SGIKHelper extends THREE.Object3D
             this.selectedContolPoint = null;
             instance.ragDoll = new RagDoll();
             this.poleTargets = new THREE.Group();
+            this.transformControls = new THREE.Group();
             this.targetControls = [];
             this.selectedControlPoint = null;
             this.intializedSkinnedMesh = null;
@@ -25,6 +26,9 @@ class SGIKHelper extends THREE.Object3D
             this.add(this.poleTargets);
             this.isPoleTargetsVisible = true;
             this.add(this.controlPoints);
+            this.add(this.transformControls);
+
+
             intializeInstancedMesh(mesh, camera, domElement, scene);
             this.add(this.instancedMesh);
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
@@ -34,6 +38,9 @@ class SGIKHelper extends THREE.Object3D
             this.userData.type = "IkHelper";
             let controlTargetSelection = new ControlTargetSelection(domElement, camera, this.targetControls);
             this.ragDoll.controlTargetSelection = controlTargetSelection;
+            instance.instancedMesh.layers.disable(0)
+            instance.instancedMesh.layers.enable(1)
+            instance.instancedMesh.layers.disable(2)
         }
         return instance;
     }
@@ -75,7 +82,7 @@ class SGIKHelper extends THREE.Object3D
             mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
             mesh.userData.scaleAspect = scaleAspect;
         }
-        ragDoll.initObject(scene, object, this.targetControls);
+        ragDoll.initObject(this, object, this.targetControls);
         ragDoll.reinitialize();
         this.updateAllTargetPoints();
     }
@@ -302,7 +309,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         controlPoint.name = "controlPoint";
         controlPoint.userData.name = controlsName.shift();
         let targetControl = new TargetControl(camera, domElement, "controlPoint");
-        targetControl.initialize(scene, new THREE.Vector3(0, 0, 0), controlPoint);
+        targetControl.initialize(instance.transformControls, new THREE.Vector3(0, 0, 0), controlPoint);
         instance.controlPoints.add(controlPoint);
         instance.targetControls.push(targetControl);
         instance.resetTargetPoint(controlPoint);

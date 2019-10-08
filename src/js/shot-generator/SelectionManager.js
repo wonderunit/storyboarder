@@ -154,7 +154,9 @@ const SelectionManager = connect(
 
   const getIntersects = (mousePosition, camera, useIcons, pointer) => {
     let raycaster = new THREE.Raycaster()
-
+    let x = mousePosition.x;
+    let y = mousePosition.y;
+    raycaster.setFromCamera({x, y}, camera )
     let intersects = [];
 
     if( useIcons)
@@ -163,12 +165,11 @@ const SelectionManager = connect(
     }
     else
     {
-      let x = pointer.x;
-      let y = pointer.y;
+      x = pointer.x;
+      y = pointer.y;
       raycaster.setFromCamera({x, y}, camera )
       //Check helpers intersection first 
       intersects = raycaster.intersectObject(SGIkHelper.getInstance())
-      console.log(intersects)
       if(intersects.length > 0)
       {
         return intersects
