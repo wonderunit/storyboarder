@@ -19,6 +19,7 @@ const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
 const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
+const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 
 const actionSanitizer = action => (
   action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
@@ -89,11 +90,15 @@ const store = configureStore({
   },
 })
 
+const loadBoard = board => {
+  loadBoardFromData(board, store.dispatch)
+}
+
+// load via Storyboarder request
 ipcRenderer.on('shot-generator:reload', async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
 
-  let shot = board.sg
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
   store.dispatch({
@@ -104,24 +109,16 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
-  store.dispatch(
-    setBoard(board)
-  )
 
-  if (shot) {
-    store.dispatch(loadScene(shot.data))
-  } else {
-    store.dispatch(resetScene())
-  }
-  store.dispatch(ActionCreators.clearHistory())
+  loadBoard(board)
 
   if (!xrServer) {
     xrServer = new XRServer({ store, service })
   }
 })
-
 ipcRenderer.on('update', (event, { board }) => {
-  store.dispatch(setBoard( board ))
+  store.dispatch(setBoard(board))
+})
 })
 
 ipcRenderer.on('shot-generator:edit:undo', () => {
