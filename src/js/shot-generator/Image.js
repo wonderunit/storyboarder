@@ -24,7 +24,7 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   side: THREE.DoubleSide
 })
 
-const Image = React.memo(({scene, id, type, storyboarderFilePath, imageAttachmentIds, ...props}) => {
+const Image = React.memo(({scene, id, type, isSelected, storyboarderFilePath, imageAttachmentIds, ...props}) => {
 
   let image = useRef(null)
   const loadingImageSet = useRef(false)
@@ -58,7 +58,7 @@ const Image = React.memo(({scene, id, type, storyboarderFilePath, imageAttachmen
 
   const create = () => {
     console.log(type, id, 'added')
-    let geo = new THREE.PlaneBufferGeometry(1, 1)
+    let geo = new THREE.BoxBufferGeometry(1, 1, 0.01)
     let mat = materialFactory()
     let mesh = new THREE.Mesh(geo, mat)
 
@@ -126,6 +126,24 @@ const Image = React.memo(({scene, id, type, storyboarderFilePath, imageAttachmen
       image.current.orthoIcon.visible = props.visible
     }
   }, [props.visible])
+
+  useEffect(() => {
+    if (!image.current) return
+    if (!image.current.material) return
+
+    image.current.material.userData.outlineParameters =
+      isSelected
+        ? {
+          thickness: 0.008,
+          color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
+        }
+        : {
+          thickness: 0.008,
+          color: [ 0, 0, 0 ],
+        }
+
+    image.current.orthoIcon.setSelected(isSelected)
+  }, [isSelected])
 
   useEffect(() => {
   if (image.current) {

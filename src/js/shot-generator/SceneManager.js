@@ -627,7 +627,8 @@ const SceneManager = connect(
               Image, {
                 key: props.id,
                 scene,
-
+                isSelected: selections.includes(props.id),
+                
                 storyboarderFilePath: meta.storyboarderFilePath,
                 imageAttachmentIds: props.imageAttachmentIds,
                 ...props
