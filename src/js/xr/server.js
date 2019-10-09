@@ -134,9 +134,14 @@ class XRServer {
     })
 
     app.post('/state.json', (req, res) => {
-      let payload = req.body
-      store.dispatch(updateSceneFromXR(payload))
-      res.status(200).send({ ok: true })
+      let { uid } = req.query
+      let sg = req.body
+      if (!validSameBoard(uid)) {
+        res.status(500).send('The board you are attempting to update from VR is not open in Shot Generator')
+      } else {
+        store.dispatch(updateSceneFromXR(sg))
+        res.status(200).send({ ok: true })
+      }
     })
 
     // upload data to Shot Generator AND save to the current board

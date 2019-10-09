@@ -95,6 +95,26 @@ api.selectBoardByUid = async (uid) => {
 }
 api.uriForThumbnail = filename =>
   `${URI}/boards/images/${filename}`
+api.sendState = async (uid, data) => {
+  let url = new URL(`${URI}/state.json`)
+  url.searchParams.append('uid', uid)
+  let body = JSON.stringify(data)
+  let response = await fetch(
+    url,
+    {
+      method: 'POST',
+      body,
+      headers: {
+        'Content-Type': 'application/json; charset=utf-8',
+      },
+    }
+  )
+  if (response.ok) {
+    return await response.json()
+  } else {
+    throw new Error(await response.text())
+  }
+}
 api.saveShot = async (uid, data) => {
   let body = JSON.stringify(data)
   let response =
@@ -140,6 +160,13 @@ const TestUI = () => {
     let board = await api.selectBoardByUid(uid)
     setRemoteBoard(JSON.parse(JSON.stringify(board)))
     setBoard(board)
+  }
+  const onSendState = async (uid, data) => {
+    try {
+      await api.sendState(uid, data)
+    } catch (err) {
+      alert('Error\n' + err)
+    }
   }
   const onSaveShot = async data => {
     try {
@@ -202,6 +229,11 @@ const TestUI = () => {
                     <p>
                       <a onClick={preventDefault(() => changeBoard())} href="#">
                         > Change board data (for testing)
+                      </a>
+                    </p>
+                    <p>
+                      <a onClick={preventDefault(() => onSendState(board.uid, board.sg.data))} href="#">
+                        > Update Shot Generator (but don’t save)
                       </a>
                     </p>
                     <p>
