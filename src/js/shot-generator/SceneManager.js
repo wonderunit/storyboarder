@@ -146,7 +146,6 @@ const SceneManager = connect(
     }, [])
 
     useEffect(() => {
-      if(!(scene && camera) || ikHelper.current) return;
       
       let sgIkHelper = SGIkHelper.getInstance(null, scene, camera, largeRenderer.current.domElement)
       ikHelper.current = sgIkHelper
@@ -183,7 +182,7 @@ const SceneManager = connect(
         updateCharacterPos,
         updatePoleTarget
       )
-    }, [camera])
+    }, [])
 
     const setOutlineEffectParams = (type, params) => {
       if (type === 'large') {
