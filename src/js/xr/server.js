@@ -31,7 +31,7 @@ class XRServer {
 
         // intercept OPTIONS method
         if (req.method == 'OPTIONS') {
-          res.send(200)
+          res.sendStatus(200)
         } else {
           next()
         }
