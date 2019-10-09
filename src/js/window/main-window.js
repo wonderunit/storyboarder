@@ -7079,7 +7079,8 @@ ipcRenderer.on('storyboarder:get-boards', event => {
   ipcRenderer.send('shot-generator:get-boards', {
     boards: boardData.boards.map(board => ({
       uid: board.uid,
-      thumbnail: boardModel.boardFilenameForThumbnail(board)
+      thumbnail: boardModel.boardFilenameForThumbnail(board),
+      hasSg: board.sg ? true : false
     }))
   })
 })
