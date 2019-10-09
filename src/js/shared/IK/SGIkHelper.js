@@ -79,27 +79,36 @@ class SGIKHelper extends THREE.Object3D
             //{
             //    mesh.userData.isInitialized = false;
             //}
-            mesh.scale.set(0.001, 0.001, 0.001).multiplyScalar(scaleAspect);
+            if(mesh.userData.type === "controlPoint")
+            {
+                mesh.scale.set(0.001, 0.001, 0.001).multiplyScalar(scaleAspect);
+            }
+            else
+            {
+                mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
+            }
+    
             mesh.userData.scaleAspect = scaleAspect;
         }
-        ragDoll.initObject(this, object, this.targetControls);
+        ragDoll.initObject(this, object, this.targetControls, this.poleTargets.children);
         ragDoll.reinitialize();
         this.updateAllTargetPoints();
     }
 
     selectControlPoint(uuid)
     {
+        //this.ragDoll.reinitialize();
         let targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
         this.selectedControlPoint = targetPoints.find(object => object.uuid === uuid);
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
         //this.selectedControlPoint.scope.selectControlPoint(event);
-        if(this.selectedControlPoint.userData.name === "hips")
+        if(this.selectedControlPoint.userData.name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
             this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent, false);
         }
-        if(this.selectedControlPoint.userData.name === "back")
+        if(this.selectedControlPoint.userData.name === "Head")
         {
             this.ragDoll.applyingOffset = true;
         }
@@ -130,13 +139,13 @@ class SGIKHelper extends THREE.Object3D
                 };
                 this.updatePoleTargets(poleTargets);
             }
-            if(this.selectedControlPoint.userData.name === "hips")
+            if(this.selectedControlPoint.userData.name === "Hips")
             {
                 this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
                 this.ragDoll.changeControlPointsParent(this.controlPoints);
                 this.ragDoll.hipsMouseDown = false;
             }
-            if(this.selectedControlPoint.userData.name === "back")
+            if(this.selectedControlPoint.userData.name === "Head")
             {
                 this.ragDoll.applyingOffset = false;
             }
@@ -166,13 +175,13 @@ class SGIKHelper extends THREE.Object3D
                 this.poleTargets.attach(this.selectedControlPoint);
 
             }
-            if(this.selectedControlPoint.userData.name === "hips")
+            if(this.selectedControlPoint.userData.name === "Hips")
             {
                 this.instancedMesh.updateMatrixWorld(true);
                 this.updateInstancedTargetPoint(this.selectedControlPoint, null, false);
-                for(let i = 0; i < this.ragDoll.chainObjects.length; i++)
+                for(let i = 0; i < this.ragDoll.chainObjectsValues.length; i++)
                 {
-                    this.updateInstancedTargetPoint( this.ragDoll.chainObjects[i].controlTarget.target, null, true);
+                    this.updateInstancedTargetPoint( this.ragDoll.chainObjectsValues[i].controlTarget.target, null, true);
                 }
             }
             else
@@ -276,10 +285,9 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
 {
     let sphereGeometry = new THREE.SphereBufferGeometry( 0.5, 8, 6 );
     let instance = SGIKHelper.getInstance();
-    let controlPointsAmount = 6;
-    let controlsName = [ "back", "leftHand", "rightHand", "leftLeg", "rightLeg", "hips"];
-    let listOfControlTargets = [];//["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
-    let sizeOfTargets = listOfControlTargets.length + controlPointsAmount;
+    let controlsName = [ "Head", "LeftHand", "RightHand", "LeftLeg", "RightLeg", "Hips"];
+    let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
+    let sizeOfTargets = listOfControlTargets.length + controlsName.length;
     let material = new THREE.MeshBasicMaterial({
         color: 0x6a4dff,    
         depthTest: false,
@@ -308,16 +316,15 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         controlPoint.userData.name = controlsName.shift();
         let targetControl = new TargetControl(camera, domElement, "controlPoint");
         targetControl.initialize(scene, new THREE.Vector3(0, 0, 0), controlPoint);
-        console.log()
         //targetControl.control.scale.set(0.01, 0.01, 0.01);
         instance.controlPoints.add(controlPoint);
         instance.targetControls.push(targetControl);
         instance.resetTargetPoint(controlPoint);
     }
-/*     for(let i = 0; i < 4; i++)
+    for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(newMesh.geometry, material);
-        poleTarget.material.visible = false;
+        poleTarget.material.visible = true;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
@@ -326,7 +333,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         poleTarget.layers.disable(2)
         instance.poleTargets.add(poleTarget);
         instance.resetTargetPoint(poleTarget);
-    } */
+    }
     
 }
 module.exports = SGIKHelper;

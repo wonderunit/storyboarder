@@ -23,6 +23,7 @@ class IkObject
         this.applyingOffset = false;
         this.isRotation = false;
         this.scene = null;  
+        this.chainObjects = {}
     }
 
     //#region External Methods
@@ -37,89 +38,53 @@ class IkObject
         this.originalObject = objectSkeleton;
         this.ikSwitcher = new IKSwitcher(objectSkeleton, clonedSkeleton);
 
-        this.rigMesh = clonedSkeleton.children[1];
-        let rigMesh = this.rigMesh;
+        this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
+        this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.controlTargets = controlTargets;
         this.addParentToControl(objectSkeleton.uuid);
-        let chainObjects = [];
-        this.chainObjects = chainObjects;
-        this.hipsControlTarget = this.controlTargets[5];
+        //let chainObjects = [];
+/*         this.hipsControlTarget = this.controlTargets[5];
 
         chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
         chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
         chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
         chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
         chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
+ */
+        this.hipsControlTarget = controlTargets[0];
+        controlTargets[0].target.userData.name = "Hips";
+        this.chainObjects["Head"] = new ChainObject("Spine", "Head", controlTargets[1]);
+        this.chainObjects['LeftHand'] = new ChainObject("LeftArm", "LeftHand", controlTargets[2]);
+        this.chainObjects['RightHand'] = new ChainObject("RightArm", "RightHand", controlTargets[3]);
+        this.chainObjects['LeftFoot'] = new ChainObject("LeftUpLeg", "LeftFoot", controlTargets[4]);
+        this.chainObjects['RightFoot'] = new ChainObject("RightUpLeg", "RightFoot", controlTargets[5]);
 
         //Fixing female-adult spine deformation
-        if(rigMesh.name === "female-adult-meso")
+        if(this.rigMesh.name === "female-adult-meso")
         {
-            rigMesh.skeleton.bones[2].rotation.set(0, 0, 0);
-            rigMesh.skeleton.bones[2].updateMatrix();
-            rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
+            this.rigMesh.skeleton.bones[2].rotation.set(0, 0, 0);
+            this.rigMesh.skeleton.bones[2].updateMatrix();
+            this.rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
         }
        
-        let skeleton = null;
         // Goes through all scene objects
-        clonedSkeleton.traverse((object) =>
-        {
-            // Searches only bones object
-            if(object instanceof THREE.Bone)
-            {
-                object.matrixAutoUpdate = false;
-                object.matrixWorldNeedsUpdate = false;
-                // Flips a model's forward from -Z to +Z
-                // By default Models axis is -Z while Three ik works with +Z
-                if(object.name === "Hips")
-                {
-                    this.hips = object;
-                    this.hipsControlTarget.setBone(object);
-                    setZDirecion(object, new THREE.Vector3(0, 0, 1));
-                }
-                // Goes through all chain objects to find with which we are working
-                chainObjects.forEach((chainObject) =>
-                {
-                    // Finds base Object Name or an object from which chain starting
-                    // Also checks if chain is started
-                    if(object.name == chainObject.baseObjectName || chainObject.isChainObjectStarted)
-                    {
-                        let chain = chainObject.chain;
-
-                        // Checks if root object
-                        if(object.name === chainObject.baseObjectName)
-                        {
-                            chainObject.isChainObjectStarted = true;
-                            chains.push(chain);
-                        }
-                        // Declares target
-                        // Target(Effector) is object to which chain is trying to get
-                        let target =  null;
-                        // Checks if object is last
-                        if(object.name === chainObject.lastObjectName)
-                        {
-                            target = chainObject.controlTarget.target;
-                            chainObject.isChainObjectStarted = false;
-                            chainObject.controlTarget.setBone(object);
-                        }
-                        this.ikSwitcher.ikBonesName.push(object.name);
-                        // Creates joint by passing current bone and its constraint
-                        let joint = new IKJoint(object, {});
-                        // Adds joint to chain and sets target
-                        chain.add(joint, {target});
-                    }
-                });
-            }
-        });
-        this.ikSwitcher.ikBonesName.push("Hips");
+        initializeChainObject(this, chains);
         // Goes through list of constraints and adds it to IK
         chains.forEach((chain) =>
         {
             this.ik.add(chain);
         });
-        // Adds skeleton helper to scene
+        this.ikSwitcher.ikBonesName.push("Hips");
         this.ikSwitcher.recalculateDifference();
         this.ikSwitcher.calculateRelativeAngle();
     }
+
+
+    get chainObjectsValues()
+    {
+        return Object.values(this.chainObjects);
+    }
+
 
     // Updates chains
     // Only done this left limbs in order to see difference
@@ -151,7 +116,7 @@ class IkObject
         if(!this.applyingOffset)
         {
             let hipsTarget = this.hipsControlTarget.target;
-            let backTarget = this.chainObjects[0].controlTarget.target;
+            let backTarget = this.chainObjects["Head"].controlTarget.target;
             let hipsPosition = hipsTarget.worldPosition();;
             let result = hipsPosition.add(this.backOffset);
             backTarget.parent.worldToLocal(hipsPosition);
@@ -229,11 +194,65 @@ class IkObject
     // Calculates back's offset in order to move with hips
     calculteBackOffset()
     {
-        let backPosition = this.chainObjects[0].controlTarget.target.worldPosition();
+        let backPosition = this.chainObjects["Head"].controlTarget.target.worldPosition();
         let hipsPosition = this.hipsControlTarget.target.worldPosition();
         this.backOffset = backPosition.sub(hipsPosition);
     }
     //#endregion
+}
+
+const initializeChainObject = (ikObject, chains) =>
+{
+    ikObject.clonedObject.traverse((object) =>
+    {
+        // Searches only bones object
+        if(object instanceof THREE.Bone)
+        {
+            object.matrixAutoUpdate = false;
+            object.matrixWorldNeedsUpdate = false;
+            // Flips a model's forward from -Z to +Z
+            // By default Models axis is -Z while Three ik works with +Z
+            if(object.name === "Hips")
+            {
+                ikObject.hips = object;
+                ikObject.hipsControlTarget.setBone(object);
+                setZDirecion(object, new THREE.Vector3(0, 0, 1));
+            }
+            // Goes through all chain objects to find with which we are working
+            ikObject.chainObjectsValues.forEach((chainObject) =>
+            {
+                // Finds base Object Name or an object from which chain starting
+                // Also checks if chain is started
+                if(object.name == chainObject.baseObjectName || chainObject.isChainObjectStarted)
+                {
+                    let chain = chainObject.chain;
+
+                    // Checks if root object
+                    if(object.name === chainObject.baseObjectName)
+                    {
+                        chainObject.isChainObjectStarted = true;
+                        chains.push(chain);
+                    }
+                    // Declares target
+                    // Target(Effector) is object to which chain is trying to get
+                    let target =  null;
+                    // Checks if object is last
+                    if(object.name === chainObject.lastObjectName)
+                    {
+                        target = chainObject.controlTarget.target;
+                        target.userData.name = object.name;
+                        chainObject.isChainObjectStarted = false;
+                        chainObject.controlTarget.setBone(object);
+                    }
+                    ikObject.ikSwitcher.ikBonesName.push(object.name);
+                    // Creates joint by passing current bone and its constraint
+                    let joint = new IKJoint(object, {});
+                    // Adds joint to chain and sets target
+                    chain.add(joint, {target});
+                }
+            });
+        }
+    });
 }
 
 module.exports =  IkObject;
