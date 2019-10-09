@@ -1172,7 +1172,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
                 onChange: volumeImageAttachmentIds => {
                   updateObject(sceneObject.id, { volumeImageAttachmentIds })
                 },
-                onBlur: () => transition('TYPING_EXIT')
+                onBlur: () => transition('TYPING_EXIT'),
+                multiSelections: true
               }
             ]
           ]]],
@@ -1428,7 +1429,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           'div.column',
 
           ['div.number-slider', [
-            ['div.number-slider__label', 'Image Files'],
+            ['div.number-slider__label', 'Image File'],
             ['div.number-slider__control', { style: { width: 137 }}, [
               AttachmentsSelect, {
                 style: { flex: 1 },
@@ -1463,7 +1464,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
                 onChange: imageAttachmentIds => {
                   updateObject(sceneObject.id, { imageAttachmentIds })
                 },
-                onBlur: () => transition('TYPING_EXIT')
+                onBlur: () => transition('TYPING_EXIT'),
+                multiSelections: false
               }
             ]
           ]]]
