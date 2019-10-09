@@ -61,7 +61,7 @@ class SGIKHelper extends THREE.Object3D
         this.intializedSkinnedMesh = object;
         let meshes = this.targetPoints;
         //let initializedMeshes = skinnedMesh.parent.parent.userData.poleTargets ? skinnedMesh.parent.parent.userData.poleTargets : [];
-        let scaleAspect = height / this.regularHeight;
+        let scaleAspect = height / this.regularHeight / object.scale.x;
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
@@ -81,7 +81,7 @@ class SGIKHelper extends THREE.Object3D
             //}
             if(mesh.userData.type === "controlPoint")
             {
-                mesh.scale.set(0.001, 0.001, 0.001).multiplyScalar(scaleAspect);
+                mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
             }
             else
             {
@@ -279,6 +279,7 @@ class SGIKHelper extends THREE.Object3D
     {
         return this.parent ? true : false;
     }
+    
 }
 
 const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
@@ -310,7 +311,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     {
         let controlPoint = new THREE.Mesh(newMesh.geometry, material);
         controlPoint.userData.id = --sizeOfTargets;
-        controlPoint.material.visible = true;
+        controlPoint.material.visible = false;
         controlPoint.userData.type = "controlPoint";
         controlPoint.name = "controlPoint";
         controlPoint.userData.name = controlsName.shift();
@@ -324,7 +325,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(newMesh.geometry, material);
-        poleTarget.material.visible = true;
+        poleTarget.material.visible = false;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();

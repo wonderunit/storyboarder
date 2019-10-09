@@ -91,7 +91,7 @@ class Ragdoll extends IkObject
             } */
         
             this.ikSwitcher.applyToIk();
-            //this.resetTargets()
+            this.resetPoleTarget();
             this.resetControlPoints();
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
@@ -258,9 +258,11 @@ class Ragdoll extends IkObject
     {
         let offset = poleTarget.initialOffset;
         let position = chain.joints[chain.joints.length - 2].bone.worldPosition();
-        let hipsOffset = position.clone().sub(this.hips.worldPosition());
-        hipsOffset.add(this.hipsControlTarget.target.position);
+        let hipsOffset = position.sub(this.hips.worldPosition());
         hipsOffset.add(offset);
+        poleTarget.offsetWithoutHips = hipsOffset.clone();
+        hipsOffset.add(this.hips.position);
+       // hipsOffset.applyMatrix4(this.rigMesh.skeleton.bones[0].matrixWorld());
         poleTarget.poleOffset = hipsOffset;
     }
 
@@ -282,30 +284,32 @@ class Ragdoll extends IkObject
     // Resets pole target position when object moved his hips position changed
     resetPoleTarget()
     {
-         let chainObjects = this.chainObjects;
+         let chainObjects = this.chainObjectsValues;
          let hipsTarget = this.hipsControlTarget.target;
          let {angle, axis} = this.hips.quaternion.toAngleAxis();
          let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
+         spineWorldQuat.premultiply(this.hipsControlTarget.target.parent.worldQuaternion().inverse());
          let armsAngleAxis = spineWorldQuat.toAngleAxis();
          for(let i = 0; i < chainObjects.length; i++)
          {
-             let constraint = this.chainObjects[i].poleConstraint;
+             let constraint = chainObjects[i].poleConstraint;
              if(!constraint)
              {
                  continue;
              }
-             let targetPosition = new THREE.Vector3();
-             hipsTarget.getWorldPosition(targetPosition);
-             let poleOffset = constraint.poleTarget.poleOffset;
+             let targetPosition = hipsTarget.position;// new THREE.Vector3();
+            // hipsTarget.getWorldPosition(targetPosition);
+             let poleOffset = constraint.poleTarget.offsetWithoutHips;
              let mesh = constraint.poleTarget.mesh;
-             mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
-             if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
-             {
-                 mesh.rotateAroundPoint(targetPosition, armsAngleAxis.axis, armsAngleAxis.angle);
-             }
-             else
-             {
-                 mesh.rotateAroundPoint(targetPosition, axis, angle);
+            if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
+            {
+                mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z - poleOffset.z);
+                mesh.rotateAroundPoint(targetPosition, armsAngleAxis.axis, armsAngleAxis.angle);
+            }
+            else
+            {
+                mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
+                mesh.rotateAroundPoint(targetPosition, axis, angle);
              }
          }
     }
@@ -319,12 +323,10 @@ class Ragdoll extends IkObject
             let joints = chainObjects[i].chain.joints;
             let bone = joints[joints.length-1].bone;
             let target = chainObjects[i].controlTarget.target;
-            target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.worldQuaternion().inverse()));
+            target.quaternion.multiply(target.worldQuaternion().inverse());
+            target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.parent.worldQuaternion().inverse()));
             target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
-            // target.inverseInitialQuaternion = bone.worldQuaternion().inverse().multiply(this.hips.worldQuaternion());
-            this.controlTargets[i].isRotationLocked = true;
         }
-        this.poseChanged = true;
     }
 
     // Resets targets position
