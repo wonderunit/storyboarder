@@ -18,6 +18,8 @@ const getIpAddress = require('../utils/getIpAddress')
 
 class XRServer {
   constructor ({ store, service }) {
+    const validSameBoard = uid => store.getState().board.uid === uid
+
     app.use(express.json({
       limit: '5mb'
     }))
@@ -138,11 +140,16 @@ class XRServer {
     })
 
     // upload data to Shot Generator AND save to the current board
-    app.post('/board.json', async (req, res, next) => {
+    app.post('/boards/:uid.json', async (req, res, next) => {
+      let { uid } = req.params
       let sg = req.body
-      store.dispatch(updateSceneFromXR(sg))
-      service.saveShot()
-      res.status(200).send({ ok: true })
+      if (!validSameBoard(uid)) {
+        res.status(500).send('The board you are attempting to save from VR is not open in Shot Generator')
+      } else {
+        store.dispatch(updateSceneFromXR(sg))
+        service.saveShot()
+        res.status(200).send({ ok: true })
+      }
     })
     // upload data to Shot Generator AND insert as a NEW board
     app.post('/boards.json', async (req, res, next) => {

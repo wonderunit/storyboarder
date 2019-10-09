@@ -95,11 +95,11 @@ api.selectBoardByUid = async (uid) => {
 }
 api.uriForThumbnail = filename =>
   `${URI}/boards/images/${filename}`
-api.saveShot = async data => {
+api.saveShot = async (uid, data) => {
   let body = JSON.stringify(data)
-  return await(
+  let response =
     await fetch(
-      `${URI}/board.json`,
+      `${URI}/boards/${uid}.json`,
       {
         method: 'POST',
         headers: {
@@ -109,7 +109,11 @@ api.saveShot = async data => {
         body
       }
     )
-  ).json()
+  if (response.ok) {
+    return await response.json()
+  } else {
+    throw new Error(await response.text())
+  }
 }
 api.insertShot = async data => {
   let body = JSON.stringify(data)
@@ -138,9 +142,13 @@ const TestUI = () => {
     setBoard(board)
   }
   const onSaveShot = async data => {
-    await api.saveShot(data)
-    setForceUpdate(i => !i)
-    onBoardClick(board.uid)
+    try {
+      await api.saveShot(board.uid, data)
+      setForceUpdate(i => !i)
+      onBoardClick(board.uid)
+    } catch (err) {
+      alert('Could not save board\n' + err)
+    }
   }
   const onInsertShot = async data => {
     let board = await api.insertShot(data)
