@@ -422,8 +422,9 @@ const Character = React.memo(({
 
   //#region Camera changing 
   useEffect(() => {
-    if(!ready) return
+    console.log(camera)
     SGIkHelper.getInstance().setCamera(camera);
+    if(!ready) return
     //skeletonRig.controlTargetSelection.camera = camera;
     //boneRotationControl.current.setCamera(camera);
    //for(let controlTarget of skeletonRig.controlTargets)

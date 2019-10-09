@@ -285,6 +285,7 @@ class SGIKHelper extends THREE.Object3D
 
     setCamera(camera)
     {
+        this.ragDoll.controlTargetSelection.camera = camera;
         for(let i = 0; i < this.targetControls.length; i++)
         {
             this.targetControls[i].setCamera(camera);
