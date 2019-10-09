@@ -37,7 +37,6 @@ class IkObject
         this.clonedObject = clonedSkeleton;
         this.originalObject = objectSkeleton;
         this.ikSwitcher = new IKSwitcher(objectSkeleton, clonedSkeleton);
-
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.controlTargets = controlTargets;
@@ -79,12 +78,10 @@ class IkObject
         this.ikSwitcher.calculateRelativeAngle();
     }
 
-
     get chainObjectsValues()
     {
         return Object.values(this.chainObjects);
     }
-
 
     // Updates chains
     // Only done this left limbs in order to see difference

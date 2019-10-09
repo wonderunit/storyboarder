@@ -58,35 +58,30 @@ class SGIKHelper extends THREE.Object3D
         this.isInitialized = true;
 
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === object.uuid) return;
+        this.resetAllTargetPoints();
         this.intializedSkinnedMesh = object;
         let meshes = this.targetPoints;
-        //let initializedMeshes = skinnedMesh.parent.parent.userData.poleTargets ? skinnedMesh.parent.parent.userData.poleTargets : [];
+        let initializedMeshes = object.userData.poleTargets ? object.userData.poleTargets : [];
         let scaleAspect = height / this.regularHeight / object.scale.x;
+        console.log(initializedMeshes);
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
-            //let intializedMesh = initializedMeshes[mesh.name];
+            let intializedMesh = initializedMeshes[mesh.name];
             // Checks if there's already info for current mesh
             // Info like position
-            //if(intializedMesh)
-            //{
-            //    let pos = intializedMesh.position;
-            //    mesh.position.set(pos.x, pos.y, pos.z);
-            //    mesh.updateMatrixWorld();
-            //    mesh.userData.isInitialized = true;
-            //}
-            //else
-            //{
-            //    mesh.userData.isInitialized = false;
-            //}
-            if(mesh.userData.type === "controlPoint")
+            if(intializedMesh)
             {
-                mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
+                let pos = intializedMesh.position;
+                mesh.position.set(pos.x, pos.y, pos.z);
+                mesh.updateMatrixWorld();
+                mesh.userData.isInitialized = true;
             }
             else
             {
-                mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
+                mesh.userData.isInitialized = false;
             }
+            mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
     
             mesh.userData.scaleAspect = scaleAspect;
         }
@@ -233,6 +228,15 @@ class SGIKHelper extends THREE.Object3D
         targetPoint.quaternion.set(0, 0, 0, 1);
         targetPoint.scale.set(1, 1, 1);
         this.updateInstancedTargetPoint(targetPoint, this.defaultColor);
+    }
+
+    resetAllTargetPoints()
+    {
+        console.log(this.targetPoints);
+        for(let i = 0; i < this.targetPoints.length; i++)
+        {
+            this.resetTargetPoint(this.targetPoints[i]);
+        }
     }
 
     updateAllTargetPoints()

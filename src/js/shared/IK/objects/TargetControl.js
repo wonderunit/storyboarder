@@ -49,7 +49,7 @@ class TargetControl
         //this.control.enabled = false;
         //this.control.addToScene();
         this.addEventsToControlTarget();
-        this.domElement.focus();
+        //this.domElement.focus();
         movingTarget.layers.disable(0)
         movingTarget.layers.enable(1)
         movingTarget.layers.disable(2)
