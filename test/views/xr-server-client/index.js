@@ -6,6 +6,8 @@ window.THREE = window.THREE || THREE
 const { useEffect, useState } = React = require('react')
 const ReactDOM = require('react-dom')
 
+const { reducer } = require('../../../src/js/shared/reducers/shot-generator')
+
 const NotAsked = () => ({ type: 'NotAsked' })
 const Loading = () => ({ type: 'Loading' })
 const Success = data => ({ type: 'Success', data })
@@ -128,23 +130,31 @@ api.insertShot = async data => {
 
 const TestUI = () => {
   const [forceUpdate, setForceUpdate] = useState()
+  const [remoteBoard, setRemoteBoard] = useState()
   const [board, setBoard] = useState()
   const onBoardClick = async uid => {
-    setBoard(await api.selectBoardByUid(uid))
+    let board = await api.selectBoardByUid(uid)
+    setRemoteBoard(JSON.parse(JSON.stringify(board)))
+    setBoard(board)
   }
   const onSaveShot = async data => {
     await api.saveShot(data)
+    setForceUpdate(i => !i)
+    onBoardClick(board.uid)
   }
   const onInsertShot = async data => {
     let board = await api.insertShot(data)
     setForceUpdate(i => !i)
+    onBoardClick(board.uid)
   }
-  const updateNames = data => {
-    for (let key of Object.keys(data.sceneObjects)) {
-      let sceneObject = data.sceneObjects[key]
-      sceneObject.name = `Saved ${Date.now()}`
+  const changeBoard = () => {
+    for (let key of Object.keys(board.sg.data.sceneObjects)) {
+      let sceneObject = board.sg.data.sceneObjects[key]
+      sceneObject.name = `Updated at ${Date.now()}`
     }
+    setBoard(JSON.parse(JSON.stringify(board)))
   }
+
   return (
     <div style={{ display: 'flex', flexDirection: 'row' }}>
       <List forceUpdate={forceUpdate} onBoardClick={onBoardClick} />
@@ -155,22 +165,32 @@ const TestUI = () => {
         {
           board
             ? <div>
-              {board.uid}
+              <b>uid:</b>{board.uid}
               {
-                board.sg &&
+                remoteBoard.sg && board.sg &&
                 <div>
                   <div>
-                  Objects:
+                    <b>objects:</b>
                     {
                       Object.values(board.sg.data.sceneObjects)
-                        .map(o => o.type)
+                        .map(o => o.name || o.displayName)
                         .join(', ')
                     }
                   </div>
                   <div>
                     <p>
-                      <a onClick={preventDefault(() => updateNames(board.sg.data))} href="#">
-                        > Change all SceneObject names (for testing)
+                      <b>server sha1:</b>
+                      {reducer({}, { type: 'LOAD_SCENE', payload: remoteBoard.sg.data }).meta.lastSavedHash}
+                    </p>
+                    <p>
+                      <b>client sha1:</b>
+                      {reducer({}, { type: 'LOAD_SCENE', payload: board.sg.data }).meta.lastSavedHash}
+                    </p>
+                  </div>
+                  <div>
+                    <p>
+                      <a onClick={preventDefault(() => changeBoard())} href="#">
+                        > Change board data (for testing)
                       </a>
                     </p>
                     <p>
