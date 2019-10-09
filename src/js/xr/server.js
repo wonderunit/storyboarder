@@ -137,6 +137,21 @@ class XRServer {
       res.status(200).send({ ok: true })
     })
 
+    // upload data to Shot Generator AND save to the current board
+    app.post('/board.json', async (req, res, next) => {
+      let sg = req.body
+      store.dispatch(updateSceneFromXR(sg))
+      service.saveShot()
+      res.status(200).send({ ok: true })
+    })
+    // upload data to Shot Generator AND insert as a NEW board
+    app.post('/boards.json', async (req, res, next) => {
+      let sg = req.body
+      store.dispatch(updateSceneFromXR(sg))
+      let { board } = await service.insertShot()
+      res.json(board)
+    })
+
     app.use(function (req, res, next) {
       res.status(404).send('Not found')
     })

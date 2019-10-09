@@ -35,7 +35,20 @@ service.getBoard = uid =>
   })
 
 service.setBoardByUid = async uid => {
+  // ask main > Shot Generator > to call loadBoardByUid
   ipcRenderer.send('shot-generator:loadBoardByUid', uid)
 }
+service.saveShot = async () => {
+  // ask main > Shot Generator > Storyboarder to save current board/sg to .storyboarder file
+  ipcRenderer.send('shot-generator:requestSaveShot')
+}
+service.insertShot = () =>
+  new Promise(resolve => {
+    ipcRenderer.on('update', (event, { board }) => {
+      resolve({ board })
+    })
+    // ask main > Shot Generator > Storyboarder to insert current board/sg as new board
+    ipcRenderer.send('shot-generator:requestInsertShot')
+  })
 
 module.exports = service

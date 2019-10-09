@@ -208,6 +208,56 @@ const Editor = connect(
     // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
     const imageRenderer = useRef()
 
+    const saveShot = (dispatch, state) => {
+      let { cameraImage, plotImage } = renderImagesForBoard(state)
+
+      ipcRenderer.send('saveShot', {
+        uid: state.board.uid,
+        data: getSerializedState(state),
+        images: {
+          'camera': cameraImage,
+          'plot': plotImage
+        }
+      })
+
+      dispatch(markSaved())
+    }
+
+    const insertShot = (dispatch, state) => {
+      let { cameraImage, plotImage } = renderImagesForBoard(state)
+
+      // NOTE we do this first, since we get new data on insertShot complete
+      dispatch(markSaved())
+
+      ipcRenderer.send('insertShot', {
+        data: getSerializedState(state),
+        images: {
+          'camera': cameraImage,
+          'plot': plotImage
+        }
+      })
+    }
+
+    // setup refs
+    const saveShotFn = useRef()
+    const insertShotFn = useRef()
+    // always point refs to updated functions
+    saveShotFn.current = saveShot
+    insertShotFn.current = insertShot
+    // add handlers once, and use refs for callbacks
+    useEffect(() => {
+      ipcRenderer.on('requestSaveShot', () => {
+        withState((dispatch, state) => {
+          saveShotFn.current(dispatch, state)
+        })
+      })
+      ipcRenderer.on('requestInsertShot', () => {
+        withState((dispatch, state) => {
+          insertShotFn.current(dispatch, state)
+        })
+      })
+    }, [])
+
     const renderImagesForBoard = state => {
       if (!imageRenderer.current) {
         imageRenderer.current = new THREE.OutlineEffect(
@@ -279,34 +329,12 @@ const Editor = connect(
 
     const onToolbarSaveToBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage, plotImage } = renderImagesForBoard(state)
-
-        ipcRenderer.send('saveShot', {
-          uid: state.board.uid,
-          data: getSerializedState(state),
-          images: {
-            'camera': cameraImage,
-            'plot': plotImage
-          }
-        })
-
-        dispatch(markSaved())
+        saveShot(dispatch, state)
       })
     }
     const onToolbarInsertAsNewBoard = () => {
       withState((dispatch, state) => {
-        let { cameraImage, plotImage } = renderImagesForBoard(state)
-
-        // NOTE we do this first, since we get new data on insertShot complete
-        dispatch(markSaved())
-
-        ipcRenderer.send('insertShot', {
-          data: getSerializedState(state),
-          images: {
-            'camera': cameraImage,
-            'plot': plotImage
-          }
-        })
+        insertShot(dispatch, state)
       })
     }
 

@@ -8,6 +8,7 @@
     html,
     body {
       margin: 0;
+      line-height: 1.333;
     }
 
     #main div {
@@ -15,26 +16,39 @@
       height: 100%;
     }
 
+    #main>div p {
+      margin: 10px 0;
+      padding: 0;
+    }
+
     .boards {
       margin: 10px;
-    }
-    .boards p {
       padding: 10px;
     }
     .board {
-      padding: 10px;
-      margin: 10px;
-      border: 2px solid #eee;
-      display: block;
-      max-width: 100px;
+      border: 2px solid #ddd;
+      display: flex;
       font-size: 11px;
       font-family: monospace;
       color: #999;
       cursor: pointer;
+      background-color: #f5f5f5;
+      margin-bottom: 10px;
+    }
+    .board div:first-child {
+      padding: 10px;
+    }
+    .board div:last-child {
+      flex: 1;
+    }
+    .board p {
+      margin: 0;
+      padding: 0;
     }
     .board img {
-      display: block;
-      max-width: 100%;
+      display: flex;
+      height: 120px;
+      background-color: white;
     }
   </style>
 </head>

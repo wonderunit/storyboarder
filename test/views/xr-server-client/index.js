@@ -16,7 +16,12 @@ const renderRemoteData = (remoteData, callbacks) => {
   return callbacks[remoteData.type](rest ? Object.values(rest)[0] : undefined)
 }
 
-const List = ({ onBoardClick }) => {
+const preventDefault = (fn, ...args) => e => {
+  e.preventDefault()
+  fn(e, ...args)
+}
+
+const List = ({ forceUpdate, onBoardClick }) => {
   const [remoteData, setRemoteData] = useState(NotAsked())
   useEffect(() => {
     async function fetchData () {
@@ -29,10 +34,10 @@ const List = ({ onBoardClick }) => {
       }
     }
     fetchData()
-  }, [])
+  }, [forceUpdate])
 
   return (
-    <div>
+    <>
       {
         renderRemoteData(remoteData, {
           NotAsked: () => <div>Initializing …</div>,
@@ -46,7 +51,8 @@ const List = ({ onBoardClick }) => {
               data.map(board => (
                 <div key={board.uid} className="board" onClick={() => onBoardClick(board.uid)}>
                   <div>
-                    {board.uid}
+                    <p>uid:{board.uid}</p>
+                    {board.hasSg && <p>w/ Shot Generator data</p>}
                   </div>
                   <div>
                     <img src={api.uriForThumbnail(board.thumbnail)} />
@@ -57,7 +63,7 @@ const List = ({ onBoardClick }) => {
           </div>
         })
       }
-    </div>
+    </>
   )
 }
 
@@ -87,14 +93,106 @@ api.selectBoardByUid = async (uid) => {
 }
 api.uriForThumbnail = filename =>
   `${URI}/boards/images/${filename}`
+api.saveShot = async data => {
+  let body = JSON.stringify(data)
+  return await(
+    await fetch(
+      `${URI}/board.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body
+      }
+    )
+  ).json()
+}
+api.insertShot = async data => {
+  let body = JSON.stringify(data)
+  return await (
+    await fetch(
+      `${URI}/boards.json`,
+      {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body
+      }
+    )
+  ).json()
+}
 
 const TestUI = () => {
+  const [forceUpdate, setForceUpdate] = useState()
+  const [board, setBoard] = useState()
   const onBoardClick = async uid => {
-    let board = await api.selectBoardByUid(uid)
-    console.log(board)
+    setBoard(await api.selectBoardByUid(uid))
+  }
+  const onSaveShot = async data => {
+    await api.saveShot(data)
+  }
+  const onInsertShot = async data => {
+    let board = await api.insertShot(data)
+    setForceUpdate(i => !i)
+  }
+  const updateNames = data => {
+    for (let key of Object.keys(data.sceneObjects)) {
+      let sceneObject = data.sceneObjects[key]
+      sceneObject.name = `Saved ${Date.now()}`
+    }
   }
   return (
-    <List onBoardClick={onBoardClick} />
+    <div style={{ display: 'flex', flexDirection: 'row' }}>
+      <List forceUpdate={forceUpdate} onBoardClick={onBoardClick} />
+      <div style={{ display: 'flex', flexDirection: 'column' }}>
+        <p>
+          Current Board:
+        </p>
+        {
+          board
+            ? <div>
+              {board.uid}
+              {
+                board.sg &&
+                <div>
+                  <div>
+                  Objects:
+                    {
+                      Object.values(board.sg.data.sceneObjects)
+                        .map(o => o.type)
+                        .join(', ')
+                    }
+                  </div>
+                  <div>
+                    <p>
+                      <a onClick={preventDefault(() => updateNames(board.sg.data))} href="#">
+                        > Change all SceneObject names (for testing)
+                      </a>
+                    </p>
+                    <p>
+                      <a onClick={preventDefault(() => onSaveShot(board.sg.data))} href="#">
+                        > Save Shot
+                      </a>
+                    </p>
+                    <p>
+                      <a onClick={preventDefault(() => onInsertShot(board.sg.data))} href="#">
+                        > Insert Shot
+                      </a>
+                    </p>
+                  </div>
+                </div>
+              }
+            </div>
+            : <div>
+              None
+            </div>
+        }
+      </div>
+    </div>
   )
 }
 

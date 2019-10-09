@@ -1509,6 +1509,18 @@ ipcMain.on('shot-generator:loadBoardByUid', (event, uid) => {
     win.webContents.send('loadBoardByUid', uid)
   }
 })
+ipcMain.on('shot-generator:requestSaveShot', (event, uid) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.webContents.send('requestSaveShot', uid)
+  }
+})
+ipcMain.on('shot-generator:requestInsertShot', (event, uid) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.webContents.send('requestInsertShot', uid)
+  }
+})
 ipcMain.on('shot-generator:menu:help:tutorial', () => {
   tutorialMain.show(() => {})
 })
