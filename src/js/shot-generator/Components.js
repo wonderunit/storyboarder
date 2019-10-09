@@ -1126,6 +1126,16 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         ],
       ],
 
+      (sceneObject.type == 'image' ) && [
+        [
+          'div.column',
+          [
+            [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
+            [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ]
+          ]
+        ],
+      ],
+
       sceneObject.type == 'volume' && [
         [
           'div.column',

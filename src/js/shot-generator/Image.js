@@ -72,6 +72,7 @@ const Image = React.memo(({scene, id, type, isSelected, storyboarderFilePath, im
     image.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, image.current)
     image.current.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
     image.current.position.set(props.x, props.z, props.y)
+    image.current.scale.set(props.width, props.height, 1)
 
     scene.add(image.current)
     scene.add(image.current.orthoIcon)
@@ -121,6 +122,13 @@ const Image = React.memo(({scene, id, type, isSelected, storyboarderFilePath, im
     props.rotation.x,
     props.rotation.y,
     props.rotation.z
+  ])
+
+  useEffect(() => {
+    image.current.scale.set(props.width, props.height, 1)
+  }, [
+    props.width,
+    props.height
   ])
 
   useEffect(() => {

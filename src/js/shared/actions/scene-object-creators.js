@@ -164,6 +164,8 @@ const createImage = (id, camera, room) => {
     id,
     type: 'image',
 
+    width: 1, height: 1,
+
     x, y, z: 1,
 
     rotation: { x: 0, y: rotation, z: 0 },
