@@ -20,8 +20,7 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   specular: 0x0,
   shininess: 0,
   flatShading: false,
-  transparent: true,
-  side: THREE.DoubleSide
+  transparent: true
 })
 
 const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboarderFilePath, imageAttachmentIds, ...props}) => {
