@@ -61,7 +61,7 @@ const Image = React.memo(({scene, id, type, isSelected, storyboarderFilePath, im
 
   const create = () => {
     console.log(type, id, 'added')
-    let geo = new THREE.BoxBufferGeometry(1, 1, 0.025)
+    let geo = new THREE.BoxBufferGeometry(1, 1, 0.01)
     let mat = materialFactory()
     let mesh = new THREE.Mesh(geo, mat)
 
@@ -141,7 +141,7 @@ const Image = React.memo(({scene, id, type, isSelected, storyboarderFilePath, im
           color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
         }
         : {
-          thickness: 0.008,
+          thickness: 0,
           color: [ 0, 0, 0 ],
         }
 
