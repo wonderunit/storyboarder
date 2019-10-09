@@ -323,7 +323,8 @@ const resetLoadingStatus = sceneObjects => {
     if (
       sceneObjects[key].type === 'character' ||
       sceneObjects[key].type === 'object' ||
-      sceneObjects[key].type === 'volume'
+      sceneObjects[key].type === 'volume' ||
+      sceneObjects[key].type === 'image'
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],

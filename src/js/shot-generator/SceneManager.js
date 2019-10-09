@@ -205,6 +205,7 @@ const SceneManager = connect(
           child.userData.type === 'character' ||
           child.userData.type === 'light' ||
           child.userData.type === 'volume' ||
+          child.userData.type === 'image' ||
           child instanceof THREE.PerspectiveCamera
         ) {
           minMax[0] = Math.min(child.position.x, minMax[0])
