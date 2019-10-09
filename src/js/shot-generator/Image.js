@@ -24,7 +24,7 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   side: THREE.DoubleSide
 })
 
-const Image = React.memo(({scene, id, type, isSelected, storyboarderFilePath, imageAttachmentIds, ...props}) => {
+const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboarderFilePath, imageAttachmentIds, ...props}) => {
 
   let image = useRef(null)
   const loadingImageSet = useRef(false)
@@ -87,6 +87,10 @@ const Image = React.memo(({scene, id, type, isSelected, storyboarderFilePath, im
 
     loadingImageSet.current = true
     loadImage(imgArray).then((result) => {
+      const { width, height } = result.materials[0].map.image
+      const aspect = width / height
+
+      updateObject(id, { width: props.height * aspect })
       image.current.material = result.materials[0]
     })
   }

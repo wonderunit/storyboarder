@@ -628,7 +628,9 @@ const SceneManager = connect(
                 key: props.id,
                 scene,
                 isSelected: selections.includes(props.id),
-                
+
+                updateObject,
+
                 storyboarderFilePath: meta.storyboarderFilePath,
                 imageAttachmentIds: props.imageAttachmentIds,
                 ...props
