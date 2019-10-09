@@ -73,6 +73,11 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     image.current.position.set(props.x, props.z, props.y)
     image.current.scale.set(props.width, props.height, 1)
 
+    image.current.visible = props.visible
+    image.current.orthoIcon.position.copy(image.current.position)
+    image.current.orthoIcon.icon.material.rotation = props.rotation.y
+    image.current.orthoIcon.visible = props.visible
+
     scene.add(image.current)
     scene.add(image.current.orthoIcon)
 
@@ -106,26 +111,20 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
   }, [])
 
   useEffect(() => {
-    image.current.position.x = props.x
-    image.current.position.z = props.y
-    image.current.position.y = props.z
-    image.current.orthoIcon.position.copy(image.current.position)
-  }, [
-    props.x,
-    props.y,
-    props.z
-  ])
+    if (image.current) {
+      image.current.position.x = props.x
+      image.current.position.z = props.y
+      image.current.position.y = props.z
+      image.current.rotation.x = props.rotation.x
+      image.current.rotation.y = props.rotation.y
+      image.current.rotation.z = props.rotation.z
 
-  useEffect(() => {
-    image.current.rotation.x = props.rotation.x
-    image.current.rotation.y = props.rotation.y
-    image.current.rotation.z = props.rotation.z
-    image.current.orthoIcon.icon.material.rotation = props.rotation
-  }, [
-    props.rotation.x,
-    props.rotation.y,
-    props.rotation.z
-  ])
+      image.current.visible = props.visible
+      image.current.orthoIcon.position.copy(image.current.position)
+      image.current.orthoIcon.icon.material.rotation = props.rotation.y
+      image.current.orthoIcon.visible = props.visible
+    }
+  }, [props.x, props.y, props.z, props.rotation, props.tilt, props.roll, props.visible])
 
   useEffect(() => {
     image.current.scale.set(props.width, props.height, 1)
@@ -133,13 +132,6 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     props.width,
     props.height
   ])
-
-  useEffect(() => {
-    if (image.current) {
-      image.current.visible = props.visible
-      image.current.orthoIcon.visible = props.visible
-    }
-  }, [props.visible])
 
   useEffect(() => {
     if (!image.current) return

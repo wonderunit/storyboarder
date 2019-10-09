@@ -295,7 +295,7 @@ const loadIcons = () => {
     const light = loadIconPromise("data/shot-generator/icons/light.svg", allSprites.light, 0.07)
     const object = generateSprite("#000000", allSprites.object)
     const volume = loadIconPromise("data/shot-generator/icons/volume.svg", allSprites.volume, 0.07)
-    const image = loadIconPromise('data/shot-generator/icons/image.svg', allSprites.image, 0.07)
+    const image = loadIconPromise('data/shot-generator/icons/volume.svg', allSprites.image, 0.07)
 
     return Promise.all( [ character, camera, light, object, image ] ).then(( values ) => {
         
