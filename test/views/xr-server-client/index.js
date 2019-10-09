@@ -173,6 +173,9 @@ const TestUI = () => {
         {
           board
             ? <div>
+              <div>
+                <img src={api.uriForThumbnail(board.url.replace('.png', '-thumbnail.png'))} />
+              </div>
               <b>uid:</b>{board.uid}
               {
                 remoteBoard.sg && board.sg &&
