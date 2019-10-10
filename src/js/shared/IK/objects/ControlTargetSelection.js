@@ -118,6 +118,18 @@ class ControlTargetSelection
     {
         console.log("Disposed");
         this.domElement.removeEventListener("pointermove", this.onPointerMove, false);
+        let selectedMeshes = this.selectedMeshes;
+        for(let keys in selectedMeshes)
+        {
+            let selectedMesh = selectedMeshes[keys];
+            // Checks if selected mesh's control target is currently in used 
+            if(selectedMesh.scope.isControlTargetSelected)
+            {
+                continue;
+            }
+            selectedMesh.scope.deselectControlPoint();
+            delete selectedMeshes[keys];
+        }
     }
 }
 

@@ -326,6 +326,7 @@ const SelectionManager = connect(
         {
           intersects[0] = controlPoint[0];
         }
+        console.log("Intersect", intersects[0])
         target = getIntersectionTarget(intersects[0])
         if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
         {
@@ -348,6 +349,8 @@ const SelectionManager = connect(
         else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo')
         {
           let characterId = target.parent.parent.parent.characterId;
+          console.log(target);
+          SGIkHelper.getInstance().selectControlPoint(target.parent.parent.parent.object.uuid, event);
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];
           isSelectedControlPoint = true;

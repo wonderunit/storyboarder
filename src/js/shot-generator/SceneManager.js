@@ -149,7 +149,7 @@ const SceneManager = connect(
       
       let sgIkHelper = SGIkHelper.getInstance(null, scene, camera, largeRenderer.current.domElement)
       ikHelper.current = sgIkHelper
-      const updateCharacterSkeleton = (name, rotation) => { updateCharacterSkeleton({
+      const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
         id: sgIkHelper.characterObject.userData.id,
         name : name,
         rotation: 
@@ -177,7 +177,7 @@ const SceneManager = connect(
       )
 
       sgIkHelper.setUpdate(
-        updateCharacterSkeleton,
+        updateCharacterRotation,
         updateSkeleton,
         updateCharacterPos,
         updatePoleTarget

@@ -91,16 +91,31 @@ class SGIKHelper extends THREE.Object3D
 
     selectControlPoint(uuid, event)
     {
+        let ragdoll = this.ragDoll;
         let targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
         this.selectedControlPoint = targetPoints.find(object => object.uuid === uuid);
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
+        let control = this.targetControls.find(object => object.target.userData.name === "Hips");
         if(this.selectedControlPoint.userData.name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
+            if(ragdoll.hipsControlTarget.control.mode === "rotate")
+            {
+                ragdoll.isEnabledIk = false;
+                ragdoll.attached = true;
+                ragdoll.originalObject.children[0].isRotated = true;
+            }
             this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent);
-            let control = this.targetControls.find(object => object.target.userData.name === "Hips");
             control.control.pointerPressedDown(event);
+
+        }
+        else
+        {
+            if(control.control.mode === "rotate")
+            {
+                this.ragDoll.isRotation = true;
+            }
         }
         if(this.selectedControlPoint.userData.name === "Head")
         {
@@ -113,6 +128,7 @@ class SGIKHelper extends THREE.Object3D
         if(this.selectedControlPoint)
         {  
             this.ragDoll.isEnabledIk = false;
+            this.ragDoll.isRotation = false;
             if(this.selectedControlPoint.userData.type === "controlPoint")
             {
                 this.controlPoints.attach(this.selectedControlPoint);
@@ -138,6 +154,11 @@ class SGIKHelper extends THREE.Object3D
                 this.ragDoll.changeControlPointsParent(this.controlPoints);
                 this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
                 this.ragDoll.hipsMouseDown = false;
+                if(this.ragDoll.attached)
+                {
+                    this.ragDoll.attached = false;
+                    this.ragDoll.originalObject.children[0].isRotated = false;
+                }
             }
             if(this.selectedControlPoint.userData.name === "Head")
             {

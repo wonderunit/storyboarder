@@ -41,7 +41,7 @@ class Ragdoll extends IkObject
         this.setUpControlTargetsInitialPosition();
         this.createPoleTargets(poleTargets);
        // this.ragdollEvents.addHipsEvent();
-       // this.ragdollEvents.setUpControlsEvents();
+        //this.ragdollEvents.setUpControlsEvents();
     }
 
     updateSkeleton(updateCharacterSkeleton)
@@ -65,7 +65,6 @@ class Ragdoll extends IkObject
         super.update();
         if(IK.firstRun)
         {
-            console.log("Update")
             IK.firstRun = false;
         }
         if(!this.isEnabledIk)
@@ -74,10 +73,8 @@ class Ragdoll extends IkObject
             {
                 this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation)
             }
-
-        
             this.ikSwitcher.applyToIk();
-            //this.resetPoleTarget();
+            this.resetPoleTarget();
             this.resetControlPoints();
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
@@ -159,21 +156,21 @@ class Ragdoll extends IkObject
 
     // Removes object and all it's meshes from scene
     removeFromScene()
-     {
-         let scene = this.scene;
-         super.removeFromScene(scene);
-         this.controlTargetSelection.dispose();
-         this.chainObjects.forEach((chainObject)=>
-         {
-             let constraint = chainObject.poleConstraint;
-             if(constraint)
-             {
-                 //scene.remove(constraint.poleTarget.mesh);
-             }
-         });
-         //this.ragdollEvents.removeHipsEvent();
-        // this.ragdollEvents.removeControlsEvents();
-    }
+    {
+        let scene = this.scene;
+        super.removeFromScene(scene);
+        this.controlTargetSelection.dispose();
+        this.chainObjects.forEach((chainObject)=>
+        {
+            let constraint = chainObject.poleConstraint;
+            if(constraint)
+            {
+                //scene.remove(constraint.poleTarget.mesh);
+            }
+        });
+        //this.ragdollEvents.removeHipsEvent();
+        //this.ragdollEvents.removeControlsEvents();
+    }   
 
     // Selects/Deselects ragdoll and adds/removes it's elements to/from scene
 
