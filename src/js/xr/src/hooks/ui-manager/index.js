@@ -122,7 +122,7 @@ const percent = value => `${value * 100}`
 const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
 
 class CanvasRenderer {
-  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio, client) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -136,6 +136,7 @@ class CanvasRenderer {
     this.send = send
     this.cameraAspectRatio = cameraAspectRatio
     this.getImageByFilepath = getImageByFilepath
+    this.client = client
 
     this.state = {
       activeCamera: null,
@@ -804,7 +805,7 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const useUiManager = ({ playSound, stopSound }) => {
+const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
@@ -1078,6 +1079,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     if (canvasRendererRef.current === null) {
       const getRoom = () => scene.getObjectByName('room')
       const getImageByFilepath = filepath => THREE.Cache.get(filepath)
+      const client = getXrClient()
 
       canvasRendererRef.current = new CanvasRenderer(
         1024,
@@ -1087,7 +1089,8 @@ const useUiManager = ({ playSound, stopSound }) => {
         camera,
         getRoom,
         getImageByFilepath,
-        cameraAspectRatio
+        cameraAspectRatio,
+        client
       )
     }
     return canvasRendererRef.current

@@ -450,7 +450,14 @@ const SceneContent = connect(
     const groundRef = useRef()
     const rootRef = useRef()
 
-    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({ playSound, stopSound })
+    const xrClient = useRef()
+    const getXrClient = () => {
+      if (!xrClient.current) {
+        xrClient.current = XRClient()
+      }
+      return xrClient.current
+    }
+    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({ playSound, stopSound, getXrClient })
 
     const { controllers, interactionServiceCurrent } = useInteractionsManager({
       groundRef,

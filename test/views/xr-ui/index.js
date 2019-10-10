@@ -21,12 +21,16 @@ const SimpleText = require('../../../src/js/xr/src/components/SimpleText')
 const useGltfLoader = require('../../../src/js/xr/src/hooks/use-gltf-loader')
 const useImageBitmapLoader = require('../../../src/js/xr/src/hooks/use-imagebitmap-loader')
 
+const XRClient = require('../../../src/js/xr/src/client')
+const xrClient = XRClient('http://localhost:1234')
+
 const UITestContent = ({ resources }) => {
   const { gl, camera, scene } = useThree()
 
   const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({
     playSound: () => { },
-    stopSound: () => { }
+    stopSound: () => { },
+    getXrClient: () => xrClient
   })
 
   const { controllers, interactionServiceCurrent } = useInteractionsManager({
