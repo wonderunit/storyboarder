@@ -19,7 +19,6 @@
     "xr:clean": "trash src/js/xr/dist",
     "xr:build": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
-    "xr:test-server": "electron src/js/xr/test/test-server.js",
     "build:thumbnails": "electron test/views/thumbnail-renderer/main.js"
   },
   "repository": {
