@@ -11,7 +11,6 @@ const thunkMiddleware = require('redux-thunk').default
 
 const h = require('../../utils/h')
 const { reducer, initialState, getSerializedState, setBoard, loadScene } = require('../../shared/reducers/shot-generator')
-const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 
 const configureStore = preloadedState => {
   const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware))
@@ -19,52 +18,15 @@ const configureStore = preloadedState => {
   return store
 }
 
+const XRClient = require('./client')
+
 const SceneManagerXR = require('./SceneManagerXR')
 
-const sendStateToServer = async ({ uid, state }) => {
-  let url = `/state.json?uid=${uid}`
-  let body = JSON.stringify(state)
-  let response = await fetch(
-    url,
-    {
-      method: 'POST',
-      body,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-    }
-  )
-  if (response.ok) {
-    return await response.json()
-  } else {
-    throw new Error(await response.text())
-  }
-}
-
-const loadBoardByUid = async uid => {
-  let body = JSON.stringify({
-    uid
-  })
-  let board = await(
-    await fetch(
-      '/sg.json',
-      {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body
-      }
-    )
-  ).json()
-
-  loadBoardFromData(board, store.dispatch)
-}
-
 const init = async () => {
+  const client = XRClient()
+
   // get the shot generator window state
-  let { aspectRatio } = await(await fetch('/sg.json')).json()
+  let { aspectRatio } = await client.getSg()
   // get pose preset data
   let poses = await(await fetch('/presets/poses.json')).json()
   // get the shot generator shot state
@@ -77,7 +39,7 @@ const init = async () => {
     },
     // uid, shot, action, dialogue, notes
     board
-  } = await (await fetch('/state.json')).json()
+  } = await client.getState()
 
   const store = configureStore({
     ...initialState,
@@ -108,7 +70,7 @@ const init = async () => {
         let uid = state.board.uid
         let serializedState = getSerializedState(state)
         try {
-          await sendStateToServer({ uid, state: serializedState })
+          await client.sendState(uid, serializedState)
         } catch (err) {
           // TODO if error is that board has changed in SG, notify user, and reload in VR
           console.error(err)

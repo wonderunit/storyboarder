@@ -8,6 +8,12 @@ const ReactDOM = require('react-dom')
 
 const { reducer, getHash } = require('../../../src/js/shared/reducers/shot-generator')
 
+const XRClient = require('../../../src/js/xr/src/client')
+let serverUri = new URL(window.location.href)
+serverUri.port = 1234
+let url = serverUri.href.replace(/\/$/, '')
+const api = XRClient(url)
+
 const NotAsked = () => ({ type: 'NotAsked' })
 const Loading = () => ({ type: 'Loading' })
 const Success = data => ({ type: 'Success', data })
@@ -67,90 +73,6 @@ const List = ({ forceUpdate, onBoardClick }) => {
       }
     </>
   )
-}
-
-const URI = 'http://localhost:1234'
-const api = {}
-api.getSg = async () =>
-  await(await fetch(`${URI}/sg.json`)).json()
-api.getBoards = async () =>
-  await(await fetch(`${URI}/boards.json`)).json()
-api.selectBoardByUid = async (uid) => {
-  let body = JSON.stringify({
-    uid
-  })
-  let board = await(
-    await fetch(
-      `${URI}/sg.json`,
-      {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body
-      }
-    )
-  ).json()
-  return board
-}
-api.uriForThumbnail = filename =>
-  `${URI}/boards/images/${filename}`
-api.sendState = async (uid, data) => {
-  let url = new URL(`${URI}/state.json`)
-  url.searchParams.append('uid', uid)
-  let body = JSON.stringify(data)
-  let response = await fetch(
-    url,
-    {
-      method: 'POST',
-      body,
-      headers: {
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-    }
-  )
-  if (response.ok) {
-    return await response.json()
-  } else {
-    throw new Error(await response.text())
-  }
-}
-api.saveShot = async (uid, data) => {
-  let body = JSON.stringify(data)
-  let response =
-    await fetch(
-      `${URI}/boards/${uid}.json`,
-      {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body
-      }
-    )
-  if (response.ok) {
-    return await response.json()
-  } else {
-    throw new Error(await response.text())
-  }
-}
-api.insertShot = async data => {
-  let body = JSON.stringify(data)
-  return await (
-    await fetch(
-      `${URI}/boards.json`,
-      {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body
-      }
-    )
-  ).json()
 }
 
 const TestUI = () => {
