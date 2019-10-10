@@ -4,6 +4,7 @@ const {setZDirecion} = require( "../../utils/axisUtils");
 const ChainObject = require( "./ChainObject");
 const SkeletonUtils = require("../../utils/SkeletonUtils");
 const IKSwitcher = require("./IkSwitcher");
+const ResourceManager = require("../../ResourceManager");
 require("../../utils/Object3dExtension");
 
 class IkObject
@@ -24,6 +25,8 @@ class IkObject
         this.isRotation = false;
         this.scene = null;  
         this.chainObjects = {}
+        this.resourceManager = ResourceManager.getInstance();
+        this.backOffset = new THREE.Vector3();
     }
 
     //#region External Methods
@@ -106,10 +109,12 @@ class IkObject
         {
             let hipsTarget = this.hipsControlTarget.target;
             let backTarget = this.chainObjects["Head"].controlTarget.target;
-            let hipsPosition = hipsTarget.worldPosition();;
+            let hipsPosition = this.resourceManager.getVector3();
+            hipsTarget.getWorldPosition(hipsPosition);
             let result = hipsPosition.add(this.backOffset);
             backTarget.parent.worldToLocal(hipsPosition);
             backTarget.position.copy(result);
+            this.resourceManager.release(hipsPosition);
         }
     }
 
@@ -161,9 +166,13 @@ class IkObject
     // Calculates back's offset in order to move with hips
     calculteBackOffset()
     {
-        let backPosition = this.chainObjects["Head"].controlTarget.target.worldPosition();
-        let hipsPosition = this.hipsControlTarget.target.worldPosition();
-        this.backOffset = backPosition.sub(hipsPosition);
+        let backPosition = this.resourceManager.getVector3();
+        let hipsPosition = this.resourceManager.getVector3();
+        this.chainObjects["Head"].controlTarget.target.getWorldPosition(backPosition);
+        this.hipsControlTarget.target.getWorldPosition(hipsPosition);
+        this.backOffset.subVectors(backPosition, hipsPosition);
+        this.resourceManager.release(backPosition);
+        this.resourceManager.release(hipsPosition);
     }
     //#endregion
 }

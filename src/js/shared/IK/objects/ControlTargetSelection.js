@@ -19,7 +19,6 @@ class ControlTargetSelection
     // Intiliazes event is used when object disposed to reenact it again
     initialize()
     {
-        console.log("Initialized");
         this.domElement.addEventListener("pointermove", this.onPointerMove, false);
     }
     // #region Events
@@ -116,7 +115,6 @@ class ControlTargetSelection
     // Dispose event
     dispose()
     {
-        console.log("Disposed");
         this.domElement.removeEventListener("pointermove", this.onPointerMove, false);
         let selectedMeshes = this.selectedMeshes;
         for(let keys in selectedMeshes)
@@ -128,7 +126,6 @@ class ControlTargetSelection
                 continue;
             }
             selectedMesh.scope.deselectControlPoint();
-           // delete selectedMeshes[keys];
         }
         this.selectedMeshes = {};
     }

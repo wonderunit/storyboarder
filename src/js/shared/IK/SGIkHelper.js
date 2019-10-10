@@ -27,13 +27,10 @@ class SGIKHelper extends THREE.Object3D
             this.isPoleTargetsVisible = false;
             this.add(this.controlPoints);
             this.add(this.transformControls);
-
-
             intializeInstancedMesh(mesh, camera, domElement, scene);
             this.add(this.instancedMesh);
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
             this.regularHeight = 1.1;
-            this.updateStarted = false;
             this.isInitialized = true;
             this.userData.type = "IkHelper";
             let controlTargetSelection = new ControlTargetSelection(domElement, camera, this.targetControls);
@@ -41,7 +38,6 @@ class SGIKHelper extends THREE.Object3D
             instance.instancedMesh.layers.disable(0)
             instance.instancedMesh.layers.enable(1)
             instance.instancedMesh.layers.disable(2)
-            //this.instancedMesh.scale.set(0.1, 0.1, 0.1)
         }
         return instance;
     }
@@ -185,9 +181,7 @@ class SGIKHelper extends THREE.Object3D
             }
             else
             {
-
                 this.poleTargets.attach(this.selectedControlPoint);
-
             }
             if(this.selectedControlPoint.userData.name === "Hips")
             {
@@ -246,7 +240,6 @@ class SGIKHelper extends THREE.Object3D
 
     resetAllTargetPoints()
     {
-        console.log(this.targetPoints);
         for(let i = 0; i < this.targetPoints.length; i++)
         {
             this.resetTargetPoint(this.targetPoints[i]);
@@ -366,6 +359,5 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         instance.poleTargets.add(poleTarget);
         instance.resetTargetPoint(poleTarget);
     }
-    
 }
 module.exports = SGIKHelper;

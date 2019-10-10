@@ -4,7 +4,6 @@ const XRIKObject = require( "./XrIkObject");
 const PoleConstraint = require( "./constraints/PoleConstraint");
 const PoleTarget = require( "./objects/PoleTarget");
 const CopyRotation = require( "./constraints/CopyRotation");
-const ResourceManager = require("./ResourceManager");
 require("./utils/Object3dExtension");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
@@ -13,7 +12,6 @@ class XRRagdoll extends XRIKObject
     constructor()
     {
         super();
-        this.resourceManager = ResourceManager.getInstance();
     }
     
     //#region External Methods

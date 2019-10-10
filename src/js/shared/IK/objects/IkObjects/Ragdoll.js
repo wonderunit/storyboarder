@@ -4,6 +4,7 @@ const THREE = require( "three");
 const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
+const ResourceManager = require("../../ResourceManager");
 require("../../utils/Object3dExtension");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
@@ -21,8 +22,6 @@ class Ragdoll extends IkObject
     initObject(scene, object, controlTargets, poleTargets )
     {
         super.initObject(scene, object, controlTargets );
-        
-
         this.resetControlPoints();
         // Adds events to Back control
         this.setUpControlTargetsInitialPosition();
@@ -56,7 +55,7 @@ class Ragdoll extends IkObject
         {
             if(this.hipsControlTarget.control.mode === "rotate" && this.attached)
             {
-                this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation)
+                this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation);
             }
             else
             {
@@ -81,8 +80,10 @@ class Ragdoll extends IkObject
         if(this.hipsMouseDown)
         {
             let hipsTarget = this.hipsControlTarget.target;
-            let targetPosition = hipsTarget.worldPosition();
-            let targetPos = hipsTarget.worldPosition()
+            let targetPosition = this.resourceManager.getVector3();
+            let targetPos = this.resourceManager.getVector3();
+            hipsTarget.getWorldPosition(targetPosition);
+            hipsTarget.getWorldPosition(targetPos);
 
             targetPos.sub(this.objectTargetDiff);
             this.clonedObject.position.copy(targetPos);
@@ -92,6 +93,8 @@ class Ragdoll extends IkObject
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
             this.originalObject.position.copy(this.clonedObject.position);
+            this.resourceManager.release(targetPosition);
+            this.resourceManager.release(targetPos);
         }
     }
 
@@ -197,10 +200,12 @@ class Ragdoll extends IkObject
     {
         let offset = poleTarget.initialOffset;
         let bone = chain.joints[chain.joints.length - 2].bone;
-        boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, bone);
+        let boneMatrix = this.resourceManager.getMatrix4();
+        this.takeBoneInTheMeshSpace(this.rigMesh, bone, boneMatrix);
         let bonePosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
-        boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
+        this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
         let hipsPosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+        this.resourceManager.release(boneMatrix);
         let hipsOffset = bonePosition.sub(hipsPosition);
         hipsOffset.add(offset);
         poleTarget.offsetWithoutHips = hipsOffset.clone();
@@ -226,8 +231,12 @@ class Ragdoll extends IkObject
         let chainObjects = this.chainObjectsValues;
         let hipsTarget = this.hipsControlTarget.target;
         let {angle, axis} = this.hips.quaternion.toAngleAxis();
-        let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
-        spineWorldQuat.premultiply(this.hipsControlTarget.target.parent.worldQuaternion().inverse());
+        let spineWorldQuat = this.resourceManager.getQuaternion();
+        let hipsParentQuat = this.resourceManager.getQuaternion();
+        this.hips.children[0].children[0].children[0].getWorldQuaternion(spineWorldQuat);
+
+        this.hipsControlTarget.target.parent.getWorldQuaternion(hipsParentQuat).inverse()
+        spineWorldQuat.premultiply(hipsParentQuat);
         let armsAngleAxis = spineWorldQuat.toAngleAxis();
         for(let i = 0; i < chainObjects.length; i++)
         {
@@ -250,9 +259,9 @@ class Ragdoll extends IkObject
                 mesh.rotateAroundPoint(targetPosition, axis, angle);
             }
         }
+        this.resourceManager.release(spineWorldQuat);
+        this.resourceManager.release(hipsParentQuat);
     }
-     
-
 
     setUpControlTargetsInitialPosition()
     {
@@ -262,11 +271,20 @@ class Ragdoll extends IkObject
             let joints = chainObjects[i].chain.joints;
             let bone = joints[joints.length-1].bone;
             let target = chainObjects[i].controlTarget.target;
-            let parentInverseQuat = this.hips.parent.worldQuaternion().inverse();
-            let boneQuate = bone.worldQuaternion();
-            target.quaternion.multiply(target.worldQuaternion().inverse());
+
+            let boneQuate = this.resourceManager.getQuaternion();
+            let parentInverseQuat = this.resourceManager.getQuaternion();
+            let targetWorldInverseQuat = this.resourceManager.getQuaternion();
+
+            this.hips.parent.getWorldQuaternion(parentInverseQuat).inverse();
+            bone.getWorldQuaternion(boneQuate);
+            target.getWorldQuaternion(targetWorldInverseQuat).inverse()
+            target.quaternion.multiply(targetWorldInverseQuat);
             target.quaternion.copy(boneQuate.premultiply(parentInverseQuat));
-            target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
+            
+            this.resourceManager.release(parentInverseQuat);
+            this.resourceManager.release(boneQuate);
+            this.resourceManager.release(targetWorldInverseQuat);
         }
     }
 
@@ -274,15 +292,17 @@ class Ragdoll extends IkObject
     {
         if(this.hipsMouseDown) return;
         let chainObjects = this.chainObjectsValues;
-        boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
+        let boneMatrix = this.resourceManager.getMatrix4();
+        this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
         this.hipsControlTarget.target.position.setFromMatrixPosition(boneMatrix);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
-            boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, jointBone);
+            this.takeBoneInTheMeshSpace(this.rigMesh, jointBone, boneMatrix);
             chainObjects[i].controlTarget.target.position.setFromMatrixPosition(boneMatrix);
         }
+        this.resourceManager.release(boneMatrix);
         this.calculteBackOffset();
     }
 
@@ -328,12 +348,23 @@ class Ragdoll extends IkObject
     // Effect like flat foot to earth can be achieved
     rotateBoneQuaternion(bone, boneTarget)
     {
-        let targetQuat = boneTarget.worldQuaternion();
-        let quaternion = bone.worldQuaternion().inverse();
+        let targetQuat = this.resourceManager.getQuaternion();
+        boneTarget.getWorldQuaternion(targetQuat);
+        let quaternion = this.resourceManager.getQuaternion();
+        bone.getWorldQuaternion(quaternion).inverse();
         bone.quaternion.multiply(quaternion);
         bone.quaternion.multiply(targetQuat);
+        this.resourceManager.release(targetQuat);
+        this.resourceManager.release(quaternion);
     }
     //#endregion
+    takeBoneInTheMeshSpace(mesh, bone, boneMatrix)
+    {
+        let armatureInverseMatrixWorld = this.resourceManager.getMatrix4();
+        armatureInverseMatrixWorld.getInverse(mesh.skeleton.bones[0].parent.matrixWorld);
+        boneMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
+        this.resourceManager.release(armatureInverseMatrixWorld);
+    }
 }
 
 const interpretatedPoleTargetsName = name =>
@@ -349,17 +380,6 @@ const interpretatedPoleTargetsName = name =>
         case "rightLegPole":
             return "RightFoot";
     }
-}
-
-let boneMatrix = new THREE.Matrix4();
-let tempMatrix = new THREE.Matrix4();
-let armatureInverseMatrixWorld = new THREE.Matrix4();
-
-const takeBoneInTheMeshSpace = (mesh, bone) =>
-{
-    armatureInverseMatrixWorld = mesh.skeleton.bones[0].parent.getInverseMatrixWorld();
-    tempMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
-    return tempMatrix;
 }
 
 module.exports =  Ragdoll;
