@@ -28,8 +28,10 @@ const getSelectedBone = state => state.undoable.present.selectedBone
 const getWorld = state => state.undoable.present.world
 
 
+const getHash = state =>
+  hashify(JSON.stringify(getSerializedState(state)))
 const getIsSceneDirty = state => {
-  let current = hashify(JSON.stringify(getSerializedState(state)))
+  let current = getHash(state)
   return current !== state.meta.lastSavedHash
 }
 // return only the stuff we want to save to JSON
@@ -854,7 +856,7 @@ const metaReducer = (state = {}, action, appState) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
-        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        draft.lastSavedHash = getHash(appState)
         return
       case 'UPDATE_SCENE_FROM_XR':
         // don't update lastSavedHash
@@ -862,7 +864,7 @@ const metaReducer = (state = {}, action, appState) => {
         return
 
       case 'MARK_SAVED':
-        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        draft.lastSavedHash = getHash(appState)
         return
 
       case 'SET_META_STORYBOARDER_FILE_PATH':
@@ -1350,5 +1352,7 @@ module.exports = {
   getWorld,
 
   getSerializedState,
-  getIsSceneDirty
+
+  getIsSceneDirty,
+  getHash
 }
