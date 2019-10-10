@@ -102,12 +102,18 @@ class TargetControl
     {
         if(!this.isControlPointSelected && !this.bone.isRotated)
         {
+            console.log("Select control point")
             this.isControlPointSelected = true;
             this.scene.add(this.control);
+            
             this.control.addToScene();
+            if(this.target.userData.name === "Hips")
+            {
+                this.control.removePointerDownEvent();
+            }
             this.addEventsToControlTarget();
+            this.domElement.focus();
         }
-        this.domElement.focus();
     }
 
     deselectControlPoint()

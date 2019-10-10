@@ -4,7 +4,7 @@ const THREE = require( "three");
 const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
-//const RagdollEvents = require( "./RagdollEvents");
+const RagdollEvents = require( "./RagdollEvents");
 require("../../utils/Object3dExtension");
 const {calculatePoleAngle, normalizeTo180} = require("../../utils/axisUtils");
 // Ragdoll is class which is used to set all specific details to ikrig
@@ -33,16 +33,15 @@ class Ragdoll extends IkObject
     {
         super.initObject(scene, object, controlTargets );
         
-        //this.ragdollEvents = new RagdollEvents(this);
+        this.ragdollEvents = new RagdollEvents(this);
         this.controlTargetSelection.initialize();
 
         this.resetControlPoints();
         // Adds events to Back control
-        this.hips.parent.updateMatrixWorld(true);
-        //console.log(this.hips.parent.scale.clone());
-        this.createPoleTargets(poleTargets);
+        //this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
         this.setUpControlTargetsInitialPosition();
-        //this.ragdollEvents.addHipsEvent();
+        this.createPoleTargets(poleTargets);
+       // this.ragdollEvents.addHipsEvent();
        // this.ragdollEvents.setUpControlsEvents();
     }
 
@@ -92,7 +91,6 @@ class Ragdoll extends IkObject
             }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
-            //this.updateReact();
         }
     }
 
@@ -102,11 +100,9 @@ class Ragdoll extends IkObject
         super.lateUpdate();
         if(this.hipsMouseDown)
         {
-            let parent = this.hipsControlTarget.target.parent;
             let hipsTarget = this.hipsControlTarget.target;
             let targetPosition = hipsTarget.worldPosition();
-            let targetPos = hipsTarget.worldPosition();
-            //this.scene.parent.parent.attach(this.hipsControlTarget.target);
+            let targetPos = hipsTarget.worldPosition()
 
             targetPos.sub(this.objectTargetDiff);
             this.clonedObject.position.copy(targetPos);
@@ -116,7 +112,6 @@ class Ragdoll extends IkObject
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
             this.originalObject.position.copy(this.clonedObject.position);
-            //parent.attach(this.hipsControlTarget.target);
         }
     }
 
@@ -150,13 +145,16 @@ class Ragdoll extends IkObject
         }
         this.resetControlPoints();
         this.calculteBackOffset();
-        let hipsTarget = this.hipsControlTarget.target;
+        this.recalculateHipsDiff();
+    }
 
+    recalculateHipsDiff()
+    {
+        let hipsTarget = this.hipsControlTarget.target;
         hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
         let hipsWP = hipsTarget.position.clone();
         hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.getInverseMatrixWorld());
         let originalObjectWp = this.originalObject.position.clone();
-        //this.objectTargetDiff = new THREE.Vector3().subVectors(hipsTarget.position, this.originalObject.position);
         this.objectTargetDiff = new THREE.Vector3().subVectors(hipsWP, originalObjectWp);
     }
 
@@ -258,18 +256,16 @@ class Ragdoll extends IkObject
         poleTarget.poleOffset = hipsOffset;
     }
 
-    changeControlPointsParent(parent, needUpdate = true)
+    changeControlPointsParent(parent)
     {
         //console.log("changed parent to", parent)
         let chainObjects = this.chainObjectsValues;
-        parent.attach(this.hipsControlTarget.target)
-       // this.hipsControlTarget.target.needsUpdate = needUpdate;
+        parent.attach(this.hipsControlTarget.target);
+        this.hipsControlTarget.target.updateMatrixWorld(true);
         for(let i = 0; i < chainObjects.length; i++)
         {
             parent.attach(chainObjects[i].controlTarget.target);
-
-           // chainObjects[i].controlTarget.target.needsUpdate = needUpdate;
-           // chainObjects[i].controlTarget.target.updateMatrixWorld();
+            chainObjects[i].controlTarget.target.updateMatrixWorld();
         }
     }
 
@@ -310,17 +306,16 @@ class Ragdoll extends IkObject
     setUpControlTargetsInitialPosition()
     {
         let chainObjects = this.chainObjectsValues;
-        for(let i = 0; i < 1; i++)
+        for(let i = 0; i < chainObjects.length; i++)
         {
             let joints = chainObjects[i].chain.joints;
             let bone = joints[joints.length-1].bone;
             let target = chainObjects[i].controlTarget.target;
             let parentInverseQuat = this.hips.parent.worldQuaternion().inverse();
-            //let boneQuate = bone.worldQuaternion();
-            //console.log(target);
+            let boneQuate = bone.worldQuaternion();
             target.quaternion.multiply(target.worldQuaternion().inverse());
-            //target.quaternion.copy(boneQuate.premultiply(parentInverseQuat));
-            //target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
+            target.quaternion.copy(boneQuate.premultiply(parentInverseQuat));
+            target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
         }
     }
 
@@ -335,6 +330,7 @@ class Ragdoll extends IkObject
 
     resetControlPoints()
     {
+        if(this.hipsMouseDown) return;
         let chainObjects = this.chainObjectsValues;
         boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
         this.hipsControlTarget.target.position.setFromMatrixPosition(boneMatrix);

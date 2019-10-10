@@ -130,7 +130,9 @@ const TransformControls = function ( camera, domElement ) {
 
 
 	this.controlSelected = true;
-
+	this.removePointerDownEvent = () => {
+		domElement.removeEventListener( "pointerdown", onPointerDown );
+	}
 	this.dispose = function () 
 	{
 		domElement.removeEventListener( "pointerdown", onPointerDown );
@@ -582,6 +584,7 @@ const TransformControls = function ( camera, domElement ) {
 		scope.pointerHover( getPointer( event ) );
 
 	}
+	this.pointerPressedDown = (event) => onPointerDown(event);
 
 	function onPointerDown( event ) {
 

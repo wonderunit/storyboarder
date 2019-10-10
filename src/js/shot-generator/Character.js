@@ -366,9 +366,9 @@ const Character = React.memo(({
       skeleton.pose()
       fixRootBone()
     }
-    //if(ragdoll)
+    if(SGIkHelper.getInstance().ragdoll)
     {
-      //ragdoll.ikSwitcher.applyToIk();  
+      //SGIkHelper.getInstance().ragdoll.ikSwitcher.applyToIk();  
     }
   }
 
@@ -422,9 +422,8 @@ const Character = React.memo(({
 
   //#region Camera changing 
   useEffect(() => {
-    console.log(camera)
-    SGIkHelper.getInstance().setCamera(camera);
     if(!ready) return
+    SGIkHelper.getInstance().setCamera(camera);
     //skeletonRig.controlTargetSelection.camera = camera;
     //boneRotationControl.current.setCamera(camera);
    //for(let controlTarget of skeletonRig.controlTargets)
