@@ -4,9 +4,7 @@ const THREE = require( "three");
 const PoleConstraint = require( "../../constraints/PoleConstraint");
 const PoleTarget = require( "../PoleTarget");
 const CopyRotation = require( "../../constraints/CopyRotation");
-const RagdollEvents = require( "./RagdollEvents");
 require("../../utils/Object3dExtension");
-const {calculatePoleAngle, normalizeTo180} = require("../../utils/axisUtils");
 // Ragdoll is class which is used to set all specific details to ikrig
 // Like head upward, contraints to limb, transformControls events etc.
 class Ragdoll extends IkObject
@@ -15,16 +13,7 @@ class Ragdoll extends IkObject
     {
         super();
         this.hipsMouseDown = false;
-        this.poseChanged = false;
         this.controlTargetSelection = null;
-        this.updatingReactPosition = [];
-        // TODO() : REMOVE THIS
-        this.originalObjectTargetBone = [];
-        this.originalObjectTargetBone.push(4);
-        this.originalObjectTargetBone.push(11);
-        this.originalObjectTargetBone.push(35);
-        this.originalObjectTargetBone.push(58);
-        this.originalObjectTargetBone.push(63);
     }
     
     //#region External Methods
@@ -33,15 +22,11 @@ class Ragdoll extends IkObject
     {
         super.initObject(scene, object, controlTargets );
         
-        this.ragdollEvents = new RagdollEvents(this);
 
         this.resetControlPoints();
         // Adds events to Back control
-        //this.ragdollEvents.applyEventsToBackControl(this.controlTargets[0].control);
         this.setUpControlTargetsInitialPosition();
         this.createPoleTargets(poleTargets);
-       // this.ragdollEvents.addHipsEvent();
-        //this.ragdollEvents.setUpControlsEvents();
     }
 
     updateSkeleton(updateCharacterSkeleton)
@@ -73,18 +58,17 @@ class Ragdoll extends IkObject
             {
                 this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation)
             }
+            else
+            {
+                this.resetPoleTarget();
+            }
             this.ikSwitcher.applyToIk();
-            this.resetPoleTarget();
             this.resetControlPoints();
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
         }
         else
         {
-            if(this.applyingOffset)
-            {
-                //this.resetPoleTarget();
-            }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
         }
@@ -123,20 +107,6 @@ class Ragdoll extends IkObject
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
-            //chain.joints[chain.joints.length - 1].bone.getWorldPosition(chainObjects[i].controlTarget.target.position);
-
-            let poleConstraints = chainObjects[i].poleConstraint;
-            console.log(chainObjects[i]);
-            if(poleConstraints != null)
-            {
-                //let targetPosition = new THREE.Vector3();
-                //chain.joints[chain.joints.length - 2].bone.getWorldPosition(targetPosition);
-                //let polePosition = poleConstraints.poleTarget.mesh.worldPosition();
-                //poleConstraints.poleTarget.mesh.position.set(targetPosition.x + polePosition.x, targetPosition.y + polePosition.y, targetPosition.z + polePosition.z);
-                //let poleTarget = poleConstraints.poleTarget;
-                //this.calculatePoleTargetOffset(poleTarget, chain);
-                //poleTarget.initialize(poleTarget.poleOffset);
-            }
             chain.reinitializeJoints();
         }
         this.resetControlPoints();
@@ -160,25 +130,12 @@ class Ragdoll extends IkObject
         let scene = this.scene;
         super.removeFromScene(scene);
         this.controlTargetSelection.dispose();
-        this.chainObjects.forEach((chainObject)=>
-        {
-            let constraint = chainObject.poleConstraint;
-            if(constraint)
-            {
-                //scene.remove(constraint.poleTarget.mesh);
-            }
-        });
-        //this.ragdollEvents.removeHipsEvent();
-        //this.ragdollEvents.removeControlsEvents();
     }   
-
-    // Selects/Deselects ragdoll and adds/removes it's elements to/from scene
 
     // Moves ragdoll hips when original object moved
     moveRagdoll()
     {
         this.originalObject.matrixWorld.decompose(  this.clonedObject.position,  this.clonedObject.quaternion,  this.clonedObject.scale );
-        //this.clonedObject.updateMatrixWorld(true, true);
     }
     //#endregion
 
@@ -226,7 +183,6 @@ class Ragdoll extends IkObject
     {
         let poleTarget = new PoleTarget();
         poleTarget.mesh = poleTargetMesh;
-        //poleTarget.mesh.scale.set(10, 10, 10);
         poleTarget.initialOffset = offset.multiplyScalar(poleTargetMesh.userData.scaleAspect);
         this.calculatePoleTargetOffset(poleTarget, chain);
         poleTarget.initialize(poleTarget.poleOffset);
@@ -254,7 +210,6 @@ class Ragdoll extends IkObject
 
     changeControlPointsParent(parent)
     {
-        //console.log("changed parent to", parent)
         let chainObjects = this.chainObjectsValues;
         parent.attach(this.hipsControlTarget.target);
         this.hipsControlTarget.target.updateMatrixWorld(true);
@@ -268,23 +223,22 @@ class Ragdoll extends IkObject
     // Resets pole target position when object moved his hips position changed
     resetPoleTarget()
     {
-         let chainObjects = this.chainObjectsValues;
-         let hipsTarget = this.hipsControlTarget.target;
-         let {angle, axis} = this.hips.quaternion.toAngleAxis();
-         let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
-         spineWorldQuat.premultiply(this.hipsControlTarget.target.parent.worldQuaternion().inverse());
-         let armsAngleAxis = spineWorldQuat.toAngleAxis();
-         for(let i = 0; i < chainObjects.length; i++)
-         {
-             let constraint = chainObjects[i].poleConstraint;
-             if(!constraint)
-             {
-                 continue;
-             }
-             let targetPosition = hipsTarget.position;// new THREE.Vector3();
-            // hipsTarget.getWorldPosition(targetPosition);
-             let poleOffset = constraint.poleTarget.offsetWithoutHips;
-             let mesh = constraint.poleTarget.mesh;
+        let chainObjects = this.chainObjectsValues;
+        let hipsTarget = this.hipsControlTarget.target;
+        let {angle, axis} = this.hips.quaternion.toAngleAxis();
+        let spineWorldQuat = this.hips.children[0].children[0].children[0].worldQuaternion();
+        spineWorldQuat.premultiply(this.hipsControlTarget.target.parent.worldQuaternion().inverse());
+        let armsAngleAxis = spineWorldQuat.toAngleAxis();
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            let constraint = chainObjects[i].poleConstraint;
+            if(!constraint)
+            {
+                continue;
+            }
+            let targetPosition = hipsTarget.position;
+            let poleOffset = constraint.poleTarget.offsetWithoutHips;
+            let mesh = constraint.poleTarget.mesh;
             if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
             {
                 mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z - poleOffset.z);
@@ -294,9 +248,10 @@ class Ragdoll extends IkObject
             {
                 mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z + poleOffset.z);
                 mesh.rotateAroundPoint(targetPosition, axis, angle);
-             }
-         }
+            }
+        }
     }
+     
 
 
     setUpControlTargetsInitialPosition()
@@ -315,15 +270,6 @@ class Ragdoll extends IkObject
         }
     }
 
-    // Resets targets position
-    // After ik has been turned off and on resets
-    // pole position with consideration of offset
-    resetTargets()
-    {
-        super.resetTargets();
-        //this.resetPoleTarget();
-    }
-
     resetControlPoints()
     {
         if(this.hipsMouseDown) return;
@@ -336,7 +282,6 @@ class Ragdoll extends IkObject
             let jointBone = chain.joints[chain.joints.length - 1].bone;
             boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, jointBone);
             chainObjects[i].controlTarget.target.position.setFromMatrixPosition(boneMatrix);
-            //chainObjects[i].controlTarget.control.position.setFromMatrixPosition(boneMatrix);
         }
         this.calculteBackOffset();
     }
@@ -374,18 +319,6 @@ class Ragdoll extends IkObject
             this.rotateBoneQuaternion(bone, controlTarget);   
             bone.updateMatrix();
             bone.updateMatrixWorld(true, true); 
-      /*       else
-            {
-                let followBone = originalbones[this.originalObjectTargetBone[i]];
-                let targetQuat = boneTarget.worldQuaternion();
-                let quaternion = bone.worldQuaternion().inverse();
-                let rotation = followBone.worldQuaternion();
-                bone.quaternion.multiply(quaternion);
-                targetQuat.premultiply(boneTarget.inverseInitialQuaternion);
-                targetQuat.premultiply(rotation);
-                bone.quaternion.multiply(targetQuat);
-            } */
-
         }
     }
 

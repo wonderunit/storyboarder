@@ -1,6 +1,6 @@
-const {IK, IKJoint, IKHelper}  = require("../../core/three-ik");
+const {IK, IKJoint}  = require("../../core/three-ik");
 const THREE = require( "three");
-const {setZDirecion, setReverseZ} = require( "../../utils/axisUtils");
+const {setZDirecion} = require( "../../utils/axisUtils");
 const ChainObject = require( "./ChainObject");
 const SkeletonUtils = require("../../utils/SkeletonUtils");
 const IKSwitcher = require("./IkSwitcher");
@@ -41,15 +41,7 @@ class IkObject
         this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.controlTargets = controlTargets;
         this.addParentToControl(objectSkeleton.uuid);
-        //let chainObjects = [];
-/*         this.hipsControlTarget = this.controlTargets[5];
 
-        chainObjects.push(new ChainObject("Spine", "Head", this.controlTargets[0]));
-        chainObjects.push(new ChainObject("LeftArm", "LeftHand", this.controlTargets[1]));
-        chainObjects.push(new ChainObject("RightArm", "RightHand", this.controlTargets[2]));
-        chainObjects.push(new ChainObject("LeftUpLeg", "LeftFoot", this.controlTargets[3]));
-        chainObjects.push(new ChainObject("RightUpLeg", "RightFoot", this.controlTargets[4]));
- */
         this.hipsControlTarget = controlTargets[0];
         controlTargets[0].target.userData.name = "Hips";
         this.chainObjects["Head"] = new ChainObject("Spine", "Head", controlTargets[1]);
@@ -164,28 +156,6 @@ class IkObject
             }
         }
         return null;
-    }
-
-    // Resets targets position
-    // After IK has been turned off and on
-    resetTargets()
-    {
-        let chainObjects = this.chainObjects;
- /*        this.hips.getWorldPosition(this.hipsControlTarget.target.position);
-        for(let i = 0; i < chainObjects.length; i++)
-        {
-            let chain = chainObjects[i].chain;
-            let jointBone = chain.joints[chain.joints.length - 1].bone;
-            // Sets target position to ik last joints in each chain 
-            if(jointBone.name === "LeftFoot" || jointBone.name === "RightFoot" ||
-            jointBone.name === "LeftHand" || jointBone.name === "RightHand" ||
-            jointBone.name === "Head" || jointBone.name === "Hips")
-            {
-                let targetPosition = chainObjects[i].controlTarget.target.position;
-                jointBone.getWorldPosition(targetPosition);
-            }
-        } */
-       // this.calculteBackOffset();
     }
 
     // Calculates back's offset in order to move with hips

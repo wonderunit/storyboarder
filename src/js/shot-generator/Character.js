@@ -198,11 +198,6 @@ const Character = React.memo(({
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
       boneRotationControl.current.deselectBone();
-   /*    if(ragDoll.current)
-      {
-        ragDoll.current.removeFromScene();
-      } */
-      //ragDoll.current = null;
       object.current.bonesHelper = null
       object.current = null
     }
@@ -299,13 +294,7 @@ const Character = React.memo(({
         console.log('Custom model. No IK.')
         return
       }
-
       console.log('Built-in model. Setting up IK.')
-      //ragDoll.current = new RagDoll();
-
-     // let sgIkHelper = SGIkHelper.getInstance();
-      //object.current.userData.ikRig = sgIkHelper.ragDoll;
-     
     }
 
     return function cleanup () {
@@ -342,13 +331,6 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
-   // let ragdoll = SGIkHelper.getInstance().ragDoll;
-    // skip this update if RagDoll recently ran an update
-    //if(ragdoll && ragdoll.updatingReactSkeleton)
-    //{
-    //  ragdoll.updatingReactSkeleton = false;
-    //  return;
-    //}
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
@@ -365,10 +347,6 @@ const Character = React.memo(({
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
       fixRootBone()
-    }
-    if(SGIkHelper.getInstance().ragdoll)
-    {
-      //SGIkHelper.getInstance().ragdoll.ikSwitcher.applyToIk();  
     }
   }
 
@@ -424,12 +402,6 @@ const Character = React.memo(({
   useEffect(() => {
     if(!ready) return
     SGIkHelper.getInstance().setCamera(camera);
-    //skeletonRig.controlTargetSelection.camera = camera;
-    //boneRotationControl.current.setCamera(camera);
-   //for(let controlTarget of skeletonRig.controlTargets)
-   //{
-   //  controlTarget.setCamera(camera);
-   //}
   }, [camera, ready])
   //#endregion
 
@@ -487,7 +459,6 @@ const Character = React.memo(({
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
     resetPose()
-    //SGIkHelper.getInstance().ragDoll.setUpControlTargetsInitialPosition();
   }, [props.posePresetId])
 
   // HACK force reset skeleton pose on Board UUID change
@@ -512,8 +483,6 @@ const Character = React.memo(({
       if (object.current.userData.modelSettings.height) {
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
-
-        let heightChanged = object.current.scale.x !== scale ? true : false;
         object.current.scale.set( scale, scale, scale )
       } else {
         object.current.scale.setScalar( props.height )
@@ -561,15 +530,15 @@ const Character = React.memo(({
     console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
-    // handle selection/deselection - add/remove the bone stucture
     if (isSelected)
     {
-      SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height);
-      object.current.add(SGIkHelper.getInstance());
+      if ( !isCustomModel(props.model) ) {
+        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height);
+        object.current.add(SGIkHelper.getInstance());
+      }
       for (var cone of object.current.bonesHelper.cones)
       
       object.current.bonesHelper.add(cone)
-      console.log(object.current)
     } else {
       object.current.remove(SGIkHelper.getInstance());
       SGIkHelper.getInstance().removeFromParent();

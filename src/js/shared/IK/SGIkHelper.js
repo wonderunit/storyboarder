@@ -96,7 +96,7 @@ class SGIKHelper extends THREE.Object3D
         this.selectedControlPoint = targetPoints.find(object => object.uuid === uuid);
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
-        let control = this.targetControls.find(object => object.target.userData.name === "Hips");
+        let control = this.targetControls.find(object => object.target.userData.name === this.selectedControlPoint.userData.name);
         if(this.selectedControlPoint.userData.name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
@@ -107,8 +107,8 @@ class SGIKHelper extends THREE.Object3D
                 ragdoll.originalObject.children[0].isRotated = true;
             }
             this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent);
+            
             control.control.pointerPressedDown(event);
-
         }
         else
         {
@@ -212,13 +212,8 @@ class SGIKHelper extends THREE.Object3D
 
     updateMatrixWorld(value)
     {
-        //console.log(values.update.velue)
         super.updateMatrixWorld(value); 
         this.update();
-       /*  
-        if(this.updateStarted) return;
-        this.updateStarted = true;
-        this.updateStarted = false; */
     }
     raycast(raycaster, intersects)
     {

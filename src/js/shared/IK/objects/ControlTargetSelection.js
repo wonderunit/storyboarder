@@ -128,8 +128,9 @@ class ControlTargetSelection
                 continue;
             }
             selectedMesh.scope.deselectControlPoint();
-            delete selectedMeshes[keys];
+           // delete selectedMeshes[keys];
         }
+        this.selectedMeshes = {};
     }
 }
 

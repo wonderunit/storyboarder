@@ -1,5 +1,4 @@
 const TransformControls = require( "../utils/TransformControls");
-const THREE = require( "three");
 
 // TargetControl is class which is resposible for TransformControl and Mesh
 class TargetControl
@@ -18,7 +17,6 @@ class TargetControl
     }
 
     //#region Events
-    onKeyDown = event => this.onKeyDownLockRotation(event);
     onControlKeyDown = event => this.selectControlTarget();
     onControlKeyUp = event => this.deselectControlTarget();
     //#endregion
@@ -26,30 +24,16 @@ class TargetControl
     initialize(scene, position, mesh)
     {
         this.scene = scene;
-  /*       let material = new THREE.MeshBasicMaterial({ 
-            color: 0x46428a,
-            opacity: 0.4, 
-            depthTest: false, 
-            depthWrite: false,
-            transparent: true,
-            opacity: 1,
-            flatShading: true });
-        let geometry = new THREE.SphereGeometry(0.05); */
-        let movingTarget = mesh;//new THREE.Mesh(geometry, material);
+        let movingTarget = mesh;
         movingTarget.position.copy(position);
         movingTarget.scale.set(0.4, 0.4, 0.4);
         movingTarget.renderOrder = 9;
-        //this.add(movingTarget);
         movingTarget.userData.type = "controlPoint";
         movingTarget.name = "controlPoint";
         movingTarget.scope = this;
         this.control.attach(movingTarget);
         this.target = movingTarget;
-        //this.scene.add(this.control);
-        //this.control.enabled = false;
-        //this.control.addToScene();
-        this.addEventsToControlTarget();
-        //this.domElement.focus();
+        this.addEventsToControlTarget(); 
         movingTarget.layers.disable(0)
         movingTarget.layers.enable(1)
         movingTarget.layers.disable(2)
@@ -60,23 +44,11 @@ class TargetControl
         this.bone = bone;
     }
 
-    addToScene()
-    {
-        //this.scene.add(this.target);
-    }
-
-    removeFromScene()
-    {
-        //this.scene.remove(this.target);
-        this.deselectControlPoint();
-    }
-
     addEventsToControlTarget()
     {
         let control = this.control;
         control.addEventListener("pointerdown", this.onControlKeyDown);
         control.addEventListener("pointerup", this.onControlKeyUp);
-        this.domElement.addEventListener("keydown", this.onKeyDown, false );
     }
 
     removeEventsFromControlTarget()
@@ -84,7 +56,6 @@ class TargetControl
         let control = this.control;
         control.removeEventListener("pointerdown", this.onControlKeyDown);
         control.removeEventListener("pointerup", this.onControlKeyUp);
-        this.domElement.removeEventListener("keydown", this.onKeyDown);
     }
     //#region Selectoin of control Target
     selectControlTarget()
@@ -102,7 +73,6 @@ class TargetControl
     {
         if(!this.isControlPointSelected && !this.bone.isRotated)
         {
-            console.log("Select control point")
             this.isControlPointSelected = true;
             this.scene.add(this.control);
             
@@ -126,19 +96,6 @@ class TargetControl
         this.removeEventsFromControlTarget();
     }
     //#endregion
-    
-    // Locks rotation of current TargetControl
-    onKeyDownLockRotation(event)
-    {
-        if(event.ctrlKey)
-        {
-            if(event.key === 'e')
-            {
-                event.stopPropagation();
-                this.isRotationLocked = !this.isRotationLocked;
-            }
-        }
-    }
 
     setCamera(camera)
     {
