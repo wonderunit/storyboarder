@@ -34,7 +34,6 @@ class Ragdoll extends IkObject
         super.initObject(scene, object, controlTargets );
         
         this.ragdollEvents = new RagdollEvents(this);
-        this.controlTargetSelection.initialize();
 
         this.resetControlPoints();
         // Adds events to Back control

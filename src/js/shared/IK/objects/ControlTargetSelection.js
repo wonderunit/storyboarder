@@ -1,3 +1,4 @@
+const SGIKHelper = require("./IkObjects/../../SGIkHelper");
 // ControlTargetSelection is class used to identify hover of mouse
 // on control points in order to start selection
 class ControlTargetSelection
@@ -18,9 +19,9 @@ class ControlTargetSelection
     // Intiliazes event is used when object disposed to reenact it again
     initialize()
     {
+        console.log("Initialized");
         this.domElement.addEventListener("pointermove", this.onPointerMove, false);
     }
-
     // #region Events
     onPointerMove = (event) => { this.pointerHover(this.getPointer(event)); }
     //#endregion
@@ -115,6 +116,7 @@ class ControlTargetSelection
     // Dispose event
     dispose()
     {
+        console.log("Disposed");
         this.domElement.removeEventListener("pointermove", this.onPointerMove, false);
     }
 }

@@ -572,6 +572,7 @@ const Character = React.memo(({
       console.log(object.current)
     } else {
       object.current.remove(SGIkHelper.getInstance());
+      SGIkHelper.getInstance().removeFromParent();
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }

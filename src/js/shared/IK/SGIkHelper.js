@@ -56,14 +56,13 @@ class SGIKHelper extends THREE.Object3D
         this.scene = scene;
         let ragDoll = instance.ragDoll;
         this.characterObject = object;
-
+        this.ragDoll.controlTargetSelection.initialize();
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === object.uuid) return;
         this.resetAllTargetPoints();
         this.intializedSkinnedMesh = object;
         let meshes = this.targetPoints;
         let initializedMeshes = object.userData.poleTargets ? object.userData.poleTargets : [];
         let scaleAspect = height / this.regularHeight / object.scale.x;
-        console.log(initializedMeshes);
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
@@ -290,6 +289,11 @@ class SGIKHelper extends THREE.Object3D
         {
             this.targetControls[i].setCamera(camera);
         }
+    }
+
+    removeFromParent()
+    {
+        this.ragDoll.controlTargetSelection.dispose()
     }
     
 }
