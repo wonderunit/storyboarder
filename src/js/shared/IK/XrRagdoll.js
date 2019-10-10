@@ -1,7 +1,7 @@
 
 const {IK}  = require("./core/three-ik");
 const XRIKObject = require( "./XrIkObject");
-const XrPoleConstraint = require( "./constraints/XrPoleConstraint");
+const PoleConstraint = require( "./constraints/PoleConstraint");
 const PoleTarget = require( "./objects/PoleTarget");
 const CopyRotation = require( "./constraints/CopyRotation");
 const ResourceManager = require("./ResourceManager");
@@ -148,7 +148,7 @@ class XRRagdoll extends XRIKObject
             {
                 poleTarget = this.initPoleTargets(chain, polePositions[chainName], poleTargetMesh);
             }
-            let poleConstraint = new XrPoleConstraint(chain, poleTarget);
+            let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
             chainObjects[i].poleConstraint = poleConstraint;
         }

@@ -3,7 +3,7 @@ const THREE = require( "three");
 const {setZDirecion} = require( "./utils/axisUtils");
 const ChainObject = require( "./objects/IkObjects/ChainObject");
 const SkeletonUtils = require("./utils/SkeletonUtils");
-const XRIKSwitcher = require("./XrIKSwitcher");
+const IKSwitcher = require("./objects/IkObjects/IkSwitcher");
 require("./utils/Object3dExtension");
 
 class XrIkObject
@@ -34,7 +34,7 @@ class XrIkObject
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
         this.clonedObject = clonedSkeleton;
         this.originalObject = objectSkeleton;
-        this.ikSwitcher = new XRIKSwitcher(objectSkeleton, clonedSkeleton);
+        this.ikSwitcher = new IKSwitcher(objectSkeleton, clonedSkeleton);
         this.rigMesh = clonedSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.controlTargets = controlTargets;
