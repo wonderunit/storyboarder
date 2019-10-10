@@ -177,7 +177,7 @@ const TestUI = () => {
                     <b>objects:</b>
                     {
                       Object.values(board.sg.data.sceneObjects)
-                        .map(o => o.name || o.displayName)
+                        .map(o => o.name || o.displayName || `${o.type} ${o.id.slice(0, 7)}`)
                         .join(', ')
                     }
                   </div>
