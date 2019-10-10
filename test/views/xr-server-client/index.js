@@ -187,6 +187,7 @@ const TestUI = () => {
       setServerHash(hash)
       setServerLastSavedHash(lastSavedHash)
     } catch (err) {
+      // TODO if the uid does not match, notify user, reload
       alert('Error\n' + err)
     }
   }
