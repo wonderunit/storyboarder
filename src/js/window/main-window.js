@@ -7102,11 +7102,13 @@ ipcRenderer.on('storyboarder:get-storyboarder-file-data', (event, uid) => {
     }
   )
 })
-ipcRenderer.on('storyboarder:get-state', (event, uid) => {
+ipcRenderer.on('storyboarder:get-state', event => {
+  let board = boardData.boards[currentBoard]
+  let { uid, shot, dialogue, action, notes } = board
   ipcRenderer.send(
     'shot-generator:get-state',
     {
-      board: boardData.boards[currentBoard]
+      board: { uid, shot, dialogue, action, notes }
     }
   )
 })

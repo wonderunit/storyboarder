@@ -126,11 +126,14 @@ class XRServer {
       }
     })
 
-    app.get('/state.json', (req, res) => {
+    app.get('/state.json', async (req, res) => {
       const state = store.getState()
-      res.json(
-        getSerializedState(state)
-      )
+      const { board } = await service.getStoryboarderState()
+      const serializedState = getSerializedState(state)
+      res.json({
+        board,
+        state: serializedState
+      })
     })
 
     app.post('/state.json', (req, res) => {

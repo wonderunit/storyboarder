@@ -10,7 +10,7 @@ const { Provider, connect } = require('react-redux')
 const thunkMiddleware = require('redux-thunk').default
 
 const h = require('../../utils/h')
-const { reducer, initialState, getSerializedState } = require('../../shared/reducers/shot-generator')
+const { reducer, initialState, getSerializedState, setBoard, loadScene } = require('../../shared/reducers/shot-generator')
 const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 
 const configureStore = preloadedState => {
@@ -21,17 +21,24 @@ const configureStore = preloadedState => {
 
 const SceneManagerXR = require('./SceneManagerXR')
 
-const sendStateToServer = async ({ state }) => {
-  await fetch(
-    '/state.json',
+const sendStateToServer = async ({ uid, state }) => {
+  let url = `/state.json?uid=${uid}`
+  let body = JSON.stringify(state)
+  let response = await fetch(
+    url,
     {
       method: 'POST',
-      body: JSON.stringify(state),
+      body,
       headers: {
         'Content-Type': 'application/json; charset=utf-8',
       },
     }
   )
+  if (response.ok) {
+    return await response.json()
+  } else {
+    throw new Error(await response.text())
+  }
 }
 
 const loadBoardByUid = async uid => {
@@ -61,16 +68,20 @@ const init = async () => {
   // get pose preset data
   let poses = await(await fetch('/presets/poses.json')).json()
   // get the shot generator shot state
-  const { activeCamera, sceneObjects, world } = await (await fetch('/state.json')).json()
+  const {
+    // serialized state
+    state: {
+      activeCamera,
+      sceneObjects,
+      world
+    },
+    // uid, shot, action, dialogue, notes
+    board
+  } = await (await fetch('/state.json')).json()
 
   const store = configureStore({
+    ...initialState,
     aspectRatio,
-    undoable: {
-      ...initialState.undoable,
-      sceneObjects,
-      world,
-      activeCamera
-    },
     models: initialState.models,
     presets: {
       poses,
@@ -79,14 +90,29 @@ const init = async () => {
     }
   })
 
+  store.dispatch({ type: 'SET_ASPECT_RATIO', payload: aspectRatio })
+  store.dispatch(setBoard(board))
+  store.dispatch(loadScene({
+    sceneObjects,
+    world,
+    activeCamera
+  }))
+
   // TODO don't send to server if data change was just a new board loaded from the server
   //      (avoid re-sending what SG already knows about)
   if (!process.env.XR_STANDALONE_DEMO) {
     // after 5s, start POST'ing changes back
     setTimeout(() => {
       store.subscribe(async () => {
-        let state = getSerializedState(store.getState())
-        await sendStateToServer({ state })
+        let state = store.getState()
+        let uid = state.board.uid
+        let serializedState = getSerializedState(state)
+        try {
+          await sendStateToServer({ uid, state: serializedState })
+        } catch (err) {
+          // TODO if error is that board has changed in SG, notify user, and reload in VR
+          console.error(err)
+        }
       })
     }, 5000)
   }
