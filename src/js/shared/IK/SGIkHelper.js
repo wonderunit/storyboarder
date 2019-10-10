@@ -24,7 +24,7 @@ class SGIKHelper extends THREE.Object3D
             this.intializedSkinnedMesh = null;
             this.isIkDisabled = false;
             this.add(this.poleTargets);
-            this.isPoleTargetsVisible = true;
+            this.isPoleTargetsVisible = false;
             this.add(this.controlPoints);
             this.add(this.transformControls);
 
@@ -32,7 +32,7 @@ class SGIKHelper extends THREE.Object3D
             intializeInstancedMesh(mesh, camera, domElement, scene);
             this.add(this.instancedMesh);
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
-            this.regularHeight = 1.8;
+            this.regularHeight = 1.1;
             this.updateStarted = false;
             this.isInitialized = true;
             this.userData.type = "IkHelper";
@@ -321,13 +321,13 @@ class SGIKHelper extends THREE.Object3D
 
 const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
 {
-    let sphereGeometry = new THREE.SphereBufferGeometry( 0.5, 8, 6 );
+    let sphereGeometry = new THREE.SphereBufferGeometry( 0.2, 8, 6 );
     let instance = SGIKHelper.getInstance();
     let controlsName = [ "Head", "LeftHand", "RightHand", "LeftLeg", "RightLeg", "Hips"];
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
     let sizeOfTargets = listOfControlTargets.length + controlsName.length;
     let material = new THREE.MeshBasicMaterial({
-        color: 0x6a4dff,    
+        color: 0x46428a,    
         depthTest: false,
         depthWrite: false,
         transparent: true,
@@ -340,7 +340,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     instance.defaultColor = new THREE.Color(0x6a4dff);
     instance.instancedMesh.userData.preventInteraction = true;
     instance.instancedMesh.userData.type = "instancedMesh";
-    instance.instancedMesh.visible = false;
+    instance.instancedMesh.visible = true;
     instance.instancedMesh.layers.disable(0)
     instance.instancedMesh.layers.enable(1)
     instance.instancedMesh.layers.disable(2)
@@ -348,13 +348,12 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     {
         let controlPoint = new THREE.Mesh(newMesh.geometry, material);
         controlPoint.userData.id = --sizeOfTargets;
-        controlPoint.material.visible = true;
+        controlPoint.material.visible = false;
         controlPoint.userData.type = "controlPoint";
         controlPoint.name = "controlPoint";
         controlPoint.userData.name = controlsName.shift();
         let targetControl = new TargetControl(camera, domElement, "controlPoint");
         targetControl.initialize(scene, new THREE.Vector3(0, 0, 0), controlPoint);
-        //targetControl.control.scale.set(0.01, 0.01, 0.01);
         instance.controlPoints.add(controlPoint);
         instance.targetControls.push(targetControl);
         instance.resetTargetPoint(controlPoint);
@@ -362,7 +361,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(newMesh.geometry, material);
-        poleTarget.material.visible = true;
+        poleTarget.material.visible = false;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
