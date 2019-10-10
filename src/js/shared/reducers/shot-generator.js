@@ -1099,7 +1099,7 @@ const mainReducer = (state/* = initialState*/, action) => {
         return
 
       case 'SET_BOARD':
-        const { uid, shot, /* action */, dialogue, notes } = action.payload
+        const { uid, shot, /* action, */ dialogue, notes } = action.payload
         draft.board = {
           uid,
 
