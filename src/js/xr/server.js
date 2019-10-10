@@ -13,7 +13,7 @@ const log = require('electron-log')
 
 const portNumber = 1234
 
-const { getSerializedState, updateServer, updateSceneFromXR } = require('../shared/reducers/shot-generator')
+const { getSerializedState, updateServer, updateSceneFromXR, getHash } = require('../shared/reducers/shot-generator')
 const getIpAddress = require('../utils/getIpAddress')
 
 class XRServer {
@@ -70,10 +70,17 @@ class XRServer {
 
     app.get('/sg.json', (req, res) => {
       const state = store.getState()
-      const { aspectRatio } = state
+      const { aspectRatio, meta: { lastSavedHash } } = state
+
+      let hash = getHash(state)
 
       res.json({
-        aspectRatio
+        aspectRatio,
+
+        // data in-memory
+        hash,
+        // data when last saved
+        lastSavedHash
       })
     })
     /*

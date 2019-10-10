@@ -6,7 +6,7 @@ window.THREE = window.THREE || THREE
 const { useEffect, useState } = React = require('react')
 const ReactDOM = require('react-dom')
 
-const { reducer } = require('../../../src/js/shared/reducers/shot-generator')
+const { reducer, getHash } = require('../../../src/js/shared/reducers/shot-generator')
 
 const NotAsked = () => ({ type: 'NotAsked' })
 const Loading = () => ({ type: 'Loading' })
@@ -71,13 +71,14 @@ const List = ({ forceUpdate, onBoardClick }) => {
 
 const URI = 'http://localhost:1234'
 const api = {}
+api.getSg = async () =>
+  await(await fetch(`${URI}/sg.json`)).json()
 api.getBoards = async () =>
   await(await fetch(`${URI}/boards.json`)).json()
 api.selectBoardByUid = async (uid) => {
   let body = JSON.stringify({
     uid
   })
-  console.log('api.selectBoardByUid', body)
   let board = await(
     await fetch(
       `${URI}/sg.json`,
@@ -154,21 +155,53 @@ api.insertShot = async data => {
 
 const TestUI = () => {
   const [forceUpdate, setForceUpdate] = useState()
-  const [remoteBoard, setRemoteBoard] = useState()
   const [board, setBoard] = useState()
+  const [serverHash, setServerHash] = useState()
+  const [serverLastSavedHash, setServerLastSavedHash] = useState()
+
+  const checkForUnsavedChanges = async data => {
+    console.log('checkForUnsavedChanges', data)
+
+    // ask for SG hashes
+    let serverResponse = await api.getSg()
+    setServerHash(serverResponse.hash)
+    setServerLastSavedHash(serverResponse.lastSavedHash)
+
+    // calculate local hash
+    let localHash = getHashForBoardSgData(data)
+
+    return serverResponse.hash != localHash
+  }
+
   const onBoardClick = async uid => {
     let board = await api.selectBoardByUid(uid)
-    setRemoteBoard(JSON.parse(JSON.stringify(board)))
     setBoard(board)
+    let response = await api.getSg()
+    setServerHash(response.hash)
+    setServerLastSavedHash(response.lastSavedHash)
   }
   const onSendState = async (uid, data) => {
     try {
       await api.sendState(uid, data)
+      let { hash, lastSavedHash } = await api.getSg()
+      setServerHash(hash)
+      setServerLastSavedHash(lastSavedHash)
     } catch (err) {
       alert('Error\n' + err)
     }
   }
+  const getHashForBoardSgData = data => {
+    let state = reducer({}, { type: 'LOAD_SCENE', payload: data })
+    return getHash(state)
+  }
+
   const onSaveShot = async data => {
+    let hasUnsavedChanges = await checkForUnsavedChanges(data)
+    if (hasUnsavedChanges) {
+      let confimed = confirm('Shot Generator has unsaved changes. Are you sure you want to overwrite with VR changes?')
+      if (!confimed) return
+    }
+
     try {
       await api.saveShot(board.uid, data)
       setForceUpdate(i => !i)
@@ -178,9 +211,19 @@ const TestUI = () => {
     }
   }
   const onInsertShot = async data => {
-    let board = await api.insertShot(data)
-    setForceUpdate(i => !i)
-    onBoardClick(board.uid)
+    let hasUnsavedChanges = await checkForUnsavedChanges(data)
+    if (hasUnsavedChanges) {
+      let confimed = confirm('Shot Generator has unsaved changes. Are you sure you want to overwrite with VR changes?')
+      if (!confimed) return
+    }
+
+    try {
+      let board = await api.insertShot(data)
+      setForceUpdate(i => !i)
+      onBoardClick(board.uid)
+    } catch (err) {
+      alert('Could not insert\n' + err)
+    }
   }
   const changeBoard = () => {
     for (let key of Object.keys(board.sg.data.sceneObjects)) {
@@ -205,7 +248,7 @@ const TestUI = () => {
               </div>
               <b>uid:</b>{board.uid}
               {
-                remoteBoard.sg && board.sg &&
+                board.sg &&
                 <div>
                   <div>
                     <b>objects:</b>
@@ -217,12 +260,14 @@ const TestUI = () => {
                   </div>
                   <div>
                     <p>
-                      <b>server sha1:</b>
-                      {reducer({}, { type: 'LOAD_SCENE', payload: remoteBoard.sg.data }).meta.lastSavedHash}
+                      <b>server hash (unsaved):</b>{serverHash}
                     </p>
                     <p>
-                      <b>client sha1:</b>
-                      {reducer({}, { type: 'LOAD_SCENE', payload: board.sg.data }).meta.lastSavedHash}
+                      <b>server hash (last saved to .storyboarder):</b>{serverLastSavedHash}
+                    </p>
+                    <p>
+                      <b>client hash:</b>
+                      {getHashForBoardSgData(board.sg.data)}
                     </p>
                   </div>
                   <div>
