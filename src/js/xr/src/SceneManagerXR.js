@@ -49,6 +49,7 @@ const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
 const Light = require('./components/Light')
 const VirtualCamera = require('./components/VirtualCamera')
+const Image = require('./components/Image')
 const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
@@ -85,6 +86,11 @@ const getSceneObjectVirtualCamerasIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
 )
 
+const getSceneObjectImageIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
+)
+
 const SceneContent = connect(
   state => ({
     aspectRatio: state.aspectRatio,
@@ -98,6 +104,7 @@ const SceneContent = connect(
     modelObjectIds: getSceneObjectModelObjectIds(state),
     lightIds: getSceneObjectLightIds(state),
     virtualCameraIds: getSceneObjectVirtualCamerasIds(state),
+    imageIds: getSceneObjectImageIds(state),
   }),
   {
     selectObject,
@@ -107,7 +114,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds,
 
     resources, getAsset
   }) => {
@@ -607,6 +614,15 @@ const SceneContent = connect(
                     : null
                 }
               />
+            )
+          }
+
+          {
+            imageIds.map(id =>
+              <Image
+                key={id}
+                sceneObject={sceneObjects[id]}
+                isSelected={selections.includes(id)}/>
             )
           }
 
