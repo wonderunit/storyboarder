@@ -353,11 +353,18 @@ const withDisplayNames = draft => {
   return draft
 }
 
-// load up the default poses
-const defaultPosePresets = require('./shot-generator-presets/poses.json')
-
-// reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
-const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
+// via poses.json
+const defaultPosePreset = {
+  'AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0': {
+    'id': 'AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0',
+    'name': 'Default Pose',
+    'keywords': 'Default Pose',
+    'state': {
+      'skeleton': {}
+    },
+    'priority': 0
+  }
+}
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -674,7 +681,9 @@ const initialState = {
       }
     },
 
-    poses: defaultPosePresets
+    poses: {
+      ...defaultPosePreset
+    }
   },
   server: {
     uri: undefined,
@@ -1341,5 +1350,7 @@ module.exports = {
   getWorld,
 
   getSerializedState,
-  getIsSceneDirty
+  getIsSceneDirty,
+
+  getDefaultPosePreset: () => initialState.poses.presets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
 }
