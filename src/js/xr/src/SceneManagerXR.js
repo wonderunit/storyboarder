@@ -17,6 +17,7 @@ require('./three/GPUPickers/utils/Object3dExtension')
 require('../../vendor/three/examples/js/vr/WebVR')
 const WEBVR = THREE.WEBVR
 
+const XRClient = require('./client')
 
 const {
   // selectors
