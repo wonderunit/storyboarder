@@ -137,8 +137,12 @@ class XRServer {
       const state = store.getState()
       const { board } = await service.getStoryboarderState()
       const serializedState = getSerializedState(state)
+      // send only what XR needs to know
+      let { uid, shot, dialogue, action, notes } = board
       res.json({
-        board,
+        board: {
+          uid, shot, dialogue, action, notes
+        },
         state: serializedState
       })
     })
