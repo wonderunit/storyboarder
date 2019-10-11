@@ -1352,5 +1352,5 @@ module.exports = {
   getSerializedState,
   getIsSceneDirty,
 
-  getDefaultPosePreset: () => initialState.poses.presets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
+  getDefaultPosePreset: () => initialState.presets.poses['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
 }
