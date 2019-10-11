@@ -14,44 +14,42 @@ serverUri.port = 1234
 let url = serverUri.href.replace(/\/$/, '')
 const api = XRClient(url)
 
-const NotAsked = () => ({ type: 'NotAsked' })
-const Loading = () => ({ type: 'Loading' })
-const Success = data => ({ type: 'Success', data })
-const Failure = error => ({ type: 'Failure', error })
-
-const renderRemoteData = (remoteData, callbacks) => {
-  let { type, ...rest } = remoteData
-  return callbacks[remoteData.type](rest ? Object.values(rest)[0] : undefined)
-}
+const RemoteData = require('./RemoteData')
 
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
   fn(e, ...args)
 }
 
-const List = ({ forceUpdate, onBoardClick }) => {
-  const [remoteData, setRemoteData] = useState(NotAsked())
-  useEffect(() => {
-    async function fetchData () {
-      setRemoteData(Loading())
-      try {
-        let data = await api.getBoards()
-        setRemoteData(Success(data))
-      } catch (err) {
-        setRemoteData(Failure(err))
-      }
+const useRemoteDataFetcher = () => {
+  const [remoteData, setRemoteData] = useState(RemoteData.init())
+  async function fetcher (fn, ...rest) {
+    setRemoteData(RemoteData.loading())
+    try {
+      let data = await fn(...rest)
+      setRemoteData(RemoteData.success(data))
+    } catch (err) {
+      setRemoteData(RemoteData.failure(err))
     }
-    fetchData()
+  }
+
+  return [remoteData, fetcher]
+}
+
+const List = ({ forceUpdate, onBoardClick }) => {
+  const [remoteData, fetcher] = useRemoteDataFetcher()
+  useEffect(() => {
+    fetcher(api.getBoards)
   }, [forceUpdate])
 
   return (
     <>
       {
-        renderRemoteData(remoteData, {
-          NotAsked: () => <div>Initializing …</div>,
-          Loading: () => <div>Loading …</div>,
-          Failure: error => <div>Could not load. {error.toString()}</div>,
-          Success: data => <div className="boards">
+        remoteData.cata({
+          NOT_ASKED: () => <div>Initializing …</div>,
+          LOADING: () => <div>Loading …</div>,
+          FAILURE: error => <div>Could not load. {error.toString()}</div>,
+          SUCCESS: data => <div className="boards">
             <p>
               Click a Board’s thumbnail to select that Board in Shot Generator
             </p>
