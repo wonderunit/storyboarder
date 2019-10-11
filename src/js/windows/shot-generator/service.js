@@ -34,7 +34,7 @@ service.getBoard = uid =>
     ipcRenderer.send('storyboarder:get-board', uid)
   })
 
-service.setBoardByUid = async uid => {
+service.loadBoardByUid = async uid => {
   // ask main > Shot Generator > to call loadBoardByUid
   ipcRenderer.send('shot-generator:loadBoardByUid', uid)
 }

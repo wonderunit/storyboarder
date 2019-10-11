@@ -101,7 +101,7 @@ class XRServer {
         if (boards.find(board => board.uid === uid)) {
           // trigger Shot Generator to update its board
           // TODO could wait for SG update to succeed before updating VR?
-          await service.setBoardByUid(uid)
+          await service.loadBoardByUid(uid)
           // get the board data
           let board = await service.getBoard(uid)
           // send it to VR
