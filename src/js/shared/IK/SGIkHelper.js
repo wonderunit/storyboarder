@@ -98,7 +98,7 @@ class SGIKHelper extends THREE.Object3D
             this.ragDoll.hipsMouseDown = true;
             if(ragdoll.hipsControlTarget.control.mode === "rotate")
             {
-                ragdoll.isEnabledIk = false;
+                //ragdoll.isEnabledIk = false;
                 ragdoll.attached = true;
                 ragdoll.originalObject.children[0].isRotated = true;
             }
@@ -152,6 +152,7 @@ class SGIKHelper extends THREE.Object3D
                 this.ragDoll.hipsMouseDown = false;
                 if(this.ragDoll.attached)
                 {
+                    this.ragDoll.updateCharacterRotation(this.ragDoll.originalObject.children[0].name, this.ragDoll.hipsControlTarget.target.rotation);
                     this.ragDoll.attached = false;
                     this.ragDoll.originalObject.children[0].isRotated = false;
                 }
