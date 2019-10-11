@@ -46,7 +46,10 @@ const init = async () => {
     aspectRatio,
     models: initialState.models,
     presets: {
-      poses,
+      poses: {
+        ...initialState.presets.poses,
+        ...poses
+      },
       characters: {},
       scenes: {}
     }
