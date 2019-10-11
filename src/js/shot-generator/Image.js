@@ -64,6 +64,10 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     let mat = materialFactory()
     let mesh = new THREE.Mesh(geo, mat)
 
+    mesh.layers.disable(0)
+    mesh.layers.enable(1)
+    mesh.layers.disable(2)
+
     image.current = mesh
     image.current.userData.id = id
     image.current.userData.type = type
