@@ -270,6 +270,18 @@ class CanvasRenderer {
             }
         },
 
+
+        ...(sceneObject.type === 'image') && {
+          width: {
+            label: `Width - ${sceneObject.width}m`,
+            lens: R.compose(R.lensPath(['width']), lenses.width)
+          },
+          height: {
+            label: `Height - ${sceneObject.height}m`,
+            lens: R.compose(R.lensPath(['height']), lenses.height)
+          }
+        },
+
         ...(sceneObject.type === 'character') &&
           {
             ...(isUserModel(sceneObject.model))
