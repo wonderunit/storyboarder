@@ -1,9 +1,27 @@
 const { useUpdate } = require('react-three-fiber')
+const { useEffect } = require('react')
+
+const VirtualCamera = require('../components/VirtualCamera')
 
 const Image = React.memo(({ sceneObject, isSelected }) => {
-  const ref = useUpdate(self => console.log())
+  const ref = useUpdate(
+    self => {
+      self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+    }
+  )
 
   const { x, y, z, visible, width, height, rotation } = sceneObject
+
+  useEffect(() => {
+    const { material } = ref.current
+    if (isSelected) {
+      material.emissive = new THREE.Color(0x755bf9)
+      material.color = new THREE.Color(0x222222)
+    } else {
+      material.emissive = new THREE.Color(0x000000)
+      material.color = new THREE.Color(0xcccccc)
+    }
+  }, [ref.current, isSelected])
 
   return (
     <mesh
@@ -11,8 +29,8 @@ const Image = React.memo(({ sceneObject, isSelected }) => {
       
       onController={sceneObject.visible ? () => null : null}
       userData={{
-        id: sceneObject.id,
-        type: 'image'
+        type: 'image',
+        id: sceneObject.id
       }}
 
       visible={visible}
