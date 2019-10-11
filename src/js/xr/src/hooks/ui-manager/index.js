@@ -19,6 +19,8 @@ const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
 const { create } = require('zustand')
 const { produce } = require('immer')
 
+const RemoteData = require('../../client/RemoteData')
+
 const useIsVrPresenting = require('../../hooks/use-is-vr-presenting')
 const { setCookie, getCookie } = require('../../helpers/cookies')
 const isUserModel = require('../../helpers/is-user-model')
@@ -160,7 +162,8 @@ class CanvasRenderer {
         pose: {
           scrollTop: 0
         }
-      }
+      },
+      boardsData: RemoteData.init()
     }
 
     this.paneComponents = {}
@@ -205,10 +208,35 @@ class CanvasRenderer {
     // ctx.fillStyle = 'rgba(60,60,60)'
     // roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
 
+    this.state.boardsData = RemoteData.init()
+    this.client.getBoards().then(result => {
+      this.state.boardsData = RemoteData.success(result)
+      this.needsRender = true
+    }).catch(err => {
+      this.state.boardsData = RemoteData.failure(err)
+      this.needsRender = true
+    })
+
     this.needsRender = false
   }
   render () {
-
+    this.state.boardsData.cata({
+      NOT_ASKED: () => {
+        console.log('boards list has not loaded')
+      },
+      LOADING: () => {
+        console.log('boards list is loading')
+      },
+      SUCCESS: data => {
+        console.log('boards list has loaded', data)
+        data.map(board =>
+          console.log(`board ${board.uid}: sg? ${board.hasSg ? 'yes' : 'no'}, thumbnail: ${board.thumbnail}`)
+        )
+      },
+      FAILURE: err => {
+        console.error('boards list failed', err)
+      }
+    })
 
     let canvas = this.canvas
     let ctx = this.context

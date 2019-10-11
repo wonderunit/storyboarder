@@ -14,7 +14,7 @@ serverUri.port = 1234
 let url = serverUri.href.replace(/\/$/, '')
 const api = XRClient(url)
 
-const RemoteData = require('./RemoteData')
+const RemoteData = require('../../../src/js/xr/src/client/RemoteData')
 
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
