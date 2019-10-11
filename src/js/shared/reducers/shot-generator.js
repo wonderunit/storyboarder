@@ -302,6 +302,10 @@ const updateObject = (draft, state, props, { models }) => {
     draft.imageAttachmentIds = props.imageAttachmentIds
   }
 
+  if (props.visibleToCam != null) {
+    draft.visibleToCam = props.visibleToCam
+  }
+
   if (props.hasOwnProperty('characterPresetId')) {
     draft.characterPresetId = props.characterPresetId
   }

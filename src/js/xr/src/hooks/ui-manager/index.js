@@ -270,7 +270,6 @@ class CanvasRenderer {
             }
         },
 
-
         ...(sceneObject.type === 'image') && {
           width: {
             label: `Width - ${sceneObject.width}m`,
@@ -424,6 +423,27 @@ class CanvasRenderer {
         weight: 'bold'
       }
 
+      if (sceneObject.type === 'image') {
+        this.paneComponents['properties']['visible-to-camera'] = {
+          id: 'visible-to-camera',
+          type: 'slider',
+          x: 570,
+          y: 30 + 90 * 3,
+          width: 420,
+          height: 80,
+          label: sceneObject.visibleToCam ? 'Visible to Camera' : 'Set as visible to Camera',
+          state: Number(sceneObject.visibleToCam),
+          onSelect: () => {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                visibleToCam: !sceneObject.visibleToCam
+              })
+            )
+            this.needsRender = true
+          }
+        }
+      }
+      
       if (sceneObject.type === 'camera') {
         const isActive = sceneObject.id === this.state.activeCamera
 

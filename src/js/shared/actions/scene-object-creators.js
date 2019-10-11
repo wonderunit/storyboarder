@@ -171,6 +171,7 @@ const createImage = (id, camera, room) => {
     rotation: { x: 0, y: rotation, z: 0 },
 
     visible: true,
+    visibleToCam: true,
     imageAttachmentIds: ['example']
   })
 }
