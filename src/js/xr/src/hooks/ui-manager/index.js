@@ -11,11 +11,6 @@ const uiMachine = require('../../machines/uiMachine')
 
 const R = require('ramda')
 
-// all pose presets (so we can use `stand` for new characters)
-const defaultPosePresets = require('../../../../shared/reducers/shot-generator-presets/poses.json')
-// id of the pose preset used for new characters
-const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
-
 const { create } = require('zustand')
 const { produce } = require('immer')
 
@@ -810,8 +805,13 @@ const {
   getActiveCamera,
   setActiveCamera,
   undoGroupStart,
-  undoGroupEnd
+  undoGroupEnd,
+
+  getDefaultPosePreset
 } = require('../../../../shared/reducers/shot-generator')
+
+// the 'stand' pose preset used for new characters
+const defaultPosePreset = getDefaultPosePreset()
 
 // via PosePresetsEditor.js
 const comparePresetNames = (a, b) => {
@@ -1009,8 +1009,8 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
                     endomorphic: 0
                   },
 
-                  posePresetId: DEFAULT_POSE_PRESET_ID,
-                  skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
+                  posePresetId: defaultPosePreset.id,
+                  skeleton: defaultPosePreset.state.skeleton,
                   visible: true
                 })
               )
