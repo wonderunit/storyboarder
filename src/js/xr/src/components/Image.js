@@ -3,13 +3,9 @@ const { useEffect, useMemo, useRef } = require('react')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const Image = React.memo(({ sceneObject, isSelected, texture }) => {
+const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) => {
   const aspect = useRef(1)
-  const ref = useUpdate(
-    self => {
-      self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
-    }
-  )
+  const ref = useRef()
 
   const { x, y, z, visible, height, rotation } = sceneObject
 
@@ -32,6 +28,11 @@ const Image = React.memo(({ sceneObject, isSelected, texture }) => {
       material.color = new THREE.Color(0xcccccc)
     }
   }, [ref.current, isSelected])
+
+  useEffect(() => {
+    if (visibleToCam) ref.current.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
+    else ref.current.layers.disable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
+  }, [ref.current, visibleToCam])
 
   return (
     <mesh

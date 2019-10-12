@@ -627,6 +627,7 @@ const SceneContent = connect(
                 key={id}
                 texture={texture}
                 sceneObject={sceneObject}
+                visibleToCam={sceneObject.visibleToCam}
                 isSelected={selections.includes(id)}/>
               }
             )
