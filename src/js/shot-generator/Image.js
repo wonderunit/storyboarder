@@ -28,6 +28,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
   let image = useRef(null)
   const loadingImageSet = useRef(false)
   const discard = useRef(false)
+  const aspect = useRef(1)
 
   const loadImage = (imgArray) => {
     const promises = imgArray.map(link => loadMaterialPromise(link))
@@ -75,7 +76,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     image.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, image.current)
     image.current.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
     image.current.position.set(props.x, props.z, props.y)
-    image.current.scale.set(props.width, props.height, 1)
+    image.current.scale.set(props.height * aspect.current, props.height, 1)
 
     image.current.visible = props.visible
     image.current.orthoIcon.position.copy(image.current.position)
@@ -96,9 +97,9 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     loadingImageSet.current = true
     loadImage(imgArray).then((result) => {
       const { width, height } = result.materials[0].map.image
-      const aspect = width / height
+      aspect.current = width / height
 
-      updateObject(id, { width: props.height * aspect })
+      updateObject(id, { width: props.height * aspect.current })
       image.current.material = result.materials[0]
     })
   }
@@ -131,11 +132,8 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
   }, [props.x, props.y, props.z, props.rotation, props.tilt, props.roll, props.visible])
 
   useEffect(() => {
-    image.current.scale.set(props.width, props.height, 1)
-  }, [
-    props.width,
-    props.height
-  ])
+    image.current.scale.set(props.height * aspect.current, props.height, 1)
+  }, [props.height, aspect.current])
 
   useEffect(() => {
     if (!image.current) return

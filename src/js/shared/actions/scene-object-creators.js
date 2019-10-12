@@ -172,7 +172,7 @@ const createImage = (id, camera, room) => {
 
     visible: true,
     visibleToCam: true,
-    imageAttachmentIds: ['example']
+    imageAttachmentIds: ['placeholder']
   })
 }
 

@@ -1128,12 +1128,17 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
       (sceneObject.type == 'image' ) && [
         [
-          'div.column',
-          [
-            [NumberSlider, { label: 'width', value: sceneObject.width, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'width') } ],
-            [NumberSlider, { label: 'height', value: sceneObject.height, min: 0.025, max: 5, onSetValue: createOnSetValue(sceneObject.id, 'height') } ]
-          ]
-        ],
+          NumberSlider, {
+            label: 'size',
+            value: sceneObject.height,
+            min: 0.025,
+            max: 5,
+            onSetValue: value => updateObject(
+              sceneObject.id,
+              { height: value }
+            )
+          }
+        ]
       ],
 
       sceneObject.type == 'volume' && [
@@ -1446,7 +1451,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
                 ids: sceneObject.imageAttachmentIds,
                 options: [
-                  { name: 'example', value: 'example' }
+                  { name: 'placeholder', value: 'placeholder' }
                 ],
                 copyFiles: filepaths => {
                   let projectDir = path.dirname(storyboarderFilePath)
