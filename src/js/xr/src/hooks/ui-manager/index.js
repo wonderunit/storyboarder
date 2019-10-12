@@ -271,12 +271,8 @@ class CanvasRenderer {
         },
 
         ...(sceneObject.type === 'image') && {
-          width: {
-            label: `Width - ${sceneObject.width}m`,
-            lens: R.compose(R.lensPath(['width']), lenses.width)
-          },
-          height: {
-            label: `Height - ${sceneObject.height}m`,
+          size: {
+            label: `Size - ${sceneObject.height}m`,
             lens: R.compose(R.lensPath(['height']), lenses.height)
           }
         },
@@ -428,7 +424,7 @@ class CanvasRenderer {
           id: 'visible-to-camera',
           type: 'slider',
           x: 570,
-          y: 30 + 90 * 3,
+          y: 30 + 90 * 2,
           width: 420,
           height: 80,
           label: sceneObject.visibleToCam ? 'Visible to Camera' : 'Set as visible to Camera',
