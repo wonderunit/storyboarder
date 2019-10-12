@@ -1,9 +1,9 @@
 const { useUpdate } = require('react-three-fiber')
-const { useEffect } = require('react')
+const { useEffect, useMemo } = require('react')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const Image = React.memo(({ sceneObject, isSelected }) => {
+const Image = React.memo(({ sceneObject, isSelected, texture }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
@@ -11,6 +11,12 @@ const Image = React.memo(({ sceneObject, isSelected }) => {
   )
 
   const { x, y, z, visible, width, height, rotation } = sceneObject
+
+  useMemo(() => {
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+    texture.offset.set(0, 0)
+    texture.repeat.set(1, 1)
+  }, [texture])
 
   useEffect(() => {
     const { material } = ref.current
@@ -39,7 +45,9 @@ const Image = React.memo(({ sceneObject, isSelected }) => {
       rotation={[rotation.x, rotation.y, rotation.z]}
     >
       <boxBufferGeometry attach='geometry' args={[1, 1, 0.01]} />
-      <meshToonMaterial attach='material' side={THREE.FrontSide}></meshToonMaterial>
+      <meshToonMaterial attach='material' side={THREE.FrontSide}>
+        <primitive attach='map' object={texture} />
+      </meshToonMaterial>
     </mesh>
   )
 })
