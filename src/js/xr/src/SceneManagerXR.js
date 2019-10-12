@@ -41,6 +41,7 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-mana
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
+const getFilepathForImage = require('./helpers/get-filepath-for-image')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -618,11 +619,16 @@ const SceneContent = connect(
           }
 
           {
-            imageIds.map(id =>
-              <Image
+            imageIds.map(id => {
+              let sceneObject = sceneObjects[id]
+              let texture = getAsset(getFilepathForImage(sceneObject))
+
+              return <Image
                 key={id}
-                sceneObject={sceneObjects[id]}
+                texture={texture}
+                sceneObject={sceneObject}
                 isSelected={selections.includes(id)}/>
+              }
             )
           }
 
@@ -744,6 +750,18 @@ const SceneManagerXR = () => {
       .filter(o => !(o.type === 'object' && o.model === 'box'))
       // what's the filepath?
       .map(getFilepathForModelByType)
+      // has not been requested
+      .filter(filepath => getAsset(filepath) == null)
+      // request the file
+      .forEach(requestAsset)
+  }, [sceneObjects])
+
+  useEffect(() => {
+    Object.values(sceneObjects)
+      // is not an image
+      .filter(o => o.type === 'image')
+      // what's the filepath?
+      .map(getFilepathForImage)
       // has not been requested
       .filter(filepath => getAsset(filepath) == null)
       // request the file
