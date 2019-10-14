@@ -61,17 +61,31 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
 
   const create = () => {
     console.log(type, id, 'added')
-    let geo = new THREE.BoxBufferGeometry(1, 1, 0.01)
+    let geo = new THREE.PlaneBufferGeometry(1, 1)
+    let boxGeo = new THREE.BoxGeometry(1, 1, 0.01)
+    boxGeo.faces = boxGeo.faces.slice(0, 8)
+
     let mat = materialFactory()
     let mesh = new THREE.Mesh(geo, mat)
+    mesh.position.z = 0.005
 
-    mesh.layers.disable(0)
-    mesh.layers.enable(1)
-    mesh.layers.disable(2)
+    let meshBackside = mesh.clone()
+    meshBackside.rotation.y = Math.PI
+    meshBackside.position.z = -0.005
+    meshBackside.scale.x = -1
 
-    image.current = mesh
+    let boxMesh = new THREE.Mesh(boxGeo, mat)
+
+    let group = new THREE.Group().add(mesh, meshBackside, boxMesh)
+
+    group.layers.disable(0)
+    group.layers.enable(1)
+    group.layers.disable(2)
+
+    image.current = group
     image.current.userData.id = id
     image.current.userData.type = type
+    image.current.children.forEach(child => (child.userData.type = type))
 
     image.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, image.current)
     image.current.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
@@ -100,7 +114,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
       aspect.current = width / height
 
       updateObject(id, { width: props.height * aspect.current })
-      image.current.material = result.materials[0]
+      image.current.children.forEach(child => child.material = result.materials[0])
     })
   }
 
@@ -137,9 +151,8 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
 
   useEffect(() => {
     if (!image.current) return
-    if (!image.current.material) return
 
-    image.current.material.userData.outlineParameters =
+    const outlineParameters =
       isSelected
         ? {
           thickness: 0.008,
@@ -150,6 +163,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
           color: [ 0, 0, 0 ],
         }
 
+    image.current.children.forEach(child => (child.material.userData.outlineParameters = outlineParameters))
     image.current.orthoIcon.setSelected(isSelected)
   }, [isSelected])
 

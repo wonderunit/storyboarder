@@ -81,7 +81,7 @@ const getIntersectionTarget = intersect => {
 
   // image
   if (intersect.object.userData.type === 'image') {
-    return intersect.object
+    return intersect.object.parent
   }
 }
 
