@@ -1,4 +1,3 @@
-const { useUpdate } = require('react-three-fiber')
 const { useEffect, useMemo, useRef } = require('react')
 
 const VirtualCamera = require('../components/VirtualCamera')
@@ -9,6 +8,10 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
 
   const { x, y, z, visible, height, rotation } = sceneObject
 
+  const material = useMemo(() => {
+    return new THREE.MeshToonMaterial({ transparent: true })
+  }, [])
+
   useMemo(() => {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
@@ -16,10 +19,11 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
 
     const { width, height } = texture.image
     aspect.current = width / height
+
+    if (material) material.map = texture
   }, [texture])
 
   useEffect(() => {
-    const { material } = ref.current
     if (isSelected) {
       material.emissive = new THREE.Color(0x755bf9)
       material.color = new THREE.Color(0x222222)
@@ -35,25 +39,27 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
   }, [ref.current, visibleToCam])
 
   return (
-    <mesh
+    <group
       ref={ref}
-      
       onController={sceneObject.visible ? () => null : null}
       userData={{
         type: 'image',
         id: sceneObject.id
       }}
-
       visible={visible}
       position={[x, z, y]}
       scale={[height * aspect.current, height, 1]}
       rotation={[rotation.x, rotation.y, rotation.z]}
     >
-      <boxBufferGeometry attach='geometry' args={[1, 1, 0.01]} />
-      <meshToonMaterial attach='material' side={THREE.FrontSide} transparent={true}>
-        <primitive attach='map' object={texture} />
-      </meshToonMaterial>
-    </mesh>
+      <mesh>
+        <planeBufferGeometry attach="geometry" args={[1, 1]} />
+        <primitive attach="material" object={material} />
+      </mesh>
+      <mesh rotation={[0, Math.PI, 0]} scale={[-1, 1, 1]}>
+        <planeBufferGeometry attach="geometry" args={[1, 1, 0.01]} />
+        <primitive attach="material" object={material} />
+      </mesh>
+    </group>
   )
 })
 
