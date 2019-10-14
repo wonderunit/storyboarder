@@ -26,6 +26,19 @@ fs.copySync(
   path.join(dstPath, 'data', 'system')
 )
 
+// pose images
+const os = require('os')
+fs.mkdirpSync(path.join(dstPath, 'data', 'presets'))
+let poseImagesFolderPath = `${os.homedir()}/Library/Application Support/Storyboarder/presets/poses`
+if (!fs.existsSync(poseImagesFolderPath)) {
+  console.error('Could not find pose images folder at', poseImagesFolderPath)
+  return
+}
+fs.copySync(
+  path.join(poseImagesFolderPath),
+  path.join(dstPath, 'data', 'presets', 'poses')
+)
+
 // state.json
 const scene = JSON.parse(
   fs.readFileSync(
