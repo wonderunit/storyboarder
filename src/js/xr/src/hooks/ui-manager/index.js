@@ -31,7 +31,7 @@ const {
   drawGrid
 } = require('./draw')
 
-const { setupHomePane, setupAddPane, setupSettingsPane, setupHelpPane } = require('./setup')
+const { setupHomePane, setupAddPane, setupSettingsPane, setupHelpPane, setupBoardsPane } = require('./setup')
 
 const [useUiStore] = create((set, get) => ({
   // values
@@ -182,6 +182,7 @@ class CanvasRenderer {
     // setupsettings
 
     setupHelpPane(this.paneComponents, this)
+    setupBoardsPane(this.paneComponents, this)
 
     // setup each pane
 
@@ -581,12 +582,15 @@ class CanvasRenderer {
 
   renderBoards () {
 
-    let canvas = this.helpCanvas
-    let ctx = this.helpContext
+    let canvas = this.boardsCanvas
+    let ctx = this.boardsContext
 
     // console.log('render boards')
 
-    // this.renderObjects(ctx, this.paneComponents['help'])
+    ctx.fillStyle = 'rgba(0,0,0)'
+    roundRect(ctx, 0, 0, 1024, 384, 25, true, false)
+
+    this.renderObjects(ctx, this.paneComponents['boards'])
   }
 
   drawLoadableImage (filepath, onSuccess, onFail) {

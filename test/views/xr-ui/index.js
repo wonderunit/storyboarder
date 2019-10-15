@@ -14,6 +14,7 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('../../../src/js
 const { Log } = require('../../../src/js/xr/src/components/Log')
 const Controls = require('../../../src/js/xr/src/components/ui/Controls')
 const Help = require('../../../src/js/xr/src/components/ui/Help')
+const Boards = require('../../../src/js/xr/src/components/ui/Boards')
 
 
 const SimpleText = require('../../../src/js/xr/src/components/SimpleText')
@@ -110,6 +111,15 @@ const UITestContent = ({ resources }) => {
                 getCanvasRenderer={getCanvasRenderer} />
             }
           </group>
+        </group>
+      
+        <group
+        position={[0, -2, 8]}
+        rotation={[-Math.PI / 2, 0, 0]}
+        scale={[2.4,2.4,2.4]}>
+          <Boards
+            mode={uiCurrent.value.controls}
+            getCanvasRenderer={getCanvasRenderer} />
         </group>
       </group>
 
