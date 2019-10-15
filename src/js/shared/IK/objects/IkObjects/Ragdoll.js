@@ -15,6 +15,7 @@ class Ragdoll extends IkObject
         super();
         this.hipsMouseDown = false;
         this.controlTargetSelection = null;
+        this.objectTargetDiff = new THREE.Vector3();
     }
     
     //#region External Methods
@@ -121,11 +122,19 @@ class Ragdoll extends IkObject
     recalculateHipsDiff()
     {
         let hipsTarget = this.hipsControlTarget.target;
+        let armatureInverseMatrixWorld = this.resourceManager.getMatrix4();
+        armatureInverseMatrixWorld.getInverse(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
+
         hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
-        let hipsWP = hipsTarget.position.clone();
-        hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.getInverseMatrixWorld());
-        let originalObjectWp = this.originalObject.position.clone();
-        this.objectTargetDiff = new THREE.Vector3().subVectors(hipsWP, originalObjectWp);
+        let hipsWP = this.resourceManager.getVector3().copy(hipsTarget.position);
+        hipsTarget.applyMatrix(armatureInverseMatrixWorld);
+
+        let originalObjectWp = this.resourceManager.getVector3().copy(this.originalObject.position);
+        this.objectTargetDiff.subVectors(hipsWP, originalObjectWp);
+
+        this.resourceManager.release(armatureInverseMatrixWorld);
+        this.resourceManager.release(hipsWP);
+        this.resourceManager.release(originalObjectWp);
     }
 
     // Removes object and all it's meshes from scene
@@ -277,8 +286,8 @@ class Ragdoll extends IkObject
             let parentInverseQuat = this.resourceManager.getQuaternion();
             let targetWorldInverseQuat = this.resourceManager.getQuaternion();
 
-            this.hips.parent.getWorldQuaternion(parentInverseQuat).inverse();
             bone.getWorldQuaternion(boneQuate);
+            this.hips.parent.getWorldQuaternion(parentInverseQuat).inverse();
             target.getWorldQuaternion(targetWorldInverseQuat).inverse()
             target.quaternion.multiply(targetWorldInverseQuat);
             target.quaternion.copy(boneQuate.premultiply(parentInverseQuat));
