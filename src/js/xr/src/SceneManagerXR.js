@@ -508,6 +508,11 @@ const SceneContent = connect(
             <primitive object={cameraAudioListener} />
           </primitive>
 
+          <Boards
+            mode={uiCurrent.value.controls}
+            locked={uiCurrent.context.locked}
+            getCanvasRenderer={getCanvasRenderer} />
+
           {controllers.filter(gamepadFor).map(controller =>
             <primitive key={controller.uuid} object={controller} >
               <Controller
@@ -528,10 +533,6 @@ const SceneContent = connect(
                       locked={uiCurrent.context.locked}
                       getCanvasRenderer={getCanvasRenderer} />
                   }
-                  <Boards
-                    mode={uiCurrent.value.controls}
-                    locked={uiCurrent.context.locked}
-                    getCanvasRenderer={getCanvasRenderer} />
                 </group>
               }
             </primitive>
