@@ -55,6 +55,7 @@ class XRRagdoll extends XRIKObject
             this.resetControlPoints();
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
+            this.recalculateHipsDiff();
         }
         else
         {
@@ -101,6 +102,11 @@ class XRRagdoll extends XRIKObject
         }
         this.resetControlPoints();
         this.calculteBackOffset();
+        this.recalculateHipsDiff();
+    }
+
+    recalculateHipsDiff()
+    {
         let hipsTarget = this.hipsControlTarget;
 
         hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);

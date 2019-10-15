@@ -65,6 +65,7 @@ class Ragdoll extends IkObject
             this.resetControlPoints();
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
+            this.recalculateHipsDiff();
         }
         else
         {
