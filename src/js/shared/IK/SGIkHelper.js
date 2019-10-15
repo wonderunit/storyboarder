@@ -48,15 +48,17 @@ class SGIKHelper extends THREE.Object3D
         return instance ? instance : new SGIKHelper(mesh, scene, camera, domElement)
     }
 
-    initialize(scene, object, height)
+    initialize(scene, object, height, skinnedMesh)
     {
         this.scene = scene;
         let ragDoll = instance.ragDoll;
         this.characterObject = object;
-        this.ragDoll.controlTargetSelection.initialize();
-        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === object.uuid) return;
+        ragDoll.controlTargetSelection.dispose();
+        ragDoll.controlTargetSelection.initialize();
+        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        //console.log("initialized character's ik");
        // this.resetAllTargetPoints();
-        this.intializedSkinnedMesh = object;
+        this.intializedSkinnedMesh = skinnedMesh;
         let meshes = this.targetPoints;
         let initializedMeshes = object.userData.poleTargets ? object.userData.poleTargets : [];
         let scaleAspect = height / this.regularHeight / object.scale.x;
@@ -78,10 +80,11 @@ class SGIKHelper extends THREE.Object3D
                 mesh.userData.isInitialized = false;
             }
             mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
-    
+            
             mesh.userData.scaleAspect = scaleAspect;
         }
         ragDoll.initObject(this, object, this.targetControls, this.poleTargets.children);
+        ragDoll.controlTargetSelection.initialize();
         ragDoll.reinitialize();
         //this.updateAllTargetPoints();
     }
@@ -104,9 +107,8 @@ class SGIKHelper extends THREE.Object3D
                 ragdoll.originalObject.children[0].isRotated = true;
             }
             else
-            {
-                
-                this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent);
+            {   
+                this.ragDoll.changeControlPointsParent(this.characterObject.parent);
             }
             
             control.control.pointerPressedDown(event);
@@ -212,9 +214,9 @@ class SGIKHelper extends THREE.Object3D
 
     updateMatrixWorld(value)
     { 
+        super.updateMatrixWorld(value); 
         if(this.isUpdating) return;
         this.isUpdating = true;
-        super.updateMatrixWorld(value); 
         this.update();
         this.isUpdating = false;
     }
@@ -309,9 +311,10 @@ class SGIKHelper extends THREE.Object3D
         }
     }
 
-    removeFromParent()
+    removeFromParent(uuid)
     {
-        this.ragDoll.controlTargetSelection.dispose()
+        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === uuid)
+            this.ragDoll.controlTargetSelection.dispose()
     }
     
 }

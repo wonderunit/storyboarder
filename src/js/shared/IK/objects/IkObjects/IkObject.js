@@ -26,13 +26,13 @@ class IkObject
         this.scene = null;  
         this.chainObjects = {}
         this.resourceManager = ResourceManager.getInstance();
-        this.backOffset = new THREE.Vector3();
     }
-
+    
     //#region External Methods
     // Takes skeleton and target for it's limbs
     initObject(scene, objectSkeleton, controlTargets)
     {
+        this.backOffset = new THREE.Vector3();
         this.ik = new IK();
         this.scene = scene;
         let chains = [];
@@ -60,7 +60,6 @@ class IkObject
             this.rigMesh.skeleton.bones[2].updateMatrix();
             this.rigMesh.skeleton.bones[2].updateMatrixWorld(true, true);
         }
-       
         // Goes through all scene objects
         initializeChainObject(this, chains);
         // Goes through list of constraints and adds it to IK
@@ -105,7 +104,7 @@ class IkObject
     {
         // Sets back position when offset is not changing
         // When we are changing back position offset between hips and back shouldn't be applied
-        if(!this.applyingOffset)
+        if(!this.applyingOffset && this.hipsMouseDown)
         {
             let hipsTarget = this.hipsControlTarget.target;
             let backTarget = this.chainObjects["Head"].controlTarget.target;
@@ -177,7 +176,7 @@ class IkObject
     //#endregion
 }
 
-const initializeChainObject = (ikObject, chains) =>
+const initializeChainObject = (ikObject, chains, skeleton) =>
 {
     ikObject.clonedObject.traverse((object) =>
     {

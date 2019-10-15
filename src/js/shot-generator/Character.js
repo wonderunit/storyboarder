@@ -484,6 +484,7 @@ const Character = React.memo(({
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
         object.current.scale.set( scale, scale, scale )
+        console.log("Changed height");
       } else {
         object.current.scale.setScalar( props.height )
       }
@@ -533,7 +534,8 @@ const Character = React.memo(({
     if (isSelected)
     {
       if ( !isCustomModel(props.model) ) {
-        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height);
+        console.log(object.current.userData.mesh.uuid);
+        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh);
         object.current.add(SGIkHelper.getInstance());
       }
       for (var cone of object.current.bonesHelper.cones)
@@ -541,7 +543,7 @@ const Character = React.memo(({
       object.current.bonesHelper.add(cone)
     } else {
       object.current.remove(SGIkHelper.getInstance());
-      SGIkHelper.getInstance().removeFromParent();
+      SGIkHelper.getInstance().removeFromParent(object.current.userData.mesh.uuid);
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }

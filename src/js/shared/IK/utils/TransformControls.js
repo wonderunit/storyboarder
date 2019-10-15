@@ -128,6 +128,10 @@ const TransformControls = function ( camera, domElement ) {
 
 	}
 
+	this.reset = function()
+	{
+		this.setMode("translate");
+	}
 
 	this.controlSelected = true;
 	this.removePointerDownEvent = () => {

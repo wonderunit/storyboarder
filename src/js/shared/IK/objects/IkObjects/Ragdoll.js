@@ -15,18 +15,18 @@ class Ragdoll extends IkObject
         super();
         this.hipsMouseDown = false;
         this.controlTargetSelection = null;
-        this.objectTargetDiff = new THREE.Vector3();
     }
     
     //#region External Methods
     // Initializes ragdoll set up all neccessary information 
     initObject(scene, object, controlTargets, poleTargets )
     {
+        this.objectTargetDiff = new THREE.Vector3();
         super.initObject(scene, object, controlTargets );
         this.resetControlPoints();
-        // Adds events to Back control
-        this.setUpControlTargetsInitialPosition();
         this.createPoleTargets(poleTargets);
+        console.log(controlTargets);
+        console.log(poleTargets);
     }
 
     updateSkeleton(updateCharacterSkeleton)
@@ -51,6 +51,7 @@ class Ragdoll extends IkObject
         if(IK.firstRun)
         {
             IK.firstRun = false;
+            console.log("First run");
             this.setUpHipsControlTargetRotation();
         }
         if(!this.isEnabledIk)
@@ -67,8 +68,15 @@ class Ragdoll extends IkObject
         {
             if(this.hipsControlTarget.control.mode === "rotate")
             {
-                this.hips.quaternion.copy(this.hipsControlTarget.target.quaternion);
+                let worldQuaternion = this.resourceManager.getQuaternion();
+                let inverseParentQuat = this.resourceManager.getQuaternion();
+                this.hipsControlTarget.target.getWorldQuaternion(worldQuaternion);
+                this.originalObject.getWorldQuaternion(inverseParentQuat);
+                worldQuaternion.premultiply(inverseParentQuat.inverse());
+                this.hips.quaternion.copy(worldQuaternion);
                 this.hips.updateMatrixWorld(true);
+                this.resourceManager.release(worldQuaternion);
+                this.resourceManager.release(inverseParentQuat);
                 this.resetPoleTarget();
                 //this.setUpHipsControlTargetRotation();
                 //this.setUpControlTargetsInitialPosition();
@@ -329,12 +337,14 @@ class Ragdoll extends IkObject
         let boneMatrix = this.resourceManager.getMatrix4();
         this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
         this.hipsControlTarget.target.position.setFromMatrixPosition(boneMatrix);
+        this.hipsControlTarget.target.updateMatrixWorld(true);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
             this.takeBoneInTheMeshSpace(this.rigMesh, jointBone, boneMatrix);
             chainObjects[i].controlTarget.target.position.setFromMatrixPosition(boneMatrix);
+            chainObjects[i].controlTarget.target.updateMatrixWorld(true);
         }
         this.resourceManager.release(boneMatrix);
         this.calculteBackOffset();
@@ -351,7 +361,7 @@ class Ragdoll extends IkObject
             }
             ikBones.push(bone);
         }
-        this.updatingReactSkeleton = true;
+        //this.updatingReactSkeleton = true;
         this.updateCharacterSkeleton(ikBones);
     }
 
