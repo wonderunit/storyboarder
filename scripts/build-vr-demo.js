@@ -9,6 +9,12 @@ const srcPath = path.join(__dirname, '..')
 const exportName = `vr-demo-${pkg.version}-${new Date().toISOString()}`
 const dstPath = path.join(__dirname, '..', 'dist', exportName)
 
+// e.g.: node scripts/build-vr-demo.js test/fixtures/shot-generator/shot-generator.storyboarder
+const defaultStoryboarderFilePath = path.join(srcPath, 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder')
+let storyboarderFilePath = process.argv[2] && process.argv[2].includes('.storyboarder')
+  ? process.argv[2]
+  : defaultStoryboarderFilePath
+
 console.log(`Generating ${exportName} …`)
 
 fs.mkdirpSync(dstPath)
@@ -40,9 +46,10 @@ fs.copySync(
 )
 
 // state.json
+console.log(`Reading ${storyboarderFilePath} …`)
 const scene = JSON.parse(
   fs.readFileSync(
-    path.join(srcPath, 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'),
+    storyboarderFilePath,
     'utf-8'
   )
 )
@@ -58,6 +65,19 @@ fs.writeFileSync(
   path.join(dstPath, 'state.json'),
   JSON.stringify(data, null, 2)
 )
+
+// user data (e.g. custom model files)
+if (storyboarderFilePath != defaultStoryboarderFilePath) {
+  let folder = path.dirname(storyboarderFilePath)
+  if (fs.existsSync(folder)) {
+    console.log(`Copying models folder from ${folder} …`)
+    fs.mkdirpSync(path.join(dstPath, 'data', 'user'))
+    fs.copySync(
+      path.join(folder, 'models'),
+      path.join(dstPath, 'data', 'user')
+    )
+  }
+}
 
 console.log('Done!')
 console.log('Test with:')
