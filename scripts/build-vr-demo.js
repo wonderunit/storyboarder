@@ -69,7 +69,7 @@ fs.writeFileSync(
 // user data (e.g. custom model files)
 if (storyboarderFilePath != defaultStoryboarderFilePath) {
   let folder = path.dirname(storyboarderFilePath)
-  if (fs.existsSync(folder)) {
+  if (fs.existsSync(path.join(folder, 'models'))) {
     console.log(`Copying models folder from ${folder} …`)
     fs.mkdirpSync(path.join(dstPath, 'data', 'user'))
     fs.copySync(
