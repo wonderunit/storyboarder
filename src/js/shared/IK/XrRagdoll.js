@@ -12,6 +12,7 @@ class XRRagdoll extends XRIKObject
     constructor()
     {
         super();
+        this.objectTargetDiff = new THREE.Vector3();
     }
     
     //#region External Methods
@@ -57,6 +58,7 @@ class XRRagdoll extends XRIKObject
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
             this.setUpHipsControlTargetRotation();
+            this.recalculateHipsDiff();
         }
         else
         {
@@ -86,9 +88,11 @@ class XRRagdoll extends XRIKObject
         if(this.hipsMouseDown)
         {
             let hipsTarget = this.hipsControlTarget;
-            let targetPosition = hipsTarget.worldPosition();            
-            let targetPos = this.hipsControlTarget.worldPosition();
-            
+            let targetPosition = this.resourceManager.getVector3();
+            let targetPos = this.resourceManager.getVector3();
+            hipsTarget.getWorldPosition(targetPosition);
+            hipsTarget.getWorldPosition(targetPos);
+
             targetPos.sub(this.objectTargetDiff);
             this.clonedObject.position.copy(targetPos);
             this.clonedObject.updateMatrixWorld(true); 
@@ -97,6 +101,9 @@ class XRRagdoll extends XRIKObject
             this.hips.position.copy(targetPosition);
             this.hips.updateMatrix();
             this.originalObject.position.copy(this.clonedObject.position);
+
+            this.resourceManager.release(targetPosition);
+            this.resourceManager.release(targetPos);
         }
     }
 
@@ -116,14 +123,25 @@ class XRRagdoll extends XRIKObject
         }
         this.resetControlPoints();
         this.calculteBackOffset();
+        this.recalculateHipsDiff();
+    }
+
+    recalculateHipsDiff()
+    {
         let hipsTarget = this.hipsControlTarget;
-
+        let armatureInverseMatrixWorld = this.resourceManager.getMatrix4();
+        armatureInverseMatrixWorld.getInverse(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
+        
         hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
-        let hipsWP = hipsTarget.position.clone();
-        hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.getInverseMatrixWorld());
+        let hipsWP = this.resourceManager.getVector3().copy(hipsTarget.position);
+        hipsTarget.applyMatrix(armatureInverseMatrixWorld);
 
-        let originalObjectWp = this.originalObject.position.clone();
-        this.objectTargetDiff = new THREE.Vector3().subVectors(hipsWP, originalObjectWp);
+        let originalObjectWp = this.resourceManager.getVector3().copy(this.originalObject.position);
+        this.objectTargetDiff.subVectors(hipsWP, originalObjectWp);
+
+        this.resourceManager.release(armatureInverseMatrixWorld);
+        this.resourceManager.release(hipsWP);
+        this.resourceManager.release(originalObjectWp);
     }
 
     // Moves ragdoll hips when original object moved
@@ -211,15 +229,17 @@ class XRRagdoll extends XRIKObject
     resetControlPoints()
     {
         let chainObjects = this.chainObjectsValues;
-        boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, this.hips);
+        let boneMatrix = this.resourceManager.getMatrix4();
+        this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
         this.hipsControlTarget.position.setFromMatrixPosition(boneMatrix);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
-            boneMatrix = takeBoneInTheMeshSpace(this.rigMesh, jointBone);
+            this.takeBoneInTheMeshSpace(this.rigMesh, jointBone, boneMatrix);
             chainObjects[i].controlTarget.position.setFromMatrixPosition(boneMatrix);
         }
+        this.resourceManager.release(boneMatrix);
         this.calculteBackOffset();
     }
 
@@ -231,9 +251,20 @@ class XRRagdoll extends XRIKObject
             let joints = chainObjects[i].chain.joints;
             let bone = joints[joints.length-1].bone;
             let target = chainObjects[i].controlTarget;
-            target.quaternion.multiply(target.worldQuaternion().inverse());
-            target.quaternion.copy(bone.worldQuaternion().premultiply(this.hips.parent.worldQuaternion().inverse()));
-            target.localQuaternion = bone.parent.worldToLocalQuaternion(bone.worldQuaternion());
+
+            let boneQuate = this.resourceManager.getQuaternion();
+            let parentInverseQuat = this.resourceManager.getQuaternion();
+            let targetWorldInverseQuat = this.resourceManager.getQuaternion();
+
+            bone.getWorldQuaternion(boneQuate);
+            this.hips.parent.getWorldQuaternion(parentInverseQuat).inverse();
+            target.getWorldQuaternion(targetWorldInverseQuat).inverse()
+            target.quaternion.multiply(targetWorldInverseQuat);
+            target.quaternion.copy(boneQuate.premultiply(parentInverseQuat));
+            
+            this.resourceManager.release(parentInverseQuat);
+            this.resourceManager.release(boneQuate);
+            this.resourceManager.release(targetWorldInverseQuat);
         }
     }
 
@@ -299,12 +330,24 @@ class XRRagdoll extends XRIKObject
     // Effect like flat foot to earth can be achieved
     rotateBoneQuaternion(bone, boneTarget)
     {
-        let targetQuat = boneTarget.worldQuaternion();
-        let quaternion = bone.worldQuaternion().inverse();
+        let targetQuat = this.resourceManager.getQuaternion();
+        boneTarget.getWorldQuaternion(targetQuat);
+        let quaternion = this.resourceManager.getQuaternion();
+        bone.getWorldQuaternion(quaternion).inverse();
         bone.quaternion.multiply(quaternion);
         bone.quaternion.multiply(targetQuat);
+        this.resourceManager.release(targetQuat);
+        this.resourceManager.release(quaternion);
     }
+
     //#endregion
+    takeBoneInTheMeshSpace(mesh, bone, boneMatrix)
+    {
+        let armatureInverseMatrixWorld = this.resourceManager.getMatrix4();
+        armatureInverseMatrixWorld.getInverse(mesh.skeleton.bones[0].parent.matrixWorld);
+        boneMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
+        this.resourceManager.release(armatureInverseMatrixWorld);
+    }
 }
 
 const interpretatedPoleTargetsName = name =>
@@ -320,17 +363,6 @@ const interpretatedPoleTargetsName = name =>
         case "rightLegPole":
             return "RightFoot";
     }
-}
-
-let boneMatrix = new THREE.Matrix4();
-let tempMatrix = new THREE.Matrix4();
-let armatureInverseMatrixWorld = new THREE.Matrix4();
-
-const takeBoneInTheMeshSpace = (mesh, bone) =>
-{
-    armatureInverseMatrixWorld = mesh.skeleton.bones[0].parent.getInverseMatrixWorld();
-    tempMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
-    return tempMatrix;
 }
 
 module.exports =  XRRagdoll;

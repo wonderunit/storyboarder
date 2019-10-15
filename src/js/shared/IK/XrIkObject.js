@@ -25,6 +25,7 @@ class XrIkObject
         this.applyingOffset = false;
         this.controlTargets = [];
         this.resourceManager = ResourceManager.getInstance();
+        this.backOffset = new THREE.Vector3();
     }
 
     //#region External Methods
@@ -101,13 +102,15 @@ class XrIkObject
         // When we are changing back position offset between hips and back shouldn't be applied
         if(!this.applyingOffset && this.hipsMouseDown)
         {
-            let backTarget = this.chainObjects["Head"].controlTarget;
-            
             let hipsTarget = this.hipsControlTarget;
-            let hipsPosition = hipsTarget.worldPosition();
-            hipsPosition.add(this.backOffset);
+            let backTarget = this.chainObjects["Head"].controlTarget;
+            let hipsPosition = this.resourceManager.getVector3();
+            hipsTarget.getWorldPosition(hipsPosition);
+            
+            let result = hipsPosition.add(this.backOffset);
             backTarget.parent.worldToLocal(hipsPosition);
-            backTarget.position.copy(hipsPosition);
+            backTarget.position.copy(result);
+            this.resourceManager.release(hipsPosition);
         }
     }
 
@@ -138,9 +141,13 @@ class XrIkObject
     // Calculates back's offset in order to move with hips
     calculteBackOffset()
     {
-        let backPosition = this.chainObjects["Head"].controlTarget.worldPosition();
-        let hipsPosition = this.hipsControlTarget.worldPosition();
-        this.backOffset = backPosition.sub(hipsPosition);
+        let backPosition = this.resourceManager.getVector3();
+        let hipsPosition = this.resourceManager.getVector3();
+        this.chainObjects["Head"].controlTarget.getWorldPosition(backPosition);
+        this.hipsControlTarget.getWorldPosition(hipsPosition);
+        this.backOffset.subVectors(backPosition, hipsPosition);
+        this.resourceManager.release(backPosition);
+        this.resourceManager.release(hipsPosition);
     }
     //#endregion
 }
