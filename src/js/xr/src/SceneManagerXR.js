@@ -58,6 +58,7 @@ const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
 
 const Controls = require('./components/ui/Controls')
 const Help = require('./components/ui/Help')
+const Boards = require('./components/ui/Boards')
 
 const BonesHelper = require('./three/BonesHelper')
 const IKHelper = require('./three/IkHelper')
@@ -527,6 +528,10 @@ const SceneContent = connect(
                       locked={uiCurrent.context.locked}
                       getCanvasRenderer={getCanvasRenderer} />
                   }
+                  <Boards
+                    mode={uiCurrent.value.controls}
+                    locked={uiCurrent.context.locked}
+                    getCanvasRenderer={getCanvasRenderer} />
                 </group>
               }
             </primitive>

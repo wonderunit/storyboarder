@@ -128,6 +128,10 @@ class CanvasRenderer {
     this.helpCanvas.width = this.helpCanvas.height = size
     this.helpContext = this.helpCanvas.getContext('2d')
 
+    this.boardsCanvas = document.createElement('canvas')
+    this.boardsCanvas.width = this.boardsCanvas.height = size
+    this.boardsContext = this.boardsCanvas.getContext('2d')
+
     this.dispatch = dispatch
     this.service = service
     this.send = send
@@ -573,6 +577,16 @@ class CanvasRenderer {
     }
 
     this.renderObjects(ctx, this.paneComponents['help'])
+  }
+
+  renderBoards () {
+
+    let canvas = this.helpCanvas
+    let ctx = this.helpContext
+
+    // console.log('render boards')
+
+    // this.renderObjects(ctx, this.paneComponents['help'])
   }
 
   drawLoadableImage (filepath, onSuccess, onFail) {
@@ -1135,6 +1149,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     getCanvasRenderer().state.activeCamera = activeCamera
     getCanvasRenderer().needsRender = true
     getCanvasRenderer().helpNeedsRender = true
+    getCanvasRenderer().boardsNeedsRender = true
 
     if (selections.length) {
       uiSend('GO_PROPERTIES')
