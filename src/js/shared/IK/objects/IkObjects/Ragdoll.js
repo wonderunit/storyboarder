@@ -50,6 +50,7 @@ class Ragdoll extends IkObject
         if(IK.firstRun)
         {
             IK.firstRun = false;
+            this.setUpHipsControlTargetRotation();
         }
         if(!this.isEnabledIk)
         {
@@ -58,6 +59,7 @@ class Ragdoll extends IkObject
             this.resetControlPoints();
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
+            this.setUpHipsControlTargetRotation();
         }
         else
         {
@@ -65,6 +67,9 @@ class Ragdoll extends IkObject
             {
                 this.hips.quaternion.copy(this.hipsControlTarget.target.quaternion);
                 this.hips.updateMatrixWorld(true);
+                this.resetPoleTarget();
+                //this.setUpHipsControlTargetRotation();
+                //this.setUpControlTargetsInitialPosition();
             }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
@@ -284,6 +289,11 @@ class Ragdoll extends IkObject
             this.resourceManager.release(boneQuate);
             this.resourceManager.release(targetWorldInverseQuat);
         }
+        //this.setUpHipsControlTargetRotation();
+    }
+
+    setUpHipsControlTargetRotation()
+    {
         let bone = this.hips;
         let target = this.hipsControlTarget.target;
 
@@ -293,14 +303,13 @@ class Ragdoll extends IkObject
 
         this.hips.parent.getWorldQuaternion(parentInverseQuat).inverse();
         bone.getWorldQuaternion(boneQuate);
-        target.getWorldQuaternion(targetWorldInverseQuat).inverse()
-        target.quaternion.multiply(targetWorldInverseQuat);
+        target.getWorldQuaternion(targetWorldInverseQuat);
+        target.quaternion.multiply(targetWorldInverseQuat.inverse());
         target.quaternion.copy(boneQuate.premultiply(parentInverseQuat));
         
         this.resourceManager.release(parentInverseQuat);
         this.resourceManager.release(boneQuate);
         this.resourceManager.release(targetWorldInverseQuat);
-
     }
 
     resetControlPoints()
@@ -355,7 +364,7 @@ class Ragdoll extends IkObject
             bone.updateMatrix();
             bone.updateMatrixWorld(true, true); 
         }
-        //this.rotateBoneQuaternion(this.hips, this.hipsControlTarget.target);   
+       // this.rotateBoneQuaternion(this.hips, this.hipsControlTarget.target);   
     }
 
     // Sets and quaternion angle for bones

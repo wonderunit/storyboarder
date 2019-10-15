@@ -84,6 +84,7 @@ class IKSwitcher
             this.cloneToOriginRotation(cloneBone, originalBone);
         }
         originalBones[0].position.copy(clonedBones[0].position);
+        originalBones[0].updateMatrixWorld(true);
         this.recalculateDifference();
     }
 

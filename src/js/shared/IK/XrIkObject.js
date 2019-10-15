@@ -4,6 +4,7 @@ const {setZDirecion} = require( "./utils/axisUtils");
 const ChainObject = require( "./objects/IkObjects/ChainObject");
 const SkeletonUtils = require("./utils/SkeletonUtils");
 const IKSwitcher = require("./objects/IkObjects/IkSwitcher");
+const ResourceManager = require("./ResourceManager");
 require("./utils/Object3dExtension");
 
 class XrIkObject
@@ -23,6 +24,7 @@ class XrIkObject
         this.originalObject = null;
         this.applyingOffset = false;
         this.controlTargets = [];
+        this.resourceManager = ResourceManager.getInstance();
     }
 
     //#region External Methods
