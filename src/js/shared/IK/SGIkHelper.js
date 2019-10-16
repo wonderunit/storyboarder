@@ -55,9 +55,13 @@ class SGIKHelper extends THREE.Object3D
         this.characterObject = object;
         ragDoll.controlTargetSelection.dispose();
         ragDoll.controlTargetSelection.initialize();
+        if(this.intializedSkinnedMesh)
+        {
+            ragDoll.reinitialize();
+        }
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
         //console.log("initialized character's ik");
-       // this.resetAllTargetPoints();
+        // this.resetAllTargetPoints();
         this.intializedSkinnedMesh = skinnedMesh;
         let meshes = this.targetPoints;
         let initializedMeshes = object.userData.poleTargets ? object.userData.poleTargets : [];
@@ -84,8 +88,8 @@ class SGIKHelper extends THREE.Object3D
             mesh.userData.scaleAspect = scaleAspect;
         }
         ragDoll.initObject(this, object, this.targetControls, this.poleTargets.children);
-        ragDoll.controlTargetSelection.initialize();
         ragDoll.reinitialize();
+        ragDoll.controlTargetSelection.initialize();
         //this.updateAllTargetPoints();
     }
 
@@ -135,6 +139,7 @@ class SGIKHelper extends THREE.Object3D
             if(this.selectedControlPoint.userData.type === "controlPoint")
             {
                 this.controlPoints.attach(this.selectedControlPoint);
+                this.selectedControlPoint.updateMatrixWorld(true);
             }
             else
             {
