@@ -3,7 +3,7 @@ const { useRender } = require('react-three-fiber')
 
 const SCALE = 4
 const POSITION = [0, 4, 1]
-const ROTATION = [Math.PI / 2, 0, 0]
+const ROTATION = [-Math.PI / 2, 0, 0]
 
 const Boards = React.memo(({ mode, locked, getCanvasRenderer }) => {
   const ref = useRef()
@@ -21,7 +21,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer }) => {
   const mesh = useMemo(() => {
     return new THREE.Mesh(
       new THREE.PlaneGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial({ map: getTexture(), transparent: true, opacity: 0.8 })
+      new THREE.MeshBasicMaterial({ map: getTexture(), transparent: true, opacity: 0.8, side: THREE.BackSide })
     )
   }, [mode])
 

@@ -28,7 +28,8 @@ const {
   roundRect,
   wrapText,
   drawPaneBGs,
-  drawGrid
+  drawGrid,
+  drawRow
 } = require('./draw')
 
 const { setupHomePane, setupAddPane, setupSettingsPane, setupHelpPane, setupBoardsPane } = require('./setup')
@@ -171,6 +172,7 @@ class CanvasRenderer {
     drawPaneBGs(ctx)
 
     this.drawGrid = drawGrid.bind(this)
+    this.drawRow = drawRow.bind(this)
 
     setupHomePane(this.paneComponents, this)
     setupAddPane(this.paneComponents, this)
@@ -588,9 +590,12 @@ class CanvasRenderer {
     // console.log('render boards')
 
     ctx.fillStyle = 'rgba(0,0,0)'
-    roundRect(ctx, 0, 0, 1024, 384, 25, true, false)
+    roundRect(ctx, 0, 0, 1024, 400, 25, true, false)
 
     this.renderObjects(ctx, this.paneComponents['boards'])
+
+    this.drawRow(ctx, 30, 30, 1024 - 60, 340 * 0.6, '#f00')
+    this.drawRow(ctx, 30, 30 + 340 * 0.6, 1024 - 60, 340 * 0.4, '#0f0')
   }
 
   drawLoadableImage (filepath, onSuccess, onFail) {

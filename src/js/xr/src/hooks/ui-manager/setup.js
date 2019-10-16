@@ -297,6 +297,15 @@ const setupHelpPane = (paneComponents, self) => {
 
 const setupBoardsPane = (paneComponents, self) => {
   paneComponents['boards'] = {
+    asd: {
+      id: 'asd',
+      type: 'text',
+      x: 0,
+      y: 0,
+      label: `Scene Cameras`,
+      size: 40,
+      weight: 'bold'
+    }
   }
 }
 

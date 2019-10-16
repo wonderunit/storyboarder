@@ -114,7 +114,7 @@ const UITestContent = ({ resources }) => {
         </group>
       
         <group
-        position={[0, -2, 8]}
+        position={[0, -8, 8]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={[2.4,2.4,2.4]}>
           <Boards

@@ -340,6 +340,14 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   roundRect(ctx, width + 37, y, 12, height, 6, false, true)
 }
 
+const drawRow = function drawRow(ctx, x, y, width, height, color) {
+  ctx.save()
+  ctx.fillStyle = color
+  ctx.fillRect(x, y, width, height)
+  ctx.beginPath()
+  ctx.rect(x, y, width, height)
+}
+
 module.exports = {
   drawText,
   drawImageButton,
@@ -349,5 +357,6 @@ module.exports = {
   roundRect,
   wrapText,
   drawPaneBGs,
-  drawGrid
+  drawGrid,
+  drawRow
 }
