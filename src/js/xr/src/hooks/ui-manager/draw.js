@@ -340,7 +340,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   roundRect(ctx, width + 37, y, 12, height, 6, false, true)
 }
 
-const drawRow = function drawRow(ctx, x, y, width, height, items, aspect) {
+const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -363,7 +363,9 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect) {
 
     ctx.font = '12px Arial'
     ctx.textBaseline = 'Middle'
-    ctx.fillText('Camera 1', x + 8 + (screenWidth + padding * 0.5) * i, y + padding + screenHeight + textHeight * 0.5)
+    const text = type === 'boards' ? items[i].uid :  'Camera'
+
+    ctx.fillText(text, x + 8 + (screenWidth + padding * 0.5) * i, y + padding + screenHeight + textHeight * 0.5)
   }
 
   ctx.restore()

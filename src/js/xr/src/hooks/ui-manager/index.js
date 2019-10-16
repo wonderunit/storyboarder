@@ -214,9 +214,11 @@ class CanvasRenderer {
     this.client.getBoards().then(result => {
       this.state.boardsData = RemoteData.success(result)
       this.needsRender = true
+      this.boardsNeedsRender = true
     }).catch(err => {
       this.state.boardsData = RemoteData.failure(err)
       this.needsRender = true
+      this.boardsNeedsRender = true
     })
 
     this.needsRender = false
@@ -583,7 +585,7 @@ class CanvasRenderer {
   }
 
   renderBoards () {
-
+    
     let canvas = this.boardsCanvas
     let ctx = this.boardsContext
 
@@ -593,11 +595,13 @@ class CanvasRenderer {
     roundRect(ctx, 0, 0, 1024, 400, 25, true, false)
 
     const sceneCameras = [0, 0, 0, 0]
-    const boards = [0, 0, 0, 0, 0, 0]
-    const aspect = this.cameraAspectRatio
+    this.drawRow(ctx, 30, 30, 1024 - 60, 340 * 0.6, sceneCameras, this.cameraAspectRatio, 'cameras')
 
-    this.drawRow(ctx, 30, 30, 1024 - 60, 340 * 0.6, sceneCameras, aspect)
-    this.drawRow(ctx, 30, 30 + 340 * 0.6, 1024 - 60, 340 * 0.4, boards, aspect)
+    this.state.boardsData.cata({
+      SUCCESS: data =>
+        this.drawRow(ctx, 30, 30 + 340 * 0.6, 1024 - 60, 340 * 0.4, data, this.cameraAspectRatio, 'boards')
+    })
+
     this.renderObjects(ctx, this.paneComponents['boards'])
   }
 
