@@ -188,8 +188,7 @@ const Character = React.memo(({
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
-  let ragDoll = useRef(null);
-  let boneRotationControl = useRef(null);
+  let boneRotationControl = useRef(null)
 
   const doCleanup = () => {
     if (object.current) {
@@ -197,10 +196,10 @@ const Character = React.memo(({
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
-      object.current.remove(SGIkHelper.getInstance());
-      SGIkHelper.getInstance().deselectControlPoint();
-      SGIkHelper.getInstance().removeFromParent(id);
-      boneRotationControl.current.deselectBone();
+      object.current.remove(SGIkHelper.getInstance())
+      SGIkHelper.getInstance().deselectControlPoint()
+      SGIkHelper.getInstance().removeFromParent(id)
+      boneRotationControl.current.deselectBone()
       object.current.bonesHelper = null
       object.current = null
     }
@@ -277,10 +276,10 @@ const Character = React.memo(({
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
 
-      let domElement = largeRenderer.current.domElement;
+      let domElement = largeRenderer.current.domElement
 
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid);
-      let boneRotation = boneRotationControl.current;
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid)
+      let boneRotation = boneRotationControl.current
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
         name : name,
@@ -290,7 +289,7 @@ const Character = React.memo(({
           y : rotation.y,
           z : rotation.z,
         }
-      } );});
+      } )})
 
     }
 
@@ -398,7 +397,7 @@ const Character = React.memo(({
   //#region Camera changing 
   useEffect(() => {
     if(!ready || !camera) return
-    SGIkHelper.getInstance().setCamera(camera);
+    SGIkHelper.getInstance().setCamera(camera)
   }, [camera, ready])
   //#endregion
 
@@ -531,16 +530,17 @@ const Character = React.memo(({
     if (isSelected)
     {
 
-      for (var cone of object.current.bonesHelper.cones){
+      for (var cone of object.current.bonesHelper.cones) {
         object.current.bonesHelper.add(cone)
       }
       if ( !isCustomModel(props.model) ) {
-        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh);
+        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh)
         object.current.add(SGIkHelper.getInstance())
+        SGIkHelper.getInstance().updateMatrixWorld(true);
       }
     } else {
-      object.current.remove(SGIkHelper.getInstance());
-      SGIkHelper.getInstance().removeFromParent(object.current.userData.mesh.uuid);
+      object.current.remove(SGIkHelper.getInstance())
+      SGIkHelper.getInstance().removeFromParent(object.current.userData.mesh.uuid)
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
@@ -597,12 +597,12 @@ const Character = React.memo(({
       if (bone) {
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
-        boneRotationControl.current.selectedBone(bone, selectedBone);
+        boneRotationControl.current.selectedBone(bone, selectedBone)
       }
     
     }
     else{
-      boneRotationControl.current.deselectBone();
+      boneRotationControl.current.deselectBone()
     }
   }, [selectedBone, ready])
 
