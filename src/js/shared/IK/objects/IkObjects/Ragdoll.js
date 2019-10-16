@@ -25,8 +25,6 @@ class Ragdoll extends IkObject
         super.initObject(scene, object, controlTargets );
         this.resetControlPoints();
         this.createPoleTargets(poleTargets);
-        console.log(controlTargets);
-        console.log(poleTargets);
     }
 
     updateSkeleton(updateCharacterSkeleton)

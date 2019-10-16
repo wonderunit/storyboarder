@@ -197,6 +197,9 @@ const Character = React.memo(({
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
+      object.current.remove(SGIkHelper.getInstance());
+      SGIkHelper.getInstance().deselectControlPoint();
+      SGIkHelper.getInstance().removeFromParent(id);
       boneRotationControl.current.deselectBone();
       object.current.bonesHelper = null
       object.current = null
@@ -298,6 +301,7 @@ const Character = React.memo(({
     }
 
     return function cleanup () {
+      console.log("Run clean up")
       doCleanup()
       // setLoaded(false)
     }
@@ -331,6 +335,7 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
+    console.log("Update skeleton")
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
@@ -400,12 +405,13 @@ const Character = React.memo(({
 
   //#region Camera changing 
   useEffect(() => {
-    if(!ready) return
+    if(!ready || !camera) return
     SGIkHelper.getInstance().setCamera(camera);
   }, [camera, ready])
   //#endregion
 
   useEffect(() => {
+
     if (object.current) {
       object.current.position.x = props.x
       object.current.position.z = props.y
@@ -446,9 +452,11 @@ const Character = React.memo(({
     // e.g.: all built-in character models
     if (boneLengthScale === 100) {
       if (props.skeleton['Hips']) {
+        console.log("Hip is corrected")
         // we already have correct values, don't multiply the root bone
       } else {
         skeleton.bones[0].quaternion.multiply(parentRotation)
+        console.log("Corrected hips")
       }
       skeleton.bones[0].position.copy(parentPosition)
     }
@@ -528,19 +536,20 @@ const Character = React.memo(({
   }, [props.morphTargets, ready])
 
   useEffect(() => {
-    console.log(type, id, 'isSelected', isSelected)
+    console.log(type, id, 'isSelected', isSelected, ready, object.current)
     if (!ready) return
     if (!object.current) return
     if (isSelected)
     {
-      if ( !isCustomModel(props.model) ) {
-        console.log(object.current.userData.mesh.uuid);
-        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh);
-        object.current.add(SGIkHelper.getInstance());
+
+      for (var cone of object.current.bonesHelper.cones){
+        object.current.bonesHelper.add(cone)
       }
-      for (var cone of object.current.bonesHelper.cones)
-      
-      object.current.bonesHelper.add(cone)
+      if ( !isCustomModel(props.model) ) {
+        console.log(object.current.parent)
+        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh);
+        object.current.add(SGIkHelper.getInstance())
+      }
     } else {
       object.current.remove(SGIkHelper.getInstance());
       SGIkHelper.getInstance().removeFromParent(object.current.userData.mesh.uuid);

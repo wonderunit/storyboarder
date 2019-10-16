@@ -36,6 +36,8 @@ class IkObject
         this.ik = new IK();
         this.scene = scene;
         let chains = [];
+        objectSkeleton.updateMatrixWorld(true);
+        objectSkeleton.updateWorldMatrix(true, true);
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
         this.clonedObject = clonedSkeleton;
         this.originalObject = objectSkeleton;
@@ -122,15 +124,15 @@ class IkObject
     // before removed mesh should be detached from control
     removeFromScene()
     {
-        let scene = this.scene;
-        this.chainObjects.forEach((chainObject) =>
+        let chains = this.chainObjectsValues;
+        for(let i = 0; i < chains.length; i++)
         {
-            let control = chainObject.controlTarget.control;
+            let control = chains[i].controlTarget.control;
             control.detach();
-            scene.remove(control);
-        });
-        this.hipsControlTarget.control.detach(this.hipsControlTarget.target);
-        scene.remove(this.hipsControlTarget.control);
+            //scene.remove(control);
+        }
+        this.hipsControlTarget.control.detach();
+        //scene.remove(this.hipsControlTarget.control);
     }
     //#endregion
 
@@ -191,6 +193,8 @@ const initializeChainObject = (ikObject, chains, skeleton) =>
             {
                 ikObject.hips = object;
                 ikObject.hipsControlTarget.setBone(object);
+                object.quaternion.multiply(object.parent.quaternion);
+                object.updateMatrixWorld(true);
                 setZDirecion(object, new THREE.Vector3(0, 0, 1));
             }
             // Goes through all chain objects to find with which we are working
@@ -206,7 +210,7 @@ const initializeChainObject = (ikObject, chains, skeleton) =>
                     if(object.name === chainObject.baseObjectName)
                     {
                         chainObject.isChainObjectStarted = true;
-                        chains.push(chain);
+                        chains.push(chain); 
                     }
                     // Declares target
                     // Target(Effector) is object to which chain is trying to get

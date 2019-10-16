@@ -55,13 +55,10 @@ class SGIKHelper extends THREE.Object3D
         this.characterObject = object;
         ragDoll.controlTargetSelection.dispose();
         ragDoll.controlTargetSelection.initialize();
-        if(this.intializedSkinnedMesh)
-        {
-            ragDoll.reinitialize();
-        }
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
-        //console.log("initialized character's ik");
-        // this.resetAllTargetPoints();
+        console.log("initialized character's ik", object.clone(false));
+
+       // this.resetAllTargetPoints();
         this.intializedSkinnedMesh = skinnedMesh;
         let meshes = this.targetPoints;
         let initializedMeshes = object.userData.poleTargets ? object.userData.poleTargets : [];
@@ -159,14 +156,18 @@ class SGIKHelper extends THREE.Object3D
             }
             if(this.selectedControlPoint.userData.name === "Hips")
             {
-                this.ragDoll.changeControlPointsParent(this.controlPoints);
-                this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
+
                 this.ragDoll.hipsMouseDown = false;
                 if(this.ragDoll.attached)
                 {
                     this.ragDoll.updateCharacterRotation(this.ragDoll.originalObject.children[0].name, this.ragDoll.hipsControlTarget.target.rotation);
                     this.ragDoll.attached = false;
                     this.ragDoll.originalObject.children[0].isRotated = false;
+                }
+                else
+                {
+                    this.ragDoll.changeControlPointsParent(this.controlPoints);
+                    this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
                 }
             }
             if(this.selectedControlPoint.userData.name === "Head")
@@ -319,7 +320,10 @@ class SGIKHelper extends THREE.Object3D
     removeFromParent(uuid)
     {
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === uuid)
+        {
             this.ragDoll.controlTargetSelection.dispose()
+            this.ragDoll.removeFromScene();
+        }
     }
     
 }

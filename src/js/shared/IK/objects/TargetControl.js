@@ -31,7 +31,7 @@ class TargetControl
         movingTarget.userData.type = "controlPoint";
         movingTarget.name = "controlPoint";
         movingTarget.scope = this;
-        this.control.attach(movingTarget);
+        //this.control.attach(movingTarget);
         this.target = movingTarget;
         this.addEventsToControlTarget(); 
         movingTarget.layers.disable(0)
@@ -42,6 +42,7 @@ class TargetControl
     setBone(bone)
     {
         this.bone = bone;
+        this.control.attach(this.target);
     }
 
     addEventsToControlTarget()
