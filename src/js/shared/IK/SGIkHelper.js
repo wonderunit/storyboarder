@@ -56,9 +56,7 @@ class SGIKHelper extends THREE.Object3D
         ragDoll.controlTargetSelection.dispose();
         ragDoll.controlTargetSelection.initialize();
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
-        console.log("initialized character's ik", object.clone(false));
-
-       // this.resetAllTargetPoints();
+        
         this.intializedSkinnedMesh = skinnedMesh;
         let meshes = this.targetPoints;
         let initializedMeshes = object.userData.poleTargets ? object.userData.poleTargets : [];
@@ -103,7 +101,6 @@ class SGIKHelper extends THREE.Object3D
             this.ragDoll.hipsMouseDown = true;
             if(ragdoll.hipsControlTarget.control.mode === "rotate")
             {
-                //ragdoll.isEnabledIk = false;
                 ragdoll.attached = true;
                 ragdoll.originalObject.children[0].isRotated = true;
             }
@@ -374,7 +371,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
-        poleTarget.visible = true;
+        poleTarget.visible = false;
         poleTarget.layers.disable(0)
         poleTarget.layers.enable(1)
         poleTarget.layers.disable(2)

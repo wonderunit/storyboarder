@@ -292,16 +292,9 @@ const Character = React.memo(({
         }
       } );});
 
-
-      if ( isCustomModel(props.model) ) {
-        console.log('Custom model. No IK.')
-        return
-      }
-      console.log('Built-in model. Setting up IK.')
     }
 
     return function cleanup () {
-      console.log("Run clean up")
       doCleanup()
       // setLoaded(false)
     }
@@ -335,7 +328,6 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
-    console.log("Update skeleton")
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
@@ -452,11 +444,9 @@ const Character = React.memo(({
     // e.g.: all built-in character models
     if (boneLengthScale === 100) {
       if (props.skeleton['Hips']) {
-        console.log("Hip is corrected")
         // we already have correct values, don't multiply the root bone
       } else {
         skeleton.bones[0].quaternion.multiply(parentRotation)
-        console.log("Corrected hips")
       }
       skeleton.bones[0].position.copy(parentPosition)
     }
@@ -492,7 +482,6 @@ const Character = React.memo(({
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
         object.current.scale.set( scale, scale, scale )
-        console.log("Changed height");
       } else {
         object.current.scale.setScalar( props.height )
       }
@@ -536,7 +525,7 @@ const Character = React.memo(({
   }, [props.morphTargets, ready])
 
   useEffect(() => {
-    console.log(type, id, 'isSelected', isSelected, ready, object.current)
+    console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
     if (isSelected)
@@ -546,7 +535,6 @@ const Character = React.memo(({
         object.current.bonesHelper.add(cone)
       }
       if ( !isCustomModel(props.model) ) {
-        console.log(object.current.parent)
         SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh);
         object.current.add(SGIkHelper.getInstance())
       }

@@ -49,7 +49,6 @@ class Ragdoll extends IkObject
         if(IK.firstRun)
         {
             IK.firstRun = false;
-            console.log("First run");
             this.setUpHipsControlTargetRotation();
         }
         if(!this.isEnabledIk)
@@ -359,7 +358,6 @@ class Ragdoll extends IkObject
             }
             ikBones.push(bone);
         }
-        //this.updatingReactSkeleton = true;
         this.updateCharacterSkeleton(ikBones);
     }
 

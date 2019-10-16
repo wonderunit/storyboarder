@@ -37,7 +37,6 @@ class IkObject
         this.scene = scene;
         let chains = [];
         objectSkeleton.updateMatrixWorld(true);
-        objectSkeleton.updateWorldMatrix(true, true);
         let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
         this.clonedObject = clonedSkeleton;
         this.originalObject = objectSkeleton;
@@ -129,10 +128,8 @@ class IkObject
         {
             let control = chains[i].controlTarget.control;
             control.detach();
-            //scene.remove(control);
         }
         this.hipsControlTarget.control.detach();
-        //scene.remove(this.hipsControlTarget.control);
     }
     //#endregion
 
