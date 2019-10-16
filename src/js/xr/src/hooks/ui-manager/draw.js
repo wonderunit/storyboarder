@@ -340,7 +340,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   roundRect(ctx, width + 37, y, 12, height, 6, false, true)
 }
 
-const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type) {
+const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, client) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -358,14 +358,35 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type) 
     ctx.fillStyle = '#6E6E6E'
     roundRect(ctx, x + (screenWidth + padding * 0.5) * i, y + padding, screenWidth, screenHeight + textHeight, 12, true, false)
 
-    ctx.fillStyle = '#ffffff'
-    roundRect(ctx, x + 8 + (screenWidth + padding * 0.5) * i, y + padding + 8, screenWidth - 16, screenHeight - 16, 0, true, false)
-
     ctx.font = '12px Arial'
+    ctx.fillStyle = '#ffffff'
     ctx.textBaseline = 'Middle'
-    const text = type === 'boards' ? items[i].uid :  'Camera'
+    const text = type === 'boards' ? items[i].uid : (items[i].name || items[i].displayName)
 
     ctx.fillText(text, x + 8 + (screenWidth + padding * 0.5) * i, y + padding + screenHeight + textHeight * 0.5)
+
+    if (type === 'boards') {
+      const filepath = this.client.uriForThumbnail(items[i].thumbnail)
+
+      this.drawLoadableImage(
+        filepath,
+
+        image => {
+          // loaded state
+          // object should allow selection
+          ctx.drawImage(image, x + 8 + (screenWidth + padding * 0.5) * i, y + padding + 8, screenWidth - 16, screenHeight - 16)
+        },
+
+        () => {
+          // loading state
+          // object should not allow selection
+          ctx.save()
+          ctx.fillStyle = '#222'
+          ctx.fillRect(x + 8 + (screenWidth + padding * 0.5) * i, y + padding + 8, screenWidth - 16, screenHeight - 16)
+          ctx.restore()
+        }
+      )
+    }
   }
 
   ctx.restore()
