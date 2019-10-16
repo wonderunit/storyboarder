@@ -17,6 +17,7 @@ class TargetControl
     }
 
     //#region Events
+    onKeyDown = event => this.onKeyDownLockRotation(event);
     onControlKeyDown = event => this.selectControlTarget();
     onControlKeyUp = event => this.deselectControlTarget();
     //#endregion
@@ -49,6 +50,7 @@ class TargetControl
         let control = this.control;
         control.addEventListener("pointerdown", this.onControlKeyDown);
         control.addEventListener("pointerup", this.onControlKeyUp);
+        this.domElement.addEventListener("keydown", this.onKeyDown, false );
     }
 
     removeEventsFromControlTarget()
@@ -56,6 +58,7 @@ class TargetControl
         let control = this.control;
         control.removeEventListener("pointerdown", this.onControlKeyDown);
         control.removeEventListener("pointerup", this.onControlKeyUp);
+        this.domElement.removeEventListener("keydown", this.onKeyDown);
     }
     //#region Selectoin of control Target
     selectControlTarget()
@@ -96,6 +99,19 @@ class TargetControl
         this.removeEventsFromControlTarget();
     }
     //#endregion
+
+    onKeyDownLockRotation(event)
+    {
+        if(event.ctrlKey )
+        {
+            if(event.key === 'e')
+            {
+                event.stopPropagation();
+                this.isRotationLocked = !this.isRotationLocked;
+                this.updateInitialPosition();
+            }
+        }
+    }
 
     setCamera(camera)
     {

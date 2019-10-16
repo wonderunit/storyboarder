@@ -35,6 +35,7 @@ class SGIKHelper extends THREE.Object3D
             this.userData.type = "IkHelper";
             let controlTargetSelection = new ControlTargetSelection(domElement, camera, this.targetControls);
             this.ragDoll.controlTargetSelection = controlTargetSelection;
+            this.isUpdating = false;
      /*        instance.instancedMesh.layers.disable(0)
             instance.instancedMesh.layers.enable(1)
             instance.instancedMesh.layers.disable(2) */
@@ -207,7 +208,10 @@ class SGIKHelper extends THREE.Object3D
     updateMatrixWorld(value)
     {
         super.updateMatrixWorld(value); 
+        if(this.isUpdating) return;
+        this.isUpdating = true;
         this.update();
+        this.isUpdating = false;
     }
     raycast(raycaster, intersects)
     {
