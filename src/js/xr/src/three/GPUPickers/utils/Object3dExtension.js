@@ -2,7 +2,7 @@ const THREE = require( "three");
 
 THREE.Object3D.prototype.worldToLocalQuaternion = function (quaternion)
 {
-    let resultQuat = quaternion.clone();
+    let resultQuat = quaternion;
     let rotation = this.matrixWorld.getRotation();
     resultQuat.multiply(rotation.inverse());
     return resultQuat;
@@ -10,7 +10,7 @@ THREE.Object3D.prototype.worldToLocalQuaternion = function (quaternion)
 
 THREE.Object3D.prototype.localToWorldQuaternion = function (quaternion)
 {
-    let resultQuat = quaternion.clone();
+    let resultQuat = quaternion;
     let rotation = this.matrixWorld.getRotation();
     resultQuat.multiply(rotation);
     return resultQuat;
