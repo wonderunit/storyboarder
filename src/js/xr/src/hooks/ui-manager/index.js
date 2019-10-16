@@ -592,10 +592,13 @@ class CanvasRenderer {
     ctx.fillStyle = 'rgba(0,0,0)'
     roundRect(ctx, 0, 0, 1024, 400, 25, true, false)
 
-    this.renderObjects(ctx, this.paneComponents['boards'])
+    const sceneCameras = [0, 0, 0, 0]
+    const boards = [0, 0, 0, 0, 0, 0]
+    const aspect = this.cameraAspectRatio
 
-    this.drawRow(ctx, 30, 30, 1024 - 60, 340 * 0.6, '#f00')
-    this.drawRow(ctx, 30, 30 + 340 * 0.6, 1024 - 60, 340 * 0.4, '#0f0')
+    this.drawRow(ctx, 30, 30, 1024 - 60, 340 * 0.6, sceneCameras, aspect)
+    this.drawRow(ctx, 30, 30 + 340 * 0.6, 1024 - 60, 340 * 0.4, boards, aspect)
+    this.renderObjects(ctx, this.paneComponents['boards'])
   }
 
   drawLoadableImage (filepath, onSuccess, onFail) {

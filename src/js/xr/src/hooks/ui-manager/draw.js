@@ -340,12 +340,33 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   roundRect(ctx, width + 37, y, 12, height, 6, false, true)
 }
 
-const drawRow = function drawRow(ctx, x, y, width, height, color) {
+const drawRow = function drawRow(ctx, x, y, width, height, items, aspect) {
   ctx.save()
-  ctx.fillStyle = color
+  ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
   ctx.beginPath()
   ctx.rect(x, y, width, height)
+  ctx.clip()
+
+  const padding = 24
+  const textHeight = 16
+
+  const screenHeight = height - 2 * padding - textHeight
+  const screenWidth = screenHeight * aspect
+
+  for (let i = 0; i < items.length; i++) {
+    ctx.fillStyle = '#6E6E6E'
+    roundRect(ctx, x + (screenWidth + padding * 0.5) * i, y + padding, screenWidth, screenHeight + textHeight, 12, true, false)
+
+    ctx.fillStyle = '#ffffff'
+    roundRect(ctx, x + 8 + (screenWidth + padding * 0.5) * i, y + padding + 8, screenWidth - 16, screenHeight - 16, 0, true, false)
+
+    ctx.font = '12px Arial'
+    ctx.textBaseline = 'Middle'
+    ctx.fillText('Camera 1', x + 8 + (screenWidth + padding * 0.5) * i, y + padding + screenHeight + textHeight * 0.5)
+  }
+
+  ctx.restore()
 }
 
 module.exports = {
