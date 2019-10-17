@@ -242,10 +242,10 @@ class CanvasRenderer {
         console.log('boards list is loading')
       },
       SUCCESS: data => {
-        console.log('boards list has loaded', data)
-        data.map(board =>
-          console.log(`board ${board.uid}: sg? ${board.hasSg ? 'yes' : 'no'}, thumbnail: ${board.thumbnail}`)
-        )
+        // console.log('boards list has loaded', data)
+        // data.map(board =>
+        //   console.log(`board ${board.uid}: sg? ${board.hasSg ? 'yes' : 'no'}, thumbnail: ${board.thumbnail}`)
+        // )
       },
       FAILURE: err => {
         console.error('boards list failed', err)
