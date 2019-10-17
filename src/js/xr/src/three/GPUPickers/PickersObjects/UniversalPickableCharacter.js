@@ -1,5 +1,5 @@
 const Pickable = require("./Pickable");
-const SkeletonUtils = require("../../../../../shot-generator/IK/utils/SkeletonUtils");
+const SkeletonUtils = require("../../../../../shared/IK/utils/SkeletonUtils");
 const {updateBoneToBone} = require("../utils/PickableCharacterUtils");
 class UniversalPickableCharacter extends Pickable
 {
@@ -59,7 +59,10 @@ class UniversalPickableCharacter extends Pickable
         this.pickingMaterial.morphNormals = true;
         this.pickingMaterial.morphTargets = true;
         let parent = this.characterContainer;
+        let ikHelper = parent.children.find(child => child.userData.type === "IkHelper");
+        if(ikHelper) parent.remove(ikHelper);
         this.node = SkeletonUtils.clone(parent);
+        if(ikHelper) parent.add(ikHelper);
         let lod = this.node.children[0];
         if(lod.type === "LOD")
         {

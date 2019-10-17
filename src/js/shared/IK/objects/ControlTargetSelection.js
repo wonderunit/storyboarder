@@ -1,14 +1,15 @@
+const SGIKHelper = require("./IkObjects/../../SGIkHelper");
 // ControlTargetSelection is class used to identify hover of mouse
 // on control points in order to start selection
 class ControlTargetSelection
 {
-    constructor(domElement, scene, camera, controlTargets)
+    constructor(domElement, camera, controlTargets)
     {
         this.ray = new THREE.Raycaster();
         this.rayControl = new THREE.Raycaster();
         this.camera = camera;
-        this.scene = scene;
         this.domElement = domElement;
+      
         this.controlTargets = controlTargets;
         this.meshes = controlTargets.map((controlTarget) => controlTarget.target);
         this.controls = controlTargets.map((controlTarget) => controlTarget.control);
@@ -20,7 +21,6 @@ class ControlTargetSelection
     {
         this.domElement.addEventListener("pointermove", this.onPointerMove, false);
     }
-
     // #region Events
     onPointerMove = (event) => { this.pointerHover(this.getPointer(event)); }
     //#endregion
@@ -48,8 +48,7 @@ class ControlTargetSelection
             intersectControlTarget = ray.intersectObjects(rotationalGizmoHelpers)[ 0 ] || false;
             controlTarget = intersectControlTarget !== false ? intersectControlTarget.object.parent.parent : false;
         }
- 
-        // Checks if meshes intersected and if they do select them
+        // Checks if meshes intersected and if they do then select them
         if ( intersectMeshes ) 
         {
             let object = intersectMeshes.object;
@@ -117,6 +116,18 @@ class ControlTargetSelection
     dispose()
     {
         this.domElement.removeEventListener("pointermove", this.onPointerMove, false);
+        let selectedMeshes = this.selectedMeshes;
+        for(let keys in selectedMeshes)
+        {
+            let selectedMesh = selectedMeshes[keys];
+            // Checks if selected mesh's control target is currently in used 
+            if(selectedMesh.scope.isControlTargetSelected)
+            {
+                continue;
+            }
+            selectedMesh.scope.deselectControlPoint();
+        }
+        this.selectedMeshes = {};
     }
 }
 

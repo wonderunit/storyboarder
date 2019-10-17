@@ -65,7 +65,8 @@ class ResourceManager
         }
         else if(resource instanceof THREE.Matrix4)
         {
-            this.matrix.push(resource);
+            resource.identity();
+            this.matrices.push(resource);
         }
     }
 }
