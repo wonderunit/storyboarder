@@ -386,10 +386,56 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
           ctx.restore()
         }
       )
+    } else {
+      ctx.fillStyle = '#222'
+      ctx.fillRect(x + 8 + (screenWidth + padding * 0.5) * i, y + padding + 8, screenWidth - 16, screenHeight - 16)
     }
   }
 
+  this.paneComponents['boards'][`${type}_background`] = {
+    id: `${type}_background`,
+    type: 'button',
+    x,
+    y: y + padding,
+    width,
+    height: screenHeight + textHeight,
+    onSelect: (x, y) => {},
+    onDrag: (x, y) => {},
+    onDrop: (x, y, u, v) => {}
+  }
+
+  this.paneComponents['boards'][`${type}_scrollbar`] = {
+    id: `${type}_scrollbar`,
+    type: 'button',
+    x,
+    y: y + padding + screenHeight + textHeight + 6,
+    width,
+    height: 12,
+    onDrag: (x, y) => {}
+  }
+
+  // Indicator
   ctx.restore()
+  const scrollPosition = 0
+
+  ctx.fillStyle = '#000'
+  roundRect(ctx, x, y + padding + screenHeight + textHeight + 6, width, 12, 6, true, false)
+
+  ctx.fillStyle = '#6E6E6E'
+  roundRect(
+    ctx,
+    x + scrollPosition * width * 0.75,
+    y + padding + screenHeight + textHeight + 6,
+    width * 0.25,
+    12,
+    6,
+    true,
+    false
+  )
+
+  ctx.strokeStyle = '#fff'
+  ctx.lineWidth = 1
+  roundRect(ctx, x, y + padding + screenHeight + textHeight + 6, width, 12, 6, false, true)
 }
 
 module.exports = {
