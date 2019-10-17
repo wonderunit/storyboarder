@@ -351,23 +351,41 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
   const padding = 24
   const textHeight = 16
 
+  let offset = this.state.boards[type].scrollTop || 0
+
   const itemHeight = height - 2 * padding - textHeight
   const itemWidth = itemHeight * aspect
   const rowWidth = items.length * itemWidth
+  const visibleItems = Math.min(Math.ceil(width / itemWidth) + 1, items.length)
+  let startItem = Math.floor(offset / itemWidth)
 
-  for (let i = 0; i < items.length; i++) {
+  offset = offset % itemWidth
+
+  for (let i = 0; i < visibleItems; i++) {
+    if (startItem >= items.length) break
+    const item = items[startItem]
+
     ctx.fillStyle = '#6E6E6E'
-    roundRect(ctx, x + (itemWidth + padding * 0.5) * i, y + padding, itemWidth, itemHeight + textHeight, 12, true, false)
+    roundRect(
+      ctx,
+      x + (itemWidth + padding * 0.5) * i - offset,
+      y + padding,
+      itemWidth,
+      itemHeight + textHeight,
+      12,
+      true,
+      false
+    )
 
     ctx.font = '12px Arial'
     ctx.fillStyle = '#ffffff'
     ctx.textBaseline = 'Middle'
-    const text = type === 'boards' ? items[i].uid : (items[i].name || items[i].displayName)
+    const text = type === 'boards' ? item.uid : item.name || item.displayName
 
-    ctx.fillText(text, x + 8 + (itemWidth + padding * 0.5) * i, y + padding + itemHeight + textHeight * 0.5)
+    ctx.fillText(text, x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + itemHeight + textHeight * 0.5)
 
     if (type === 'boards') {
-      const filepath = this.client.uriForThumbnail(items[i].thumbnail)
+      const filepath = this.client.uriForThumbnail(item.thumbnail)
 
       this.drawLoadableImage(
         filepath,
@@ -375,7 +393,13 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
         image => {
           // loaded state
           // object should allow selection
-          ctx.drawImage(image, x + 8 + (itemWidth + padding * 0.5) * i, y + padding + 8, itemWidth - 16, itemHeight - 16)
+          ctx.drawImage(
+            image,
+            x + 8 + (itemWidth + padding * 0.5) * i - offset,
+            y + padding + 8,
+            itemWidth - 16,
+            itemHeight - 16
+          )
         },
 
         () => {
@@ -383,18 +407,20 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
           // object should not allow selection
           ctx.save()
           ctx.fillStyle = '#222'
-          ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i, y + padding + 8, itemWidth - 16, itemHeight - 16)
+          ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + 8, itemWidth - 16, itemHeight - 16)
           ctx.restore()
         }
       )
     } else {
       ctx.fillStyle = '#222'
-      ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i, y + padding + 8, itemWidth - 16, itemHeight - 16)
+      ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + 8, itemWidth - 16, itemHeight - 16)
     }
+
+    startItem++
   }
 
-  this.paneComponents['boards'][`${type}_background`] = {
-    id: `${type}_background`,
+  this.paneComponents['boards'][`${type}-background`] = {
+    id: `${type}-background`,
     type: 'button',
     x,
     y: y + padding,
@@ -406,9 +432,9 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
     onDrag: (x, y) => {
       const { boards } = this.state
       const offset = Math.floor((boards.prevCoords.y - y) * width)
-      boards[type].scrollTop = Math.min(Math.max(boards[type].scrollTop + offset, 0), Math.max(rowWidth - width, 0))
-      boards.prevCoords = { x, y }
-      this.boardsNeedsRender = true
+      // boards[type].scrollTop = Math.min(Math.max(boards[type].scrollTop + offset, 0), Math.max(rowWidth - width, 0))
+      // boards.prevCoords = { x, y }
+      // this.boardsNeedsRender = true
     },
     onDrop: (x, y, u, v) => {
       const { startCoords } = this.state.boards
@@ -416,8 +442,8 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
     }
   }
 
-  this.paneComponents['boards'][`${type}_scrollbar`] = {
-    id: `${type}_scrollbar`,
+  this.paneComponents['boards'][`${type}-scrollbar`] = {
+    id: `${type}-scrollbar`,
     type: 'button',
     x,
     y: y + padding + itemHeight + textHeight + 6,
