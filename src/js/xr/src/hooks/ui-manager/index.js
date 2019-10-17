@@ -818,6 +818,10 @@ class CanvasRenderer {
 
     for (let paneId in this.paneComponents) {
       if (paneId === 'help' && !intersectHelp) continue
+
+      if (paneId === 'boards') x = (u - 1) * this.canvas.width
+      else x = u * this.canvas.width
+
       for (let componentId in this.paneComponents[paneId]) {
         let component = this.paneComponents[paneId][componentId]
         if (ignoreInvisible && component.invisible) continue

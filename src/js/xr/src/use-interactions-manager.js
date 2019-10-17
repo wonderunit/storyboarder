@@ -398,7 +398,8 @@ const useInteractionsManager = ({
     let intersections = getControllerIntersections(controller, uis)
     intersection = intersections.length && intersections[0]
     if (intersection) {
-      let u = intersection.uv.x
+      let offset = intersection.object.userData.id === 'boards' ? 1 : 0
+      let u = intersection.uv.x + offset
       let v = intersection.uv.y
       uiService.send({
         type: 'TRIGGER_START',
@@ -410,7 +411,7 @@ const useInteractionsManager = ({
           object: intersection.object,
           distance: intersection.distance,
           point: intersection.point,
-          uv: intersection.uv
+          uv: new THREE.Vector2(u, v)
         }
       })
       return
