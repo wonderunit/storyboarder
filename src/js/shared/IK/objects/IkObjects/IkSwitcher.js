@@ -83,7 +83,6 @@ class IKSwitcher
             }
             this.cloneToOriginRotation(cloneBone, originalBone);
         }
-        originalBones[0].position.copy(clonedBones[0].position);
         this.recalculateDifference();
     }
 
@@ -122,7 +121,6 @@ class IKSwitcher
             this.originToCloneRotation(cloneBone, originalBone);
             cloneBone.isRotationChanged = originalBone.isRotationChanged;
         }
-        clonedBones[0].position.copy(originalBones[0].position);
         this.recalculateDifference();
     }
 

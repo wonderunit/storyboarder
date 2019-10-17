@@ -188,8 +188,7 @@ const Character = React.memo(({
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
-  let ragDoll = useRef(null);
-  let boneRotationControl = useRef(null);
+  let boneRotationControl = useRef(null)
 
   const doCleanup = () => {
     if (object.current) {
@@ -197,7 +196,10 @@ const Character = React.memo(({
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
-      boneRotationControl.current.deselectBone();
+      object.current.remove(SGIkHelper.getInstance())
+      SGIkHelper.getInstance().deselectControlPoint()
+      SGIkHelper.getInstance().removeFromParent(id)
+      boneRotationControl.current.deselectBone()
       object.current.bonesHelper = null
       object.current = null
     }
@@ -274,10 +276,10 @@ const Character = React.memo(({
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
 
-      let domElement = largeRenderer.current.domElement;
+      let domElement = largeRenderer.current.domElement
 
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid);
-      let boneRotation = boneRotationControl.current;
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid)
+      let boneRotation = boneRotationControl.current
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
         name : name,
@@ -287,14 +289,8 @@ const Character = React.memo(({
           y : rotation.y,
           z : rotation.z,
         }
-      } );});
+      } )})
 
-
-      if ( isCustomModel(props.model) ) {
-        console.log('Custom model. No IK.')
-        return
-      }
-      console.log('Built-in model. Setting up IK.')
     }
 
     return function cleanup () {
@@ -400,12 +396,13 @@ const Character = React.memo(({
 
   //#region Camera changing 
   useEffect(() => {
-    if(!ready) return
-    SGIkHelper.getInstance().setCamera(camera);
+    if(!ready || !camera) return
+    SGIkHelper.getInstance().setCamera(camera)
   }, [camera, ready])
   //#endregion
 
   useEffect(() => {
+
     if (object.current) {
       object.current.position.x = props.x
       object.current.position.z = props.y
@@ -532,16 +529,18 @@ const Character = React.memo(({
     if (!object.current) return
     if (isSelected)
     {
-      if ( !isCustomModel(props.model) ) {
-        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height);
-        object.current.add(SGIkHelper.getInstance());
+
+      for (var cone of object.current.bonesHelper.cones) {
+        object.current.bonesHelper.add(cone)
       }
-      for (var cone of object.current.bonesHelper.cones)
-      
-      object.current.bonesHelper.add(cone)
+      if ( !isCustomModel(props.model) ) {
+        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh)
+        object.current.add(SGIkHelper.getInstance())
+        SGIkHelper.getInstance().updateMatrixWorld(true);
+      }
     } else {
-      object.current.remove(SGIkHelper.getInstance());
-      SGIkHelper.getInstance().removeFromParent();
+      object.current.remove(SGIkHelper.getInstance())
+      SGIkHelper.getInstance().removeFromParent(object.current.userData.mesh.uuid)
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
@@ -598,12 +597,12 @@ const Character = React.memo(({
       if (bone) {
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
-        boneRotationControl.current.selectedBone(bone, selectedBone);
+        boneRotationControl.current.selectedBone(bone, selectedBone)
       }
     
     }
     else{
-      boneRotationControl.current.deselectBone();
+      boneRotationControl.current.deselectBone()
     }
   }, [selectedBone, ready])
 

@@ -128,6 +128,10 @@ class ControlTargetSelection
             selectedMesh.scope.deselectControlPoint();
         }
         this.selectedMeshes = {};
+        for(let i = 0; i < this.controls.length; i++)
+        {
+            this.controls[i].reset();
+        }
     }
 }
 

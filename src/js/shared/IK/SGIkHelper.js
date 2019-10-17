@@ -48,15 +48,16 @@ class SGIKHelper extends THREE.Object3D
         return instance ? instance : new SGIKHelper(mesh, scene, camera, domElement)
     }
 
-    initialize(scene, object, height)
+    initialize(scene, object, height, skinnedMesh)
     {
         this.scene = scene;
         let ragDoll = instance.ragDoll;
         this.characterObject = object;
-        this.ragDoll.controlTargetSelection.initialize();
-        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === object.uuid) return;
-       // this.resetAllTargetPoints();
-        this.intializedSkinnedMesh = object;
+        ragDoll.controlTargetSelection.dispose();
+        ragDoll.controlTargetSelection.initialize();
+        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        
+        this.intializedSkinnedMesh = skinnedMesh;
         let meshes = this.targetPoints;
         let initializedMeshes = object.userData.poleTargets ? object.userData.poleTargets : [];
         let scaleAspect = height / this.regularHeight / object.scale.x;
@@ -78,11 +79,12 @@ class SGIKHelper extends THREE.Object3D
                 mesh.userData.isInitialized = false;
             }
             mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
-    
+            
             mesh.userData.scaleAspect = scaleAspect;
         }
         ragDoll.initObject(this, object, this.targetControls, this.poleTargets.children);
         ragDoll.reinitialize();
+        ragDoll.controlTargetSelection.initialize();
         //this.updateAllTargetPoints();
     }
 
@@ -93,18 +95,20 @@ class SGIKHelper extends THREE.Object3D
         this.selectedControlPoint = targetPoints.find(object => object.uuid === uuid);
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
+        this.selectedControlPoint.isActivated = true;
         let control = this.targetControls.find(object => object.target.userData.name === this.selectedControlPoint.userData.name);
         if(this.selectedControlPoint.userData.name === "Hips")
         {
             this.ragDoll.hipsMouseDown = true;
             if(ragdoll.hipsControlTarget.control.mode === "rotate")
             {
-                ragdoll.isEnabledIk = false;
                 ragdoll.attached = true;
                 ragdoll.originalObject.children[0].isRotated = true;
             }
-            this.ragDoll.changeControlPointsParent(this.intializedSkinnedMesh.parent);
-            
+            else
+            {   
+                this.ragDoll.changeControlPointsParent(this.characterObject.parent);
+            } 
             control.control.pointerPressedDown(event);
         }
         else
@@ -126,9 +130,11 @@ class SGIKHelper extends THREE.Object3D
         {  
             this.ragDoll.isEnabledIk = false;
             this.ragDoll.isRotation = false;
+            this.selectedControlPoint.isActivated = false;
             if(this.selectedControlPoint.userData.type === "controlPoint")
             {
                 this.controlPoints.attach(this.selectedControlPoint);
+                this.selectedControlPoint.updateMatrixWorld(true);
             }
             else
             {
@@ -148,13 +154,18 @@ class SGIKHelper extends THREE.Object3D
             }
             if(this.selectedControlPoint.userData.name === "Hips")
             {
-                this.ragDoll.changeControlPointsParent(this.controlPoints);
-                this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
+
                 this.ragDoll.hipsMouseDown = false;
                 if(this.ragDoll.attached)
                 {
+                    this.ragDoll.updateCharacterRotation(this.ragDoll.originalObject.children[0].name, this.ragDoll.hipsControlTarget.target.rotation);
                     this.ragDoll.attached = false;
                     this.ragDoll.originalObject.children[0].isRotated = false;
+                }
+                else
+                {
+                    this.ragDoll.changeControlPointsParent(this.controlPoints);
+                    this.ragDoll.updateCharPosition(this.ragDoll.clonedObject.position);
                 }
             }
             if(this.selectedControlPoint.userData.name === "Head")
@@ -206,7 +217,7 @@ class SGIKHelper extends THREE.Object3D
     }
 
     updateMatrixWorld(value)
-    {
+    { 
         super.updateMatrixWorld(value); 
         if(this.isUpdating) return;
         this.isUpdating = true;
@@ -304,9 +315,13 @@ class SGIKHelper extends THREE.Object3D
         }
     }
 
-    removeFromParent()
+    removeFromParent(uuid)
     {
-        this.ragDoll.controlTargetSelection.dispose()
+        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === uuid)
+        {
+            this.ragDoll.controlTargetSelection.dispose()
+            this.ragDoll.removeFromScene();
+        }
     }
     
 }
@@ -357,7 +372,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
-        poleTarget.visible = false;
+        poleTarget.visible = true;
         poleTarget.layers.disable(0)
         poleTarget.layers.enable(1)
         poleTarget.layers.disable(2)

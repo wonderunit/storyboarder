@@ -28,10 +28,9 @@ class Ragdoll extends IkObject
     // Initializes ragdoll set up all neccessary information 
     initObject(scene, object, controlTargets, poleTargets )
     {
+        this.objectTargetDiff = new THREE.Vector3();
         super.initObject(scene, object, controlTargets );
         this.resetControlPoints();
-        // Adds events to Back control
-        this.setUpControlTargetsInitialPosition();
         this.createPoleTargets(poleTargets);
         for(let i = 0; i < controlTargets.length; i++)
         {
@@ -61,25 +60,35 @@ class Ragdoll extends IkObject
         if(IK.firstRun)
         {
             IK.firstRun = false;
+            this.setUpHipsControlTargetRotation();
         }
         if(!this.isEnabledIk)
         {
-            if(this.hipsControlTarget.control.mode === "rotate" && this.attached)
-            {
-                this.updateCharacterRotation(this.originalObject.children[0].name, this.hipsControlTarget.target.rotation);
-            }
-            else
-            {
-                this.resetPoleTarget();
-            }
             this.ikSwitcher.applyToIk();
+            this.resetPoleTarget();
             this.resetControlPoints();
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
+            this.setUpHipsControlTargetRotation();
             this.recalculateHipsDiff();
         }
         else
         {
+            if(this.hipsControlTarget.control.mode === "rotate" && this.attached && !this.hipsIsMoving && this.originalObject.children[0].isRotated)
+            {
+                let worldQuaternion = this.resourceManager.getQuaternion();
+                let inverseParentQuat = this.resourceManager.getQuaternion();
+                let vector = this.resourceManager.getVector3();
+                this.hipsControlTarget.target.getWorldQuaternion(worldQuaternion);
+                this.originalObject.matrixWorld.decompose(vector, inverseParentQuat, vector);
+                worldQuaternion.premultiply(inverseParentQuat.inverse());
+                this.hips.quaternion.copy(worldQuaternion);
+                this.hips.updateMatrixWorld(true);
+                this.resourceManager.release(worldQuaternion);
+                this.resourceManager.release(inverseParentQuat);
+                this.resourceManager.release(vector);
+                this.resetPoleTarget();
+            }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
         }
@@ -308,21 +317,43 @@ class Ragdoll extends IkObject
         this.chainObjects["LeftFoot"].controlTarget.isRotationLocked = true;
         this.chainObjects["RightFoot"].controlTarget.isRotationLocked = true;
         //this.chainObjects["RightHand"].controlTarget.isRotationLocked = true;
+        //this.setUpHipsControlTargetRotation();
+    }
+
+    setUpHipsControlTargetRotation()
+    {
+        let bone = this.hips;
+        let target = this.hipsControlTarget.target;
+
+        let boneQuate = this.resourceManager.getQuaternion();
+        let parentInverseQuat = this.resourceManager.getQuaternion();
+        let targetWorldInverseQuat = this.resourceManager.getQuaternion();
+
+        this.hips.parent.getWorldQuaternion(parentInverseQuat).inverse();
+        bone.getWorldQuaternion(boneQuate);
+        target.quaternion.copy(boneQuate.premultiply(parentInverseQuat));
+        
+        this.resourceManager.release(parentInverseQuat);
+        this.resourceManager.release(boneQuate);
+        this.resourceManager.release(targetWorldInverseQuat);
+
     }
 
     resetControlPoints()
     {
-        if(this.hipsMouseDown) return;
+        if(this.hipsMouseDown) return; 
         let chainObjects = this.chainObjectsValues;
         let boneMatrix = this.resourceManager.getMatrix4();
         this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
         this.hipsControlTarget.target.position.setFromMatrixPosition(boneMatrix);
+        this.hipsControlTarget.target.updateMatrixWorld(true);
         for(let i = 0; i < chainObjects.length; i++)
         {
             let chain = chainObjects[i].chain;
             let jointBone = chain.joints[chain.joints.length - 1].bone;
             this.takeBoneInTheMeshSpace(this.rigMesh, jointBone, boneMatrix);
             chainObjects[i].controlTarget.target.position.setFromMatrixPosition(boneMatrix);
+            chainObjects[i].controlTarget.target.updateMatrixWorld(true);
         }
         this.resourceManager.release(boneMatrix);
         this.calculteBackOffset();
@@ -339,7 +370,6 @@ class Ragdoll extends IkObject
             }
             ikBones.push(bone);
         }
-        this.updatingReactSkeleton = true;
         this.updateCharacterSkeleton(ikBones);
     }
 
@@ -347,12 +377,10 @@ class Ragdoll extends IkObject
     limbsFollowRotation()
     {
         let chainObjects = this.chainObjectsValues;
-        let originalbones = this.originalMesh.skeleton.bones;
         for(let i = 0; i < chainObjects.length; i++)
         {
             let joints = chainObjects[i].chain.joints;
             let bone = joints[joints.length -1].bone;
-
             let target = this.getTargetForSolve();
             let controlTarget = chainObjects[i].controlTarget
             let boneTarget = controlTarget.target;
@@ -363,46 +391,9 @@ class Ragdoll extends IkObject
             if(controlTarget.isRotationLocked)
             {
                 this.rotateBoneQuaternion(bone, boneTarget);   
+                bone.updateMatrix();
+                bone.updateMatrixWorld(true, true); 
             }
-            else
-            {
-                let followBone = originalbones[this.originalObjectTargetBone[i]];
-                let targetQuat = boneTarget.worldQuaternion();
-                let quaternion = bone.worldQuaternion().inverse();
-                let rotation = followBone.worldQuaternion();
-                //targetQuat.multiply(boneTarget.parent.worldQuaternion().inverse());
-
-                //bone.quaternion.multiply(quaternion);
-                //targetQuat.premultiply(boneTarget.inverseInitialQuaternion);
-                //targetQuat.premultiply(rotation);
-                //bone.quaternion.multiply(targetQuat);
-
-
-                //let followBone = originalbones[this.originalObjectTargetBone[i]];
-                //let targetQuat = boneTarget.worldQuaternion();
-                //let boneParent = bone.parent.quaternion;
-                ////let rotation = followBone.worldQuaternion();
-                //targetQuat.premultiply(boneTarget.parent.worldQuaternion().inverse());
-                ////targetQuat.premultiply(bone.parent.worldQuaternion());
-                //console.log("Target quat", targetQuat.clone());
-                ////targetQuat.premultiply(this.hips.parent.worldQuaternion());
-                //bone.parent.updateMatrixWorld(true);
-                //bone.parent.worldToLocalQuaternion(targetQuat);
-                ////targetQuat.premultiply(.worldQuaternion());
-                //console.log("Target quat", targetQuat.clone());
-                //console.log("Bone World quat", bone.worldQuaternion());
-                //console.log("Bone quat", bone.quaternion.clone());
-                //targetQuat.multiply(boneTarget.parent.worldQuaternion().inverse());
-                //targetQuat.multiply(boneParent);
-                //bone.quaternion.copy(targetQuat);
-                //bone.quaternion.multiply(quaternion);
-                //targetQuat.premultiply(boneTarget.parent.worldQuaternion().inverse());
-                //targetQuat.multiply(boneTarget.inverseInitialQuaternion);
-                //targetQuat.multiply(rotation);
-                //bone.quaternion.multiply(targetQuat);
-            }
-            bone.updateMatrix();
-            bone.updateMatrixWorld(true, true); 
         }
     }
 

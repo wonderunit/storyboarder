@@ -57,10 +57,12 @@ class ResourceManager
     {
         if(resource instanceof THREE.Quaternion)
         {
+            resource.set(0, 0, 0, 0);
             this.quaternions.push(resource);
         }
         else if (resource instanceof THREE.Vector3)
         {
+            resource.set(0, 0, 0);
             this.vectors.push(resource);
         }
         else if(resource instanceof THREE.Matrix4)

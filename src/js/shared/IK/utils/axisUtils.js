@@ -132,6 +132,7 @@ THREE.Object3D.prototype.lengthTo = function lengthTo(bone)
 THREE.Quaternion.prototype.toAngleAxis = function toAngleAxis()
 {
     let quaternion = this;
+    quaternion.normalize();
     let angle = 2 * Math.acos(quaternion.w);
     let x = quaternion.x / Math.sqrt(1 - quaternion.w * quaternion.w);
     let y = quaternion.y / Math.sqrt(1 - quaternion.w * quaternion.w);
