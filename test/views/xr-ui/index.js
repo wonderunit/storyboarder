@@ -68,13 +68,14 @@ const UITestContent = ({ resources }) => {
     })
   }
   const onPointerUp = event => {
-    let u = event.uv.x
+    let offset = event.receivingObject.userData.id === 'boards' ? 1 : 0
+    let u = event.uv.x + offset
     let v = event.uv.y
     uiService.send({
       type: 'TRIGGER_END',
       controller: getFakeController(),
       intersection: {
-        uv: event.uv
+        uv: new THREE.Vector2(u, v)
       }
     })
   }

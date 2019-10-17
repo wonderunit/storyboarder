@@ -355,7 +355,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
 
   const itemHeight = height - 2 * padding - textHeight
   const itemWidth = itemHeight * aspect
-  const rowWidth = items.length * itemWidth
+  const rowWidth = items.length * itemWidth + items.length * padding * 0.25
   const visibleItems = Math.min(Math.ceil(width / itemWidth) + 1, items.length)
   let startItem = Math.floor(offset / itemWidth)
 
@@ -416,6 +416,17 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
       ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + 8, itemWidth - 16, itemHeight - 16)
     }
 
+    this.paneComponents['boards'][item.id || item.uid] = {
+      id: item.id || item.uid,
+      name: item.id || item.uid,
+      type: 'button',
+      x: x + (itemWidth + padding * 0.5) * i - offset,
+      y: y + padding,
+      width: itemWidth,
+      height: itemHeight + textHeight,
+      invisible: true
+    }
+
     startItem++
   }
 
@@ -427,18 +438,27 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
     width,
     height: itemHeight + textHeight,
     onSelect: (x, y) => {
-      this.state.boards.startCoords = this.state.boards.prevCoords = { x, y }
+      this.state.boards.startCoords = this.state.boards.prevCoords = { x: x - 1, y }
     },
     onDrag: (x, y) => {
       const { boards } = this.state
-      const offset = Math.floor((boards.prevCoords.y - y) * width)
-      // boards[type].scrollTop = Math.min(Math.max(boards[type].scrollTop + offset, 0), Math.max(rowWidth - width, 0))
-      // boards.prevCoords = { x, y }
-      // this.boardsNeedsRender = true
+      const offset = Math.floor((boards.prevCoords.x - x) * width)
+      boards[type].scrollTop = Math.min(Math.max(boards[type].scrollTop + offset, 0), Math.max(rowWidth - width, 0))
+      boards.prevCoords = { x, y }
+      this.boardsNeedsRender = true
     },
     onDrop: (x, y, u, v) => {
       const { startCoords } = this.state.boards
-      const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
+      const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x - 1, y))
+
+      if (distance < 0.1) {
+        let canvasIntersection = this.getCanvasIntersection(u, v, false)
+
+        if (canvasIntersection && canvasIntersection.id !== 'boards-background') {
+          const name = canvasIntersection.id
+          console.log(`CLICKED: ${name}`)
+        }
+      }
     }
   }
 
