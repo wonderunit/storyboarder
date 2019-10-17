@@ -95,6 +95,7 @@ class SGIKHelper extends THREE.Object3D
         this.selectedControlPoint = targetPoints.find(object => object.uuid === uuid);
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
+        this.selectedControlPoint.isActivated = true;
         let control = this.targetControls.find(object => object.target.userData.name === this.selectedControlPoint.userData.name);
         if(this.selectedControlPoint.userData.name === "Hips")
         {
@@ -107,8 +108,7 @@ class SGIKHelper extends THREE.Object3D
             else
             {   
                 this.ragDoll.changeControlPointsParent(this.characterObject.parent);
-            }
-            
+            } 
             control.control.pointerPressedDown(event);
         }
         else
@@ -130,6 +130,7 @@ class SGIKHelper extends THREE.Object3D
         {  
             this.ragDoll.isEnabledIk = false;
             this.ragDoll.isRotation = false;
+            this.selectedControlPoint.isActivated = false;
             if(this.selectedControlPoint.userData.type === "controlPoint")
             {
                 this.controlPoints.attach(this.selectedControlPoint);
@@ -371,7 +372,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
-        poleTarget.visible = false;
+        poleTarget.visible = true;
         poleTarget.layers.disable(0)
         poleTarget.layers.enable(1)
         poleTarget.layers.disable(2)

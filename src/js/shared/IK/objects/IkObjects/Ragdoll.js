@@ -74,17 +74,19 @@ class Ragdoll extends IkObject
         }
         else
         {
-            if(this.hipsControlTarget.control.mode === "rotate")
+            if(this.hipsControlTarget.control.mode === "rotate" && this.attached && !this.hipsIsMoving && this.originalObject.children[0].isRotated)
             {
                 let worldQuaternion = this.resourceManager.getQuaternion();
                 let inverseParentQuat = this.resourceManager.getQuaternion();
+                let vector = this.resourceManager.getVector3();
                 this.hipsControlTarget.target.getWorldQuaternion(worldQuaternion);
-                this.originalObject.getWorldQuaternion(inverseParentQuat);
+                this.originalObject.matrixWorld.decompose(vector, inverseParentQuat, vector);
                 worldQuaternion.premultiply(inverseParentQuat.inverse());
                 this.hips.quaternion.copy(worldQuaternion);
                 this.hips.updateMatrixWorld(true);
                 this.resourceManager.release(worldQuaternion);
                 this.resourceManager.release(inverseParentQuat);
+                this.resourceManager.release(vector);
                 this.resetPoleTarget();
             }
             this.limbsFollowRotation();
@@ -379,7 +381,6 @@ class Ragdoll extends IkObject
         {
             let joints = chainObjects[i].chain.joints;
             let bone = joints[joints.length -1].bone;
-
             let target = this.getTargetForSolve();
             let controlTarget = chainObjects[i].controlTarget
             let boneTarget = controlTarget.target;
@@ -390,9 +391,9 @@ class Ragdoll extends IkObject
             if(controlTarget.isRotationLocked)
             {
                 this.rotateBoneQuaternion(bone, boneTarget);   
+                bone.updateMatrix();
+                bone.updateMatrixWorld(true, true); 
             }
-            bone.updateMatrix();
-            bone.updateMatrixWorld(true, true); 
         }
     }
 

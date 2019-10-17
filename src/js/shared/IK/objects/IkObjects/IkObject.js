@@ -190,8 +190,6 @@ const initializeChainObject = (ikObject, chains, skeleton) =>
             {
                 ikObject.hips = object;
                 ikObject.hipsControlTarget.setBone(object);
-                object.quaternion.multiply(object.parent.quaternion);
-                object.updateMatrixWorld(true);
                 setZDirecion(object, new THREE.Vector3(0, 0, 1));
             }
             // Goes through all chain objects to find with which we are working
