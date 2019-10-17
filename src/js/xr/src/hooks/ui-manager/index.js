@@ -163,6 +163,16 @@ class CanvasRenderer {
           scrollTop: 0
         }
       },
+      boards: {
+        startCoords: {},
+        prevCoords: {},
+        cameras: {
+          scrollTop: 0
+        },
+        boards: {
+          scrollTop: 0
+        }
+      },
       boardsData: RemoteData.init()
     }
 

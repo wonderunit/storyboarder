@@ -117,9 +117,15 @@ const UITestContent = ({ resources }) => {
         position={[0, -8, 8]}
         rotation={[-Math.PI / 2, 0, 0]}
         scale={[2.4,2.4,2.4]}>
-          <Boards
-            mode={uiCurrent.value.controls}
-            getCanvasRenderer={getCanvasRenderer} />
+          <group
+            onPointerDown={onPointerDown}
+            onPointerUp={onPointerUp}
+            onPointerMove={onPointerMove}
+          >
+            <Boards
+              mode={uiCurrent.value.controls}
+              getCanvasRenderer={getCanvasRenderer} />
+          </group>
         </group>
       </group>
 

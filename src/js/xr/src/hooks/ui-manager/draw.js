@@ -351,19 +351,20 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
   const padding = 24
   const textHeight = 16
 
-  const screenHeight = height - 2 * padding - textHeight
-  const screenWidth = screenHeight * aspect
+  const itemHeight = height - 2 * padding - textHeight
+  const itemWidth = itemHeight * aspect
+  const rowWidth = items.length * itemWidth
 
   for (let i = 0; i < items.length; i++) {
     ctx.fillStyle = '#6E6E6E'
-    roundRect(ctx, x + (screenWidth + padding * 0.5) * i, y + padding, screenWidth, screenHeight + textHeight, 12, true, false)
+    roundRect(ctx, x + (itemWidth + padding * 0.5) * i, y + padding, itemWidth, itemHeight + textHeight, 12, true, false)
 
     ctx.font = '12px Arial'
     ctx.fillStyle = '#ffffff'
     ctx.textBaseline = 'Middle'
     const text = type === 'boards' ? items[i].uid : (items[i].name || items[i].displayName)
 
-    ctx.fillText(text, x + 8 + (screenWidth + padding * 0.5) * i, y + padding + screenHeight + textHeight * 0.5)
+    ctx.fillText(text, x + 8 + (itemWidth + padding * 0.5) * i, y + padding + itemHeight + textHeight * 0.5)
 
     if (type === 'boards') {
       const filepath = this.client.uriForThumbnail(items[i].thumbnail)
@@ -374,7 +375,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
         image => {
           // loaded state
           // object should allow selection
-          ctx.drawImage(image, x + 8 + (screenWidth + padding * 0.5) * i, y + padding + 8, screenWidth - 16, screenHeight - 16)
+          ctx.drawImage(image, x + 8 + (itemWidth + padding * 0.5) * i, y + padding + 8, itemWidth - 16, itemHeight - 16)
         },
 
         () => {
@@ -382,13 +383,13 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
           // object should not allow selection
           ctx.save()
           ctx.fillStyle = '#222'
-          ctx.fillRect(x + 8 + (screenWidth + padding * 0.5) * i, y + padding + 8, screenWidth - 16, screenHeight - 16)
+          ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i, y + padding + 8, itemWidth - 16, itemHeight - 16)
           ctx.restore()
         }
       )
     } else {
       ctx.fillStyle = '#222'
-      ctx.fillRect(x + 8 + (screenWidth + padding * 0.5) * i, y + padding + 8, screenWidth - 16, screenHeight - 16)
+      ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i, y + padding + 8, itemWidth - 16, itemHeight - 16)
     }
   }
 
@@ -398,34 +399,49 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
     x,
     y: y + padding,
     width,
-    height: screenHeight + textHeight,
-    onSelect: (x, y) => {},
-    onDrag: (x, y) => {},
-    onDrop: (x, y, u, v) => {}
+    height: itemHeight + textHeight,
+    onSelect: (x, y) => {
+      this.state.boards.startCoords = this.state.boards.prevCoords = { x, y }
+    },
+    onDrag: (x, y) => {
+      const { boards } = this.state
+      const offset = Math.floor((boards.prevCoords.y - y) * width)
+      boards[type].scrollTop = Math.min(Math.max(boards[type].scrollTop + offset, 0), Math.max(rowWidth - width, 0))
+      boards.prevCoords = { x, y }
+      this.boardsNeedsRender = true
+    },
+    onDrop: (x, y, u, v) => {
+      const { startCoords } = this.state.boards
+      const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
+    }
   }
 
   this.paneComponents['boards'][`${type}_scrollbar`] = {
     id: `${type}_scrollbar`,
     type: 'button',
     x,
-    y: y + padding + screenHeight + textHeight + 6,
+    y: y + padding + itemHeight + textHeight + 6,
     width,
     height: 12,
-    onDrag: (x, y) => {}
+    onDrag: (x, y) => {
+      const { boards } = this.state
+      boards[type].scrollTop = Math.min(Math.max((rowWidth - width) * x, 0), Math.max(rowWidth - width, 0))
+      this.boardsNeedsRender = true
+    }
   }
 
   // Indicator
   ctx.restore()
-  const scrollPosition = 0
+  const scrollPosition = this.state.boards[type].scrollTop / (rowWidth - width)
 
   ctx.fillStyle = '#000'
-  roundRect(ctx, x, y + padding + screenHeight + textHeight + 6, width, 12, 6, true, false)
+  roundRect(ctx, x, y + padding + itemHeight + textHeight + 6, width, 12, 6, true, false)
 
   ctx.fillStyle = '#6E6E6E'
   roundRect(
     ctx,
     x + scrollPosition * width * 0.75,
-    y + padding + screenHeight + textHeight + 6,
+    y + padding + itemHeight + textHeight + 6,
     width * 0.25,
     12,
     6,
@@ -435,7 +451,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
 
   ctx.strokeStyle = '#fff'
   ctx.lineWidth = 1
-  roundRect(ctx, x, y + padding + screenHeight + textHeight + 6, width, 12, 6, false, true)
+  roundRect(ctx, x, y + padding + itemHeight + textHeight + 6, width, 12, 6, false, true)
 }
 
 module.exports = {
