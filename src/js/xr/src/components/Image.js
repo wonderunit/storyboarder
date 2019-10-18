@@ -34,8 +34,8 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
   }, [ref.current, isSelected])
 
   useEffect(() => {
-    if (visibleToCam) ref.current.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
-    else ref.current.layers.disable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
+    if (visibleToCam) ref.current.children.forEach(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+    else ref.current.children.forEach(child => child.layers.disable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
   }, [ref.current, visibleToCam])
 
   return (
