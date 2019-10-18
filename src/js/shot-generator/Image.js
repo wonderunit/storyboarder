@@ -82,6 +82,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     group.layers.disable(0)
     group.layers.enable(1)
     group.layers.disable(2)
+    group.layers.enable(3)
 
     image.current = group
     image.current.userData.id = id
@@ -90,6 +91,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
       child.layers.disable(0)
       child.layers.enable(1)
       child.layers.disable(2)
+      child.layers.enable(3)
       child.userData.type = type
     })
 
