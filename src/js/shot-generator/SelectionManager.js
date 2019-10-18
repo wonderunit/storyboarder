@@ -79,6 +79,11 @@ const getIntersectionTarget = intersect => {
   if (intersect.object.parent.userData.type === 'object') {
     return intersect.object.parent
   }
+
+  // image
+  if (intersect.object.userData.type === 'image') {
+    return intersect.object.parent
+  }
 }
 
 const SelectionManager = connect(
@@ -139,6 +144,7 @@ const SelectionManager = connect(
     o.userData.type === 'character' ||
     o.userData.type === 'light' ||
     o.userData.type === 'volume' ||
+    o.userData.type === 'image' ||
     o.userData.type === 'controlTarget' ||
     o.userData.type === 'controlPoint' ||
     o.userData.type === 'boneControl' ||

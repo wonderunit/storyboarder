@@ -199,7 +199,7 @@ const updateObject = (draft, state, props, { models }) => {
     draft.fov = props.fov
   }
   if (props.rotation != null) {
-    if (draft.type === 'object') {
+    if (draft.type === 'object' || draft.type === 'image') {
       // MERGE
       draft.rotation = {
         ...state.rotation,
@@ -297,7 +297,14 @@ const updateObject = (draft, state, props, { models }) => {
     draft.volumeImageAttachmentIds = props.volumeImageAttachmentIds
   }
 
+  // for images
+  if (props.imageAttachmentIds != null) {
+    draft.imageAttachmentIds = props.imageAttachmentIds
+  }
 
+  if (props.visibleToCam != null) {
+    draft.visibleToCam = props.visibleToCam
+  }
 
   if (props.hasOwnProperty('characterPresetId')) {
     draft.characterPresetId = props.characterPresetId
@@ -320,7 +327,8 @@ const resetLoadingStatus = sceneObjects => {
     if (
       sceneObjects[key].type === 'character' ||
       sceneObjects[key].type === 'object' ||
-      sceneObjects[key].type === 'volume'
+      sceneObjects[key].type === 'volume' ||
+      sceneObjects[key].type === 'image'
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],

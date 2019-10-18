@@ -157,10 +157,31 @@ const createVolume = (id) => {
   })
 }
 
+const createImage = (id, camera, room) => {
+  let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
+
+  return createObject({
+    id,
+    type: 'image',
+
+    height: 1,
+
+    x, y, z: 1,
+
+    rotation: { x: 0, y: rotation, z: 0 },
+
+    visible: true,
+    opacity: 1,
+    visibleToCam: true,
+    imageAttachmentIds: ['placeholder']
+  })
+}
+
 module.exports = {
   createCamera,
   createModelObject,
   createCharacter,
   createLight,
-  createVolume
+  createVolume,
+  createImage
 }

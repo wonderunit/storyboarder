@@ -43,6 +43,7 @@ const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
 const Camera = require('./Camera')
+const Image = require('./Image')
 
 const WorldObject = require('./World')
 
@@ -243,6 +244,7 @@ const SceneManager = connect(
           child.userData.type === 'character' ||
           child.userData.type === 'light' ||
           child.userData.type === 'volume' ||
+          child.userData.type === 'image' ||
           child instanceof THREE.PerspectiveCamera
         ) {
           minMax[0] = Math.min(child.position.x, minMax[0])
@@ -660,6 +662,20 @@ const SceneManager = connect(
                 }
               ]
 
+          case 'image':
+            return [
+              Image, {
+                key: props.id,
+                scene,
+                isSelected: selections.includes(props.id),
+
+                updateObject,
+
+                storyboarderFilePath: meta.storyboarderFilePath,
+                imageAttachmentIds: props.imageAttachmentIds,
+                ...props
+              }
+            ]
         }
     })
 

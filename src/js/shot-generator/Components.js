@@ -725,6 +725,7 @@ const ElementsPanel = connect(
       ...types.camera,
       ...types.character,
       ...types.object,
+      ...types.image,
       ...types.light,
       ...types.volume
     }
@@ -1125,6 +1126,21 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         ],
       ],
 
+      (sceneObject.type == 'image' ) && [
+        [
+          NumberSlider, {
+            label: 'size',
+            value: sceneObject.height,
+            min: 0.025,
+            max: 5,
+            onSetValue: value => updateObject(
+              sceneObject.id,
+              { height: value }
+            )
+          }
+        ]
+      ],
+
       sceneObject.type == 'volume' && [
         [
           'div.column',
@@ -1171,7 +1187,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
                 onChange: volumeImageAttachmentIds => {
                   updateObject(sceneObject.id, { volumeImageAttachmentIds })
                 },
-                onBlur: () => transition('TYPING_EXIT')
+                onBlur: () => transition('TYPING_EXIT'),
+                multiSelections: true
               }
             ]
           ]]],
@@ -1232,7 +1249,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         ],
       ],
 
-      sceneObject.type == 'object'
+      sceneObject.type == 'object' || sceneObject.type == 'image'
         ? [
             ['div',
               [NumberSlider, {
@@ -1402,6 +1419,21 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         ]
       ),
 
+      (sceneObject.type == 'image' ) && [
+        [
+          NumberSlider, {
+            label: 'opacity',
+            value: sceneObject.opacity,
+            min: 0.1,
+            max: 1,
+            onSetValue: value => updateObject(
+              sceneObject.id,
+              { opacity: value }
+            )
+          }
+        ]
+      ],
+
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [
         ModelSelect, {
           sceneObject,
@@ -1420,7 +1452,121 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
       ],
 
       sceneObject.type == 'character' &&
-        selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }]
+        selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }],
+
+      sceneObject.type == 'image' && [
+        [
+          'div', { style: { marginBottom: 12 }},
+          [
+            ['div.column',
+              ['div.number-slider', [
+
+                [
+                  'div.number-slider__label',
+                  [
+                    'div',
+                    'Image File',
+
+                  ]
+                ],
+
+                // number-slider__control
+                [
+                  'div',
+                  {
+                    style: {
+                      display: 'flex',
+                      borderRadius: 4,
+                      width: 181,
+                      height: 27,
+                      alignItems: 'center',
+                      alignContent: 'flex-end',
+                      backgroundColor: 'rgba(255, 255, 255, 0.05)'
+                    }
+                  },
+                  ['div', { style: { flex: 1, margin: '-3px 0 0 9px' } },
+                    [
+                      'a[href=#]',
+                      {
+                        onClick: preventDefault(event => {
+                          let filepaths = dialog.showOpenDialog(null, {})
+                          if (filepaths) {
+                            let projectDir = path.dirname(storyboarderFilePath)
+                            let assetsDir = path.join(projectDir, 'models', 'images')
+                            fs.ensureDirSync(assetsDir)
+
+                            let dsts = []
+                            for (let src of filepaths) {
+                              let dst = path.join(assetsDir, path.basename(src))
+                              console.log('copying from', src, 'to', dst)
+                              try {
+                                fs.copySync(src, dst)
+                                dsts.push(dst)
+                              } catch (err) {
+                                console.error('could not copy', src)
+                                alert('could not copy ' + src)
+                              }
+                            }
+
+                            let ids = dsts.map(filepath => path.relative(projectDir, filepath))
+                            console.log('setting attachment ids', ids)
+
+                            updateObject(sceneObject.id, { imageAttachmentIds: ids })
+                          }
+
+                          // automatically blur to return keyboard control
+                          document.activeElement.blur()
+                          transition('TYPING_EXIT')
+                        }),
+
+                        style: {
+                          fontStyle: 'italic',
+                          textDecoration: 'none',
+                          borderBottomWidth: '1px',
+                          borderBottomStyle: 'dashed',
+                          fontSize: 13,
+                          lineHeight: 1,
+                          color: '#aaa',
+                          textTransform: 'none'
+                        }
+                      },
+
+                      sceneObject.imageAttachmentIds[0] !== 'placeholder'
+                        ? sceneObject.imageAttachmentIds[0].split(/[\\\/]/).pop()
+                        : '(none)'
+                    ],
+                  ]
+                ]
+              ]]
+            ]
+          ]
+        ],
+        [
+          'div.row',
+          { style: { alignItems: 'center', margin: '-6px 0 3px 0' } }, [
+
+            ['div', { style: { width: 130 } }, 'visible to camera'],
+
+            ['input', {
+              type: 'checkbox',
+              checked: sceneObject.visibleToCam,
+              readOnly: true,
+              style: {
+
+              }
+            }],
+
+            ['label', {
+              onClick: preventDefault(event => {
+                updateObject(sceneObject.id, { visibleToCam: !sceneObject.visibleToCam })
+              }),
+            }, [
+              'span'
+            ]]
+          ]
+        ],
+      ]
+      
     ]
   )
 }
@@ -1551,7 +1697,8 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
     'character': [Icon, { src: 'icon-item-character' }],
     'object': [Icon, { src: 'icon-item-object' }],
     'light': [Icon, { src: 'icon-item-light' }],
-    'volume': [Icon, { src: 'icon-item-volume' }]
+    'volume': [Icon, { src: 'icon-item-volume' }],
+    'image': [Icon, { src: 'icon-item-image' }]
   }
 
   let className = classNames({
@@ -2224,6 +2371,8 @@ const canDelete = (sceneObject, activeCamera) =>
   sceneObject.type === 'volume' ||
   // allow lights
   sceneObject.type === 'light' ||
+  // allow images
+  sceneObject.type === 'image' ||
   // allow cameras which are not the active camera
   (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 
