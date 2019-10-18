@@ -45,7 +45,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
         let imageMaterial = materialFactory()
         imageMaterial.map = texture
         imageMaterial.userData.outlineParameters = {
-          thickness: 0.008,
+          thickness: 0,
           color: [122 / 256.0 / 2, 114 / 256.0 / 2, 233 / 256.0 / 2]
         }
         resolve(imageMaterial)
