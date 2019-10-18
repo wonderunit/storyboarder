@@ -1,0 +1,21 @@
+{
+  "name": "tether-tooltip",
+  "version": "1.2.0",
+  "description": "CSS tooltips built on Tether",
+  "authors": [
+    "Adam Schwartz <adam.flynn.schwartz@gmail.com>",
+    "Zack Bloom <zackbloom@gmail.com>"
+  ],
+  "maintainers": [
+    "Nicholas Hwang <nick.joosung.hwang@gmail.com>"
+  ],
+  "scripts": {
+    "build": "gulp build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HubSpot/tooltip.git"
+  },
+  "license": "MIT",
+  "main": "dist/js/tooltip.js"
+}

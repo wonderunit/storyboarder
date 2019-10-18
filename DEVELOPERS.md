@@ -134,6 +134,7 @@ Remember to sync data files that have server representation (like `messages.json
 
 ## Vendored Libraries
 
-We're using a modified version of [drop](https://github.com/HubSpot/drop), forked at [wonderunit/drop](https://github.com/wonderunit/drop) with a fix from [HubSpot/drop/pull/171](https://github.com/HubSpot/drop/pull/171) applied.
-We keep a built version in `src/js/vendor/tether-drop` which is referenced by `package-lock.json`.
-To make changes, work from a clone of the fork, build, and copy the built `drop.js` to `src/js/vendor/tether-drop/dist/js/drop.js`.
+To fix a tooltip bug, we modified the `tether-tooltip` library to use a modified version of one of its dependencies (`tether-drop`).
+We forked [tether-drop](https://github.com/HubSpot/drop) to [wonderunit/drop](https://github.com/wonderunit/drop) and applied a fix from [HubSpot/drop/pull/171](https://github.com/HubSpot/drop/pull/171).
+The built version is kept in `src/js/vendor/tether-drop` for Storyboarder.
+We reference this from a copy of `tether-tooltip`, of which a built version is kept in `src/js/vendor/tether-tooltip`.

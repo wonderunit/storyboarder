@@ -1,7 +1,7 @@
 // IKSwitcher is class which is responsible for connecting 
 // ik bones and character bones
 // Ik and character works in different coordinate system ik(+z) and character(-z)
-class XrIKSwitcher
+class IKSwitcher
 {
     constructor(originalObject, clonedObject)
     {
@@ -83,7 +83,6 @@ class XrIKSwitcher
             }
             this.cloneToOriginRotation(cloneBone, originalBone);
         }
-        originalBones[0].position.copy(clonedBones[0].position);
         this.recalculateDifference();
     }
 
@@ -122,7 +121,6 @@ class XrIKSwitcher
             this.originToCloneRotation(cloneBone, originalBone);
             cloneBone.isRotationChanged = originalBone.isRotationChanged;
         }
-        clonedBones[0].position.copy(originalBones[0].position);
         this.recalculateDifference();
     }
 
@@ -141,4 +139,4 @@ class XrIKSwitcher
     }
     //#endregion
 }
-module.exports = XrIKSwitcher;
+module.exports = IKSwitcher;

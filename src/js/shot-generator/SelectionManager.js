@@ -1,7 +1,8 @@
 const { useState, useLayoutEffect, useRef, useMemo, useContext } = React = require('react')
 const { connect } = require('react-redux')
-require("./IK/utils/Object3dExtension");
+require("../shared/IK/utils/Object3dExtension");
 const GPUPicker = require("../xr/src/three/GPUPickers/GPUPicker");
+const SGIkHelper = require("../shared/IK/SGIkHelper");
 const {
   selectObject,
   selectObjectToggle,
@@ -157,22 +158,35 @@ const SelectionManager = connect(
     }
   }
 
-  const getIntersects = (mousePosition, camera, useIcons) => {
+  const getIntersects = (mousePosition, camera, useIcons, pointer) => {
     let raycaster = new THREE.Raycaster()
     let x = mousePosition.x;
     let y = mousePosition.y;
     raycaster.setFromCamera({x, y}, camera )
     let intersects = [];
+
     if( useIcons)
     {
       intersects = raycaster.intersectObjects( getObjectsFromIcons(intersectables) )
     }
     else
     {
-      let gpuPicker = getGPUPicker();
-      gpuPicker.setupScene(intersectables.filter(object => object.userData.type !== 'volume'));
-      gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y);
-      intersects = gpuPicker.pickWithCamera(camera, gl);
+      x = pointer.x;
+      y = pointer.y;
+      raycaster.setFromCamera({x, y}, camera )
+      //Check helpers intersection first 
+      intersects = raycaster.intersectObject(SGIkHelper.getInstance())
+      if(intersects.length > 0)
+      {
+        return intersects
+      }
+      x = mousePosition.x;
+      y = mousePosition.y;
+      raycaster.setFromCamera({x, y}, camera )
+      let gpuPicker = getGPUPicker()
+      gpuPicker.setupScene(intersectables.filter(object => object.userData.type !== 'volume'))
+      gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y)
+      intersects = gpuPicker.pickWithCamera(camera, gl)
     }
     return intersects
   }
@@ -252,8 +266,7 @@ const SelectionManager = connect(
       const rect = el.getBoundingClientRect();
       mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
     }
-
-    let intersects = getIntersects(mousePosition.current, camera, useIcons);
+    let intersects = getIntersects(mousePosition.current, camera, useIcons, {x, y});
     // if no objects intersected
     if (intersects.length === 0) {
       // cancel any active dragging
@@ -322,9 +335,11 @@ const SelectionManager = connect(
         if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
         {
           let characterId = target.characterId;
+          SGIkHelper.getInstance().selectControlPoint(target.uuid, event);
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];
           isSelectedControlPoint = true;
+  
         } 
         else if(target && target.userData && target.userData.type === 'boneControl')
         {
@@ -338,6 +353,7 @@ const SelectionManager = connect(
         else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo')
         {
           let characterId = target.parent.parent.parent.characterId;
+          SGIkHelper.getInstance().selectControlPoint(target.parent.parent.parent.object.uuid, event);
           let characters = intersectables.filter(value => value.uuid === characterId);
           target = characters[0];
           isSelectedControlPoint = true;
@@ -357,7 +373,6 @@ const SelectionManager = connect(
             let raycaster = new THREE.Raycaster()
             raycaster.setFromCamera({ x, y }, camera )
             let hits = raycaster.intersectObject(target.bonesHelper)
-
             if(!isSelectedControlPoint && selectedBoneControl)
             {
               selectBone(selectedBoneControl.uuid)
@@ -429,7 +444,7 @@ const SelectionManager = connect(
     {
       if(dragTarget.target.userData.type === 'character')
       {
-        let ikRig = dragTarget.target.userData.ikRig;
+        let ikRig = SGIkHelper.getInstance().ragDoll;
         if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown)
         {
           if(!dragTarget.isBoneControl)
@@ -457,7 +472,7 @@ const SelectionManager = connect(
 
       undoGroupEnd()
     }
-
+    SGIkHelper.getInstance().deselectControlPoint(event);
     if (event.target === el) {
       if (!selectOnPointerDown) {
         mousePosition.current.set(x, y);
@@ -466,7 +481,7 @@ const SelectionManager = connect(
           const rect = el.getBoundingClientRect();
           mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
         }
-        let intersects = getIntersects(mousePosition.current, camera, useIcons)
+        let intersects = getIntersects(mousePosition.current, camera, useIcons, { x, y })
         if (intersects.length === 0) {
           // selectObject(undefined)
           // selectBone(null)

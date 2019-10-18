@@ -1,7 +1,7 @@
 const THREE = require( "three");
 const IkConstraint = require( "./IkConstraint");
 const {normalizeTo180} = require("../utils/axisUtils");
-
+let reusableVector = new THREE.Vector3();
 // PoleConstraint is class which is closely interviened with three-ik.js IkChain
 // it initializes lambda for IkChain which is executes in backward calculations method
 class PoleConstraint extends IkConstraint
@@ -42,7 +42,7 @@ class PoleConstraint extends IkConstraint
         // Taking Ik target position
         let ikTargetPose = endGlobalPose;
         let rootPose = rootGlobalPose;
-        let target = this.poleTarget.mesh.position.clone();
+        let target = this.poleTarget.mesh.getWorldPosition(reusableVector);
 
         // Projecting pole target on to line between ikTarget and rootPose
         let projectedPole = this.projectPointOnLine(ikTargetPose, rootPose, target);

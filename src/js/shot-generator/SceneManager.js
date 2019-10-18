@@ -7,7 +7,7 @@ window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
 
 const h = require('../utils/h')
-
+const SGIkHelper = require('../shared/IK/SGIkHelper')
 const {
   selectObject,
   selectObjectToggle,
@@ -96,9 +96,9 @@ const SceneManager = connect(
 
     let bonesHelper = useRef(null)
     let lightHelper = useRef(null)
+    let ikHelper = useRef(null)
 
     let clock = useRef(new THREE.Clock())
-
     useMemo(() => {
       console.log('new SceneManager')
 
@@ -144,6 +144,45 @@ const SceneManager = connect(
         window.removeEventListener('blur', onBlur)
         window.removeEventListener('focus', onFocus)
       }
+    }, [])
+
+    useEffect(() => {
+      
+      let sgIkHelper = SGIkHelper.getInstance(null, scene, camera, largeRenderer.current.domElement)
+      ikHelper.current = sgIkHelper
+      const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
+        id: sgIkHelper.characterObject.userData.id,
+        name : name,
+        rotation: 
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }  
+      } )}
+
+      const updateSkeleton = (skeleton) => { updateCharacterIkSkeleton({
+        id: sgIkHelper.characterObject.userData.id,
+        skeleton: skeleton  
+      } )}
+
+      const updateCharacterPos = ({ x, y, z}) => updateObject(
+        sgIkHelper.characterObject.userData.id,
+        { x, y: z, z: y }
+      )
+
+      const updatePoleTarget = (poleTargets) => updateCharacterPoleTargets({
+          id: sgIkHelper.characterObject.userData.id,
+          poleTargets: poleTargets
+        }
+      )
+
+      sgIkHelper.setUpdate(
+        updateCharacterRotation,
+        updateSkeleton,
+        updateCharacterPos,
+        updatePoleTarget
+      )
     }, [])
 
     const setOutlineEffectParams = (type, params) => {
@@ -703,10 +742,10 @@ function updateCharacterIk(scene)
 {
   scene.traverse((object) =>
   {
-    if(object.userData.ikRig !== undefined)
-    {
-        object.userData.ikRig.update();
-    }
+    //if(object.userData.ikRig !== undefined)
+    //{
+    //    //object.userData.ikRig.update();
+    //}
   });
 
 }
