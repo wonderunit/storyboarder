@@ -79,11 +79,6 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
 
     let group = new THREE.Group().add(mesh, meshBackside, boxMesh)
 
-    group.layers.disable(0)
-    group.layers.enable(1)
-    group.layers.disable(2)
-    group.layers.enable(3)
-
     image.current = group
     image.current.userData.id = id
     image.current.userData.type = type
@@ -130,6 +125,12 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     if (!image.current) return
     image.current.children.forEach(child => (child.material.opacity = props.opacity))
   }, [props.opacity])
+
+  useEffect(() => {
+    if (!image.current) return
+    if (props.visibleToCam) image.current.children.forEach(child => child.layers.enable(3))
+    else image.current.children.forEach(child => child.layers.disable(3))
+  }, [props.visibleToCam])
 
   useEffect(() => {
     create()
