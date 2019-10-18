@@ -86,7 +86,8 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
       child.layers.disable(0)
       child.layers.enable(1)
       child.layers.disable(2)
-      child.layers.enable(3)
+      if (props.visibleToCam) child.layers.enable(3)
+      else child.layers.disable(3)
       child.userData.type = type
     })
 
