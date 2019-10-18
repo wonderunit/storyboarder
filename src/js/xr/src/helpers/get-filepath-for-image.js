@@ -4,7 +4,7 @@ const getFilepathForImage = ({ imageAttachmentIds }) => {
     const filename = parts[parts.length - 1]
     return `/data/user/images/${filename}`
   } else {
-    return `/data/system/images/placeholder.jpg`
+    return `/data/system/images/placeholder.png`
   }
 }
 

@@ -104,7 +104,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
       if (isUserFile(relpath)) {
         return path.join(path.dirname(storyboarderFilePath), relpath)
       } else {
-        return path.join(pathToBuiltInVolumeImages, relpath + '.jpg')
+        return path.join(pathToBuiltInVolumeImages, relpath + '.png')
       }
     })
 
