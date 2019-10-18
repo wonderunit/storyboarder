@@ -1540,7 +1540,31 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
               ]]
             ]
           ]
-        ]
+        ],
+        [
+          'div.row',
+          { style: { alignItems: 'center', margin: '-6px 0 3px 0' } }, [
+
+            ['div', { style: { width: 130 } }, 'visible to camera'],
+
+            ['input', {
+              type: 'checkbox',
+              checked: sceneObject.visibleToCam,
+              readOnly: true,
+              style: {
+
+              }
+            }],
+
+            ['label', {
+              onClick: preventDefault(event => {
+                updateObject(sceneObject.id, { visibleToCam: !sceneObject.visibleToCam })
+              }),
+            }, [
+              'span'
+            ]]
+          ]
+        ],
       ]
       
     ]
