@@ -9,6 +9,7 @@ const {
 const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
+const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
 
 const drawText = ({ ctx, label, size, weight = '', align = 'left', baseline = 'top', color = '#fff' }) => {
   ctx.save()
@@ -412,6 +413,14 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
         }
       )
     } else {
+      const fov = parseInt(getFovAsFocalLength(item.fov, aspect))
+      ctx.textAlign = 'end'
+      ctx.fillText(
+        `${fov}mm`,
+        x - 8 + itemWidth + (itemWidth + padding * 0.5) * i - offset,
+        y + padding + itemHeight + textHeight * 0.5
+      )
+
       ctx.fillStyle = '#222'
       ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + 8, itemWidth - 16, itemHeight - 16)
     }
