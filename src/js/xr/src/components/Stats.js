@@ -3,7 +3,7 @@ const { useThree } = require('react-three-fiber')
 
 const useInterval = require('../hooks/use-interval')
 
-const SimpleText = require('../components/SimpleText')
+//const SimpleText = require('../components/SimpleText')
 
 const Stats = ({ rStats, position }) => {
   const { gl } = useThree()
@@ -23,9 +23,13 @@ const Stats = ({ rStats, position }) => {
 
   let label = `F ${fps}\nC ${gl.info.render.calls}\nT ${gl.info.render.triangles}`
 
+  // return (
+  //   <group position={position}>
+  //     <SimpleText label={label} position={[0.3, 0.05, 0]} textProps={{ color: 0xff0000 }}/>
+  //   </group>
+  // )
   return (
     <group position={position}>
-      <SimpleText label={label} position={[0.3, 0.05, 0]} textProps={{ color: 0xff0000 }}/>
     </group>
   )
 }
