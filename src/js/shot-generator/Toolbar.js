@@ -243,7 +243,7 @@ const Toolbar = connect(
           ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
           ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
           ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']],
-          ['a[href=#]', { onClick: preventDefault(onCreateImageClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Image']]
+          ['a[href=#]', { onClick: preventDefault(onCreateImageClick) }, [[Icon, { src: 'icon-toolbar-image' }], 'Image']]
         ]],
         // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 

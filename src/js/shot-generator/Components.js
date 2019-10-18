@@ -1659,7 +1659,7 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
     'object': [Icon, { src: 'icon-item-object' }],
     'light': [Icon, { src: 'icon-item-light' }],
     'volume': [Icon, { src: 'icon-item-volume' }],
-    'image': [Icon, { src: 'icon-toolbar-save-to-board' }]
+    'image': [Icon, { src: 'icon-item-image' }]
   }
 
   let className = classNames({
