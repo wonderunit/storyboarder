@@ -1419,6 +1419,21 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         ]
       ),
 
+      (sceneObject.type == 'image' ) && [
+        [
+          NumberSlider, {
+            label: 'opacity',
+            value: sceneObject.opacity,
+            min: 0.0,
+            max: 1,
+            onSetValue: value => updateObject(
+              sceneObject.id,
+              { opacity: value }
+            )
+          }
+        ]
+      ],
+
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [
         ModelSelect, {
           sceneObject,

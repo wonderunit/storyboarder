@@ -43,6 +43,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     return new Promise((resolve, reject) => {
       textureLoader.load(link, (texture) => {
         let imageMaterial = materialFactory()
+        imageMaterial.opacity = props.opacity
         imageMaterial.map = texture
         imageMaterial.userData.outlineParameters = {
           thickness: 0,
@@ -122,6 +123,11 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
       image.current.children.forEach(child => child.material = result.materials[0])
     })
   }
+
+  useEffect(() => {
+    if (!image.current) return
+    image.current.children.forEach(child => (child.material.opacity = props.opacity))
+  }, [props.opacity])
 
   useEffect(() => {
     create()
