@@ -85,7 +85,12 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     image.current = group
     image.current.userData.id = id
     image.current.userData.type = type
-    image.current.children.forEach(child => (child.userData.type = type))
+    image.current.children.forEach(child => {
+      child.layers.disable(0)
+      child.layers.enable(1)
+      child.layers.disable(2)
+      child.userData.type = type
+    })
 
     image.current.orthoIcon = new IconSprites(type, props.name ? props.name : props.displayName, image.current)
     image.current.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
