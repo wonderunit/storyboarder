@@ -1424,7 +1424,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           NumberSlider, {
             label: 'opacity',
             value: sceneObject.opacity,
-            min: 0.0,
+            min: 0.1,
             max: 1,
             onSetValue: value => updateObject(
               sceneObject.id,

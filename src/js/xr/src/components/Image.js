@@ -6,7 +6,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
   const aspect = useRef(1)
   const ref = useRef()
 
-  const { x, y, z, visible, height, rotation } = sceneObject
+  const { x, y, z, visible, height, rotation, opacity } = sceneObject
 
   const material = useMemo(() => {
     return new THREE.MeshToonMaterial({ transparent: true })
@@ -32,6 +32,10 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
       material.color = new THREE.Color(0xcccccc)
     }
   }, [ref.current, isSelected])
+
+  useEffect(() => {
+    material.opacity = opacity
+  }, [opacity])
 
   useEffect(() => {
     if (visibleToCam) ref.current.children.forEach(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
