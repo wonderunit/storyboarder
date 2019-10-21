@@ -1566,7 +1566,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           ]
         ],
       ]
-      
+
     ]
   )
 }
@@ -2163,12 +2163,12 @@ const ClosestObjectInspector = ({ camera, sceneObjects, characters }) => {
       try {
         let closest = getClosestCharacterInView(characters, camera)
 
-        let [distFeet, distInches] = metersAsFeetAndInches(closest.distance)
+        let meters = parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)
 
         let sceneObject = closest.object ? sceneObjects[closest.object.userData.id] : undefined
 
         setResult(sceneObject
-          ? `Distance to ${sceneObject.name || sceneObject.displayName}: ${feetAndInchesAsString(distFeet, distInches)} (${parseFloat(Math.round(closest.distance * 100) / 100).toFixed(2)}m)`
+          ? `Distance to ${sceneObject.name || sceneObject.displayName}: ${meters}m`
           : '')
 
       } catch (err) {
@@ -2195,7 +2195,7 @@ const CameraInspector = connect(
 
     let tiltInDegrees = Math.round(cameraState.tilt * THREE.Math.RAD2DEG)
 
-    let [heightFeet, heightInches] = metersAsFeetAndInches(cameraState.z)
+    let meters = parseFloat(Math.round(cameraState.z * 100) / 100).toFixed(2)
 
     let cameraNumber = Object.values(sceneObjects)
                         .filter(o => o.type === 'camera')
@@ -2217,7 +2217,7 @@ const CameraInspector = connect(
             'div',
             `${cameraName}, ${Math.round(focalLength)}mm, f/1.4`,
             ['br'],
-            `Height: ${feetAndInchesAsString(heightFeet, heightInches)} Tilt: ${tiltInDegrees}°`,
+            `Height: ${meters}m Tilt: ${tiltInDegrees}°`,
             ['br'],
             [ClosestObjectInspector, {
               camera,
