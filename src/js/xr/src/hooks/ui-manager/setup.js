@@ -325,7 +325,11 @@ const setupBoardsPane = (paneComponents, self) => {
       fill: 'black',
       label: 'Save to board',
       fontSize: 18,
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+
+      onSelect: () => {
+        self.send('SAVE_BOARD')
+      }
     },
 
     'new-board-button': {
@@ -338,7 +342,11 @@ const setupBoardsPane = (paneComponents, self) => {
       fill: 'black',
       label: 'Insert as new board',
       fontSize: 18,
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+
+      onSelect: () => {
+        self.send('NEW_BOARD')
+      }
     },
 
     'boards-settings-button': {

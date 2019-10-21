@@ -173,7 +173,8 @@ class CanvasRenderer {
           scrollTop: 0
         }
       },
-      boardsData: RemoteData.init()
+      boardsData: RemoteData.init(),
+      currentBoard: RemoteData.init()
     }
 
     this.paneComponents = {}
@@ -227,6 +228,17 @@ class CanvasRenderer {
       this.boardsNeedsRender = true
     }).catch(err => {
       this.state.boardsData = RemoteData.failure(err)
+      this.needsRender = true
+      this.boardsNeedsRender = true
+    })
+
+    this.state.currentBoard = RemoteData.init()
+    this.client.getState().then(result => {
+      this.state.currentBoard = RemoteData.success(result.board)
+      this.needsRender = true
+      this.boardsNeedsRender = true
+    }).catch(err => {
+      this.state.currentBoard = RemoteData.failure(err)
       this.needsRender = true
       this.boardsNeedsRender = true
     })
@@ -1141,6 +1153,14 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
 
           getCanvasRenderer().helpNeedsRender = true
+        },
+
+        onSaveBoard (context, event) {
+          console.log('save board')
+        },
+
+        onNewBoard (context, event) {
+          console.log('new board')
         }
       }
     }

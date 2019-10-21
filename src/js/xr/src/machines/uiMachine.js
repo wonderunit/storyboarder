@@ -71,7 +71,9 @@ const machine = Machine({
             'REQUEST_DELETE': { actions: 'onDelete' },
             'TOGGLE_SWITCH': { actions: 'onToggleSwitch' },
             'TOGGLE_HELP': { actions: 'onToggleHelp' },
-            'INCREMENT_HELP': { actions: 'onIncrementHelp' }
+            'INCREMENT_HELP': { actions: 'onIncrementHelp' },
+            'SAVE_BOARD': { actions: 'onSaveBoard' },
+            'NEW_BOARD': { actions: 'onNewBoard' }
           }
         },
         locked: {
