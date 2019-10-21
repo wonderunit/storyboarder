@@ -1,6 +1,7 @@
 const {
   selectObject,
   updateObject,
+  setActiveCamera,
   undoGroupStart,
   undoGroupEnd,
   initialState
@@ -341,7 +342,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   roundRect(ctx, width + 37, y, 12, height, 6, false, true)
 }
 
-const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, client) {
+const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -355,7 +356,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
   let offset = this.state.boards[type].scrollTop || 0
 
   const itemHeight = height - 2 * padding - textHeight
-  const itemWidth = itemHeight * aspect
+  const itemWidth = itemHeight * this.cameraAspectRatio
   const rowWidth = items.length * itemWidth + items.length * padding * 0.25
   const visibleItems = Math.min(Math.ceil(width / itemWidth) + 1, items.length)
   let startItem = Math.floor(offset / itemWidth)
@@ -366,7 +367,8 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
     if (startItem >= items.length) break
     const item = items[startItem]
 
-    ctx.fillStyle = '#6E6E6E'
+    const isActive = type === 'boards' ? false : item.id === this.state.activeCamera
+    ctx.fillStyle = isActive ? '#d561fc' : '#6E6E6E'
     roundRect(
       ctx,
       x + (itemWidth + padding * 0.5) * i - offset,
@@ -413,7 +415,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
         }
       )
     } else {
-      const fov = parseInt(getFovAsFocalLength(item.fov, aspect))
+      const fov = parseInt(getFovAsFocalLength(item.fov, this.cameraAspectRatio))
       ctx.textAlign = 'end'
       ctx.fillText(
         `${fov}mm`,
@@ -429,6 +431,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
       id: item.id || item.uid,
       name: item.id || item.uid,
       type: 'button',
+      row: type,
       x: x + (itemWidth + padding * 0.5) * i - offset,
       y: y + padding,
       width: itemWidth,
@@ -464,8 +467,10 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
 
         if (canvasIntersection && canvasIntersection.id !== 'boards-background') {
-          const name = canvasIntersection.id
-          console.log(`CLICKED: ${name}`)
+          const component = this.getComponentById(canvasIntersection.id)
+          if (component.row === 'cameras') {
+            this.dispatch(setActiveCamera(component.id))
+          } else {}
         }
       }
     }
