@@ -313,6 +313,45 @@ const setupBoardsPane = (paneComponents, self) => {
       label: `Boards`,
       size: 18,
       weight: 'bold'
+    },
+
+    'save-board-button': {
+      id: 'save-board-button',
+      type: 'button',
+      x: 0,
+      y: 415,
+      width: 118 + 18 * 2,
+      height: 18 * 3,
+      fill: 'black',
+      label: 'Save to board',
+      fontSize: 18,
+      fontWeight: 'bold'
+    },
+
+    'new-board-button': {
+      id: 'new-board-button',
+      type: 'button',
+      x: 118 + 18 * 2 + 15,
+      y: 415,
+      width: 168 + 18 * 2,
+      height: 18 * 3,
+      fill: 'black',
+      label: 'Insert as new board',
+      fontSize: 18,
+      fontWeight: 'bold'
+    },
+
+    'boards-settings-button': {
+      id: 'boards-settings-button',
+      type: 'button',
+      x: 1024 - (68 + 18 * 2),
+      y: 415,
+      width: 68 + 18 * 2,
+      height: 18 * 3,
+      fill: 'black',
+      label: 'Settings',
+      fontSize: 18,
+      fontWeight: 'bold'
     }
   }
 }

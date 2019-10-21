@@ -44,15 +44,15 @@ const drawImageButton = ({
   ctx.restore()
 }
 
-const drawButton = ({ ctx, width, height, label, fill = 'rgba(0, 0, 0, 0)' }) => {
+const drawButton = ({ ctx, width, height, label, fill = 'rgba(0, 0, 0, 0)', fontSize = 20, fontWeight = 500 }) => {
   ctx.save()
   ctx.fillStyle = fill
-  ctx.fillRect(0, 0, width, height)
+  roundRect(ctx, 0, 0, width, height, 16, true, false)
   ctx.translate(width / 2, height / 2)
-  ctx.font = '20px Arial'
+  ctx.font = `${fontWeight} ${fontSize}px Arial`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = 'black'
+  ctx.fillStyle = 'white'
   ctx.fillText(label || '', 0, 0)
   ctx.restore()
 }
@@ -381,7 +381,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, aspect, type, 
     ctx.font = '12px Arial'
     ctx.fillStyle = '#ffffff'
     ctx.textBaseline = 'Middle'
-    const text = type === 'boards' ? item.uid : item.name || item.displayName
+    const text = type === 'boards' ? item.shot : item.name || item.displayName
 
     ctx.fillText(text, x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + itemHeight + textHeight * 0.5)
 
