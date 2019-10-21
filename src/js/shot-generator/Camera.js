@@ -1,20 +1,5 @@
 const { useEffect, useRef, useMemo } = React
 
-// TODO dry
-const metersAsFeetAndInches = meters => {
-  let heightInInches = meters * 39.3701
-  let heightFeet = Math.floor(heightInInches / 12)
-  let heightInches = Math.floor(heightInInches % 12)
-  return [heightFeet, heightInches]
-}
-
-const feetAndInchesAsString = (feet, inches) => `${feet}′${inches}″`
-
-// sdf font doesn't have these glyphs
-const forSdf = string => string
-  .replace("′", "''")
-  .replace("″", '"')
-
 const IconSprites = require('./IconSprites')
 
 const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
@@ -44,7 +29,6 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
 
     camera.current.fov = props.fov
     let focal = camera.current.getFocalLength()
-    let [camFeet, camInches] = metersAsFeetAndInches(props.z)
     camera.current.aspect = props.aspectRatio
     camera.current.orthoIcon = new IconSprites(
       type,
@@ -52,7 +36,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
         ? props.name
         : props.displayName,
       camera.current,
-      Math.round(focal) + "mm, " + forSdf(feetAndInchesAsString(camFeet, camInches))
+      Math.round(focal) + "mm, " + props.z.toFixed(2) + "m"
     )
 
     camera.current.orthoIcon.position.copy(camera.current.position)
@@ -144,9 +128,9 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
       //camera.current.orthoIcon.iconText.textGeometry.update( calculatedName )
 
     let focal = camera.current.getFocalLength()
-    let [camFeet, camInches] = metersAsFeetAndInches(props.z)
+    let meters = parseFloat(Math.round(props.z * 100) / 100).toFixed(2)
     if (camera.current.orthoIcon.iconSecondText)
-      camera.current.orthoIcon.changeSecondText( Math.round(focal)+"mm, "+forSdf(feetAndInchesAsString(camFeet, camInches)) )
+      camera.current.orthoIcon.changeSecondText(`${Math.round(focal)}mm, ${meters}m`)
     //camera.current.orthoIcon.frustumIcons = frustumIcons
   }
   camera.current.layers.enable(1)
