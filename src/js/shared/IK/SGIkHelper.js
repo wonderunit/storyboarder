@@ -53,7 +53,6 @@ class SGIKHelper extends THREE.Object3D
         this.scene = scene;
         let ragDoll = instance.ragDoll;
         this.characterObject = object;
-        ragDoll.controlTargetSelection.dispose();
         ragDoll.controlTargetSelection.initialize();
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
         
@@ -84,6 +83,7 @@ class SGIKHelper extends THREE.Object3D
         }
         ragDoll.initObject(this, object, this.targetControls, this.poleTargets.children);
         ragDoll.reinitialize();
+        ragDoll.controlTargetSelection.initialize();
        // ragDoll.controlTargetSelection.initialize();
         //this.updateAllTargetPoints();
     }
@@ -321,6 +321,7 @@ class SGIKHelper extends THREE.Object3D
         {
             this.ragDoll.controlTargetSelection.dispose()
             this.ragDoll.removeFromScene();
+            this.intializedSkinnedMesh = null;
         }
     }
     
