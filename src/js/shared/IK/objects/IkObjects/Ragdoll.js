@@ -313,11 +313,6 @@ class Ragdoll extends IkObject
 
             target.inverseInitialQuaternion = bone.worldQuaternion().inverse().multiply(this.hips.worldQuaternion());
         }
-        this.chainObjects["Head"].controlTarget.isRotationLocked = true;
-        this.chainObjects["LeftFoot"].controlTarget.isRotationLocked = true;
-        this.chainObjects["RightFoot"].controlTarget.isRotationLocked = true;
-        //this.chainObjects["RightHand"].controlTarget.isRotationLocked = true;
-        //this.setUpHipsControlTargetRotation();
     }
 
     setUpHipsControlTargetRotation()
@@ -384,7 +379,7 @@ class Ragdoll extends IkObject
             let target = this.getTargetForSolve();
             let controlTarget = chainObjects[i].controlTarget
             let boneTarget = controlTarget.target;
-            if((target && controlTarget.uuid !== target.uuid))
+            if((target && boneTarget.uuid !== target.uuid))
             {
               continue;
             }

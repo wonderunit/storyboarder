@@ -84,7 +84,7 @@ class SGIKHelper extends THREE.Object3D
         }
         ragDoll.initObject(this, object, this.targetControls, this.poleTargets.children);
         ragDoll.reinitialize();
-        ragDoll.controlTargetSelection.initialize();
+       // ragDoll.controlTargetSelection.initialize();
         //this.updateAllTargetPoints();
     }
 
@@ -372,7 +372,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
-        poleTarget.visible = true;
+        poleTarget.visible = false;
         poleTarget.layers.disable(0)
         poleTarget.layers.enable(1)
         poleTarget.layers.disable(2)
