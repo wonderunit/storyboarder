@@ -223,7 +223,7 @@ const Character = React.memo(({
   useEffect(() => {
     if (ready) {
       console.log(type, id, 'add')
-    
+
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
@@ -242,7 +242,7 @@ const Character = React.memo(({
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
       object.current.orthoIcon = new IconSprites( type, props.name?props.name:props.displayName, object.current )
-      
+
       object.current.userData.mesh = mesh
 
       scene.add(object.current)
@@ -283,7 +283,7 @@ const Character = React.memo(({
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
         name : name,
-        rotation: 
+        rotation:
         {
           x : rotation.x,
           y : rotation.y,
@@ -330,7 +330,7 @@ const Character = React.memo(({
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
-      
+
       for (bone of skeleton.bones) {
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
@@ -394,7 +394,7 @@ const Character = React.memo(({
   // FIXME frame delay between redux update and react render here
   //
 
-  //#region Camera changing 
+  //#region Camera changing
   useEffect(() => {
     if(!ready || !camera) return
     SGIkHelper.getInstance().setCamera(camera)
@@ -431,7 +431,7 @@ const Character = React.memo(({
 
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
-   
+
     updateSkeleton()
   }
 
@@ -498,13 +498,24 @@ const Character = React.memo(({
 
       if (headBone && object.current.userData.modelSettings.height) {
         let baseHeadScale = object.current.userData.modelSettings.height / props.height
-      
+
         //head bone
         headBone.scale.setScalar( baseHeadScale )
-        headBone.scale.setScalar( props.headScale ) 
+        headBone.scale.setScalar( props.headScale )
       }
     }
   }, [props.model, props.headScale, props.skeleton, ready])
+
+  useEffect(() => {
+    if (!ready) return
+    if (!object.current) return
+
+    if (object.current) {
+      let {material} = object.current.userData.mesh
+
+      material.emissive.set(props.tintColor)
+    }
+  }, [props.model, props.tintColor, ready])
 
   useEffect(() => {
     if (!ready) return
@@ -593,13 +604,13 @@ const Character = React.memo(({
         .skeleton
         .bones.find(b => b.uuid == selectedBone)
 
-       
+
       if (bone) {
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
         boneRotationControl.current.selectedBone(bone, selectedBone)
       }
-    
+
     }
     else{
       boneRotationControl.current.deselectBone()
@@ -655,8 +666,8 @@ const Character = React.memo(({
       target.quaternion.copy(objectQuaternion.normalize())
       let rotation = new THREE.Euler()
       if (selectedBone) {
-       
-       
+
+
         rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
         updateCharacterSkeleton({
           id,

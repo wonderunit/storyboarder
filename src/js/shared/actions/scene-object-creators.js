@@ -106,6 +106,7 @@ const createCharacter = (id, camera, room) => {
     rotation,
 
     headScale: 1,
+    tintColor: '#000000',
 
     morphTargets: {
       mesomorphic: 0,

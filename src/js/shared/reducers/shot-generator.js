@@ -243,6 +243,10 @@ const updateObject = (draft, state, props, { models }) => {
     draft.headScale = props.headScale
   }
 
+  if (props.tintColor != null) {
+    draft.tintColor = props.tintColor
+  }
+
   if (props.morphTargets != null) {
     Object.entries(props.morphTargets).forEach(([key, value]) => {
       draft.morphTargets[key] = value
@@ -371,6 +375,7 @@ const defaultCharacterPreset = {
   height: 1.6256,
   model: 'adult-female',
   headScale: 1,
+  tintColor: '#000000',
   // gender: 'female',
   // age: 'adult'
   morphTargets: {

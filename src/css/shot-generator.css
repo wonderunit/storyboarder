@@ -619,6 +619,54 @@ select {
   left: 1px; /* optical */
 }
 
+
+.color-select {
+  position: relative;
+  margin-bottom: 0.5rem;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.color-select__label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  cursor: default;
+  padding: 0 0.5rem 0 0;
+  margin-top: -1px; /* optical */
+  font-size: 87.5%;
+}
+.color-select__control {
+  display: flex;
+  flex-direction: row;
+  background-color: rgba(255,255,255,0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.color-select__control:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+.color-select__input {
+  flex: 1;
+  -webkit-appearance: textfield;
+  width: 158px;
+  cursor: col-resize;
+  text-align: center;
+  border: 0;
+  outline: 0;
+  padding: 6px;
+  background-color: rgba(255,255,255,0.05);
+  color: #E4E4E4;
+  font-variant-numeric: tabular-nums;
+}
+.color-select:hover {
+  opacity: 1;
+}
+
 .server-inspector {
   display: flex;
   flex-direction: row;
