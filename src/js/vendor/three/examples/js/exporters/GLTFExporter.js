@@ -615,7 +615,7 @@ THREE.GLTFExporter.prototype = {
 		 * @return {Integer}           Index of the processed accessor on the "accessors" array
 		 */
 		function processAccessor( attribute, geometry, start, count ) {
-
+			
 			var types = {
 
 				1: 'SCALAR',
@@ -677,7 +677,6 @@ THREE.GLTFExporter.prototype = {
 			}
 
 			var minMax = getMinMax( attribute, start, count );
-
 			var bufferViewTarget;
 
 			// If geometry isn't provided, don't infer the target usage of the bufferView. For
@@ -689,7 +688,6 @@ THREE.GLTFExporter.prototype = {
 			}
 
 			var bufferView = processBufferView( attribute, componentType, start, count, bufferViewTarget );
-
 			var gltfAccessor = {
 
 				bufferView: bufferView.id,
@@ -701,7 +699,6 @@ THREE.GLTFExporter.prototype = {
 				type: types[ attribute.itemSize ]
 
 			};
-
 			if ( ! outputJSON.accessors ) {
 
 				outputJSON.accessors = [];
@@ -847,7 +844,6 @@ THREE.GLTFExporter.prototype = {
 		 * @return {Integer}     Index of the processed texture in the "textures" array
 		 */
 		function processTexture( map ) {
-
 			if ( cachedData.textures.has( map ) ) {
 
 				return cachedData.textures.get( map );
@@ -882,7 +878,6 @@ THREE.GLTFExporter.prototype = {
 		 * @return {Integer}      Index of the processed material in the "materials" array
 		 */
 		function processMaterial( material ) {
-
 			if ( cachedData.materials.has( material ) ) {
 
 				return cachedData.materials.get( material );
@@ -1086,7 +1081,6 @@ THREE.GLTFExporter.prototype = {
 		 * @return {Integer}      Index of the processed mesh in the "meshes" array
 		 */
 		function processMesh( mesh ) {
-
 			var cacheKey = mesh.geometry.uuid + ':' + mesh.material.uuid;
 			if ( cachedData.meshes.has( cacheKey ) ) {
 
@@ -1181,7 +1175,6 @@ THREE.GLTFExporter.prototype = {
 
 				var attribute = geometry.attributes[ attributeName ];
 				attributeName = nameConversion[ attributeName ] || attributeName.toUpperCase();
-
 				// Prefix all geometry attributes except the ones specifically
 				// listed in the spec; non-spec attributes are considered custom.
 				var validVertexAttributes =
@@ -1279,7 +1272,7 @@ THREE.GLTFExporter.prototype = {
 						// glTF 2.0 Specification:
 						// https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#morph-targets
 
-						var baseAttribute = geometry.attributes[ attributeName ];
+						var baseAttribute = geometry.attributes[ attributeName ].clone();
 
 						if ( cachedData.attributes.has( getUID( attribute ) ) ) {
 
@@ -1301,7 +1294,6 @@ THREE.GLTFExporter.prototype = {
 							);
 
 						}
-
 						target[ gltfAttributeName ] = processAccessor( relativeAttribute, geometry );
 						cachedData.attributes.set( getUID( baseAttribute ), target[ gltfAttributeName ] );
 
@@ -1498,7 +1490,6 @@ THREE.GLTFExporter.prototype = {
 		 * @return {number}
 		 */
 		function processAnimation( clip, root ) {
-
 			if ( ! outputJSON.animations ) {
 
 				outputJSON.animations = [];
@@ -1607,7 +1598,6 @@ THREE.GLTFExporter.prototype = {
 		}
 
 		function processSkin( object ) {
-
 			var node = outputJSON.nodes[ nodeMap.get( object ) ];
 
 			var skeleton = object.skeleton;
@@ -1631,7 +1621,6 @@ THREE.GLTFExporter.prototype = {
 				outputJSON.skins = [];
 
 			}
-
 			outputJSON.skins.push( {
 
 				inverseBindMatrices: processAccessor( new THREE.BufferAttribute( inverseBindMatrices, 16 ) ),
@@ -1705,7 +1694,6 @@ THREE.GLTFExporter.prototype = {
 		 * @return {Integer}      Index of the node in the nodes list
 		 */
 		function processNode( object ) {
-
 			if ( ! outputJSON.nodes ) {
 
 				outputJSON.nodes = [];

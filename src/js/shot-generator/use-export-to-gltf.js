@@ -5,6 +5,7 @@ const path = require('path')
 const fs = require('fs-extra')
 const moment = require('moment')
 
+const {setZDirecion, setReverseZ} = require( "./IK/utils/axisUtils");
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/three/examples/js/exporters/GLTFExporter.js')
@@ -45,13 +46,13 @@ const useExportToGltf = (sceneRef) => {
                 console.log('\tCloning', sceneObject.type)
 
                 let skinnedMesh = child.getObjectByProperty('type', 'SkinnedMesh')
-
+              
                 mementos.push({
                   parent: skinnedMesh.parent,
                   bonesHelper: skinnedMesh.parent.bonesHelper,
                   userData: skinnedMesh.parent.userData,
                   name: skinnedMesh.parent.name,
-
+                  scale: skinnedMesh.parent.scale.clone(),
                   mesh: skinnedMesh,
                   meshUserData: skinnedMesh.userData
                 })
@@ -63,40 +64,40 @@ const useExportToGltf = (sceneRef) => {
                 skinnedMesh.userData = {}
 
                 console.log('\t\tAdded', skinnedMesh.parent)
-
+                skinnedMesh.geometry.normalizeNormals();
                 scene.add( skinnedMesh.parent )
-
+                
               } else if (sceneObject) {
                 console.log('\tCloning', sceneObject.type)
                 let clone = child.clone()
-
+                
                 clone.userData = {}
-
+                
                 clone.material = new THREE.MeshStandardMaterial()
                 clone.name = sceneObject.name || sceneObject.displayName
-
+                
                 scene.add(clone)
               }
             }
           }
         }
-
+        
         console.log('\tExporting Scene:', scene)
-
+        
         let exporter = new THREE.GLTFExporter()
         let options = {
           binary: true,
-          embedImages: true
+          embedImages: true,
+
         }
         exporter.parse(scene, function (glb) {
-
+          
           for (let memento of mementos) {
             memento.parent.bonesHelper = memento.bonesHelper
             memento.parent.userData = memento.userData
             memento.parent.name = memento.name
-
             memento.mesh.userData = memento.meshUserData
-
+            
             sceneRef.current.add(memento.parent)
           }
 
