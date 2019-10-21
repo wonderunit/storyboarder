@@ -347,15 +347,16 @@ const withDisplayNames = draft => {
 
   for (let id in draft) {
     let sceneObject = draft[id]
+    let key = sceneObject.model || sceneObject.type;
 
-    countByType[sceneObject.type] = countByType[sceneObject.type]
-      ? countByType[sceneObject.type] + 1
+    countByType[key] = countByType[key]
+      ? countByType[key] + 1
       : 1
 
-    let number = countByType[sceneObject.type]
+    let number = countByType[key]
 
     // mutate
-    sceneObject.displayName = capitalize(`${sceneObject.type} ${number}`)
+    sceneObject.displayName = capitalize(`${key} ${number}`)
   }
 
   return draft
