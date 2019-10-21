@@ -299,8 +299,8 @@ const setupBoardsPane = (paneComponents, self) => {
   paneComponents['boards'] = {
     'scene-cameras-title': {
       type: 'text',
-      x: 30,
-      y: 30,
+      x: 15,
+      y: 15,
       label: `Scene Cameras`,
       size: 18,
       weight: 'bold'
@@ -308,8 +308,8 @@ const setupBoardsPane = (paneComponents, self) => {
 
     'boards-title': {
       type: 'text',
-      x: 30,
-      y: 30 + 340 * 0.6,
+      x: 15,
+      y: 15 + 370 * 0.6,
       label: `Boards`,
       size: 18,
       weight: 'bold'

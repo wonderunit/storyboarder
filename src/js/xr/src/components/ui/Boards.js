@@ -20,7 +20,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer }) => {
 
   const mesh = useMemo(() => {
     return new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1, 1),
+      new THREE.PlaneBufferGeometry(1, 1, 1),
       new THREE.MeshBasicMaterial({ map: getTexture(), transparent: true, opacity: 0.8, side: THREE.BackSide })
     )
   }, [mode])
@@ -43,6 +43,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer }) => {
     ? <primitive
       ref={ref}
       object={mesh}
+      name={'gui-boards'}
 
       position={POSITION}
       scale={[SCALE, SCALE, SCALE]}

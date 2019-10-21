@@ -48,7 +48,7 @@ const drawImageButton = ({
 const drawButton = ({ ctx, width, height, label, fill = 'rgba(0, 0, 0, 0)', fontSize = 20, fontWeight = 500 }) => {
   ctx.save()
   ctx.fillStyle = fill
-  roundRect(ctx, 0, 0, width, height, 16, true, false)
+  roundRect(ctx, 0, 0, width, height, 12, true, false)
   ctx.translate(width / 2, height / 2)
   ctx.font = `${fontWeight} ${fontSize}px Arial`
   ctx.textAlign = 'center'
@@ -480,7 +480,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
     id: `${type}-scrollbar`,
     type: 'button',
     x,
-    y: y + padding + itemHeight + textHeight + 6,
+    y: y + padding + itemHeight + textHeight + 12,
     width,
     height: 12,
     onDrag: (x, y) => {
@@ -495,13 +495,13 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
   const scrollPosition = this.state.boards[type].scrollTop / (rowWidth - width)
 
   ctx.fillStyle = '#000'
-  roundRect(ctx, x, y + padding + itemHeight + textHeight + 6, width, 12, 6, true, false)
+  roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, true, false)
 
   ctx.fillStyle = '#6E6E6E'
   roundRect(
     ctx,
     x + scrollPosition * width * 0.75,
-    y + padding + itemHeight + textHeight + 6,
+    y + padding + itemHeight + textHeight + 12,
     width * 0.25,
     12,
     6,
@@ -511,7 +511,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
 
   ctx.strokeStyle = '#fff'
   ctx.lineWidth = 1
-  roundRect(ctx, x, y + padding + itemHeight + textHeight + 6, width, 12, 6, false, true)
+  roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, false, true)
 }
 
 module.exports = {

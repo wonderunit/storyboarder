@@ -605,11 +605,10 @@ class CanvasRenderer {
     roundRect(ctx, 0, 0, 1024, 400, 25, true, false)
 
     const sceneCameras = Object.values(this.state.sceneObjects).filter(model => model.type === 'camera')
-    this.drawRow(ctx, 30, 30, 1024 - 60, 340 * 0.6, sceneCameras, 'cameras')
+    this.drawRow(ctx, 15, 15, 1024 - 30, 370 * 0.6 - 15, sceneCameras, 'cameras')
 
     this.state.boardsData.cata({
-      SUCCESS: data =>
-        this.drawRow(ctx, 30, 30 + 340 * 0.6, 1024 - 60, 340 * 0.4, data, 'boards')
+      SUCCESS: data => this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, data, 'boards')
     })
 
     this.renderObjects(ctx, this.paneComponents['boards'])
