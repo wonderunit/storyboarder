@@ -1182,8 +1182,26 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           }
         },
 
-        onNewBoard (context, event) {
-          console.log('new board')
+        async onInsertBoard (context, event) {
+          let cr = getCanvasRenderer()
+
+          const data = {
+            activeCamera: cr.state.activeCamera,
+            sceneObjects: cr.state.sceneObjects,
+            world: cr.state.world
+          }
+
+          let hasUnsavedChanges = await checkForUnsavedChanges(data)
+          if (hasUnsavedChanges) {
+            let confimed = confirm('Shot Generator has unsaved changes. Are you sure you want to overwrite with VR changes?')
+            if (!confimed) return
+          }
+
+          try {
+            let board = await cr.client.insertShot(data)
+          } catch (err) {
+            alert('Could not insert\n' + err)
+          }
         }
       }
     }

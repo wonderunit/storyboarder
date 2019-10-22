@@ -332,8 +332,8 @@ const setupBoardsPane = (paneComponents, self) => {
       }
     },
 
-    'new-board-button': {
-      id: 'new-board-button',
+    'insert-board-button': {
+      id: 'insert-board-button',
       type: 'button',
       x: 118 + 18 * 2 + 15,
       y: 415,
@@ -345,7 +345,7 @@ const setupBoardsPane = (paneComponents, self) => {
       fontWeight: 'bold',
 
       onSelect: () => {
-        self.send('NEW_BOARD')
+        self.send('INSERT_BOARD')
       }
     },
 
