@@ -88,7 +88,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => 
           material.emissive = new THREE.Color( 0x755bf9 )
           material.color = new THREE.Color( 0x222222 )
         } else {
-          material.emissive = new THREE.Color( sceneObject.tintColor )
+          material.emissive = new THREE.Color( sceneObject.tintColor || '#000000' )
           material.color = new THREE.Color( 0xcccccc )
         }
       }
