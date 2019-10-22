@@ -227,6 +227,8 @@ const updateObject = (draft, state, props, { models }) => {
         // ... otherwise, a reasonable value
         : 1.6
     }
+    
+    draft = withDisplayName(draft)
   }
 
   if (props.width != null) {
@@ -345,21 +347,40 @@ const resetLoadingStatus = sceneObjects => {
   return sceneObjects
 }
 
+let countByType = {}
+
+// decorate target SceneObject with a calculated displayName
+const withDisplayName = sceneObject => {
+  let key = sceneObject.model || sceneObject.type;
+  
+  countByType[key] = countByType[key]
+      ? countByType[key] + 1
+      : 1
+  
+  let number = countByType[key]
+  
+  // mutate
+  sceneObject.displayName = capitalize(`${key} ${number}`)
+  
+  return sceneObject
+}
+
 // decorate each SceneObject with a calculated displayName
 const withDisplayNames = draft => {
-  let countByType = {}
+  countByType = {}
 
   for (let id in draft) {
     let sceneObject = draft[id]
+    let key = sceneObject.model || sceneObject.type;
 
-    countByType[sceneObject.type] = countByType[sceneObject.type]
-      ? countByType[sceneObject.type] + 1
+    countByType[key] = countByType[key]
+      ? countByType[key] + 1
       : 1
 
-    let number = countByType[sceneObject.type]
+    let number = countByType[key]
 
     // mutate
-    sceneObject.displayName = capitalize(`${sceneObject.type} ${number}`)
+    sceneObject.displayName = capitalize(`${key} ${number}`)
   }
 
   return draft
