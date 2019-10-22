@@ -278,7 +278,7 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 	function setOutlineMaterial( object ) {
 
 		if ( object.material === undefined ) return;
-
+		if ( object.userData.type == "instancedMesh" ) return;
 		if ( Array.isArray( object.material ) ) {
 
 			for ( var i = 0, il = object.material.length; i < il; i ++ ) {
@@ -289,8 +289,9 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 		} else {
 
-			object.material = getOutlineMaterial( object.material );
-
+			let outlineMaterial = getOutlineMaterial( object.material );
+			object.material = outlineMaterial;
+			
 		}
 
 		originalOnBeforeRenders[ object.uuid ] = object.onBeforeRender;
@@ -301,7 +302,7 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 	function restoreOriginalMaterial( object ) {
 
 		if ( object.material === undefined ) return;
-
+		if ( object.userData.type == "instancedMesh" ) return;
 		if ( Array.isArray( object.material ) ) {
 
 			for ( var i = 0, il = object.material.length; i < il; i ++ ) {
@@ -312,7 +313,7 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 		} else {
 
-			object.material = originalMaterials[ object.material.uuid ];
+				object.material = originalMaterials[ object.material.uuid ];
 
 		}
 

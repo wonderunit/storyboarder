@@ -1,6 +1,6 @@
 const { useState } = React = require('react')
 
-const SimpleText = require('../components/SimpleText')
+//const SimpleText = require('../components/SimpleText')
 
 const { create } = require('zustand')
 
@@ -23,15 +23,20 @@ const Log = ({ position }) => {
 
   return (
     <group position={position}>
-      <SimpleText
-        label={label}
-        position={[0.3, 0.05, 0]}
-        textProps={{
-          color: 0x00aa00,
-          scale: 0.75
-        }} />
     </group>
   )
+
+  // return (
+  //   <group position={position}>
+  //     <SimpleText
+  //       label={label}
+  //       position={[0.3, 0.05, 0]}
+  //       textProps={{
+  //         color: 0x00aa00,
+  //         scale: 0.75
+  //       }} />
+  //   </group>
+  // )
 }
 
 module.exports = {

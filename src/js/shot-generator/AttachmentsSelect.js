@@ -5,7 +5,7 @@ const h = require('../utils/h')
 
 const { isUserFile } = require('../services/model-loader')
 
-const AttachmentsSelect = ({ style = {}, ids, options, copyFiles, onChange, onBlur }) => {
+const AttachmentsSelect = ({ style = {}, ids, options, copyFiles, onChange, onBlur, multiSelections }) => {
   // convert ids to value string
   let value = ids.slice().sort().join(',')
 
@@ -27,7 +27,7 @@ const AttachmentsSelect = ({ style = {}, ids, options, copyFiles, onChange, onBl
           if (selected) {
 
             if (selected.dataset.selector) {
-              let filepaths = dialog.showOpenDialog(null, { properties: ['openFile', 'multiSelections'] })
+              let filepaths = dialog.showOpenDialog(null, { properties: ['openFile', multiSelections ? 'multiSelections' : ''] })
 
               if (filepaths) {
                 let ids = copyFiles(filepaths)
@@ -66,7 +66,7 @@ const AttachmentsSelect = ({ style = {}, ids, options, copyFiles, onChange, onBl
               'data-selector': true,
               onClick: event => event.preventDefault()
             },
-            'Select files …'
+            multiSelections ? 'Select files …' : 'Select file …'
           ]
         ]],
         ['optgroup', { label: 'Built-in' }, [

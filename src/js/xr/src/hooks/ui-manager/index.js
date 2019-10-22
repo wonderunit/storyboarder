@@ -108,6 +108,11 @@ for (let propertyName of ['width', 'height', 'depth']) {
   )
 }
 
+lenses.opacity = R.lens(
+  vin => clamp(mapLinear(vin, 0.1, 1, 0, 1), 0, 1),
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0.1, 1), 0.1), 0.1, 1)
+)
+
 lenses.morphTargets = R.lens(
   // from morphTarget value to slider internal value
   from => clamp(from, 0, 1),
@@ -328,6 +333,17 @@ class CanvasRenderer {
             }
         },
 
+        ...(sceneObject.type === 'image') && {
+          size: {
+            label: `Size - ${sceneObject.height}m`,
+            lens: R.compose(R.lensPath(['height']), lenses.height)
+          },
+          opacity: {
+            label: `Opacity - ${sceneObject.opacity}`,
+            lens: R.compose(R.lensPath(['opacity']), lenses.opacity)
+          }
+        },
+
         ...(sceneObject.type === 'character') &&
           {
             ...(isUserModel(sceneObject.model))
@@ -470,6 +486,27 @@ class CanvasRenderer {
         weight: 'bold'
       }
 
+      if (sceneObject.type === 'image') {
+        this.paneComponents['properties']['visible-to-camera'] = {
+          id: 'visible-to-camera',
+          type: 'slider',
+          x: 570,
+          y: 30 + 90 * 3,
+          width: 420,
+          height: 80,
+          label: sceneObject.visibleToCam ? 'Visible to Camera' : 'Set as visible to Camera',
+          state: Number(sceneObject.visibleToCam),
+          onSelect: () => {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                visibleToCam: !sceneObject.visibleToCam
+              })
+            )
+            this.needsRender = true
+          }
+        }
+      }
+      
       if (sceneObject.type === 'camera') {
         const isActive = sceneObject.id === this.state.activeCamera
 

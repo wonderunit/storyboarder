@@ -37,9 +37,12 @@ jspm_packages
 .node_repl_history
 
 dist/
+!src/js/vendor/**/dist
 
 .vscode
 
 .DS_Store
 
 .cache
+
+.env

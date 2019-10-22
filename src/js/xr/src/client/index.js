@@ -29,10 +29,10 @@ module.exports = function (URI='') {
     uriForThumbnail: filename =>
       `${URI}/boards/images/${filename}`,
 
-    getState: async () => await(await fetch(`${URI}/state.json`)).json(),
+    getState: async (stateJsonUri = '/state.json') => await(await fetch(`${URI}${stateJsonUri}`)).json(),
 
-    sendState: async (uid, data) => {
-      let url = `${URI}/state.json?uid=${uid}`
+    sendState: async (uid, data, stateJsonUri = '/state.json') => {
+      let url = `${URI}${stateJsonUri}?uid=${uid}`
       let body = JSON.stringify(data)
       let response = await fetch(
         url,

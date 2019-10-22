@@ -201,7 +201,7 @@ const updateObject = (draft, state, props, { models }) => {
     draft.fov = props.fov
   }
   if (props.rotation != null) {
-    if (draft.type === 'object') {
+    if (draft.type === 'object' || draft.type === 'image') {
       // MERGE
       draft.rotation = {
         ...state.rotation,
@@ -229,6 +229,8 @@ const updateObject = (draft, state, props, { models }) => {
         // ... otherwise, a reasonable value
         : 1.6
     }
+    
+    draft = withDisplayName(draft)
   }
 
   if (props.width != null) {
@@ -243,6 +245,10 @@ const updateObject = (draft, state, props, { models }) => {
 
   if (props.headScale != null) {
     draft.headScale = props.headScale
+  }
+
+  if (props.tintColor != null) {
+    draft.tintColor = props.tintColor
   }
 
   if (props.morphTargets != null) {
@@ -299,7 +305,14 @@ const updateObject = (draft, state, props, { models }) => {
     draft.volumeImageAttachmentIds = props.volumeImageAttachmentIds
   }
 
+  // for images
+  if (props.imageAttachmentIds != null) {
+    draft.imageAttachmentIds = props.imageAttachmentIds
+  }
 
+  if (props.visibleToCam != null) {
+    draft.visibleToCam = props.visibleToCam
+  }
 
   if (props.hasOwnProperty('characterPresetId')) {
     draft.characterPresetId = props.characterPresetId
@@ -322,7 +335,8 @@ const resetLoadingStatus = sceneObjects => {
     if (
       sceneObjects[key].type === 'character' ||
       sceneObjects[key].type === 'object' ||
-      sceneObjects[key].type === 'volume'
+      sceneObjects[key].type === 'volume' ||
+      sceneObjects[key].type === 'image'
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],
@@ -335,21 +349,40 @@ const resetLoadingStatus = sceneObjects => {
   return sceneObjects
 }
 
+let countByType = {}
+
+// decorate target SceneObject with a calculated displayName
+const withDisplayName = sceneObject => {
+  let key = sceneObject.model || sceneObject.type;
+  
+  countByType[key] = countByType[key]
+      ? countByType[key] + 1
+      : 1
+  
+  let number = countByType[key]
+  
+  // mutate
+  sceneObject.displayName = capitalize(`${key} ${number}`)
+  
+  return sceneObject
+}
+
 // decorate each SceneObject with a calculated displayName
 const withDisplayNames = draft => {
-  let countByType = {}
+  countByType = {}
 
   for (let id in draft) {
     let sceneObject = draft[id]
+    let key = sceneObject.model || sceneObject.type;
 
-    countByType[sceneObject.type] = countByType[sceneObject.type]
-      ? countByType[sceneObject.type] + 1
+    countByType[key] = countByType[key]
+      ? countByType[key] + 1
       : 1
 
-    let number = countByType[sceneObject.type]
+    let number = countByType[key]
 
     // mutate
-    sceneObject.displayName = capitalize(`${sceneObject.type} ${number}`)
+    sceneObject.displayName = capitalize(`${key} ${number}`)
   }
 
   return draft
@@ -372,6 +405,7 @@ const defaultCharacterPreset = {
   height: 1.6256,
   model: 'adult-female',
   headScale: 1,
+  tintColor: '#000000',
   // gender: 'female',
   // age: 'adult'
   morphTargets: {

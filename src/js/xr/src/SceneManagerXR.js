@@ -42,6 +42,7 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-mana
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
+const getFilepathForImage = require('./helpers/get-filepath-for-image')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -50,6 +51,7 @@ const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
 const Light = require('./components/Light')
 const VirtualCamera = require('./components/VirtualCamera')
+const Image = require('./components/Image')
 const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
@@ -61,7 +63,6 @@ const Help = require('./components/ui/Help')
 const Boards = require('./components/ui/Boards')
 
 const BonesHelper = require('./three/BonesHelper')
-const IKHelper = require('./three/IkHelper')
 const Voicer = require('./three/Voicer')
 
 const { createSelector } = require('reselect')
@@ -87,6 +88,11 @@ const getSceneObjectVirtualCamerasIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
 )
 
+const getSceneObjectImageIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
+)
+
 const SceneContent = connect(
   state => ({
     aspectRatio: state.aspectRatio,
@@ -100,6 +106,7 @@ const SceneContent = connect(
     modelObjectIds: getSceneObjectModelObjectIds(state),
     lightIds: getSceneObjectLightIds(state),
     virtualCameraIds: getSceneObjectVirtualCamerasIds(state),
+    imageIds: getSceneObjectImageIds(state),
   }),
   {
     selectObject,
@@ -109,7 +116,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds,
 
     resources, getAsset
   }) => {
@@ -474,7 +481,6 @@ const SceneContent = connect(
     useMemo(() => {
       const mesh = resources.boneGltf.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
-      IKHelper.getInstance(mesh)
     }, [resources.boneGltf])
 
     const ambientLightRef = useUpdate(self => {
@@ -628,6 +634,21 @@ const SceneContent = connect(
           }
 
           {
+            imageIds.map(id => {
+              let sceneObject = sceneObjects[id]
+              let texture = getAsset(getFilepathForImage(sceneObject))
+
+              return <Image
+                key={id}
+                texture={texture}
+                sceneObject={sceneObject}
+                visibleToCam={sceneObject.visibleToCam}
+                isSelected={selections.includes(id)}/>
+              }
+            )
+          }
+
+          {
             world.environment.file &&
             getAsset(getFilepathForModelByType({
               type: 'environment',
@@ -745,6 +766,18 @@ const SceneManagerXR = () => {
       .filter(o => !(o.type === 'object' && o.model === 'box'))
       // what's the filepath?
       .map(getFilepathForModelByType)
+      // has not been requested
+      .filter(filepath => getAsset(filepath) == null)
+      // request the file
+      .forEach(requestAsset)
+  }, [sceneObjects])
+
+  useEffect(() => {
+    Object.values(sceneObjects)
+      // is not an image
+      .filter(o => o.type === 'image')
+      // what's the filepath?
+      .map(getFilepathForImage)
       // has not been requested
       .filter(filepath => getAsset(filepath) == null)
       // request the file
