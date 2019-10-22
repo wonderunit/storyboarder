@@ -147,6 +147,7 @@ const SceneContent = connect(
     const switchHand = useUiStore(state => state.switchHand)
     const showCameras = useUiStore(state => state.showCameras)
     const showHelp = useUiStore(state => state.showHelp)
+    const showHUD = useUiStore(state => state.showHUD)
 
     const fog = useRef()
     const getFog = () => {
@@ -508,10 +509,12 @@ const SceneContent = connect(
             <primitive object={cameraAudioListener} />
           </primitive>
 
-          <Boards
-            mode={uiCurrent.value.controls}
-            locked={uiCurrent.context.locked}
-            getCanvasRenderer={getCanvasRenderer} />
+          { showHUD && 
+            <Boards
+              mode={uiCurrent.value.controls}
+              locked={uiCurrent.context.locked}
+              getCanvasRenderer={getCanvasRenderer} />
+          }
 
           {controllers.filter(gamepadFor).map(controller =>
             <primitive key={controller.uuid} object={controller} >

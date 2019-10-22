@@ -52,8 +52,8 @@ const setupHomePane = (paneComponents, self) => {
         self.send('REQUEST_DELETE', { selections: self.state.selections })
       }
     },
-    'settings-button': {
-      id: 'settings-button',
+    'hud-button': {
+      id: 'hud-button',
       type: 'image-button',
       x: 909 + 12,
       y: 684 + 12,
@@ -62,7 +62,7 @@ const setupHomePane = (paneComponents, self) => {
       image: 'settings',
 
       onSelect: () => {
-        self.send('TOGGLE_SETTINGS')
+        self.send('TOGGLE_HUD')
       }
     },
     'quote-1': {
@@ -349,8 +349,8 @@ const setupBoardsPane = (paneComponents, self) => {
       }
     },
 
-    'boards-settings-button': {
-      id: 'boards-settings-button',
+    'settings-button': {
+      id: 'settings-button',
       type: 'button',
       x: 1024 - (68 + 18 * 2),
       y: 415,
@@ -359,7 +359,11 @@ const setupBoardsPane = (paneComponents, self) => {
       fill: 'black',
       label: 'Settings',
       fontSize: 18,
-      fontWeight: 'bold'
+      fontWeight: 'bold',
+
+      onSelect: () => {
+        self.send('TOGGLE_SETTINGS')
+      }
     }
   }
 }

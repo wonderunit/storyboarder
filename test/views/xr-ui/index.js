@@ -84,16 +84,17 @@ const UITestContent = ({ resources }) => {
   }
 
   const showHelp = useUiStore(state => state.showHelp)
+  const showHUD = useUiStore(state => state.showHUD)
 
   return (
     <>
       <group>
         <primitive object={camera}>
-          <Log position={[0, -0.15, -1]} />
+          <Log position={[0, -0.55, -1]} />
         </primitive>
 
         <group
-          position={[0, 0, 4.30]}
+          position={[0, -0.4, 4.30]}
           rotation={[0.8, 0, 0]}
           scale={[2.4,2.4,2.4]}
         >
@@ -115,21 +116,24 @@ const UITestContent = ({ resources }) => {
           </group>
         </group>
       
-        <group
-        position={[0, -1, 7.5]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        scale={[2.4,2.4,2.4]}>
+        { showHUD &&
           <group
-            onPointerDown={onPointerDown}
-            onPointerUp={onPointerUp}
-            onPointerMove={onPointerMove}
-          >
-            <Boards
-              mode={uiCurrent.value.controls}
-              getCanvasRenderer={getCanvasRenderer} />
+          position={[0, -10, 10]}
+          scale={[2.4, 2.4, 2.4]}>
+            <group
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+              onPointerMove={onPointerMove}
+            >
+              <Boards
+                rotation={Math.PI}
+                mode={uiCurrent.value.controls}
+                getCanvasRenderer={getCanvasRenderer} />
+            </group>
           </group>
-        </group>
+        }
       </group>
+      
 
       <ambientLight color={0xffffff} intensity={1} />
 

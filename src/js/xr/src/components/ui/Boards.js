@@ -1,11 +1,10 @@
 const { useMemo, useRef, useCallback } = React = require('react')
 const { useRender } = require('react-three-fiber')
 
-const SCALE = 4
-const POSITION = [0, 4, -2]
-const ROTATION = [-Math.PI / 2, 0, 0]
+const SCALE = 6
+const POSITION = [0, 4, -6]
 
-const Boards = React.memo(({ mode, locked, getCanvasRenderer }) => {
+const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.PI * 0.75 }) => {
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -47,7 +46,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer }) => {
 
       position={POSITION}
       scale={[SCALE, SCALE, SCALE]}
-      rotation={ROTATION}
+      rotation={[rotation, 0, 0]}
 
       onController={() => null}
       userData={{

@@ -39,11 +39,13 @@ const [useUiStore] = create((set, get) => ({
   switchHand: getCookie('switchHand') == 'true',
   showCameras: getCookie('showCameras') !== 'false',
   showHelp: false,
+  showHUD: false,
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
   setShowHelp: value => set(produce(state => { state.showHelp = value })),
+  setShowHUD: value => set(produce(state => { state.showHUD = value })),
 
   set: fn => set(produce(fn))
 }))
@@ -902,8 +904,10 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
   const setShowCameras = useUiStore(state => state.setShowCameras)
   const setShowHelp = useUiStore(state => state.setShowHelp)
+  const setShowHUD = useUiStore(state => state.setShowHUD)
 
   const showHelp = useUiStore(state => state.showHelp)
+  const showHUD = useUiStore(state => state.showHUD)
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
@@ -1158,6 +1162,10 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
 
           getCanvasRenderer().helpNeedsRender = true
+        },
+
+        onToggleHUD (context, event) {
+          setShowHUD(!showHUD)
         },
 
         async onSaveBoard (context, event) {
