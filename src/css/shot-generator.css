@@ -568,6 +568,7 @@ select {
   flex: 1;
   cursor: col-resize;
   text-align: center;
+  width: 125px;
   border: 0;
   outline: 0;
   padding: 6px;
@@ -653,7 +654,7 @@ select {
 .color-select__input {
   flex: 1;
   -webkit-appearance: textfield;
-  width: 158px;
+  width: 125px;
   cursor: col-resize;
   text-align: center;
   border: 0;
