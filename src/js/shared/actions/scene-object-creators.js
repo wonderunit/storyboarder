@@ -83,6 +83,8 @@ const createModelObject = (id, camera, room) => {
     type: 'object',
     model: 'box',
 
+    tintColor: '#000000',
+
     width: 1, height: 1, depth: 1,
 
     x, y, z,
@@ -106,6 +108,7 @@ const createCharacter = (id, camera, room) => {
     rotation,
 
     headScale: 1,
+    tintColor: '#000000',
 
     morphTargets: {
       mesomorphic: 0,
@@ -163,6 +166,7 @@ const createImage = (id, camera, room) => {
   return createObject({
     id,
     type: 'image',
+    tintColor: '#000000',
 
     height: 1,
 

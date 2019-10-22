@@ -144,6 +144,12 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
   }, [skeleton, sceneObject.headScale])
 
   useMemo(() => {
+    lod.children.forEach(skinnedMesh => {
+      skinnedMesh.material.emissive.set(sceneObject.tintColor)
+    })
+  }, [sceneObject.tintColor])
+
+  useMemo(() => {
     if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
       lod.children.forEach(skinnedMesh => {
         skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = true
@@ -161,7 +167,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
   useMemo(() => {
     if(!ref.current) return
     if (isSelected) {
-      
+
       BonesHelper.getInstance().initialize(lod.children[0])
       if(!isUserModel(sceneObject.model) && !IKHelper.getInstance().isIkDisabled)
       {

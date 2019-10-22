@@ -86,6 +86,9 @@ const presetsStorage = require('../shared/store/presetsStorage')
 
 const ModelLoader = require('../services/model-loader')
 
+const ColorSelect = require('./ColorSelect')
+
+
 const NumberSliderComponent = require('./NumberSlider')
 const NumberSlider = connect(null, {
   onDragStart: undoGroupStart,
@@ -907,6 +910,7 @@ const CharacterPresetsEditor = connect(
         // age: 'adult'
 
         headScale: preset.state.headScale,
+        tintColor: preset.state.tintColor,
 
         morphTargets: {
           mesomorphic: preset.state.morphTargets.mesomorphic,
@@ -931,6 +935,7 @@ const CharacterPresetsEditor = connect(
           // age: 'adult'
 
           headScale: sceneObject.headScale,
+          tintColor: sceneObject.tintColor,
 
           morphTargets: {
             mesomorphic: sceneObject.morphTargets.mesomorphic,
@@ -1301,6 +1306,19 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
             }]
           ],
 
+    sceneObject.type == 'object'
+        ? ['div',
+          [
+            ColorSelect,
+            {
+              label: 'tint color',
+              value: sceneObject.tintColor,
+              onSetValue: createOnSetValue(sceneObject.id, 'tintColor')
+            }
+          ]
+        ]
+        : null,
+
       sceneObject.type == 'camera' &&
         ['div',
           [NumberSlider, {
@@ -1381,6 +1399,14 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
                   value: sceneObject.headScale * 100,
                   onSetValue: createOnSetValue(sceneObject.id, 'headScale', value => value / 100),
                   formatter: value => Math.round(value).toString() + '%'
+                }
+              ],
+              [
+                ColorSelect,
+                {
+                  label: 'tint color',
+                  value: sceneObject.tintColor,
+                  onSetValue: createOnSetValue(sceneObject.id, 'tintColor')
                 }
               ],
             ]],
