@@ -396,6 +396,7 @@ const useInteractionsManager = ({
     let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
     let intersections = getControllerIntersections(controller, uis)
     intersection = intersections.length && intersections[0]
+    //console.log(intersection)
     if (intersection) {
       let u = intersection.uv.x
       let v = intersection.uv.y
@@ -646,6 +647,11 @@ const useInteractionsManager = ({
     interactionService.send({ type: 'PRESS_END_X', controller: event.target })
   }
 
+  const onPressEndY = event => {
+    // relay through state machine
+    interactionService.send({ type: 'PRESS_END_Y', controller: event.target })
+  }
+
   const onMoveCamera = event => {
     if (didMoveCamera != null) {
       if (event.axes[1] === 0) {
@@ -708,7 +714,8 @@ const useInteractionsManager = ({
     onAxesChanged,
     onPressEndA,
     onPressEndB,
-    onPressEndX
+    onPressEndX,
+    onPressEndY
   })
 
   const reusableVector = useRef()
@@ -888,6 +895,31 @@ const useInteractionsManager = ({
 
             playSound('teleport')
           }
+        },
+        onPosingCharacter: (context, event) => {
+          console.log(event)
+          console.log(context)
+          if(context.selectionType !== "character") return;
+          let pos = useStoreApi.getState().teleportTargetPos
+          let ikHelper = getIkHelper();
+          console.log(ikHelper)
+          let headControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "Head");
+          let leftArmControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "LeftFoot");
+          let rightArmControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "RightFoot");
+          // world scale is always reset to large
+          setMiniMode(false, camera)
+          let worldPosition = headControlPoint.worldPosition();
+          let worldRotation = new THREE.Euler().setFromQuaternion(headControlPoint.worldQuaternion());
+          // reposition
+
+          console.log(worldRotation);
+          teleport(camera, worldPosition.x, worldPosition.y, worldPosition.z, -worldRotation.z)
+          console.log(worldPosition.y);
+          console.log(camera.worldPosition().y);
+          // clear any prior memento
+          clearStandingMemento()
+
+          playSound('teleport')
         },
         onDropLowest: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)

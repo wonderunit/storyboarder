@@ -94,6 +94,9 @@ const machine = Machine({
         PRESS_END_X: {
           actions: 'onDropLowest'
         },
+        PRESS_END_Y: {
+          actions: 'onPosingCharacter'
+        }
       }
     },
     drag_control_point :
