@@ -144,6 +144,7 @@ class CanvasRenderer {
       activeCamera: null,
       selections: [],
       sceneObjects: {},
+      world: null,
       poses: {},
       models: {},
       mode: 'home',
@@ -853,6 +854,7 @@ class CanvasRenderer {
 const {
   getSceneObjects,
   getSelections,
+  getWorld,
   createObject,
   selectObject,
   updateObject,
@@ -863,7 +865,10 @@ const {
   undoGroupStart,
   undoGroupEnd,
 
-  getDefaultPosePreset
+  getDefaultPosePreset,
+
+  reducer,
+  getHash
 } = require('../../../../shared/reducers/shot-generator')
 
 // the 'stand' pose preset used for new characters
@@ -1155,8 +1160,26 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           getCanvasRenderer().helpNeedsRender = true
         },
 
-        onSaveBoard (context, event) {
-          console.log('save board')
+        async onSaveBoard (context, event) {
+          let cr = getCanvasRenderer()
+
+          const data = {
+            activeCamera: cr.state.activeCamera,
+            sceneObjects: cr.state.sceneObjects,
+            world: cr.state.world
+          }
+
+          let hasUnsavedChanges = await checkForUnsavedChanges(data)
+          if (hasUnsavedChanges) {
+            let confimed = confirm('Shot Generator has unsaved changes. Are you sure you want to overwrite with VR changes?')
+            if (!confimed) return
+          }
+
+          try {
+            await cr.client.saveShot(cr.state.currentBoard.uid, data)
+          } catch (err) {
+            alert('Could not save board\n' + err)
+          }
         },
 
         onNewBoard (context, event) {
@@ -1166,6 +1189,22 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     }
   )
 
+  const checkForUnsavedChanges = async data => {
+    // ask for SG hashes
+    let serverResponse = await getCanvasRenderer().client.getSg()
+
+    // calculate local hash
+    let localHash = getHashForBoardSgData(data)
+
+    return serverResponse.hash != localHash
+  }
+
+  const getHashForBoardSgData = data => {
+    let state = reducer({}, { type: 'LOAD_SCENE', payload: data })
+    return getHash(state)
+  }
+
+  const clientRef = useRef(null)
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
@@ -1190,6 +1229,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
   const selections = useSelector(getSelections)
   const sceneObjects = useSelector(getSceneObjects)
+  const world = useSelector(getWorld)
 
   useMemo(() => {
     getCanvasRenderer().state.selections = selections
@@ -1197,6 +1237,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     getCanvasRenderer().state.poses = poses
     getCanvasRenderer().state.models = models
     getCanvasRenderer().state.activeCamera = activeCamera
+    getCanvasRenderer().state.world = world
     getCanvasRenderer().needsRender = true
     getCanvasRenderer().helpNeedsRender = true
     getCanvasRenderer().boardsNeedsRender = true
