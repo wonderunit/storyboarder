@@ -143,7 +143,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     }
   }, [skeleton, sceneObject.headScale])
 
-  useEffect(() => {
+  useMemo(() => {
     lod.children.forEach(skinnedMesh => {
       skinnedMesh.material.emissive.set(sceneObject.tintColor)
     })
