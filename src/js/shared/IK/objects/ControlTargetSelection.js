@@ -14,12 +14,15 @@ class ControlTargetSelection
         this.meshes = controlTargets.map((controlTarget) => controlTarget.target);
         this.controls = controlTargets.map((controlTarget) => controlTarget.control);
         this.selectedMeshes = {};
+        this.isInitialized = false;
     }
 
     // Intiliazes event is used when object disposed to reenact it again
     initialize()
     {
+        if(this.isInitialized) return;
         this.domElement.addEventListener("pointermove", this.onPointerMove, false);
+        this.isInitialized = true;
     }
     // #region Events
     onPointerMove = (event) => { this.pointerHover(this.getPointer(event)); }
@@ -115,6 +118,8 @@ class ControlTargetSelection
     // Dispose event
     dispose()
     {
+        if(! this.isInitialized) return;
+        this.isInitialized = false;
         this.domElement.removeEventListener("pointermove", this.onPointerMove, false);
         let selectedMeshes = this.selectedMeshes;
         for(let keys in selectedMeshes)

@@ -26,6 +26,7 @@ class IkObject
         this.scene = null;  
         this.chainObjects = {}
         this.resourceManager = ResourceManager.getInstance();
+        this.backOffset = new THREE.Vector3();
     }
     
     //#region External Methods
@@ -54,6 +55,10 @@ class IkObject
         this.chainObjects['LeftFoot'] = new ChainObject("LeftUpLeg", "LeftFoot", controlTargets[4]);
         this.chainObjects['RightFoot'] = new ChainObject("RightUpLeg", "RightFoot", controlTargets[5]);
 
+        this.chainObjects["Head"].controlTarget.isRotationLocked = true;
+        this.chainObjects["LeftFoot"].controlTarget.isRotationLocked = true;
+        this.chainObjects["RightFoot"].controlTarget.isRotationLocked = true;
+        
         //Fixing female-adult spine deformation
         if(this.rigMesh.name === "female-adult-meso")
         {
@@ -153,7 +158,7 @@ class IkObject
         for(let i = 1; i < controlTargets.length; i++)
         {
             let target = controlTargets[i].target;
-            if(target.isActivated === true)
+            if(target.isActivated === true && target.userData.name !== "Head")
             {
                 return target;
             }
@@ -175,7 +180,7 @@ class IkObject
     //#endregion
 }
 
-const initializeChainObject = (ikObject, chains, skeleton) =>
+const initializeChainObject = (ikObject, chains) =>
 {
     ikObject.clonedObject.traverse((object) =>
     {
