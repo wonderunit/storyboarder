@@ -1306,6 +1306,19 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
             }]
           ],
 
+    sceneObject.type == 'object'
+        ? ['div',
+          [
+            ColorSelect,
+            {
+              label: 'tint color',
+              value: sceneObject.tintColor,
+              onSetValue: createOnSetValue(sceneObject.id, 'tintColor')
+            }
+          ]
+        ]
+        : null,
+
       sceneObject.type == 'camera' &&
         ['div',
           [NumberSlider, {

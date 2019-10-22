@@ -15,7 +15,6 @@ const ColorSelect = ({
         ['input.color-select__input', {
           type: 'color',
           value: value,
-          readOnly: true,
           onChange: event => onSetValue(event.target.value)
         }],
       ]]
