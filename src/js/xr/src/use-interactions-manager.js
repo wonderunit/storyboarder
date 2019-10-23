@@ -906,14 +906,15 @@ const useInteractionsManager = ({
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
           setMiniMode(false, camera)
+
           let worldPosition = headControlPoint.worldPosition()
           let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[5].worldQuaternion()
-          camera.parent.userData.prevPosition = camera.parent.position.clone().sub(camera.position)
-          camera.parent.userData.prevPosition.y = camera.parent.position.y
-          camera.parent.userData.prevQuaternion = camera.parent.quaternion.clone()
+          camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
+          camera.parent.userData.prevQuaternion = useStoreApi.getState().teleportRot
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldRotation.y + 180)
           getIkHelper().ragDoll.isEnabledIk = true;
           camera.attach(headControlPoint);
+
           if(controllers[0] && controllers[0].userData.gamepad.index === 0)
           {
             leftArmControlPoint.quaternion.premultiply(controllers[0].worldQuaternion().inverse());
@@ -942,12 +943,8 @@ const useInteractionsManager = ({
           ikHelper.controlPoints.attach(headControlPoint)
           ikHelper.controlPoints.attach(leftArmControlPoint)
           ikHelper.controlPoints.attach(rightArmControlPoint)
-          camera.parent.position.copy(camera.parent.userData.prevPosition)
-          camera.parent.quaternion.copy(camera.parent.userData.prevQuaternion)
-          camera.parent.userData.prevPosition = null
-          camera.parent.userData.prevQuaternion = null
-          let euler = new THREE.Euler().setFromQuaternion(camera.parent.quaternion);
-          teleport(camera, camera.parent.position.x, camera.parent.position.y, camera.parent.position.z, euler.y)
+          useStoreApi.setState({teleportPos : {x, y, z} = camera.parent.userData.prevPosition} )
+          useStoreApi.setState({teleportRot : {x, y, z, w} = camera.parent.userData.prevQuaternion} )
         },
         onDropLowest: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
