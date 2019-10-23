@@ -145,9 +145,10 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportPos.y = parent.position.y
   teleportPos.z = parent.position.z
 
-  teleportRot.x = parent.rotation.x
-  teleportRot.y = parent.rotation.y
-  teleportRot.z = parent.rotation.z
+  let rotationToApply = parent.rotation;
+  teleportRot.x = rotationToApply.x
+  teleportRot.y = rotationToApply.y
+  teleportRot.z = rotationToApply.z
 }
 
 const [useStore, useStoreApi] = create((set, get) => ({
@@ -192,6 +193,7 @@ const [useStore, useStoreApi] = create((set, get) => ({
   teleport: (camera, x, y, z, r) => set(produce(state => {
     teleportState(state, camera, x, y, z, r)
   })),
+
 
   setMiniMode: (value, camera) => set(produce(state => {
     if (value) {
@@ -899,23 +901,34 @@ const useInteractionsManager = ({
         onPosingCharacter: (context, event) => {
           console.log(event)
           console.log(context)
-          if(context.selectionType !== "character") return;
+          if(context.selectionType !== "character") return
           let pos = useStoreApi.getState().teleportTargetPos
-          let ikHelper = getIkHelper();
-          console.log(ikHelper)
-          let headControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "Head");
-          let leftArmControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "LeftFoot");
-          let rightArmControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "RightFoot");
+          let ikHelper = getIkHelper()
+          let headControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "Head")
+          let leftArmControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "LeftHand")
+          let rightArmControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "RightHand")
           // world scale is always reset to large
           setMiniMode(false, camera)
-          let worldPosition = headControlPoint.worldPosition();
-          let worldRotation = new THREE.Euler().setFromQuaternion(headControlPoint.worldQuaternion());
-          // reposition
+          let worldPosition = headControlPoint.worldPosition()
+          let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[5].worldQuaternion()
 
-          console.log(worldRotation);
-          teleport(camera, worldPosition.x, worldPosition.y, worldPosition.z, -worldRotation.z)
-          console.log(worldPosition.y);
-          console.log(camera.worldPosition().y);
+          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldRotation.y + 180)
+          getIkHelper().ragDoll.isEnabledIk = true;
+          camera.attach(headControlPoint);
+          if(controllers[0] && controllers[0].userData.gamepad.index === 0)
+          {
+            leftArmControlPoint.quaternion.premultiply(controllers[0].worldQuaternion().inverse());
+            leftArmControlPoint.position.set(0, 0, 0);
+            leftArmControlPoint.updateMatrixWorld();
+            controllers[0].add(leftArmControlPoint);
+          }
+          if(controllers[1] && controllers[1].userData.gamepad.index === 1)
+          {
+            rightArmControlPoint.quaternion.premultiply(controllers[1].worldQuaternion().inverse());
+            rightArmControlPoint.position.set(0, 0, 0);
+            rightArmControlPoint.updateMatrixWorld();
+            controllers[1].add(rightArmControlPoint);
+          }
           // clear any prior memento
           clearStandingMemento()
 
