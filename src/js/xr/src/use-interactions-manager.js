@@ -652,6 +652,7 @@ const useInteractionsManager = ({
   const onPressEndY = event => {
     // relay through state machine
     interactionService.send({ type: 'PRESS_END_Y', controller: event.target })
+
   }
 
   const onMoveCamera = event => {
@@ -901,6 +902,7 @@ const useInteractionsManager = ({
         onPosingCharacterEntry: (context, event) => {
           console.log("Posing started");
           if(context.selectionType !== "character") return
+          setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
           let ikHelper = getIkHelper()
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")

@@ -119,7 +119,7 @@ const machine = Machine({
       onEntry: 'onPosingCharacterEntry',
       onExit: 'onPosingCharacterExit',
       on : {
-        PRESS_END_Y: {
+        STOP_POSING: {
           target: 'selected'
         }
       }
