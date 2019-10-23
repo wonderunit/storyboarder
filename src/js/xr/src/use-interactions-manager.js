@@ -898,20 +898,19 @@ const useInteractionsManager = ({
             playSound('teleport')
           }
         },
-        onPosingCharacter: (context, event) => {
-          console.log(event)
-          console.log(context)
+        onPosingCharacterEntry: (context, event) => {
+          console.log("Posing started");
           if(context.selectionType !== "character") return
-          let pos = useStoreApi.getState().teleportTargetPos
           let ikHelper = getIkHelper()
-          let headControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "Head")
-          let leftArmControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "LeftHand")
-          let rightArmControlPoint = ikHelper.controlPoints.getObjectByProperty("name", "RightHand")
-          // world scale is always reset to large
+          let headControlPoint = ikHelper.getControlPointByName("Head")
+          let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
+          let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
           setMiniMode(false, camera)
           let worldPosition = headControlPoint.worldPosition()
           let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[5].worldQuaternion()
-
+          camera.parent.userData.prevPosition = camera.parent.position.clone().sub(camera.position)
+          camera.parent.userData.prevPosition.y = camera.parent.position.y
+          camera.parent.userData.prevQuaternion = camera.parent.quaternion.clone()
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldRotation.y + 180)
           getIkHelper().ragDoll.isEnabledIk = true;
           camera.attach(headControlPoint);
@@ -929,10 +928,26 @@ const useInteractionsManager = ({
             rightArmControlPoint.updateMatrixWorld();
             controllers[1].add(rightArmControlPoint);
           }
-          // clear any prior memento
           clearStandingMemento()
 
           playSound('teleport')
+        },
+        onPosingCharacterExit: (context, event) => {
+          console.log("Posing stopped");
+          let ikHelper = getIkHelper()
+          let headControlPoint = ikHelper.getControlPointByName("Head")
+          let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
+          let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
+          getIkHelper().ragDoll.isEnabledIk = false;
+          ikHelper.controlPoints.attach(headControlPoint)
+          ikHelper.controlPoints.attach(leftArmControlPoint)
+          ikHelper.controlPoints.attach(rightArmControlPoint)
+          camera.parent.position.copy(camera.parent.userData.prevPosition)
+          camera.parent.quaternion.copy(camera.parent.userData.prevQuaternion)
+          camera.parent.userData.prevPosition = null
+          camera.parent.userData.prevQuaternion = null
+          let euler = new THREE.Euler().setFromQuaternion(camera.parent.quaternion);
+          teleport(camera, camera.parent.position.x, camera.parent.position.y, camera.parent.position.z, euler.y)
         },
         onDropLowest: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)

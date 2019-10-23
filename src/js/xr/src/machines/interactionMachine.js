@@ -95,7 +95,7 @@ const machine = Machine({
           actions: 'onDropLowest'
         },
         PRESS_END_Y: {
-          actions: 'onPosingCharacter'
+          target: 'character_posing'
         }
       }
     },
@@ -114,6 +114,16 @@ const machine = Machine({
 
       },
     },
+    character_posing :
+    {
+      onEntry: 'onPosingCharacterEntry',
+      onExit: 'onPosingCharacterExit',
+      on : {
+        PRESS_END_Y: {
+          target: 'selected'
+        }
+      }
+    }, 
     drag_object: {
       onEntry: 'onDragObjectEntry',
       onExit: ['onSnapEnd', 'onDragObjectExit'],

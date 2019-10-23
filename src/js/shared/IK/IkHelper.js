@@ -67,6 +67,11 @@ class IKHelper extends THREE.Object3D
         this.updateAllTargetPoints();
     }
 
+    getControlPointByName(name)
+    {
+        return this.ragDoll.chainObjects[name].controlTarget;
+    }
+
     selectControlPoint(name)
     {
         let targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
