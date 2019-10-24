@@ -192,6 +192,7 @@ const initializeChainObject = (ikObject, chains) =>
                         target = chainObject.controlTarget;
                         target.name = object.name;
                         chainObject.isChainObjectStarted = false;
+                        chainObject.lastBone = object; 
                     }
                     ikObject.ikSwitcher.ikBonesName.push(object.name);
                     // Creates joint by passing current bone and its constraint

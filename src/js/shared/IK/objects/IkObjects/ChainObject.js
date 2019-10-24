@@ -17,6 +17,7 @@ class ChainObject
         this.currentJoint = 0;
         this.constraints = [];
         this.poleConstraint = null;
+        this.lastBone = null;
     }
 
     removePoleConstraintFromScene(scene)

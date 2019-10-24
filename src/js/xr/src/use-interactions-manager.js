@@ -902,34 +902,54 @@ const useInteractionsManager = ({
         onPosingCharacterEntry: (context, event) => {
           console.log("Posing started");
           if(context.selectionType !== "character") return
-          setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
+          let controller = gl.vr.getController(context.draggingController)
+         // setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
           let ikHelper = getIkHelper()
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
+          // world scale is always reset to large
           setMiniMode(false, camera)
 
+          // Taking world position of control point 
           let worldPosition = headControlPoint.worldPosition()
+          // Taking world quaternion of head bone
           let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[5].worldQuaternion()
           camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
           camera.parent.userData.prevQuaternion = useStoreApi.getState().teleportRot
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldRotation.y + 180)
-          getIkHelper().ragDoll.isEnabledIk = true;
-          camera.attach(headControlPoint);
+          getIkHelper().ragDoll.isEnabledIk = true
+          camera.attach(headControlPoint)
+          console.log(controller)
+          if(controller.gamepad.hand === "left")
+          {
+            //console.log(ikHelper.ragDoll.chainObjects["LeftHand"])
+            let euler = new THREE.Euler(0, 90, 90)
+            let quaternion = new THREE.Quaternion().setFromEuler(euler)
+            leftArmControlPoint.quaternion.set(0, 0, 0, 1)
+            //leftArmControlPoint.quaternion.multiply(quaternion)
+            leftArmControlPoint.position.set(0, 0, 0)
+            leftArmControlPoint.updateMatrixWorld() 
+            controller.add(leftArmControlPoint)
+            leftArmControlPoint.quaternion.copy(controller.parent.worldQuaternion().inverse());
+            leftArmControlPoint.quaternion.multiply(quaternion);
+            leftArmControlPoint.updateMatrixWorld() 
 
-          if(controllers[0] && controllers[0].userData.gamepad.index === 0)
-          {
-            leftArmControlPoint.quaternion.premultiply(controllers[0].worldQuaternion().inverse());
-            leftArmControlPoint.position.set(0, 0, 0);
-            leftArmControlPoint.updateMatrixWorld();
-            controllers[0].add(leftArmControlPoint);
+            //leftArmControlPoint.quaternion.premultiply(controllers[0].worldQuaternion().inverse());
+            //leftArmControlPoint.quaternion.multiply(quaternion)
           }
-          if(controllers[1] && controllers[1].userData.gamepad.index === 1)
+          else
           {
-            rightArmControlPoint.quaternion.premultiply(controllers[1].worldQuaternion().inverse());
-            rightArmControlPoint.position.set(0, 0, 0);
-            rightArmControlPoint.updateMatrixWorld();
-            controllers[1].add(rightArmControlPoint);
+            //let boneQuat = ikHelper.ragDoll.chainObjects["RightHand"].lastBone.quaternion
+
+            let euler = new THREE.Euler(0, 180, 0)
+            let quaternion = new THREE.Quaternion().setFromEuler(euler)
+           // rightArmControlPoint.quaternion.copy(quaternion)
+           // rightArmControlPoint.quaternion.multiply(quaternion)
+            //rightArmControlPoint.quaternion.premultiply(controllers[1].worldQuaternion().inverse());
+            rightArmControlPoint.position.set(0, 0, 0)
+            rightArmControlPoint.updateMatrixWorld()
+            controller.add(rightArmControlPoint)
           }
           clearStandingMemento()
 
