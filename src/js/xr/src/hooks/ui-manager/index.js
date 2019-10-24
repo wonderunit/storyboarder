@@ -1278,20 +1278,22 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
           let hasUnsavedChanges = await checkForUnsavedChanges(data)
           if (hasUnsavedChanges) {
-            cr.state.boards.showConfirm = true
-            cr.boardsNeedsRender = true
-            
             let confirmed = await checkConfirmStatus()
-
-            cr.state.boards.showConfirm = false
-            cr.state.boards.confirmChange = null
-            cr.boardsNeedsRender = true
-
             if (!confirmed) return
           }
 
           try {
             await cr.client.saveShot(cr.state.currentBoard.uid, data)
+
+            cr.state.boardsData.cata({
+              SUCCESS: data => {
+                const item = data.find(board => board.uid === cr.state.currentBoard.uid)
+                const filepath = cr.client.uriForThumbnail(item.thumbnail)
+                THREE.Cache.remove(filepath)
+              }
+            })
+
+            updateThumbnails(cr)
           } catch (err) {
             alert('Could not save board\n' + err)
           }
@@ -1308,20 +1310,13 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
           let hasUnsavedChanges = await checkForUnsavedChanges(data)
           if (hasUnsavedChanges) {
-            cr.state.boards.showConfirm = true
-            cr.boardsNeedsRender = true
-
             let confirmed = await checkConfirmStatus()
-
-            cr.state.boards.showConfirm = false
-            cr.state.boards.confirmChange = null
-            cr.boardsNeedsRender = true
-
             if (!confirmed) return
           }
 
           try {
             let board = await cr.client.insertShot(data)
+            updateThumbnails(cr)
           } catch (err) {
             alert('Could not insert\n' + err)
           }
@@ -1347,15 +1342,36 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
   const checkConfirmStatus = async () => {
     const cr = getCanvasRenderer()
-    
+    cr.state.boards.showConfirm = true
+    cr.boardsNeedsRender = true
+
     return new Promise(resolve => {
       const checkConfirmInterval = setInterval(() => {
         if (cr.state.boards.confirmChange !== null) {
           clearInterval(checkConfirmInterval)
-          resolve(cr.state.boards.confirmChange)
+
+          const confirm = cr.state.boards.confirmChange
+          cr.state.boards.showConfirm = false
+          cr.state.boards.confirmChange = null
+          cr.boardsNeedsRender = true
+
+          resolve(confirm)
         }
       }, 500)
     })
+  }
+
+  const updateThumbnails = (cr) => {
+    setTimeout(() => {
+      cr.state.boardsData = RemoteData.init()
+      cr.client.getBoards().then(result => {
+        cr.state.boardsData = RemoteData.success(result)
+        cr.boardsNeedsRender = true
+      }).catch(err => {
+        cr.state.boardsData = RemoteData.failure(err)
+        cr.boardsNeedsRender = true
+      })
+    }, 500)
   }
 
   const canvasRendererRef = useRef(null)
