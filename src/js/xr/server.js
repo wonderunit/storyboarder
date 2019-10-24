@@ -6,12 +6,13 @@ const electronApp = electron.app ? electron.app : electron.remote.app
 
 const app = express()
 const http = require('http').Server(app)
+const {createSocketServer} = require('./socketServer')
 
 const log = require('electron-log')
 
 const portNumber = 1234
 
-const { getSerializedState, updateServer, updateSceneFromXR } = require('../shared/reducers/shot-generator')
+const {updateServer} = require('../shared/reducers/shot-generator')
 const getIpAddress = require('../utils/getIpAddress')
 
 class XRServer {
@@ -43,26 +44,8 @@ class XRServer {
     app.get('/', function(req, res) {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'))
     })
-
-    app.get('/state.json', (req, res) => {
-      const state = store.getState()
-      const { aspectRatio } = state
-
-      res.json({
-        ...getSerializedState(state),
-
-        aspectRatio,
-        presets: {
-          poses: state.presets.poses
-        }
-      })
-    })
-
-    app.post('/state.json', (req, res) => {
-      let payload = req.body
-      store.dispatch(updateSceneFromXR(payload))
-      res.status(200).send({ ok: true })
-    })
+  
+    createSocketServer(http, store)
 
     http.on('error', err => {
       console.error(err)
@@ -82,6 +65,8 @@ class XRServer {
         store.dispatch(updateServer({ xrUri: `http://${ip}:${portNumber}` }))
       } else {
         log.error('Could not determine IP address')
+        
+        return false
       }
     })
   }

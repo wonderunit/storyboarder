@@ -9,77 +9,93 @@ const { Provider, connect } = require('react-redux')
 
 const thunkMiddleware = require('redux-thunk').default
 
+const io = require('socket.io-client')
+
 const h = require('../../utils/h')
 const { reducer, initialState, getSerializedState } = require('../../shared/reducers/shot-generator')
 
-const configureStore = preloadedState => {
-  const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware))
-  window.$r = { store }
-  return store
-}
-
 const SceneManagerXR = require('./SceneManagerXR')
 
-const setupXR = ({ stateJsonUri = '/state.json' }) => {
-  fetch(stateJsonUri)
-    .then(response => response.json())
-    .then(result => {
-      const { aspectRatio, activeCamera, sceneObjects, world, presets } = result
-      const store = configureStore({
-        aspectRatio,
-        undoable: {
-          ...initialState.undoable,
-          sceneObjects,
-          world,
-          activeCamera
-        },
-        models: initialState.models,
-        presets: {
-          poses: presets.poses,
-          characters: {},
-          scenes: {}
-        }
-      })
+let onReduxAction = null
 
-      if (!process.env.XR_STANDALONE_DEMO) {
-        // after 5s, start POST'ing changes back
-        setTimeout(() => {
-          store.subscribe(() => {
-            let state = {
-              ...getSerializedState(store.getState()),
-              // TODO: include other state, e.g.: boardId, meta.storyboarderFilePath, etc
-            }
-            sendStateToServer({ state })
-          })
-        }, 5000)
+const setupXR = () => {
+  let store = null
+  
+  const setupScene = (result) => {
+    const { aspectRatio, activeCamera, sceneObjects, world, presets } = result
+    store = configureStore({
+      aspectRatio,
+      undoable: {
+        ...initialState.undoable,
+        sceneObjects,
+        world,
+        activeCamera
+      },
+      models: initialState.models,
+      presets: {
+        poses: presets.poses,
+        characters: {},
+        scenes: {}
       }
-
-      ReactDOM.render(
+    })
+  
+    ReactDOM.render(
         <Provider store={store}>
           <SceneManagerXR />
         </Provider>,
         document.getElementById('main')
-      )
-    })
-
-  const sendStateToServer = ({ state }) => {
-    fetch(
-      stateJsonUri,
-      {
-        method: 'POST',
-        body: JSON.stringify(state),
-        headers: {
-          'Content-Type': 'application/json; charset=utf-8',
-        },
-      }
     )
-      .then(response => response.json())
-      .then(result => {
-      })
-      .catch(err => {
-        console.error(err)
-      })
   }
+  
+  let wsAddress = location.href.replace('http', 'ws')
+  wsAddress = wsAddress.replace('https', 'wss')
+  
+  socket = io(wsAddress)
+  
+  socket.on('connect', function () {
+    
+    socket.on('state', (state) => {
+      if (!store) {
+        setupScene(state)
+        console.log(state)
+  
+        onReduxAction = (action) => {
+          socket.emit('dispatch', JSON.stringify(action))
+        }
+        
+        return false
+      }
+    })
+    
+    socket.on('action', (payload) => {
+      if (store) {
+        store.dispatch(JSON.parse(payload))
+      }
+    })
+    
+    socket.emit('get-state')
+    
+    //if (!process.env.XR_STANDALONE_DEMO) {
+    
+    //}
+    
+  });
+  
+}
+
+const actionMiddleware = ({ getState }) => {
+  return next => action => {
+    
+    onReduxAction && !action.fromMainApp && onReduxAction(action)
+    
+    return next(action)
+  }
+}
+
+const configureStore = preloadedState => {
+  const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware, actionMiddleware))
+  window.$r = { store }
+  return store
 }
 
 window.setupXR = setupXR

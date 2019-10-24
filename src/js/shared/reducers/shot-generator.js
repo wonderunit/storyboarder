@@ -712,8 +712,25 @@ const initialState = {
   },
   server: {
     uri: undefined,
-    client: false
-  }
+    client: false,
+  },
+  connections: []
+}
+
+const connectionReducer = (state = [], action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'USER_CONNECTED':
+        draft.push({
+          id: action.payload.id
+        })
+        return
+      case 'USER_DISCONNECTED':
+        return draft.filter((current) => current.id !== action.payload.id)
+      default:
+        return
+    }
+  })
 }
 
 const selectionsReducer = (state = [], action) => {
@@ -1271,6 +1288,11 @@ const rootReducer = reduceReducers(
     ...state,
     undoable: undoableReducer(state.undoable, action)
   }),
+  
+  (state, action) => ({
+    ...state,
+    connections: connectionReducer(state.connections, action)
+  }),
 
   checksReducer,
 
@@ -1363,6 +1385,9 @@ module.exports = {
 
   undoGroupStart: payload => ({ type: 'UNDO_GROUP_START', payload }),
   undoGroupEnd: payload => ({ type: 'UNDO_GROUP_END', payload }),
+  
+  userConnected: payload => ({ type: 'USER_CONNECTED', payload }),
+  userDisconnected: payload => ({ type: 'USER_DISCONNECTED', payload }),
 
   //
   //

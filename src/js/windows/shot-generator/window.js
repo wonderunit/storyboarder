@@ -20,6 +20,7 @@ const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
 const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
+const {actionMiddleware} = require('../../xr/socketServer')
 
 const actionSanitizer = action => (
   action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
@@ -35,14 +36,13 @@ const composeEnhancers = (
     window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(reduxDevtoolsExtensionOptions)
   ) || compose
 const configureStore = function configureStore (preloadedState) {
-  const store = createStore(
+  return createStore(
     reducer,
     preloadedState,
     composeEnhancers(
-      applyMiddleware(thunkMiddleware)
+      applyMiddleware(thunkMiddleware, actionMiddleware)
     )
   )
-  return store
 }
 
 
