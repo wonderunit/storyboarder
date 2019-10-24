@@ -90,11 +90,11 @@ const UITestContent = ({ resources }) => {
     <>
       <group>
         <primitive object={camera}>
-          <Log position={[0, -0.55, -1]} />
+          <Log position={[0, -0.575, -1]} />
         </primitive>
 
         <group
-          position={[0, -0.4, 4.30]}
+          position={[0, -0.425, 4.30]}
           rotation={[0.8, 0, 0]}
           scale={[2.4,2.4,2.4]}
         >
@@ -118,8 +118,8 @@ const UITestContent = ({ resources }) => {
       
         { showHUD &&
           <group
-          position={[0, -10, 10]}
-          scale={[2.4, 2.4, 2.4]}>
+          position={[0, -11, 10]}
+          scale={[3, 3, 3]}>
             <group
               onPointerDown={onPointerDown}
               onPointerUp={onPointerUp}

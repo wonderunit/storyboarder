@@ -172,6 +172,8 @@ class CanvasRenderer {
         }
       },
       boards: {
+        showConfirm: false,
+        confirmChange: null,
         startCoords: {},
         prevCoords: {},
         cameras: {
@@ -663,7 +665,67 @@ class CanvasRenderer {
       SUCCESS: data => this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, data, 'boards')
     })
 
+    if (this.state.boards.showConfirm) {
+      ctx.fillStyle = 'rgba(0,0,0)'
+      roundRect(ctx, 0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30, 25, true, false)
+
+      this.paneComponents['boards']['confirm-1'] = {
+        id: 'confirm-1',
+        type: 'text',
+        x: 15,
+        y: 430 + 18 * 3 + 15,
+        label: `Shot Generator has unsaved changes.`,
+        size: 14
+      }
+
+      this.paneComponents['boards']['confirm-2'] = {
+        id: 'confirm-2',
+        type: 'text',
+        x: 15,
+        y: 430 + 18 * 3 + 15 + 27,
+        label: `Are you sure you want to overwrite with VR changes?`,
+        size: 14
+      }
+
+      this.paneComponents['boards']['confirm-ok'] = {
+        id: 'confirm-ok',
+        type: 'button',
+        x: 15,
+        y: 430 + 18 * 3 + (18 * 3 * 2 + 30) - 18 * 3 - 15,
+        width: 118 + 18 * 2 - 15,
+        height: 18 * 3,
+        fill: '#737373',
+        label: 'OK',
+        fontSize: 18,
+        fontWeight: 'bold',
+
+        onSelect: () => {
+          this.state.boards.confirmChange = true
+        }
+      }
+
+      this.paneComponents['boards']['confirm-cancel'] = {
+        id: 'confirm-cancel',
+        type: 'button',
+        x: 118 + 18 * 2 + 15,
+        y: 430 + 18 * 3 + (18 * 3 * 2 + 30) - 18 * 3 - 15,
+        width: 168 + 18 * 2 - 15,
+        height: 18 * 3,
+        fill: '#4D4E51',
+        label: 'Cancel',
+        fontSize: 18,
+        fontWeight: 'bold',
+
+        onSelect: () => {
+          this.state.boards.confirmChange = false
+        }
+      }
+    }
+
     this.renderObjects(ctx, this.paneComponents['boards'])
+    if (!this.state.boards.showConfirm) {
+      ctx.clearRect(0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30)
+    }
   }
 
   drawLoadableImage (filepath, onSuccess, onFail) {
@@ -1216,8 +1278,16 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
           let hasUnsavedChanges = await checkForUnsavedChanges(data)
           if (hasUnsavedChanges) {
-            let confimed = confirm('Shot Generator has unsaved changes. Are you sure you want to overwrite with VR changes?')
-            if (!confimed) return
+            cr.state.boards.showConfirm = true
+            cr.boardsNeedsRender = true
+            
+            let confirmed = await checkConfirmStatus()
+
+            cr.state.boards.showConfirm = false
+            cr.state.boards.confirmChange = null
+            cr.boardsNeedsRender = true
+
+            if (!confirmed) return
           }
 
           try {
@@ -1238,8 +1308,8 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
           let hasUnsavedChanges = await checkForUnsavedChanges(data)
           if (hasUnsavedChanges) {
-            let confimed = confirm('Shot Generator has unsaved changes. Are you sure you want to overwrite with VR changes?')
-            if (!confimed) return
+            let confirmed = confirm('Shot Generator has unsaved changes. Are you sure you want to overwrite with VR changes?')
+            if (!confirmed) return
           }
 
           try {
@@ -1267,7 +1337,19 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     return getHash(state)
   }
 
-  const clientRef = useRef(null)
+  const checkConfirmStatus = async () => {
+    const cr = getCanvasRenderer()
+    
+    return new Promise(resolve => {
+      const checkConfirmInterval = setInterval(() => {
+        if (cr.state.boards.confirmChange !== null) {
+          clearInterval(checkConfirmInterval)
+          resolve(cr.state.boards.confirmChange)
+        }
+      }, 500)
+    })
+  }
+
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {

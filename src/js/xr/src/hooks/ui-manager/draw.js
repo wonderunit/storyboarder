@@ -385,6 +385,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
     ctx.textBaseline = 'Middle'
     const text = type === 'boards' ? item.shot : item.name || item.displayName
 
+    ctx.textAlign = 'start'
     ctx.fillText(text, x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + itemHeight + textHeight * 0.5)
 
     if (type === 'boards') {
