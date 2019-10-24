@@ -1308,7 +1308,15 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
           let hasUnsavedChanges = await checkForUnsavedChanges(data)
           if (hasUnsavedChanges) {
-            let confirmed = confirm('Shot Generator has unsaved changes. Are you sure you want to overwrite with VR changes?')
+            cr.state.boards.showConfirm = true
+            cr.boardsNeedsRender = true
+
+            let confirmed = await checkConfirmStatus()
+
+            cr.state.boards.showConfirm = false
+            cr.state.boards.confirmChange = null
+            cr.boardsNeedsRender = true
+
             if (!confirmed) return
           }
 
