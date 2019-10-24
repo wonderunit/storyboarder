@@ -251,6 +251,17 @@ const [useStore, useStoreApi] = create((set, get) => ({
   set: fn => set(produce(fn))
 }))
 
+const getControllerByName = (controllers, name) => {
+  if(controllers[0].gamepad && controllers[0].gamepad.hand === name) {
+    return controllers[0]
+  }
+  else if(controllers[1].gamepad && controllers[1].gamepad.hand === name) {
+    return controllers[1]
+  }
+  else {
+    return controllers[0]
+  }
+}
 const getExcludeList = parent => {
   let list = []
   parent.traverse(child => {
@@ -917,40 +928,41 @@ const useInteractionsManager = ({
           let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[5].worldQuaternion()
           camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
           camera.parent.userData.prevQuaternion = useStoreApi.getState().teleportRot
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldRotation.y + 180)
+          // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
+          worldPosition.sub(camera.position);
+          teleport(camera, worldPosition.x, worldPosition.y, worldPosition.z, worldRotation.y + 180)
           getIkHelper().ragDoll.isEnabledIk = true
           camera.attach(headControlPoint)
-          console.log(controller)
-          if(controller.gamepad.hand === "left")
-          {
-            //console.log(ikHelper.ragDoll.chainObjects["LeftHand"])
-            let euler = new THREE.Euler(0, 90, 90)
-            let quaternion = new THREE.Quaternion().setFromEuler(euler)
-            leftArmControlPoint.quaternion.set(0, 0, 0, 1)
-            //leftArmControlPoint.quaternion.multiply(quaternion)
-            leftArmControlPoint.position.set(0, 0, 0)
-            leftArmControlPoint.updateMatrixWorld() 
-            controller.add(leftArmControlPoint)
-            leftArmControlPoint.quaternion.copy(controller.parent.worldQuaternion().inverse());
-            leftArmControlPoint.quaternion.multiply(quaternion);
-            leftArmControlPoint.updateMatrixWorld() 
+          // Getting controllers 
+          let leftController = getControllerByName(controllers, "left")
+          let rightController = getControllerByName(controllers, "right")
+          console.log(leftController)
+          console.log(rightController)
+          let euler = new THREE.Euler(0, 0, -90)
+          let quaternion = new THREE.Quaternion().setFromEuler(euler)
+          // Apply left controller rotation to left control point
+         // leftArmControlPoint.quaternion.premultiply(leftArmControlPoint.parent.worldQuaternion().inverse())
+          leftArmControlPoint.quaternion.set(0, 0, 0, 0)
+          leftArmControlPoint.position.set(0, 0, 0)
+          leftArmControlPoint.updateMatrixWorld(true) 
+          leftController.add(leftArmControlPoint)
+          leftArmControlPoint.updateMatrixWorld(true) 
+          leftArmControlPoint.quaternion.copy(leftController.parent.worldQuaternion().inverse())
+          leftArmControlPoint.quaternion.multiply(quaternion)
+          leftArmControlPoint.updateMatrixWorld(true) 
+          
+          euler = new THREE.Euler(0, 0, 90)
+          quaternion = new THREE.Quaternion().setFromEuler(euler)
+          // Apply right controller rotation to right control point
+          rightArmControlPoint.quaternion.set(0, 0, 0, 0)
+          rightArmControlPoint.position.set(0, 0, 0)
+          rightArmControlPoint.updateMatrixWorld(true) 
+          rightController.add(rightArmControlPoint)
+          rightArmControlPoint.updateMatrixWorld(true) 
+          rightArmControlPoint.quaternion.copy(rightController.parent.worldQuaternion().inverse())
+          rightArmControlPoint.quaternion.multiply(quaternion)
+          rightArmControlPoint.updateMatrixWorld(true) 
 
-            //leftArmControlPoint.quaternion.premultiply(controllers[0].worldQuaternion().inverse());
-            //leftArmControlPoint.quaternion.multiply(quaternion)
-          }
-          else
-          {
-            //let boneQuat = ikHelper.ragDoll.chainObjects["RightHand"].lastBone.quaternion
-
-            let euler = new THREE.Euler(0, 180, 0)
-            let quaternion = new THREE.Quaternion().setFromEuler(euler)
-           // rightArmControlPoint.quaternion.copy(quaternion)
-           // rightArmControlPoint.quaternion.multiply(quaternion)
-            //rightArmControlPoint.quaternion.premultiply(controllers[1].worldQuaternion().inverse());
-            rightArmControlPoint.position.set(0, 0, 0)
-            rightArmControlPoint.updateMatrixWorld()
-            controller.add(rightArmControlPoint)
-          }
           clearStandingMemento()
 
           playSound('teleport')
