@@ -630,6 +630,9 @@ const SceneManager = connect(
                 isSelected: selections.includes(props.id),
 
                 aspectRatio,
+                boardUid: _boardUid,
+                canvas: largeCanvasRef.current,
+                storyboarderFilePath: meta.storyboarderFilePath,
                 ...props
               }
             ]

@@ -1,9 +1,37 @@
 const { useEffect, useRef, useMemo } = React
 
+const path = require('path')
+const fs = require('fs-extra')
+
 const IconSprites = require('./IconSprites')
 
-const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
+const Camera = React.memo(({ scene, id, type, setCamera, icon, boardUid, canvas, storyboarderFilePath, ...props }) => {
   let camera = useRef()
+  const previousTime = useRef(null)
+
+  useEffect(() => {
+  if (!storyboarderFilePath || !boardUid || !props.isSelected) return
+  if (!previousTime.current) previousTime.current = 0
+
+  const currentTime = Date.now()
+  const delta = currentTime - previousTime.current
+
+  // Update camera thumbnails every second if there's changes to it
+  if (delta > 1000) previousTime.current = currentTime
+  else return
+
+  const boardFilename = storyboarderFilePath
+  let boardPath = boardFilename.split(path.sep)
+  boardPath.pop()
+  boardPath = boardPath.join(path.sep)
+
+  const cameraName = props.displayName.split(' ').join('-')
+  const imageFilePath = path.join(boardPath, 'images', `${boardUid}-${cameraName}.jpg`)    
+
+  const imageData = canvas.toDataURL('image/jpg').replace(/^data:image\/\w+;base64,/, '')
+
+  fs.writeFileSync(imageFilePath, imageData, 'base64')
+  }, [props])
 
   useMemo(() => {
     camera.current = new THREE.PerspectiveCamera(
