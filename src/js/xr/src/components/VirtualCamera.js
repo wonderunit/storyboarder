@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo, useRef, useCallback } = React = require('react')
+const { useMemo, useRef, useCallback, useEffect } = React = require('react')
 const { useRender, useThree, useUpdate } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
 
@@ -27,7 +27,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, audio }) => {
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, client, boardUid, audio }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -42,6 +42,16 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     [sceneObject.rotation, sceneObject.tilt, sceneObject.roll]
   )
 
+  // remove old camera thumbnails
+  useEffect(() => {
+    if (!boardUid) return
+    const cameraName = sceneObject.displayName.split(' ').join('-')
+    const filepath = client.uriForThumbnail(`${boardUid}-${cameraName}-thumbnail.jpg`)
+
+    THREE.Cache.remove(filepath)
+    console.log(`${filepath} removed from cache`)
+  }, [sceneObject, boardUid])
+  
   const virtualCamera = useUpdate(self => {
     self.updateProjectionMatrix()
     self.layers.set(VIRTUAL_CAMERA_LAYER)

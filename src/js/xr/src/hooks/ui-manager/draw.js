@@ -431,6 +431,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
         filepath,
 
         image => {
+          console.log(`${filepath} loaded`)
           // loaded state
           // object should allow selection
           ctx.drawImage(

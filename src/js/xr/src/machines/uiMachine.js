@@ -74,7 +74,8 @@ const machine = Machine({
             'INCREMENT_HELP': { actions: 'onIncrementHelp' },
             'SAVE_BOARD': { actions: 'onSaveBoard' },
             'INSERT_BOARD': { actions: 'onInsertBoard' },
-            'TOGGLE_HUD': { actions: 'onToggleHUD' }
+            'TOGGLE_HUD': { actions: 'onToggleHUD' },
+            'SET_BOARDUID': { actions: 'onSetBoardUid' }
           }
         },
         locked: {

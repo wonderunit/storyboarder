@@ -39,13 +39,15 @@ const [useUiStore] = create((set, get) => ({
   switchHand: getCookie('switchHand') == 'true',
   showCameras: getCookie('showCameras') !== 'false',
   showHelp: false,
-  showHUD: false,
+  showHUD: true,
+  boardUid: null,
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
   setShowHelp: value => set(produce(state => { state.showHelp = value })),
   setShowHUD: value => set(produce(state => { state.showHUD = value })),
+  setBoardUid: value => set(produce(state => { state.boardUid = value })),
 
   set: fn => set(produce(fn))
 }))
@@ -247,10 +249,12 @@ class CanvasRenderer {
       this.state.currentBoard = RemoteData.success(result.board)
       this.needsRender = true
       this.boardsNeedsRender = true
+      this.send('SET_BOARDUID', { uid: result.board.uid })
     }).catch(err => {
       this.state.currentBoard = RemoteData.failure(err)
       this.needsRender = true
       this.boardsNeedsRender = true
+      this.send('SET_BOARDUID', { uid: null })
     })
 
     this.needsRender = false
@@ -1004,6 +1008,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const setShowCameras = useUiStore(state => state.setShowCameras)
   const setShowHelp = useUiStore(state => state.setShowHelp)
   const setShowHUD = useUiStore(state => state.setShowHUD)
+  const setBoardUid = useUiStore(state => state.setBoardUid)
 
   const showHelp = useUiStore(state => state.showHelp)
   const showHUD = useUiStore(state => state.showHUD)
@@ -1265,6 +1270,10 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
         onToggleHUD (context, event) {
           setShowHUD(!showHUD)
+        },
+
+        onSetBoardUid (context, event) {
+          setBoardUid(event.uid)
         },
 
         async onSaveBoard (context, event) {
