@@ -8,9 +8,10 @@ const IconSprites = require('./IconSprites')
 const Camera = React.memo(({ scene, id, type, setCamera, icon, boardUid, canvas, storyboarderFilePath, ...props }) => {
   let camera = useRef()
   const previousTime = useRef(null)
+  const resizeCanvas = useRef(null)
 
   useEffect(() => {
-  if (!storyboarderFilePath || !boardUid || !props.isSelected) return
+  if (!storyboarderFilePath || !boardUid || !props.isSelected || !resizeCanvas.current) return
   if (!previousTime.current) previousTime.current = 0
 
   const currentTime = Date.now()
@@ -26,9 +27,12 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, boardUid, canvas,
   boardPath = boardPath.join(path.sep)
 
   const cameraName = props.displayName.split(' ').join('-')
-  const imageFilePath = path.join(boardPath, 'images', `${boardUid}-${cameraName}.jpg`)    
+  const imageFilePath = path.join(boardPath, 'images', `${boardUid}-${cameraName}-thumbnail.jpg`)    
 
-  const imageData = canvas.toDataURL('image/jpg').replace(/^data:image\/\w+;base64,/, '')
+  const resizedContext = resizeCanvas.current.getContext('2d')
+  resizedContext.drawImage(canvas, 0, 0, resizeCanvas.current.width, resizeCanvas.current.height)
+
+  const imageData = resizeCanvas.current.toDataURL('image/jpg').replace(/^data:image\/\w+;base64,/, '')
 
   fs.writeFileSync(imageFilePath, imageData, 'base64')
   }, [props])
@@ -105,6 +109,11 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, boardUid, canvas,
     //   'aspect',
     //   camera.current.aspect
     // )
+
+    const resolution = 256
+    resizeCanvas.current = document.createElement('canvas')
+    resizeCanvas.height = resolution
+    resizeCanvas.width = resolution * props.aspectRatio
 
     return function cleanup () {
       console.log(type, id, 'removed')
