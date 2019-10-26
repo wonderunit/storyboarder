@@ -631,7 +631,7 @@ const SceneManager = connect(
 
                 aspectRatio,
                 boardUid: _boardUid,
-                canvas: largeCanvasRef.current,
+                gl: largeRendererEffect.current,
                 storyboarderFilePath: meta.storyboarderFilePath,
                 ...props
               }
