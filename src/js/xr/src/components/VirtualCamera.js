@@ -51,7 +51,8 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   const size = 1 / 3
   const resolution = 512
   const previousTime = useRef([null])
-  const thumbnailRenderer = useRef(new THREE.WebGLRenderer())
+  const thumbnailRenderer = useRef()
+  const previousThumbnail = useRef(null)
 
   const getRenderTarget = useCallback(() => {
     if (!renderTarget.current) {
@@ -85,34 +86,54 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   }
 
   useEffect(() => {
+    thumbnailRenderer.current = new THREE.WebGLRenderer()
+    thumbnailRenderer.current.setSize(256 * aspectRatio, 256)
+  }, [])
+  
+  useEffect(() => {
     if (!boardUid) return
 
-    const cameraName = sceneObject.displayName.split(' ').join('-')
-    const imageFileName = `${boardUid}-${cameraName}-thumbnail.png`
-    const filepath = client.uriForThumbnail(imageFileName)
-
-    THREE.Cache.remove(filepath)
-    console.log(`${filepath} removed from cache`)
-
-    if (thumbnailRenderer.current) {
-      thumbnailRenderer.current.render(scene, virtualCamera.current)
-      const base64String = thumbnailRenderer.current.domElement.toDataURL('image/png')
-
-      // Split the base64 string in data and contentType
-      const block = base64String.split(';')
-      // Get the content type of the image
-      const contentType = block[0].split(':')[1]// In this case "image/gif"
-      // get the real base64 content of the file
-      const realData = block[1].split(',')[1]
-      const blob = b64toBlob(realData, contentType)
-
-      const formData = new FormData()
-      formData.append(imageFileName, blob)
-
-      client.saveCameraThumbnail(formData)
+    if (!previousThumbnail.current) {
+      previousThumbnail.current = 0
+      // Save camera thumbnail at creation
+      saveCameraThumbnail()
     }
 
+    const currentTime = Date.now()
+    const delta = currentTime - previousThumbnail.current
+
+    if (delta > 1000) previousThumbnail.current = currentTime
+    else return
+
+    // Update camera thumbnails every second if there's changes to it
+    saveCameraThumbnail()
   }, [sceneObject, boardUid])
+
+  const saveCameraThumbnail = () => {
+    const cameraName = sceneObject.displayName.split(' ').join('-')
+    const imageFileName = `${cameraName}-board-${boardUid}-thumbnail.png`
+    const filepath = client.uriForThumbnail(imageFileName)
+
+    // Remove from cache so that update can happen
+    THREE.Cache.remove(filepath)
+
+    // Render on separate canvas
+    thumbnailRenderer.current.render(scene, virtualCamera.current)
+    const base64String = thumbnailRenderer.current.domElement.toDataURL('image/png')
+
+    // Split the base64 string in data and contentType
+    const block = base64String.split(';')
+    // Get the content type of the image
+    const contentType = block[0].split(':')[1] // In this case "image/gif"
+    // Get the real base64 content of the file
+    const realData = block[1].split(',')[1]
+    const blob = b64toBlob(realData, contentType)
+
+    const formData = new FormData()
+    formData.append(imageFileName, blob)
+
+    client.saveCameraThumbnail(formData)
+  }
 
   const renderCamera = () => {
     if (virtualCamera.current && getRenderTarget()) {

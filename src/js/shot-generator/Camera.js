@@ -5,48 +5,9 @@ const fs = require('fs-extra')
 
 const IconSprites = require('./IconSprites')
 
-const Camera = React.memo(({ scene, id, type, setCamera, icon, boardUid, storyboarderFilePath, gl, ...props }) => {
+const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   let camera = useRef()
-  const previousTime = useRef(null)
   const resizeCanvas = useRef(null)
-
-  useEffect(() => {
-    if (!storyboarderFilePath || !boardUid || !resizeCanvas.current || !props.isSelected) return
-    if (!previousTime.current) {
-      previousTime.current = 0
-      // Save camera thumbnail at creation
-      saveCameraThumbnail()
-    }
-
-    const currentTime = Date.now()
-    const delta = currentTime - previousTime.current
-
-    if (delta > 1000) previousTime.current = currentTime
-    else return
-
-    // Update camera thumbnails every second if there's changes to it
-    saveCameraThumbnail()
-  }, [props, storyboarderFilePath, boardUid, resizeCanvas.current])
-
-  const saveCameraThumbnail = () => {
-    // Can not grab the render directly without rendering again, sometimes canvas is black
-    gl.render(scene, camera.current)
-
-    const boardFilename = storyboarderFilePath
-    let boardPath = boardFilename.split(path.sep)
-    boardPath.pop()
-    boardPath = boardPath.join(path.sep)
-
-    const cameraName = props.displayName.split(' ').join('-')
-    const imageFilePath = path.join(boardPath, 'images', `${boardUid}-${cameraName}-thumbnail.jpg`)
-
-    const resizedContext = resizeCanvas.current.getContext('2d')
-    resizedContext.drawImage(gl.domElement, 0, 0, resizeCanvas.current.width, resizeCanvas.current.height)
-
-    const imageData = resizeCanvas.current.toDataURL('image/jpg').replace(/^data:image\/\w+;base64,/, '')
-
-    fs.writeFileSync(imageFilePath, imageData, 'base64')
-  }
 
   useMemo(() => {
     camera.current = new THREE.PerspectiveCamera(

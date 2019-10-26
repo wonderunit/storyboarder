@@ -417,7 +417,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
       )
     } else {
       const cameraName = item.displayName.split(' ').join('-')
-      const filepath = this.client.uriForThumbnail(`${this.state.currentBoard.uid}-${cameraName}-thumbnail.jpg`)
+      const filepath = this.client.uriForThumbnail(`${cameraName}-board-${this.state.currentBoard.uid}-thumbnail.png`)
 
       const fov = parseInt(getFovAsFocalLength(item.fov, this.cameraAspectRatio))
       ctx.textAlign = 'end'
@@ -431,7 +431,6 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
         filepath,
 
         image => {
-          console.log(`${filepath} loaded`)
           // loaded state
           // object should allow selection
           ctx.drawImage(
