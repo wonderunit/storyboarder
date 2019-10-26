@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs-extra')
 
 const express = require('express')
 const electron = require('electron')
@@ -15,6 +16,8 @@ const portNumber = 1234
 
 const { getSerializedState, updateServer, updateSceneFromXR, getHash } = require('../shared/reducers/shot-generator')
 const getIpAddress = require('../utils/getIpAddress')
+
+const multer = require('multer')
 
 class XRServer {
   constructor ({ store, service }) {
@@ -176,6 +179,28 @@ class XRServer {
       store.dispatch(updateSceneFromXR(sg))
       let { board } = await service.insertShot()
       res.json(board)
+    })
+
+    // save camera thumbnail
+    const upload = multer({ storage: multer.memoryStorage({}) })
+    app.post('/camera-thumbnail', upload.any(), async (req, res, next) => {
+      const boardFilename = store.getState().meta.storyboarderFilePath
+
+      let boardPath = boardFilename.split(path.sep)
+      boardPath.pop()
+      boardPath = boardPath.join(path.sep)
+
+      const imageFilePath = path.join(boardPath, 'images', req.files[0].fieldname)
+
+      const blob = new Blob([req.files[0].buffer], { type: 'image/png' })
+      const reader = new FileReader()
+      reader.readAsDataURL(blob)
+      reader.onloadend = () => {
+        const base64data = reader.result.replace(/^data:image\/\w+;base64,/, '')
+        fs.writeFileSync(imageFilePath, base64data, 'base64')
+      }
+
+      res.status(200).send({ ok: true })
     })
 
     app.use(function (req, res, next) {

@@ -87,6 +87,18 @@ module.exports = function (URI='') {
           }
         )
       ).json()
+    },
+
+    saveCameraThumbnail: async data => {
+      return await (
+        await fetch(
+          `${URI}/camera-thumbnail`,
+          {
+            method: 'POST',
+            body: data
+          }
+        )
+      ).json()
     }
   }
 }

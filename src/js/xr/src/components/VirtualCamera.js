@@ -41,16 +41,6 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     },
     [sceneObject.rotation, sceneObject.tilt, sceneObject.roll]
   )
-
-  // remove old camera thumbnails
-  useEffect(() => {
-    if (!boardUid) return
-    const cameraName = sceneObject.displayName.split(' ').join('-')
-    const filepath = client.uriForThumbnail(`${boardUid}-${cameraName}-thumbnail.jpg`)
-
-    THREE.Cache.remove(filepath)
-    console.log(`${filepath} removed from cache`)
-  }, [sceneObject, boardUid])
   
   const virtualCamera = useUpdate(self => {
     self.updateProjectionMatrix()
@@ -61,6 +51,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   const size = 1 / 3
   const resolution = 512
   const previousTime = useRef([null])
+  const thumbnailRenderer = useRef(new THREE.WebGLRenderer())
 
   const getRenderTarget = useCallback(() => {
     if (!renderTarget.current) {
@@ -68,6 +59,60 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }
     return renderTarget.current
   }, [resolution, aspectRatio])
+
+  const b64toBlob = (b64Data, contentType, sliceSize) => {
+    contentType = contentType || ''
+    sliceSize = sliceSize || 512
+
+    var byteCharacters = atob(b64Data)
+    var byteArrays = []
+
+    for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+      var slice = byteCharacters.slice(offset, offset + sliceSize)
+
+      var byteNumbers = new Array(slice.length)
+      for (var i = 0; i < slice.length; i++) {
+        byteNumbers[i] = slice.charCodeAt(i)
+      }
+
+      var byteArray = new Uint8Array(byteNumbers)
+
+      byteArrays.push(byteArray)
+    }
+
+    var blob = new Blob(byteArrays, { type: contentType })
+    return blob
+  }
+
+  useEffect(() => {
+    if (!boardUid) return
+
+    const cameraName = sceneObject.displayName.split(' ').join('-')
+    const imageFileName = `${boardUid}-${cameraName}-thumbnail.png`
+    const filepath = client.uriForThumbnail(imageFileName)
+
+    THREE.Cache.remove(filepath)
+    console.log(`${filepath} removed from cache`)
+
+    if (thumbnailRenderer.current) {
+      thumbnailRenderer.current.render(scene, virtualCamera.current)
+      const base64String = thumbnailRenderer.current.domElement.toDataURL('image/png')
+
+      // Split the base64 string in data and contentType
+      const block = base64String.split(';')
+      // Get the content type of the image
+      const contentType = block[0].split(':')[1]// In this case "image/gif"
+      // get the real base64 content of the file
+      const realData = block[1].split(',')[1]
+      const blob = b64toBlob(realData, contentType)
+
+      const formData = new FormData()
+      formData.append(imageFileName, blob)
+
+      client.saveCameraThumbnail(formData)
+    }
+
+  }, [sceneObject, boardUid])
 
   const renderCamera = () => {
     if (virtualCamera.current && getRenderTarget()) {
