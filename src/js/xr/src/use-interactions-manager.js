@@ -150,6 +150,25 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.z = parent.rotation.z
 }
 
+const getImageData = image => {
+  const canvas = document.createElement('canvas')
+  canvas.width = image.width
+  canvas.height = image.height
+
+  const context = canvas.getContext('2d')
+  context.drawImage(image, 0, 0)
+
+  return context.getImageData(0, 0, image.width, image.height)
+}
+
+const getPixel = (image, x, y) => {
+  const imageData = getImageData(image)
+
+  let position = (x + imageData.width * y) * 4,
+    data = imageData.data
+  return { r: data[position], g: data[position + 1], b: data[position + 2], a: data[position + 3] }
+}
+
 const [useStore, useStoreApi] = create((set, get) => ({
   // values
   teleportPos: { x: 0, y: 0, z: 0 },
@@ -393,30 +412,36 @@ const useInteractionsManager = ({
     const controller = event.target
     let intersection = null
 
-    let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+    let uis = scene.__interaction.filter(o => o.userData.type == 'ui' && o.name !== 'gui-boards')
     let intersections = getControllerIntersections(controller, uis)
     intersection = intersections.length && intersections[0]
     if (intersection) {
-      let offset = intersection.object.userData.id === 'boards' ? 1 : 0
-      let u = intersection.uv.x + offset
-      let v = intersection.uv.y
-      uiService.send({
-        type: 'TRIGGER_START',
-        controller: event.target,
-        intersection: {
-          id: intersection.object.userData.id,
-          type: 'ui',
+      const color = getPixel(
+        intersection.object.material.map.image,
+        parseInt(intersection.uv.x * intersection.object.material.map.image.width),
+        parseInt(intersection.uv.y * intersection.object.material.map.image.height)
+      )
 
-          object: intersection.object,
-          distance: intersection.distance,
-          point: intersection.point,
-          uv: new THREE.Vector2(u, v)
-        }
-      })
-      return
+      if (color.a !== 0) {
+        let offset = intersection.object.userData.id === 'boards' ? 1 : 0
+        let u = intersection.uv.x + offset
+        let v = intersection.uv.y
+        uiService.send({
+          type: 'TRIGGER_START',
+          controller: event.target,
+          intersection: {
+            id: intersection.object.userData.id,
+            type: 'ui',
+
+            object: intersection.object,
+            distance: intersection.distance,
+            point: intersection.point,
+            uv: new THREE.Vector2(u, v)
+          }
+        })
+        return
+      }
     }
-
-
 
     // if the BonesHelper instance is in the scene ...
     if ( BonesHelper.getInstance().isSelected ) {
@@ -465,7 +490,7 @@ const useInteractionsManager = ({
     let match = null
 
     // include all interactables (Model Object, Character, Virtual Camera, etc)
-    let list = scene.__interaction
+    let list = scene.__interaction.filter(o => o.userData.type !== 'ui')
 
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
