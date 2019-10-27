@@ -103,16 +103,14 @@ const setupXR = async ({
     }, 5000)
   }
 
-  ReactDOM.render( <
-    Provider store = {
-      store
-    } >
-    <
-    SceneManagerXR / >
-    <
-    /Provider>,
+  ReactDOM.render(
+    <Provider store={store}>
+      <SceneManagerXR />
+    </Provider>,
     document.getElementById('main')
   )
 }
 
-window.setupXR = setupXR
+setupXR({
+  stateJsonUri: '/state.json'
+})
