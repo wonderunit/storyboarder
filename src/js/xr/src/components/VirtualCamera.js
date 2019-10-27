@@ -27,7 +27,31 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, client, boardUid, audio }) => {
+const b64toBlob = (b64Data, contentType, sliceSize) => {
+  contentType = contentType || ''
+  sliceSize = sliceSize || 512
+
+  const byteCharacters = atob(b64Data)
+  const byteArrays = []
+
+  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
+    const slice = byteCharacters.slice(offset, offset + sliceSize)
+
+    const byteNumbers = new Array(slice.length)
+    for (var i = 0; i < slice.length; i++) {
+      byteNumbers[i] = slice.charCodeAt(i)
+    }
+
+    const byteArray = new Uint8Array(byteNumbers)
+
+    byteArrays.push(byteArray)
+  }
+
+  const blob = new Blob(byteArrays, { type: contentType })
+  return blob
+}
+
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, getCanvasRenderer, client, boardUid, audio }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -52,7 +76,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   const resolution = 512
   const previousTime = useRef(null)
   const thumbnailRenderer = useRef()
-  const previousThumbnail = useRef(null)
+  const renderTimeout = useRef(null)
 
   const getRenderTarget = useCallback(() => {
     if (!renderTarget.current) {
@@ -60,30 +84,6 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }
     return renderTarget.current
   }, [resolution, aspectRatio])
-
-  const b64toBlob = (b64Data, contentType, sliceSize) => {
-    contentType = contentType || ''
-    sliceSize = sliceSize || 512
-
-    var byteCharacters = atob(b64Data)
-    var byteArrays = []
-
-    for (var offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-      var slice = byteCharacters.slice(offset, offset + sliceSize)
-
-      var byteNumbers = new Array(slice.length)
-      for (var i = 0; i < slice.length; i++) {
-        byteNumbers[i] = slice.charCodeAt(i)
-      }
-
-      var byteArray = new Uint8Array(byteNumbers)
-
-      byteArrays.push(byteArray)
-    }
-
-    var blob = new Blob(byteArrays, { type: contentType })
-    return blob
-  }
 
   useEffect(() => {
     thumbnailRenderer.current = new THREE.WebGLRenderer()
@@ -100,20 +100,16 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   useEffect(() => {
     if (!boardUid) return
 
-    if (!previousThumbnail.current) {
-      previousThumbnail.current = 0
+    if (!renderTimeout.current) {
       // Save camera thumbnail at creation
       saveCameraThumbnail()
     }
 
-    const currentTime = Date.now()
-    const delta = currentTime - previousThumbnail.current
-
-    if (delta > 1000) previousThumbnail.current = currentTime
-    else return
-
-    // Update camera thumbnails every second if there's changes to it
-    saveCameraThumbnail()
+    // Update camera thumbnail half a sec after the last update
+    clearTimeout(renderTimeout.current)
+    renderTimeout.current = setTimeout(() => {
+      saveCameraThumbnail()
+    }, 500)
   }, [sceneObject, boardUid])
 
   const saveCameraThumbnail = () => {
@@ -140,6 +136,9 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     formData.append(imageFileName, blob)
 
     client.saveCameraThumbnail(formData)
+
+    // Trigger HUD rerender
+    getCanvasRenderer().boardsNeedsRender = true
   }
 
   const renderCamera = () => {

@@ -625,6 +625,7 @@ const SceneContent = connect(
                 sceneObject={sceneObjects[id]}
                 isSelected={selections.includes(id)}
                 isActive={activeCamera === id}
+                getCanvasRenderer={getCanvasRenderer}
                 client={xrClient.current}
                 boardUid={boardUid}
                 audio={
