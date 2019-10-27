@@ -50,7 +50,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   const renderTarget = useRef()
   const size = 1 / 3
   const resolution = 512
-  const previousTime = useRef([null])
+  const previousTime = useRef(null)
   const thumbnailRenderer = useRef()
   const previousThumbnail = useRef(null)
 
@@ -88,6 +88,13 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   useEffect(() => {
     thumbnailRenderer.current = new THREE.WebGLRenderer()
     thumbnailRenderer.current.setSize(256 * aspectRatio, 256)
+    return destroyContext = () => {
+      thumbnailRenderer.current.forceContextLoss()
+      thumbnailRenderer.current.context = null
+      thumbnailRenderer.current.domElement = null
+      thumbnailRenderer.current = null
+      renderTarget.current.dispose()
+    }
   }, [])
   
   useEffect(() => {
