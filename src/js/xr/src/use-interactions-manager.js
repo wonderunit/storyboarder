@@ -423,8 +423,7 @@ const useInteractionsManager = ({
       )
 
       if (color.a !== 0) {
-        let offset = intersection.object.userData.id === 'boards' ? 1 : 0
-        let u = intersection.uv.x + offset
+        let u = intersection.uv.x
         let v = intersection.uv.y
         uiService.send({
           type: 'TRIGGER_START',
@@ -526,6 +525,37 @@ const useInteractionsManager = ({
           point: intersection.point
         }
       })
+    } 
+    
+    let boardUi = scene.__interaction.filter(o => o.name === 'gui-boards')
+    intersections = getControllerIntersections(controller, boardUi)
+    intersection = intersections.length && intersections[0]
+    if (intersection) {
+      const color = getPixel(
+        intersection.object.material.map.image,
+        parseInt(intersection.uv.x * intersection.object.material.map.image.width),
+        parseInt(intersection.uv.y * intersection.object.material.map.image.height)
+      )
+
+      if (color.a !== 0) {
+        // UV offset for Boards UI
+        let u = intersection.uv.x + 1
+        let v = intersection.uv.y
+        uiService.send({
+          type: 'TRIGGER_START',
+          controller: event.target,
+          intersection: {
+            id: intersection.object.userData.id,
+            type: 'ui',
+
+            object: intersection.object,
+            distance: intersection.distance,
+            point: intersection.point,
+            uv: new THREE.Vector2(u, v)
+          }
+        })
+        return
+      }
     } else {
       // console.log('clearing selection')
       log(`trigger start on: none`)
