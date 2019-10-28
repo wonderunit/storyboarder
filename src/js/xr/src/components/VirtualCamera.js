@@ -27,31 +27,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const b64toBlob = (b64Data, contentType, sliceSize) => {
-  contentType = contentType || ''
-  sliceSize = sliceSize || 512
-
-  const byteCharacters = atob(b64Data)
-  const byteArrays = []
-
-  for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-    const slice = byteCharacters.slice(offset, offset + sliceSize)
-
-    const byteNumbers = new Array(slice.length)
-    for (var i = 0; i < slice.length; i++) {
-      byteNumbers[i] = slice.charCodeAt(i)
-    }
-
-    const byteArray = new Uint8Array(byteNumbers)
-
-    byteArrays.push(byteArray)
-  }
-
-  const blob = new Blob(byteArrays, { type: contentType })
-  return blob
-}
-
-const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, getCanvasRenderer, client, boardUid, audio }) => {
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, getCanvasRenderer, audio }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -75,8 +51,9 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   const size = 1 / 3
   const resolution = 512
   const previousTime = useRef(null)
+
   const thumbnailRenderer = useRef()
-  const renderTimeout = useRef(null)
+  const cameraThumbnail = useRef(new Image())
 
   const getRenderTarget = useCallback(() => {
     if (!renderTarget.current) {
@@ -87,7 +64,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
 
   useEffect(() => {
     thumbnailRenderer.current = new THREE.WebGLRenderer()
-    thumbnailRenderer.current.setSize(256 * aspectRatio, 256)
+    thumbnailRenderer.current.setSize(128 * aspectRatio, 128)
     return destroyContext = () => {
       thumbnailRenderer.current.forceContextLoss()
       thumbnailRenderer.current.context = null
@@ -96,49 +73,17 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
       renderTarget.current.dispose()
     }
   }, [])
-  
-  useEffect(() => {
-    if (!boardUid) return
-
-    if (!renderTimeout.current) {
-      // Save camera thumbnail at creation
-      saveCameraThumbnail()
-    }
-
-    // Update camera thumbnail half a sec after the last update
-    clearTimeout(renderTimeout.current)
-    renderTimeout.current = setTimeout(() => {
-      saveCameraThumbnail()
-    }, 500)
-  }, [sceneObject, boardUid])
 
   const saveCameraThumbnail = () => {
-    const cameraName = sceneObject.displayName.split(' ').join('-')
-    const imageFileName = `${cameraName}-board-${boardUid}-thumbnail.png`
-    const filepath = client.uriForThumbnail(imageFileName)
-
-    // Remove from cache so that update can happen
-    THREE.Cache.remove(filepath)
-
     // Render on separate canvas
     thumbnailRenderer.current.render(scene, virtualCamera.current)
     const base64String = thumbnailRenderer.current.domElement.toDataURL('image/png')
 
-    // Split the base64 string in data and contentType
-    const block = base64String.split(';')
-    // Get the content type of the image
-    const contentType = block[0].split(':')[1] // In this case "image/gif"
-    // Get the real base64 content of the file
-    const realData = block[1].split(',')[1]
-    const blob = b64toBlob(realData, contentType)
-
-    const formData = new FormData()
-    formData.append(imageFileName, blob)
-
-    client.saveCameraThumbnail(formData)
-
     // Trigger HUD rerender
-    getCanvasRenderer().boardsNeedsRender = true
+    const cr = getCanvasRenderer()
+    cameraThumbnail.current.src = base64String
+    cr.state.cameraThumbnails[sceneObject.displayName] = cameraThumbnail.current
+    cr.boardsNeedsRender = true
   }
 
   const renderCamera = () => {
@@ -300,6 +245,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }
 
     renderCamera()
+    if (delta > 500) saveCameraThumbnail()
   }, false, [isSelected, ref.current, meshes])
 
   let lightColor = 0x8c78f1

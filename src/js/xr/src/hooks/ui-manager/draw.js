@@ -416,9 +416,6 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
         }
       )
     } else {
-      const cameraName = item.displayName.split(' ').join('-')
-      const filepath = this.client.uriForThumbnail(`${cameraName}-board-${this.state.currentBoard.uid}-thumbnail.png`)
-
       const fov = parseInt(getFovAsFocalLength(item.fov, this.cameraAspectRatio))
       ctx.textAlign = 'end'
       ctx.fillText(
@@ -427,30 +424,21 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
         y + padding + itemHeight + textHeight * 0.5
       )
 
-      this.drawLoadableImage(
-        filepath,
-
-        image => {
-          // loaded state
-          // object should allow selection
-          ctx.drawImage(
-            image,
-            x + 8 + (itemWidth + padding * 0.5) * i - offset,
-            y + padding + 8,
-            itemWidth - 16,
-            itemHeight - 16
-          )
-        },
-
-        () => {
-          // loading state
-          // object should not allow selection
-          ctx.save()
-          ctx.fillStyle = '#222'
-          ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + 8, itemWidth - 16, itemHeight - 16)
-          ctx.restore()
-        }
-      )
+      const cameraThumbnail = this.state.cameraThumbnails[item.displayName]
+      if (cameraThumbnail) {
+        ctx.drawImage(
+          cameraThumbnail,
+          x + 8 + (itemWidth + padding * 0.5) * i - offset,
+          y + padding + 8,
+          itemWidth - 16,
+          itemHeight - 16
+        )
+      } else {
+        ctx.save()
+        ctx.fillStyle = '#222'
+        ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + 8, itemWidth - 16, itemHeight - 16)
+        ctx.restore()
+      }
     }
 
     this.paneComponents['boards'][item.id || item.uid] = {

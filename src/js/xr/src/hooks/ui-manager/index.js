@@ -186,7 +186,8 @@ class CanvasRenderer {
         }
       },
       boardsData: RemoteData.init(),
-      currentBoard: RemoteData.init()
+      currentBoard: RemoteData.init(),
+      cameraThumbnails: {}
     }
 
     this.paneComponents = {}
