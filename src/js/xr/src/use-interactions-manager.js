@@ -926,7 +926,7 @@ const useInteractionsManager = ({
             interactionService.send({ type: 'STOP_POSING', controller: event.target})
             return;
           }
-          setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
+         // setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
