@@ -190,7 +190,7 @@ class CanvasRenderer {
         }
       },
       boardsData: RemoteData.init(),
-      currentBoard: RemoteData.init(),
+      sgCurrentState: RemoteData.init(),
       cameraThumbnails: {}
     }
 
@@ -249,12 +249,12 @@ class CanvasRenderer {
       this.boardsNeedsRender = true
     })
 
-    this.state.currentBoard = RemoteData.init()
+    this.state.sgCurrentState = RemoteData.init()
     this.client.getState().then(result => {
-      this.state.currentBoard = RemoteData.success(result.board)
+      this.state.sgCurrentState = RemoteData.success(result)
       this.boardsNeedsRender = true
     }).catch(err => {
-      this.state.currentBoard = RemoteData.failure(err)
+      this.state.sgCurrentState = RemoteData.failure(err)
       this.boardsNeedsRender = true
     })
 
@@ -1284,7 +1284,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             let { hash, lastSavedHash } = await cr.client.getSg()
             setServerHash(hash)
             setServerLastSavedHash(lastSavedHash)
-            cr.state.currentBoard.uid = board.uid
+            cr.state.sgCurrentState.board.uid = board.uid
             cr.boardsNeedsRender = true
           } catch (err) {
             // TODO if the uid does not match, notify user, reload
@@ -1296,9 +1296,9 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           let cr = getCanvasRenderer()
 
           const data = {
-            activeCamera: cr.state.activeCamera,
+            world: cr.state.world,
             sceneObjects: cr.state.sceneObjects,
-            world: cr.state.world
+            activeCamera: cr.state.activeCamera
           }
 
           let hasUnsavedChanges = await checkForUnsavedChanges(data)
@@ -1308,11 +1308,11 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           }
 
           try {
-            await cr.client.saveShot(cr.state.currentBoard.uid, data)
+            await cr.client.saveShot(cr.state.sgCurrentState.board.uid, data)
 
             cr.state.boardsData.cata({
               SUCCESS: data => {
-                const item = data.find(board => board.uid === cr.state.currentBoard.uid)
+                const item = data.find(board => board.uid === cr.state.sgCurrentState.board.uid)
                 const filepath = cr.client.uriForThumbnail(item.thumbnail)
                 THREE.Cache.remove(filepath)
               }
@@ -1328,12 +1328,13 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           let cr = getCanvasRenderer()
 
           const data = {
-            activeCamera: cr.state.activeCamera,
+            world: cr.state.world,
             sceneObjects: cr.state.sceneObjects,
-            world: cr.state.world
+            activeCamera: cr.state.activeCamera
           }
 
           let hasUnsavedChanges = await checkForUnsavedChanges(data)
+
           if (hasUnsavedChanges) {
             let confirmed = await checkConfirmStatus()
             if (!confirmed) return
@@ -1353,6 +1354,8 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const checkForUnsavedChanges = async data => {
     // ask for SG hashes
     let serverResponse = await getCanvasRenderer().client.getSg()
+    setServerHash(serverResponse.hash)
+    setServerLastSavedHash(serverResponse.lastSavedHash)
 
     // calculate local hash
     let localHash = getHashForBoardSgData(data)
