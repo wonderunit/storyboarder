@@ -670,6 +670,7 @@ const useInteractionsManager = ({
 
   const onPressEndY = event => {
     // relay through state machine
+    console.log(event)
     interactionService.send({ type: 'PRESS_END_Y', controller: event.target })
 
   }
@@ -919,11 +920,13 @@ const useInteractionsManager = ({
           }
         },
         onPosingCharacterEntry: (context, event) => {
-          console.log("Posing started");
-          if(context.selectionType !== "character") return
-          let controller = gl.vr.getController(context.draggingController)
-         // setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
           let ikHelper = getIkHelper()
+          if(!ikHelper.isSelected())
+          {
+            interactionService.send({ type: 'STOP_POSING', controller: event.target})
+            return;
+          }
+          setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
@@ -952,7 +955,6 @@ const useInteractionsManager = ({
           let euler = new THREE.Euler(x, y, z)
           let staticRotation = new THREE.Quaternion().setFromEuler(euler)
           changeControlPointSpaceToHMDSpace(camera, headControlPoint, headBone, staticRotation)
-          console.log(camera)
 
           // Getting controllers 
           let leftController = getControllerByName(controllers, "left")
@@ -976,6 +978,10 @@ const useInteractionsManager = ({
         onPosingCharacterExit: (context, event) => {
           console.log("Posing stopped");
           let ikHelper = getIkHelper()
+          if(!ikHelper.isSelected())
+          {
+            return;
+          }
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
