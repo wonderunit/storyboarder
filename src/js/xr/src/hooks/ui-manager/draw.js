@@ -463,8 +463,8 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
     y: y + padding,
     width,
     height: itemHeight + textHeight,
-    onSelect: (x, y) => {
-      this.state.boards.startCoords = this.state.boards.prevCoords = { x: x - 1, y }
+    onSelect: (xClick, yClick) => {
+      this.state.boards.startCoords = this.state.boards.prevCoords = { x: xClick - 1 - x * 2 / width, yClick }
     },
     onDrag: (x, y) => {
       const { boards } = this.state
