@@ -480,11 +480,13 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
       if (distance < 0.1) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
 
-        if (canvasIntersection && canvasIntersection.id !== 'boards-background') {
+        if (canvasIntersection && !canvasIntersection.id.includes('-background')) {
           const component = this.getComponentById(canvasIntersection.id)
           if (component.row === 'cameras') {
             this.dispatch(setActiveCamera(component.id))
-          } else {}
+          } else {
+            this.send('CHANGE_BOARD', { uid: canvasIntersection.id })
+          }
         }
       }
     }

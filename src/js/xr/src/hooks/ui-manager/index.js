@@ -40,14 +40,18 @@ const [useUiStore] = create((set, get) => ({
   showCameras: getCookie('showCameras') !== 'false',
   showHelp: false,
   showHUD: true,
-  boardUid: null,
+
+  serverHash: null,
+  serverLastSavedHash: null,
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
   setShowHelp: value => set(produce(state => { state.showHelp = value })),
   setShowHUD: value => set(produce(state => { state.showHUD = value })),
-  setBoardUid: value => set(produce(state => { state.boardUid = value })),
+
+  setServerHash: value => set(produce(state => { state.serverHash = value })),
+  setServerLastSavedHash: value => set(produce(state => { state.serverLastSavedHash = value })),
 
   set: fn => set(produce(fn))
 }))
@@ -248,14 +252,10 @@ class CanvasRenderer {
     this.state.currentBoard = RemoteData.init()
     this.client.getState().then(result => {
       this.state.currentBoard = RemoteData.success(result.board)
-      this.needsRender = true
       this.boardsNeedsRender = true
-      this.send('SET_BOARDUID', { uid: result.board.uid })
     }).catch(err => {
       this.state.currentBoard = RemoteData.failure(err)
-      this.needsRender = true
       this.boardsNeedsRender = true
-      this.send('SET_BOARDUID', { uid: null })
     })
 
     this.needsRender = false
@@ -1009,7 +1009,9 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const setShowCameras = useUiStore(state => state.setShowCameras)
   const setShowHelp = useUiStore(state => state.setShowHelp)
   const setShowHUD = useUiStore(state => state.setShowHUD)
-  const setBoardUid = useUiStore(state => state.setBoardUid)
+
+  const setServerHash = useUiStore(state => state.setServerHash)
+  const setServerLastSavedHash = useUiStore(state => state.setServerLastSavedHash)
 
   const showHelp = useUiStore(state => state.showHelp)
   const showHUD = useUiStore(state => state.showHUD)
@@ -1273,10 +1275,23 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           setShowHUD(!showHUD)
         },
 
-        onSetBoardUid (context, event) {
-          setBoardUid(event.uid)
-        },
+        async onChangeBoard (context, event) {
+          let cr = getCanvasRenderer()
+          let board = await cr.client.selectBoardByUid(event.uid)
 
+          try {
+            await cr.client.sendState(board.uid, board.sg.data)
+            let { hash, lastSavedHash } = await cr.client.getSg()
+            setServerHash(hash)
+            setServerLastSavedHash(lastSavedHash)
+            cr.state.currentBoard.uid = board.uid
+            cr.boardsNeedsRender = true
+          } catch (err) {
+            // TODO if the uid does not match, notify user, reload
+            alert('Error\n' + err)
+          }
+        },
+        
         async onSaveBoard (context, event) {
           let cr = getCanvasRenderer()
 
