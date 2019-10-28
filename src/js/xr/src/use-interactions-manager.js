@@ -948,10 +948,9 @@ const useInteractionsManager = ({
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldRotation.y + 180)
           getIkHelper().ragDoll.isEnabledIk = true
 
-
           let x = THREE.Math.degToRad(45)
           let y = THREE.Math.degToRad(-180)
-          let z = THREE.Math.degToRad(60)
+          let z = THREE.Math.degToRad(0)
           let euler = new THREE.Euler(x, y, z)
           let staticRotation = new THREE.Quaternion().setFromEuler(euler)
           changeControlPointSpaceToHMDSpace(camera, headControlPoint, headBone, staticRotation)
@@ -962,7 +961,7 @@ const useInteractionsManager = ({
                     
           // Changes left control point space to left controller(hmd space) and apply custom rotation
           euler.x = THREE.Math.degToRad(0)
-          euler.z = THREE.Math.degToRad(90)
+          euler.z = THREE.Math.degToRad(135)
           staticRotation.setFromEuler(euler)
           changeControlPointSpaceToHMDSpace(leftController, leftArmControlPoint, leftHandBone, staticRotation)
           
