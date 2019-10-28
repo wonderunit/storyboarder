@@ -102,6 +102,14 @@ const rotateObjectY = (object, event) => {
   }
 }
 
+const changeControlPointSpaceToHMDSpace = (hmdElement, controlPoint, originalBone, quatrenion) => {
+  hmdElement.attach(controlPoint);
+  controlPoint.quaternion.premultiply(originalBone.worldQuaternion().inverse())
+  controlPoint.quaternion.copy(quatrenion)
+  controlPoint.position.set(0, 0, 0)
+  controlPoint.updateMatrixWorld(true)
+}
+
 const snapObjectRotation = (object) => {
   // setup for rotation
   object.userData.order = object.rotation.order
@@ -252,14 +260,14 @@ const [useStore, useStoreApi] = create((set, get) => ({
 }))
 
 const getControllerByName = (controllers, name) => {
-  if(controllers[0].gamepad && controllers[0].gamepad.hand === name) {
-    return controllers[0]
+  if(controllers[0] && controllers[0].gamepad ) {
+    if(controllers[0].gamepad.hand === name) return controllers[0]
+    else return controllers[1]
+
   }
-  else if(controllers[1].gamepad && controllers[1].gamepad.hand === name) {
-    return controllers[1]
-  }
-  else {
-    return controllers[0]
+  else if(controllers[1] && controllers[1].gamepad) {
+    if(controllers[1].gamepad.hand === name) return controllers[1]
+    else return controllers[0]
   }
 }
 const getExcludeList = parent => {
@@ -921,22 +929,10 @@ const useInteractionsManager = ({
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
 
           let headBone = ikHelper.ragDoll.chainObjects['Head'].lastBone;
+          let leftHandBone = ikHelper.ragDoll.chainObjects['LeftHand'].lastBone;
+          let rightHandBone = ikHelper.ragDoll.chainObjects['RightHand'].lastBone;
           // world scale is always reset to large
           setMiniMode(false, camera)
-
-
-          let vector1 = new THREE.Quaternion().set(1, 1, 1, 1);
-          vector1.multiply(headControlPoint.parent.worldQuaternion().inverse());
-
-          let vector2 = new THREE.Quaternion().set(1, 1, 1, 1);
-          vector2.multiply(camera.parent.worldQuaternion().inverse());
-
-          console.log(vector1);
-          console.log(vector2.clone());
-          
-          vector2.premultiply(camera.parent.worldQuaternion());
-          vector2.premultiply(headControlPoint.parent.worldQuaternion().inverse());
-          console.log(vector2.clone());
 
           // Taking world position of control point 
           let worldPosition = headControlPoint.worldPosition()
@@ -944,66 +940,34 @@ const useInteractionsManager = ({
           let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[5].worldQuaternion()
           camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
           camera.parent.userData.prevQuaternion = useStoreApi.getState().teleportRot
+
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          worldPosition.sub(camera.position);
-          teleport(camera, worldPosition.x, worldPosition.y, worldPosition.z, worldRotation.y + 180)
+          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldRotation.y + 180)
           getIkHelper().ragDoll.isEnabledIk = true
-          //camera.attach(headControlPoint)
 
-          //headControlPoint.applyMatrix(headControlPoint.parent.matrixWorld.inverse())//quaternion.copy(headControlPoint.parent.worldQuaternion().inverse())
-          //headControlPoint.//position.applyMatrix4(headControlPoint.parent.matrixWorld).applyMatrix4(camera.parent.matrixWorld.inverse());
-         // headControlPoint.quaternion.copy(camera.quaternion.inverse())
-          //headControlPoint.updateMatrixWorld(true)
-          // headControlPoint.rotation.y -= 90
-          //headControlPoint.quaternion.set(0, 0, 0, 1)
-          let euler = new THREE.Euler(90, 0, 0)
-          let quaternion = new THREE.Quaternion().setFromEuler(euler)
 
-          let cameraQuat = camera.quaternion.clone();
-          cameraQuat.multiply(camera.parent.worldQuaternion().inverse())
-          cameraQuat.multiply(headBone.parent.worldQuaternion())
-          console.log(cameraQuat)
-          console.log(headControlPoint.quaternion.clone())
-          headControlPoint.quaternion.copy(cameraQuat)
-          console.log(headBone)
-
-          headControlPoint.quaternion.premultiply(camera.worldQuaternion());
-          //headControlPoint.position.multiply(camera.worldQuaternion().inverse());
-          headControlPoint.updateMatrixWorld(true);
-          camera.attach(headControlPoint)
-          //headControlPoint.quaternion.multiply(quaternion);
+          let x = THREE.Math.degToRad(45)
+          let y = THREE.Math.degToRad(-180)
+          let z = THREE.Math.degToRad(60)
+          let euler = new THREE.Euler(x, y, z)
+          let staticRotation = new THREE.Quaternion().setFromEuler(euler)
+          changeControlPointSpaceToHMDSpace(camera, headControlPoint, headBone, staticRotation)
+          console.log(camera)
 
           // Getting controllers 
           let leftController = getControllerByName(controllers, "left")
           let rightController = getControllerByName(controllers, "right")
-          console.log(leftController)
-          console.log(rightController)
-
-         // euler = new THREE.Euler(0, 0, -90)
-         // quaternion = new THREE.Quaternion().setFromEuler(euler)
-
-          // Apply left controller rotation to left control point
-         // leftArmControlPoint.quaternion.premultiply(leftArmControlPoint.parent.worldQuaternion().inverse())
-          leftArmControlPoint.quaternion.set(0, 0, 0, 0)
-          leftArmControlPoint.position.set(0, 0, 0)
-          leftArmControlPoint.updateMatrixWorld(true) 
-          leftController.add(leftArmControlPoint)
-          leftArmControlPoint.updateMatrixWorld(true) 
-          leftArmControlPoint.quaternion.copy(leftController.parent.worldQuaternion().inverse())
-        //  leftArmControlPoint.quaternion.multiply(quaternion)
-          leftArmControlPoint.updateMatrixWorld(true) 
+                    
+          // Changes left control point space to left controller(hmd space) and apply custom rotation
+          euler.x = THREE.Math.degToRad(0)
+          euler.z = THREE.Math.degToRad(90)
+          staticRotation.setFromEuler(euler)
+          changeControlPointSpaceToHMDSpace(leftController, leftArmControlPoint, leftHandBone, staticRotation)
           
-         // euler = new THREE.Euler(0, 0, 90)
-         // quaternion = new THREE.Quaternion().setFromEuler(euler)
-          // Apply right controller rotation to right control point
-          rightArmControlPoint.quaternion.set(0, 0, 0, 0)
-          rightArmControlPoint.position.set(0, 0, 0)
-          rightArmControlPoint.updateMatrixWorld(true) 
-          rightController.add(rightArmControlPoint)
-          rightArmControlPoint.updateMatrixWorld(true) 
-          rightArmControlPoint.quaternion.copy(rightController.parent.worldQuaternion().inverse())
-       //   rightArmControlPoint.quaternion.multiply(quaternion)
-          rightArmControlPoint.updateMatrixWorld(true) 
+          // Changes right control point space to right controller(hmd space) and apply custom rotation
+          euler.z = THREE.Math.degToRad(135)
+          staticRotation.setFromEuler(euler)
+          changeControlPointSpaceToHMDSpace(rightController, rightArmControlPoint, rightHandBone, staticRotation)
 
           clearStandingMemento()
 
@@ -1015,10 +979,10 @@ const useInteractionsManager = ({
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
-          getIkHelper().ragDoll.isEnabledIk = false;
           ikHelper.controlPoints.attach(headControlPoint)
           ikHelper.controlPoints.attach(leftArmControlPoint)
           ikHelper.controlPoints.attach(rightArmControlPoint)
+          getIkHelper().ragDoll.isEnabledIk = false;
           useStoreApi.setState({teleportPos : {x, y, z} = camera.parent.userData.prevPosition} )
           useStoreApi.setState({teleportRot : {x, y, z, w} = camera.parent.userData.prevQuaternion} )
         },
