@@ -1,6 +1,8 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const RoundedBoxGeometry = require('three-rounded-box')(THREE)
+const TWEEN = require('@tweenjs/tween.js');
+window.TWEEN = TWEEN
 
 const path = require('path')
 const React = require('react')
@@ -46,6 +48,91 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
   const setLoaded = loaded => updateObject(id, { loaded })
 
   const container = useRef()
+  
+  //.easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
+  let tween = new TWEEN.Tween({})
+  
+  // This doesn't work with tween@18.3.1
+  const setTweenData = () => {
+    console.clear()
+    tween.stop()
+  
+    tween = new TWEEN.Tween({
+      x: container.current.position.x,
+      y: container.current.position.y,
+      z: container.current.position.z,
+      rotx: container.current.rotation.x,
+      roty: container.current.rotation.y,
+      rotz: container.current.rotation.z
+    })
+    
+    tween.to({
+      x: props.x,
+      y: props.y,
+      z: props.z,
+      rotx: props.rotation.x,
+      roty: props.rotation.y,
+      rotz: props.rotation.z
+    }, 200)
+    
+    tween.onUpdate(({ x, y, z, rotx, roty, rotz }) => {
+      container.current.position.x = x
+      container.current.position.y = y
+      container.current.position.z = z
+      container.current.rotation.x = rotx
+      container.current.rotation.y = roty
+      container.current.rotation.z = rotz
+    })
+    
+    tween.start()
+  }
+  
+  const setTweenDataWorks = () => {
+    console.clear()
+    TWEEN.removeAll()
+    
+    let tween = new TWEEN.Tween({
+      x: container.current.position.x,
+      y: container.current.position.y,
+      z: container.current.position.z,
+      rotx: container.current.rotation.x,
+      roty: container.current.rotation.y,
+      rotz: container.current.rotation.z
+    })
+    
+    tween.to({
+      x: props.x || 0,
+      y: props.y || 0,
+      z: props.z || 0,
+      rotx: props.rotation.x || 0,
+      roty: props.rotation.y || 0,
+      rotz: props.rotation.z || 0
+    }, 200)
+    
+    tween.onUpdate(({ x, y, z, rotx, roty, rotz }) => {
+      //{ x, y, z, rotx, roty, rotz }
+      /*
+      state.
+state.
+state.
+state.
+state.
+state.
+       */
+      //console.clear()
+      //console.log('TWEEN UPDATE', x, y, z)
+      container.current.position.x = x
+      container.current.position.y = y
+      container.current.position.z = z
+      container.current.rotation.x = rotx
+      container.current.rotation.y = roty
+      container.current.rotation.z = rotz
+    })
+    
+    tween.start()
+    
+    console.log('New props', props, tween)
+  }
 
   useEffect(() => {
     console.log(type, id, 'added')
@@ -71,7 +158,6 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
     mesh.layers.enable(1)
     mesh.layers.enable(2)
     mesh.layers.enable(3)
-    geometry.translate( 0, 1 / 2, 0 )
     container.current.remove(...container.current.children)
     container.current.add(mesh)
     setLoaded(true)
@@ -84,9 +170,7 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
   }, [])
   
   useEffect(() => {
-    container.current.position.x = props.x
-    container.current.position.z = props.z
-    container.current.position.y = props.y
+    setTweenData()
     //container.current.orthoIcon.position.copy(container.current.position)
   }, [
     props.x,
@@ -95,9 +179,7 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
   ])
 
   useEffect(() => {
-    container.current.rotation.x = props.rotation.x
-    container.current.rotation.y = props.rotation.y
-    container.current.rotation.z = props.rotation.z
+    setTweenData()
     //container.current.orthoIcon.icon.rotation = props.rotation.y
   }, [
     props.rotation.x,

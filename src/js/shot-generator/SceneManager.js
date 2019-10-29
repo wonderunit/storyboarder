@@ -6,6 +6,8 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
 
+const TWEEN = require('@tweenjs/tween.js');
+
 const h = require('../utils/h')
 const SGIkHelper = require('../shared/IK/SGIkHelper')
 const {
@@ -135,15 +137,22 @@ const SceneManager = connect(
         // console.log('SceneManager onFocus')
         setShouldRaf(true)
       }
+      
+      const updateTween = (time) => {
+        requestAnimationFrame(updateTween)
+        TWEEN.update(time, true)
+      }
 
       document.addEventListener('visibilitychange', onVisibilityChange)
       window.addEventListener('blur', onBlur)
       window.addEventListener('focus', onFocus)
+      requestAnimationFrame(updateTween)
 
       return function cleanup () {
         document.removeEventListener('visibilitychange', onVisibilityChange)
         window.removeEventListener('blur', onBlur)
         window.removeEventListener('focus', onFocus)
+        cancelAnimationFrame(updateTween)
       }
     }, [])
 

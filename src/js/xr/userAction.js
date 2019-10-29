@@ -1,5 +1,10 @@
 
-module.exports = function (action) {
+const DISABLED_ACTIONS = {
+  SELECT_OBJECT: true,
+  SELECT_OBJECT_TOGGLE: true
+}
+
+function userAction (action) {
   switch (action.type) {
     case 'UPDATE_CHARACTER_IK_SKELETON':
       action.payload.skeleton = action.payload.skeleton.map((bone) => {
@@ -17,4 +22,9 @@ module.exports = function (action) {
   
   
   return action
+}
+
+module.exports = {
+  userAction,
+  DISABLED_ACTIONS
 }

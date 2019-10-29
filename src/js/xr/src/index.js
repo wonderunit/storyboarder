@@ -13,7 +13,7 @@ const io = require('socket.io-client')
 
 const h = require('../../utils/h')
 const { reducer, initialState, updateObject } = require('../../shared/reducers/shot-generator')
-const userAction = require('../userAction')
+const {userAction, DISABLED_ACTIONS} = require('../userAction')
 
 const SceneManagerXR = require('./SceneManagerXR')
 
@@ -62,6 +62,10 @@ const setupXR = () => {
         console.log(state)
   
         onReduxAction = (action) => {
+          if (DISABLED_ACTIONS[action.type]) {
+            return false
+          }
+          
           socket.emit('dispatch', JSON.stringify(userAction(action)))
         }
         

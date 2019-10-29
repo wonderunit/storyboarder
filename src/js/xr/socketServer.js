@@ -1,7 +1,7 @@
 const ioCreate = require('socket.io')
 
 const {getSerializedState, createObject, deleteObjects, updateObject} = require('../shared/reducers/shot-generator')
-const userAction = require('./userAction')
+const {userAction, DISABLED_ACTIONS} = require('./userAction')
 
 const clients = {}
 let sockets = []
@@ -69,11 +69,6 @@ const actionMiddleware = ({ getState }) => {
   }
 }
 
-const DISABLED_ACTIONS = {
-  SELECT_OBJECT: true,
-  SELECT_OBJECT_TOGGLE: true
-}
-
 const createSocketServer = (http, store) => {
   const io = ioCreate(http)
   debug('STORE', [store.getState(), store])
@@ -124,6 +119,5 @@ module.exports = {
   actionMiddleware,
   createSocketServer,
   broadcast,
-  objectPositionSend,
-  userAction
+  objectPositionSend
 }

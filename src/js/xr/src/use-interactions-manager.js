@@ -150,8 +150,14 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.z = parent.rotation.z
   
   if (window.mainAppSocket) {
+    let pos = new THREE.Vector3()
+    let scale = new THREE.Vector3()
+    let rot = new THREE.Quaternion()
+  
+    camera.matrixWorld.decompose(pos, rot, scale)
+    
     window.mainAppSocket.emit('xr-camera', {
-      pos: teleportPos,
+      pos: {x: teleportPos.x, y: pos.y, z: teleportPos.z},
       rot: teleportRot
     })
   }
