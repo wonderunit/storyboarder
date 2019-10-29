@@ -464,7 +464,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
     width,
     height: itemHeight + textHeight,
     onSelect: (xClick, yClick) => {
-      this.state.boards.startCoords = this.state.boards.prevCoords = { x: xClick - 1 - x * 2 / width, yClick }
+      this.state.boards.startCoords = this.state.boards.prevCoords = { x: xClick - 1 - (x * 2) / width, y: yClick }
     },
     onDrag: (x, y) => {
       const { boards } = this.state
@@ -473,9 +473,13 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
       boards.prevCoords = { x, y }
       this.boardsNeedsRender = true
     },
-    onDrop: (x, y, u, v) => {
+    onDrop: (xClick, yClick, u, v) => {
       const { startCoords } = this.state.boards
-      const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x - 1, y))
+      const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(
+        new THREE.Vector2(xClick - 1 - (x * 2) / width, yClick)
+      )
+
+      console.log(startCoords, new THREE.Vector2(xClick - 1 - (x * 2) / width, yClick))
 
       if (distance < 0.1) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
