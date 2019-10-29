@@ -83,7 +83,7 @@ const setupXR = async ({
     world,
     activeCamera
   }))
-
+  
   // TODO don't send to server if data change was just a new board loaded from the server
   //      (avoid re-sending what SG already knows about)
   if (!process.env.XR_STANDALONE_DEMO) {

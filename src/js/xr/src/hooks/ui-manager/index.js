@@ -970,6 +970,7 @@ const {
   setActiveCamera,
   undoGroupStart,
   undoGroupEnd,
+  loadScene,
 
   getDefaultPosePreset,
 
@@ -1286,6 +1287,18 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             setServerLastSavedHash(lastSavedHash)
             cr.state.sgCurrentState.board.uid = board.uid
             cr.boardsNeedsRender = true
+
+            const {
+              state: { activeCamera, sceneObjects, world }
+            } = await cr.client.getState()
+
+            store.dispatch(
+              loadScene({
+                sceneObjects,
+                world,
+                activeCamera
+              })
+            )
           } catch (err) {
             // TODO if the uid does not match, notify user, reload
             alert('Error\n' + err)
