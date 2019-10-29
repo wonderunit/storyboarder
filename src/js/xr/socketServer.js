@@ -1,26 +1,46 @@
 const ioCreate = require('socket.io')
 
-const {getSerializedState} = require('../shared/reducers/shot-generator')
+const {getSerializedState, createObject, deleteObjects, updateObject} = require('../shared/reducers/shot-generator')
+const userAction = require('./userAction')
 
 const clients = {}
 let sockets = []
 
-function onConnect(socket) {
-  clients[socket.id] = socket
-  
-  sockets.push(socket);
-}
-
-function onDisconnect(socket) {
-  Reflect.deleteProperty(clients, socket.id)
-  
-  sockets = sockets.filter((target) => target !== socket)
-}
+const POSITION_EVENT = 'object-position'
+const ACTION_EVENT = 'action'
+const XR_CAMERA_EVENT = 'xr-camera'
 
 function broadcast(event, msg) {
   for(let socket of sockets) {
     socket.emit(event, msg)
   }
+}
+
+function objectPositionSend(id, position) {
+  for(let socket of sockets) {
+    socket.emit(POSITION_EVENT, {id, position, fromMainApp: true})
+  }
+}
+
+function onConnect(socket, store) {
+  clients[socket.id] = socket
+  
+  sockets.push(socket);
+  
+  store.dispatch(createObject({
+    id: socket.id,
+    type: 'xrclient',
+    x: 0, y: 0, z: 0,
+    rotation: {x: 0, y: 0, z: 0},
+  }))
+}
+
+function onDisconnect(socket, store) {
+  Reflect.deleteProperty(clients, socket.id)
+  
+  sockets = sockets.filter((target) => target !== socket)
+  
+  store.dispatch(deleteObjects([socket.id]))
 }
 
 function sendState(socket, store) {
@@ -37,25 +57,11 @@ function sendState(socket, store) {
   })
 }
 
-function userAction(action) {
-  switch (action.type) {
-    case 'UPDATE_CHARACTER_IK_SKELETON':
-      action.payload.skeleton = action.payload.skeleton.map((bone) => {
-        bone.rotation = new THREE.Euler().setFromRotationMatrix(new THREE.Matrix4().fromArray(bone.object.matrix))
-        
-        return bone
-      })
-      break
-  }
-  
-  
-  return action
-}
-
 let onReduxAction = null
 
 const actionMiddleware = ({ getState }) => {
   return next => action => {
+    //debug('Will dispatch', action)
     
     onReduxAction && !action.fromSubApp && onReduxAction(action)
     
@@ -63,35 +69,43 @@ const actionMiddleware = ({ getState }) => {
   }
 }
 
+const DISABLED_ACTIONS = {
+  SELECT_OBJECT: true,
+  SELECT_OBJECT_TOGGLE: true
+}
+
 const createSocketServer = (http, store) => {
   const io = ioCreate(http)
+  debug('STORE', [store.getState(), store])
   
   io.on('connection', (socket) => {
     debug('IO', io)
     
-    onConnect(socket)
+    onConnect(socket, store)
+    sendState(socket, store)
     
     socket.on('disconnect', () => {
-      onDisconnect(socket)
-    })
-  
-    socket.on('get-state', () => {
-      sendState(socket, store)
+      onDisconnect(socket, store)
     })
   
     let currentAction = null
     socket.on('dispatch', (payload) => {
-      currentAction = userAction(JSON.parse(payload))
-  
-      //debug('WILL DISPATCH FROM CLIENT', currentAction)
+      currentAction = JSON.parse(payload)
       store.dispatch({...currentAction, fromSubApp: true})
-      
-      socket.broadcast.emit('action', JSON.stringify({...currentAction, fromMainApp: true}))
+    
+      socket.broadcast.emit(ACTION_EVENT, JSON.stringify({...currentAction, fromMainApp: true}))
+    })
+    
+    socket.on(XR_CAMERA_EVENT, (payload) => {
+      store.dispatch(updateObject(socket.id, {...payload.pos, rotation: payload.rot}))
     })
     
     onReduxAction = (payload) => {
-      //debug('WILL DISPATCH', payload)
-      io.emit('action', JSON.stringify({...payload, fromMainApp: true}))
+      if (DISABLED_ACTIONS[payload.type]) {
+        return false
+      }
+      
+      io.emit(ACTION_EVENT, JSON.stringify({...userAction(payload), fromMainApp: true}))
     }
     
   })
@@ -108,5 +122,8 @@ function debug(msg, object) {
 
 module.exports = {
   actionMiddleware,
-  createSocketServer
+  createSocketServer,
+  broadcast,
+  objectPositionSend,
+  userAction
 }

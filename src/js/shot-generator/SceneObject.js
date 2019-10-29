@@ -13,6 +13,8 @@ const ModelLoader = require('../services/model-loader')
 const applyDeviceQuaternion = require('./apply-device-quaternion')
 const IconSprites = require('./IconSprites')
 
+const {objectPositionSend} = require('./../xr/socketServer')
+
 const boxRadius = .005
 const boxRadiusSegments = 5
 
@@ -30,6 +32,9 @@ const groupFactory = () => {
       // uv - U,V coordinates at point of intersection
       intersects.push({ object: this })
     }
+  }
+  group.onDrag = function () {
+    objectPositionSend(group.userData.id, group.position)
   }
   return group
 }

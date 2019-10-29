@@ -174,7 +174,7 @@ const SelectionManager = connect(
       x = pointer.x;
       y = pointer.y;
       raycaster.setFromCamera({x, y}, camera )
-      //Check helpers intersection first 
+      //Check helpers intersection first
       intersects = raycaster.intersectObject(SGIkHelper.getInstance())
       if(intersects.length > 0)
       {
@@ -232,16 +232,29 @@ const SelectionManager = connect(
     raycaster.current.setFromCamera( mouse, camera )
     
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
-      let changes = {}
       for (selection of selections) {
         let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
-        changes[selection] = { x, y: z }
+        target.position.set( x, target.position.y, z )
+        if (target.onDrag) {
+          target.onDrag()
+        }
       }
-      updateObjects(changes)
     }
   }
   const endDrag = () => {
+    if (!intersection || !intersection.current) {
+      return false
+    }
     
+    let changes = {}
+    for (selection of selections) {
+      if (offsets.current[selection]) {
+        let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
+        changes[selection] = { x, y: z }
+      }
+    }
+    
+    updateObjects(changes)
   }
   useMemo(() => {
     if (dragTarget) {
@@ -323,8 +336,8 @@ const SelectionManager = connect(
 
         target = getIntersectionTarget(intersect)
       
-      } 
-      else 
+      }
+      else
       {
         let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint' || intersect.object.type === "gizmo");
         if(controlPoint.length !== 0)
@@ -340,7 +353,7 @@ const SelectionManager = connect(
           target = characters[0];
           isSelectedControlPoint = true;
   
-        } 
+        }
         else if(target && target.userData && target.userData.type === 'boneControl')
         {
           let characterId = target.characterId;
@@ -486,7 +499,7 @@ const SelectionManager = connect(
           // selectObject(undefined)
           // selectBone(null)
           setLastDownId(null)
-          // 
+          //
           // endDrag()
           // setDragTarget(null)
 

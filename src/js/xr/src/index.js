@@ -12,7 +12,8 @@ const thunkMiddleware = require('redux-thunk').default
 const io = require('socket.io-client')
 
 const h = require('../../utils/h')
-const { reducer, initialState, getSerializedState } = require('../../shared/reducers/shot-generator')
+const { reducer, initialState, updateObject } = require('../../shared/reducers/shot-generator')
+const userAction = require('../userAction')
 
 const SceneManagerXR = require('./SceneManagerXR')
 
@@ -50,7 +51,8 @@ const setupXR = () => {
   let wsAddress = location.href.replace('http', 'ws')
   wsAddress = wsAddress.replace('https', 'wss')
   
-  socket = io(wsAddress)
+  const socket = io(wsAddress)
+  window.mainAppSocket = socket
   
   socket.on('connect', function () {
     
@@ -60,20 +62,31 @@ const setupXR = () => {
         console.log(state)
   
         onReduxAction = (action) => {
-          socket.emit('dispatch', JSON.stringify(action))
+          socket.emit('dispatch', JSON.stringify(userAction(action)))
         }
         
         return false
       }
     })
-    
+  
     socket.on('action', (payload) => {
       if (store) {
         store.dispatch(JSON.parse(payload))
       }
     })
-    
-    socket.emit('get-state')
+  
+    socket.on('object-position', (payload) => {
+      if (store) {
+        store.dispatch({
+          ...updateObject(payload.id, {
+            x: payload.position.x,
+            y: payload.position.z,
+            z: payload.position.y
+          }),
+          fromMainApp: true
+        })
+      }
+    })
     
     //if (!process.env.XR_STANDALONE_DEMO) {
     

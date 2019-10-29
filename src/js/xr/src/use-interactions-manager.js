@@ -148,6 +148,13 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.x = parent.rotation.x
   teleportRot.y = parent.rotation.y
   teleportRot.z = parent.rotation.z
+  
+  if (window.mainAppSocket) {
+    window.mainAppSocket.emit('xr-camera', {
+      pos: teleportPos,
+      rot: teleportRot
+    })
+  }
 }
 
 const [useStore, useStoreApi] = create((set, get) => ({
@@ -289,17 +296,17 @@ const useInteractionsManager = ({
       const updateCharacterSkeleton = (name, rotation) => { dispatch(updateCharacterSkeleton({
         id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
         name : name,
-        rotation: 
+        rotation:
         {
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
-        }  
+        }
       } ))}
 
       const updateSkeleton = (skeleton) => { dispatch(updateCharacterIkSkeleton({
         id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
-        skeleton: skeleton  
+        skeleton: skeleton
       } ))}
 
       const updateCharacterPos = ({ x, y, z}) => dispatch(updateObject(
@@ -320,7 +327,7 @@ const useInteractionsManager = ({
         updatePoleTarget
       )
     }
-    return ikHelper.current 
+    return ikHelper.current
   }
   
   useEffect(() => {
@@ -388,6 +395,15 @@ const useInteractionsManager = ({
       }))
     }
   }
+  
+  // useRender(() => {
+  //   if (window.mainAppSocket) {
+  //     window.mainAppSocket.emit('camera-matrix', {
+  //       pos: camera.parent.position,
+  //       rot: camera.parent.rotation
+  //     })
+  //   }
+  // })
 
   const onTriggerStart = event => {
     const controller = event.target
