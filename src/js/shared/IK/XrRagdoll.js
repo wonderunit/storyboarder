@@ -46,6 +46,7 @@ class XRRagdoll extends XRIKObject
         {
             IK.firstRun = false;
             this.setUpHipsControlTargetRotation();
+            this.setUpControlTargetsInitialPosition();
         }
         if(!this.isEnabledIk)
         {
@@ -292,12 +293,15 @@ class XRRagdoll extends XRIKObject
     updateReact()
     {        
         let ikBones = [];
+        this.limbsFollowRotation();
+        this.ikSwitcher.applyChangesToOriginal();
         for (let bone of this.originalObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones)
         {
             if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName ))
             {
                 continue;
             }
+            bone.updateWorldMatrix(true, true)
             ikBones.push(bone);
         }
         this.updateCharacterSkeleton(ikBones);
@@ -331,11 +335,24 @@ class XRRagdoll extends XRIKObject
     rotateBoneQuaternion(bone, boneTarget)
     {
         let targetQuat = this.resourceManager.getQuaternion();
-        boneTarget.getWorldQuaternion(targetQuat);
         let quaternion = this.resourceManager.getQuaternion();
-        bone.getWorldQuaternion(quaternion).inverse();
-        bone.quaternion.multiply(quaternion);
+        boneTarget.getWorldQuaternion(targetQuat);
+        if(boneTarget.userData.posing)
+        {
+            console.log(boneTarget.clone())
+            console.log(bone.clone())
+           // bone.getWorldQuaternion(quaternion).inverse();
+           // bone.quaternion.copy(targetQuat);
+            //return;
+        }
+        let boneQuat = bone.quaternion.clone()
+        bone.parent.getWorldQuaternion(quaternion).inverse();
+        bone.quaternion.copy(quaternion);
+
         bone.quaternion.multiply(targetQuat);
+        //console.log(bone.worldQuaternion().clone());
+        //console.log(boneQuat.clone());
+       // console.log(boneTarget.parent.clone().worldQuaternion())
         this.resourceManager.release(targetQuat);
         this.resourceManager.release(quaternion);
     }
