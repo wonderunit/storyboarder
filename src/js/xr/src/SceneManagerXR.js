@@ -488,15 +488,17 @@ const SceneContent = connect(
     const groundRef = useRef()
     const rootRef = useRef()
 
-    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({ playSound, stopSound })
+    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound })
 
-    const { controllers, interactionServiceCurrent } = useInteractionsManager({
+    const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
       rootRef,
       uiService,
       playSound,
       stopSound
     })
+
+    canvasRendererRef.current.interactionServiceSend = interactionServiceSend
 
     // initialize the BonesHelper
     useMemo(() => {
