@@ -70,6 +70,9 @@ class XRServer {
 
     app.get('/sg.json', (req, res) => {
       const state = store.getState()
+      const serializedState = getSerializedState(state)
+      console.log(JSON.stringify(serializedState), 'DOG')
+
       const { aspectRatio, meta: { lastSavedHash } } = state
 
       let hash = getHash(state)

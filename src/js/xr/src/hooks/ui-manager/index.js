@@ -1331,7 +1331,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             activeCamera: cr.state.activeCamera
           }
 
-          let hasUnsavedChanges = await checkForUnsavedChanges(data)
+          let hasUnsavedChanges = await checkForUnsavedChanges()
           if (hasUnsavedChanges) {
             let confirmed = await checkConfirmStatus()
             if (!confirmed) return
@@ -1363,7 +1363,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             activeCamera: cr.state.activeCamera
           }
 
-          let hasUnsavedChanges = await checkForUnsavedChanges(data)
+          let hasUnsavedChanges = await checkForUnsavedChanges()
 
           if (hasUnsavedChanges) {
             let confirmed = await checkConfirmStatus()
@@ -1382,16 +1382,12 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     }
   )
 
-  const checkForUnsavedChanges = async data => {
+  const checkForUnsavedChanges = async () => {
     // ask for SG hashes
     let serverResponse = await getCanvasRenderer().client.getSg()
     setServerHash(serverResponse.hash)
     setServerLastSavedHash(serverResponse.lastSavedHash)
-
-    // calculate local hash
-    let localHash = getHashForBoardSgData(data)
-
-    return serverResponse.hash != localHash
+    return serverResponse.hash != serverResponse.lastSavedHash
   }
 
   const getHashForBoardSgData = data => {
