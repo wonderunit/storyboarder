@@ -324,27 +324,6 @@ const useInteractionsManager = ({
   }
   
   useEffect(() => {
-    let times = 0
-    let skip = 1
-    const onUpdate = () => {
-      requestAnimationFrame(onUpdate)
-      
-      if (times < skip) {
-        times++
-      } else {
-        times = 0
-  
-        if (window.mainAppSocket) {
-          camera.updateMatrixWorld()
-          window.mainAppSocket.emit('xr-camera', {matrix: camera.matrixWorld.elements})
-        }
-      }
-    }
-    
-    onUpdate()
-  }, [])
-  
-  useEffect(() => {
     // create a temporary mesh object to initialize the GPUPicker
     let gpuPicker = getGpuPicker()
     let geometry = new THREE.BoxBufferGeometry(2, 2, 2)
@@ -748,9 +727,41 @@ const useInteractionsManager = ({
     }
     return reusableVector.current
   }
+  
+  const sendToServerGenerator = () => {
+    let controllersInfo
+    let times = 0
+    let skip = 2
+    
+    return () => {
+      // Send update info once per 3 calls to achieve 20 updates per second (60 / 3 = 20)
+      if (times < skip) {
+        times++
+      } else {
+        times = 0
+    
+        if (window.mainAppSocket) {
+          camera.updateMatrixWorld()
+      
+          controllersInfo = []
+          for (let i = 0, n = controllers.length; i < n; i++) {
+            controllersInfo[i] = {matrix: controllers[i].matrixWorld.elements}
+          }
+      
+          window.mainAppSocket.emit('xr-controls', {
+            cameraMatrix: camera.matrixWorld.elements,
+            controllers: controllersInfo
+          })
+        }
+      }
+    }
+  }
+  
+  const sendToServer = sendToServerGenerator()
 
   // TODO could model these as ... activities? exec:'render' actions?
   useRender(() => {
+    sendToServer()
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())

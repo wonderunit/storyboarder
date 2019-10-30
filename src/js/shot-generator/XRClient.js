@@ -2,21 +2,13 @@ const ModelLoader = require('../services/model-loader')
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 const TWEEN = require('@tweenjs/tween.js');
 window.TWEEN = TWEEN
 
-const path = require('path')
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
 const {gltfLoader} = require('./Components')
-
-const applyDeviceQuaternion = require('./apply-device-quaternion')
-const IconSprites = require('./IconSprites')
-
-const boxRadius = .005
-const boxRadiusSegments = 5
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -32,12 +24,6 @@ const groupFactory = () => {
   group.raycast = function ( raycaster, intersects ) {
     let results = raycaster.intersectObjects(this.children)
     if (results.length) {
-      // distance – distance between the origin of the ray and the intersection
-      // point – point of intersection, in world coordinates
-      // face – intersected face
-      // faceIndex – index of the intersected face
-      // object – the intersected object
-      // uv - U,V coordinates at point of intersection
       intersects.push({ object: this })
     }
   }
@@ -66,16 +52,41 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
+const getEmptyObj = () => {
+  return {
+    state: {
+      worldRotation1: new THREE.Quaternion(),
+      worldRotation0: new THREE.Quaternion(),
+      worldPosition: new THREE.Vector3(),
+      worldScale: new THREE.Vector3(),
+      worldMatrix: new THREE.Matrix4()
+    },
+    object: new THREE.Object3D()
+  }
+}
+
+const loadModels = (models) => {
+  return Promise.all(
+      models.map((modelPath) => {
+        return new Promise((resolve, reject) => {
+          gltfLoader.load(
+              modelPath,
+              modelData => resolve(modelData.scene),
+              null,
+              reject
+          )
+        })
+      })
+  )
+}
+
 const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, storyboarderFilePath, camera, ...props }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
 
   const container = useRef()
   
-  const worldRotation1 = new THREE.Quaternion()
-  const worldRotation0 = new THREE.Quaternion()
-  const worldPosition = new THREE.Vector3()
-  const worldScale = new THREE.Vector3()
-  const worldMatrix = new THREE.Matrix4()
+  const head = getEmptyObj()
+  const controls = [getEmptyObj(), getEmptyObj()]
   
   //.easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
   let tween = new TWEEN.Tween({})
@@ -86,43 +97,102 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
       tween.stop()
     }
   
-    worldRotation0.copy(container.current.quaternion)
+    head.state.worldRotation0.copy(head.object.quaternion)
+    controls[0].state.worldRotation0.copy(controls[0].object.quaternion)
+    controls[1].state.worldRotation0.copy(controls[1].object.quaternion)
   
     tween = new TWEEN.Tween({
-      x: container.current.position.x,
-      y: container.current.position.y,
-      z: container.current.position.z,
+      x: head.object.position.x,
+      y: head.object.position.y,
+      z: head.object.position.z,
+      xc1: controls[0].object.position.x,
+      yc1: controls[0].object.position.y,
+      zc1: controls[0].object.position.z,
+      xc2: controls[1].object.position.x,
+      yc2: controls[1].object.position.y,
+      zc2: controls[1].object.position.z,
       deltaTime: 0
     })
     
     tween.to({
-      x: worldPosition.x,
-      y: worldPosition.y,
-      z: worldPosition.z,
+      x: head.state.worldPosition.x,
+      y: head.state.worldPosition.y,
+      z: head.state.worldPosition.z,
+      xc1: controls[0].state.worldPosition.x,
+      yc1: controls[0].state.worldPosition.y,
+      zc1: controls[0].state.worldPosition.z,
+      xc2: controls[1].state.worldPosition.x,
+      yc2: controls[1].state.worldPosition.y,
+      zc2: controls[1].state.worldPosition.z,
       deltaTime: 1
     }, 200)
     
-    tween.onUpdate(({ x, y, z, deltaTime }) => {
-      container.current.position.x = x
-      container.current.position.y = y
-      container.current.position.z = z
-      THREE.Quaternion.slerp(worldRotation0, worldRotation1, container.current.quaternion, deltaTime)
+    // TODO There must be an easier way to update values
+    tween.onUpdate(({ x, y, z, xc1, yc1, zc1, xc2, yc2, zc2, deltaTime }) => {
+      head.object.position.x = x
+      head.object.position.y = y
+      head.object.position.z = z
+  
+      controls[0].object.position.x = xc1
+      controls[0].object.position.y = yc1
+      controls[0].object.position.z = zc1
+  
+      controls[1].object.position.x = xc2
+      controls[1].object.position.y = yc2
+      controls[1].object.position.z = zc2
+  
+  
+      THREE.Quaternion.slerp(
+          head.state.worldRotation0,
+          head.state.worldRotation1,
+          head.object.quaternion,
+          deltaTime
+      )
+  
+      THREE.Quaternion.slerp(
+          controls[0].state.worldRotation0,
+          controls[0].state.worldRotation1,
+          controls[0].object.quaternion,
+          deltaTime
+      )
+  
+      THREE.Quaternion.slerp(
+          controls[1].state.worldRotation0,
+          controls[1].state.worldRotation1,
+          controls[1].object.quaternion,
+          deltaTime
+      )
     })
     
     tween.start()
   }
   
-  const updateMatrix = (matrix) => {
-    worldMatrix.fromArray(matrix)
-    worldMatrix.decompose(worldPosition, worldRotation1, worldScale)
-  
+  let controllerIndex, controller
+  const update = (data) => {
+    head.state.worldMatrix.fromArray(data.cameraMatrix)
+    head.state.worldMatrix.decompose(head.state.worldPosition, head.state.worldRotation1, head.state.worldScale)
+    
+    for(controllerIndex = 0; controllerIndex < data.controllers.length; controllerIndex++) {
+      controller = data.controllers[controllerIndex]
+      controls[controllerIndex].state.worldMatrix.fromArray(controller.matrix)
+      controls[controllerIndex].state.worldMatrix.decompose(
+          controls[controllerIndex].state.worldPosition,
+          controls[controllerIndex].state.worldRotation1,
+          controls[controllerIndex].state.worldScale
+      )
+    }
+    
     setTweenData()
   }
 
   useEffect(() => {
-    
-    let expectedFilepath = ModelLoader.getFilepathForModel({
+    let expectedHeadsetFilepath = ModelLoader.getFilepathForModel({
       model: 'hmd',
+      type: 'xr'
+    }, { storyboarderFilePath })
+  
+    let expectedControllerFilepath = ModelLoader.getFilepathForModel({
+      model: 'controller',
       type: 'xr'
     }, { storyboarderFilePath })
   
@@ -131,39 +201,54 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
     container.current.userData.id = id
     container.current.userData.type = type
   
-    window.connectedClientModels[id] = {updateMatrix}
+    // FIXME DIRTY HACK v1.0, allows to update object without dispatching an event
+    window.connectedClient[id] = {update}
     scene.add(container.current)
   
-    gltfLoader.load(
-        expectedFilepath,
-        modelData => {
-          container.current.remove(...container.current.children)
-          
-          modelData.scene.traverse( function ( child ) {
-            if ( child instanceof THREE.Mesh ) {
-              let mesh = meshFactory(child.clone())
-              mesh.rotateY(Math.PI)
-              container.current.add(mesh)
-            }
-          })
-          
-          container.current.children[1].material.color.setRGB(0.15, 0.0, 0.8)
-          container.current.children[2].material.color.setRGB(0.15, 0.0, 0.8)
+    loadModels([
+      expectedHeadsetFilepath,
+      expectedControllerFilepath
+    ]).then(([headModel, controllerModel]) => {
+    
+      container.current.remove(...container.current.children)
+      head.object.remove(...head.object.children)
+      controls[0].object.remove(...controls[0].object.children)
+      controls[1].object.remove(...controls[1].object.children)
   
-          setLoaded(true)
-        },
-        null,
-        error => {
-          console.error(error)
-          setLoaded(undefined)
+      headModel.traverse( function ( child ) {
+        if ( child instanceof THREE.Mesh ) {
+          let mesh = meshFactory(child.clone())
+          mesh.rotateY(Math.PI)
+          head.object.add(mesh)
         }
-    )
+      })
+  
+      controllerModel.traverse( function ( child ) {
+        if ( child instanceof THREE.Mesh ) {
+          controls[0].object.add(meshFactory(child.clone()))
+          controls[1].object.add(meshFactory(child.clone()))
+        }
+      })
+    
+      head.object.children[1].material.color.setRGB(0.15, 0.0, 0.8)
+      head.object.children[2].material.color.setRGB(0.15, 0.0, 0.8)
+      
+      container.current.add(head.object)
+      container.current.add(controls[0].object)
+      container.current.add(controls[1].object)
+      
+      setLoaded(true)
+    
+    }).catch((error) => {
+      console.error(error)
+      setLoaded(undefined)
+    })
 
     return function cleanup () {
       console.log(type, id, 'XR CLIENT removed from scene')
       scene.remove(container.current.orthoIcon)
       scene.remove(container.current)
-      Reflect.deleteProperty(window.connectedClientModels, id)
+      Reflect.deleteProperty(window.connectedClient, id)
     }
   }, [])
   
@@ -174,16 +259,15 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
   ])
   
   useEffect(() => {
-    if (!container.current.children[0]) return
-    if (!container.current.children[0].material) return
-    
-    for(let i = 0; i < container.current.children.length; i++) {
-      container.current.children[i].material.userData.outlineParameters = {
-        thickness: 0.008,
-        color: [ 0, 0, 0 ]
+    container.current.traverse((obj) => {
+      if (obj.isMesh) {
+        obj.material.userData.outlineParameters = {
+          thickness: 0.008,
+          color: [ 0, 0, 0 ]
+        }
       }
-    }
-  }, [isSelected])
+    })
+  }, [isSelected, loaded])
 
   return null
 })

@@ -1,15 +1,16 @@
 const ioCreate = require('socket.io')
 
-const {getSerializedState, createObject, deleteObjects, updateObject} = require('../shared/reducers/shot-generator')
+const {getSerializedState, createObject, deleteObjects} = require('../shared/reducers/shot-generator')
 const {userAction, DISABLED_ACTIONS} = require('./userAction')
 
-window.connectedClientModels = {}
+// FIXME DIRTY HACK v2.0, allows to update objects without dispatching an event
+window.connectedClient = {}
 const clients = {}
 let sockets = []
 
 const POSITION_EVENT = 'object-position'
 const ACTION_EVENT = 'action'
-const XR_CAMERA_EVENT = 'xr-camera'
+const XR_CONTROL_EVENT = 'xr-controls'
 
 function broadcast(event, msg) {
   for(let socket of sockets) {
@@ -92,10 +93,9 @@ const createSocketServer = (http, store) => {
       socket.broadcast.emit(ACTION_EVENT, JSON.stringify({...currentAction, fromMainApp: true}))
     })
     
-    socket.on(XR_CAMERA_EVENT, (payload) => {
-      //store.dispatch(updateObject(socket.id, payload))
-      if (window.connectedClientModels[socket.id]) {
-        window.connectedClientModels[socket.id].updateMatrix(payload.matrix)
+    socket.on(XR_CONTROL_EVENT, (payload) => {
+      if (window.connectedClient[socket.id]) {
+        window.connectedClient[socket.id].update(payload)
       }
     })
     
