@@ -241,11 +241,9 @@ class CanvasRenderer {
     this.state.boardsData = RemoteData.init()
     this.client.getBoards().then(result => {
       this.state.boardsData = RemoteData.success(result)
-      this.needsRender = true
       this.boardsNeedsRender = true
     }).catch(err => {
       this.state.boardsData = RemoteData.failure(err)
-      this.needsRender = true
       this.boardsNeedsRender = true
     })
 
@@ -1304,7 +1302,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             let { hash, lastSavedHash } = await cr.client.getSg()
             setServerHash(hash)
             setServerLastSavedHash(lastSavedHash)
-            cr.state.sgCurrentState.board.uid = board.uid
+            cr.state.sgCurrentState.board = { uid: board.uid, shot: board.shot }
             cr.boardsNeedsRender = true
 
             const {

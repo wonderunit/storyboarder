@@ -367,7 +367,8 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
     if (startItem >= items.length) break
     const item = items[startItem]
 
-    const isActive = type === 'boards' ? item.uid === this.state.sgCurrentState.board.uid : item.id === this.state.activeCamera
+    const activeBoard = this.state.sgCurrentState.board && item.uid === this.state.sgCurrentState.board.uid
+    const isActive = type === 'boards' ? activeBoard : item.id === this.state.activeCamera
     ctx.fillStyle = isActive ? '#d561fc' : '#6E6E6E'
     roundRect(
       ctx,
