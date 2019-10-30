@@ -683,7 +683,6 @@ const useInteractionsManager = ({
     // relay through state machine
     console.log(event)
     interactionService.send({ type: 'PRESS_END_Y', controller: event.target })
-
   }
 
   const onMoveCamera = event => {
@@ -758,6 +757,12 @@ const useInteractionsManager = ({
       reusableVector.current = new THREE.Vector3()
     }
     return reusableVector.current
+  }
+
+  const poseTicking = () => {
+    if(interactionService.state.value !== "character_posing") return
+    playSound('posing')
+    setTimeout(() => poseTicking(), 1000)
   }
 
   // TODO could model these as ... activities? exec:'render' actions?
@@ -974,21 +979,18 @@ const useInteractionsManager = ({
           staticLimbRotation.setFromEuler(eulerRot)
           changeControlPointSpaceToHMDSpace(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
           
-
           // Changes right control point space to right controller(hmd space) and apply custom rotation
           let rightController = getControllerByName(controllers, "right")
           changeControlPointSpaceToHMDSpace(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
           ikHelper.ragDoll.isEnabledIk = true
           clearStandingMemento()
-         
-          playSound('teleport')
           
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
           mirror.position.copy(ikHelper.parent.worldPosition())
           mirror.position.z += 2
-          scene.add(mirror);
-
-          //interactionService.send({ type: 'STOP_POSING', controller: event.target})
+          scene.add(mirror); //playSound('posing')
+          setTimeout(() => { interactionService.send({ type: 'STOP_POSING', controller: event.target}) }, 5000)
+          setTimeout(() => { poseTicking() }, 1000)
         },
         onPosingCharacterExit: (context, event) => {
           console.log("Posing stopped")
@@ -1011,6 +1013,7 @@ const useInteractionsManager = ({
           leftArmControlPoint.updateWorldMatrix(true, true)
           useStoreApi.setState({teleportPos : {x, y, z} = camera.parent.userData.prevPosition} )
           useStoreApi.setState({teleportRot : {x, y, z} = camera.parent.userData.prevRotation} )
+          playSound('endPosing')
         },
         onDropLowest: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
