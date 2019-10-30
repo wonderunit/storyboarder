@@ -1506,7 +1506,6 @@ ipcMain.on('shot-generator:update', (event, { board }) => {
 ipcMain.on('shot-generator:loadBoardByUid', (event, uid) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
-    win.show()
     win.webContents.send('loadBoardByUid', uid)
   }
 })
