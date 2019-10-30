@@ -20,7 +20,12 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
   const mesh = useMemo(() => {
     return new THREE.Mesh(
       new THREE.PlaneBufferGeometry(1, 1, 1),
-      new THREE.MeshBasicMaterial({ map: getTexture(), transparent: true, opacity: 0.8, side: THREE.BackSide })
+      new THREE.MeshBasicMaterial({
+        map: getTexture(),
+        transparent: true,
+        opacity: 1.0,
+        side: THREE.BackSide
+      })
     )
   }, [mode])
 
@@ -38,23 +43,35 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
     getCanvasRenderer().boardsNeedsRender = false
   })
 
-  return mesh
-    ? <primitive
-      ref={ref}
-      object={mesh}
-      name={'gui-boards'}
+  const boardsIndicators = (
+    <mesh position={[0, -0.05, 0]}>
+      <circleBufferGeometry attach="geometry" args={[0.03, 32]} />
+      <meshBasicMaterial
+        attach="material"
+        color={0x7256ff}
+        depthTest={false}
+        depthWrite={false}
+        transparent={true}
+        side={THREE.DoubleSide}
+      />
+    </mesh>
+  )
 
-      position={POSITION}
-      scale={[SCALE, SCALE, SCALE]}
-      rotation={[rotation, 0, 0]}
-
-      onController={() => null}
-      userData={{
-        type: 'ui',
-        id: 'boards'
-      }}>
-    </primitive>
-    : null
+  return mesh ? (
+    <group position={POSITION} scale={[SCALE, SCALE, SCALE]} rotation={[rotation, 0, 0]}>
+      {boardsIndicators}
+      <primitive
+        ref={ref}
+        object={mesh}
+        onController={() => null}
+        name={'gui-boards'}
+        userData={{
+          type: 'ui',
+          id: 'boards'
+        }}
+      ></primitive>
+    </group>
+  ) : null
 })
 
 module.exports = Boards
