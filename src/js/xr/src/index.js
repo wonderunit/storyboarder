@@ -94,7 +94,7 @@ const setupXR = async ({
         let uid = state.board.uid
         let serializedState = getSerializedState(state)
         try {
-          await client.sendState(uid, serializedState, stateJsonUri)
+          // await client.sendState(uid, serializedState, stateJsonUri)
         } catch (err) {
           // TODO if error is that board has changed in SG, notify user, and reload in VR
           console.error(err)
