@@ -140,7 +140,7 @@ const SceneManager = connect(
       
       const updateTween = (time) => {
         requestAnimationFrame(updateTween)
-        TWEEN.update(time, true)
+        TWEEN.update(time)
       }
 
       document.addEventListener('visibilitychange', onVisibilityChange)
@@ -600,7 +600,7 @@ const SceneManager = connect(
                 camera,
           
                 updateObject,
-                modelData: {},
+                storyboarderFilePath: meta.storyboarderFilePath,
           
                 ...props
               }

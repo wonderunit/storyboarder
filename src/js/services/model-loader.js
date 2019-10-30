@@ -235,7 +235,8 @@ const pathToShotGeneratorData =
 // calculate filepath
 const builtInFolder = type => ({
   'object': path.join(pathToShotGeneratorData, 'objects'),
-  'character': path.join(pathToShotGeneratorData, 'dummies', 'gltf')
+  'character': path.join(pathToShotGeneratorData, 'dummies', 'gltf'),
+  'xr': path.join(pathToShotGeneratorData, 'xr')
 }[type])
 
 const projectFolder = type => ({

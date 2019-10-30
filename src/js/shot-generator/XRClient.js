@@ -1,3 +1,5 @@
+const ModelLoader = require('../services/model-loader')
+
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const RoundedBoxGeometry = require('three-rounded-box')(THREE)
@@ -8,15 +10,21 @@ const path = require('path')
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
-const { dialog } = require('electron').remote
-const fs = require('fs')
-const ModelLoader = require('../services/model-loader')
+const {gltfLoader} = require('./Components')
 
 const applyDeviceQuaternion = require('./apply-device-quaternion')
 const IconSprites = require('./IconSprites')
 
 const boxRadius = .005
 const boxRadiusSegments = 5
+
+const materialFactory = () => new THREE.MeshToonMaterial({
+  color: 0xcccccc,
+  emissive: 0x0,
+  specular: 0x0,
+  shininess: 0,
+  flatShading: false
+})
 
 // return a group which can report intersections
 const groupFactory = () => {
@@ -36,157 +44,129 @@ const groupFactory = () => {
   return group
 }
 
-const materialFactory = () => new THREE.MeshToonMaterial({
-  color: 0xcccccc,
-  emissive: 0x0,
-  specular: 0x0,
-  shininess: 0,
-  flatShading: false
-})
 
-const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, camera, ...props }) => {
+
+const meshFactory = originalMesh => {
+  let mesh = originalMesh.clone()
+  mesh.geometry.computeBoundingBox()
+  
+  // create a skeleton if one is not provided
+  if (mesh instanceof THREE.SkinnedMesh && !mesh.skeleton) {
+    mesh.skeleton = new THREE.Skeleton()
+  }
+  
+  let material = materialFactory()
+  
+  if (mesh.material.map) {
+    material.map = mesh.material.map
+    material.map.needsUpdate = true
+  }
+  mesh.material = material
+  
+  return mesh
+}
+
+const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, storyboarderFilePath, camera, ...props }) => {
   const setLoaded = loaded => updateObject(id, { loaded })
 
   const container = useRef()
+  
+  const worldRotation1 = new THREE.Quaternion()
+  const worldRotation0 = new THREE.Quaternion()
+  const worldPosition = new THREE.Vector3()
+  const worldScale = new THREE.Vector3()
+  const worldMatrix = new THREE.Matrix4()
   
   //.easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
   let tween = new TWEEN.Tween({})
   
   // This doesn't work with tween@18.3.1
   const setTweenData = () => {
-    console.clear()
-    tween.stop()
+    if (tween) {
+      tween.stop()
+    }
+  
+    worldRotation0.copy(container.current.quaternion)
   
     tween = new TWEEN.Tween({
       x: container.current.position.x,
       y: container.current.position.y,
       z: container.current.position.z,
-      rotx: container.current.rotation.x,
-      roty: container.current.rotation.y,
-      rotz: container.current.rotation.z
+      deltaTime: 0
     })
     
     tween.to({
-      x: props.x,
-      y: props.y,
-      z: props.z,
-      rotx: props.rotation.x,
-      roty: props.rotation.y,
-      rotz: props.rotation.z
+      x: worldPosition.x,
+      y: worldPosition.y,
+      z: worldPosition.z,
+      deltaTime: 1
     }, 200)
     
-    tween.onUpdate(({ x, y, z, rotx, roty, rotz }) => {
+    tween.onUpdate(({ x, y, z, deltaTime }) => {
       container.current.position.x = x
       container.current.position.y = y
       container.current.position.z = z
-      container.current.rotation.x = rotx
-      container.current.rotation.y = roty
-      container.current.rotation.z = rotz
+      THREE.Quaternion.slerp(worldRotation0, worldRotation1, container.current.quaternion, deltaTime)
     })
     
     tween.start()
   }
   
-  const setTweenDataWorks = () => {
-    console.clear()
-    TWEEN.removeAll()
-    
-    let tween = new TWEEN.Tween({
-      x: container.current.position.x,
-      y: container.current.position.y,
-      z: container.current.position.z,
-      rotx: container.current.rotation.x,
-      roty: container.current.rotation.y,
-      rotz: container.current.rotation.z
-    })
-    
-    tween.to({
-      x: props.x || 0,
-      y: props.y || 0,
-      z: props.z || 0,
-      rotx: props.rotation.x || 0,
-      roty: props.rotation.y || 0,
-      rotz: props.rotation.z || 0
-    }, 200)
-    
-    tween.onUpdate(({ x, y, z, rotx, roty, rotz }) => {
-      //{ x, y, z, rotx, roty, rotz }
-      /*
-      state.
-state.
-state.
-state.
-state.
-state.
-       */
-      //console.clear()
-      //console.log('TWEEN UPDATE', x, y, z)
-      container.current.position.x = x
-      container.current.position.y = y
-      container.current.position.z = z
-      container.current.rotation.x = rotx
-      container.current.rotation.y = roty
-      container.current.rotation.z = rotz
-    })
-    
-    tween.start()
-    
-    console.log('New props', props, tween)
+  const updateMatrix = (matrix) => {
+    worldMatrix.fromArray(matrix)
+    worldMatrix.decompose(worldPosition, worldRotation1, worldScale)
+  
+    setTweenData()
   }
 
   useEffect(() => {
-    console.log(type, id, 'added')
     
-
+    let expectedFilepath = ModelLoader.getFilepathForModel({
+      model: 'hmd',
+      type: 'xr'
+    }, { storyboarderFilePath })
+  
+    console.log(type, id, 'XR CLIENT added to the scene')
     container.current = groupFactory()
     container.current.userData.id = id
     container.current.userData.type = type
   
-    console.log(container.current, 'CLIENT')
-
-    //container.current.orthoIcon = new IconSprites( type, "", container.current )
-    //scene.add(container.current.orthoIcon)
-
-    console.log(type, id, 'XR CLIENT added to scene')
+    window.connectedClientModels[id] = {updateMatrix}
     scene.add(container.current)
   
-    let geometry = new RoundedBoxGeometry( 0.5, 0.5, 0.5, boxRadius, boxRadiusSegments )
-    let material = materialFactory()
-    let mesh = new THREE.Mesh( geometry, material )
-    mesh.renderOrder = 1.0
-    mesh.layers.disable(0)
-    mesh.layers.enable(1)
-    mesh.layers.enable(2)
-    mesh.layers.enable(3)
-    container.current.remove(...container.current.children)
-    container.current.add(mesh)
-    setLoaded(true)
+    gltfLoader.load(
+        expectedFilepath,
+        modelData => {
+          container.current.remove(...container.current.children)
+          
+          modelData.scene.traverse( function ( child ) {
+            if ( child instanceof THREE.Mesh ) {
+              let mesh = meshFactory(child.clone())
+              mesh.rotateY(Math.PI)
+              container.current.add(mesh)
+            }
+          })
+          
+          container.current.children[1].material.color.setRGB(0.15, 0.0, 0.8)
+          container.current.children[2].material.color.setRGB(0.15, 0.0, 0.8)
+  
+          setLoaded(true)
+        },
+        null,
+        error => {
+          console.error(error)
+          setLoaded(undefined)
+        }
+    )
 
     return function cleanup () {
       console.log(type, id, 'XR CLIENT removed from scene')
       scene.remove(container.current.orthoIcon)
       scene.remove(container.current)
+      Reflect.deleteProperty(window.connectedClientModels, id)
     }
   }, [])
   
-  useEffect(() => {
-    setTweenData()
-    //container.current.orthoIcon.position.copy(container.current.position)
-  }, [
-    props.x,
-    props.y,
-    props.z
-  ])
-
-  useEffect(() => {
-    setTweenData()
-    //container.current.orthoIcon.icon.rotation = props.rotation.y
-  }, [
-    props.rotation.x,
-    props.rotation.y,
-    props.rotation.z
-  ])
-
   useEffect(() => {
     container.current.visible = props.visible
   }, [
@@ -197,9 +177,11 @@ state.
     if (!container.current.children[0]) return
     if (!container.current.children[0].material) return
     
-    container.current.children[0].material.userData.outlineParameters = {
-      thickness: 0.008,
-      color: [ 0, 0, 0 ]
+    for(let i = 0; i < container.current.children.length; i++) {
+      container.current.children[i].material.userData.outlineParameters = {
+        thickness: 0.008,
+        color: [ 0, 0, 0 ]
+      }
     }
   }, [isSelected])
 

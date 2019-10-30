@@ -148,19 +148,6 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.x = parent.rotation.x
   teleportRot.y = parent.rotation.y
   teleportRot.z = parent.rotation.z
-  
-  if (window.mainAppSocket) {
-    let pos = new THREE.Vector3()
-    let scale = new THREE.Vector3()
-    let rot = new THREE.Quaternion()
-  
-    camera.matrixWorld.decompose(pos, rot, scale)
-    
-    window.mainAppSocket.emit('xr-camera', {
-      pos: {x: teleportPos.x, y: pos.y, z: teleportPos.z},
-      rot: teleportRot
-    })
-  }
 }
 
 const [useStore, useStoreApi] = create((set, get) => ({
@@ -335,6 +322,27 @@ const useInteractionsManager = ({
     }
     return ikHelper.current
   }
+  
+  useEffect(() => {
+    let times = 0
+    let skip = 1
+    const onUpdate = () => {
+      requestAnimationFrame(onUpdate)
+      
+      if (times < skip) {
+        times++
+      } else {
+        times = 0
+  
+        if (window.mainAppSocket) {
+          camera.updateMatrixWorld()
+          window.mainAppSocket.emit('xr-camera', {matrix: camera.matrixWorld.elements})
+        }
+      }
+    }
+    
+    onUpdate()
+  }, [])
   
   useEffect(() => {
     // create a temporary mesh object to initialize the GPUPicker

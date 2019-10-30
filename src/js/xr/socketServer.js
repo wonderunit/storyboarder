@@ -3,6 +3,7 @@ const ioCreate = require('socket.io')
 const {getSerializedState, createObject, deleteObjects, updateObject} = require('../shared/reducers/shot-generator')
 const {userAction, DISABLED_ACTIONS} = require('./userAction')
 
+window.connectedClientModels = {}
 const clients = {}
 let sockets = []
 
@@ -92,7 +93,10 @@ const createSocketServer = (http, store) => {
     })
     
     socket.on(XR_CAMERA_EVENT, (payload) => {
-      store.dispatch(updateObject(socket.id, {...payload.pos, rotation: payload.rot}))
+      //store.dispatch(updateObject(socket.id, payload))
+      if (window.connectedClientModels[socket.id]) {
+        window.connectedClientModels[socket.id].updateMatrix(payload.matrix)
+      }
     })
     
     onReduxAction = (payload) => {

@@ -115,4 +115,4 @@ const configureStore = preloadedState => {
   return store
 }
 
-window.setupXR = setupXR
+setupXR()
