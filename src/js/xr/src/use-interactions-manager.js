@@ -11,7 +11,7 @@ const { ActionCreators } = require('redux-undo')
 const useVrControllers = require('./hooks/use-vr-controllers')
 
 const { log } = require('./components/Log')
-
+const Mirror = require("./three/Mirror")
 const {
   getControllerRaycaster,
   getControllerIntersections
@@ -938,10 +938,9 @@ const useInteractionsManager = ({
             return
           }
          // setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
-         let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
-         let leftHandBone = ikHelper.ragDoll.chainObjects['LeftHand'].lastBone
-         let leftController = getControllerByName(controllers, "left")
-         leftArmControlPoint.userData.posing = true
+          let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
+          let leftHandBone = ikHelper.ragDoll.chainObjects['LeftHand'].lastBone
+          leftArmControlPoint.userData.posing = true
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
 
@@ -953,14 +952,13 @@ const useInteractionsManager = ({
           // Taking world position of control point 
           let worldPosition = headControlPoint.worldPosition()
           // Taking world quaternion of head bone
-          let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[0].worldQuaternion()
           camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
           //worldRotation.multiply(camera.parent.worldQuaternion())
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, camera.rotation.y + THREE.Math.degToRad(180))
 
-          let x = THREE.Math.degToRad(0)
+          let x = THREE.Math.degToRad(45)
           let y = THREE.Math.degToRad(-180)
           let z = THREE.Math.degToRad(0)
           let eulerRot = new THREE.Euler(x, y, z)
@@ -969,11 +967,14 @@ const useInteractionsManager = ({
 
           changeControlPointSpaceToHMDSpace(camera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
           
-          // Getting controllers 
-          
+          staticLimbRotation.setFromEuler(eulerRot)
           // Changes left control point space to left controller(hmd space) and apply custom rotation
+          let leftController = getControllerByName(controllers, "left")
+          eulerRot.x = 0;
+          staticLimbRotation.setFromEuler(eulerRot)
           changeControlPointSpaceToHMDSpace(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
           
+
           // Changes right control point space to right controller(hmd space) and apply custom rotation
           let rightController = getControllerByName(controllers, "right")
           changeControlPointSpaceToHMDSpace(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
@@ -981,6 +982,12 @@ const useInteractionsManager = ({
           clearStandingMemento()
          
           playSound('teleport')
+          
+          const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
+          mirror.position.copy(ikHelper.parent.worldPosition())
+          mirror.position.z += 2
+          scene.add(mirror);
+
           //interactionService.send({ type: 'STOP_POSING', controller: event.target})
         },
         onPosingCharacterExit: (context, event) => {
@@ -995,9 +1002,11 @@ const useInteractionsManager = ({
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
+          let mirror = scene.getObjectByName("Mirror")
+          scene.remove(mirror)
           ikHelper.ragDoll.updateReact()
           ikHelper.controlPoints.attach(headControlPoint)
-          ikHelper.controlPoints.add(leftArmControlPoint)
+          ikHelper.controlPoints.attach(leftArmControlPoint)
           ikHelper.controlPoints.attach(rightArmControlPoint)
           leftArmControlPoint.updateWorldMatrix(true, true)
           useStoreApi.setState({teleportPos : {x, y, z} = camera.parent.userData.prevPosition} )
