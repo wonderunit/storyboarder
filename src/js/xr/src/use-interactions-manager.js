@@ -102,15 +102,23 @@ const rotateObjectY = (object, event) => {
   }
 }
 
-const changeControlPointSpaceToHMDSpace = (hmdElement, controlPoint, originalBone, quaternion) => {
-  hmdElement.add(controlPoint)
-  controlPoint.quaternion.set(0, 0, 0, 1)
-  controlPoint.quaternion.multiply(originalBone.parent.worldQuaternion().inverse())
-  
-  //controlPoint.quaternion.multiply(quaternion)
+const changeControlPointSpaceToHMDSpace = (hmdElement, controlPoint, originalBone, quaternion, ragDoll) => {
+  let boneQuate = new THREE.Quaternion()
+  let parentInverseQuat = new THREE.Quaternion()
+  originalBone.updateWorldMatrix(true, true)
+  let controllerParent = hmdElement.parent;
+  originalBone.parent.attach(hmdElement);
+  hmdElement.getWorldQuaternion(boneQuate);
+  ragDoll.originalMesh.getWorldQuaternion(parentInverseQuat).inverse();
+  controllerParent.attach(hmdElement)
+  //ikHelper.selectedControlPoint = controlPoints;
 
+  controlPoint.quaternion.copy(boneQuate.premultiply(parentInverseQuat))
+  controlPoint.quaternion.multiply(quaternion)
+  hmdElement.userData.posing = true
+  hmdElement.attach(controlPoint)
   controlPoint.position.set(0, 0, 0)
-  //controlPoint.updateMatrixWorld(true)
+  controlPoint.updateMatrixWorld(true)
 }
 
 const snapObjectRotation = (object) => {
@@ -927,125 +935,73 @@ const useInteractionsManager = ({
           if(!ikHelper.isSelected())
           {
             interactionService.send({ type: 'STOP_POSING', controller: event.target})
-            return;
+            return
           }
          // setTimeout(() => {interactionService.send({ type: 'STOP_POSING', controller: event.target})}, 5000)
          let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
-         let leftHandBone = ikHelper.ragDoll.chainObjects['LeftHand'].lastBone;
+         let leftHandBone = ikHelper.ragDoll.chainObjects['LeftHand'].lastBone
          let leftController = getControllerByName(controllers, "left")
-         leftArmControlPoint.userData.posing = true;
+         leftArmControlPoint.userData.posing = true
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
 
-          let headBone = ikHelper.ragDoll.chainObjects['Head'].lastBone;
-          let rightHandBone = ikHelper.ragDoll.chainObjects['RightHand'].lastBone;
+          let headBone = ikHelper.ragDoll.chainObjects['Head'].lastBone
+          let rightHandBone = ikHelper.ragDoll.chainObjects['RightHand'].lastBone
           // world scale is always reset to large
           setMiniMode(false, camera)
 
           // Taking world position of control point 
           let worldPosition = headControlPoint.worldPosition()
           // Taking world quaternion of head bone
-          let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[5].worldQuaternion()
+          let worldRotation = ikHelper.intializedSkinnedMesh.skeleton.bones[0].worldQuaternion()
           camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
-          camera.parent.userData.prevQuaternion = useStoreApi.getState().teleportRot
-
+          camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
+          //worldRotation.multiply(camera.parent.worldQuaternion())
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldRotation.y + 180)
-          //
+          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, camera.rotation.y + THREE.Math.degToRad(180))
 
-      
-          // changeControlPointSpaceToHMDSpace(camera, headControlPoint, headBone, staticLimbRotation)
-          
-          // Getting controllers 
-          let rightController = getControllerByName(controllers, "right")
-          
-          // Changes left control point space to left controller(hmd space) and apply custom rotation
-         // eulerRot.x = THREE.Math.degToRad(0)
-          // euler.z = THREE.Math.degToRad(180)
-          //changeControlPointSpaceToHMDSpace(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation)
-          let matrixInverse = new THREE.Matrix4()
-          let boneMatrix = new THREE.Matrix4()
-          
-          
-          console.log(leftController.rotation.clone())
-          console.log(leftArmControlPoint.parent.clone()) 
-          let leftArmControlPointGroup = new THREE.Group()
           let x = THREE.Math.degToRad(0)
           let y = THREE.Math.degToRad(-180)
           let z = THREE.Math.degToRad(0)
           let eulerRot = new THREE.Euler(x, y, z)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
           staticLimbRotation.setFromEuler(eulerRot)
-          let boneQuate = new THREE.Quaternion()
-          let parentInverseQuat = new THREE.Quaternion()
-          leftHandBone.updateWorldMatrix(true, true)
-          let controllerParent = leftController.parent;
-          leftHandBone.attach(leftController);
-          leftController.getWorldQuaternion(boneQuate);
-          ikHelper.ragDoll.originalMesh.getWorldQuaternion(parentInverseQuat).inverse();
-          controllerParent.attach(leftController)
-         // leftArmControlPointGroup.attach(leftArmControlPoint)
-         ikHelper.selectedControlPoint = leftArmControlPoint;
-         //leftArmControlPoint.quaternion.setFromEuler(new THREE.Euler(0, 1.5708, 0))
-         // leftArmControlPoint.quaternion.set(0, 0, 0, 1);
-         console.log(leftHandBone.clone())
-         //leftArmControlPointGroup.quaternion.multiply(ikHelper.ragDoll.originalMesh.worldQuaternion());
-         leftArmControlPoint.quaternion.copy(boneQuate.premultiply(parentInverseQuat))
-       //leftArmControlPointGroup.quaternion.copy(leftHandBone.quaternion)
-         leftArmControlPoint.quaternion.multiply(staticLimbRotation)
-          //leftArmControlPointGroup.quaternion.copy(staticLimbRotation)
-          //leftArmControlPoint.updateMatrixWorld(true)
-          leftController.userData.posing = true
-          // leftArmControlPointGroup.quaternion.multiply(staticLimbRotation)
-          console.log(leftArmControlPointGroup.quaternion.clone())
-          console.log(leftController.quaternion.clone())
-          console.log(leftArmControlPoint.quaternion.clone())
-          //leftArmControlPoint.quaternion.multiply(boneQuate.inverse());
-          //leftArmControlPoint.quaternion.multiply(staticLimbRotation)
-          //leftArmControlPoint.quaternion.multiply(staticLimbRotation)
-          //leftArmControlPoint.quaternion.set(0, 0, 0, 1)
-          //leftArmControlPointGroup.position.copy(leftArmControlPoint.position)
-          //  leftArmControlPoint.updateMatrixWorld(true)
-          //leftArmControlPointGroup.add(leftArmControlPoint)
-          leftController.attach(leftArmControlPoint)
-         // leftArmControlPointGroup.quaternion.copy(leftController.worldQuaternion())
-         leftArmControlPoint.position.set(0, 0, 0)
-         //leftArmControlPointGroup.position.set(0, 0, 0)
-         //leftArmControlPointGroup.updateWorldMatrix(true, true)
-         leftArmControlPoint.updateMatrixWorld(true)
-         console.log(leftArmControlPoint.rotation.clone())
-          //leftArmControlPoint.updateMatrixWorld(true)
-          getIkHelper().ragDoll.isEnabledIk = true
+
+          changeControlPointSpaceToHMDSpace(camera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
+          
+          // Getting controllers 
+          
+          // Changes left control point space to left controller(hmd space) and apply custom rotation
+          changeControlPointSpaceToHMDSpace(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
           
           // Changes right control point space to right controller(hmd space) and apply custom rotation
-          //euler.z = THREE.Math.degToRad(180)
-         // staticLimbRotation.setFromEuler(eulerRot)
-         //  changeControlPointSpaceToHMDSpace(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation)
-         clearStandingMemento()
+          let rightController = getControllerByName(controllers, "right")
+          changeControlPointSpaceToHMDSpace(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
+          ikHelper.ragDoll.isEnabledIk = true
+          clearStandingMemento()
          
-         playSound('teleport')
-         //interactionService.send({ type: 'STOP_POSING', controller: event.target})
+          playSound('teleport')
+          //interactionService.send({ type: 'STOP_POSING', controller: event.target})
         },
         onPosingCharacterExit: (context, event) => {
-          console.log("Posing stopped");
+          console.log("Posing stopped")
           let ikHelper = getIkHelper()
-          ikHelper.ragDoll.isEnabledIk = false;
+          ikHelper.ragDoll.isEnabledIk = false
           if(!ikHelper.isSelected())
           {
-            return;
+            return
           }
-          ikHelper.selectedControlPoint = null;
+          ikHelper.selectedControlPoint = null
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
-          //leftArmControlPoint.parent.parent.remove(leftArmControlPoint.parent)
           ikHelper.ragDoll.updateReact()
           ikHelper.controlPoints.attach(headControlPoint)
           ikHelper.controlPoints.add(leftArmControlPoint)
           ikHelper.controlPoints.attach(rightArmControlPoint)
           leftArmControlPoint.updateWorldMatrix(true, true)
           useStoreApi.setState({teleportPos : {x, y, z} = camera.parent.userData.prevPosition} )
-          useStoreApi.setState({teleportRot : {x, y, z, w} = camera.parent.userData.prevQuaternion} )
+          useStoreApi.setState({teleportRot : {x, y, z} = camera.parent.userData.prevRotation} )
         },
         onDropLowest: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
