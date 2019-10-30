@@ -941,6 +941,8 @@ class CanvasRenderer {
       else x = u * this.canvas.width
 
       for (let componentId in this.paneComponents[paneId]) {
+        if (paneId === 'boards' && componentId.includes('-background')) continue
+
         let component = this.paneComponents[paneId][componentId]
         if (ignoreInvisible && component.invisible) continue
         let { id, type } = component
@@ -953,6 +955,23 @@ class CanvasRenderer {
         }
       }
     }
+
+    for (let componentId in this.paneComponents['boards']) {
+      x = (u - 1) * this.canvas.width
+
+      let component = this.paneComponents['boards'][componentId]
+      if (ignoreInvisible && component.invisible) continue
+
+      let { id, type } = component
+      if (
+        x > component.x && x < component.x + component.width &&
+        y > component.y && y < component.y + component.height
+      ) {
+      // TODO include local x,y? and u,v?
+        return { id, type }
+      }
+    }
+
     return null
   }
 }

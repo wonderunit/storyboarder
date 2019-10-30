@@ -479,7 +479,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
         new THREE.Vector2(xClick - 1 - (x * 2) / width, yClick)
       )
 
-      if (distance < 0.1) {
+      if (distance < 0.15) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
 
         if (canvasIntersection && !canvasIntersection.id.includes('-background')) {
