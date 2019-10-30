@@ -1348,7 +1348,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
               }
             })
 
-            updateThumbnails(cr)
+            updateBoardsData(cr)
           } catch (err) {
             alert('Could not save board\n' + err)
           }
@@ -1372,7 +1372,8 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
           try {
             let board = await cr.client.insertShot(data)
-            updateThumbnails(cr)
+            updateBoardsData(cr)
+            updateSgCurrentState(cr)
           } catch (err) {
             alert('Could not insert\n' + err)
           }
@@ -1419,7 +1420,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     })
   }
 
-  const updateThumbnails = (cr) => {
+  const updateBoardsData = cr => {
     setTimeout(() => {
       cr.state.boardsData = RemoteData.init()
       cr.client.getBoards().then(result => {
@@ -1427,6 +1428,19 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
         cr.boardsNeedsRender = true
       }).catch(err => {
         cr.state.boardsData = RemoteData.failure(err)
+        cr.boardsNeedsRender = true
+      })
+    }, 500)
+  }
+
+  const updateSgCurrentState = cr => {
+    setTimeout(() => {
+      cr.state.sgCurrentState = RemoteData.init()
+      cr.client.getState().then(result => {
+        cr.state.sgCurrentState = RemoteData.success(result)
+        cr.boardsNeedsRender = true
+      }).catch(err => {
+        cr.state.sgCurrentState = RemoteData.failure(err)
         cr.boardsNeedsRender = true
       })
     }, 500)

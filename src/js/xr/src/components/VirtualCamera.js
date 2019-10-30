@@ -54,6 +54,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
 
   const thumbnailRenderer = useRef()
   const cameraThumbnail = useRef(new Image())
+  const cr = useRef(getCanvasRenderer())
 
   const getRenderTarget = useCallback(() => {
     if (!renderTarget.current) {
@@ -80,10 +81,9 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     const base64String = thumbnailRenderer.current.domElement.toDataURL('image/png')
 
     // Trigger HUD rerender
-    const cr = getCanvasRenderer()
     cameraThumbnail.current.src = base64String
-    cr.state.cameraThumbnails[sceneObject.displayName] = cameraThumbnail.current
-    cr.boardsNeedsRender = true
+    cr.current.state.cameraThumbnails[sceneObject.displayName] = cameraThumbnail.current
+    cr.current.boardsNeedsRender = true
   }
 
   const renderCamera = () => {
