@@ -401,8 +401,8 @@ class Ragdoll extends IkObject
         let targetQuat = this.resourceManager.getQuaternion();
         boneTarget.getWorldQuaternion(targetQuat);
         let quaternion = this.resourceManager.getQuaternion();
-        bone.getWorldQuaternion(quaternion).inverse();
-        bone.quaternion.multiply(quaternion);
+        bone.parent.getWorldQuaternion(quaternion).inverse();
+        bone.quaternion.copy(quaternion);
         bone.quaternion.multiply(targetQuat);
         this.resourceManager.release(targetQuat);
         this.resourceManager.release(quaternion);

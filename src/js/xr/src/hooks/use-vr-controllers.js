@@ -26,7 +26,8 @@ const useVrControllers = ({
   onAxesChanged,
   onPressEndA,
   onPressEndB,
-  onPressEndX
+  onPressEndX,
+  onPressEndY
 }) => {
   const { gl } = useThree()
   const [list, setList] = useState([])
@@ -39,6 +40,7 @@ const useVrControllers = ({
   const onPressEndARef = useRef()
   const onPressEndBRef = useRef()
   const onPressEndXRef = useRef()
+  const onPressEndYRef = useRef()
 
   onTriggerStartRef.current = onTriggerStart
   onTriggerEndRef.current = onTriggerEnd
@@ -48,6 +50,7 @@ const useVrControllers = ({
   onPressEndARef.current = onPressEndA
   onPressEndBRef.current = onPressEndB
   onPressEndXRef.current = onPressEndX
+  onPressEndYRef.current = onPressEndY
 
   useRender(() => {
     THREE.VRController.update()
@@ -69,6 +72,7 @@ const useVrControllers = ({
     controller.addEventListener('A press ended', event => onPressEndARef.current(modifyEvent(event, gl)))
     controller.addEventListener('B press ended', event => onPressEndBRef.current(modifyEvent(event, gl)))
     controller.addEventListener('X press ended', event => onPressEndXRef.current(modifyEvent(event, gl)))
+    controller.addEventListener('Y press ended', event => onPressEndYRef.current(modifyEvent(event, gl)))
     controller.addEventListener('disconnected', event => {
       console.log('disconnected', event)
       setList(getList(THREE.VRController.controllers, gl))
