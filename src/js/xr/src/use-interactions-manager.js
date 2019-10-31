@@ -728,6 +728,19 @@ const useInteractionsManager = ({
     return reusableVector.current
   }
   
+  const detectControllersGenerator = () => {
+    let count = -1
+    
+    return () => {
+      if (controllers.length !== count) {
+        count = controllers.length
+        console.log('controllers count detected')
+        
+        window.mainAppSocket.emit('xr-controls-count', {count: controllers.length})
+      }
+    }
+  }
+  
   const sendToServerGenerator = () => {
     let controllersInfo
     let times = 0
@@ -740,28 +753,33 @@ const useInteractionsManager = ({
       } else {
         times = 0
     
-        if (window.mainAppSocket) {
-          camera.updateMatrixWorld()
-      
-          controllersInfo = []
-          for (let i = 0, n = controllers.length; i < n; i++) {
-            controllersInfo[i] = {matrix: controllers[i].matrixWorld.elements}
-          }
-      
-          window.mainAppSocket.emit('xr-controls', {
-            cameraMatrix: camera.matrixWorld.elements,
-            controllers: controllersInfo
-          })
+        if (!window.mainAppSocket) {
+          return false
         }
+        
+        camera.updateMatrixWorld()
+    
+        controllersInfo = []
+        for (let i = 0, n = controllers.length; i < n; i++) {
+          controllersInfo[i] = {matrix: controllers[i].matrixWorld.elements}
+        }
+    
+        window.mainAppSocket.emit('xr-controls', {
+          cameraMatrix: camera.matrixWorld.elements,
+          controllers: controllersInfo
+        })
+        
       }
     }
   }
   
   const sendToServer = sendToServerGenerator()
+  const detectControllers = detectControllersGenerator()
 
   // TODO could model these as ... activities? exec:'render' actions?
   useRender(() => {
     sendToServer()
+    detectControllers()
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
@@ -835,8 +853,6 @@ const useInteractionsManager = ({
           object3d.quaternion.copy(rotation)
         }
         object3d.updateMatrixWorld()
-
-        //object3d.updateMatrix()
       }
     }
 

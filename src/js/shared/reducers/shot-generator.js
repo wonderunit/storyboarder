@@ -1194,6 +1194,8 @@ const checksReducer = (state, action) => {
         if (action.payload.hasOwnProperty('loaded')) return
 
         let sceneObject = getSceneObjects(draft)[action.payload.id]
+        if (!sceneObject) return
+        
         if (sceneObject.type === 'character') {
           // unless characterPresetId was just set ...
           if (!action.payload.hasOwnProperty('characterPresetId')) {

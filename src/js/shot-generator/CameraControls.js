@@ -1,9 +1,13 @@
 const THREE = require('three')
+const EventEmitter = require('events');
 
-class CameraControls {
+class CameraControls extends EventEmitter {
 
   constructor ( object, domElement, options = {} ) {
-    this.object = object
+    super()
+    
+    this._object = object
+    this._prevValues = {...object}
     this.domElement = domElement
     this.enabled = true
 
@@ -35,6 +39,11 @@ class CameraControls {
     window.addEventListener( 'keyup', this.onKeyUp, false )
     document.getElementById('camera-view').addEventListener("wheel", this.onWheel, false )
   }
+  
+  set object(value) {
+    this._object = value
+    this._prevValues = {...value}
+  }
 
   dispose () {
     window.removeEventListener( 'pointermove', this.onPointerMove )
@@ -57,8 +66,8 @@ class CameraControls {
 
     this.domElement.focus()
 
-    this.initialRotation = this.object.rotation
-    this.initialTilt = this.object.tilt
+    this.initialRotation = this._object.rotation
+    this.initialTilt = this._object.tilt
 
     this.initialMouseX = event.pageX
     this.initialMouseY = event.pageY
@@ -67,6 +76,8 @@ class CameraControls {
     this.mouseDragOn = true
 
     this.undoGroupStart()
+  
+    this.emit('change', {active: this.mouseDragOn, object: this._object})
   }
 
   onPointerUp ( event ) {
@@ -78,6 +89,8 @@ class CameraControls {
     }
 
     this.mouseDragOn = false
+  
+    this.emit('change', {active: this.mouseDragOn, object: this._object})
   }
 
   addKey (key) {
@@ -167,14 +180,25 @@ class CameraControls {
     this.moveDown = false
     this.moveAnalogue = false
   }
+  
+  isChanged() {
+    return (
+        this._object.x !== this._prevValues.x ||
+        this._object.y !== this._prevValues.y ||
+        this._object.z !== this._prevValues.z ||
+        this._object.rotation !== this._prevValues.rotation ||
+        this._object.tilt !== this._prevValues.tilt ||
+        this._object.fov !== this._prevValues.fov
+    )
+  }
 
   update ( delta, state ) {
 
     if ( this.enabled === false ) return
 
-    this.object.fov += this.zoomSpeed
-    this.object.fov = Math.max(3, this.object.fov)
-    this.object.fov = Math.min(71, this.object.fov)
+    this._object.fov += this.zoomSpeed
+    this._object.fov = Math.max(3, this._object.fov)
+    this._object.fov = Math.min(71, this._object.fov)
 
     this.zoomSpeed = this.zoomSpeed * 0.0001
 
@@ -193,9 +217,9 @@ class CameraControls {
 
     if (this.mouseDragOn) {
       let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
-      this.object.rotation = rotation
+      this._object.rotation = rotation
       let tilt = this.initialTilt - (this.mouseY - this.initialMouseY)*0.001
-      this.object.tilt = Math.max(Math.min(tilt, Math.PI / 2), -Math.PI / 2)
+      this._object.tilt = Math.max(Math.min(tilt, Math.PI / 2), -Math.PI / 2)
     }
 
     // rotation
@@ -203,21 +227,21 @@ class CameraControls {
     let rStickY = (state.devices[0].analog.rStickY/127) - 1
 
     if (Math.abs(rStickX) > deadzone || Math.abs(rStickY) > deadzone) {
-      this.object.rotation -= (rStickX * 0.03) * Math.abs(Math.pow(rStickX, 2))
-      this.object.tilt -= (rStickY * 0.02) * Math.abs(Math.pow(rStickY, 2))
-      this.object.tilt = Math.max(Math.min(this.object.tilt, Math.PI / 2), -Math.PI / 2)
+      this._object.rotation -= (rStickX * 0.03) * Math.abs(Math.pow(rStickX, 2))
+      this._object.tilt -= (rStickY * 0.02) * Math.abs(Math.pow(rStickY, 2))
+      this._object.tilt = Math.max(Math.min(this._object.tilt, Math.PI / 2), -Math.PI / 2)
     }
 
     if (this.moveAnalogue) {
-      let loc = new THREE.Vector2(this.object.x, this.object.y)
+      let loc = new THREE.Vector2(this._object.x, this._object.y)
       let magX = (lStickX*0.07) * (Math.abs(Math.pow(lStickX, 2)))
       let magY = (lStickY*0.1) * (Math.abs(Math.pow(lStickY, 2)))
       if (state.devices[0].digital.l3) {
         magY *= 4.0
       }
-      let result = new THREE.Vector2(magX+loc.x, magY+loc.y).rotateAround(loc,-this.object.rotation)
-      this.object.x = result.x
-      this.object.y = result.y
+      let result = new THREE.Vector2(magX+loc.x, magY+loc.y).rotateAround(loc,-this._object.rotation)
+      this._object.x = result.x
+      this._object.y = result.y
     }
 
     if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
@@ -232,55 +256,61 @@ class CameraControls {
 
 
     if ( this.moveForward ) {
-      let loc = new THREE.Vector2(this.object.x, this.object.y)
-      let result = new THREE.Vector2(0+loc.x, -this.movementSpeed+loc.y).rotateAround(loc,-this.object.rotation)
+      let loc = new THREE.Vector2(this._object.x, this._object.y)
+      let result = new THREE.Vector2(0+loc.x, -this.movementSpeed+loc.y).rotateAround(loc,-this._object.rotation)
 
-      this.object.x = result.x
-      this.object.y = result.y
+      this._object.x = result.x
+      this._object.y = result.y
     }
 
     if ( this.moveBackward ) {
-      let loc = new THREE.Vector2(this.object.x, this.object.y)
-      let result = new THREE.Vector2(0+loc.x, this.movementSpeed+loc.y).rotateAround(loc,-this.object.rotation)
+      let loc = new THREE.Vector2(this._object.x, this._object.y)
+      let result = new THREE.Vector2(0+loc.x, this.movementSpeed+loc.y).rotateAround(loc,-this._object.rotation)
 
-      this.object.x = result.x
-      this.object.y = result.y
+      this._object.x = result.x
+      this._object.y = result.y
     }
 
     if ( this.moveLeft ) {
-      let loc = new THREE.Vector2(this.object.x, this.object.y)
-      let result = new THREE.Vector2(-this.movementSpeed+loc.x, 0+loc.y).rotateAround(loc,-this.object.rotation)
+      let loc = new THREE.Vector2(this._object.x, this._object.y)
+      let result = new THREE.Vector2(-this.movementSpeed+loc.x, 0+loc.y).rotateAround(loc,-this._object.rotation)
 
-      this.object.x = result.x
-      this.object.y = result.y
+      this._object.x = result.x
+      this._object.y = result.y
     }
     if ( this.moveRight ) {
-      let loc = new THREE.Vector2(this.object.x, this.object.y)
-      let result = new THREE.Vector2(this.movementSpeed+loc.x, 0+loc.y).rotateAround(loc,-this.object.rotation)
+      let loc = new THREE.Vector2(this._object.x, this._object.y)
+      let result = new THREE.Vector2(this.movementSpeed+loc.x, 0+loc.y).rotateAround(loc,-this._object.rotation)
 
-      this.object.x = result.x
-      this.object.y = result.y
+      this._object.x = result.x
+      this._object.y = result.y
     }
 
 
     if ( this.moveUp ) {
-      this.object.z += this.movementSpeed
+      this._object.z += this.movementSpeed
     }
 
 
     if (state.devices[0].analog.r2) {
-      this.object.z -= ((state.devices[0].analog.r2/127.0)*0.002)*(Math.pow((state.devices[0].analog.r2/127.0),2))
-      this.object.z = Math.max(0, this.object.z)
+      this._object.z -= ((state.devices[0].analog.r2/127.0)*0.002)*(Math.pow((state.devices[0].analog.r2/127.0),2))
+      this._object.z = Math.max(0, this._object.z)
     }
 
     if ( this.moveDown ) {
-      this.object.z -= this.movementSpeed
-      this.object.z = Math.max(0, this.object.z)
+      this._object.z -= this.movementSpeed
+      this._object.z = Math.max(0, this._object.z)
     }
 
     if (state.devices[0].analog.l2) {
-      this.object.z += ((state.devices[0].analog.l2/127.0)*0.002)*(Math.pow((state.devices[0].analog.l2/127.0),2))
+      this._object.z += ((state.devices[0].analog.l2/127.0)*0.002)*(Math.pow((state.devices[0].analog.l2/127.0),2))
     }
+    
+    if (this.mouseDragOn || this.isChanged()) {
+      this.emit('change', {active: this.mouseDragOn, object: this._object})
+    }
+    
+    this._prevValues = {...this._object}
 
     // if (state.devices[0].digital.r1 || state.devices[0].digital.l1) {
     //   this.zoomSpeed += 0.002
@@ -311,7 +341,8 @@ CameraControls.objectFromCameraState = cameraState =>
     z: cameraState.z,
     rotation: cameraState.rotation,
     tilt: cameraState.tilt,
-    fov: cameraState.fov
+    fov: cameraState.fov,
+    roll: cameraState.roll
   })
 
 

@@ -10,7 +10,8 @@ let sockets = []
 
 const POSITION_EVENT = 'object-position'
 const ACTION_EVENT = 'action'
-const XR_CONTROL_EVENT = 'xr-controls'
+const XR_CONTROLS_EVENT = 'xr-controls'
+const XR_CONTROLS_COUNT_EVENT = 'xr-controls-count'
 
 function broadcast(event, msg) {
   for(let socket of sockets) {
@@ -19,9 +20,10 @@ function broadcast(event, msg) {
 }
 
 function objectPositionSend(id, position) {
-  for(let socket of sockets) {
-    socket.emit(POSITION_EVENT, {id, position, fromMainApp: true})
-  }
+  setTimeout(() => broadcast(POSITION_EVENT, {id, position, fromMainApp: true}), 0)
+  // for(let socket of sockets) {
+  //   socket.emit(POSITION_EVENT, {id, position, fromMainApp: true})
+  // }
 }
 
 function onConnect(socket, store) {
@@ -72,7 +74,7 @@ const actionMiddleware = ({ getState }) => {
 }
 
 const createSocketServer = (http, store) => {
-  const io = ioCreate(http)
+  const io = ioCreate(http, {transports: ['websocket'], wsEngine: 'ws'})
   debug('STORE', [store.getState(), store])
   
   io.on('connection', (socket) => {
@@ -87,15 +89,21 @@ const createSocketServer = (http, store) => {
   
     let currentAction = null
     socket.on('dispatch', (payload) => {
-      currentAction = JSON.parse(payload)
+      currentAction = payload
       store.dispatch({...currentAction, fromSubApp: true})
     
-      socket.broadcast.emit(ACTION_EVENT, JSON.stringify({...currentAction, fromMainApp: true}))
+      socket.broadcast.emit(ACTION_EVENT, {...currentAction, fromMainApp: true})
     })
-    
-    socket.on(XR_CONTROL_EVENT, (payload) => {
+  
+    socket.on(XR_CONTROLS_EVENT, (payload) => {
       if (window.connectedClient[socket.id]) {
         window.connectedClient[socket.id].update(payload)
+      }
+    })
+  
+    socket.on(XR_CONTROLS_COUNT_EVENT, (payload) => {
+      if (window.connectedClient[socket.id]) {
+        window.connectedClient[socket.id].setControllersCount(payload.count)
       }
     })
     
@@ -104,7 +112,7 @@ const createSocketServer = (http, store) => {
         return false
       }
       
-      io.emit(ACTION_EVENT, JSON.stringify({...userAction(payload), fromMainApp: true}))
+      io.emit(ACTION_EVENT, {...userAction(payload), fromMainApp: true})
     }
     
   })

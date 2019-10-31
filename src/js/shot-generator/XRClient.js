@@ -3,10 +3,9 @@ const ModelLoader = require('../services/model-loader')
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const TWEEN = require('@tweenjs/tween.js');
-window.TWEEN = TWEEN
 
 const React = require('react')
-const { useRef, useEffect, useState } = React
+const { useRef, useEffect } = React
 
 const {gltfLoader} = require('./Components')
 
@@ -29,8 +28,6 @@ const groupFactory = () => {
   }
   return group
 }
-
-
 
 const meshFactory = originalMesh => {
   let mesh = originalMesh.clone()
@@ -88,7 +85,6 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
   const head = getEmptyObj()
   const controls = [getEmptyObj(), getEmptyObj()]
   
-  //.easing(TWEEN.Easing.Quadratic.Out) // Use an easing function to make the animation smooth.
   let tween = new TWEEN.Tween({})
   
   // This doesn't work with tween@18.3.1
@@ -184,6 +180,14 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
     
     setTweenData()
   }
+  
+  const setControllersCount = (count) => {
+    controls[0].object.visible = false
+    controls[1].object.visible = false
+    for(let i = 0; i < count; i++) {
+      controls[i].object.visible = true
+    }
+  }
 
   useEffect(() => {
     let expectedHeadsetFilepath = ModelLoader.getFilepathForModel({
@@ -202,7 +206,10 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
     container.current.userData.type = type
   
     // FIXME DIRTY HACK v1.0, allows to update object without dispatching an event
-    window.connectedClient[id] = {update}
+    window.connectedClient[id] = {
+      update,
+      setControllersCount
+    }
     scene.add(container.current)
   
     loadModels([
@@ -236,6 +243,7 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
       container.current.add(head.object)
       container.current.add(controls[0].object)
       container.current.add(controls[1].object)
+      setControllersCount(0)
       
       setLoaded(true)
     

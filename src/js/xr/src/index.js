@@ -51,7 +51,7 @@ const setupXR = () => {
   let wsAddress = location.href.replace('http', 'ws')
   wsAddress = wsAddress.replace('https', 'wss')
   
-  const socket = io(wsAddress)
+  const socket = io(wsAddress, {transports: ['websocket'], wsEngine: 'ws'})
   window.mainAppSocket = socket
   
   socket.on('connect', function () {
@@ -66,7 +66,7 @@ const setupXR = () => {
             return false
           }
           
-          socket.emit('dispatch', JSON.stringify(userAction(action)))
+          socket.emit('dispatch', userAction(action))
         }
         
         return false
@@ -75,7 +75,7 @@ const setupXR = () => {
   
     socket.on('action', (payload) => {
       if (store) {
-        store.dispatch(JSON.parse(payload))
+        store.dispatch(payload)
       }
     })
   

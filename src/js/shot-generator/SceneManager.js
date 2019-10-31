@@ -391,6 +391,33 @@ const SceneManager = connect(
               undoGroupEnd
             }
           )
+  
+          cameraControlsView.current.on('change', ({active, object}) => {
+            console.log('cam update')
+            if (active) {
+              camera.position.x = object.x
+              camera.position.y = object.z
+              camera.position.z = object.y
+              camera.rotation.x = 0
+              camera.rotation.z = 0
+              camera.rotation.y = object.rotation
+              camera.rotateX(object.tilt)
+              camera.rotateZ(object.roll)
+              camera.fov = object.fov
+              camera.updateProjectionMatrix()
+            } else {
+              //Update camera state if dragging was ended
+              updateObject(camera.userData.id, {
+                x: object.x,
+                y: object.y,
+                z: object.z,
+                rotation: object.rotation,
+                tilt: object.tilt,
+                fov: object.fov
+              })
+            }
+            
+          })
         }
 
         animator.current = () => {
@@ -416,30 +443,6 @@ const SceneManager = connect(
 
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
-
-                // update object state with the latest values
-                let cameraId = camera.userData.id
-                let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
-
-                // if props changed
-                if (
-                  cameraState.x != x ||
-                  cameraState.y != y ||
-                  cameraState.z != z ||
-                  cameraState.rotation != rotation ||
-                  cameraState.tilt != tilt ||
-                  cameraState.fov != fov
-                ) {
-                  // update the camera state
-                  updateObject(cameraId, {
-                    x,
-                    y,
-                    z,
-                    rotation,
-                    tilt,
-                    fov
-                  })
-                }
               }
               let tempColor = scene.background.clone()
               if (state.mainViewCamera === 'live') {
@@ -474,6 +477,7 @@ const SceneManager = connect(
 
         if (cameraControlsView.current) {
           // remove camera controls event listeners and null the reference
+          cameraControlsView.current.removeAllListeners('change')
           cameraControlsView.current.dispose()
           cameraControlsView.current = null
         }

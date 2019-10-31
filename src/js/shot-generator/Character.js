@@ -1,4 +1,6 @@
 //#region ragdoll's import
+const {objectPositionSend} = require("../xr/socketServer")
+
 const SGIkHelper = require("../shared/IK/SGIkHelper")
 const BoneRotationControl = require("../shared/IK/objects/BoneRotationControl")
 const { isCustomModel } = require('../services/model-loader')
@@ -237,6 +239,7 @@ const Character = React.memo(({
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
+      object.current.onDrag = () => objectPositionSend(id, object.current.position)
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}

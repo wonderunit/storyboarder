@@ -235,6 +235,7 @@ const SelectionManager = connect(
       for (selection of selections) {
         let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
         target.position.set( x, target.position.y, z )
+        target.orthoIcon.position.set( x, target.position.y, z )
         if (target.onDrag) {
           target.onDrag()
         }
@@ -542,12 +543,12 @@ const SelectionManager = connect(
   useLayoutEffect(() => {
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointerup', onPointerUp)
 
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointerup', onPointerUp)
     }
   }, [onPointerDown, onPointerUp, onPointerMove])
 

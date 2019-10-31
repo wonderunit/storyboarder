@@ -18,6 +18,9 @@ function userAction (action) {
         }
       })
       break
+    case 'ATTACHMENTS_SUCCESS':
+      action.payload = JSON.parse(JSON.stringify(action.payload))
+      break
   }
   
   
