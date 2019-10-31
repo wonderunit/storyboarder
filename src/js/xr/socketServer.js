@@ -20,10 +20,9 @@ function broadcast(event, msg) {
 }
 
 function objectPositionSend(id, position) {
-  setTimeout(() => broadcast(POSITION_EVENT, {id, position, fromMainApp: true}), 0)
-  // for(let socket of sockets) {
-  //   socket.emit(POSITION_EVENT, {id, position, fromMainApp: true})
-  // }
+  for(let socket of sockets) {
+    socket.emit(POSITION_EVENT, {id, position, fromMainApp: true})
+  }
 }
 
 function onConnect(socket, store) {

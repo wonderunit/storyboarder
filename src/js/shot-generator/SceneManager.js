@@ -393,7 +393,6 @@ const SceneManager = connect(
           )
   
           cameraControlsView.current.on('change', ({active, object}) => {
-            console.log('cam update')
             if (active) {
               camera.position.x = object.x
               camera.position.y = object.z
