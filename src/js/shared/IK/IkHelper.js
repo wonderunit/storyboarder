@@ -167,8 +167,8 @@ class IKHelper extends THREE.Object3D
 
     updateMatrixWorld(value)
     {
-        super.updateMatrixWorld(value); 
         if(this.updateStarted) return;
+        super.updateMatrixWorld(value); 
         this.updateStarted = true;
         this.update();
         this.updateStarted = false;
