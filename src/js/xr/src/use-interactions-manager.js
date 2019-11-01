@@ -145,10 +145,9 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportPos.y = parent.position.y
   teleportPos.z = parent.position.z
 
-  let rotationToApply = parent.rotation
-  teleportRot.x = rotationToApply.x
-  teleportRot.y = rotationToApply.y
-  teleportRot.z = rotationToApply.z
+  teleportRot.x = parent.rotation.x
+  teleportRot.y = parent.rotation.y
+  teleportRot.z = parent.rotation.z
 }
 
 const [useStore, useStoreApi] = create((set, get) => ({
@@ -660,10 +659,6 @@ const useInteractionsManager = ({
     interactionService.send({ type: 'PRESS_END_X', controller: event.target })
   }
 
-  const onPressEndY = event => {
-    // relay through state machine
-  }
-
   const onMoveCamera = event => {
     if (didMoveCamera != null) {
       if (event.axes[1] === 0) {
@@ -726,8 +721,7 @@ const useInteractionsManager = ({
     onAxesChanged,
     onPressEndA,
     onPressEndB,
-    onPressEndX,
-    onPressEndY
+    onPressEndX
   })
 
   const reusableVector = useRef()

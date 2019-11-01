@@ -314,7 +314,6 @@ const SceneContent = connect(
     const xrPosing = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.xrPosing)
-     // audio.setLoop(false)
       audio.setVolume(1)
       audio.play()
       audio.stop()
@@ -324,7 +323,6 @@ const SceneContent = connect(
     const xrEndPosing = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.xrEndPosing)
-      //audio.setLoop(false)
       audio.setVolume(1)
       audio.play()
       audio.stop()
@@ -453,7 +451,7 @@ const SceneContent = connect(
           xrPosing.play()
           break;
         case 'endPosing':
-            console.log("Play endPosing")
+          console.log("Play endPosing")
           xrEndPosing.stop()
           xrEndPosing.play()
           break;
@@ -908,8 +906,7 @@ const SceneManagerXR = () => {
                   uiDeleteBuffer,
 
                   vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
-                  xrPosing,
-                  xrEndPosing
+                  xrPosing, xrEndPosing
                 }}
                 getAsset={getAsset} />
               : null
