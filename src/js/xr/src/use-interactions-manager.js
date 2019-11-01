@@ -987,13 +987,13 @@ const useInteractionsManager = ({
 
           // Taking world position of control point 
           let worldPosition = headControlPoint.worldPosition()
-          let worldEuler = new THREE.Euler().setFromQuaternion(camera.worldQuaternion())
+  
           // Taking world quaternion of head bone
           camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
           
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, worldEuler.y + THREE.Math.degToRad(180))
+          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
           let eulerRot = new THREE.Euler(0, 0, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
