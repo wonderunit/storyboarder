@@ -33,9 +33,9 @@ const groupFactory = () => {
       intersects.push({ object: this })
     }
   }
-  group.onDrag = function () {
-    objectPositionSend(group.userData.id, group.position)
-  }
+  group.onDrag = () => objectPositionSend([group.userData.id, group.position])
+  group.onDragEnd = () => objectPositionSend([group.userData.id, group.position], true)
+  
   return group
 }
 

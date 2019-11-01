@@ -239,7 +239,8 @@ const Character = React.memo(({
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
-      object.current.onDrag = () => objectPositionSend(id, object.current.position)
+      object.current.onDrag = () => objectPositionSend([id, object.current.position])
+      object.current.onDragEnd = () => objectPositionSend([id, object.current.position], true)
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}

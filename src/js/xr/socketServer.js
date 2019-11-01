@@ -3,6 +3,8 @@ const ioCreate = require('socket.io')
 const {getSerializedState, createObject, deleteObjects} = require('../shared/reducers/shot-generator')
 const {userAction, DISABLED_ACTIONS} = require('./userAction')
 
+const {skipCalls} = require("../utils/generators")
+
 // FIXME DIRTY HACK v2.0, allows to update objects without dispatching an event
 window.connectedClient = {}
 const clients = {}
@@ -12,6 +14,7 @@ const POSITION_EVENT = 'object-position'
 const ACTION_EVENT = 'action'
 const XR_CONTROLS_EVENT = 'xr-controls'
 const XR_CONTROLS_COUNT_EVENT = 'xr-controls-count'
+const XR_CLIENT_INFO_EVENT = 'xr-client-info'
 
 function broadcast(event, msg) {
   for(let socket of sockets) {
@@ -19,9 +22,15 @@ function broadcast(event, msg) {
   }
 }
 
-function objectPositionSend(id, position) {
+const objectPositionSend = skipCalls((id, position) => {
   for(let socket of sockets) {
     socket.emit(POSITION_EVENT, {id, position, fromMainApp: true})
+  }
+}, 6)
+
+const clientInfoSent = (id, payload) => {
+  for(let socket of sockets) {
+    socket.emit(XR_CLIENT_INFO_EVENT, {id, payload, fromMainApp: true})
   }
 }
 
@@ -64,7 +73,8 @@ let onReduxAction = null
 
 const actionMiddleware = ({ getState }) => {
   return next => action => {
-    //debug('Will dispatch', action)
+    if (action.fromSubApp)
+    debug('Will dispatch', action)
     
     onReduxAction && !action.fromSubApp && onReduxAction(action)
     
@@ -130,5 +140,6 @@ module.exports = {
   actionMiddleware,
   createSocketServer,
   broadcast,
-  objectPositionSend
+  objectPositionSend,
+  clientInfoSent
 }

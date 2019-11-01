@@ -1,11 +1,13 @@
 const THREE = require('three')
-const { useMemo } = React = require('react')
+const TWEEN = require('@tweenjs/tween.js')
+const { useMemo, useEffect } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
 
 const cloneGltf = require('../helpers/clone-gltf')
 const isUserModel = require('../helpers/is-user-model')
 
 const VirtualCamera = require('../components/VirtualCamera')
+const transitionTime = require('../../../utils/transitionTime')
 
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
@@ -180,6 +182,52 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       ref.current.remove(IKHelper.getInstance())
     }
   }, [ref.current, isSelected])
+  
+  let tween
+  
+  useEffect(() => {
+    if (tween) {
+      tween.stop()
+    }
+    
+    if (sceneObject.remoteUpdate) {
+      tween = new TWEEN.Tween([
+        ref.current.position.x,
+        ref.current.position.y,
+        ref.current.position.z,
+        ref.current.rotation.y
+      ])
+      
+      tween.to([
+        sceneObject.x,
+        sceneObject.z,
+        sceneObject.y,
+        sceneObject.rotation
+      ], transitionTime(ref.current.position, sceneObject))
+      
+      tween.onUpdate(([x, y, z, r]) => {
+        ref.current.position.set(x, y, z)
+        ref.current.rotation.set(0, r, 0)
+      })
+      
+      tween.start()
+    }
+  }, [
+    ref.current,
+    sceneObject.x, sceneObject.y, sceneObject.z,
+    sceneObject.rotation
+  ])
+  
+  const { x, y, z, rotation } = sceneObject
+  let currentPos = {x, y: z, z: y}
+  let currentRot = rotation
+  
+  if (ref.current) {
+    currentPos.x = ref.current.position.x
+    currentPos.y = ref.current.position.y
+    currentPos.z = ref.current.position.z
+    currentRot = ref.current.rotation.y
+  }
 
   return lod
     ? <group
@@ -192,8 +240,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         poleTargets: sceneObject.poleTargets || {}
       }}
 
-      position={[sceneObject.x, sceneObject.z, sceneObject.y]}
-      rotation={[0, sceneObject.rotation, 0]}
+      position={[currentPos.x, currentPos.y, currentPos.z]}
+      rotation={[0, currentRot, 0]}
       scale={[bodyScale, bodyScale, bodyScale]}
     >
       <primitive object={lod} />

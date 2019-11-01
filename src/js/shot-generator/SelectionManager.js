@@ -121,7 +121,9 @@ const SelectionManager = connect(
     gl,
     
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    
+    onDrag
   }) => {
 
   const { scene } = useContext(SceneContext)
@@ -199,6 +201,8 @@ const SelectionManager = connect(
   const raycaster = useRef()
   const plane = useRef()
   const intersection = useRef()
+  const selectedObjects = useRef()
+  const objectChanges = useRef()
   const offsets = useRef()
   const mousePosition = useRef(new THREE.Vector2());
   const prepareDrag = (target, { x, y, useIcons }) => {
@@ -207,6 +211,8 @@ const SelectionManager = connect(
     if (!intersection.current) intersection.current = new THREE.Vector3()
 
     offsets.current = []
+    selectedObjects.current = {}
+    objectChanges.current = {}
 
     raycaster.current.setFromCamera({ x, y }, camera )
 
@@ -215,12 +221,15 @@ const SelectionManager = connect(
     } else {
       plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
     }
+  
+    for (let selection of selections) {
+      selectedObjects.current[selection] = scene.children.find(child => child.userData.id === selection)
+    }
 
     // remember the offsets of every selected object
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       for (let selection of selections) {
-        let child = scene.children.find(child => child.userData.id === selection)
-        offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( child.position )
+        offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( selectedObjects.current[selection].position )
       }
     } else {
       for (let selection of selections) {
@@ -228,34 +237,43 @@ const SelectionManager = connect(
       }
     }
   }
-  const drag = (target, mouse) => {
+  const drag = (mouse) => {
     raycaster.current.setFromCamera( mouse, camera )
     
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       for (selection of selections) {
         let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
+        let target = selectedObjects.current[selection]
         target.position.set( x, target.position.y, z )
         target.orthoIcon.position.set( x, target.position.y, z )
+  
+        objectChanges.current[selection] = { x, y: z }
+        
         if (target.onDrag) {
           target.onDrag()
         }
       }
+      
+      if (onDrag) {
+        onDrag()
+      }
     }
   }
   const endDrag = () => {
-    if (!intersection || !intersection.current) {
+    if (!objectChanges || !objectChanges.current) {
       return false
     }
     
-    let changes = {}
+    updateObjects(objectChanges.current)
+    
     for (selection of selections) {
-      if (offsets.current[selection]) {
-        let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
-        changes[selection] = { x, y: z }
+      let target = selectedObjects.current[selection]
+      if (target && target.onDragEnd) {
+        target.onDragEnd()
       }
     }
     
-    updateObjects(changes)
+    objectChanges.current = null
   }
   useMemo(() => {
     if (dragTarget) {
@@ -463,13 +481,13 @@ const SelectionManager = connect(
         {
           if(!dragTarget.isBoneControl)
           {
-            drag(dragTarget.target, { x, y })
+            drag({ x, y })
           }
         }
 
       }
       else {
-        drag(dragTarget.target, { x, y })
+        drag({ x, y })
       }
 
     }

@@ -56,6 +56,13 @@ const setupXR = () => {
   
   socket.on('connect', function () {
     
+    //We were connected before, must reload page to get the new store
+    if (store) {
+      location.reload()
+      
+      return false
+    }
+    
     socket.on('state', (state) => {
       if (!store) {
         setupScene(state)
@@ -85,7 +92,8 @@ const setupXR = () => {
           ...updateObject(payload.id, {
             x: payload.position.x,
             y: payload.position.z,
-            z: payload.position.y
+            z: payload.position.y,
+            remoteUpdate: true
           }),
           fromMainApp: true
         })

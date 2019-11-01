@@ -25,9 +25,13 @@ const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
 const IKHelper = require('../../shared/IK/IkHelper')
 
+const TWEEN = require('@tweenjs/tween.js')
+
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
 const {dropObject, dropCharacter } = require('./utils/dropToObjects')
+
+const {skipCalls, whenChanged} = require("../../utils/generators")
 
 require('./three/GPUPickers/utils/Object3dExtension')
 
@@ -728,58 +732,37 @@ const useInteractionsManager = ({
     return reusableVector.current
   }
   
-  const detectControllersGenerator = () => {
-    let count = -1
+  const detectControllers = whenChanged((count) => {
+    console.log('controllers count = ', count)
     
-    return () => {
-      if (controllers.length !== count) {
-        count = controllers.length
-        console.log('controllers count detected')
-        
-        window.mainAppSocket.emit('xr-controls-count', {count: controllers.length})
-      }
-    }
-  }
+    window.mainAppSocket.emit('xr-controls-count', {count})
+  }, -1)
   
-  const sendToServerGenerator = () => {
-    let controllersInfo
-    let times = 0
-    let skip = 2
-    
-    return () => {
-      // Send update info once per 3 calls to achieve 20 updates per second (60 / 3 = 20)
-      if (times < skip) {
-        times++
-      } else {
-        times = 0
-    
-        if (!window.mainAppSocket) {
-          return false
-        }
-        
-        camera.updateMatrixWorld()
-    
-        controllersInfo = []
-        for (let i = 0, n = controllers.length; i < n; i++) {
-          controllersInfo[i] = {matrix: controllers[i].matrixWorld.elements}
-        }
-    
-        window.mainAppSocket.emit('xr-controls', {
-          cameraMatrix: camera.matrixWorld.elements,
-          controllers: controllersInfo
-        })
-        
-      }
+  let controllersInfo
+  // Send update info once per 3 calls to achieve 20 updates per second (60 / 3 = 20)
+  const sendToServer = skipCalls(() => {
+    if (!window.mainAppSocket) {
+      return false
     }
-  }
-  
-  const sendToServer = sendToServerGenerator()
-  const detectControllers = detectControllersGenerator()
+    
+    camera.updateMatrixWorld()
 
+    controllersInfo = []
+    for (let i = 0, n = controllers.length; i < n; i++) {
+      controllersInfo[i] = {matrix: controllers[i].matrixWorld.elements}
+    }
+
+    window.mainAppSocket.emit('xr-controls', {
+      cameraMatrix: camera.matrixWorld.elements,
+      controllers: controllersInfo
+    })
+  }, 6)
+  
   // TODO could model these as ... activities? exec:'render' actions?
   useRender(() => {
+    TWEEN.update()
     sendToServer()
-    detectControllers()
+    detectControllers(controllers.length)
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())

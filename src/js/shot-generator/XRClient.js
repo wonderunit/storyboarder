@@ -9,6 +9,8 @@ const { useRef, useEffect } = React
 
 const {gltfLoader} = require('./Components')
 
+const {clientInfoSent} = require("../xr/socketServer")
+
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
@@ -97,6 +99,8 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
     controls[0].state.worldRotation0.copy(controls[0].object.quaternion)
     controls[1].state.worldRotation0.copy(controls[1].object.quaternion)
   
+    // TODO There must be an easier way to update values
+    
     tween = new TWEEN.Tween({
       x: head.object.position.x,
       y: head.object.position.y,
@@ -123,7 +127,6 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
       deltaTime: 1
     }, 200)
     
-    // TODO There must be an easier way to update values
     tween.onUpdate(({ x, y, z, xc1, yc1, zc1, xc2, yc2, zc2, deltaTime }) => {
       head.object.position.x = x
       head.object.position.y = y
@@ -177,6 +180,23 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
           controls[controllerIndex].state.worldScale
       )
     }
+  
+    clientInfoSent(id, {
+      head: {
+        pos: head.state.worldPosition,
+        rot: head.state.worldRotation1
+      },
+      controls: [
+        {
+          pos: controls[0].state.worldPosition,
+          rot: controls[0].state.worldRotation1
+        },
+        {
+          pos: controls[1].state.worldPosition,
+          rot: controls[1].state.worldRotation1
+        }
+      ]
+    })
     
     setTweenData()
   }
