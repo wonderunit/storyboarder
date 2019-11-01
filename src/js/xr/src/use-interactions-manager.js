@@ -1011,13 +1011,20 @@ const useInteractionsManager = ({
           relativeAngle(leftController, leftHandBone, staticLimbRotation)
 
           ikHelper.ragDoll.update()
+          let leftArmPoleTarget = ikHelper.ragDoll.chainObjects["LeftHand"].poleConstraint.poleTarget
+          let rightArmPoleTarget = ikHelper.ragDoll.chainObjects["RightHand"].poleConstraint.poleTarget
+          let neckBone = ikHelper.ragDoll.originalMesh.skeleton.bones.find(object => object.name === "Hips").worldPosition()
+          if(!leftArmPoleTarget.mesh.userData.isInitialized)
+          leftArmPoleTarget.mesh.position.y = neckBone.y
+          if(!rightArmPoleTarget.mesh.userData.isInitialized)
+          rightArmPoleTarget.mesh.position.y = neckBone.y
 
           attachControlPointToHmdElement(camera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
       
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
-          ikHelper.ragDoll.originalObject.add(mirror);
+          ikHelper.ragDoll.originalObject.add(mirror)
           mirror.position.z += 2
           playSound('posing')
           setTimeout(() => { interactionService.send({ type: 'STOP_POSING', controller: event.target}) }, 5000)

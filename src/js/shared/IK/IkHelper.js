@@ -102,6 +102,7 @@ class IKHelper extends THREE.Object3D
             {
                 this.poleTargets.attach(this.selectedControlPoint);
                 let worldPosition = this.selectedControlPoint.position;
+                this.selectedControlPoint.userData.isInitialized = true;
                 let poleTargets = {};
                 poleTargets[this.selectedControlPoint.name] = 
                 {

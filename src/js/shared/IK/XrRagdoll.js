@@ -169,6 +169,8 @@ class XRRagdoll extends XRIKObject
         {
             let poleTargetMesh = poleTargetMeshes[i];
             let chainName = interpretatedPoleTargetsName(poleTargetMesh.name);
+            console.log(chainName)
+            console.log(poleTargetMesh.name)
             let chain = this.chainObjects[chainName].chain;
             let poleTarget = null;
             if(poleTargetMesh.userData.isInitialized)
@@ -182,7 +184,7 @@ class XRRagdoll extends XRIKObject
             }
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
-            chainObjects[i].poleConstraint = poleConstraint;
+            this.chainObjects[chainName].poleConstraint = poleConstraint;
         }
 
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
