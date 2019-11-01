@@ -1051,6 +1051,7 @@ const useInteractionsManager = ({
           clearStandingMemento()
           ikHelper.updateStarted = false;
           ikHelper.ragDoll.isEnabledIk = true
+          uiService.send({ type: 'HIDE' })
         },
         onPosingCharacterExit: (context, event) => {
           console.log("Posing stopped")
@@ -1074,6 +1075,7 @@ const useInteractionsManager = ({
           useStoreApi.setState({teleportPos : {x, y, z} = camera.parent.userData.prevPosition} )
           useStoreApi.setState({teleportRot : {x, y, z} = camera.parent.userData.prevRotation} )
           playSound('endPosing')
+          uiService.send({ type: 'SHOW' })
         },
         onDropLowest: (context, event) => {
           let object = scene.__interaction.find(o => o.userData.id === context.selection)

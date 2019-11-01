@@ -221,6 +221,7 @@ class CanvasRenderer {
     let sceneObject = this.state.sceneObjects[id]
 
     // console.log("render")
+    if(this.state.context.isUIHidden)  return
 
     if (this.state.context.locked) {
       // console.log('rendering a locked ui')
@@ -562,6 +563,7 @@ class CanvasRenderer {
     }
 
     if (this.state.mode == 'settings') {
+      console.log("render settings")
       this.renderObjects(ctx, this.paneComponents['settings'])
     }
   }
@@ -570,7 +572,10 @@ class CanvasRenderer {
 
     let canvas = this.helpCanvas
     let ctx = this.helpContext
-
+    if(this.state.context.isUIHidden) {
+      console.log("UI hidden")
+      return
+    } 
     // console.log('render help')
 
     this.paneComponents['help']['help-image'] = {
@@ -603,6 +608,7 @@ class CanvasRenderer {
   }
 
   renderObjects (ctx, objects) {
+    if(this.state.context.isUIHidden)  return
     // TODO: render only what is dirty
     for (let object of Object.values(objects)) {
       let { type, x, y, width, height, image, ...props } = object
@@ -782,6 +788,22 @@ class CanvasRenderer {
       y = y / component.height
       component.onDrop(x, y, u, v)
     }
+  }
+
+  onHide () {
+    this.context.clearRect(0, 0, 1000, 1000,)
+   // this.helpContext.clearRect(-10000, -10000, 120000, 120000)
+   // useUiStore(state => state.setShowHelp)(false)
+  }
+
+  onShow () {
+    let ctx =  this.context
+    this.state.context.isUIHidden = false
+    drawPaneBGs(ctx)
+    this.renderObjects(ctx, this.paneComponents['home'])
+    this.renderObjects(ctx, this.paneComponents['add'])
+    this.renderObjects(ctx, this.paneComponents['settings'])
+    this.render()
   }
 
   getCanvasIntersection (u, v, ignoreInvisible = true, intersectHelp = false) {
@@ -1105,6 +1127,13 @@ const useUiManager = ({ playSound, stopSound }) => {
           playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
 
           getCanvasRenderer().helpNeedsRender = true
+        },
+        onHideUI (context, event) {
+          getCanvasRenderer().onHide()
+          if(showHelp) setShowHelp(!showHelp)
+        },
+        onShowUI (context, event) {
+          getCanvasRenderer().onShow()
         }
       }
     }
@@ -1113,7 +1142,7 @@ const useUiManager = ({ playSound, stopSound }) => {
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
-      const getRoom = () => scene.getObjectByName('room')
+      const getRoom = () => scene.getObjectByName('room' )
       const getImageByFilepath = filepath => THREE.Cache.get(filepath)
 
       canvasRendererRef.current = new CanvasRenderer(
