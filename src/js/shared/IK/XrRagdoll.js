@@ -337,22 +337,10 @@ class XRRagdoll extends XRIKObject
         let targetQuat = this.resourceManager.getQuaternion();
         let quaternion = this.resourceManager.getQuaternion();
         boneTarget.getWorldQuaternion(targetQuat);
-        if(boneTarget.userData.posing)
-        {
-            //console.log(boneTarget.clone())
-            //console.log(bone.clone())
-           // bone.getWorldQuaternion(quaternion).inverse();
-           // bone.quaternion.copy(targetQuat);
-            //return;
-        }
-        let boneQuat = bone.quaternion.clone()
         bone.parent.getWorldQuaternion(quaternion).inverse();
         bone.quaternion.copy(quaternion);
 
         bone.quaternion.multiply(targetQuat);
-        //console.log(bone.worldQuaternion().clone());
-        //console.log(boneQuat.clone());
-       // console.log(boneTarget.parent.clone().worldQuaternion())
         this.resourceManager.release(targetQuat);
         this.resourceManager.release(quaternion);
     }

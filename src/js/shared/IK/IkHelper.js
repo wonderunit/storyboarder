@@ -36,7 +36,7 @@ class IKHelper extends THREE.Object3D
 
     initialize(skinnedMesh, height)
     {
-       // if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
         this.intializedSkinnedMesh = skinnedMesh;
         let ragDoll = instance.ragDoll;
         let meshes = this.targetPoints;

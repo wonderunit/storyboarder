@@ -563,7 +563,6 @@ class CanvasRenderer {
     }
 
     if (this.state.mode == 'settings') {
-      console.log("render settings")
       this.renderObjects(ctx, this.paneComponents['settings'])
     }
   }
@@ -573,7 +572,6 @@ class CanvasRenderer {
     let canvas = this.helpCanvas
     let ctx = this.helpContext
     if(this.state.context.isUIHidden) {
-      console.log("UI hidden")
       return
     } 
     // console.log('render help')
