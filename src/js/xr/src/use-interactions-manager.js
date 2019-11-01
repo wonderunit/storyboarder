@@ -662,7 +662,6 @@ const useInteractionsManager = ({
 
   const onPressEndY = event => {
     // relay through state machine
-    interactionService.send({ type: 'PRESS_END_Y', controller: event.target })
   }
 
   const onMoveCamera = event => {
