@@ -94,6 +94,10 @@ const machine = Machine({
         PRESS_END_X: {
           actions: 'onDropLowest'
         },
+        POSE_CHARACTER: {
+          cond: 'eventHasCharacterIntersection',
+          target: 'character_posing'
+        },
       }
     },
     drag_control_point :
@@ -111,6 +115,16 @@ const machine = Machine({
 
       },
     },
+    character_posing :
+    {
+      onEntry: 'onPosingCharacterEntry',
+      onExit: 'onPosingCharacterExit',
+      on : {
+        STOP_POSING: {
+          target: 'selected'
+        }
+      }
+    }, 
     drag_object: {
       onEntry: 'onDragObjectEntry',
       onExit: ['onSnapEnd', 'onDragObjectExit'],
@@ -215,7 +229,7 @@ const machine = Machine({
 
     eventHasSceneObjectIntersection: (context, event) => event.intersection != null && ['object', 'character', 'light', 'virtual-camera', 'image'].includes(event.intersection.type),
     eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.bone,
-
+    eventHasCharacterIntersection : (context, event) => context.selectionType === 'character',
     eventHasControlPointIntersection: (context, event) => event.intersection != null && event.intersection.controlPoint,
 
     eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,

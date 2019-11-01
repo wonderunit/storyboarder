@@ -67,6 +67,11 @@ class IKHelper extends THREE.Object3D
         this.updateAllTargetPoints();
     }
 
+    getControlPointByName(name)
+    {
+        return this.ragDoll.chainObjects[name].controlTarget;
+    }
+
     selectControlPoint(name)
     {
         let targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
@@ -97,6 +102,7 @@ class IKHelper extends THREE.Object3D
             {
                 this.poleTargets.attach(this.selectedControlPoint);
                 let worldPosition = this.selectedControlPoint.position;
+                this.selectedControlPoint.userData.isInitialized = true;
                 let poleTargets = {};
                 poleTargets[this.selectedControlPoint.name] = 
                 {
@@ -137,9 +143,7 @@ class IKHelper extends THREE.Object3D
             }
             else
             {
-
                 this.poleTargets.attach(this.selectedControlPoint);
-
             }
             if(this.selectedControlPoint.name === "Hips")
             {
@@ -164,8 +168,8 @@ class IKHelper extends THREE.Object3D
 
     updateMatrixWorld(value)
     {
-        super.updateMatrixWorld(value); 
         if(this.updateStarted) return;
+        super.updateMatrixWorld(value); 
         this.updateStarted = true;
         this.update();
         this.updateStarted = false;
@@ -204,7 +208,18 @@ class IKHelper extends THREE.Object3D
     {
         for(let i = 0; i < this.targetPoints.length; i++)
         {
+            let targetPoint = this.targetPoints[i];
+            let parent = targetPoint.parent;
+            if(targetPoint.userData.type === "controlPoint")
+            {
+                this.controlPoints.attach(targetPoint);
+            }
+            else
+            {
+                this.poleTargets.attach(targetPoint);
+            }
             this.updateInstancedTargetPoint(this.targetPoints[i]);
+            parent.attach(targetPoint);
         }
     }
 

@@ -310,6 +310,25 @@ const SceneContent = connect(
       audio.stop()
       return audio
     }, [])
+
+    const xrPosing = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.xrPosing)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+
+    const xrEndPosing = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.xrEndPosing)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+
     const uiDeleteAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiDeleteBuffer)
@@ -426,6 +445,16 @@ const SceneContent = connect(
           helpVoicer.allNotesOff()
           helpVoicer.noteOn(null, { buffer: resources.vrHelp10 })
           break
+        case 'posing':
+          console.log("Play posing")
+          xrPosing.stop()
+          xrPosing.play()
+          break;
+        case 'endPosing':
+          console.log("Play endPosing")
+          xrEndPosing.stop()
+          xrEndPosing.play()
+          break;
       }
     }, [])
 
@@ -457,15 +486,17 @@ const SceneContent = connect(
     const groundRef = useRef()
     const rootRef = useRef()
 
-    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({ playSound, stopSound })
+    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound })
 
-    const { controllers, interactionServiceCurrent } = useInteractionsManager({
+    const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
       rootRef,
       uiService,
       playSound,
       stopSound
     })
+
+    canvasRendererRef.current.interactionServiceSend = interactionServiceSend
 
     // initialize the BonesHelper
     useMemo(() => {
@@ -737,6 +768,9 @@ const SceneManagerXR = () => {
   const vrHelp9 = useAudioLoader('/data/system/xr/snd/vr-help-9.ogg')
   const vrHelp10 = useAudioLoader('/data/system/xr/snd/vr-help-10.ogg')
 
+  const xrPosing = useAudioLoader('/data/system/xr/snd/xr-posing.ogg')
+  const xrEndPosing = useAudioLoader('/data/system/xr/snd/xr-end-posing.ogg')
+
   // scene
   const sceneObjects = useSelector(getSceneObjects)
   const world = useSelector(getWorld)
@@ -787,7 +821,9 @@ const SceneManagerXR = () => {
         teleportAudioBuffer,
         undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
         uiCreateBuffer, uiDeleteBuffer,
-        vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
+        vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
+        xrPosing, xrEndPosing
+
       ]
 
       // fail if any app resources are missing
@@ -869,7 +905,8 @@ const SceneManagerXR = () => {
                   uiCreateBuffer,
                   uiDeleteBuffer,
 
-                  vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
+                  vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
+                  xrPosing, xrEndPosing
                 }}
                 getAsset={getAsset} />
               : null
