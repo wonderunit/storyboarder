@@ -1017,9 +1017,8 @@ const useInteractionsManager = ({
           attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
       
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
-          mirror.position.copy(ikHelper.parent.worldPosition())
+          ikHelper.ragDoll.originalObject.add(mirror);
           mirror.position.z += 2
-          scene.add(mirror);
           playSound('posing')
           setTimeout(() => { interactionService.send({ type: 'STOP_POSING', controller: event.target}) }, 5000)
           setTimeout(() => { poseTicking() }, 1000)
