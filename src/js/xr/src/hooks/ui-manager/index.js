@@ -471,6 +471,24 @@ class CanvasRenderer {
         }
       }
 
+      if (sceneObject.type === 'character') {
+        const characterSliders = Object.values(this.paneComponents['properties']).filter(component => component.type === 'slider')
+
+        this.paneComponents['properties']['pose-capture'] = {
+          id: 'pose-capture',
+          type: 'slider',
+          x: 570,
+          y: 30 + 90 * (characterSliders.length + 1),
+          width: 420,
+          height: 80,
+          label: 'Pose Capture',
+          state: 0,
+          onSelect: () => {
+            this.interactionServiceSend('POSE_CHARACTER')
+          }
+        }
+      }
+
       if (sceneObject.type === 'character' || sceneObject.type === 'object') {
         roundRect(ctx, 483, 288, 66, 105, 25, true, false)
         this.paneComponents['properties']['extend-button'] = {
@@ -1203,7 +1221,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     }
   }, [isVrPresenting])
 
-  return { uiService, uiCurrent, getCanvasRenderer }
+  return { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef }
 }
 
 const UI_ICON_NAMES = [

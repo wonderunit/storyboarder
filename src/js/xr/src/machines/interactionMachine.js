@@ -97,7 +97,11 @@ const machine = Machine({
         PRESS_END_Y: {
           cond: 'eventHasCharacterIntersection',
           target: 'character_posing'
-        }
+        },
+        POSE_CHARACTER: {
+          cond: 'eventHasCharacterIntersection',
+          target: 'character_posing'
+        },
       }
     },
     drag_control_point :

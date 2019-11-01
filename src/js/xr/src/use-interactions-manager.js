@@ -1281,7 +1281,7 @@ const useInteractionsManager = ({
     }
   )
 
-  return { controllers, interactionServiceCurrent }
+  return { controllers, interactionServiceCurrent, interactionServiceSend }
 }
 
 module.exports = {
