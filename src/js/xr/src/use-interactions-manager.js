@@ -145,7 +145,7 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportPos.y = parent.position.y
   teleportPos.z = parent.position.z
 
-  let rotationToApply = parent.rotation;
+  let rotationToApply = parent.rotation
   teleportRot.x = rotationToApply.x
   teleportRot.y = rotationToApply.y
   teleportRot.z = rotationToApply.z
@@ -340,7 +340,7 @@ const useInteractionsManager = ({
     // create a temporary mesh object to initialize the GPUPicker
     let gpuPicker = getGpuPicker()
     let geometry = new THREE.BoxBufferGeometry(2, 2, 2)
-    let material = new THREE.MeshBasicMaterial();
+    let material = new THREE.MeshBasicMaterial()
     let mesh = new THREE.Mesh(geometry, material)
     mesh.position.copy(camera.worldPosition())
     mesh.position.z -= 1
@@ -963,15 +963,15 @@ const useInteractionsManager = ({
             delta.multiply(boneInOriginalMesh.worldQuaternion())
      
             // Applies delta to transform hmdElement rotation to bone space
-            let controllerWorldQuaternion = hmdElement.worldQuaternion();
+            let controllerWorldQuaternion = hmdElement.worldQuaternion()
             controllerWorldQuaternion.multiply(delta)
             let transformMatrix = new THREE.Matrix4()
             transformMatrix.multiply(boneInOriginalMesh.matrix)
             transformMatrix.multiply(boneInOriginalMesh.matrixWorld.inverse())
             controllerWorldQuaternion.applyMatrix(transformMatrix)
             boneInOriginalMesh.quaternion.copy(controllerWorldQuaternion)
-            boneInOriginalMesh.updateMatrix();
-            boneInOriginalMesh.updateWorldMatrix(false, true);
+            boneInOriginalMesh.updateMatrix()
+            boneInOriginalMesh.updateWorldMatrix(false, true)
           }
           
           // Atttaches control point to HMDElement(controllers and camera) 
@@ -1001,12 +1001,12 @@ const useInteractionsManager = ({
 
           relativeAngle(camera, headBone, staticLimbRotation)
 
-          eulerRot.x = THREE.Math.degToRad(90);
-          eulerRot.y = THREE.Math.degToRad(90);
+          eulerRot.x = THREE.Math.degToRad(90)
+          eulerRot.y = THREE.Math.degToRad(90)
           staticLimbRotation.setFromEuler(eulerRot)
           relativeAngle(rightController, rightHandBone, staticLimbRotation)
 
-          eulerRot.y = THREE.Math.degToRad(-90);
+          eulerRot.y = THREE.Math.degToRad(-90)
           staticLimbRotation.setFromEuler(eulerRot)
           relativeAngle(leftController, leftHandBone, staticLimbRotation)
 
@@ -1030,7 +1030,7 @@ const useInteractionsManager = ({
           setTimeout(() => { interactionService.send({ type: 'STOP_POSING', controller: event.target}) }, 5000)
           setTimeout(() => { poseTicking() }, 1000)
           clearStandingMemento()
-          ikHelper.updateStarted = false;
+          ikHelper.updateStarted = false
           ikHelper.ragDoll.isEnabledIk = true
           uiService.send({ type: 'HIDE' })
         },
