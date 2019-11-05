@@ -20,7 +20,6 @@ const useExportToGltf = (sceneRef) => {
   const meta = useSelector(state => state.meta)
   const board = useSelector(state => state.board)
   const sceneObjects = useSelector(getSceneObjects)
-
   useEffect(() => {
     if (board && meta && meta.storyboarderFilePath) {
       ipcRenderer.on('shot-generator:export-gltf', () => {
@@ -28,8 +27,6 @@ const useExportToGltf = (sceneRef) => {
           message: 'Preparing to export GLTF…',
           timing: 5
         })
-
-        console.log('Preparing GLTF…')
         let scene = new THREE.Scene()
         for (let child of sceneRef.current.children) {
           // console.log('\tScene contains:', child)
@@ -38,10 +35,8 @@ const useExportToGltf = (sceneRef) => {
             if (child.userData.id && sceneObjects[child.userData.id]) {
               let sceneObject = sceneObjects[child.userData.id]
               if (sceneObject.type === 'volume') {
-                console.log('\tSkipping', sceneObject.type)
 
               } else if (sceneObject.type === 'character') {
-                console.log('\tCloning', sceneObject.type)
 
                 let skinnedMesh = child.getObjectByProperty('type', 'SkinnedMesh')
 
@@ -52,7 +47,6 @@ const useExportToGltf = (sceneRef) => {
                 scene.add( simpleMesh)
                 
               } else if (sceneObject) {
-                console.log('\tCloning', sceneObject.type)
                 let clone = child.clone()
                 
                 clone.userData = {}
@@ -62,7 +56,12 @@ const useExportToGltf = (sceneRef) => {
                 
                 scene.add(clone)
               }
-            }
+            } else if (child.userData.type === 'ground' || (child.geometry && child.geometry instanceof THREE.ExtrudeGeometry)) {
+              let clone = child.clone()
+              
+              clone.userData = {}
+              scene.add(clone)
+            } 
           }
         }
         
@@ -100,7 +99,6 @@ const useExportToGltf = (sceneRef) => {
     }
 
     return function cleanup() {
-      console.log('cleanup shot-generator:export-gltf')
       ipcRenderer.removeAllListeners('shot-generator:export-gltf')
     }
   }, [board, meta, sceneObjects])
