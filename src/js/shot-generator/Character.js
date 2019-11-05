@@ -549,9 +549,9 @@ const Character = React.memo(({
         object.current.bonesHelper.add(cone)
       }
       if ( !isCustomModel(props.model) ) {
-        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh)
+        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh, props)
         object.current.add(SGIkHelper.getInstance())
-        SGIkHelper.getInstance().updateMatrixWorld(true);
+        SGIkHelper.getInstance().updateMatrixWorld(true)
       }
     } else {
       object.current.remove(SGIkHelper.getInstance())
@@ -589,6 +589,13 @@ const Character = React.memo(({
 
     object.current.orthoIcon.setSelected(isSelected)
   }, [props.model, isSelected, ready])
+
+  // Watches for poletargets changes and applies them 
+  useEffect(() => {
+    if(!ready) return
+    if(!props.poleTargets) return
+    SGIkHelper.getInstance().updatePoleTarget(object.current, props.poleTargets)
+  }, [props.poleTargets, ready])
 
   useEffect(() => {
     if (!ready) return

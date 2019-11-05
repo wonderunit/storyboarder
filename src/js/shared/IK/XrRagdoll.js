@@ -46,6 +46,7 @@ class XRRagdoll extends XRIKObject
         {
             IK.firstRun = false;
             this.setUpHipsControlTargetRotation();
+            this.setUpControlTargetsInitialPosition();
         }
         if(!this.isEnabledIk)
         {
@@ -168,6 +169,8 @@ class XRRagdoll extends XRIKObject
         {
             let poleTargetMesh = poleTargetMeshes[i];
             let chainName = interpretatedPoleTargetsName(poleTargetMesh.name);
+            console.log(chainName)
+            console.log(poleTargetMesh.name)
             let chain = this.chainObjects[chainName].chain;
             let poleTarget = null;
             if(poleTargetMesh.userData.isInitialized)
@@ -181,7 +184,7 @@ class XRRagdoll extends XRIKObject
             }
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
-            chainObjects[i].poleConstraint = poleConstraint;
+            this.chainObjects[chainName].poleConstraint = poleConstraint;
         }
 
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
@@ -292,12 +295,15 @@ class XRRagdoll extends XRIKObject
     updateReact()
     {        
         let ikBones = [];
+        this.limbsFollowRotation();
+        this.ikSwitcher.applyChangesToOriginal();
         for (let bone of this.originalObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones)
         {
             if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName ))
             {
                 continue;
             }
+            bone.updateWorldMatrix(true, true)
             ikBones.push(bone);
         }
         this.updateCharacterSkeleton(ikBones);
@@ -331,10 +337,11 @@ class XRRagdoll extends XRIKObject
     rotateBoneQuaternion(bone, boneTarget)
     {
         let targetQuat = this.resourceManager.getQuaternion();
-        boneTarget.getWorldQuaternion(targetQuat);
         let quaternion = this.resourceManager.getQuaternion();
-        bone.getWorldQuaternion(quaternion).inverse();
-        bone.quaternion.multiply(quaternion);
+        boneTarget.getWorldQuaternion(targetQuat);
+        bone.parent.getWorldQuaternion(quaternion).inverse();
+        bone.quaternion.copy(quaternion);
+
         bone.quaternion.multiply(targetQuat);
         this.resourceManager.release(targetQuat);
         this.resourceManager.release(quaternion);

@@ -25,11 +25,12 @@ class IKHelper extends THREE.Object3D
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
             this.regularHeight = 1.8;
             this.updateStarted = false;
+            this.userData.type = "IkHelper"
         }
         return instance;
     }
 
-    static getInstance(mesh) 
+    static getInstance(mesh)
     {
         return instance ? instance : new IKHelper(mesh)
     }
@@ -52,6 +53,7 @@ class IKHelper extends THREE.Object3D
             {
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
+                this.intializedSkinnedMesh.worldToLocal(mesh.position);
                 mesh.updateMatrixWorld();
                 mesh.userData.isInitialized = true;
             }
@@ -65,6 +67,11 @@ class IKHelper extends THREE.Object3D
         ragDoll.initObject(skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
         ragDoll.reinitialize();
         this.updateAllTargetPoints();
+    }
+
+    getControlPointByName(name)
+    {
+        return this.ragDoll.chainObjects[name].controlTarget;
     }
 
     selectControlPoint(name)
@@ -87,7 +94,7 @@ class IKHelper extends THREE.Object3D
     deselectControlPoint()
     {
         if(this.selectedControlPoint)
-        {  
+        {
             this.ragDoll.isEnabledIk = false;
             if(this.selectedControlPoint.userData.type === "controlPoint")
             {
@@ -96,11 +103,13 @@ class IKHelper extends THREE.Object3D
             else
             {
                 this.poleTargets.attach(this.selectedControlPoint);
-                let worldPosition = this.selectedControlPoint.position;
+                this.poleTargets.updateMatrixWorld(true)
+                let worldPosition = this.selectedControlPoint.worldPosition();
+                this.selectedControlPoint.userData.isInitialized = true;
                 let poleTargets = {};
-                poleTargets[this.selectedControlPoint.name] = 
+                poleTargets[this.selectedControlPoint.name] =
                 {
-                    position: 
+                    position:
                     {
                         x: worldPosition.x,
                         y: worldPosition.y,
@@ -137,9 +146,7 @@ class IKHelper extends THREE.Object3D
             }
             else
             {
-
                 this.poleTargets.attach(this.selectedControlPoint);
-
             }
             if(this.selectedControlPoint.name === "Hips")
             {
@@ -164,8 +171,8 @@ class IKHelper extends THREE.Object3D
 
     updateMatrixWorld(value)
     {
-        super.updateMatrixWorld(value); 
         if(this.updateStarted) return;
+        super.updateMatrixWorld(value);
         this.updateStarted = true;
         this.update();
         this.updateStarted = false;
@@ -204,7 +211,18 @@ class IKHelper extends THREE.Object3D
     {
         for(let i = 0; i < this.targetPoints.length; i++)
         {
+            let targetPoint = this.targetPoints[i];
+            let parent = targetPoint.parent;
+            if(targetPoint.userData.type === "controlPoint")
+            {
+                this.controlPoints.attach(targetPoint);
+            }
+            else
+            {
+                this.poleTargets.attach(targetPoint);
+            }
             this.updateInstancedTargetPoint(this.targetPoints[i]);
+            parent.attach(targetPoint);
         }
     }
 
@@ -263,7 +281,7 @@ const intializeInstancedMesh = (mesh) =>
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];
     let sizeOfTargets = listOfControlTargets.length + controlPointsAmount;
     let material = new THREE.MeshBasicMaterial({
-        color: 0x6a4dff,    
+        color: 0x6a4dff,
         depthTest: false,
         depthWrite: false,
         transparent: true,

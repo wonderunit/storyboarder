@@ -60,9 +60,12 @@ class UniversalPickableCharacter extends Pickable
         this.pickingMaterial.morphTargets = true;
         let parent = this.characterContainer;
         let ikHelper = parent.children.find(child => child.userData.type === "IkHelper");
+        let bonesHelper = parent.children.find(child => child.userData.type === "BonesHelper");
         if(ikHelper) parent.remove(ikHelper);
+        if(bonesHelper) parent.remove(bonesHelper);
         this.node = SkeletonUtils.clone(parent);
         if(ikHelper) parent.add(ikHelper);
+        if(bonesHelper) parent.add(bonesHelper);
         let lod = this.node.children[0];
         if(lod.type === "LOD")
         {
@@ -129,7 +132,7 @@ class UniversalPickableCharacter extends Pickable
             this.node.remove(this.node.children[0]);
             this.node.add(node.children[0]);
             i--;
-        }   
+        }
         this.pickingMesh.visible = true;
     }
 }

@@ -66,7 +66,6 @@ const setupXR = () => {
     socket.on('state', (state) => {
       if (!store) {
         setupScene(state, socket.id)
-        console.log(state)
   
         onReduxAction = (action) => {
           if (DISABLED_ACTIONS[action.type]) {

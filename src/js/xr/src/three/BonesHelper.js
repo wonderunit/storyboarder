@@ -18,7 +18,8 @@ class BonesHelper extends THREE.Object3D
             this.bonesGroup = new THREE.Group();
             this.add(this.bonesGroup)
             this.intializedSkinnedMeshUuid = null;
-            this.selectedBoneColor = new THREE.Color(0xffffff)
+            this.selectedBoneColor = new THREE.Color(0xffffff);
+            this.userData.type = "BonesHelper";
         }
         return instance;
     }
