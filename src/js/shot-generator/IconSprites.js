@@ -18,7 +18,8 @@ const allIcons = {
     camera: new THREE.SpriteMaterial( { color: 0xffffff } ),
     light: new THREE.SpriteMaterial( { color: 0xffffff } ),
     object: new THREE.SpriteMaterial( { color: 0xffffff } ),
-    volume: new THREE.SpriteMaterial( { color: 0xffffff } )
+    volume: new THREE.SpriteMaterial( { color: 0xffffff } ),
+    image: new THREE.SpriteMaterial( { color: 0xffffff } )
 }
 
 const allSprites = {
@@ -26,7 +27,8 @@ const allSprites = {
     camera: new THREE.Sprite( allIcons.camera ),
     light: new THREE.Sprite( allIcons.light ),
     object: new THREE.Sprite( allIcons.object ),
-    volume: new THREE.Sprite( allIcons.volume )
+    volume: new THREE.Sprite( allIcons.volume ),
+    image: new THREE.Sprite( allIcons.image )
 }
 
 function IconSprites ( type, text, parent, secondaryText ) {
@@ -50,6 +52,9 @@ function IconSprites ( type, text, parent, secondaryText ) {
             break
         case 'volume':
             icon = allSprites.volume
+            break
+        case 'image':
+            icon = allSprites.image
             break
     }
     
@@ -290,8 +295,9 @@ const loadIcons = () => {
     const light = loadIconPromise("data/shot-generator/icons/light.svg", allSprites.light, 0.07)
     const object = generateSprite("#000000", allSprites.object)
     const volume = loadIconPromise("data/shot-generator/icons/volume.svg", allSprites.volume, 0.07)
+    const image = loadIconPromise('data/shot-generator/icons/image.svg', allSprites.image, 0.07)
 
-    return Promise.all( [ character, camera, light, object ] ).then(( values ) => {
+    return Promise.all( [ character, camera, light, object, image ] ).then(( values ) => {
         
         return new Promise( resolve => {
             resolve(allSprites)

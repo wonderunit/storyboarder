@@ -7,7 +7,7 @@ window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
 
 const h = require('../utils/h')
-
+const SGIkHelper = require('../shared/IK/SGIkHelper')
 const {
   selectObject,
   selectObjectToggle,
@@ -43,6 +43,7 @@ const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
 const Camera = require('./Camera')
+const Image = require('./Image')
 
 const WorldObject = require('./World')
 
@@ -95,9 +96,9 @@ const SceneManager = connect(
 
     let bonesHelper = useRef(null)
     let lightHelper = useRef(null)
+    let ikHelper = useRef(null)
 
     let clock = useRef(new THREE.Clock())
-
     useMemo(() => {
       console.log('new SceneManager')
 
@@ -143,6 +144,45 @@ const SceneManager = connect(
         window.removeEventListener('blur', onBlur)
         window.removeEventListener('focus', onFocus)
       }
+    }, [])
+
+    useEffect(() => {
+      
+      let sgIkHelper = SGIkHelper.getInstance(null, scene, camera, largeRenderer.current.domElement)
+      ikHelper.current = sgIkHelper
+      const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
+        id: sgIkHelper.characterObject.userData.id,
+        name : name,
+        rotation: 
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }  
+      } )}
+
+      const updateSkeleton = (skeleton) => { updateCharacterIkSkeleton({
+        id: sgIkHelper.characterObject.userData.id,
+        skeleton: skeleton  
+      } )}
+
+      const updateCharacterPos = ({ x, y, z}) => updateObject(
+        sgIkHelper.characterObject.userData.id,
+        { x, y: z, z: y }
+      )
+
+      const updatePoleTarget = (poleTargets) => updateCharacterPoleTargets({
+          id: sgIkHelper.characterObject.userData.id,
+          poleTargets: poleTargets
+        }
+      )
+
+      sgIkHelper.setUpdate(
+        updateCharacterRotation,
+        updateSkeleton,
+        updateCharacterPos,
+        updatePoleTarget
+      )
     }, [])
 
     const setOutlineEffectParams = (type, params) => {
@@ -204,6 +244,7 @@ const SceneManager = connect(
           child.userData.type === 'character' ||
           child.userData.type === 'light' ||
           child.userData.type === 'volume' ||
+          child.userData.type === 'image' ||
           child instanceof THREE.PerspectiveCamera
         ) {
           minMax[0] = Math.min(child.position.x, minMax[0])
@@ -621,6 +662,20 @@ const SceneManager = connect(
                 }
               ]
 
+          case 'image':
+            return [
+              Image, {
+                key: props.id,
+                scene,
+                isSelected: selections.includes(props.id),
+
+                updateObject,
+
+                storyboarderFilePath: meta.storyboarderFilePath,
+                imageAttachmentIds: props.imageAttachmentIds,
+                ...props
+              }
+            ]
         }
     })
 
@@ -687,10 +742,10 @@ function updateCharacterIk(scene)
 {
   scene.traverse((object) =>
   {
-    if(object.userData.ikRig !== undefined)
-    {
-        object.userData.ikRig.update();
-    }
+    //if(object.userData.ikRig !== undefined)
+    //{
+    //    //object.userData.ikRig.update();
+    //}
   });
 
 }

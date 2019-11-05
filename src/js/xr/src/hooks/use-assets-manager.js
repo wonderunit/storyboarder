@@ -56,6 +56,7 @@ const reducer = (state, action) => {
 
 const useAssetsManager = () => {
   const [loader] = useState(() => new GLTFLoader())
+  const [textureLoader] = useState(() => new THREE.TextureLoader())
 
   const [assets, dispatch] = useReducer(reducer, {})
 
@@ -63,13 +64,23 @@ const useAssetsManager = () => {
     Object.entries(assets)
       .filter(([_, o]) => o.status === 'NotAsked')
       .forEach(([id]) => {
-        loader.load(
-          id,
-          value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-          progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-          error => dispatch({ type: 'ERROR', payload: { id, error } })
-        )
-        dispatch({ type: 'LOAD', payload: { id } })
+        if (!id.includes('/images/')) {
+          loader.load(
+            id,
+            value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
+            progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+            error => dispatch({ type: 'ERROR', payload: { id, error } })
+          )
+          dispatch({ type: 'LOAD', payload: { id } })
+        } else {
+          textureLoader.load(
+            id,
+            value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
+            progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+            error => dispatch({ type: 'ERROR', payload: { id, error } })
+          )
+          dispatch({ type: 'LOAD', payload: { id } })
+        }
       })
   }, [assets])
 

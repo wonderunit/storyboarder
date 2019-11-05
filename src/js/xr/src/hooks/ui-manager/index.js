@@ -108,6 +108,11 @@ for (let propertyName of ['width', 'height', 'depth']) {
   )
 }
 
+lenses.opacity = R.lens(
+  vin => clamp(mapLinear(vin, 0.1, 1, 0, 1), 0, 1),
+  vout => clamp(steps(mapLinear(vout, 0, 1, 0.1, 1), 0.1), 0.1, 1)
+)
+
 lenses.morphTargets = R.lens(
   // from morphTarget value to slider internal value
   from => clamp(from, 0, 1),
@@ -216,6 +221,7 @@ class CanvasRenderer {
     let sceneObject = this.state.sceneObjects[id]
 
     // console.log("render")
+    if(this.state.context.isUIHidden)  return
 
     if (this.state.context.locked) {
       // console.log('rendering a locked ui')
@@ -268,6 +274,17 @@ class CanvasRenderer {
                 lens: R.compose(R.lensPath(['height']), lenses.height)
               }
             }
+        },
+
+        ...(sceneObject.type === 'image') && {
+          size: {
+            label: `Size - ${sceneObject.height}m`,
+            lens: R.compose(R.lensPath(['height']), lenses.height)
+          },
+          opacity: {
+            label: `Opacity - ${sceneObject.opacity}`,
+            lens: R.compose(R.lensPath(['opacity']), lenses.opacity)
+          }
         },
 
         ...(sceneObject.type === 'character') &&
@@ -412,6 +429,27 @@ class CanvasRenderer {
         weight: 'bold'
       }
 
+      if (sceneObject.type === 'image') {
+        this.paneComponents['properties']['visible-to-camera'] = {
+          id: 'visible-to-camera',
+          type: 'slider',
+          x: 570,
+          y: 30 + 90 * 3,
+          width: 420,
+          height: 80,
+          label: sceneObject.visibleToCam ? 'Visible to Camera' : 'Set as visible to Camera',
+          state: Number(sceneObject.visibleToCam),
+          onSelect: () => {
+            this.dispatch(
+              updateObject(sceneObject.id, {
+                visibleToCam: !sceneObject.visibleToCam
+              })
+            )
+            this.needsRender = true
+          }
+        }
+      }
+      
       if (sceneObject.type === 'camera') {
         const isActive = sceneObject.id === this.state.activeCamera
 
@@ -429,6 +467,24 @@ class CanvasRenderer {
               this.dispatch(setActiveCamera(sceneObject.id))
               this.needsRender = true
             }
+          }
+        }
+      }
+
+      if (sceneObject.type === 'character') {
+        const characterSliders = Object.values(this.paneComponents['properties']).filter(component => component.type === 'slider')
+
+        this.paneComponents['properties']['pose-capture'] = {
+          id: 'pose-capture',
+          type: 'slider',
+          x: 570,
+          y: 30 + 90 * (characterSliders.length + 1),
+          width: 420,
+          height: 80,
+          label: 'Pose Capture',
+          state: 0,
+          onSelect: () => {
+            this.interactionServiceSend('POSE_CHARACTER')
           }
         }
       }
@@ -533,7 +589,9 @@ class CanvasRenderer {
 
     let canvas = this.helpCanvas
     let ctx = this.helpContext
-
+    if(this.state.context.isUIHidden) {
+      return
+    } 
     // console.log('render help')
 
     this.paneComponents['help']['help-image'] = {
@@ -566,6 +624,7 @@ class CanvasRenderer {
   }
 
   renderObjects (ctx, objects) {
+    if(this.state.context.isUIHidden)  return
     // TODO: render only what is dirty
     for (let object of Object.values(objects)) {
       let { type, x, y, width, height, image, ...props } = object
@@ -745,6 +804,22 @@ class CanvasRenderer {
       y = y / component.height
       component.onDrop(x, y, u, v)
     }
+  }
+
+  onHide () {
+    this.context.clearRect(0, 0, 1000, 1000,)
+   // this.helpContext.clearRect(-10000, -10000, 120000, 120000)
+   // useUiStore(state => state.setShowHelp)(false)
+  }
+
+  onShow () {
+    let ctx =  this.context
+    this.state.context.isUIHidden = false
+    drawPaneBGs(ctx)
+    this.renderObjects(ctx, this.paneComponents['home'])
+    this.renderObjects(ctx, this.paneComponents['add'])
+    this.renderObjects(ctx, this.paneComponents['settings'])
+    this.render()
   }
 
   getCanvasIntersection (u, v, ignoreInvisible = true, intersectHelp = false) {
@@ -1068,6 +1143,13 @@ const useUiManager = ({ playSound, stopSound }) => {
           playSound(`help${getCanvasRenderer().state.helpIndex + 1}`)
 
           getCanvasRenderer().helpNeedsRender = true
+        },
+        onHideUI (context, event) {
+          getCanvasRenderer().onHide()
+          if(showHelp) setShowHelp(!showHelp)
+        },
+        onShowUI (context, event) {
+          getCanvasRenderer().onShow()
         }
       }
     }
@@ -1076,7 +1158,7 @@ const useUiManager = ({ playSound, stopSound }) => {
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
-      const getRoom = () => scene.getObjectByName('room')
+      const getRoom = () => scene.getObjectByName('room' )
       const getImageByFilepath = filepath => THREE.Cache.get(filepath)
 
       canvasRendererRef.current = new CanvasRenderer(
@@ -1139,7 +1221,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     }
   }, [isVrPresenting])
 
-  return { uiService, uiCurrent, getCanvasRenderer }
+  return { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef }
 }
 
 const UI_ICON_NAMES = [

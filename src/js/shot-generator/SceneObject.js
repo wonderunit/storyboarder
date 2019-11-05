@@ -93,6 +93,17 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
     // return function cleanup () { }
   }, [props.model])
 
+  // tintColor
+  useEffect(() => {
+    if (container.current) {
+      container.current.traverse((obj) => {
+        if (obj.isMesh) {
+          obj.material.emissive.set(props.tintColor || '#000000')
+        }
+      })
+    }
+  }, [props.tintColor])
+
   useEffect(() => {
     if (!loaded && modelData) {
       console.log(type, id, 'got modelData')

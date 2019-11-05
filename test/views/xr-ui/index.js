@@ -16,7 +16,7 @@ const Controls = require('../../../src/js/xr/src/components/ui/Controls')
 const Help = require('../../../src/js/xr/src/components/ui/Help')
 
 
-const SimpleText = require('../../../src/js/xr/src/components/SimpleText')
+//const SimpleText = require('../../../src/js/xr/src/components/SimpleText')
 
 const useGltfLoader = require('../../../src/js/xr/src/hooks/use-gltf-loader')
 const useImageBitmapLoader = require('../../../src/js/xr/src/hooks/use-imagebitmap-loader')
@@ -122,15 +122,17 @@ const UITestContent = ({ resources }) => {
 
 const LoadingMessage = () => {
   return <group>
-    <SimpleText
-      label={'Loading ...'}
-      position={[0, 0, 0]}
-      textProps={{
-        color: 0xaaaaaa,
-        scale: 10
-      }}
-    />
   </group>
+//   return <group>
+//   <SimpleText
+//     label={'Loading ...'}
+//     position={[0, 0, 0]}
+//     textProps={{
+//       color: 0xaaaaaa,
+//       scale: 10
+//     }}
+//   />
+// </group>
 }
 
 const UITest = () => {

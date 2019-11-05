@@ -41,6 +41,7 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-mana
 
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
+const getFilepathForImage = require('./helpers/get-filepath-for-image')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -49,6 +50,7 @@ const Character = require('./components/Character')
 const ModelObject = require('./components/ModelObject')
 const Light = require('./components/Light')
 const VirtualCamera = require('./components/VirtualCamera')
+const Image = require('./components/Image')
 const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
@@ -59,7 +61,6 @@ const Controls = require('./components/ui/Controls')
 const Help = require('./components/ui/Help')
 
 const BonesHelper = require('./three/BonesHelper')
-const IKHelper = require('./three/IkHelper')
 const Voicer = require('./three/Voicer')
 
 const { createSelector } = require('reselect')
@@ -85,6 +86,11 @@ const getSceneObjectVirtualCamerasIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
 )
 
+const getSceneObjectImageIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
+)
+
 const SceneContent = connect(
   state => ({
     aspectRatio: state.aspectRatio,
@@ -98,6 +104,7 @@ const SceneContent = connect(
     modelObjectIds: getSceneObjectModelObjectIds(state),
     lightIds: getSceneObjectLightIds(state),
     virtualCameraIds: getSceneObjectVirtualCamerasIds(state),
+    imageIds: getSceneObjectImageIds(state),
   }),
   {
     selectObject,
@@ -107,7 +114,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds,
 
     resources, getAsset
   }) => {
@@ -303,6 +310,25 @@ const SceneContent = connect(
       audio.stop()
       return audio
     }, [])
+
+    const xrPosing = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.xrPosing)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+
+    const xrEndPosing = useMemo(() => {
+      let audio = new THREE.Audio(cameraAudioListener)
+      audio.setBuffer(resources.xrEndPosing)
+      audio.setVolume(1)
+      audio.play()
+      audio.stop()
+      return audio
+    }, [])
+
     const uiDeleteAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiDeleteBuffer)
@@ -419,6 +445,16 @@ const SceneContent = connect(
           helpVoicer.allNotesOff()
           helpVoicer.noteOn(null, { buffer: resources.vrHelp10 })
           break
+        case 'posing':
+          console.log("Play posing")
+          xrPosing.stop()
+          xrPosing.play()
+          break;
+        case 'endPosing':
+          console.log("Play endPosing")
+          xrEndPosing.stop()
+          xrEndPosing.play()
+          break;
       }
     }, [])
 
@@ -450,9 +486,9 @@ const SceneContent = connect(
     const groundRef = useRef()
     const rootRef = useRef()
 
-    const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({ playSound, stopSound })
+    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound })
 
-    const { controllers, interactionServiceCurrent } = useInteractionsManager({
+    const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
       rootRef,
       uiService,
@@ -460,11 +496,12 @@ const SceneContent = connect(
       stopSound
     })
 
+    canvasRendererRef.current.interactionServiceSend = interactionServiceSend
+
     // initialize the BonesHelper
     useMemo(() => {
       const mesh = resources.boneGltf.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
-      IKHelper.getInstance(mesh)
     }, [resources.boneGltf])
 
     const ambientLightRef = useUpdate(self => {
@@ -611,6 +648,21 @@ const SceneContent = connect(
           }
 
           {
+            imageIds.map(id => {
+              let sceneObject = sceneObjects[id]
+              let texture = getAsset(getFilepathForImage(sceneObject))
+
+              return <Image
+                key={id}
+                texture={texture}
+                sceneObject={sceneObject}
+                visibleToCam={sceneObject.visibleToCam}
+                isSelected={selections.includes(id)}/>
+              }
+            )
+          }
+
+          {
             world.environment.file &&
             getAsset(getFilepathForModelByType({
               type: 'environment',
@@ -716,6 +768,9 @@ const SceneManagerXR = () => {
   const vrHelp9 = useAudioLoader('/data/system/xr/snd/vr-help-9.ogg')
   const vrHelp10 = useAudioLoader('/data/system/xr/snd/vr-help-10.ogg')
 
+  const xrPosing = useAudioLoader('/data/system/xr/snd/xr-posing.ogg')
+  const xrEndPosing = useAudioLoader('/data/system/xr/snd/xr-end-posing.ogg')
+
   // scene
   const sceneObjects = useSelector(getSceneObjects)
   const world = useSelector(getWorld)
@@ -728,6 +783,18 @@ const SceneManagerXR = () => {
       .filter(o => !(o.type === 'object' && o.model === 'box'))
       // what's the filepath?
       .map(getFilepathForModelByType)
+      // has not been requested
+      .filter(filepath => getAsset(filepath) == null)
+      // request the file
+      .forEach(requestAsset)
+  }, [sceneObjects])
+
+  useEffect(() => {
+    Object.values(sceneObjects)
+      // is not an image
+      .filter(o => o.type === 'image')
+      // what's the filepath?
+      .map(getFilepathForImage)
       // has not been requested
       .filter(filepath => getAsset(filepath) == null)
       // request the file
@@ -754,7 +821,9 @@ const SceneManagerXR = () => {
         teleportAudioBuffer,
         undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
         uiCreateBuffer, uiDeleteBuffer,
-        vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
+        vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
+        xrPosing, xrEndPosing
+
       ]
 
       // fail if any app resources are missing
@@ -836,7 +905,8 @@ const SceneManagerXR = () => {
                   uiCreateBuffer,
                   uiDeleteBuffer,
 
-                  vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
+                  vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
+                  xrPosing, xrEndPosing
                 }}
                 getAsset={getAsset} />
               : null

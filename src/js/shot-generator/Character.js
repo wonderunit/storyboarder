@@ -1,7 +1,6 @@
 //#region ragdoll's import
-const RagDoll = require("./IK/objects/IkObjects/Ragdoll");
-const BoneRotationControl = require("./IK/objects/BoneRotationControl")
-const {AddTransformationControl, createTransformationControls} = require("./IK/utils/IkUtils");
+const SGIkHelper = require("../shared/IK/SGIkHelper")
+const BoneRotationControl = require("../shared/IK/objects/BoneRotationControl")
 const { isCustomModel } = require('../services/model-loader')
 //#endregion
 const THREE = require('three')
@@ -189,8 +188,7 @@ const Character = React.memo(({
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
-  let ragDoll = useRef(null);
-  let boneRotationControl = useRef(null);
+  let boneRotationControl = useRef(null)
 
   const doCleanup = () => {
     if (object.current) {
@@ -198,12 +196,10 @@ const Character = React.memo(({
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
-      boneRotationControl.current.deselectBone();
-      if(ragDoll.current)
-      {
-        ragDoll.current.removeFromScene();
-      }
-      ragDoll.current = null;
+      object.current.remove(SGIkHelper.getInstance())
+      SGIkHelper.getInstance().deselectControlPoint()
+      SGIkHelper.getInstance().removeFromParent(id)
+      boneRotationControl.current.deselectBone()
       object.current.bonesHelper = null
       object.current = null
     }
@@ -227,7 +223,7 @@ const Character = React.memo(({
   useEffect(() => {
     if (ready) {
       console.log(type, id, 'add')
-    
+
       const { mesh, skeleton, armatures, originalHeight, boneLengthScale, parentRotation, parentPosition } = characterFactory(modelData)
       // make a clone of the initial skeleton pose, for comparison
       originalSkeleton.current = skeleton.clone()
@@ -246,7 +242,7 @@ const Character = React.memo(({
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
       object.current.orthoIcon = new IconSprites( type, props.name?props.name:props.displayName, object.current )
-      
+
       object.current.userData.mesh = mesh
 
       scene.add(object.current)
@@ -280,58 +276,21 @@ const Character = React.memo(({
       object.current.userData.parentPosition = parentPosition
       scene.add(object.current.bonesHelper)
 
-      let domElement = largeRenderer.current.domElement;
+      let domElement = largeRenderer.current.domElement
 
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid);
-      let boneRotation = boneRotationControl.current;
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid)
+      let boneRotation = boneRotationControl.current
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
         name : name,
-        rotation: 
+        rotation:
         {
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
         }
-      } );});
+      } )})
 
-
-      if ( isCustomModel(props.model) ) {
-        console.log('Custom model. No IK.')
-        return
-      }
-
-      console.log('Built-in model. Setting up IK.')
-      ragDoll.current = new RagDoll();
-      let skeletonRig = ragDoll.current;
-
-      
-      let {controls, controlTargetSelection} = createTransformationControls(camera, domElement, scene);
-    
-      skeletonRig.initObject(scene, object.current, controls);
-      skeletonRig.controlTargetSelection = controlTargetSelection;
-
-
-      skeletonRig.updateCharacterRotation((name, rotation) => {updateCharacterSkeleton({
-        id,
-        name : name,
-        rotation: 
-        {
-          x : rotation.x,
-          y : rotation.y,
-          z : rotation.z,
-        }  
-      } );});
-
-      skeletonRig.updateSkeleton((skeleton) => {updateCharacterIkSkeleton({
-        id,
-        skeleton: skeleton  
-      } );});
-
-      skeletonRig.updateCharacterPos(({ x, y, z}) => updateObject(id, { x, y: z, z: y }))
-
-      object.current.userData.ikRig = skeletonRig;
-     
     }
 
     return function cleanup () {
@@ -368,16 +327,10 @@ const Character = React.memo(({
   let currentBoneSelected = useRef(null)
 
   const updateSkeleton = () => {
-    // skip this update if RagDoll recently ran an update
-    if(ragDoll.current && ragDoll.current.updatingReactSkeleton)
-    {
-      ragDoll.current.updatingReactSkeleton = false;
-      return;
-    }
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
-      
+
       for (bone of skeleton.bones) {
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
@@ -390,10 +343,6 @@ const Character = React.memo(({
       let skeleton = object.current.userData.skeleton
       skeleton.pose()
       fixRootBone()
-    }
-    if(ragDoll.current)
-    {
-      ragDoll.current.ikSwitcher.applyToIk();  
     }
   }
 
@@ -445,29 +394,19 @@ const Character = React.memo(({
   // FIXME frame delay between redux update and react render here
   //
 
-  //#region Camera changing 
+  //#region Camera changing
   useEffect(() => {
-    if(!ready) return
-    if(!ragDoll.current) return;
-    let skeletonRig = ragDoll.current;
-    skeletonRig.controlTargetSelection.camera = camera;
-    boneRotationControl.current.setCamera(camera);
-    for(let controlTarget of skeletonRig.controlTargets)
-    {
-      controlTarget.setCamera(camera);
-    }
+    if(!ready || !camera) return
+    SGIkHelper.getInstance().setCamera(camera)
   }, [camera, ready])
   //#endregion
 
   useEffect(() => {
+
     if (object.current) {
       object.current.position.x = props.x
       object.current.position.z = props.y
       object.current.position.y = props.z
-      if(ragDoll.current)
-      {
-        ragDoll.current.moveRagdoll();
-      }
       object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, ready])
@@ -492,7 +431,7 @@ const Character = React.memo(({
 
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
-   
+
     updateSkeleton()
   }
 
@@ -517,10 +456,6 @@ const Character = React.memo(({
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
     resetPose()
-    if(ragDoll.current)
-    {
-      ragDoll.current.setUpControlTargetsInitialPosition();
-    }
   }, [props.posePresetId])
 
   // HACK force reset skeleton pose on Board UUID change
@@ -545,20 +480,11 @@ const Character = React.memo(({
       if (object.current.userData.modelSettings.height) {
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
-
-        let heightChanged = object.current.scale.x !== scale ? true : false;
         object.current.scale.set( scale, scale, scale )
-        if(heightChanged)
-        {
-          if(ragDoll.current)
-          {
-            ragDoll.current.reinitialize();
-          }
-        }
       } else {
         object.current.scale.setScalar( props.height )
       }
-      //object.current.bonesHelper.updateMatrixWorld()
+      object.current.bonesHelper.updateMatrixWorld()
     }
   }, [props.model, props.height, props.skeleton, ready])
 
@@ -572,13 +498,24 @@ const Character = React.memo(({
 
       if (headBone && object.current.userData.modelSettings.height) {
         let baseHeadScale = object.current.userData.modelSettings.height / props.height
-      
+
         //head bone
         headBone.scale.setScalar( baseHeadScale )
-        headBone.scale.setScalar( props.headScale ) 
+        headBone.scale.setScalar( props.headScale )
       }
     }
   }, [props.model, props.headScale, props.skeleton, ready])
+
+  useEffect(() => {
+    if (!ready) return
+    if (!object.current) return
+
+    if (object.current) {
+      let {material} = object.current.userData.mesh
+
+      material.emissive.set(props.tintColor)
+    }
+  }, [props.model, props.tintColor, ready])
 
   useEffect(() => {
     if (!ready) return
@@ -601,18 +538,20 @@ const Character = React.memo(({
     console.log(type, id, 'isSelected', isSelected)
     if (!ready) return
     if (!object.current) return
-    
-    if(ragDoll.current)
-    {
-      ragDoll.current.selectedSkeleton(isSelected);
-    }
-
-    // handle selection/deselection - add/remove the bone stucture
     if (isSelected)
     {
-      for (var cone of object.current.bonesHelper.cones)
+
+      for (var cone of object.current.bonesHelper.cones) {
         object.current.bonesHelper.add(cone)
-      } else {
+      }
+      if ( !isCustomModel(props.model) ) {
+        SGIkHelper.getInstance().initialize(scene, object.current, object.current.userData.modelSettings.height, object.current.userData.mesh)
+        object.current.add(SGIkHelper.getInstance())
+        SGIkHelper.getInstance().updateMatrixWorld(true);
+      }
+    } else {
+      object.current.remove(SGIkHelper.getInstance())
+      SGIkHelper.getInstance().removeFromParent(object.current.userData.mesh.uuid)
       for (var cone of object.current.bonesHelper.cones)
         object.current.bonesHelper.remove(cone)
     }
@@ -665,16 +604,16 @@ const Character = React.memo(({
         .skeleton
         .bones.find(b => b.uuid == selectedBone)
 
-       
+
       if (bone) {
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
-        boneRotationControl.current.selectedBone(bone, selectedBone);
+        boneRotationControl.current.selectedBone(bone, selectedBone)
       }
-    
+
     }
     else{
-      boneRotationControl.current.deselectBone();
+      boneRotationControl.current.deselectBone()
     }
   }, [selectedBone, ready])
 
@@ -727,8 +666,8 @@ const Character = React.memo(({
       target.quaternion.copy(objectQuaternion.normalize())
       let rotation = new THREE.Euler()
       if (selectedBone) {
-       
-       
+
+
         rotation.setFromQuaternion( objectQuaternion.normalize(), "YXZ" )
         updateCharacterSkeleton({
           id,
