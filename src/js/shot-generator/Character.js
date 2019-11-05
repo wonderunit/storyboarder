@@ -1,5 +1,5 @@
 //#region ragdoll's import
-const {objectPositionSend} = require("../xr/socketServer")
+const {sendObjectPosition} = require("../xr/socketServer")
 
 const SGIkHelper = require("../shared/IK/SGIkHelper")
 const BoneRotationControl = require("../shared/IK/objects/BoneRotationControl")
@@ -239,8 +239,8 @@ const Character = React.memo(({
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
-      object.current.onDrag = () => objectPositionSend([id, object.current.position])
-      object.current.onDragEnd = () => objectPositionSend([id, object.current.position], true)
+      object.current.onDrag = () => sendObjectPosition([id, object.current.position])
+      object.current.onDragEnd = () => sendObjectPosition([id, object.current.position], true)
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
@@ -800,6 +800,7 @@ const Character = React.memo(({
 
   useEffect(() => {
     if (!ready && modelData) {
+      console.log('MODEL DATA', modelData)
       if (isValidSkinnedMesh(modelData)) {
         console.log(type, id, 'got valid mesh')
 

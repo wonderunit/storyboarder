@@ -13,7 +13,7 @@ const ModelLoader = require('../services/model-loader')
 const applyDeviceQuaternion = require('./apply-device-quaternion')
 const IconSprites = require('./IconSprites')
 
-const {objectPositionSend} = require('./../xr/socketServer')
+const {sendObjectPosition} = require('./../xr/socketServer')
 
 const boxRadius = .005
 const boxRadiusSegments = 5
@@ -33,8 +33,8 @@ const groupFactory = () => {
       intersects.push({ object: this })
     }
   }
-  group.onDrag = () => objectPositionSend([group.userData.id, group.position])
-  group.onDragEnd = () => objectPositionSend([group.userData.id, group.position], true)
+  group.onDrag = () => sendObjectPosition([group.userData.id, group.position])
+  group.onDragEnd = () => sendObjectPosition([group.userData.id, group.position], true)
   
   return group
 }

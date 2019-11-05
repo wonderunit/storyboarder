@@ -196,6 +196,9 @@ const updateObject = (draft, state, props, { models }) => {
   }
   
   draft.remoteUpdate = !!props.remoteUpdate
+  if (props.xrClientParts != null) {
+    draft.xrClientParts = props.xrClientParts
+  }
 
   if (props.fov != null) {
     draft.fov = props.fov

@@ -13,12 +13,14 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
   }, [])
 
   useMemo(() => {
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping
-    texture.offset.set(0, 0)
-    texture.repeat.set(1, 1)
-
-    const { width, height } = texture.image
-    aspect.current = width / height
+    if (texture) {
+      texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+      texture.offset.set(0, 0)
+      texture.repeat.set(1, 1)
+  
+      const { width, height } = texture.image
+      aspect.current = width / height
+    }
 
     if (material) material.map = texture
   }, [texture])

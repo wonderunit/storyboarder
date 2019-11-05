@@ -10,7 +10,7 @@ const textureLoader = new THREE.TextureLoader()
 
 const IconSprites = require('./IconSprites')
 
-const {objectPositionSend} = require("../xr/socketServer")
+const {sendObjectPosition} = require("../xr/socketServer")
 
 const { isUserFile } = require('../services/model-loader')
 const pathToShotGeneratorData = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
@@ -84,8 +84,8 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     image.current = group
     image.current.userData.id = id
     image.current.userData.type = type
-    object.current.onDrag = () => objectPositionSend([id, object.current.position])
-    object.current.onDragEnd = () => objectPositionSend([id, object.current.position], true)
+    image.current.onDrag = () => sendObjectPosition([id, image.current.position])
+    image.current.onDragEnd = () => sendObjectPosition([id, image.current.position], true)
     image.current.children.forEach(child => {
       child.layers.disable(0)
       child.layers.enable(1)

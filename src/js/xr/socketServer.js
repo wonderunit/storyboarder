@@ -1,12 +1,12 @@
 const ioCreate = require('socket.io')
 
-const {getSerializedState, createObject, deleteObjects} = require('../shared/reducers/shot-generator')
+const {getSerializedState, createObject, deleteObjects, updateObject} = require('../shared/reducers/shot-generator')
 const {userAction, DISABLED_ACTIONS} = require('./userAction')
 
 const {skipCalls} = require("../utils/generators")
 
 // FIXME DIRTY HACK v2.0, allows to update objects without dispatching an event
-window.connectedClient = {}
+const connectedClient = {}
 const clients = {}
 let sockets = []
 
@@ -15,6 +15,7 @@ const ACTION_EVENT = 'action'
 const XR_CONTROLS_EVENT = 'xr-controls'
 const XR_CONTROLS_COUNT_EVENT = 'xr-controls-count'
 const XR_CLIENT_INFO_EVENT = 'xr-client-info'
+const XR_CLIENT_POSITION_EVENT = 'xr-client-position'
 
 function broadcast(event, msg) {
   for(let socket of sockets) {
@@ -22,13 +23,13 @@ function broadcast(event, msg) {
   }
 }
 
-const objectPositionSend = skipCalls((id, position) => {
+const sendObjectPosition = skipCalls((id, position) => {
   for(let socket of sockets) {
     socket.emit(POSITION_EVENT, {id, position, fromMainApp: true})
   }
 }, 6)
 
-const clientInfoSent = (id, payload) => {
+const sendClientInfo = (id, payload) => {
   for(let socket of sockets) {
     socket.emit(XR_CLIENT_INFO_EVENT, {id, payload, fromMainApp: true})
   }
@@ -42,7 +43,8 @@ function onConnect(socket, store) {
   store.dispatch(createObject({
     id: socket.id,
     type: 'xrclient',
-    x: 0, y: 0, z: 0,
+    visible: false,
+    x: 0.0, y: 0.0, z: 1.0,
     rotation: {x: 0, y: 0, z: 0},
   }))
 }
@@ -71,7 +73,7 @@ function sendState(socket, store) {
 
 let onReduxAction = null
 
-const actionMiddleware = ({ getState }) => {
+const actionMiddleware = () => {
   return next => action => {
     if (action.fromSubApp)
     debug('Will dispatch', action)
@@ -84,11 +86,8 @@ const actionMiddleware = ({ getState }) => {
 
 const createSocketServer = (http, store) => {
   const io = ioCreate(http, {transports: ['websocket'], wsEngine: 'ws'})
-  debug('STORE', [store.getState(), store])
   
   io.on('connection', (socket) => {
-    debug('IO', io)
-    
     onConnect(socket, store)
     sendState(socket, store)
     
@@ -105,14 +104,18 @@ const createSocketServer = (http, store) => {
     })
   
     socket.on(XR_CONTROLS_EVENT, (payload) => {
-      if (window.connectedClient[socket.id]) {
-        window.connectedClient[socket.id].update(payload)
+      if (connectedClient[socket.id]) {
+        connectedClient[socket.id].update(payload)
+        
+        socket.broadcast.emit(XR_CLIENT_POSITION_EVENT, {id: socket.id, parts: connectedClient[socket.id].parts, fromMainApp: true})
       }
     })
   
     socket.on(XR_CONTROLS_COUNT_EVENT, (payload) => {
-      if (window.connectedClient[socket.id]) {
-        window.connectedClient[socket.id].setControllersCount(payload.count)
+      if (connectedClient[socket.id]) {
+        connectedClient[socket.id].setControllersCount(payload.count)
+        
+        store.dispatch({...updateObject(socket.id, {visible: (payload.count > 0)})})
       }
     })
     
@@ -140,6 +143,9 @@ module.exports = {
   actionMiddleware,
   createSocketServer,
   broadcast,
-  objectPositionSend,
-  clientInfoSent
+  
+  connectedClient,
+  
+  sendObjectPosition,
+  sendClientInfo
 }

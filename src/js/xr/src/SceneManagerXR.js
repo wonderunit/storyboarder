@@ -51,6 +51,7 @@ const ModelObject = require('./components/ModelObject')
 const Light = require('./components/Light')
 const VirtualCamera = require('./components/VirtualCamera')
 const Image = require('./components/Image')
+const XRClient = require('./components/XRClient')
 const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
@@ -91,6 +92,11 @@ const getSceneObjectImageIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
 )
 
+const getSceneObjectClientIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'xrclient').map(o => o.id)
+)
+
 const SceneContent = connect(
   state => ({
     aspectRatio: state.aspectRatio,
@@ -105,6 +111,7 @@ const SceneContent = connect(
     lightIds: getSceneObjectLightIds(state),
     virtualCameraIds: getSceneObjectVirtualCamerasIds(state),
     imageIds: getSceneObjectImageIds(state),
+    clientIds: getSceneObjectClientIds(state),
   }),
   {
     selectObject,
@@ -114,9 +121,9 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, clientIds,
 
-    resources, getAsset
+    resources, getAsset, networkId
   }) => {
     const { gl, camera, scene } = useThree()
 
@@ -615,19 +622,33 @@ const SceneContent = connect(
               />
             )
           }
-
+  
           {
             imageIds.map(id => {
-              let sceneObject = sceneObjects[id]
-              let texture = getAsset(getFilepathForImage(sceneObject))
-
-              return <Image
-                key={id}
-                texture={texture}
-                sceneObject={sceneObject}
-                visibleToCam={sceneObject.visibleToCam}
-                isSelected={selections.includes(id)}/>
-              }
+                  let sceneObject = sceneObjects[id]
+                  let texture = getAsset(getFilepathForImage(sceneObject))
+          
+                  return <Image
+                      key={id}
+                      texture={texture}
+                      sceneObject={sceneObject}
+                      visibleToCam={sceneObject.visibleToCam}
+                      isSelected={selections.includes(id)}/>
+                }
+            )
+          }
+  
+          {
+            clientIds.map(id => {
+                  let sceneObject = sceneObjects[id]
+          
+                  return id === networkId ? null : <XRClient
+                      key={id}
+                      controllerGltf={resources.controllerGltf}
+                      headsetGltf={resources.headsetGltf}
+                      sceneObject={sceneObject}
+                      isSelected={selections.includes(id)}/>
+                }
             )
           }
 
@@ -679,6 +700,7 @@ const XRStartButton = ({ }) => {
 
 const APP_GLTFS = [
   '/data/system/xr/controller.glb',
+  '/data/system/xr/hmd.glb',
   '/data/system/xr/ui/controls.glb',
   '/data/system/dummies/bone.glb',
   '/data/system/xr/virtual-camera.glb',
@@ -686,7 +708,7 @@ const APP_GLTFS = [
   '/data/system/xr/teleport-target.glb'
 ]
 
-const SceneManagerXR = () => {
+const SceneManagerXR = ({networkId}) => {
   useMemo(() => {
     THREE.Cache.enabled = true
   }, [])
@@ -849,6 +871,7 @@ const SceneManagerXR = () => {
 
                   controllerGltf: getAsset('/data/system/xr/controller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),
+                  headsetGltf: getAsset('/data/system/xr/hmd.glb'),
                   boneGltf: getAsset('/data/system/dummies/bone.glb'),
                   virtualCameraGltf: getAsset('/data/system/xr/virtual-camera.glb'),
                   lightGltf: getAsset('/data/system/xr/light.glb'),
@@ -871,7 +894,8 @@ const SceneManagerXR = () => {
 
                   vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10
                 }}
-                getAsset={getAsset} />
+                getAsset={getAsset}
+                networkId={networkId} />
               : null
           }
         </Provider>

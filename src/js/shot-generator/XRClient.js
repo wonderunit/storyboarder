@@ -9,7 +9,7 @@ const { useRef, useEffect } = React
 
 const {gltfLoader} = require('./Components')
 
-const {clientInfoSent} = require("../xr/socketServer")
+const {connectedClient, sendClientInfo} = require("../xr/socketServer")
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -181,7 +181,7 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
       )
     }
   
-    clientInfoSent(id, {
+    sendClientInfo(id, {
       head: {
         pos: head.state.worldPosition,
         rot: head.state.worldRotation1
@@ -226,9 +226,25 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
     container.current.userData.type = type
   
     // FIXME DIRTY HACK v1.0, allows to update object without dispatching an event
-    window.connectedClient[id] = {
+    connectedClient[id] = {
       update,
-      setControllersCount
+      setControllersCount,
+      parts: {
+        head: {
+          position: head.state.worldPosition,
+          rotation: head.state.worldRotation1
+        },
+        controls: [
+          {
+            position: controls[0].state.worldPosition,
+            rotation: controls[0].state.worldRotation1
+          },
+          {
+            position: controls[1].state.worldPosition,
+            rotation: controls[1].state.worldRotation1
+          }
+        ]
+      }
     }
     scene.add(container.current)
   
@@ -266,7 +282,6 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
       setControllersCount(0)
       
       setLoaded(true)
-    
     }).catch((error) => {
       console.error(error)
       setLoaded(undefined)
@@ -276,7 +291,7 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
       console.log(type, id, 'XR CLIENT removed from scene')
       scene.remove(container.current.orthoIcon)
       scene.remove(container.current)
-      Reflect.deleteProperty(window.connectedClient, id)
+      Reflect.deleteProperty(connectedClient, id)
     }
   }, [])
   

@@ -22,7 +22,7 @@ let onReduxAction = null
 const setupXR = () => {
   let store = null
   
-  const setupScene = (result) => {
+  const setupScene = (result, networkId) => {
     const { aspectRatio, activeCamera, sceneObjects, world, presets } = result
     store = configureStore({
       aspectRatio,
@@ -42,7 +42,7 @@ const setupXR = () => {
   
     ReactDOM.render(
         <Provider store={store}>
-          <SceneManagerXR />
+          <SceneManagerXR networkId={networkId}/>
         </Provider>,
         document.getElementById('main')
     )
@@ -65,7 +65,7 @@ const setupXR = () => {
     
     socket.on('state', (state) => {
       if (!store) {
-        setupScene(state)
+        setupScene(state, socket.id)
         console.log(state)
   
         onReduxAction = (action) => {
@@ -95,6 +95,15 @@ const setupXR = () => {
             z: payload.position.y,
             remoteUpdate: true
           }),
+          fromMainApp: true
+        })
+      }
+    })
+    
+    socket.on('xr-client-position', (payload) => {
+      if (store) {
+        store.dispatch({
+          ...updateObject(payload.id, {xrClientParts: payload.parts}),
           fromMainApp: true
         })
       }
