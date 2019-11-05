@@ -5,7 +5,6 @@ const path = require('path')
 const fs = require('fs-extra')
 const moment = require('moment')
 
-const {setZDirecion, setReverseZ} = require( "./IK/utils/axisUtils");
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/three/examples/js/exporters/GLTFExporter.js')
@@ -31,7 +30,6 @@ const useExportToGltf = (sceneRef) => {
         })
 
         console.log('Preparing GLTF…')
-        let mementos = []
         let scene = new THREE.Scene()
         for (let child of sceneRef.current.children) {
           // console.log('\tScene contains:', child)
@@ -46,26 +44,12 @@ const useExportToGltf = (sceneRef) => {
                 console.log('\tCloning', sceneObject.type)
 
                 let skinnedMesh = child.getObjectByProperty('type', 'SkinnedMesh')
-              
-                mementos.push({
-                  parent: skinnedMesh.parent,
-                  bonesHelper: skinnedMesh.parent.bonesHelper,
-                  userData: skinnedMesh.parent.userData,
-                  name: skinnedMesh.parent.name,
-                  scale: skinnedMesh.parent.scale.clone(),
-                  mesh: skinnedMesh,
-                  meshUserData: skinnedMesh.userData
-                })
 
-                skinnedMesh.parent.bonesHelper = null
-                skinnedMesh.parent.name = sceneObject.name || sceneObject.displayName
-                skinnedMesh.parent.userData = {}
-
-                skinnedMesh.userData = {}
-
-                console.log('\t\tAdded', skinnedMesh.parent)
-                skinnedMesh.geometry.normalizeNormals();
-                scene.add( skinnedMesh.parent )
+                let simpleMesh = new THREE.Mesh(skinnedMesh.geometry, new THREE.MeshStandardMaterial())
+                simpleMesh.scale.copy(skinnedMesh.worldScale())
+                simpleMesh.quaternion.copy(skinnedMesh.worldQuaternion())
+                simpleMesh.position.copy(skinnedMesh.worldPosition())
+                scene.add( simpleMesh)
                 
               } else if (sceneObject) {
                 console.log('\tCloning', sceneObject.type)
@@ -88,18 +72,8 @@ const useExportToGltf = (sceneRef) => {
         let options = {
           binary: true,
           embedImages: true,
-
         }
         exporter.parse(scene, function (glb) {
-          
-          for (let memento of mementos) {
-            memento.parent.bonesHelper = memento.bonesHelper
-            memento.parent.userData = memento.userData
-            memento.parent.name = memento.name
-            memento.mesh.userData = memento.meshUserData
-            
-            sceneRef.current.add(memento.parent)
-          }
 
           if (meta.storyboarderFilePath) {
 
