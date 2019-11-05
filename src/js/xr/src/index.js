@@ -12,7 +12,7 @@ const thunkMiddleware = require('redux-thunk').default
 const io = require('socket.io-client')
 
 const h = require('../../utils/h')
-const { reducer, initialState, updateObject } = require('../../shared/reducers/shot-generator')
+const { reducer, initialState, updateObject, selectObject } = require('../../shared/reducers/shot-generator')
 const {userAction, DISABLED_ACTIONS} = require('../userAction')
 
 const SceneManagerXR = require('./SceneManagerXR')
@@ -79,9 +79,22 @@ const setupXR = () => {
       }
     })
   
-    socket.on('action', (payload) => {
+    socket.on('action', (action) => {
       if (store) {
-        store.dispatch(payload)
+        // Remove the selection from the object that we want to delete
+        if (action.type === 'DELETE_OBJECTS') {
+          let state = store.getState()
+          
+          let selected = state.undoable.present.selections.filter((target) => {
+            return (action.payload.ids.indexOf(target) === -1)
+          })
+          
+          if (selected.length !== state.undoable.present.selections.length) {
+            store.dispatch(selectObject(null))
+          }
+        }
+        
+        store.dispatch(action)
       }
     })
   
