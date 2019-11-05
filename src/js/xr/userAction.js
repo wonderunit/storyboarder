@@ -2,7 +2,12 @@ const {produce} = require("immer")
 
 const DISABLED_ACTIONS = {
   SELECT_OBJECT: true,
-  SELECT_OBJECT_TOGGLE: true
+  SELECT_OBJECT_TOGGLE: true,
+  ATTACHMENTS_PENDING: true,
+  ATTACHMENTS_LOAD: true,
+  ATTACHMENTS_SUCCESS: true,
+  ATTACHMENTS_ERROR: true,
+  ATTACHMENTS_DELETE: true
 }
 
 function userAction (action) {
