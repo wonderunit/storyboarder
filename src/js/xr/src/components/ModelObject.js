@@ -131,6 +131,9 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => 
       })
       
       tween.start()
+    } else {
+      ref.current.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
+      ref.current.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
     }
   }, [
     ref.current,

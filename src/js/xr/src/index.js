@@ -94,6 +94,10 @@ const setupXR = () => {
           }
         }
         
+        if (action.isRemoteUser) {
+          action.payload.remoteUpdate = true
+        }
+        
         store.dispatch(action)
       }
     })

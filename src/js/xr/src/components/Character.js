@@ -211,6 +211,9 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       })
       
       tween.start()
+    } else {
+      ref.current.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
+      ref.current.rotation.set(0, sceneObject.rotation, 0)
     }
   }, [
     ref.current,

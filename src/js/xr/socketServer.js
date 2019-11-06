@@ -94,13 +94,11 @@ const createSocketServer = (http, store) => {
     socket.on('disconnect', () => {
       onDisconnect(socket, store)
     })
-  
-    let currentAction = null
-    socket.on('dispatch', (payload) => {
-      currentAction = payload
+    
+    socket.on('dispatch', (currentAction) => {
       store.dispatch({...currentAction, fromSubApp: true})
     
-      socket.broadcast.emit(ACTION_EVENT, {...currentAction, fromMainApp: true})
+      socket.broadcast.emit(ACTION_EVENT, {...currentAction, fromMainApp: true, isRemoteUser: true})
     })
   
     socket.on(XR_CONTROLS_EVENT, (payload) => {
