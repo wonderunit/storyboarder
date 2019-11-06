@@ -39,7 +39,7 @@ const [useUiStore] = create((set, get) => ({
   switchHand: getCookie('switchHand') == 'true',
   showCameras: getCookie('showCameras') !== 'false',
   showHelp: false,
-  showHUD: true,
+  showHUD: false,
 
   serverHash: null,
   serverLastSavedHash: null,
