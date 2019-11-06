@@ -346,6 +346,21 @@ const Character = React.memo(({
     }
   }
 
+  const updateSkeletonHand = () => {
+    let skeleton = object.current.userData.skeleton
+    let handSkeletonKeys = Object.keys(props.handSkeleton)
+    let skeletonBones = skeleton.bones.filter(bone => handSkeletonKeys.includes(bone.name))
+    for ( let i = 0; i < skeletonBones.length; i++ ) {
+      let key = skeletonBones[i].name
+      let bone = skeletonBones[i]
+      let handBone = props.handSkeleton[key]
+      console.log(handBone)
+      bone.rotation.x = handBone.rotation.x
+      bone.rotation.y = handBone.rotation.y
+      bone.rotation.z = handBone.rotation.z
+    }
+  }
+
   const getCurrentControllerRotation = (device, virtual) => {
 
     let virtualPitch = virtual.pitch,
@@ -458,6 +473,14 @@ const Character = React.memo(({
     resetPose()
   }, [props.posePresetId])
 
+  useEffect(() => {
+    if (!ready) return
+    if (!props.handPosePresetId) return
+    if (!props.handSkeleton) return
+    console.log(type, id, 'changed hand pose preset')
+    updateSkeletonHand()
+  }, [props.handPosePresetId, props.handSkeleton])
+
   // HACK force reset skeleton pose on Board UUID change
   useEffect(() => {
     if (!ready) return
@@ -471,9 +494,13 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
 
-    // console.log(type, id, 'skeleton')
+    console.log(type, id, 'skeleton')
     updateSkeleton()
+    if(props.handSkeleton)
+    updateSkeletonHand()
   }, [props.model, props.skeleton, ready])
+
+
 
   useEffect(() => {
     if (object.current) {

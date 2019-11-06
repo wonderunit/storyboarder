@@ -20,7 +20,7 @@ const h = require('../utils/h')
 
 const {
   updateObject,
-  createPosePreset,
+  createHandPosePreset,
 
   getSceneObjects
 } = require('../shared/reducers/shot-generator')
@@ -140,15 +140,15 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
 }
 
 const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset, updateObject, attachments, thumbnailRenderer }) => {
-  const src = path.join(remote.app.getPath('userData'), 'presets', 'hadnPoses', `${preset.id}.jpg`)
+  const src = path.join(remote.app.getPath('userData'), 'presets', 'handPoses', `${preset.id}.jpg`)
 
   const onPointerDown = event => {
     event.preventDefault()
 
     let handPosePresetId = preset.id
-    let skeleton = preset.state.skeleton
+    let handSkeleton = preset.state.handSkeleton
 
-    updateObject(id, { handPosePresetId, skeleton })
+    updateObject(id, { handPosePresetId, handSkeleton })
   }
 
   useMemo(() => {
@@ -224,7 +224,7 @@ const HandPresetsEditor = connect(
   }),
   {
     updateObject,
-    createPosePreset,
+    createHandPosePreset,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -236,7 +236,7 @@ React.memo(({
   attachments,
 
   updateObject,
-  createPosePreset,
+  createHandPosePreset,
   withState
 }) => {
   const thumbnailRenderer = useRef()
@@ -264,7 +264,7 @@ React.memo(({
     setTerms(event.currentTarget.value)
   }
 
-  const onCreatePosePreset = event => {
+  const onCreateHandPosePreset = event => {
     event.preventDefault()
 
     // show a prompt to get the desired preset name
@@ -272,64 +272,79 @@ React.memo(({
     prompt({
       title: 'Preset Name',
       label: 'Select a Preset Name',
-      value: `Pose ${shortId(THREE.Math.generateUUID())}`
-    }, win).then(name => {
-      if (name != null && name != '' && name != ' ') {
-        withState((dispatch, state) => {
-          // get the latest skeleton data
-          let sceneObject = getSceneObjects(state)[id]
-          let skeleton = sceneObject.skeleton
-          let model = sceneObject.model
-
-          // create a preset out of it
-          let newPreset = {
-            id: THREE.Math.generateUUID(),
-            name,
-            keywords: name, // TODO keyword editing
-            state: {
-              skeleton: skeleton || {}
-            },
-            priority: 0
-          }
-
-          // add it to state
-          createPosePreset(newPreset)
-
-          // save to server
-          // for pose harvesting (maybe abstract this later?)
-          request.post('https://storyboarders.com/api/create_pose', {
-            form: {
-              name: name,
-              json: JSON.stringify(skeleton),
-              model_type: model,
-              storyboarder_version: pkg.version,
-              machine_id: machineIdSync()
+      value: `HandPose ${shortId(THREE.Math.generateUUID())}`,
+    }, win).then(name => prompt({   
+        title: 'Hand chooser',
+        lable: 'Select which hand to save',   
+        type: 'select',
+        selectOptions: { 
+            'LeftHand': 'LeftHand',
+            'RightHand': 'RightHand',
+        }}, win).then(handName => {
+            if (name != null && name != '' && name != ' ') {
+              withState((dispatch, state) => {
+                // get the latest skeleton data
+                let sceneObject = getSceneObjects(state)[id]
+                let skeleton = sceneObject.skeleton
+                let model = sceneObject.model
+                let handSkeleton = {}
+        
+                let skeletonKeys = Object.keys(skeleton)
+                for(let i = 0; i < skeletonKeys.length; i++) {
+                    let key = skeletonKeys[i]
+                    if(key.includes(handName)) {
+                        handSkeleton[key] = skeleton[key]
+                    }
+                }
+                // create a preset out of it
+                let newPreset = {
+                  id: THREE.Math.generateUUID(),
+                  name,
+                  keywords: name, // TODO keyword editing
+                  state: {
+                    handSkeleton: handSkeleton || {}
+                  },
+                  priority: 0
+                }
+            
+                // add it to state
+                createHandPosePreset(newPreset)
+            
+                // save to server
+                // for pose harvesting (maybe abstract this later?)
+                request.post('https://storyboarders.com/api/create_pose', {
+                  form: {
+                    name: name,
+                    json: JSON.stringify(skeleton),
+                    model_type: model,
+                    storyboarder_version: pkg.version,
+                    machine_id: machineIdSync()
+                  }
+                })
+            
+                // select the preset in the list
+                updateObject(id, { handPosePresetId: newPreset.id })
+            
+                // get updated state (with newly created pose preset)
+                withState((dispatch, state) => {
+                  // ... and save it to the presets file
+                  let denylist = Object.keys(defaultPosePresets)
+                  let filteredPoses = Object.values(state.presets.handPoses)
+                    .filter(pose => denylist.includes(pose.id) === false)
+                    .reduce(
+                      (coll, pose) => {
+                        coll[pose.id] = pose
+                        return coll
+                      },
+                      {}
+                    )
+                  presetsStorage.saveHandPosePresets({ handPoses: filteredPoses })
+                })
+              })
             }
-          })
-
-          // select the preset in the list
-          updateObject(id, { handPosePresetId: newPreset.id })
-
-          // get updated state (with newly created pose preset)
-          withState((dispatch, state) => {
-            // ... and save it to the presets file
-            let denylist = Object.keys(defaultPosePresets)
-            let filteredPoses = Object.values(state.presets.handPoses)
-              .filter(pose => denylist.includes(pose.id) === false)
-              .reduce(
-                (coll, pose) => {
-                  coll[pose.id] = pose
-                  return coll
-                },
-                {}
-              )
-            presetsStorage.saveHandPosePresets({ handPoses: filteredPoses })
-          })
-        })
-      }
     }).catch(err =>
       console.error(err)
-    )
+    ))
   }
 
   // via https://reactjs.org/docs/forwarding-refs.html
@@ -361,7 +376,7 @@ React.memo(({
         ['div.column', { style: { marginLeft: 5 }}, [
           ['a.button_add[href=#]', {
             style: { width: 30, height: 34 },
-            onPointerDown: onCreatePosePreset
+            onPointerDown: onCreateHandPosePreset
           }, '+']
         ]]
       ]],

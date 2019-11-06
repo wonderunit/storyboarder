@@ -184,7 +184,11 @@ const updateObject = (draft, state, props, { models }) => {
   {
     draft.skeleton = props.skeleton
   }
-
+  if (props.hasOwnProperty('handSkeleton'))
+  {
+    draft.handSkeleton = props.handSkeleton
+  }
+  
   if (props.x != null) {
     draft.x = props.x
   }
@@ -320,6 +324,10 @@ const updateObject = (draft, state, props, { models }) => {
     draft.posePresetId = props.posePresetId
   }
 
+  if (props.hasOwnProperty('handPosePresetId')) {
+    draft.handPosePresetId = props.handPosePresetId
+  }
+  
   if (props.hasOwnProperty('loaded')) {
     draft.loaded = props.loaded
   }
@@ -1065,6 +1073,10 @@ const presetsReducer = (state = initialState.presets, action) => {
           draft.poses[action.payload.id].name = action.payload.name
         }
         return
+
+      case 'CREATE_HAND_POSE_PRESET':
+        draft.handPoses[action.payload.id] = action.payload
+        return
     }
   })
 }
@@ -1185,6 +1197,12 @@ const checksReducer = (state, action) => {
 
           // unless posePresetId was just set ...
           if (!action.payload.hasOwnProperty('posePresetId')) {
+            // ... detect change between state and preset
+            checkForSkeletonChanges(state, draft, action.payload.id)
+          }
+
+           // unless handPosePresetId was just set ...
+          if (!action.payload.hasOwnProperty('handPosePresetId')) {
             // ... detect change between state and preset
             checkForSkeletonChanges(state, draft, action.payload.id)
           }
@@ -1343,6 +1361,7 @@ module.exports = {
   createCharacterPreset: payload => ({ type: 'CREATE_CHARACTER_PRESET', payload }),
 
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
+  createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
 
