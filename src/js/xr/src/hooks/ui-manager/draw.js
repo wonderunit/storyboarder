@@ -337,9 +337,9 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   ctx.fillStyle = '#6E6E6E'
   roundRect(ctx, width + 37, y + scrollPosition * height * 0.75, 12, height * 0.25, 6, true, false)
 
-  ctx.strokeStyle = '#fff'
-  ctx.lineWidth = 1
-  roundRect(ctx, width + 37, y, 12, height, 6, false, true)
+  // ctx.strokeStyle = '#fff'
+  // ctx.lineWidth = 1
+  // roundRect(ctx, width + 37, y, 12, height, 6, false, true)
 }
 
 const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
@@ -528,9 +528,9 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
     false
   )
 
-  ctx.strokeStyle = '#fff'
-  ctx.lineWidth = 1
-  roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, false, true)
+  // ctx.strokeStyle = '#fff'
+  // ctx.lineWidth = 1
+  // roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, false, true)
 }
 
 module.exports = {
