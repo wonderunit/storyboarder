@@ -100,6 +100,7 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
+const HandPresetsEditor = require('./HandPresetsEditor')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
@@ -1476,7 +1477,12 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           posePresetId: sceneObject.posePresetId
         }
       ],
-
+      sceneObject.type == 'character' && [
+        HandPresetsEditor, {
+          id: sceneObject.id,
+          handPosePresetId: sceneObject.handPosePresetId
+        }
+      ],
       sceneObject.type == 'character' &&
         selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }],
 
