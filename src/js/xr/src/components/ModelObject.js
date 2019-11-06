@@ -1,16 +1,13 @@
 const THREE = require('three')
-const TWEEN = require('@tweenjs/tween.js')
 
 const { useMemo, useEffect } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
-
-const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-type')
 
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const transitionTime = require('../../../utils/transitionTime')
+const getObjectTween = require('../../../utils/objectTween')
 
 // old material
 // const materialFactory = () => new THREE.MeshLambertMaterial({
@@ -99,38 +96,11 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => 
     })
   }, [ref.current, isSelected, sceneObject.tintColor])
   
-  let tween
+  let objectTween = getObjectTween(ref)
   
   useEffect(() => {
-    if (tween) {
-      tween.stop()
-    }
-    
     if (sceneObject.remoteUpdate) {
-      tween = new TWEEN.Tween([
-        ref.current.position.x,
-        ref.current.position.y,
-        ref.current.position.z,
-        ref.current.rotation.x,
-        ref.current.rotation.y,
-        ref.current.rotation.z
-      ])
-      
-      tween.to([
-        sceneObject.x,
-        sceneObject.z,
-        sceneObject.y,
-        sceneObject.rotation.x,
-        sceneObject.rotation.y,
-        sceneObject.rotation.z
-      ], transitionTime(ref.current.position, sceneObject))
-      
-      tween.onUpdate(([x, y, z, rx, ry, rz]) => {
-        ref.current.position.set(x, y, z)
-        ref.current.rotation.set(rx, ry, rz)
-      })
-      
-      tween.start()
+      objectTween({x: sceneObject.x, y: sceneObject.z, z: sceneObject.y}, sceneObject.rotation)
     } else {
       ref.current.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
       ref.current.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
@@ -138,21 +108,10 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => 
   }, [
     ref.current,
     sceneObject.x, sceneObject.y, sceneObject.z,
-    sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z
+    sceneObject.rotation
   ])
   
-  const { x, y, z, visible, width, height, depth, rotation } = sceneObject
-  const currentPos = {x, y: z, z: y}
-  const currentRot = {x: rotation.x, y: rotation.y, z: rotation.z}
-  
-  if (ref.current) {
-    currentPos.x = ref.current.position.x
-    currentPos.y = ref.current.position.y
-    currentPos.z = ref.current.position.z
-    currentRot.x = ref.current.rotation.x
-    currentRot.y = ref.current.rotation.y
-    currentRot.z = ref.current.rotation.z
-  }
+  const {visible, width, height, depth} = sceneObject
 
   return <group
     ref={ref}
@@ -164,9 +123,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => 
     }}
 
     visible={visible}
-    position={[currentPos.x, currentPos.y, currentPos.z]}
     scale={[width, height, depth]}
-    rotation={[currentRot.x, currentRot.y, currentRot.z]}
   >
     {meshes}
     {children}

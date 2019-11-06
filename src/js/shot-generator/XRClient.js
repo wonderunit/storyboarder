@@ -2,7 +2,6 @@ const ModelLoader = require('../services/model-loader')
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const TWEEN = require('@tweenjs/tween.js');
 
 const React = require('react')
 const { useRef, useEffect } = React
@@ -10,6 +9,7 @@ const { useRef, useEffect } = React
 const {gltfLoader} = require('./Components')
 
 const {connectedClient, sendClientInfo} = require("../xr/socket-server")
+const getObjectTween = require('../utils/objectTween')
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -87,84 +87,9 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
   const head = getEmptyObj()
   const controls = [getEmptyObj(), getEmptyObj()]
   
-  let tween = new TWEEN.Tween({})
-  
-  // This doesn't work with tween@18.3.1
-  const setTweenData = () => {
-    if (tween) {
-      tween.stop()
-    }
-  
-    head.state.worldRotation0.copy(head.object.quaternion)
-    controls[0].state.worldRotation0.copy(controls[0].object.quaternion)
-    controls[1].state.worldRotation0.copy(controls[1].object.quaternion)
-  
-    // TODO There must be an easier way to update values
-    
-    tween = new TWEEN.Tween({
-      x: head.object.position.x,
-      y: head.object.position.y,
-      z: head.object.position.z,
-      xc1: controls[0].object.position.x,
-      yc1: controls[0].object.position.y,
-      zc1: controls[0].object.position.z,
-      xc2: controls[1].object.position.x,
-      yc2: controls[1].object.position.y,
-      zc2: controls[1].object.position.z,
-      deltaTime: 0
-    })
-    
-    tween.to({
-      x: head.state.worldPosition.x,
-      y: head.state.worldPosition.y,
-      z: head.state.worldPosition.z,
-      xc1: controls[0].state.worldPosition.x,
-      yc1: controls[0].state.worldPosition.y,
-      zc1: controls[0].state.worldPosition.z,
-      xc2: controls[1].state.worldPosition.x,
-      yc2: controls[1].state.worldPosition.y,
-      zc2: controls[1].state.worldPosition.z,
-      deltaTime: 1
-    }, 200)
-    
-    tween.onUpdate(({ x, y, z, xc1, yc1, zc1, xc2, yc2, zc2, deltaTime }) => {
-      head.object.position.x = x
-      head.object.position.y = y
-      head.object.position.z = z
-  
-      controls[0].object.position.x = xc1
-      controls[0].object.position.y = yc1
-      controls[0].object.position.z = zc1
-  
-      controls[1].object.position.x = xc2
-      controls[1].object.position.y = yc2
-      controls[1].object.position.z = zc2
-  
-  
-      THREE.Quaternion.slerp(
-          head.state.worldRotation0,
-          head.state.worldRotation1,
-          head.object.quaternion,
-          deltaTime
-      )
-  
-      THREE.Quaternion.slerp(
-          controls[0].state.worldRotation0,
-          controls[0].state.worldRotation1,
-          controls[0].object.quaternion,
-          deltaTime
-      )
-  
-      THREE.Quaternion.slerp(
-          controls[1].state.worldRotation0,
-          controls[1].state.worldRotation1,
-          controls[1].object.quaternion,
-          deltaTime
-      )
-    })
-    
-    tween.start()
-  }
+  let updateHead = getObjectTween({current: head.object})
+  let updateControl1 = getObjectTween({current: controls[0].object})
+  let updateControl2 = getObjectTween({current: controls[1].object})
   
   let controllerIndex, controller
   const update = (data) => {
@@ -197,8 +122,10 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
         }
       ]
     })
-    
-    setTweenData()
+  
+    updateHead(head.state.worldPosition, head.state.worldRotation1, 200)
+    updateControl1(controls[0].state.worldPosition, controls[0].state.worldRotation1, 200)
+    updateControl2(controls[1].state.worldPosition, controls[1].state.worldRotation1, 200)
   }
   
   const setControllersCount = (count) => {
@@ -219,8 +146,7 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
       model: 'controller',
       type: 'xr'
     }, { storyboarderFilePath })
-  
-    console.log(type, id, 'XR CLIENT added to the scene')
+    
     container.current = groupFactory()
     container.current.userData.id = id
     container.current.userData.type = type
@@ -260,7 +186,7 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
   
       headModel.traverse( function ( child ) {
         if ( child instanceof THREE.Mesh ) {
-          let mesh = meshFactory(child.clone())
+          let mesh = meshFactory(child)
           mesh.rotateY(Math.PI)
           head.object.add(mesh)
         }
@@ -268,8 +194,8 @@ const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject
   
       controllerModel.traverse( function ( child ) {
         if ( child instanceof THREE.Mesh ) {
-          controls[0].object.add(meshFactory(child.clone()))
-          controls[1].object.add(meshFactory(child.clone()))
+          controls[0].object.add(meshFactory(child))
+          controls[1].object.add(meshFactory(child))
         }
       })
     

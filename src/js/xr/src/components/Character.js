@@ -1,5 +1,4 @@
 const THREE = require('three')
-const TWEEN = require('@tweenjs/tween.js')
 const { useMemo, useEffect } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
 
@@ -7,7 +6,7 @@ const cloneGltf = require('../helpers/clone-gltf')
 const isUserModel = require('../helpers/is-user-model')
 
 const VirtualCamera = require('../components/VirtualCamera')
-const transitionTime = require('../../../utils/transitionTime')
+const getObjectTween = require('../../../utils/objectTween')
 
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
@@ -183,34 +182,11 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     }
   }, [ref.current, isSelected])
   
-  let tween
+  let objectTween = getObjectTween(ref)
   
   useEffect(() => {
-    if (tween) {
-      tween.stop()
-    }
-    
     if (sceneObject.remoteUpdate) {
-      tween = new TWEEN.Tween([
-        ref.current.position.x,
-        ref.current.position.y,
-        ref.current.position.z,
-        ref.current.rotation.y
-      ])
-      
-      tween.to([
-        sceneObject.x,
-        sceneObject.z,
-        sceneObject.y,
-        sceneObject.rotation
-      ], transitionTime(ref.current.position, sceneObject))
-      
-      tween.onUpdate(([x, y, z, r]) => {
-        ref.current.position.set(x, y, z)
-        ref.current.rotation.set(0, r, 0)
-      })
-      
-      tween.start()
+      objectTween({x: sceneObject.x, y: sceneObject.z, z: sceneObject.y}, {x: 0, y: sceneObject.rotation, z: 0})
     } else {
       ref.current.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
       ref.current.rotation.set(0, sceneObject.rotation, 0)
@@ -220,17 +196,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     sceneObject.x, sceneObject.y, sceneObject.z,
     sceneObject.rotation
   ])
-  
-  const { x, y, z, rotation } = sceneObject
-  let currentPos = {x, y: z, z: y}
-  let currentRot = rotation
-  
-  if (ref.current) {
-    currentPos.x = ref.current.position.x
-    currentPos.y = ref.current.position.y
-    currentPos.z = ref.current.position.z
-    currentRot = ref.current.rotation.y
-  }
 
   return lod
     ? <group
@@ -242,9 +207,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         id: sceneObject.id,
         poleTargets: sceneObject.poleTargets || {}
       }}
-
-      position={[currentPos.x, currentPos.y, currentPos.z]}
-      rotation={[0, currentRot, 0]}
+      
       scale={[bodyScale, bodyScale, bodyScale]}
     >
       <primitive object={lod} />
