@@ -313,6 +313,8 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
     }
   }
 
+  ctx.restore()
+  if (gridHeight > height) {
   this.paneComponents['grid']['scrollbar'] = {
     id: 'scrollbar',
     type: 'button',
@@ -328,7 +330,6 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   }
 
   // Indicator
-  ctx.restore()
   const scrollPosition = this.state.grids[type].scrollTop / (gridHeight - height)
 
   ctx.fillStyle = '#000'
@@ -340,6 +341,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   // ctx.strokeStyle = '#fff'
   // ctx.lineWidth = 1
   // roundRect(ctx, width + 37, y, 12, height, 6, false, true)
+  }
 }
 
 const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
@@ -495,6 +497,8 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
     }
   }
 
+  ctx.restore()
+  if (rowWidth > width) {
   this.paneComponents['boards'][`${type}-scrollbar`] = {
     id: `${type}-scrollbar`,
     type: 'button',
@@ -510,7 +514,6 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
   }
 
   // Indicator
-  ctx.restore()
   const scrollPosition = this.state.boards[type].scrollTop / (rowWidth - width)
 
   ctx.fillStyle = '#000'
@@ -531,6 +534,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
   // ctx.strokeStyle = '#fff'
   // ctx.lineWidth = 1
   // roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, false, true)
+  }
 }
 
 module.exports = {
