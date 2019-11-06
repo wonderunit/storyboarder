@@ -43,23 +43,8 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
     getCanvasRenderer().boardsNeedsRender = false
   })
 
-  const boardsIndicators = (
-    <mesh position={[0, -0.05, 0]}>
-      <circleBufferGeometry attach="geometry" args={[0.03, 32]} />
-      <meshBasicMaterial
-        attach="material"
-        color={0x7256ff}
-        depthTest={false}
-        depthWrite={false}
-        transparent={true}
-        side={THREE.DoubleSide}
-      />
-    </mesh>
-  )
-
   return mesh ? (
     <group position={POSITION} scale={[SCALE, SCALE, SCALE]} rotation={[rotation, 0, 0]}>
-      {boardsIndicators}
       <primitive
         ref={ref}
         object={mesh}
