@@ -663,12 +663,13 @@ const useInteractionsManager = ({
     let rightController = getControllerByName(controllers, "right");
     let worldScale = useStoreApi.getState().worldScale
     let hmd = camera.parent
+    let elevationDisplacement = 0.5
     if(event.target.uuid === rightController.uuid) {
-      hmd.position.y += 1
+      hmd.position.y += elevationDisplacement
     }
     else {
       if(hmd.position.y !== 0)
-        hmd.position.y -= 1
+        hmd.position.y -= elevationDisplacement
     }
     teleport(camera, (hmd.position.x + camera.position.x) * worldScale, hmd.position.y * worldScale, (hmd.position.z + camera.position.z) * worldScale)
   }
