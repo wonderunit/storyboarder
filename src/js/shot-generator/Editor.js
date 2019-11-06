@@ -35,6 +35,8 @@ const Icon = require('./Icon')
 const Toolbar = require('./Toolbar')
 const FatalErrorBoundary = require('./FatalErrorBoundary')
 
+const {useExportToGltf, loadCameraModel} = require('./use-export-to-gltf')
+
 const ModelLoader = require('../services/model-loader')
 
 const h = require('../utils/h')
@@ -329,6 +331,8 @@ const Editor = connect(
       }
     }, [])
 
+    useExportToGltf(scene)
+
     // render Toolbar with updated camera when scene is ready, or when activeCamera changes
     useEffect(() => {
       setCamera(scene.current.children.find(o => o.userData.id === activeCamera))
@@ -387,7 +391,7 @@ const Editor = connect(
     // TODO cancellation (e.g.: redux-saga)
     const loadSceneObjects = async (dispatch, state) => {
       let storyboarderFilePath = state.meta.storyboarderFilePath
-
+      loadCameraModel(storyboarderFilePath)
       const loadables = Object.values(sceneObjects)
         // has a value for model
         .filter(o => o.model != null)

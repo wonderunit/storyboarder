@@ -856,6 +856,12 @@ const shotGeneratorMenu = [
         click (item, focusedWindow, event) {
           ipcRenderer.send('openDialogue')
         }
+      },
+      {
+        label: 'Export GLTF…',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:export-gltf')
+        }
       }
     ]
   },
