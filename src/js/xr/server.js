@@ -6,7 +6,7 @@ const electronApp = electron.app ? electron.app : electron.remote.app
 
 const app = express()
 const http = require('http').Server(app)
-const {createSocketServer} = require('./socketServer')
+const {createSocketServer} = require('./socket-server')
 
 const log = require('electron-log')
 

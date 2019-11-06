@@ -1,5 +1,5 @@
 //#region ragdoll's import
-const {sendObjectPosition} = require("../xr/socketServer")
+const {sendObjectPosition} = require("../xr/socket-server")
 
 const SGIkHelper = require("../shared/IK/SGIkHelper")
 const BoneRotationControl = require("../shared/IK/objects/BoneRotationControl")
@@ -590,7 +590,7 @@ const Character = React.memo(({
     object.current.orthoIcon.setSelected(isSelected)
   }, [props.model, isSelected, ready])
 
-  // Watches for poletargets changes and applies them 
+  // Watches for poletargets changes and applies them
   useEffect(() => {
     if(!ready) return
     if(!props.poleTargets) return

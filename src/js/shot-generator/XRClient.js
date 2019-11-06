@@ -9,7 +9,7 @@ const { useRef, useEffect } = React
 
 const {gltfLoader} = require('./Components')
 
-const {connectedClient, sendClientInfo} = require("../xr/socketServer")
+const {connectedClient, sendClientInfo} = require("../xr/socket-server")
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,

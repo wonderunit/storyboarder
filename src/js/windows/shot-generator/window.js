@@ -20,7 +20,7 @@ const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
 const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
-const {actionMiddleware} = require('../../xr/socketServer')
+const {actionMiddleware} = require('../../xr/socket-server')
 
 const actionSanitizer = action => (
   action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?

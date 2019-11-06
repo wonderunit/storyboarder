@@ -13,7 +13,7 @@ const ModelLoader = require('../services/model-loader')
 const applyDeviceQuaternion = require('./apply-device-quaternion')
 const IconSprites = require('./IconSprites')
 
-const {sendObjectPosition} = require('./../xr/socketServer')
+const {sendObjectPosition} = require('./../xr/socket-server')
 
 const boxRadius = .005
 const boxRadiusSegments = 5

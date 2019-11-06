@@ -10,7 +10,7 @@ const textureLoader = new THREE.TextureLoader()
 
 const IconSprites = require('./IconSprites')
 
-const {sendObjectPosition} = require("../xr/socketServer")
+const {sendObjectPosition} = require("../xr/socket-server")
 
 const { isUserFile } = require('../services/model-loader')
 const pathToShotGeneratorData = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')

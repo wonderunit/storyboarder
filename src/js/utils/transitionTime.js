@@ -1,5 +1,5 @@
 const THREE = require('three')
-const MS_TO_METER = 200
+const MS_TO_METER = 150
 
 /**
  * Calculates time of a transition from start to end

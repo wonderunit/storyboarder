@@ -2,20 +2,26 @@ const THREE = require('three')
 window.THREE = THREE
 
 const React = require('react')
-const { createStore, applyMiddleware } = require('redux')
 const ReactDOM = require('react-dom')
-
-const { Provider, connect } = require('react-redux')
-
 const thunkMiddleware = require('redux-thunk').default
 
 const io = require('socket.io-client')
 
-const h = require('../../utils/h')
-const { reducer, initialState, updateObject, selectObject } = require('../../shared/reducers/shot-generator')
-const {userAction, DISABLED_ACTIONS} = require('../userAction')
-
 const SceneManagerXR = require('./SceneManagerXR')
+
+const {createStore, applyMiddleware} = require('redux')
+const {Provider} = require('react-redux')
+
+const {reducer, initialState, updateObject, selectObject} = require('../../shared/reducers/shot-generator')
+const {userAction, DISABLED_ACTIONS} = require('../socket-server/userAction')
+const {
+  STATE_EVENT,
+  DISPATCH_EVENT,
+  ACTION_EVENT,
+  POSITION_EVENT,
+  XR_CLIENT_POSITION_EVENT
+} = require('../socket-server/actions')
+
 
 let onReduxAction = null
 
@@ -63,7 +69,7 @@ const setupXR = () => {
       return false
     }
     
-    socket.on('state', (state) => {
+    socket.on(STATE_EVENT, (state) => {
       if (!store) {
         setupScene(state, socket.id)
   
@@ -72,14 +78,14 @@ const setupXR = () => {
             return false
           }
           
-          socket.emit('dispatch', userAction(action))
+          socket.emit(DISPATCH_EVENT, userAction(action))
         }
         
         return false
       }
     })
   
-    socket.on('action', (action) => {
+    socket.on(ACTION_EVENT, (action) => {
       if (store) {
         // Remove the selection from the object that we want to delete
         if (action.type === 'DELETE_OBJECTS') {
@@ -102,7 +108,7 @@ const setupXR = () => {
       }
     })
   
-    socket.on('object-position', (payload) => {
+    socket.on(POSITION_EVENT, (payload) => {
       if (store) {
         store.dispatch({
           ...updateObject(payload.id, {
@@ -116,7 +122,7 @@ const setupXR = () => {
       }
     })
     
-    socket.on('xr-client-position', (payload) => {
+    socket.on(XR_CLIENT_POSITION_EVENT, (payload) => {
       if (store) {
         store.dispatch({
           ...updateObject(payload.id, {xrClientParts: payload.parts}),
