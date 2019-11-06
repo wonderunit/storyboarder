@@ -35,7 +35,7 @@ const Icon = require('./Icon')
 const Toolbar = require('./Toolbar')
 const FatalErrorBoundary = require('./FatalErrorBoundary')
 
-const useExportToGltf = require('./use-export-to-gltf')
+const {useExportToGltf, loadCameraModel} = require('./use-export-to-gltf')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -391,7 +391,7 @@ const Editor = connect(
     // TODO cancellation (e.g.: redux-saga)
     const loadSceneObjects = async (dispatch, state) => {
       let storyboarderFilePath = state.meta.storyboarderFilePath
-
+      loadCameraModel(storyboarderFilePath)
       const loadables = Object.values(sceneObjects)
         // has a value for model
         .filter(o => o.model != null)

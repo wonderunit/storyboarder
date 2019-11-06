@@ -9,17 +9,80 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/three/examples/js/exporters/GLTFExporter.js')
 require('../vendor/three/examples/js/utils/SkeletonUtils')
-
+const {gltfLoader} = require('./Components')
 const {
   getSceneObjects
 } = require('../shared/reducers/shot-generator')
 
 const notifications = require('../window/notifications')
 
-const useExportToGltf = (sceneRef) => {
+
+const ModelLoader = require('../services/model-loader')
+
+const materialFactory = () => new THREE.MeshBasicMaterial({
+  color: 0x8c78f1,
+  flatShading: false
+})
+
+const meshFactory = originalMesh => {
+  let mesh = originalMesh.clone()
+  mesh.geometry.computeBoundingBox()
+  
+  // create a skeleton if one is not provided
+  if (mesh instanceof THREE.SkinnedMesh && !mesh.skeleton) {
+    mesh.skeleton = new THREE.Skeleton()
+  }
+  
+  let material = materialFactory()
+  
+  if (mesh.material.map) {
+    material.map = mesh.material.map
+    material.map.needsUpdate = true
+  }
+  mesh.material = material
+  
+  return mesh
+}
+
+
+
+let virtualCameraObject = null
+const loadModels = (models) => {
+  return Promise.all(
+      models.map((modelPath) => {
+        return new Promise((resolve, reject) => {
+          gltfLoader.load(
+              modelPath,
+              modelData => resolve(modelData.scene),
+              null,
+              reject
+          )
+        })
+      })
+  )
+}
+
+const loadCameraModel = (storyboarderFilePath) => {
+  let expectedCameraFilepath = ModelLoader.getFilepathForModel({
+    model: 'virtual-camera',
+    type: 'xr'
+  }, { storyboarderFilePath })
+  loadModels([expectedCameraFilepath ]).then(([virtualCamera]) => {
+    virtualCameraObject = new THREE.Object3D()
+    virtualCamera.traverse( function ( child ) {
+      if ( child instanceof THREE.Mesh ) {
+        let mesh = meshFactory(child)
+        virtualCameraObject.add(mesh)
+      }
+    })
+  })
+}
+
+const useExportToGltf = (sceneRef, storyboarderFilePath) => {
   const meta = useSelector(state => state.meta)
   const board = useSelector(state => state.board)
   const sceneObjects = useSelector(getSceneObjects)
+
   useEffect(() => {
     if (board && meta && meta.storyboarderFilePath) {
       ipcRenderer.on('shot-generator:export-gltf', () => {
@@ -29,7 +92,6 @@ const useExportToGltf = (sceneRef) => {
         })
         let scene = new THREE.Scene()
         for (let child of sceneRef.current.children) {
-          // console.log('\tScene contains:', child)
           // HACK test to avoid IconSprites, which fail to .clone
           if (!child.icon) {
             if (child.userData.id && sceneObjects[child.userData.id]) {
@@ -46,6 +108,12 @@ const useExportToGltf = (sceneRef) => {
                 simpleMesh.position.copy(skinnedMesh.worldPosition())
                 scene.add( simpleMesh)
                 
+              } else if (sceneObject.type === "camera") { 
+                let camera = virtualCameraObject.clone()
+                camera.position.copy(child.worldPosition())
+                camera.quaternion.copy(child.worldQuaternion())
+                camera.scale.copy(child.worldScale())
+                scene.add(camera)
               } else if (sceneObject) {
                 let clone = child.clone()
                 
@@ -64,8 +132,6 @@ const useExportToGltf = (sceneRef) => {
             } 
           }
         }
-        
-        console.log('\tExporting Scene:', scene)
         
         let exporter = new THREE.GLTFExporter()
         let options = {
@@ -104,4 +170,4 @@ const useExportToGltf = (sceneRef) => {
   }, [board, meta, sceneObjects])
 }
 
-module.exports = useExportToGltf
+module.exports = {useExportToGltf, loadCameraModel}
