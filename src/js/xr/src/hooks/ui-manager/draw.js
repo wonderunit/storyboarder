@@ -369,7 +369,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
 
     const activeBoard = this.state.sgCurrentState.board && item.uid === this.state.sgCurrentState.board.uid
     const isActive = type === 'boards' ? activeBoard : item.id === this.state.activeCamera
-    ctx.fillStyle = isActive ? '#d561fc' : '#6E6E6E'
+    ctx.fillStyle = isActive ? '#7256ff' : '#6E6E6E'
     roundRect(
       ctx,
       x + (itemWidth + padding * 0.5) * i - offset,
