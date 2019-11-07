@@ -662,6 +662,22 @@ const useInteractionsManager = ({
     interactionService.send({ type: 'PRESS_END_X', controller: event.target })
   }
 
+  const onPressStartThumbstick = event => {
+    let rightController = getControllerByName(controllers, "right");
+    let worldScale = useStoreApi.getState().worldScale
+    let hmd = camera.parent
+    let elevationDisplacement = 0.5
+    if(event.target.uuid === rightController.uuid) {
+      hmd.position.y += elevationDisplacement
+    }
+    else {
+      if(hmd.position.y !== 0)
+        hmd.position.y -= elevationDisplacement
+    }
+    teleport(camera, (hmd.position.x + camera.position.x) * worldScale, hmd.position.y * worldScale, (hmd.position.z + camera.position.z) * worldScale)
+  }
+
+  const thumbStickSensitivity = 0.25
   const onMoveCamera = event => {
     if (didMoveCamera != null) {
       if (event.axes[1] === 0) {
@@ -674,12 +690,12 @@ const useInteractionsManager = ({
       let value = event.axes[1]
 
       // backward
-      if (value > 0.075) {
+      if (value > thumbStickSensitivity) {
         distance = +0.5
       }
 
       // forward
-      if (value < -0.075) {
+      if (value < -thumbStickSensitivity) {
         distance = -0.5
       }
 
@@ -700,14 +716,14 @@ const useInteractionsManager = ({
       if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
       // right
-      if (event.axes[0] > 0.075) {
+      if (event.axes[0] > thumbStickSensitivity) {
         setDidRotateCamera(-45)
         playSound('teleport-rotate')
         rotateCameraByRadians(camera, THREE.Math.degToRad(-45))
       }
 
       // left
-      if (event.axes[0] < -0.075) {
+      if (event.axes[0] < -thumbStickSensitivity) {
         setDidRotateCamera(45)
         playSound('teleport-rotate')
         rotateCameraByRadians(camera, THREE.Math.degToRad(45))
@@ -724,7 +740,8 @@ const useInteractionsManager = ({
     onAxesChanged,
     onPressEndA,
     onPressEndB,
-    onPressEndX
+    onPressEndX,
+    onPressStartThumbstick
   })
 
   const reusableVector = useRef()

@@ -114,6 +114,9 @@ ipcMain.on('shot-generator:edit:redo', () => {
   win.webContents.send('shot-generator:edit:redo')
 })
 
+ipcMain.on('shot-generator:export-gltf', () =>
+  win.webContents.send('shot-generator:export-gltf'))
+
 module.exports = {
   show,
   getWindow: () => win
