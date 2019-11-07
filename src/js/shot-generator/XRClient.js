@@ -8,7 +8,7 @@ const { useRef, useEffect } = React
 
 const {gltfLoader} = require('./Components')
 
-const {connectedClient, sendClientInfo} = require("../xr/socket-server")
+const {connectedClient, clients, sendClientInfo} = require("../xr/socket-server")
 const getObjectTween = require('../utils/objectTween')
 
 const materialFactory = () => new THREE.MeshToonMaterial({
@@ -79,7 +79,13 @@ const loadModels = (models) => {
   )
 }
 
-const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject, remoteInput, storyboarderFilePath, camera, ...props }) => {
+const XRClient = React.memo(({ scene, id, type, isSelected, loaded, updateObject, deleteObjects, remoteInput, storyboarderFilePath, camera, ...props }) => {
+  if (!clients[id]) {
+    deleteObjects([id])
+    
+    return null
+  }
+  
   const setLoaded = loaded => updateObject(id, { loaded })
 
   const container = useRef()

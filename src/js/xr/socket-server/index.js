@@ -128,6 +128,7 @@ module.exports = {
   createSocketServer,
   
   connectedClient,
+  clients,
   
   sendObjectPosition,
   sendClientInfo
