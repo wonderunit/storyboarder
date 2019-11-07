@@ -469,6 +469,7 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
+    updateObject(id, { handSkeleton: [] })
     resetPose()
   }, [props.posePresetId])
 
@@ -496,7 +497,7 @@ const Character = React.memo(({
 
     console.log(type, id, 'skeleton')
     updateSkeleton()
-    if(props.handSkeleton)
+    if(props.handSkeleton && props.handSkeleton.length > 0)
     updateSkeletonHand()
   }, [props.model, props.skeleton, ready])
 
