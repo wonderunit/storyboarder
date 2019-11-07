@@ -344,7 +344,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   }
 }
 
-const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
+const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIndex) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -355,15 +355,17 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
   const padding = 24
   const textHeight = 16
 
-  let offset = this.state.boards[type].scrollTop || 0
-
   const itemHeight = height - 2 * padding - textHeight
   const itemWidth = itemHeight * this.cameraAspectRatio
   const rowWidth = items.length * itemWidth + items.length * padding * 0.25
   const visibleItems = Math.min(Math.ceil(width / itemWidth) + 1, items.length)
-  let startItem = Math.floor(offset / itemWidth)
 
-  offset = offset % itemWidth
+  if (this.state.boards[type].scrollTop === null) {
+    this.state.boards[type].scrollTop = Math.min(activeIndex * itemWidth, Math.max(rowWidth - width, 0))
+  }
+  
+  let startItem = Math.floor(this.state.boards[type].scrollTop / itemWidth)
+  const offset = this.state.boards[type].scrollTop % itemWidth
 
   for (let i = 0; i < visibleItems; i++) {
     if (startItem >= items.length) break
@@ -499,41 +501,41 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type) {
 
   ctx.restore()
   if (rowWidth > width) {
-  this.paneComponents['boards'][`${type}-scrollbar`] = {
-    id: `${type}-scrollbar`,
-    type: 'button',
-    x,
-    y: y + padding + itemHeight + textHeight + 12,
-    width,
-    height: 12,
-    onDrag: (x, y) => {
-      const { boards } = this.state
-      boards[type].scrollTop = Math.min(Math.max((rowWidth - width) * x, 0), Math.max(rowWidth - width, 0))
-      this.boardsNeedsRender = true
+    this.paneComponents['boards'][`${type}-scrollbar`] = {
+      id: `${type}-scrollbar`,
+      type: 'button',
+      x,
+      y: y + padding + itemHeight + textHeight + 12,
+      width,
+      height: 12,
+      onDrag: (x, y) => {
+        const { boards } = this.state
+        boards[type].scrollTop = Math.min(Math.max((rowWidth - width) * x, 0), Math.max(rowWidth - width, 0))
+        this.boardsNeedsRender = true
+      }
     }
-  }
 
-  // Indicator
-  const scrollPosition = this.state.boards[type].scrollTop / (rowWidth - width)
+    // Indicator
+    const scrollPosition = this.state.boards[type].scrollTop / (rowWidth - width)
 
-  ctx.fillStyle = '#000'
-  roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, true, false)
+    ctx.fillStyle = '#000'
+    roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, true, false)
 
-  ctx.fillStyle = '#6E6E6E'
-  roundRect(
-    ctx,
-    x + scrollPosition * width * 0.75,
-    y + padding + itemHeight + textHeight + 12,
-    width * 0.25,
-    12,
-    6,
-    true,
-    false
-  )
+    ctx.fillStyle = '#6E6E6E'
+    roundRect(
+      ctx,
+      x + scrollPosition * width * 0.75,
+      y + padding + itemHeight + textHeight + 12,
+      width * 0.25,
+      12,
+      6,
+      true,
+      false
+    )
 
-  // ctx.strokeStyle = '#fff'
-  // ctx.lineWidth = 1
-  // roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, false, true)
+    // ctx.strokeStyle = '#fff'
+    // ctx.lineWidth = 1
+    // roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, false, true)
   }
 }
 

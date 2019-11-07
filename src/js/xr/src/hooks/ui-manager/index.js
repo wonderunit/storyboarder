@@ -183,10 +183,10 @@ class CanvasRenderer {
         startCoords: {},
         prevCoords: {},
         cameras: {
-          scrollTop: 0
+          scrollTop: null
         },
         boards: {
-          scrollTop: 0
+          scrollTop: null
         }
       },
       boardsData: RemoteData.init(),
@@ -662,10 +662,14 @@ class CanvasRenderer {
     roundRect(ctx, 0, 0, 1024, 400, 25, true, false)
 
     const sceneCameras = Object.values(this.state.sceneObjects).filter(model => model.type === 'camera')
-    this.drawRow(ctx, 15, 15, 1024 - 30, 370 * 0.6 - 15, sceneCameras, 'cameras')
+    const activeCameraIndex = Object.values(sceneCameras).findIndex(camera => camera.id === this.state.activeCamera)
+    this.drawRow(ctx, 15, 15, 1024 - 30, 370 * 0.6 - 15, sceneCameras, 'cameras', activeCameraIndex)
 
     this.state.boardsData.cata({
-      SUCCESS: data => this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, data, 'boards')
+      SUCCESS: data => {
+        const activeBoardIndex = Object.values(data).findIndex(board => board.uid === this.state.sgCurrentState.board.uid)
+        this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, data, 'boards', activeBoardIndex)
+      }
     })
 
     if (this.state.boards.showConfirm) {
