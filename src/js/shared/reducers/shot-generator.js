@@ -144,6 +144,42 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   }
 }
 
+const checkForHandSkeletonChanges = (state, draft, actionPayloadId) => {
+  let handPosePresetId = getSceneObjects(draft)[actionPayloadId].handPosePresetId
+  if (handPosePresetId) {
+    let statePreset = state.presets.poses[handPosePresetId]
+
+    // preset does not exist anymore
+    if (!statePreset) {
+      // so don't reference it
+      getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+      return true
+    }
+
+    let draftSkeleton = getSceneObjects(draft)[actionPayloadId].handSkeleton
+
+    let preset = statePreset.state.handSkeleton
+    let curr = draftSkeleton
+
+    if (Object.values(curr).length != Object.values(preset).length) {
+      // changed, no longer matches preset
+      getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+      return true
+    }
+    for (let name in preset) {
+      if (
+        preset[name].rotation.x !== curr[name].rotation.x ||
+        preset[name].rotation.y !== curr[name].rotation.y ||
+        preset[name].rotation.z !== curr[name].rotation.z
+      ) {
+        // changed, no longer matches preset
+        getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+        return true
+      }
+    }
+  }
+}
+
 // migrate SceneObjects from older beta builds of Shot Generator 2.0
 const migrateRotations = sceneObjects =>
   Object.entries(sceneObjects)
@@ -856,7 +892,7 @@ const sceneObjectsReducer = (state = {}, action) => {
           rotation: action.payload.rotation
         }
         // Check if handBone got same bones and update it if it does
-        if(draft[action.payload.id].handSkeleton[action.payload.name]) {
+        if(draft[action.payload.id].handSkeleto && draft[action.payload.id].handSkeleton[action.payload.name]) {
           draft[action.payload.id].handSkeleton[action.payload.name] = {
             rotation: action.payload.rotation
           }
@@ -1210,7 +1246,7 @@ const checksReducer = (state, action) => {
            // unless handPosePresetId was just set ...
           if (!action.payload.hasOwnProperty('handPosePresetId')) {
             // ... detect change between state and preset
-            checkForSkeletonChanges(state, draft, action.payload.id)
+            checkForHandSkeletonChanges(state, draft, action.payload.id)
           }
         }
         return

@@ -354,7 +354,6 @@ const Character = React.memo(({
       let key = skeletonBones[i].name
       let bone = skeletonBones[i]
       let handBone = props.handSkeleton[key]
-      console.log(handBone)
       bone.rotation.x = handBone.rotation.x
       bone.rotation.y = handBone.rotation.y
       bone.rotation.z = handBone.rotation.z
@@ -478,6 +477,7 @@ const Character = React.memo(({
     if (!props.handPosePresetId) return
     if (!props.handSkeleton) return
     console.log(type, id, 'changed hand pose preset')
+    resetPose()
     updateSkeletonHand()
   }, [props.handPosePresetId, props.handSkeleton])
 

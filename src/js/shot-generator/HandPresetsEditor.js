@@ -73,13 +73,13 @@ const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
 
 const ThumbnailRenderer = require('./ThumbnailRenderer')
-
 const filepathFor = model => 
-  ModelLoader.getFilepathForModel(
-    { model: model.id, type: model.type },
-    { storyboarderFilePath: null })
-
-const CHARACTER_MODEL = { id: 'adult-male', type: 'character' }
+ModelLoader.getFilepathForModel(
+  { model: model.id, type: model.type },
+  { storyboarderFilePath: null })
+  
+  const CHARACTER_MODEL = { id: 'adult-male', type: 'character' }
+let selectedHand = "LeftHand"
 
 const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
   if (!thumbnailRenderer.getGroup().children.length) {
@@ -147,8 +147,35 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
 
     let handPosePresetId = preset.id
     let handSkeleton = preset.state.handSkeleton
-
+    let skeletonBones = Object.keys(handSkeleton)
+    if(skeletonBones.length !== 0) {
+      let currentHand = skeletonBones[0].includes("RightHand") ? "RightHand" : "LeftHand"
+      if (selectedHand === "BothHands") {
+        let oppositeSkeleton = calculateOpositeHand(handSkeleton, currentHand)
+        handSkeleton = Object.assign(oppositeSkeleton, handSkeleton)
+      } else if (selectedHand !== currentHand) {
+        let oppositeSkeleton = calculateOpositeHand(handSkeleton, currentHand)
+        handSkeleton = oppositeSkeleton
+      }
+    }
     updateObject(id, { handPosePresetId, handSkeleton })
+  }
+  
+  const calculateOpositeHand = (handSkeleton, currentHand) => {
+    let oppositeSkeleton = {}
+    let oppositeHand = currentHand === "RightHand" ?  "LeftHand" : "RightHand"
+    let keys = Object.keys(handSkeleton)
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i]
+      let newKey = key.replace(currentHand, oppositeHand)
+      let boneRot = handSkeleton[key].rotation
+      let mirroredEuler = new THREE.Quaternion().setFromEuler(new THREE.Euler(boneRot.x, boneRot.y, boneRot.z))
+      mirroredEuler.x *= -1
+      mirroredEuler.w *= -1
+      let euler = new THREE.Euler().setFromQuaternion(mirroredEuler)
+      oppositeSkeleton[newKey] = {rotation : {x: euler.x, y: euler.y, z: euler.z }} 
+    }
+    return oppositeSkeleton
   }
 
   useMemo(() => {
@@ -258,6 +285,9 @@ React.memo(({
     }
   }, [attachments])
 
+  const onChangeHand = event => {
+    selectedHand = event.target.value
+  }
 
   const onChange = event => {
     event.preventDefault()
@@ -378,6 +408,17 @@ React.memo(({
             style: { width: 30, height: 34 },
             onPointerDown: onCreateHandPosePreset
           }, '+']
+        ]]
+      ]],
+      ['div.row', { style: { padding: '6px 0' } }, [
+        ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'Select hand'],
+        ['div.column', { style: { flex: 1 }}, [
+
+          ['select', {
+            onChange: onChangeHand
+          }, ['option', {value: "LeftHand"}, 'LeftHand'],
+              ['option', {value: "RightHand"}, 'RightHand'],
+              ['option', {value: "BothHands"}, 'BothHands']],
         ]]
       ]],
       ['div.thumbnail-search__list', [
