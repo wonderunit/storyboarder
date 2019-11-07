@@ -637,8 +637,7 @@ const useInteractionsManager = ({
   const onPressEndA = event => {
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
-
-    if (canUndo) {
+    if (canUndo && interactionService.state.value !== "character_posing") {
       dispatch(ActionCreators.undo())
       playSound('undo')
     }
@@ -648,7 +647,7 @@ const useInteractionsManager = ({
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_B', controller: event.target })
 
-    if (canRedo) {
+    if (canRedo && interactionService.state.value !== "character_posing") {
       dispatch(ActionCreators.redo())
       playSound('redo')
     }
