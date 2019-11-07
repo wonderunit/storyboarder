@@ -292,7 +292,7 @@ React.memo(({
                 let skeletonKeys = Object.keys(skeleton)
                 for(let i = 0; i < skeletonKeys.length; i++) {
                     let key = skeletonKeys[i]
-                    if(key.includes(handName)) {
+                    if(key.includes(handName) && key !== handName) {
                         handSkeleton[key] = skeleton[key]
                     }
                 }
