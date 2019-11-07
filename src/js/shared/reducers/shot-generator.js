@@ -718,24 +718,7 @@ const initialState = {
   server: {
     uri: undefined,
     client: false,
-  },
-  connections: []
-}
-
-const connectionReducer = (state = [], action) => {
-  return produce(state, draft => {
-    switch (action.type) {
-      case 'USER_CONNECTED':
-        draft.push({
-          id: action.payload.id
-        })
-        return
-      case 'USER_DISCONNECTED':
-        return draft.filter((current) => current.id !== action.payload.id)
-      default:
-        return
-    }
-  })
+  }
 }
 
 const selectionsReducer = (state = [], action) => {
@@ -1294,11 +1277,6 @@ const rootReducer = reduceReducers(
   (state, action) => ({
     ...state,
     undoable: undoableReducer(state.undoable, action)
-  }),
-  
-  (state, action) => ({
-    ...state,
-    connections: connectionReducer(state.connections, action)
   }),
 
   checksReducer,

@@ -591,7 +591,7 @@ class CanvasRenderer {
     let ctx = this.helpContext
     if(this.state.context.isUIHidden) {
       return
-    } 
+    }
     // console.log('render help')
 
     this.paneComponents['help']['help-image'] = {
@@ -1177,6 +1177,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
   const selections = useSelector(getSelections)
   const sceneObjects = useSelector(getSceneObjects)
+  const sceneObjectsCount = Object.keys(sceneObjects || {}).length
 
   useMemo(() => {
     getCanvasRenderer().state.selections = selections
@@ -1187,12 +1188,14 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().needsRender = true
     getCanvasRenderer().helpNeedsRender = true
 
+    //console.log('selection')
+    
     if (selections.length) {
       uiSend('GO_PROPERTIES')
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses, models, activeCamera])
+  }, [selections, sceneObjectsCount, poses, models, activeCamera])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls

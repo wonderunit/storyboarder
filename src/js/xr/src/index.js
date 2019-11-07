@@ -100,7 +100,7 @@ const setupXR = () => {
           }
         }
         
-        if (action.isRemoteUser) {
+        if (action.isRemoteUser && action.payload) {
           action.payload.remoteUpdate = true
         }
         
