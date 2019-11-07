@@ -667,8 +667,9 @@ class CanvasRenderer {
 
     this.state.boardsData.cata({
       SUCCESS: data => {
-        const activeBoardIndex = Object.values(data).findIndex(board => board.uid === this.state.sgCurrentState.board.uid)
-        this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, data, 'boards', activeBoardIndex)
+        const sgBoards = data.filter(board => board.hasSg)
+        const activeBoardIndex = Object.values(sgBoards).findIndex(board => board.uid === this.state.sgCurrentState.board.uid)
+        this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, sgBoards, 'boards', activeBoardIndex)
       }
     })
 
