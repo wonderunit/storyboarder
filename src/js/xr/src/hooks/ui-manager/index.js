@@ -1187,8 +1187,6 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().state.activeCamera = activeCamera
     getCanvasRenderer().needsRender = true
     getCanvasRenderer().helpNeedsRender = true
-
-    //console.log('selection')
     
     if (selections.length) {
       uiSend('GO_PROPERTIES')

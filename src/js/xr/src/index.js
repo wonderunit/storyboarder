@@ -130,12 +130,7 @@ const setupXR = () => {
         })
       }
     })
-    
-    //if (!process.env.XR_STANDALONE_DEMO) {
-    
-    //}
-    
-  });
+  })
   
 }
 
