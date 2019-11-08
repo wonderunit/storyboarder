@@ -362,7 +362,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIn
   const visibleItems = Math.min(Math.ceil(width / itemWidth) + 1, items.length)
 
   if (this.state.boards[type].scrollTop === null) {
-    this.state.boards[type].scrollTop = Math.min(activeIndex * itemWidth, Math.max(rowWidth - width, 0))
+    this.state.boards[type].scrollTop = Math.max(Math.min((activeIndex) * itemWidth + 0.01, Math.max(rowWidth - width, 0)), 0)
   }
   
   let startItem = Math.floor(this.state.boards[type].scrollTop / itemWidth)

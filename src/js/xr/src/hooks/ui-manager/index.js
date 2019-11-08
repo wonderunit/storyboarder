@@ -651,6 +651,9 @@ class CanvasRenderer {
     let canvas = this.boardsCanvas
     let ctx = this.boardsContext
 
+    // Reset all boards items, otherwise many thumbnails buttons exists
+    setupBoardsPane(this.paneComponents, this)
+    
     // console.log('render boards')
 
     ctx.fillStyle = 'rgba(0,0,0)'
