@@ -401,6 +401,8 @@ const defaultPosePreset = {
   }
 }
 
+const defaultPosePresets = require('./shot-generator-presets/poses.json')
+
 const defaultCharacterPreset = {
   height: 1.6256,
   model: 'adult-female',
@@ -718,7 +720,7 @@ const initialState = {
     },
 
     poses: {
-      ...defaultPosePreset
+      ...defaultPosePresets
     }
   },
   server: {
