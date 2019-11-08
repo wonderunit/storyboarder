@@ -75,6 +75,10 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }
   }, [])
 
+  useEffect(() => {
+    if (boardUid) saveCameraThumbnail()
+  }, [boardUid])
+
   const saveCameraThumbnail = () => {
     // Render on separate canvas
     thumbnailRenderer.current.render(scene, virtualCamera.current)
@@ -84,7 +88,10 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     cameraThumbnail.current.src = base64String
     const thumbnailName = `${boardUid}_${sceneObject.displayName}`
     cr.current.state.cameraThumbnails[thumbnailName] = cameraThumbnail.current
-    cr.current.boardsNeedsRender = true
+
+    setTimeout(() {
+      cr.current.boardsNeedsRender = true
+    }, 250)
   }
 
   const renderCamera = () => {
