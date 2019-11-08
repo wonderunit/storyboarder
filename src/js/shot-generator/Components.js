@@ -1471,12 +1471,12 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         }
       ],
 
-      sceneObject.type == 'character' && [
+    /*   sceneObject.type == 'character' && [
         PosePresetsEditor, {
           id: sceneObject.id,
           posePresetId: sceneObject.posePresetId
         }
-      ],
+      ], */
       sceneObject.type == 'character' && [
         HandPresetsEditor, {
           id: sceneObject.id,

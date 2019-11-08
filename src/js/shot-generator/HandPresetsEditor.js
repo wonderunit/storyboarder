@@ -122,8 +122,11 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
 
   // setup thumbnail renderer
   let mesh = thumbnailRenderer.getGroup().children[0].children[1]
-  let pose = preset.state.skeleton
+  let pose = preset.state.handSkeleton
+  let key = Object.keys(pose)
+  if(!key.length) return
   let skeleton = mesh.skeleton
+  let handName = key[0].includes("RightHand") ? "RightHand" : "LeftHand"
   skeleton.pose()
   for (let name in pose) {
     let bone = skeleton.getBoneByName(name)
@@ -134,9 +137,18 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
 
       if (name === 'Hips') {
         bone.rotation.x += Math.PI / 2.0
+        bone.rotation.y += Math.PI / 2.0
       }
     }
   }
+  let bone = skeleton.getBoneByName(handName)
+  bone.updateMatrixWorld(true)
+  bone.parent.parent.parent.quaternion.set(0, 0, 0, 1)
+  bone.parent.parent.quaternion.set(0, 0, 0, 1)
+  bone.parent.quaternion.set(0, 0, 0, 1)
+  bone.quaternion.set(0, 0, 0, 1)
+
+  bone.parent.parent.parent.updateWorldMatrix(true, true)
 }
 
 const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset, updateObject, attachments, thumbnailRenderer }) => {
@@ -147,7 +159,7 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
 
     let handPosePresetId = preset.id
     let handSkeleton = preset.state.handSkeleton
-    let skeletonBones = Object.keys(handSkeleton)
+    let skeletonBones = Object.keys(handSkeleton)      
     if(skeletonBones.length !== 0) {
       let currentHand = skeletonBones[0].includes("RightHand") ? "RightHand" : "LeftHand"
       if (selectedHand === "BothHands") {
@@ -183,11 +195,24 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
 
     if (!hasRendered) {
       thumbnailRenderer.current = thumbnailRenderer.current || new ThumbnailRenderer()
+
       setupRenderer({
         thumbnailRenderer: thumbnailRenderer.current,
         attachments,
         preset
       })
+      let bone = thumbnailRenderer.current.getGroup().children[0].children[1].skeleton.getBoneByName(selectedHand)
+      let camera = thumbnailRenderer.current.camera
+      let boxGeometry = new THREE.BoxGeometry(2.5, 2)
+      let material = new THREE.MeshBasicMaterial()
+      let mesh = new THREE.Mesh(boxGeometry, material);
+      mesh.scale.multiplyScalar(0.001)
+      bone.parent.add(mesh)
+      mesh.position.copy(bone.position)
+      mesh.position.y += 0.00095
+      mesh.updateWorldMatrix(true, true)
+      clampInstance(mesh, camera)
+      mesh.visible = false;
       thumbnailRenderer.current.render()
       let dataURL = thumbnailRenderer.current.toDataURL('image/jpg')
       thumbnailRenderer.current.clear()
@@ -224,6 +249,20 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
     }, preset.name]
   ]])
 })
+
+const clampInstance = (instance, camera ) => {
+    let box = new THREE.Box3().setFromObject(instance);
+		let sphere = new THREE.Sphere();
+		box.getBoundingSphere(sphere);
+		let direction = new THREE.Vector3();
+    camera.getWorldDirection(direction) 
+		let s = new THREE.Vector3(0, 0, -1)
+		let h = sphere.radius / Math.tan( camera.fov / 2 * Math.PI / 180 );
+		let newPos = new THREE.Vector3().addVectors( sphere.center, s.setLength(h) );
+		camera.position.copy(newPos);
+    camera.lookAt(sphere.center);
+    camera.updateMatrixWorld(true)
+}
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   let { id, handPosePresetId, updateObject, attachments, thumbnailRenderer } = data
@@ -318,7 +357,7 @@ React.memo(({
                 let skeleton = sceneObject.skeleton
                 let model = sceneObject.model
                 let handSkeleton = {}
-        
+                selectedHand = handName
                 let skeletonKeys = Object.keys(skeleton)
                 for(let i = 0; i < skeletonKeys.length; i++) {
                     let key = skeletonKeys[i]
