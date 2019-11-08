@@ -21,6 +21,11 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
 
   useEffect(() => {
     camera.rotation.order = 'YXZ'
+
+    if (ref.current) {
+      ref.current.parent.rotation.y = camera.rotation.y
+      ref.current.parent.position.copy(camera.position)
+    }
   }, [])
 
   const mesh = useMemo(() => {
@@ -42,11 +47,6 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
   // }, [locked])
 
   useRender((state, delta) => {
-    if (ref.current) {
-      ref.current.parent.rotation.y = camera.rotation.y
-      ref.current.parent.position.copy(camera.position)
-    }
-
     if (getCanvasRenderer().boardsNeedsRender) {
       getCanvasRenderer().renderBoards()
       getTexture().needsUpdate = true
