@@ -89,7 +89,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     const thumbnailName = `${boardUid}_${sceneObject.displayName}`
     cr.current.state.cameraThumbnails[thumbnailName] = cameraThumbnail.current
 
-    setTimeout(() {
+    setTimeout(() => {
       cr.current.boardsNeedsRender = true
     }, 250)
   }
