@@ -1,10 +1,12 @@
-const { useMemo, useRef, useCallback } = React = require('react')
-const { useRender } = require('react-three-fiber')
+const { useEffect, useMemo, useRef, useCallback } = React = require('react')
+const { useRender, useThree } = require('react-three-fiber')
 
-const SCALE = 6
-const POSITION = [0, 4, -6]
+const SCALE = 1
+const POSITION = [0, 0.4, -1]
 
 const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.PI * 0.75 }) => {
+  const { camera } = useThree()
+
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -15,6 +17,10 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
       textureRef.current.minFilter = THREE.LinearFilter
     }
     return textureRef.current
+  }, [])
+
+  useEffect(() => {
+    camera.rotation.order = 'YXZ'
   }, [])
 
   const mesh = useMemo(() => {
@@ -36,6 +42,11 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
   // }, [locked])
 
   useRender((state, delta) => {
+    if (ref.current) {
+      ref.current.parent.rotation.y = camera.rotation.y
+      ref.current.parent.position.copy(camera.position)
+    }
+
     if (getCanvasRenderer().boardsNeedsRender) {
       getCanvasRenderer().renderBoards()
       getTexture().needsUpdate = true
@@ -44,8 +55,11 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
   })
 
   return mesh ? (
-    <group position={POSITION} scale={[SCALE, SCALE, SCALE]} rotation={[rotation, 0, 0]}>
+    <group>
       <primitive
+        position={POSITION}
+        scale={[SCALE, SCALE, SCALE]}
+        rotation={[rotation, 0, 0]}
         ref={ref}
         object={mesh}
         onController={() => null}
