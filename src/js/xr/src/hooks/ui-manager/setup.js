@@ -178,15 +178,6 @@ const setupSettingsPane = (paneComponents, self) => {
       size: 36
     },
 
-    // 'switch-hand': {
-    //   id: 'switch-hand',
-    //   type: 'text',
-    //   x: 0 + 30,
-    //   y: 684 + 20 + 48 + 30 + 40 - 12,
-    //   label: 'Switch Hand',
-    //   size: 24
-    // },
-
     'show-cameras': {
       id: 'show-cameras',
       type: 'text',
@@ -195,19 +186,6 @@ const setupSettingsPane = (paneComponents, self) => {
       label: 'Show Cameras',
       size: 24
     },
-
-    // 'switch-hand-toggle': {
-    //   id: 'switch-hand-toggle',
-    //   type: 'toggle-button',
-    //   toggle: 'switchHand',
-    //   x: 0 + 30 + 200,
-    //   y: 684 + 20 + 48 + 30,
-    //   width: 200,
-    //   height: 80,
-    //   onSelect: () => {
-    //     self.send('TOGGLE_SWITCH', { toggle: 'switchHand' })
-    //   }
-    // },
 
     'show-cameras-toggle': {
       id: 'show-cameras-toggle',

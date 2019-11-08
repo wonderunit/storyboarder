@@ -32,7 +32,7 @@ const {
   drawRow
 } = require('./draw')
 
-const { setupHomePane, setupAddPane, setupSettingsPane, setupHelpPane, setupBoardsPane } = require('./setup')
+const { setupHomePane, setupAddPane, setupHelpPane, setupBoardsPane } = require('./setup')
 
 const [useUiStore] = create((set, get) => ({
   // values
@@ -163,6 +163,7 @@ class CanvasRenderer {
       mode: 'home',
       context: {},
       helpIndex: 0,
+      showSettings: false,
       grids: {
         tab: 'pose',
         startCoords: {},
@@ -204,10 +205,8 @@ class CanvasRenderer {
 
     setupHomePane(this.paneComponents, this)
     setupAddPane(this.paneComponents, this)
-    setupSettingsPane(this.paneComponents, this)
     this.renderObjects(ctx, this.paneComponents['home'])
     this.renderObjects(ctx, this.paneComponents['add'])
-    this.renderObjects(ctx, this.paneComponents['settings'])
     // setupaddpane
     // setupsettings
 
@@ -623,10 +622,6 @@ class CanvasRenderer {
 
       this.renderObjects(ctx, this.paneComponents['grid'])
     }
-
-    if (this.state.mode == 'settings') {
-      this.renderObjects(ctx, this.paneComponents['settings'])
-    }
   }
 
   renderHelp () {
@@ -730,9 +725,69 @@ class CanvasRenderer {
       }
     }
 
+    if (this.state.showSettings) {
+      ctx.fillStyle = 'rgba(0,0,0)'
+      roundRect(ctx, 1024 - 439, 483 - 3, 439, 325 - 114, 25, true, false)
+
+      this.paneComponents['boards']['settings'] = {
+        id: 'settings',
+        type: 'text',
+        x: 1024 - 439 + 30,
+        y: 483 + 30,
+        label: 'Settings',
+        size: 36
+      }
+
+      this.paneComponents['boards']['show-cameras'] = {
+        id: 'show-cameras',
+        type: 'text',
+        x: 1024 - 439 + 30,
+        y: 483 + 20 + 48 + 40 + 40 - 12,
+        label: 'Show Cameras',
+        size: 24
+      }
+
+      this.paneComponents['boards']['show-cameras-toggle'] = {
+        id: 'show-cameras-toggle',
+        type: 'toggle-button',
+        toggle: 'showCameras',
+        x: 1024 - 439 + 30 + 200,
+        y: 483 + 20 + 48 + 40,
+        width: 200,
+        height: 80,
+        onSelect: () => {
+          this.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
+        }
+      }
+
+      this.paneComponents['boards']['help-button'] = {
+        id: 'help-button',
+        type: 'image-button',
+        x: 1024 - 64 - 15,
+        y: 483 + 20,
+        width: 64,
+        height: 64,
+        image: 'help',
+        drawBG: true,
+        padding: 6,
+        fill: '#6E6E6E',
+
+        onSelect: () => {
+          this.send('TOGGLE_HELP')
+          this.send('GO_HOME')
+        }
+      }
+    }
+
+
     this.renderObjects(ctx, this.paneComponents['boards'])
+
     if (!this.state.boards.showConfirm) {
       ctx.clearRect(0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30)
+    }
+
+    if (!this.state.showSettings) {
+      ctx.clearRect(1024 - 439, 483 - 3, 439, 325 - 114)
     }
   }
 
@@ -1263,7 +1318,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
           if (toggle === 'switchHand') setSwitchHand(value)
           if (toggle === 'showCameras') setShowCameras(value)
-          getCanvasRenderer().needsRender = true
+          getCanvasRenderer().boardsNeedsRender = true
           playSound('select')
         },
 
@@ -1296,6 +1351,12 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
         onToggleHUD (context, event) {
           setShowHUD(!showHUD)
+        },
+
+        onToggleSettings (context, event) {
+          let cr = getCanvasRenderer()
+          cr.state.showSettings = !cr.state.showSettings
+          cr.boardsNeedsRender = true
         },
 
         async onChangeBoard (context, event) {
