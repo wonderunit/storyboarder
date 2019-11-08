@@ -357,8 +357,8 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIn
   const textHeight = 16
 
   const itemHeight = height - 2 * padding - textHeight
-  const itemWidth = height * this.cameraAspectRatio - 2 * padding - textHeight
-  const rowWidth = items.length * itemWidth + padding * 2
+  const itemWidth = itemHeight * this.cameraAspectRatio
+  const rowWidth = items.length * itemWidth + padding * 3
   const visibleItems = Math.min(Math.ceil(width / itemWidth) + 1, items.length)
 
   if (this.state.boards[type].scrollTop === null) {
