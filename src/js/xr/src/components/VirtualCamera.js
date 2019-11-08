@@ -273,7 +273,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     {activeIndicator}
     {cameraView}
     {meshChildren}
-    <group position={[0, 0, -0.2]}>
+    <group position={[0, 0, 0]}>
       <perspectiveCamera
         ref={virtualCamera}
         aspect={aspectRatio}

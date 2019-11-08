@@ -42,6 +42,11 @@ class XrIkObject
         this.originalMesh = objectSkeleton.getObjectByProperty("type", "SkinnedMesh");
         this.controlTargets = controlTargets;
 
+        for(let i = 0; i < controlTargets.length; i++)
+        {
+            controlTargets[i].quaternion.set(0, 0, 0, 1);
+            controlTargets[i].position.set(0, 0, 0);
+        }
         this.hipsControlTarget = controlTargets[0];
         controlTargets[0].name = "Hips";
         this.chainObjects["Head"] = new ChainObject("Spine", "Head", controlTargets[1]);
@@ -192,6 +197,7 @@ const initializeChainObject = (ikObject, chains) =>
                         target = chainObject.controlTarget;
                         target.name = object.name;
                         chainObject.isChainObjectStarted = false;
+                        chainObject.lastBone = object; 
                     }
                     ikObject.ikSwitcher.ikBonesName.push(object.name);
                     // Creates joint by passing current bone and its constraint

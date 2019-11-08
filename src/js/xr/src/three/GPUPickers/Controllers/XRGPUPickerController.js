@@ -120,8 +120,8 @@ class XRGPUPickerController extends GPUPickerController
                 meshes.push(this.gpuPickerFactory.createGUI(sceneMesh, this.idPool, excludingList));
                 break;
             case 'object':
-                meshes.push(this.gpuPickerFactory.createObject(sceneMesh, excludingList));
-                break;
+               // meshes.push(this.gpuPickerFactory.createObject(sceneMesh, excludingList));
+               // break;
             case 'virtual-camera':
             case 'light':
             default:

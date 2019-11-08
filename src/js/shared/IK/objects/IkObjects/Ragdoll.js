@@ -194,6 +194,16 @@ class Ragdoll extends IkObject
             {
                 poleTarget = new PoleTarget();
                 poleTarget.mesh = poleTargetMesh;
+                
+                let boneMatrix = this.resourceManager.getMatrix4();
+                this.takeBoneInTheMeshSpace(this.rigMesh, poleTargetMesh, boneMatrix);
+                let bonePosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+                this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
+                let hipsPosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+                this.resourceManager.release(boneMatrix);
+
+                let hipsOffset = bonePosition.sub(hipsPosition);
+                poleTarget.offsetWithoutHips = hipsOffset.clone();
             }
             else
             {
@@ -277,7 +287,7 @@ class Ragdoll extends IkObject
             let targetPosition = hipsTarget.position;
             let poleOffset = constraint.poleTarget.offsetWithoutHips;
             let mesh = constraint.poleTarget.mesh;
-            if(constraint.poleTarget.mesh.name === "leftArmPole" || constraint.poleTarget.mesh.name === "rightArmPole")
+            if((mesh.name === "leftArmPole" || mesh.name === "rightArmPole") && !mesh.userData.isInitialized)
             {
                 mesh.position.set(targetPosition.x + poleOffset.x, targetPosition.y + poleOffset.y, targetPosition.z - poleOffset.z);
                 mesh.rotateAroundPoint(targetPosition, armsAngleAxis.axis, armsAngleAxis.angle);
@@ -401,8 +411,8 @@ class Ragdoll extends IkObject
         let targetQuat = this.resourceManager.getQuaternion();
         boneTarget.getWorldQuaternion(targetQuat);
         let quaternion = this.resourceManager.getQuaternion();
-        bone.getWorldQuaternion(quaternion).inverse();
-        bone.quaternion.multiply(quaternion);
+        bone.parent.getWorldQuaternion(quaternion).inverse();
+        bone.quaternion.copy(quaternion);
         bone.quaternion.multiply(targetQuat);
         this.resourceManager.release(targetQuat);
         this.resourceManager.release(quaternion);

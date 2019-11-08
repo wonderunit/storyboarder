@@ -92,10 +92,18 @@ const machine = Machine({
               actions: 'onDrag'
             }
           }
+        },
+        hidden : {
+          onEntry: ['hideUI', 'onHideUI'],
+          onExit: ['showUI','onShowUI'],
+          on: {
+            SHOW: 'idle'
+          }
         }
       },
       on: {
-        LOCK: '.locked'
+        LOCK: '.locked',
+        HIDE: '.hidden'
       }
     }
   }
@@ -111,6 +119,12 @@ const machine = Machine({
     }),
     unlock: assign({
       locked: (context, event) => false
+    }),
+    hideUI: assign({
+      isUIHidden: (context, event) => true
+    }),
+    showUI: assign({
+      isUIHidden: (context, event) => false
     }),
 
     updateSelection: assign({
