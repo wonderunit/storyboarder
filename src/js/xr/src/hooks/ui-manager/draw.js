@@ -31,12 +31,13 @@ const drawImageButton = ({
   flip = false,
   flipY = false,
   drawBG = false,
-  padding = 0
+  padding = 0,
+  rounding = 25
 }) => {
   ctx.save()
 
   ctx.fillStyle = fill
-  if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, 25, true, false)
+  if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, rounding, true, false)
 
   if (flip) ctx.scale(-1, 1)
   if (flipY) ctx.scale(1, -1)

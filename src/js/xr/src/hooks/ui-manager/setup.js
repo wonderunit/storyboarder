@@ -351,15 +351,15 @@ const setupBoardsPane = (paneComponents, self) => {
 
     'settings-button': {
       id: 'settings-button',
-      type: 'button',
-      x: 1024 - (68 + 18 * 2),
-      y: 415,
-      width: 68 + 18 * 2,
-      height: 18 * 3,
-      fill: 'black',
-      label: 'Settings',
-      fontSize: 18,
-      fontWeight: 'bold',
+      type: 'image-button',
+      x: 1024 - (18 * 3 - 6),
+      y: 420,
+      width: 18 * 3 - 12,
+      height: 18 * 3 - 12,
+      image: 'settings',
+      drawBG: true,
+      padding: 6,
+      rounding: 12,
 
       onSelect: () => {
         self.send('TOGGLE_SETTINGS')
