@@ -27,7 +27,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, getCanvasRenderer, audio }) => {
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, getCanvasRenderer, boardUid, audio }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -82,7 +82,8 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
 
     // Trigger HUD rerender
     cameraThumbnail.current.src = base64String
-    cr.current.state.cameraThumbnails[sceneObject.displayName] = cameraThumbnail.current
+    const thumbnailName = `${boardUid}_${sceneObject.displayName}`
+    cr.current.state.cameraThumbnails[thumbnailName] = cameraThumbnail.current
     cr.current.boardsNeedsRender = true
   }
 
@@ -245,8 +246,8 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }
 
     renderCamera()
-    if (delta > 500) saveCameraThumbnail()
-  }, false, [isSelected, ref.current, meshes])
+    if (delta > 500 && boardUid) saveCameraThumbnail()
+  }, false, [isSelected, ref.current, meshes, boardUid])
 
   let lightColor = 0x8c78f1
   if (isSelected) {

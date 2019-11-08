@@ -69,6 +69,7 @@ const machine = Machine({
             'SAVE_BOARD': { actions: 'onSaveBoard' },
             'INSERT_BOARD': { actions: 'onInsertBoard' },
             'CHANGE_BOARD': { actions: 'onChangeBoard' },
+            'SET_BOARDUID': { actions: 'onSetBoardUid' },
             'TOGGLE_HUD': { actions: 'onToggleHUD' },
             'TOGGLE_SETTINGS': { actions: 'onToggleSettings' },
           }

@@ -430,7 +430,9 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIn
         y + padding + itemHeight + textHeight * 0.5
       )
 
-      const cameraThumbnail = this.state.cameraThumbnails[item.displayName]
+      const thumbnailName = `${this.state.sgCurrentState.board.uid}_${item.displayName}`
+      const cameraThumbnail = this.state.cameraThumbnails[thumbnailName]
+      
       if (cameraThumbnail) {
         ctx.drawImage(
           cameraThumbnail,

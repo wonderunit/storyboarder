@@ -155,6 +155,7 @@ const SceneContent = connect(
     const showCameras = useUiStore(state => state.showCameras)
     const showHelp = useUiStore(state => state.showHelp)
     const showHUD = useUiStore(state => state.showHUD)
+    const boardUid = useUiStore(state => state.boardUid)
 
     const fog = useRef()
     const getFog = () => {
@@ -625,6 +626,7 @@ const SceneContent = connect(
                 isSelected={selections.includes(id)}
                 isActive={activeCamera === id}
                 getCanvasRenderer={getCanvasRenderer}
+                boardUid={boardUid}
                 audio={
                   activeCamera === id
                     ? atmosphereAudio

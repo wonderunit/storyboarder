@@ -41,6 +41,7 @@ const [useUiStore] = create((set, get) => ({
   showHelp: false,
   showHUD: false,
 
+  boardUid: null,
   serverHash: null,
   serverLastSavedHash: null,
 
@@ -50,6 +51,7 @@ const [useUiStore] = create((set, get) => ({
   setShowHelp: value => set(produce(state => { state.showHelp = value })),
   setShowHUD: value => set(produce(state => { state.showHUD = value })),
 
+  setBoardUid: value => set(produce(state => { state.boardUid = value })),
   setServerHash: value => set(produce(state => { state.serverHash = value })),
   setServerLastSavedHash: value => set(produce(state => { state.serverLastSavedHash = value })),
 
@@ -250,9 +252,11 @@ class CanvasRenderer {
     this.client.getState().then(result => {
       this.state.sgCurrentState = RemoteData.success(result)
       this.boardsNeedsRender = true
+      this.send('SET_BOARDUID', { uid: result.board.uid })
     }).catch(err => {
       this.state.sgCurrentState = RemoteData.failure(err)
       this.boardsNeedsRender = true
+      this.send('SET_BOARDUID', { uid: null })
     })
 
     this.needsRender = false
@@ -661,13 +665,16 @@ class CanvasRenderer {
 
     const sceneCameras = Object.values(this.state.sceneObjects).filter(model => model.type === 'camera')
     const activeCameraIndex = Object.values(sceneCameras).findIndex(camera => camera.id === this.state.activeCamera)
-    this.drawRow(ctx, 15, 15, 1024 - 30, 370 * 0.6 - 15, sceneCameras, 'cameras', activeCameraIndex)
 
     this.state.boardsData.cata({
       SUCCESS: data => {
-        const sgBoards = data.filter(board => board.hasSg)
-        const activeBoardIndex = Object.values(sgBoards).findIndex(board => board.uid === this.state.sgCurrentState.board.uid)
-        this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, sgBoards, 'boards', activeBoardIndex)
+        if (this.state.sgCurrentState.board) {
+          this.drawRow(ctx, 15, 15, 1024 - 30, 370 * 0.6 - 15, sceneCameras, 'cameras', activeCameraIndex)
+
+          const sgBoards = data.filter(board => board.hasSg)
+          const activeBoardIndex = Object.values(sgBoards).findIndex(board => board.uid === this.state.sgCurrentState.board.uid)
+          this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, sgBoards, 'boards', activeBoardIndex)
+        }
       }
     })
 
@@ -1091,6 +1098,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const setShowHelp = useUiStore(state => state.setShowHelp)
   const setShowHUD = useUiStore(state => state.setShowHUD)
 
+  const setBoardUid = useUiStore(state => state.setBoardUid)
   const setServerHash = useUiStore(state => state.setServerHash)
   const setServerLastSavedHash = useUiStore(state => state.setServerLastSavedHash)
 
@@ -1362,6 +1370,10 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           cr.boardsNeedsRender = true
         },
 
+        onSetBoardUid (context, event) {
+          setBoardUid(event.uid)
+        },
+        
         async onChangeBoard (context, event) {
           let cr = getCanvasRenderer()
           let board = await cr.client.selectBoardByUid(event.uid)
@@ -1385,6 +1397,8 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
                 activeCamera
               })
             )
+
+            setBoardUid(board.uid)
           } catch (err) {
             // TODO if the uid does not match, notify user, reload
             alert('Error\n' + err)
