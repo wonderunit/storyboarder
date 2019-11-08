@@ -32,7 +32,8 @@ const availableSceneObjects = {
   CHARACTER: 'character',
   OBJECT: 'object',
   LIGHT: 'light',
-  CAMERA: 'camera'
+  CAMERA: 'camera',
+  VOLUME: 'volume'
 }
 
 const getIsSceneDirty = state => {
