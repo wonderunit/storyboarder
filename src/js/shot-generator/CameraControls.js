@@ -26,7 +26,8 @@ class CameraControls extends EventEmitter {
     this.onKeyUp = this.onKeyUp.bind(this)
 
     this.onWheel = this.onWheel.bind(this)
-
+  
+    this.isMoveOn = false
     this.runMode = false
 
     this.undoGroupStart = options.undoGroupStart
@@ -243,7 +244,8 @@ class CameraControls extends EventEmitter {
       this._object.x = result.x
       this._object.y = result.y
     }
-
+  
+    this.isMoveOn = false
     if ( this.moveForward || this.moveBackward || this.moveLeft || this.moveRight || this.moveUp || this.moveDown) {
       if (this.runMode) {
         this.movementSpeed += (0.002/0.0166666)*delta
@@ -252,6 +254,8 @@ class CameraControls extends EventEmitter {
         this.movementSpeed += (0.0007/0.0166666)*delta
         this.movementSpeed = Math.min(this.movementSpeed, (this.maxSpeed/0.0166666)*delta)
       }
+      
+      this.isMoveOn = true
     }
 
 
@@ -305,9 +309,9 @@ class CameraControls extends EventEmitter {
     if (state.devices[0].analog.l2) {
       this._object.z += ((state.devices[0].analog.l2/127.0)*0.002)*(Math.pow((state.devices[0].analog.l2/127.0),2))
     }
-    
-    if (this.mouseDragOn || this.isChanged()) {
-      this.emit('change', {active: this.mouseDragOn, object: this._object})
+  
+    if (this.isMoveOn || this.mouseDragOn || this.isChanged()) {
+      this.emit('change', {active: this.mouseDragOn && !this.isMoveOn, object: this._object})
     }
     
     this._prevValues = {...this._object}
