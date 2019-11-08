@@ -175,7 +175,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         ref.current.add(IKHelper.getInstance())
       }
       ref.current.add(BonesHelper.getInstance())
-      console.log(ref.current)
     } else {
       ref.current.remove(BonesHelper.getInstance())
       ref.current.remove(IKHelper.getInstance())

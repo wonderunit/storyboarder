@@ -94,10 +94,10 @@ const machine = Machine({
         PRESS_END_X: {
           actions: 'onDropLowest'
         },
-        PRESS_END_Y: {
+        POSE_CHARACTER: {
           cond: 'eventHasCharacterIntersection',
           target: 'character_posing'
-        }
+        },
       }
     },
     drag_control_point :
@@ -120,7 +120,6 @@ const machine = Machine({
       onEntry: 'onPosingCharacterEntry',
       onExit: 'onPosingCharacterExit',
       on : {
-
         STOP_POSING: {
           target: 'selected'
         }

@@ -36,7 +36,7 @@ class IKHelper extends THREE.Object3D
 
     initialize(skinnedMesh, height)
     {
-       // if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
         this.intializedSkinnedMesh = skinnedMesh;
         let ragDoll = instance.ragDoll;
         let meshes = this.targetPoints;
@@ -52,6 +52,7 @@ class IKHelper extends THREE.Object3D
             {
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
+                this.intializedSkinnedMesh.worldToLocal(mesh.position);
                 mesh.updateMatrixWorld();
                 mesh.userData.isInitialized = true;
             }
@@ -101,7 +102,9 @@ class IKHelper extends THREE.Object3D
             else
             {
                 this.poleTargets.attach(this.selectedControlPoint);
-                let worldPosition = this.selectedControlPoint.position;
+                this.poleTargets.updateMatrixWorld(true)
+                let worldPosition = this.selectedControlPoint.worldPosition();
+                this.selectedControlPoint.userData.isInitialized = true;
                 let poleTargets = {};
                 poleTargets[this.selectedControlPoint.name] = 
                 {
@@ -167,8 +170,8 @@ class IKHelper extends THREE.Object3D
 
     updateMatrixWorld(value)
     {
-        super.updateMatrixWorld(value); 
         if(this.updateStarted) return;
+        super.updateMatrixWorld(value); 
         this.updateStarted = true;
         this.update();
         this.updateStarted = false;

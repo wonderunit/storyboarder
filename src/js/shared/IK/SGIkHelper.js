@@ -48,17 +48,17 @@ class SGIKHelper extends THREE.Object3D
         return instance ? instance : new SGIKHelper(mesh, scene, camera, domElement)
     }
 
-    initialize(scene, object, height, skinnedMesh)
+    initialize(scene, object, height, skinnedMesh, props)
     {
         this.scene = scene;
         let ragDoll = instance.ragDoll;
-        this.characterObject = object;
-        ragDoll.controlTargetSelection.initialize();
+        if(this.characterObject) ragDoll.controlTargetSelection.initialize();
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        this.characterObject = object;
         
         this.intializedSkinnedMesh = skinnedMesh;
         let meshes = this.targetPoints;
-        let initializedMeshes = object.userData.poleTargets ? object.userData.poleTargets : [];
+        let initializedMeshes = props.poleTargets ? props.poleTargets : [];
         let scaleAspect = height / this.regularHeight / object.scale.x;
         for(let i = 0; i < meshes.length; i++)
         {
@@ -70,6 +70,7 @@ class SGIKHelper extends THREE.Object3D
             {
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
+                this.characterObject.worldToLocal(mesh.position);
                 mesh.updateMatrixWorld();
                 mesh.userData.isInitialized = true;
             }
@@ -86,6 +87,22 @@ class SGIKHelper extends THREE.Object3D
         ragDoll.controlTargetSelection.initialize();
        // ragDoll.controlTargetSelection.initialize();
         //this.updateAllTargetPoints();
+    }
+
+    updatePoleTarget(object, poleTargets)
+    {
+        if(this.characterObject && this.characterObject.uuid === object.uuid)
+        {
+            for(let i = 0; i > this.poleTargets.children.length; i++)
+            {
+                let ikPoleTarget = this.poleTargets.children[i];
+                let passedPolePosition = poleTargets[ikPoleTarget.name].position;
+                ikPoleTarget.position.set(passedPolePosition.x, passedPolePosition.y, passedPolePosition.z);
+                this.characterObject.worldToLocal(ikPoleTarget.position);
+                ikPoleTarget.updateMatrixWorld();
+                ikPoleTarget.userData.isInitialized = true;
+            }
+        }
     }
 
     selectControlPoint(uuid, event)
@@ -373,7 +390,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
-        poleTarget.visible = false;
+        poleTarget.visible = instance.isPoleTargetsVisible;
         poleTarget.layers.disable(0)
         poleTarget.layers.enable(1)
         poleTarget.layers.disable(2)

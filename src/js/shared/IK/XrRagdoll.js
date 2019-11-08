@@ -169,6 +169,8 @@ class XRRagdoll extends XRIKObject
         {
             let poleTargetMesh = poleTargetMeshes[i];
             let chainName = interpretatedPoleTargetsName(poleTargetMesh.name);
+            console.log(chainName)
+            console.log(poleTargetMesh.name)
             let chain = this.chainObjects[chainName].chain;
             let poleTarget = null;
             if(poleTargetMesh.userData.isInitialized)
@@ -182,7 +184,7 @@ class XRRagdoll extends XRIKObject
             }
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
-            chainObjects[i].poleConstraint = poleConstraint;
+            this.chainObjects[chainName].poleConstraint = poleConstraint;
         }
 
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
@@ -337,22 +339,10 @@ class XRRagdoll extends XRIKObject
         let targetQuat = this.resourceManager.getQuaternion();
         let quaternion = this.resourceManager.getQuaternion();
         boneTarget.getWorldQuaternion(targetQuat);
-        if(boneTarget.userData.posing)
-        {
-            console.log(boneTarget.clone())
-            console.log(bone.clone())
-           // bone.getWorldQuaternion(quaternion).inverse();
-           // bone.quaternion.copy(targetQuat);
-            //return;
-        }
-        let boneQuat = bone.quaternion.clone()
         bone.parent.getWorldQuaternion(quaternion).inverse();
         bone.quaternion.copy(quaternion);
 
         bone.quaternion.multiply(targetQuat);
-        //console.log(bone.worldQuaternion().clone());
-        //console.log(boneQuat.clone());
-       // console.log(boneTarget.parent.clone().worldQuaternion())
         this.resourceManager.release(targetQuat);
         this.resourceManager.release(quaternion);
     }
