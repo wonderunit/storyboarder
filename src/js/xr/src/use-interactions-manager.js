@@ -287,7 +287,7 @@ const useInteractionsManager = ({
 }) => {
   const { gl, camera, scene } = useThree()
 
-
+  
   const selections = useSelector(getSelections)
 
   const canUndo = useSelector(state => state.undoable.past.length > 0)
