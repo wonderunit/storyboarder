@@ -27,6 +27,13 @@ const getSelectedBone = state => state.undoable.present.selectedBone
 
 const getWorld = state => state.undoable.present.world
 
+const availableSceneObjects = {
+  IMAGE: 'image',
+  CHARACTER: 'character',
+  OBJECT: 'object',
+  LIGHT: 'light',
+  CAMERA: 'camera'
+}
 
 const getIsSceneDirty = state => {
   let current = hashify(JSON.stringify(getSerializedState(state)))
@@ -34,7 +41,11 @@ const getIsSceneDirty = state => {
 }
 // return only the stuff we want to save to JSON
 const getSerializedState = state => {
+  let available = Object.values(availableSceneObjects)
   let sceneObjects = Object.entries(getSceneObjects(state))
+    .filter(([ k, v ]) => {
+      return (available.indexOf(v.type) !== -1)
+    })
     .reduce((o, [ k, v ]) => {
       let {
         // ignore 'loaded'
@@ -1385,5 +1396,7 @@ module.exports = {
   getWorld,
 
   getSerializedState,
-  getIsSceneDirty
+  getIsSceneDirty,
+  
+  availableSceneObjects
 }

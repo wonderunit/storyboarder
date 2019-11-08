@@ -19,7 +19,7 @@ log.catchErrors()
 const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
 const undoable = require('redux-undo').default
-const { reducer } = require('../../shared/reducers/shot-generator')
+const { reducer, availableSceneObjects } = require('../../shared/reducers/shot-generator')
 const {actionMiddleware} = require('../../xr/socket-server')
 
 const actionSanitizer = action => (
@@ -92,6 +92,18 @@ const store = configureStore({
 
 ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) => {
   let shot = board.sg
+  if (shot) {
+    let availableObjects = Object.values(availableSceneObjects)
+    
+    let currentObjects = {}
+    for (let key of Object.keys(shot.data.sceneObjects)) {
+      if (availableObjects.indexOf(shot.data.sceneObjects[key].type) !== -1) {
+        currentObjects[key] = shot.data.sceneObjects[key]
+      }
+    }
+    
+    shot.data.sceneObjects = currentObjects
+  }
 
   store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
 
