@@ -26,6 +26,7 @@ class IKHelper extends THREE.Object3D
             this.regularHeight = 1.8;
             this.updateStarted = false;
             this.userData.type = "IkHelper"
+            this.canUpdate = true
         }
         return instance;
     }
@@ -171,11 +172,12 @@ class IKHelper extends THREE.Object3D
 
     updateMatrixWorld(value)
     {
-        if(this.updateStarted) return;
+        if(this.updateStarted || !this.canUpdate) return;
         super.updateMatrixWorld(value);
         this.updateStarted = true;
         this.update();
         this.updateStarted = false;
+        this.canUpdate = false
     }
 
     raycast(raycaster, intersects)

@@ -761,11 +761,7 @@ const useInteractionsManager = ({
   let controllersInfo
   // Send update info once per 3 calls to achieve 20 updates per second (60 / 3 = 20)
   const sendToServer = skipCalls(() => {
-    if (!window.mainAppSocket) {
-      return false
-    }
-    
-    camera.updateMatrixWorld()
+    //camera.updateMatrixWorld()
 
     controllersInfo = []
     for (let i = 0, n = controllers.length; i < n; i++) {
@@ -787,6 +783,8 @@ const useInteractionsManager = ({
   // TODO could model these as ... activities? exec:'render' actions?
   useRender(() => {
     TWEEN.update()
+    getIkHelper().canUpdate = true
+    
     sendToServer()
     detectControllers(controllers.length)
     // don't wait for a React update

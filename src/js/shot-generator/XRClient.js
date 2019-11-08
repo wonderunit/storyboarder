@@ -33,6 +33,7 @@ const groupFactory = () => {
 
 const meshFactory = originalMesh => {
   let mesh = originalMesh.clone()
+  mesh.layers.set(1)
   mesh.geometry.computeBoundingBox()
   
   // create a skeleton if one is not provided
