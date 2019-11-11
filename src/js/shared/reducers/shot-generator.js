@@ -892,7 +892,7 @@ const sceneObjectsReducer = (state = {}, action) => {
           rotation: action.payload.rotation
         }
         // Check if handBone got same bones and update it if it does
-        if(draft[action.payload.id].handSkeleto && draft[action.payload.id].handSkeleton[action.payload.name]) {
+        if(draft[action.payload.id].handSkeleton && draft[action.payload.id].handSkeleton[action.payload.name]) {
           draft[action.payload.id].handSkeleton[action.payload.name] = {
             rotation: action.payload.rotation
           }
