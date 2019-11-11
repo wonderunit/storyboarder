@@ -1717,6 +1717,10 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
   const onToggleVisibleClick = preventDefault(event => {
     updateObject(sceneObject.id, { visible: !sceneObject.visible })
   })
+  
+  const onToggleLockClick = preventDefault(event => {
+    updateObject(sceneObject.id, { locked: !sceneObject.locked })
+  })
 
   let typeLabels = {
     'camera': [Icon, { src: 'icon-item-camera' }],
@@ -1753,6 +1757,10 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
           isActive
             ? ['span.active', { style: { display: 'flex' }},  [Icon, { src: 'icon-item-active' }]]
             : [],
+  
+          sceneObject.locked
+            ? ['a.lock[href=#]', { onClick: onToggleLockClick }, "Unlock"]
+            : ['a.lock.hide-unless-hovered[href=#]', { onClick: onToggleLockClick }, "Lock"],
 
           sceneObject.type === 'camera'
             ? []

@@ -233,6 +233,14 @@ kbd {
   align-items: center;
   line-height: 1;
 }
+
+.element a.lock {
+  width: 48px;
+  font-size: 11px;
+  text-align: center;
+  font-weight: bold;
+}
+
 .element .row {
   align-items: center;
 }
