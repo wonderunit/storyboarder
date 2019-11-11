@@ -369,8 +369,8 @@ React.memo(({
         lable: 'Select which hand to save',   
         type: 'select',
         selectOptions: { 
-            'LeftHand': 'LeftHand',
-            'RightHand': 'RightHand',
+            'LeftHand': 'Left Hand',
+            'RightHand': 'Right Hand',
         }}, win).then((handName) => { if(handName) {
             if (name != null && name != '' && name != ' ') {
               withState((dispatch, state) => {
@@ -478,9 +478,9 @@ React.memo(({
           ['select', {
             onChange: onChangeHand,
             value: selectedHand,
-          }, ['option', {value: "LeftHand"}, 'LeftHand'],
-              ['option', {value: "RightHand"}, 'RightHand'],
-              ['option', {value: "BothHands"}, 'BothHands']],
+          }, ['option', {value: "LeftHand"}, 'Left Hand'],
+              ['option', {value: "RightHand"}, 'Right Hand'],
+              ['option', {value: "BothHands"}, 'Both Hands']],
         ]]
       ]],
       ['div.thumbnail-search__list', [
