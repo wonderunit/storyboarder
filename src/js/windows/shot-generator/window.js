@@ -71,6 +71,8 @@ window.addEventListener('load', () => {
 //   alert(`An error occurred\n\n${message}\n\nin ${source}:${lineno}`)
 // }
 
+const poses = require('../../shared/reducers/shot-generator-presets/poses.json')
+
 const store = configureStore({
   ...initialState,
   presets: {
@@ -85,6 +87,7 @@ const store = configureStore({
     },
     poses: {
       ...initialState.presets.poses,
+      ...poses,
       ...presetsStorage.loadPosePresets().poses
     }
   },
