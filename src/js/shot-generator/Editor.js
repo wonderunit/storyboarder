@@ -234,9 +234,10 @@ const Editor = connect(
       ipcRenderer.send('insertShot', {
         data: getSerializedState(state),
         images: {
-          'camera': cameraImage,
-          'plot': plotImage
-        }
+          camera: cameraImage,
+          plot: plotImage
+        },
+        currentBoard: state.board
       })
     }
 
