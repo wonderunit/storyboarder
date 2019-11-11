@@ -141,12 +141,13 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
       }
     }
   }
+  let euler = new THREE.Euler(0, 20 * THREE.Math.degToRad, 0)
   let bone = skeleton.getBoneByName(handName)
   bone.updateMatrixWorld(true)
   bone.parent.parent.parent.quaternion.set(0, 0, 0, 1)
   bone.parent.parent.quaternion.set(0, 0, 0, 1)
   bone.parent.quaternion.set(0, 0, 0, 1)
-  bone.quaternion.set(0, 0, 0, 1)
+  bone.quaternion.setFromEuler(euler)
 
   bone.parent.parent.parent.updateWorldMatrix(true, true)
 }
@@ -203,15 +204,20 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
       })
       let bone = thumbnailRenderer.current.getGroup().children[0].children[1].skeleton.getBoneByName(selectedHand)
       let camera = thumbnailRenderer.current.camera
+      let fingerBones = thumbnailRenderer.current.getGroup().children[0].children[1].skeleton.bones.filter(fingerBone => fingerBone.name.includes(selectedHand))
+      let borderingBones = findBorderingBones(fingerBones, thumbnailRenderer.current.getGroup().children[0].children[1])
+      
+
       let boxGeometry = new THREE.BoxGeometry(2.5, 2)
       let material = new THREE.MeshBasicMaterial()
       let mesh = new THREE.Mesh(boxGeometry, material);
-      mesh.scale.multiplyScalar(0.001)
       bone.parent.add(mesh)
+      mesh.scale.multiplyScalar(0.1 / thumbnailRenderer.current.getGroup().children[0].children[1].scale.x)
       mesh.position.copy(bone.position)
       mesh.position.y += 0.00095
       mesh.updateWorldMatrix(true, true)
       clampInstance(mesh, camera)
+
       mesh.visible = false;
       thumbnailRenderer.current.render()
       let dataURL = thumbnailRenderer.current.toDataURL('image/jpg')
@@ -249,6 +255,37 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
     }, preset.name]
   ]])
 })
+
+const findBorderingBones = (bones, parent) => {
+  let rightmostBone = null
+  let leftmostBone = null
+  let uppermostBone = null
+  let boneWorldPosition = new THREE.Vector3()
+  for(let i = 0; i < bones.length; i++) {
+    let bone = bones[i]
+    boneWorldPosition.setFromMatrixPosition(takeBoneInTheMeshSpace(bone, parent))
+    if(!rightmostBone) rightmostBone = boneWorldPosition.x
+    if(!leftmostBone) leftmostBone = boneWorldPosition.x
+    if(!uppermostBone) uppermostBone = boneWorldPosition.y
+    if(rightmostBone < boneWorldPosition.x) {
+      rightmostBone = boneWorldPosition.x
+    }
+    if(leftmostBone > boneWorldPosition.x) {
+      leftmostBone = boneWorldPosition.x
+    }
+    if(uppermostBone < boneWorldPosition.y) {
+      uppermostBone = boneWorldPosition.y
+    }
+  }
+  return {rightmostBone, leftmostBone, uppermostBone}
+}
+
+const takeBoneInTheMeshSpace = (bone, mesh) => {
+    let armatureInverseMatrixWorld = new THREE.Matrix4()
+    armatureInverseMatrixWorld.getInverse(mesh.matrix)
+    armatureInverseMatrixWorld.multiply(bone.matrixWorld)
+    return armatureInverseMatrixWorld
+}
 
 const clampInstance = (instance, camera ) => {
     let box = new THREE.Box3().setFromObject(instance);
