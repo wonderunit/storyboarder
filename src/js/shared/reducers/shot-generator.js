@@ -358,6 +358,10 @@ const updateObject = (draft, state, props, { models }) => {
 
   if (props.hasOwnProperty('posePresetId')) {
     draft.posePresetId = props.posePresetId
+    if( draft.handPosePresetId) {
+      draft.handPosePresetId = null
+      draft.handSkeleton = [] 
+    }
   }
 
   if (props.hasOwnProperty('handPosePresetId')) {

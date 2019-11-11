@@ -78,8 +78,7 @@ ModelLoader.getFilepathForModel(
   { model: model.id, type: model.type },
   { storyboarderFilePath: null })
   
-  const CHARACTER_MODEL = { id: 'adult-male', type: 'character' }
-//let selectedHand = "LeftHand"
+const CHARACTER_MODEL = { id: 'adult-male', type: 'character' }
 
 const setupRenderer = ({ thumbnailRenderer, attachments, preset, selectedHand }) => {
   if (!thumbnailRenderer.getGroup().children.length) {
@@ -372,7 +371,7 @@ React.memo(({
         selectOptions: { 
             'LeftHand': 'LeftHand',
             'RightHand': 'RightHand',
-        }}, win).then((handName) => {
+        }}, win).then((handName) => { if(handName) {
             if (name != null && name != '' && name != ' ') {
               withState((dispatch, state) => {
                 // get the latest skeleton data
@@ -433,9 +432,7 @@ React.memo(({
                   presetsStorage.saveHandPosePresets({ handPoses: filteredPoses })
                 })
               })
-            }},
-            rejected => { return}
-
+            }}}
     ).catch(err =>
       console.error(err)
     )})
