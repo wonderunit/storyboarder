@@ -330,7 +330,7 @@ const setupBoardsPane = (paneComponents, self) => {
     'settings-button': {
       id: 'settings-button',
       type: 'image-button',
-      x: 1024 - (18 * 3 - 6),
+      x: 1024 - (18 * 3 - 6) * 2 - 6 - 15,
       y: 420,
       width: 18 * 3 - 12,
       height: 18 * 3 - 12,
@@ -341,6 +341,23 @@ const setupBoardsPane = (paneComponents, self) => {
 
       onSelect: () => {
         self.send('TOGGLE_SETTINGS')
+      }
+    },
+
+    'hud-close-button': {
+      id: 'hud-close-button',
+      type: 'image-button',
+      x: 1024 - (18 * 3 - 6),
+      y: 420,
+      width: 18 * 3 - 12,
+      height: 18 * 3 - 12,
+      image: 'close',
+      drawBG: true,
+      padding: 6,
+      rounding: 12,
+
+      onSelect: () => {
+        self.send('TOGGLE_HUD')
       }
     }
   }
