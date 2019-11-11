@@ -436,6 +436,7 @@ const withDisplayNames = draft => {
 
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
+const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
 
 // reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
 const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
@@ -756,7 +757,8 @@ const initialState = {
       }
     },
 
-    poses: defaultPosePresets
+    poses: defaultPosePresets,
+    handPoses: defaultHandPosePresets
   },
   server: {
     uri: undefined,
