@@ -380,7 +380,8 @@ React.memo(({
       title: 'Preset Name',
       label: 'Select a Preset Name',
       value: `HandPose ${shortId(THREE.Math.generateUUID())}`,
-    }, win).then(name => prompt({   
+    }, win).then(name => { if( name ) 
+      prompt({   
         title: 'Hand chooser',
         lable: 'Select which hand to save',   
         type: 'select',
@@ -452,7 +453,7 @@ React.memo(({
             }
     }).catch(err =>
       console.error(err)
-    ))
+    )})
   }
 
   // via https://reactjs.org/docs/forwarding-refs.html
