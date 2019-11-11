@@ -24,6 +24,7 @@ const setupXR = ({ stateJsonUri = '/state.json' }) => {
   fetch(stateJsonUri)
     .then(response => response.json())
     .then(result => {
+      console.log(result)
       const { aspectRatio, activeCamera, sceneObjects, world, presets } = result
       const store = configureStore({
         aspectRatio,
@@ -37,7 +38,8 @@ const setupXR = ({ stateJsonUri = '/state.json' }) => {
         presets: {
           poses: presets.poses,
           characters: {},
-          scenes: {}
+          scenes: {},
+          handPoses: presets.handPoses
         }
       })
 

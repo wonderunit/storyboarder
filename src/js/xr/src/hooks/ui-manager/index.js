@@ -147,6 +147,7 @@ class CanvasRenderer {
       selections: [],
       sceneObjects: {},
       poses: {},
+      handPoses: {},
       models: {},
       mode: 'home',
       context: {},
@@ -162,6 +163,9 @@ class CanvasRenderer {
           scrollTop: 0
         },
         pose: {
+          scrollTop: 0
+        },
+        handPoses: {
           scrollTop: 0
         }
       }
@@ -527,9 +531,9 @@ class CanvasRenderer {
       if (sceneObject && sceneObject.type == 'character') {
         const { grids } = this.state
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
-
-        const list = grids.tab === 'pose' ? this.state.poses : characterModels
-        const rowCount = grids.tab === 'pose' ? 4 : 2
+        console.log(this.state.handPoses)
+        const list = grids.tab === 'pose' ? this.state.poses : grids.tab === "handPoses" ? this.state.handPoses : characterModels
+        const rowCount = grids.tab === 'character' ? 2 : 4
         this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount)
         
         this.paneComponents['grid']['poses-title'] = {
@@ -550,14 +554,29 @@ class CanvasRenderer {
         this.paneComponents['grid']['characters-title'] = {
           id: 'characters-title',
           type: 'slider',
-          x: 30 + (440 - 45) / 2,
+          x: 30 + (440 - 45),
           y: 30,
-          width: (440 - 45) / 2,
+          width: (440 - 45),
           height: titleHeight - 10,
           label: 'Characters',
           state: grids.tab === 'character',
           onSelect: () => {
             grids.tab = 'character'
+            this.needsRender = true
+          }
+        }
+
+        this.paneComponents['grid']['hand-poses-title'] = {
+          id: 'hand-poses-title',
+          type: 'slider',
+          x: 30 + (440 - 45) / 2,
+          y: 30,
+          width: (440 - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Hand poses',
+          state: grids.tab === 'handPoses',
+          onSelect: () => {
+            grids.tab = 'handPoses'
             this.needsRender = true
           }
         }
@@ -894,12 +913,18 @@ const useUiManager = ({ playSound, stopSound }) => {
   const presets = useSelector(state => state.presets)
   const models = useSelector(state => state.models)
   const cameraAspectRatio = useSelector(state => state.aspectRatio)
-
+  console.log(presets)
   const poses = useMemo(() =>
     Object.values(presets.poses)
       .sort(comparePresetNames)
       .sort(comparePresetPriority)
   , [presets.poses])
+
+  const handPoses = useMemo(() =>
+  Object.values(presets.handPoses)
+    .sort(comparePresetNames)
+    .sort(comparePresetPriority)
+, [presets.handPoses])
 
   const activeCamera = useSelector(getActiveCamera)
 
@@ -1182,6 +1207,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().state.selections = selections
     getCanvasRenderer().state.sceneObjects = sceneObjects
     getCanvasRenderer().state.poses = poses
+    getCanvasRenderer().state.handPoses = handPoses
     getCanvasRenderer().state.models = models
     getCanvasRenderer().state.activeCamera = activeCamera
     getCanvasRenderer().needsRender = true
@@ -1192,7 +1218,7 @@ const useUiManager = ({ playSound, stopSound }) => {
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses, models, activeCamera])
+  }, [selections, sceneObjects, poses, models, activeCamera, handPoses])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls

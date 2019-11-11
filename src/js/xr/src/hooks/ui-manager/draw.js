@@ -7,6 +7,7 @@ const {
 } = require('../../../../shared/reducers/shot-generator')
 
 const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
+const getHandPoseImageFilepathById = id => `/data/presets/handPoses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
@@ -217,6 +218,9 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
           break
         case 'object':
           filepath = getModelImageFilepathById(item.id)
+          break
+        case 'handPoses':
+          filepath = getHandPoseImageFilepathById(item.id)
           break
       }
 
