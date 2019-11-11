@@ -340,7 +340,8 @@ React.memo(({
 
   updateObject,
   createHandPosePreset,
-  withState
+  withState,
+  scene
 }) => {
   const thumbnailRenderer = useRef()
 
@@ -393,13 +394,14 @@ React.memo(({
                 let sceneObject = getSceneObjects(state)[id]
                 let skeleton = sceneObject.skeleton
                 let model = sceneObject.model
+                let originalSkeleton = scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh").skeleton.bones
                 let handSkeleton = {}
                 selectedHand = handName
-                let skeletonKeys = Object.keys(skeleton)
-                for(let i = 0; i < skeletonKeys.length; i++) {
-                    let key = skeletonKeys[i]
+                for(let i = 0; i < originalSkeleton.length; i++) {
+                    let key = originalSkeleton[i].name
                     if(key.includes(handName) && key !== handName) {
-                        handSkeleton[key] = skeleton[key]
+                      let rot = originalSkeleton[i].rotation
+                      handSkeleton[key] = { rotation: { x: rot.x, y: rot.y, z: rot.z } }
                     }
                 }
                 // create a preset out of it
