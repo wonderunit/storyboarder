@@ -182,7 +182,7 @@ const drawPaneBGs = (ctx) => {
   roundRect(ctx, 453, 889, 440, 132, 25, true, false)
 }
 
-const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCount = 4, sceneObject) {
+const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCount = 4, sceneObject, selectedHand) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -304,7 +304,6 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
             const skeleton = pose.state.skeleton
             this.dispatch(updateObject(id, { posePresetId: name, skeleton }))
           } else  if (type === 'handPoses') {
-            let selectedHand = 'LeftHand'
             let currentSkeleton = sceneObject.handSkeleton
             if(!currentSkeleton) currentSkeleton = {}
             const pose = this.state.handPoses.find(pose => pose.id === name)
@@ -319,7 +318,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
               } 
               else if (selectedHand !== presetHand) {
                 if(currentSkeletonBones.some(bone => bone.includes(presetHand))) {
-                  handSkeleton = applyChangesToSkeleton(selectedHand, currentSkeleton, oppositeSkeleton)
+                  handSkeleton = applyChangesToSkeleton(currentSkeleton, oppositeSkeleton)
                 }
                 else {
                     handSkeleton = oppositeSkeleton
@@ -327,7 +326,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
               }
               else {
                 if(currentSkeletonBones.some(bone => bone.includes(getOppositeHandName(presetHand)))) {
-                  handSkeleton = applyChangesToSkeleton(selectedHand, currentSkeleton, handSkeleton)
+                  handSkeleton = applyChangesToSkeleton(currentSkeleton, handSkeleton)
                 }
               }
             }

@@ -167,8 +167,9 @@ class CanvasRenderer {
         },
         handPoses: {
           scrollTop: 0
-        }
-      }
+        },
+      },
+      selectedHand: "LeftHand"
     }
 
     this.paneComponents = {}
@@ -529,11 +530,14 @@ class CanvasRenderer {
 
       this.paneComponents['grid'] = {}
       if (sceneObject && sceneObject.type == 'character') {
+        //let selectedHand = "LeftHand"
         const { grids } = this.state
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
         const list = grids.tab === 'pose' ? this.state.poses : grids.tab === "handPoses" ? this.state.handPoses : characterModels
         const rowCount = grids.tab === 'character' ? 2 : 4
-        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount, sceneObject)
+        let spaceForTitle = titleHeight
+        if(grids.tab === "handPoses") spaceForTitle *= 2
+        this.drawGrid(ctx, 30, 30 + spaceForTitle, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount, sceneObject, this.state.selectedHand)
         
         this.paneComponents['grid']['poses-title'] = {
           id: 'poses-title',
@@ -565,6 +569,7 @@ class CanvasRenderer {
           }
         }
 
+
         this.paneComponents['grid']['hand-poses-title'] = {
           id: 'hand-poses-title',
           type: 'slider',
@@ -579,6 +584,54 @@ class CanvasRenderer {
             this.needsRender = true
           }
         }
+
+        let buttonSize = 310
+        this.paneComponents['grid']['hand-poses-title']['right-hand'] = {
+          id: 'right-hand',
+          type: 'slider',
+          x: 30,
+          y: 30 + 90,
+          width: (buttonSize - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Right',
+          state: grids.tab === 'handPoses',
+          onSelect: () => {
+            this.state.selectedHand = "RightHand"
+            this.needsRender = true
+          }
+        }
+
+        this.paneComponents['grid']['hand-poses-title']['left-hand'] = {
+          id: 'left-hand',
+          type: 'slider',
+          x: 30 + (buttonSize - 45) / 2,
+          y: 30 + 90,
+          width: (buttonSize - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Left',
+          state: grids.tab === 'handPoses',
+          onSelect: () => {
+            this.state.selectedHand = "LeftHand"
+            this.needsRender = true
+          }
+        }
+
+        this.paneComponents['grid']['hand-poses-title']['both-hands'] = {
+          id: 'both-hands',
+          type: 'slider',
+          x: 30 + (buttonSize - 45),
+          y: 30 + 90,
+          width: (buttonSize - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Both',
+          state: grids.tab === 'handPoses',
+          onSelect: () => {
+            this.state.selectedHand = "BothHands"
+            this.needsRender = true
+          }
+        }
+        
+
       } else if (sceneObject && sceneObject.type == 'object') {
         const objectModels = Object.values(this.state.models).filter(model => model.type === 'object')
         this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, objectModels, 'object')
@@ -596,6 +649,8 @@ class CanvasRenderer {
       }
 
       this.renderObjects(ctx, this.paneComponents['grid'])
+      if(this.state.grids.tab === "handPoses")
+      this.renderObjects(ctx, this.paneComponents['grid']['hand-poses-title'])
     }
 
     if (this.state.mode == 'settings') {
@@ -780,6 +835,10 @@ class CanvasRenderer {
   getComponentById (id) {
     for (let paneId in this.paneComponents) {
       for (let componentId in this.paneComponents[paneId]) {
+        for(let subComponentId in this.paneComponents[paneId][componentId]){
+          if (subComponentId == id) return this.paneComponents[paneId][componentId][subComponentId]
+        }
+
         if (componentId == id) return this.paneComponents[paneId][componentId]
       }
     }
@@ -848,6 +907,18 @@ class CanvasRenderer {
       if (paneId === 'help' && !intersectHelp) continue
       for (let componentId in this.paneComponents[paneId]) {
         let component = this.paneComponents[paneId][componentId]
+        for (let subComponentId in this.paneComponents[paneId][componentId]) {
+          let subComponent = this.paneComponents[paneId][componentId][subComponentId]
+          if (ignoreInvisible && subComponent.invisible) continue
+          let { id, type } = subComponent
+          if (
+            x > subComponent.x && x < subComponent.x + subComponent.width &&
+            y > subComponent.y && y < subComponent.y + subComponent.height
+            ) {
+          // TODO include local x,y? and u,v?
+            return { id, type }
+          }
+        }
         if (ignoreInvisible && component.invisible) continue
         let { id, type } = component
         if (
@@ -964,7 +1035,6 @@ const useUiManager = ({ playSound, stopSound }) => {
           let cr = getCanvasRenderer()
 
           let canvasIntersection = cr.getCanvasIntersection(u, v, true, showHelp)
-
           if (canvasIntersection) {
             let { id } = canvasIntersection
 
