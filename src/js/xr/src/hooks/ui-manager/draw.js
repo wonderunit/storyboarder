@@ -32,13 +32,23 @@ const drawImageButton = ({
   flip = false,
   flipY = false,
   drawBG = false,
-  padding = 0
+  padding = 0,
+  state = false,
+  stroke = false
 }) => {
   ctx.save()
 
   ctx.fillStyle = fill
+  if (state > 0) { 
+    ctx.fillStyle = '#6E6E6E'
+    roundRect(ctx, 0, 0, (width - 10) * state, height, 12, true, false) 
+  }
   if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, 25, true, false)
-
+  if (stroke) {
+    ctx.strokeStyle = '#fff'
+    ctx.lineWidth = 3
+    roundRect(ctx, 0, 0, width - 10, height, 12, false, true)
+  }
   if (flip) ctx.scale(-1, 1)
   if (flipY) ctx.scale(1, -1)
 
@@ -78,6 +88,8 @@ const drawSlider = ({ ctx, width, height, state, label }) => {
   ctx.fillText(label.charAt(0).toUpperCase() + label.slice(1), 0, 0)
   ctx.restore()
 }
+
+
 
 const drawToggleButton = ({ ctx, width, height, cookieBoolean }) => {
   ctx.save()

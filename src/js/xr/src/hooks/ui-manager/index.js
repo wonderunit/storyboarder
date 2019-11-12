@@ -530,7 +530,6 @@ class CanvasRenderer {
 
       this.paneComponents['grid'] = {}
       if (sceneObject && sceneObject.type == 'character') {
-        //let selectedHand = "LeftHand"
         const { grids } = this.state
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
         const list = grids.tab === 'pose' ? this.state.poses : grids.tab === "handPoses" ? this.state.handPoses : characterModels
@@ -539,14 +538,18 @@ class CanvasRenderer {
         if(grids.tab === "handPoses") spaceForTitle *= 2
         this.drawGrid(ctx, 30, 30 + spaceForTitle, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount, sceneObject, this.state.selectedHand)
         
+        let buttonSize = 310
+
         this.paneComponents['grid']['poses-title'] = {
           id: 'poses-title',
-          type: 'slider',
+          type: 'image-button',
           x: 30,
           y: 30,
-          width: (440 - 45) / 2,
+          width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Poses',
+          drawBG: true,
+          image: 'arrow',
+          stroke: true,
           state: grids.tab === 'pose',
           onSelect: () => {
             grids.tab = 'pose'
@@ -556,12 +559,14 @@ class CanvasRenderer {
 
         this.paneComponents['grid']['characters-title'] = {
           id: 'characters-title',
-          type: 'slider',
-          x: 30 + (440 - 45),
+          type: 'image-button',
+          x: 30 + (buttonSize - 45),
           y: 30,
-          width: (440 - 45),
+          width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Characters',
+          drawBG: true,
+          image: 'arrow',
+          stroke: true,
           state: grids.tab === 'character',
           onSelect: () => {
             grids.tab = 'character'
@@ -572,12 +577,14 @@ class CanvasRenderer {
 
         this.paneComponents['grid']['hand-poses-title'] = {
           id: 'hand-poses-title',
-          type: 'slider',
-          x: 30 + (440 - 45) / 2,
+          type: 'image-button',
+          x: 30 + (buttonSize - 45) / 2,
           y: 30,
-          width: (440 - 45) / 2,
+          width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Hand poses',
+          drawBG: true,
+          image: 'arrow',
+          stroke: true,
           state: grids.tab === 'handPoses',
           onSelect: () => {
             grids.tab = 'handPoses'
@@ -585,7 +592,7 @@ class CanvasRenderer {
           }
         }
 
-        let buttonSize = 310
+       
 
         this.paneComponents['grid']['hand-poses-title']['left-hand'] = {
           id: 'left-hand',
