@@ -531,10 +531,9 @@ class CanvasRenderer {
       if (sceneObject && sceneObject.type == 'character') {
         const { grids } = this.state
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
-        console.log(this.state.handPoses)
         const list = grids.tab === 'pose' ? this.state.poses : grids.tab === "handPoses" ? this.state.handPoses : characterModels
         const rowCount = grids.tab === 'character' ? 2 : 4
-        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount)
+        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount, sceneObject)
         
         this.paneComponents['grid']['poses-title'] = {
           id: 'poses-title',
@@ -913,7 +912,6 @@ const useUiManager = ({ playSound, stopSound }) => {
   const presets = useSelector(state => state.presets)
   const models = useSelector(state => state.models)
   const cameraAspectRatio = useSelector(state => state.aspectRatio)
-  console.log(presets)
   const poses = useMemo(() =>
     Object.values(presets.poses)
       .sort(comparePresetNames)

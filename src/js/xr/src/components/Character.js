@@ -17,7 +17,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     }
   )
 
-  const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
+  const [skeleton, lod, originalSkeleton, armature, originalHeight, handSkeleton] = useMemo(
     () => {
       let lod = new THREE.LOD()
 
@@ -88,9 +88,9 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
+      let handSkeleton = null
 
-
-      return [skeleton, lod, originalSkeleton, armature, originalHeight]
+      return [skeleton, lod, originalSkeleton, armature, originalHeight, handSkeleton]
     },
     [gltf]
   )
@@ -125,6 +125,26 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       skeleton.pose()
     }
   }, [skeleton, sceneObject.skeleton])
+
+  useMemo(() => {
+    if (!skeleton) return
+    if (!sceneObject.handSkeleton) return
+    // has the user entered data for at least one bone?
+    let hasModifications = Object.values(sceneObject.handSkeleton).length > 0
+
+    if (hasModifications) {
+      let handSkeletonKeys = Object.keys(sceneObject.handSkeleton)
+      let skeletonBones = skeleton.bones.filter(bone => handSkeletonKeys.includes(bone.name))
+      for ( let i = 0; i < skeletonBones.length; i++ ) {
+        let key = skeletonBones[i].name
+        let bone = skeletonBones[i]
+        let handBone = sceneObject.handSkeleton[key]
+        bone.rotation.x = handBone.rotation.x
+        bone.rotation.y = handBone.rotation.y
+        bone.rotation.z = handBone.rotation.z
+      }
+    }
+  }, [skeleton, sceneObject.handSkeleton])
 
   const bodyScale = useMemo(
     () => sceneObject.height / originalHeight,

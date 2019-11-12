@@ -6,6 +6,8 @@ const {
   initialState
 } = require('../../../../shared/reducers/shot-generator')
 
+const {createdMirroredHand, applyChangesToSkeleton, getOppositeHandName} = require("../../../../utils/handSkeletonUtils")
+
 const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getHandPoseImageFilepathById = id => `/data/presets/handPoses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
@@ -180,7 +182,7 @@ const drawPaneBGs = (ctx) => {
   roundRect(ctx, 453, 889, 440, 132, 25, true, false)
 }
 
-const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCount = 4) {
+const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCount = 4, sceneObject) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -290,18 +292,46 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
     onDrop: (x, y, u, v) => {
       const { startCoords } = this.state.grids
       const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
-
       if (distance < 0.1) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
-
+        
         if (canvasIntersection && canvasIntersection.id !== 'grid-background') {
           const name = canvasIntersection.id
           const id = this.state.selections[0]
-
+          
           if (type === 'pose') {
             const pose = this.state.poses.find(pose => pose.id === name)
             const skeleton = pose.state.skeleton
             this.dispatch(updateObject(id, { posePresetId: name, skeleton }))
+          } else  if (type === 'handPoses') {
+            let selectedHand = 'LeftHand'
+            let currentSkeleton = sceneObject.handSkeleton
+            if(!currentSkeleton) currentSkeleton = {}
+            const pose = this.state.handPoses.find(pose => pose.id === name)
+            let handSkeleton = pose.state.handSkeleton
+            let skeletonBones = Object.keys(handSkeleton)  
+            let currentSkeletonBones = Object.keys(currentSkeleton) 
+            if(skeletonBones.length !== 0) {
+              let presetHand = skeletonBones[0].includes("RightHand") ? "RightHand" : "LeftHand"
+              let oppositeSkeleton = createdMirroredHand(handSkeleton, presetHand)
+              if (selectedHand === "BothHands") {
+                handSkeleton = Object.assign(oppositeSkeleton, handSkeleton)
+              } 
+              else if (selectedHand !== presetHand) {
+                if(currentSkeletonBones.some(bone => bone.includes(presetHand))) {
+                  handSkeleton = applyChangesToSkeleton(selectedHand, currentSkeleton, oppositeSkeleton)
+                }
+                else {
+                    handSkeleton = oppositeSkeleton
+                }
+              }
+              else {
+                if(currentSkeletonBones.some(bone => bone.includes(getOppositeHandName(presetHand)))) {
+                  handSkeleton = applyChangesToSkeleton(selectedHand, currentSkeleton, handSkeleton)
+                }
+              }
+            }
+            this.dispatch(updateObject(id, { handPosePresetId: name, handSkeleton }))
           } else if (type === 'character') {
             this.dispatch(undoGroupStart())
             this.dispatch(selectObject(null))

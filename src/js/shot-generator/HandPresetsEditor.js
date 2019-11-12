@@ -29,6 +29,8 @@ const ModelLoader = require('../services/model-loader')
 
 require('../vendor/three/examples/js/utils/SkeletonUtils')
 
+const {createdMirroredHand, applyChangesToSkeleton, getOppositeHandName} = require("../utils/handSkeletonUtils")
+
 const defaultPosePresets = require('../shared/reducers/shot-generator-presets/hand-poses.json')
 const presetsStorage = require('../shared/store/presetsStorage')
 
@@ -151,13 +153,13 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
     let currentSkeletonBones = Object.keys(currentSkeleton)      
     if(skeletonBones.length !== 0) {
       let presetHand = skeletonBones[0].includes("RightHand") ? "RightHand" : "LeftHand"
-      let oppositeSkeleton = calculateOpositeHand(handSkeleton, presetHand)
+      let oppositeSkeleton = createdMirroredHand(handSkeleton, presetHand)
       if (selectedHand === "BothHands") {
         handSkeleton = Object.assign(oppositeSkeleton, handSkeleton)
       } 
       else if (selectedHand !== presetHand) {
         if(currentSkeletonBones.some(bone => bone.includes(presetHand))) {
-          handSkeleton = overwriteHandSkeleton(selectedHand, currentSkeleton, oppositeSkeleton)
+          handSkeleton = applyChangesToSkeleton(currentSkeleton, oppositeSkeleton)
         }
         else {
             handSkeleton = oppositeSkeleton
@@ -165,44 +167,13 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
       }
       else {
         if(currentSkeletonBones.some(bone => bone.includes(getOppositeHandName(presetHand)))) {
-          handSkeleton = overwriteHandSkeleton(selectedHand, currentSkeleton, handSkeleton)
+          handSkeleton = applyChangesToSkeleton(currentSkeleton, handSkeleton)
         }
       }
     }
     updateObject(id, { handPosePresetId, handSkeleton })
   }
-  
-  const calculateOpositeHand = (handSkeleton, presetHand) => {
-    let oppositeSkeleton = {}
-    let oppositeHand = getOppositeHandName(presetHand)
-    let keys = Object.keys(handSkeleton)
-    for (let i = 0; i < keys.length; i++) {
-      let key = keys[i]
-      let newKey = key.replace(presetHand, oppositeHand)
-      let boneRot = handSkeleton[key].rotation
-      let mirroredEuler = new THREE.Quaternion().setFromEuler(new THREE.Euler(boneRot.x, boneRot.y, boneRot.z))
-      mirroredEuler.x *= -1
-      mirroredEuler.w *= -1
-      let euler = new THREE.Euler().setFromQuaternion(mirroredEuler)
-      oppositeSkeleton[newKey] = {rotation : {x: euler.x, y: euler.y, z: euler.z }} 
-    }
-    return oppositeSkeleton
-  }
 
-  const overwriteHandSkeleton = (handName, handSkeleton, overwriteBones) => {
-    let keys = Object.keys(overwriteBones)
-    let newSkeleton = {}
-    Object.assign(newSkeleton, handSkeleton)
-    for(let i = 0; i < keys.length; i++) {
-      let key = keys[i]
-      newSkeleton[key] = overwriteBones[key] 
-    }
-    return newSkeleton
-  }
-
-  const getOppositeHandName = handName => {
-    return handName === "RightHand" ? "LeftHand" : "RightHand"
-  }
 
   useMemo(() => {
     let hasRendered = fs.existsSync(src)
