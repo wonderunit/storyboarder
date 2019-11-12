@@ -586,51 +586,48 @@ class CanvasRenderer {
         }
 
         let buttonSize = 310
-        this.paneComponents['grid']['hand-poses-title']['right-hand'] = {
-          id: 'right-hand',
+
+        this.paneComponents['grid']['hand-poses-title']['left-hand'] = {
+          id: 'left-hand',
           type: 'slider',
           x: 30,
           y: 30 + 90,
           width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Right',
-          state: grids.tab === 'handPoses',
-          onSelect: () => {
-            this.state.selectedHand = "RightHand"
-            this.needsRender = true
-          }
-        }
-
-        this.paneComponents['grid']['hand-poses-title']['left-hand'] = {
-          id: 'left-hand',
-          type: 'slider',
-          x: 30 + (buttonSize - 45) / 2,
-          y: 30 + 90,
-          width: (buttonSize - 45) / 2,
-          height: titleHeight - 10,
           label: 'Left',
-          state: grids.tab === 'handPoses',
+          state: this.state.selectedHand === 'LeftHand',
           onSelect: () => {
             this.state.selectedHand = "LeftHand"
-            this.needsRender = true
           }
         }
 
         this.paneComponents['grid']['hand-poses-title']['both-hands'] = {
           id: 'both-hands',
           type: 'slider',
-          x: 30 + (buttonSize - 45),
+          x: 30 + (buttonSize - 45) / 2,
           y: 30 + 90,
           width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
           label: 'Both',
-          state: grids.tab === 'handPoses',
+          state: this.state.selectedHand === 'BothHands',
           onSelect: () => {
             this.state.selectedHand = "BothHands"
-            this.needsRender = true
           }
         }
-        
+
+        this.paneComponents['grid']['hand-poses-title']['right-hand'] = {
+          id: 'right-hand',
+          type: 'slider',
+          x: 30 + (buttonSize - 45),
+          y: 30 + 90,
+          width: (buttonSize - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Right',
+          state: this.state.selectedHand === 'RightHand',
+          onSelect: () => {
+            this.state.selectedHand = "RightHand"
+          }
+        }
 
       } else if (sceneObject && sceneObject.type == 'object') {
         const objectModels = Object.values(this.state.models).filter(model => model.type === 'object')
