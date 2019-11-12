@@ -536,7 +536,7 @@ class CanvasRenderer {
         const rowCount = grids.tab === 'character' ? 2 : 4
         let spaceForTitle = titleHeight
         if(grids.tab === "handPoses") spaceForTitle *= 2
-        this.drawGrid(ctx, 30, 30 + spaceForTitle, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount, sceneObject, this.state.selectedHand)
+        this.drawGrid(ctx, 30, 30 + spaceForTitle, 440 - 55, 670 - 55 - spaceForTitle, list, grids.tab, rowCount, sceneObject, this.state.selectedHand)
         
         let buttonSize = 310
 
