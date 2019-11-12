@@ -42,6 +42,7 @@ const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
+const Group = require('./Group')
 const Camera = require('./Camera')
 const Image = require('./Image')
 
@@ -153,17 +154,17 @@ const SceneManager = connect(
       const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
         id: sgIkHelper.characterObject.userData.id,
         name : name,
-        rotation: 
+        rotation:
         {
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
-        }  
+        }
       } )}
 
       const updateSkeleton = (skeleton) => { updateCharacterIkSkeleton({
         id: sgIkHelper.characterObject.userData.id,
-        skeleton: skeleton  
+        skeleton: skeleton
       } )}
 
       const updateCharacterPos = ({ x, y, z}) => updateObject(
@@ -673,6 +674,24 @@ const SceneManager = connect(
 
                 storyboarderFilePath: meta.storyboarderFilePath,
                 imageAttachmentIds: props.imageAttachmentIds,
+                ...props
+              }
+            ]
+          case 'group':
+            return [
+              Group, {
+                key: props.id,
+                scene,
+          
+                remoteInput,
+                isSelected: selections.includes(props.id),
+          
+                camera,
+          
+                updateObject,
+          
+                storyboarderFilePath: meta.storyboarderFilePath,
+          
                 ...props
               }
             ]

@@ -212,44 +212,30 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
   ])
 })
 
-const ListItem = ({ index, style, isScrolling, data }) => {
-  const { items, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera, undoGroupStart, undoGroupEnd } = data
-  const isWorld = index === 0
+const ListItem = (props) => {
+  const { items, models, groupLevel, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera, undoGroupStart, undoGroupEnd } = props
+  const sceneObject = props.object
 
-  const sceneObject = index === 0
-    ? items[0]
-    : items[index]
-
-  return h(
-    isWorld
-    ? [
-      WorldElement, {
-        index,
-        world: items[0],
-        isSelected: selections.length === 0,
-        selectObject
-      }
-    ]
-    : [
-        Element, {
-          index,
-          style,
-          sceneObject,
-          isSelected: selections.includes(sceneObject.id),
-          isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
-          allowDelete: (
-            sceneObject.type != 'camera' ||
-            (sceneObject.type == 'camera' && activeCamera !== sceneObject.id)
-          ),
-          selectObject,
-          selectObjectToggle,
-          updateObject,
-          deleteObjects,
-          setActiveCamera,
-          undoGroupStart,
-          undoGroupEnd
-        }
-      ]
+  return React.createElement(
+    Element, {
+      index: props.index,
+      style: {},
+      groupLevel,
+      sceneObject,
+      isSelected: selections.includes(sceneObject.id),
+      isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
+      allowDelete: (
+        sceneObject.type != 'camera' ||
+        (sceneObject.type == 'camera' && activeCamera !== sceneObject.id)
+      ),
+      selectObject,
+      selectObjectToggle,
+      updateObject,
+      deleteObjects,
+      setActiveCamera,
+      undoGroupStart,
+      undoGroupEnd
+    }
   )
 }
 
@@ -680,6 +666,34 @@ const RemoteInputView = ({ remoteInput }) => {
   )
 }
 
+const getListItems = (targetObjects, allObjects, data, index = 1, groupLevel = 0) => {
+   let skipIndices = 0
+   let currentIndex = 0
+  
+   let components = []
+   
+   targetObjects.forEach((object, i) => {
+     currentIndex = index + i + skipIndices
+     
+     components.push(React.createElement(
+         ListItem,
+         {...data, object, index: currentIndex, key: object.id, groupLevel}
+     ))
+  
+     if (object.children && object.children.length > 0) {
+       let children = object.children.map((targetId) => {
+         return allObjects[targetId]
+       })
+    
+       components.push(...getListItems(children, allObjects, data, index + i + skipIndices + 1, groupLevel + 1))
+    
+       skipIndices += children.length
+     }
+   })
+  
+  return components
+}
+
 const ElementsPanel = connect(
   // what changes should we watch for to re-render?
   state => ({
@@ -730,25 +744,17 @@ const ElementsPanel = connect(
       ...types.object,
       ...types.image,
       ...types.light,
-      ...types.volume
+      ...types.volume,
+      ...types.group
     }
-
-    let items = [
-      world,
-      ...Object.values(sceneObjectsSorted)
-    ]
-
-    const ItemsList = size.width && React.createElement(
-      VariableSizeList,
-      {
-        ref: listRef,
-        height: size.height,
-        itemCount: items.length,
-        itemSize: index => ELEMENT_HEIGHT,
-        width: size.width,
-        itemData: {
-          items,
-
+    
+    let sceneObjectsArray = Object.values(sceneObjectsSorted).filter((object) => (!!object.group) === false)
+    
+    const Items = getListItems(
+        sceneObjectsArray,
+        sceneObjectsSorted,
+        {
+          items: sceneObjectsArray,
           models,
           selections,
           selectObject,
@@ -757,13 +763,22 @@ const ElementsPanel = connect(
           deleteObjects,
           activeCamera,
           setActiveCamera,
-
+      
           undoGroupStart,
           undoGroupEnd
         }
-      },
-      ListItem
     )
+    
+    Items.unshift(h([
+        WorldElement, {
+          world,
+          isSelected: selections.length === 0,
+          selectObject,
+          key: 'world-list-item'
+        }
+    ]))
+    
+    const ItemsList = React.createElement('div', {className: 'objects-list', ref: listRef}, Items)
 
     useEffect(() => {
       let arr = Object.values(sceneObjectsSorted)
@@ -772,7 +787,8 @@ const ElementsPanel = connect(
       if (index > -1) {
         // item 0 is always the world item
         // so add 1 to index for actual item
-        listRef.current.scrollToItem(index + 1)
+        listRef.current.scrollTop = ELEMENT_HEIGHT * (index + 1)
+        //listRef.current.scrollToItem(index + 1)
       }
     }, [selections])
 
@@ -1682,7 +1698,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete, undoGroupStart, undoGroupEnd }) => {
+const Element = React.memo(({ children, index, groupLevel, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete, undoGroupStart, undoGroupEnd }) => {
   const onClick = preventDefault(event => {
     const { shiftKey } = event
 
@@ -1724,16 +1740,43 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
     'object': [Icon, { src: 'icon-item-object' }],
     'light': [Icon, { src: 'icon-item-light' }],
     'volume': [Icon, { src: 'icon-item-volume' }],
-    'image': [Icon, { src: 'icon-item-image' }]
+    'image': [Icon, { src: 'icon-item-image' }],
+    'group': ['>']
   }
 
   let className = classNames({
     'selected': isSelected,
     'zebra': index % 2
   })
+  
+  if (sceneObject.type === 'group') {
+    return h([
+      'div.element-group', {className, style: {paddingLeft: groupLevel * 12}}, [['div.element', {className, style: {height: ELEMENT_HEIGHT}}, [
+        [
+          'a.title[href=#]',
+          { onClick },
+          [
+            ['span.type', typeLabels[sceneObject.type]],
+            [
+              ['span.id', sceneObject.displayName]
+            ]
+          ],
+        ],
+        ['div.row', [
+          sceneObject.visible
+              ? ['a.visibility.hide-unless-hovered[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
+              : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
+        
+          allowDelete
+              ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
+              : ['a.delete', { style: { opacity: 0.1 } }, 'X']
+        ]]
+      ]]]
+    ])
+  }
 
   return h([
-    'div.element', { className, style: { height: ELEMENT_HEIGHT, ...style } }, [
+    'div.element', { className, style: { height: ELEMENT_HEIGHT, paddingLeft: groupLevel * 12 } }, [
       [
         'a.title[href=#]',
         { onClick },
