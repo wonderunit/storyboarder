@@ -169,7 +169,7 @@ class XRServer {
         res.status(500).send('The board you are attempting to save from VR is not open in Shot Generator')
       } else {
         store.dispatch(updateSceneFromXR(sg))
-        service.saveShot()
+        let { board } = await service.saveShot()
         res.status(200).send({ ok: true })
       }
     })

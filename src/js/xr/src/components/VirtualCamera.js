@@ -242,6 +242,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     if (delta > 500) {
       // time has elapsed
       previousTime.current = currentTime
+      if (boardUid) saveCameraThumbnail()
 
       // but if the camera is not in view, don't bother rendering
       if (!isInView) return
@@ -253,7 +254,6 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }
 
     renderCamera()
-    if (delta > 500 && boardUid) saveCameraThumbnail()
   }, false, [isSelected, ref.current, meshes, boardUid])
 
   let lightColor = 0x8c78f1

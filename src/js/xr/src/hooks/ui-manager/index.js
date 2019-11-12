@@ -1479,6 +1479,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             })
 
             updateBoardsData(cr)
+            cr.boardsNeedsRender = true
           } catch (err) {
             alert('Could not save board\n' + err)
           }
@@ -1504,6 +1505,8 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             let board = await cr.client.insertShot(data)
             updateBoardsData(cr)
             updateSgCurrentState(cr)
+            setBoardUid(board.uid)
+            cr.boardsNeedsRender = true;
           } catch (err) {
             alert('Could not insert\n' + err)
           }

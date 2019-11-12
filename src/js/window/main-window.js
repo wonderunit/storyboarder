@@ -7060,6 +7060,10 @@ ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
+
+  ipcRenderer.send('shot-generator:update', {
+    board: boardData.boards.find(board => board.uid === uid)
+  })
 })
 ipcRenderer.on('insertShot', async (event, { data, images, currentBoard }) => {
   let position = boardData.boards.map(board => board.uid).indexOf(currentBoard.uid);
