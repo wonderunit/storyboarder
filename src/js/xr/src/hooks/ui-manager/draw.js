@@ -315,7 +315,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
             const pose = this.state.poses.find(pose => pose.id === name)
             const skeleton = pose.state.skeleton
             this.dispatch(updateObject(id, { posePresetId: name, skeleton }))
-          } else  if (type === 'handPoses') {
+          } else if (type === 'handPoses') {
             let currentSkeleton = sceneObject.handSkeleton
             if(!currentSkeleton) currentSkeleton = {}
             const pose = this.state.handPoses.find(pose => pose.id === name)
