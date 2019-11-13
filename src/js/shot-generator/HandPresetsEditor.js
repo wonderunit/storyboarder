@@ -122,13 +122,13 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset, selectedHand })
       bone.updateMatrixWorld(true)
     }
   }
-  let euler = new THREE.Euler(0, 20 * THREE.Math.degToRad, 0)
+  let euler = new THREE.Euler(0, 200 * THREE.Math.DEG2RAD, 0)
   let bone = skeleton.getBoneByName(selectedHand)
   bone.updateMatrixWorld(true)
-  bone.parent.parent.parent.quaternion.set(0, 0, 0, 1)
+  bone.parent.parent.parent.quaternion.setFromEuler(euler)
   bone.parent.parent.quaternion.set(0, 0, 0, 1)
   bone.parent.quaternion.set(0, 0, 0, 1)
-  bone.quaternion.setFromEuler(euler)
+  bone.quaternion.set(0, 0, 0, 1)
 
   bone.parent.parent.parent.updateWorldMatrix(true, true)
 }
