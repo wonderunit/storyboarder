@@ -24,7 +24,7 @@ class IkObject
         this.applyingOffset = false;
         this.isRotation = false;
         this.scene = null;  
-        this.chainObjects = {}
+        this.chainObjects = {};
         this.resourceManager = ResourceManager.getInstance();
         this.backOffset = new THREE.Vector3();
     }
