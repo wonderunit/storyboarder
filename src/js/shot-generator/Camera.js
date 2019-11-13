@@ -1,13 +1,9 @@
 const { useEffect, useRef, useMemo } = React
 
-const path = require('path')
-const fs = require('fs-extra')
-
 const IconSprites = require('./IconSprites')
 
 const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   let camera = useRef()
-  const resizeCanvas = useRef(null)
 
   useMemo(() => {
     camera.current = new THREE.PerspectiveCamera(
@@ -81,11 +77,6 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     //   'aspect',
     //   camera.current.aspect
     // )
-
-    const resolution = 256
-    resizeCanvas.current = document.createElement('canvas')
-    resizeCanvas.height = resolution
-    resizeCanvas.width = resolution * props.aspectRatio
 
     return function cleanup () {
       console.log(type, id, 'removed')
