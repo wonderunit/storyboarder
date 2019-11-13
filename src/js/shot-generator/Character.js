@@ -398,6 +398,7 @@ const Character = React.memo(({
   useEffect(() => {
     if(!ready || !camera) return
     SGIkHelper.getInstance().setCamera(camera)
+    boneRotationControl.current.setCamera(camera)
   }, [camera, ready])
   //#endregion
 
