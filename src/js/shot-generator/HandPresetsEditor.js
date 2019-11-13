@@ -299,7 +299,7 @@ React.memo(({
   // !!!!!Should be intialized somewhere else
  // handPosePresets = []
   const presets = useMemo(() => searchPresetsForTerms(Object.values(handPosePresets), terms), [handPosePresets, terms])
-  const [selectedHand, setSelectedHand] = useState("LeftHand")
+  const [selectedHand, setSelectedHand] = useState("BothHands")
   useEffect(() => {
     if (ready) return
 
@@ -444,9 +444,10 @@ React.memo(({
           ['select', {
             onChange: onChangeHand,
             value: selectedHand,
-          }, ['option', {value: "LeftHand"}, 'Left Hand'],
-              ['option', {value: "RightHand"}, 'Right Hand'],
-              ['option', {value: "BothHands"}, 'Both Hands']],
+          }, 
+          ['option', {value: "LeftHand"}, 'Left Hand'],
+          ['option', {value: "RightHand"}, 'Right Hand'],
+          ['option', {value: "BothHands"}, 'Both Hands']],
         ]]
       ]],
       ['div.thumbnail-search__list', [
