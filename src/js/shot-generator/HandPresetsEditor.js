@@ -123,9 +123,6 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset, selectedHand })
     }
   }
   let euler = new THREE.Euler(0, 20 * THREE.Math.degToRad, 0)
-  console.log(skeleton.getBoneByName(selectedHand))
-  console.log(selectedHand)
-  console.log(skeleton)
   let bone = skeleton.getBoneByName(selectedHand)
   bone.updateMatrixWorld(true)
   bone.parent.parent.parent.quaternion.set(0, 0, 0, 1)
@@ -178,16 +175,13 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
 
     if (!hasRendered) {
       thumbnailRenderer.current = thumbnailRenderer.current || new ThumbnailRenderer()
-      console.log( Object.keys(preset.state.handSkeleton)[0])
       selectedHand = Object.keys(preset.state.handSkeleton)[0].includes("RightHand") ? "RightHand" : "LeftHand"
-      //console.log(presetsHand)
       setupRenderer({
         thumbnailRenderer: thumbnailRenderer.current,
         attachments,
         preset,
         selectedHand
       })
-      //console.log(presetsHand)
       let bone = thumbnailRenderer.current.getGroup().children[0].children[1].skeleton.getBoneByName(selectedHand)
       let camera = thumbnailRenderer.current.camera
 
@@ -202,7 +196,6 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
       clampInstance(mesh, camera)
 
       mesh.visible = false;
-      console.log("render stuff", thumbnailRenderer.current.getGroup().children[0].children[1].skeleton)
       thumbnailRenderer.current.render()
       let dataURL = thumbnailRenderer.current.toDataURL('image/jpg')
       thumbnailRenderer.current.clear()
