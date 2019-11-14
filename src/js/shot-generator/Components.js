@@ -222,9 +222,10 @@ const ListItem = (props) => {
     Element, {
       index: props.index,
       style: {},
+      selections,
       groupLevel,
       sceneObject,
-      isSelected: selections.includes(sceneObject.id),
+      isSelected: selections.includes(sceneObject.id) || (sceneObject.group && selections.includes(sceneObject.group)),
       isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
       allowDelete: (
         sceneObject.type != 'camera' ||
@@ -1703,14 +1704,28 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ children, index, groupLevel, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, selectObjects, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete, undoGroupStart, undoGroupEnd }) => {
+const Element = React.memo(({ children, index, selections, groupLevel, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, selectObjects, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete, undoGroupStart, undoGroupEnd }) => {
   const onClick = preventDefault(event => {
     const { shiftKey } = event
 
     undoGroupStart()
+    
+    let selected = Array.isArray(selections) ? selections : []
 
-    if (sceneObject.children && sceneObject.children.length > 0) {
-      selectObjects([sceneObject.id, ...sceneObject.children])
+    if (sceneObject.type === 'group') {
+      if (shiftKey) {
+        if (selected.includes(sceneObject.id)) {
+          selected = selected.filter((selectedId) => {
+            return (selectedId !== sceneObject.id && !sceneObject.children.includes(selectedId))
+          })
+  
+          selectObjects(selected)
+        } else {
+          selectObjects([...selected, sceneObject.id, ...sceneObject.children])
+        }
+      } else {
+        selectObjects([sceneObject.id, ...sceneObject.children])
+      }
     } else if (shiftKey) {
       selectObjectToggle(sceneObject.id)
 
@@ -1763,8 +1778,7 @@ const Element = React.memo(({ children, index, groupLevel, style, sceneObject, i
     'object': [Icon, { src: 'icon-item-object' }],
     'light': [Icon, { src: 'icon-item-light' }],
     'volume': [Icon, { src: 'icon-item-volume' }],
-    'image': [Icon, { src: 'icon-item-image' }],
-    'group': ['>']
+    'image': [Icon, { src: 'icon-item-image' }]
   }
 
   let className = classNames({
@@ -1779,7 +1793,6 @@ const Element = React.memo(({ children, index, groupLevel, style, sceneObject, i
           'a.title[href=#]',
           { onClick },
           [
-            ['span.type', typeLabels[sceneObject.type]],
             [
               ['span.id', sceneObject.displayName]
             ]
