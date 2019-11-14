@@ -787,14 +787,21 @@ const ElementsPanel = connect(
     const ItemsList = React.createElement('div', {className: 'objects-list', ref: listRef}, Items)
 
     useEffect(() => {
-      let arr = Object.values(sceneObjectsSorted)
-      let selected = arr.find(o => o.id === selections[0])
-      let index = arr.indexOf(selected)
+      if (!listRef.current) {
+        return
+      }
+      
+      let selectedItem = Items.find((item) => item.key === selections[0])
+      let index = selectedItem ? selectedItem.props.index : 0
       if (index > -1) {
         // item 0 is always the world item
-        // so add 1 to index for actual item
-        listRef.current.scrollTop = ELEMENT_HEIGHT * (index + 1)
-        //listRef.current.scrollToItem(index + 1)
+        let isInView =
+            ((listRef.current.scrollTop + listRef.current.clientHeight) >= ELEMENT_HEIGHT * (index + 1))
+          && (listRef.current.scrollTop <= ELEMENT_HEIGHT * index)
+        
+        if (!isInView) {
+          listRef.current.scrollTop = ELEMENT_HEIGHT * index
+        }
       }
     }, [selections])
 
