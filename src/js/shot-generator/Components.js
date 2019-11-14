@@ -266,6 +266,8 @@ const Inspector = ({
   const onBlur = event => transition('TYPING_EXIT')
 
   let sceneObject = data
+  let isGroup = sceneObject && sceneObject.type === 'group'
+  let selectedCount = isGroup ? sceneObject.children.length + 1 : selections.length
 
   // try to exit typing if there is nothing to inspect
   useEffect(() => {
@@ -287,9 +289,9 @@ const Inspector = ({
   return h([
     'div#inspector',
     { ref, onFocus, onBlur },
-    selections.length > 1
+    (selectedCount > 1)
       ? [
-          MultiSelectionInspector
+          MultiSelectionInspector, {count: selectedCount}
         ]
       : (kind && data)
         ? [
