@@ -153,17 +153,17 @@ const SceneManager = connect(
       const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
         id: sgIkHelper.characterObject.userData.id,
         name : name,
-        rotation: 
+        rotation:
         {
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
-        }  
+        }
       } )}
 
       const updateSkeleton = (skeleton) => { updateCharacterIkSkeleton({
         id: sgIkHelper.characterObject.userData.id,
-        skeleton: skeleton  
+        skeleton: skeleton
       } )}
 
       const updateCharacterPos = ({ x, y, z}) => updateObject(

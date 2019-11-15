@@ -301,15 +301,16 @@ kbd {
 }
 
 #camera-view {
-  height: 0;
+  height: 100%;
+  flex: 1;
   position: relative;
   overflow: hidden;
   background: #111;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 #camera-canvas {
-  top: 0;
   position: absolute;
 }
 #camera-canvas:focus {
@@ -320,9 +321,7 @@ kbd {
 }
 #guides-canvas {
   position: absolute;
-  top: 0;
   right: 0;
-  bottom: 0;
   left: 0;
   pointer-events: none;
 }
