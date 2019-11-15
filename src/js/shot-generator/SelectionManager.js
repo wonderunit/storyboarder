@@ -5,6 +5,7 @@ const GPUPicker = require("../xr/src/three/GPUPickers/GPUPicker");
 const SGIkHelper = require("../shared/IK/SGIkHelper");
 const {
   selectObject,
+  selectObjects,
   selectObjectToggle,
   selectBone,
   updateObjects,
@@ -13,6 +14,7 @@ const {
   undoGroupEnd,
 
   getSelections,
+  getSceneObjects,
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
@@ -89,10 +91,12 @@ const getIntersectionTarget = intersect => {
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
+    sceneObjects: getSceneObjects(state),
     activeCamera: getActiveCamera(state)
   }),
   {
     selectObject,
+    selectObjects,
     selectObjectToggle,
     selectBone,
     updateObjects,
@@ -110,9 +114,11 @@ const SelectionManager = connect(
     useIcons,
 
     selections,
+    sceneObjects,
     activeCamera,
 
     selectObject,
+    selectObjects,
     selectObjectToggle,
     selectBone,
     updateObjects,
@@ -174,7 +180,7 @@ const SelectionManager = connect(
       x = pointer.x;
       y = pointer.y;
       raycaster.setFromCamera({x, y}, camera )
-      //Check helpers intersection first 
+      //Check helpers intersection first
       intersects = raycaster.intersectObject(SGIkHelper.getInstance())
       if(intersects.length > 0)
       {
@@ -241,7 +247,7 @@ const SelectionManager = connect(
     }
   }
   const endDrag = () => {
-    
+  
   }
   useMemo(() => {
     if (dragTarget) {
@@ -323,8 +329,8 @@ const SelectionManager = connect(
 
         target = getIntersectionTarget(intersect)
       
-      } 
-      else 
+      }
+      else
       {
         let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint' || intersect.object.type === "gizmo");
         if(controlPoint.length !== 0)
@@ -340,7 +346,7 @@ const SelectionManager = connect(
           target = characters[0];
           isSelectedControlPoint = true;
   
-        } 
+        }
         else if(target && target.userData && target.userData.type === 'boneControl')
         {
           let characterId = target.characterId;
@@ -420,7 +426,12 @@ const SelectionManager = connect(
           // if the pointerup'd target is not part of the multi-selection
           if (!selections.includes(target.userData.id)) {
             // clear the multi-selection and select just the target
-            selectObject(target.userData.id)
+            let object = sceneObjects[target.userData.id]
+            if (object && object.group) {
+              selectObjects([object.group, ...sceneObjects[object.group].children])
+            } else {
+              selectObject(target.userData.id)
+            }
           }
         }
         shouldDrag = true
@@ -486,7 +497,7 @@ const SelectionManager = connect(
           // selectObject(undefined)
           // selectBone(null)
           setLastDownId(null)
-          // 
+          //
           // endDrag()
           // setDragTarget(null)
 
@@ -513,7 +524,12 @@ const SelectionManager = connect(
               // if the pointerup'd target is not part of the multi-selection
               if (!selections.includes(target.userData.id)) {
                 // clear the multi-selection and select just the target
-                selectObject(target.userData.id)
+                let object = sceneObjects[target.userData.id]
+                if (object && object.group) {
+                  selectObjects([object.group, ...sceneObjects[object.group].children])
+                } else {
+                  selectObject(target.userData.id)
+                }
               }
             }
            
