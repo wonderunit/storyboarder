@@ -8,6 +8,7 @@ const { combineReducers } = require('redux')
 const batchGroupBy = require('./shot-generator/batchGroupBy')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
+const AccessoriesModelFileDescriptions = require('../../../data/shot-generator/accessories/accessories.json')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -635,6 +636,7 @@ const initialState = {
       height: 1
     },
     ...ObjectModelFileDescriptions,
+    ...AccessoriesModelFileDescriptions
   },
 
   attachments: {},

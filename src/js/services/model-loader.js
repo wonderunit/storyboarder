@@ -236,6 +236,7 @@ const pathToShotGeneratorData =
 const builtInFolder = type => ({
   'object': path.join(pathToShotGeneratorData, 'objects'),
   'character': path.join(pathToShotGeneratorData, 'dummies', 'gltf'),
+  'accessory': path.join(pathToShotGeneratorData, 'accessories'),
   'xr': path.join(pathToShotGeneratorData, 'xr')
 }[type])
 

@@ -1,0 +1,8 @@
+{
+    "object-pistol": {
+        "id": "object-pistol",
+        "name": "Object: Pistol Gun",
+        "type": "accessory",
+        "height": 1
+      }
+}
