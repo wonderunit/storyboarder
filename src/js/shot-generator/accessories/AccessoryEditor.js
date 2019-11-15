@@ -9,6 +9,7 @@ const { FixedSizeGrid } = require('react-window')
 const prompt = require('electron-prompt')
 const {
   updateObject,
+  createObject,
   getSceneObjects
 } = require('../../shared/reducers/shot-generator')
 const ModelLoader = require('../../services/model-loader')
@@ -133,6 +134,7 @@ const AccessoryEditor = connect(
   }),
   {
     updateObject,
+    createObject,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -146,6 +148,7 @@ const AccessoryEditor = connect(
     withState,
     scene,
     updateObject,
+    createObject,
     transition,
 
     rows = 3
@@ -200,18 +203,23 @@ const AccessoryEditor = connect(
       selectOptions
     }, win).then(name => {
       if (name != null && name != '' && name != ' ') {
-        let passedModel = { id: model, type: "accessory" }
-        console.log(passedModel)
-        let filePath = filepathFor(passedModel)
-        console.log(filePath)
-        let object = attachments[filePath].value
-        console.log(object)
         let bone = originalSkeleton.getBoneByName(name)
-        console.log(bone)
-        let accessory = object.scene.children[0].clone()
-        accessory.applyMatrix(skinnedMesh.getInverseMatrixWorld())
-        bone.add(accessory)
-      }
+        //let accessory = object.scene.children[0].clone()
+       // accessory.applyMatrix(skinnedMesh.getInverseMatrixWorld())
+       // bone.add(accessory)
+        let key = THREE.Math.generateUUID()
+        let element = {
+          id: key,
+          type: 'accessory',
+        
+          x:0, y: 0, z: 0,
+
+          model: model,
+          bindBone: name,
+          attachToId: id
+         }
+         createObject(element)
+        }
     }).catch(err =>
       console.error(err)
     )

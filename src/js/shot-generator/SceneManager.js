@@ -44,6 +44,7 @@ const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
 const Camera = require('./Camera')
 const Image = require('./Image')
+const Accessory = require('./accessories/Accessory')
 
 const WorldObject = require('./World')
 
@@ -673,6 +674,26 @@ const SceneManager = connect(
 
                 storyboarderFilePath: meta.storyboarderFilePath,
                 imageAttachmentIds: props.imageAttachmentIds,
+                ...props
+              }
+            ]
+          case 'accessory':
+              try {
+                modelCacheKey = ModelLoader.getFilepathForModel({ model: props.model, type: props.type }, { storyboarderFilePath: meta.storyboarderFilePath })
+                console.log(modelCacheKey)
+              } catch (err) {
+                // console.log('migrating from absolute path')
+              }
+            return [
+              Accessory, {
+                scene, 
+                key: props.id,
+                updateObject,
+                storyboarderFilePath: meta.storyboarderFilePath,
+                sceneObject: sceneObjects[props.attachToId],
+                loaded: props.loaded ? props.loaded : false,
+                modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
+          
                 ...props
               }
             ]

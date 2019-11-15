@@ -689,12 +689,6 @@ const Editor = connect(
           { storyboarderFilePath: null }
         )
         loadAttachment({ filepath, dispatch })
-
-        filepath = ModelLoader.getFilepathForModel(
-          {model: "object-pistol", type: "accessory"},
-          {storyboarderFilePath: null})
-          
-        loadAttachment({ filepath, dispatch })
       })
     }, [])
 
