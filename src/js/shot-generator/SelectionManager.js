@@ -8,6 +8,7 @@ const {
   selectObjectToggle,
   selectBone,
   updateObjects,
+  updateObject,
 
   undoGroupStart,
   undoGroupEnd,
@@ -36,6 +37,11 @@ function getObjectsFromIcons ( objects ) {
 }
 
 const getIntersectionTarget = intersect => {
+
+  if(intersect.object.userData.type === 'accessory'){
+    return intersect.object.parent
+  }
+
   if (intersect.object.type === 'Sprite') {
     return intersect.object.parent.linkedTo
   }
@@ -116,9 +122,9 @@ const SelectionManager = connect(
     selectObjectToggle,
     selectBone,
     updateObjects,
-
     transition,
     gl,
+    updateObject,
     
     undoGroupStart,
     undoGroupEnd
@@ -139,7 +145,7 @@ const SelectionManager = connect(
   };
 
 
-  const intersectables = scene.children.filter(o =>
+  let intersectables = scene.children.filter(o =>
     o.userData.type === 'object' ||
     o.userData.type === 'character' ||
     o.userData.type === 'light' ||
@@ -148,8 +154,14 @@ const SelectionManager = connect(
     o.userData.type === 'controlTarget' ||
     o.userData.type === 'controlPoint' ||
     o.userData.type === 'boneControl' ||
+    o.userData.type === 'accessory' ||
     (useIcons && o.isPerspectiveCamera)
   )
+  for(let i = 0; i < intersectables.length; i++) {
+    if(intersectables[i].userData.type === 'character' && intersectables[i].accessories) {
+      intersectables = intersectables.concat(intersectables[i].accessories)
+    }
+  }
   const mouse = event => {
     const rect = el.getBoundingClientRect()
     return {
@@ -187,6 +199,7 @@ const SelectionManager = connect(
       gpuPicker.setupScene(intersectables.filter(object => object.userData.type !== 'volume'))
       gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y)
       intersects = gpuPicker.pickWithCamera(camera, gl)
+     // console.log(intersects)
     }
     return intersects
   }
@@ -209,17 +222,21 @@ const SelectionManager = connect(
     offsets.current = []
 
     raycaster.current.setFromCamera({ x, y }, camera )
-
     if (useIcons) {
       plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
     } else {
-      plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
+      plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position)
     }
 
     // remember the offsets of every selected object
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
+      if(target.userData.type === 'accessory' ) {
+        let child = intersectables.find(child => child.userData.id === target.userData.id)
+        let vectorPos = child.position.clone()
+       offsets.current[target.userData.id] = new THREE.Vector3().copy( intersection.current ).sub( vectorPos )
+      }
       for (let selection of selections) {
-        let child = scene.children.find(child => child.userData.id === selection)
+        let child = intersectables.find(child => child.userData.id === selection)
         offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( child.position )
       }
     } else {
@@ -230,18 +247,26 @@ const SelectionManager = connect(
   }
   const drag = (target, mouse) => {
     raycaster.current.setFromCamera( mouse, camera )
-    
+
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       let changes = {}
-      for (selection of selections) {
-        let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
+      if(target.userData.type === 'accessory' ) {
+
+        let { x, y, z } = intersection.current.clone().sub( offsets.current[target.userData.id] )
+        let vector = new THREE.Vector3(x, y, z)
+        changes[target.userData.id] = { x: vector.x, y: vector.y, z: vector.z  }
+      } else {
+        for (selection of selections) {
+        let { x, z } = intersection.current.clone().sub( offsets.current[selection] )
         changes[selection] = { x, y: z }
+       }
       }
       updateObjects(changes)
     }
   }
-  const endDrag = () => {
-    
+  const endDrag = (dragTarget) => {
+    if(dragTarget && dragTarget.target.userData.type === 'accessory')
+      updateObject(dragTarget.target.userData.id, {isAccessorySelected: false})
   }
   useMemo(() => {
     if (dragTarget) {
@@ -259,6 +284,7 @@ const SelectionManager = connect(
     // get the mouse coords
     const { x, y } = mouse(event)
     mousePosition.current.set(x, y);
+    //console.log(intersectables)
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
     if(!useIcons)
@@ -267,6 +293,7 @@ const SelectionManager = connect(
       mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
     }
     let intersects = getIntersects(mousePosition.current, camera, useIcons, {x, y});
+    //console.log(intersects)
     // if no objects intersected
     if (intersects.length === 0) {
       // cancel any active dragging
@@ -332,8 +359,13 @@ const SelectionManager = connect(
           intersects[0] = controlPoint[0];
         }
         target = getIntersectionTarget(intersects[0])
-        if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint')
-        {
+        if(target.userData && target.userData.type === 'accessory') {
+          updateObject(target.userData.id, {isAccessorySelected: true})
+          selectObject(target.userData.bindedId)
+          setDragTarget({ target, x, y})
+          return 
+        }
+        if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint') {
           let characterId = target.characterId;
           SGIkHelper.getInstance().selectControlPoint(target.uuid, event);
           let characters = intersectables.filter(value => value.uuid === characterId);
@@ -341,8 +373,7 @@ const SelectionManager = connect(
           isSelectedControlPoint = true;
   
         } 
-        else if(target && target.userData && target.userData.type === 'boneControl')
-        {
+        else if(target && target.userData && target.userData.type === 'boneControl') {
           let characterId = target.characterId;
           let boneId = target.boneId;
           let characters = intersectables.filter(value => value.uuid === characterId);
@@ -350,8 +381,7 @@ const SelectionManager = connect(
           let bone = target.children.filter(child => child.type === "SkinnedMesh")[0].skeleton.bones.filter(value => value.uuid === boneId);
           selectedBoneControl = bone[0];
         }
-        else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo')
-        {
+        else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo') {
           let characterId = target.parent.parent.parent.characterId;
           SGIkHelper.getInstance().selectControlPoint(target.parent.parent.parent.object.uuid, event);
           let characters = intersectables.filter(value => value.uuid === characterId);
@@ -467,7 +497,7 @@ const SelectionManager = connect(
     const { x, y } = mouse(event)
 
     if (dragTarget) {
-      endDrag()
+      endDrag(dragTarget)
       setDragTarget(null)
 
       undoGroupEnd()

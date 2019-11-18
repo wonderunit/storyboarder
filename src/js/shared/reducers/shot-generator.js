@@ -324,6 +324,10 @@ const updateObject = (draft, state, props, { models }) => {
   if (props.hasOwnProperty('loaded')) {
     draft.loaded = props.loaded
   }
+
+  if(props.hasOwnProperty('isAccessorySelected')) {
+    draft.isAccessorySelected = props.isAccessorySelected
+  }
 }
 
 // `loaded` status is not serialized
@@ -335,7 +339,8 @@ const resetLoadingStatus = sceneObjects => {
       sceneObjects[key].type === 'character' ||
       sceneObjects[key].type === 'object' ||
       sceneObjects[key].type === 'volume' ||
-      sceneObjects[key].type === 'image'
+      sceneObjects[key].type === 'image' ||
+      sceneObjects[key].type === 'accessory'
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],
@@ -803,6 +808,7 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       case 'UPDATE_OBJECT':
         if (draft[action.payload.id] == null) return
+       // console.log(draft[action.payload.id].type)
         updateObject(
           draft[action.payload.id],
           state[action.payload.id],
@@ -1178,6 +1184,7 @@ const checksReducer = (state, action) => {
         if (action.payload.hasOwnProperty('loaded')) return
 
         let sceneObject = getSceneObjects(draft)[action.payload.id]
+        
         if (sceneObject.type === 'character') {
           // unless characterPresetId was just set ...
           if (!action.payload.hasOwnProperty('characterPresetId')) {

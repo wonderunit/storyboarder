@@ -71,6 +71,9 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current = groupFactory()
       container.current.userData.id = id
       container.current.userData.type = props.type
+
+      container.current.userData.type = 'accessory'
+      container.current.userData.bindedId = props.attachToId
   
       //container.current.orthoIcon = new IconSprites( props.type, "", container.current )
       //scene.add(container.current.orthoIcon)
@@ -96,13 +99,14 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
         // add a clone of every single mesh we find
         modelData.scene.traverse( function ( child ) {
           if ( child instanceof THREE.Mesh ) {
-            container.current.add(meshFactory(child))
+            let newMesh = meshFactory(child)
+            container.current.add(newMesh)
+            newMesh.userData.type = 'accessory'
           }
         })
         // console.log('loaded', props.model)
         //setLoaded(true)
         } catch (err) {
-        console.error(err)
 
         // HACK `undefined` means error
        // setLoaded(undefined)
@@ -110,14 +114,49 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       let skinnedMesh = scene.children.filter(child => child.userData.id === sceneObject.id)[0].getObjectByProperty("type", "SkinnedMesh")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(props.bindBone)
-      container.current.applyMatrix(skinnedMesh.getInverseMatrixWorld())
+      container.current.scale.multiplyScalar(1 / skinnedMesh.worldScale().x)
       //console.log(skinnedMesh)
-      container.current.position.set(0, 0, 0)
-      container.current.quaternion.set(0, 0, 0, 1)
+      //container.current.position.copy(bone.worldPosition())
+     // container.current.quaternion.copy(bone.worldQuaternion())
+
+      if(!skinnedMesh.parent.accessories) skinnedMesh.parent.accessories = []
+      skinnedMesh.parent.accessories.push(container.current)
       bone.add(container.current)
+      container.current.updateMatrixWorld(true, true)
     }
   }, [modelData, loaded])
+
+  useEffect(() => {
+    container.current.position.x = props.x
+    container.current.position.z = props.z
+    container.current.position.y = props.y
+    //container.current.orthoIcon.position.copy(container.current.position)
+  }, [
+    props.x,
+    props.y,
+    props.z
+  ])
     
+  useEffect(() => {
+    if(props.isAccessorySelected === undefined) return
+    if(props.isAccessorySelected)
+    {
+      container.current.applyMatrix(container.current.parent.matrixWorld)
+      scene.add(container.current)
+      container.current.updateMatrixWorld(true)
+    }
+    else
+    {
+      let skinnedMesh = scene.children.filter(child => child.userData.id === sceneObject.id)[0].getObjectByProperty("type", "SkinnedMesh")
+      let skeleton = skinnedMesh.skeleton
+      let bone = skeleton.getBoneByName(props.bindBone)
+      container.current.applyMatrix(bone.getInverseMatrixWorld())
+      bone.add(container.current)
+      container.current.updateMatrixWorld(true)
+    }
+
+  }, [props.isAccessorySelected])
+
 })
 
 module.exports = Accessory

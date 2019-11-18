@@ -680,7 +680,6 @@ const SceneManager = connect(
           case 'accessory':
               try {
                 modelCacheKey = ModelLoader.getFilepathForModel({ model: props.model, type: props.type }, { storyboarderFilePath: meta.storyboarderFilePath })
-                console.log(modelCacheKey)
               } catch (err) {
                 // console.log('migrating from absolute path')
               }
@@ -732,7 +731,8 @@ const SceneManager = connect(
           selectOnPointerDown: mainViewCamera !== 'live',
           useIcons: mainViewCamera !== 'live',
           transition,
-          gl: largeRenderer.current
+          gl: largeRenderer.current,
+          updateObject:updateObject
         }],
 
         [SelectionManager, {
@@ -743,7 +743,8 @@ const SceneManager = connect(
           selectOnPointerDown: mainViewCamera === 'live',
           useIcons: mainViewCamera === 'live',
           transition,
-          gl: smallRenderer.current
+          gl: smallRenderer.current,
+          updateObject:updateObject
         }],
 
         // [SelectionsMover, {
