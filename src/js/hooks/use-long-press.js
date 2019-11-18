@@ -1,13 +1,31 @@
 const { useState, useEffect, useCallback } = require('react')
 
-module.exports = function useLongPress(callback = () => {}, ms = 100) {
+module.exports = function useLongPress(callback = () => {}, ms = 300) {
   const [startLongPress, setStartLongPress] = useState(false);
+  const [longPress, setLongPress] = useState(false);
   
   useEffect(() => {
     let timerId;
+    
     if (startLongPress) {
       callback();
-      timerId = setInterval(callback, ms);
+      timerId = setInterval(() => setLongPress(true), ms);
+    } else {
+      clearInterval(timerId);
+      setLongPress(false);
+    }
+    
+    return () => {
+      clearInterval(timerId);
+      setLongPress(false);
+    };
+  }, [startLongPress]);
+  
+  useEffect(() => {
+    let timerId;
+    
+    if (longPress) {
+      timerId = setInterval(callback, 1000 / 30);
     } else {
       clearInterval(timerId);
     }
@@ -15,7 +33,7 @@ module.exports = function useLongPress(callback = () => {}, ms = 100) {
     return () => {
       clearInterval(timerId);
     };
-  }, [startLongPress]);
+  }, [longPress]);
   
   const start = useCallback(() => {
     setStartLongPress(true);

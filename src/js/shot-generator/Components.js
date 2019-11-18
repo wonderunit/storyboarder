@@ -2363,18 +2363,18 @@ const CameraPanelInspector = connect(
                     ['div.camera-item-button', {...useLongPress(getValueShifter({z: -0.1}))}, ['div.arrow.down']]
                   ]]
                 ]],
-                ['div.camera-item-label', 'Elevate']
+                ['div.camera-item-label', `Elevate: ${cameraState.z.toFixed(2)}m`]
               ]
             ],
             ['div.camera-item',
               [
                 ['div.camera-item-control', [
                   ['div.row', [
-                    ['div.camera-item-button', {...useLongPress(getValueShifter({fov: 0.5}))}, ['div.arrow.left']],
-                    ['div.camera-item-button', {...useLongPress(getValueShifter({fov: -0.5}))}, ['div.arrow.right']]
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({fov: 0.2}))}, ['div.arrow.left']],
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({fov: -0.2}))}, ['div.arrow.right']]
                   ]]
                 ]],
-                ['div.camera-item-label', 'Lens']
+                ['div.camera-item-label', `Lens: ${focalLength.toFixed(2)}mm`]
               ]
             ]
           ]
