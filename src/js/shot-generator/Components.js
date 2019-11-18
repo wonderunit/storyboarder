@@ -17,6 +17,9 @@ const { createSelector } = require('reselect')
 
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
+const useLongPress = require('../hooks/use-long-press')
+
+const CameraControls = require('./CameraControls')
 
 //const robot = require("robotjs")
 
@@ -2282,6 +2285,104 @@ const BoardInspector = connect(
   )
 })
 
+const CameraPanelInspector = connect(
+    state => ({
+      sceneObjects: getSceneObjects(state),
+      activeCamera: getActiveCamera(state)
+    }),
+    {
+      updateObject
+    }
+)(
+  React.memo(({ camera, sceneObjects, activeCamera, updateObject }) => {
+    //const { scene } = useContext(SceneContext)
+    
+    if (!camera) return h(['div.camera-inspector'])
+    
+    let cameraState = {...sceneObjects[activeCamera]}
+    
+    let fakeCamera = camera.clone() // TODO reuse a single object
+    let focalLength = fakeCamera.getFocalLength()
+    
+    const getValueShifter = (draft) => () => {
+      for (let [k, v] of Object.entries(draft)) {
+        cameraState[k] += v
+      }
+  
+      updateObject(cameraState.id, cameraState)
+    }
+    
+    const moveCamera = ([speedX, speedY]) => () => {
+      cameraState = CameraControls.getMovedState(cameraState, {x: speedX, y: speedY})
+      updateObject(cameraState.id, cameraState)
+    }
+    
+    return h(
+        ['div.camera-inspector',
+          
+          [
+            ['div.camera-item',
+              [
+                ['div.camera-item-control', [
+                    ['div.row', [
+                      ['div.camera-item-button', {...useLongPress(getValueShifter({roll: -THREE.Math.DEG2RAD}))}, ['div.arrow.left']],
+                      ['div.camera-item-button', {...useLongPress(getValueShifter({roll: THREE.Math.DEG2RAD}))}, ['div.arrow.right']]
+                    ]]
+                ]],
+                ['div.camera-item-label', 'Roll']
+              ]
+            ],
+            ['div.camera-item',
+              [
+                ['div.camera-item-control'],
+                ['div.camera-item-label', 'Pan']
+              ]
+            ],
+            ['div.camera-item',
+              [
+                ['div.camera-item-control', [
+                  ['div.row', {style: {justifyContent: 'center'}}, [
+                    ['div.camera-item-button', {...useLongPress(moveCamera([0, -0.1]))}, ['div.arrow.up']]
+                  ]],
+                  ['div.row', [
+                    ['div.camera-item-button', {...useLongPress(moveCamera([-0.1, 0]))}, ['div.arrow.left']],
+                    ['div.camera-item-button', {...useLongPress(moveCamera([0, 0.1]))}, ['div.arrow.down']],
+                    ['div.camera-item-button', {...useLongPress(moveCamera([0.1, 0]))}, ['div.arrow.right']]
+                  ]]
+                ]],
+                ['div.camera-item-label', 'Move']
+              ]
+            ],
+            ['div.camera-item',
+              [
+                ['div.camera-item-control', [
+                  ['div.row', [
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({z: 0.1}))}, ['div.arrow.up']]
+                  ]],
+                  ['div.row', [
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({z: -0.1}))}, ['div.arrow.down']]
+                  ]]
+                ]],
+                ['div.camera-item-label', 'Elevate']
+              ]
+            ],
+            ['div.camera-item',
+              [
+                ['div.camera-item-control', [
+                  ['div.row', [
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({fov: 0.5}))}, ['div.arrow.left']],
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({fov: -0.5}))}, ['div.arrow.right']]
+                  ]]
+                ]],
+                ['div.camera-item-label', 'Lens']
+              ]
+            ]
+          ]
+        ]
+    )
+  }
+))
+
 const GuidesInspector = connect(
   state => ({
     center: state.workspace.guides.center,
@@ -2809,6 +2910,7 @@ module.exports = {
   SceneContext,
   ElementsPanel,
   CameraInspector,
+  CameraPanelInspector,
   BoardInspector,
   GuidesInspector,
   CamerasInspector,

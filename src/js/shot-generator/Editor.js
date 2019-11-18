@@ -19,6 +19,7 @@ const {
   SceneContext,
   ElementsPanel,
   CameraInspector,
+  CameraPanelInspector,
   BoardInspector,
   GuidesInspector,
   CamerasInspector,
@@ -762,8 +763,9 @@ const Editor = connect(
                   }]
                 ],
                 ['div.inspectors', [
-                  [CameraInspector, { camera }],
-                  [BoardInspector],
+                  // [CameraInspector, { camera }],
+                  // [BoardInspector],
+                  [CameraPanelInspector, {camera}],
                   [GuidesInspector],
                   [CamerasInspector]
                 ]]

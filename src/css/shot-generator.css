@@ -127,7 +127,6 @@ kbd {
   justify-content: center;
   align-items: center;
   display: flex;
-
 }
 
 #toolbar a:last-child {
@@ -339,6 +338,8 @@ kbd {
 
   position: relative;
   overflow: hidden;
+
+  height: 120px;
 }
 .inspectors .camera-inspector,
 .inspectors .board-inspector,
@@ -351,7 +352,7 @@ kbd {
 }
 .camera-inspector {
   display: flex;
-  width: 30%;
+  width: 100%;
 }
 .camera-inspector__nearest-character {
   margin-top: 1rem;
@@ -896,4 +897,78 @@ div.fatal-error-screen__report {
 div.fatal-error-screen__report::selection {
   color: #bbb;
   background: rgb(255, 237, 0, 20%);
+}
+
+.arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+
+  border-bottom: 8px solid #808080;
+}
+
+
+.arrow.up {
+  transform: rotate(0deg);
+}
+
+.arrow.right {
+  transform: rotate(90deg);
+}
+
+.arrow.down {
+  transform: rotate(180deg);
+}
+
+.arrow.left {
+  transform: rotate(270deg);
+}
+
+.camera-item {
+  margin: 0px 12px;
+}
+
+.camera-item-button {
+  /* Total size = 34 x 34 */
+  width: 32px;
+  height: 32px;
+  border: 2px solid #808080;
+  border-radius: 8px;
+  /* If sizing set to border-box then total size = size + margin (padding not used)*/
+  box-sizing: border-box;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 2px;
+
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.camera-item-button:hover {
+  border-color: #A5A5A5;
+}
+
+.camera-item-control {
+  /* Set height to 2x item button height */
+  height: 68px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.camera-item-label {
+  text-align: center;
+}
+
+@media (max-width: 1280px) {
+
+  #toolbar a span {
+    display: none;
+  }
+
 }

@@ -309,6 +309,11 @@ const SceneManager = connect(
       let width = Math.ceil(largeCanvasSize.width)
       // assign a target height, based on scene aspect ratio
       let height = Math.ceil(width / aspectRatio)
+      
+      if (height > largeCanvasSize.height) {
+        height = Math.ceil(largeCanvasSize.height)
+        width = Math.ceil(height * aspectRatio)
+      }
 
       // resize the renderers
       if (mainViewCamera === 'live') {
