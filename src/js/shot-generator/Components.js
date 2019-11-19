@@ -7,6 +7,7 @@ const path = require('path')
 
 const React = require('react')
 const { useState, useEffect, useRef, useContext } = React
+const {useDrag} = require('react-use-gesture')
 const { connect } = require('react-redux')
 const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
@@ -20,6 +21,8 @@ const useComponentSize = require('../hooks/use-component-size')
 const useLongPress = require('../hooks/use-long-press')
 
 const CameraControls = require('./CameraControls')
+
+const throttle = require('lodash.throttle')
 
 //const robot = require("robotjs")
 
@@ -2303,6 +2306,9 @@ const CameraPanelInspector = connect(
     
     let fakeCamera = camera.clone() // TODO reuse a single object
     let focalLength = fakeCamera.getFocalLength()
+    let cameraRoll = Math.round(THREE.Math.radToDeg(cameraState.roll))
+    let cameraPan = Math.round(THREE.Math.radToDeg(cameraState.rotation))
+    let cameraTilt = Math.round(THREE.Math.radToDeg(cameraState.tilt))
     
     const getValueShifter = (draft) => () => {
       for (let [k, v] of Object.entries(draft)) {
@@ -2316,12 +2322,22 @@ const CameraPanelInspector = connect(
       cameraState = CameraControls.getMovedState(cameraState, {x: speedX, y: speedY})
       updateObject(cameraState.id, cameraState)
     }
+  
+    const getCameraPanEvents = useDrag(throttle(({ down, delta: [dx, dy] }) => {
+      let rotationDelta = (dx === 0) ? 0 : Math.sign(dx)
+      let tiltDelta = (dy === 0) ? 0 : Math.sign(dy)
+      
+      let rotation = THREE.Math.degToRad(cameraPan - dx)
+      let tilt = THREE.Math.degToRad(cameraTilt - dy)
+      
+      updateObject(cameraState.id, {rotation, tilt})
+    }, 100, {trailing:false}))
     
     return h(
         ['div.camera-inspector',
           
           [
-            ['div.camera-item',
+            ['div.camera-item.roll',
               [
                 ['div.camera-item-control', [
                     ['div.row', [
@@ -2329,16 +2345,20 @@ const CameraPanelInspector = connect(
                       ['div.camera-item-button', {...useLongPress(getValueShifter({roll: THREE.Math.DEG2RAD}))}, ['div.arrow.right']]
                     ]]
                 ]],
-                ['div.camera-item-label', 'Roll']
+                ['div.camera-item-label', `Roll: ${cameraRoll}°`]
               ]
             ],
-            ['div.camera-item',
+            ['div.camera-item.pan',
               [
-                ['div.camera-item-control'],
-                ['div.camera-item-label', 'Pan']
+                ['div.camera-item-control', [
+                  ['div.row', [
+                      ['div.pan-control', {...getCameraPanEvents()}, ['div.pan-control-target']]
+                  ]]
+                ]],
+                ['div.camera-item-label', `Pan: ${cameraPan}° // Tilt: ${cameraTilt}°`]
               ]
             ],
-            ['div.camera-item',
+            ['div.camera-item.move',
               [
                 ['div.camera-item-control', [
                   ['div.row', {style: {justifyContent: 'center'}}, [
@@ -2353,7 +2373,7 @@ const CameraPanelInspector = connect(
                 ['div.camera-item-label', 'Move']
               ]
             ],
-            ['div.camera-item',
+            ['div.camera-item.elevate',
               [
                 ['div.camera-item-control', [
                   ['div.row', [
@@ -2366,7 +2386,7 @@ const CameraPanelInspector = connect(
                 ['div.camera-item-label', `Elevate: ${cameraState.z.toFixed(2)}m`]
               ]
             ],
-            ['div.camera-item',
+            ['div.camera-item.lens',
               [
                 ['div.camera-item-control', [
                   ['div.row', [
