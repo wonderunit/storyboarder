@@ -42,7 +42,6 @@ const ModelFileItem = React.memo(({
 
   onSelectItem
 }) => {
-  console.log(model)
   const src = filepathFor(model).replace(/.glb$/, '.jpg')
 
   const onSelect = event => {

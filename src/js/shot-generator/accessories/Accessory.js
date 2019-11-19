@@ -1,17 +1,8 @@
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const RoundedBoxGeometry = require('three-rounded-box')(THREE)
 
-const path = require('path')
 const React = require('react')
-const { useRef, useEffect, useState } = React
-
-const { dialog } = require('electron').remote
-const fs = require('fs')
-const ModelLoader = require('../../services/model-loader')
-
-const applyDeviceQuaternion = require('../apply-device-quaternion')
-const IconSprites = require('../IconSprites')
+const { useRef, useEffect } = React
 
 // return a group which can report intersections
 const groupFactory = () => {
@@ -61,6 +52,7 @@ const meshFactory = originalMesh => {
 const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, ...props }) => {
   //const setLoaded = loaded => updateObject(id, { loaded })
   const container = useRef()
+  const characterObject = useRef()
 
   useEffect(() => {
       console.log('added', props)
@@ -74,7 +66,7 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
       container.current.userData.type = 'accessory'
       container.current.userData.bindedId = props.attachToId
-  
+      characterObject.current = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
       //container.current.orthoIcon = new IconSprites( props.type, "", container.current )
       //scene.add(container.current.orthoIcon)
   
@@ -90,10 +82,7 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect(() => {
     if (!loaded && modelData) {
-      //console.log(type, id, 'got modelData')
       container.current.remove(...container.current.children)
-    
-      // console.log('scene object', path.extname(props.model), modelData)
 
       try {
         // add a clone of every single mesh we find
@@ -104,20 +93,13 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
             newMesh.userData.type = 'accessory'
           }
         })
-        // console.log('loaded', props.model)
-        //setLoaded(true)
         } catch (err) {
 
-        // HACK `undefined` means error
-       // setLoaded(undefined)
       }
-      let skinnedMesh = scene.children.filter(child => child.userData.id === sceneObject.id)[0].getObjectByProperty("type", "SkinnedMesh")
+      let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(props.bindBone)
       container.current.scale.multiplyScalar(1 / skinnedMesh.worldScale().x)
-      //console.log(skinnedMesh)
-      //container.current.position.copy(bone.worldPosition())
-     // container.current.quaternion.copy(bone.worldQuaternion())
 
       if(!skinnedMesh.parent.accessories) skinnedMesh.parent.accessories = []
       skinnedMesh.parent.accessories.push(container.current)
@@ -130,42 +112,67 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     container.current.position.x = props.x
     container.current.position.z = props.z
     container.current.position.y = props.y
-    //container.current.orthoIcon.position.copy(container.current.position)
-  }, [
-    props.x,
-    props.y,
-    props.z
-  ])
+  }, [props.x, props.y, props.z])
     
   useEffect(() => {
-    if(props.isAccessorySelected === undefined) return
-    let outlineParameters = {}
-    if(props.isAccessorySelected)
-    {
-      container.current.applyMatrix(container.current.parent.matrixWorld)
-      scene.add(container.current)
-      container.current.updateMatrixWorld(true)
-      outlineParameters = {
-        thickness: 0.008,
-        color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
+      if(props.isAccessorySelected === undefined) return
+      let outlineParameters = {}
+      if(props.isAccessorySelected)
+      {
+        container.current.applyMatrix(container.current.parent.matrixWorld)
+        scene.add(container.current)
+        container.current.updateMatrixWorld(true)
+        outlineParameters = {
+          thickness: 0.008,
+          color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
+        }
       }
-    }
-    else
-    {
-      let skinnedMesh = scene.children.filter(child => child.userData.id === sceneObject.id)[0].getObjectByProperty("type", "SkinnedMesh")
-      let skeleton = skinnedMesh.skeleton
-      let bone = skeleton.getBoneByName(props.bindBone)
-      container.current.applyMatrix(bone.getInverseMatrixWorld())
-      bone.add(container.current)
-      container.current.updateMatrixWorld(true)
-      outlineParameters = {
-        thickness: 0.008,
-        color: [ 0, 0, 0 ],
+      else
+      {
+        snapToNearestBone()
+        outlineParameters = {
+          thickness: 0.008,
+          color: [ 0, 0, 0 ],
+        }
       }
-    }
-    container.current.children[0].material.userData.outlineParameters = outlineParameters
-
+      container.current.children[0].material.userData.outlineParameters = outlineParameters
   }, [props.isAccessorySelected])
+
+  const snapToNearestBone = () => {
+    let object = characterObject.current
+    let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
+    let skeleton = skinnedMesh.skeleton
+    let bone = skeleton.getBoneByName(props.bindBone)
+  
+    let meshBox = new THREE.Box3().setFromObject(container.current)
+    let preBoxSize = new THREE.Vector3()
+    let currentBoxSize = new THREE.Vector3()
+    let theBiggestBox = null
+    let hitMeshes = object.bonesHelper.hit_meshes
+    let hitBox = new THREE.Box3()
+    for(let i = 0; i < hitMeshes.length; i++) {
+      let hitMesh = hitMeshes[i]
+      hitBox.setFromObject(hitMesh)
+      if(hitBox.intersectsBox(meshBox)) {
+        let intersectBox = hitBox.intersect(meshBox)
+        if(!theBiggestBox) {
+          theBiggestBox = intersectBox
+          bone = hitMesh.originalBone
+        }
+        else  {
+          theBiggestBox.getSize(preBoxSize)
+          intersectBox.getSize(currentBoxSize)
+           if(preBoxSize.x * preBoxSize.y < currentBoxSize.x * currentBoxSize.y) {
+            theBiggestBox = intersectBox
+            bone = hitMesh.originalBone
+           }
+        }
+      }
+    }
+    container.current.applyMatrix(bone.getInverseMatrixWorld())
+    bone.add(container.current)
+    container.current.updateMatrixWorld(true)
+  }
 
 })
 
