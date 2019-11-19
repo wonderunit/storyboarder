@@ -139,11 +139,16 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     
   useEffect(() => {
     if(props.isAccessorySelected === undefined) return
+    let outlineParameters = {}
     if(props.isAccessorySelected)
     {
       container.current.applyMatrix(container.current.parent.matrixWorld)
       scene.add(container.current)
       container.current.updateMatrixWorld(true)
+      outlineParameters = {
+        thickness: 0.008,
+        color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
+      }
     }
     else
     {
@@ -153,7 +158,12 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.applyMatrix(bone.getInverseMatrixWorld())
       bone.add(container.current)
       container.current.updateMatrixWorld(true)
+      outlineParameters = {
+        thickness: 0.008,
+        color: [ 0, 0, 0 ],
+      }
     }
+    container.current.children[0].material.userData.outlineParameters = outlineParameters
 
   }, [props.isAccessorySelected])
 
