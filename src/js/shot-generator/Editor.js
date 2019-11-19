@@ -767,7 +767,7 @@ const Editor = connect(
                   // [BoardInspector],
                   [CameraPanelInspector, {camera}],
                   [BoardInspector],
-                  ['div',{}, [
+                  ['div', [
                     [CamerasInspector],
                     [GuidesInspector]
                   ]]

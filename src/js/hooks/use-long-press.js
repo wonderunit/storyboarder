@@ -1,52 +1,59 @@
-const { useState, useEffect, useCallback } = require('react')
+const { useState, useEffect, useCallback, useRef } = require('react')
 
 module.exports = function useLongPress(callback = () => {}, ms = 300) {
-  const [startLongPress, setStartLongPress] = useState(false);
-  const [longPress, setLongPress] = useState(false);
+  const [startLongPress, setStartLongPress] = useState(false)
+  const [longPress, setLongPress] = useState(false)
+  
+  const savedCallback = useRef()
   
   useEffect(() => {
-    let timerId;
+    savedCallback.current = callback;
+  }, [callback])
+  
+  useEffect(() => {
+    let timerId
     
     if (startLongPress) {
-      callback();
-      timerId = setInterval(() => setLongPress(true), ms);
+      savedCallback.current()
+      timerId = setInterval(() => setLongPress(true), ms)
     } else {
-      clearInterval(timerId);
-      setLongPress(false);
+      clearInterval(timerId)
+      setLongPress(false)
     }
     
     return () => {
-      clearInterval(timerId);
-      setLongPress(false);
+      clearInterval(timerId)
+      setLongPress(false)
     };
-  }, [startLongPress]);
+  }, [startLongPress])
   
   useEffect(() => {
-    let timerId;
+    let timerId
     
     if (longPress) {
-      timerId = setInterval(callback, 1000 / 30);
+      timerId = setInterval(savedCallback.current, 1000 / 30)
     } else {
-      clearInterval(timerId);
+      clearInterval(timerId)
     }
     
     return () => {
-      clearInterval(timerId);
+      clearInterval(timerId)
     };
-  }, [longPress]);
+  }, [longPress])
   
   const start = useCallback(() => {
-    setStartLongPress(true);
-  }, []);
+    setStartLongPress(true)
+  }, [])
   const stop = useCallback(() => {
-    setStartLongPress(false);
-  }, []);
+    setStartLongPress(false)
+    setLongPress(false)
+  }, [])
   
   return {
     onMouseDown: start,
     onMouseUp: stop,
     onMouseLeave: stop,
     onTouchStart: start,
-    onTouchEnd: stop,
+    onTouchEnd: stop
   };
 }
