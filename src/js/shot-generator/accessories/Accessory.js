@@ -3,6 +3,7 @@ window.THREE = window.THREE || THREE
 
 const React = require('react')
 const { useRef, useEffect } = React
+const BoneRotationControl = require("../../shared/IK/objects/BoneRotationControl")
 
 // return a group which can report intersections
 const groupFactory = () => {
@@ -49,28 +50,33 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, ...props }) => {
+const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, ...props }) => {
   //const setLoaded = loaded => updateObject(id, { loaded })
   const container = useRef()
   const characterObject = useRef()
-
+  const prevPosition = useRef(new THREE.Vector3())
+  const boneRotationControl = useRef();
   useEffect(() => {
-      console.log('added', props)
-      //let passedModel = { id: props.model, type: props.type }
-     // let filePath = filepathFor(passedModel)
-     // let object = attachments[filePath].value
-   
+  
+      let domElement = largeRenderer.current.domElement
+
       container.current = groupFactory()
       container.current.userData.id = id
       container.current.userData.type = props.type
-
+      
       container.current.userData.type = 'accessory'
       container.current.userData.bindedId = props.attachToId
-      characterObject.current = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
-      //container.current.orthoIcon = new IconSprites( props.type, "", container.current )
-      //scene.add(container.current.orthoIcon)
-  
-      //console.log(type, id, 'added to scene')
+      characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]
+      console.log(characterObject)
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, characterObject.current.uuid)
+      boneRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
+        rotation:
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }
+      } )})
       scene.add(container.current)
   
       return function cleanup () {
@@ -110,26 +116,31 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect(() => {
     container.current.position.x = props.x
-    container.current.position.z = props.z
     container.current.position.y = props.y
+    container.current.position.z = props.z
   }, [props.x, props.y, props.z])
     
   useEffect(() => {
+    console.log("Is attachable selected", props.isAccessorySelected)
       if(props.isAccessorySelected === undefined) return
       let outlineParameters = {}
-      if(props.isAccessorySelected)
-      {
-        container.current.applyMatrix(container.current.parent.matrixWorld)
+      if(props.isAccessorySelected) {
+        boneRotationControl.current.selectedBone(container.current, props.id)
+/*         container.current.applyMatrix(container.current.parent.matrixWorld)
         scene.add(container.current)
-        container.current.updateMatrixWorld(true)
+        */
+      // boneRotationControl.current.control.scale.mu
+       container.current.updateMatrixWorld(true)
+       // prevPosition.current.copy(container.current.position)
         outlineParameters = {
           thickness: 0.008,
           color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
         }
       }
-      else
-      {
-        snapToNearestBone()
+      else {
+        boneRotationControl.current.deselectBone()
+        //snapToNearestBone()
+        container.current.updateMatrixWorld(true)
         outlineParameters = {
           thickness: 0.008,
           color: [ 0, 0, 0 ],
@@ -138,11 +149,27 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.children[0].material.userData.outlineParameters = outlineParameters
   }, [props.isAccessorySelected])
 
+
+  useEffect( () => {
+    console.log("Is dragging finished", props.isDragging)
+    if(props.isAccessorySelected === undefined) return
+    if(props.isDragging === undefined) return
+    if(props.isDragging) {
+      container.current.applyMatrix(container.current.parent.matrixWorld)
+      scene.add(container.current)
+      container.current.updateMatrixWorld(true)
+      prevPosition.current.copy(container.current.position)
+    }
+    else {
+      snapToNearestBone()
+    }
+
+  }, [props.isDragging])
+
+
   const snapToNearestBone = () => {
     let object = characterObject.current
-    let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
-    let skeleton = skinnedMesh.skeleton
-    let bone = skeleton.getBoneByName(props.bindBone)
+    let bone = null 
   
     let meshBox = new THREE.Box3().setFromObject(container.current)
     let preBoxSize = new THREE.Vector3()
@@ -168,6 +195,12 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
            }
         }
       }
+    }
+    if(!bone) {
+      let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
+      let skeleton = skinnedMesh.skeleton
+      bone = skeleton.getBoneByName(props.bindBone)
+      container.current.position.copy(prevPosition.current)
     }
     container.current.applyMatrix(bone.getInverseMatrixWorld())
     bone.add(container.current)

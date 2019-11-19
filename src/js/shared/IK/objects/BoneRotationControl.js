@@ -17,25 +17,27 @@ class BoneRotationControl
         this.control.characterId = characterId;
     }
     //#region Events
-    onMouseDown = event => {this.bone.isRotated = true;};
-    onMouseMove = event => {this.updateCharacter(this.bone.name, this.bone.rotation);};
-    onMouseUp = event => {this.bone.isRotated = false; this.bone.isRotationChanged = true;};
+    onMouseDown = event => {this.control.bone.isRotated = true;};
+    onMouseMove = event => {this.updateCharacter(this.control.bone.name, this.control.bone.rotation);};
+    onMouseUp = event => {this.control.bone.isRotated = false; this.control.bone.isRotationChanged = true;};
     //#enderegion
 
     selectedBone(bone, hitmeshid)
     {
-        if(this.bone !== null)
+        if(this.control.bone)
         {
+            console.log("Was already on scene")
             this.control.detach();
         }
         else if (bone)
         {
+            console.log("Added to scene")
             this.scene.add(this.control);
             this.control.addToScene();
         }
         this.control.boneId = hitmeshid;
         this.control.attach(bone);
-        this.bone = bone;
+        this.control.bone = bone;
         this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
         this.control.addEventListener("transformMoved", this.onMouseMove, false);
         this.control.addEventListener("transformMouseUp", this.onMouseUp, false);
@@ -52,7 +54,7 @@ class BoneRotationControl
         this.scene.remove(this.control);
         
         this.control.dispose();
-        this.bone = null;
+        this.control.bone = null;
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
         this.control.removeEventListener("transformMoved", this.onMouseMove);
         this.control.removeEventListener("transformMouseUp", this.onMouseUp);

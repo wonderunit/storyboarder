@@ -692,6 +692,8 @@ const SceneManager = connect(
                 sceneObject: sceneObjects[props.attachToId],
                 loaded: props.loaded ? props.loaded : false,
                 modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
+                camera: camera,
+                largeRenderer: largeRenderer,
           
                 ...props
               }

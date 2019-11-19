@@ -328,6 +328,10 @@ const updateObject = (draft, state, props, { models }) => {
   if(props.hasOwnProperty('isAccessorySelected')) {
     draft.isAccessorySelected = props.isAccessorySelected
   }
+
+  if(props.hasOwnProperty('isDragging')) {
+    draft.isDragging = props.isDragging
+  }
 }
 
 // `loaded` status is not serialized
@@ -1184,6 +1188,7 @@ const checksReducer = (state, action) => {
         if (action.payload.hasOwnProperty('loaded')) return
 
         let sceneObject = getSceneObjects(draft)[action.payload.id]
+        console.log(action.payload.id)
         
         if (sceneObject.type === 'character') {
           // unless characterPresetId was just set ...

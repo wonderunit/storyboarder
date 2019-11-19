@@ -266,7 +266,7 @@ const SelectionManager = connect(
   }
   const endDrag = (dragTarget) => {
     if(dragTarget && dragTarget.target.userData.type === 'accessory')
-      updateObject(dragTarget.target.userData.id, {isAccessorySelected: false})
+    updateObject(dragTarget.target.userData.id, {isDragging: false})
   }
   useMemo(() => {
     if (dragTarget) {
@@ -361,6 +361,7 @@ const SelectionManager = connect(
         target = getIntersectionTarget(intersects[0])
         if(target.userData && target.userData.type === 'accessory') {
           updateObject(target.userData.id, {isAccessorySelected: true})
+          updateObject(target.userData.id, {isDragging: true})
           selectObject(target.userData.bindedId)
           setDragTarget({ target, x, y})
           return 
@@ -374,12 +375,20 @@ const SelectionManager = connect(
   
         } 
         else if(target && target.userData && target.userData.type === 'boneControl') {
-          let characterId = target.characterId;
-          let boneId = target.boneId;
-          let characters = intersectables.filter(value => value.uuid === characterId);
-          target = characters[0];
-          let bone = target.children.filter(child => child.type === "SkinnedMesh")[0].skeleton.bones.filter(value => value.uuid === boneId);
-          selectedBoneControl = bone[0];
+          let characterId = target.characterId
+          let boneId = target.boneId
+          let targetElement = target.bone
+          if(targetElement.type === "bone") {
+            let characters = intersectables.filter(value => value.uuid === characterId)
+            target = characters[0]
+            let bone = target.children.filter(child => child.type === "SkinnedMesh")[0].skeleton.bones.filter(value => value.uuid === boneId)
+            selectedBoneControl = bone[0]
+          } else if(targetElement.userData.type === "accessor") {
+            let characters = intersectables.filter(value => value.uuid === characterId)
+            target = characters[0]
+            console.log(targetElement)
+            //updateObject(targetElement.userData.id, {isAccessorySelected: true})
+          }
         }
         else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo') {
           let characterId = target.parent.parent.parent.characterId;
@@ -435,7 +444,7 @@ const SelectionManager = connect(
       }
 
       selectBone(null)
-
+      //updateObject(target.userData.id, {isAccessorySelected: false})
       if (selectOnPointerDown) {
         if (event.shiftKey) {
           // if there is only one selection and it is the active camera
