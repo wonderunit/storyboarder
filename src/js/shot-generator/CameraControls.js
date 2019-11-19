@@ -167,6 +167,17 @@ class CameraControls {
     this.moveDown = false
     this.moveAnalogue = false
   }
+  
+  static getMovedState (object, movementSpeed) {
+    let loc = new THREE.Vector2(object.x, object.y)
+    let result = new THREE.Vector2(movementSpeed.x + loc.x, movementSpeed.y + loc.y).rotateAround(loc,-object.rotation)
+  
+    return {
+      ...object,
+      x: result.x,
+      y: result.y
+    }
+  }
 
   update ( delta, state ) {
 
