@@ -390,12 +390,41 @@ const withDisplayNames = draft => {
 
 // via poses.json
 const defaultPosePreset = {
-  'AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0': {
-    'id': 'AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0',
-    'name': 'Default Pose',
-    'keywords': 'Default Pose',
+  '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE': {
+    'id': '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE',
+    'name': 'stand',
+    'keywords': 'stand straight upright',
     'state': {
-      'skeleton': {}
+      'skeleton': {
+        'RightArm': {
+          'rotation': {
+            'x': 1.057228116003184,
+            'y': 0.13045102714961612,
+            'z': 0.1570463626924257
+          }
+        },
+        'LeftArm': {
+          'rotation': {
+            'x': 1.0708379327832764,
+            'y': -0.11931130645160759,
+            'z': -0.1776163624389008
+          }
+        },
+        'LeftForeArm': {
+          'rotation': {
+            'x': 0.09392413349188732,
+            'y': 0.06624836455319376,
+            'z': 0.29879477158887485
+          }
+        },
+        'RightForeArm': {
+          'rotation': {
+            'x': 0.08067946699767342,
+            'y': -0.19368502447268662,
+            'z': -0.2725073929210185
+          }
+        }
+      }
     },
     'priority': 0
   }
@@ -1399,5 +1428,5 @@ module.exports = {
   getIsSceneDirty,
   getHash,
 
-  getDefaultPosePreset: () => initialState.presets.poses['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
+  getDefaultPosePreset: () => initialState.presets.poses['79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE']
 }
