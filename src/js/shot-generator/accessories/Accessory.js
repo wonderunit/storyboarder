@@ -124,9 +124,6 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect(() => {
     if (!ready) return
-    console.log(props.x)
-    console.log(props.y)
-    console.log(props.z)
     if(container.current.parent.uuid === scene.uuid) {
       container.current.position.x = props.x
       container.current.position.y = props.y
@@ -157,12 +154,7 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       let outlineParameters = {}
       if(isSelected) {
         boneRotationControl.current.selectedBone(container.current, props.id)
-/*         container.current.applyMatrix(container.current.parent.matrixWorld)
-        scene.add(container.current)
-        */
-      // boneRotationControl.current.control.scale.mu
-       container.current.updateMatrixWorld(true)
-       // prevPosition.current.copy(container.current.position)
+        container.current.updateMatrixWorld(true)
         outlineParameters = {
           thickness: 0.008,
           color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
@@ -170,7 +162,6 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       }
       else {
         boneRotationControl.current.deselectBone()
-        //snapToNearestBone()
         container.current.updateMatrixWorld(true)
         outlineParameters = {
           thickness: 0.008,
@@ -192,34 +183,27 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     let bone = skeleton.getBoneByName(props.bindBone)
     if(props.isDragging) {
       let parentMatrixWorld = bone.matrixWorld
-      console.log(parentMatrixWorld)
       scene.add(container.current)
       container.current.applyMatrix(parentMatrixWorld)
       container.current.updateMatrixWorld(true)
-      //object.updateWorldMatrix(true, true)
       updateObject(container.current.userData.id, { x: container.current.position.x, y: container.current.position.y, z: container.current.position.z })
     }
-    else {
-      
+    else {  
       container.current.applyMatrix(bone.getInverseMatrixWorld())
       bone.add(container.current)
       container.current.updateMatrixWorld(true)
-     // object.updateWorldMatrix(true, true)
-     // snapToNearestBone()
     }
 
   }, [props.isDragging])
 
 
   useEffect(() => {
-    //console.log('is attachable ready', ready)
     if (ready ) {
       setLoaded(true)
     }
   }, [ready])
 
   useEffect(() => {
-    //console.log("is scene changed")
     let character = scene.children.filter(child => child.userData.id === props.attachToId)[0]
     if(character && modelData){
       setReady(true)

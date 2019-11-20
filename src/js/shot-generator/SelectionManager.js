@@ -173,7 +173,7 @@ const SelectionManager = connect(
     }
   }
 
-  const getIntersects = (mousePosition, camera, useIcons, pointer) => {
+  const getIntersects = (mousePosition, camera, useIcons, pointer, wall = null) => {
     let raycaster = new THREE.Raycaster()
     let x = mousePosition.x;
     let y = mousePosition.y;
@@ -201,12 +201,10 @@ const SelectionManager = connect(
       let gpuPicker = getGPUPicker()
       gpuPicker.setupScene(intersectables.filter(object => object.userData.type !== 'volume'))
       gpuPicker.controller.setPickingPosition(mousePosition.x, mousePosition.y)
-      intersects = gpuPicker.pickWithCamera(camera, gl)
-     // console.log(intersects)
+      intersects = gpuPicker.pickWithCamera(camera, gl, wall)
     }
     return intersects
-  }
-
+  }     
 
   //
   //
@@ -235,7 +233,6 @@ const SelectionManager = connect(
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       if(target.userData.type === 'accessory' ) {
         let child = intersectables.find(child => child.userData.id === target.userData.id)
-        console.log(child.parent)
         let vectorPos = child.worldPosition().clone()
        offsets.current[target.userData.id] = new THREE.Vector3().copy( intersection.current ).sub( vectorPos )
       }
@@ -296,7 +293,6 @@ const SelectionManager = connect(
       mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
     }
     let intersects = getIntersects(mousePosition.current, camera, useIcons, {x, y});
-    //console.log(intersects)
     // if no objects intersected
     if (intersects.length === 0) {
       // cancel any active dragging

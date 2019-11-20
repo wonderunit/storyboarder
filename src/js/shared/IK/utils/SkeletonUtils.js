@@ -598,7 +598,7 @@ function parallelTraverse( a, b, callback ) {
     callback( a, b );
 
     for ( var i = 0; i < a.children.length; i ++ ) {
-
+        if(a && b)
         parallelTraverse( a.children[ i ], b.children[ i ], callback );
 
     }
