@@ -591,7 +591,7 @@ const SceneManager = connect(
               console.error(err)
               // console.log('migrating from absolute path')
             }
-
+           // console.log("Character")
             return [
               Character, {
                 key: props.id,
@@ -683,6 +683,7 @@ const SceneManager = connect(
               } catch (err) {
                 // console.log('migrating from absolute path')
               }
+              //console.log("Accessory")
             return [
               Accessory, {
                 scene, 

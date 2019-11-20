@@ -2,7 +2,7 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 
 const React = require('react')
-const { useRef, useEffect } = React
+const { useRef, useEffect, useState } = React
 const BoneRotationControl = require("../../shared/IK/objects/BoneRotationControl")
 
 // return a group which can report intersections
@@ -51,32 +51,21 @@ const meshFactory = originalMesh => {
 }
 
 const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, ...props }) => {
-  //const setLoaded = loaded => updateObject(id, { loaded })
   const container = useRef()
   const characterObject = useRef()
-  const prevPosition = useRef(new THREE.Vector3())
   const boneRotationControl = useRef();
+  const [ready, setReady] = useState(false) // ready to load?
+  const setLoaded = loaded => updateObject(id, { loaded })
   useEffect(() => {
   
-      let domElement = largeRenderer.current.domElement
-
+    
       container.current = groupFactory()
       container.current.userData.id = id
       container.current.userData.type = props.type
       
       container.current.userData.type = 'accessory'
       container.current.userData.bindedId = props.attachToId
-      characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]
-      console.log(characterObject)
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, characterObject.current.uuid)
-      boneRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
-        rotation:
-        {
-          x : rotation.x,
-          y : rotation.y,
-          z : rotation.z,
-        }
-      } )})
+ 
       scene.add(container.current)
   
       return function cleanup () {
@@ -87,7 +76,15 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   }, [])    
 
   useEffect(() => {
-    if (!loaded && modelData) {
+    setReady(false)
+    setLoaded(false)
+
+    // return function cleanup () { }
+  }, [props.model])
+
+  useEffect(() => {
+    console.log("Is accessory read", ready)
+    if (ready) {
       container.current.remove(...container.current.children)
 
       try {
@@ -102,26 +99,45 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
         } catch (err) {
 
       }
+      characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(props.bindBone)
-      container.current.scale.multiplyScalar(1 / skinnedMesh.worldScale().x)
-
+      let domElement = largeRenderer.current.domElement
+      
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, characterObject.current.uuid)
+      boneRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
+        rotation:
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }
+      } )})
       if(!skinnedMesh.parent.accessories) skinnedMesh.parent.accessories = []
       skinnedMesh.parent.accessories.push(container.current)
+      container.current.scale.multiplyScalar(1 / characterObject.current.scale.x)
       bone.add(container.current)
       container.current.updateMatrixWorld(true, true)
     }
-  }, [modelData, loaded])
+  }, [ready])
 
   useEffect(() => {
     container.current.position.x = props.x
     container.current.position.y = props.y
     container.current.position.z = props.z
   }, [props.x, props.y, props.z])
+
+  useEffect(() => {
+    if(!props.rotation) return
+    container.current.rotation.x = props.rotation.x
+    container.current.rotation.y = props.rotation.y
+    container.current.rotation.z = props.rotation.z
+  }, [props.rotation])
     
   useEffect(() => {
     console.log("Is attachable selected", props.isAccessorySelected)
+    if(!ready) return
       if(props.isAccessorySelected === undefined) return
       let outlineParameters = {}
       if(props.isAccessorySelected) {
@@ -151,23 +167,45 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
 
   useEffect( () => {
-    console.log("Is dragging finished", props.isDragging)
+    if(!loaded) return
+   // console.log("Is dragging finished", props.isDragging)
     if(props.isAccessorySelected === undefined) return
     if(props.isDragging === undefined) return
     if(props.isDragging) {
       container.current.applyMatrix(container.current.parent.matrixWorld)
       scene.add(container.current)
       container.current.updateMatrixWorld(true)
-      prevPosition.current.copy(container.current.position)
     }
     else {
-      snapToNearestBone()
+      let object = characterObject.current
+      let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
+      let skeleton = skinnedMesh.skeleton
+      let bone = skeleton.getBoneByName(props.bindBone)
+      container.current.applyMatrix(bone.getInverseMatrixWorld())
+      bone.add(container.current)
+      container.current.updateMatrixWorld(true)
+     // snapToNearestBone()
     }
 
   }, [props.isDragging])
 
 
-  const snapToNearestBone = () => {
+  useEffect(() => {
+    //console.log('is attachable ready', ready)
+    if (ready ) {
+      setLoaded(true)
+    }
+  }, [ready])
+
+  useEffect(() => {
+    //console.log("is scene changed")
+    let character = scene.children.filter(child => child.userData.id === props.attachToId)[0]
+    if(character && modelData){
+      setReady(true)
+    }
+  }, [modelData, ready, scene.children.length])
+
+/*   const snapToNearestBone = () => {
     let object = characterObject.current
     let bone = null 
   
@@ -177,14 +215,31 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     let theBiggestBox = null
     let hitMeshes = object.bonesHelper.hit_meshes
     let hitBox = new THREE.Box3()
+    console.log(object.bonesHelper)
+    
+    let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     for(let i = 0; i < hitMeshes.length; i++) {
       let hitMesh = hitMeshes[i]
+     // hitMesh.applyMatrix( hitMeshes[i].matrixWorld)
+     let boneMatrix = new THREE.Matrix4()
+      takeBoneInTheMeshSpace(skinnedMesh, hitMesh.originalBone, boneMatrix)
+      hitMesh = hitMesh.clone()
+      //hitMesh.position.copy( hitMeshes[i].originalBone.position)
+      //hitMesh.quaternion.copy( hitMeshes[i].originalBone.quaternion)
+      //hitMesh.scale.copy( hitMeshes[i].originalBone.scale)
+      //hitMesh.updateMatrixWorld(true)
+      //hitMesh.applyMatrix( hitMeshes[i].parent.matrixWorld)
       hitBox.setFromObject(hitMesh)
+      
+      console.log(hitMesh.clone())
+      let boxHelper = new THREE.Box3Helper(hitBox, 0xffff00)
+      scene.add(boxHelper)
       if(hitBox.intersectsBox(meshBox)) {
+        console.log("Intersected")
         let intersectBox = hitBox.intersect(meshBox)
         if(!theBiggestBox) {
           theBiggestBox = intersectBox
-          bone = hitMesh.originalBone
+          bone = hitMeshes[i].originalBone
         }
         else  {
           theBiggestBox.getSize(preBoxSize)
@@ -196,16 +251,26 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
         }
       }
     }
+    console.log(bone)
     if(!bone) {
       let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
       let skeleton = skinnedMesh.skeleton
       bone = skeleton.getBoneByName(props.bindBone)
       container.current.position.copy(prevPosition.current)
+      //return 
     }
     container.current.applyMatrix(bone.getInverseMatrixWorld())
     bone.add(container.current)
     container.current.updateMatrixWorld(true)
+    updateObject(container.current.userData.id, { bindBone: bone.name})
   }
+
+  const takeBoneInTheMeshSpace = (mesh, bone, boneMatrix) => {
+      let armatureInverseMatrixWorld = new THREE.Matrix4()//this.resourceManager.getMatrix4();
+      armatureInverseMatrixWorld.copy(mesh.skeleton.bones[0].parent.matrixWorld);
+      boneMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
+     // this.resourceManager.release(armatureInverseMatrixWorld);
+  } */
 
 })
 
