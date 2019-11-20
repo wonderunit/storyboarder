@@ -50,7 +50,7 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, ...props }) => {
+const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, isSelected, ...props }) => {
   const container = useRef()
   const characterObject = useRef()
   const boneRotationControl = useRef();
@@ -136,11 +136,10 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   }, [props.rotation])
     
   useEffect(() => {
-    console.log("Is attachable selected", props.isAccessorySelected)
+    console.log("Is attachable selected", isSelected)
     if(!ready) return
-      if(props.isAccessorySelected === undefined) return
       let outlineParameters = {}
-      if(props.isAccessorySelected) {
+      if(isSelected) {
         boneRotationControl.current.selectedBone(container.current, props.id)
 /*         container.current.applyMatrix(container.current.parent.matrixWorld)
         scene.add(container.current)
@@ -163,13 +162,13 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
         }
       }
       container.current.children[0].material.userData.outlineParameters = outlineParameters
-  }, [props.isAccessorySelected])
+  }, [isSelected])
 
 
   useEffect( () => {
     if(!loaded) return
-   // console.log("Is dragging finished", props.isDragging)
-    if(props.isAccessorySelected === undefined) return
+    console.log("Is dragging finished", props.isDragging, isSelected)
+    if(!isSelected) return
     if(props.isDragging === undefined) return
     if(props.isDragging) {
       container.current.applyMatrix(container.current.parent.matrixWorld)

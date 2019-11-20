@@ -25,7 +25,8 @@ const {
   getWorld,
 
   undoGroupStart,
-  undoGroupEnd
+  undoGroupEnd,
+  getSelectedAttachable
 } = require('../shared/reducers/shot-generator')
 
 const {
@@ -57,6 +58,7 @@ const SceneManager = connect(
     remoteInput: state.input,
     selections: getSelections(state),
     selectedBone: getSelectedBone(state),
+    selectedAttachable: getSelectedAttachable(state),
     mainViewCamera: state.mainViewCamera,
     activeCamera: getActiveCamera(state),
     aspectRatio: state.aspectRatio,
@@ -80,7 +82,7 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -683,7 +685,6 @@ const SceneManager = connect(
               } catch (err) {
                 // console.log('migrating from absolute path')
               }
-              //console.log("Accessory")
             return [
               Accessory, {
                 scene, 
@@ -695,6 +696,7 @@ const SceneManager = connect(
                 modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
                 camera: camera,
                 largeRenderer: largeRenderer,
+                isSelected: selectedAttachable === null ? false : selectedAttachable === props.id ? true : false,
           
                 ...props
               }

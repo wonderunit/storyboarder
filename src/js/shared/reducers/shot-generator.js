@@ -26,6 +26,8 @@ const getActiveCamera = state => state.undoable.present.activeCamera
 
 const getSelectedBone = state => state.undoable.present.selectedBone
 
+const getSelectedAttachable = state => state.undoable.present.selectedAttachable
+
 const getWorld = state => state.undoable.present.world
 
 
@@ -661,6 +663,7 @@ const initialState = {
 
     selections: [],
     selectedBone: null,
+    selectedAttachable: null
   },
 
   meta: {
@@ -765,6 +768,33 @@ const selectionsReducer = (state = [], action) => {
           }
         }
         return
+
+      default:
+        return
+    }
+  })
+}
+
+const attachableSelectionsReducer = (state = [], action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+      case 'UPDATE_SCENE_FROM_XR':
+        // clear selections
+        return null
+
+      // select a single object
+      case 'SELECT_OBJECT':
+        // de-select any currently selected bone
+        return null
+
+      case 'SELECT_ATTACHABLE':
+        console.log("Attachable selected")
+        return action.payload
+
+      case 'DELETE_OBJECTS':
+        // de-select any currently selected bone
+        draft = null
 
       default:
         return
@@ -1255,7 +1285,8 @@ const undoableReducers = combineReducers({
   activeCamera: activeCameraReducer,
   world: worldReducer,
   selections: selectionsReducer,
-  selectedBone: selectedBoneReducer
+  selectedBone: selectedBoneReducer,
+  selectedAttachable: attachableSelectionsReducer
 })
 
 const undoableReducer = undoable(
@@ -1308,6 +1339,7 @@ module.exports = {
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
+  selectAttachable: id => ({ type: 'SELECT_ATTACHABLE', payload: id }),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
@@ -1389,5 +1421,6 @@ module.exports = {
   getWorld,
 
   getSerializedState,
-  getIsSceneDirty
+  getIsSceneDirty,
+  getSelectedAttachable
 }

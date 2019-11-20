@@ -7,6 +7,7 @@ const {
   selectObject,
   selectObjectToggle,
   selectBone,
+  selectAttachable,
   updateObjects,
   updateObject,
 
@@ -102,6 +103,7 @@ const SelectionManager = connect(
     selectObjectToggle,
     selectBone,
     updateObjects,
+    selectAttachable,
 
     undoGroupStart,
     undoGroupEnd
@@ -121,6 +123,7 @@ const SelectionManager = connect(
     selectObject,
     selectObjectToggle,
     selectBone,
+    selectAttachable,
     updateObjects,
     transition,
     gl,
@@ -360,9 +363,10 @@ const SelectionManager = connect(
         }
         target = getIntersectionTarget(intersects[0])
         if(target.userData && target.userData.type === 'accessory') {
-          updateObject(target.userData.id, {isAccessorySelected: true})
+         // updateObject(target.userData.id, {isAccessorySelected: true})
+         selectObject(target.userData.bindedId)
+          selectAttachable(target.userData.id)
           updateObject(target.userData.id, {isDragging: true})
-          selectObject(target.userData.bindedId)
           setDragTarget({ target, x, y})
           return 
         }
