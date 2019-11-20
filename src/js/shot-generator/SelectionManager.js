@@ -363,8 +363,7 @@ const SelectionManager = connect(
         }
         target = getIntersectionTarget(intersects[0])
         if(target.userData && target.userData.type === 'accessory') {
-         // updateObject(target.userData.id, {isAccessorySelected: true})
-         selectObject(target.userData.bindedId)
+          selectObject(target.userData.bindedId)
           selectAttachable(target.userData.id)
           updateObject(target.userData.id, {isDragging: true})
           setDragTarget({ target, x, y})
@@ -380,18 +379,16 @@ const SelectionManager = connect(
         } 
         else if(target && target.userData && target.userData.type === 'boneControl') {
           let characterId = target.characterId
-          let boneId = target.boneId
-          let targetElement = target.bone
-          if(targetElement.type === "bone") {
+          let targetElement = target.object
+          if(targetElement.type === "Bone") {
             let characters = intersectables.filter(value => value.uuid === characterId)
             target = characters[0]
-            let bone = target.children.filter(child => child.type === "SkinnedMesh")[0].skeleton.bones.filter(value => value.uuid === boneId)
-            selectedBoneControl = bone[0]
+            selectedBoneControl = targetElement
           } else if(targetElement.userData.type === "accessor") {
             let characters = intersectables.filter(value => value.uuid === characterId)
             target = characters[0]
-            console.log(targetElement)
-            //updateObject(targetElement.userData.id, {isAccessorySelected: true})
+            selectObject(target.userData.bindedId)
+            selectAttachable(target.userData.id)
           }
         }
         else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo') {
