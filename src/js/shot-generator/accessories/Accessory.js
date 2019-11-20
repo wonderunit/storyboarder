@@ -123,17 +123,30 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   }, [ready])
 
   useEffect(() => {
-    container.current.position.x = props.x
-    container.current.position.y = props.y
-    container.current.position.z = props.z
-  }, [props.x, props.y, props.z])
+    if (!ready) return
+    if(container.current.parent.uuid === scene.uuid) {
+      container.current.position.x = props.x
+      container.current.position.y = props.y
+      container.current.position.z = props.z
+    } else {
+      let parentMatrixWorld = container.current.parent.matrixWorld
+      let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
+      container.current.applyMatrix(parentMatrixWorld)
+      container.current.position.set(props.x, props.y, props.z)
+      container.current.updateMatrixWorld(true)
+      container.current.applyMatrix(parentInverseMatrixWorld)
+      container.current.updateMatrixWorld(true)
+    }
+
+  }, [props.x, props.y, props.z, ready])
 
   useEffect(() => {
+    if (!ready) return
     if(!props.rotation) return
     container.current.rotation.x = props.rotation.x
     container.current.rotation.y = props.rotation.y
     container.current.rotation.z = props.rotation.z
-  }, [props.rotation])
+  }, [props.rotation, ready])
     
   useEffect(() => {
     console.log("Is attachable selected", isSelected)
@@ -167,22 +180,28 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect( () => {
     if(!loaded) return
-    console.log("Is dragging finished", props.isDragging, isSelected)
+    console.log("Is dragging", props.isDragging, isSelected)
     if(!isSelected) return
     if(props.isDragging === undefined) return
+    let object = characterObject.current
+    let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
+    let skeleton = skinnedMesh.skeleton
+    let bone = skeleton.getBoneByName(props.bindBone)
     if(props.isDragging) {
-      container.current.applyMatrix(container.current.parent.matrixWorld)
+      let parentMatrixWorld = bone.matrixWorld
+      console.log(parentMatrixWorld)
       scene.add(container.current)
+      container.current.applyMatrix(parentMatrixWorld)
       container.current.updateMatrixWorld(true)
+      //object.updateWorldMatrix(true, true)
+      updateObject(container.current.userData.id, { x: container.current.position.x, y: container.current.position.y, z: container.current.position.z })
     }
     else {
-      let object = characterObject.current
-      let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
-      let skeleton = skinnedMesh.skeleton
-      let bone = skeleton.getBoneByName(props.bindBone)
+      
       container.current.applyMatrix(bone.getInverseMatrixWorld())
       bone.add(container.current)
       container.current.updateMatrixWorld(true)
+     // object.updateWorldMatrix(true, true)
      // snapToNearestBone()
     }
 

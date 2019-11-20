@@ -235,7 +235,8 @@ const SelectionManager = connect(
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       if(target.userData.type === 'accessory' ) {
         let child = intersectables.find(child => child.userData.id === target.userData.id)
-        let vectorPos = child.position.clone()
+        console.log(child.parent)
+        let vectorPos = child.worldPosition().clone()
        offsets.current[target.userData.id] = new THREE.Vector3().copy( intersection.current ).sub( vectorPos )
       }
       for (let selection of selections) {
@@ -254,10 +255,9 @@ const SelectionManager = connect(
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       let changes = {}
       if(target.userData.type === 'accessory' ) {
-
         let { x, y, z } = intersection.current.clone().sub( offsets.current[target.userData.id] )
-        let vector = new THREE.Vector3(x, y, z)
-        changes[target.userData.id] = { x: vector.x, y: vector.y, z: vector.z  }
+        // let vector = new THREE.Vector3(x, y, z)
+        changes[target.userData.id] = { x, y}
       } else {
         for (selection of selections) {
         let { x, z } = intersection.current.clone().sub( offsets.current[selection] )
