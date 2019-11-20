@@ -124,6 +124,9 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect(() => {
     if (!ready) return
+    console.log(props.x)
+    console.log(props.y)
+    console.log(props.z)
     if(container.current.parent.uuid === scene.uuid) {
       container.current.position.x = props.x
       container.current.position.y = props.y

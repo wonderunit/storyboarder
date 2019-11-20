@@ -206,12 +206,13 @@ const AccessoryEditor = connect(
         //let accessory = object.scene.children[0].clone()
        // accessory.applyMatrix(skinnedMesh.getInverseMatrixWorld())
        // bone.add(accessory)
+        let {x, y, z} = bone.worldPosition()
         let key = THREE.Math.generateUUID()
         let element = {
           id: key,
           type: 'accessory',
         
-          x:0, y: 0, z: 0,
+          x:x, y: y, z: z,
 
           model: model,
           bindBone: name,
