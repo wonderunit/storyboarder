@@ -56,18 +56,20 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   const boneRotationControl = useRef();
   const [ready, setReady] = useState(false) // ready to load?
   const setLoaded = loaded => updateObject(id, { loaded })
+  const domElement = useRef()
+  const isBoneSelected = useRef()
+  const isDragged = useRef()
   useEffect(() => {
-  
-    
       container.current = groupFactory()
       container.current.userData.id = id
       container.current.userData.type = props.type
-      
+
       container.current.userData.type = 'accessory'
       container.current.userData.bindedId = props.attachToId
- 
+      container.current.userData.isRotationEnabled = false
+      isBoneSelected.current = false
+      isDragged.current = false 
       scene.add(container.current)
-  
       return function cleanup () {
         console.log(type, id, 'removed from scene')
         scene.remove(container.current.orthoIcon)
@@ -83,7 +85,6 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   }, [props.model])
 
   useEffect(() => {
-    console.log("Is accessory read", ready)
     if (ready) {
       container.current.remove(...container.current.children)
 
@@ -103,9 +104,9 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(props.bindBone)
-      let domElement = largeRenderer.current.domElement
-      
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, characterObject.current.uuid)
+      domElement.current = largeRenderer.current.domElement
+      container.current.setDragging = dragging
+      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement.current, characterObject.current.uuid)
       boneRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
         rotation:
         {
@@ -143,17 +144,27 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if (!ready) return
     if(!props.rotation) return
+    if(props.isDragging) return
     container.current.rotation.x = props.rotation.x
     container.current.rotation.y = props.rotation.y
     container.current.rotation.z = props.rotation.z
-  }, [props.rotation, ready])
+  }, [props.rotation, ready, props.isDragging])
     
   useEffect(() => {
     console.log("Is attachable selected", isSelected)
     if(!ready) return
       let outlineParameters = {}
       if(isSelected) {
-        boneRotationControl.current.selectedBone(container.current, props.id)
+        domElement.current.addEventListener("keydown", keyDownEvent, false)
+        if(!isBoneSelected.current) {
+          if(boneRotationControl.current.isEnabled) { 
+            boneRotationControl.current.selectedBone(container.current, props.id)
+            isBoneSelected.current = true
+          } else {
+            boneRotationControl.current.bone = container.current
+          }
+          
+        }
         container.current.updateMatrixWorld(true)
         outlineParameters = {
           thickness: 0.008,
@@ -161,41 +172,21 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
         }
       }
       else {
-        boneRotationControl.current.deselectBone()
+        if(isBoneSelected.current) {
+            boneRotationControl.current.deselectBone()
+            isBoneSelected.current = false
+        }
         container.current.updateMatrixWorld(true)
         outlineParameters = {
           thickness: 0.008,
-          color: [ 0, 0, 0 ],
+          color: [ 0, 0, 0 ]
         }
       }
       container.current.children[0].material.userData.outlineParameters = outlineParameters
+      return function cleanup () {
+        domElement.current.removeEventListener("keydown", keyDownEvent, false)
+      }
   }, [isSelected])
-
-
-  useEffect( () => {
-    if(!loaded) return
-    console.log("Is dragging", props.isDragging, isSelected)
-    if(!isSelected) return
-    if(props.isDragging === undefined) return
-    let object = characterObject.current
-    let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
-    let skeleton = skinnedMesh.skeleton
-    let bone = skeleton.getBoneByName(props.bindBone)
-    if(props.isDragging) {
-      let parentMatrixWorld = bone.matrixWorld
-      scene.add(container.current)
-      container.current.applyMatrix(parentMatrixWorld)
-      container.current.updateMatrixWorld(true)
-      updateObject(container.current.userData.id, { x: container.current.position.x, y: container.current.position.y, z: container.current.position.z })
-    }
-    else {  
-      container.current.applyMatrix(bone.getInverseMatrixWorld())
-      bone.add(container.current)
-      container.current.updateMatrixWorld(true)
-    }
-
-  }, [props.isDragging])
-
 
   useEffect(() => {
     if (ready ) {
@@ -214,6 +205,49 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     if(!ready) return
     boneRotationControl.current.setCamera(camera)
   }, [ready, camera])
+
+  const dragging = (isDragging) => {
+    let object = characterObject.current
+    let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
+    let skeleton = skinnedMesh.skeleton
+    let bone = skeleton.getBoneByName(props.bindBone)
+    if(isDragging) {
+      if(isDragged.current) return 
+      let parentMatrixWorld = bone.matrixWorld
+      scene.add(container.current)
+      container.current.applyMatrix(parentMatrixWorld)
+      container.current.updateMatrixWorld(true)
+      updateObject(container.current.userData.id, { x: container.current.position.x, y: container.current.position.y, z: container.current.position.z })
+      isDragged.current = true
+    }
+    else {  
+      if(!isDragging.current) return 
+      container.current.applyMatrix(bone.getInverseMatrixWorld())
+      bone.add(container.current)
+      container.current.updateMatrixWorld(true)
+      isDragged.current = false
+    }
+  }
+
+  const keyDownEvent = (event) => {switchManipulationState(event)}
+
+  const switchManipulationState = (event) => {
+    console.log("Changed state")
+    if(event.ctrlKey )
+    {
+        if(event.key === 'r')
+        {
+            event.stopPropagation()
+            let isRotation = !container.current.userData.isRotationEnabled
+            container.current.userData.isRotationEnabled = isRotation
+            if(isRotation) {
+              boneRotationControl.current.enable()
+            } else {
+              boneRotationControl.current.disable()
+            }
+        }
+    } 
+  }
 
 /*   const snapToNearestBone = () => {
     let object = characterObject.current

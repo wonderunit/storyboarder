@@ -754,7 +754,8 @@ const selectionsReducer = (state = [], action) => {
           draft.splice(n, 1)
         }
         return
-
+      case 'SELECT_ATTACHABLE':
+        return [action.payload.bindId]
       case 'DUPLICATE_OBJECTS':
         // select the new duplicates, replacing the selection list
         return action.payload.newIds
@@ -789,8 +790,7 @@ const attachableSelectionsReducer = (state = [], action) => {
         return null
 
       case 'SELECT_ATTACHABLE':
-        console.log("Attachable selected")
-        return action.payload
+        return action.payload.id
 
       case 'DELETE_OBJECTS':
         // de-select any currently selected bone

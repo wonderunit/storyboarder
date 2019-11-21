@@ -15,6 +15,8 @@ class BoneRotationControl
         this.bone = null;
         this.scene = scene;
         this.control.characterId = characterId;
+        this.isEnabled = false;
+        //this.isSelected = false;
     }
     //#region Events
     onMouseDown = event => {this.bone.isRotated = true;};
@@ -39,6 +41,8 @@ class BoneRotationControl
         this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
         this.control.addEventListener("transformMoved", this.onMouseMove, false);
         this.control.addEventListener("transformMouseUp", this.onMouseUp, false);
+        this.domElement.addEventListener('keydown', this.keyDownEvent, false)
+       // this.isSelected = true
     }
 
     setUpdateCharacter(updateCharacter)
@@ -48,6 +52,7 @@ class BoneRotationControl
 
     deselectBone()
     {
+        //this.isSelected = false;
         this.control.detach();
         this.scene.remove(this.control);
         
@@ -56,6 +61,7 @@ class BoneRotationControl
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
         this.control.removeEventListener("transformMoved", this.onMouseMove);
         this.control.removeEventListener("transformMouseUp", this.onMouseUp);
+        this.domElement.removeEventListener('keydown', this.keyDownEvent, false)
     }
 
     setCamera(camera)
@@ -63,5 +69,54 @@ class BoneRotationControl
         this.control.changeCamera(camera);
         this.control.updateMatrixWorld();
     }
+
+    disable() {
+        console.log("Disabled")
+        if(!this.bone && !this.isEnabled) return 
+        console.log("Disabled")
+        this.control.detach();
+        this.scene.remove(this.control);
+        this.isEnabled = false;
+    }
+
+    enable() {
+        console.log("Enabled")
+        if(!this.bone && this.isEnabled) return
+        console.log("Enabled")
+        this.scene.add(this.control);
+        this.control.addToScene();
+        this.control.attach(this.bone);
+        this.control.updateMatrixWorld(true)
+
+   /*      if(this.isSelected ) {
+    
+        } else {
+            this.selectedBone(bone, hitmeshid)
+            
+        } */
+
+        this.isEnabled = true;
+     
+    }
+/* 
+    keyDownEvent = (event) => { this.switchManipulationState(event)}
+
+    switchManipulationState(event) {
+      console.log("Changed state")
+      if(event.ctrlKey )
+      {
+          if(event.key === 'r')
+          {
+              event.stopPropagation()
+             // let isRotation = !container.current.userData.isRotationEnabled
+             // container.current.userData.isRotationEnabled = isRotation
+              if(isRotation) {
+               // boneRotationControl.current.enable()
+              } else {
+               // boneRotationControl.current.disable()
+              }
+          }
+      } 
+    } */
 }
 module.exports = BoneRotationControl;
