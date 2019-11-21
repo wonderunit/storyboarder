@@ -6,7 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useCallback } = React
 const {useDrag} = require('react-use-gesture')
 const { connect } = require('react-redux')
 const Stats = require('stats.js')
@@ -93,7 +93,7 @@ const presetsStorage = require('../shared/store/presetsStorage')
 const ModelLoader = require('../services/model-loader')
 
 const ColorSelect = require('./ColorSelect')
-
+const Select = require('./Select')
 
 const NumberSliderComponent = require('./NumberSlider')
 const NumberSlider = connect(null, {
@@ -110,7 +110,7 @@ const PosePresetsEditor = require('./PosePresetsEditor')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
 
-
+const {setShotSize, ShotSizes} = require('./cameraUtils')
 
 
 window.THREE = THREE
@@ -2291,16 +2291,30 @@ const BoardInspector = connect(
 const CameraPanelInspector = connect(
     state => ({
       sceneObjects: getSceneObjects(state),
-      activeCamera: getActiveCamera(state)
+      activeCamera: getActiveCamera(state),
+      selections: getSelections(state)
     }),
     {
       updateObject
     }
 )(
-  React.memo(({ camera, sceneObjects, activeCamera, updateObject }) => {
-    //const { scene } = useContext(SceneContext)
-    
+  React.memo(({ camera, selections, sceneObjects, activeCamera, updateObject }) => {
     if (!camera) return h(['div.camera-inspector'])
+    const { scene } = useContext(SceneContext)
+  
+    const selectionsRef = useRef(selections)
+    const selectedCharacters = useRef([])
+    const [isCharacterSelected, selectCharacter] = useState(false)
+    
+    useEffect(() => {
+      selectionsRef.current = selections;
+  
+      selectedCharacters.current = selections.filter((id) => {
+        return (sceneObjects[id] && sceneObjects[id].type === 'character')
+      })
+  
+      selectCharacter(selectedCharacters.current.length > 0)
+    }, [selections])
     
     let cameraState = {...sceneObjects[activeCamera]}
     
@@ -2324,14 +2338,47 @@ const CameraPanelInspector = connect(
     }
   
     const getCameraPanEvents = useDrag(throttle(({ down, delta: [dx, dy] }) => {
-      let rotationDelta = (dx === 0) ? 0 : Math.sign(dx)
-      let tiltDelta = (dy === 0) ? 0 : Math.sign(dy)
-      
       let rotation = THREE.Math.degToRad(cameraPan - dx)
       let tilt = THREE.Math.degToRad(cameraTilt - dy)
       
       updateObject(cameraState.id, {rotation, tilt})
     }, 100, {trailing:false}))
+    
+    const onShotSizeChange = useCallback((item) => {
+      let objectsToClamp = scene.children.filter((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
+      
+      if (objectsToClamp) {
+        setShotSize({
+          camera,
+          objectsToClamp,
+          updateObject,
+          shotSize: item.value
+        })
+      }
+    })
+  
+    const shotSizes = [
+      {value: ShotSizes.EXTREME_CLOSE_UP, label: 'Extreme Close Up'},
+      {value: ShotSizes.VERY_CLOSE_UP, label: 'Very Close Up'},
+      {value: ShotSizes.CLOSE_UP, label: 'Close Up'},
+      {value: ShotSizes.MEDIUM_CLOSE_UP, label: 'Medium Close Up'},
+      {value: ShotSizes.BUST, label: 'Bust'},
+      {value: ShotSizes.MEDIUM, label: 'Medium Shot'},
+      {value: ShotSizes.MEDIUM_LONG, label: 'Medium Long Shot'},
+      {value: ShotSizes.LONG, label: 'Long Shot / Wide'},
+      {value: ShotSizes.EXTREME_LONG, label: 'Extreme Long Shot'},
+      // {value: 9, label: 'Establishing Shot'},
+      // {value: 10, label: 'Over The Shoulder Left'},
+      // {value: 11, label: 'Over The Shoulder Right'}
+    ]
+  
+    const cameraAngles = [
+      {value: 'EyeLevel', label: 'Bird\'s Eye'},
+      {value: 'Low', label: 'High'},
+      {value: 'High', label: 'Eye'},
+      {value: 'Dutch', label: 'Low'},
+      {value: 'OTS', label: 'Worm\'s Eye'}
+    ]
     
     return h(
         ['div.camera-inspector',
@@ -2395,6 +2442,12 @@ const CameraPanelInspector = connect(
                   ]]
                 ]],
                 ['div.camera-item-label', `Lens: ${focalLength.toFixed(2)}mm`]
+              ]
+            ],
+            ['div.camera-item.shots',
+              [
+                ['div.select', [Select, {label: 'Shot Size', options: shotSizes, onSetValue: onShotSizeChange, disabled: !isCharacterSelected}]],
+                ['div.select', [Select, {label: 'Camera Angle', options: cameraAngles, disabled: !isCharacterSelected}]]
               ]
             ]
           ]
