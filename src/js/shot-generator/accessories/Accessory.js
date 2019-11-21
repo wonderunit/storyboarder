@@ -210,6 +210,11 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     }
   }, [modelData, ready, scene.children.length])
 
+  useEffect(() => {
+    if(!ready) return
+    boneRotationControl.current.setCamera(camera)
+  }, [ready, camera])
+
 /*   const snapToNearestBone = () => {
     let object = characterObject.current
     let bone = null 
