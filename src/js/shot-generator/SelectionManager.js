@@ -380,11 +380,14 @@ const SelectionManager = connect(
             let characters = intersectables.filter(value => value.uuid === characterId)
             target = characters[0]
             selectedBoneControl = targetElement
-          } else if(targetElement.userData.type === "accessor") {
+          } else if(targetElement.userData.type === "accessory") {
             let characters = intersectables.filter(value => value.uuid === characterId)
             target = characters[0]
-            selectObject(target.userData.bindedId)
-            selectAttachable(target.userData.id)
+           // selectObject(target.userData.bindedId)
+            //selectAttachable(target.userData.id)
+            selectedBoneControl = targetElement
+            setDragTarget({ target, x, y, isBoneControl: true })
+            return
           }
         }
         else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo') {
