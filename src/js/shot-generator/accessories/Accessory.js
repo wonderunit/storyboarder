@@ -95,6 +95,9 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
             let newMesh = meshFactory(child)
             container.current.add(newMesh)
             newMesh.userData.type = 'accessory'
+            newMesh.layers.disable(0)
+            newMesh.layers.enable(1)
+            newMesh.layers.disable(2)
           }
         })
         } catch (err) {
