@@ -189,7 +189,7 @@ const ModelSelect = connect(
               terms
             ) > 0.8
         )
-    }, [terms])
+    }, [terms, sceneObject.id])
 
     // via https://reactjs.org/docs/forwarding-refs.html
     const innerElementType = forwardRef(({ style, ...rest }, ref) => {
