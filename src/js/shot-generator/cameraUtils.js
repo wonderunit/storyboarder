@@ -51,7 +51,10 @@ const ShotSizes = {
   MEDIUM: 5,
   MEDIUM_LONG: 6,
   LONG: 7,
-  EXTREME_LONG: 8
+  EXTREME_LONG: 8,
+  ESTABLISHING: 9,
+  OTS_LEFT: 10,
+  OTS_RIGHT: 11,
 }
 
 const ShotSizesInfo = {
@@ -122,6 +125,24 @@ const ShotSizesInfo = {
       'leaf011', 'leaf012'
     ],
     relativeToScreen: 1.0 / 3.0 //height of a character is 1/3 of the view height
+  },
+  [ShotSizes.OTS_LEFT]: {
+    bones: [
+      'Head', 'Neck', 'leaf',
+      'LeftShoulder'
+    ],
+    backSide: true,
+    pan: 0.5
+    //relativeToScreen: 1.0 / 3.0 //height of a character is 1/3 of the view height
+  },
+  [ShotSizes.OTS_RIGHT]: {
+    bones: [
+      'Head', 'Neck', 'leaf',
+      'RightShoulder',
+    ],
+    backSide: true,
+    pan: -0.5
+    //relativeToScreen: 1.0 / 3.0 //height of a character is 1/3 of the view height
   }
 }
 
@@ -175,11 +196,27 @@ const setShotSize = ({
   let direction = new THREE.Vector3()
   objectsToClamp[0].getWorldDirection(direction)
   
+  if (ShotSizesInfo[shotSize].backSide) {
+    direction.negate()
+  }
+  
   let clampedInfo = clampCameraToBox({
     camera,
     direction,
     box: getShotBox(objectsToClamp[0], shotSize)
   })
+  
+  if (ShotSizesInfo[shotSize].pan) {
+    let pan = ShotSizesInfo[shotSize].pan
+    
+    let panVector = new THREE.Vector3().crossVectors(direction.clone(), objectsToClamp[0].up.clone())
+  
+    clampedInfo.position.add(panVector.setLength(ShotSizesInfo[shotSize].pan))
+  
+    direction.setLength(Math.abs(pan))
+    
+    clampedInfo.target.sub(direction)
+  }
   
   camera.position.copy(clampedInfo.position)
   camera.lookAt(clampedInfo.target)
