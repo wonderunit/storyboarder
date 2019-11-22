@@ -3,7 +3,7 @@ window.THREE = window.THREE || THREE
 
 const React = require('react')
 const { useRef, useEffect, useState } = React
-const BoneRotationControl = require("../../shared/IK/objects/BoneRotationControl")
+const ObjectRotationControl = require("../../shared/IK/objects/ObjectRotationControl")
 
 // return a group which can report intersections
 const groupFactory = () => {
@@ -53,7 +53,7 @@ const meshFactory = originalMesh => {
 const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, isSelected, ...props }) => {
   const container = useRef()
   const characterObject = useRef()
-  const boneRotationControl = useRef();
+  const objectRotationControl = useRef();
   const [ready, setReady] = useState(false) // ready to load?
   const setLoaded = loaded => updateObject(id, { loaded })
   const domElement = useRef()
@@ -110,8 +110,8 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       domElement.current = largeRenderer.current.domElement
       container.current.setDragging = dragging
       container.current.userData.bindBone = props.bindBone
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement.current, characterObject.current.uuid)
-      boneRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
+      objectRotationControl.current = new ObjectRotationControl(scene, camera, domElement.current, characterObject.current.uuid)
+      objectRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
         rotation:
         {
           x : rotation.x,
@@ -160,11 +160,11 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       if(isSelected) {
        window.addEventListener("keydown", keyDownEvent, false)
         if(!isBoneSelected.current) {
-          if(boneRotationControl.current.isEnabled) { 
-            boneRotationControl.current.selectedBone(container.current, props.id)
+          if(objectRotationControl.current.isEnabled) { 
+            objectRotationControl.current.selectObject(container.current, props.id)
             isBoneSelected.current = true
           } else {
-            boneRotationControl.current.bone = container.current
+            objectRotationControl.current.object = container.current
           }
           
         }
@@ -176,7 +176,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       }
       else {
         if(isBoneSelected.current) {
-            boneRotationControl.current.deselectBone()
+          objectRotationControl.current.deselectObject()
             isBoneSelected.current = false
         }
         container.current.updateMatrixWorld(true)
@@ -206,7 +206,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect(() => {
     if(!ready) return
-    boneRotationControl.current.setCamera(camera)
+    objectRotationControl.current.setCamera(camera)
   }, [ready, camera])
 
   useEffect(() => {
@@ -254,9 +254,9 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
             let isRotation = !container.current.userData.isRotationEnabled
             container.current.userData.isRotationEnabled = isRotation
             if(isRotation) {
-              boneRotationControl.current.enable()
+              objectRotationControl.current.enable()
             } else {
-              boneRotationControl.current.disable()
+              objectRotationControl.current.disable()
             }
         }
     } 

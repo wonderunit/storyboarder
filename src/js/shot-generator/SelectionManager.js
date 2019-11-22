@@ -61,7 +61,7 @@ const getIntersectionTarget = intersect => {
   //Transform control
   if(intersect.object.type === 'gizmo')
   {
-    if(intersect.object.parent.parent.userData.type === "boneControl")
+    if(intersect.object.parent.parent.userData.type === "objectControl")
     {
       return intersect.object.parent.parent.parent;
     }
@@ -78,7 +78,7 @@ const getIntersectionTarget = intersect => {
     return intersect.object;
   }
 
-  if(intersect.object.userData.type === 'boneControl')
+  if(intersect.object.userData.type === 'objectControl')
   {
     return intersect.object;
   }
@@ -158,7 +158,7 @@ const SelectionManager = connect(
     o.userData.type === 'image' ||
     o.userData.type === 'controlTarget' ||
     o.userData.type === 'controlPoint' ||
-    o.userData.type === 'boneControl' ||
+    o.userData.type === 'objectControl' ||
     o.userData.type === 'attachable' ||
     (useIcons && o.isPerspectiveCamera)
   )
@@ -317,7 +317,7 @@ const SelectionManager = connect(
       let shouldDrag = false
       let target
       let isSelectedControlPoint = false;
-      let selectedBoneControl;
+      let selectedObjectControl;
 
       // prefer the nearest character to the click
       if (useIcons) {
@@ -376,19 +376,19 @@ const SelectionManager = connect(
           isSelectedControlPoint = true;
   
         } 
-        else if(target && target.userData && target.userData.type === 'boneControl') {
+        else if(target && target.userData && target.userData.type === 'objectControl') {
           let characterId = target.characterId
           let targetElement = target.object
           if(targetElement.type === "Bone") {
             let characters = intersectables.filter(value => value.uuid === characterId)
             target = characters[0]
-            selectedBoneControl = targetElement
+            selectedObjectControl = targetElement
           } else if(targetElement.userData.type === "attachable") {
             let characters = intersectables.filter(value => value.uuid === characterId)
             target = characters[0]
             selectAttachable({id: targetElement.userData.id, bindId: targetElement.userData.bindedId})
-            selectedBoneControl = targetElement
-            setDragTarget({ target, x, y, isBoneControl: true })
+            selectedObjectControl = targetElement
+            setDragTarget({ target, x, y, isObjectControl: true })
             return
           }
         }
@@ -415,11 +415,11 @@ const SelectionManager = connect(
             let raycaster = new THREE.Raycaster()
             raycaster.setFromCamera({ x, y }, camera )
             let hits = raycaster.intersectObject(target.bonesHelper)
-            if(!isSelectedControlPoint && selectedBoneControl)
+            if(!isSelectedControlPoint && selectedObjectControl)
             {
-              selectBone(selectedBoneControl.uuid)
+              selectBone(selectedObjectControl.uuid)
               // consider a bone selection the start of a drag
-              setDragTarget({ target, x, y, isBoneControl: true })
+              setDragTarget({ target, x, y, isObjectControl: true })
               return
             }
 
@@ -489,7 +489,7 @@ const SelectionManager = connect(
         let ikRig = SGIkHelper.getInstance().ragDoll;
         if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown)
         {
-          if(!dragTarget.isBoneControl)
+          if(!dragTarget.isObjectControl)
           {
             drag(dragTarget.target, { x, y })
           }
@@ -534,10 +534,10 @@ const SelectionManager = connect(
 
         } else {
           // get the intersection target of the object
-          // but ignore gizmo and boneControl intersections
+          // but ignore gizmo and objectControl intersections
           let target = (
             intersects[0].object.type === 'gizmo' ||
-            intersects[0].object.userData.type === 'boneControl'
+            intersects[0].object.userData.type === 'objectControl'
           )
           ? null
           : getIntersectionTarget(intersects[0])

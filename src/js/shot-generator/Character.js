@@ -1,6 +1,6 @@
 //#region ragdoll's import
 const SGIkHelper = require("../shared/IK/SGIkHelper")
-const BoneRotationControl = require("../shared/IK/objects/BoneRotationControl")
+const ObjectRotationControl = require("../shared/IK/objects/ObjectRotationControl")
 const { isCustomModel } = require('../services/model-loader')
 //#endregion
 const THREE = require('three')
@@ -188,7 +188,7 @@ const Character = React.memo(({
   const object = useRef(null)
 
   const originalSkeleton = useRef(null)
-  let boneRotationControl = useRef(null)
+  let objectRotationControl = useRef(null)
 
   const doCleanup = () => {
     if (object.current) {
@@ -199,7 +199,7 @@ const Character = React.memo(({
       object.current.remove(SGIkHelper.getInstance())
       SGIkHelper.getInstance().deselectControlPoint()
       SGIkHelper.getInstance().removeFromParent(id)
-      boneRotationControl.current.deselectBone()
+      objectRotationControl.current.deselectObject()
       object.current.bonesHelper = null
       object.current = null
     }
@@ -278,8 +278,8 @@ const Character = React.memo(({
 
       let domElement = largeRenderer.current.domElement
 
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid)
-      let boneRotation = boneRotationControl.current
+      objectRotationControl.current = new ObjectRotationControl(scene, camera, domElement, object.current.uuid)
+      let boneRotation = objectRotationControl.current
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
         name : name,
@@ -398,7 +398,7 @@ const Character = React.memo(({
   useEffect(() => {
     if(!ready || !camera) return
     SGIkHelper.getInstance().setCamera(camera)
-    boneRotationControl.current.setCamera(camera)
+    objectRotationControl.current.setCamera(camera)
   }, [camera, ready])
   //#endregion
 
@@ -616,12 +616,12 @@ const Character = React.memo(({
       if (bone) {
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
-        boneRotationControl.current.selectedBone(bone, selectedBone)
+        objectRotationControl.current.selectObject(bone, selectedBone)
       }
 
     }
     else{
-      boneRotationControl.current.deselectBone()
+      objectRotationControl.current.deselectObject()
     }
   }, [selectedBone, ready])
 
