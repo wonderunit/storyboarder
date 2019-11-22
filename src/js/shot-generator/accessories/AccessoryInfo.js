@@ -126,7 +126,7 @@ const AccessoryInfo = connect(
   const accessories = useMemo(() => {
       let character = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
       return !character ? [] : character.accessories ? character.accessories : []
-  }, [sceneObjects])
+  }, [sceneObjects, sceneObject])
 
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
     return h([
