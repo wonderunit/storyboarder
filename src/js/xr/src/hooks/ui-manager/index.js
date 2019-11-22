@@ -308,7 +308,7 @@ class CanvasRenderer {
       let characterHeightLens = lenses.characterHeight
       if (sceneObject.model === 'child') characterHeightLens = lenses.childHeight
       if (sceneObject.model === 'baby') characterHeightLens = lenses.babyHeight
-      
+
       this.paneComponents['properties'] = {
         ...(sceneObject.type === 'camera') &&
           {
@@ -515,7 +515,7 @@ class CanvasRenderer {
           }
         }
       }
-      
+
       if (sceneObject.type === 'camera') {
         const isActive = sceneObject.id === this.state.activeCamera
 
@@ -574,7 +574,7 @@ class CanvasRenderer {
       } else {
         ctx.clearRect(483, 288, 66, 105)
       }
-      
+
       this.renderObjects(ctx, this.paneComponents['properties'])
     }
 
@@ -597,7 +597,7 @@ class CanvasRenderer {
         const list = grids.tab === 'pose' ? this.state.poses : characterModels
         const rowCount = grids.tab === 'pose' ? 4 : 2
         this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount)
-        
+
         this.paneComponents['grid']['poses-title'] = {
           id: 'poses-title',
           type: 'slider',
@@ -653,7 +653,7 @@ class CanvasRenderer {
     let ctx = this.helpContext
     if(this.state.context.isUIHidden) {
       return
-    } 
+    }
     // console.log('render help')
 
     this.paneComponents['help']['help-image'] = {
@@ -672,13 +672,13 @@ class CanvasRenderer {
   }
 
   renderBoards () {
-    
+
     let canvas = this.boardsCanvas
     let ctx = this.boardsContext
 
     // Reset all boards items, otherwise many thumbnails buttons exists
     setupBoardsPane(this.paneComponents, this)
-    
+
     // console.log('render boards')
 
     ctx.fillStyle = 'rgba(0,0,0)'
@@ -1420,7 +1420,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
         onSetBoardUid (context, event) {
           setBoardUid(event.uid)
         },
-        
+
         async onChangeBoard (context, event) {
           let cr = getCanvasRenderer()
           let board = await cr.client.selectBoardByUid(event.uid)
@@ -1451,7 +1451,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             alert('Error\n' + err)
           }
         },
-        
+
         async onSaveBoard (context, event) {
           let cr = getCanvasRenderer()
 
@@ -1651,7 +1651,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
 const UI_ICON_NAMES = [
   'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
-  'close', 'settings',
+  'close', 'settings', 'hud',
 
   'camera', 'eye',
 

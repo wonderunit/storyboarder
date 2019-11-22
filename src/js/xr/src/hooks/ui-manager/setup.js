@@ -59,7 +59,7 @@ const setupHomePane = (paneComponents, self) => {
       y: 684 + 12,
       width: 64,
       height: 64,
-      image: 'settings',
+      image: 'hud',
 
       onSelect: () => {
         self.send('TOGGLE_HUD')
