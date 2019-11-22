@@ -39,7 +39,7 @@ function getObjectsFromIcons ( objects ) {
 
 const getIntersectionTarget = intersect => {
 
-  if(intersect.object.userData.type === 'accessory'){
+  if(intersect.object.userData.type === 'attachable'){
     return intersect.object.parent
   }
 
@@ -157,12 +157,12 @@ const SelectionManager = connect(
     o.userData.type === 'controlTarget' ||
     o.userData.type === 'controlPoint' ||
     o.userData.type === 'boneControl' ||
-    o.userData.type === 'accessory' ||
+    o.userData.type === 'attachable' ||
     (useIcons && o.isPerspectiveCamera)
   )
   for(let i = 0; i < intersectables.length; i++) {
-    if(intersectables[i].userData.type === 'character' && intersectables[i].accessories) {
-      intersectables = intersectables.concat(intersectables[i].accessories)
+    if(intersectables[i].userData.type === 'character' && intersectables[i].attachables) {
+      intersectables = intersectables.concat(intersectables[i].attachables)
     }
   }
   const mouse = event => {
@@ -231,7 +231,7 @@ const SelectionManager = connect(
 
     // remember the offsets of every selected object
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
-      if(target.userData.type === 'accessory' ) {
+      if(target.userData.type === 'attachable' ) {
         let child = intersectables.find(child => child.userData.id === target.userData.id)
         let vectorPos = child.worldPosition().clone()
         offsets.current[target.userData.id] = new THREE.Vector3().copy( intersection.current ).sub( vectorPos )
@@ -252,7 +252,7 @@ const SelectionManager = connect(
 
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       let changes = {}
-      if(target.userData.type === 'accessory' ) {
+      if(target.userData.type === 'attachable' ) {
         if(target.userData.isRotationEnabled) return
         let { x, y, z } = intersection.current.clone().sub( offsets.current[target.userData.id] )
         // let vector = new THREE.Vector3(x, y, z)
@@ -267,7 +267,7 @@ const SelectionManager = connect(
     }
   }
   const endDrag = (dragTarget) => {
-    if(dragTarget && dragTarget.target.userData.type === 'accessory')
+    if(dragTarget && dragTarget.target.userData.type === 'attachable')
       dragTarget.target.setDragging(false)
    // updateObject(dragTarget.target.userData.id, {isDragging: false})
   }
@@ -360,7 +360,7 @@ const SelectionManager = connect(
           intersects[0] = controlPoint[0];
         }
         target = getIntersectionTarget(intersects[0])
-        if(target.userData && target.userData.type === 'accessory') {
+        if(target.userData && target.userData.type === 'attachable') {
           selectAttachable({id: target.userData.id, bindId: target.userData.bindedId})
           target.setDragging(true)
           setDragTarget({ target, x, y})
@@ -381,7 +381,7 @@ const SelectionManager = connect(
             let characters = intersectables.filter(value => value.uuid === characterId)
             target = characters[0]
             selectedBoneControl = targetElement
-          } else if(targetElement.userData.type === "accessory") {
+          } else if(targetElement.userData.type === "attachable") {
             let characters = intersectables.filter(value => value.uuid === characterId)
             target = characters[0]
             selectAttachable({id: targetElement.userData.id, bindId: targetElement.userData.bindedId})

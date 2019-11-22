@@ -101,8 +101,8 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
-const AccessoryEditor = require('./accessories/AccessoryEditor')
-const AccessoryInfo = require('./accessories/AccessoryInfo')
+const AttachableEditor = require('./attachables/AttachableEditor')
+const AttachableInfo = require('./attachables/AttachableInfo')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
@@ -1486,7 +1486,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
 
       sceneObject.type == 'character' && [
-        AccessoryEditor, {
+        AttachableEditor, {
           sceneObject,
           updateObject,
           transition,
@@ -1495,7 +1495,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         }
       ],
       sceneObject.type == 'character' && [
-        AccessoryInfo, {
+        AttachableInfo, {
           id: sceneObject.id,
           sceneObject,
           updateObject,

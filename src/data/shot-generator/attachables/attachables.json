@@ -2,7 +2,7 @@
     "object-pistol": {
         "id": "object-pistol",
         "name": "Object: Pistol Gun",
-        "type": "accessory",
+        "type": "attachable",
         "height": 1
       }
 }

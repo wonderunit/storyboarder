@@ -19,9 +19,9 @@ const NumberSlider = connect(null, {
 const ITEM_HEIGHT = 132
 const NUM_COLS = 1
 
-const AccessoryInfoItem  = React.memo(({
+const AttachableInfoItem  = React.memo(({
     sceneObject,
-    accessory,
+    attachable,
     onSelectItem,
     updateObject,
     deleteObjects
@@ -32,7 +32,7 @@ const AccessoryInfoItem  = React.memo(({
     }
     const buttonName = useMemo(() => sceneObject.bindBone, [sceneObject.bindBone])
     const attachableName = useMemo(() => { 
-        let model = accessory.children.filter(child => child.userData.name)[0]
+        let model = attachable.children.filter(child => child.userData.name)[0]
         return !model.userData.name ? '' : model.userData.name
     })
 
@@ -60,18 +60,18 @@ const AccessoryInfoItem  = React.memo(({
 })
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  const { sceneObjects, accessories } = data
+  const { sceneObjects, attachables } = data
   const onSelectItem = data.onSelectItem
   const updateObject = data.updateObject
   const deleteObjects = data.deleteObjects
-  let accessory = accessories[rowIndex]
-  let sceneObject = sceneObjects[accessory.userData.id]
-  if (!accessory) return h(['div', { style }])
+  let attachable = attachables[rowIndex]
+  let sceneObject = sceneObjects[attachable.userData.id]
+  if (!attachable) return h(['div', { style }])
   return h([
-    AccessoryInfoItem,
+    AttachableInfoItem,
     {
         sceneObject,
-        accessory,
+        attachable,
         onSelectItem,
         updateObject,
         deleteObjects
@@ -79,7 +79,7 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   ])
 })
 
-const AccessoryInfo = connect(
+const AttachableInfo = connect(
   state => ({
     sceneObjects: getSceneObjects(state),
   }),
@@ -123,9 +123,9 @@ const AccessoryInfo = connect(
     })
   }
 
-  const accessories = useMemo(() => {
+  const attachables = useMemo(() => {
       let character = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
-      return !character ? [] : character.accessories ? character.accessories : []
+      return !character ? [] : character.attachables ? character.attachables : []
   }, [sceneObjects, sceneObject])
 
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
@@ -152,7 +152,7 @@ const AccessoryInfo = connect(
           columnCount: NUM_COLS,
           columnWidth: 288,
 
-          rowCount: accessories.length,
+          rowCount: attachables.length,
           rowHeight: ITEM_HEIGHT,
  
           width: 288,
@@ -164,7 +164,7 @@ const AccessoryInfo = connect(
 
           itemData: {
             selectedAttachable,
-            accessories,
+            attachables,
 
             sceneObjects,
 
@@ -179,4 +179,4 @@ const AccessoryInfo = connect(
   )
 }))
 
-module.exports = AccessoryInfo
+module.exports = AttachableInfo

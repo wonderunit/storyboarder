@@ -262,7 +262,7 @@ THREE.Object3D.prototype.copy = function ( source, recursive ) {
         for ( var i = 0; i < source.children.length; i ++ ) {
 
             var child = source.children[ i ];
-            if(child.userData.type !== "accessory") {
+            if(child.userData.type !== "attachable") {
                 this.add( child.clone() );
             }
         }

@@ -99,7 +99,7 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   ])
 })
 
-const AccessoryEditor = connect(
+const AttachableEditor = connect(
   state => ({
     attachments: state.attachments,
     sceneObjects: getSceneObjects(state),
@@ -125,7 +125,7 @@ const AccessoryEditor = connect(
   const [terms, setTerms] = useState(null)
 
   const models = useMemo(
-    () => Object.values(allModels).filter(m => m.type === "accessory"),
+    () => Object.values(allModels).filter(m => m.type === "attachable"),
     [allModels, sceneObject.type]
   )
 
@@ -156,7 +156,7 @@ const AccessoryEditor = connect(
         let key = THREE.Math.generateUUID()
         let element = {
           id: key,
-          type: 'accessory',
+          type: 'attachable',
         
           x:x, y: y, z: z,
 
@@ -251,4 +251,4 @@ const AccessoryEditor = connect(
   )
 }))
 
-module.exports = AccessoryEditor
+module.exports = AttachableEditor

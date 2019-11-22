@@ -8,7 +8,7 @@ const { combineReducers } = require('redux')
 const batchGroupBy = require('./shot-generator/batchGroupBy')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
-const AccessoriesModelFileDescriptions = require('../../../data/shot-generator/accessories/accessories.json')
+const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -327,8 +327,8 @@ const updateObject = (draft, state, props, { models }) => {
     draft.loaded = props.loaded
   }
 
-  if(props.hasOwnProperty('isAccessorySelected')) {
-    draft.isAccessorySelected = props.isAccessorySelected
+  if(props.hasOwnProperty('isAttachableSelected')) {
+    draft.isAttachableSelected = props.isAttachableSelected
   }
 
   if(props.hasOwnProperty('isDragging')) {
@@ -354,7 +354,7 @@ const resetLoadingStatus = sceneObjects => {
       sceneObjects[key].type === 'object' ||
       sceneObjects[key].type === 'volume' ||
       sceneObjects[key].type === 'image' ||
-      sceneObjects[key].type === 'accessory'
+      sceneObjects[key].type === 'attachable'
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],
@@ -655,7 +655,7 @@ const initialState = {
       height: 1
     },
     ...ObjectModelFileDescriptions,
-    ...AccessoriesModelFileDescriptions
+    ...AttachablesModelFileDescriptions
   },
 
   attachments: {},

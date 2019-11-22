@@ -50,7 +50,7 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, isSelected, ...props }) => {
+const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, isSelected, ...props }) => {
   const container = useRef()
   const characterObject = useRef()
   const boneRotationControl = useRef();
@@ -64,7 +64,7 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.userData.id = id
       container.current.userData.type = props.type
 
-      container.current.userData.type = 'accessory'
+      container.current.userData.type = 'attachable'
       container.current.userData.bindedId = props.attachToId
       container.current.userData.isRotationEnabled = false
       isBoneSelected.current = false
@@ -72,8 +72,8 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       scene.add(container.current)
       return function cleanup () {
         container.current.parent.remove(container.current)
-        let indexOf = characterObject.current.accessories.indexOf(container.curren)
-        characterObject.current.accessories.splice(indexOf, 1)
+        let indexOf = characterObject.current.attachables.indexOf(container.curren)
+        characterObject.current.attachables.splice(indexOf, 1)
       }
   }, [])    
 
@@ -94,7 +94,7 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
           if ( child instanceof THREE.Mesh ) {
             let newMesh = meshFactory(child)
             container.current.add(newMesh)
-            newMesh.userData.type = 'accessory'
+            newMesh.userData.type = 'attachable'
             newMesh.layers.disable(0)
             newMesh.layers.enable(1)
             newMesh.layers.disable(2)
@@ -119,8 +119,8 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
           z : rotation.z,
         }
       } )})
-      if(!skinnedMesh.parent.accessories) skinnedMesh.parent.accessories = []
-      skinnedMesh.parent.accessories.push(container.current)
+      if(!skinnedMesh.parent.attachables) skinnedMesh.parent.attachables = []
+      skinnedMesh.parent.attachables.push(container.current)
       container.current.scale.multiplyScalar(props.size / characterObject.current.scale.x)
       bone.add(container.current)
       container.current.updateMatrixWorld(true, true)
@@ -212,13 +212,11 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect(() => {
     if(!ready) return
-    console.log(container.current)
     container.current.userData.bindBone = props.bindBone
   }, [props.bindBone])
 
   useEffect(() => {
     if(!ready) return
-    console.log(container.current.scale.clone())
     let scale = container.current.parent.uuid === scene.uuid ? props.size : props.size / characterObject.current.scale.x
     container.current.scale.set( scale, scale, scale )
   }, [props.size])
@@ -334,4 +332,4 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
 })
 
-module.exports = Accessory
+module.exports = Attachable
