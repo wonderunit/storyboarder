@@ -41,7 +41,7 @@ class BoneRotationControl
         this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
         this.control.addEventListener("transformMoved", this.onMouseMove, false);
         this.control.addEventListener("transformMouseUp", this.onMouseUp, false);
-        this.domElement.addEventListener('keydown', this.keyDownEvent, false)
+       // this.domElement.addEventListener('keydown', this.keyDownEvent, false)
        // this.isSelected = true
     }
 
@@ -61,7 +61,7 @@ class BoneRotationControl
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
         this.control.removeEventListener("transformMoved", this.onMouseMove);
         this.control.removeEventListener("transformMouseUp", this.onMouseUp);
-        this.domElement.removeEventListener('keydown', this.keyDownEvent, false)
+       // this.domElement.removeEventListener('keydown', this.keyDownEvent, false)
     }
 
     setCamera(camera)

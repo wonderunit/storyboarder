@@ -158,7 +158,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     if(!ready) return
       let outlineParameters = {}
       if(isSelected) {
-        domElement.current.addEventListener("keydown", keyDownEvent, false)
+       window.addEventListener("keydown", keyDownEvent, false)
         if(!isBoneSelected.current) {
           if(boneRotationControl.current.isEnabled) { 
             boneRotationControl.current.selectedBone(container.current, props.id)
@@ -187,9 +187,9 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       }
       container.current.children[0].material.userData.outlineParameters = outlineParameters
       return function cleanup () {
-        domElement.current.removeEventListener("keydown", keyDownEvent, false)
+        window.removeEventListener("keydown", keyDownEvent, false)
       }
-  }, [isSelected])
+  }, [isSelected, ready])
 
   useEffect(() => {
     if (ready ) {

@@ -799,7 +799,7 @@ const attachableSelectionsReducer = (state = [], action) => {
         return null
 
       case 'SELECT_ATTACHABLE':
-        return action.payload ? action.payload.id : []
+        return action.payload.id
 
       case 'DESELECT_ATTACHABLE':
         return null
