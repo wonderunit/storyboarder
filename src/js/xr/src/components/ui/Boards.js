@@ -29,8 +29,28 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
   }, [])
 
   const mesh = useMemo(() => {
+    let hudGeo = new THREE.PlaneBufferGeometry(1, 469 / 1024, 1)
+    hudGeo.attributes.uv.array[1] = hudGeo.attributes.uv.array[3] = 469 / 1024
+
+    let settingsGeo = new THREE.PlaneBufferGeometry(439 / 1024, (325 - 114) / 1024, 1)
+    settingsGeo.attributes.uv.array[1] = settingsGeo.attributes.uv.array[3] = (483 - 3 + 325 - 114) / 1024
+    settingsGeo.attributes.uv.array[5] = settingsGeo.attributes.uv.array[7] = (483 - 3) / 1024
+    settingsGeo.attributes.uv.array[0] = settingsGeo.attributes.uv.array[4] = (1024 - 439) / 1024
+
+    let popupGeo = new THREE.PlaneBufferGeometry((118 + 168 + 18 * 4 + 15) / 1024, (18 * 3 * 2 + 30) / 1024, 1)
+    popupGeo.attributes.uv.array[1] = popupGeo.attributes.uv.array[3] = (430 + 18 * 3 + (18 * 3 * 2 + 30)) / 1024
+    popupGeo.attributes.uv.array[5] = popupGeo.attributes.uv.array[7] = (430 + 18 * 3) / 1024
+    popupGeo.attributes.uv.array[2] = popupGeo.attributes.uv.array[6] = (118 + 168 + 18 * 4 + 15) / 1024
+
+    hudGeo = new THREE.Geometry().fromBufferGeometry(hudGeo)
+    settingsGeo = new THREE.Geometry().fromBufferGeometry(settingsGeo).translate((1024 - 439) / 1024 * 0.5, 0.345, 0)
+    popupGeo = new THREE.Geometry().fromBufferGeometry(popupGeo).translate((1024 - (118 + 168 + 18 * 4 + 15)) / 1024 * -0.5, 0.31, 0)
+
+    hudGeo.merge(settingsGeo)
+    hudGeo.merge(popupGeo)
+
     return new THREE.Mesh(
-      new THREE.PlaneBufferGeometry(1, 1, 1),
+      hudGeo,
       new THREE.MeshBasicMaterial({
         map: getTexture(),
         transparent: true,

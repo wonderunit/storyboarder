@@ -118,7 +118,7 @@ const UITestContent = ({ resources }) => {
       
         { showHUD &&
           <group
-          position={[0, -0.35, 0.25]}
+          position={[0, -0.05, 0.25]}
           scale={[1, 1, 1]}>
             <group
               onPointerDown={onPointerDown}
