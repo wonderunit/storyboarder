@@ -155,7 +155,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   }, [props.rotation, ready, props.isDragging])
     
   useEffect(() => {
-    console.log("Is attachable selected", isSelected)
     if(!ready) return
       let outlineParameters = {}
       if(isSelected) {
@@ -236,7 +235,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       isDragged.current = true
     }
     else {  
-      if(!isDragging.current) return 
+      if(!isDragged.current) return 
       container.current.applyMatrix(bone.getInverseMatrixWorld())
       bone.add(container.current)
       container.current.updateMatrixWorld(true)

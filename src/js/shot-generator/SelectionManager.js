@@ -15,7 +15,8 @@ const {
   undoGroupEnd,
 
   getSelections,
-  getActiveCamera
+  getActiveCamera,
+  deselectAttachable
 } = require('../shared/reducers/shot-generator')
 
 
@@ -104,7 +105,7 @@ const SelectionManager = connect(
     selectBone,
     updateObjects,
     selectAttachable,
-
+    deselectAttachable,
     undoGroupStart,
     undoGroupEnd
   }
@@ -130,7 +131,8 @@ const SelectionManager = connect(
     updateObject,
     
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    deselectAttachable
   }) => {
 
   const { scene } = useContext(SceneContext)
@@ -398,6 +400,7 @@ const SelectionManager = connect(
           isSelectedControlPoint = true;
         }
       }
+      deselectAttachable()
       // if there are 1 or more selections
       if (selections.length) {
         // and we're not in icon mode

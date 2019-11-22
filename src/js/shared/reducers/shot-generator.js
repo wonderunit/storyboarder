@@ -764,6 +764,7 @@ const selectionsReducer = (state = [], action) => {
         return
       case 'SELECT_ATTACHABLE':
         return [action.payload.bindId]
+        
       case 'DUPLICATE_OBJECTS':
         // select the new duplicates, replacing the selection list
         return action.payload.newIds
@@ -798,10 +799,12 @@ const attachableSelectionsReducer = (state = [], action) => {
         return null
 
       case 'SELECT_ATTACHABLE':
-        return action.payload.id
+        return action.payload ? action.payload.id : []
+
+      case 'DESELECT_ATTACHABLE':
+        return null
 
       case 'DELETE_OBJECTS':
-        console.log(action.payload.ids)
         for (let id of action.payload.ids) {
           // did we remove a selected id?
           if (draft && draft.includes(id)) {
@@ -1354,6 +1357,7 @@ module.exports = {
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
   selectAttachable: id => ({ type: 'SELECT_ATTACHABLE', payload: id }),
+  deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
