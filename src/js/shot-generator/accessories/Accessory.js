@@ -71,9 +71,9 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       isDragged.current = false 
       scene.add(container.current)
       return function cleanup () {
-        console.log(type, id, 'removed from scene')
-        scene.remove(container.current.orthoIcon)
-        scene.remove(container.current)
+        container.current.parent.remove(container.current)
+        let indexOf = characterObject.current.accessories.indexOf(container.curren)
+        characterObject.current.accessories.splice(indexOf, 1)
       }
   }, [])    
 
@@ -106,6 +106,7 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       let bone = skeleton.getBoneByName(props.bindBone)
       domElement.current = largeRenderer.current.domElement
       container.current.setDragging = dragging
+      container.current.userData.bindBone = props.bindBone
       boneRotationControl.current = new BoneRotationControl(scene, camera, domElement.current, characterObject.current.uuid)
       boneRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
         rotation:
@@ -117,7 +118,7 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       } )})
       if(!skinnedMesh.parent.accessories) skinnedMesh.parent.accessories = []
       skinnedMesh.parent.accessories.push(container.current)
-      container.current.scale.multiplyScalar(1 / characterObject.current.scale.x)
+      container.current.scale.multiplyScalar(props.size / characterObject.current.scale.x)
       bone.add(container.current)
       container.current.updateMatrixWorld(true, true)
     }
@@ -206,6 +207,19 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     boneRotationControl.current.setCamera(camera)
   }, [ready, camera])
 
+  useEffect(() => {
+    if(!ready) return
+    console.log(container.current)
+    container.current.userData.bindBone = props.bindBone
+  }, [props.bindBone])
+
+  useEffect(() => {
+    if(!ready) return
+    console.log(container.current.scale.clone())
+    let scale = container.current.parent.uuid === scene.uuid ? props.size : props.size / characterObject.current.scale.x
+    container.current.scale.set( scale, scale, scale )
+  }, [props.size])
+
   const dragging = (isDragging) => {
     let object = characterObject.current
     let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
@@ -232,7 +246,6 @@ const Accessory =  React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   const keyDownEvent = (event) => {switchManipulationState(event)}
 
   const switchManipulationState = (event) => {
-    console.log("Changed state")
     if(event.ctrlKey )
     {
         if(event.key === 'r')

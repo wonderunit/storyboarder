@@ -334,6 +334,14 @@ const updateObject = (draft, state, props, { models }) => {
   if(props.hasOwnProperty('isDragging')) {
     draft.isDragging = props.isDragging
   }
+
+  if(props.hasOwnProperty('bindBone')) {
+    draft.bindBone = props.bindBone
+  }
+
+  if(props.hasOwnProperty('size')) {
+    draft.size = props.size
+  }
 }
 
 // `loaded` status is not serialized
@@ -793,8 +801,15 @@ const attachableSelectionsReducer = (state = [], action) => {
         return action.payload.id
 
       case 'DELETE_OBJECTS':
-        // de-select any currently selected bone
-        draft = null
+        console.log(action.payload.ids)
+        for (let id of action.payload.ids) {
+          // did we remove a selected id?
+          if (draft && draft.includes(id)) {
+            // delete it from the selections list
+            draft.splice(draft.indexOf(id), 1)
+          }
+        }
+        return
 
       default:
         return

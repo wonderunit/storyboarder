@@ -10,7 +10,8 @@ const prompt = require('electron-prompt')
 const {
   updateObject,
   createObject,
-  getSceneObjects
+  getSceneObjects,
+  selectAttachable
 } = require('../../shared/reducers/shot-generator')
 const ModelLoader = require('../../services/model-loader')
 const h = require('../../utils/h')
@@ -98,43 +99,16 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   ])
 })
 
-const FileSelect = ({ model, onSelectFile }) => {
-  const isCustom = ModelLoader.isCustomModel(model)
-  const ext = path.extname(model)
-  const basenameWithoutExt = path.basename(model, ext)
-  const displayName = truncateMiddle(basenameWithoutExt, 13)
-
-  const className = classNames({
-    'button__file--selected': isCustom
-  })
-
-  return h(
-    ['div.column', { style: { width: 106 } }, [
-      [
-        'a.button__file[href=#]', {
-          style: { flex: 1, width: '100%', height: 34, whiteSpace: 'nowrap', overflow: 'hidden' },
-          className,
-          onPointerUp: onSelectFile,
-          title: isCustom ? path.basename(model) : undefined
-        },
-        isCustom
-          ? displayName
-          : 'Select File …'
-      ]
-    ]]
-  )
-}
-
 const AccessoryEditor = connect(
   state => ({
     attachments: state.attachments,
-
+    sceneObjects: getSceneObjects(state),
     allModels: state.models
   }),
   {
     updateObject,
     createObject,
-    withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
+    selectAttachable
   }
 )(
   React.memo(({
@@ -143,13 +117,9 @@ const AccessoryEditor = connect(
     attachments,
 
     allModels,
-
-    withState,
+    sceneObjects,
     scene,
-    updateObject,
     createObject,
-    transition,
-
     rows = 3
   }) => {
   const [terms, setTerms] = useState(null)
@@ -164,36 +134,15 @@ const AccessoryEditor = connect(
     setTerms(event.currentTarget.value)
   }
 
-  const onSelectFile = event => {
-    event.preventDefault()
-
-    const filepaths = dialog.showOpenDialog(null, {})
-    console.log(filepath)
-    if (filepaths) {
-      const filepath = filepaths[0]
-      updateObject(sceneObject.id, { model: filepath })
-    }
-
-    // automatically blur to return keyboard control
-    document.activeElement.blur()
-    transition('TYPING_EXIT')
-  }
-
   const onSelectItem = (id, { model }) => {
-
-    withState((dispatch, state) => {
-      currentSkeleton = getSceneObjects(state)[sceneObject.id]
-    })
+    currentSkeleton = sceneObject[sceneObject.id]
     let skinnedMesh =  scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh")
     let originalSkeleton = skinnedMesh.skeleton
-   // console.log(originalSkeleton)
     let selectOptions = {}
     for(let i = 0; i < originalSkeleton.bones.length; i++) {
       if(!originalSkeleton.bones[i].name.includes("leaf"))
         selectOptions[originalSkeleton.bones[i].name] = originalSkeleton.bones[i].name
     }
-    console.log(attachments)
-    // show a prompt to get the desired preset name
     let win = remote.getCurrentWindow()
     prompt({
       title: 'Preset Name',
@@ -203,9 +152,6 @@ const AccessoryEditor = connect(
     }, win).then(name => {
       if (name != null && name != '' && name != ' ') {
         let bone = originalSkeleton.getBoneByName(name)
-        //let accessory = object.scene.children[0].clone()
-       // accessory.applyMatrix(skinnedMesh.getInverseMatrixWorld())
-       // bone.add(accessory)
         let {x, y, z} = bone.worldPosition()
         let key = THREE.Math.generateUUID()
         let element = {
@@ -216,9 +162,11 @@ const AccessoryEditor = connect(
 
           model: model,
           bindBone: name,
-          attachToId: id
+          attachToId: id,
+          size: 1
          }
          createObject(element)
+         selectAttachable({id: element.id, bindId: element.attachToId })
         }
     }).catch(err =>
       console.error(err)
@@ -268,14 +216,7 @@ const AccessoryEditor = connect(
           }]
         ]],
         isCustom
-          ? ['div.column', { style: { padding: 2 } }]
-          : ['div.column', { style: { alignSelf: 'center', padding: 6, lineHeight: 1 } }, 'or'],
-        [FileSelect, { model: sceneObject.model, onSelectFile }],
-        [
-          'div.column', { style: { width: 20, margin: '0 0 0 6px', alignSelf: 'center', alignItems: 'flex-end' } }, [
-            CustomModelHelpButton
-          ]
-        ]
+        ['div.column', { style: { padding: 2 } }]
       ]],
 
       ['div.thumbnail-search__list', [

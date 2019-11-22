@@ -75,7 +75,8 @@ const {
   getSelectedBone,
   getWorld,
 
-  initialState
+  initialState,
+  getSelectedAttachable
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
@@ -101,6 +102,7 @@ const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
 const AccessoryEditor = require('./accessories/AccessoryEditor')
+const AccessoryInfo = require('./accessories/AccessoryInfo')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
@@ -267,7 +269,8 @@ const Inspector = ({
   updateWorldEnvironment,
   updateWorldFog,
   storyboarderFilePath,
-  selections
+  selections,
+  selectedAttachable
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -313,7 +316,8 @@ const Inspector = ({
               transition,
               selectBone,
               updateCharacterSkeleton,
-              storyboarderFilePath
+              storyboarderFilePath, 
+              selectedAttachable
             }
           ]
         : [
@@ -690,6 +694,7 @@ const ElementsPanel = connect(
     selectedBone: getSelectedBone(state),
     models: state.models,
     activeCamera: getActiveCamera(state),
+    selectedAttachable: getSelectedAttachable(state),
 
     storyboarderFilePath: state.meta.storyboarderFilePath
   }),
@@ -710,7 +715,7 @@ const ElementsPanel = connect(
     undoGroupEnd
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd, selectedAttachable }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -810,7 +815,8 @@ const ElementsPanel = connect(
 
             storyboarderFilePath,
 
-            selections
+            selections,
+            selectedAttachable
           }]
         )
       )
@@ -1034,7 +1040,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'Skinny',
   'endomorphic': 'Obese',
 }
-const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
+const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath, selectedAttachable  }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
   const { scene } = useContext(SceneContext)
   let positionSliders = [
@@ -1486,6 +1492,15 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           transition,
           scene: scene,
           rows: sceneObject.type == 'character' ? 2 : 3
+        }
+      ],
+      sceneObject.type == 'character' && [
+        AccessoryInfo, {
+          id: sceneObject.id,
+          sceneObject,
+          updateObject,
+          scene: scene,
+          selectedAttachable:selectedAttachable
         }
       ],
       sceneObject.type == 'character' &&
