@@ -36,15 +36,19 @@ const AttachableInfoItem  = React.memo(({
         return !model.userData.name ? '' : model.userData.name
     })
 
-    return h(['div', ['div.number-slider ',
-        ['div.number-slider__label', attachableName], 
-        ['div.column', { style: { marginLeft: 5 }}, [
+    return h(['div.attachable-card', 
+        ['div.attachable-card___title', 
+          ['div.attachable-card___label', attachableName],
+          ['a.attachable-card__discard[href=#]', { onClick: () => { deleteObjects([sceneObject.id])} }, 'X']
+        ],
+        ['div.number-slider',
+          ['div.number-slider__label', "Attached to bone"], 
+          ['div.column', { style: { marginLeft: 5 }}, [
             ['a.button_add[href=#]', {
-              style: { width: 150, height: 34 },
-              onPointerDown: onHandSelect
-            }, buttonName]
-          ]],
-          ['a.delete[href=#]', { onClick: () => { deleteObjects([sceneObject.id])} }, 'X']],
+                style: { width: 161, height: 35 },
+                onPointerDown: onHandSelect
+                }, buttonName]
+          ]]],
         [NumberSlider, {
               label: 'size',
               value: sceneObject.size,

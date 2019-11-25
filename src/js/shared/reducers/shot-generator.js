@@ -775,7 +775,7 @@ const selectionsReducer = (state = [], action) => {
       case 'DELETE_OBJECTS':
         for (let id of action.payload.ids) {
           // did we remove a selected id?
-          if (draft.includes(id)) {
+          if (draft && draft.includes(id) && draft[id]) {
             // delete it from the selections list
             draft.splice(draft.indexOf(id), 1)
           }
@@ -810,7 +810,8 @@ const attachableSelectionsReducer = (state = [], action) => {
       case 'DELETE_OBJECTS':
         for (let id of action.payload.ids) {
           // did we remove a selected id?
-          if (draft && draft.includes(id)) {
+          if (draft && draft.includes(id) && draft[id]) {
+            console.log(draft[id])
             // delete it from the selections list
             draft.splice(draft.indexOf(id), 1)
           }
