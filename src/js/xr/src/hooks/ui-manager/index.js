@@ -169,7 +169,7 @@ class CanvasRenderer {
           scrollTop: 0
         },
       },
-      selectedHand: "LeftHand"
+      selectedHand: "BothHands"
     }
 
     this.paneComponents = {}
