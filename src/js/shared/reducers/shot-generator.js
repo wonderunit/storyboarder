@@ -189,12 +189,15 @@ const updateObject = (draft, state, props, { models }) => {
   }
 
   if (props.x != null) {
+    //console.log(props.x)
     draft.x = props.x
   }
   if (props.y != null) {
+    //console.log(props.y)
     draft.y = props.y
   }
   if (props.z != null) {
+    //console.log(props.z)
     draft.z = props.z
   }
 
@@ -875,6 +878,7 @@ const sceneObjectsReducer = (state = {}, action) => {
 
           draft[key].x = value.x
           draft[key].y = value.y
+          draft[key].z = value.z ? value.z : draft[key].z
         }
         return
 
@@ -1241,6 +1245,7 @@ const checksReducer = (state, action) => {
           // unless characterPresetId was just set ...
           if (!action.payload.hasOwnProperty('characterPresetId')) {
             // ... detect change between state and preset
+           // console.log("Checking character changes")
             checkForCharacterChanges(state, draft, action.payload.id)
           }
 

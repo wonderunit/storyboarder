@@ -128,8 +128,8 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   }, [ready])
 
   useEffect(() => {
-    if (!ready) return
-    if(container.current.parent.uuid === scene.uuid) {
+    if ( !ready ) return
+    if ( container.current.parent.uuid === scene.uuid ) {
       container.current.position.x = props.x
       container.current.position.y = props.y
       container.current.position.z = props.z
@@ -146,9 +146,9 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   }, [props.x, props.y, props.z, ready])
 
   useEffect(() => {
-    if (!ready) return
-    if(!props.rotation) return
-    if(props.isDragging) return
+    if ( !ready ) return
+    if ( !props.rotation ) return
+    if ( props.isDragging ) return
     container.current.rotation.x = props.rotation.x
     container.current.rotation.y = props.rotation.y
     container.current.rotation.z = props.rotation.z
@@ -227,6 +227,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     let bone = skeleton.getBoneByName(props.bindBone)
     if(isDragging) {
       if(isDragged.current) return 
+
       let parentMatrixWorld = bone.matrixWorld
       scene.add(container.current)
       container.current.applyMatrix(parentMatrixWorld)
@@ -250,6 +251,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     {
         if(event.key === 'r')
         {
+            event.preventDefault();
             event.stopPropagation()
             let isRotation = !container.current.userData.isRotationEnabled
             container.current.userData.isRotationEnabled = isRotation

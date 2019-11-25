@@ -235,7 +235,7 @@ const SelectionManager = connect(
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       if(target.userData.type === 'attachable' ) {
         let child = intersectables.find(child => child.userData.id === target.userData.id)
-        let vectorPos = child.worldPosition().clone()
+        let vectorPos = child.worldPosition()
         offsets.current[target.userData.id] = new THREE.Vector3().copy( intersection.current ).sub( vectorPos )
        return;
       }
@@ -257,8 +257,7 @@ const SelectionManager = connect(
       if(target.userData.type === 'attachable' ) {
         if(target.userData.isRotationEnabled) return
         let { x, y, z } = intersection.current.clone().sub( offsets.current[target.userData.id] )
-        // let vector = new THREE.Vector3(x, y, z)
-        changes[target.userData.id] = { x, y }
+        changes[target.userData.id] = { x, y, z }
       } else {
         for (selection of selections) {
         let { x, z } = intersection.current.clone().sub( offsets.current[selection] )
