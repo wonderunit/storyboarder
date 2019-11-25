@@ -58,7 +58,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   const setLoaded = loaded => updateObject(id, { loaded })
   const domElement = useRef()
   const isBoneSelected = useRef()
-  const isDragged = useRef()
   useEffect(() => {
       container.current = groupFactory()
       container.current.userData.id = id
@@ -68,7 +67,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.userData.bindedId = props.attachToId
       container.current.userData.isRotationEnabled = false
       isBoneSelected.current = false
-      isDragged.current = false 
       scene.add(container.current)
       return function cleanup () {
         container.current.parent.remove(container.current)
@@ -87,7 +85,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if (ready) {
       container.current.remove(...container.current.children)
-
+      // Traverses passed model and clones it's meshes to container
       try {
         // add a clone of every single mesh we find
         modelData.scene.traverse( function ( child ) {
@@ -103,13 +101,24 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
         } catch (err) {
 
       }
+      // Sets up bind bone
       characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(props.bindBone)
       domElement.current = largeRenderer.current.domElement
-      container.current.setDragging = dragging
       container.current.userData.bindBone = props.bindBone
+
+      // Applies character scale for case when character is scaled up to 100
+      container.current.scale.multiplyScalar(props.size / characterObject.current.scale.x)
+      bone.add(container.current)
+      container.current.updateMatrixWorld(true, true)
+
+      // Adds a container of attachable to character if it doesn't exist and adds current attachable
+      if(!skinnedMesh.parent.attachables) skinnedMesh.parent.attachables = []
+      skinnedMesh.parent.attachables.push(container.current)
+
+      // Sets up object rotation control for manipulation of attachale rotation
       objectRotationControl.current = new ObjectRotationControl(scene, camera, domElement.current, characterObject.current.uuid)
       objectRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
         rotation:
@@ -119,16 +128,14 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
           z : rotation.z,
         }
       } )})
-      if(!skinnedMesh.parent.attachables) skinnedMesh.parent.attachables = []
-      skinnedMesh.parent.attachables.push(container.current)
-      container.current.scale.multiplyScalar(props.size / characterObject.current.scale.x)
-      bone.add(container.current)
-      container.current.updateMatrixWorld(true, true)
     }
   }, [ready])
 
   useEffect(() => {
     if ( !ready ) return
+    // Applies position to container.
+    // Position for container should always be in world space but container not always attached to bone
+    // In case if it's attached we need to take it out of bone space and apply world position
     if ( container.current.parent.uuid === scene.uuid ) {
       container.current.position.x = props.x
       container.current.position.y = props.y
@@ -148,11 +155,10 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if ( !ready ) return
     if ( !props.rotation ) return
-    if ( props.isDragging ) return
     container.current.rotation.x = props.rotation.x
     container.current.rotation.y = props.rotation.y
     container.current.rotation.z = props.rotation.z
-  }, [props.rotation, ready, props.isDragging])
+  }, [props.rotation, ready])
     
   useEffect(() => {
     if(!ready) return
@@ -166,9 +172,8 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
           } else {
             objectRotationControl.current.object = container.current
           }
-          
         }
-        container.current.updateMatrixWorld(true)
+
         outlineParameters = {
           thickness: 0.008,
           color: [ 122/256.0/2, 114/256.0/2, 233/256.0/2 ]
@@ -179,7 +184,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
           objectRotationControl.current.deselectObject()
             isBoneSelected.current = false
         }
-        container.current.updateMatrixWorld(true)
         outlineParameters = {
           thickness: 0.008,
           color: [ 0, 0, 0 ]
@@ -220,39 +224,15 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     container.current.scale.set( scale, scale, scale )
   }, [props.size])
 
-  const dragging = (isDragging) => {
-    let object = characterObject.current
-    let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
-    let skeleton = skinnedMesh.skeleton
-    let bone = skeleton.getBoneByName(props.bindBone)
-    if(isDragging) {
-      if(isDragged.current) return 
-
-      let parentMatrixWorld = bone.matrixWorld
-      scene.add(container.current)
-      container.current.applyMatrix(parentMatrixWorld)
-      container.current.updateMatrixWorld(true)
-      updateObject(container.current.userData.id, { x: container.current.position.x, y: container.current.position.y, z: container.current.position.z })
-      isDragged.current = true
-    }
-    else {  
-      if(!isDragged.current) return 
-      container.current.applyMatrix(bone.getInverseMatrixWorld())
-      bone.add(container.current)
-      container.current.updateMatrixWorld(true)
-      isDragged.current = false
-    }
-  }
-
   const keyDownEvent = (event) => {switchManipulationState(event)}
 
   const switchManipulationState = (event) => {
+    event.preventDefault();
+    event.stopPropagation()
     if(event.ctrlKey )
     {
         if(event.key === 'r')
         {
-            event.preventDefault();
-            event.stopPropagation()
             let isRotation = !container.current.userData.isRotationEnabled
             container.current.userData.isRotationEnabled = isRotation
             if(isRotation) {
@@ -263,74 +243,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
         }
     } 
   }
-
-/*   const snapToNearestBone = () => {
-    let object = characterObject.current
-    let bone = null 
-  
-    let meshBox = new THREE.Box3().setFromObject(container.current)
-    let preBoxSize = new THREE.Vector3()
-    let currentBoxSize = new THREE.Vector3()
-    let theBiggestBox = null
-    let hitMeshes = object.bonesHelper.hit_meshes
-    let hitBox = new THREE.Box3()
-    console.log(object.bonesHelper)
-    
-    let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
-    for(let i = 0; i < hitMeshes.length; i++) {
-      let hitMesh = hitMeshes[i]
-     // hitMesh.applyMatrix( hitMeshes[i].matrixWorld)
-     let boneMatrix = new THREE.Matrix4()
-      takeBoneInTheMeshSpace(skinnedMesh, hitMesh.originalBone, boneMatrix)
-      hitMesh = hitMesh.clone()
-      //hitMesh.position.copy( hitMeshes[i].originalBone.position)
-      //hitMesh.quaternion.copy( hitMeshes[i].originalBone.quaternion)
-      //hitMesh.scale.copy( hitMeshes[i].originalBone.scale)
-      //hitMesh.updateMatrixWorld(true)
-      //hitMesh.applyMatrix( hitMeshes[i].parent.matrixWorld)
-      hitBox.setFromObject(hitMesh)
-      
-      console.log(hitMesh.clone())
-      let boxHelper = new THREE.Box3Helper(hitBox, 0xffff00)
-      scene.add(boxHelper)
-      if(hitBox.intersectsBox(meshBox)) {
-        console.log("Intersected")
-        let intersectBox = hitBox.intersect(meshBox)
-        if(!theBiggestBox) {
-          theBiggestBox = intersectBox
-          bone = hitMeshes[i].originalBone
-        }
-        else  {
-          theBiggestBox.getSize(preBoxSize)
-          intersectBox.getSize(currentBoxSize)
-           if(preBoxSize.x * preBoxSize.y < currentBoxSize.x * currentBoxSize.y) {
-            theBiggestBox = intersectBox
-            bone = hitMesh.originalBone
-           }
-        }
-      }
-    }
-    console.log(bone)
-    if(!bone) {
-      let skinnedMesh = object.getObjectByProperty("type", "SkinnedMesh")
-      let skeleton = skinnedMesh.skeleton
-      bone = skeleton.getBoneByName(props.bindBone)
-      container.current.position.copy(prevPosition.current)
-      //return 
-    }
-    container.current.applyMatrix(bone.getInverseMatrixWorld())
-    bone.add(container.current)
-    container.current.updateMatrixWorld(true)
-    updateObject(container.current.userData.id, { bindBone: bone.name})
-  }
-
-  const takeBoneInTheMeshSpace = (mesh, bone, boneMatrix) => {
-      let armatureInverseMatrixWorld = new THREE.Matrix4()//this.resourceManager.getMatrix4();
-      armatureInverseMatrixWorld.copy(mesh.skeleton.bones[0].parent.matrixWorld);
-      boneMatrix.multiplyMatrices(armatureInverseMatrixWorld, bone.matrixWorld);
-     // this.resourceManager.release(armatureInverseMatrixWorld);
-  } */
-
 })
 
 module.exports = Attachable

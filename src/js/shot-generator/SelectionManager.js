@@ -228,16 +228,18 @@ const SelectionManager = connect(
     if (useIcons) {
       plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
     } else {
-      plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position)
+      plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
     }
 
     // remember the offsets of every selected object
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
-      if(target.userData.type === 'attachable' ) {
-        let child = intersectables.find(child => child.userData.id === target.userData.id)
+      // Calculates offset for selected attachable
+      // Attachable isn't in selection list cause it moves independently from selected character
+      if ( target.userData.type === 'attachable' ) {
+        let child = intersectables.find( child => child.userData.id === target.userData.id )
         let vectorPos = child.worldPosition()
         offsets.current[target.userData.id] = new THREE.Vector3().copy( intersection.current ).sub( vectorPos )
-       return;
+        return;
       }
       for (let selection of selections) {
         let child = intersectables.find(child => child.userData.id === selection)
@@ -254,6 +256,10 @@ const SelectionManager = connect(
 
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       let changes = {}
+      // Calculates new attachable position
+      // Attachable is in no need of switching Y and Z cause they are already in bone space
+      // And bone space is in character space which is already got Y and Z switched
+      // Also, attachable needs to move up and down while other objects don't
       if(target.userData.type === 'attachable' ) {
         if(target.userData.isRotationEnabled) return
         let { x, y, z } = intersection.current.clone().sub( offsets.current[target.userData.id] )
@@ -268,9 +274,6 @@ const SelectionManager = connect(
     }
   }
   const endDrag = (dragTarget) => {
-    if(dragTarget && dragTarget.target.userData.type === 'attachable')
-      dragTarget.target.setDragging(false)
-   // updateObject(dragTarget.target.userData.id, {isDragging: false})
   }
   useMemo(() => {
     if (dragTarget) {
@@ -363,7 +366,6 @@ const SelectionManager = connect(
         target = getIntersectionTarget(intersects[0])
         if(target.userData && target.userData.type === 'attachable') {
           selectAttachable({id: target.userData.id, bindId: target.userData.bindedId})
-          target.setDragging(true)
           setDragTarget({ target, x, y})
           return 
         }
