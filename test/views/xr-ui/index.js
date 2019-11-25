@@ -28,7 +28,7 @@ const xrClient = XRClient('http://localhost:1234')
 const UITestContent = ({ resources }) => {
   const { gl, camera, scene } = useThree()
 
-  const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({
+  const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({
     playSound: () => { },
     stopSound: () => { },
     getXrClient: () => xrClient
@@ -128,7 +128,9 @@ const UITestContent = ({ resources }) => {
               <Boards
                 rotation={Math.PI}
                 mode={uiCurrent.value.controls}
-                getCanvasRenderer={getCanvasRenderer} />
+                getCanvasRenderer={getCanvasRenderer}
+                showConfirm={canvasRendererRef.current.state.boards.showConfirm}
+                showSettings={canvasRendererRef.current.state.showSettings} />
             </group>
           </group>
         }

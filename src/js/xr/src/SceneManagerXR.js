@@ -551,7 +551,9 @@ const SceneContent = connect(
             <Boards
               mode={uiCurrent.value.controls}
               locked={uiCurrent.context.locked}
-              getCanvasRenderer={getCanvasRenderer} />
+              getCanvasRenderer={getCanvasRenderer}
+              showConfirm={canvasRendererRef.current.state.boards.showConfirm}
+              showSettings={canvasRendererRef.current.state.showSettings} />
           }
 
           {controllers.filter(gamepadFor).map(controller =>

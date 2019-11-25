@@ -4,7 +4,7 @@ const { useRender, useThree } = require('react-three-fiber')
 const SCALE = 1
 const POSITION = [0, 0.4, -1]
 
-const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.PI * 0.75 }) => {
+const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showSettings, rotation = -Math.PI * 0.75 }) => {
   const { camera } = useThree()
 
   const ref = useRef()
@@ -28,7 +28,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
     }
   }, [])
 
-  const mesh = useMemo(() => {
+  const [mesh, confirmMesh, settingsMesh] = useMemo(() => {
     let hudGeo = new THREE.PlaneBufferGeometry(1, 469 / 1024, 1)
     hudGeo.attributes.uv.array[1] = hudGeo.attributes.uv.array[3] = 469 / 1024
 
@@ -46,18 +46,18 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
     settingsGeo = new THREE.Geometry().fromBufferGeometry(settingsGeo).translate((1024 - 439) / 1024 * 0.5, 0.345, 0)
     popupGeo = new THREE.Geometry().fromBufferGeometry(popupGeo).translate((1024 - (118 + 168 + 18 * 4 + 15)) / 1024 * -0.5, 0.31, 0)
 
-    hudGeo.merge(settingsGeo)
-    hudGeo.merge(popupGeo)
+    const material = new THREE.MeshBasicMaterial({
+      map: getTexture(),
+      transparent: true,
+      opacity: 1.0,
+      side: THREE.BackSide
+    })
 
-    return new THREE.Mesh(
-      hudGeo,
-      new THREE.MeshBasicMaterial({
-        map: getTexture(),
-        transparent: true,
-        opacity: 1.0,
-        side: THREE.BackSide
-      })
-    )
+    const mesh = new THREE.Mesh(hudGeo, material)
+    const settingsMesh = new THREE.Mesh(settingsGeo, material)
+    const confirmMesh = new THREE.Mesh(popupGeo, material)
+
+    return [mesh, confirmMesh, settingsMesh]
   }, [mode])
 
   // to hide boards when locked, uncomment this:
@@ -76,19 +76,37 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, rotation = -Math.P
 
   return mesh ? (
     <group>
-      <primitive
+      <group
         position={POSITION}
         scale={[SCALE, SCALE, SCALE]}
         rotation={[rotation, 0, 0]}
         ref={ref}
-        object={mesh}
-        onController={() => null}
-        name={'gui-boards'}
-        userData={{
-          type: 'ui',
-          id: 'boards'
-        }}
-      ></primitive>
+      >
+        <primitive
+          object={mesh}
+          onController={() => null}
+          name={'gui-boards'}
+          userData={{
+            type: 'ui',
+            id: 'boards'
+          }}></primitive>
+        {showConfirm && <primitive
+          object={confirmMesh}
+          onController={() => null}
+          name={'gui-boards'}
+          userData={{
+            type: 'ui',
+            id: 'boards'
+          }}></primitive>}
+        {showSettings && <primitive
+          object={settingsMesh}
+          onController={() => null}
+          name={'gui-boards'}
+          userData={{
+            type: 'ui',
+            id: 'boards'
+          }}></primitive>}
+      </group>
     </group>
   ) : null
 })
