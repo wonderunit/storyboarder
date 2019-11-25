@@ -1035,7 +1035,6 @@ const useInteractionsManager = ({
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
           ikHelper.ragDoll.originalObject.add(mirror)
           mirror.position.z += 2
-          playSound('posing')
           setTimeout(() => { interactionService.send({ type: 'STOP_POSING', controller: event.target}) }, 5000)
           setTimeout(() => { poseTicking() }, 1000)
           clearStandingMemento()
