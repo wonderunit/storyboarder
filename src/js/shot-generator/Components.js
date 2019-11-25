@@ -2367,7 +2367,7 @@ const CameraPanelInspector = connect(
       {value: ShotSizes.MEDIUM_LONG, label: 'Medium Long Shot'},
       {value: ShotSizes.LONG, label: 'Long Shot / Wide'},
       {value: ShotSizes.EXTREME_LONG, label: 'Extreme Long Shot'},
-      // {value: 9, label: 'Establishing Shot'},
+      {value: ShotSizes.ESTABLISHING, label: 'Establishing Shot'},
       {value: ShotSizes.OTS_LEFT, label: 'Over The Shoulder Left'},
       {value: ShotSizes.OTS_RIGHT, label: 'Over The Shoulder Right'}
     ]

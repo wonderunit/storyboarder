@@ -57,6 +57,14 @@ const ShotSizes = {
   OTS_RIGHT: 11,
 }
 
+const ShotAngles = {
+  BIRDS_EYE: 0,
+  HIGH: 1,
+  EYE: 2,
+  LOW: 3,
+  WORMS_EYE: 4
+}
+
 const ShotSizesInfo = {
   [ShotSizes.EXTREME_CLOSE_UP]: {
     bones: ['Head', 'leaf', 'Neck'],
@@ -157,6 +165,10 @@ const getBoneStartEndPos = (bone) => {
 const getShotBox = (character, shotType = 0) => {
   let box = new THREE.Box3()
   
+  if (!ShotSizesInfo[shotType]) {
+    return box
+  }
+  
   let shotInfo = ShotSizesInfo[shotType]
   
   let bones = character.userData.skeleton.bones.filter((bone) => shotInfo.bones.indexOf(bone.name) !== -1)
@@ -190,28 +202,37 @@ const setShotSize = ({
   shotSize
 }) => {
   if (!ShotSizesInfo[shotSize]) {
-    return false
+    //return false
   }
   
   let direction = new THREE.Vector3()
   objectsToClamp[0].getWorldDirection(direction)
   
-  if (ShotSizesInfo[shotSize].backSide) {
+  let box = getShotBox(objectsToClamp[0], shotSize)
+  if (shotSize === ShotSizes.ESTABLISHING) {
+    for(let char of objectsToClamp) {
+      box.expandByObject(char)
+    }
+    
+    direction.subVectors(camera.position, box.getCenter())
+  }
+  
+  if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].backSide) {
     direction.negate()
   }
   
   let clampedInfo = clampCameraToBox({
     camera,
     direction,
-    box: getShotBox(objectsToClamp[0], shotSize)
+    box
   })
   
-  if (ShotSizesInfo[shotSize].pan) {
+  if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].pan) {
     let pan = ShotSizesInfo[shotSize].pan
     
     let panVector = new THREE.Vector3().crossVectors(direction.clone(), objectsToClamp[0].up.clone())
   
-    clampedInfo.position.add(panVector.setLength(ShotSizesInfo[shotSize].pan))
+    clampedInfo.position.add(panVector.setLength(pan))
   
     direction.setLength(Math.abs(pan))
     
@@ -232,10 +253,19 @@ const setShotSize = ({
     roll: 0,
     tilt: 0
   })
-  
+}
+
+const setShotAngle = ({
+  camera,
+  objectsToClamp,
+  updateObject,
+  shotAngle
+}) => {
+
 }
 
 module.exports = {
   ShotSizes,
-  setShotSize
+  setShotSize,
+  setShotAngle
 }
