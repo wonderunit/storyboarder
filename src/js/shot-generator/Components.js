@@ -110,7 +110,7 @@ const PosePresetsEditor = require('./PosePresetsEditor')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
 
-const {setShotSize, ShotSizes} = require('./cameraUtils')
+const {setShotSize, setShotAngle, ShotSizes, ShotAngles} = require('./cameraUtils')
 
 
 window.THREE = THREE
@@ -2305,6 +2305,8 @@ const CameraPanelInspector = connect(
     const selectionsRef = useRef(selections)
     const selectedCharacters = useRef([])
     const [isCharacterSelected, selectCharacter] = useState(false)
+    const [currentShotAngle, setCurrentShotAngle] = useState(null)
+    const [currentShotSize, setCurrentShotSize] = useState(null)
     
     useEffect(() => {
       selectionsRef.current = selections;
@@ -2343,10 +2345,10 @@ const CameraPanelInspector = connect(
       
       updateObject(cameraState.id, {rotation, tilt})
     }, 100, {trailing:false}))
-    
+  
     const onShotSizeChange = useCallback((item) => {
       let objectsToClamp = scene.children.filter((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
-      
+    
       if (objectsToClamp) {
         setShotSize({
           camera,
@@ -2355,6 +2357,24 @@ const CameraPanelInspector = connect(
           shotSize: item.value
         })
       }
+  
+      setCurrentShotSize(item.value)
+    })
+  
+    const onShotAngleChange = useCallback((item) => {
+      let objectsToClamp = scene.children.filter((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
+    
+      if (objectsToClamp) {
+        setShotAngle({
+          camera,
+          objectsToClamp,
+          updateObject,
+          shotAngle: item.value,
+          shotSize: currentShotSize
+        })
+      }
+  
+      setCurrentShotAngle(item.value)
     })
   
     const shotSizes = [
@@ -2373,11 +2393,11 @@ const CameraPanelInspector = connect(
     ]
   
     const cameraAngles = [
-      {value: 'EyeLevel', label: 'Bird\'s Eye'},
-      {value: 'Low', label: 'High'},
-      {value: 'High', label: 'Eye'},
-      {value: 'Dutch', label: 'Low'},
-      {value: 'OTS', label: 'Worm\'s Eye'}
+      {value: ShotAngles.BIRDS_EYE, label: 'Bird\'s Eye'},
+      {value: ShotAngles.HIGH, label: 'High'},
+      {value: ShotAngles.EYE, label: 'Eye'},
+      {value: ShotAngles.LOW, label: 'Low'},
+      {value: ShotAngles.WORMS_EYE, label: 'Worm\'s Eye'}
     ]
     
     return h(
@@ -2447,7 +2467,7 @@ const CameraPanelInspector = connect(
             ['div.camera-item.shots',
               [
                 ['div.select', [Select, {label: 'Shot Size', options: shotSizes, onSetValue: onShotSizeChange, disabled: !isCharacterSelected}]],
-                ['div.select', [Select, {label: 'Camera Angle', options: cameraAngles, disabled: !isCharacterSelected}]]
+                ['div.select', [Select, {label: 'Camera Angle', options: cameraAngles, onSetValue: onShotAngleChange, disabled: !isCharacterSelected}]]
               ]
             ]
           ]

@@ -18,30 +18,6 @@ const clampCameraToBox = ({
   }
 }
 
-const getCameraInfo = (camera) => {
-  /// Regarding to http://planning.cs.uiuc.edu/node103.html
-  let rotationMatrix = new THREE.Matrix4().extractRotation(camera.matrixWorld)
-  let elems = rotationMatrix.elements
-  
-  let alpha = Math.atan(elems[4] / elems[0])
-  let beta = Math.atan(-elems[8] / Math.sqrt(Math.pow(elems[9], 2) + Math.pow(elems[10], 2)))
-  let gamma = Math.atan(elems[9] / elems[10])
-  
-  
-  let Pi = Math.PI;
-  
-  let lookAtVector = new THREE.Vector3()
-  camera.getWorldDirection(lookAtVector)
-  
-  beta = (lookAtVector.z > 0) ? (beta + Pi) : -beta
-  
-  return {
-    rotation: beta,
-    tilt: alpha,
-    roll: gamma
-  }
-}
-
 const ShotSizes = {
   EXTREME_CLOSE_UP: 0,
   VERY_CLOSE_UP: 1,
@@ -63,6 +39,14 @@ const ShotAngles = {
   EYE: 2,
   LOW: 3,
   WORMS_EYE: 4
+}
+
+const ShotAnglesInfo = {
+  [ShotAngles.BIRDS_EYE]: -30 * THREE.Math.DEG2RAD,
+  [ShotAngles.HIGH]: -15 * THREE.Math.DEG2RAD,
+  [ShotAngles.EYE]: 0,
+  [ShotAngles.LOW]: 30 * THREE.Math.DEG2RAD,
+  [ShotAngles.WORMS_EYE]: 45 * THREE.Math.DEG2RAD
 }
 
 const ShotSizesInfo = {
@@ -160,6 +144,63 @@ const getBoneStartEndPos = (bone) => {
   }
 }
 
+const getShotInfo = ({objectsToClamp, shotSize, camera}) => {
+  let direction = new THREE.Vector3()
+  objectsToClamp[0].getWorldDirection(direction)
+  
+  let box = getShotBox(objectsToClamp[0], shotSize)
+  if (shotSize === ShotSizes.ESTABLISHING) {
+    for (let i = 0; i < objectsToClamp.length; i++) {
+      box.expandByObject(objectsToClamp[i])
+    }
+    
+    if (objectsToClamp.length > 1) {
+      direction = new THREE.Vector3()
+      
+      for (let i = 0; i < objectsToClamp.length - 1; i += 2) {
+        direction.add(objectsToClamp[i + 1].position.clone().sub(objectsToClamp[i].position.clone()))
+      }
+      
+      direction.divideScalar(objectsToClamp.length)
+      
+      direction = camera.position.clone().sub(direction)
+      direction.y = camera.y
+    }
+  } else if (!ShotSizesInfo[shotSize]) {
+    return false
+  }
+  
+  if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].backSide) {
+    direction.negate()
+  }
+  
+  let clampedInfo = clampCameraToBox({
+    camera,
+    direction,
+    box
+  })
+  
+  if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].pan) {
+    let pan = ShotSizesInfo[shotSize].pan
+    
+    let panVector = new THREE.Vector3().crossVectors(direction.clone(), objectsToClamp[0].up.clone())
+    
+    clampedInfo.position.add(panVector.setLength(pan))
+    
+    direction.setLength(Math.abs(pan))
+    
+    clampedInfo.target.sub(direction)
+  }
+  
+  direction = clampedInfo.target.clone().sub(clampedInfo.position).normalize()
+  
+  return {
+    direction,
+    box,
+    clampedInfo
+  }
+}
+
 const getShotBox = (character, shotType = 0) => {
   let box = new THREE.Box3()
   
@@ -199,65 +240,25 @@ const setShotSize = ({
   updateObject,
   shotSize
 }) => {
-  let direction = new THREE.Vector3()
-  objectsToClamp[0].getWorldDirection(direction)
-  
-  let box = getShotBox(objectsToClamp[0], shotSize)
-  if (shotSize === ShotSizes.ESTABLISHING) {
-    for (let i = 0; i < objectsToClamp.length; i++) {
-      box.expandByObject(objectsToClamp[i])
-    }
-    
-    if (objectsToClamp.length !== 1) {
-      direction = new THREE.Vector3()
-  
-      for (let i = 0; i < objectsToClamp.length - 1; i += 2) {
-        direction.add(objectsToClamp[i + 1].position.clone().sub(objectsToClamp[i].position.clone()))
-      }
-  
-    
-      direction.divideScalar(objectsToClamp.length)
-      direction.cross(objectsToClamp[0].up)
-    }
-  } else if (!ShotSizesInfo[shotSize]) {
-    return false
-  }
-  
-  if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].backSide) {
-    direction.negate()
-  }
-  
-  let clampedInfo = clampCameraToBox({
-    camera,
-    direction,
-    box
+  let info = getShotInfo({
+    objectsToClamp,
+    shotSize,
+    camera
   })
   
-  if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].pan) {
-    let pan = ShotSizesInfo[shotSize].pan
-    
-    let panVector = new THREE.Vector3().crossVectors(direction.clone(), objectsToClamp[0].up.clone())
-  
-    clampedInfo.position.add(panVector.setLength(pan))
-  
-    direction.setLength(Math.abs(pan))
-    
-    clampedInfo.target.sub(direction)
-  }
-  
-  camera.position.copy(clampedInfo.position)
-  camera.lookAt(clampedInfo.target)
+  camera.position.copy(info.clampedInfo.position)
+  camera.lookAt(info.clampedInfo.target)
   camera.updateMatrixWorld(true)
   
-  let newState = getCameraInfo(camera)
+  let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
   
   updateObject(camera.userData.id, {
     x: camera.position.x,
     y: camera.position.z,
     z: camera.position.y,
-    rotation: newState.rotation,
-    roll: 0,
-    tilt: 0
+    rotation: rot.y,
+    roll: rot.z,
+    tilt: rot.x
   })
 }
 
@@ -265,13 +266,51 @@ const setShotAngle = ({
   camera,
   objectsToClamp,
   updateObject,
-  shotAngle
+  shotAngle,
+  shotSize
 }) => {
+  if (ShotAnglesInfo[shotAngle] === undefined || !ShotSizesInfo[shotSize]) {
+    return false
+  }
+  
+  let {clampedInfo, direction} = getShotInfo({
+    objectsToClamp,
+    shotSize,
+    camera
+  })
+  
+  let currentDistance = clampedInfo.position.distanceTo(clampedInfo.target)
+  
+  let mainAxis = new THREE.Vector3().crossVectors(camera.up, direction)
+  
+  let quaternion = new THREE.Quaternion()
+  quaternion.setFromAxisAngle(mainAxis, -ShotAnglesInfo[shotAngle])
+  
+  direction.applyQuaternion(quaternion)
+  direction.setLength(currentDistance)
+  
+  clampedInfo.position.copy(clampedInfo.target).sub(direction)
+  
+  camera.position.copy(clampedInfo.position)
+  camera.lookAt(clampedInfo.target)
+  camera.updateMatrixWorld(true)
+  
+  let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
 
+  updateObject(camera.userData.id, {
+    x: camera.position.x,
+    y: camera.position.z,
+    z: camera.position.y,
+    rotation: rot.y,
+    roll: rot.z,
+    tilt: rot.x
+  })
+  
 }
 
 module.exports = {
   ShotSizes,
+  ShotAngles,
   setShotSize,
   setShotAngle
 }
