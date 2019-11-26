@@ -141,7 +141,6 @@ const ShotSizesInfo = {
     ],
     backSide: true,
     pan: 0.5
-    //relativeToScreen: 1.0 / 3.0 //height of a character is 1/3 of the view height
   },
   [ShotSizes.OTS_RIGHT]: {
     bones: [
@@ -150,7 +149,6 @@ const ShotSizesInfo = {
     ],
     backSide: true,
     pan: -0.5
-    //relativeToScreen: 1.0 / 3.0 //height of a character is 1/3 of the view height
   }
 }
 
@@ -201,20 +199,28 @@ const setShotSize = ({
   updateObject,
   shotSize
 }) => {
-  if (!ShotSizesInfo[shotSize]) {
-    //return false
-  }
-  
   let direction = new THREE.Vector3()
   objectsToClamp[0].getWorldDirection(direction)
   
   let box = getShotBox(objectsToClamp[0], shotSize)
   if (shotSize === ShotSizes.ESTABLISHING) {
-    for(let char of objectsToClamp) {
-      box.expandByObject(char)
+    for (let i = 0; i < objectsToClamp.length; i++) {
+      box.expandByObject(objectsToClamp[i])
     }
     
-    direction.subVectors(camera.position, box.getCenter())
+    if (objectsToClamp.length !== 1) {
+      direction = new THREE.Vector3()
+  
+      for (let i = 0; i < objectsToClamp.length - 1; i += 2) {
+        direction.add(objectsToClamp[i + 1].position.clone().sub(objectsToClamp[i].position.clone()))
+      }
+  
+    
+      direction.divideScalar(objectsToClamp.length)
+      direction.cross(objectsToClamp[0].up)
+    }
+  } else if (!ShotSizesInfo[shotSize]) {
+    return false
   }
   
   if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].backSide) {
