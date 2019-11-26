@@ -534,12 +534,14 @@ const SelectionManager = connect(
   }
 
   const onDropKeyPressed = event => {
+    console.log("Key pressed")
     if( event.ctrlKey ) {
-      if( event.key === 'g' ) {
+      if( event.key === 'b' ) {
         let changes = {}
         for( let i = 0; i < selections.length; i++ ) {
           let selection = scene.children.find( child => child.userData.id === selections[i] )
           if( selection.userData.type === "object" ) {
+            console.log("dropping object")
             dropObject( selection, dropingPlaces )
             let pos = selection.position
             changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
