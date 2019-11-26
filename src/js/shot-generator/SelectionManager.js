@@ -16,6 +16,7 @@ const {
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
+const { dropObject, dropCharacter } = require("../utils/dropToObjects")
 
 function getObjectsFromIcons ( objects ) {
   return objects
@@ -150,6 +151,12 @@ const SelectionManager = connect(
     o.userData.type === 'boneControl' ||
     (useIcons && o.isPerspectiveCamera)
   )
+
+  const dropingPlaces = scene.children.filter(o =>
+    o.userData.type === 'object' ||
+    o.userData.type === 'character' ||
+    o.userData.type === 'ground')
+
   const mouse = event => {
     const rect = el.getBoundingClientRect()
     return {
@@ -526,17 +533,35 @@ const SelectionManager = connect(
     setLastDownId(null)
   }
 
+  const onDropKeyPressed = event => {
+    if( event.ctrlKey ) {
+        if( event.key === 'g' ) {
+          for( let i = 0; i < selections.length; i++ ) {
+            let selection = scene.children.find( child => child.userData.id === selections[i] )
+            if( selection.userData.type === "object" ) {
+              dropObject(selection, dropingPlaces)
+            } else if ( selection.userData.type === "character" ) {
+              dropCharacter(selection, dropingPlaces)
+            }
+          }
+        }
+    }
+  }
+
   useLayoutEffect(() => {
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
     document.addEventListener('pointerup', onPointerUp)
-
+    if( !useIcons )
+      window.addEventListener('keydown', onDropKeyPressed)
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
       document.removeEventListener('pointerup', onPointerUp)
+      if( !useIcons )
+        window.removeEventListener('keydown', onDropKeyPressed)
     }
-  }, [onPointerDown, onPointerUp, onPointerMove])
+  }, [onPointerDown, onPointerUp, onPointerMove, onDropKeyPressed])
 
   useLayoutEffect(() => {
     if (dragTarget) {
