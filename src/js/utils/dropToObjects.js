@@ -12,7 +12,17 @@ const dropObject = (object, dropToObjects) =>
     objectBox.getCenter(objectCenter)
     lowerCenter.set(objectCenter.x, objectBox.min.y, objectCenter.z)
     raycaster.ray.origin.copy(lowerCenter)
-    let dropPlace =  raycaster.intersectObjects(dropToObjects, true)[0]
+    let dropPlace = raycaster.intersectObjects(dropToObjects, true).filter(o => o.distance)
+    dropPlace.sort((a, b) => {
+        if(a.distance < b.distance) {
+            return -1
+        } else if(a.distance > b.distance) {
+            return 1
+        } else {
+            return 0
+        }
+    }) 
+    dropPlace = dropPlace[0]
     if(!dropPlace ) return 
     object.parent.worldToLocal(lowerCenter)
     lowerCenter.sub(object.position)
@@ -32,7 +42,17 @@ const dropCharacter = (character, dropToObjects) =>
     let lowestBone = findLowestBone(skinnedMesh)
     lowestBone.getWorldPosition(worldPositionLowestBone)
     raycaster.ray.origin.copy(worldPositionLowestBone)
-    let dropPlace = raycaster.intersectObjects(dropToObjects, true)[0]
+    let dropPlace = raycaster.intersectObjects(dropToObjects, true).filter(o => o.distance)
+    dropPlace.sort((a, b) => {
+        if(a.distance < b.distance) {
+            return -1
+        } else if(a.distance > b.distance) {
+            return 1
+        } else {
+            return 0
+        }
+    }) 
+    dropPlace = dropPlace[0]
     if(!dropPlace ) return 
     
     let lowestBonePosition = lowestBone.worldPosition()
