@@ -110,7 +110,7 @@ const PosePresetsEditor = require('./PosePresetsEditor')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
 
-const {setShotSize, setShotAngle, ShotSizes, ShotAngles} = require('./cameraUtils')
+const {setShot, ShotSizes, ShotAngles} = require('./cameraUtils')
 
 
 window.THREE = THREE
@@ -2350,11 +2350,12 @@ const CameraPanelInspector = connect(
       let objectsToClamp = scene.children.filter((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
     
       if (objectsToClamp) {
-        setShotSize({
+        setShot({
           camera,
           objectsToClamp,
           updateObject,
-          shotSize: item.value
+          shotSize: item.value,
+          shotAngle: currentShotAngle
         })
       }
   
@@ -2365,7 +2366,7 @@ const CameraPanelInspector = connect(
       let objectsToClamp = scene.children.filter((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
     
       if (objectsToClamp) {
-        setShotAngle({
+        setShot({
           camera,
           objectsToClamp,
           updateObject,

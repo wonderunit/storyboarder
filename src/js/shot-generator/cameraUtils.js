@@ -167,7 +167,19 @@ const getShotInfo = ({objectsToClamp, shotSize, camera}) => {
       direction.y = camera.y
     }
   } else if (!ShotSizesInfo[shotSize]) {
-    return false
+    let center = new THREE.Vector3()
+    box.getCenter(center)
+  
+    
+    
+    return {
+      clampedInfo: {
+        position: camera.position.clone(),
+        target: center,
+      },
+      direction: direction.negate(),
+      box
+    }
   }
   
   if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].backSide) {
@@ -204,7 +216,14 @@ const getShotInfo = ({objectsToClamp, shotSize, camera}) => {
 const getShotBox = (character, shotType = 0) => {
   let box = new THREE.Box3()
   
+  /** If shot isn't provided, use eyes to calculate shot angle */
   if (!ShotSizesInfo[shotType]) {
+    let bone = character.userData.skeleton.bones.find((bone) => bone.name === 'leaf')
+    
+    let boneInfo = getBoneStartEndPos(bone)
+    box.expandByPoint(boneInfo.start)
+    box.expandByPoint(boneInfo.end)
+    
     return box
   }
   
@@ -234,62 +253,32 @@ const getShotBox = (character, shotType = 0) => {
   return box;
 }
 
-const setShotSize = ({
-  camera,
-  objectsToClamp,
-  updateObject,
-  shotSize
-}) => {
-  let info = getShotInfo({
-    objectsToClamp,
-    shotSize,
-    camera
-  })
-  
-  camera.position.copy(info.clampedInfo.position)
-  camera.lookAt(info.clampedInfo.target)
-  camera.updateMatrixWorld(true)
-  
-  let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
-  
-  updateObject(camera.userData.id, {
-    x: camera.position.x,
-    y: camera.position.z,
-    z: camera.position.y,
-    rotation: rot.y,
-    roll: rot.z,
-    tilt: rot.x
-  })
-}
-
-const setShotAngle = ({
+const setShot = ({
   camera,
   objectsToClamp,
   updateObject,
   shotAngle,
   shotSize
 }) => {
-  if (ShotAnglesInfo[shotAngle] === undefined || !ShotSizesInfo[shotSize]) {
-    return false
-  }
-  
   let {clampedInfo, direction} = getShotInfo({
     objectsToClamp,
     shotSize,
     camera
   })
   
-  let currentDistance = clampedInfo.position.distanceTo(clampedInfo.target)
+  if (ShotAnglesInfo[shotAngle] !== undefined) {
+    let currentDistance = clampedInfo.position.distanceTo(clampedInfo.target)
   
-  let mainAxis = new THREE.Vector3().crossVectors(camera.up, direction)
+    let mainAxis = new THREE.Vector3().crossVectors(camera.up, direction)
   
-  let quaternion = new THREE.Quaternion()
-  quaternion.setFromAxisAngle(mainAxis, -ShotAnglesInfo[shotAngle])
+    let quaternion = new THREE.Quaternion()
+    quaternion.setFromAxisAngle(mainAxis, -ShotAnglesInfo[shotAngle])
   
-  direction.applyQuaternion(quaternion)
-  direction.setLength(currentDistance)
+    direction.applyQuaternion(quaternion)
+    direction.setLength(currentDistance)
   
-  clampedInfo.position.copy(clampedInfo.target).sub(direction)
+    clampedInfo.position.copy(clampedInfo.target).sub(direction)
+  }
   
   camera.position.copy(clampedInfo.position)
   camera.lookAt(clampedInfo.target)
@@ -311,6 +300,5 @@ const setShotAngle = ({
 module.exports = {
   ShotSizes,
   ShotAngles,
-  setShotSize,
-  setShotAngle
+  setShot
 }
