@@ -183,6 +183,7 @@ class CanvasRenderer {
       boards: {
         showConfirm: false,
         confirmChange: null,
+        confirmDialogType: null,
         startCoords: {},
         prevCoords: {},
         cameras: {
@@ -703,12 +704,16 @@ class CanvasRenderer {
       ctx.fillStyle = 'rgba(0,0,0)'
       roundRect(ctx, 0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30, 25, true, false)
 
+      const labels = this.state.boards.confirmDialogType === 'overwrite' ? 
+        [`Shot Generator has unsaved changes.`, `Are you sure you want to overwrite with VR changes?`] :
+        [`Changes have not been saved.`, `Are you sure you want to change board without saving?`]
+
       this.paneComponents['boards']['confirm-1'] = {
         id: 'confirm-1',
         type: 'text',
         x: 15,
         y: 430 + 18 * 3 + 15,
-        label: `Shot Generator has unsaved changes.`,
+        label: labels[0],
         size: 14
       }
 
@@ -717,7 +722,7 @@ class CanvasRenderer {
         type: 'text',
         x: 15,
         y: 430 + 18 * 3 + 15 + 27,
-        label: `Are you sure you want to overwrite with VR changes?`,
+        label: labels[1],
         size: 14
       }
 
@@ -1423,6 +1428,20 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
         async onChangeBoard (context, event) {
           let cr = getCanvasRenderer()
+
+          const data = {
+            world: cr.state.world,
+            sceneObjects: cr.state.sceneObjects,
+            activeCamera: cr.state.activeCamera
+          }
+
+          let { lastSavedHash } = await cr.client.getSg()
+          let localHash = getHashForBoardSgData(data)
+          if (localHash !== lastSavedHash) {
+            let confirmed = await checkConfirmStatus('unsaved')
+            if (!confirmed) return
+          }
+          
           let board = await cr.client.selectBoardByUid(event.uid)
 
           try {
@@ -1463,7 +1482,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
           let hasUnsavedChanges = await checkForUnsavedChanges()
           if (hasUnsavedChanges) {
-            let confirmed = await checkConfirmStatus()
+            let confirmed = await checkConfirmStatus('overwrite')
             if (!confirmed) return
           }
 
@@ -1497,7 +1516,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           let hasUnsavedChanges = await checkForUnsavedChanges()
 
           if (hasUnsavedChanges) {
-            let confirmed = await checkConfirmStatus()
+            let confirmed = await checkConfirmStatus('overwrite')
             if (!confirmed) return
           }
 
@@ -1528,9 +1547,10 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     return getHash(state)
   }
 
-  const checkConfirmStatus = async () => {
+  const checkConfirmStatus = async (type) => {
     const cr = getCanvasRenderer()
     cr.state.boards.showConfirm = true
+    cr.state.boards.confirmDialogType = type
     cr.boardsNeedsRender = true
 
     return new Promise(resolve => {
@@ -1541,6 +1561,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           const confirm = cr.state.boards.confirmChange
           cr.state.boards.showConfirm = false
           cr.state.boards.confirmChange = null
+          cr.state.boards.confirmDialogType = null
           cr.boardsNeedsRender = true
 
           resolve(confirm)
