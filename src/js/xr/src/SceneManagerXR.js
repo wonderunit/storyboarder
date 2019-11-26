@@ -155,6 +155,7 @@ const SceneContent = connect(
     const showCameras = useUiStore(state => state.showCameras)
     const showHelp = useUiStore(state => state.showHelp)
     const showHUD = useUiStore(state => state.showHUD)
+    const showConfirm = useUiStore(state => state.showConfirm)
     const boardUid = useUiStore(state => state.boardUid)
 
     const fog = useRef()
@@ -552,7 +553,7 @@ const SceneContent = connect(
               mode={uiCurrent.value.controls}
               locked={uiCurrent.context.locked}
               getCanvasRenderer={getCanvasRenderer}
-              showConfirm={canvasRendererRef.current.state.boards.showConfirm}
+              showConfirm={showConfirm}
               showSettings={canvasRendererRef.current.state.showSettings} />
           }
 

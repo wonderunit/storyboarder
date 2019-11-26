@@ -41,6 +41,8 @@ const [useUiStore] = create((set, get) => ({
   showHelp: false,
   showHUD: false,
 
+  showConfirm: false,
+
   boardUid: null,
   serverHash: null,
   serverLastSavedHash: null,
@@ -50,6 +52,8 @@ const [useUiStore] = create((set, get) => ({
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
   setShowHelp: value => set(produce(state => { state.showHelp = value })),
   setShowHUD: value => set(produce(state => { state.showHUD = value })),
+
+  setShowConfirm: value => set(produce(state => { state.showConfirm = value })),
 
   setBoardUid: value => set(produce(state => { state.boardUid = value })),
   setServerHash: value => set(produce(state => { state.serverHash = value })),
@@ -1145,6 +1149,8 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const setServerHash = useUiStore(state => state.setServerHash)
   const setServerLastSavedHash = useUiStore(state => state.setServerLastSavedHash)
 
+  const setShowConfirm = useUiStore(state => state.setShowConfirm)
+
   const showHelp = useUiStore(state => state.showHelp)
   const showHUD = useUiStore(state => state.showHUD)
 
@@ -1552,6 +1558,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     cr.state.boards.showConfirm = true
     cr.state.boards.confirmDialogType = type
     cr.boardsNeedsRender = true
+    setShowConfirm(true)
 
     return new Promise(resolve => {
       const checkConfirmInterval = setInterval(() => {
@@ -1563,6 +1570,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           cr.state.boards.confirmChange = null
           cr.state.boards.confirmDialogType = null
           cr.boardsNeedsRender = true
+          setShowConfirm(false)
 
           resolve(confirm)
         }
