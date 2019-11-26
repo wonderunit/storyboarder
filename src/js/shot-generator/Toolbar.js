@@ -238,12 +238,12 @@ const Toolbar = connect(
     return h(
       ['div#toolbar', { key: 'toolbar' },
         ['div.toolbar__addition.row', [
-          ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], 'Camera']],
-          ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], 'Object']],
-          ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], 'Character']],
-          ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], 'Light']],
-          ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], 'Volume']],
-          ['a[href=#]', { onClick: preventDefault(onCreateImageClick) }, [[Icon, { src: 'icon-toolbar-image' }], 'Image']]
+          ['a[href=#]', { onClick: preventDefault(onCreateCameraClick) }, [[Icon, { src: 'icon-toolbar-camera' }], ['span', 'Camera']]],
+          ['a[href=#]', { onClick: preventDefault(onCreateObjectClick) }, [[Icon, { src: 'icon-toolbar-object' }], ['span', 'Object']]],
+          ['a[href=#]', { onClick: preventDefault(onCreateCharacterClick) }, [[Icon, { src: 'icon-toolbar-character' }], ['span', 'Character']]],
+          ['a[href=#]', { onClick: preventDefault(onCreateLightClick) }, [[Icon, { src: 'icon-toolbar-light' }], ['span', 'Light']]],
+          ['a[href=#]', { onClick: preventDefault(onCreateVolumeClick) }, [[Icon, { src: 'icon-toolbar-volume' }], ['span', 'Volume']]],
+          ['a[href=#]', { onClick: preventDefault(onCreateImageClick) }, [[Icon, { src: 'icon-toolbar-image' }], ['span', 'Image']]]
         ]],
         // ['a[href=#]', { onClick: preventDefault(onCreateStressClick) }, '+ STRESS'],
 
@@ -252,9 +252,9 @@ const Toolbar = connect(
         // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
         ['div.toolbar__board-actions.row', [
-          server.xrUri ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, 'Open in VR'] : [],
-          ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], 'Save to Board']],
-          ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], 'Insert As New Board']],
+          server.xrUri ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, ['span', 'Open in VR']] : [],
+          ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], ['span', 'Save to Board']]],
+          ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], ['span', 'Insert As New Board']]],
         ]]
       ]
     )
