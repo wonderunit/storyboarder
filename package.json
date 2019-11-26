@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -182,6 +182,7 @@
     "react-dom": "16.8.6",
     "react-redux": "7.1.0",
     "react-three-fiber": "2.4.3",
+    "react-use-gesture": "^6.0.14",
     "react-window": "1.5.0",
     "redux": "4.0.1",
     "redux-promise": "0.5.3",

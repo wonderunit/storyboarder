@@ -153,17 +153,17 @@ const SceneManager = connect(
       const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
         id: sgIkHelper.characterObject.userData.id,
         name : name,
-        rotation: 
+        rotation:
         {
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
-        }  
+        }
       } )}
 
       const updateSkeleton = (skeleton) => { updateCharacterIkSkeleton({
         id: sgIkHelper.characterObject.userData.id,
-        skeleton: skeleton  
+        skeleton: skeleton
       } )}
 
       const updateCharacterPos = ({ x, y, z}) => updateObject(
@@ -309,6 +309,11 @@ const SceneManager = connect(
       let width = Math.ceil(largeCanvasSize.width)
       // assign a target height, based on scene aspect ratio
       let height = Math.ceil(width / aspectRatio)
+      
+      if (height > largeCanvasSize.height) {
+        height = Math.ceil(largeCanvasSize.height)
+        width = Math.ceil(height * aspectRatio)
+      }
 
       // resize the renderers
       if (mainViewCamera === 'live') {

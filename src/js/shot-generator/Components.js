@@ -7,6 +7,7 @@ const path = require('path')
 
 const React = require('react')
 const { useState, useEffect, useRef, useContext } = React
+const {useDrag} = require('react-use-gesture')
 const { connect } = require('react-redux')
 const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
@@ -17,6 +18,11 @@ const { createSelector } = require('reselect')
 
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
+const useLongPress = require('../hooks/use-long-press')
+
+const CameraControls = require('./CameraControls')
+
+const throttle = require('lodash.throttle')
 
 //const robot = require("robotjs")
 
@@ -2289,6 +2295,121 @@ const BoardInspector = connect(
   )
 })
 
+const CameraPanelInspector = connect(
+    state => ({
+      sceneObjects: getSceneObjects(state),
+      activeCamera: getActiveCamera(state)
+    }),
+    {
+      updateObject
+    }
+)(
+  React.memo(({ camera, sceneObjects, activeCamera, updateObject }) => {
+    //const { scene } = useContext(SceneContext)
+    
+    if (!camera) return h(['div.camera-inspector'])
+    
+    let cameraState = {...sceneObjects[activeCamera]}
+    
+    let fakeCamera = camera.clone() // TODO reuse a single object
+    let focalLength = fakeCamera.getFocalLength()
+    let cameraRoll = Math.round(THREE.Math.radToDeg(cameraState.roll))
+    let cameraPan = Math.round(THREE.Math.radToDeg(cameraState.rotation))
+    let cameraTilt = Math.round(THREE.Math.radToDeg(cameraState.tilt))
+    
+    const getValueShifter = (draft) => () => {
+      for (let [k, v] of Object.entries(draft)) {
+        cameraState[k] += v
+      }
+  
+      updateObject(cameraState.id, cameraState)
+    }
+    
+    const moveCamera = ([speedX, speedY]) => () => {
+      cameraState = CameraControls.getMovedState(cameraState, {x: speedX, y: speedY})
+      updateObject(cameraState.id, cameraState)
+    }
+  
+    const getCameraPanEvents = useDrag(throttle(({ down, delta: [dx, dy] }) => {
+      let rotationDelta = (dx === 0) ? 0 : Math.sign(dx)
+      let tiltDelta = (dy === 0) ? 0 : Math.sign(dy)
+      
+      let rotation = THREE.Math.degToRad(cameraPan - dx)
+      let tilt = THREE.Math.degToRad(cameraTilt - dy)
+      
+      updateObject(cameraState.id, {rotation, tilt})
+    }, 100, {trailing:false}))
+    
+    return h(
+        ['div.camera-inspector',
+          
+          [
+            ['div.camera-item.roll',
+              [
+                ['div.camera-item-control', [
+                    ['div.row', [
+                      ['div.camera-item-button', {...useLongPress(getValueShifter({roll: -THREE.Math.DEG2RAD}))}, ['div.arrow.left']],
+                      ['div.camera-item-button', {...useLongPress(getValueShifter({roll: THREE.Math.DEG2RAD}))}, ['div.arrow.right']]
+                    ]]
+                ]],
+                ['div.camera-item-label', `Roll: ${cameraRoll}°`]
+              ]
+            ],
+            ['div.camera-item.pan',
+              [
+                ['div.camera-item-control', [
+                  ['div.row', [
+                      ['div.pan-control', {...getCameraPanEvents()}, ['div.pan-control-target']]
+                  ]]
+                ]],
+                ['div.camera-item-label', `Pan: ${cameraPan}° // Tilt: ${cameraTilt}°`]
+              ]
+            ],
+            ['div.camera-item.move',
+              [
+                ['div.camera-item-control', [
+                  ['div.row', {style: {justifyContent: 'center'}}, [
+                    ['div.camera-item-button', {...useLongPress(moveCamera([0, -0.1]))}, ['div.arrow.up']]
+                  ]],
+                  ['div.row', [
+                    ['div.camera-item-button', {...useLongPress(moveCamera([-0.1, 0]))}, ['div.arrow.left']],
+                    ['div.camera-item-button', {...useLongPress(moveCamera([0, 0.1]))}, ['div.arrow.down']],
+                    ['div.camera-item-button', {...useLongPress(moveCamera([0.1, 0]))}, ['div.arrow.right']]
+                  ]]
+                ]],
+                ['div.camera-item-label', 'Move']
+              ]
+            ],
+            ['div.camera-item.elevate',
+              [
+                ['div.camera-item-control', [
+                  ['div.row', [
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({z: 0.1}))}, ['div.arrow.up']]
+                  ]],
+                  ['div.row', [
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({z: -0.1}))}, ['div.arrow.down']]
+                  ]]
+                ]],
+                ['div.camera-item-label', `Elevate: ${cameraState.z.toFixed(2)}m`]
+              ]
+            ],
+            ['div.camera-item.lens',
+              [
+                ['div.camera-item-control', [
+                  ['div.row', [
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({fov: 0.2}))}, ['div.arrow.left']],
+                    ['div.camera-item-button', {...useLongPress(getValueShifter({fov: -0.2}))}, ['div.arrow.right']]
+                  ]]
+                ]],
+                ['div.camera-item-label', `Lens: ${focalLength.toFixed(2)}mm`]
+              ]
+            ]
+          ]
+        ]
+    )
+  }
+))
+
 const GuidesInspector = connect(
   state => ({
     center: state.workspace.guides.center,
@@ -2816,6 +2937,7 @@ module.exports = {
   SceneContext,
   ElementsPanel,
   CameraInspector,
+  CameraPanelInspector,
   BoardInspector,
   GuidesInspector,
   CamerasInspector,

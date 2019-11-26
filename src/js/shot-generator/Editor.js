@@ -19,6 +19,7 @@ const {
   SceneContext,
   ElementsPanel,
   CameraInspector,
+  CameraPanelInspector,
   BoardInspector,
   GuidesInspector,
   CamerasInspector,
@@ -34,6 +35,8 @@ const GuidesView = require('./GuidesView')
 const Icon = require('./Icon')
 const Toolbar = require('./Toolbar')
 const FatalErrorBoundary = require('./FatalErrorBoundary')
+
+const {useExportToGltf, loadCameraModel} = require('./use-export-to-gltf')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -329,6 +332,8 @@ const Editor = connect(
       }
     }, [])
 
+    useExportToGltf(scene)
+
     // render Toolbar with updated camera when scene is ready, or when activeCamera changes
     useEffect(() => {
       setCamera(scene.current.children.find(o => o.userData.id === activeCamera))
@@ -387,7 +392,7 @@ const Editor = connect(
     // TODO cancellation (e.g.: redux-saga)
     const loadSceneObjects = async (dispatch, state) => {
       let storyboarderFilePath = state.meta.storyboarderFilePath
-
+      loadCameraModel(storyboarderFilePath)
       const loadables = Object.values(sceneObjects)
         // has a value for model
         .filter(o => o.model != null)
@@ -747,7 +752,7 @@ const Editor = connect(
               ],
 
               ['div.column.fill',
-                ['div#camera-view', { ref: mainViewContainerRef, style: { paddingTop: `${(1 / aspectRatio) * 100}%` } },
+                ['div#camera-view', { ref: mainViewContainerRef},
                   // camera canvas
                   ['canvas', { key: 'camera-canvas', tabIndex: 1, ref: largeCanvasRef, id: 'camera-canvas', onPointerDown: onCanvasPointerDown }],
                   largeCanvasSize.width && [GuidesView, {
@@ -758,10 +763,14 @@ const Editor = connect(
                   }]
                 ],
                 ['div.inspectors', [
-                  [CameraInspector, { camera }],
+                  // [CameraInspector, { camera }],
+                  // [BoardInspector],
+                  [CameraPanelInspector, {camera}],
                   [BoardInspector],
-                  [GuidesInspector],
-                  [CamerasInspector]
+                  ['div', [
+                    [CamerasInspector],
+                    [GuidesInspector]
+                  ]]
                 ]]
               ],
 
