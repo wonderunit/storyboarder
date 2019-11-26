@@ -153,17 +153,20 @@ const AttachableEditor = connect(
       if (name != null && name != '' && name != ' ') {
         let bone = originalSkeleton.getBoneByName(name)
         let {x, y, z} = bone.worldPosition()
+        let quat = bone.worldQuaternion()
+        let euler = new THREE.Euler().setFromQuaternion(quat)
         let key = THREE.Math.generateUUID()
         let element = {
           id: key,
           type: 'attachable',
         
-          x:x, y: y, z: z,
+          x: x, y: y, z: z,
 
           model: model,
           bindBone: name,
           attachToId: id,
-          size: 1
+          size: 1,
+          rotation: { x: euler.x, y: euler.y, z: euler.z },
          }
          createObject(element)
          selectAttachable({id: element.id, bindId: element.attachToId })

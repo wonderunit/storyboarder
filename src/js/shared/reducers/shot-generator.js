@@ -189,15 +189,12 @@ const updateObject = (draft, state, props, { models }) => {
   }
 
   if (props.x != null) {
-    //console.log(props.x)
     draft.x = props.x
   }
   if (props.y != null) {
-    //console.log(props.y)
     draft.y = props.y
   }
   if (props.z != null) {
-    //console.log(props.z)
     draft.z = props.z
   }
 
@@ -811,7 +808,6 @@ const attachableSelectionsReducer = (state = [], action) => {
         for (let id of action.payload.ids) {
           // did we remove a selected id?
           if (draft && draft.includes(id) && draft[id]) {
-            console.log(draft[id])
             // delete it from the selections list
             draft.splice(draft.indexOf(id), 1)
           }
@@ -864,7 +860,6 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       case 'UPDATE_OBJECT':
         if (draft[action.payload.id] == null) return
-       // console.log(draft[action.payload.id].type)
         updateObject(
           draft[action.payload.id],
           state[action.payload.id],

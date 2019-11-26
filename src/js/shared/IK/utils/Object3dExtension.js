@@ -211,7 +211,6 @@ THREE.Object3D.prototype.copyMesh = function( source, recursive)
         for ( var i = 0; i < source.children.length; i ++ ) {
 
             var child = source.children[ i ];
-             console.log(child)
             if(child.type !== "Audio" && child.type !== "Attachable")
             {
                 this.add( child.clone() );

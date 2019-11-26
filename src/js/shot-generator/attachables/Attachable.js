@@ -67,7 +67,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.userData.bindedId = props.attachToId
       container.current.userData.isRotationEnabled = false
       isBoneSelected.current = false
-      scene.add(container.current)
       return function cleanup () {
         container.current.parent.remove(container.current)
         let indexOf = characterObject.current.attachables.indexOf(container.curren)
@@ -134,30 +133,27 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if ( !ready ) return
     // Applies position to container.
-    // Position for container should always be in world space but container not always attached to bone
-    // In case if it's attached we need to take it out of bone space and apply world position
-    if ( container.current.parent.uuid === scene.uuid ) {
-      container.current.position.x = props.x
-      container.current.position.y = props.y
-      container.current.position.z = props.z
-    } else {
-      let parentMatrixWorld = container.current.parent.matrixWorld
-      let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
-      container.current.applyMatrix(parentMatrixWorld)
-      container.current.position.set(props.x, props.y, props.z)
-      container.current.updateMatrixWorld(true)
-      container.current.applyMatrix(parentInverseMatrixWorld)
-      container.current.updateMatrixWorld(true)
-    }
-
+    // Position for container should always be in world space but container always attached to bone
+    // We need to take it out of bone space and apply world position
+    let parentMatrixWorld = container.current.parent.matrixWorld
+    let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
+    container.current.applyMatrix(parentMatrixWorld)
+    container.current.position.set(props.x, props.y, props.z)
+    container.current.updateMatrixWorld(true)
+    container.current.applyMatrix(parentInverseMatrixWorld)
+    container.current.updateMatrixWorld(true)
   }, [props.x, props.y, props.z, ready])
 
   useEffect(() => {
     if ( !ready ) return
     if ( !props.rotation ) return
-    container.current.rotation.x = props.rotation.x
-    container.current.rotation.y = props.rotation.y
-    container.current.rotation.z = props.rotation.z
+    let parentMatrixWorld = container.current.parent.matrixWorld
+    let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
+    container.current.applyMatrix(parentMatrixWorld)
+    container.current.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
+    container.current.updateMatrixWorld(true)
+    container.current.applyMatrix(parentInverseMatrixWorld)
+    container.current.updateMatrixWorld(true)
   }, [props.rotation, ready])
     
   useEffect(() => {

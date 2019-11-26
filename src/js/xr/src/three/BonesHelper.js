@@ -61,7 +61,7 @@ class BonesHelper extends THREE.Object3D
         for(let i = 0, n = bones.length; i < n; i++)
         {
             bone = bones[i];
-            if(bone.children.length === 0)
+            if(bone.children.length === 0 )
             {
                 continue;
             }
@@ -109,7 +109,9 @@ class BonesHelper extends THREE.Object3D
         {
             // Extracts child bone matrx from parents matrix
             // So to take it world position in world space
-            boneMatrix.multiplyMatrices( originalInverseMatrix, originalBone.children[originalBone.children.length - 1].matrixWorld );
+            let childBones = originalBone.children.filter(b => b.type === "Bone")
+            if(childBones.length === 0) return
+            boneMatrix.multiplyMatrices( originalInverseMatrix, childBones[childBones.length - 1].matrixWorld );
             reusableVector.setFromMatrixPosition(boneMatrix);
             size = helpingBone.position.distanceTo(reusableVector);
 
