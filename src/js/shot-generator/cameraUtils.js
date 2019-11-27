@@ -144,24 +144,30 @@ const getBoneStartEndPos = (bone) => {
   }
 }
 
-const getShotInfo = ({objectsToClamp, shotSize, camera}) => {
+const getShotInfo = ({
+  selected,
+  characters,
+  shotSize,
+  camera
+}) => {
   let direction = new THREE.Vector3()
-  objectsToClamp[0].getWorldDirection(direction)
+  camera.getWorldDirection(direction)
+  direction.negate()
   
-  let box = getShotBox(objectsToClamp[0], shotSize)
+  let box = getShotBox(selected, shotSize)
   if (shotSize === ShotSizes.ESTABLISHING) {
-    for (let i = 0; i < objectsToClamp.length; i++) {
-      box.expandByObject(objectsToClamp[i])
+    for (let i = 0; i < characters.length; i++) {
+      box.expandByObject(characters[i])
     }
     
-    if (objectsToClamp.length > 1) {
+    if (characters.length > 1) {
       direction = new THREE.Vector3()
       
-      for (let i = 0; i < objectsToClamp.length - 1; i += 2) {
-        direction.add(objectsToClamp[i + 1].position.clone().sub(objectsToClamp[i].position.clone()))
+      for (let i = 0; i < characters.length - 1; i += 2) {
+        direction.add(characters[i + 1].position.clone().sub(characters[i].position.clone()))
       }
       
-      direction.divideScalar(objectsToClamp.length)
+      direction.divideScalar(characters.length)
       
       direction = camera.position.clone().sub(direction)
       direction.y = camera.y
@@ -195,7 +201,7 @@ const getShotInfo = ({objectsToClamp, shotSize, camera}) => {
   if (ShotSizesInfo[shotSize] && ShotSizesInfo[shotSize].pan) {
     let pan = ShotSizesInfo[shotSize].pan
     
-    let panVector = new THREE.Vector3().crossVectors(direction.clone(), objectsToClamp[0].up.clone())
+    let panVector = new THREE.Vector3().crossVectors(direction.clone(), selected.up.clone())
     
     clampedInfo.position.add(panVector.setLength(pan))
     
@@ -255,13 +261,16 @@ const getShotBox = (character, shotType = 0) => {
 
 const setShot = ({
   camera,
-  objectsToClamp,
+  characters,
+  selected,
+  scene,
   updateObject,
   shotAngle,
   shotSize
 }) => {
   let {clampedInfo, direction} = getShotInfo({
-    objectsToClamp,
+    selected: selected || characters[0],
+    characters,
     shotSize,
     camera
   })
@@ -269,15 +278,22 @@ const setShot = ({
   if (ShotAnglesInfo[shotAngle] !== undefined) {
     let currentDistance = clampedInfo.position.distanceTo(clampedInfo.target)
   
+    direction.y = 0
+    direction.normalize()
     let mainAxis = new THREE.Vector3().crossVectors(camera.up, direction)
   
     let quaternion = new THREE.Quaternion()
     quaternion.setFromAxisAngle(mainAxis, -ShotAnglesInfo[shotAngle])
-  
+    
     direction.applyQuaternion(quaternion)
     direction.setLength(currentDistance)
   
     clampedInfo.position.copy(clampedInfo.target).sub(direction)
+  }
+  
+  if (clampedInfo.position.y < 0) {
+    clampedInfo.position.sub(direction.clone().setY(0).setLength(clampedInfo.position.y))
+    clampedInfo.position.y = 0
   }
   
   camera.position.copy(clampedInfo.position)

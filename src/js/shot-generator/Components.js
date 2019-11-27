@@ -2347,12 +2347,14 @@ const CameraPanelInspector = connect(
     }, 100, {trailing:false}))
   
     const onShotSizeChange = useCallback((item) => {
-      let objectsToClamp = scene.children.filter((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
+      let selected = scene.children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
+      let characters = scene.children.filter((obj) => obj.userData.type === 'character')
     
-      if (objectsToClamp) {
+      if (selected || characters.length) {
         setShot({
           camera,
-          objectsToClamp,
+          characters,
+          selected,
           updateObject,
           shotSize: item.value,
           shotAngle: currentShotAngle
@@ -2363,12 +2365,15 @@ const CameraPanelInspector = connect(
     })
   
     const onShotAngleChange = useCallback((item) => {
-      let objectsToClamp = scene.children.filter((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
-    
-      if (objectsToClamp) {
+      let selected = scene.children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
+      let characters = scene.children.filter((obj) => obj.userData.type === 'character')
+  
+      if (selected || characters.length) {
         setShot({
           camera,
-          objectsToClamp,
+          characters,
+          selected,
+          scene,
           updateObject,
           shotAngle: item.value,
           shotSize: currentShotSize
@@ -2388,9 +2393,7 @@ const CameraPanelInspector = connect(
       {value: ShotSizes.MEDIUM_LONG, label: 'Medium Long Shot'},
       {value: ShotSizes.LONG, label: 'Long Shot / Wide'},
       {value: ShotSizes.EXTREME_LONG, label: 'Extreme Long Shot'},
-      {value: ShotSizes.ESTABLISHING, label: 'Establishing Shot'},
-      {value: ShotSizes.OTS_LEFT, label: 'Over The Shoulder Left'},
-      {value: ShotSizes.OTS_RIGHT, label: 'Over The Shoulder Right'}
+      {value: ShotSizes.ESTABLISHING, label: 'Establishing Shot'}
     ]
   
     const cameraAngles = [
@@ -2467,8 +2470,8 @@ const CameraPanelInspector = connect(
             ],
             ['div.camera-item.shots',
               [
-                ['div.select', [Select, {label: 'Shot Size', options: shotSizes, onSetValue: onShotSizeChange, disabled: !isCharacterSelected}]],
-                ['div.select', [Select, {label: 'Camera Angle', options: cameraAngles, onSetValue: onShotAngleChange, disabled: !isCharacterSelected}]]
+                ['div.select', [Select, {label: 'Shot Size', options: shotSizes, onSetValue: onShotSizeChange}]],
+                ['div.select', [Select, {label: 'Camera Angle', options: cameraAngles, onSetValue: onShotAngleChange}]]
               ]
             ]
           ]
