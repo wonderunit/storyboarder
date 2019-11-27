@@ -1759,8 +1759,8 @@ const Element = React.memo(({ index, style, sceneObject, isSelected, isActive, s
             : [],
   
           sceneObject.locked
-            ? ['a.lock[href=#]', { onClick: onToggleLockClick }, "Unlock"]
-            : ['a.lock.hide-unless-hovered[href=#]', { onClick: onToggleLockClick }, "Lock"],
+            ? ['a.lock[href=#]', { onClick: onToggleLockClick }, [Icon, { src: 'icon-item-lock' }]]
+            : ['a.lock.hide-unless-hovered[href=#]', { onClick: onToggleLockClick }, [Icon, { src: 'icon-item-unlock' }]],
 
           sceneObject.type === 'camera'
             ? []
