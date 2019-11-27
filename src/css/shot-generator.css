@@ -997,6 +997,13 @@ div.fatal-error-screen__report::selection {
   width: 110px;
 }
 
+.camera-item.shots {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
 .camera-item.pan .pan-control {
   width: 64px;
   height: 64px;
@@ -1013,6 +1020,103 @@ div.fatal-error-screen__report::selection {
   height: 6px;
   border-radius: 50%;
   background-color: #808080;
+}
+
+.shots > .select {
+  box-sizing: border-box;
+  width: 158px;
+  height: 26px;
+
+  margin: 3px;
+  cursor: pointer;
+}
+
+.select {
+  width: 100%;
+  height: inherit;
+}
+
+.select .select__menu {
+  background: rgb(41, 41, 44);
+}
+
+.select .select__option.select__option--is-focused {
+  background: rgba(255,255,255,0.2);
+}
+.select .select__option.select__option--is-selected {
+  background: #5c65c0;
+}
+.select .select__option:focus,
+.select .select__option:active {
+  background: rgb(84, 84, 86);
+}
+
+.select .select--is-disabled {
+  opacity: 0.5;
+}
+
+.select .select__control {
+  background: rgb(41, 41, 44);
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  min-height: 0;
+  height: inherit;
+
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+
+  cursor: pointer;
+}
+
+.select .select__control:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.select .select__control.select__control--is-focused {
+  border-color: #5c65c0;
+}
+
+.select .select__single-value {
+  color: #eee;
+}
+
+.select .select__placeholder {
+  color: #888888;
+}
+
+.select .select__dropdown-indicator {
+  padding: 0 4px;
+}
+
+.select .select__indicator-separator {
+  margin: 0;
+  background-color: #808080;
+}
+
+.select .select__value-container {
+  padding: 0 0 0 6px;
+  line-height: initial;
+}
+
+.select .select__indicators {
+  display: none;
+}
+
+/* Scroll Bar */
+.select__menu-list::-webkit-scrollbar {
+  width: 4px;
+  height: 0px;
+}
+.select__menu-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.select__menu-list::-webkit-scrollbar-thumb {
+  background: #888;
+}
+.select__menu-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }
 
 @media (max-width: 1280px) {
