@@ -2304,7 +2304,6 @@ const CameraPanelInspector = connect(
   
     const selectionsRef = useRef(selections)
     const selectedCharacters = useRef([])
-    const [isCharacterSelected, selectCharacter] = useState(false)
     const [currentShotAngle, setCurrentShotAngle] = useState(null)
     const [currentShotSize, setCurrentShotSize] = useState(null)
     
@@ -2314,8 +2313,6 @@ const CameraPanelInspector = connect(
       selectedCharacters.current = selections.filter((id) => {
         return (sceneObjects[id] && sceneObjects[id].type === 'character')
       })
-  
-      selectCharacter(selectedCharacters.current.length > 0)
     }, [selections])
     
     let cameraState = {...sceneObjects[activeCamera]}
@@ -2350,7 +2347,7 @@ const CameraPanelInspector = connect(
       let selected = scene.children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
       let characters = scene.children.filter((obj) => obj.userData.type === 'character')
     
-      if (selected || characters.length) {
+      if (characters.length) {
         setShot({
           camera,
           characters,
@@ -2368,7 +2365,7 @@ const CameraPanelInspector = connect(
       let selected = scene.children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
       let characters = scene.children.filter((obj) => obj.userData.type === 'character')
   
-      if (selected || characters.length) {
+      if (characters.length) {
         setShot({
           camera,
           characters,

@@ -18,6 +18,14 @@ const clampCameraToBox = ({
   }
 }
 
+const DefaultLenses = [
+    22,
+    35,
+    50,
+    85,
+    120
+]
+
 const ShotSizes = {
   EXTREME_CLOSE_UP: 0,
   VERY_CLOSE_UP: 1,
@@ -259,6 +267,38 @@ const getShotBox = (character, shotType = 0) => {
   return box;
 }
 
+const getClosestCharacter = (characters, camera) => {
+  let resultAngle = Math.PI
+  let resultDistance = Infinity
+  let resultObject = null
+  
+  let cameraDir = new THREE.Vector3()
+  camera.getWorldDirection(cameraDir)
+  
+  characters.forEach((target) => {
+    let charDir = new THREE.Vector3()
+    target.getWorldDirection(charDir)
+    
+    let dist = camera.position.distanceTo(target.position)
+    let angle = charDir.clone().dot(cameraDir)
+    
+    let frustum = new THREE.Frustum().setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse))
+    let visible = frustum.containsPoint(target.position)
+    
+    if ((angle >= 1.0 || angle <= 0.0) && dist <= resultDistance && visible) {
+      resultAngle = angle
+      resultDistance = dist
+      resultObject = target
+    }
+  })
+  
+  if (!resultObject) {
+    return characters[0]
+  }
+  
+  return resultObject
+}
+
 const setShot = ({
   camera,
   characters,
@@ -269,7 +309,7 @@ const setShot = ({
   shotSize
 }) => {
   let {clampedInfo, direction} = getShotInfo({
-    selected: selected || characters[0],
+    selected: selected || getClosestCharacter(characters, camera),
     characters,
     shotSize,
     camera
