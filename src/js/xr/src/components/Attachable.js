@@ -70,7 +70,17 @@ const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
   }, [sceneObject.model, gltf])
 
   useEffect(() => {
-    console.log("Attachable is selected")
+    traverseMeshMaterials(ref.current, material => {
+      if (material.emissive) {
+        if (isSelected) {
+          material.emissive = new THREE.Color( 0x755bf9 )
+          material.color = new THREE.Color( 0x222222 )
+        } else {
+          material.emissive = new THREE.Color( '#000000' )
+          material.color = new THREE.Color( 0xcccccc )
+        }
+      }
+    })
   }, [isSelected])
 
   useEffect(() => {
@@ -103,7 +113,7 @@ const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
     ref.current.updateMatrixWorld(true)
   }, [sceneObject.rotation])
 
-  const { x, y, z, size, rotation } = sceneObject
+  const { size } = sceneObject
   return <group
     ref={ref}
 
