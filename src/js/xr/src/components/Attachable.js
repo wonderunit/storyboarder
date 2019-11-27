@@ -40,7 +40,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, children }) => {
+const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
   const { scene } = useThree()
   const ref = useUpdate(
     self => {
@@ -57,6 +57,7 @@ const Attachable = React.memo(({ gltf, sceneObject, children }) => {
             <primitive
               key={`${sceneObject.id}-${child.uuid}`}
               object={meshFactory(child)}
+              userData={{type:'attachable'}}
             />
           )
         }
@@ -69,27 +70,51 @@ const Attachable = React.memo(({ gltf, sceneObject, children }) => {
   }, [sceneObject.model, gltf])
 
   useEffect(() => {
+    console.log("Attachable is selected")
+  }, [isSelected])
+
+  useEffect(() => {
     if(!scene.children[1]) return []
+   // console.log("Object added")
     let characterObject = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
     let skinnedMesh = characterObject.getObjectByProperty("type", "SkinnedMesh")
     let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
-    bone.attach(ref.current)
+    bone.add(ref.current)
+    ref.current.updateMatrixWorld(true)
   }, [scene.children])
+  
+  useEffect(() => {
+    let parentMatrixWorld = ref.current.parent.matrixWorld
+    let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
+    ref.current.applyMatrix(parentMatrixWorld)
+    ref.current.position.set(sceneObject.x, sceneObject.y, sceneObject.z)
+    ref.current.updateMatrixWorld(true)
+    ref.current.applyMatrix(parentInverseMatrixWorld)
+    ref.current.updateMatrixWorld(true)
+  }, [sceneObject.x, sceneObject.y, sceneObject.z])
+  
+  useEffect(() => {
+    let parentMatrixWorld = ref.current.parent.matrixWorld
+    let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
+    ref.current.applyMatrix(parentMatrixWorld)
+    ref.current.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
+    ref.current.updateMatrixWorld(true)
+    ref.current.applyMatrix(parentInverseMatrixWorld)
+    ref.current.updateMatrixWorld(true)
+  }, [sceneObject.rotation])
 
   const { x, y, z, size, rotation } = sceneObject
   return <group
     ref={ref}
 
-    onController={sceneObject.visible ? () => null : null}
+    onController={() => null}
     userData={{
       type: 'attachable',
-      id: sceneObject.id
+      id: sceneObject.id,
+      attachToId: sceneObject.attachToId
     }}
 
-
-    position={[x, y, z]}
     scale={[size, size, size]}
-    rotation={[rotation.x, rotation.y, rotation.z]}
   >
     {meshes}
     {children}

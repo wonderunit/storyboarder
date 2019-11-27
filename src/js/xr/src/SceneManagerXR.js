@@ -27,7 +27,8 @@ const {
 
   // action creators
   selectObject,
-  updateObject
+  updateObject,
+  getSelectedAttachable
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
@@ -105,6 +106,7 @@ const SceneContent = connect(
     activeCamera: getActiveCamera(state),
     selections: getSelections(state),
     models: state.models,
+    selectedAttachable: getSelectedAttachable(state),
 
     characterIds: getSceneObjectCharacterIds(state),
     modelObjectIds: getSceneObjectModelObjectIds(state),
@@ -121,7 +123,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable,
 
     resources, getAsset
   }) => {
@@ -634,6 +636,7 @@ const SceneContent = connect(
                     key={id}
                     gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
                     sceneObject={sceneObjects[id]}
+                    isSelected={ selectedAttachable === id ? true : false}
                     modelSettings={models[sceneObjects[id].model] || undefined}/>
                 </SimpleErrorBoundary>
                 : null

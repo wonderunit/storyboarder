@@ -227,7 +227,7 @@ const machine = Machine({
     selectionNil: (context, event) => event.intersection == null,
     //setRediractedModeSelect : (context, event) => 
 
-    eventHasSceneObjectIntersection: (context, event) => event.intersection != null && ['object', 'character', 'light', 'virtual-camera', 'image'].includes(event.intersection.type),
+    eventHasSceneObjectIntersection: (context, event) => event.intersection != null && ['object', 'character', 'light', 'virtual-camera', 'image', 'attachable'].includes(event.intersection.type),
     eventHasBoneIntersection: (context, event) => event.intersection != null && event.intersection.bone,
     eventHasCharacterIntersection : (context, event) => context.selectionType === 'character',
     eventHasControlPointIntersection: (context, event) => event.intersection != null && event.intersection.controlPoint,
