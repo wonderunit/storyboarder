@@ -295,7 +295,6 @@ const SelectionManager = connect(
           return
         }
       }
-      
 
       // prefer the nearest character to the click
       if (useIcons) {
@@ -527,7 +526,7 @@ const SelectionManager = connect(
               }
             } else {
               // if the pointerup'd target is not part of the multi-selection
-              if (!selections.includes(target.userData.id)) {
+              if (!selections.includes(target.userData.id) && !target.userData.locked) {
                 // clear the multi-selection and select just the target
                 selectObject(target.userData.id)
               }
