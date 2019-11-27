@@ -174,7 +174,7 @@ const SelectionManager = connect(
       x = pointer.x;
       y = pointer.y;
       raycaster.setFromCamera({x, y}, camera )
-      //Check helpers intersection first 
+      //Check helpers intersection first
       intersects = raycaster.intersectObject(SGIkHelper.getInstance())
       if(intersects.length > 0)
       {
@@ -241,7 +241,7 @@ const SelectionManager = connect(
     }
   }
   const endDrag = () => {
-    
+  
   }
   useMemo(() => {
     if (dragTarget) {
@@ -287,7 +287,14 @@ const SelectionManager = connect(
       let shouldDrag = false
       let target
       let isSelectedControlPoint = false;
-      let selectedBoneControl;
+      let selectedBoneControl
+  
+      for (let intersect of intersects) {
+        target = getIntersectionTarget(intersect)
+        if (target.userData.type === 'character' && target.userData.locked) {
+          return
+        }
+      }
 
       // prefer the nearest character to the click
       if (useIcons) {
@@ -323,8 +330,8 @@ const SelectionManager = connect(
 
         target = getIntersectionTarget(intersect)
       
-      } 
-      else 
+      }
+      else
       {
         let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint' || intersect.object.type === "gizmo");
         if(controlPoint.length !== 0)
@@ -340,7 +347,7 @@ const SelectionManager = connect(
           target = characters[0];
           isSelectedControlPoint = true;
   
-        } 
+        }
         else if(target && target.userData && target.userData.type === 'boneControl')
         {
           let characterId = target.characterId;
@@ -369,6 +376,14 @@ const SelectionManager = connect(
               //  and its the one we pointerdown'd ...
               selections[0] === target.userData.id
             ) {
+            if (target.userData.locked) {
+              selectObject(null)
+              selectBone(null)
+              setLastDownId(null)
+              setDragTarget(null)
+              undoGroupEnd()
+              return
+            }
             // see if we pointerdown'd a bone ...
             let raycaster = new THREE.Raycaster()
             raycaster.setFromCamera({ x, y }, camera )
@@ -486,7 +501,7 @@ const SelectionManager = connect(
           // selectObject(undefined)
           // selectBone(null)
           setLastDownId(null)
-          // 
+          //
           // endDrag()
           // setDragTarget(null)
 
@@ -511,7 +526,7 @@ const SelectionManager = connect(
               }
             } else {
               // if the pointerup'd target is not part of the multi-selection
-              if (!selections.includes(target.userData.id)) {
+              if (!selections.includes(target.userData.id) && !target.userData.locked) {
                 // clear the multi-selection and select just the target
                 selectObject(target.userData.id)
               }
