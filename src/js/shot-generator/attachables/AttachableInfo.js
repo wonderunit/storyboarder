@@ -1,4 +1,5 @@
 const { remote } = require('electron')
+const { dialog } = remote
 const { useMemo, forwardRef } = require('react')
 const { connect } = require('react-redux')
 const { FixedSizeGrid } = require('react-window')
@@ -27,19 +28,31 @@ const AttachableInfoItem  = React.memo(({
     deleteObjects
   
 }) => {
+    const bindBoneName = !sceneObject ? '' : sceneObject.bindBone ? sceneObject.bindBone : ''
     const onHandSelect = () => {
         onSelectItem(sceneObject.id, sceneObject.bindBone )
     }
-    const buttonName = useMemo(() => sceneObject.bindBone, [sceneObject.bindBone])
+    const buttonName = useMemo(() => bindBoneName, [bindBoneName])
     const attachableName = useMemo(() => { 
         let model = attachable.children.filter(child => child.userData.name)[0]
         return !model.userData.name ? '' : model.userData.name
     })
+    const onDelete = () => {
+      let choice = dialog.showMessageBox(null, {
+        type: 'question',
+        buttons: ['Yes', 'No'],
+        message: 'Are you sure?',
+        defaultId: 1 // default to No
+      })
+      if (choice === 0) {
+        deleteObjects([sceneObject.id])
+      }
+    }
 
-    return h(['div.attachable-card', 
+    return sceneObject ? h(['div.attachable-card', 
         ['div.attachable-card___title', 
           ['div.attachable-card___label', attachableName],
-          ['a.attachable-card__discard[href=#]', { onClick: () => { deleteObjects([sceneObject.id])} }, 'X']
+          ['a.attachable-card__discard[href=#]', { onClick: () => { onDelete() }}, 'X']
         ],
         ['div.number-slider',
           ['div.number-slider__label', "Attached to bone"], 
@@ -60,7 +73,8 @@ const AttachableInfoItem  = React.memo(({
               )}
             }
         ]
-    ])
+    ]) :
+    []
 })
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
