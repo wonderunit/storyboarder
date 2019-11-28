@@ -550,6 +550,7 @@ class CanvasRenderer {
           image: 'pose-preset',
           stroke: true,
           state: grids.tab === 'pose',
+          drawSquare: true,
           onSelect: () => {
             grids.tab = 'pose'
             this.needsRender = true
@@ -566,6 +567,7 @@ class CanvasRenderer {
           image: 'model-type',
           stroke: true,
           state: grids.tab === 'character',
+          drawSquare: true,
           onSelect: () => {
             grids.tab = 'character'
             this.needsRender = true
@@ -583,6 +585,7 @@ class CanvasRenderer {
           image: 'hand-preset',
           stroke: true,
           state: grids.tab === 'handPoses',
+          drawSquare: true,
           onSelect: () => {
             grids.tab = 'handPoses'
             this.needsRender = true

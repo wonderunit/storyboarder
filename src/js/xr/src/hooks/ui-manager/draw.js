@@ -34,7 +34,8 @@ const drawImageButton = ({
   drawBG = false,
   padding = 0,
   state = false,
-  stroke = false
+  stroke = false,
+  drawSquare = false
 }) => {
   ctx.save()
 
@@ -52,7 +53,12 @@ const drawImageButton = ({
   if (flip) ctx.scale(-1, 1)
   if (flipY) ctx.scale(1, -1)
 
-  ctx.drawImage(image, flip ? -width : 0, flipY ? -height : 0, width, height)
+  if(drawSquare) {
+    let x = (width / 2) - (height / 2)
+    ctx.drawImage(image, x, 0, height, height)
+  } else {
+    ctx.drawImage(image, flip ? -width : 0, flipY ? -height : 0, width, height)
+  }
   ctx.restore()
 }
 
