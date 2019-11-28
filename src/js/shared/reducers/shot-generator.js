@@ -179,6 +179,22 @@ const migrateWorldFog = world => ({
 
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
+  
+  if (props.visible != null) {
+    draft.visible = props.visible
+  }
+  
+  if (props.hasOwnProperty('locked')) {
+    if (props.locked) {
+      draft.locked = true
+    } else {
+      draft.locked = false
+    }
+  }
+  
+  if (draft.locked) {
+    return
+  }
 
   // update skeleton first
   // so that subsequent changes to height and headScale take effect
@@ -260,10 +276,6 @@ const updateObject = (draft, state, props, { models }) => {
   // allow a null value for name
   if (props.hasOwnProperty('name')) {
     draft.name = props.name
-  }
-
-  if (props.visible != null) {
-    draft.visible = props.visible
   }
 
   if (props.intensity != null) {
@@ -852,6 +864,7 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'UPDATE_OBJECTS':
         for (let [ key, value ] of Object.entries(action.payload)) {
           if (draft[key] == null) return
+          if (draft[key].locked) continue
 
           draft[key].x = value.x
           draft[key].y = value.y
