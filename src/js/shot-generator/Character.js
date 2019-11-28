@@ -237,6 +237,7 @@ const Character = React.memo(({
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
+      object.current.userData.locked = props.locked
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
@@ -415,9 +416,9 @@ const Character = React.memo(({
     boneRotationControl.current.setCamera(camera)
   }, [camera, ready])
   //#endregion
-
+  
   useEffect(() => {
-
+    
     if (object.current) {
       object.current.position.x = props.x
       object.current.position.z = props.y
@@ -425,6 +426,11 @@ const Character = React.memo(({
       object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, ready])
+  
+  useEffect(() => {
+    if (!object.current) return
+    object.current.userData.locked = props.locked
+  }, [props.locked, ready])
 
   useEffect(() => {
     if (object.current) {
@@ -616,7 +622,7 @@ const Character = React.memo(({
     object.current.orthoIcon.setSelected(isSelected)
   }, [props.model, isSelected, ready])
 
-  // Watches for poletargets changes and applies them 
+  // Watches for poletargets changes and applies them
   useEffect(() => {
     if(!ready) return
     if(!props.poleTargets) return

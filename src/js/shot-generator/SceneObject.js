@@ -72,6 +72,7 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
     container.current = groupFactory()
     container.current.userData.id = id
     container.current.userData.type = type
+    container.current.userData.locked = props.locked
 
     container.current.orthoIcon = new IconSprites( type, "", container.current )
     //scene.add(container.current.orthoIcon)
@@ -85,6 +86,11 @@ const SceneObject = React.memo(({ scene, id, type, isSelected, loaded, modelData
       scene.remove(container.current)
     }
   }, [])
+  
+  useEffect(() => {
+    if (!container.current) return
+    container.current.userData.locked = props.locked
+  }, [props.locked])
 
   // if the model has changed
   useEffect(() => {
