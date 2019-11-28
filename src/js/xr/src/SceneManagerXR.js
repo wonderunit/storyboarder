@@ -827,6 +827,14 @@ const SceneManagerXR = () => {
   // world model files
   useEffect(() => {
     if (world.environment.file) {
+      // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
+      const environmentPath = getFilepathForModelByType({
+        type: 'environment',
+        model: world.environment.file
+      })
+
+      delete assets[environmentPath]
+
       requestAsset(
         getFilepathForModelByType({
           type: 'environment',
