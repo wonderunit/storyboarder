@@ -94,6 +94,8 @@ const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
   }, [scene.children])
   
   useEffect(() => {
+    console.log(sceneObject)
+    console.log(sceneObject.x, sceneObject.y, sceneObject.z)
     let parentMatrixWorld = ref.current.parent.matrixWorld
     let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
     ref.current.applyMatrix(parentMatrixWorld)
@@ -106,6 +108,7 @@ const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
   useEffect(() => {
     let parentMatrixWorld = ref.current.parent.matrixWorld
     let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
+    console.log(sceneObject.rotation)
     ref.current.applyMatrix(parentMatrixWorld)
     ref.current.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
     ref.current.updateMatrixWorld(true)

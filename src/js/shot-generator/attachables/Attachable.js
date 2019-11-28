@@ -112,7 +112,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.scale.multiplyScalar(props.size / characterObject.current.scale.x)
       bone.add(container.current)
       container.current.updateMatrixWorld(true, true)
-
       // Adds a container of attachable to character if it doesn't exist and adds current attachable
       if(!skinnedMesh.parent.attachables) skinnedMesh.parent.attachables = []
       skinnedMesh.parent.attachables.push(container.current)
@@ -135,6 +134,8 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     // Applies position to container.
     // Position for container should always be in world space but container always attached to bone
     // We need to take it out of bone space and apply world position
+    characterObject.current.updateWorldMatrix(true, true)
+    container.current.parent.updateMatrixWorld(true)
     let parentMatrixWorld = container.current.parent.matrixWorld
     let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
     container.current.applyMatrix(parentMatrixWorld)
@@ -147,8 +148,10 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if ( !ready ) return
     if ( !props.rotation ) return
+    characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = container.current.parent.matrixWorld
     let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
+
     container.current.applyMatrix(parentMatrixWorld)
     container.current.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
     container.current.updateMatrixWorld(true)

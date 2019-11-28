@@ -391,8 +391,13 @@ const useInteractionsManager = ({
         tilt: euler.x
       }))
     } else if (object.userData.type === 'attachable') {
-      let position = object.worldPosition()
-      let rot = new THREE.Euler().setFromQuaternion(object.worldQuaternion(), 'XYZ')
+      let position = new THREE.Vector3()
+      let quaternion = new THREE.Quaternion()
+      let scale = new THREE.Vector3()
+      let matrix = object.matrix.clone()
+      matrix.premultiply(object.parent.matrixWorld)
+      matrix.decompose(position, quaternion, scale)
+      let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
       dispatch(updateObject(id, {
         x: position.x,
         y: position.y,
