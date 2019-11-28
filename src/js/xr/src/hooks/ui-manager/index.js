@@ -1649,7 +1649,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses, models, activeCamera])
+  }, [selections, sceneObjects, poses, models, activeCamera, world])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls

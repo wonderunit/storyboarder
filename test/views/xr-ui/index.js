@@ -85,6 +85,7 @@ const UITestContent = ({ resources }) => {
 
   const showHelp = useUiStore(state => state.showHelp)
   const showHUD = useUiStore(state => state.showHUD)
+  const showConfirm = useUiStore(state => state.showConfirm)
 
   return (
     <>
@@ -129,7 +130,7 @@ const UITestContent = ({ resources }) => {
                 rotation={Math.PI}
                 mode={uiCurrent.value.controls}
                 getCanvasRenderer={getCanvasRenderer}
-                showConfirm={canvasRendererRef.current.state.boards.showConfirm}
+                showConfirm={showConfirm}
                 showSettings={canvasRendererRef.current.state.showSettings} />
             </group>
           </group>
