@@ -195,6 +195,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       position={[sceneObject.x, sceneObject.z, sceneObject.y]}
       rotation={[0, sceneObject.rotation, 0]}
       scale={[bodyScale, bodyScale, bodyScale]}
+      visible={sceneObject.visible}
     >
       <primitive object={lod} />
       <primitive object={armature} />
