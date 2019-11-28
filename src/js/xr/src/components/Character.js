@@ -144,7 +144,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         bone.rotation.z = handBone.rotation.z
       }
     }
-  }, [skeleton, sceneObject.handSkeleton])
+  }, [skeleton, sceneObject.skeleton, sceneObject.handSkeleton])
 
   const bodyScale = useMemo(
     () => sceneObject.height / originalHeight,
