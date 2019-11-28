@@ -547,8 +547,7 @@ class CanvasRenderer {
           y: 30,
           width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          drawBG: true,
-          image: 'arrow',
+          image: 'pose-preset',
           stroke: true,
           state: grids.tab === 'pose',
           onSelect: () => {
@@ -564,8 +563,7 @@ class CanvasRenderer {
           y: 30,
           width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          drawBG: true,
-          image: 'arrow',
+          image: 'model-type',
           stroke: true,
           state: grids.tab === 'character',
           onSelect: () => {
@@ -582,8 +580,7 @@ class CanvasRenderer {
           y: 30,
           width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          drawBG: true,
-          image: 'arrow',
+          image: 'hand-preset',
           stroke: true,
           state: grids.tab === 'handPoses',
           onSelect: () => {
@@ -1324,7 +1321,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
 const UI_ICON_NAMES = [
   'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
-  'close', 'settings',
+  'close', 'settings', 'pose-preset', 'model-type', 'hand-preset',
 
   'camera', 'eye',
 

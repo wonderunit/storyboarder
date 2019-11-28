@@ -41,7 +41,7 @@ const drawImageButton = ({
   ctx.fillStyle = fill
   if (state > 0) { 
     ctx.fillStyle = '#6E6E6E'
-    roundRect(ctx, 0, 0, (width - 10) * state, height, 12, true, false) 
+    roundRect(ctx, 0, 0, width - 10, height, 12, true, false) 
   }
   if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, 25, true, false)
   if (stroke) {
