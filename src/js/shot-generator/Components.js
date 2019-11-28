@@ -6,7 +6,7 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
-const { useState, useEffect, useRef, useContext } = React
+const { useState, useEffect, useRef, useContext, useMemo } = React
 const {useDrag} = require('react-use-gesture')
 const { connect } = require('react-redux')
 const Stats = require('stats.js')
@@ -61,6 +61,7 @@ const {
   updateWorldRoom,
   updateWorldEnvironment,
   updateWorldFog,
+  updateObjects,
 
   // markSaved,
 
@@ -2540,6 +2541,8 @@ const MenuManager = ({ }) => {
   return null
 }
 
+const { dropObject, dropCharacter } = require("../utils/dropToObjects")
+
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -2558,7 +2561,8 @@ const KeyHandler = connect(
     deleteObjects,
     updateObject,
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    updateObjects
   }
 )(
   ({
@@ -2574,10 +2578,18 @@ const KeyHandler = connect(
     deleteObjects,
     updateObject,
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    updateObjects
   }) => {
     const { scene } = useContext(SceneContext)
-
+    let sceneChildren = scene ? scene.children : []
+    const dropingPlaces = useMemo(() => {
+      if(!scene) return
+      return scene.children.filter(o =>
+        o.userData.type === 'object' ||
+        o.userData.type === 'character' ||
+        o.userData.type === 'ground')
+    }, [sceneChildren])
     const onCommandDuplicate = () => {
       if (selections) {
         // NOTE: this will also select the new duplicates, replacing selection
@@ -2588,6 +2600,24 @@ const KeyHandler = connect(
           selections.map(THREE.Math.generateUUID)
         )
       }
+    }
+
+    const onCommandDrop = () => {
+      let changes = {}
+      console.log(dropingPlaces)
+      for( let i = 0; i < selections.length; i++ ) {
+        let selection = scene.children.find( child => child.userData.id === selections[i] )
+        if( selection.userData.type === "object" ) {
+          dropObject( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        } else if ( selection.userData.type === "character" ) {
+          dropCharacter( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        }
+      }
+      updateObjects(changes)
     }
 
     useEffect(() => {
@@ -2676,9 +2706,11 @@ const KeyHandler = connect(
 
       window.addEventListener('keydown', onKeyDown)
       ipcRenderer.on('shot-generator:object:duplicate', onCommandDuplicate)
-
+      ipcRenderer.on('shot-generator:object:drop', onCommandDrop)
+      
       return function cleanup () {
         window.removeEventListener('keydown', onKeyDown)
+        ipcRenderer.off('shot-generator:object:drop', onCommandDrop)
         ipcRenderer.off('shot-generator:object:duplicate', onCommandDuplicate)
       }
     }, [mainViewCamera, _cameras, selections, _selectedSceneObject, activeCamera])
