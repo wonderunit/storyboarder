@@ -1108,6 +1108,7 @@ const {
 
   getDefaultPosePreset,
 
+  setBoard,
   reducer,
   getHash
 } = require('../../../../shared/reducers/shot-generator')
@@ -1470,6 +1471,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
               })
             )
 
+            store.dispatch(setBoard(board))
             setBoardUid(board.uid)
           } catch (err) {
             // TODO if the uid does not match, notify user, reload
@@ -1506,7 +1508,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             updateBoardsData(cr)
             cr.boardsNeedsRender = true
           } catch (err) {
-            alert('Could not save board\n' + err)
+            console.log('Could not save board\n' + err)
           }
         },
 
@@ -1530,6 +1532,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             let board = await cr.client.insertShot(data)
             updateBoardsData(cr)
             updateSgCurrentState(cr)
+            store.dispatch(setBoard(board))
             setBoardUid(board.uid)
             cr.boardsNeedsRender = true;
           } catch (err) {
