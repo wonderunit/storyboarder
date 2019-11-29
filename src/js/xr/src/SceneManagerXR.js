@@ -93,7 +93,7 @@ const getSceneObjectImageIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
 )
 
-const getSceneObjectAttachableIds= createSelector(
+const getSceneObjectAttachableIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
 )

@@ -2,7 +2,6 @@ const classNames = require('classnames')
 const { remote } = require('electron')
 const { dialog } = remote
 const LiquidMetal = require('liquidmetal')
-const path = require('path')
 const { useState, useMemo, forwardRef } = require('react')
 const { connect } = require('react-redux')
 const { FixedSizeGrid } = require('react-window')
@@ -15,8 +14,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 const ModelLoader = require('../../services/model-loader')
 const h = require('../../utils/h')
-const { truncateMiddle } = require('../../utils')
-
+const FileSelect = require('./FileSelect')
 const CustomModelHelpButton = require('../CustomModelHelpButton')
 
 const GUTTER_SIZE = 5
@@ -27,7 +25,6 @@ const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
 
 const NUM_COLS = 4
-const shortId = id => id.toString().substr(0, 7).toLowerCase()
 const filepathFor = model =>
   ModelLoader.getFilepathForModel(
     { model: model.id, type: model.type },
@@ -120,6 +117,7 @@ const AttachableEditor = connect(
     sceneObjects,
     scene,
     createObject,
+    transition,
     rows = 3
   }) => {
   const [terms, setTerms] = useState(null)
@@ -176,6 +174,21 @@ const AttachableEditor = connect(
     )
   }
 
+  const onSelectFile = event => {
+    event.preventDefault()
+
+    const filepaths = dialog.showOpenDialog(null, {})
+    if (filepaths) {
+      const filepath = filepaths[0]
+     // updateObject(sceneObject.id, { model: filepath })
+      onSelectItem(sceneObject.id, {model:filepath})
+    }
+
+    // automatically blur to return keyboard control
+    document.activeElement.blur()
+    transition('TYPING_EXIT')
+  }
+
   const results = useMemo(() => {
     const matchAll = terms == null || terms.length === 0
 
@@ -219,7 +232,14 @@ const AttachableEditor = connect(
           }]
         ]],
         isCustom
-        ['div.column', { style: { padding: 2 } }]
+          ? ['div.column', { style: { padding: 2 } }]
+          : ['div.column', { style: { alignSelf: 'center', padding: 6, lineHeight: 1 } }, 'or'],
+        [FileSelect, { model: sceneObject.model, onSelectFile }],
+        [
+          'div.column', { style: { width: 20, margin: '0 0 0 6px', alignSelf: 'center', alignItems: 'flex-end' } }, [
+            CustomModelHelpButton
+          ]
+        ]
       ]],
 
       ['div.thumbnail-search__list', [

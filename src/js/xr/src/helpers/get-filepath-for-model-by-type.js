@@ -4,7 +4,6 @@ const getFilepathForModelByType = ({ type, model }) => {
   if (isUserModel(model)) {
     const parts = model.split(/\//)
     const filename = parts[parts.length - 1]
-
     switch (type) {
       case 'character':
         return `/data/user/characters/${filename}`
@@ -12,6 +11,8 @@ const getFilepathForModelByType = ({ type, model }) => {
         return `/data/user/objects/${filename}`
       case 'environment':
         return `/data/user/environments/${filename}`
+      case 'attachable':
+        return `/data/user/attachables/${filename}`
       default:
         return null
     }

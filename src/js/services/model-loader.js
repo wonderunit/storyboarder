@@ -243,7 +243,8 @@ const builtInFolder = type => ({
 const projectFolder = type => ({
   'object': path.join('models', 'objects'),
   'character': path.join('models', 'characters'),
-  'environment': path.join('models', 'environments')
+  'environment': path.join('models', 'environments'),
+  'attachable': path.join('models', 'attachables')
 }[type])
 
 const modelIsInProjectFolder = ({ model, type }) =>
