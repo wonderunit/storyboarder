@@ -875,6 +875,7 @@ const sceneObjectsReducer = (state = {}, action) => {
           draft[key].x = value.x
           draft[key].y = value.y
           draft[key].z = value.z ? value.z : draft[key].z
+          draft[key].rotation = value.rotation ? value.rotation : draft[key].rotation 
         }
         return
 

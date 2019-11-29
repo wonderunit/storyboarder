@@ -1,18 +1,11 @@
 const THREE = require('three')
-const { useMemo, useEffect } = React = require('react')
+const { useMemo, useEffect, useRef } = React = require('react')
 const { useUpdate, useThree } = require('react-three-fiber')
 
 
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
 
 const VirtualCamera = require('../components/VirtualCamera')
-
-// old material
-// const materialFactory = () => new THREE.MeshLambertMaterial({
-//   color: 0xcccccc,
-//   emissive: 0x0,
-//   flatShading: false
-// })
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -41,6 +34,7 @@ const meshFactory = source => {
 }
 
 const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
+  const characterObject = useRef(null)
   const { scene } = useThree()
   const ref = useUpdate(
     self => {
@@ -85,17 +79,17 @@ const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
 
   useEffect(() => {
     if(!scene.children[1]) return []
-   // console.log("Object added")
-    let characterObject = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
-    let skinnedMesh = characterObject.getObjectByProperty("type", "SkinnedMesh")
+    characterObject.current = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
+    let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
     bone.add(ref.current)
+    if(!characterObject.current.attachables) characterObject.current.attachables = []
+    characterObject.current.attachables.push(ref.current)
     ref.current.updateMatrixWorld(true)
   }, [scene.children])
   
   useEffect(() => {
-    console.log(sceneObject)
-    console.log(sceneObject.x, sceneObject.y, sceneObject.z)
+    characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = ref.current.parent.matrixWorld
     let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
     ref.current.applyMatrix(parentMatrixWorld)
@@ -106,9 +100,9 @@ const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
   }, [sceneObject.x, sceneObject.y, sceneObject.z])
   
   useEffect(() => {
+    characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = ref.current.parent.matrixWorld
     let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
-    console.log(sceneObject.rotation)
     ref.current.applyMatrix(parentMatrixWorld)
     ref.current.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
     ref.current.updateMatrixWorld(true)

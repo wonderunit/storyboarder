@@ -12,6 +12,7 @@ const {
   selectObject,
   selectObjectToggle,
   updateObject,
+  updateObjects,
   selectBone,
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
@@ -69,6 +70,7 @@ const SceneManager = connect(
   }),
   {
     updateObject,
+    updateObjects,
     selectObject,
     selectObjectToggle,
     animatedUpdate,
@@ -82,7 +84,7 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -184,7 +186,8 @@ const SceneManager = connect(
         updateCharacterRotation,
         updateSkeleton,
         updateCharacterPos,
-        updatePoleTarget
+        updatePoleTarget,
+        updateObjects
       )
     }, [])
 

@@ -226,10 +226,8 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   const keyDownEvent = (event) => {switchManipulationState(event)}
 
   const switchManipulationState = (event) => {
-    if(event.ctrlKey )
-    {
-      if(event.key === 'r')
-      {
+    if(event.ctrlKey ) {
+      if(event.key === 'r') {
             event.stopPropagation()
             let isRotation = !container.current.userData.isRotationEnabled
             container.current.userData.isRotationEnabled = isRotation

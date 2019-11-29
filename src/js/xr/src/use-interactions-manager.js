@@ -40,6 +40,7 @@ const {
   selectObject,
   selectAttachable,
   updateObject,
+  updateObjects,
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
   updateCharacterPoleTargets,
@@ -327,11 +328,14 @@ const useInteractionsManager = ({
         }
       ))
 
+      const updateAllObjects = (objectsToUpdate) => dispatch(updateObjects(objectsToUpdate))
+
       ikHelper.current.setUpdate(
         updateCharacterSkeleton,
         updateSkeleton,
         updateCharacterPos,
-        updatePoleTarget
+        updatePoleTarget,
+        updateAllObjects
       )
     }
     return ikHelper.current 
@@ -425,7 +429,6 @@ const useInteractionsManager = ({
     console.log(scene.__interaction)
     let intersections = getControllerIntersections(controller, uis)
     intersection = intersections.length && intersections[0]
-    //console.log(intersection)
     if (intersection) {
       let u = intersection.uv.x
       let v = intersection.uv.y
