@@ -825,9 +825,9 @@ const sceneObjectsReducer = (state = {}, action) => {
         for (let [ key, value ] of Object.entries(action.payload)) {
           if (draft[key] == null) return
           if (draft[key].locked) continue
-
-          draft[key].x = value.x
-          draft[key].y = value.y
+          draft[key].x = value.x ? value.x : draft[key].x
+          draft[key].y = value.y ? value.y : draft[key].y
+          draft[key].z = value.z ? value.z : draft[key].z
         }
         return
 

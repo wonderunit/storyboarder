@@ -27,7 +27,7 @@ const IKHelper = require('../../shared/IK/IkHelper')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
-const {dropObject, dropCharacter } = require('./utils/dropToObjects')
+const {dropObject, dropCharacter } = require('../../utils/dropToObjects')
 
 require('./three/GPUPickers/utils/Object3dExtension')
 
