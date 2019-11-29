@@ -108,6 +108,7 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
+const HandPresetsEditor = require('./HandPresetsEditor')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
@@ -1043,7 +1044,7 @@ const MORPH_TARGET_LABELS = {
 }
 const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
-
+  const { scene } = useContext(SceneContext)
   let positionSliders = [
     [NumberSlider, { label: 'x', value: sceneObject.x, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'x') } ],
     [NumberSlider, { label: 'y', value: sceneObject.y, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'y') } ],
@@ -1484,6 +1485,13 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           posePresetId: sceneObject.posePresetId
         }
       ],
+      sceneObject.type == 'character' && [
+        HandPresetsEditor, {
+          id: sceneObject.id,
+          handPosePresetId: sceneObject.handPosePresetId,
+          scene: scene
+        }
+      ],
 
       sceneObject.type == 'character' &&
         selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }],
@@ -1607,7 +1615,6 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
 const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
   const [render, setRender] = useState(false)
-
   // has the user modified the skeleton?
   let rotation = sceneObject.skeleton[bone.name]
     // use the modified skeleton data

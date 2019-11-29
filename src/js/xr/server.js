@@ -39,6 +39,10 @@ class XRServer {
     app.use('/data/presets/poses', express.static(
       path.join(electronApp.getPath('userData'), 'presets', 'poses')
     ))
+    
+    app.use('/data/presets/handPoses', express.static(
+      path.join(electronApp.getPath('userData'), 'presets', 'handPoses')
+    ))
 
     app.get('/', function(req, res) {
       res.sendFile(path.join(__dirname, 'dist', 'index.html'))
@@ -47,13 +51,13 @@ class XRServer {
     app.get('/state.json', (req, res) => {
       const state = store.getState()
       const { aspectRatio } = state
-
       res.json({
         ...getSerializedState(state),
 
         aspectRatio,
         presets: {
-          poses: state.presets.poses
+          poses: state.presets.poses,
+          handPoses: state.presets.handPoses
         }
       })
     })
