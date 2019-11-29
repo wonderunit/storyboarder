@@ -17,7 +17,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     }
   )
 
-  const [skeleton, lod, originalSkeleton, armature, originalHeight, handSkeleton] = useMemo(
+  const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
     () => {
       let lod = new THREE.LOD()
 
@@ -88,9 +88,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
-      let handSkeleton = null
 
-      return [skeleton, lod, originalSkeleton, armature, originalHeight, handSkeleton]
+      return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
   )
@@ -129,7 +128,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
   useMemo(() => {
     if (!skeleton) return
     if (!sceneObject.handSkeleton) return
-    // has the user entered data for at least one bone?
     let hasModifications = Object.values(sceneObject.handSkeleton).length > 0
 
     if (hasModifications) {

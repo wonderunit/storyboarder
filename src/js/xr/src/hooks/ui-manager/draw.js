@@ -95,8 +95,6 @@ const drawSlider = ({ ctx, width, height, state, label }) => {
   ctx.restore()
 }
 
-
-
 const drawToggleButton = ({ ctx, width, height, cookieBoolean }) => {
   ctx.save()
   ctx.fillStyle = '#000'
@@ -312,7 +310,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
       const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
       if (distance < 0.1) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
-        
+
         if (canvasIntersection && canvasIntersection.id !== 'grid-background') {
           const name = canvasIntersection.id
           const id = this.state.selections[0]
@@ -326,11 +324,13 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
             if(!currentSkeleton) currentSkeleton = {}
             const pose = this.state.handPoses.find(pose => pose.id === name)
             let handSkeleton = pose.state.handSkeleton
-            let skeletonBones = Object.keys(handSkeleton)  
+            let skeletonBones = Object.keys(handSkeleton) 
             let currentSkeletonBones = Object.keys(currentSkeleton) 
+            
             if(skeletonBones.length !== 0) {
               let presetHand = skeletonBones[0].includes("RightHand") ? "RightHand" : "LeftHand"
               let oppositeSkeleton = createdMirroredHand(handSkeleton, presetHand)
+
               if (selectedHand === "BothHands") {
                 handSkeleton = Object.assign(oppositeSkeleton, handSkeleton)
               } 

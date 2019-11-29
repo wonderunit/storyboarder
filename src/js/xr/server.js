@@ -51,7 +51,6 @@ class XRServer {
     app.get('/state.json', (req, res) => {
       const state = store.getState()
       const { aspectRatio } = state
-      console.log("Get", state)
       res.json({
         ...getSerializedState(state),
 

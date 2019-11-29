@@ -232,12 +232,11 @@ const updateObject = (draft, state, props, { models }) => {
 
   // update skeleton first
   // so that subsequent changes to height and headScale take effect
-  if (props.hasOwnProperty('skeleton'))
-  {
+  if (props.hasOwnProperty('skeleton')) {
     draft.skeleton = props.skeleton
   }
-  if (props.hasOwnProperty('handSkeleton'))
-  {
+
+  if (props.hasOwnProperty('handSkeleton')) {
     draft.handSkeleton = props.handSkeleton
   }
   

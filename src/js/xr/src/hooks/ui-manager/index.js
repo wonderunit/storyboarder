@@ -839,10 +839,9 @@ class CanvasRenderer {
   getComponentById (id) {
     for (let paneId in this.paneComponents) {
       for (let componentId in this.paneComponents[paneId]) {
-        for(let subComponentId in this.paneComponents[paneId][componentId]){
+        for(let subComponentId in this.paneComponents[paneId][componentId]) {
           if (subComponentId == id) return this.paneComponents[paneId][componentId][subComponentId]
         }
-
         if (componentId == id) return this.paneComponents[paneId][componentId]
       }
     }
