@@ -2687,7 +2687,6 @@ const KeyHandler = connect(
 
     const onCommandDrop = () => {
       let changes = {}
-      console.log(dropingPlaces)
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children.find( child => child.userData.id === selections[i] )
         if( selection.userData.type === "object" ) {
