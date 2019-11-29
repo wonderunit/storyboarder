@@ -2665,7 +2665,7 @@ const KeyHandler = connect(
     updateObjects
   }) => {
     const { scene } = useContext(SceneContext)
-    let sceneChildren = scene ? scene.children : []
+    let sceneChildren = scene ? scene.children.length : 0
     const dropingPlaces = useMemo(() => {
       if(!scene) return
       return scene.children.filter(o =>

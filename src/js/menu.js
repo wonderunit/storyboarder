@@ -904,7 +904,7 @@ const shotGeneratorMenu = [
         accelerator: 'CommandOrControl+b',
         label: 'Drop',
         click () {
-          ipcRenderer.send('shot-generator:object:drop')
+          ipcRenderer.send('shot-generator:object:drops')
         }
       },
     ]

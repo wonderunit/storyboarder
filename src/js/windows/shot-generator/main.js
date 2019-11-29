@@ -107,7 +107,7 @@ ipcMain.on('shot-generator:object:duplicate', () => {
   win.webContents.send('shot-generator:object:duplicate')
 })
 
-ipcMain.on('shot-generator:object:drop', () => {
+ipcMain.on('shot-generator:object:drops', () => {
   win.webContents.send('shot-generator:object:drop')
 })
 
