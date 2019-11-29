@@ -34,8 +34,7 @@ const AttachableInfoItem  = React.memo(({
     }
     const buttonName = useMemo(() => bindBoneName, [bindBoneName])
     const attachableName = useMemo(() => { 
-        let model = attachable.children.filter(child => child.userData.name)[0]
-        return !model.userData.name ? '' : model.userData.name
+        return !sceneObject.displayName ? '' : sceneObject.displayName
     })
     const onDelete = () => {
       let choice = dialog.showMessageBox(null, {
