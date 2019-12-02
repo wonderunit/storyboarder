@@ -371,7 +371,7 @@ let countByType = {}
 
 // decorate target SceneObject with a calculated displayName
 const withDisplayName = sceneObject => {
-  let key = sceneObject.model || sceneObject.type;
+  let key = sceneObject.name || sceneObject.model || sceneObject.type;
   
   countByType[key] = countByType[key]
       ? countByType[key] + 1
@@ -391,7 +391,7 @@ const withDisplayNames = draft => {
 
   for (let id in draft) {
     let sceneObject = draft[id]
-    let key = sceneObject.model || sceneObject.type;
+    let key = sceneObject.name || sceneObject.model || sceneObject.type;
 
     countByType[key] = countByType[key]
       ? countByType[key] + 1

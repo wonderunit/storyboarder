@@ -133,7 +133,6 @@ const AttachableEditor = connect(
   }
 
   const onSelectItem = (id, { model }) => {
-    currentSkeleton = sceneObject[sceneObject.id]
     let skinnedMesh =  scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh")
     let originalSkeleton = skinnedMesh.skeleton
 
@@ -186,7 +185,7 @@ const AttachableEditor = connect(
       x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
 
       model: model.id,
-      displayName: model.name,
+      name: model.name,
       bindBone: bone.name,
       attachToId: id,
       size: 1,
