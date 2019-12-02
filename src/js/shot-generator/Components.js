@@ -81,8 +81,7 @@ const {
   getSelectedBone,
   getWorld,
 
-  initialState,
-  getSelectedAttachable
+  initialState
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
@@ -275,8 +274,7 @@ const Inspector = ({
   updateWorldEnvironment,
   updateWorldFog,
   storyboarderFilePath,
-  selections,
-  selectedAttachable
+  selections
 }) => {
   const { scene } = useContext(SceneContext)
 
@@ -322,8 +320,7 @@ const Inspector = ({
               transition,
               selectBone,
               updateCharacterSkeleton,
-              storyboarderFilePath, 
-              selectedAttachable
+              storyboarderFilePath
             }
           ]
         : [
@@ -700,7 +697,6 @@ const ElementsPanel = connect(
     selectedBone: getSelectedBone(state),
     models: state.models,
     activeCamera: getActiveCamera(state),
-    selectedAttachable: getSelectedAttachable(state),
 
     storyboarderFilePath: state.meta.storyboarderFilePath
   }),
@@ -721,7 +717,7 @@ const ElementsPanel = connect(
     undoGroupEnd
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd, selectedAttachable }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -821,8 +817,7 @@ const ElementsPanel = connect(
 
             storyboarderFilePath,
 
-            selections,
-            selectedAttachable
+            selections
           }]
         )
       )
@@ -1046,7 +1041,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'Skinny',
   'endomorphic': 'Obese',
 }
-const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath, selectedAttachable  }) => {
+const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath  }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
   const { scene } = useContext(SceneContext)
   let positionSliders = [
@@ -1506,7 +1501,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           sceneObject,
           updateObject,
           scene: scene,
-          selectedAttachable:selectedAttachable
+          NumberSlider,
         }
       ],
       sceneObject.type == 'character' &&

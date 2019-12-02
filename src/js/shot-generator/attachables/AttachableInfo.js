@@ -1,31 +1,18 @@
 const { remote } = require('electron')
 const { dialog } = remote
-const { useMemo, forwardRef } = require('react')
+const { useMemo } = require('react')
 const { connect } = require('react-redux')
-const { FixedSizeGrid } = require('react-window')
 const prompt = require('electron-prompt')
 const {
-  updateObject,
   deleteObjects,
-  getSceneObjects,
-  undoGroupEnd, 
-  undoGroupStart
+  getSceneObjects
 } = require('../../shared/reducers/shot-generator')
 const h = require('../../utils/h')
-const NumberSliderComponent = require('../NumberSlider')
-const NumberSlider = connect(null, {
-  onDragStart: undoGroupStart,
-  onDragEnd: undoGroupEnd
-})(NumberSliderComponent.NumberSlider)
-const ITEM_HEIGHT = 132
-const NUM_COLS = 1
-
-const AttachableInfoItem  = React.memo(({
+const AttachableInfoItem = React.memo(({
     sceneObject,
-    attachable,
     onSelectItem,
-    updateObject,
-    deleteObjects
+    onDelete,
+    getNumberSlider
   
 }) => {
     const bindBoneName = !sceneObject ? '' : sceneObject.bindBone ? sceneObject.bindBone : ''
@@ -36,19 +23,8 @@ const AttachableInfoItem  = React.memo(({
     const attachableName = useMemo(() => { 
         return !sceneObject.displayName ? '' : sceneObject.displayName
     })
-    const onDelete = () => {
-      let choice = dialog.showMessageBox(null, {
-        type: 'question',
-        buttons: ['Yes', 'No'],
-        message: 'Are you sure?',
-        defaultId: 1 // default to No
-      })
-      if (choice === 0) {
-        deleteObjects([sceneObject.id])
-      }
-    }
 
-    return sceneObject ? h(['div.attachable-card', 
+    return h(['div.attachable-card', 
         ['div.attachable-card___title', 
           ['div.attachable-card___label', attachableName],
           ['a.attachable-card__discard[href=#]', { onClick: () => { onDelete() }}, 'X']
@@ -60,38 +36,24 @@ const AttachableInfoItem  = React.memo(({
                 style: { width: 161, height: 35 },
                 onPointerDown: onHandSelect
                 }, buttonName]
-          ]]],
-        [NumberSlider, {
-              label: 'size',
-              value: sceneObject.size,
-              min: 0.7,
-              max: 2,
-              onSetValue: value => {updateObject(
-                sceneObject.id,
-                { size: value }
-              )}
-            }
-        ]
-    ]) :
-    []
+          ]]], 
+          getNumberSlider(sceneObject)
+    ])
 })
 
-const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  const { sceneObjects, attachables } = data
-  const onSelectItem = data.onSelectItem
-  const updateObject = data.updateObject
-  const deleteObjects = data.deleteObjects
-  let attachable = attachables[rowIndex]
+const ListItem = React.memo(({ props }) => {
+  const { sceneObjects, getNumberSlider, attachables} = props
+  const onSelectItem = props.onSelectItem
+  const onDelete = props.onDelete
+  let attachable = attachables[props.rowIndex]
   let sceneObject = sceneObjects[attachable.userData.id]
-  if (!attachable) return h(['div', { style }])
   return h([
     AttachableInfoItem,
     {
         sceneObject,
-        attachable,
         onSelectItem,
-        updateObject,
-        deleteObjects
+        onDelete,
+        getNumberSlider
     }
   ])
 })
@@ -107,14 +69,14 @@ const AttachableInfo = connect(
 )(
   React.memo(({
     sceneObject,
-    scene,
     updateObject,
+    scene,
     deleteObjects,
-    selectedAttachable,
-    rows = 3,
-    sceneObjects
+    sceneObjects,
+    NumberSlider,
   }) => {
   const onSelectItem = (id, bindBoneName) => {
+  
     currentSkeleton = sceneObjects[sceneObject.id]
     let skinnedMesh = scene.children.filter(child => child.userData.id === sceneObject.id)[0].getObjectByProperty("type", "SkinnedMesh")
     let originalSkeleton = skinnedMesh.skeleton
@@ -143,55 +105,50 @@ const AttachableInfo = connect(
   const attachables = useMemo(() => {
       let character = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
       return !character ? [] : character.attachables ? character.attachables : []
-  }, [sceneObjects, sceneObject])
+  }, [sceneObjects, sceneObject, attachableObject.size])
 
-  const innerElementType = forwardRef(({ style, ...rest }, ref) => {
-    return h([
-      'div',
-      {
-        ref,
-        style: {
-          ...style,
-          width: 288, // cut off the right side gutter
-          position: 'relative',
-          overflow: 'hidden'
-        },
-        ...rest
-      }
-    ])
-  })
+  const onDelete = (sceneObject) => {
+    let choice = dialog.showMessageBox(null, {
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      message: 'Are you sure?',
+      defaultId: 1 // default to No
+    })
+    if (choice === 0) {
+      deleteObjects([sceneObject.id])
+    }
+  }
+
+  const getNumberSlider = (sceneObject) => {
+    return [NumberSlider, {
+      label: 'size',
+      value: attachableObject.size === 10000 ? sceneObject.size : attachableObject.size,    
+      min: 0.7,
+      max: 2,
+      onSetValue: value => {
+        updateObject(
+          sceneObject.id,
+          { size: value }
+        )
+        }
+    }
+]
+  }
 
   return h(
     ['div.thumbnail-search.column', [
       ['div.thumbnail-search__list', [
-        FixedSizeGrid,
-        {
-          columnCount: NUM_COLS,
-          columnWidth: 288,
-
-          rowCount: attachables.length,
-          rowHeight: ITEM_HEIGHT,
- 
-          width: 288,
-          height: rows === 2
-            ? 248 // built-in Characters list
-            : rows * ITEM_HEIGHT, // built-in Models list
-
-          innerElementType,
-
-          itemData: {
-            selectedAttachable,
+        ['div', [
+          attachables.map((item, i) => [ListItem, { props: {
             attachables,
-
             sceneObjects,
-
+            rowIndex: i,
             onSelectItem,
-            updateObject,
-            deleteObjects
-          },
-          children: ListItem
-        }
-      ]]
+            onDelete,
+            getNumberSlider,
+          }}])
+        ]
+      ]]]
     ]]
   )
 }))
