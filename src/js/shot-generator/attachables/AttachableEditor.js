@@ -133,15 +133,23 @@ const AttachableEditor = connect(
     setTerms(event.currentTarget.value)
   }
 
-  const onSelectItem = (id, { model, attachableObject }) => {
+  const onSelectItem = (id, { model }) => {
     currentSkeleton = sceneObject[sceneObject.id]
     let skinnedMesh =  scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh")
     let originalSkeleton = skinnedMesh.skeleton
+
+    let bone = originalSkeleton.getBoneByName(model.bindBone)
+    if(bone) {
+      createAttachableElement(model, originalSkeleton, id, {bindBone: bone})
+      return
+    }
+
     let selectOptions = {}
     for(let i = 0; i < originalSkeleton.bones.length; i++) {
       if(!originalSkeleton.bones[i].name.includes("leaf"))
         selectOptions[originalSkeleton.bones[i].name] = originalSkeleton.bones[i].name
     }
+
     let win = remote.getCurrentWindow()
     prompt({
       title: 'Preset Name',
@@ -150,38 +158,43 @@ const AttachableEditor = connect(
       selectOptions
     }, win).then(name => {
       if (name != null && name != '' && name != ' ') {
-        let bone = originalSkeleton.getBoneByName(name)
-        bone.updateWorldMatrix(true, true)
-
-        let {x, y, z} = model
-        let modelPosition = new THREE.Vector3(x, y, z)
-        modelPosition.add(bone.worldPosition())
-        
-        let modelEuler = new THREE.Euler(model.rotation.x, model.rotation.y, model.rotation.z)
-        let modelQuat = new THREE.Quaternion().setFromEuler(modelEuler)
-        let quat = bone.worldQuaternion()
-        modelQuat.premultiply(quat)
-        let euler = new THREE.Euler().setFromQuaternion(modelQuat)
-        let key = THREE.Math.generateUUID()
-        let element = {
-          id: key,
-          type: 'attachable',
-        
-          x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
-
-          model: model.id,
-          displayName: model.name,
-          bindBone: name,
-          attachToId: id,
-          size: 1,
-          rotation: { x: euler.x, y: euler.y, z: euler.z },
-         }
-         createObject(element)
-         selectAttachable({id: element.id, bindId: element.attachToId })
+        createAttachableElement(model, originalSkeleton, id, {name: name})
         }
     }).catch(err =>
       console.error(err)
     )
+  }
+
+  const createAttachableElement = (model, originalSkeleton, id, {bindBone = null, name = null }) => {
+    if(!bindBone && !name) return 
+    let bone = bindBone ? bindBone : originalSkeleton.getBoneByName(name)
+    bone.updateWorldMatrix(true, true)
+
+    let {x, y, z} = model
+    let modelPosition = new THREE.Vector3(x, y, z)
+    modelPosition.add(bone.worldPosition())
+    
+    let modelEuler = new THREE.Euler(model.rotation.x, model.rotation.y, model.rotation.z)
+    let modelQuat = new THREE.Quaternion().setFromEuler(modelEuler)
+    let quat = bone.worldQuaternion()
+    modelQuat.premultiply(quat)
+    let euler = new THREE.Euler().setFromQuaternion(modelQuat)
+    let key = THREE.Math.generateUUID()
+    let element = {
+      id: key,
+      type: 'attachable',
+    
+      x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
+
+      model: model.id,
+      displayName: model.name,
+      bindBone: bone.name,
+      attachToId: id,
+      size: 1,
+      rotation: { x: euler.x, y: euler.y, z: euler.z },
+     }
+     createObject(element)
+     selectAttachable({id: element.id, bindId: element.attachToId })
   }
 
   const onSelectFile = event => {
