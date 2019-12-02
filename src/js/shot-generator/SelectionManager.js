@@ -16,7 +16,6 @@ const {
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
-
 function getObjectsFromIcons ( objects ) {
   return objects
       // visible objects
@@ -150,6 +149,7 @@ const SelectionManager = connect(
     o.userData.type === 'boneControl' ||
     (useIcons && o.isPerspectiveCamera)
   )
+
   const mouse = event => {
     const rect = el.getBoundingClientRect()
     return {
@@ -545,7 +545,6 @@ const SelectionManager = connect(
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
     document.addEventListener('pointerup', onPointerUp)
-
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)

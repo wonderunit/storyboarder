@@ -6,7 +6,8 @@ const fs = require('fs-extra')
 const path = require('path')
 
 const React = require('react')
-const { useState, useEffect, useRef, useContext, useCallback } = React
+
+const { useState, useEffect, useRef, useContext, useMemo, useCallback } = React
 const {useDrag} = require('react-use-gesture')
 const { connect } = require('react-redux')
 const Stats = require('stats.js')
@@ -61,6 +62,7 @@ const {
   updateWorldRoom,
   updateWorldEnvironment,
   updateWorldFog,
+  updateObjects,
 
   // markSaved,
 
@@ -106,6 +108,7 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
+const HandPresetsEditor = require('./HandPresetsEditor')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
@@ -1041,7 +1044,7 @@ const MORPH_TARGET_LABELS = {
 }
 const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
-
+  const { scene } = useContext(SceneContext)
   let positionSliders = [
     [NumberSlider, { label: 'x', value: sceneObject.x, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'x') } ],
     [NumberSlider, { label: 'y', value: sceneObject.y, min: -30, max: 30, onSetValue: createOnSetValue(sceneObject.id, 'y') } ],
@@ -1482,6 +1485,13 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
           posePresetId: sceneObject.posePresetId
         }
       ],
+      sceneObject.type == 'character' && [
+        HandPresetsEditor, {
+          id: sceneObject.id,
+          handPosePresetId: sceneObject.handPosePresetId,
+          scene: scene
+        }
+      ],
 
       sceneObject.type == 'character' &&
         selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }],
@@ -1605,7 +1615,6 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
 const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
   const [render, setRender] = useState(false)
-
   // has the user modified the skeleton?
   let rotation = sceneObject.skeleton[bone.name]
     // use the modified skeleton data
@@ -2624,6 +2633,8 @@ const MenuManager = ({ }) => {
   return null
 }
 
+const { dropObject, dropCharacter } = require("../utils/dropToObjects")
+
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -2642,7 +2653,8 @@ const KeyHandler = connect(
     deleteObjects,
     updateObject,
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    updateObjects
   }
 )(
   ({
@@ -2658,10 +2670,18 @@ const KeyHandler = connect(
     deleteObjects,
     updateObject,
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    updateObjects
   }) => {
     const { scene } = useContext(SceneContext)
-
+    let sceneChildren = scene ? scene.children.length : 0
+    const dropingPlaces = useMemo(() => {
+      if(!scene) return
+      return scene.children.filter(o =>
+        o.userData.type === 'object' ||
+        o.userData.type === 'character' ||
+        o.userData.type === 'ground')
+    }, [sceneChildren])
     const onCommandDuplicate = () => {
       if (selections) {
         // NOTE: this will also select the new duplicates, replacing selection
@@ -2672,6 +2692,23 @@ const KeyHandler = connect(
           selections.map(THREE.Math.generateUUID)
         )
       }
+    }
+
+    const onCommandDrop = () => {
+      let changes = {}
+      for( let i = 0; i < selections.length; i++ ) {
+        let selection = scene.children.find( child => child.userData.id === selections[i] )
+        if( selection.userData.type === "object" ) {
+          dropObject( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        } else if ( selection.userData.type === "character" ) {
+          dropCharacter( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        }
+      }
+      updateObjects(changes)
     }
 
     useEffect(() => {
@@ -2760,9 +2797,11 @@ const KeyHandler = connect(
 
       window.addEventListener('keydown', onKeyDown)
       ipcRenderer.on('shot-generator:object:duplicate', onCommandDuplicate)
-
+      ipcRenderer.on('shot-generator:object:drop', onCommandDrop)
+      
       return function cleanup () {
         window.removeEventListener('keydown', onKeyDown)
+        ipcRenderer.off('shot-generator:object:drop', onCommandDrop)
         ipcRenderer.off('shot-generator:object:duplicate', onCommandDuplicate)
       }
     }, [mainViewCamera, _cameras, selections, _selectedSceneObject, activeCamera])

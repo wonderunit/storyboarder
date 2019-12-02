@@ -89,7 +89,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         originalHeight = bbox.max.y - bbox.min.y
       }
 
-
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
@@ -125,6 +124,25 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       skeleton.pose()
     }
   }, [skeleton, sceneObject.skeleton])
+
+  useMemo(() => {
+    if (!skeleton) return
+    if (!sceneObject.handSkeleton) return
+    let hasModifications = Object.values(sceneObject.handSkeleton).length > 0
+
+    if (hasModifications) {
+      let handSkeletonKeys = Object.keys(sceneObject.handSkeleton)
+      let skeletonBones = skeleton.bones.filter(bone => handSkeletonKeys.includes(bone.name))
+      for ( let i = 0; i < skeletonBones.length; i++ ) {
+        let key = skeletonBones[i].name
+        let bone = skeletonBones[i]
+        let handBone = sceneObject.handSkeleton[key]
+        bone.rotation.x = handBone.rotation.x
+        bone.rotation.y = handBone.rotation.y
+        bone.rotation.z = handBone.rotation.z
+      }
+    }
+  }, [skeleton, sceneObject.skeleton, sceneObject.handSkeleton])
 
   const bodyScale = useMemo(
     () => sceneObject.height / originalHeight,

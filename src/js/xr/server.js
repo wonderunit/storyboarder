@@ -59,6 +59,10 @@ class XRServer {
     app.use('/data/presets/poses', express.static(
       path.join(electronApp.getPath('userData'), 'presets', 'poses')
     ))
+    
+    app.use('/data/presets/handPoses', express.static(
+      path.join(electronApp.getPath('userData'), 'presets', 'handPoses')
+    ))
 
     app.use('/boards/images', express.static(
       path.join(path.dirname(store.getState().meta.storyboarderFilePath), 'images')
@@ -118,6 +122,11 @@ class XRServer {
     app.get('/presets/poses.json', (req, res) => {
       const { presets } = store.getState()
       res.json(presets.poses)
+    })
+
+    app.get('/presets/handPoses.json', (req, res) => {
+      const { presets } = store.getState()
+      res.json(presets.handPoses)
     })
 
     app.get('/boards.json', async (req, res) => {

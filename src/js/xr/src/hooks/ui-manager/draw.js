@@ -7,7 +7,10 @@ const {
   initialState
 } = require('../../../../shared/reducers/shot-generator')
 
+const {createdMirroredHand, applyChangesToSkeleton, getOppositeHandName} = require("../../../../utils/handSkeletonUtils")
+
 const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
+const getHandPoseImageFilepathById = id => `/data/presets/handPoses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
@@ -32,17 +35,35 @@ const drawImageButton = ({
   flipY = false,
   drawBG = false,
   padding = 0,
-  rounding = 25
+  rounding = 25,
+  state = false,
+  stroke = false,
+  drawSquare = false
 }) => {
   ctx.save()
 
   ctx.fillStyle = fill
   if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, rounding, true, false)
 
+  if (state > 0) { 
+    ctx.fillStyle = '#6E6E6E'
+    roundRect(ctx, 0, 0, width - 10, height, 12, true, false) 
+  }
+  if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, 25, true, false)
+  if (stroke) {
+    ctx.strokeStyle = '#fff'
+    ctx.lineWidth = 3
+    roundRect(ctx, 0, 0, width - 10, height, 12, false, true)
+  }
   if (flip) ctx.scale(-1, 1)
   if (flipY) ctx.scale(1, -1)
 
-  ctx.drawImage(image, flip ? -width : 0, flipY ? -height : 0, width, height)
+  if(drawSquare) {
+    let x = (width / 2) - (height / 2)
+    ctx.drawImage(image, x, 0, height, height)
+  } else {
+    ctx.drawImage(image, flip ? -width : 0, flipY ? -height : 0, width, height)
+  }
   ctx.restore()
 }
 
@@ -182,7 +203,7 @@ const drawPaneBGs = (ctx) => {
   roundRect(ctx, 453, 889, 440, 132, 25, true, false)
 }
 
-const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCount = 4) {
+const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCount = 4, sceneObject, selectedHand) {
   ctx.save()
   ctx.fillStyle = '#000'
   ctx.fillRect(x, y, width, height)
@@ -220,6 +241,9 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
           break
         case 'object':
           filepath = getModelImageFilepathById(item.id)
+          break
+        case 'handPoses':
+          filepath = getHandPoseImageFilepathById(item.id)
           break
       }
 
@@ -289,18 +313,47 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
     onDrop: (x, y, u, v) => {
       const { startCoords } = this.state.grids
       const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(new THREE.Vector2(x, y))
-
       if (distance < 0.1) {
         let canvasIntersection = this.getCanvasIntersection(u, v, false)
 
         if (canvasIntersection && canvasIntersection.id !== 'grid-background') {
           const name = canvasIntersection.id
           const id = this.state.selections[0]
-
+          
           if (type === 'pose') {
             const pose = this.state.poses.find(pose => pose.id === name)
             const skeleton = pose.state.skeleton
             this.dispatch(updateObject(id, { posePresetId: name, skeleton }))
+          } else if (type === 'handPoses') {
+            let currentSkeleton = sceneObject.handSkeleton
+            if(!currentSkeleton) currentSkeleton = {}
+            const pose = this.state.handPoses.find(pose => pose.id === name)
+            let handSkeleton = pose.state.handSkeleton
+            let skeletonBones = Object.keys(handSkeleton) 
+            let currentSkeletonBones = Object.keys(currentSkeleton) 
+            
+            if(skeletonBones.length !== 0) {
+              let presetHand = skeletonBones[0].includes("RightHand") ? "RightHand" : "LeftHand"
+              let oppositeSkeleton = createdMirroredHand(handSkeleton, presetHand)
+
+              if (selectedHand === "BothHands") {
+                handSkeleton = Object.assign(oppositeSkeleton, handSkeleton)
+              } 
+              else if (selectedHand !== presetHand) {
+                if(currentSkeletonBones.some(bone => bone.includes(presetHand))) {
+                  handSkeleton = applyChangesToSkeleton(currentSkeleton, oppositeSkeleton)
+                }
+                else {
+                    handSkeleton = oppositeSkeleton
+                }
+              }
+              else {
+                if(currentSkeletonBones.some(bone => bone.includes(getOppositeHandName(presetHand)))) {
+                  handSkeleton = applyChangesToSkeleton(currentSkeleton, handSkeleton)
+                }
+              }
+            }
+            this.dispatch(updateObject(id, { handPosePresetId: name, handSkeleton }))
           } else if (type === 'character') {
             this.dispatch(undoGroupStart())
             this.dispatch(selectObject(null))

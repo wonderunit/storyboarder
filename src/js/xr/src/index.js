@@ -47,6 +47,7 @@ const setupXR = async ({
   } = await client.getSg()
   // get pose preset data
   let poses = await (await fetch('/presets/poses.json')).json()
+  let handPoses = await (await fetch('/presets/handPoses.json')).json()
   // get the shot generator shot state
   const {
     // serialized state
@@ -69,7 +70,10 @@ const setupXR = async ({
         ...poses
       },
       characters: {},
-      scenes: {}
+      scenes: {},
+      handPoses: {
+        ...handPoses
+      },
     }
   })
 

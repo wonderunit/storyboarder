@@ -146,6 +146,42 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   }
 }
 
+const checkForHandSkeletonChanges = (state, draft, actionPayloadId) => {
+  let handPosePresetId = getSceneObjects(draft)[actionPayloadId].handPosePresetId
+  if (handPosePresetId) {
+    let statePreset = state.presets.poses[handPosePresetId]
+
+    // preset does not exist anymore
+    if (!statePreset) {
+      // so don't reference it
+      getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+      return true
+    }
+
+    let draftSkeleton = getSceneObjects(draft)[actionPayloadId].handSkeleton
+
+    let preset = statePreset.state.handSkeleton
+    let curr = draftSkeleton
+
+    if (Object.values(curr).length != Object.values(preset).length) {
+      // changed, no longer matches preset
+      getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+      return true
+    }
+    for (let name in preset) {
+      if (
+        preset[name].rotation.x !== curr[name].rotation.x ||
+        preset[name].rotation.y !== curr[name].rotation.y ||
+        preset[name].rotation.z !== curr[name].rotation.z
+      ) {
+        // changed, no longer matches preset
+        getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+        return true
+      }
+    }
+  }
+}
+
 // migrate SceneObjects from older beta builds of Shot Generator 2.0
 const migrateRotations = sceneObjects =>
   Object.entries(sceneObjects)
@@ -198,11 +234,14 @@ const updateObject = (draft, state, props, { models }) => {
 
   // update skeleton first
   // so that subsequent changes to height and headScale take effect
-  if (props.hasOwnProperty('skeleton'))
-  {
+  if (props.hasOwnProperty('skeleton')) {
     draft.skeleton = props.skeleton
   }
 
+  if (props.hasOwnProperty('handSkeleton')) {
+    draft.handSkeleton = props.handSkeleton
+  }
+  
   if (props.x != null) {
     draft.x = props.x
   }
@@ -332,8 +371,16 @@ const updateObject = (draft, state, props, { models }) => {
 
   if (props.hasOwnProperty('posePresetId')) {
     draft.posePresetId = props.posePresetId
+    if( draft.handPosePresetId) {
+      draft.handPosePresetId = null
+      draft.handSkeleton = [] 
+    }
   }
 
+  if (props.hasOwnProperty('handPosePresetId')) {
+    draft.handPosePresetId = props.handPosePresetId
+  }
+  
   if (props.hasOwnProperty('loaded')) {
     draft.loaded = props.loaded
   }
@@ -441,6 +488,7 @@ const defaultPosePreset = {
     'priority': 0
   }
 }
+const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -760,7 +808,8 @@ const initialState = {
 
     poses: {
       ...defaultPosePreset
-    }
+    },
+    handPoses: defaultHandPosePresets
   },
   server: {
     uri: undefined,
@@ -865,9 +914,9 @@ const sceneObjectsReducer = (state = {}, action) => {
         for (let [ key, value ] of Object.entries(action.payload)) {
           if (draft[key] == null) return
           if (draft[key].locked) continue
-
-          draft[key].x = value.x
-          draft[key].y = value.y
+          draft[key].x = value.x ? value.x : draft[key].x
+          draft[key].y = value.y ? value.y : draft[key].y
+          draft[key].z = value.z ? value.z : draft[key].z
         }
         return
 
@@ -899,6 +948,12 @@ const sceneObjectsReducer = (state = {}, action) => {
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         draft[action.payload.id].skeleton[action.payload.name] = {
           rotation: action.payload.rotation
+        }
+        // Check if handBone got same bones and update it if it does
+        if(draft[action.payload.id].handSkeleton && draft[action.payload.id].handSkeleton[action.payload.name]) {
+          draft[action.payload.id].handSkeleton[action.payload.name] = {
+            rotation: action.payload.rotation
+          }
         }
         return
 
@@ -1118,6 +1173,10 @@ const presetsReducer = (state = initialState.presets, action) => {
           draft.poses[action.payload.id].name = action.payload.name
         }
         return
+
+      case 'CREATE_HAND_POSE_PRESET':
+        draft.handPoses[action.payload.id] = action.payload
+        return
     }
   })
 }
@@ -1249,6 +1308,12 @@ const checksReducer = (state, action) => {
           if (!action.payload.hasOwnProperty('posePresetId')) {
             // ... detect change between state and preset
             checkForSkeletonChanges(state, draft, action.payload.id)
+          }
+
+           // unless handPosePresetId was just set ...
+          if (!action.payload.hasOwnProperty('handPosePresetId')) {
+            // ... detect change between state and preset
+            checkForHandSkeletonChanges(state, draft, action.payload.id)
           }
         }
         return
@@ -1405,6 +1470,7 @@ module.exports = {
   createCharacterPreset: payload => ({ type: 'CREATE_CHARACTER_PRESET', payload }),
 
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
+  createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
 

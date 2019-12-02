@@ -165,6 +165,7 @@ class CanvasRenderer {
       sceneObjects: {},
       world: null,
       poses: {},
+      handPoses: {},
       models: {},
       mode: 'home',
       context: {},
@@ -182,8 +183,12 @@ class CanvasRenderer {
         },
         pose: {
           scrollTop: 0
+        },
+        handPoses: {
+          scrollTop: 0
         }
       },
+      selectedHand: "BothHands",
       boards: {
         showConfirm: false,
         confirmChange: null,
@@ -598,20 +603,25 @@ class CanvasRenderer {
       if (sceneObject && sceneObject.type == 'character') {
         const { grids } = this.state
         const characterModels = Object.values(this.state.models).filter(model => model.type === 'character')
-
-        const list = grids.tab === 'pose' ? this.state.poses : characterModels
-        const rowCount = grids.tab === 'pose' ? 4 : 2
-        this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, list, grids.tab, rowCount)
+        const list = grids.tab === 'pose' ? this.state.poses : grids.tab === "handPoses" ? this.state.handPoses : characterModels
+        const rowCount = grids.tab === 'character' ? 2 : 4
+        let spaceForTitle = titleHeight
+        if(grids.tab === "handPoses") spaceForTitle *= 2
+        this.drawGrid(ctx, 30, 30 + spaceForTitle, 440 - 55, 670 - 55 - spaceForTitle, list, grids.tab, rowCount, sceneObject, this.state.selectedHand)
+        
+        let buttonSize = 310
 
         this.paneComponents['grid']['poses-title'] = {
           id: 'poses-title',
-          type: 'slider',
+          type: 'image-button',
           x: 30,
           y: 30,
-          width: (440 - 45) / 2,
+          width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Poses',
+          image: 'pose-preset',
+          stroke: true,
           state: grids.tab === 'pose',
+          drawSquare: true,
           onSelect: () => {
             grids.tab = 'pose'
             this.needsRender = true
@@ -620,18 +630,83 @@ class CanvasRenderer {
 
         this.paneComponents['grid']['characters-title'] = {
           id: 'characters-title',
-          type: 'slider',
-          x: 30 + (440 - 45) / 2,
+          type: 'image-button',
+          x: 30 + (buttonSize - 45),
           y: 30,
-          width: (440 - 45) / 2,
+          width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Characters',
+          image: 'model-type',
+          stroke: true,
           state: grids.tab === 'character',
+          drawSquare: true,
           onSelect: () => {
             grids.tab = 'character'
             this.needsRender = true
           }
         }
+
+
+        this.paneComponents['grid']['hand-poses-title'] = {
+          id: 'hand-poses-title',
+          type: 'image-button',
+          x: 30 + (buttonSize - 45) / 2,
+          y: 30,
+          width: (buttonSize - 45) / 2,
+          height: titleHeight - 10,
+          image: 'hand-preset',
+          stroke: true,
+          state: grids.tab === 'handPoses',
+          drawSquare: true,
+          onSelect: () => {
+            grids.tab = 'handPoses'
+            this.needsRender = true
+          }
+        }
+
+       
+
+        this.paneComponents['grid']['hand-poses-title']['left-hand'] = {
+          id: 'left-hand',
+          type: 'slider',
+          x: 30,
+          y: 30 + 90,
+          width: (buttonSize - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Left',
+          state: this.state.selectedHand === 'LeftHand',
+          onSelect: () => {
+            this.state.selectedHand = "LeftHand"
+          }
+        }
+
+        this.paneComponents['grid']['hand-poses-title']['both-hands'] = {
+          id: 'both-hands',
+          type: 'slider',
+          x: 30 + (buttonSize - 45) / 2,
+          y: 30 + 90,
+          width: (buttonSize - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Both',
+          state: this.state.selectedHand === 'BothHands',
+          onSelect: () => {
+            this.state.selectedHand = "BothHands"
+          }
+        }
+
+        this.paneComponents['grid']['hand-poses-title']['right-hand'] = {
+          id: 'right-hand',
+          type: 'slider',
+          x: 30 + (buttonSize - 45),
+          y: 30 + 90,
+          width: (buttonSize - 45) / 2,
+          height: titleHeight - 10,
+          label: 'Right',
+          state: this.state.selectedHand === 'RightHand',
+          onSelect: () => {
+            this.state.selectedHand = "RightHand"
+          }
+        }
+
       } else if (sceneObject && sceneObject.type == 'object') {
         const objectModels = Object.values(this.state.models).filter(model => model.type === 'object')
         this.drawGrid(ctx, 30, 30 + titleHeight, 440 - 55, 670 - 55 - titleHeight, objectModels, 'object')
@@ -649,6 +724,8 @@ class CanvasRenderer {
       }
 
       this.renderObjects(ctx, this.paneComponents['grid'])
+      if(this.state.grids.tab === "handPoses")
+      this.renderObjects(ctx, this.paneComponents['grid']['hand-poses-title'])
     }
   }
 
@@ -985,6 +1062,9 @@ class CanvasRenderer {
   getComponentById (id) {
     for (let paneId in this.paneComponents) {
       for (let componentId in this.paneComponents[paneId]) {
+        for(let subComponentId in this.paneComponents[paneId][componentId]) {
+          if (subComponentId == id) return this.paneComponents[paneId][componentId][subComponentId]
+        }
         if (componentId == id) return this.paneComponents[paneId][componentId]
       }
     }
@@ -1059,6 +1139,18 @@ class CanvasRenderer {
         if (paneId === 'boards' && componentId.includes('-background')) continue
 
         let component = this.paneComponents[paneId][componentId]
+        for (let subComponentId in this.paneComponents[paneId][componentId]) {
+          let subComponent = this.paneComponents[paneId][componentId][subComponentId]
+          if (ignoreInvisible && subComponent.invisible) continue
+          let { id, type } = subComponent
+          if (
+            x > subComponent.x && x < subComponent.x + subComponent.width &&
+            y > subComponent.y && y < subComponent.y + subComponent.height
+            ) {
+          // TODO include local x,y? and u,v?
+            return { id, type }
+          }
+        }
         if (ignoreInvisible && component.invisible) continue
         let { id, type } = component
         if (
@@ -1159,12 +1251,17 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const presets = useSelector(state => state.presets)
   const models = useSelector(state => state.models)
   const cameraAspectRatio = useSelector(state => state.aspectRatio)
-
   const poses = useMemo(() =>
     Object.values(presets.poses)
       .sort(comparePresetNames)
       .sort(comparePresetPriority)
   , [presets.poses])
+
+  const handPoses = useMemo(() =>
+  Object.values(presets.handPoses)
+    .sort(comparePresetNames)
+    .sort(comparePresetPriority)
+, [presets.handPoses])
 
   const activeCamera = useSelector(getActiveCamera)
 
@@ -1206,7 +1303,6 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           let cr = getCanvasRenderer()
 
           let canvasIntersection = cr.getCanvasIntersection(u, v, true, showHelp)
-
           if (canvasIntersection) {
             let { id } = canvasIntersection
 
@@ -1640,6 +1736,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     getCanvasRenderer().state.selections = selections
     getCanvasRenderer().state.sceneObjects = sceneObjects
     getCanvasRenderer().state.poses = poses
+    getCanvasRenderer().state.handPoses = handPoses
     getCanvasRenderer().state.models = models
     getCanvasRenderer().state.activeCamera = activeCamera
     getCanvasRenderer().state.world = world
@@ -1652,7 +1749,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses, models, activeCamera, world])
+  }, [selections, sceneObjects, poses, models, activeCamera, world, handPoses])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
@@ -1686,7 +1783,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
 const UI_ICON_NAMES = [
   'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
-  'close', 'settings', 'hud',
+  'close', 'settings', 'hud', 'pose-preset', 'model-type', 'hand-preset',
 
   'camera', 'eye',
 
