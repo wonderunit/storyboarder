@@ -134,6 +134,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     // Applies position to container.
     // Position for container should always be in world space but container always attached to bone
     // We need to take it out of bone space and apply world position
+    console.log(props.x, props.y, props.z)
     characterObject.current.updateWorldMatrix(true, true)
     container.current.parent.updateMatrixWorld(true)
     let parentMatrixWorld = container.current.parent.matrixWorld
@@ -148,6 +149,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if ( !ready ) return
     if ( !props.rotation ) return
+    console.log(props.rotation)
     characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = container.current.parent.matrixWorld
     let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()

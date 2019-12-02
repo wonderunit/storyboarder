@@ -3,6 +3,9 @@
         "id": "object-pistol",
         "name": "Object: Pistol Gun",
         "type": "attachable",
-        "height": 1
+        "x":0.1, 
+        "y":-0.15, 
+        "z":0,
+        "rotation": {"x":-1.5708, "y":0, "z": 1.5708}
       }
 }

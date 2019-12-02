@@ -5,7 +5,8 @@ const { connect } = require('react-redux')
 const prompt = require('electron-prompt')
 const {
   deleteObjects,
-  getSceneObjects
+  getSceneObjects,
+  updateObject
 } = require('../../shared/reducers/shot-generator')
 const h = require('../../utils/h')
 const AttachableInfoItem = React.memo(({
@@ -105,7 +106,7 @@ const AttachableInfo = connect(
   const attachables = useMemo(() => {
       let character = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
       return !character ? [] : character.attachables ? character.attachables : []
-  }, [sceneObjects, sceneObject, attachableObject.size])
+  }, [sceneObjects, sceneObject])
 
   const onDelete = (sceneObject) => {
     let choice = dialog.showMessageBox(null, {
@@ -122,7 +123,7 @@ const AttachableInfo = connect(
   const getNumberSlider = (sceneObject) => {
     return [NumberSlider, {
       label: 'size',
-      value: attachableObject.size === 10000 ? sceneObject.size : attachableObject.size,    
+      value: sceneObject.size,  
       min: 0.7,
       max: 2,
       onSetValue: value => {

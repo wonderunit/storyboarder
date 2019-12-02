@@ -44,7 +44,8 @@ const ModelFileItem = React.memo(({
 
   const onSelect = event => {
     event.preventDefault()
-    onSelectItem(sceneObject.id, { model: model.id })
+    console.log(sceneObject)
+    onSelectItem(sceneObject.id, { model: model })
   }
 
   const className = classNames({
@@ -132,7 +133,7 @@ const AttachableEditor = connect(
     setTerms(event.currentTarget.value)
   }
 
-  const onSelectItem = (id, { model }) => {
+  const onSelectItem = (id, { model, attachableObject }) => {
     currentSkeleton = sceneObject[sceneObject.id]
     let skinnedMesh =  scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh")
     let originalSkeleton = skinnedMesh.skeleton
@@ -150,17 +151,26 @@ const AttachableEditor = connect(
     }, win).then(name => {
       if (name != null && name != '' && name != ' ') {
         let bone = originalSkeleton.getBoneByName(name)
-        let {x, y, z} = bone.worldPosition()
+        bone.updateWorldMatrix(true, true)
+
+        let {x, y, z} = model
+        let modelPosition = new THREE.Vector3(x, y, z)
+        modelPosition.add(bone.worldPosition())
+        
+        let modelEuler = new THREE.Euler(model.rotation.x, model.rotation.y, model.rotation.z)
+        let modelQuat = new THREE.Quaternion().setFromEuler(modelEuler)
         let quat = bone.worldQuaternion()
-        let euler = new THREE.Euler().setFromQuaternion(quat)
+        modelQuat.premultiply(quat)
+        let euler = new THREE.Euler().setFromQuaternion(modelQuat)
         let key = THREE.Math.generateUUID()
         let element = {
           id: key,
           type: 'attachable',
         
-          x: x, y: y, z: z,
+          x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
 
-          model: model,
+          model: model.id,
+          displayName: model.name,
           bindBone: name,
           attachToId: id,
           size: 1,
