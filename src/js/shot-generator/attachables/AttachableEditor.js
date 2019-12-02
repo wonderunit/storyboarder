@@ -44,7 +44,6 @@ const ModelFileItem = React.memo(({
 
   const onSelect = event => {
     event.preventDefault()
-    console.log(sceneObject)
     onSelectItem(sceneObject.id, { model: model })
   }
 

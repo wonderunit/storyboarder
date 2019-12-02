@@ -69,7 +69,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       isBoneSelected.current = false
       return function cleanup () {
         container.current.parent.remove(container.current)
-        let indexOf = characterObject.current.attachables.indexOf(container.curren)
+        let indexOf = characterObject.current.attachables.indexOf(container.current)
         characterObject.current.attachables.splice(indexOf, 1)
       }
   }, [])    

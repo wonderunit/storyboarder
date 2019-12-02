@@ -28,7 +28,7 @@ const AttachableInfoItem = React.memo(({
     return h(['div.attachable-card', 
         ['div.attachable-card___title', 
           ['div.attachable-card___label', attachableName],
-          ['a.attachable-card__discard[href=#]', { onClick: () => { onDelete() }}, 'X']
+          ['a.attachable-card__discard[href=#]', { onClick: () => { onDelete(sceneObject) }}, 'X']
         ],
         ['div.number-slider',
           ['div.number-slider__label', "Attached to bone"], 
@@ -42,11 +42,8 @@ const AttachableInfoItem = React.memo(({
     ])
 })
 
-const ListItem = React.memo(({ props }) => {
-  const { sceneObjects, getNumberSlider, attachables} = props
-  const onSelectItem = props.onSelectItem
-  const onDelete = props.onDelete
-  let attachable = attachables[props.rowIndex]
+const ListItem = React.memo(({ props, attachable }) => {
+  const { sceneObjects, getNumberSlider, onSelectItem, onDelete} = props
   let sceneObject = sceneObjects[attachable.userData.id]
   return h([
     AttachableInfoItem,
@@ -108,7 +105,7 @@ const AttachableInfo = connect(
       return !character ? [] : character.attachables ? character.attachables : []
   }, [sceneObjects, sceneObject])
 
-  const onDelete = (sceneObject) => {
+  const onDelete = (attachable) => {
     let choice = dialog.showMessageBox(null, {
       type: 'question',
       buttons: ['Yes', 'No'],
@@ -116,7 +113,7 @@ const AttachableInfo = connect(
       defaultId: 1 // default to No
     })
     if (choice === 0) {
-      deleteObjects([sceneObject.id])
+      deleteObjects([attachable.id])
     }
   }
 
@@ -140,15 +137,15 @@ const AttachableInfo = connect(
     ['div.thumbnail-search.column', [
       ['div.thumbnail-search__list', [
         ['div', [
-          attachables.map((item, i) => [ListItem, { props: {
-            attachables,
-            sceneObjects,
-            rowIndex: i,
-            onSelectItem,
-            onDelete,
-            getNumberSlider,
-          }}])
-        ]
+          attachables.map((item) => [ListItem, {
+            attachable: item, 
+            props: {
+              sceneObjects,
+              onSelectItem,
+              onDelete,
+              getNumberSlider,
+            }}])
+          ]
       ]]]
     ]]
   )
