@@ -59,6 +59,23 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
     frustumIcons.add(frustumIcons.left)
     frustumIcons.add(frustumIcons.right)
     camera.current.orthoIcon.add(frustumIcons)
+    
+    camera.current.updateIcon = () => {
+      if (camera.current.orthoIcon) {
+        camera.current.orthoIcon.position.copy(camera.current.position)
+        let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )
+        camera.current.orthoIcon.icon.material.rotation = rotation.y
+    
+        let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect )
+        camera.current.orthoIcon.frustumIcons.left.icon.material.rotation = hFOV/2 + rotation.y
+        camera.current.orthoIcon.frustumIcons.right.icon.material.rotation = -hFOV/2 + rotation.y
+    
+        let focal = camera.current.getFocalLength()
+        let meters = parseFloat(Math.round(props.z * 100) / 100).toFixed(2)
+        if (camera.current.orthoIcon.iconSecondText)
+          camera.current.orthoIcon.changeSecondText(`${Math.round(focal)}mm, ${meters}m`)
+      }
+    }
   }, [])
 
   useEffect(() => {
@@ -94,7 +111,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
       )
     }
   }, [props.displayName, props.name])
-
+  
   useMemo(() => {
     camera.current.orthoIcon.setSelected(props.isSelected)
   }, [props.isSelected])
