@@ -87,27 +87,28 @@ const NumberSlider = React.memo(({
   }
 
   useEffect(() => {
+    const onMove = onPointerMove()
     if (moving) {
-      document.addEventListener('pointermove', onPointerMove)
+      document.addEventListener('pointermove', onMove)
     }
     return function cleanup () {
-      document.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('pointermove', onMove)
     }
-  }, [moving, value, altKey]) // rebind if values change that we care about
+  }, [moving, altKey]) // rebind if values change that we care about
 
   useEffect(() => {
     if (!moving && !textInput) {
       document.activeElement.blur()
     }
   }, [moving, textInput])
-
-  let updated = false
-  const onPointerMove = event => {
-    if (!updated) {
-      onSetValue(transform(value, event.movementX, { min, max, step, fine: altKey }))
-      updated = true
+  
+  const onPointerMove = () => {
+    let currentValue = value
+    return (event) => {
+      currentValue = transform(currentValue, event.movementX, {min, max, step, fine: altKey})
+      onSetValue(currentValue)
+      event.preventDefault()
     }
-    event.preventDefault()
   }
 
   const onPointerUp = event => {
