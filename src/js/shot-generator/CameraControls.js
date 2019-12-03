@@ -81,14 +81,14 @@ class CameraControls {
   
   onPointerUp ( event ) {
     event.preventDefault()
-    event.stopPropagation()
     
     if (this.mouseDragOn) {
+      event.stopPropagation()
+      
       this.undoGroupEnd()
     }
     
     this.mouseDragOn = false
-  
     this.onChange({active: this.mouseDragOn, object: this._object})
   }
   
