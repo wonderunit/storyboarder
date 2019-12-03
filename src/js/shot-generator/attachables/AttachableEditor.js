@@ -166,17 +166,20 @@ const AttachableEditor = connect(
   const createAttachableElement = (model, originalSkeleton, id, {bindBone = null, name = null }) => {
     if(!bindBone && !name) return 
     let bone = bindBone ? bindBone : originalSkeleton.getBoneByName(name)
+    let character = originalSkeleton.bones[0].parent
     bone.updateWorldMatrix(true, true)
-
     let {x, y, z} = model
     let modelPosition = new THREE.Vector3(x, y, z)
-    modelPosition.add(bone.worldPosition())
-    
-    let modelEuler = new THREE.Euler(model.rotation.x, model.rotation.y, model.rotation.z)
-    let modelQuat = new THREE.Quaternion().setFromEuler(modelEuler)
-    let quat = bone.worldQuaternion()
-    modelQuat.premultiply(quat)
-    let euler = new THREE.Euler().setFromQuaternion(modelQuat)
+    modelPosition.multiplyScalar(1 / character.worldScale().x)
+    let newGroup = new THREE.Object3D()
+    newGroup.rotation.set(model.rotation.x, model.rotation.y, model.rotation.z)
+    newGroup.position.copy(modelPosition)
+    bone.add(newGroup)
+    bone.updateWorldMatrix(true, true)
+    modelPosition = newGroup.worldPosition()
+    let quat = newGroup.worldQuaternion()
+    bone.remove(newGroup)
+    let euler = new THREE.Euler().setFromQuaternion(quat)
     let key = THREE.Math.generateUUID()
     let element = {
       id: key,

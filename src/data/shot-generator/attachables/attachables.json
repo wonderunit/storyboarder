@@ -3,9 +3,9 @@
         "id": "object-pistol",
         "name": "Attachable: Pistol Gun",
         "type": "attachable",
-        "x": -0.03, 
-        "y": -0.18, 
-        "z": 0,
+        "x": -0.4, 
+        "y": 0.3, 
+        "z": 0.025,
         "rotation": { "x": -1.5708, "y": 0, "z": 1.5708 },
         "bindBone": "LeftHand"
       },
@@ -15,7 +15,7 @@
         "type": "attachable",
         "x": 0, 
         "y": 0, 
-        "z": 0,
+        "z": -0.15,
         "rotation": { "x": 0, "y": 0, "z": 0 },
         "bindBone": "Spine1"
       },
