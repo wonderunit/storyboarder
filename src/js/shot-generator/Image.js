@@ -59,6 +59,11 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
       image.current.orthoIcon.changeFirstText(props.name ? props.name : props.displayName)
     }
   }, [props.displayName, props.name])
+  
+  useEffect(() => {
+    if (!image.current) return
+    image.current.userData.locked = props.locked
+  }, [props.locked])
 
   const create = () => {
     console.log(type, id, 'added')
@@ -82,6 +87,7 @@ const Image = React.memo(({scene, id, type, isSelected, updateObject, storyboard
     image.current = group
     image.current.userData.id = id
     image.current.userData.type = type
+    image.current.userData.locked = props.locked
     image.current.children.forEach(child => {
       child.layers.disable(0)
       child.layers.enable(1)

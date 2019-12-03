@@ -27,7 +27,7 @@ const IKHelper = require('../../shared/IK/IkHelper')
 
 const { useMachine } = require('@xstate/react')
 const interactionMachine = require('./machines/interactionMachine')
-const {dropObject, dropCharacter } = require('./utils/dropToObjects')
+const {dropObject, dropCharacter } = require('../../utils/dropToObjects')
 
 require('./three/GPUPickers/utils/Object3dExtension')
 
@@ -660,8 +660,7 @@ const useInteractionsManager = ({
   const onPressEndA = event => {
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
-
-    if (canUndo) {
+    if (canUndo && interactionService.state.value !== "character_posing") {
       dispatch(ActionCreators.undo())
       playSound('undo')
     }
@@ -671,7 +670,7 @@ const useInteractionsManager = ({
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_B', controller: event.target })
 
-    if (canRedo) {
+    if (canRedo && interactionService.state.value !== "character_posing") {
       dispatch(ActionCreators.redo())
       playSound('redo')
     }
@@ -1059,7 +1058,6 @@ const useInteractionsManager = ({
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
           ikHelper.ragDoll.originalObject.add(mirror)
           mirror.position.z += 2
-          playSound('posing')
           setTimeout(() => { interactionService.send({ type: 'STOP_POSING', controller: event.target}) }, 5000)
           setTimeout(() => { poseTicking() }, 1000)
           clearStandingMemento()

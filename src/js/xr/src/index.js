@@ -37,7 +37,8 @@ const setupXR = ({ stateJsonUri = '/state.json' }) => {
         presets: {
           poses: presets.poses,
           characters: {},
-          scenes: {}
+          scenes: {},
+          handPoses: presets.handPoses
         }
       })
 

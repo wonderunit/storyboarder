@@ -237,6 +237,7 @@ const Character = React.memo(({
       object.current.userData.id = id
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
+      object.current.userData.locked = props.locked
 
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
@@ -346,6 +347,20 @@ const Character = React.memo(({
     }
   }
 
+  const updateSkeletonHand = () => {
+    let skeleton = object.current.userData.skeleton
+    let handSkeletonKeys = Object.keys(props.handSkeleton)
+    let skeletonBones = skeleton.bones.filter(bone => handSkeletonKeys.includes(bone.name))
+    for ( let i = 0; i < skeletonBones.length; i++ ) {
+      let key = skeletonBones[i].name
+      let bone = skeletonBones[i]
+      let handBone = props.handSkeleton[key]
+      bone.rotation.x = handBone.rotation.x
+      bone.rotation.y = handBone.rotation.y
+      bone.rotation.z = handBone.rotation.z
+    }
+  }
+
   const getCurrentControllerRotation = (device, virtual) => {
 
     let virtualPitch = virtual.pitch,
@@ -401,9 +416,9 @@ const Character = React.memo(({
     objectRotationControl.current.setCamera(camera)
   }, [camera, ready])
   //#endregion
-
+  
   useEffect(() => {
-
+    
     if (object.current) {
       object.current.position.x = props.x
       object.current.position.z = props.y
@@ -411,6 +426,11 @@ const Character = React.memo(({
       object.current.orthoIcon.position.copy(object.current.position)
     }
   }, [props.model, props.x, props.y, props.z, ready])
+  
+  useEffect(() => {
+    if (!object.current) return
+    object.current.userData.locked = props.locked
+  }, [props.locked, ready])
 
   useEffect(() => {
     if (object.current) {
@@ -456,8 +476,18 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     console.log(type, id, 'changed pose preset')
+    //updateObject(id, { handSkeleton: [] })
     resetPose()
   }, [props.posePresetId])
+
+  useEffect(() => {
+    if (!ready) return
+    if (!props.handPosePresetId) return
+    if (!props.handSkeleton) return
+   // console.log(type, id, 'changed hand pose preset')
+    resetPose()
+    updateSkeletonHand()
+  }, [props.handPosePresetId, props.handSkeleton])
 
   // HACK force reset skeleton pose on Board UUID change
   useEffect(() => {
@@ -472,9 +502,14 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
 
-    // console.log(type, id, 'skeleton')
+   // console.log(type, id, 'skeleton')
     updateSkeleton()
+
+    if(props.handSkeleton && Object.keys(props.handSkeleton).length > 0)
+      updateSkeletonHand()
   }, [props.model, props.skeleton, ready])
+
+
 
   useEffect(() => {
     if (object.current) {
@@ -587,7 +622,7 @@ const Character = React.memo(({
     object.current.orthoIcon.setSelected(isSelected)
   }, [props.model, isSelected, ready])
 
-  // Watches for poletargets changes and applies them 
+  // Watches for poletargets changes and applies them
   useEffect(() => {
     if(!ready) return
     if(!props.poleTargets) return

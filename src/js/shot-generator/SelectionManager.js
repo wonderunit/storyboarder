@@ -19,7 +19,6 @@ const {
   deselectAttachable
 } = require('../shared/reducers/shot-generator')
 
-
 function getObjectsFromIcons ( objects ) {
   return objects
       // visible objects
@@ -191,7 +190,7 @@ const SelectionManager = connect(
       x = pointer.x;
       y = pointer.y;
       raycaster.setFromCamera({x, y}, camera )
-      //Check helpers intersection first 
+      //Check helpers intersection first
       intersects = raycaster.intersectObject(SGIkHelper.getInstance())
       if(intersects.length > 0)
       {
@@ -273,7 +272,8 @@ const SelectionManager = connect(
       updateObjects(changes)
     }
   }
-  const endDrag = (dragTarget) => {
+  const endDrag = () => {
+  
   }
   useMemo(() => {
     if (dragTarget) {
@@ -319,7 +319,14 @@ const SelectionManager = connect(
       let shouldDrag = false
       let target
       let isSelectedControlPoint = false;
-      let selectedObjectControl;
+      let selectedObjectControl
+  
+      for (let intersect of intersects) {
+        target = getIntersectionTarget(intersect)
+        if (target.userData.type === 'character' && target.userData.locked) {
+          return
+        }
+      }
 
       // prefer the nearest character to the click
       if (useIcons) {
@@ -355,8 +362,8 @@ const SelectionManager = connect(
 
         target = getIntersectionTarget(intersect)
       
-      } 
-      else 
+      }
+      else
       {
         let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint' || intersect.object.type === "gizmo");
         if(controlPoint.length !== 0)
@@ -412,6 +419,14 @@ const SelectionManager = connect(
               //  and its the one we pointerdown'd ...
               selections[0] === target.userData.id
             ) {
+            if (target.userData.locked) {
+              selectObject(null)
+              selectBone(null)
+              setLastDownId(null)
+              setDragTarget(null)
+              undoGroupEnd()
+              return
+            }
             // see if we pointerdown'd a bone ...
             let raycaster = new THREE.Raycaster()
             raycaster.setFromCamera({ x, y }, camera )
@@ -529,7 +544,7 @@ const SelectionManager = connect(
           // selectObject(undefined)
           // selectBone(null)
           setLastDownId(null)
-          // 
+          //
           // endDrag()
           // setDragTarget(null)
 
@@ -554,7 +569,7 @@ const SelectionManager = connect(
               }
             } else {
               // if the pointerup'd target is not part of the multi-selection
-              if (!selections.includes(target.userData.id)) {
+              if (!selections.includes(target.userData.id) && !target.userData.locked) {
                 // clear the multi-selection and select just the target
                 selectObject(target.userData.id)
               }
@@ -573,7 +588,6 @@ const SelectionManager = connect(
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
     document.addEventListener('pointerup', onPointerUp)
-
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
