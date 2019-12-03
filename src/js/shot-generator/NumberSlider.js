@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef } = React = require('react')
+const { useState, useEffect, useRef, useCallback } = React = require('react')
 const infixToPostfix = require('infix-to-postfix')
 const postfixCalculator = require('postfix-calculator')
 const h = require('../../../src/js/utils/h')
@@ -47,7 +47,7 @@ const formatters = {
   percent: value => Math.round(value).toString() + '%'
 }
 
-const NumberSlider = ({
+const NumberSlider = React.memo(({
   label,
   value = 0,
   min = -10,
@@ -72,18 +72,6 @@ const NumberSlider = ({
     setAltKey(event.altKey)
   }
 
-  function lockChangeAlert () {
-    // console.log(document.pointerLockElement)
-
-    // if (document.pointerLockElement === ref)
-    //   console.log('The pointer lock status is now locked');
-    //   document.addEventListener("mousemove", updatePosition, false);
-    // } else {
-    //   console.log('The pointer lock status is now unlocked');
-    //   document.removeEventListener("mousemove", updatePosition, false);
-    // }
-  }
-
   const onPointerDown = event => {
     event.preventDefault()
     if (event.shiftKey) {
@@ -93,7 +81,6 @@ const NumberSlider = ({
     } else {
       document.addEventListener('pointerup', onPointerUp)
       event.target.requestPointerLock()
-      document.addEventListener('pointerlockchange', lockChangeAlert, false)
       setMoving(true)
       onDragStart()
     }
@@ -114,8 +101,12 @@ const NumberSlider = ({
     }
   }, [moving, textInput])
 
+  let updated = false
   const onPointerMove = event => {
-    onSetValue(transform(value, event.movementX, { min, max, step, fine: altKey }))
+    if (!updated) {
+      onSetValue(transform(value, event.movementX, { min, max, step, fine: altKey }))
+      updated = true
+    }
     event.preventDefault()
   }
 
@@ -201,6 +192,6 @@ const NumberSlider = ({
       ]]
     ]
   ])
-}
+})
 
 module.exports = { NumberSlider, transforms, formatters }
