@@ -90,6 +90,9 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
         modelData.scene.traverse( function ( child ) {
           if ( child instanceof THREE.Mesh ) {
             let newMesh = meshFactory(child)
+            newMesh.geometry.computeBoundingSphere()
+            newMesh.position.copy(newMesh.geometry.boundingSphere.center)
+            newMesh.position.negate()
             container.current.add(newMesh)
             newMesh.userData.type = 'attachable'
             newMesh.layers.disable(0)
@@ -98,7 +101,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
           }
         })
         } catch (err) {
-
       }
       // Sets up bind bone
       characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]

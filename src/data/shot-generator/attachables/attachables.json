@@ -1,12 +1,52 @@
 {
     "object-pistol": {
         "id": "object-pistol",
-        "name": "Object: Pistol Gun",
+        "name": "Attachable: Pistol Gun",
         "type": "attachable",
-        "x":0.1, 
-        "y":-0.15, 
-        "z":0,
-        "rotation": {"x":-1.5708, "y":0, "z": 1.5708},
+        "x": -0.03, 
+        "y": -0.18, 
+        "z": 0,
+        "rotation": { "x": -1.5708, "y": 0, "z": 1.5708 },
         "bindBone": "LeftHand"
+      },
+   "backpack": {
+        "id": "backpack",
+        "name": "Attachable: Backpack",
+        "type": "attachable",
+        "x": 0, 
+        "y": 0, 
+        "z": 0,
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "bindBone": "Spine1"
+      },
+    "glasses": {
+        "id": "glasses",
+        "name": "Attachable: Glasses",
+        "type": "attachable",
+        "x": 0, 
+        "y": 0.08, 
+        "z": 0.06,
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "bindBone": "Head"
+      },
+    "hair": {
+        "id": "hair",
+        "name": "Attachable: Hair",
+        "type": "attachable",
+        "x": -0.0013, 
+        "y": 0.15, 
+        "z": 0.014,
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "bindBone": "Head"
+      },
+    "moustache": {
+        "id": "moustache",
+        "name": "Attachable: Moustache",
+        "type": "attachable",
+        "x": -0.0001, 
+        "y": 0.025, 
+        "z": 0.13,
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "bindBone": "Head"
       }
 }
