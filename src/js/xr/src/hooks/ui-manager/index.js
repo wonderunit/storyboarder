@@ -1559,6 +1559,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
               state: { activeCamera, sceneObjects, world }
             } = await cr.client.getState()
 
+            store.dispatch(selectObject(null))
             store.dispatch(
               loadScene({
                 sceneObjects,
