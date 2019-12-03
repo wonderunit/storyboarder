@@ -29,11 +29,14 @@ const meshFactory = source => {
     material.map.needsUpdate = true
   }
   mesh.material = material
-
+  mesh.geometry.computeBoundingSphere()
+  mesh.position.copy(mesh.geometry.boundingSphere.center)
+  mesh.position.negate()
+  mesh.updateMatrixWorld(true)
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
+const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
   const characterObject = useRef(null)
   const { scene } = useThree()
   const ref = useUpdate(
@@ -124,7 +127,6 @@ const Attachable = React.memo(({ gltf, sceneObject, children, isSelected }) => {
     scale={[size, size, size]}
   >
     {meshes}
-    {children}
   </group>
 })
 
