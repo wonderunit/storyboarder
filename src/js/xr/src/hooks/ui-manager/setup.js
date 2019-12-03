@@ -167,59 +167,6 @@ const setupAddPane = (paneComponents, self) => {
   }
 }
 
-const setupSettingsPane = (paneComponents, self) => {
-  paneComponents['settings'] = {
-    settings: {
-      id: 'settings',
-      type: 'text',
-      x: 0 + 30,
-      y: 684 + 30,
-      label: 'Settings',
-      size: 36
-    },
-
-    'show-cameras': {
-      id: 'show-cameras',
-      type: 'text',
-      x: 0 + 30,
-      y: 684 + 20 + 48 + 40 + 40 - 12,
-      label: 'Show Cameras',
-      size: 24
-    },
-
-    'show-cameras-toggle': {
-      id: 'show-cameras-toggle',
-      type: 'toggle-button',
-      toggle: 'showCameras',
-      x: 0 + 30 + 200,
-      y: 684 + 20 + 48 + 40,
-      width: 200,
-      height: 80,
-      onSelect: () => {
-        self.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
-      }
-    },
-
-    'help-button': {
-      id: 'help-button',
-      type: 'image-button',
-      x: 439 - 64 - 15,
-      y: 684 + 20,
-      width: 64,
-      height: 64,
-      image: 'help',
-      drawBG: true,
-      padding: 6,
-      fill: '#6E6E6E',
-
-      onSelect: () => {
-        self.send('TOGGLE_HELP')
-        self.send('GO_HOME')
-      }
-    }
-  }
-}
-
 const setupHelpPane = (paneComponents, self) => {
   paneComponents['help'] = {
     'prev-help': {
@@ -327,6 +274,24 @@ const setupBoardsPane = (paneComponents, self) => {
       }
     },
 
+    'help-button': {
+      id: 'help-button',
+      type: 'image-button',
+      x: 1024 - (18 * 3 - 6) * 3 - 12 - 30,
+      y: 420,
+      width: 18 * 3 - 12,
+      height: 18 * 3 - 12,
+      image: 'help',
+      drawBG: true,
+      padding: 6,
+      rounding: 12,
+
+      onSelect: () => {
+        self.send('TOGGLE_HELP')
+        self.send('GO_HOME')
+      }
+    },
+
     'settings-button': {
       id: 'settings-button',
       type: 'image-button',
@@ -366,7 +331,6 @@ const setupBoardsPane = (paneComponents, self) => {
 module.exports = {
   setupHomePane,
   setupAddPane,
-  setupSettingsPane,
   setupHelpPane,
   setupBoardsPane
 }

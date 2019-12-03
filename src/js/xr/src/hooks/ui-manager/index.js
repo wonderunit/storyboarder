@@ -877,23 +877,23 @@ class CanvasRenderer {
         }
       }
 
-      this.paneComponents['boards']['help-button'] = {
-        id: 'help-button',
-        type: 'image-button',
-        x: 1024 - 64 - 15,
-        y: 483 + 20,
-        width: 64,
-        height: 64,
-        image: 'help',
-        drawBG: true,
-        padding: 6,
-        fill: '#6E6E6E',
+      // this.paneComponents['boards']['help-button'] = {
+      //   id: 'help-button',
+      //   type: 'image-button',
+      //   x: 1024 - 64 - 15,
+      //   y: 483 + 20,
+      //   width: 64,
+      //   height: 64,
+      //   image: 'help',
+      //   drawBG: true,
+      //   padding: 6,
+      //   fill: '#6E6E6E',
 
-        onSelect: () => {
-          this.send('TOGGLE_HELP')
-          this.send('GO_HOME')
-        }
-      }
+      //   onSelect: () => {
+      //     this.send('TOGGLE_HELP')
+      //     this.send('GO_HOME')
+      //   }
+      // }
     }
 
 
