@@ -64,23 +64,5 @@ class ObjectRotationControl
         this.control.changeCamera(camera);
         this.control.updateMatrixWorld();
     }
-
-    disable() 
-    {
-        if(!this.object && !this.isEnabled) return;
-        this.control.detach();
-        this.scene.remove(this.control);
-        this.isEnabled = false;
-    }
-
-    enable() 
-    {
-        if(!this.object && this.isEnabled) return;
-        this.scene.add(this.control);
-        this.control.addToScene();
-        this.control.attach(this.object);
-        this.control.updateMatrixWorld(true);
-        this.isEnabled = true;
-    }
 }
 module.exports = ObjectRotationControl;

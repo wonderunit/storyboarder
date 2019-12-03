@@ -118,12 +118,16 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
       // Sets up object rotation control for manipulation of attachale rotation
       objectRotationControl.current = new ObjectRotationControl(scene, camera, domElement.current, characterObject.current.uuid)
-      objectRotationControl.current.setUpdateCharacter((name, rotation) => {updateObject(container.current.userData.id, {
+      objectRotationControl.current.control.canSwitch = false
+      objectRotationControl.current.setUpdateCharacter((name, rotation) => {
+      let euler = new THREE.Euler().setFromQuaternion(container.current.worldQuaternion())
+
+      updateObject(container.current.userData.id, {
         rotation:
         {
-          x : rotation.x,
-          y : rotation.y,
-          z : rotation.z,
+          x : euler.x,
+          y : euler.y,
+          z : euler.z,
         }
       } )})
     }
@@ -134,7 +138,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     // Applies position to container.
     // Position for container should always be in world space but container always attached to bone
     // We need to take it out of bone space and apply world position
-    console.log(props.x, props.y, props.z)
     characterObject.current.updateWorldMatrix(true, true)
     container.current.parent.updateMatrixWorld(true)
     let parentMatrixWorld = container.current.parent.matrixWorld
@@ -149,7 +152,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if ( !ready ) return
     if ( !props.rotation ) return
-    console.log(props.rotation)
     characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = container.current.parent.matrixWorld
     let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
@@ -165,14 +167,12 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     if(!ready) return
       let outlineParameters = {}
       if(isSelected) {
-       window.addEventListener("keydown", keyDownEvent, false)
+        window.addEventListener("keydown", keyDownEvent, false)
         if(!isBoneSelected.current) {
           if(objectRotationControl.current.isEnabled) { 
             objectRotationControl.current.selectObject(container.current, props.id)
-            isBoneSelected.current = true
-          } else {
-            objectRotationControl.current.object = container.current
           }
+          isBoneSelected.current = true
         }
 
         outlineParameters = {
@@ -183,7 +183,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       else {
         if(isBoneSelected.current) {
           objectRotationControl.current.deselectObject()
-            isBoneSelected.current = false
+          isBoneSelected.current = false
         }
         outlineParameters = {
           thickness: 0.008,
@@ -225,7 +225,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     container.current.scale.set( scale, scale, scale )
   }, [props.size])
 
-  const keyDownEvent = (event) => {switchManipulationState(event)}
+  const keyDownEvent = (event) => { switchManipulationState(event) }
 
   const switchManipulationState = (event) => {
     if(event.ctrlKey ) {
@@ -234,9 +234,11 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
             let isRotation = !container.current.userData.isRotationEnabled
             container.current.userData.isRotationEnabled = isRotation
             if(isRotation) {
-              objectRotationControl.current.enable()
+              objectRotationControl.current.selectObject(container.current, props.id)
+              objectRotationControl.current.isEnabled = true
             } else {
-              objectRotationControl.current.disable()
+              objectRotationControl.current.deselectObject()
+              objectRotationControl.current.isEnabled = false
             }
         }
     } 
