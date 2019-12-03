@@ -125,6 +125,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   camera.current.rotateX(props.tilt)
   camera.current.rotateZ(props.roll)
   camera.current.userData.type = type
+  camera.current.userData.locked = props.locked
   camera.current.userData.id = id
   camera.current.aspect = props.aspectRatio
 
