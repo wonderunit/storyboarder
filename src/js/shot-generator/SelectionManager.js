@@ -513,6 +513,8 @@ const SelectionManager = connect(
   }
 
   const onPointerUp = event => {
+    event.preventDefault()
+
     const { x, y } = mouse(event)
 
     if (dragTarget) {
@@ -578,11 +580,11 @@ const SelectionManager = connect(
   useLayoutEffect(() => {
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
-    window.addEventListener('pointerup', onPointerUp)
+    document.addEventListener('pointerup', onPointerUp)
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
-      window.removeEventListener('pointerup', onPointerUp)
+      document.removeEventListener('pointerup', onPointerUp)
     }
   }, [onPointerDown, onPointerUp, onPointerMove])
 
