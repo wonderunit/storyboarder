@@ -1,4 +1,4 @@
-const { useState, useEffect, useRef, useCallback } = React = require('react')
+const { useState, useEffect, useRef } = React = require('react')
 const infixToPostfix = require('infix-to-postfix')
 const postfixCalculator = require('postfix-calculator')
 const h = require('../../../src/js/utils/h')

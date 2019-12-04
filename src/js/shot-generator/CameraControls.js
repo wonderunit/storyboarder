@@ -83,8 +83,6 @@ class CameraControls {
     event.preventDefault()
     
     if (this.mouseDragOn) {
-      event.stopPropagation()
-      
       this.undoGroupEnd()
     }
     

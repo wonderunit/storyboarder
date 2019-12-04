@@ -513,8 +513,6 @@ const SelectionManager = connect(
   }
 
   const onPointerUp = event => {
-    event.preventDefault()
-
     const { x, y } = mouse(event)
 
     if (dragTarget) {

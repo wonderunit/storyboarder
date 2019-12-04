@@ -1342,28 +1342,14 @@ const rootReducer = reduceReducers(
   
   (state, action) => {
     const presets = presetsReducer(state.presets, action)
-    
-    if (presets !== state.presets) {
-      return {
-        ...state,
-        presets
-      }
-    }
-    
-    return state
+  
+    return (presets !== state.presets) ? { ...state, presets} : state
   },
   
   (state, action) => {
     const undoable = undoableReducer(state.undoable, action)
   
-    if (undoable !== state.undoable) {
-      return {
-        ...state,
-        undoable
-      }
-    }
-  
-    return state
+    return (undoable !== state.undoable) ? { ...state, undoable} : state
   },
 
   checksReducer,
@@ -1371,15 +1357,8 @@ const rootReducer = reduceReducers(
   // `meta` must run last, to calculate lastSavedHash
   (state, action) => {
     const meta = metaReducer(state.meta, action, state)
-    
-    if (meta !== state.meta) {
-      return {
-        ...state,
-        meta
-      }
-    }
   
-    return state
+    return (meta !== state.meta) ? { ...state, meta} : state
   }
 )
 
