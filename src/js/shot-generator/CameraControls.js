@@ -33,7 +33,7 @@ class CameraControls {
     
     window.addEventListener( 'pointermove', this.onPointerMove, false )
     this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
-    window.addEventListener( 'pointerup', this.onPointerUp, false )
+    document.addEventListener( 'pointerup', this.onPointerUp, false )
     window.addEventListener( 'keydown', this.onKeyDown, false )
     window.addEventListener( 'keyup', this.onKeyUp, false )
     document.getElementById('camera-view').addEventListener("wheel", this.onWheel, false )
@@ -47,7 +47,7 @@ class CameraControls {
   dispose () {
     window.removeEventListener( 'pointermove', this.onPointerMove )
     this.domElement.removeEventListener( 'pointerdown', this.onPointerDown )
-    window.removeEventListener( 'pointerup', this.onPointerUp )
+    document.removeEventListener( 'pointerup', this.onPointerUp )
     window.removeEventListener( 'keydown', this.onKeyDown )
     window.removeEventListener( 'keyup', this.onKeyUp )
     document.getElementById('camera-view').removeEventListener("wheel", this.onWheel )
@@ -81,14 +81,14 @@ class CameraControls {
   
   onPointerUp ( event ) {
     event.preventDefault()
-    event.stopPropagation()
+    //event.stopPropagation()
     
     if (this.mouseDragOn) {
       this.undoGroupEnd()
-      this.onChange({active: false, object: this._object})g
     }
     
     this.mouseDragOn = false
+    this.onChange({active: false, object: this._object})
   }
   
   addKey (key) {

@@ -580,11 +580,11 @@ const SelectionManager = connect(
   useLayoutEffect(() => {
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointerup', onPointerUp)
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointerup', onPointerUp)
     }
   }, [onPointerDown, onPointerUp, onPointerMove])
 
