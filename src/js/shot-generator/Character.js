@@ -179,6 +179,7 @@ const Character = React.memo(({
   loaded,
   modelData,
   largeRenderer,
+  deleteObjects,
   ...props
 }) => {
   const [ready, setReady] = useState(false) // ready to load?
@@ -186,7 +187,8 @@ const Character = React.memo(({
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
-
+  const [attachables, setAttachables] = useState(null)
+  const [modelChanged, setModelChange] = useState(false)
   const originalSkeleton = useRef(null)
   let objectRotationControl = useRef(null)
 
@@ -209,7 +211,6 @@ const Character = React.memo(({
   useEffect(() => {
     setReady(false)
     setLoaded(false)
-
     // return function cleanup () { }
   }, [props.model])
 
@@ -238,7 +239,6 @@ const Character = React.memo(({
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
       object.current.userData.locked = props.locked
-
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
@@ -295,6 +295,8 @@ const Character = React.memo(({
     }
 
     return function cleanup () {
+      setAttachables(object.current ? object.current.attachables : null)
+      setModelChange(!object.current ? false : object.current.attachables ? true : false)
       doCleanup()
       // setLoaded(false)
     }
@@ -619,6 +621,21 @@ const Character = React.memo(({
           }
     }
 
+    if(modelChanged) {
+      if(attachables) {
+        if(isCustomModel(props.model)) {
+          deleteObjects(attachables.map(attachable => attachable.userData.id))
+        } else {
+          for(let i = 0; i < attachables.length; i++) {
+            attachables[i].rebindAttachable(props.height / object.current.userData.originalHeight)
+          }
+        }
+       
+        setAttachables( null)
+      }
+      setModelChange(false)
+    }
+
     object.current.orthoIcon.setSelected(isSelected)
   }, [props.model, isSelected, ready])
 
@@ -841,7 +858,7 @@ const Character = React.memo(({
     if (!ready && modelData) {
       if (isValidSkinnedMesh(modelData)) {
         console.log(type, id, 'got valid mesh')
-
+        console.log(object.current)
         setReady(true)
       } else {
         alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')

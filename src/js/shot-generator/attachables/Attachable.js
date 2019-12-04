@@ -66,6 +66,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.userData.type = 'attachable'
       container.current.userData.bindedId = props.attachToId
       container.current.userData.isRotationEnabled = false
+      container.current.rebindAttachable = rebindAttachable
       isBoneSelected.current = false
       return function cleanup () {
         container.current.parent.remove(container.current)
@@ -77,8 +78,6 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     setReady(false)
     setLoaded(false)
-
-    // return function cleanup () { }
   }, [props.model])
 
   useEffect(() => {
@@ -134,6 +133,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       } )})
     }
   }, [ready])
+
 
   useEffect(() => {
     if ( !ready ) return
@@ -226,6 +226,29 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     let scale = container.current.parent.uuid === scene.uuid ? props.size : props.size / characterObject.current.scale.x
     container.current.scale.set( scale, scale, scale )
   }, [props.size])
+
+  const rebindAttachable = (characterScale) => {
+    let prevCharacter = characterObject.current
+    characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]
+
+    let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
+    let skeleton = skinnedMesh.skeleton
+    let bone = skeleton.getBoneByName(props.bindBone)
+    domElement.current = largeRenderer.current.domElement
+    container.current.userData.bindBone = props.bindBone
+
+    let prevParent = container.current.parent
+    prevParent.remove(container.current)
+    container.current.applyMatrix(prevCharacter.matrixWorld)
+    container.current.applyMatrix(characterObject.current.getInverseMatrixWorld())
+    bone.add(container.current)
+    container.current.scale.set( props.size, props.size, props.size )
+    container.current.scale.multiplyScalar(1 / characterScale)
+    container.current.updateWorldMatrix(true, true)
+    // Adds a container of attachable to character if it doesn't exist and adds current attachable
+    if(!skinnedMesh.parent.attachables) skinnedMesh.parent.attachables = []
+    skinnedMesh.parent.attachables.push(container.current)
+  }
 
   const keyDownEvent = (event) => { switchManipulationState(event) }
 
