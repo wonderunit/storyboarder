@@ -653,7 +653,7 @@ class CanvasRenderer {
       }
 
       this.renderObjects(ctx, this.paneComponents['grid'])
-      if(this.state.grids.tab === "handPoses")
+      if(sceneObject && sceneObject.type === 'character' && this.state.grids.tab === 'handPoses')
       this.renderObjects(ctx, this.paneComponents['grid']['hand-poses-title'])
     }
 
