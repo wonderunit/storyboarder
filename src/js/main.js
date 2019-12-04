@@ -1,3 +1,9 @@
+const env = require('../../env.json')
+
+if (env.mode) {
+  process.env.NODE_ENV = env.mode
+}
+
 const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
 const fs = require('fs-extra')
@@ -44,7 +50,6 @@ const autoUpdater = require('./auto-updater')
 
 
 const store = configureStore({}, 'main')
-
 
 
 let welcomeWindow
@@ -453,7 +458,7 @@ let openFile = filepath => {
 
           findOrCreateProjectFolder([
             scriptData,
-            locations,  
+            locations,
             characters,
             metadata
           ])
@@ -550,7 +555,7 @@ let openDialogue = () => {
 let importImagesDialogue = (shouldReplace = false) => {
   dialog.showOpenDialog(
     {
-      title:"Import Boards", 
+      title:"Import Boards",
       filters:[
         {name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'psd']},
       ],
@@ -605,7 +610,7 @@ let importImagesDialogue = (shouldReplace = false) => {
 let importWorksheetDialogue = () => {
   dialog.showOpenDialog(
     {
-      title:"Import Worksheet", 
+      title:"Import Worksheet",
       filters:[
         {name: 'Images', extensions: ['png', 'jpg', 'jpeg']},
       ],
@@ -671,7 +676,7 @@ let processFountainData = (data, create, update) => {
         break
       case 'scene':
         metadata.sceneCount++
-        let id 
+        let id
         if (node.scene_id) {
           id = node.scene_id.split('-')
           if (id.length>1) {
@@ -711,7 +716,7 @@ let processFountainData = (data, create, update) => {
       break
   }
 
-  // unused 
+  // unused
   // if (update) {
   //   mainWindow.webContents.send('updateScript', 1)//, diffScene)
   // }
@@ -798,7 +803,7 @@ const ensureFdxSceneIds = fdxObj => {
     dialog.showMessageBox({
       type: 'info',
       message: 'We added scene IDs to the Final Draft script',
-      detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. " + 
+      detail: "Scene IDs are what we use to make sure we put the storyboards in the right place. " +
               "If you have your script open in an editor, you should reload it. " +
               "Also, you can change your script around as much as you want, "+
               "but please don't change the scene IDs.",
@@ -863,7 +868,7 @@ const createAndLoadScene = aspectRatio =>
             await trash(filename)
           } else {
             dialog.showMessageBox(null, {
-              message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten." 
+              message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten."
             })
             return reject(null)
           }
@@ -947,7 +952,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       devTools: true,
       plugins: true,
       nodeIntegration: true
-    } 
+    }
   })
 
   let projectName = path.basename(filename, path.extname(filename))
@@ -1470,7 +1475,7 @@ ipcMain.on('insertShot',
 
 ipcMain.on('registration:open', event => registration.show())
 
-ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardData }) => {  
+ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardData }) => {
   shotGeneratorWindow.show(win => {
     win.webContents.send('loadBoard', { storyboarderFilePath, boardData, board })
   })
