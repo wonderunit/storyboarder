@@ -371,7 +371,7 @@ const updateObject = (draft, state, props, { models }) => {
     draft.posePresetId = props.posePresetId
     if( draft.handPosePresetId) {
       draft.handPosePresetId = null
-      draft.handSkeleton = [] 
+      draft.handSkeleton = []
     }
   }
 
@@ -1339,24 +1339,27 @@ const rootReducer = reduceReducers(
   initialState,
 
   mainReducer,
-
-  (state, action) => ({
-    ...state,
-    presets: presetsReducer(state.presets, action)
-  }),
-
-  (state, action) => ({
-    ...state,
-    undoable: undoableReducer(state.undoable, action)
-  }),
+  
+  (state, action) => {
+    const presets = presetsReducer(state.presets, action)
+  
+    return (presets !== state.presets) ? { ...state, presets} : state
+  },
+  
+  (state, action) => {
+    const undoable = undoableReducer(state.undoable, action)
+  
+    return (undoable !== state.undoable) ? { ...state, undoable} : state
+  },
 
   checksReducer,
 
   // `meta` must run last, to calculate lastSavedHash
-  (state, action) => ({
-    ...state,
-    meta: metaReducer(state.meta, action, state)
-  })
+  (state, action) => {
+    const meta = metaReducer(state.meta, action, state)
+  
+    return (meta !== state.meta) ? { ...state, meta} : state
+  }
 )
 
 module.exports = {
