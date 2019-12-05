@@ -11,7 +11,7 @@ const Select = React.memo(({
     disabled = false,
     onSetValue = defaultOnSetValue
   } = {}) => {
-  const callbackRef = useRef(null)
+  const callbackRef = useRef(onSetValue)
   
   useEffect(() => {
     callbackRef.current = onSetValue
@@ -19,6 +19,7 @@ const Select = React.memo(({
   
   return h([ReactSelect.default, {
     options,
+    value,
     placeholder: label,
     onChange: callbackRef.current,
     isDisabled: disabled,
