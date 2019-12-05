@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo } = React = require('react')
+const { useMemo, useEffect, useState } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
 
 const cloneGltf = require('../helpers/clone-gltf')
@@ -9,6 +9,7 @@ const VirtualCamera = require('../components/VirtualCamera')
 
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
+let attachablesList = []
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) => {
   const ref = useUpdate(
@@ -20,10 +21,10 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
   const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
     () => {
       let lod = new THREE.LOD()
-
+      console.log("Gltf clone")
       let { scene } = cloneGltf(gltf)
-
       let map
+      console.log("Gltf cloned")
 
       // for built-in Characters
       // SkinnedMeshes are immediate children
@@ -88,11 +89,33 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
-
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
   )
+
+  useEffect(() => {
+    if(!lod) return
+    if(!ref.current) return
+    if(attachablesList.length) { 
+      ref.current.attachables = []
+      for(let i = 0; i < attachablesList.length; i++) {
+        attachablesList[i].rebindAttachable(sceneObject.height / ref.current.userData.originalHeight)
+      }
+      attachablesList = []
+    }
+    return () => {
+      if(ref.current.attachables) {
+        for(let i = 0; i < ref.current.attachables.length; i++) { 
+          if(ref.current.attachables[i].parent) 
+          ref.current.attachables[i].parent.remove(ref.current.attachables[i])
+          console.log(ref.current.attachables[i].clone())
+        }
+        attachablesList = ref.current.attachables.concat([])
+      }
+    }
+  }, [ref.current, lod])
+
 
   useMemo(() => {
     if (!skeleton) return

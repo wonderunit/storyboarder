@@ -59,12 +59,15 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
           )
         }
       })
-
       return children
     }
 
     return []
   }, [sceneObject.model, gltf])
+
+  useEffect(() => {
+    ref.current.rebindAttachable = rebindAttachable
+  }, []) 
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
@@ -81,8 +84,9 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
   }, [isSelected])
 
   useEffect(() => {
-    if(!scene.children[1]) return []
+    if(!scene.children[1]) return 
     characterObject.current = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
+    if(!characterObject.current) return
     let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
     bone.add(ref.current)
@@ -92,6 +96,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
   }, [scene.children])
   
   useEffect(() => {
+    if(!characterObject.current) return 
     characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = ref.current.parent.matrixWorld
     let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
@@ -103,6 +108,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
   }, [sceneObject.x, sceneObject.y, sceneObject.z])
   
   useEffect(() => {
+    if(!characterObject.current) return 
     characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = ref.current.parent.matrixWorld
     let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
@@ -112,6 +118,34 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     ref.current.applyMatrix(parentInverseMatrixWorld)
     ref.current.updateMatrixWorld(true)
   }, [sceneObject.rotation])
+
+  const rebindAttachable = () => {
+    let prevCharacter = characterObject.current
+    characterObject.current = scene.children[1].children.filter(child => child.userData.id === sceneObject.attachToId)[0]
+
+    let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
+    let skeleton = skinnedMesh.skeleton
+    let bone = skeleton.getBoneByName(sceneObject.bindBone)
+    ref.current.applyMatrix(prevCharacter.matrixWorld)
+    ref.current.applyMatrix(characterObject.current.getInverseMatrixWorld())
+    bone.add(ref.current)
+    ref.current.updateWorldMatrix(true, true)
+
+    console.log(ref.current.children.length)
+    if(!ref.current.children.length) {
+      console.log(ref.current.children)
+      gltf.scene.traverse(child => {
+        if (child.isMesh) {
+          let mesh = meshFactory(child)
+          mesh.userData.type === 'attachable'
+          ref.current.add(mesh)
+        }
+      })
+    }
+    // Adds a ref of attachable to character if it doesn't exist and adds current attachable
+    if(!characterObject.current.attachables) characterObject.current.attachables = []
+    characterObject.current.attachables.push(ref.current)
+  }
 
   const { size } = sceneObject
   return <group
