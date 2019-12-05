@@ -445,6 +445,18 @@ const withDisplayNames = draft => {
   return draft
 }
 
+const getCameraShot = (draft, cameraId) => {
+  if (!draft[cameraId]) {
+    draft[cameraId] = {
+      size: null,
+      angle: null,
+      cameraId: cameraId
+    }
+  }
+  
+  return draft[cameraId]
+}
+
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
@@ -774,7 +786,53 @@ const initialState = {
   server: {
     uri: undefined,
     client: false
-  }
+  },
+  cameraShots: {}
+}
+
+const cameraShotsReducer = (state = {}, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'SET_CAMERA_SHOT':
+        const camera = getCameraShot(draft, action.payload.cameraId)
+        
+        camera.size = action.payload.size || camera.size
+        camera.angle = action.payload.angle || camera.angle
+        return
+        
+        // select a single object
+      case 'CREATE_OBJECT':
+        if (action.payload.type === 'camera') {
+          getCameraShot(draft, action.payload.id)
+        }
+        return
+      
+      case 'DUPLICATE_OBJECTS':
+        // select the new duplicates, replacing the selection list
+          action.payload.ids.forEach((id, i) => {
+            if (draft[id]) {
+              getCameraShot(draft, action.payload.newIds[i])
+            }
+          })
+        return
+      
+      case 'DELETE_OBJECTS':
+        if (
+            action.payload.ids == null ||
+            action.payload.ids.length === 0
+        ) return
+  
+        for (let id of action.payload.ids) {
+          if (draft[id] == null) continue
+          
+          delete draft[id]
+        }
+        return
+      
+      default:
+        return
+    }
+  })
 }
 
 const selectionsReducer = (state = [], action) => {
@@ -1351,6 +1409,12 @@ const rootReducer = reduceReducers(
   
     return (undoable !== state.undoable) ? { ...state, undoable} : state
   },
+  
+  (state, action) => {
+    const cameraShots = cameraShotsReducer(state.cameraShots, action)
+
+    return (cameraShots !== state.cameraShots) ? { ...state, cameraShots} : state
+  },
 
   checksReducer,
 
@@ -1387,6 +1451,8 @@ module.exports = {
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
+  
+  setCameraShot: (cameraId, values) => ({ type: 'SET_CAMERA_SHOT', payload: { cameraId, ...values } }),
 
   loadScene: data => ({ type: 'LOAD_SCENE', payload: data }),
   updateSceneFromXR: data => ({ type: 'UPDATE_SCENE_FROM_XR', payload: data }),
