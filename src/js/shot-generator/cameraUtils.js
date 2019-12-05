@@ -308,10 +308,6 @@ const setShot = ({
   shotAngle,
   shotSize
 }) => {
-  if (ShotAnglesInfo[shotAngle] === undefined && ShotSizesInfo[shotSize] === undefined) {
-    return
-  }
-  
   let {clampedInfo, direction} = getShotInfo({
     selected: selected || getClosestCharacter(characters, camera),
     characters,
