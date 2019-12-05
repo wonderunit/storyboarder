@@ -490,6 +490,7 @@ const SceneContent = connect(
 
     const groundRef = useRef()
     const rootRef = useRef()
+    const thumbnailRenderer = useRef()
 
     const xrClient = useRef()
     const getXrClient = () => {
@@ -534,6 +535,17 @@ const SceneContent = connect(
 
     const gamepads = navigator.getGamepads()
     const gamepadFor = controller => gamepads[controller.userData.gamepad.index]
+
+    useEffect(() => {
+      thumbnailRenderer.current = new THREE.WebGLRenderer()
+      thumbnailRenderer.current.setSize(128 * aspectRatio, 128)
+      return destroyContext = () => {
+        thumbnailRenderer.current.forceContextLoss()
+        thumbnailRenderer.current.context = null
+        thumbnailRenderer.current.domElement = null
+        thumbnailRenderer.current = null
+      }
+    }, [])
 
     return (
       <>
@@ -660,6 +672,7 @@ const SceneContent = connect(
                 isSelected={selections.includes(id)}
                 isActive={activeCamera === id}
                 getCanvasRenderer={getCanvasRenderer}
+                thumbnailRenderer={thumbnailRenderer}
                 boardUid={boardUid}
                 audio={
                   activeCamera === id

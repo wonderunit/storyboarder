@@ -27,7 +27,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, getCanvasRenderer, boardUid, audio }) => {
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, getCanvasRenderer, thumbnailRenderer, boardUid, audio }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -52,7 +52,6 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   const resolution = 512
   const previousTime = useRef(null)
 
-  const thumbnailRenderer = useRef()
   const cameraThumbnail = useRef(new Image())
   const cr = useRef(getCanvasRenderer())
 
@@ -64,13 +63,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   }, [resolution, aspectRatio])
 
   useEffect(() => {
-    thumbnailRenderer.current = new THREE.WebGLRenderer()
-    thumbnailRenderer.current.setSize(128 * aspectRatio, 128)
-    return destroyContext = () => {
-      thumbnailRenderer.current.forceContextLoss()
-      thumbnailRenderer.current.context = null
-      thumbnailRenderer.current.domElement = null
-      thumbnailRenderer.current = null
+    return destroyTarget = () => {
       renderTarget.current.dispose()
     }
   }, [])
