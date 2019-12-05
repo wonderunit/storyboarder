@@ -395,8 +395,8 @@ const useInteractionsManager = ({
         tilt: euler.x
       }))
     } else if (object.userData.type === 'attachable') {
-      let position = new THREE.Vector3()
-      let quaternion = new THREE.Quaternion()
+      let position = object.worldPosition()// new THREE.Vector3()
+      let quaternion = object.worldQuaternion()
       let scale = new THREE.Vector3()
       let matrix = object.matrix.clone()
       matrix.premultiply(object.parent.matrixWorld)
@@ -1160,7 +1160,6 @@ const useInteractionsManager = ({
           let controller = gl.vr.getController(context.draggingController)
           let object = event.intersection.object
           
-          console.log(object.position.clone())
 
           if (object.userData.type != 'character') {
             if(object.userData.type === "attachable")
@@ -1193,6 +1192,13 @@ const useInteractionsManager = ({
           stopSound('beam', object)
 
           commit(context.selection, object)
+          if(object.userData.type === 'character') {
+            if(object.attachables) {
+              for(let i = 0; i < object.attachables.length; i++) {
+                commit(object.attachables[i].userData.id, object.attachables[i])
+              }
+            }
+          }
 
           uiService.send({ type: 'UNLOCK' })
         },
