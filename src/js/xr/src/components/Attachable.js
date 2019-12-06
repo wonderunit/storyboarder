@@ -131,9 +131,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     bone.add(ref.current)
     ref.current.updateWorldMatrix(true, true)
 
-    console.log(ref.current.children.length)
     if(!ref.current.children.length) {
-      console.log(ref.current.children)
       gltf.scene.traverse(child => {
         if (child.isMesh) {
           let mesh = meshFactory(child)
