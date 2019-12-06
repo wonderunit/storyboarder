@@ -35,6 +35,7 @@ const {
   // selectors
   getSelections,
   getSelectedBone,
+  getSceneObjects,
 
   // action creators
   selectObject,
@@ -282,6 +283,7 @@ const useInteractionsManager = ({
 
 
   const selections = useSelector(getSelections)
+  const sceneObjects = useSelector(getSceneObjects)
 
   const canUndo = useSelector(state => state.undoable.past.length > 0)
   const canRedo = useSelector(state => state.undoable.future.length > 0)
@@ -301,17 +303,17 @@ const useInteractionsManager = ({
       const updateCharacterSkeleton = (name, rotation) => { dispatch(updateCharacterSkeleton({
         id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
         name : name,
-        rotation: 
+        rotation:
         {
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
-        }  
+        }
       } ))}
 
       const updateSkeleton = (skeleton) => { dispatch(updateCharacterIkSkeleton({
         id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
-        skeleton: skeleton  
+        skeleton: skeleton
       } ))}
 
       const updateCharacterPos = ({ x, y, z}) => dispatch(updateObject(
@@ -332,7 +334,7 @@ const useInteractionsManager = ({
         updatePoleTarget
       )
     }
-    return ikHelper.current 
+    return ikHelper.current
   }
   
   useEffect(() => {
@@ -496,7 +498,7 @@ const useInteractionsManager = ({
       }
     }
 
-    if (match) {
+    if (match && !sceneObjects[match.userData.id].locked) {
       // console.log('found sceneObject:', sceneObjects[match.userData.id])
       // console.log('intersection', intersection)
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
@@ -956,11 +958,11 @@ const useInteractionsManager = ({
             let parentQuat = boneInOriginalMesh.parent.worldQuaternion().inverse()
             // Applies parent invese rotation to extract bone from it's parent rotation
             boneInOriginalMesh.quaternion.copy(parentQuat)
-            // Applies static rotation to bone 
+            // Applies static rotation to bone
             boneInOriginalMesh.quaternion.multiply(staticRotation)
-            boneInOriginalMesh.updateMatrixWorld(true) 
+            boneInOriginalMesh.updateMatrixWorld(true)
 
-            // Sets up default (looking forward) camera's parent rotation 
+            // Sets up default (looking forward) camera's parent rotation
             // Serves as a static rotation of camera's parent
             hmdElement.parent.rotation.x = Math.PI
             hmdElement.parent.rotation.y = 0
@@ -983,7 +985,7 @@ const useInteractionsManager = ({
             boneInOriginalMesh.updateWorldMatrix(false, true)
           }
           
-          // Atttaches control point to HMDElement(controllers and camera) 
+          // Atttaches control point to HMDElement(controllers and camera)
           // and sets it's position to (0, 0, 0) in order to put control point in the center of hmd element
           const attachControlPointToHmdElement = (hmdElement, controlPoint,) => {
             hmdElement.attach(controlPoint)
@@ -994,7 +996,7 @@ const useInteractionsManager = ({
           // world scale is always reset to large
           setMiniMode(false, camera)
 
-          // Taking world position of control point 
+          // Taking world position of control point
           let worldPosition = headControlPoint.worldPosition()
   
           // Taking world quaternion of head bone
