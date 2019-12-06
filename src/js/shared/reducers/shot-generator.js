@@ -144,6 +144,42 @@ const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   }
 }
 
+const checkForHandSkeletonChanges = (state, draft, actionPayloadId) => {
+  let handPosePresetId = getSceneObjects(draft)[actionPayloadId].handPosePresetId
+  if (handPosePresetId) {
+    let statePreset = state.presets.poses[handPosePresetId]
+
+    // preset does not exist anymore
+    if (!statePreset) {
+      // so don't reference it
+      getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+      return true
+    }
+
+    let draftSkeleton = getSceneObjects(draft)[actionPayloadId].handSkeleton
+
+    let preset = statePreset.state.handSkeleton
+    let curr = draftSkeleton
+
+    if (Object.values(curr).length != Object.values(preset).length) {
+      // changed, no longer matches preset
+      getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+      return true
+    }
+    for (let name in preset) {
+      if (
+        preset[name].rotation.x !== curr[name].rotation.x ||
+        preset[name].rotation.y !== curr[name].rotation.y ||
+        preset[name].rotation.z !== curr[name].rotation.z
+      ) {
+        // changed, no longer matches preset
+        getSceneObjects(draft)[actionPayloadId].handPosePresetId = undefined
+        return true
+      }
+    }
+  }
+}
+
 // migrate SceneObjects from older beta builds of Shot Generator 2.0
 const migrateRotations = sceneObjects =>
   Object.entries(sceneObjects)
@@ -177,14 +213,33 @@ const migrateWorldFog = world => ({
 
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
+  
+  if (props.visible != null) {
+    draft.visible = props.visible
+  }
+  
+  if (props.hasOwnProperty('locked')) {
+    if (props.locked) {
+      draft.locked = true
+    } else {
+      draft.locked = false
+    }
+  }
+  
+  if (draft.locked) {
+    return
+  }
 
   // update skeleton first
   // so that subsequent changes to height and headScale take effect
-  if (props.hasOwnProperty('skeleton'))
-  {
+  if (props.hasOwnProperty('skeleton')) {
     draft.skeleton = props.skeleton
   }
 
+  if (props.hasOwnProperty('handSkeleton')) {
+    draft.handSkeleton = props.handSkeleton
+  }
+  
   if (props.x != null) {
     draft.x = props.x
   }
@@ -268,10 +323,6 @@ const updateObject = (draft, state, props, { models }) => {
     draft.name = props.name
   }
 
-  if (props.visible != null) {
-    draft.visible = props.visible
-  }
-
   if (props.intensity != null) {
     draft.intensity = props.intensity
   }
@@ -326,8 +377,16 @@ const updateObject = (draft, state, props, { models }) => {
 
   if (props.hasOwnProperty('posePresetId')) {
     draft.posePresetId = props.posePresetId
+    if( draft.handPosePresetId) {
+      draft.handPosePresetId = null
+      draft.handSkeleton = []
+    }
   }
 
+  if (props.hasOwnProperty('handPosePresetId')) {
+    draft.handPosePresetId = props.handPosePresetId
+  }
+  
   if (props.hasOwnProperty('loaded')) {
     draft.loaded = props.loaded
   }
@@ -394,8 +453,21 @@ const withDisplayNames = draft => {
   return draft
 }
 
+const getCameraShot = (draft, cameraId) => {
+  if (!draft[cameraId]) {
+    draft[cameraId] = {
+      size: null,
+      angle: null,
+      cameraId: cameraId
+    }
+  }
+  
+  return draft[cameraId]
+}
+
 // load up the default poses
 const defaultPosePresets = require('./shot-generator-presets/poses.json')
+const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
 
 // reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
 const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
@@ -716,12 +788,59 @@ const initialState = {
       }
     },
 
-    poses: defaultPosePresets
+    poses: defaultPosePresets,
+    handPoses: defaultHandPosePresets
   },
   server: {
     uri: undefined,
     client: false
-  }
+  },
+  cameraShots: {}
+}
+
+const cameraShotsReducer = (state = {}, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'SET_CAMERA_SHOT':
+        const camera = getCameraShot(draft, action.payload.cameraId)
+        
+        camera.size = action.payload.size || camera.size
+        camera.angle = action.payload.angle || camera.angle
+        return
+        
+        // select a single object
+      case 'CREATE_OBJECT':
+        if (action.payload.type === 'camera') {
+          getCameraShot(draft, action.payload.id)
+        }
+        return
+      
+      case 'DUPLICATE_OBJECTS':
+        // select the new duplicates, replacing the selection list
+          action.payload.ids.forEach((id, i) => {
+            if (draft[id]) {
+              getCameraShot(draft, action.payload.newIds[i])
+            }
+          })
+        return
+      
+      case 'DELETE_OBJECTS':
+        if (
+            action.payload.ids == null ||
+            action.payload.ids.length === 0
+        ) return
+  
+        for (let id of action.payload.ids) {
+          if (draft[id] == null) continue
+          
+          delete draft[id]
+        }
+        return
+      
+      default:
+        return
+    }
+  })
 }
 
 const selectionsReducer = (state = [], action) => {
@@ -929,9 +1048,10 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'UPDATE_OBJECTS':
         for (let [ key, value ] of Object.entries(action.payload)) {
           if (draft[key] == null) return
-
-          draft[key].x = value.x
-          draft[key].y = value.y
+          if (draft[key].locked) continue
+          draft[key].x = value.x ? value.x : draft[key].x
+          draft[key].y = value.y ? value.y : draft[key].y
+          draft[key].z = value.z ? value.z : draft[key].z
         }
         return
 
@@ -987,6 +1107,12 @@ const sceneObjectsReducer = (state = {}, action) => {
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         draft[action.payload.id].skeleton[action.payload.name] = {
           rotation: action.payload.rotation
+        }
+        // Check if handBone got same bones and update it if it does
+        if(draft[action.payload.id].handSkeleton && draft[action.payload.id].handSkeleton[action.payload.name]) {
+          draft[action.payload.id].handSkeleton[action.payload.name] = {
+            rotation: action.payload.rotation
+          }
         }
         return
 
@@ -1206,6 +1332,10 @@ const presetsReducer = (state = initialState.presets, action) => {
           draft.poses[action.payload.id].name = action.payload.name
         }
         return
+
+      case 'CREATE_HAND_POSE_PRESET':
+        draft.handPoses[action.payload.id] = action.payload
+        return
     }
   })
 }
@@ -1329,6 +1459,12 @@ const checksReducer = (state, action) => {
             // ... detect change between state and preset
             checkForSkeletonChanges(state, draft, action.payload.id)
           }
+
+           // unless handPosePresetId was just set ...
+          if (!action.payload.hasOwnProperty('handPosePresetId')) {
+            // ... detect change between state and preset
+            checkForHandSkeletonChanges(state, draft, action.payload.id)
+          }
         }
         return
 
@@ -1402,24 +1538,33 @@ const rootReducer = reduceReducers(
   initialState,
 
   mainReducer,
+  
+  (state, action) => {
+    const presets = presetsReducer(state.presets, action)
+  
+    return (presets !== state.presets) ? { ...state, presets} : state
+  },
+  
+  (state, action) => {
+    const undoable = undoableReducer(state.undoable, action)
+  
+    return (undoable !== state.undoable) ? { ...state, undoable} : state
+  },
+  
+  (state, action) => {
+    const cameraShots = cameraShotsReducer(state.cameraShots, action)
 
-  (state, action) => ({
-    ...state,
-    presets: presetsReducer(state.presets, action)
-  }),
-
-  (state, action) => ({
-    ...state,
-    undoable: undoableReducer(state.undoable, action)
-  }),
+    return (cameraShots !== state.cameraShots) ? { ...state, cameraShots} : state
+  },
 
   checksReducer,
 
   // `meta` must run last, to calculate lastSavedHash
-  (state, action) => ({
-    ...state,
-    meta: metaReducer(state.meta, action, state)
-  })
+  (state, action) => {
+    const meta = metaReducer(state.meta, action, state)
+  
+    return (meta !== state.meta) ? { ...state, meta} : state
+  }
 )
 
 module.exports = {
@@ -1449,6 +1594,8 @@ module.exports = {
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
+  
+  setCameraShot: (cameraId, values) => ({ type: 'SET_CAMERA_SHOT', payload: { cameraId, ...values } }),
 
   loadScene: data => ({ type: 'LOAD_SCENE', payload: data }),
   updateSceneFromXR: data => ({ type: 'UPDATE_SCENE_FROM_XR', payload: data }),
@@ -1486,6 +1633,7 @@ module.exports = {
   createCharacterPreset: payload => ({ type: 'CREATE_CHARACTER_PRESET', payload }),
 
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
+  createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
 

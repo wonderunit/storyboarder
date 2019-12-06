@@ -127,7 +127,6 @@ kbd {
   justify-content: center;
   align-items: center;
   display: flex;
-
 }
 
 #toolbar a:last-child {
@@ -233,6 +232,14 @@ kbd {
   align-items: center;
   line-height: 1;
 }
+
+.element a.lock {
+  width: 48px;
+  font-size: 11px;
+  text-align: center;
+  font-weight: bold;
+}
+
 .element .row {
   align-items: center;
 }
@@ -270,7 +277,6 @@ kbd {
   color: #999;
   text-transform: capitalize;
   max-width: 288px;
-
 }
 
 #inspector::-webkit-scrollbar {
@@ -306,15 +312,16 @@ kbd {
 }
 
 #camera-view {
-  height: 0;
+  height: 100%;
+  flex: 1;
   position: relative;
   overflow: hidden;
-  background: #111;
+  background-color: #111114;
   display: flex;
   justify-content: center;
+  align-items: center;
 }
 #camera-canvas {
-  top: 0;
   position: absolute;
 }
 #camera-canvas:focus {
@@ -325,9 +332,7 @@ kbd {
 }
 #guides-canvas {
   position: absolute;
-  top: 0;
   right: 0;
-  bottom: 0;
   left: 0;
   pointer-events: none;
 }
@@ -338,26 +343,31 @@ kbd {
 
   width: 100%;
 
-  font-size: 16px;
+  font-size: 14px;
   line-height: 1.25;
 
   color: #888;
 
   position: relative;
   overflow: hidden;
+
+  height: 120px;
+
+  background-color: #111114;
+
+  padding-top: 20px;
 }
 .inspectors .camera-inspector,
 .inspectors .board-inspector,
 .inspectors .guides-inspector,
 .inspectors .cameras-inspector {
-  padding: 1rem;
+  padding: 0.5rem 1rem;
 }
 .inspectors > div:last-child {
   justify-content: flex-end;
 }
 .camera-inspector {
   display: flex;
-  width: 30%;
 }
 .camera-inspector__nearest-character {
   margin-top: 1rem;
@@ -365,6 +375,8 @@ kbd {
 .board-inspector {
   display: flex;
   flex: 1;
+  align-items: center;
+  font-size: 16px;
 }
 .board-inspector__shot {
   font-weight: bold;
@@ -375,11 +387,13 @@ kbd {
 }
 .guides-inspector {
   display: flex;
-  width: 15%;
+  min-width: 15%;
+  justify-content: flex-end;
 }
 .cameras-inspector {
   display: flex;
   min-width: 15%;
+  justify-content: flex-end;
 }
 .guides-inspector__label,
 .cameras-inspector__label {
@@ -902,4 +916,221 @@ div.fatal-error-screen__report {
 div.fatal-error-screen__report::selection {
   color: #bbb;
   background: rgb(255, 237, 0, 20%);
+}
+
+.arrow {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+
+  border-bottom: 8px solid #808080;
+}
+
+
+.arrow.up {
+  transform: rotate(0deg);
+}
+
+.arrow.right {
+  transform: rotate(90deg);
+}
+
+.arrow.down {
+  transform: rotate(180deg);
+}
+
+.arrow.left {
+  transform: rotate(270deg);
+}
+
+.camera-item {
+  margin: 0 6px;
+}
+
+.camera-item-button {
+  /* Total size = 34 x 34 */
+  width: 32px;
+  height: 32px;
+  border: 2px solid #808080;
+  border-radius: 8px;
+  /* If sizing set to border-box then total size = size + margin (padding not used)*/
+  box-sizing: border-box;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 2px;
+
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.camera-item-button:hover {
+  border-color: #A5A5A5;
+}
+
+.camera-item-control {
+  /* Set height to 2x item button height */
+  height: 68px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.camera-item-label {
+  padding-top: 6px;
+  text-align: center;
+}
+
+.camera-item.roll {
+  width: 100px;
+}
+
+.camera-item.pan {
+  width: 130px;
+}
+
+.camera-item.move,
+.camera-item.lens {
+  width: 120px;
+}
+
+.camera-item.elevate {
+  width: 110px;
+}
+
+.camera-item.shots {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+}
+
+.camera-item.pan .pan-control {
+  width: 64px;
+  height: 64px;
+  border: 2px solid #808080;
+  border-radius: 50%;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pan-control .pan-control-target {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #808080;
+}
+
+.shots > .select {
+  box-sizing: border-box;
+  width: 158px;
+  height: 26px;
+
+  margin: 3px;
+  cursor: pointer;
+}
+
+.select {
+  width: 100%;
+  height: inherit;
+}
+
+.select .select__menu {
+  background: rgb(41, 41, 44);
+}
+
+.select .select__option.select__option--is-focused {
+  background: rgba(255,255,255,0.2);
+}
+.select .select__option.select__option--is-selected {
+  background: #5c65c0;
+}
+.select .select__option:focus,
+.select .select__option:active {
+  background: rgb(84, 84, 86);
+}
+
+.select .select--is-disabled {
+  opacity: 0.5;
+}
+
+.select .select__control {
+  background: rgb(41, 41, 44);
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  min-height: 0;
+  height: inherit;
+
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+
+  cursor: pointer;
+}
+
+.select .select__control:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+.select .select__control.select__control--is-focused {
+  border-color: #5c65c0;
+}
+
+.select .select__single-value {
+  color: #eee;
+}
+
+.select .select__placeholder {
+  color: #888888;
+}
+
+.select .select__dropdown-indicator {
+  padding: 0 4px;
+}
+
+.select .select__indicator-separator {
+  margin: 0;
+  background-color: #808080;
+}
+
+.select .select__value-container {
+  padding: 0 0 0 6px;
+  line-height: initial;
+}
+
+.select .select__indicators {
+  display: none;
+}
+
+/* Scroll Bar */
+.select__menu-list::-webkit-scrollbar {
+  width: 4px;
+  height: 0px;
+}
+.select__menu-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+.select__menu-list::-webkit-scrollbar-thumb {
+  background: #888;
+}
+.select__menu-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+@media (max-width: 1280px) {
+
+  #toolbar a span,
+  .inspectors .board-inspector,
+  .inspectors .cameras-inspector,
+  .inspectors .guides-inspector {
+    display: none;
+  }
+
 }

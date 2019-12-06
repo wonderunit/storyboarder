@@ -18,7 +18,6 @@ const {
   getActiveCamera
 } = require('../shared/reducers/shot-generator')
 
-
 function getObjectsFromIcons ( objects ) {
   return objects
       // visible objects
@@ -127,7 +126,9 @@ const SelectionManager = connect(
     gl,
     
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+  
+     onDrag
   }) => {
 
   const { scene } = useContext(SceneContext)
@@ -156,6 +157,7 @@ const SelectionManager = connect(
     o.userData.type === 'boneControl' ||
     (useIcons && o.isPerspectiveCamera)
   )
+
   const mouse = event => {
     const rect = el.getBoundingClientRect()
     return {
@@ -205,6 +207,8 @@ const SelectionManager = connect(
   const raycaster = useRef()
   const plane = useRef()
   const intersection = useRef()
+  const selectedObjects = useRef()
+  const objectChanges = useRef()
   const offsets = useRef()
   const mousePosition = useRef(new THREE.Vector2());
   const prepareDrag = (target, { x, y, useIcons }) => {
@@ -213,6 +217,8 @@ const SelectionManager = connect(
     if (!intersection.current) intersection.current = new THREE.Vector3()
 
     offsets.current = []
+    selectedObjects.current = {}
+    objectChanges.current = {}
 
     raycaster.current.setFromCamera({ x, y }, camera )
 
@@ -221,12 +227,15 @@ const SelectionManager = connect(
     } else {
       plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
     }
+  
+    for (let selection of selections) {
+      selectedObjects.current[selection] = scene.children.find(child => child.userData.id === selection)
+    }
 
     // remember the offsets of every selected object
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
       for (let selection of selections) {
-        let child = scene.children.find(child => child.userData.id === selection)
-        offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( child.position )
+        offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( selectedObjects.current[selection].position )
       }
     } else {
       for (let selection of selections) {
@@ -234,21 +243,47 @@ const SelectionManager = connect(
       }
     }
   }
-  const drag = (target, mouse) => {
+  const drag = (mouse) => {
     raycaster.current.setFromCamera( mouse, camera )
-    
+  
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
-      let changes = {}
-      for (selection of selections) {
+      for (let selection of selections) {
+        let target = selectedObjects.current[selection]
+        if (target.userData.locked) continue
+      
         let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
-        changes[selection] = { x, y: z }
+        target.position.set( x, target.position.y, z )
+  
+        objectChanges.current[selection] = { x, y: z }
+ 
+        if (target.onDrag) {
+          target.onDrag()
+        }
       }
-      updateObjects(changes)
+    
+      if (onDrag) {
+        onDrag()
+      }
     }
   }
-  const endDrag = () => {
   
+  const endDrag = () => {
+    if (!objectChanges || !objectChanges.current) {
+      return false
+    }
+  
+    updateObjects(objectChanges.current)
+  
+    for (let selection of selections) {
+      let target = selectedObjects.current[selection]
+      if (target && target.onDragEnd) {
+        target.onDragEnd()
+      }
+    }
+  
+    objectChanges.current = null
   }
+  
   useMemo(() => {
     if (dragTarget) {
       let { target, x, y } = dragTarget
@@ -293,7 +328,14 @@ const SelectionManager = connect(
       let shouldDrag = false
       let target
       let isSelectedControlPoint = false;
-      let selectedBoneControl;
+      let selectedBoneControl
+  
+      for (let intersect of intersects) {
+        target = getIntersectionTarget(intersect)
+        if (target.userData.type === 'character' && target.userData.locked) {
+          return
+        }
+      }
 
       // prefer the nearest character to the click
       if (useIcons) {
@@ -375,6 +417,14 @@ const SelectionManager = connect(
               //  and its the one we pointerdown'd ...
               selections[0] === target.userData.id
             ) {
+            if (target.userData.locked) {
+              selectObject(null)
+              selectBone(null)
+              setLastDownId(null)
+              setDragTarget(null)
+              undoGroupEnd()
+              return
+            }
             // see if we pointerdown'd a bone ...
             let raycaster = new THREE.Raycaster()
             raycaster.setFromCamera({ x, y }, camera )
@@ -460,13 +510,13 @@ const SelectionManager = connect(
         {
           if(!dragTarget.isBoneControl)
           {
-            drag(dragTarget.target, { x, y })
+            drag({ x, y })
           }
         }
 
       }
       else {
-        drag(dragTarget.target, { x, y })
+        drag({ x, y })
       }
 
     }
@@ -522,7 +572,7 @@ const SelectionManager = connect(
               }
             } else {
               // if the pointerup'd target is not part of the multi-selection
-              if (!selections.includes(target.userData.id)) {
+              if (!selections.includes(target.userData.id) && !target.userData.locked) {
                 // clear the multi-selection and select just the target
                 let object = sceneObjects[target.userData.id]
                 if (object && object.group) {
@@ -545,12 +595,11 @@ const SelectionManager = connect(
   useLayoutEffect(() => {
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
-
+    window.addEventListener('pointerup', onPointerUp)
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointerup', onPointerUp)
     }
   }, [onPointerDown, onPointerUp, onPointerMove])
 

@@ -7,6 +7,7 @@ const getPresetsFolderPath = () => path.join(app.getPath('userData'), 'presets')
 const getScenePresetsFilePath = () => path.join(getPresetsFolderPath(), 'scenes.json')
 const getCharacterPresetsFilePath = () => path.join(getPresetsFolderPath(), 'characters.json')
 const getPosePresetsFilePath = () => path.join(getPresetsFolderPath(), 'poses.json')
+const getHandPosePresetsFilePath = () => path.join(getPresetsFolderPath(), 'hand-poses.json')
 
 // versions 1.13.0 and before had no priority field for poses
 // ensure that all poses have a priority field
@@ -75,5 +76,25 @@ module.exports = {
     migratePosePresets(poses)
     let string = JSON.stringify(poses, null, 2)
     fs.writeFileSync(getPosePresetsFilePath(), string)
+  },
+
+  loadHandPosePresets: () => {
+    let filepath = getHandPosePresetsFilePath()
+    if (fs.existsSync(filepath)) {
+      let string = fs.readFileSync(filepath)
+      let data = JSON.parse(string)
+      migratePosePresets(data)
+      return { handPoses: data }
+    } else {
+      return { handPoses: undefined }
+    }
+  },
+
+  saveHandPosePresets: ({ handPoses }) => {
+    if (!fs.existsSync(getPresetsFolderPath())) { fs.mkdirSync(getPresetsFolderPath()) }
+
+    migratePosePresets(handPoses)
+    let string = JSON.stringify(handPoses, null, 2)
+    fs.writeFileSync(getHandPosePresetsFilePath(), string)
   }
 }

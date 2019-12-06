@@ -907,7 +907,14 @@ const shotGeneratorMenu = [
       // {role: 'pasteandmatchstyle'},
       {role: 'delete'},
 
-      {role: 'selectall'}
+      {role: 'selectall'},
+      {
+        accelerator: 'CommandOrControl+b',
+        label: 'Drop',
+        click () {
+          ipcRenderer.send('shot-generator:object:drops')
+        }
+      },
     ]
   },
   {

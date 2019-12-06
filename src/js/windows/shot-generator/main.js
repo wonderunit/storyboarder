@@ -111,6 +111,10 @@ ipcMain.on('shot-generator:object:group', () => {
   win.webContents.send('shot-generator:object:group')
 })
 
+ipcMain.on('shot-generator:object:drops', () => {
+  win.webContents.send('shot-generator:object:drop')
+})
+
 ipcMain.on('shot-generator:edit:undo', () => {
   win.webContents.send('shot-generator:edit:undo')
 })
