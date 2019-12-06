@@ -252,7 +252,7 @@ const Toolbar = connect(
         // ['a[href=#]', { onClick: preventDefault(onSaveClick) }, 'Save'],
 
         ['div.toolbar__board-actions.row', [
-          server.xrUri ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, ['span', 'Open in VR']] : [],
+          server.xrUri ? ['a[href=#]', { onClick: preventDefault(onOpenVR) }, [[Icon, { src: 'icon-toolbar-vr' }], ['span', 'Open in VR']]] : [],
           ['a[href=#]', { onClick: preventDefault(onSaveToBoardClick) }, [[Icon, { src: 'icon-toolbar-save-to-board' }], ['span', 'Save to Board']]],
           ['a[href=#]', { onClick: preventDefault(onInsertNewBoardClick) }, [[Icon, { src: 'icon-toolbar-insert-as-new-board' }], ['span', 'Insert As New Board']]],
         ]]

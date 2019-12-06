@@ -47,6 +47,7 @@ const {
   // saveScene,
   updateCharacterSkeleton,
   setActiveCamera,
+  setCameraShot,
   // resetScene,
   // createScenePreset,
   // updateScenePreset,
@@ -2311,20 +2312,24 @@ const CameraPanelInspector = connect(
     state => ({
       sceneObjects: getSceneObjects(state),
       activeCamera: getActiveCamera(state),
-      selections: getSelections(state)
+      selections: getSelections(state),
+      cameraShots: state.cameraShots
     }),
     {
-      updateObject
+      updateObject,
+      setCameraShot
     }
 )(
-  React.memo(({ camera, selections, sceneObjects, activeCamera, updateObject }) => {
+  React.memo(({ camera, selections, sceneObjects, activeCamera, cameraShots, updateObject, setCameraShot }) => {
     if (!camera) return h(['div.camera-inspector'])
     const { scene } = useContext(SceneContext)
+    
+    const shotInfo = cameraShots[camera.userData.id] || {}
+    const [currentShotSize, setCurrentShotSize] = useState(shotInfo.size)
+    const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
   
     const selectionsRef = useRef(selections)
     const selectedCharacters = useRef([])
-    const [currentShotAngle, setCurrentShotAngle] = useState(null)
-    const [currentShotSize, setCurrentShotSize] = useState(null)
     
     useEffect(() => {
       selectionsRef.current = selections;
@@ -2333,6 +2338,14 @@ const CameraPanelInspector = connect(
         return (sceneObjects[id] && sceneObjects[id].type === 'character')
       })
     }, [selections])
+  
+    useEffect(() => {
+      setCurrentShotSize(shotInfo.size)
+    }, [shotInfo.size, camera])
+  
+    useEffect(() => {
+      setCurrentShotAngle(shotInfo.angle)
+    }, [shotInfo.angle, camera])
     
     let cameraState = {...sceneObjects[activeCamera]}
     
@@ -2361,26 +2374,8 @@ const CameraPanelInspector = connect(
       
       updateObject(cameraState.id, {rotation, tilt})
     }, 100, {trailing:false}))
-  
-    const onShotSizeChange = useCallback((item) => {
-      let selected = scene.children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
-      let characters = scene.children.filter((obj) => obj.userData.type === 'character')
     
-      if (characters.length) {
-        setShot({
-          camera,
-          characters,
-          selected,
-          updateObject,
-          shotSize: item.value,
-          shotAngle: currentShotAngle
-        })
-      }
-  
-      setCurrentShotSize(item.value)
-    })
-  
-    const onShotAngleChange = useCallback((item) => {
+    const onSetShot = ({size, angle}) => {
       let selected = scene.children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
       let characters = scene.children.filter((obj) => obj.userData.type === 'character')
   
@@ -2389,15 +2384,14 @@ const CameraPanelInspector = connect(
           camera,
           characters,
           selected,
-          scene,
           updateObject,
-          shotAngle: item.value,
-          shotSize: currentShotSize
+          shotSize: size,
+          shotAngle: angle
         })
       }
-  
-      setCurrentShotAngle(item.value)
-    })
+      
+      setCameraShot(camera.userData.id, {size, angle})
+    }
   
     const shotSizes = [
       {value: ShotSizes.EXTREME_CLOSE_UP, label: 'Extreme Close Up'},
@@ -2412,7 +2406,7 @@ const CameraPanelInspector = connect(
       {value: ShotSizes.ESTABLISHING, label: 'Establishing Shot'}
     ]
   
-    const cameraAngles = [
+    const shotAngles = [
       {value: ShotAngles.BIRDS_EYE, label: 'Bird\'s Eye'},
       {value: ShotAngles.HIGH, label: 'High'},
       {value: ShotAngles.EYE, label: 'Eye'},
@@ -2486,8 +2480,20 @@ const CameraPanelInspector = connect(
             ],
             ['div.camera-item.shots',
               [
-                ['div.select', [Select, {label: 'Shot Size', options: shotSizes, onSetValue: onShotSizeChange}]],
-                ['div.select', [Select, {label: 'Camera Angle', options: cameraAngles, onSetValue: onShotAngleChange}]]
+                ['div.select',
+                  [Select, {
+                    label: 'Shot Size',
+                    value: shotSizes.find(option => option.value === currentShotSize),
+                    options: shotSizes,
+                    onSetValue: (item) => onSetShot({size: item.value, angle: shotInfo.angle})
+                }]],
+                ['div.select',
+                  [Select, {
+                    label: 'Camera Angle',
+                    value: shotAngles.find(option => option.value === currentShotAngle),
+                    options: shotAngles,
+                    onSetValue: (item) => onSetShot({size: shotInfo.size, angle: item.value})
+                }]]
               ]
             ]
           ]

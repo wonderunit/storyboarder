@@ -724,7 +724,7 @@ class CanvasRenderer {
       }
 
       this.renderObjects(ctx, this.paneComponents['grid'])
-      if(this.state.grids.tab === "handPoses")
+      if(sceneObject && sceneObject.type === 'character' && this.state.grids.tab === 'handPoses')
       this.renderObjects(ctx, this.paneComponents['grid']['hand-poses-title'])
     }
   }
@@ -1063,7 +1063,9 @@ class CanvasRenderer {
     for (let paneId in this.paneComponents) {
       for (let componentId in this.paneComponents[paneId]) {
         for(let subComponentId in this.paneComponents[paneId][componentId]) {
-          if (subComponentId == id) return this.paneComponents[paneId][componentId][subComponentId]
+          if(this.paneComponents[paneId][componentId][subComponentId] instanceof Object) {
+              if (subComponentId == id) return this.paneComponents[paneId][componentId][subComponentId]
+            }
         }
         if (componentId == id) return this.paneComponents[paneId][componentId]
       }

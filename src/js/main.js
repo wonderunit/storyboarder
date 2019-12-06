@@ -1,3 +1,9 @@
+const env = require('../../env.json')
+
+if (env.mode) {
+  process.env.NODE_ENV = env.mode
+}
+
 const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
 const fs = require('fs-extra')
@@ -44,7 +50,6 @@ const autoUpdater = require('./auto-updater')
 
 
 const store = configureStore({}, 'main')
-
 
 
 let welcomeWindow
@@ -1490,7 +1495,11 @@ ipcMain.on('shot-generator:get-state', (event, data) => {
     win.send('shot-generator:get-state', data)
   }
 })
-ipcMain.on('shot-generator:open', () => {
+ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardData }) => {
+  shotGeneratorWindow.show(win => {
+    win.webContents.send('loadBoard', { storyboarderFilePath, boardData, board })
+  })
+
   // TODO analytics?
   // analytics.screenView('shot-generator')
   shotGeneratorWindow.show(win => {
