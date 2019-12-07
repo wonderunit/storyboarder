@@ -1495,11 +1495,7 @@ ipcMain.on('shot-generator:get-state', (event, data) => {
     win.send('shot-generator:get-state', data)
   }
 })
-ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardData }) => {
-  shotGeneratorWindow.show(win => {
-    win.webContents.send('loadBoard', { storyboarderFilePath, boardData, board })
-  })
-
+ipcMain.on('shot-generator:open', () => {
   // TODO analytics?
   // analytics.screenView('shot-generator')
   shotGeneratorWindow.show(win => {
