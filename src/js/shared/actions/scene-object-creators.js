@@ -1,10 +1,7 @@
-const { createObject } = require('../reducers/shot-generator')
+const { createObject, getDefaultPosePreset } = require('../reducers/shot-generator')
 
-// all pose presets (so we can use `stand` for new characters)
-const defaultPosePresets = require('../reducers/shot-generator-presets/poses.json')
-
-// id of the pose preset used for new characters
-const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
+// the 'stand' pose preset used for new characters
+const defaultPosePreset = getDefaultPosePreset()
 
 const generatePositionAndRotation = (camera, room) => {
   let direction = new THREE.Vector3()
@@ -116,8 +113,8 @@ const createCharacter = (id, camera, room) => {
       endomorphic: 0
     },
 
-    posePresetId: DEFAULT_POSE_PRESET_ID,
-    skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
+    posePresetId: defaultPosePreset.id,
+    skeleton: defaultPosePreset.state.skeleton,
 
     visible: true
   })

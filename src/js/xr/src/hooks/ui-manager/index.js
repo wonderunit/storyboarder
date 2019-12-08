@@ -11,13 +11,10 @@ const uiMachine = require('../../machines/uiMachine')
 
 const R = require('ramda')
 
-// all pose presets (so we can use `stand` for new characters)
-const defaultPosePresets = require('../../../../shared/reducers/shot-generator-presets/poses.json')
-// id of the pose preset used for new characters
-const DEFAULT_POSE_PRESET_ID = '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE'
-
 const { create } = require('zustand')
 const { produce } = require('immer')
+
+const RemoteData = require('../../client/RemoteData')
 
 const useIsVrPresenting = require('../../hooks/use-is-vr-presenting')
 const { setCookie, getCookie } = require('../../helpers/cookies')
@@ -31,21 +28,36 @@ const {
   roundRect,
   wrapText,
   drawPaneBGs,
-  drawGrid
+  drawGrid,
+  drawRow
 } = require('./draw')
 
-const { setupHomePane, setupAddPane, setupSettingsPane, setupHelpPane } = require('./setup')
+const { setupHomePane, setupAddPane, setupHelpPane, setupBoardsPane } = require('./setup')
 
 const [useUiStore] = create((set, get) => ({
   // values
   switchHand: getCookie('switchHand') == 'true',
   showCameras: getCookie('showCameras') !== 'false',
   showHelp: false,
+  showHUD: false,
+
+  showConfirm: false,
+
+  boardUid: null,
+  serverHash: null,
+  serverLastSavedHash: null,
 
   // actions
   setSwitchHand: value => set(produce(state => { state.switchHand = value })),
   setShowCameras: value => set(produce(state => { state.showCameras = value })),
   setShowHelp: value => set(produce(state => { state.showHelp = value })),
+  setShowHUD: value => set(produce(state => { state.showHUD = value })),
+
+  setShowConfirm: value => set(produce(state => { state.showConfirm = value })),
+
+  setBoardUid: value => set(produce(state => { state.boardUid = value })),
+  setServerHash: value => set(produce(state => { state.serverHash = value })),
+  setServerLastSavedHash: value => set(produce(state => { state.serverLastSavedHash = value })),
 
   set: fn => set(produce(fn))
 }))
@@ -127,7 +139,7 @@ const percent = value => `${value * 100}`
 const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
 
 class CanvasRenderer {
-  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio, client) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -136,22 +148,29 @@ class CanvasRenderer {
     this.helpCanvas.width = this.helpCanvas.height = size
     this.helpContext = this.helpCanvas.getContext('2d')
 
+    this.boardsCanvas = document.createElement('canvas')
+    this.boardsCanvas.width = this.boardsCanvas.height = size
+    this.boardsContext = this.boardsCanvas.getContext('2d')
+
     this.dispatch = dispatch
     this.service = service
     this.send = send
     this.cameraAspectRatio = cameraAspectRatio
     this.getImageByFilepath = getImageByFilepath
+    this.client = client
 
     this.state = {
       activeCamera: null,
       selections: [],
       sceneObjects: {},
+      world: null,
       poses: {},
       handPoses: {},
       models: {},
       mode: 'home',
       context: {},
       helpIndex: 0,
+      showSettings: false,
       grids: {
         tab: 'pose',
         startCoords: {},
@@ -167,9 +186,25 @@ class CanvasRenderer {
         },
         handPoses: {
           scrollTop: 0
-        },
+        }
       },
-      selectedHand: "BothHands"
+      selectedHand: "BothHands",
+      boards: {
+        showConfirm: false,
+        confirmChange: null,
+        confirmDialogType: null,
+        startCoords: {},
+        prevCoords: {},
+        cameras: {
+          scrollTop: null
+        },
+        boards: {
+          scrollTop: null
+        }
+      },
+      boardsData: RemoteData.init(),
+      sgCurrentState: RemoteData.init(),
+      cameraThumbnails: {}
     }
 
     this.paneComponents = {}
@@ -178,17 +213,17 @@ class CanvasRenderer {
     drawPaneBGs(ctx)
 
     this.drawGrid = drawGrid.bind(this)
+    this.drawRow = drawRow.bind(this)
 
     setupHomePane(this.paneComponents, this)
     setupAddPane(this.paneComponents, this)
-    setupSettingsPane(this.paneComponents, this)
     this.renderObjects(ctx, this.paneComponents['home'])
     this.renderObjects(ctx, this.paneComponents['add'])
-    this.renderObjects(ctx, this.paneComponents['settings'])
     // setupaddpane
     // setupsettings
 
     setupHelpPane(this.paneComponents, this)
+    setupBoardsPane(this.paneComponents, this)
 
     // setup each pane
 
@@ -214,10 +249,46 @@ class CanvasRenderer {
     // ctx.fillStyle = 'rgba(60,60,60)'
     // roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
 
+    this.state.boardsData = RemoteData.init()
+    this.client.getBoards().then(result => {
+      this.state.boardsData = RemoteData.success(result)
+      this.boardsNeedsRender = true
+    }).catch(err => {
+      this.state.boardsData = RemoteData.failure(err)
+      this.boardsNeedsRender = true
+    })
+
+    this.state.sgCurrentState = RemoteData.init()
+    this.client.getState().then(result => {
+      this.state.sgCurrentState = RemoteData.success(result)
+      this.boardsNeedsRender = true
+      this.send('SET_BOARDUID', { uid: result.board.uid })
+    }).catch(err => {
+      this.state.sgCurrentState = RemoteData.failure(err)
+      this.boardsNeedsRender = true
+      this.send('SET_BOARDUID', { uid: null })
+    })
+
     this.needsRender = false
   }
   render () {
-
+    this.state.boardsData.cata({
+      NOT_ASKED: () => {
+        console.log('boards list has not loaded')
+      },
+      LOADING: () => {
+        console.log('boards list is loading')
+      },
+      SUCCESS: data => {
+        // console.log('boards list has loaded', data)
+        // data.map(board =>
+        //   console.log(`board ${board.uid}: sg? ${board.hasSg ? 'yes' : 'no'}, thumbnail: ${board.thumbnail}`)
+        // )
+      },
+      FAILURE: err => {
+        console.error('boards list failed', err)
+      }
+    })
 
     let canvas = this.canvas
     let ctx = this.context
@@ -247,7 +318,7 @@ class CanvasRenderer {
       let characterHeightLens = lenses.characterHeight
       if (sceneObject.model === 'child') characterHeightLens = lenses.childHeight
       if (sceneObject.model === 'baby') characterHeightLens = lenses.babyHeight
-      
+
       this.paneComponents['properties'] = {
         ...(sceneObject.type === 'camera') &&
           {
@@ -454,7 +525,7 @@ class CanvasRenderer {
           }
         }
       }
-      
+
       if (sceneObject.type === 'camera') {
         const isActive = sceneObject.id === this.state.activeCamera
 
@@ -513,7 +584,7 @@ class CanvasRenderer {
       } else {
         ctx.clearRect(483, 288, 66, 105)
       }
-      
+
       this.renderObjects(ctx, this.paneComponents['properties'])
     }
 
@@ -656,10 +727,6 @@ class CanvasRenderer {
       if(sceneObject && sceneObject.type === 'character' && this.state.grids.tab === 'handPoses')
       this.renderObjects(ctx, this.paneComponents['grid']['hand-poses-title'])
     }
-
-    if (this.state.mode == 'settings') {
-      this.renderObjects(ctx, this.paneComponents['settings'])
-    }
   }
 
   renderHelp () {
@@ -668,7 +735,7 @@ class CanvasRenderer {
     let ctx = this.helpContext
     if(this.state.context.isUIHidden) {
       return
-    } 
+    }
     // console.log('render help')
 
     this.paneComponents['help']['help-image'] = {
@@ -686,6 +753,161 @@ class CanvasRenderer {
     this.renderObjects(ctx, this.paneComponents['help'])
   }
 
+  renderBoards () {
+
+    let canvas = this.boardsCanvas
+    let ctx = this.boardsContext
+
+    // Reset all boards items, otherwise many thumbnails buttons exists
+    setupBoardsPane(this.paneComponents, this)
+
+    // console.log('render boards')
+
+    ctx.fillStyle = 'rgba(0,0,0)'
+    roundRect(ctx, 0, 0, 1024, 400, 25, true, false)
+
+    const sceneCameras = Object.values(this.state.sceneObjects).filter(model => model.type === 'camera')
+    const activeCameraIndex = Object.values(sceneCameras).findIndex(camera => camera.id === this.state.activeCamera)
+
+    this.state.boardsData.cata({
+      SUCCESS: data => {
+        if (this.state.sgCurrentState.board) {
+          this.drawRow(ctx, 15, 15, 1024 - 30, 370 * 0.6 - 15, sceneCameras, 'cameras', activeCameraIndex)
+
+          const sgBoards = data.filter(board => board.hasSg)
+          const activeBoardIndex = Object.values(sgBoards).findIndex(board => board.uid === this.state.sgCurrentState.board.uid)
+          this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, sgBoards, 'boards', activeBoardIndex)
+        }
+      }
+    })
+
+    if (this.state.boards.showConfirm) {
+      ctx.fillStyle = 'rgba(0,0,0)'
+      roundRect(ctx, 0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30, 25, true, false)
+
+      const labels = this.state.boards.confirmDialogType === 'overwrite' ? 
+        [`Shot Generator has unsaved changes.`, `Are you sure you want to overwrite with VR changes?`] :
+        [`Changes have not been saved.`, `Are you sure you want to change board without saving?`]
+
+      this.paneComponents['boards']['confirm-1'] = {
+        id: 'confirm-1',
+        type: 'text',
+        x: 15,
+        y: 430 + 18 * 3 + 15,
+        label: labels[0],
+        size: 14
+      }
+
+      this.paneComponents['boards']['confirm-2'] = {
+        id: 'confirm-2',
+        type: 'text',
+        x: 15,
+        y: 430 + 18 * 3 + 15 + 27,
+        label: labels[1],
+        size: 14
+      }
+
+      this.paneComponents['boards']['confirm-ok'] = {
+        id: 'confirm-ok',
+        type: 'button',
+        x: 15,
+        y: 430 + 18 * 3 + (18 * 3 * 2 + 30) - 18 * 3 - 15,
+        width: 118 + 18 * 2 - 15,
+        height: 18 * 3,
+        fill: '#737373',
+        label: 'OK',
+        fontSize: 18,
+        fontWeight: 'bold',
+
+        onSelect: () => {
+          this.state.boards.confirmChange = true
+        }
+      }
+
+      this.paneComponents['boards']['confirm-cancel'] = {
+        id: 'confirm-cancel',
+        type: 'button',
+        x: 118 + 18 * 2 + 15,
+        y: 430 + 18 * 3 + (18 * 3 * 2 + 30) - 18 * 3 - 15,
+        width: 168 + 18 * 2 - 15,
+        height: 18 * 3,
+        fill: '#4D4E51',
+        label: 'Cancel',
+        fontSize: 18,
+        fontWeight: 'bold',
+
+        onSelect: () => {
+          this.state.boards.confirmChange = false
+        }
+      }
+    }
+
+    if (this.state.showSettings) {
+      ctx.fillStyle = 'rgba(0,0,0)'
+      roundRect(ctx, 1024 - 439, 483 - 3, 439, 325 - 114, 25, true, false)
+
+      this.paneComponents['boards']['settings'] = {
+        id: 'settings',
+        type: 'text',
+        x: 1024 - 439 + 30,
+        y: 483 + 30,
+        label: 'Settings',
+        size: 36
+      }
+
+      this.paneComponents['boards']['show-cameras'] = {
+        id: 'show-cameras',
+        type: 'text',
+        x: 1024 - 439 + 30,
+        y: 483 + 20 + 48 + 40 + 40 - 12,
+        label: 'Show Cameras',
+        size: 24
+      }
+
+      this.paneComponents['boards']['show-cameras-toggle'] = {
+        id: 'show-cameras-toggle',
+        type: 'toggle-button',
+        toggle: 'showCameras',
+        x: 1024 - 439 + 30 + 200,
+        y: 483 + 20 + 48 + 40,
+        width: 200,
+        height: 80,
+        onSelect: () => {
+          this.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
+        }
+      }
+
+      // this.paneComponents['boards']['help-button'] = {
+      //   id: 'help-button',
+      //   type: 'image-button',
+      //   x: 1024 - 64 - 15,
+      //   y: 483 + 20,
+      //   width: 64,
+      //   height: 64,
+      //   image: 'help',
+      //   drawBG: true,
+      //   padding: 6,
+      //   fill: '#6E6E6E',
+
+      //   onSelect: () => {
+      //     this.send('TOGGLE_HELP')
+      //     this.send('GO_HOME')
+      //   }
+      // }
+    }
+
+
+    this.renderObjects(ctx, this.paneComponents['boards'])
+
+    if (!this.state.boards.showConfirm) {
+      ctx.clearRect(0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30)
+    }
+
+    if (!this.state.showSettings) {
+      ctx.clearRect(1024 - 439, 483 - 3, 439, 325 - 114)
+    }
+  }
+
   drawLoadableImage (filepath, onSuccess, onFail) {
     let image = THREE.Cache.get(filepath)
     if (image) {
@@ -698,6 +920,7 @@ class CanvasRenderer {
 
   requestRender () {
     this.needsRender = true
+    this.boardsNeedsRender = true
   }
 
   renderObjects (ctx, objects) {
@@ -910,7 +1133,13 @@ class CanvasRenderer {
 
     for (let paneId in this.paneComponents) {
       if (paneId === 'help' && !intersectHelp) continue
+
+      if (paneId === 'boards') x = (u - 1) * this.canvas.width
+      else x = u * this.canvas.width
+
       for (let componentId in this.paneComponents[paneId]) {
+        if (paneId === 'boards' && componentId.includes('-background')) continue
+
         let component = this.paneComponents[paneId][componentId]
         for (let subComponentId in this.paneComponents[paneId][componentId]) {
           let subComponent = this.paneComponents[paneId][componentId][subComponentId]
@@ -935,6 +1164,23 @@ class CanvasRenderer {
         }
       }
     }
+
+    for (let componentId in this.paneComponents['boards']) {
+      x = (u - 1) * this.canvas.width
+
+      let component = this.paneComponents['boards'][componentId]
+      if (ignoreInvisible && component.invisible) continue
+
+      let { id, type } = component
+      if (
+        x > component.x && x < component.x + component.width &&
+        y > component.y && y < component.y + component.height
+      ) {
+      // TODO include local x,y? and u,v?
+        return { id, type }
+      }
+    }
+
     return null
   }
 }
@@ -942,6 +1188,7 @@ class CanvasRenderer {
 const {
   getSceneObjects,
   getSelections,
+  getWorld,
   createObject,
   selectObject,
   updateObject,
@@ -950,8 +1197,18 @@ const {
   getActiveCamera,
   setActiveCamera,
   undoGroupStart,
-  undoGroupEnd
+  undoGroupEnd,
+  loadScene,
+
+  getDefaultPosePreset,
+
+  setBoard,
+  reducer,
+  getHash
 } = require('../../../../shared/reducers/shot-generator')
+
+// the 'stand' pose preset used for new characters
+const defaultPosePreset = getDefaultPosePreset()
 
 // via PosePresetsEditor.js
 const comparePresetNames = (a, b) => {
@@ -973,7 +1230,7 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const useUiManager = ({ playSound, stopSound }) => {
+const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
@@ -981,8 +1238,16 @@ const useUiManager = ({ playSound, stopSound }) => {
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
   const setShowCameras = useUiStore(state => state.setShowCameras)
   const setShowHelp = useUiStore(state => state.setShowHelp)
+  const setShowHUD = useUiStore(state => state.setShowHUD)
+
+  const setBoardUid = useUiStore(state => state.setBoardUid)
+  const setServerHash = useUiStore(state => state.setServerHash)
+  const setServerLastSavedHash = useUiStore(state => state.setServerLastSavedHash)
+
+  const setShowConfirm = useUiStore(state => state.setShowConfirm)
 
   const showHelp = useUiStore(state => state.showHelp)
+  const showHUD = useUiStore(state => state.showHUD)
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
@@ -1153,8 +1418,8 @@ const useUiManager = ({ playSound, stopSound }) => {
                     endomorphic: 0
                   },
 
-                  posePresetId: DEFAULT_POSE_PRESET_ID,
-                  skeleton: defaultPosePresets[DEFAULT_POSE_PRESET_ID].state.skeleton,
+                  posePresetId: defaultPosePreset.id,
+                  skeleton: defaultPosePreset.state.skeleton,
                   visible: true
                 })
               )
@@ -1212,7 +1477,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
           if (toggle === 'switchHand') setSwitchHand(value)
           if (toggle === 'showCameras') setShowCameras(value)
-          getCanvasRenderer().needsRender = true
+          getCanvasRenderer().boardsNeedsRender = true
           playSound('select')
         },
 
@@ -1242,22 +1507,214 @@ const useUiManager = ({ playSound, stopSound }) => {
 
           getCanvasRenderer().helpNeedsRender = true
         },
+
         onHideUI (context, event) {
           getCanvasRenderer().onHide()
           if(showHelp) setShowHelp(!showHelp)
         },
+
         onShowUI (context, event) {
           getCanvasRenderer().onShow()
+        },
+
+        onToggleHUD (context, event) {
+          setShowHUD(!showHUD)
+        },
+
+        onToggleSettings (context, event) {
+          let cr = getCanvasRenderer()
+          cr.state.showSettings = !cr.state.showSettings
+          cr.boardsNeedsRender = true
+        },
+
+        onSetBoardUid (context, event) {
+          setBoardUid(event.uid)
+        },
+
+        async onChangeBoard (context, event) {
+          let cr = getCanvasRenderer()
+
+          const data = {
+            world: cr.state.world,
+            sceneObjects: cr.state.sceneObjects,
+            activeCamera: cr.state.activeCamera
+          }
+
+          let { lastSavedHash } = await cr.client.getSg()
+          let localHash = getHashForBoardSgData(data)
+          if (localHash !== lastSavedHash) {
+            let confirmed = await checkConfirmStatus('unsaved')
+            if (!confirmed) return
+          }
+          
+          let board = await cr.client.selectBoardByUid(event.uid)
+
+          try {
+            await cr.client.sendState(board.uid, board.sg.data)
+            let { hash, lastSavedHash } = await cr.client.getSg()
+            setServerHash(hash)
+            setServerLastSavedHash(lastSavedHash)
+            cr.state.sgCurrentState.board = { uid: board.uid, shot: board.shot }
+            cr.boardsNeedsRender = true
+
+            const {
+              state: { activeCamera, sceneObjects, world }
+            } = await cr.client.getState()
+
+            store.dispatch(selectObject(null))
+            store.dispatch(
+              loadScene({
+                sceneObjects,
+                world,
+                activeCamera
+              })
+            )
+
+            store.dispatch(setBoard(board))
+            setBoardUid(board.uid)
+          } catch (err) {
+            // TODO if the uid does not match, notify user, reload
+            alert('Error\n' + err)
+          }
+        },
+
+        async onSaveBoard (context, event) {
+          let cr = getCanvasRenderer()
+
+          const data = {
+            world: cr.state.world,
+            sceneObjects: cr.state.sceneObjects,
+            activeCamera: cr.state.activeCamera
+          }
+
+          let hasUnsavedChanges = await checkForUnsavedChanges(data)
+          if (hasUnsavedChanges) {
+            let confirmed = await checkConfirmStatus('overwrite')
+            if (!confirmed) return
+          }
+
+          try {
+            await cr.client.saveShot(cr.state.sgCurrentState.board.uid, data)
+
+            cr.state.boardsData.cata({
+              SUCCESS: data => {
+                const item = data.find(board => board.uid === cr.state.sgCurrentState.board.uid)
+                const filepath = cr.client.uriForThumbnail(item.thumbnail)
+                THREE.Cache.remove(filepath)
+              }
+            })
+
+            updateBoardsData(cr)
+            cr.boardsNeedsRender = true
+          } catch (err) {
+            console.log('Could not save board\n' + err)
+          }
+        },
+
+        async onInsertBoard (context, event) {
+          let cr = getCanvasRenderer()
+
+          const data = {
+            world: cr.state.world,
+            sceneObjects: cr.state.sceneObjects,
+            activeCamera: cr.state.activeCamera
+          }
+
+          let hasUnsavedChanges = await checkForUnsavedChanges(data)
+
+          if (hasUnsavedChanges) {
+            let confirmed = await checkConfirmStatus('overwrite')
+            if (!confirmed) return
+          }
+
+          try {
+            let board = await cr.client.insertShot(data)
+            updateBoardsData(cr)
+            updateSgCurrentState(cr)
+            store.dispatch(setBoard(board))
+            setBoardUid(board.uid)
+            cr.boardsNeedsRender = true;
+          } catch (err) {
+            alert('Could not insert\n' + err)
+          }
         }
       }
     }
   )
+
+  const checkForUnsavedChanges = async (data) => {
+    let localHash = getHashForBoardSgData(data)
+
+    // ask for SG hashes
+    let serverResponse = await getCanvasRenderer().client.getSg()
+    setServerHash(serverResponse.hash)
+    setServerLastSavedHash(serverResponse.lastSavedHash)
+
+    return serverResponse.hash != localHash
+  }
+
+  const getHashForBoardSgData = data => {
+    let state = reducer({}, { type: 'LOAD_SCENE', payload: data })
+    return getHash(state)
+  }
+
+  const checkConfirmStatus = async (type) => {
+    const cr = getCanvasRenderer()
+    cr.state.boards.showConfirm = true
+    cr.state.boards.confirmDialogType = type
+    cr.boardsNeedsRender = true
+    setShowConfirm(true)
+
+    return new Promise(resolve => {
+      const checkConfirmInterval = setInterval(() => {
+        if (cr.state.boards.confirmChange !== null) {
+          clearInterval(checkConfirmInterval)
+
+          const confirm = cr.state.boards.confirmChange
+          cr.state.boards.showConfirm = false
+          cr.state.boards.confirmChange = null
+          cr.state.boards.confirmDialogType = null
+          cr.boardsNeedsRender = true
+          setShowConfirm(false)
+
+          resolve(confirm)
+        }
+      }, 500)
+    })
+  }
+
+  const updateBoardsData = cr => {
+    setTimeout(() => {
+      cr.state.boardsData = RemoteData.init()
+      cr.client.getBoards().then(result => {
+        cr.state.boardsData = RemoteData.success(result)
+        cr.boardsNeedsRender = true
+      }).catch(err => {
+        cr.state.boardsData = RemoteData.failure(err)
+        cr.boardsNeedsRender = true
+      })
+    }, 500)
+  }
+
+  const updateSgCurrentState = cr => {
+    setTimeout(() => {
+      cr.state.sgCurrentState = RemoteData.init()
+      cr.client.getState().then(result => {
+        cr.state.sgCurrentState = RemoteData.success(result)
+        cr.boardsNeedsRender = true
+      }).catch(err => {
+        cr.state.sgCurrentState = RemoteData.failure(err)
+        cr.boardsNeedsRender = true
+      })
+    }, 500)
+  }
 
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
       const getRoom = () => scene.getObjectByName('room' )
       const getImageByFilepath = filepath => THREE.Cache.get(filepath)
+      const client = getXrClient()
 
       canvasRendererRef.current = new CanvasRenderer(
         1024,
@@ -1267,7 +1724,8 @@ const useUiManager = ({ playSound, stopSound }) => {
         camera,
         getRoom,
         getImageByFilepath,
-        cameraAspectRatio
+        cameraAspectRatio,
+        client
       )
     }
     return canvasRendererRef.current
@@ -1275,6 +1733,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
   const selections = useSelector(getSelections)
   const sceneObjects = useSelector(getSceneObjects)
+  const world = useSelector(getWorld)
 
   useMemo(() => {
     getCanvasRenderer().state.selections = selections
@@ -1283,15 +1742,17 @@ const useUiManager = ({ playSound, stopSound }) => {
     getCanvasRenderer().state.handPoses = handPoses
     getCanvasRenderer().state.models = models
     getCanvasRenderer().state.activeCamera = activeCamera
+    getCanvasRenderer().state.world = world
     getCanvasRenderer().needsRender = true
     getCanvasRenderer().helpNeedsRender = true
+    getCanvasRenderer().boardsNeedsRender = true
 
     if (selections.length) {
       uiSend('GO_PROPERTIES')
     } else {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses, models, activeCamera, handPoses])
+  }, [selections, sceneObjects, poses, models, activeCamera, world, handPoses])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
@@ -1325,7 +1786,7 @@ const useUiManager = ({ playSound, stopSound }) => {
 
 const UI_ICON_NAMES = [
   'selection', 'duplicate', 'add', 'erase', 'arrow', 'hand', 'help',
-  'close', 'settings', 'pose-preset', 'model-type', 'hand-preset',
+  'close', 'settings', 'hud', 'pose-preset', 'model-type', 'hand-preset',
 
   'camera', 'eye',
 

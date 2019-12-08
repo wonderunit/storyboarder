@@ -188,9 +188,9 @@ app.on('ready', async () => {
         buttons: ['Move to Applications', 'Do Not Move'],
         defaultId: 1
       })
-    
+
       const yes = (choice === 0)
-      
+
       if (yes) {
         try {
           let didMove = app.moveToApplicationsFolder()
@@ -237,14 +237,6 @@ app.on('ready', async () => {
 
   await attemptLicenseVerification()
 
-  // are we testing locally?
-  // SHOT_GENERATOR_STANDALONE=true npm start
-  if (process.env.SHOT_GENERATOR_STANDALONE) {
-    log.info('Running Shot Generator Standalone')
-    shotGeneratorWindow.show(() => {})
-    return
-  }
-
   // open the welcome window when the app loads up first
   openWelcomeWindow()
 
@@ -275,7 +267,7 @@ app.on('ready', async () => {
       }
     }
   }
- 
+
   // this only works on mac.
   if (toBeOpenedPath) {
     openFile(toBeOpenedPath)
@@ -316,7 +308,7 @@ let openKeyCommandWindow = () => {
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
-  
+
 })
 
 let openNewWindow = () => {
@@ -596,7 +588,7 @@ let importImagesDialogue = (shouldReplace = false) => {
             handleDirectory(filepath)
           }
         }
-        
+
         if (shouldReplace) {
           mainWindow.webContents.send('importImageAndReplace', filepathsRecursive)
         } else {
@@ -886,13 +878,13 @@ const createAndLoadScene = aspectRatio =>
           defaultBoardTiming: prefs.defaultBoardTiming,
           boards: []
         }
-  
+
         fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
         fs.mkdirSync(path.join(filename, 'images'))
-  
+
         addToRecentDocs(filePath, newBoardObject)
         loadStoryboarderWindow(filePath)
-  
+
         analytics.event('Application', 'new', newBoardObject.aspectRatio)
 
         resolve()
@@ -1469,20 +1461,46 @@ ipcMain.on('zoomOut',
 
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
-
 ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
-
-ipcMain.on('registration:open', event => registration.show())
-
-ipcMain.on('shot-generator:open', (event, { storyboarderFilePath, board, boardData }) => {
-  shotGeneratorWindow.show(win => {
-    win.webContents.send('loadBoard', { storyboarderFilePath, boardData, board })
-  })
-
+ipcMain.on('storyboarder:get-boards',
+  event => mainWindow.webContents.send('storyboarder:get-boards'))
+ipcMain.on('shot-generator:get-boards', (event, data) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('shot-generator:get-boards', data)
+  }
+})
+ipcMain.on('storyboarder:get-board',
+  (event, uid) => mainWindow.webContents.send('storyboarder:get-board', uid))
+ipcMain.on('shot-generator:get-board', (event, board) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('shot-generator:get-board', board)
+  }
+})
+ipcMain.on('storyboarder:get-storyboarder-file-data',
+  (event, uid) => mainWindow.webContents.send('storyboarder:get-storyboarder-file-data'))
+ipcMain.on('shot-generator:get-storyboarder-file-data', (event, data) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('shot-generator:get-storyboarder-file-data', data)
+  }
+})
+ipcMain.on('storyboarder:get-state',
+  (event, uid) => mainWindow.webContents.send('storyboarder:get-state'))
+ipcMain.on('shot-generator:get-state', (event, data) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('shot-generator:get-state', data)
+  }
+})
+ipcMain.on('shot-generator:open', () => {
   // TODO analytics?
-  //
   // analytics.screenView('shot-generator')
+  shotGeneratorWindow.show(win => {
+    win.webContents.send('shot-generator:reload')
+  })
 })
 ipcMain.on('shot-generator:update', (event, { board }) => {
   let win = shotGeneratorWindow.getWindow()
@@ -1490,7 +1508,26 @@ ipcMain.on('shot-generator:update', (event, { board }) => {
     win.webContents.send('update', { board })
   }
 })
-
+ipcMain.on('shot-generator:loadBoardByUid', (event, uid) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.webContents.send('loadBoardByUid', uid)
+  }
+})
+ipcMain.on('shot-generator:requestSaveShot', (event, uid) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.webContents.send('requestSaveShot', uid)
+  }
+})
+ipcMain.on('shot-generator:requestInsertShot', (event, uid) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.webContents.send('requestInsertShot', uid)
+  }
+})
 ipcMain.on('shot-generator:menu:help:tutorial', () => {
   tutorialMain.show(() => {})
 })
+
+ipcMain.on('registration:open', event => registration.show())

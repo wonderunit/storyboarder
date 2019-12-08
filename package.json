@@ -11,7 +11,6 @@
     "dist:linux": "npm run xr:build && electron-builder build -l",
     "dist": "npm run xr:build && build -mwl",
     "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/*.renderer.test.js test/**/*.renderer.test.js && electron-mocha test/**/*.main.test.js",
-    "shot-generator": "cross-env SHOT_GENERATOR_STANDALONE=true npm start",
     "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
@@ -20,7 +19,6 @@
     "xr:clean": "trash src/js/xr/dist",
     "xr:build": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
-    "xr:test-server": "electron src/js/xr/test/test-server.js",
     "build:thumbnails": "electron test/views/thumbnail-renderer/main.js"
   },
   "repository": {

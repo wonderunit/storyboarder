@@ -28,8 +28,10 @@ const getSelectedBone = state => state.undoable.present.selectedBone
 const getWorld = state => state.undoable.present.world
 
 
+const getHash = state =>
+  hashify(JSON.stringify(getSerializedState(state)))
 const getIsSceneDirty = state => {
-  let current = hashify(JSON.stringify(getSerializedState(state)))
+  let current = getHash(state)
   return current !== state.meta.lastSavedHash
 }
 // return only the stuff we want to save to JSON
@@ -445,6 +447,47 @@ const withDisplayNames = draft => {
   return draft
 }
 
+// via poses.json
+const defaultPosePreset = {
+  '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE': {
+    'id': '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE',
+    'name': 'stand',
+    'keywords': 'stand straight upright',
+    'state': {
+      'skeleton': {
+        'RightArm': {
+          'rotation': {
+            'x': 1.057228116003184,
+            'y': 0.13045102714961612,
+            'z': 0.1570463626924257
+          }
+        },
+        'LeftArm': {
+          'rotation': {
+            'x': 1.0708379327832764,
+            'y': -0.11931130645160759,
+            'z': -0.1776163624389008
+          }
+        },
+        'LeftForeArm': {
+          'rotation': {
+            'x': 0.09392413349188732,
+            'y': 0.06624836455319376,
+            'z': 0.29879477158887485
+          }
+        },
+        'RightForeArm': {
+          'rotation': {
+            'x': 0.08067946699767342,
+            'y': -0.19368502447268662,
+            'z': -0.2725073929210185
+          }
+        }
+      }
+    },
+    'priority': 0
+  }
+}
 const getCameraShot = (draft, cameraId) => {
   if (!draft[cameraId]) {
     draft[cameraId] = {
@@ -458,11 +501,7 @@ const getCameraShot = (draft, cameraId) => {
 }
 
 // load up the default poses
-const defaultPosePresets = require('./shot-generator-presets/poses.json')
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
-
-// reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
-const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -780,7 +819,9 @@ const initialState = {
       }
     },
 
-    poses: defaultPosePresets,
+    poses: {
+      ...defaultPosePreset
+    },
     handPoses: defaultHandPosePresets
   },
   server: {
@@ -1014,7 +1055,7 @@ const metaReducer = (state = {}, action, appState) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
-        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        draft.lastSavedHash = getHash(appState)
         return
       case 'UPDATE_SCENE_FROM_XR':
         // don't update lastSavedHash
@@ -1022,7 +1063,7 @@ const metaReducer = (state = {}, action, appState) => {
         return
 
       case 'MARK_SAVED':
-        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        draft.lastSavedHash = getHash(appState)
         return
 
       case 'SET_META_STORYBOARDER_FILE_PATH':
@@ -1263,7 +1304,16 @@ const mainReducer = (state/* = initialState*/, action) => {
         return
 
       case 'SET_BOARD':
-        draft.board = action.payload
+        const { uid, shot, /* action, */ dialogue, notes } = action.payload
+        draft.board = {
+          uid,
+
+          // used by BoardInspector
+          shot,
+          dialogue,
+          action: action.payload.action,
+          notes
+        }
         return
 
       case 'TOGGLE_WORKSPACE_GUIDE':
@@ -1523,5 +1573,9 @@ module.exports = {
   getWorld,
 
   getSerializedState,
-  getIsSceneDirty
+
+  getIsSceneDirty,
+  getHash,
+
+  getDefaultPosePreset: () => initialState.presets.poses['79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE']
 }
