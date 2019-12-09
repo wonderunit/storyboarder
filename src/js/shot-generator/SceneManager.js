@@ -45,6 +45,7 @@ const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
+const Group = require('./Group')
 const Camera = require('./Camera')
 const Image = require('./Image')
 const Attachable = require('./attachables/Attachable')
@@ -719,7 +720,17 @@ const SceneManager = connect(
                 camera: camera,
                 largeRenderer: largeRenderer,
                 isSelected: selectedAttachable === null ? false : selectedAttachable === props.id ? true : false,
-          
+                ...props
+              }
+            ]
+          case 'group':
+            return [
+              Group, {
+                key: props.id,
+                scene,
+                isSelected: selections.includes(props.id),
+            
+                updateObject,
                 ...props
               }
             ]

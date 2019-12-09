@@ -16,7 +16,8 @@ const {
 
   getSelections,
   getActiveCamera,
-  deselectAttachable
+  deselectAttachable,
+  getSceneObjects,
 } = require('../shared/reducers/shot-generator')
 
 function getObjectsFromIcons ( objects ) {
@@ -96,6 +97,7 @@ const getIntersectionTarget = intersect => {
 const SelectionManager = connect(
   state => ({
     selections: getSelections(state),
+    sceneObjects: getSceneObjects(state),
     activeCamera: getActiveCamera(state)
   }),
   {
@@ -118,6 +120,7 @@ const SelectionManager = connect(
     useIcons,
 
     selections,
+    sceneObjects,
     activeCamera,
 
     selectObject,
@@ -286,7 +289,9 @@ const SelectionManager = connect(
           
           let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
           target.position.set( x, target.position.y, z )
-          target.orthoIcon.position.set( x, target.position.y, z )
+          if (target.orthoIcon) {
+            target.orthoIcon.position.set( x, target.position.y, z )
+          }
           
           objectChanges.current[selection] = { x, y: z }
           if (target.onDrag) {
@@ -520,7 +525,12 @@ const SelectionManager = connect(
           // if the pointerup'd target is not part of the multi-selection
           if (!selections.includes(target.userData.id)) {
             // clear the multi-selection and select just the target
-            selectObject(target.userData.id)
+            let object = sceneObjects[target.userData.id]
+            if (object && object.group) {
+              selectObject([object.group, ...sceneObjects[object.group].children])
+            } else {
+              selectObject(target.userData.id)
+            }
           }
         }
         shouldDrag = true
@@ -612,7 +622,12 @@ const SelectionManager = connect(
               // if the pointerup'd target is not part of the multi-selection
               if (!selections.includes(target.userData.id) && !target.userData.locked) {
                 // clear the multi-selection and select just the target
-                selectObject(target.userData.id)
+                let object = sceneObjects[target.userData.id]
+                if (object && object.group) {
+                  selectObject([object.group, ...sceneObjects[object.group].children])
+                } else {
+                  selectObject(target.userData.id)
+                }
               }
             }
            
