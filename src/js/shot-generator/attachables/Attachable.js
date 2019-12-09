@@ -97,6 +97,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
             newMesh.layers.disable(0)
             newMesh.layers.enable(1)
             newMesh.layers.disable(2)
+            newMesh.layers.enable(3)
           }
         })
         } catch (err) {
