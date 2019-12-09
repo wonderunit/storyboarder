@@ -168,17 +168,30 @@ const AttachableEditor = connect(
     let bone = bindBone ? bindBone : originalSkeleton.getBoneByName(name)
     let character = originalSkeleton.bones[0].parent
     bone.updateWorldMatrix(true, true)
-    let {x, y, z} = model
-    let modelPosition = new THREE.Vector3(x, y, z)
-    modelPosition.multiplyScalar(1 / character.worldScale().x)
-    let newGroup = new THREE.Object3D()
-    newGroup.rotation.set(model.rotation.x, model.rotation.y, model.rotation.z)
-    newGroup.position.copy(modelPosition)
-    bone.add(newGroup)
-    bone.updateWorldMatrix(true, true)
-    modelPosition = newGroup.worldPosition()
-    let quat = newGroup.worldQuaternion()
-    bone.remove(newGroup)
+    let modelData = model
+    let modelPosition = new THREE.Vector3()
+    let quat = null
+    if(!(modelData instanceof Object)) {
+      modelData = {
+        id: model,
+        name: model
+      }
+      modelPosition.copy(bone.worldPosition())
+      quat = bone.worldQuaternion()
+    } else {
+      let {x, y, z} = model
+      modelPosition.set(x, y, z)
+      modelPosition.multiplyScalar(1 / character.worldScale().x)
+      let newGroup = new THREE.Object3D()
+      newGroup.rotation.set(model.rotation.x, model.rotation.y, model.rotation.z)
+      newGroup.position.copy(modelPosition)
+      bone.add(newGroup)
+      bone.updateWorldMatrix(true, true)
+      modelPosition = newGroup.worldPosition()
+      quat = newGroup.worldQuaternion()
+      bone.remove(newGroup)
+    }
+
     let euler = new THREE.Euler().setFromQuaternion(quat)
     let key = THREE.Math.generateUUID()
     let element = {
@@ -187,8 +200,8 @@ const AttachableEditor = connect(
     
       x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
 
-      model: model.id,
-      name: model.name,
+      model: modelData.id,
+      name: modelData.name,
       bindBone: bone.name,
       attachToId: id,
       size: 1,
