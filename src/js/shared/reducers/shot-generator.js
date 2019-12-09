@@ -1066,9 +1066,17 @@ const sceneObjectsReducer = (state = {}, action) => {
       // update a single bone by name
       case 'UPDATE_CHARACTER_SKELETON':
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
-        draft[action.payload.id].skeleton[action.payload.name] = {
-          rotation: action.payload.rotation
+        let rotation = action.payload.rotation
+        if(draft[action.payload.id].skeleton[action.payload.name]) {
+          draft[action.payload.id].skeleton[action.payload.name].rotation = !rotation ?
+                                                         draft[action.payload.id].skeleton[action.payload.name].rotation :
+                                                         { x: rotation.x, y: rotation.y, z: rotation.z }
+        } else {
+          draft[action.payload.id].skeleton[action.payload.name] = {
+            rotation: action.payload.rotation
+          }
         }
+
         // Check if handBone got same bones and update it if it does
         if(draft[action.payload.id].handSkeleton && draft[action.payload.id].handSkeleton[action.payload.name]) {
           draft[action.payload.id].handSkeleton[action.payload.name] = {
@@ -1081,10 +1089,22 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'UPDATE_CHARACTER_IK_SKELETON':
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         for (let bone of action.payload.skeleton) {
-          let { x, y, z } = bone.rotation
-          draft[action.payload.id].skeleton[bone.name] = {
-            rotation: { x, y, z }
+          let rotation = bone.rotation
+          let { x, y, z } = bone.position
+          if(draft[action.payload.id].skeleton[bone.name]) {
+            draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
+                                                                      draft[action.payload.id].skeleton[bone.name].rotation : 
+                                                                      { x: rotation.x, y: rotation.y, z: rotation.z }
+            draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
+                                                                      draft[action.payload.id].skeleton[bone.name].position : 
+                                                                      { x: x, y: y, z: z }
+          } else {
+            draft[action.payload.id].skeleton[bone.name] = {
+              rotation: { x: rotation.x, y: rotation.y, z: rotation.z },
+              position: { x: x, y: y, z: z },
+            }
           }
+       
         }
         return
 
