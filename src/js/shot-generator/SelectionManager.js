@@ -5,7 +5,6 @@ const GPUPicker = require("../xr/src/three/GPUPickers/GPUPicker");
 const SGIkHelper = require("../shared/IK/SGIkHelper");
 const {
   selectObject,
-  selectObjects,
   selectObjectToggle,
   selectBone,
   updateObjects,
@@ -95,7 +94,6 @@ const SelectionManager = connect(
   }),
   {
     selectObject,
-    selectObjects,
     selectObjectToggle,
     selectBone,
     updateObjects,
@@ -117,7 +115,6 @@ const SelectionManager = connect(
     activeCamera,
 
     selectObject,
-    selectObjects,
     selectObjectToggle,
     selectBone,
     updateObjects,
@@ -253,6 +250,9 @@ const SelectionManager = connect(
       
         let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
         target.position.set( x, target.position.y, z )
+        if (target.orthoIcon) {
+          target.orthoIcon.position.set( x, target.position.y, z )
+        }
   
         objectChanges.current[selection] = { x, y: z }
  
@@ -478,7 +478,7 @@ const SelectionManager = connect(
             // clear the multi-selection and select just the target
             let object = sceneObjects[target.userData.id]
             if (object && object.group) {
-              selectObjects([object.group, ...sceneObjects[object.group].children])
+              selectObject([object.group, ...sceneObjects[object.group].children])
             } else {
               selectObject(target.userData.id)
             }
@@ -576,7 +576,7 @@ const SelectionManager = connect(
                 // clear the multi-selection and select just the target
                 let object = sceneObjects[target.userData.id]
                 if (object && object.group) {
-                  selectObjects([object.group, ...sceneObjects[object.group].children])
+                  selectObject([object.group, ...sceneObjects[object.group].children])
                 } else {
                   selectObject(target.userData.id)
                 }

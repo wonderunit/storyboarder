@@ -898,14 +898,7 @@ const selectionsReducer = (state = [], action) => {
             // empty the selection
             ? []
             // make the selection
-            : [action.payload]
-  
-      case 'SELECT_OBJECTS':
-        return (action.payload == null)
-            // empty the selection
-            ? []
-            // make the selection
-            : action.payload
+            : Array.isArray(action.payload) ? action.payload : [action.payload]
 
       case 'SELECT_OBJECT_TOGGLE':
         let n = draft.indexOf(action.payload)
@@ -929,6 +922,15 @@ const selectionsReducer = (state = [], action) => {
           }
         }
         return
+  
+      case 'GROUP_OBJECTS':
+        return [action.payload.groupId]
+  
+      case 'UNGROUP_OBJECTS':
+        return action.payload.ids
+  
+      case 'MERGE_GROUPS':
+        return [action.payload.groupIds[0]]
 
       default:
         return
@@ -986,93 +988,81 @@ const sceneObjectsReducer = (state = {}, action) => {
             action.payload.ids == null ||
             action.payload.ids.length === 0
         ) return
-        
-        let targetGroups = {}
-        let withoutGroup = []
-        
-        /** Collect data */
-        for (let id of action.payload.ids) {
-          if (draft[id] == null) continue
-          const groupName = draft[id].group
-          if (groupName) {
-            if (!targetGroups[groupName]) {
-              targetGroups[groupName] = []
-            }
-  
-            targetGroups[draft[id].group].push(id)
-          } else if (draft[id].children) {
-            if (!targetGroups[id]) {
-              targetGroups[id] = []
-            }
-          } else if (!groupName) {
-            withoutGroup.push(id)
-          }
+    
+        draft[action.payload.groupId] = {
+          id: action.payload.groupId,
+          name: 'Group',
+          type: 'group',
+          visible: true,
+          children: action.payload.ids
         }
+    
+        action.payload.ids.forEach((childId) => draft[childId].group = action.payload.groupId)
+    
+        return withDisplayNames(draft)
+  
+      case 'UNGROUP_OBJECTS':
+        if (
+            action.payload.ids == null ||
+            action.payload.ids.length === 0 ||
+            action.payload.groupId == null
+        ) return
         
-        const targetGroupsEntries = Object.entries(targetGroups)
-        
-        /** Process data */
-        if (targetGroupsEntries.length === 1 && withoutGroup.length === 0) {
-          /** We selected a single group, we can ungroup the whole group or part of it*/
-          let groupKey = targetGroupsEntries[0][0]
-          let group = state[groupKey]
-          let selectedGroupItems = targetGroupsEntries[0][1]
+        const groupKey = action.payload.groupId
+        const group = draft[groupKey]
+        const selectedGroupItems = action.payload.ids
+    
+        if (group) {
+          /** Ungroup items */
+          draft[groupKey].children = draft[groupKey].children.filter((childId) => {
+            if (draft[childId] && selectedGroupItems.indexOf(childId) !== -1) {
+              draft[childId].group = null
           
-          if (group) {
-            /** Ungroup items */
-            draft[groupKey].children = draft[groupKey].children.filter((childId) => {
-              if (draft[childId] && selectedGroupItems.indexOf(childId) !== -1) {
-                draft[childId].group = null
+              return false
+            }
+        
+            return true
+          })
       
-                return false
-              }
-    
-              return true
-            })
-  
-            if (selectedGroupItems.length === group.children.length) {
-              /** if we select all the children of group then remove group*/
-    
-              delete draft[groupKey]
-            }
+          if (draft[groupKey].children.length === 0) {
+            /** if we select all the children of group then remove group*/
+        
+            delete draft[groupKey]
           }
-        } else if (targetGroupsEntries.length === 0 && withoutGroup.length > 0) {
-          /** We didn't selected any group, create new one and group items */
-          const destId = THREE.Math.generateUUID()
-          draft[destId] = {
-            id: destId,
-            name: 'Group',
-            type: 'group',
-            visible: true,
-            children: withoutGroup
-          }
-  
-          withoutGroup.forEach((childId) => draft[childId].group = destId)
-        } else {
-          /** We selected more than one group, merge them together */
-          let destGroup = draft[targetGroupsEntries[0][0]]
-          
-          targetGroupsEntries.forEach(([k, v], index) => {
-            /** Skip the first group that we want to merge items in */
-            if (index === 0 || !draft[k]) return
-  
-            draft[k].children.forEach((childId) => {
-              if (draft[childId]) {
-                /** Append child to the first selected group */
-                draft[childId].group = destGroup.id
-                destGroup.children.push(childId)
-              }
-            })
-            
-            delete draft[k]
-          })
-  
-          /** Add items that doesn't have a group to the main group */
-          withoutGroup.forEach((childId) => {
-            draft[childId].group = destGroup.id
-            destGroup.children.push(childId)
-          })
         }
+    
+        return withDisplayNames(draft)
+  
+      case 'MERGE_GROUPS':
+        if (
+            action.payload.ids == null ||
+            action.payload.ids.length === 0 ||
+            action.payload.groupIds == null ||
+            action.payload.groupIds.length === 0
+        ) return
+  
+        let destGroup = draft[action.payload.groupIds[0]]
+  
+        action.payload.groupIds.forEach((group, index) => {
+          /** Skip the first group that we want to merge items in */
+          if (index === 0 || !draft[group]) return
+    
+          draft[group].children.forEach((childId) => {
+            if (draft[childId]) {
+              /** Append child to the first selected group */
+              draft[childId].group = destGroup.id
+              if (destGroup.children.indexOf(childId) === -1) destGroup.children.push(childId)
+            }
+          })
+    
+          delete draft[group]
+        })
+  
+        /** Add items that doesn't have a group to the main group */
+        action.payload.ids.forEach((childId) => {
+          draft[childId].group = destGroup.id
+          if (destGroup.children.indexOf(childId) === -1) destGroup.children.push(childId)
+        })
     
         return withDisplayNames(draft)
 
@@ -1628,7 +1618,6 @@ module.exports = {
   //
   selectObject: id => ({ type: 'SELECT_OBJECT', payload: id }),
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
-  selectObjects: id => ({ type: 'SELECT_OBJECTS', payload: id }),
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
 
@@ -1639,7 +1628,27 @@ module.exports = {
   updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
 
   deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
-  groupObjects: ids => ({ type: 'GROUP_OBJECTS', payload: { ids } }),
+  groupObjects: ids => ({
+    type: 'GROUP_OBJECTS',
+    payload: {
+      groupId: THREE.Math.generateUUID(),
+      ids
+    }
+  }),
+  ungroupObjects: (groupId, ids) => ({
+    type: 'UNGROUP_OBJECTS',
+    payload: {
+      groupId,
+      ids
+    }
+  }),
+  mergeGroups: (groupIds, ids) => ({
+    type: 'MERGE_GROUPS',
+    payload: {
+      groupIds,
+      ids
+    }
+  }),
 
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 

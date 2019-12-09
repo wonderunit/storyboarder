@@ -33,13 +33,14 @@ const {
   // action creators
   //
   selectObject,
-  selectObjects,
   selectObjectToggle,
 
   // createObject,
   updateObject,
   deleteObjects,
   groupObjects,
+  ungroupObjects,
+  mergeGroups,
 
   duplicateObjects,
 
@@ -225,7 +226,7 @@ const WorldElement = React.memo(({ index, world, isSelected, selectObject, style
 })
 
 const ListItem = (props) => {
-  const { items, models, groupLevel, selections, selectObject, selectObjects, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera, undoGroupStart, undoGroupEnd } = props
+  const { items, models, groupLevel, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera, undoGroupStart, undoGroupEnd } = props
   const sceneObject = props.object
 
   return React.createElement(
@@ -242,7 +243,6 @@ const ListItem = (props) => {
         (sceneObject.type == 'camera' && activeCamera !== sceneObject.id)
       ),
       selectObject,
-      selectObjects,
       selectObjectToggle,
       updateObject,
       deleteObjects,
@@ -725,7 +725,6 @@ const ElementsPanel = connect(
   // what actions can we dispatch?
   {
     selectObject,
-    selectObjects,
     selectObjectToggle,
     updateObject,
     deleteObjects,
@@ -740,7 +739,7 @@ const ElementsPanel = connect(
     undoGroupEnd
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjects, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
     let ref = useRef(null)
     let size = useComponentSize(ref)
 
@@ -775,7 +774,6 @@ const ElementsPanel = connect(
           models,
           selections,
           selectObject,
-          selectObjects,
           selectObjectToggle,
           updateObject,
           deleteObjects,
@@ -1729,7 +1727,7 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
 }
 
 const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ children, index, selections, groupLevel, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, selectObjects, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete, undoGroupStart, undoGroupEnd }) => {
+const Element = React.memo(({ children, index, selections, groupLevel, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete, undoGroupStart, undoGroupEnd }) => {
   const onClick = preventDefault(event => {
     const { shiftKey } = event
 
@@ -1744,12 +1742,12 @@ const Element = React.memo(({ children, index, selections, groupLevel, style, sc
             return (selectedId !== sceneObject.id && !sceneObject.children.includes(selectedId))
           })
   
-          selectObjects(selected)
+          selectObject(selected)
         } else {
-          selectObjects([...selected, sceneObject.id, ...sceneObject.children])
+          selectObject([...selected, sceneObject.id, ...sceneObject.children])
         }
       } else {
-        selectObjects([sceneObject.id, ...sceneObject.children])
+        selectObject([sceneObject.id, ...sceneObject.children])
       }
     } else if (shiftKey) {
       selectObjectToggle(sceneObject.id)
@@ -2743,12 +2741,14 @@ const MenuManager = ({ }) => {
 }
 
 const { dropObject, dropCharacter } = require("../utils/dropToObjects")
+const getGroupAction = require("../utils/getGroupAction")
 
 const KeyHandler = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
     activeCamera: getActiveCamera(state),
     selections: getSelections(state),
+    sceneObjects: getSceneObjects(state),
 
     _selectedSceneObject: getSelectedSceneObject(state),
 
@@ -2761,6 +2761,8 @@ const KeyHandler = connect(
     duplicateObjects,
     deleteObjects,
     groupObjects,
+    ungroupObjects,
+    mergeGroups,
     updateObject,
     undoGroupStart,
     undoGroupEnd,
@@ -2771,6 +2773,7 @@ const KeyHandler = connect(
     mainViewCamera,
     activeCamera,
     selections,
+    sceneObjects,
     _selectedSceneObject,
     _cameras,
     setMainViewCamera,
@@ -2779,6 +2782,8 @@ const KeyHandler = connect(
     duplicateObjects,
     deleteObjects,
     groupObjects,
+    ungroupObjects,
+    mergeGroups,
     updateObject,
     undoGroupStart,
     undoGroupEnd,
@@ -2808,7 +2813,14 @@ const KeyHandler = connect(
     
     const onCommandGroup = () => {
       if (selections) {
-        groupObjects(selections)
+        const groupAction = getGroupAction(sceneObjects, selections)
+        if (groupAction.shouldGroup) {
+          groupObjects(groupAction.objectsIds)
+        } else if (groupAction.shouldUngroup) {
+          ungroupObjects(groupAction.groupsIds[0], groupAction.objectsIds)
+        } else {
+          mergeGroups(groupAction.groupsIds, groupAction.objectsIds)
+        }
       }
     }
 
