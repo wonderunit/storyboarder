@@ -17,6 +17,7 @@ require('./three/GPUPickers/utils/Object3dExtension')
 require('../../vendor/three/examples/js/vr/WebVR')
 const WEBVR = THREE.WEBVR
 
+const XRClient = require('./client')
 
 const {
   // selectors
@@ -59,6 +60,7 @@ const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
 
 const Controls = require('./components/ui/Controls')
 const Help = require('./components/ui/Help')
+const Boards = require('./components/ui/Boards')
 
 const BonesHelper = require('./three/BonesHelper')
 const Voicer = require('./three/Voicer')
@@ -152,6 +154,9 @@ const SceneContent = connect(
     const switchHand = useUiStore(state => state.switchHand)
     const showCameras = useUiStore(state => state.showCameras)
     const showHelp = useUiStore(state => state.showHelp)
+    const showHUD = useUiStore(state => state.showHUD)
+    const showConfirm = useUiStore(state => state.showConfirm)
+    const boardUid = useUiStore(state => state.boardUid)
 
     const fog = useRef()
     const getFog = () => {
@@ -485,8 +490,16 @@ const SceneContent = connect(
 
     const groundRef = useRef()
     const rootRef = useRef()
+    const thumbnailRenderer = useRef()
 
-    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound })
+    const xrClient = useRef()
+    const getXrClient = () => {
+      if (!xrClient.current) {
+        xrClient.current = XRClient()
+      }
+      return xrClient.current
+    }
+    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, getXrClient })
 
     const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
@@ -523,6 +536,17 @@ const SceneContent = connect(
     const gamepads = navigator.getGamepads()
     const gamepadFor = controller => gamepads[controller.userData.gamepad.index]
 
+    useEffect(() => {
+      thumbnailRenderer.current = new THREE.WebGLRenderer()
+      thumbnailRenderer.current.setSize(128 * aspectRatio, 128)
+      return destroyContext = () => {
+        thumbnailRenderer.current.forceContextLoss()
+        thumbnailRenderer.current.context = null
+        thumbnailRenderer.current.domElement = null
+        thumbnailRenderer.current = null
+      }
+    }, [])
+
     return (
       <>
         <group
@@ -535,6 +559,15 @@ const SceneContent = connect(
             {logComponent}
             <primitive object={cameraAudioListener} />
           </primitive>
+
+          { showHUD && 
+            <Boards
+              mode={uiCurrent.value.controls}
+              locked={uiCurrent.context.locked}
+              getCanvasRenderer={getCanvasRenderer}
+              showConfirm={showConfirm}
+              showSettings={canvasRendererRef.current.state.showSettings} />
+          }
 
           {controllers.filter(gamepadFor).map(controller =>
             <primitive key={controller.uuid} object={controller} >
@@ -638,6 +671,9 @@ const SceneContent = connect(
                 sceneObject={sceneObjects[id]}
                 isSelected={selections.includes(id)}
                 isActive={activeCamera === id}
+                getCanvasRenderer={getCanvasRenderer}
+                thumbnailRenderer={thumbnailRenderer}
+                boardUid={boardUid}
                 audio={
                   activeCamera === id
                     ? atmosphereAudio
@@ -804,6 +840,14 @@ const SceneManagerXR = () => {
   // world model files
   useEffect(() => {
     if (world.environment.file) {
+      // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
+      const environmentPath = getFilepathForModelByType({
+        type: 'environment',
+        model: world.environment.file
+      })
+
+      delete assets[environmentPath]
+
       requestAsset(
         getFilepathForModelByType({
           type: 'environment',

@@ -2400,7 +2400,9 @@ const BoardInspector = connect(
 
   return h(
     ['div.column.board-inspector', [
-      ['div.board-inspector__shot', 'Shot ' + board.shot],
+      present(board.shot)
+        ? ['div.board-inspector__shot', 'Shot ' + board.shot]
+        : ['div.board-inspector__shot', 'Loading …'],
 
       present(board.dialogue) && ['p.board-inspector__dialogue', 'DIALOGUE: ' + board.dialogue],
       present(board.action) && ['p.board-inspector__action', 'ACTION: ' + board.action],

@@ -3409,8 +3409,8 @@ const renderShotGeneratorPanel = () => {
   )
 
   let thumbnail = fs.existsSync(src)
-      ? src + '?' + cacheKey(src)
-      : null
+    ? src + '?' + cacheKey(src)
+    : null
 
   let aspectRatio = boardData.aspectRatio
 
@@ -3425,14 +3425,7 @@ const renderShotGeneratorPanel = () => {
       el.style.cursor = prev
     }, 2000)
 
-    ipcRenderer.send('shot-generator:open', {
-      storyboarderFilePath: boardFilename,
-      boardData: {
-        version: boardData.version,
-        aspectRatio: boardData.aspectRatio
-      },
-      board: boardData.boards[currentBoard]
-    })
+    ipcRenderer.send('shot-generator:open')
   }
 
   ReactDOM.render(
@@ -7067,9 +7060,14 @@ ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
+
+  ipcRenderer.send('shot-generator:update', {
+    board: boardData.boards.find(board => board.uid === uid)
+  })
 })
-ipcRenderer.on('insertShot', async (event, { data, images }) => {
-  let index = await newBoard()
+ipcRenderer.on('insertShot', async (event, { data, images, currentBoard }) => {
+  let position = boardData.boards.map(board => board.uid).indexOf(currentBoard.uid);
+  let index = await newBoard(position + 1)
   await gotoBoard(index)
 
   let uid = boardData.boards[index].uid
@@ -7081,6 +7079,43 @@ ipcRenderer.on('insertShot', async (event, { data, images }) => {
   ipcRenderer.send('shot-generator:update', {
     board: boardData.boards[index]
   })
+})
+ipcRenderer.on('storyboarder:get-boards', event => {
+  ipcRenderer.send('shot-generator:get-boards', {
+    boards: boardData.boards.map(board => ({
+      uid: board.uid,
+      shot: board.shot,
+      thumbnail: boardModel.boardFilenameForThumbnail(board),
+      hasSg: board.sg ? true : false
+    }))
+  })
+})
+ipcRenderer.on('storyboarder:get-board', (event, uid) => {
+  ipcRenderer.send(
+    'shot-generator:get-board',
+    boardData.boards.find(board => board.uid === uid)
+  )
+})
+ipcRenderer.on('storyboarder:get-storyboarder-file-data', (event, uid) => {
+  ipcRenderer.send(
+    'shot-generator:get-storyboarder-file-data',
+    {
+      storyboarderFilePath: boardFilename,
+      boardData: {
+        version: boardData.version,
+        aspectRatio: boardData.aspectRatio
+      }
+    }
+  )
+})
+ipcRenderer.on('storyboarder:get-state', event => {
+  let board = boardData.boards[currentBoard]
+  ipcRenderer.send(
+    'shot-generator:get-state',
+    {
+      board
+    }
+  )
 })
 
 const logToView = opt => ipcRenderer.send('log', opt)

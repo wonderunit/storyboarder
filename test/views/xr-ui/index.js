@@ -14,6 +14,7 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('../../../src/js
 const { Log } = require('../../../src/js/xr/src/components/Log')
 const Controls = require('../../../src/js/xr/src/components/ui/Controls')
 const Help = require('../../../src/js/xr/src/components/ui/Help')
+const Boards = require('../../../src/js/xr/src/components/ui/Boards')
 
 
 //const SimpleText = require('../../../src/js/xr/src/components/SimpleText')
@@ -21,12 +22,16 @@ const Help = require('../../../src/js/xr/src/components/ui/Help')
 const useGltfLoader = require('../../../src/js/xr/src/hooks/use-gltf-loader')
 const useImageBitmapLoader = require('../../../src/js/xr/src/hooks/use-imagebitmap-loader')
 
+const XRClient = require('../../../src/js/xr/src/client')
+const xrClient = XRClient('http://localhost:1234')
+
 const UITestContent = ({ resources }) => {
   const { gl, camera, scene } = useThree()
 
-  const { uiService, uiCurrent, getCanvasRenderer } = useUiManager({
+  const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({
     playSound: () => { },
-    stopSound: () => { }
+    stopSound: () => { },
+    getXrClient: () => xrClient
   })
 
   const { controllers, interactionServiceCurrent } = useInteractionsManager({
@@ -51,24 +56,26 @@ const UITestContent = ({ resources }) => {
   }
 
   const onPointerDown = event => {
-    let u = event.uv.x
+    let offset = event.receivingObject.userData.id === 'boards' ? 1 : 0
+    let u = event.uv.x + offset
     let v = event.uv.y
     uiService.send({
       type: 'TRIGGER_START',
       controller: getFakeController(),
       intersection: {
-        uv: event.uv
+        uv: new THREE.Vector2(u, v)
       }
     })
   }
   const onPointerUp = event => {
-    let u = event.uv.x
+    let offset = event.receivingObject.userData.id === 'boards' ? 1 : 0
+    let u = event.uv.x + offset
     let v = event.uv.y
     uiService.send({
       type: 'TRIGGER_END',
       controller: getFakeController(),
       intersection: {
-        uv: event.uv
+        uv: new THREE.Vector2(u, v)
       }
     })
   }
@@ -77,16 +84,18 @@ const UITestContent = ({ resources }) => {
   }
 
   const showHelp = useUiStore(state => state.showHelp)
+  const showHUD = useUiStore(state => state.showHUD)
+  const showConfirm = useUiStore(state => state.showConfirm)
 
   return (
     <>
       <group>
         <primitive object={camera}>
-          <Log position={[0, -0.15, -1]} />
+          <Log position={[0, -0.575, -1]} />
         </primitive>
 
         <group
-          position={[0, 0, 4.30]}
+          position={[0, -0.425, 4.30]}
           rotation={[0.8, 0, 0]}
           scale={[2.4,2.4,2.4]}
         >
@@ -107,7 +116,27 @@ const UITestContent = ({ resources }) => {
             }
           </group>
         </group>
+      
+        { showHUD &&
+          <group
+          position={[0, -0.05, 0.25]}
+          scale={[1, 1, 1]}>
+            <group
+              onPointerDown={onPointerDown}
+              onPointerUp={onPointerUp}
+              onPointerMove={onPointerMove}
+            >
+              <Boards
+                rotation={Math.PI}
+                mode={uiCurrent.value.controls}
+                getCanvasRenderer={getCanvasRenderer}
+                showConfirm={showConfirm}
+                showSettings={canvasRendererRef.current.state.showSettings} />
+            </group>
+          </group>
+        }
       </group>
+      
 
       <ambientLight color={0xffffff} intensity={1} />
 
