@@ -198,6 +198,10 @@ const useEnvironmentModel = (world, scene, { modelData}) => {
           if (child.material.map) {
             material.map = child.material.map
             material.map.needsUpdate = true
+            material.userData.outlineParameters = {
+              thickness: 0.009,
+              color: [ 0, 0, 0 ],
+            }
           }
 
           child.material = material
