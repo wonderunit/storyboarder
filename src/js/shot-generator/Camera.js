@@ -77,7 +77,7 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
       }
     }
   }, [])
-
+ 
   useEffect(() => {
     console.log(type, id, 'added')
 
@@ -131,26 +131,9 @@ const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
 
   camera.current.fov = props.fov
   camera.current.updateProjectionMatrix()
-  if (camera.current.orthoIcon) {
-    camera.current.orthoIcon.position.copy(camera.current.position)
-    let rotation = new THREE.Euler().setFromQuaternion( camera.current.quaternion, "YXZ" )   //always "YXZ" when we gat strange rotations
-    camera.current.orthoIcon.icon.material.rotation = rotation.y
-
-    let hFOV = 2 * Math.atan( Math.tan( camera.current.fov * Math.PI / 180 / 2 ) * camera.current.aspect )
-    camera.current.orthoIcon.frustumIcons.left.icon.material.rotation = hFOV/2 + rotation.y
-    camera.current.orthoIcon.frustumIcons.right.icon.material.rotation = -hFOV/2 + rotation.y
-
-
-    //calculatedName = camera.current.name || capitalize(`${camera.current.type} ${number}`)
-    //if (camera.current.orthoIcon.iconText)
-      //camera.current.orthoIcon.iconText.textGeometry.update( calculatedName )
-
-    let focal = camera.current.getFocalLength()
-    let meters = parseFloat(Math.round(props.z * 100) / 100).toFixed(2)
-    if (camera.current.orthoIcon.iconSecondText)
-      camera.current.orthoIcon.changeSecondText(`${Math.round(focal)}mm, ${meters}m`)
-    //camera.current.orthoIcon.frustumIcons = frustumIcons
-  }
+  
+  camera.current.updateIcon()
+  
   camera.current.layers.enable(1)
 
   return null

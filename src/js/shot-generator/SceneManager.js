@@ -42,6 +42,7 @@ const Character = require('./Character')
 const SpotLight = require('./SpotLight')
 const Volumetric = require('./Volumetric')
 const SceneObject = require('./SceneObject')
+const Group = require('./Group')
 const Camera = require('./Camera')
 const Image = require('./Image')
 
@@ -690,6 +691,18 @@ const SceneManager = connect(
 
                 storyboarderFilePath: meta.storyboarderFilePath,
                 imageAttachmentIds: props.imageAttachmentIds,
+                ...props
+              }
+            ]
+          case 'group':
+            return [
+              Group, {
+                key: props.id,
+                scene,
+                isSelected: selections.includes(props.id),
+          
+                updateObject,
+          
                 ...props
               }
             ]
