@@ -699,15 +699,9 @@ const SceneManager = connect(
               Group, {
                 key: props.id,
                 scene,
-          
-                remoteInput,
                 isSelected: selections.includes(props.id),
           
-                camera,
-          
                 updateObject,
-          
-                storyboarderFilePath: meta.storyboarderFilePath,
           
                 ...props
               }
