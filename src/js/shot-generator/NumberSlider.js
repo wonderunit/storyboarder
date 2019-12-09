@@ -47,7 +47,7 @@ const formatters = {
   percent: value => Math.round(value).toString() + '%'
 }
 
-const NumberSlider = ({
+const NumberSlider = React.memo(({
   label,
   value = 0,
   min = -10,
@@ -72,18 +72,6 @@ const NumberSlider = ({
     setAltKey(event.altKey)
   }
 
-  function lockChangeAlert () {
-    // console.log(document.pointerLockElement)
-
-    // if (document.pointerLockElement === ref)
-    //   console.log('The pointer lock status is now locked');
-    //   document.addEventListener("mousemove", updatePosition, false);
-    // } else {
-    //   console.log('The pointer lock status is now unlocked');
-    //   document.removeEventListener("mousemove", updatePosition, false);
-    // }
-  }
-
   const onPointerDown = event => {
     event.preventDefault()
     if (event.shiftKey) {
@@ -93,30 +81,34 @@ const NumberSlider = ({
     } else {
       document.addEventListener('pointerup', onPointerUp)
       event.target.requestPointerLock()
-      document.addEventListener('pointerlockchange', lockChangeAlert, false)
       setMoving(true)
       onDragStart()
     }
   }
 
   useEffect(() => {
+    const onMove = onPointerMove()
     if (moving) {
-      document.addEventListener('pointermove', onPointerMove)
+      document.addEventListener('pointermove', onMove)
     }
     return function cleanup () {
-      document.removeEventListener('pointermove', onPointerMove)
+      document.removeEventListener('pointermove', onMove)
     }
-  }, [moving, value, altKey]) // rebind if values change that we care about
+  }, [moving, altKey]) // rebind if values change that we care about
 
   useEffect(() => {
     if (!moving && !textInput) {
       document.activeElement.blur()
     }
   }, [moving, textInput])
-
-  const onPointerMove = event => {
-    onSetValue(transform(value, event.movementX, { min, max, step, fine: altKey }))
-    event.preventDefault()
+  
+  const onPointerMove = () => {
+    let currentValue = value
+    return (event) => {
+      currentValue = transform(currentValue, event.movementX, {min, max, step, fine: altKey})
+      onSetValue(currentValue)
+      event.preventDefault()
+    }
   }
 
   const onPointerUp = event => {
@@ -201,6 +193,6 @@ const NumberSlider = ({
       ]]
     ]
   ])
-}
+})
 
 module.exports = { NumberSlider, transforms, formatters }

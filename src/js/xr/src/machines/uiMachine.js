@@ -17,38 +17,32 @@ const machine = Machine({
         home: {
           on: {
             'GO_ADD': 'add',
-            'TOGGLE_SETTINGS': 'settings',
             'GO_PROPERTIES': 'properties'
           }
         },
         add: {
           on: {
             'GO_HOME': 'home',
-            'TOGGLE_SETTINGS': 'settings',
             'GO_PROPERTIES': 'properties'
           }
         },
         settings: {
           on: {
             'GO_HOME': 'home',
-            'GO_ADD': 'add',
-            'TOGGLE_SETTINGS': 'home',
-
+            'GO_ADD': 'add'
           }
         },
         properties: {
           on: {
             'GO_ADD': 'add',
             'GO_HOME': 'home',
-            'TOGGLE_SETTINGS': 'settings',
             'TOGGLE_GRID': 'grid',
           }
         },
         grid: {
           on: {
             'GO_ADD': 'add',
-            'GO_HOME': 'home',
-            'TOGGLE_SETTINGS': 'settings'
+            'GO_HOME': 'home'
           }
         }
       }
@@ -71,7 +65,13 @@ const machine = Machine({
             'REQUEST_DELETE': { actions: 'onDelete' },
             'TOGGLE_SWITCH': { actions: 'onToggleSwitch' },
             'TOGGLE_HELP': { actions: 'onToggleHelp' },
-            'INCREMENT_HELP': { actions: 'onIncrementHelp' }
+            'INCREMENT_HELP': { actions: 'onIncrementHelp' },
+            'SAVE_BOARD': { actions: 'onSaveBoard' },
+            'INSERT_BOARD': { actions: 'onInsertBoard' },
+            'CHANGE_BOARD': { actions: 'onChangeBoard' },
+            'SET_BOARDUID': { actions: 'onSetBoardUid' },
+            'TOGGLE_HUD': { actions: 'onToggleHUD' },
+            'TOGGLE_SETTINGS': { actions: 'onToggleSettings' },
           }
         },
         locked: {

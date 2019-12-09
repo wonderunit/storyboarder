@@ -1,6 +1,7 @@
 const {
   selectObject,
   updateObject,
+  setActiveCamera,
   undoGroupStart,
   undoGroupEnd,
   initialState
@@ -12,6 +13,7 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getHandPoseImageFilepathById = id => `/data/presets/handPoses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
+const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
 
 const drawText = ({ ctx, label, size, weight = '', align = 'left', baseline = 'top', color = '#fff' }) => {
   ctx.save()
@@ -33,6 +35,7 @@ const drawImageButton = ({
   flipY = false,
   drawBG = false,
   padding = 0,
+  rounding = 25,
   state = false,
   stroke = false,
   drawSquare = false
@@ -40,6 +43,8 @@ const drawImageButton = ({
   ctx.save()
 
   ctx.fillStyle = fill
+  if (drawBG) roundRect(ctx, -padding, -padding, width + padding * 2, height + padding * 2, rounding, true, false)
+
   if (state > 0) { 
     ctx.fillStyle = '#6E6E6E'
     roundRect(ctx, 0, 0, width - 10, height, 12, true, false) 
@@ -62,15 +67,15 @@ const drawImageButton = ({
   ctx.restore()
 }
 
-const drawButton = ({ ctx, width, height, label, fill = 'rgba(0, 0, 0, 0)' }) => {
+const drawButton = ({ ctx, width, height, label, fill = 'rgba(0, 0, 0, 0)', fontSize = 20, fontWeight = 500 }) => {
   ctx.save()
   ctx.fillStyle = fill
-  ctx.fillRect(0, 0, width, height)
+  roundRect(ctx, 0, 0, width, height, 12, true, false)
   ctx.translate(width / 2, height / 2)
-  ctx.font = '20px Arial'
+  ctx.font = `${fontWeight} ${fontSize}px Arial`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
-  ctx.fillStyle = 'black'
+  ctx.fillStyle = 'white'
   ctx.fillText(label || '', 0, 0)
   ctx.restore()
 }
@@ -362,6 +367,8 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
     }
   }
 
+  ctx.restore()
+  if (gridHeight > height) {
   this.paneComponents['grid']['scrollbar'] = {
     id: 'scrollbar',
     type: 'button',
@@ -377,7 +384,6 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   }
 
   // Indicator
-  ctx.restore()
   const scrollPosition = this.state.grids[type].scrollTop / (gridHeight - height)
 
   ctx.fillStyle = '#000'
@@ -386,9 +392,207 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   ctx.fillStyle = '#6E6E6E'
   roundRect(ctx, width + 37, y + scrollPosition * height * 0.75, 12, height * 0.25, 6, true, false)
 
-  ctx.strokeStyle = '#fff'
-  ctx.lineWidth = 1
-  roundRect(ctx, width + 37, y, 12, height, 6, false, true)
+  // ctx.strokeStyle = '#fff'
+  // ctx.lineWidth = 1
+  // roundRect(ctx, width + 37, y, 12, height, 6, false, true)
+  }
+}
+
+const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIndex) {
+  ctx.save()
+  ctx.fillStyle = '#000'
+  ctx.fillRect(x, y, width, height)
+  ctx.beginPath()
+  ctx.rect(x, y, width, height)
+  ctx.clip()
+
+  const padding = 24
+  const textHeight = 16
+
+  const itemHeight = height - 2 * padding - textHeight
+  const itemWidth = itemHeight * this.cameraAspectRatio
+  const rowWidth = items.length * itemWidth + padding * 3
+  const visibleItems = Math.min(Math.ceil(width / itemWidth) + 1, items.length)
+
+  if (this.state.boards[type].scrollTop === null) {
+    this.state.boards[type].scrollTop = Math.max(Math.min((activeIndex) * itemWidth + 0.01, Math.max(rowWidth - width, 0)), 0)
+  }
+  
+  let startItem = Math.floor(this.state.boards[type].scrollTop / itemWidth)
+  const offset = this.state.boards[type].scrollTop % itemWidth
+
+  for (let i = 0; i < visibleItems; i++) {
+    if (startItem >= items.length) break
+    const item = items[startItem]
+
+    const activeBoard = this.state.sgCurrentState.board && item.uid === this.state.sgCurrentState.board.uid
+    const isActive = type === 'boards' ? activeBoard : item.id === this.state.activeCamera
+    ctx.fillStyle = isActive ? '#7256ff' : '#6E6E6E'
+    roundRect(
+      ctx,
+      x + (itemWidth + padding * 0.5) * i - offset,
+      y + padding,
+      itemWidth,
+      itemHeight + textHeight,
+      12,
+      true,
+      false
+    )
+
+    ctx.font = '12px Arial'
+    ctx.fillStyle = '#ffffff'
+    ctx.textBaseline = 'Middle'
+    const text = type === 'boards' ? item.shot : item.name || item.displayName
+
+    ctx.textAlign = 'start'
+    ctx.fillText(text, x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + itemHeight + textHeight * 0.5)
+
+    if (type === 'boards') {
+      const filepath = this.client.uriForThumbnail(item.thumbnail)
+
+      this.drawLoadableImage(
+        filepath,
+
+        image => {
+          // loaded state
+          // object should allow selection
+          ctx.drawImage(
+            image,
+            x + 8 + (itemWidth + padding * 0.5) * i - offset,
+            y + padding + 8,
+            itemWidth - 16,
+            itemHeight - 16
+          )
+        },
+
+        () => {
+          // loading state
+          // object should not allow selection
+          ctx.save()
+          ctx.fillStyle = '#222'
+          ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + 8, itemWidth - 16, itemHeight - 16)
+          ctx.restore()
+        }
+      )
+    } else {
+      const fov = parseInt(getFovAsFocalLength(item.fov, this.cameraAspectRatio))
+      ctx.textAlign = 'end'
+      ctx.fillText(
+        `${fov}mm`,
+        x - 8 + itemWidth + (itemWidth + padding * 0.5) * i - offset,
+        y + padding + itemHeight + textHeight * 0.5
+      )
+
+      const thumbnailName = `${this.state.sgCurrentState.board.uid}_${item.displayName}`
+      const cameraThumbnail = this.state.cameraThumbnails[thumbnailName]
+      
+      if (cameraThumbnail) {
+        ctx.drawImage(
+          cameraThumbnail,
+          x + 8 + (itemWidth + padding * 0.5) * i - offset,
+          y + padding + 8,
+          itemWidth - 16,
+          itemHeight - 16
+        )
+      } else {
+        ctx.save()
+        ctx.fillStyle = '#222'
+        ctx.fillRect(x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + 8, itemWidth - 16, itemHeight - 16)
+        ctx.restore()
+      }
+    }
+
+    this.paneComponents['boards'][item.id || item.uid] = {
+      id: item.id || item.uid,
+      name: item.id || item.uid,
+      type: 'button',
+      row: type,
+      x: x + (itemWidth + padding * 0.5) * i - offset,
+      y: y + padding,
+      width: itemWidth,
+      height: itemHeight + textHeight,
+      invisible: true
+    }
+
+    startItem++
+  }
+
+  this.paneComponents['boards'][`${type}-background`] = {
+    id: `${type}-background`,
+    type: 'button',
+    x,
+    y: y + padding,
+    width,
+    height: itemHeight + textHeight,
+    onSelect: (xClick, yClick) => {
+      this.state.boards.startCoords = this.state.boards.prevCoords = { x: xClick - 1 - (x * 2) / width, y: yClick }
+    },
+    onDrag: (x, y) => {
+      const { boards } = this.state
+      const offset = Math.floor((boards.prevCoords.x - x) * width)
+      boards[type].scrollTop = Math.min(Math.max(boards[type].scrollTop + offset, 0), Math.max(rowWidth - width, 0))
+      boards.prevCoords = { x, y }
+      this.boardsNeedsRender = true
+    },
+    onDrop: (xClick, yClick, u, v) => {
+      const { startCoords } = this.state.boards
+      const distance = new THREE.Vector2(startCoords.x, startCoords.y).distanceTo(
+        new THREE.Vector2(xClick - 1 - (x * 2) / width, yClick)
+      )
+
+      if (distance < 0.15) {
+        let canvasIntersection = this.getCanvasIntersection(u, v, false)
+
+        if (canvasIntersection && !canvasIntersection.id.includes('-background')) {
+          const component = this.getComponentById(canvasIntersection.id)
+          if (component.row === 'cameras') {
+            this.dispatch(setActiveCamera(component.id))
+          } else {
+            this.send('CHANGE_BOARD', { uid: canvasIntersection.id })
+          }
+        }
+      }
+    }
+  }
+
+  ctx.restore()
+  if (rowWidth > width) {
+    this.paneComponents['boards'][`${type}-scrollbar`] = {
+      id: `${type}-scrollbar`,
+      type: 'button',
+      x,
+      y: y + padding + itemHeight + textHeight + 12,
+      width,
+      height: 12,
+      onDrag: (x, y) => {
+        const { boards } = this.state
+        boards[type].scrollTop = Math.min(Math.max((rowWidth - width) * x, 0), Math.max(rowWidth - width, 0))
+        this.boardsNeedsRender = true
+      }
+    }
+
+    // Indicator
+    const scrollPosition = this.state.boards[type].scrollTop / (rowWidth - width)
+
+    ctx.fillStyle = '#000'
+    roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, true, false)
+
+    ctx.fillStyle = '#6E6E6E'
+    roundRect(
+      ctx,
+      x + scrollPosition * width * 0.75,
+      y + padding + itemHeight + textHeight + 12,
+      width * 0.25,
+      12,
+      6,
+      true,
+      false
+    )
+
+    // ctx.strokeStyle = '#fff'
+    // ctx.lineWidth = 1
+    // roundRect(ctx, x, y + padding + itemHeight + textHeight + 12, width, 12, 6, false, true)
+  }
 }
 
 module.exports = {
@@ -400,5 +604,6 @@ module.exports = {
   roundRect,
   wrapText,
   drawPaneBGs,
-  drawGrid
+  drawGrid,
+  drawRow
 }

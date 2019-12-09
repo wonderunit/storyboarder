@@ -131,7 +131,9 @@ const SelectionManager = connect(
     
     undoGroupStart,
     undoGroupEnd,
-    deselectAttachable
+    deselectAttachable,
+  
+     onDrag
   }) => {
 
   const { scene } = useContext(SceneContext)
@@ -214,6 +216,8 @@ const SelectionManager = connect(
   const raycaster = useRef()
   const plane = useRef()
   const intersection = useRef()
+  const selectedObjects = useRef()
+  const objectChanges = useRef()
   const offsets = useRef()
   const mousePosition = useRef(new THREE.Vector2());
   const prepareDrag = (target, { x, y, useIcons }) => {
@@ -222,12 +226,18 @@ const SelectionManager = connect(
     if (!intersection.current) intersection.current = new THREE.Vector3()
 
     offsets.current = []
+    selectedObjects.current = {}
+    objectChanges.current = {}
 
     raycaster.current.setFromCamera({ x, y }, camera )
     if (useIcons) {
       plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
     } else {
       plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
+    }
+  
+    for (let selection of selections) {
+      selectedObjects.current[selection] = scene.children.find(child => child.userData.id === selection)
     }
 
     // remember the offsets of every selected object
@@ -241,8 +251,7 @@ const SelectionManager = connect(
         return;
       }
       for (let selection of selections) {
-        let child = intersectables.find(child => child.userData.id === selection)
-        offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( child.position )
+        offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( selectedObjects.current[selection].position )
       }
     } else {
       for (let selection of selections) {
@@ -250,11 +259,10 @@ const SelectionManager = connect(
       }
     }
   }
-  const drag = (target, mouse) => {
+  const drag = (mouse, target) => {
     raycaster.current.setFromCamera( mouse, camera )
 
     if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
-      let changes = {}
       // Calculates new attachable position
       // Attachable is in no need of switching Y and Z cause they are already in bone space
       // And bone space is in character space which is already got Y and Z switched
@@ -262,19 +270,53 @@ const SelectionManager = connect(
       if(target.userData.type === 'attachable' ) {
         if(target.userData.isRotationEnabled) return
         let { x, y, z } = intersection.current.clone().sub( offsets.current[target.userData.id] )
-        changes[target.userData.id] = { x, y, z }
+        let parentMatrixWorld = target.parent.matrixWorld
+        let parentInverseMatrixWorld = target.parent.getInverseMatrixWorld()
+        target.applyMatrix(parentMatrixWorld)
+        target.position.set( x, y, z )
+        target.updateMatrixWorld(true)
+        target.applyMatrix(parentInverseMatrixWorld)
+
+        objectChanges.current[target.userData.id] = { x, y, z }
+       // updateObjects(changes)
       } else {
-        for (selection of selections) {
-        let { x, z } = intersection.current.clone().sub( offsets.current[selection] )
-        changes[selection] = { x, y: z }
-       }
+        for (let selection of selections) {
+          let target = selectedObjects.current[selection]
+          if (target.userData.locked) continue
+          
+          let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
+          target.position.set( x, target.position.y, z )
+          target.orthoIcon.position.set( x, target.position.y, z )
+          
+          objectChanges.current[selection] = { x, y: z }
+          if (target.onDrag) {
+            target.onDrag()
+          }
+        }
       }
-      updateObjects(changes)
+      if (onDrag) {
+        onDrag()
+      }
     }
   }
-  const endDrag = () => {
   
+  const endDrag = () => {
+    if (!objectChanges || !objectChanges.current) {
+      return false
+    }
+  
+    updateObjects(objectChanges.current)
+  
+    for (let selection of selections) {
+      let target = selectedObjects.current[selection]
+      if (target && target.onDragEnd) {
+        target.onDragEnd()
+      }
+    }
+  
+    objectChanges.current = null
   }
+  
   useMemo(() => {
     if (dragTarget) {
       let { target, x, y } = dragTarget
@@ -497,7 +539,6 @@ const SelectionManager = connect(
     event.preventDefault()
 
     const { x, y } = mouse(event)
-
     if (dragTarget)
     {
       if(dragTarget.target.userData.type === 'character')
@@ -507,13 +548,13 @@ const SelectionManager = connect(
         {
           if(!dragTarget.isObjectControl)
           {
-            drag(dragTarget.target, { x, y })
+            drag({ x, y }, dragTarget.target)
           }
         }
 
       }
       else {
-        drag(dragTarget.target, { x, y })
+        drag({ x, y }, dragTarget.target)
       }
 
     }
@@ -587,11 +628,11 @@ const SelectionManager = connect(
   useLayoutEffect(() => {
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
-    document.addEventListener('pointerup', onPointerUp)
+    window.addEventListener('pointerup', onPointerUp)
     return function cleanup () {
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
-      document.removeEventListener('pointerup', onPointerUp)
+      window.removeEventListener('pointerup', onPointerUp)
     }
   }, [onPointerDown, onPointerUp, onPointerMove])
 

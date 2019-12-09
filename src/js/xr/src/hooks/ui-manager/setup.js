@@ -52,17 +52,17 @@ const setupHomePane = (paneComponents, self) => {
         self.send('REQUEST_DELETE', { selections: self.state.selections })
       }
     },
-    'settings-button': {
-      id: 'settings-button',
+    'hud-button': {
+      id: 'hud-button',
       type: 'image-button',
       x: 909 + 12,
       y: 684 + 12,
       width: 64,
       height: 64,
-      image: 'settings',
+      image: 'hud',
 
       onSelect: () => {
-        self.send('TOGGLE_SETTINGS')
+        self.send('TOGGLE_HUD')
       }
     },
     'quote-1': {
@@ -167,81 +167,6 @@ const setupAddPane = (paneComponents, self) => {
   }
 }
 
-const setupSettingsPane = (paneComponents, self) => {
-  paneComponents['settings'] = {
-    settings: {
-      id: 'settings',
-      type: 'text',
-      x: 0 + 30,
-      y: 684 + 30,
-      label: 'Settings',
-      size: 36
-    },
-
-    // 'switch-hand': {
-    //   id: 'switch-hand',
-    //   type: 'text',
-    //   x: 0 + 30,
-    //   y: 684 + 20 + 48 + 30 + 40 - 12,
-    //   label: 'Switch Hand',
-    //   size: 24
-    // },
-
-    'show-cameras': {
-      id: 'show-cameras',
-      type: 'text',
-      x: 0 + 30,
-      y: 684 + 20 + 48 + 40 + 40 - 12,
-      label: 'Show Cameras',
-      size: 24
-    },
-
-    // 'switch-hand-toggle': {
-    //   id: 'switch-hand-toggle',
-    //   type: 'toggle-button',
-    //   toggle: 'switchHand',
-    //   x: 0 + 30 + 200,
-    //   y: 684 + 20 + 48 + 30,
-    //   width: 200,
-    //   height: 80,
-    //   onSelect: () => {
-    //     self.send('TOGGLE_SWITCH', { toggle: 'switchHand' })
-    //   }
-    // },
-
-    'show-cameras-toggle': {
-      id: 'show-cameras-toggle',
-      type: 'toggle-button',
-      toggle: 'showCameras',
-      x: 0 + 30 + 200,
-      y: 684 + 20 + 48 + 40,
-      width: 200,
-      height: 80,
-      onSelect: () => {
-        self.send('TOGGLE_SWITCH', { toggle: 'showCameras' })
-      }
-    },
-
-    'help-button': {
-      id: 'help-button',
-      type: 'image-button',
-      x: 439 - 64 - 15,
-      y: 684 + 20,
-      width: 64,
-      height: 64,
-      image: 'help',
-      drawBG: true,
-      padding: 6,
-      fill: '#6E6E6E',
-
-      onSelect: () => {
-        self.send('TOGGLE_HELP')
-        self.send('GO_HOME')
-      }
-    }
-  }
-}
-
 const setupHelpPane = (paneComponents, self) => {
   paneComponents['help'] = {
     'prev-help': {
@@ -295,9 +220,117 @@ const setupHelpPane = (paneComponents, self) => {
   }
 }
 
+const setupBoardsPane = (paneComponents, self) => {
+  paneComponents['boards'] = {
+    'scene-cameras-title': {
+      type: 'text',
+      x: 15,
+      y: 15,
+      label: `Scene Cameras`,
+      size: 18,
+      weight: 'bold'
+    },
+
+    'boards-title': {
+      type: 'text',
+      x: 15,
+      y: 15 + 370 * 0.6,
+      label: `Boards`,
+      size: 18,
+      weight: 'bold'
+    },
+
+    'save-board-button': {
+      id: 'save-board-button',
+      type: 'button',
+      x: 0,
+      y: 415,
+      width: 118 + 18 * 2,
+      height: 18 * 3,
+      fill: 'black',
+      label: 'Save to board',
+      fontSize: 18,
+      fontWeight: 'bold',
+
+      onSelect: () => {
+        self.send('SAVE_BOARD')
+      }
+    },
+
+    'insert-board-button': {
+      id: 'insert-board-button',
+      type: 'button',
+      x: 118 + 18 * 2 + 15,
+      y: 415,
+      width: 168 + 18 * 2,
+      height: 18 * 3,
+      fill: 'black',
+      label: 'Insert as new board',
+      fontSize: 18,
+      fontWeight: 'bold',
+
+      onSelect: () => {
+        self.send('INSERT_BOARD')
+      }
+    },
+
+    'help-button': {
+      id: 'help-button',
+      type: 'image-button',
+      x: 1024 - (18 * 3 - 6) * 3 - 12 - 30,
+      y: 420,
+      width: 18 * 3 - 12,
+      height: 18 * 3 - 12,
+      image: 'help',
+      drawBG: true,
+      padding: 6,
+      rounding: 12,
+
+      onSelect: () => {
+        self.send('TOGGLE_HELP')
+        self.send('GO_HOME')
+      }
+    },
+
+    'settings-button': {
+      id: 'settings-button',
+      type: 'image-button',
+      x: 1024 - (18 * 3 - 6) * 2 - 6 - 15,
+      y: 420,
+      width: 18 * 3 - 12,
+      height: 18 * 3 - 12,
+      image: 'settings',
+      drawBG: true,
+      padding: 6,
+      rounding: 12,
+
+      onSelect: () => {
+        self.send('TOGGLE_SETTINGS')
+      }
+    },
+
+    'hud-close-button': {
+      id: 'hud-close-button',
+      type: 'image-button',
+      x: 1024 - (18 * 3 - 6),
+      y: 420,
+      width: 18 * 3 - 12,
+      height: 18 * 3 - 12,
+      image: 'close',
+      drawBG: true,
+      padding: 6,
+      rounding: 12,
+
+      onSelect: () => {
+        self.send('TOGGLE_HUD')
+      }
+    }
+  }
+}
+
 module.exports = {
   setupHomePane,
   setupAddPane,
-  setupSettingsPane,
-  setupHelpPane
+  setupHelpPane,
+  setupBoardsPane
 }

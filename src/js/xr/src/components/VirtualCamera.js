@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo, useRef, useCallback } = React = require('react')
+const { useMemo, useRef, useCallback, useEffect } = React = require('react')
 const { useRender, useThree, useUpdate } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
 
@@ -27,7 +27,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, audio }) => {
+const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, isActive, getCanvasRenderer, thumbnailRenderer, boardUid, audio }) => {
   const { gl, scene, camera } = useThree()
 
   const ref = useUpdate(
@@ -41,7 +41,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     },
     [sceneObject.rotation, sceneObject.tilt, sceneObject.roll]
   )
-
+  
   const virtualCamera = useUpdate(self => {
     self.updateProjectionMatrix()
     self.layers.set(VIRTUAL_CAMERA_LAYER)
@@ -50,7 +50,10 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   const renderTarget = useRef()
   const size = 1 / 3
   const resolution = 512
-  const previousTime = useRef([null])
+  const previousTime = useRef(null)
+
+  const cameraThumbnail = useRef(new Image())
+  const cr = useRef(getCanvasRenderer())
 
   const getRenderTarget = useCallback(() => {
     if (!renderTarget.current) {
@@ -58,6 +61,31 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }
     return renderTarget.current
   }, [resolution, aspectRatio])
+
+  useEffect(() => {
+    return destroyTarget = () => {
+      renderTarget.current.dispose()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (boardUid) saveCameraThumbnail()
+  }, [boardUid])
+
+  const saveCameraThumbnail = () => {
+    // Render on separate canvas
+    thumbnailRenderer.current.render(scene, virtualCamera.current)
+    const base64String = thumbnailRenderer.current.domElement.toDataURL('image/png')
+
+    // Trigger HUD rerender
+    cameraThumbnail.current.src = base64String
+    const thumbnailName = `${boardUid}_${sceneObject.displayName}`
+    cr.current.state.cameraThumbnails[thumbnailName] = cameraThumbnail.current
+
+    setTimeout(() => {
+      cr.current.boardsNeedsRender = true
+    }, 250)
+  }
 
   const renderCamera = () => {
     if (virtualCamera.current && getRenderTarget()) {
@@ -207,6 +235,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     if (delta > 500) {
       // time has elapsed
       previousTime.current = currentTime
+      if (boardUid) saveCameraThumbnail()
 
       // but if the camera is not in view, don't bother rendering
       if (!isInView) return
@@ -218,7 +247,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     }
 
     renderCamera()
-  }, false, [isSelected, ref.current, meshes])
+  }, false, [isSelected, ref.current, meshes, boardUid])
 
   let lightColor = 0x8c78f1
   if (isSelected) {

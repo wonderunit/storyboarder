@@ -1176,7 +1176,10 @@ div.fatal-error-screen__report::selection {
 
 @media (max-width: 1280px) {
 
-  #toolbar a span {
+  #toolbar a span,
+  .inspectors .board-inspector,
+  .inspectors .cameras-inspector,
+  .inspectors .guides-inspector {
     display: none;
   }
 

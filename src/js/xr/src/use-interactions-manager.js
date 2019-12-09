@@ -35,6 +35,7 @@ const {
   // selectors
   getSelections,
   getSelectedBone,
+  getSceneObjects,
 
   // action creators
   selectObject,
@@ -150,6 +151,25 @@ const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
   teleportRot.x = parent.rotation.x
   teleportRot.y = parent.rotation.y
   teleportRot.z = parent.rotation.z
+}
+
+const getImageData = image => {
+  const canvas = document.createElement('canvas')
+  canvas.width = image.width
+  canvas.height = image.height
+
+  const context = canvas.getContext('2d')
+  context.drawImage(image, 0, 0)
+
+  return context.getImageData(0, 0, image.width, image.height)
+}
+
+const getPixel = (image, x, y) => {
+  const imageData = getImageData(image)
+
+  let position = (x + imageData.width * y) * 4,
+    data = imageData.data
+  return { r: data[position], g: data[position + 1], b: data[position + 2], a: data[position + 3] }
 }
 
 const [useStore, useStoreApi] = create((set, get) => ({
@@ -282,8 +302,9 @@ const useInteractionsManager = ({
 }) => {
   const { gl, camera, scene } = useThree()
 
-
+  
   const selections = useSelector(getSelections)
+  const sceneObjects = useSelector(getSceneObjects)
 
   const canUndo = useSelector(state => state.undoable.past.length > 0)
   const canRedo = useSelector(state => state.undoable.future.length > 0)
@@ -304,17 +325,17 @@ const useInteractionsManager = ({
       const updateCharacterSkeleton = (name, rotation) => { dispatch(updateCharacterSkeleton({
         id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
         name : name,
-        rotation: 
+        rotation:
         {
           x : rotation.x,
           y : rotation.y,
           z : rotation.z,
-        }  
+        }
       } ))}
 
       const updateSkeleton = (skeleton) => { dispatch(updateCharacterIkSkeleton({
         id: ikHelper.current.intializedSkinnedMesh.parent.parent.userData.id,
-        skeleton: skeleton  
+        skeleton: skeleton
       } ))}
 
       const updateCharacterPos = ({ x, y, z}) => dispatch(updateObject(
@@ -338,7 +359,7 @@ const useInteractionsManager = ({
         updateAllObjects
       )
     }
-    return ikHelper.current 
+    return ikHelper.current
   }
   
   useEffect(() => {
@@ -425,29 +446,66 @@ const useInteractionsManager = ({
     const controller = event.target
     let intersection = null
 
-    let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+    let uis = scene.__interaction.filter(o => o.userData.type == 'ui' && o.name !== 'gui-boards')
     let intersections = getControllerIntersections(controller, uis)
     intersection = intersections.length && intersections[0]
     if (intersection) {
-      let u = intersection.uv.x
-      let v = intersection.uv.y
-      uiService.send({
-        type: 'TRIGGER_START',
-        controller: event.target,
-        intersection: {
-          id: intersection.object.userData.id,
-          type: 'ui',
+      const color = getPixel(
+        intersection.object.material.map.image,
+        parseInt(intersection.uv.x * intersection.object.material.map.image.width),
+        parseInt(intersection.uv.y * intersection.object.material.map.image.height)
+      )
 
-          object: intersection.object,
-          distance: intersection.distance,
-          point: intersection.point,
-          uv: intersection.uv
-        }
-      })
-      return
+      if (color.a !== 0) {
+        let u = intersection.uv.x
+        let v = intersection.uv.y
+        uiService.send({
+          type: 'TRIGGER_START',
+          controller: event.target,
+          intersection: {
+            id: intersection.object.userData.id,
+            type: 'ui',
+
+            object: intersection.object,
+            distance: intersection.distance,
+            point: intersection.point,
+            uv: new THREE.Vector2(u, v)
+          }
+        })
+        return
+      }
     }
 
+    let boardUi = scene.__interaction.filter(o => o.name === 'gui-boards')
+    intersections = getControllerIntersections(controller, boardUi)
+    intersection = intersections.length && intersections[0]
+    if (intersection) {
+      const color = getPixel(
+        intersection.object.material.map.image,
+        parseInt(intersection.uv.x * intersection.object.material.map.image.width),
+        parseInt(intersection.uv.y * intersection.object.material.map.image.height)
+      )
 
+      if (color.a !== 0) {
+        // UV offset for Boards UI
+        let u = intersection.uv.x + 1
+        let v = intersection.uv.y
+        uiService.send({
+          type: 'TRIGGER_START',
+          controller: event.target,
+          intersection: {
+            id: intersection.object.userData.id,
+            type: 'ui',
+
+            object: intersection.object,
+            distance: intersection.distance,
+            point: intersection.point,
+            uv: new THREE.Vector2(u, v)
+          }
+        })
+        return
+      }
+    }
 
     // if the BonesHelper instance is in the scene ...
     if ( BonesHelper.getInstance().isSelected ) {
@@ -496,7 +554,7 @@ const useInteractionsManager = ({
     let match = null
 
     // include all interactables (Model Object, Character, Virtual Camera, etc)
-    let list = scene.__interaction
+    let list = scene.__interaction.filter(o => o.userData.type !== 'ui')
 
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
@@ -518,7 +576,7 @@ const useInteractionsManager = ({
       }
     }
 
-    if (match) {
+    if (match && !sceneObjects[match.userData.id].locked) {
       // console.log('found sceneObject:', sceneObjects[match.userData.id])
       // console.log('intersection', intersection)
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
@@ -551,7 +609,8 @@ const useInteractionsManager = ({
     let intersections = getControllerIntersections(controller, uis)
     intersection = intersections.length && intersections[0]
     if (intersection) {
-      let u = intersection.uv.x
+      let offset = intersection.object.userData.id === 'boards' ? 1 : 0
+      let u = intersection.uv.x + offset
       let v = intersection.uv.y
       uiService.send({
         type: 'TRIGGER_END',
@@ -563,7 +622,7 @@ const useInteractionsManager = ({
           object: intersection.object,
           distance: intersection.distance,
           point: intersection.point,
-          uv: intersection.uv
+          uv: new THREE.Vector2(u, v)
         }
       })
     } else {
@@ -978,11 +1037,11 @@ const useInteractionsManager = ({
             let parentQuat = boneInOriginalMesh.parent.worldQuaternion().inverse()
             // Applies parent invese rotation to extract bone from it's parent rotation
             boneInOriginalMesh.quaternion.copy(parentQuat)
-            // Applies static rotation to bone 
+            // Applies static rotation to bone
             boneInOriginalMesh.quaternion.multiply(staticRotation)
-            boneInOriginalMesh.updateMatrixWorld(true) 
+            boneInOriginalMesh.updateMatrixWorld(true)
 
-            // Sets up default (looking forward) camera's parent rotation 
+            // Sets up default (looking forward) camera's parent rotation
             // Serves as a static rotation of camera's parent
             hmdElement.parent.rotation.x = Math.PI
             hmdElement.parent.rotation.y = 0
@@ -1005,7 +1064,7 @@ const useInteractionsManager = ({
             boneInOriginalMesh.updateWorldMatrix(false, true)
           }
           
-          // Atttaches control point to HMDElement(controllers and camera) 
+          // Atttaches control point to HMDElement(controllers and camera)
           // and sets it's position to (0, 0, 0) in order to put control point in the center of hmd element
           const attachControlPointToHmdElement = (hmdElement, controlPoint,) => {
             hmdElement.attach(controlPoint)
@@ -1016,7 +1075,7 @@ const useInteractionsManager = ({
           // world scale is always reset to large
           setMiniMode(false, camera)
 
-          // Taking world position of control point 
+          // Taking world position of control point
           let worldPosition = headControlPoint.worldPosition()
   
           // Taking world quaternion of head bone

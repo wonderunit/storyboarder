@@ -13,13 +13,13 @@ log.catchErrors()
 
 
 
-// TODO use the main Storyboarder store instead of a special one for Shot Generator
 //
 // configureStore:
 const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
 const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
+const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 
 const actionSanitizer = action => (
   action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
@@ -57,6 +57,8 @@ const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ set
 const createDualShockController = require('../../shot-generator/DualshockController')
 
 const XRServer = require('../../xr/server')
+const service = require('./service')
+
 let xrServer
 
 
@@ -68,6 +70,8 @@ window.addEventListener('load', () => {
 // window.onerror = (message, source, lineno, colno, error) => {
 //   alert(`An error occurred\n\n${message}\n\nin ${source}:${lineno}`)
 // }
+
+const poses = require('../../shared/reducers/shot-generator-presets/poses.json')
 
 const store = configureStore({
   ...initialState,
@@ -83,6 +87,7 @@ const store = configureStore({
     },
     poses: {
       ...initialState.presets.poses,
+      ...poses,
       ...presetsStorage.loadPosePresets().poses
     },
     handPoses: {
@@ -92,33 +97,40 @@ const store = configureStore({
   },
 })
 
+const loadBoard = board => {
+  loadBoardFromData(board, store.dispatch)
+}
 
-
-ipcRenderer.on('loadBoard', (event, { storyboarderFilePath, boardData, board }) => {
-  let shot = board.sg
-
-  store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
+// load via Storyboarder request
+ipcRenderer.on('shot-generator:reload', async (event) => {
+  const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
+  const { board } = await service.getStoryboarderState()
 
   let aspectRatio = parseFloat(boardData.aspectRatio)
-  store.dispatch({ type: 'SET_ASPECT_RATIO', payload: aspectRatio })
 
-  store.dispatch(setBoard( board ))
+  store.dispatch({
+    type: 'SET_META_STORYBOARDER_FILE_PATH',
+    payload: storyboarderFilePath
+  })
+  store.dispatch({
+    type: 'SET_ASPECT_RATIO',
+    payload: aspectRatio
+  })
 
-  if (shot) {
-    store.dispatch(loadScene(shot.data))
-    store.dispatch(ActionCreators.clearHistory())
-  } else {
-    store.dispatch(resetScene())
-    store.dispatch(ActionCreators.clearHistory())
-  }
+  loadBoard(board)
 
   if (!xrServer) {
-    xrServer = new XRServer({ store })
+    xrServer = new XRServer({ store, service })
   }
-
 })
 ipcRenderer.on('update', (event, { board }) => {
-  store.dispatch(setBoard( board ))
+  store.dispatch(setBoard(board))
+})
+
+// load via server request (e.g.: triggered by VR)
+ipcRenderer.on('loadBoardByUid', async (event, uid) => {
+  let board = await service.getBoard(uid)
+  loadBoard(board)
 })
 
 ipcRenderer.on('shot-generator:edit:undo', () => {
@@ -175,29 +187,3 @@ createDualShockController(throttle(updater, 16, { leading: true }))
 //
 //   updateServer: payload => store.dispatch(updateServer(payload))
 // })
-
-// are we testing locally?
-// SHOT_GENERATOR_STANDALONE=true npm start
-if (process.env.SHOT_GENERATOR_STANDALONE) {
-  log.info('loading shot from shot-generator.storyboarder')
-
-  const fs = require('fs')
-  const path = require('path')
-
-  let storyboarderFilePath = path.join(
-    __dirname, '..', '..', '..', '..', 'test', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'
-  )
-
-  let file = JSON.parse(fs.readFileSync(storyboarderFilePath))
-
-  let win = electron.remote.BrowserWindow.getAllWindows()
-    .find(w => w.webContents.getURL() === window.location.toString())
-
-  win.webContents.send('loadBoard', { storyboarderFilePath, boardData: file, board: file.boards[0] })
-
-  // send storyboarderFilePath immediately so XRServer has access to it
-  store.dispatch({ type: 'SET_META_STORYBOARDER_FILE_PATH', payload: storyboarderFilePath })
-
-  xrServer = new XRServer({ store })
-}
-

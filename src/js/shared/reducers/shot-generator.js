@@ -31,8 +31,10 @@ const getSelectedAttachable = state => state.undoable.present.selectedAttachable
 const getWorld = state => state.undoable.present.world
 
 
+const getHash = state =>
+  hashify(JSON.stringify(getSerializedState(state)))
 const getIsSceneDirty = state => {
-  let current = hashify(JSON.stringify(getSerializedState(state)))
+  let current = getHash(state)
   return current !== state.meta.lastSavedHash
 }
 // return only the stuff we want to save to JSON
@@ -374,7 +376,7 @@ const updateObject = (draft, state, props, { models }) => {
     draft.posePresetId = props.posePresetId
     if( draft.handPosePresetId) {
       draft.handPosePresetId = null
-      draft.handSkeleton = [] 
+      draft.handSkeleton = []
     }
   }
 
@@ -465,12 +467,61 @@ const withDisplayNames = draft => {
   return draft
 }
 
-// load up the default poses
-const defaultPosePresets = require('./shot-generator-presets/poses.json')
-const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
+// via poses.json
+const defaultPosePreset = {
+  '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE': {
+    'id': '79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE',
+    'name': 'stand',
+    'keywords': 'stand straight upright',
+    'state': {
+      'skeleton': {
+        'RightArm': {
+          'rotation': {
+            'x': 1.057228116003184,
+            'y': 0.13045102714961612,
+            'z': 0.1570463626924257
+          }
+        },
+        'LeftArm': {
+          'rotation': {
+            'x': 1.0708379327832764,
+            'y': -0.11931130645160759,
+            'z': -0.1776163624389008
+          }
+        },
+        'LeftForeArm': {
+          'rotation': {
+            'x': 0.09392413349188732,
+            'y': 0.06624836455319376,
+            'z': 0.29879477158887485
+          }
+        },
+        'RightForeArm': {
+          'rotation': {
+            'x': 0.08067946699767342,
+            'y': -0.19368502447268662,
+            'z': -0.2725073929210185
+          }
+        }
+      }
+    },
+    'priority': 0
+  }
+}
+const getCameraShot = (draft, cameraId) => {
+  if (!draft[cameraId]) {
+    draft[cameraId] = {
+      size: null,
+      angle: null,
+      cameraId: cameraId
+    }
+  }
+  
+  return draft[cameraId]
+}
 
-// reference AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0 as our Default Pose
-const defaultPosePreset = defaultPosePresets['AE56DD1E-3F6F-4A74-B247-C8A6E3EB8FC0']
+// load up the default poses
+const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -790,13 +841,61 @@ const initialState = {
       }
     },
 
-    poses: defaultPosePresets,
+    poses: {
+      ...defaultPosePreset
+    },
     handPoses: defaultHandPosePresets
   },
   server: {
     uri: undefined,
     client: false
-  }
+  },
+  cameraShots: {}
+}
+
+const cameraShotsReducer = (state = {}, action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'SET_CAMERA_SHOT':
+        const camera = getCameraShot(draft, action.payload.cameraId)
+        
+        camera.size = action.payload.size || camera.size
+        camera.angle = action.payload.angle || camera.angle
+        return
+        
+        // select a single object
+      case 'CREATE_OBJECT':
+        if (action.payload.type === 'camera') {
+          getCameraShot(draft, action.payload.id)
+        }
+        return
+      
+      case 'DUPLICATE_OBJECTS':
+        // select the new duplicates, replacing the selection list
+          action.payload.ids.forEach((id, i) => {
+            if (draft[id]) {
+              getCameraShot(draft, action.payload.newIds[i])
+            }
+          })
+        return
+      
+      case 'DELETE_OBJECTS':
+        if (
+            action.payload.ids == null ||
+            action.payload.ids.length === 0
+        ) return
+  
+        for (let id of action.payload.ids) {
+          if (draft[id] == null) continue
+          
+          delete draft[id]
+        }
+        return
+      
+      default:
+        return
+    }
+  })
 }
 
 const selectionsReducer = (state = [], action) => {
@@ -1017,7 +1116,7 @@ const metaReducer = (state = {}, action, appState) => {
   return produce(state, draft => {
     switch (action.type) {
       case 'LOAD_SCENE':
-        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        draft.lastSavedHash = getHash(appState)
         return
       case 'UPDATE_SCENE_FROM_XR':
         // don't update lastSavedHash
@@ -1025,7 +1124,7 @@ const metaReducer = (state = {}, action, appState) => {
         return
 
       case 'MARK_SAVED':
-        draft.lastSavedHash = hashify(JSON.stringify(getSerializedState(appState)))
+        draft.lastSavedHash = getHash(appState)
         return
 
       case 'SET_META_STORYBOARDER_FILE_PATH':
@@ -1266,7 +1365,16 @@ const mainReducer = (state/* = initialState*/, action) => {
         return
 
       case 'SET_BOARD':
-        draft.board = action.payload
+        const { uid, shot, /* action, */ dialogue, notes } = action.payload
+        draft.board = {
+          uid,
+
+          // used by BoardInspector
+          shot,
+          dialogue,
+          action: action.payload.action,
+          notes
+        }
         return
 
       case 'TOGGLE_WORKSPACE_GUIDE':
@@ -1403,24 +1511,33 @@ const rootReducer = reduceReducers(
   initialState,
 
   mainReducer,
+  
+  (state, action) => {
+    const presets = presetsReducer(state.presets, action)
+  
+    return (presets !== state.presets) ? { ...state, presets} : state
+  },
+  
+  (state, action) => {
+    const undoable = undoableReducer(state.undoable, action)
+  
+    return (undoable !== state.undoable) ? { ...state, undoable} : state
+  },
+  
+  (state, action) => {
+    const cameraShots = cameraShotsReducer(state.cameraShots, action)
 
-  (state, action) => ({
-    ...state,
-    presets: presetsReducer(state.presets, action)
-  }),
-
-  (state, action) => ({
-    ...state,
-    undoable: undoableReducer(state.undoable, action)
-  }),
+    return (cameraShots !== state.cameraShots) ? { ...state, cameraShots} : state
+  },
 
   checksReducer,
 
   // `meta` must run last, to calculate lastSavedHash
-  (state, action) => ({
-    ...state,
-    meta: metaReducer(state.meta, action, state)
-  })
+  (state, action) => {
+    const meta = metaReducer(state.meta, action, state)
+  
+    return (meta !== state.meta) ? { ...state, meta} : state
+  }
 )
 
 module.exports = {
@@ -1450,6 +1567,8 @@ module.exports = {
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
+  
+  setCameraShot: (cameraId, values) => ({ type: 'SET_CAMERA_SHOT', payload: { cameraId, ...values } }),
 
   loadScene: data => ({ type: 'LOAD_SCENE', payload: data }),
   updateSceneFromXR: data => ({ type: 'UPDATE_SCENE_FROM_XR', payload: data }),
@@ -1520,6 +1639,10 @@ module.exports = {
   getWorld,
 
   getSerializedState,
+  getSelectedAttachable,
+
   getIsSceneDirty,
-  getSelectedAttachable
+  getHash,
+
+  getDefaultPosePreset: () => initialState.presets.poses['79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE']
 }

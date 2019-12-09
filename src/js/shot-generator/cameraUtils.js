@@ -27,26 +27,26 @@ const DefaultLenses = [
 ]
 
 const ShotSizes = {
-  EXTREME_CLOSE_UP: 0,
-  VERY_CLOSE_UP: 1,
-  CLOSE_UP: 2,
-  MEDIUM_CLOSE_UP: 3,
-  BUST: 4,
-  MEDIUM: 5,
-  MEDIUM_LONG: 6,
-  LONG: 7,
-  EXTREME_LONG: 8,
-  ESTABLISHING: 9,
-  OTS_LEFT: 10,
-  OTS_RIGHT: 11,
+  EXTREME_CLOSE_UP: 'Extremely close up',
+  VERY_CLOSE_UP: 'Very close up',
+  CLOSE_UP: 'Close up',
+  MEDIUM_CLOSE_UP: 'Medium close up',
+  BUST: 'Bust',
+  MEDIUM: 'Medium',
+  MEDIUM_LONG: 'Medium long',
+  LONG: 'Long',
+  EXTREME_LONG: 'Extremely long',
+  ESTABLISHING: 'Establishing',
+  OTS_LEFT: 'OTS Left',
+  OTS_RIGHT: 'OTS Right',
 }
 
 const ShotAngles = {
-  BIRDS_EYE: 0,
-  HIGH: 1,
-  EYE: 2,
-  LOW: 3,
-  WORMS_EYE: 4
+  BIRDS_EYE: 'Birds',
+  HIGH: 'High',
+  EYE: 'Eye',
+  LOW: 'Low',
+  WORMS_EYE: 'Worms'
 }
 
 const ShotAnglesInfo = {

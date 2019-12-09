@@ -237,22 +237,21 @@ const SceneManager = connect(
       )
       setOutlineEffectParams('small')
     }, [])
-
-    // autofit ortho camera for scene
-    useMemo(() => {
+  
+    const autofitOrtho = () => {
       let minMax = [9999,-9999,9999,-9999]
-
+    
       // go through all appropriate objects and get the min max
       let numVisible = 0
       for (child of scene.children) {
         if (
-          child.userData &&
-          child.userData.type === 'object' ||
-          child.userData.type === 'character' ||
-          child.userData.type === 'light' ||
-          child.userData.type === 'volume' ||
-          child.userData.type === 'image' ||
-          child instanceof THREE.PerspectiveCamera
+            child.userData &&
+            child.userData.type === 'object' ||
+            child.userData.type === 'character' ||
+            child.userData.type === 'light' ||
+            child.userData.type === 'volume' ||
+            child.userData.type === 'image' ||
+            child instanceof THREE.PerspectiveCamera
         ) {
           minMax[0] = Math.min(child.position.x, minMax[0])
           minMax[1] = Math.max(child.position.x, minMax[1])
@@ -261,7 +260,7 @@ const SceneManager = connect(
           numVisible++
         }
       }
-
+    
       // if only one object is in the scene (a single camera)
       if (numVisible === 1) {
         // add some extra padding
@@ -270,24 +269,24 @@ const SceneManager = connect(
         minMax[2] -= 2
         minMax[3] += 2
       }
-
+    
       // add some padding
       minMax[0] -= 2
       minMax[1] += 2
       minMax[2] -= 2
       minMax[3] += 2
-
+    
       // get the aspect ratio of the container window
       // target aspect ratio
       let rs = (mainViewCamera === 'live')
-        ? 1
-        : aspectRatio
-
+          ? 1
+          : aspectRatio
+    
       // make sure the min max box fits in the aspect ratio
       let mWidth = minMax[1]-minMax[0]
       let mHeight = minMax[3]-minMax[2]
       let mAspectRatio = (mWidth/mHeight)
-
+    
       if (mAspectRatio>rs) {
         let padding = (mWidth / rs)-mHeight
         minMax[2] -= padding/2
@@ -297,7 +296,7 @@ const SceneManager = connect(
         minMax[0] -= padding/2
         minMax[1] += padding/2
       }
-
+    
       orthoCamera.current.position.x = minMax[0]+((minMax[1]-minMax[0])/2)
       orthoCamera.current.position.z = minMax[2]+((minMax[3]-minMax[2])/2)
       orthoCamera.current.left = -(minMax[1]-minMax[0])/2
@@ -306,9 +305,12 @@ const SceneManager = connect(
       orthoCamera.current.bottom = -(minMax[3]-minMax[2])/2
       orthoCamera.current.near = -1000
       orthoCamera.current.far = 1000
-
+    
       orthoCamera.current.updateProjectionMatrix()
-    }, [sceneObjects, mainViewCamera, aspectRatio])
+    }
+  
+    // autofit ortho camera for scene
+    useEffect(autofitOrtho, [sceneObjects, mainViewCamera, aspectRatio])
 
     // resize the renderers (large and small)
     useMemo(() => {
@@ -380,6 +382,39 @@ const SceneManager = connect(
     useEffect(() => {
       if (camera) {
         console.log('camera changed')
+        
+        const onCameraUpdate = ({active, object}) => {
+          if (camera.userData.locked) {
+            return false
+          }
+  
+          if (active) {
+            camera.position.x = object.x
+            camera.position.y = object.z
+            camera.position.z = object.y
+            camera.rotation.x = 0
+            camera.rotation.z = 0
+            camera.rotation.y = object.rotation
+            camera.rotateX(object.tilt)
+            camera.rotateZ(object.roll)
+            camera.fov = object.fov
+            camera.updateProjectionMatrix()
+  
+            if (camera.updateIcon) {
+              camera.updateIcon()
+            }
+          } else {
+            //Update camera state if dragging was ended
+            updateObject(camera.userData.id, {
+              x: object.x,
+              y: object.y,
+              z: object.z,
+              rotation: object.rotation,
+              tilt: object.tilt,
+              fov: object.fov
+            })
+          }
+        }
 
         // state of the active camera
         let cameraState = Object.values(sceneObjects).find(o => o.id === camera.userData.id)
@@ -390,7 +425,8 @@ const SceneManager = connect(
             largeCanvasRef.current,
             {
               undoGroupStart,
-              undoGroupEnd
+              undoGroupEnd,
+              onChange: onCameraUpdate
             }
           )
         }
@@ -418,30 +454,6 @@ const SceneManager = connect(
 
                 // step
                 cameraControlsView.current.update( clock.current.getDelta(), state )
-
-                // update object state with the latest values
-                let cameraId = camera.userData.id
-                let { x, y, z, rotation, tilt, fov } = cameraControlsView.current.object
-
-                // if props changed
-                if (
-                  cameraState.x != x ||
-                  cameraState.y != y ||
-                  cameraState.z != z ||
-                  cameraState.rotation != rotation ||
-                  cameraState.tilt != tilt ||
-                  cameraState.fov != fov
-                ) {
-                  // update the camera state
-                  updateObject(cameraId, {
-                    x,
-                    y,
-                    z,
-                    rotation,
-                    tilt,
-                    fov
-                  })
-                }
               }
               let tempColor = scene.background.clone()
               if (state.mainViewCamera === 'live') {
@@ -747,7 +759,8 @@ const SceneManager = connect(
           useIcons: mainViewCamera !== 'live',
           transition,
           gl: largeRenderer.current,
-          updateObject:updateObject
+          updateObject:updateObject,
+          onDrag: autofitOrtho
         }],
 
         [SelectionManager, {
@@ -759,7 +772,8 @@ const SceneManager = connect(
           useIcons: mainViewCamera === 'live',
           transition,
           gl: smallRenderer.current,
-          updateObject:updateObject
+          updateObject:updateObject,
+          onDrag: autofitOrtho
         }],
 
         // [SelectionsMover, {
@@ -777,14 +791,6 @@ const SceneManager = connect(
 
 function updateCharacterIk(scene)
 {
-  scene.traverse((object) =>
-  {
-    //if(object.userData.ikRig !== undefined)
-    //{
-    //    //object.userData.ikRig.update();
-    //}
-  });
-
 }
 
 module.exports = SceneManager
