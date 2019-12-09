@@ -130,14 +130,14 @@ class IKHelper extends THREE.Object3D
             this.selectedControlPoint = null;
             this.ragDoll.updateReact();
             let characterObject = this.intializedSkinnedMesh.parent.parent;
-            console.log(characterObject)
-            console.log(characterObject.attachables)
             let changes = {};
-            for(let i = 0; i < characterObject.attachables.length; i++) {
-                let attachable = characterObject.attachables[i];
-                let {x, y, z} = attachable.worldPosition();
-                let rotation = new THREE.Euler().setFromQuaternion(attachable.worldQuaternion());
-                changes[attachable.userData.id] = { x, y, z, rotation:{x: rotation.x, y: rotation.y, z: rotation.z} };
+            if(characterObject.attachables) {
+                for(let i = 0; i < characterObject.attachables.length; i++) {
+                    let attachable = characterObject.attachables[i];
+                    let { x, y, z } = attachable.worldPosition();
+                    let rotation = new THREE.Euler().setFromQuaternion(attachable.worldQuaternion());
+                    changes[attachable.userData.id] = { x, y, z, rotation: { x: rotation.x, y: rotation.y, z: rotation.z } };
+                }
             }
             this.updateObjects(changes);
         }

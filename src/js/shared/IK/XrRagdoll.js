@@ -169,8 +169,6 @@ class XRRagdoll extends XRIKObject
         {
             let poleTargetMesh = poleTargetMeshes[i];
             let chainName = interpretatedPoleTargetsName(poleTargetMesh.name);
-            console.log(chainName)
-            console.log(poleTargetMesh.name)
             let chain = this.chainObjects[chainName].chain;
             let poleTarget = null;
             if(poleTargetMesh.userData.isInitialized)
