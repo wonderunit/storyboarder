@@ -254,6 +254,8 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     // Adds a container of attachable to character if it doesn't exist and adds current attachable
     if(!skinnedMesh.parent.attachables) skinnedMesh.parent.attachables = []
     skinnedMesh.parent.attachables.push(container.current)
+    let position = container.current.worldPosition() 
+    updateObject(id, { x: position.x, y: position.y, z: position.z})
   }
 
   const keyDownEvent = (event) => { switchManipulationState(event) }
