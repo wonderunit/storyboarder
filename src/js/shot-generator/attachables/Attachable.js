@@ -50,7 +50,7 @@ const meshFactory = originalMesh => {
   return mesh
 }
 
-const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, isSelected, ...props }) => {
+const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, modelData, camera, largeRenderer, isSelected, deleteObjects, ...props }) => {
   const container = useRef()
   const characterObject = useRef()
   const objectRotationControl = useRef();
@@ -83,11 +83,13 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if (ready) {
       container.current.remove(...container.current.children)
+      let isSkinnedMesh = false
       // Traverses passed model and clones it's meshes to container
       try {
         // add a clone of every single mesh we find
         modelData.scene.traverse( function ( child ) {
           if ( child instanceof THREE.Mesh ) {
+            if(child.type === "SkinnedMesh") isSkinnedMesh = true
             let newMesh = meshFactory(child)
             newMesh.geometry.computeBoundingSphere()
             newMesh.position.copy(newMesh.geometry.boundingSphere.center)
@@ -101,6 +103,9 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
           }
         })
         } catch (err) {
+      }
+      if(isSkinnedMesh) {
+        deleteObjects([id])
       }
       // Sets up bind bone
       characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]

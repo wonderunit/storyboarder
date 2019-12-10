@@ -720,6 +720,7 @@ const SceneManager = connect(
                 camera: camera,
                 largeRenderer: largeRenderer,
                 isSelected: selectedAttachable === null ? false : selectedAttachable === props.id ? true : false,
+                deleteObjects,
                 ...props
               }
             ]
