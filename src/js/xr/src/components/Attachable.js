@@ -119,6 +119,13 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     ref.current.updateMatrixWorld(true)
   }, [sceneObject.rotation])
 
+  useEffect(() => {
+    if(!characterObject.current) return
+    let scale = sceneObject.size / characterObject.current.scale.x
+    ref.current.scale.set(scale, scale, scale)
+    ref.current.updateMatrixWorld(true)
+  }, [sceneObject.size])
+
   const rebindAttachable = () => {
     let prevCharacter = characterObject.current
     characterObject.current = scene.children[1].children.filter(child => child.userData.id === sceneObject.attachToId)[0]
@@ -144,8 +151,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     if(!characterObject.current.attachables) characterObject.current.attachables = []
     characterObject.current.attachables.push(ref.current)
   }
-
-  const { size } = sceneObject
   return <group
     ref={ref}
 
@@ -155,8 +160,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
       id: sceneObject.id,
       attachToId: sceneObject.attachToId
     }}
-
-    scale={[size, size, size]}
   >
     {meshes}
   </group>
