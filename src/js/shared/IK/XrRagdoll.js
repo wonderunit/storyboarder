@@ -157,8 +157,8 @@ class XRRagdoll extends XRIKObject
     createPoleTargets(poleTargetMeshes)
     {
         let polePositions = {
-            "LeftHand": new THREE.Vector3(0.3, 0.7, -0.5),
-            "RightHand": new THREE.Vector3(-0.3, 0.7, -0.5),
+            "LeftHand": new THREE.Vector3(0.15, -0.15, -0.5),
+            "RightHand": new THREE.Vector3(-0.15, -0.15, -0.5),
             "LeftFoot": new THREE.Vector3(0, 0.4, 0.6),
             "RightFoot": new THREE.Vector3(0, 0.4, 0.6)
         };
