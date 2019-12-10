@@ -15,7 +15,7 @@ const h = require('../../../src/js/utils/h')
 const { reducer, initialState } = require('../../../src/js/shared/reducers/shot-generator')
 const store = createStore(reducer, initialState)
 
-const { useAttachmentLoader, getFilepathForLoadable } = require('../../../src/js/xr/src/hooks/useAttachmentLoader')
+const { useAssetsManager } = require('../../../src/js/xr/src/hooks/use-assets-manager')
 
 const ModelLoader = require('../../../src/js/services/model-loader')
 
@@ -44,7 +44,6 @@ const Render = ({ model, modelData }) => {
 
   const groupFactory = () => {
     let group = new THREE.Group()
-
     if (model.id === 'box') {
       let mesh = roundedBoxFactory()
       mesh.material = materialFactory()
@@ -276,6 +275,15 @@ const Render = ({ model, modelData }) => {
         camera.position.z = 1
         camera.position.y = 0
         break
+      case 'attachable':
+        if(model.id === 'object-pistol') {
+          group.rotation.y += 1.5708
+        } else {
+          group.rotation.y = Math.PI/20
+        }
+        clampInstance(group, camera)
+        camera.position.z -= 0.1
+        break
     }
 
     switch (model.id) {
@@ -333,7 +341,8 @@ const Render = ({ model, modelData }) => {
         group.position.x = -0.8
         group.rotation.y += Math.PI / 6
         break;
-
+      case 'object-pistol':
+        break
       default:
         group.rotation.y = Math.PI/20
         break
@@ -384,26 +393,22 @@ const TestView = connect(
 ({
   models
 }) => {
-  const [attachments, attachmentsDispatch] = useAttachmentLoader()
+  const {assets, requestAsset} = useAssetsManager()
 
   const loadables = Object.values(models)
-    .filter(o => o.type === 'character' || o.type === 'object')
-
+    .filter(o => o.type === 'character' || o.type === 'object' || o.type === 'attachable')
   useMemo(() => {
     loadables
     .filter(o => o.id !== 'box')
     .forEach(model =>
-      attachmentsDispatch({
-        type: 'PENDING',
-        payload: { id: filepathFor(model) }
-      })
+      requestAsset(filepathFor(model))
     )
   }, [models])
 
-  const started = Object.values(attachments).length > 0
+  const started = Object.values(assets).length > 0
   const remaining = useMemo(
-    () => Object.values(attachments).filter(a => a.status !== 'Success').length,
-    [attachments])
+    () => Object.values(assets).filter(a => a.status !== 'Success').length,
+    [assets])
 
   if (!started || remaining) {
     return h(['div', 'Loading ...'])
@@ -411,7 +416,8 @@ const TestView = connect(
     return h(['div', [
       loadables.map(model => {
         let filepath = filepathFor(model)
-        let modelData = attachments[filepath] && attachments[filepath].value
+
+        let modelData = assets[filepath] && assets[filepath].value
         return [Render, {
           model,
           modelData
@@ -420,6 +426,20 @@ const TestView = connect(
     ]])
   }
 })
+
+const clampInstance = (instance, camera ) => {
+  let box = new THREE.Box3().setFromObject(instance);
+  let sphere = new THREE.Sphere();
+  box.getBoundingSphere(sphere);
+  let direction = new THREE.Vector3();
+  camera.getWorldDirection(direction) 
+  let s = new THREE.Vector3(0, 0, -1)
+  let h = sphere.radius / Math.tan( camera.fov / 2 * Math.PI / 180 );
+  let newPos = new THREE.Vector3().addVectors( sphere.center, s.setLength(h) );
+  camera.position.copy(newPos);
+  camera.lookAt(sphere.center);
+  camera.updateMatrixWorld(true)
+}
 
 let div = document.createElement('div')
 document.body.appendChild(div)

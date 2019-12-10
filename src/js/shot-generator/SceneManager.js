@@ -12,6 +12,8 @@ const {
   selectObject,
   selectObjectToggle,
   updateObject,
+  updateObjects,
+  deleteObjects,
   selectBone,
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
@@ -25,7 +27,8 @@ const {
   getWorld,
 
   undoGroupStart,
-  undoGroupEnd
+  undoGroupEnd,
+  getSelectedAttachable
 } = require('../shared/reducers/shot-generator')
 
 const {
@@ -45,6 +48,7 @@ const SceneObject = require('./SceneObject')
 const Group = require('./Group')
 const Camera = require('./Camera')
 const Image = require('./Image')
+const Attachable = require('./attachables/Attachable')
 
 const WorldObject = require('./World')
 
@@ -57,6 +61,7 @@ const SceneManager = connect(
     remoteInput: state.input,
     selections: getSelections(state),
     selectedBone: getSelectedBone(state),
+    selectedAttachable: getSelectedAttachable(state),
     mainViewCamera: state.mainViewCamera,
     activeCamera: getActiveCamera(state),
     aspectRatio: state.aspectRatio,
@@ -67,6 +72,7 @@ const SceneManager = connect(
   }),
   {
     updateObject,
+    updateObjects,
     selectObject,
     selectObjectToggle,
     animatedUpdate,
@@ -75,12 +81,12 @@ const SceneManager = connect(
     updateCharacterIkSkeleton,
     createPosePreset,
     updateWorldEnvironment,
-
+    deleteObjects,
     undoGroupStart,
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -182,7 +188,8 @@ const SceneManager = connect(
         updateCharacterRotation,
         updateSkeleton,
         updateCharacterPos,
-        updatePoleTarget
+        updatePoleTarget,
+        updateObjects
       )
     }, [])
 
@@ -608,7 +615,7 @@ const SceneManager = connect(
               console.error(err)
               // console.log('migrating from absolute path')
             }
-
+           // console.log("Character")
             return [
               Character, {
                 key: props.id,
@@ -633,6 +640,7 @@ const SceneManager = connect(
                 loaded: props.loaded ? props.loaded : false,
                 modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
                 largeRenderer,
+                deleteObjects,
                 ...props
               }
             ]
@@ -694,15 +702,36 @@ const SceneManager = connect(
                 ...props
               }
             ]
+          case 'attachable':
+              try {
+                modelCacheKey = ModelLoader.getFilepathForModel({ model: props.model, type: props.type }, { storyboarderFilePath: meta.storyboarderFilePath })
+              } catch (err) {
+                // console.log('migrating from absolute path')
+              }
+            return [
+              Attachable, {
+                scene, 
+                key: props.id,
+                updateObject,
+                storyboarderFilePath: meta.storyboarderFilePath,
+                sceneObject: sceneObjects[props.attachToId],
+                loaded: props.loaded ? props.loaded : false,
+                modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
+                camera: camera,
+                largeRenderer: largeRenderer,
+                isSelected: selectedAttachable === null ? false : selectedAttachable === props.id ? true : false,
+                deleteObjects,
+                ...props
+              }
+            ]
           case 'group':
             return [
               Group, {
                 key: props.id,
                 scene,
                 isSelected: selections.includes(props.id),
-          
+            
                 updateObject,
-          
                 ...props
               }
             ]
@@ -742,6 +771,7 @@ const SceneManager = connect(
           useIcons: mainViewCamera !== 'live',
           transition,
           gl: largeRenderer.current,
+          updateObject:updateObject,
           onDrag: autofitOrtho
         }],
 
@@ -754,6 +784,7 @@ const SceneManager = connect(
           useIcons: mainViewCamera === 'live',
           transition,
           gl: smallRenderer.current,
+          updateObject:updateObject,
           onDrag: autofitOrtho
         }],
 

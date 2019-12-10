@@ -2,7 +2,7 @@ const THREE = require('three')
 const React = require('react')
 const { useState, useReducer, useMemo, useCallback } = React
 
-const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader')
+require("../../../vendor/three/examples/js/loaders/GLTFLoader")////require('three/examples/jsm/loaders/GLTFLoader')
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -55,7 +55,7 @@ const reducer = (state, action) => {
 }
 
 const useAssetsManager = () => {
-  const [loader] = useState(() => new GLTFLoader())
+  const [loader] = useState(() => new THREE.GLTFLoader())
   const [textureLoader] = useState(() => new THREE.TextureLoader())
 
   const [assets, dispatch] = useReducer(reducer, {})

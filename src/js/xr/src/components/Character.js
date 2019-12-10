@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo } = React = require('react')
+const { useMemo, useEffect, useState } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
 
 const cloneGltf = require('../helpers/clone-gltf')
@@ -9,6 +9,9 @@ const VirtualCamera = require('../components/VirtualCamera')
 
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
+let attachablesList = []
+let isUnmounted = []
+let isClonned = []
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) => {
   const ref = useUpdate(
@@ -17,12 +20,28 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     }
   )
 
+  useEffect(() => { 
+    return () => {
+      if(ref.current.attachables && attachablesList.length ) {
+        attachablesList = ref.current.attachables.concat([])
+        for(let i = 0; i < attachablesList.length; i++) { 
+          if(attachablesList[i].parent) 
+          attachablesList[i].parent.remove(attachablesList[i])
+        }
+        isUnmounted[sceneObject.id] = true
+      }
+    }
+  }, [])
+
+  useEffect(() => { 
+
+  }, [ref.current])
+
   const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
     () => {
+  
       let lod = new THREE.LOD()
-
       let { scene } = cloneGltf(gltf)
-
       let map
 
       // for built-in Characters
@@ -88,11 +107,32 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
-
+      isClonned[sceneObject.id] = true
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
   )
+
+  useEffect(() => {
+    if(!lod) return
+    if(!ref.current) return
+    if(attachablesList.length && isUnmounted[sceneObject.id] && isClonned[sceneObject.id]) { 
+      ref.current.attachables = []
+      for(let i = 0; i < attachablesList.length; i++) {
+        attachablesList[i].rebindAttachable(sceneObject.height / ref.current.userData.originalHeight)
+      }
+      attachablesList = []
+      isUnmounted[sceneObject.id] = false
+      isClonned[sceneObject.id] = false
+    }
+    return () => {
+      if(ref.current.attachables && ref.current) {
+        attachablesList = ref.current.attachables.concat([])
+        isUnmounted[sceneObject.id] = true
+      }
+    }
+  }, [ref.current, lod, attachablesList.length])
+
 
   useMemo(() => {
     if (!skeleton) return

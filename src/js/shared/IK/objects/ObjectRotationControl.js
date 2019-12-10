@@ -1,5 +1,5 @@
 const TransformControls = require( "../utils/TransformControls");
-class BoneRotationControl
+class ObjectRotationControl
 {
     constructor(scene, camera, domElement, characterId)
     {
@@ -8,34 +8,35 @@ class BoneRotationControl
         this.control.setMode('rotate');
         this.control.size = 0.2;
         this.domElement = domElement;
-        this.control.userData.type = "boneControl";
+        this.control.userData.type = "objectControl";
         this.control.traverse(child => {
-            child.userData.type = "boneControl";
+            child.userData.type = "objectControl";
         });
-        this.bone = null;
+        this.object = null;
         this.scene = scene;
         this.control.characterId = characterId;
+        this.isEnabled = false;
     }
     //#region Events
-    onMouseDown = event => {this.bone.isRotated = true;};
-    onMouseMove = event => {this.updateCharacter(this.bone.name, this.bone.rotation);};
-    onMouseUp = event => {this.bone.isRotated = false; this.bone.isRotationChanged = true;};
+    onMouseDown = event => {this.object.isRotated = true;};
+    onMouseMove = event => {this.updateCharacter(this.object.name, this.object.rotation);};
+    onMouseUp = event => {this.object.isRotated = false; this.object.isRotationChanged = true;};
     //#enderegion
 
-    selectedBone(bone, hitmeshid)
+    selectObject(object, hitmeshid)
     {
-        if(this.bone !== null)
+        if(this.object !== null)
         {
             this.control.detach();
         }
-        else if (bone)
+        else if (object)
         {
             this.scene.add(this.control);
             this.control.addToScene();
         }
-        this.control.boneId = hitmeshid;
-        this.control.attach(bone);
-        this.bone = bone;
+        this.control.objectId = hitmeshid;
+        this.control.attach(object);
+        this.object = object;
         this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
         this.control.addEventListener("transformMoved", this.onMouseMove, false);
         this.control.addEventListener("transformMouseUp", this.onMouseUp, false);
@@ -46,13 +47,13 @@ class BoneRotationControl
         this.updateCharacter = updateCharacter;
     }
 
-    deselectBone()
+    deselectObject()
     {
         this.control.detach();
         this.scene.remove(this.control);
         
         this.control.dispose();
-        this.bone = null;
+        this.object = null;
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
         this.control.removeEventListener("transformMoved", this.onMouseMove);
         this.control.removeEventListener("transformMouseUp", this.onMouseUp);
@@ -64,4 +65,4 @@ class BoneRotationControl
         this.control.updateMatrixWorld();
     }
 }
-module.exports = BoneRotationControl;
+module.exports = ObjectRotationControl;

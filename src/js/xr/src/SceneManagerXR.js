@@ -28,7 +28,8 @@ const {
 
   // action creators
   selectObject,
-  updateObject
+  updateObject,
+  getSelectedAttachable
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
@@ -48,6 +49,7 @@ const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
 const Room = require('./components/Room')
 const Character = require('./components/Character')
+const Attachable = require('./components/Attachable')
 const ModelObject = require('./components/ModelObject')
 const Light = require('./components/Light')
 const VirtualCamera = require('./components/VirtualCamera')
@@ -93,6 +95,11 @@ const getSceneObjectImageIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
 )
 
+const getSceneObjectAttachableIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
+)
+
 const SceneContent = connect(
   state => ({
     aspectRatio: state.aspectRatio,
@@ -101,9 +108,11 @@ const SceneContent = connect(
     activeCamera: getActiveCamera(state),
     selections: getSelections(state),
     models: state.models,
+    selectedAttachable: getSelectedAttachable(state),
 
     characterIds: getSceneObjectCharacterIds(state),
     modelObjectIds: getSceneObjectModelObjectIds(state),
+    attachablesIds: getSceneObjectAttachableIds(state),
     lightIds: getSceneObjectLightIds(state),
     virtualCameraIds: getSceneObjectVirtualCamerasIds(state),
     imageIds: getSceneObjectImageIds(state),
@@ -116,7 +125,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable,
 
     resources, getAsset
   }) => {
@@ -125,7 +134,6 @@ const SceneContent = connect(
     const teleportRef = useRef()
     // actions
     const set = useStore(state => state.set)
-
     // initialize behind the camera, on the floor
     useMemo(() => {
       const { x, y, rotation } = sceneObjects[activeCamera]
@@ -623,6 +631,7 @@ const SceneContent = connect(
                 : null
             )
           }
+          
 
           {
             modelObjectIds.map(id => {
@@ -651,6 +660,21 @@ const SceneContent = connect(
               </SimpleErrorBoundary>
             })
           }
+
+          {
+            attachablesIds.map(id =>
+              getAsset(getFilepathForModelByType(sceneObjects[id]))
+                ? <SimpleErrorBoundary key={id}>
+                  <Attachable
+                    key={id}
+                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
+                    sceneObject={sceneObjects[id]}
+                    isSelected={ selectedAttachable === id ? true : false}
+                    modelSettings={models[sceneObjects[id].model] || undefined}/>
+                </SimpleErrorBoundary>
+                : null
+            )
+          } 
 
           {
             lightIds.map(id =>

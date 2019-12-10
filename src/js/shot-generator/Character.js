@@ -1,6 +1,6 @@
 //#region ragdoll's import
 const SGIkHelper = require("../shared/IK/SGIkHelper")
-const BoneRotationControl = require("../shared/IK/objects/BoneRotationControl")
+const ObjectRotationControl = require("../shared/IK/objects/ObjectRotationControl")
 const { isCustomModel } = require('../services/model-loader')
 //#endregion
 const THREE = require('three')
@@ -179,6 +179,7 @@ const Character = React.memo(({
   loaded,
   modelData,
   largeRenderer,
+  deleteObjects,
   ...props
 }) => {
   const [ready, setReady] = useState(false) // ready to load?
@@ -186,9 +187,10 @@ const Character = React.memo(({
   // which is what Editor listens for to attach the BonesHelper
   const setLoaded = loaded => updateObject(id, { loaded })
   const object = useRef(null)
-
+  const [attachables, setAttachables] = useState(null)
+  const [modelChanged, setModelChange] = useState(false)
   const originalSkeleton = useRef(null)
-  let boneRotationControl = useRef(null)
+  let objectRotationControl = useRef(null)
 
   const doCleanup = () => {
     if (object.current) {
@@ -199,7 +201,7 @@ const Character = React.memo(({
       object.current.remove(SGIkHelper.getInstance())
       SGIkHelper.getInstance().deselectControlPoint()
       SGIkHelper.getInstance().removeFromParent(id)
-      boneRotationControl.current.deselectBone()
+      objectRotationControl.current.deselectObject()
       object.current.bonesHelper = null
       object.current = null
     }
@@ -209,7 +211,6 @@ const Character = React.memo(({
   useEffect(() => {
     setReady(false)
     setLoaded(false)
-
     // return function cleanup () { }
   }, [props.model])
 
@@ -238,7 +239,6 @@ const Character = React.memo(({
       object.current.userData.type = type
       object.current.userData.originalHeight = originalHeight
       object.current.userData.locked = props.locked
-
       // FIXME get current .models from getState()
       object.current.userData.modelSettings = initialState.models[props.model] || {}
 
@@ -279,8 +279,8 @@ const Character = React.memo(({
 
       let domElement = largeRenderer.current.domElement
 
-      boneRotationControl.current = new BoneRotationControl(scene, camera, domElement, object.current.uuid)
-      let boneRotation = boneRotationControl.current
+      objectRotationControl.current = new ObjectRotationControl(scene, camera, domElement, object.current.uuid)
+      let boneRotation = objectRotationControl.current
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
         id,
         name : name,
@@ -295,6 +295,8 @@ const Character = React.memo(({
     }
 
     return function cleanup () {
+      setAttachables(object.current ? object.current.attachables : null)
+      setModelChange(!object.current ? false : object.current.attachables ? true : false)
       doCleanup()
       // setLoaded(false)
     }
@@ -413,7 +415,7 @@ const Character = React.memo(({
   useEffect(() => {
     if(!ready || !camera) return
     SGIkHelper.getInstance().setCamera(camera)
-    boneRotationControl.current.setCamera(camera)
+    objectRotationControl.current.setCamera(camera)
   }, [camera, ready])
   //#endregion
   
@@ -560,10 +562,11 @@ const Character = React.memo(({
 
     let modelSettings = initialState.models[props.model]
 
-    if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
+    if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length
+        && mesh.morphTargetInfluences ) {
       mesh.material.morphTargets = mesh.material.morphNormals = true
       modelSettings.validMorphTargets.forEach((name, index) => {
-        mesh.morphTargetInfluences[ index ] = props.morphTargets[ name ]
+          mesh.morphTargetInfluences[ index ] = props.morphTargets[ name ]
       })
     } else {
       mesh.material.morphTargets = mesh.material.morphNormals = false
@@ -619,6 +622,21 @@ const Character = React.memo(({
           }
     }
 
+    if(modelChanged) {
+      if(attachables) {
+        if(isCustomModel(props.model)) {
+          deleteObjects(attachables.map(attachable => attachable.userData.id))
+        } else {
+          for(let i = 0; i < attachables.length; i++) {
+            attachables[i].rebindAttachable(props.height / object.current.userData.originalHeight)
+          }
+        }
+       
+        setAttachables( null)
+      }
+      setModelChange(false)
+    }
+
     object.current.orthoIcon.setSelected(isSelected)
   }, [props.model, isSelected, ready])
 
@@ -651,12 +669,12 @@ const Character = React.memo(({
       if (bone) {
         currentBoneSelected.current = bone
         currentBoneSelected.current.connectedBone.material.color = new THREE.Color( 0x242246 )
-        boneRotationControl.current.selectedBone(bone, selectedBone)
+        objectRotationControl.current.selectObject(bone, selectedBone)
       }
 
     }
     else{
-      boneRotationControl.current.deselectBone()
+      objectRotationControl.current.deselectObject()
     }
   }, [selectedBone, ready])
 
@@ -841,7 +859,7 @@ const Character = React.memo(({
     if (!ready && modelData) {
       if (isValidSkinnedMesh(modelData)) {
         console.log(type, id, 'got valid mesh')
-
+        console.log(object.current)
         setReady(true)
       } else {
         alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')

@@ -112,6 +112,8 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
+const AttachableEditor = require('./attachables/AttachableEditor')
+const AttachableInfo = require('./attachables/AttachableInfo')
 const HandPresetsEditor = require('./HandPresetsEditor')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
@@ -1072,7 +1074,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'Skinny',
   'endomorphic': 'Obese',
 }
-const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath }) => {
+const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath  }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
   const { scene } = useContext(SceneContext)
   let positionSliders = [
@@ -1523,6 +1525,25 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         }
       ],
 
+
+      sceneObject.type == 'character' && [
+        AttachableEditor, {
+          sceneObject,
+          updateObject,
+          transition,
+          scene: scene,
+          rows: sceneObject.type == 'character' ? 2 : 3
+        }
+      ],
+      sceneObject.type == 'character' && [
+        AttachableInfo, {
+          id: sceneObject.id,
+          sceneObject,
+          updateObject,
+          scene: scene,
+          NumberSlider,
+        }
+      ],
       sceneObject.type == 'character' &&
         selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }],
 

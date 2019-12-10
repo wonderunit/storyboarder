@@ -112,6 +112,7 @@ const TransformControls = function ( camera, domElement ) {
 	defineProperty( "rotationAngle", rotationAngle );
 	defineProperty( "eye", eye );
 
+	this.canSwitch = true;
 
 	this.addToScene = function() 
 	{
@@ -124,15 +125,16 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.addEventListener( "touchend", onPointerUp, false );
 		domElement.addEventListener( "touchcancel", onPointerUp, false );
 		domElement.addEventListener( "touchleave", onPointerUp, false );
-		domElement.addEventListener( "keydown", onKeyDown, false );
-
+		if(this.canSwitch)
+		window.addEventListener( "keydown", onKeyDown, false );
+		
 	}
-
+	
 	this.reset = function()
 	{
 		this.setMode("translate");
 	}
-
+	
 	this.controlSelected = true;
 	this.removePointerDownEvent = () => {
 		domElement.removeEventListener( "pointerdown", onPointerDown );
@@ -149,7 +151,8 @@ const TransformControls = function ( camera, domElement ) {
 		domElement.removeEventListener( "touchend", onPointerUp );
 		domElement.removeEventListener( "touchcancel", onPointerUp );
 		domElement.removeEventListener( "touchleave", onPointerUp );
-		domElement.removeEventListener( "keydown", onKeyDown );
+		if(this.canSwitch)
+			window.removeEventListener( "keydown", onKeyDown );
 	};
 
 	this.changeCamera = (camera) =>

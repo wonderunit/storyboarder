@@ -8,6 +8,7 @@ const { combineReducers } = require('redux')
 const batchGroupBy = require('./shot-generator/batchGroupBy')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
+const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -24,6 +25,8 @@ const getSelections = state => state.undoable.present.selections
 const getActiveCamera = state => state.undoable.present.activeCamera
 
 const getSelectedBone = state => state.undoable.present.selectedBone
+
+const getSelectedAttachable = state => state.undoable.present.selectedAttachable
 
 const getWorld = state => state.undoable.present.world
 
@@ -392,6 +395,22 @@ const updateObject = (draft, state, props, { models }) => {
   if (props.hasOwnProperty('loaded')) {
     draft.loaded = props.loaded
   }
+
+  if(props.hasOwnProperty('isAttachableSelected')) {
+    draft.isAttachableSelected = props.isAttachableSelected
+  }
+
+  if(props.hasOwnProperty('isDragging')) {
+    draft.isDragging = props.isDragging
+  }
+
+  if(props.hasOwnProperty('bindBone')) {
+    draft.bindBone = props.bindBone
+  }
+
+  if(props.hasOwnProperty('size')) {
+    draft.size = props.size
+  }
 }
 
 // `loaded` status is not serialized
@@ -403,7 +422,8 @@ const resetLoadingStatus = sceneObjects => {
       sceneObjects[key].type === 'character' ||
       sceneObjects[key].type === 'object' ||
       sceneObjects[key].type === 'volume' ||
-      sceneObjects[key].type === 'image'
+      sceneObjects[key].type === 'image' ||
+      sceneObjects[key].type === 'attachable'
     ) {
       sceneObjects[key] = {
         ...sceneObjects[key],
@@ -420,7 +440,7 @@ let countByType = {}
 
 // decorate target SceneObject with a calculated displayName
 const withDisplayName = sceneObject => {
-  let key = sceneObject.model || sceneObject.type;
+  let key = sceneObject.name || sceneObject.model || sceneObject.type;
   
   countByType[key] = countByType[key]
       ? countByType[key] + 1
@@ -440,7 +460,7 @@ const withDisplayNames = draft => {
 
   for (let id in draft) {
     let sceneObject = draft[id]
-    let key = sceneObject.model || sceneObject.type;
+    let key = sceneObject.name || sceneObject.model || sceneObject.type;
 
     countByType[key] = countByType[key]
       ? countByType[key] + 1
@@ -754,6 +774,7 @@ const initialState = {
       height: 1
     },
     ...ObjectModelFileDescriptions,
+    ...AttachablesModelFileDescriptions
   },
 
   attachments: {},
@@ -769,6 +790,7 @@ const initialState = {
 
     selections: [],
     selectedBone: null,
+    selectedAttachable: null
   },
 
   meta: {
@@ -908,7 +930,9 @@ const selectionsReducer = (state = [], action) => {
           draft.splice(n, 1)
         }
         return
-
+      case 'SELECT_ATTACHABLE':
+        return [action.payload.bindId]
+        
       case 'DUPLICATE_OBJECTS':
         // select the new duplicates, replacing the selection list
         return action.payload.newIds
@@ -916,7 +940,42 @@ const selectionsReducer = (state = [], action) => {
       case 'DELETE_OBJECTS':
         for (let id of action.payload.ids) {
           // did we remove a selected id?
-          if (draft.includes(id)) {
+          if (draft && draft.includes(id) && draft[id]) {
+            // delete it from the selections list
+            draft.splice(draft.indexOf(id), 1)
+          }
+        }
+        return
+
+      default:
+        return
+    }
+  })
+}
+
+const attachableSelectionsReducer = (state = [], action) => {
+  return produce(state, draft => {
+    switch (action.type) {
+      case 'LOAD_SCENE':
+      case 'UPDATE_SCENE_FROM_XR':
+        // clear selections
+        return null
+
+      // select a single object
+      case 'SELECT_OBJECT':
+        // de-select any currently selected bone
+        return null
+
+      case 'SELECT_ATTACHABLE':
+        return action.payload.id
+
+      case 'DESELECT_ATTACHABLE':
+        return null
+
+      case 'DELETE_OBJECTS':
+        for (let id of action.payload.ids) {
+          // did we remove a selected id?
+          if (draft && draft.includes(id) && draft[id]) {
             // delete it from the selections list
             draft.splice(draft.indexOf(id), 1)
           }
@@ -1079,10 +1138,12 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'UPDATE_OBJECTS':
         for (let [ key, value ] of Object.entries(action.payload)) {
           if (draft[key] == null) return
+
           if (draft[key].locked) continue
           draft[key].x = value.x ? value.x : draft[key].x
           draft[key].y = value.y ? value.y : draft[key].y
           draft[key].z = value.z ? value.z : draft[key].z
+          draft[key].rotation = value.rotation ? value.rotation : draft[key].rotation 
         }
         return
 
@@ -1487,10 +1548,12 @@ const checksReducer = (state, action) => {
         if (action.payload.hasOwnProperty('loaded')) return
 
         let sceneObject = getSceneObjects(draft)[action.payload.id]
+        
         if (sceneObject.type === 'character') {
           // unless characterPresetId was just set ...
           if (!action.payload.hasOwnProperty('characterPresetId')) {
             // ... detect change between state and preset
+           // console.log("Checking character changes")
             checkForCharacterChanges(state, draft, action.payload.id)
           }
 
@@ -1558,7 +1621,8 @@ const undoableReducers = combineReducers({
   activeCamera: activeCameraReducer,
   world: worldReducer,
   selections: selectionsReducer,
-  selectedBone: selectedBoneReducer
+  selectedBone: selectedBoneReducer,
+  selectedAttachable: attachableSelectionsReducer
 })
 
 const undoableReducer = undoable(
@@ -1620,6 +1684,8 @@ module.exports = {
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
+  selectAttachable: id => ({ type: 'SELECT_ATTACHABLE', payload: id }),
+  deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
@@ -1725,6 +1791,7 @@ module.exports = {
   getWorld,
 
   getSerializedState,
+  getSelectedAttachable,
 
   getIsSceneDirty,
   getHash,

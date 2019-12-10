@@ -192,7 +192,16 @@ class SGIKHelper extends THREE.Object3D
             
             this.selectedControlPoint = null;
             this.ragDoll.updateReact();
-
+            let changes = {};
+            if(this.characterObject.attachables) {
+                for(let i = 0; i < this.characterObject.attachables.length; i++) {
+                    let attachable = this.characterObject.attachables[i];
+                    let {x, y, z} = attachable.worldPosition();
+                    let rotation = new THREE.Euler().setFromQuaternion(attachable.worldQuaternion());
+                    changes[attachable.userData.id] = { x, y, z, rotation:{x: rotation.x, y: rotation.y, z: rotation.z} };
+                }
+            }
+            this.updateObjects(changes);
         }
     }
 
@@ -253,11 +262,12 @@ class SGIKHelper extends THREE.Object3D
         }
     }
 
-    setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos, updatePoleTargets)
+    setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos, updatePoleTargets, updateObjects)
     {
         this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
         this.ragDoll.updateSkeleton(updateSkeleton);
         this.ragDoll.updateCharacterPos(updateCharacterPos);
+        this.updateObjects = updateObjects
         this.updatePoleTargets = updatePoleTargets;
     }
 

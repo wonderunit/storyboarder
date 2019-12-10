@@ -227,3 +227,48 @@ THREE.Object3D.prototype.copyMesh = function( source, recursive)
     }
     return this;
 }
+
+THREE.Object3D.prototype.copy = function ( source, recursive ) {
+
+    if ( recursive === undefined ) recursive = true;
+
+    this.name = source.name;
+
+    this.up.copy( source.up );
+
+    this.position.copy( source.position );
+    this.quaternion.copy( source.quaternion );
+    this.scale.copy( source.scale );
+
+    this.matrix.copy( source.matrix );
+    this.matrixWorld.copy( source.matrixWorld );
+
+    this.matrixAutoUpdate = source.matrixAutoUpdate;
+    this.matrixWorldNeedsUpdate = source.matrixWorldNeedsUpdate;
+
+    this.layers.mask = source.layers.mask;
+    this.visible = source.visible;
+
+    this.castShadow = source.castShadow;
+    this.receiveShadow = source.receiveShadow;
+
+    this.frustumCulled = source.frustumCulled;
+    this.renderOrder = source.renderOrder;
+
+    this.userData = JSON.parse( JSON.stringify( source.userData ) );
+
+    if ( recursive === true ) {
+
+        for ( var i = 0; i < source.children.length; i ++ ) {
+
+            var child = source.children[ i ];
+            if(child.type !== "Audio" && child.userData.type !== "attachable") {
+                this.add( child.clone() );
+            }
+        }
+
+    }
+
+    return this;
+
+}

@@ -1,5 +1,5 @@
-const { useMemo, useRef, useEffect } = React = require('react')
 const { useThree, useRender } = require('react-three-fiber')
+const { useMemo, useRef, useEffect } = React = require('react')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 
@@ -39,7 +39,9 @@ const {
 
   // action creators
   selectObject,
+  selectAttachable,
   updateObject,
+  updateObjects,
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
   updateCharacterPoleTargets,
@@ -306,6 +308,7 @@ const useInteractionsManager = ({
 
   const canUndo = useSelector(state => state.undoable.past.length > 0)
   const canRedo = useSelector(state => state.undoable.future.length > 0)
+  const attachableParent = useRef(null)
 
   const gpuPicker = useRef(null)
   const getGpuPicker = () => {
@@ -346,11 +349,14 @@ const useInteractionsManager = ({
         }
       ))
 
+      const updateAllObjects = (objectsToUpdate) => dispatch(updateObjects(objectsToUpdate))
+
       ikHelper.current.setUpdate(
         updateCharacterSkeleton,
         updateSkeleton,
         updateCharacterPos,
-        updatePoleTarget
+        updatePoleTarget,
+        updateAllObjects
       )
     }
     return ikHelper.current
@@ -409,7 +415,21 @@ const useInteractionsManager = ({
         roll: euler.z,
         tilt: euler.x
       }))
-    } else {
+    } else if (object.userData.type === 'attachable') {
+      let position = object.worldPosition()// new THREE.Vector3()
+      let quaternion = object.worldQuaternion()
+      let scale = new THREE.Vector3()
+      let matrix = object.matrix.clone()
+      matrix.premultiply(object.parent.matrixWorld)
+      matrix.decompose(position, quaternion, scale)
+      let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
+      dispatch(updateObject(id, {
+        x: position.x,
+        y: position.y,
+        z: position.z,
+        rotation: {x: rot.x, y: rot.y, z: rot.z}
+      }))
+    }else {
       let rotation = object.userData.type == 'character'
         ? euler.y
         : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
@@ -429,7 +449,6 @@ const useInteractionsManager = ({
     let uis = scene.__interaction.filter(o => o.userData.type == 'ui' && o.name !== 'gui-boards')
     let intersections = getControllerIntersections(controller, uis)
     intersection = intersections.length && intersections[0]
-    //console.log(intersection)
     if (intersection) {
       const color = getPixel(
         intersection.object.material.map.image,
@@ -542,13 +561,16 @@ const useInteractionsManager = ({
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
-
     // if one intersects
     if (hits.length) {
       // grab the first intersection
       let child = hits[0].object
       // find either the child or one of its parents on the list of interaction-ables
-      match = findMatchingAncestor(child, list)
+      if(child.userData.type === 'attachable') {
+        match = child.parent
+      } else {
+        match = findMatchingAncestor(child, list)
+      }
       if (match) {
         intersection = hits[0]
       }
@@ -1157,7 +1179,11 @@ const useInteractionsManager = ({
           log('-- onSelected')
           // selectOffset is used for Character
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
-          dispatch(selectObject(context.selection))
+          if(object.userData.type === "attachable") {
+            dispatch(selectAttachable({id: context.selection, bindId: object.userData.attachToId}))
+          } else {
+            dispatch(selectObject(context.selection))
+          }
 
           playSound('select')
         },
@@ -1192,8 +1218,13 @@ const useInteractionsManager = ({
         onDragObjectEntry: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
           let object = event.intersection.object
+          
 
           if (object.userData.type != 'character') {
+            if(object.userData.type === "attachable")
+            {
+              attachableParent.current = object.parent
+            }
             controller.attach(object)
             object.updateMatrixWorld(true)
           }
@@ -1208,13 +1239,25 @@ const useInteractionsManager = ({
 
           let root = rootRef.current
           if (object.parent != root) {
-            root.attach(object)
-            object.updateMatrixWorld()
+            if(object.userData.type !== "attachable"){
+              root.attach(object)
+            }
+            else {
+              attachableParent.current.attach(object)
+            }
+            object.updateWorldMatrix(true, true)
           }
 
           stopSound('beam', object)
 
           commit(context.selection, object)
+          if(object.userData.type === 'character') {
+            if(object.attachables) {
+              for(let i = 0; i < object.attachables.length; i++) {
+                commit(object.attachables[i].userData.id, object.attachables[i])
+              }
+            }
+          }
 
           uiService.send({ type: 'UNLOCK' })
         },

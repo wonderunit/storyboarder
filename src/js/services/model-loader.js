@@ -236,13 +236,15 @@ const pathToShotGeneratorData =
 const builtInFolder = type => ({
   'object': path.join(pathToShotGeneratorData, 'objects'),
   'character': path.join(pathToShotGeneratorData, 'dummies', 'gltf'),
+  'attachable': path.join(pathToShotGeneratorData, 'attachables'),
   'xr': path.join(pathToShotGeneratorData, 'xr')
 }[type])
 
 const projectFolder = type => ({
   'object': path.join('models', 'objects'),
   'character': path.join('models', 'characters'),
-  'environment': path.join('models', 'environments')
+  'environment': path.join('models', 'environments'),
+  'attachable': path.join('models', 'attachables')
 }[type])
 
 const modelIsInProjectFolder = ({ model, type }) =>

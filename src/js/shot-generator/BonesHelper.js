@@ -400,6 +400,7 @@ function BonesHelper( object, object3D, { boneLengthScale = 1, cacheKey } ) {
       hitMesh.material.visible = false
       hitMesh.name = 'hitter_'+bone.name
       hitMesh.userData.type = 'hitter'
+      hitMesh.originalBone = bone
 
       // Add the axis helper if needed
       // let axisHelper = new THREE.AxesHelper(0.2)

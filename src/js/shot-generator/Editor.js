@@ -534,7 +534,6 @@ const Editor = connect(
               return
             }
           }
-
           if (ModelLoader.needsCopy(loadable)) {
             let src = expectedFilepath
 
