@@ -129,7 +129,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
   const rebindAttachable = () => {
     let prevCharacter = characterObject.current
     characterObject.current = scene.children[1].children.filter(child => child.userData.id === sceneObject.attachToId)[0]
-
+    if(!characterObject.current) return
     let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     let skeleton = skinnedMesh.skeleton
     let bone = skeleton.getBoneByName(sceneObject.bindBone)
@@ -151,6 +151,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     if(!characterObject.current.attachables) characterObject.current.attachables = []
     characterObject.current.attachables.push(ref.current)
   }
+
   return <group
     ref={ref}
 
