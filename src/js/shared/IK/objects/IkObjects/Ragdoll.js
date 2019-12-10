@@ -367,7 +367,6 @@ class Ragdoll extends IkObject
     updateReact()
     {        
         let changedSkeleton = [];
-        let inverseMatrixWorld = this.originalObject.getInverseMatrixWorld();
         let position = new THREE.Vector3();
         for (let bone of this.originalObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones)
         {
@@ -375,18 +374,18 @@ class Ragdoll extends IkObject
             {
                 continue;
             }
+            changedSkeleton.push(bone)
+            bone.updateMatrixWorld(true)
             let rotation = bone.rotation
-            bone.applyMatrix(this.originalObject.matrixWorld)
-            position = bone.position.clone()
-            bone.applyMatrix(inverseMatrixWorld)
+            position.copy(bone.position)
             position.multiplyScalar( this.originalObject.userData.boneLengthScale === 100 ? 100 : 1)
             changedSkeleton.push({ 
               name: bone.name,
-              position: { 
-                x: position.x, 
-                y: position.y, 
-                z: position.z 
-              }, 
+              position: {
+                x: position.x,
+                y: position.y,
+                z: position.z
+              },
               rotation: { 
                 x: rotation.x, 
                 y: rotation.y, 
