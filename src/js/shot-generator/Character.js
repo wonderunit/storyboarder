@@ -180,6 +180,7 @@ const Character = React.memo(({
   modelData,
   largeRenderer,
   deleteObjects,
+  updateObjects,
   ...props
 }) => {
   const [ready, setReady] = useState(false) // ready to load?
@@ -291,7 +292,8 @@ const Character = React.memo(({
           z : rotation.z,
         }
       } )})
-
+      resetPose()
+      fullyUpdateSkeleton()
     }
 
     return function cleanup () {
@@ -325,6 +327,39 @@ const Character = React.memo(({
     pitch: 0,
     yaw: 0
   })
+
+  // Updates character skeleton by saving it's position
+  // Hack to fix position difference in sg and xr boneas
+  const fullyUpdateSkeleton = () => {
+    let skeleton = object.current.userData.skeleton
+    let changedSkeleton = []
+
+    let inverseMatrixWorld = object.current.getInverseMatrixWorld()
+    let position = new THREE.Vector3()
+    for(let i = 0; i < skeleton.bones.length; i++) {
+      let bone = skeleton.bones[i]
+      
+      let rotation = bone.rotation
+      bone.applyMatrix(object.current.matrixWorld)
+      position = bone.position.clone()
+      bone.applyMatrix(inverseMatrixWorld)
+      position.multiplyScalar( object.current.userData.boneLengthScale === 100 ? 100 : 1)
+      changedSkeleton.push({ 
+        name: bone.name,
+        position: { 
+          x: position.x, 
+          y: position.y, 
+          z: position.z 
+        }, 
+        rotation: { 
+          x: rotation.x, 
+          y: rotation.y, 
+          z: rotation.z
+        }
+      })
+    }
+    updateCharacterIkSkeleton({id, skeleton:changedSkeleton})
+  }
 
   let startingDeviceRotation = useRef(null)
   let currentBoneSelected = useRef(null)
@@ -451,10 +486,8 @@ const Character = React.memo(({
 
   const resetPose = () => {
     if (!object.current) return
-
     let skeleton = object.current.userData.skeleton
     skeleton.pose()
-
     updateSkeleton()
   }
 
@@ -471,22 +504,20 @@ const Character = React.memo(({
         skeleton.bones[0].quaternion.multiply(parentRotation)
       }
       skeleton.bones[0].position.copy(parentPosition)
-    }
+    }  
   }
 
   useEffect(() => {
     if (!ready) return
     if (!props.posePresetId) return
-    console.log(type, id, 'changed pose preset')
-    //updateObject(id, { handSkeleton: [] })
     resetPose()
+    fullyUpdateSkeleton()
   }, [props.posePresetId])
 
   useEffect(() => {
     if (!ready) return
     if (!props.handPosePresetId) return
     if (!props.handSkeleton) return
-   // console.log(type, id, 'changed hand pose preset')
     resetPose()
     updateSkeletonHand()
   }, [props.handPosePresetId, props.handSkeleton])
@@ -859,7 +890,6 @@ const Character = React.memo(({
     if (!ready && modelData) {
       if (isValidSkinnedMesh(modelData)) {
         console.log(type, id, 'got valid mesh')
-        console.log(object.current)
         setReady(true)
       } else {
         alert('This model doesn’t contain a Skinned Mesh. Please load it as an Object, not a Character.')

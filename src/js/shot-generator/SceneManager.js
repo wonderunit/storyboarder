@@ -641,6 +641,7 @@ const SceneManager = connect(
                 modelData: attachments[modelCacheKey] && attachments[modelCacheKey].value,
                 largeRenderer,
                 deleteObjects,
+                updateObjects:updateObjects,
                 ...props
               }
             ]

@@ -366,16 +366,34 @@ class Ragdoll extends IkObject
 
     updateReact()
     {        
-        let ikBones = [];
+        let changedSkeleton = [];
+        let position = new THREE.Vector3();
         for (let bone of this.originalObject.getObjectByProperty("type", "SkinnedMesh").skeleton.bones)
         {
             if(!this.ikSwitcher.ikBonesName.some((boneName) => bone.name === boneName ))
             {
                 continue;
             }
-            ikBones.push(bone);
+            changedSkeleton.push(bone)
+            bone.updateMatrixWorld(true)
+            let rotation = bone.rotation
+            position.copy(bone.position)
+            position.multiplyScalar( this.originalObject.userData.boneLengthScale === 100 ? 100 : 1)
+            changedSkeleton.push({ 
+              name: bone.name,
+              position: {
+                x: position.x,
+                y: position.y,
+                z: position.z
+              },
+              rotation: { 
+                x: rotation.x, 
+                y: rotation.y, 
+                z: rotation.z
+              }
+            })
         }
-        this.updateCharacterSkeleton(ikBones);
+        this.updateCharacterSkeleton(changedSkeleton);
     }
 
     // Sets limbs rotation to control target rotation

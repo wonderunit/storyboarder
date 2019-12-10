@@ -136,7 +136,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
 
   useMemo(() => {
     if (!skeleton) return
-
     // has the user entered data for at least one bone?
     let hasModifications = Object.values(sceneObject.skeleton).length > 0
 
@@ -155,6 +154,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         if (bone.rotation.equals(state.rotation) == false) {
           // rotate the bone
           bone.rotation.setFromVector3(state.rotation)
+          if(state.position)
+            bone.position.set(state.position.x, state.position.y, state.position.z)
           // and update
           bone.updateMatrixWorld()
         }
