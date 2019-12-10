@@ -11,7 +11,7 @@ let win
 let memento = {
   x: undefined,
   y: undefined,
-  width: 1500,
+  width: 1505,
   height: 1080
 }
 
@@ -92,7 +92,7 @@ const show = (onComplete) => {
 
   // use this to wait until the window has completely loaded
   // ipcMain.on('shot-generator:window:loaded', () => { })
-  
+
   // use this to show sooner
   win.once('ready-to-show', () => {
     reveal(onComplete)

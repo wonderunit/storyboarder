@@ -1179,7 +1179,7 @@ div.fatal-error-screen__report::selection {
   background: #555;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1504px) {
 
   #toolbar a span,
   .inspectors .board-inspector,
