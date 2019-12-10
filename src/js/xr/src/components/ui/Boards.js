@@ -4,7 +4,7 @@ const { useRender, useThree } = require('react-three-fiber')
 const SCALE = 1
 const POSITION = [0, 0.4, -1]
 
-const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showSettings, rotation = -Math.PI * 0.75 }) => {
+const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showSettings, rotation = -Math.PI * 1 }) => {
   const { camera } = useThree()
 
   const ref = useRef()
