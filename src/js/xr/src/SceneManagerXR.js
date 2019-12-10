@@ -177,7 +177,7 @@ const SceneContent = connect(
     useMemo(() => {
       scene.background = new THREE.Color(world.backgroundColor)
 
-      getFog().backgroundColor = world.backgroundColor
+      getFog().color = new THREE.Color(world.backgroundColor)
       getFog().far = world.fog.far
       scene.fog = world.fog.visible
         ? getFog()
