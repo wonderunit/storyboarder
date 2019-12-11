@@ -38,7 +38,6 @@ const meshFactory = source => {
 
 const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) => {
   const characterObject = useRef(null)
-  const [update, setUpdate] = useState(false)
   const { scene } = useThree()
   const ref = useUpdate(
     self => {
@@ -116,7 +115,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     ref.current.updateMatrixWorld(true)
     ref.current.applyMatrix(parentInverseMatrixWorld)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.x, sceneObject.y, sceneObject.z,  characterObject.current])
+  }, [sceneObject.x, sceneObject.y, sceneObject.z])
   
   useEffect(() => {
     if(!characterObject.current) return 
@@ -128,14 +127,14 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     ref.current.updateMatrixWorld(true)
     ref.current.applyMatrix(parentInverseMatrixWorld)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.rotation,  characterObject.current])
+  }, [sceneObject.rotation])
 
   useEffect(() => {
     if(!characterObject.current) return
     let scale = sceneObject.size / characterObject.current.scale.x
     ref.current.scale.set(scale, scale, scale)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.size,  characterObject.current])
+  }, [sceneObject.size])
 
   const rebindAttachable = () => {
     let prevCharacter = characterObject.current

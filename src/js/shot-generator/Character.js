@@ -539,6 +539,8 @@ const Character = React.memo(({
 
     console.log(type, id, 'changed boards')
     resetPose()
+    if(props.handSkeleton && Object.keys(props.handSkeleton).length > 0)
+    updateSkeletonHand()
   }, [boardUid])
 
   useEffect(() => {
@@ -547,7 +549,7 @@ const Character = React.memo(({
 
    // console.log(type, id, 'skeleton')
     updateSkeleton()
-
+    console.log(props.handSkeleton)
     if(props.handSkeleton && Object.keys(props.handSkeleton).length > 0)
       updateSkeletonHand()
   }, [props.model, props.skeleton, ready])
