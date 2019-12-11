@@ -67,6 +67,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
   }, [sceneObject.model, gltf])
   useEffect(() => {
     ref.current.rebindAttachable = rebindAttachable
+    ref.current.saveToStore = saveToStore
   }, []) 
 
   useEffect(() => {
@@ -149,9 +150,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     ref.current.scale.set(scale, scale, scale)
     ref.current.updateWorldMatrix(true, true)
 
-    if(!ref.current.children.length) {
-     // setUpdate(true)
-    }
     // Adds a ref of attachable to character if it doesn't exist and adds current attachable
     if(!characterObject.current.attachables) {
       characterObject.current.attachables = []
@@ -163,6 +161,10 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
       }
     }
 
+    saveToStore()
+  }
+
+  const saveToStore = () => {
     let position = ref.current.worldPosition()// new THREE.Vector3()
     let quaternion = ref.current.worldQuaternion()
     let matrix = ref.current.matrix.clone()
@@ -171,7 +173,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
     updateObject(sceneObject.id, { x: position.x, y: position.y, z: position.z,
       rotation: {x: rot.x, y: rot.y, z: rot.z}})
-    //forceUpdate()
   }
 
   return <group

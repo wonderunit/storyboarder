@@ -67,6 +67,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.userData.bindedId = props.attachToId
       container.current.userData.isRotationEnabled = false
       container.current.rebindAttachable = rebindAttachable
+      container.current.saveToStore = saveToStore
       isBoneSelected.current = false
       return function cleanup () {
         container.current.parent.remove(container.current)
@@ -256,6 +257,16 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     skinnedMesh.parent.attachables.push(container.current)
     let position = container.current.worldPosition() 
     updateObject(id, { x: position.x, y: position.y, z: position.z})
+  }
+
+  const saveToStore = () => {
+    let position = container.current.worldPosition() 
+    let quaternion = container.current.worldQuaternion()
+    let matrix = container.current.matrix.clone()
+    matrix.premultiply(container.current.parent.matrixWorld)
+    matrix.decompose(position, quaternion, new THREE.Vector3())
+    let euler = new THREE.Euler().setFromQuaternion(quaternion)
+    updateObject(id, { x: position.x, y: position.y, z: position.z, rotation: {x: euler.x, y: euler.y, z: euler.z}})
   }
 
   const keyDownEvent = (event) => { switchManipulationState(event) }

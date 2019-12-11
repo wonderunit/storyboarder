@@ -194,7 +194,14 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
           // and update
           bone.updateMatrixWorld()
         }
+
       }
+      if(ref.current) {
+        for(let i = 0; i < ref.current.attachables.length; i++) {
+          ref.current.attachables[i].saveToStore()
+        }
+      }
+     
     } else {
       // reset the pose
       skeleton.pose()

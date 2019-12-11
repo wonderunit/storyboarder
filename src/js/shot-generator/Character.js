@@ -361,6 +361,13 @@ const Character = React.memo(({
     updateCharacterIkSkeleton({id, skeleton:changedSkeleton})
   }
 
+  const saveAttachablesPositions = () => {
+    object.current.updateWorldMatrix(true, true)
+    for(let i = 0; i < object.current.attachables.length; i++) {
+      object.current.attachables[i].saveToStore()
+    }
+  }
+
   let startingDeviceRotation = useRef(null)
   let currentBoneSelected = useRef(null)
 
@@ -512,6 +519,7 @@ const Character = React.memo(({
     if (!props.posePresetId) return
     resetPose()
     fullyUpdateSkeleton()
+    saveAttachablesPositions()
   }, [props.posePresetId])
 
   useEffect(() => {
@@ -520,6 +528,7 @@ const Character = React.memo(({
     if (!props.handSkeleton) return
     resetPose()
     updateSkeletonHand()
+    saveAttachablesPositions()
   }, [props.handPosePresetId, props.handSkeleton])
 
   // HACK force reset skeleton pose on Board UUID change
