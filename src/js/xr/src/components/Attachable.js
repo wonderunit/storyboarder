@@ -36,7 +36,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, isSelected, forceUpdate}) => {
+const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) => {
   const characterObject = useRef(null)
   const [update, setUpdate] = useState(false)
   const { scene } = useThree()
@@ -67,13 +67,9 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, forceUpdate}) =>
   }, [sceneObject.model, gltf])
   useEffect(() => {
     ref.current.rebindAttachable = rebindAttachable
-    return () => {
-      console.log("Attachable unmount")
-    }
   }, []) 
 
   useEffect(() => {
-    console.log("Rerendering attachable")
   }, [ref.current])
 
   useEffect(() => {
@@ -94,14 +90,20 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, forceUpdate}) =>
     if(!scene.children[1]) return 
     characterObject.current = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
     if(!characterObject.current) return
-    console.log("Object changed")
     let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
     bone.add(ref.current)
-    if(!characterObject.current.attachables) characterObject.current.attachables = []
-    characterObject.current.attachables.push(ref.current)
+    if(!characterObject.current.attachables) {
+      characterObject.current.attachables = []
+      characterObject.current.attachables.push(ref.current)
+    } else {
+      let isAdded = characterObject.current.attachables.some(attachable => attachable.uuid === ref.current.uuid)
+      if(!isAdded) {
+        characterObject.current.attachables.push(ref.current)
+      }
+    }
     ref.current.updateMatrixWorld(true)
-  }, [scene.children])
+  }, [scene.children.length])
   
   useEffect(() => {
     if(!characterObject.current) return 
@@ -113,7 +115,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, forceUpdate}) =>
     ref.current.updateMatrixWorld(true)
     ref.current.applyMatrix(parentInverseMatrixWorld)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.x, sceneObject.y, sceneObject.z])
+  }, [sceneObject.x, sceneObject.y, sceneObject.z,  characterObject.current])
   
   useEffect(() => {
     if(!characterObject.current) return 
@@ -125,25 +127,26 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, forceUpdate}) =>
     ref.current.updateMatrixWorld(true)
     ref.current.applyMatrix(parentInverseMatrixWorld)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.rotation])
+  }, [sceneObject.rotation,  characterObject.current])
 
   useEffect(() => {
     if(!characterObject.current) return
     let scale = sceneObject.size / characterObject.current.scale.x
     ref.current.scale.set(scale, scale, scale)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.size])
+  }, [sceneObject.size,  characterObject.current])
 
   const rebindAttachable = () => {
     let prevCharacter = characterObject.current
     characterObject.current = scene.children[1].children.filter(child => child.userData.id === sceneObject.attachToId)[0]
     if(!characterObject.current) return
+    
     let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     let skeleton = skinnedMesh.skeleton
     let bone = skeleton.getBoneByName(sceneObject.bindBone)
-    ref.current.applyMatrix(prevCharacter.matrixWorld)
-    ref.current.applyMatrix(characterObject.current.getInverseMatrixWorld())
     bone.add(ref.current)
+    let scale = sceneObject.size / characterObject.current.scale.x
+    ref.current.scale.set(scale, scale, scale)
     ref.current.updateWorldMatrix(true, true)
 
     if(!ref.current.children.length) {
@@ -160,7 +163,15 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, forceUpdate}) =>
       }
     }
 
-    forceUpdate()
+    let position = ref.current.worldPosition()// new THREE.Vector3()
+    let quaternion = ref.current.worldQuaternion()
+    let matrix = ref.current.matrix.clone()
+    matrix.premultiply(ref.current.parent.matrixWorld)
+    matrix.decompose(position, quaternion, new THREE.Vector3())
+    let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
+    updateObject(sceneObject.id, { x: position.x, y: position.y, z: position.z,
+      rotation: {x: rot.x, y: rot.y, z: rot.z}})
+    //forceUpdate()
   }
 
   return <group

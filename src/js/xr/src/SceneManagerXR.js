@@ -127,7 +127,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
     resources, getAsset
   }) => {
@@ -136,8 +136,6 @@ const SceneContent = connect(
     const teleportRef = useRef()
     // actions
     const set = useStore(state => state.set)
-    const [, updateState] = React.useState();
-    const forceUpdate = useCallback(() => updateState({}), []);
     // initialize behind the camera, on the floor
     useMemo(() => {
       const { x, y, rotation } = sceneObjects[activeCamera]
@@ -676,7 +674,7 @@ const SceneContent = connect(
                     sceneObject={sceneObjects[id]}
                     isSelected={ selectedAttachable === id ? true : false}
                     modelSettings={models[sceneObjects[id].model] || undefined}
-                    forceUpdate={forceUpdate}/>
+                    updateObject={updateObject}/>
                 </SimpleErrorBoundary>
                 : null
             )
