@@ -24,7 +24,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
   useEffect(() => { 
     return () => {
-      if(ref.current.attachables) {
+      if(ref.current && ref.current.attachables) {
         attachablesList = ref.current.attachables.concat([])
         for(let i = 0; i < attachablesList.length; i++) { 
           if(attachablesList[i].parent) {
@@ -122,12 +122,18 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         for(let i = 0; i < skeleton.bones.length; i++) {
           let bone = skeleton.bones[i]
           let position = bone.position
+          let rotation = sceneObject.skeleton[bone.name] ? sceneObject.skeleton[bone.name].rotation : bone.rotation
           newBones.push({
             name: bone.name, 
             position: {
               x: position.x,
               y: position.y,
               z: position.z
+            },
+            rotation: {
+              x: rotation.x,
+              y: rotation.y,
+              z: rotation.z
             }
           })
         }
@@ -196,7 +202,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         }
 
       }
-      if(ref.current) {
+      if(ref.current && ref.current.attachables) {
         for(let i = 0; i < ref.current.attachables.length; i++) {
           ref.current.attachables[i].saveToStore()
         }

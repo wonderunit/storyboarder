@@ -1231,10 +1231,13 @@ const sceneObjectsReducer = (state = {}, action) => {
                                                                       draft[action.payload.id].skeleton[bone.name].position : 
                                                                       { x: x, y: y, z: z }
           } else {
-            draft[action.payload.id].skeleton[bone.name] = {
-              rotation: { x: rotation.x, y: rotation.y, z: rotation.z },
-              position: { x: x, y: y, z: z },
-            }
+            draft[action.payload.id].skeleton[bone.name] = {}
+            draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
+            {} : 
+            { x: rotation.x, y: rotation.y, z: rotation.z }
+            draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
+            {} : 
+            { x: x, y: y, z: z }
           }
        
         }

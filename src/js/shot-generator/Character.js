@@ -362,6 +362,7 @@ const Character = React.memo(({
   }
 
   const saveAttachablesPositions = () => {
+    if(!object.current || !object.current.attachables) return
     object.current.updateWorldMatrix(true, true)
     for(let i = 0; i < object.current.attachables.length; i++) {
       object.current.attachables[i].saveToStore()
