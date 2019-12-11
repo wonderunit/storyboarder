@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo, useEffect, useState } = React = require('react')
+const { useMemo, useEffect, useState, useRef } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
 
 const cloneGltf = require('../helpers/clone-gltf')
@@ -13,7 +13,8 @@ let attachablesList = []
 let isUnmounted = []
 let isClonned = []
 
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) => {
+const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton }) => {
+  const prevGltf = useRef(null)
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
@@ -22,24 +23,35 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
 
   useEffect(() => { 
     return () => {
-      if(ref.current.attachables && attachablesList.length ) {
+      if(ref.current.attachables) {
         attachablesList = ref.current.attachables.concat([])
+        console.log("Unparenting attachables")
         for(let i = 0; i < attachablesList.length; i++) { 
-          if(attachablesList[i].parent) 
-          attachablesList[i].parent.remove(attachablesList[i])
+          if(attachablesList[i].parent) {
+            ref.current.parent.add(attachablesList[i])
+          }
+          ref.current.attachables.slice(1)
         }
         isUnmounted[sceneObject.id] = true
       }
     }
   }, [])
 
-  useEffect(() => { 
-
-  }, [ref.current])
 
   const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
     () => {
   
+      if(ref.current && ref.current.attachables) {
+        attachablesList = ref.current.attachables.concat([])
+        console.log("Unparenting attachables")
+        for(let i = 0; i < attachablesList.length; i++) { 
+          if(attachablesList[i].parent) {
+            ref.current.parent.add(attachablesList[i])
+          }
+          ref.current.attachables.slice(1)
+        }
+        isUnmounted[sceneObject.id] = true
+      }
       let lod = new THREE.LOD()
       let { scene } = cloneGltf(gltf)
       let map
@@ -108,6 +120,26 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
         originalHeight = bbox.max.y - bbox.min.y
       }
       isClonned[sceneObject.id] = true
+      if(prevGltf) {
+        let newBones = []
+        for(let i = 0; i < skeleton.bones.length; i++) {
+          let bone = skeleton.bones[i]
+          let position = bone.position
+          newBones.push({
+            name: bone.name, 
+            position: {
+              x: position.x,
+              y: position.y,
+              z: position.z
+            }
+          })
+        }
+        console.log(sceneObject)
+        console.log(newBones)
+        updateSkeleton({id:sceneObject.id, skeleton:newBones})
+      } else {
+        prevGltf.current = gltf
+      }
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
@@ -119,6 +151,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     if(attachablesList.length && isUnmounted[sceneObject.id] && isClonned[sceneObject.id]) { 
       ref.current.attachables = []
       for(let i = 0; i < attachablesList.length; i++) {
+        console.log('rebind attachable')
         attachablesList[i].rebindAttachable(sceneObject.height / ref.current.userData.originalHeight)
       }
       attachablesList = []
@@ -160,6 +193,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
           bone.updateMatrixWorld()
         }
       }
+      console.log(skeleton)
     } else {
       // reset the pose
       skeleton.pose()

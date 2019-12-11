@@ -555,7 +555,9 @@ const useInteractionsManager = ({
 
     // include all interactables (Model Object, Character, Virtual Camera, etc)
     let list = scene.__interaction.filter(o => o.userData.type !== 'ui')
-
+    console.log(list)
+    console.log(scene.__interaction)
+    console.log(scene)
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
 

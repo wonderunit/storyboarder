@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo, useEffect, useRef } = React = require('react')
+const { useMemo, useEffect, useRef, useState } = React = require('react')
 const { useUpdate, useThree } = require('react-three-fiber')
 
 
@@ -36,8 +36,9 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
+const Attachable = React.memo(({ gltf, sceneObject, isSelected, forceUpdate}) => {
   const characterObject = useRef(null)
+  const [update, setUpdate] = useState(false)
   const { scene } = useThree()
   const ref = useUpdate(
     self => {
@@ -64,10 +65,16 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
 
     return []
   }, [sceneObject.model, gltf])
-
   useEffect(() => {
     ref.current.rebindAttachable = rebindAttachable
+    return () => {
+      console.log("Attachable unmount")
+    }
   }, []) 
+
+  useEffect(() => {
+    console.log("Rerendering attachable")
+  }, [ref.current])
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
@@ -87,6 +94,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     if(!scene.children[1]) return 
     characterObject.current = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
     if(!characterObject.current) return
+    console.log("Object changed")
     let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
     bone.add(ref.current)
@@ -139,17 +147,20 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     ref.current.updateWorldMatrix(true, true)
 
     if(!ref.current.children.length) {
-      gltf.scene.traverse(child => {
-        if (child.isMesh) {
-          let mesh = meshFactory(child)
-          mesh.userData.type === 'attachable'
-          ref.current.add(mesh)
-        }
-      })
+     // setUpdate(true)
     }
     // Adds a ref of attachable to character if it doesn't exist and adds current attachable
-    if(!characterObject.current.attachables) characterObject.current.attachables = []
-    characterObject.current.attachables.push(ref.current)
+    if(!characterObject.current.attachables) {
+      characterObject.current.attachables = []
+      characterObject.current.attachables.push(ref.current)
+    } else {
+      let isAdded = characterObject.current.attachables.some(attachable => attachable.uuid === ref.current.uuid)
+      if(!isAdded) {
+        characterObject.current.attachables.push(ref.current)
+      }
+    }
+
+    forceUpdate()
   }
 
   return <group

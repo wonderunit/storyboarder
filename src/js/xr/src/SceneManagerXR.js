@@ -29,6 +29,7 @@ const {
   // action creators
   selectObject,
   updateObject,
+  updateCharacterIkSkeleton,
   getSelectedAttachable
 } = require('../../shared/reducers/shot-generator')
 
@@ -119,13 +120,14 @@ const SceneContent = connect(
   }),
   {
     selectObject,
-    updateObject
+    updateObject,
+    updateCharacterIkSkeleton,
   }
 )(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton,
 
     resources, getAsset
   }) => {
@@ -134,6 +136,8 @@ const SceneContent = connect(
     const teleportRef = useRef()
     // actions
     const set = useStore(state => state.set)
+    const [, updateState] = React.useState();
+    const forceUpdate = useCallback(() => updateState({}), []);
     // initialize behind the camera, on the floor
     useMemo(() => {
       const { x, y, rotation } = sceneObjects[activeCamera]
@@ -626,7 +630,8 @@ const SceneContent = connect(
                     gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
                     sceneObject={sceneObjects[id]}
                     modelSettings={models[sceneObjects[id].model] || undefined}
-                    isSelected={selections.includes(id)} />
+                    isSelected={selections.includes(id)}
+                    updateSkeleton= {updateCharacterIkSkeleton} />
                 </SimpleErrorBoundary>
                 : null
             )
@@ -670,7 +675,8 @@ const SceneContent = connect(
                     gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
                     sceneObject={sceneObjects[id]}
                     isSelected={ selectedAttachable === id ? true : false}
-                    modelSettings={models[sceneObjects[id].model] || undefined}/>
+                    modelSettings={models[sceneObjects[id].model] || undefined}
+                    forceUpdate={forceUpdate}/>
                 </SimpleErrorBoundary>
                 : null
             )
