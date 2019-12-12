@@ -29,6 +29,7 @@ const {
   // action creators
   selectObject,
   updateObject,
+  deleteObjects,
   updateCharacterIkSkeleton,
   getSelectedAttachable
 } = require('../../shared/reducers/shot-generator')
@@ -122,12 +123,13 @@ const SceneContent = connect(
     selectObject,
     updateObject,
     updateCharacterIkSkeleton,
+    deleteObjects
   }
 )(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton, updateObject,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton, updateObject, deleteObjects,
 
     resources, getAsset
   }) => {
@@ -629,7 +631,8 @@ const SceneContent = connect(
                     sceneObject={sceneObjects[id]}
                     modelSettings={models[sceneObjects[id].model] || undefined}
                     isSelected={selections.includes(id)}
-                    updateSkeleton= {updateCharacterIkSkeleton} />
+                    updateSkeleton= {updateCharacterIkSkeleton}
+                    deleteObjects={deleteObjects} />
                 </SimpleErrorBoundary>
                 : null
             )

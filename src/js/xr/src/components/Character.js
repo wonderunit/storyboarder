@@ -13,7 +13,7 @@ let attachablesList = []
 let isUnmounted = []
 let isClonned = []
 
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton }) => {
+const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton, deleteObjects}) => {
   const prevGltf = useRef(null)
   const { scene } = useThree()
   const ref = useUpdate(
@@ -257,6 +257,17 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       ref.current.remove(IKHelper.getInstance())
     }
   }, [ref.current, isSelected])
+
+  useMemo(() => {
+    console.log("Changed posePresetId", sceneObject.posePresetId)
+    if(ref.current && ref.current.attachables) {
+      let attachablesToDelete = []
+      for(let i = 0; i < ref.current.attachables.length; i++) {
+        attachablesToDelete.push(ref.current.attachables[i].userData.id)
+      }
+      deleteObjects(attachablesToDelete)
+    }
+  }, [sceneObject.posePresetId])
 
   return lod
     ? <group

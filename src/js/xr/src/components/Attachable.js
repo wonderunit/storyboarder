@@ -151,10 +151,8 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     let bone = skeleton.getBoneByName(sceneObject.bindBone)
     bone.add(ref.current)
     let scale = sceneObject.size / characterObject.current.scale.x
-    console.log(scale)
     ref.current.scale.set(scale, scale, scale)
     ref.current.updateWorldMatrix(true, true)
-    console.log(ref.current.clone())
 
     // Adds a ref of attachable to character if it doesn't exist and adds current attachable
     if(!characterObject.current.attachables) {

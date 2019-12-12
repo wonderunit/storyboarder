@@ -520,7 +520,14 @@ const Character = React.memo(({
     if (!props.posePresetId) return
     resetPose()
     //fullyUpdateSkeleton()
-    saveAttachablesPositions()
+    if(object.current.attachables) {
+      let attachablesToDelete = []
+      for(let i = 0; i < object.current.attachables.length; i++) {
+        attachablesToDelete.push(object.current.attachables[i].userData.id)
+      }
+      deleteObjects(attachablesToDelete)
+    }
+    //saveAttachablesPositions()
   }, [props.posePresetId])
 
   useEffect(() => {
