@@ -1228,7 +1228,6 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
-        console.log("Skeleton changed", draft[action.payload.id], action.payload.id)
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation

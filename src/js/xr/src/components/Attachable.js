@@ -88,6 +88,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
 
   useEffect(() => {
     if(!scene.children[1]) return 
+    //console.log("character object changed", characterObject.curent)
     characterObject.current = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
     if(!characterObject.current) return
     let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
@@ -106,8 +107,9 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
   }, [scene.children.length])
   
   useEffect(() => {
+    characterObject.current = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
     if(!characterObject.current) return 
-    characterObject.current.updateWorldMatrix(true, true)
+    
     let parentMatrixWorld = ref.current.parent.matrixWorld
     let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
     ref.current.applyMatrix(parentMatrixWorld)
@@ -115,9 +117,10 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     ref.current.updateMatrixWorld(true)
     ref.current.applyMatrix(parentInverseMatrixWorld)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.x, sceneObject.y, sceneObject.z])
+  }, [sceneObject.x, sceneObject.y, sceneObject.z, characterObject.current])
   
   useEffect(() => {
+    characterObject.current = scene.children[1].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
     if(!characterObject.current) return 
     characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = ref.current.parent.matrixWorld
@@ -127,16 +130,18 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     ref.current.updateMatrixWorld(true)
     ref.current.applyMatrix(parentInverseMatrixWorld)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.rotation])
+
+  }, [sceneObject.rotation, characterObject.current])
 
   useEffect(() => {
     if(!characterObject.current) return
     let scale = sceneObject.size / characterObject.current.scale.x
     ref.current.scale.set(scale, scale, scale)
     ref.current.updateMatrixWorld(true)
-  }, [sceneObject.size])
+  }, [sceneObject.size, characterObject.current])
 
   const rebindAttachable = () => {
+
     let prevCharacter = characterObject.current
     characterObject.current = scene.children[1].children.filter(child => child.userData.id === sceneObject.attachToId)[0]
     if(!characterObject.current) return
@@ -146,8 +151,10 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     let bone = skeleton.getBoneByName(sceneObject.bindBone)
     bone.add(ref.current)
     let scale = sceneObject.size / characterObject.current.scale.x
+    console.log(scale)
     ref.current.scale.set(scale, scale, scale)
     ref.current.updateWorldMatrix(true, true)
+    console.log(ref.current.clone())
 
     // Adds a ref of attachable to character if it doesn't exist and adds current attachable
     if(!characterObject.current.attachables) {
@@ -159,10 +166,9 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
         characterObject.current.attachables.push(ref.current)
       }
     }
-
     saveToStore()
   }
-
+  
   const saveToStore = () => {
     let position = ref.current.worldPosition()// new THREE.Vector3()
     let quaternion = ref.current.worldQuaternion()

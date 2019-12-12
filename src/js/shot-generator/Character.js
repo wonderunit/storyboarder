@@ -331,19 +331,19 @@ const Character = React.memo(({
   // Updates character skeleton by saving it's position
   // Hack to fix position difference in sg and xr boneas
   const fullyUpdateSkeleton = () => {
-    let skeleton = object.current.userData.skeleton
+  /*   let skeleton = object.current.userData.skeleton
     let changedSkeleton = []
-
-    let inverseMatrixWorld = object.current.getInverseMatrixWorld()
+    object.current.updateWorldMatrix(true, true)
     let position = new THREE.Vector3()
     for(let i = 0; i < skeleton.bones.length; i++) {
       let bone = skeleton.bones[i]
       
       let rotation = bone.rotation
-      bone.applyMatrix(object.current.matrixWorld)
+      let inverseMatrixWorld = bone.parent.getInverseMatrixWorld()
+      bone.applyMatrix(bone.parent.matrixWorld)
       position = bone.position.clone()
       bone.applyMatrix(inverseMatrixWorld)
-      position.multiplyScalar( object.current.userData.boneLengthScale === 100 ? 100 : 1)
+     //position.multiplyScalar( object.current.userData.boneLengthScale === 100 ? 100 : 1)
       changedSkeleton.push({ 
         name: bone.name,
         position: { 
@@ -358,7 +358,7 @@ const Character = React.memo(({
         }
       })
     }
-    updateCharacterIkSkeleton({id, skeleton:changedSkeleton})
+    updateCharacterIkSkeleton({id, skeleton:changedSkeleton}) */
   }
 
   const saveAttachablesPositions = () => {
@@ -519,7 +519,7 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     resetPose()
-    fullyUpdateSkeleton()
+    //fullyUpdateSkeleton()
     saveAttachablesPositions()
   }, [props.posePresetId])
 

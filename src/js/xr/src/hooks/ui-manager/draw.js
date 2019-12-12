@@ -1,6 +1,7 @@
 const {
   selectObject,
   updateObject,
+  createObjects,
   setActiveCamera,
   undoGroupStart,
   undoGroupEnd,
@@ -321,9 +322,57 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
           const id = this.state.selections[0]
           
           if (type === 'pose') {
+            console.log( this.state)
             const pose = this.state.poses.find(pose => pose.id === name)
             const skeleton = pose.state.skeleton
+            
             this.dispatch(updateObject(id, { posePresetId: name, skeleton }))
+            let currentParent = new THREE.Group()
+            currentParent.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
+            currentParent.rotation.set(0, sceneObject.rotation, 0 )
+            currentParent.updateMatrixWorld(true)
+            let prevParent = new THREE.Group()
+            let attachableObject = new THREE.Object3D()
+            let attachables = pose.state.attachables
+            let newAttachables = []
+            if(attachables) {
+              for(let i = 0; i < attachables.length; i++) {
+                let attachable = attachables[i]
+                prevParent.position.set(pose.state.originalPosition.x, pose.state.originalPosition.z, pose.state.originalPosition.y)
+                prevParent.rotation.set(0, pose.state.originalRotation, 0 )
+                prevParent.updateMatrixWorld(true)
+                let newAttachable = {}
+                newAttachable.attachToId = id
+                newAttachable.id = THREE.Math.generateUUID()
+                newAttachable.loaded = false
+                newAttachable.model = attachable.model
+                newAttachable.name = attachable.name
+                newAttachable.type = attachable.type
+                newAttachable.size = attachable.size
+                newAttachable.bindBone = attachable.bindBone
+      
+                attachableObject.position.set(attachable.x, attachable.y, attachable.z)
+                attachableObject.rotation.set(attachable.rotation.x, attachable.rotation.y, attachable.rotation.z)
+                attachableObject.updateMatrixWorld(true)
+                prevParent.add(attachableObject)
+                attachableObject.applyMatrix(prevParent.getInverseMatrixWorld())
+                
+                prevParent.position.copy(currentParent.position)
+                prevParent.rotation.copy(currentParent.rotation)
+                prevParent.updateMatrixWorld(true)
+                attachableObject.updateMatrixWorld(true)
+                let {x, y, z }  = attachableObject.worldPosition()
+                newAttachable.x = x
+                newAttachable.y = y
+                newAttachable.z = z
+                let quaternion = attachableObject.worldQuaternion()
+                let euler = new THREE.Euler().setFromQuaternion(quaternion)
+                newAttachable.rotation = { x: euler.x, y: euler.y, z: euler.z }
+                newAttachables.push(newAttachable)
+              }
+            }
+            this.dispatch(createObjects(newAttachables))
+
           } else if (type === 'handPoses') {
             let currentSkeleton = sceneObject.handSkeleton
             if(!currentSkeleton) currentSkeleton = {}

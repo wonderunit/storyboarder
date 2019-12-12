@@ -162,8 +162,8 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
       if(attachables) {
         for(let i = 0; i < attachables.length; i++) {
           let attachable = attachables[i]
-          prevParent.position.set(preset.state.position.x, preset.state.position.z, preset.state.position.y)
-          prevParent.rotation.set(0, preset.state.rotation, 0 )
+          prevParent.position.set(preset.state.originalPosition.x, preset.state.originalPosition.z, preset.state.originalPosition.y)
+          prevParent.rotation.set(0, preset.state.originalRotation, 0 )
           prevParent.updateMatrixWorld(true)
           let newAttachable = {}
           newAttachable.attachToId = id
@@ -348,8 +348,8 @@ React.memo(({
             name,
             keywords: name, // TODO keyword editing
             state: {
-              position: {x:sceneObject.x, y: sceneObject.y, z: sceneObject.z},
-              rotation: sceneObject.rotation,
+              originalPosition: {x:sceneObject.x, y: sceneObject.y, z: sceneObject.z},
+              originalRotation: sceneObject.rotation,
               skeleton: skeleton || {},
               attachables: attachables
             },

@@ -32,6 +32,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
           }
         }
         isUnmounted[sceneObject.id] = true
+        ref.current.userData.isUnmounted = true
       }
     }
   }, [])
@@ -39,7 +40,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
   const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
     () => {
-  
       if(ref.current && ref.current.attachables) {
         attachablesList = ref.current.attachables.concat([])
         for(let i = 0; i < attachablesList.length; i++) { 
@@ -108,7 +108,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
       let armature = scene.children[0].children[0]
-
+     // console.log(armature.clone())
       let originalHeight
       if (isUserModel(sceneObject.model)) {
         originalHeight = 1
@@ -117,27 +117,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         originalHeight = bbox.max.y - bbox.min.y
       }
       isClonned[sceneObject.id] = true
-      // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
-      let newBones = []
-      for(let i = 0; i < skeleton.bones.length; i++) {
-        let bone = skeleton.bones[i]
-        let position = bone.position
-        let rotation = sceneObject.skeleton[bone.name] ? sceneObject.skeleton[bone.name].rotation : bone.rotation
-        newBones.push({
-          name: bone.name, 
-          position: {
-            x: position.x,
-            y: position.y,
-            z: position.z
-          },
-          rotation: {
-            x: rotation.x,
-            y: rotation.y,
-            z: rotation.z
-          }
-        })
-      }
-      updateSkeleton({id:sceneObject.id, skeleton:newBones})
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
@@ -148,14 +127,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
     if(!ref.current) return
     if(attachablesList.length && isUnmounted[sceneObject.id] && isClonned[sceneObject.id]) { 
       ref.current.attachables = []
-      // Updating skeleton to original bones position
-      for (let i = 0; i < skeleton.bones.length; i++)  {
-        let bone = skeleton.bones[i]
-        if(!bone) continue
-        let originalbone = originalSkeleton.bones[i]
-        bone.position.copy(originalbone.position)
-        bone.updateMatrixWorld()
-      }
       for(let i = 0; i < attachablesList.length; i++) {
         attachablesList[i].rebindAttachable(sceneObject.height / ref.current.userData.originalHeight)
       }
@@ -164,8 +135,14 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       isClonned[sceneObject.id] = false
     }
     return () => {
-      if(ref.current.attachables && ref.current) {
+      if(ref.current && ref.current.attachables ) {
         attachablesList = ref.current.attachables.concat([])
+        for(let i = 0; i < attachablesList.length; i++) { 
+          if(attachablesList[i].parent) {
+          //  console.log( attachablesList[i].clone())
+            attachablesList[i].parent.remove(attachablesList[i])
+          }
+        }
         isUnmounted[sceneObject.id] = true
       }
     }
@@ -174,6 +151,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
   useMemo(() => {
     if (!skeleton) return
+  //  console.log("Skeleton changed", skeleton.bones[0].clone())
     // has the user entered data for at least one bone?
     let hasModifications = Object.values(sceneObject.skeleton).length > 0
 
@@ -187,17 +165,18 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
         // call this state
         let state = modified || original
+       // console.log(modified)
 
         // if the state differs for this bone
         if (bone.rotation.equals(state.rotation) == false) {
           // rotate the bone
           bone.rotation.setFromVector3(state.rotation)
+
           if(state.position)
             bone.position.set(state.position.x, state.position.y, state.position.z)
           // and update
-          bone.updateMatrixWorld()
+          bone.updateMatrixWorld(true)
         }
-
       }
     } else {
       // reset the pose
