@@ -19,7 +19,8 @@
     "xr:clean": "trash src/js/xr/dist",
     "xr:build": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
-    "build:thumbnails": "electron test/views/thumbnail-renderer/main.js"
+    "build:thumbnails": "electron test/views/thumbnail-renderer/main.js",
+    "build:shot-generator": "webpack --config configs/shot-generator/dev.webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -116,20 +117,29 @@
     "last 1 Chrome version"
   ],
   "devDependencies": {
+    "@babel/core": "^7.7.5",
+    "@babel/plugin-proposal-class-properties": "^7.7.4",
+    "@babel/plugin-transform-runtime": "^7.7.6",
+    "@babel/preset-env": "^7.7.6",
+    "@babel/preset-react": "^7.7.4",
+    "babel-loader": "^8.0.6",
+    "babel-plugin-add-module-exports": "^1.0.2",
     "cross-env": "^5.2.0",
+    "dotenv": "8.2.0",
     "electron": "5.0.11",
     "electron-builder": "21.2.0",
+    "electron-devtools-installer": "^2.2.4",
     "electron-mocha": "8.0.2",
+    "electron-notarize": "^0.2.1",
     "electron-osx-sign": "^0.4.11",
     "electron-rebuild": "^1.8.6",
-    "electron-notarize": "^0.2.1",
     "floss": "^2.2.0",
     "mocha": "3.5.0",
     "mock-fs": "4.10.1",
     "nock": "9.4.2",
     "parcel-bundler": "1.12.4",
-    "webpack": "4.41.2",
-    "dotenv": "8.2.0"
+    "webpack": "^4.41.2",
+    "webpack-cli": "^3.3.10"
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "1.0.13",

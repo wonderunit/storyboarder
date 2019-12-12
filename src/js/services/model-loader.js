@@ -230,7 +230,7 @@ const isUserFile = string => {
 // path.join(app.getAppPath(), 'src', 'data', 'shot-generator')
 
 const pathToShotGeneratorData =
-  path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
+  path.join(window.__dirname, 'data', 'shot-generator')
 
 // calculate filepath
 const builtInFolder = type => ({

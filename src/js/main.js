@@ -1,7 +1,7 @@
 const env = require('../../env.json')
 
 if (env.mode) {
-  process.env.NODE_ENV = env.mode
+  //process.env.NODE_ENV = env.mode
 }
 
 const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
@@ -36,7 +36,7 @@ const MobileServer = require('./express-app/app')
 
 const preferencesUI = require('./windows/preferences')()
 const registration = require('./windows/registration/main')
-const shotGeneratorWindow = require('./windows/shot-generator/main')
+const shotGeneratorWindow = require('./windows/shot-generator-new/main')
 const tutorialMain = require('./windows/shot-generator-tutorial/main')
 
 const JWT = require('jsonwebtoken')
