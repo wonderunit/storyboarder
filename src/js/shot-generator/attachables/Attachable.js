@@ -69,6 +69,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.rebindAttachable = rebindAttachable
       container.current.saveToStore = saveToStore
       isBoneSelected.current = false
+      console.log(scene)
       return function cleanup () {
         container.current.parent.remove(container.current)
         let indexOf = characterObject.current.attachables.indexOf(container.current)

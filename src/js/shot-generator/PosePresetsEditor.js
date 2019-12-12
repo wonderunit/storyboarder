@@ -147,24 +147,55 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
 
     let posePresetId = preset.id
     let skeleton = preset.state.skeleton
+  
     withState((dispatch, state) => {
       let sceneObject = getSceneObjects(state)[id]
-
+      let currentParent = new THREE.Group()
+      currentParent.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
+      currentParent.rotation.set(0, sceneObject.rotation, 0 )
+      currentParent.updateMatrixWorld(true)
+      let prevParent = new THREE.Group()
+      let attachableObject = new THREE.Object3D()
       updateObject(id, { posePresetId, skeleton })
       let attachables = preset.state.attachables
+      let newAttachables = []
       if(attachables) {
         for(let i = 0; i < attachables.length; i++) {
           let attachable = attachables[i]
-          attachable.attachToId = id
-          attachable.id = THREE.Math.generateUUID()
-          attachable.loaded = false
-          attachable.x += (sceneObject.x - preset.state.position.x)
-          attachable.z += (sceneObject.y - preset.state.position.y)
-          attachable.y += (sceneObject.z - preset.state.position.z)
-          attachable.rotation.y += (sceneObject.rotation - preset.state.rotation)
+          prevParent.position.set(preset.state.position.x, preset.state.position.z, preset.state.position.y)
+          prevParent.rotation.set(0, preset.state.rotation, 0 )
+          prevParent.updateMatrixWorld(true)
+          let newAttachable = {}
+          newAttachable.attachToId = id
+          newAttachable.id = THREE.Math.generateUUID()
+          newAttachable.loaded = false
+          newAttachable.model = attachable.model
+          newAttachable.name = attachable.name
+          newAttachable.type = attachable.type
+          newAttachable.size = attachable.size
+          newAttachable.bindBone = attachable.bindBone
+
+          attachableObject.position.set(attachable.x, attachable.y, attachable.z)
+          attachableObject.rotation.set(attachable.rotation.x, attachable.rotation.y, attachable.rotation.z)
+          attachableObject.updateMatrixWorld(true)
+          prevParent.add(attachableObject)
+          attachableObject.applyMatrix(prevParent.getInverseMatrixWorld())
+          
+          prevParent.position.copy(currentParent.position)
+          prevParent.rotation.copy(currentParent.rotation)
+          prevParent.updateMatrixWorld(true)
+          attachableObject.updateMatrixWorld(true)
+          let {x, y, z }  = attachableObject.worldPosition()
+          newAttachable.x = x
+          newAttachable.y = y
+          newAttachable.z = z
+          let quaternion = attachableObject.worldQuaternion()
+          let euler = new THREE.Euler().setFromQuaternion(quaternion)
+          newAttachable.rotation = { x: euler.x, y: euler.y, z: euler.z }
+          newAttachables.push(newAttachable)
         }
       }
-      createObjects(attachables)
+      createObjects(newAttachables)
     })
   }
 
