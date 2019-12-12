@@ -331,19 +331,19 @@ const Character = React.memo(({
   // Updates character skeleton by saving it's position
   // Hack to fix position difference in sg and xr boneas
   const fullyUpdateSkeleton = () => {
-  /*   let skeleton = object.current.userData.skeleton
+    let skeleton = object.current.userData.skeleton
     let changedSkeleton = []
-    object.current.updateWorldMatrix(true, true)
+
+    let inverseMatrixWorld = object.current.getInverseMatrixWorld()
     let position = new THREE.Vector3()
     for(let i = 0; i < skeleton.bones.length; i++) {
       let bone = skeleton.bones[i]
       
       let rotation = bone.rotation
-      let inverseMatrixWorld = bone.parent.getInverseMatrixWorld()
-      bone.applyMatrix(bone.parent.matrixWorld)
+      bone.applyMatrix(object.current.matrixWorld)
       position = bone.position.clone()
       bone.applyMatrix(inverseMatrixWorld)
-     //position.multiplyScalar( object.current.userData.boneLengthScale === 100 ? 100 : 1)
+      position.multiplyScalar( object.current.userData.boneLengthScale === 100 ? 100 : 1)
       changedSkeleton.push({ 
         name: bone.name,
         position: { 
@@ -358,7 +358,7 @@ const Character = React.memo(({
         }
       })
     }
-    updateCharacterIkSkeleton({id, skeleton:changedSkeleton}) */
+    updateCharacterIkSkeleton({id, skeleton:changedSkeleton})
   }
 
   const saveAttachablesPositions = () => {
@@ -519,15 +519,8 @@ const Character = React.memo(({
     if (!ready) return
     if (!props.posePresetId) return
     resetPose()
-    //fullyUpdateSkeleton()
-    if(object.current.attachables) {
-      let attachablesToDelete = []
-      for(let i = 0; i < object.current.attachables.length; i++) {
-        attachablesToDelete.push(object.current.attachables[i].userData.id)
-      }
-      deleteObjects(attachablesToDelete)
-    }
-    //saveAttachablesPositions()
+    fullyUpdateSkeleton()
+    saveAttachablesPositions()
   }, [props.posePresetId])
 
   useEffect(() => {

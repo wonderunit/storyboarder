@@ -1514,8 +1514,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
       sceneObject.type == 'character' && [
         PosePresetsEditor, {
           id: sceneObject.id,
-          posePresetId: sceneObject.posePresetId,
-          scene: scene
+          posePresetId: sceneObject.posePresetId
         }
       ],
       sceneObject.type == 'character' && [

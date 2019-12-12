@@ -1020,16 +1020,6 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
 
         return withDisplayNames(draft)
-
-      case 'CREATE_OBJECTS':
-        if (
-            action.payload.objects == null ||
-            action.payload.objects.length === 0
-        ) return
-        for(let object of action.payload.objects) {
-          draft[object.id] = object
-        }
-        return withDisplayNames(draft)
   
       case 'DELETE_OBJECTS':
         if (
@@ -1228,6 +1218,7 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
+        console.log("Skeleton changed", draft[action.payload.id], action.payload.id)
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
@@ -1721,7 +1712,6 @@ module.exports = {
   deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
-  createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
 
   // batch update

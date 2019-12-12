@@ -21,7 +21,7 @@ const h = require('../utils/h')
 const {
   updateObject,
   createPosePreset,
-  createObjects,
+
   getSceneObjects
 } = require('../shared/reducers/shot-generator')
 
@@ -139,7 +139,7 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
   }
 }
 
-const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject, attachments, thumbnailRenderer, createObjects, withState }) => {
+const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject, attachments, thumbnailRenderer }) => {
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
 
   const onPointerDown = event => {
@@ -147,56 +147,8 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
 
     let posePresetId = preset.id
     let skeleton = preset.state.skeleton
-  
-    withState((dispatch, state) => {
-      let sceneObject = getSceneObjects(state)[id]
-      let currentParent = new THREE.Group()
-      currentParent.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
-      currentParent.rotation.set(0, sceneObject.rotation, 0 )
-      currentParent.updateMatrixWorld(true)
-      let prevParent = new THREE.Group()
-      let attachableObject = new THREE.Object3D()
-      updateObject(id, { posePresetId, skeleton })
-      let attachables = preset.state.attachables
-      let newAttachables = []
-      if(attachables) {
-        for(let i = 0; i < attachables.length; i++) {
-          let attachable = attachables[i]
-          prevParent.position.set(preset.state.originalPosition.x, preset.state.originalPosition.z, preset.state.originalPosition.y)
-          prevParent.rotation.set(0, preset.state.originalRotation, 0 )
-          prevParent.updateMatrixWorld(true)
-          let newAttachable = {}
-          newAttachable.attachToId = id
-          newAttachable.id = THREE.Math.generateUUID()
-          newAttachable.loaded = false
-          newAttachable.model = attachable.model
-          newAttachable.name = attachable.name
-          newAttachable.type = attachable.type
-          newAttachable.size = attachable.size
-          newAttachable.bindBone = attachable.bindBone
 
-          attachableObject.position.set(attachable.x, attachable.y, attachable.z)
-          attachableObject.rotation.set(attachable.rotation.x, attachable.rotation.y, attachable.rotation.z)
-          attachableObject.updateMatrixWorld(true)
-          prevParent.add(attachableObject)
-          attachableObject.applyMatrix(prevParent.getInverseMatrixWorld())
-          
-          prevParent.position.copy(currentParent.position)
-          prevParent.rotation.copy(currentParent.rotation)
-          prevParent.updateMatrixWorld(true)
-          attachableObject.updateMatrixWorld(true)
-          let {x, y, z }  = attachableObject.worldPosition()
-          newAttachable.x = x
-          newAttachable.y = y
-          newAttachable.z = z
-          let quaternion = attachableObject.worldQuaternion()
-          let euler = new THREE.Euler().setFromQuaternion(quaternion)
-          newAttachable.rotation = { x: euler.x, y: euler.y, z: euler.z }
-          newAttachables.push(newAttachable)
-        }
-      }
-      createObjects(newAttachables)
-    })
+    updateObject(id, { posePresetId, skeleton })
   }
 
   useMemo(() => {
@@ -247,7 +199,7 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
 })
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  let { id, posePresetId, updateObject, attachments, thumbnailRenderer, createObjects, withState } = data
+  let { id, posePresetId, updateObject, attachments, thumbnailRenderer } = data
   let preset = data.presets[columnIndex + (rowIndex * 4)]
 
   if (!preset) return h(['div', { style }])
@@ -258,10 +210,8 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
       style,
       id, posePresetId, attachments, updateObject,
       preset,
-      
-      thumbnailRenderer,
-      createObjects,
-      withState
+
+      thumbnailRenderer
     }
   ])
 })
@@ -275,7 +225,6 @@ const PosePresetsEditor = connect(
   {
     updateObject,
     createPosePreset,
-    createObjects,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -288,11 +237,9 @@ React.memo(({
 
   updateObject,
   createPosePreset,
-  createObjects,
-  scene,
   withState
 }) => {
-  const thumbnailRenderer = useRef()  
+  const thumbnailRenderer = useRef()
 
   const [ready, setReady] = useState(false)
   const [terms, setTerms] = useState(null)
@@ -332,15 +279,6 @@ React.memo(({
           let sceneObject = getSceneObjects(state)[id]
           let skeleton = sceneObject.skeleton
           let model = sceneObject.model
-          let character = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
-          let attachables = []
-          if(character.attachables) {
-            for(let i = 0; i < character.attachables.length; i++) {
-              let attachableSceneObject = getSceneObjects(state)[character.attachables[i].userData.id]
-              attachables.push(attachableSceneObject)
-            }
-
-          }
 
           // create a preset out of it
           let newPreset = {
@@ -348,13 +286,9 @@ React.memo(({
             name,
             keywords: name, // TODO keyword editing
             state: {
-              originalPosition: {x:sceneObject.x, y: sceneObject.y, z: sceneObject.z},
-              originalRotation: sceneObject.rotation,
-              skeleton: skeleton || {},
-              attachables: attachables
+              skeleton: skeleton || {}
             },
-            priority: 0,
-
+            priority: 0
           }
 
           // add it to state
@@ -453,9 +387,7 @@ React.memo(({
             attachments,
             updateObject,
 
-            thumbnailRenderer,
-            createObjects,
-            withState
+            thumbnailRenderer
           },
           children: ListItem
         }
