@@ -1020,6 +1020,16 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
 
         return withDisplayNames(draft)
+
+      case 'CREATE_OBJECTS':
+        if (
+            action.payload.objects == null ||
+            action.payload.objects.length === 0
+        ) return
+        for(let object of action.payload.objects) {
+          draft[object.id] = object
+        }
+        return withDisplayNames(draft)
   
       case 'DELETE_OBJECTS':
         if (
@@ -1712,6 +1722,7 @@ module.exports = {
   deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
+  createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
 
   // batch update
