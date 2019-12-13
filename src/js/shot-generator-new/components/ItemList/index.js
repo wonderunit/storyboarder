@@ -11,7 +11,7 @@ import {
   getSelections
 } from './../../../shared/reducers/shot-generator'
 
-import isEqual from 'lodash.isequal'
+import memoizeResult from './../../../utils/memoizeResult'
 import classNames from 'classnames'
 
 const ELEMENT_HEIGHT = 40
@@ -20,7 +20,7 @@ const ItemList = React.memo(({sceneObjects, selections, ...props}) => {
   const Items = Object.values(sceneObjects).map((object, index) => {
     let className = classNames({
       'element': true,
-      //'selected': selections.indexOf(object.id) !== -1,
+      'selected': selections.indexOf(object.id) !== -1,
       'zebra': index % 2
     })
     
@@ -49,15 +49,22 @@ const ItemList = React.memo(({sceneObjects, selections, ...props}) => {
   )
 })
 
+const getSceneObjectsM = memoizeResult((state) => {
+  return Object.values(getSceneObjects(state)).map((object) => ({
+    id: object.id,
+    displayName: object.displayName
+  }))
+})
+const getSelectionsM = memoizeResult(getSelections)
 const mapStateToProps = (state) => ({
-  sceneObjects: getSceneObjects(state),
-  selections: getSelections(state)
+  sceneObjects: getSceneObjectsM(state),
+  selections: getSelectionsM(state)
 })
 
 const mapDispatchToProps = {
-  // selectObject,
-  // deleteObjects,
-  // updateObject
+  selectObject,
+  deleteObjects,
+  updateObject
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ItemList)
