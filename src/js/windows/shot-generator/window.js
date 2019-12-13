@@ -11,6 +11,8 @@ console.clear() // clear the annoying dev tools warning
 const log = require('electron-log')
 log.catchErrors()
 
+
+
 //
 // configureStore:
 const { createStore, applyMiddleware, compose } = require('redux')
@@ -103,9 +105,9 @@ const loadBoard = board => {
 ipcRenderer.on('shot-generator:reload', async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
-  
+
   let aspectRatio = parseFloat(boardData.aspectRatio)
-  
+
   store.dispatch({
     type: 'SET_META_STORYBOARDER_FILE_PATH',
     payload: storyboarderFilePath
@@ -114,9 +116,9 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
-  
+
   loadBoard(board)
-  
+
   if (!xrServer) {
     xrServer = new XRServer({ store, service })
   }
@@ -148,29 +150,29 @@ log.info('ready!')
 electronUtil.disableZoom()
 
 ReactDOM.render(
-    h([
-      Provider, { store }, [
-        Editor
-      ]
-    ]),
-    document.getElementById('main')
+  h([
+    Provider, { store }, [
+      Editor
+    ]
+  ]),
+  document.getElementById('main')
 )
 
 const throttle = require('lodash.throttle')
 const updater = (values, changed) => {
   store.dispatch(updateDevice(
-      0,
-      {
-        analog: {
-          ...values.analog
-        },
-        motion: {
-          ...values.motion
-        },
-        digital: {
-          ...values.digital
-        }
+    0,
+    {
+      analog: {
+        ...values.analog
+      },
+      motion: {
+        ...values.motion
+      },
+      digital: {
+        ...values.digital
       }
+    }
   ))
 }
 createDualShockController(throttle(updater, 16, { leading: true }))
