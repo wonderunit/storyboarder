@@ -360,7 +360,7 @@ const Character = React.memo(({
         }
       })
     }
-    updateCharacterIkSkeleton({id, skeleton:changedSkeleton})
+    //updateCharacterIkSkeleton({id, skeleton:changedSkeleton})
   }
 
   const saveAttachablesPositions = () => {
@@ -536,6 +536,7 @@ const Character = React.memo(({
 
   useEffect(() => {
     if(!props.characterPresetId) return 
+    console.log("changed character preset")
     if(object.current && object.current.attachables) {
       let attachablesToDelete = []
       for(let i = 0; i < object.current.attachables.length; i++) {
@@ -543,7 +544,6 @@ const Character = React.memo(({
       }
       deleteObjects(attachablesToDelete)
     }
-    //console.log("changed character preset")
   }, [props.characterPresetId])
 
   // HACK force reset skeleton pose on Board UUID change

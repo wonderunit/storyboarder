@@ -247,11 +247,13 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if(!ready) return
     if(!characterObject.current) return
+
     let scale = container.current.parent.uuid === scene.uuid ? props.size : props.size / characterObject.current.scale.x
     container.current.scale.set( scale, scale, scale )
   }, [props.size, characterObject.current])
 
   const rebindAttachable = (characterScale) => {
+    if(!container.current) return
     let prevCharacter = characterObject.current
     characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]
 

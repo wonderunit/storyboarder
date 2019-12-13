@@ -137,7 +137,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
           }
         })
       }
-      updateSkeleton({id:sceneObject.id, skeleton:newBones})
+      //updateSkeleton({id:sceneObject.id, skeleton:newBones})
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
