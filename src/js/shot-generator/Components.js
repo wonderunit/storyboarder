@@ -50,6 +50,7 @@ const {
   // loadScene,
   // saveScene,
   updateCharacterSkeleton,
+  updateCharacterIkSkeleton,
   setActiveCamera,
   setCameraShot,
   // resetScene,
@@ -941,10 +942,12 @@ const CharacterPresetsEditor = connect(
   {
     updateObject,
     createObjects,
-    selectCharacterPreset: (sceneObject, characterPresetId, preset) => (dispatch, getState) => {
+    updateCharacterIkSkeleton,
+    selectCharacterPreset: (sceneObject, characterPresetId, preset, scene) => (dispatch, getState) => {
       dispatch(updateObject(sceneObject.id, {
         // set characterPresetId
         characterPresetId,
+        posePresetId: null,
 
         // apply preset values to character model
         height: preset.state.height,
@@ -967,6 +970,12 @@ const CharacterPresetsEditor = connect(
       if(preset.state.attachables) {
 
       }
+      let character = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
+      let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
+      skinnedMesh.skeleton.pose()
+      character.resetToStandardSkeleton()
+      character.updateWorldMatrix(true, true)
+      dispatch(updateCharacterIkSkeleton({id: sceneObject.id, skeleton: skinnedMesh.skeleton.bones}))
       let attachables = initializeAttachables(sceneObject, preset)
       if(attachables)
         dispatch(createObjects(attachables))
@@ -1043,16 +1052,23 @@ const CharacterPresetsEditor = connect(
 
           let attachables = []
           if(character && character.attachables) {
+            character.getObjectByProperty("type", "SkinnedMesh").skeleton.pose()
+            character.resetToStandardSkeleton()
+            character.updateWorldMatrix(true, true)
             for(let i = 0; i < character.attachables.length; i++) {
+              character.attachables[i].saveToStore()
               let attachableSceneObject = sceneObjects[character.attachables[i].userData.id]
+              let position = character.attachables[i].worldPosition()
+              let rotation = character.attachables[i].worldQuaternion()
+              let euler = new THREE.Euler().setFromQuaternion(rotation)
               attachables.push({
-                x: attachableSceneObject.x,
-                y: attachableSceneObject.y,
-                z: attachableSceneObject.z,
+                x: position.x,
+                y: position.y,
+                z: position.z,
                 model: attachableSceneObject.model, 
                 name: attachableSceneObject.name,
                 size: attachableSceneObject.size,
-                rotation: attachableSceneObject.rotation,
+                rotation: {x: euler.x, y: euler.y, z: euler.z},
                 bindBone: attachableSceneObject.bindBone,
 
               })
@@ -1074,7 +1090,7 @@ const CharacterPresetsEditor = connect(
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
-      selectCharacterPreset(sceneObject, characterPresetId, preset)
+      selectCharacterPreset(sceneObject, characterPresetId, preset, scene)
     }
 
     return h(

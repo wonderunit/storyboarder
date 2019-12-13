@@ -278,10 +278,11 @@ const Character = React.memo(({
       object.current.userData.boneLengthScale = boneLengthScale
       object.current.userData.parentRotation = parentRotation
       object.current.userData.parentPosition = parentPosition
+      object.current.resetToStandardSkeleton = resetToStandardSkeleton
       scene.add(object.current.bonesHelper)
 
       let domElement = largeRenderer.current.domElement
-
+      object.current.userData.standardSkeleton = props.skeleton
       objectRotationControl.current = new ObjectRotationControl(scene, camera, domElement, object.current.uuid)
       let boneRotation = objectRotationControl.current
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
@@ -501,6 +502,23 @@ const Character = React.memo(({
     updateSkeleton()
   }
 
+  const resetToStandardSkeleton = () => {
+    object.current.userData.standardSkeleton 
+    let skeleton = object.current.userData.skeleton
+    if (Object.values(props.skeleton).length) {
+      fixRootBone()
+
+      for (bone of skeleton.bones) {
+        let userState = object.current.userData.standardSkeleton[bone.name]
+        let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
+        let state = userState || systemState
+        bone.rotation.x = state.rotation.x
+        bone.rotation.y = state.rotation.y
+        bone.rotation.z = state.rotation.z
+      }
+    }
+  }
+
   const fixRootBone = () => {
     let { boneLengthScale, parentRotation, parentPosition } = object.current.userData
     let skeleton = object.current.userData.skeleton
@@ -536,7 +554,6 @@ const Character = React.memo(({
 
   useEffect(() => {
     if(!props.characterPresetId) return 
-    console.log("changed character preset")
     if(object.current && object.current.attachables) {
       let attachablesToDelete = []
       for(let i = 0; i < object.current.attachables.length; i++) {
@@ -544,6 +561,7 @@ const Character = React.memo(({
       }
       deleteObjects(attachablesToDelete)
     }
+    object.current.resetToStandardSkeleton()
   }, [props.characterPresetId])
 
   // HACK force reset skeleton pose on Board UUID change
