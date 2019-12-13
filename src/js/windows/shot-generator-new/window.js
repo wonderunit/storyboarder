@@ -46,7 +46,7 @@ const configureStore = function configureStore (preloadedState) {
 
 
 const h = require('../../utils/h')
-const Editor = require('../../shot-generator/Editor')
+const Editor = require('../../shot-generator-new/Editor')
 
 const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ setBoard } = require('../../shared/reducers/shot-generator')

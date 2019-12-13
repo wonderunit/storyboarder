@@ -14,7 +14,7 @@ const loadFont = require('load-bmfont')
 const SDFShader = require("./shaders/sdf-shader")
 
 const allIcons = {
-    character: new THREE.SpriteMaterial( { color: 0xffffff } ),    
+    character: new THREE.SpriteMaterial( { color: 0xffffff } ),
     camera: new THREE.SpriteMaterial( { color: 0xffffff } ),
     light: new THREE.SpriteMaterial( { color: 0xffffff } ),
     object: new THREE.SpriteMaterial( { color: 0xffffff } ),
@@ -66,7 +66,7 @@ function IconSprites ( type, text, parent, secondaryText ) {
             mesh.rotation.y = Math.PI
             mesh.rotation.x = -Math.PI/2
             mesh.position.z = secondaryText ? 0 : 0.15
-            mesh.position.x = 0.7 
+            mesh.position.x = 0.7
             scope.iconText = mesh
             scope.add(mesh)
         })
@@ -122,10 +122,10 @@ Sprite.prototype.clone = function ( recursive ) {
 
 const iconTextBetter = ( text ) => {
     return new Promise((resolve, reject) => {
-        let fontpath = path.join(__dirname, '..', '..', '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
+        let fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
         loadFont(fontpath, (err, font) => {
             
-            // create a geometry of packed bitmap glyphs, 
+            // create a geometry of packed bitmap glyphs,
             // word wrapped to 300px and right-aligned
             var geometry = createGeometry({
                 width: 1000,
@@ -164,7 +164,7 @@ const iconTextBetter = ( text ) => {
                 
                 material.uniforms.map.value = texture;
                 material.uniforms.color.value = new THREE.Color( '#000000' );
-                                
+                
                 // let material = new THREE.MeshBasicMaterial({
                 //     map: texture,
                 //     transparent: true,
@@ -205,13 +205,13 @@ const iconText = ( text ) => {
             let textMaterial = new THREE.SpriteMaterial({
                 color:"#550055",
                 map:textTexture,
-                useScreenCoordinates: false, 
+                useScreenCoordinates: false,
                 depthTest: false
             })
             textMaterial.needsUpdate = true
             textTexture.needsUpdate = true
             textMaterial.depthTest = false
-                
+            
             let textSprite = new THREE.Sprite(textMaterial)
             textSprite.layers.disable(0)
             textSprite.layers.disable(1)
@@ -219,7 +219,7 @@ const iconText = ( text ) => {
             
             resolve(textSprite)
         })
-    }) 
+    })
 }
 
 const generateSprite = ( color, sprite ) => {
@@ -234,7 +234,7 @@ const generateSprite = ( color, sprite ) => {
         spriteTexture = new THREE.CanvasTexture(blancContext)
         let spriteMaterial = new THREE.SpriteMaterial({
             color,
-            useScreenCoordinates: false, 
+            useScreenCoordinates: false,
             depthTest: false
         })
         
@@ -263,7 +263,7 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
                 //svgBox = img.getBBox()
                 ratio = w/h,
                 wantedWidthScale = 2500 * compensatescaling,
-                computedWidthScale = 100 * wantedWidthScale / w            
+                computedWidthScale = 100 * wantedWidthScale / w
                 computedHeightScale = computedWidthScale * ratio
             let tex = new THREE.Texture(img)
             tex.needsUpdate = true
@@ -280,7 +280,7 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
             sprite.material.needsUpdate = true
             sprite.material.depthTest = false
             sprite.material.renderOrder = 4
-            resolve(sprite)          
+            resolve(sprite)
         }
         img.onerror = (e) => {
             reject(e)

@@ -119,6 +119,7 @@ const HandPresetsEditor = require('./HandPresetsEditor')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
 
+const ItemList = require('./components/ItemList').default
 const {setShot, ShotSizes, ShotAngles} = require('./cameraUtils')
 
 
@@ -796,7 +797,21 @@ const ElementsPanel = connect(
         }
     ]))
     
-    const ItemsList = React.createElement('div', {className: 'objects-list', ref: listRef}, Items)
+    const ItemsList = (
+        <div
+            className='objects-list'
+            ref={listRef}
+        >
+          <ItemList/>
+          {/*<WorldElement*/}
+          {/*world={world}*/}
+          {/*isSelected={selections.length === 0}*/}
+          {/*selectObject={selectObject}*/}
+          {/*key={'world-list-item'}*/}
+          {/*/>*/}
+          {/*{Items}*/}
+        </div>
+    )
 
     useEffect(() => {
       if (!listRef.current) {

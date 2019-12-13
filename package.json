@@ -20,7 +20,7 @@
     "xr:build": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
     "build:thumbnails": "electron test/views/thumbnail-renderer/main.js",
-    "build:shot-generator": "webpack --config configs/shot-generator/dev.webpack.config.js"
+    "build:shot-generator": "webpack --watch --progress --config configs/shot-generator/dev.webpack.config.js"
   },
   "repository": {
     "type": "git",
@@ -173,6 +173,7 @@
     "liquidmetal": "1.3.0",
     "load-bmfont": "^1.4.0",
     "lodash.debounce": "4.0.8",
+    "lodash.isequal": "^4.5.0",
     "lodash.throttle": "4.1.1",
     "moment": "2.19.3",
     "node-fetch": "2.1.2",

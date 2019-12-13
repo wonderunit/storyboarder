@@ -122,9 +122,8 @@ Sprite.prototype.clone = function ( recursive ) {
 
 const iconTextBetter = ( text ) => {
     return new Promise((resolve, reject) => {
-        let fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
+        let fontpath = path.join(__dirname, '..', '..', '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
         loadFont(fontpath, (err, font) => {
-            if (err) console.error(err)
             
             // create a geometry of packed bitmap glyphs,
             // word wrapped to 300px and right-aligned
