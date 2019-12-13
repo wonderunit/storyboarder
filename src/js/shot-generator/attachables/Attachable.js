@@ -166,7 +166,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     container.current.updateMatrixWorld(true)
     container.current.applyMatrix(parentInverseMatrixWorld)
     container.current.updateMatrixWorld(true)
-  }, [props.x, props.y, props.z, ready])
+  }, [props.x, props.y, props.z, ready, characterObject.current])
 
   useEffect(() => {
     if ( !ready ) return
@@ -181,7 +181,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     container.current.updateMatrixWorld(true)
     container.current.applyMatrix(parentInverseMatrixWorld)
     container.current.updateMatrixWorld(true)
-  }, [props.rotation, ready])
+  }, [props.rotation, ready, characterObject.current])
     
   useEffect(() => {
     if(!ready) return
@@ -246,9 +246,10 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect(() => {
     if(!ready) return
+    if(!characterObject.current) return
     let scale = container.current.parent.uuid === scene.uuid ? props.size : props.size / characterObject.current.scale.x
     container.current.scale.set( scale, scale, scale )
-  }, [props.size])
+  }, [props.size, characterObject.current])
 
   const rebindAttachable = (characterScale) => {
     let prevCharacter = characterObject.current

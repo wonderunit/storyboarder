@@ -1020,6 +1020,10 @@ const CharacterPresetsEditor = connect(
 
       // end the undo-able operation
       dispatch(undoGroupEnd())
+
+      let attachablesList = initializeAttachables(sceneObject, preset)
+      if(attachablesList)
+        dispatch(createObjects(attachablesList))
     }
   }
 )(
