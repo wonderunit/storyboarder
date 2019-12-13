@@ -5,10 +5,10 @@
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
-    "start": "electron .",
-    "dist:mac": "npm run xr:build && electron-builder build -m",
-    "dist:win": "npm run xr:build && electron-builder build -w",
-    "dist:linux": "npm run xr:build && electron-builder build -l",
+    "start": "cross-env NODE_ENV=development electron .",
+    "dist:mac": "npm run build && electron-builder build -m",
+    "dist:win": "npm run build && electron-builder build -w",
+    "dist:linux": "npm run build && electron-builder build -l",
     "dist": "npm run xr:build && build -mwl",
     "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/*.renderer.test.js test/**/*.renderer.test.js && electron-mocha test/**/*.main.test.js",
     "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
@@ -20,7 +20,10 @@
     "xr:build": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "xr:build-demo": "cross-env XR_STANDALONE_DEMO=true npm run xr:build && node scripts/build-vr-demo.js",
     "build:thumbnails": "electron test/views/thumbnail-renderer/main.js",
-    "build:shot-generator": "webpack --watch --progress --config configs/shot-generator/dev.webpack.config.js"
+    "build:shot-generator": "webpack --mode=production --progress --config configs/shot-generator/webpack.config.js",
+    "build:xr": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
+    "watch:xr": "parcel watch --no-hmr src/js/xr/src/index.html -d src/js/xr/dist",
+    "watch:shot-generator": "webpack --mode=development --watch --progress --config configs/shot-generator/webpack.config.js"
   },
   "repository": {
     "type": "git",

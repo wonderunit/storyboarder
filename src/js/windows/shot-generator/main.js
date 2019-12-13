@@ -6,6 +6,17 @@ const url = require('url')
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
+//const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
+const installExtensions = async () => {
+  const installer = require('electron-devtools-installer');
+  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+  const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
+  
+  return Promise.all(
+      extensions.map(name => installer.default(installer[name], forceDownload))
+  ).catch(console.log);
+};
+
 let win
 
 let memento = {
@@ -21,30 +32,34 @@ const reveal = onComplete => {
   onComplete(win)
 }
 
-const show = (onComplete) => {
+const show = async (onComplete) => {
   if (win) {
     reveal(onComplete)
     return
   }
-
+  
+  if (process.env.NODE_ENV === 'development') {
+    await installExtensions()
+  }
+  
   let { x, y, width, height } = memento
-
+  
   win = new BrowserWindow({
     minWidth: isDev ? undefined : 1200,
     minHeight: isDev ? undefined : 800,
-
+    
     x,
     y,
     width,
     height,
-
+    
     show: false,
     center: true,
     frame: true,
-
+    
     backgroundColor: '#333333',
     titleBarStyle: 'hiddenInset',
-
+    
     acceptFirstMouse: true,
     simpleFullscreen: true,
     webPreferences: {
@@ -56,7 +71,7 @@ const show = (onComplete) => {
       backgroundThrottling: true,
     }
   })
-
+  
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
   //
@@ -68,19 +83,19 @@ const show = (onComplete) => {
       title: 'Confirm',
       message: 'Your scene is not saved. Are you sure you want to close Shot Generator?'
     })
-
+    
     const leave = (choice === 0)
-
+    
     if (leave) {
       // ignore the default behavior of preventing unload
       // ... which means we'll actually ... _allow_ unload :)
       event.preventDefault()
     }
   })
-
+  
   win.on('resize', () => memento = win.getBounds())
   win.on('move', () => memento = win.getBounds())
-
+  
   win.once('closed', () => {
     win = null
   })
@@ -89,10 +104,10 @@ const show = (onComplete) => {
     protocol: 'file:',
     slashes: true
   }))
-
+  
   // use this to wait until the window has completely loaded
   // ipcMain.on('shot-generator:window:loaded', () => { })
-
+  
   // use this to show sooner
   win.once('ready-to-show', () => {
     reveal(onComplete)
@@ -123,7 +138,7 @@ ipcMain.on('shot-generator:edit:redo', () => {
 })
 
 ipcMain.on('shot-generator:export-gltf', () =>
-  win.webContents.send('shot-generator:export-gltf'))
+    win.webContents.send('shot-generator:export-gltf'))
 
 module.exports = {
   show,
