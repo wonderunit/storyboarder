@@ -967,7 +967,8 @@ const CharacterPresetsEditor = connect(
           endomorphic: preset.state.morphTargets.endomorphic
         },
 
-        name: sceneObject.name || preset.name
+        name: sceneObject.name || preset.name,
+        skeleton: defaultPosePreset.state.skeleton
       }))
       if(preset.state.attachables) {
 
@@ -977,12 +978,11 @@ const CharacterPresetsEditor = connect(
       skinnedMesh.skeleton.pose()
       character.resetToStandardSkeleton(defaultPosePreset.state.skeleton)
       character.updateWorldMatrix(true, true)
-      dispatch(updateCharacterIkSkeleton({id: sceneObject.id, skeleton: skinnedMesh.skeleton.bones}))
       let attachables = initializeAttachables(sceneObject, preset)
       if(attachables)
         dispatch(createObjects(attachables))
     },
-    createCharacterPreset: ({ id, name, sceneObject, attachables }) => (dispatch, getState) => {
+    createCharacterPreset: ({ id, name, sceneObject, attachables, defaultPosePreset }) => (dispatch, getState) => {
       // add the character data to a named preset
       let preset = {
         id,
@@ -1025,8 +1025,10 @@ const CharacterPresetsEditor = connect(
       dispatch(updateObject(sceneObject.id, {
         // set the preset id
         characterPresetId: id,
+        posePresetId: null,
         // use the preset’s name (if none assigned)
-        name: sceneObject.name || preset.name
+        name: sceneObject.name || preset.name,
+        skeleton: defaultPosePreset.state.skeleton
       }))
 
       // end the undo-able operation
@@ -1039,7 +1041,7 @@ const CharacterPresetsEditor = connect(
   }
 )(
   // TODO could optimize by only passing sceneObject properties we actually care about
-  React.memo(({ sceneObject, characterPresets, selectCharacterPreset, createCharacterPreset, sceneObjects, defaultPosePreset }) => {
+  React.memo(({ sceneObject, characterPresets, selectCharacterPreset, createCharacterPreset, sceneObjects, defaultPosePreset, updateCharacterIkSkeleton }) => {
     const { scene } = useContext(SceneContext)
     const onCreateCharacterPresetClick = event => {
       // show a prompt to get the desired preset name
@@ -1054,7 +1056,8 @@ const CharacterPresetsEditor = connect(
 
           let attachables = []
           if(character && character.attachables) {
-            character.getObjectByProperty("type", "SkinnedMesh").skeleton.pose()
+            let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
+            skinnedMesh.skeleton.pose()
             character.resetToStandardSkeleton(defaultPosePreset.state.skeleton)
             character.updateWorldMatrix(true, true)
             for(let i = 0; i < character.attachables.length; i++) {
@@ -1081,7 +1084,8 @@ const CharacterPresetsEditor = connect(
             id,
             name,
             sceneObject,
-            attachables: attachables
+            attachables: attachables,
+            defaultPosePreset
           })
         }
       }).catch(err => {
