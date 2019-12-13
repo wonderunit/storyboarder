@@ -3,40 +3,47 @@ import React, {useState, useMemo, useEffect, useCallback, useRef} from 'react'
 import {connect} from "react-redux"
 
 import {
-  selectObject,
-  deleteObjects,
-  updateObject,
-  
   getSceneObjects,
-  getSelections
+  getSelections,
+  getActiveCamera
 } from './../../../shared/reducers/shot-generator'
 
 import memoizeResult from './../../../utils/memoizeResult'
-import classNames from 'classnames'
+import Item from "./Item";
 
-const ELEMENT_HEIGHT = 40
+const sortPriority = ['camera', 'character', 'object', 'image', 'light', 'volume', 'group']
 
-const ItemList = React.memo(({sceneObjects, selections, ...props}) => {
-  const Items = Object.values(sceneObjects).map((object, index) => {
-    let className = classNames({
-      'element': true,
-      'selected': selections.indexOf(object.id) !== -1,
-      'zebra': index % 2
-    })
+const getSortedItems = (sceneObjectsArray) => {
+  const headItems = sceneObjectsArray
+    .sort((prev, current) => sortPriority.indexOf(prev.type) - sortPriority.indexOf(current.type))
+    .filter(object => !!object.group === false)
+  
+  const sortedItems = []
+  
+  for (let object of headItems) {
+    sortedItems.push(object)
+    if (object.children) {
+      sortedItems.push(...sceneObjectsArray.filter(target => target.group === object.id))
+    }
+  }
+  
+  return sortedItems
+}
+
+
+const ItemList = React.memo(({sceneObjects, selections, activeCamera}) => {
+  const Items = getSortedItems(sceneObjects).map((props, index) => {
+    const allowDelete = props.type !== 'camera' || (props.type === 'camera' && activeCamera !== props.id)
     
     return (
-        <div
-          className={className}
-          style = {{height: ELEMENT_HEIGHT}}
-          key = {object.id}
-        >
-          <a
-            className='title'
-            href='#'
-          >
-            {object.displayName}
-          </a>
-        </div>
+      <Item
+          selected={selections.indexOf(props.id) !== -1}
+          index={index}
+          key={props.id}
+          allowDelete={allowDelete}
+          activeCamera={activeCamera}
+          {...props}
+      />
     )
   })
   
@@ -44,27 +51,36 @@ const ItemList = React.memo(({sceneObjects, selections, ...props}) => {
   
   return (
       <div>
+        <Item
+            selected={selections.length === 0}
+            index={0}
+            displayName='Scene'
+            id={null}
+        />
         {Items}
       </div>
   )
 })
 
 const getSceneObjectsM = memoizeResult((state) => {
-  return Object.values(getSceneObjects(state)).map((object) => ({
-    id: object.id,
-    displayName: object.displayName
-  }))
+  return Object.values(getSceneObjects(state)).map((object) => {
+    return {
+      id:           object.id,
+      displayName:  object.displayName,
+      group:        object.group,
+      children:     object.children,
+      visible:      object.visible,
+      locked:       object.locked,
+      type:         object.type
+    }
+  })
 })
 const getSelectionsM = memoizeResult(getSelections)
+
 const mapStateToProps = (state) => ({
   sceneObjects: getSceneObjectsM(state),
-  selections: getSelectionsM(state)
+  selections: getSelectionsM(state),
+  activeCamera: getActiveCamera(state)
 })
 
-const mapDispatchToProps = {
-  selectObject,
-  deleteObjects,
-  updateObject
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(ItemList)
+export default connect(mapStateToProps)(ItemList)
