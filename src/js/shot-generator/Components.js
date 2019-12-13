@@ -51,6 +51,7 @@ const {
   // saveScene,
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
+  getDefaultPosePreset,
   setActiveCamera,
   setCameraShot,
   // resetScene,
@@ -937,13 +938,14 @@ const CharacterPresetsEditor = connect(
   state => ({
     characterPresets: state.presets.characters,
     models: state.models,
-    sceneObjects: getSceneObjects(state)
+    sceneObjects: getSceneObjects(state),
+    defaultPosePreset: getDefaultPosePreset()
   }),
   {
     updateObject,
     createObjects,
     updateCharacterIkSkeleton,
-    selectCharacterPreset: (sceneObject, characterPresetId, preset, scene) => (dispatch, getState) => {
+    selectCharacterPreset: (sceneObject, characterPresetId, preset, scene, defaultPosePreset) => (dispatch, getState) => {
       dispatch(updateObject(sceneObject.id, {
         // set characterPresetId
         characterPresetId,
@@ -973,7 +975,7 @@ const CharacterPresetsEditor = connect(
       let character = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
       let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
       skinnedMesh.skeleton.pose()
-      character.resetToStandardSkeleton()
+      character.resetToStandardSkeleton(defaultPosePreset.state.skeleton)
       character.updateWorldMatrix(true, true)
       dispatch(updateCharacterIkSkeleton({id: sceneObject.id, skeleton: skinnedMesh.skeleton.bones}))
       let attachables = initializeAttachables(sceneObject, preset)
@@ -1037,7 +1039,7 @@ const CharacterPresetsEditor = connect(
   }
 )(
   // TODO could optimize by only passing sceneObject properties we actually care about
-  React.memo(({ sceneObject, characterPresets, selectCharacterPreset, createCharacterPreset, sceneObjects }) => {
+  React.memo(({ sceneObject, characterPresets, selectCharacterPreset, createCharacterPreset, sceneObjects, defaultPosePreset }) => {
     const { scene } = useContext(SceneContext)
     const onCreateCharacterPresetClick = event => {
       // show a prompt to get the desired preset name
@@ -1053,7 +1055,7 @@ const CharacterPresetsEditor = connect(
           let attachables = []
           if(character && character.attachables) {
             character.getObjectByProperty("type", "SkinnedMesh").skeleton.pose()
-            character.resetToStandardSkeleton()
+            character.resetToStandardSkeleton(defaultPosePreset.state.skeleton)
             character.updateWorldMatrix(true, true)
             for(let i = 0; i < character.attachables.length; i++) {
               character.attachables[i].saveToStore()
@@ -1090,7 +1092,7 @@ const CharacterPresetsEditor = connect(
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
-      selectCharacterPreset(sceneObject, characterPresetId, preset, scene)
+      selectCharacterPreset(sceneObject, characterPresetId, preset, scene, defaultPosePreset)
     }
 
     return h(

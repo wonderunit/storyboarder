@@ -282,7 +282,6 @@ const Character = React.memo(({
       scene.add(object.current.bonesHelper)
 
       let domElement = largeRenderer.current.domElement
-      object.current.userData.standardSkeleton = props.skeleton
       objectRotationControl.current = new ObjectRotationControl(scene, camera, domElement, object.current.uuid)
       let boneRotation = objectRotationControl.current
       boneRotation.setUpdateCharacter((name, rotation) => {updateCharacterSkeleton({
@@ -502,14 +501,13 @@ const Character = React.memo(({
     updateSkeleton()
   }
 
-  const resetToStandardSkeleton = () => {
-    object.current.userData.standardSkeleton 
+  const resetToStandardSkeleton = (defaultSkeleton) => {
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
 
       for (bone of skeleton.bones) {
-        let userState = object.current.userData.standardSkeleton[bone.name]
+        let userState = defaultSkeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
         let state = userState || systemState
         bone.rotation.x = state.rotation.x
@@ -561,7 +559,6 @@ const Character = React.memo(({
       }
       deleteObjects(attachablesToDelete)
     }
-    object.current.resetToStandardSkeleton()
   }, [props.characterPresetId])
 
   // HACK force reset skeleton pose on Board UUID change
