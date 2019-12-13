@@ -70,9 +70,14 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       container.current.saveToStore = saveToStore
       isBoneSelected.current = false
       return function cleanup () {
+        setReady(false)
+        setLoaded(false)
         container.current.parent.remove(container.current)
         let indexOf = characterObject.current.attachables.indexOf(container.current)
         characterObject.current.attachables.splice(indexOf, 1)
+        characterObject.current = null
+        objectRotationControl.current = null
+        container.current = null
       }
   }, [])    
 
@@ -110,6 +115,10 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
       }
       // Sets up bind bone
       characterObject.current = scene.children.filter(child => child.userData.id === props.attachToId)[0]
+      if(!characterObject.current) {
+        setReady(false)
+        return
+      }  
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(props.bindBone)
@@ -144,6 +153,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
 
   useEffect(() => {
     if ( !ready ) return
+    if ( !characterObject.current ) return
     // Applies position to container.
     // Position for container should always be in world space but container always attached to bone
     // We need to take it out of bone space and apply world position
@@ -161,6 +171,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if ( !ready ) return
     if ( !props.rotation ) return
+    if ( !characterObject.current ) return
     characterObject.current.updateWorldMatrix(true, true)
     let parentMatrixWorld = container.current.parent.matrixWorld
     let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
@@ -174,6 +185,7 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     
   useEffect(() => {
     if(!ready) return
+    if ( !characterObject.current ) return
       let outlineParameters = {}
       if(isSelected) {
         window.addEventListener("keydown", keyDownEvent, false)
@@ -215,16 +227,20 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
     let character = scene.children.filter(child => child.userData.id === props.attachToId)[0]
     if(character && modelData){
       setReady(true)
+    } else {
+      setReady(false)
     }
-  }, [modelData, ready, scene.children.length])
+  }, [modelData, scene.children.length, characterObject.current ])
 
   useEffect(() => {
     if(!ready) return
+    if(!objectRotationControl.current) return
     objectRotationControl.current.setCamera(camera)
   }, [ready, camera])
 
   useEffect(() => {
     if(!ready) return
+    if(! container.current) return
     container.current.userData.bindBone = props.bindBone
   }, [props.bindBone])
 

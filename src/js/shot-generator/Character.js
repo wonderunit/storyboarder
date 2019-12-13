@@ -199,11 +199,13 @@ const Character = React.memo(({
       scene.remove(object.current.bonesHelper)
       scene.remove(object.current.orthoIcon)
       scene.remove(object.current)
+      object.current.userData.id === null
       object.current.remove(SGIkHelper.getInstance())
       SGIkHelper.getInstance().deselectControlPoint()
       SGIkHelper.getInstance().removeFromParent(id)
       objectRotationControl.current.deselectObject()
       object.current.bonesHelper = null
+      scene.remove(object.current)
       object.current = null
     }
   }
@@ -532,6 +534,18 @@ const Character = React.memo(({
     saveAttachablesPositions()
   }, [props.handPosePresetId, props.handSkeleton])
 
+  useEffect(() => {
+    if(!props.characterPresetId) return 
+    if(object.current && object.current.attachables) {
+      let attachablesToDelete = []
+      for(let i = 0; i < object.current.attachables.length; i++) {
+        attachablesToDelete.push(object.current.attachables[i].userData.id)
+      }
+      deleteObjects(attachablesToDelete)
+    }
+    //console.log("changed character preset")
+  }, [props.characterPresetId])
+
   // HACK force reset skeleton pose on Board UUID change
   useEffect(() => {
     if (!ready) return
@@ -549,7 +563,6 @@ const Character = React.memo(({
 
    // console.log(type, id, 'skeleton')
     updateSkeleton()
-    console.log(props.handSkeleton)
     if(props.handSkeleton && Object.keys(props.handSkeleton).length > 0)
       updateSkeletonHand()
   }, [props.model, props.skeleton, ready])
