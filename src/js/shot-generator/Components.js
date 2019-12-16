@@ -976,7 +976,7 @@ const CharacterPresetsEditor = connect(
       let character = scene.children.filter(child => child.userData.id === sceneObject.id)[0]
       let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
       skinnedMesh.skeleton.pose()
-      character.resetToStandardSkeleton(defaultPosePreset.state.skeleton)
+      character.resetToStandardSkeleton()
       character.updateWorldMatrix(true, true)
       let attachables = initializeAttachables(sceneObject, preset)
       if(attachables)
@@ -1058,13 +1058,16 @@ const CharacterPresetsEditor = connect(
           if(character && character.attachables) {
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
             skinnedMesh.skeleton.pose()
-            character.resetToStandardSkeleton(defaultPosePreset.state.skeleton)
+            character.resetToStandardSkeleton()
             character.updateWorldMatrix(true, true)
             for(let i = 0; i < character.attachables.length; i++) {
-              character.attachables[i].saveToStore()
+              let attachable = character.attachables[i]
               let attachableSceneObject = sceneObjects[character.attachables[i].userData.id]
               let position = character.attachables[i].worldPosition()
               let rotation = character.attachables[i].worldQuaternion()
+              let matrix = attachable.matrix.clone()
+              matrix.premultiply(attachable.parent.matrixWorld)
+              matrix.decompose(position, rotation, new THREE.Vector3())
               let euler = new THREE.Euler().setFromQuaternion(rotation)
               attachables.push({
                 x: position.x,

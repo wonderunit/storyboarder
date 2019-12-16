@@ -621,8 +621,9 @@ const SceneContent = connect(
 
           {
             characterIds.map(id =>
-              getAsset(getFilepathForModelByType(sceneObjects[id]))
-                ? <SimpleErrorBoundary key={id}>
+             // getAsset(getFilepathForModelByType(sceneObjects[id]))
+               // ?
+               <SimpleErrorBoundary key={id}>
                   <Character
                     key={id}
                     gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
@@ -631,7 +632,7 @@ const SceneContent = connect(
                     isSelected={selections.includes(id)}
                     updateSkeleton= {updateCharacterIkSkeleton} />
                 </SimpleErrorBoundary>
-                : null
+               // : null
             )
           }
           

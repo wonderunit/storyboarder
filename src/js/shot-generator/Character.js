@@ -181,6 +181,7 @@ const Character = React.memo(({
   largeRenderer,
   deleteObjects,
   updateObjects,
+  defaultPosePreset,
   ...props
 }) => {
   const [ready, setReady] = useState(false) // ready to load?
@@ -214,7 +215,11 @@ const Character = React.memo(({
   useEffect(() => {
     setReady(false)
     setLoaded(false)
-    // return function cleanup () { }
+    return () => { 
+      // Because when we switch models we recreate character(create new component) we need to set prev component object's id to null
+      if(object.current)
+        object.current.userData.id = null
+    }
   }, [props.model])
 
   useEffect(() => {
@@ -299,7 +304,7 @@ const Character = React.memo(({
     }
 
     return function cleanup () {
-      setAttachables(object.current ? object.current.attachables : null)
+      setAttachables(!object.current ? null : object.current.attachables ? object.current.attachables.concat([]) : null)
       setModelChange(!object.current ? false : object.current.attachables ? true : false)
       doCleanup()
       // setLoaded(false)
@@ -335,17 +340,17 @@ const Character = React.memo(({
   const fullyUpdateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
     let changedSkeleton = []
-
-    let inverseMatrixWorld = object.current.getInverseMatrixWorld()
     let position = new THREE.Vector3()
+    let scalarForBones = 1
+    if(props.posePresetId === defaultPosePreset.id)
+      scalarForBones = object.current.userData.boneLengthScale === 100 ? 100 : 1
     for(let i = 0; i < skeleton.bones.length; i++) {
       let bone = skeleton.bones[i]
-      
+      if(bone.name.includes("leaf")) continue
       let rotation = bone.rotation
-      bone.applyMatrix(object.current.matrixWorld)
-      position = bone.position.clone()
-      bone.applyMatrix(inverseMatrixWorld)
-      position.multiplyScalar( object.current.userData.boneLengthScale === 100 ? 100 : 1)
+
+      position = bone.position.clone().applyMatrix4(object.current.getInverseMatrixWorld())
+      position.multiplyScalar(scalarForBones)
       changedSkeleton.push({ 
         name: bone.name,
         position: { 
@@ -360,7 +365,7 @@ const Character = React.memo(({
         }
       })
     }
-    //updateCharacterIkSkeleton({id, skeleton:changedSkeleton})
+    updateCharacterIkSkeleton({id, skeleton:changedSkeleton})
   }
 
   const saveAttachablesPositions = () => {
@@ -376,9 +381,9 @@ const Character = React.memo(({
 
   const updateSkeleton = () => {
     let skeleton = object.current.userData.skeleton
+    
     if (Object.values(props.skeleton).length) {
       fixRootBone()
-
       for (bone of skeleton.bones) {
         let userState = props.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
@@ -386,6 +391,7 @@ const Character = React.memo(({
         bone.rotation.x = state.rotation.x
         bone.rotation.y = state.rotation.y
         bone.rotation.z = state.rotation.z
+       
       }
     } else {
       let skeleton = object.current.userData.skeleton
@@ -471,6 +477,8 @@ const Character = React.memo(({
       object.current.position.z = props.y
       object.current.position.y = props.z
       object.current.orthoIcon.position.copy(object.current.position)
+      saveAttachablesPositions()
+      
     }
   }, [props.model, props.x, props.y, props.z, ready])
   
@@ -490,7 +498,6 @@ const Character = React.memo(({
         object.current.rotation.y = props.rotation
         object.current.orthoIcon.icon.material.rotation = props.rotation + Math.PI
       }
-
     }
   }, [props.model, props.rotation, ready])
 
@@ -501,18 +508,18 @@ const Character = React.memo(({
     updateSkeleton()
   }
 
-  const resetToStandardSkeleton = (defaultSkeleton) => {
+  const resetToStandardSkeleton = () => {
     let skeleton = object.current.userData.skeleton
     if (Object.values(props.skeleton).length) {
       fixRootBone()
-
       for (bone of skeleton.bones) {
-        let userState = defaultSkeleton[bone.name]
+        let userState = defaultPosePreset.state.skeleton[bone.name]
         let systemState = originalSkeleton.current.getBoneByName(bone.name).clone()
         let state = userState || systemState
         bone.rotation.x = state.rotation.x
         bone.rotation.y = state.rotation.y
         bone.rotation.z = state.rotation.z
+        bone.updateMatrixWorld(true)
       }
     }
   }
@@ -576,7 +583,7 @@ const Character = React.memo(({
     if (!ready) return
     if (!object.current) return
 
-   // console.log(type, id, 'skeleton')
+    //console.log(type, id, 'skeleton')
     updateSkeleton()
     if(props.handSkeleton && Object.keys(props.handSkeleton).length > 0)
       updateSkeletonHand()
@@ -585,11 +592,14 @@ const Character = React.memo(({
 
 
   useEffect(() => {
+    if (!ready) return
+    if (props.model !== object.current.userData.modelSettings.id) return
     if (object.current) {
       if (object.current.userData.modelSettings.height) {
         let originalHeight = object.current.userData.originalHeight
         let scale = props.height / originalHeight
         object.current.scale.set( scale, scale, scale )
+        object.current.userData.height = props.height
       } else {
         object.current.scale.setScalar( props.height )
       }
@@ -703,7 +713,7 @@ const Character = React.memo(({
           }
         }
        
-        setAttachables( null)
+        setAttachables(null)
       }
       setModelChange(false)
     }

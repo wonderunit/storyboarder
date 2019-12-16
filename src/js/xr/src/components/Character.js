@@ -9,46 +9,31 @@ const VirtualCamera = require('../components/VirtualCamera')
 
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
-let attachablesList = []
-let isUnmounted = []
-let isClonned = []
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton }) => {
-  const prevGltf = useRef(null)
-  const { scene } = useThree()
+  const [ready, setReady] = useState(false)
+  const attachablesList = useRef([])
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
     }
   )
 
-  useEffect(() => { 
-    return () => {
-      if(ref.current && ref.current.attachables) {
-        attachablesList = ref.current.attachables.concat([])
-        for(let i = 0; i < attachablesList.length; i++) { 
-          if(attachablesList[i].parent) {
-            attachablesList[i].parent.remove(attachablesList[i])
-          }
-        }
-        isUnmounted[sceneObject.id] = true
-      }
-    }
-  }, [])
-
-
   const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
     () => {
-  
       if(ref.current && ref.current.attachables) {
-        attachablesList = ref.current.attachables.concat([])
-        for(let i = 0; i < attachablesList.length; i++) { 
-          if(attachablesList[i].parent) {
-            attachablesList[i].parent.remove(attachablesList[i])
+        attachablesList.current = ref.current.attachables.concat([])
+        for(let i = 0; i < attachablesList.current.length; i++) { 
+          if(attachablesList.current[i].parent) {
+            attachablesList.current[i].parent.remove(attachablesList.current[i])
           }
         }
-        isUnmounted[sceneObject.id] = true
       }
+      if(!gltf) {
+        setReady(false)
+        return [null, null, null, null, null]
+      }
+  
       let lod = new THREE.LOD()
       let { scene } = cloneGltf(gltf)
       let map
@@ -116,7 +101,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
-      isClonned[sceneObject.id] = true
       // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
       let newBones = []
       for(let i = 0; i < skeleton.bones.length; i++) {
@@ -137,7 +121,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
           }
         })
       }
-      //updateSkeleton({id:sceneObject.id, skeleton:newBones})
+      setReady(true)
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     },
     [gltf]
@@ -146,7 +130,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
   useEffect(() => {
     if(!lod) return
     if(!ref.current) return
-    if(attachablesList.length && isUnmounted[sceneObject.id] && isClonned[sceneObject.id]) { 
+    if(attachablesList.current.length) { 
       ref.current.attachables = []
       // Updating skeleton to original bones position
       for (let i = 0; i < skeleton.bones.length; i++)  {
@@ -156,21 +140,12 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         bone.position.copy(originalbone.position)
         bone.updateMatrixWorld()
       }
-      for(let i = 0; i < attachablesList.length; i++) {
-        attachablesList[i].rebindAttachable(sceneObject.height / ref.current.userData.originalHeight)
+      for(let i = 0; i < attachablesList.current.length; i++) {
+        attachablesList.current[i].rebindAttachable(sceneObject.height / ref.current.userData.originalHeight)
       }
-      attachablesList = []
-      isUnmounted[sceneObject.id] = false
-      isClonned[sceneObject.id] = false
+      attachablesList.current = []
     }
-    return () => {
-      if(ref.current.attachables && ref.current) {
-        attachablesList = ref.current.attachables.concat([])
-        isUnmounted[sceneObject.id] = true
-      }
-    }
-  }, [ref.current, lod, attachablesList.length])
-
+  }, [ref.current, attachablesList.current.length, lod, ready])
 
   useMemo(() => {
     if (!skeleton) return
@@ -178,6 +153,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
     let hasModifications = Object.values(sceneObject.skeleton).length > 0
 
     if (hasModifications) {
+    //  let position = new THREE.Vector3()
       // go through all the bones in the skeleton
       for (bone of skeleton.bones) {
         // if user data exists for a bone, use it
@@ -192,8 +168,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         if (bone.rotation.equals(state.rotation) == false) {
           // rotate the bone
           bone.rotation.setFromVector3(state.rotation)
-          if(state.position)
-            bone.position.set(state.position.x, state.position.y, state.position.z)
           // and update
           bone.updateMatrixWorld()
         }
@@ -203,7 +177,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       // reset the pose
       skeleton.pose()
     }
-  }, [skeleton, sceneObject.skeleton])
+  }, [skeleton, sceneObject.skeleton, ready])
 
   useMemo(() => {
     if (!skeleton) return
@@ -222,15 +196,16 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         bone.rotation.z = handBone.rotation.z
       }
     }
-  }, [skeleton, sceneObject.skeleton, sceneObject.handSkeleton])
+  }, [skeleton, sceneObject.skeleton, sceneObject.handSkeleton, ready])
 
   const bodyScale = useMemo(
     () => sceneObject.height / originalHeight,
-    [sceneObject.height]
+    [sceneObject.height, ready]
   )
 
   // headScale (0.8...1.2)
   useMemo(() => {
+    if(!skeleton) return
     let headBone = skeleton.getBoneByName('Head')
     if (headBone) {
       // in prior versions, the head was scaled proportionally to the body
@@ -239,15 +214,17 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       // now we just use the user's percentage value directly
       headBone.scale.setScalar(sceneObject.headScale)
     }
-  }, [skeleton, sceneObject.headScale])
+  }, [skeleton, sceneObject.headScale, ready])
 
   useMemo(() => {
+    if(!lod) return
     lod.children.forEach(skinnedMesh => {
       skinnedMesh.material.emissive.set(sceneObject.tintColor)
     })
-  }, [sceneObject.tintColor])
+  }, [sceneObject.tintColor, ready])
 
   useMemo(() => {
+    if(!lod) return
     if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
       lod.children.forEach(skinnedMesh => {
         skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = true
@@ -260,7 +237,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = false
       })
     }
-  }, [modelSettings, sceneObject.morphTargets])
+  }, [modelSettings, sceneObject.morphTargets, ready])
 
   useMemo(() => {
     if(!ref.current) return
@@ -277,10 +254,9 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       ref.current.remove(BonesHelper.getInstance())
       ref.current.remove(IKHelper.getInstance())
     }
-  }, [ref.current, isSelected])
+  }, [ref.current, isSelected, ready])
 
-  return lod
-    ? <group
+  return <group
       ref={ref}
 
       onController={sceneObject.visible ? () => null : null}
@@ -294,10 +270,9 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       rotation={[0, sceneObject.rotation, 0]}
       scale={[bodyScale, bodyScale, bodyScale]}
     >
-      <primitive object={lod} />
-      <primitive object={armature} />
+      <primitive object={lod ? lod : new THREE.Object3D() } />
+      <primitive object={armature ? armature : new THREE.Object3D()} />
     </group>
-    : null
 })
 
 module.exports = Character
