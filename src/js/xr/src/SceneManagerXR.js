@@ -29,6 +29,7 @@ const {
   // action creators
   selectObject,
   updateObject,
+  updateCharacterIkSkeleton,
   getSelectedAttachable
 } = require('../../shared/reducers/shot-generator')
 
@@ -119,13 +120,14 @@ const SceneContent = connect(
   }),
   {
     selectObject,
-    updateObject
+    updateObject,
+    updateCharacterIkSkeleton,
   }
 )(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
     resources, getAsset
   }) => {
@@ -619,16 +621,18 @@ const SceneContent = connect(
 
           {
             characterIds.map(id =>
-              getAsset(getFilepathForModelByType(sceneObjects[id]))
-                ? <SimpleErrorBoundary key={id}>
+             // getAsset(getFilepathForModelByType(sceneObjects[id]))
+               // ?
+               <SimpleErrorBoundary key={id}>
                   <Character
                     key={id}
                     gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
                     sceneObject={sceneObjects[id]}
                     modelSettings={models[sceneObjects[id].model] || undefined}
-                    isSelected={selections.includes(id)} />
+                    isSelected={selections.includes(id)}
+                    updateSkeleton= {updateCharacterIkSkeleton} />
                 </SimpleErrorBoundary>
-                : null
+               // : null
             )
           }
           
@@ -670,7 +674,8 @@ const SceneContent = connect(
                     gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
                     sceneObject={sceneObjects[id]}
                     isSelected={ selectedAttachable === id ? true : false}
-                    modelSettings={models[sceneObjects[id].model] || undefined}/>
+                    modelSettings={models[sceneObjects[id].model] || undefined}
+                    updateObject={updateObject}/>
                 </SimpleErrorBoundary>
                 : null
             )

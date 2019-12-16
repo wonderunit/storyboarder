@@ -1020,6 +1020,16 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
 
         return withDisplayNames(draft)
+
+      case 'CREATE_OBJECTS':
+        if (
+            action.payload.objects == null ||
+            action.payload.objects.length === 0
+        ) return
+        for(let object of action.payload.objects) {
+          draft[object.id] = object
+        }
+        return withDisplayNames(draft)
   
       case 'DELETE_OBJECTS':
         if (
@@ -1221,19 +1231,22 @@ const sceneObjectsReducer = (state = {}, action) => {
         draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
-          let { x, y, z } = bone.position
+          let position = bone.position
           if(draft[action.payload.id].skeleton[bone.name]) {
             draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
                                                                       draft[action.payload.id].skeleton[bone.name].rotation : 
                                                                       { x: rotation.x, y: rotation.y, z: rotation.z }
             draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
                                                                       draft[action.payload.id].skeleton[bone.name].position : 
-                                                                      { x: x, y: y, z: z }
+                                                                      { x: position.x, y: position.y, z: position.z }
           } else {
-            draft[action.payload.id].skeleton[bone.name] = {
-              rotation: { x: rotation.x, y: rotation.y, z: rotation.z },
-              position: { x: x, y: y, z: z },
-            }
+            draft[action.payload.id].skeleton[bone.name] = {}
+            draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
+            {} : 
+            { x: rotation.x, y: rotation.y, z: rotation.z }
+            draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
+            {} : 
+            { x: position.x, y: position.y, z: position.z }
           }
        
         }
@@ -1708,6 +1721,7 @@ module.exports = {
   deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
+  createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
 
   // batch update

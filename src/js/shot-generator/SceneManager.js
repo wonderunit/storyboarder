@@ -19,6 +19,7 @@ const {
   updateCharacterIkSkeleton,
   createPosePreset,
   updateWorldEnvironment,
+  getDefaultPosePreset,
 
   getSceneObjects,
   getSelections,
@@ -68,7 +69,8 @@ const SceneManager = connect(
     devices: state.devices,
     meta: state.meta,
     // HACK force reset skeleton pose on Board UUID change
-    _boardUid: state.board.uid
+    _boardUid: state.board.uid,
+    defaultPosePreset: getDefaultPosePreset()
   }),
   {
     updateObject,
@@ -86,7 +88,7 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, defaultPosePreset }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -642,6 +644,7 @@ const SceneManager = connect(
                 largeRenderer,
                 deleteObjects,
                 updateObjects:updateObjects,
+                defaultPosePreset:defaultPosePreset,
                 ...props
               }
             ]
