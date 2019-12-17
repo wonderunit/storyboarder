@@ -22,10 +22,10 @@ const AttachableInfoItem = React.memo(({
     }
     const buttonName = useMemo(() => bindBoneName, [bindBoneName])
     const attachableName = useMemo(() => { 
-        return !sceneObject.displayName ? '' : sceneObject.displayName
+        return !sceneObject? '' : !sceneObject.displayName ? '' : sceneObject.displayName
     })
 
-    return h(['div.attachable-card', 
+    return sceneObject ? h(['div.attachable-card', 
         ['div.attachable-card___title', 
           ['div.attachable-card___label', attachableName],
           ['a.attachable-card__discard[href=#]', { onClick: () => { onDelete(sceneObject) }}, 'X']
@@ -39,7 +39,7 @@ const AttachableInfoItem = React.memo(({
                 }, buttonName]
           ]]], 
           getNumberSlider(sceneObject)
-    ])
+    ]) : []
 })
 
 const ListItem = React.memo(({ props, attachable }) => {

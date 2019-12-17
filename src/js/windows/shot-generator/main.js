@@ -6,6 +6,17 @@ const url = require('url')
 
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
+//const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
+const installExtensions = async () => {
+  const installer = require('electron-devtools-installer');
+  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+  const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
+  
+  return Promise.all(
+      extensions.map(name => installer.default(installer[name], forceDownload))
+  ).catch(console.log);
+};
+
 let win
 
 let memento = {
@@ -21,12 +32,16 @@ const reveal = onComplete => {
   onComplete(win)
 }
 
-const show = (onComplete) => {
+const show = async (onComplete) => {
   if (win) {
     reveal(onComplete)
     return
   }
-
+  
+  if (process.env.NODE_ENV === 'development') {
+    await installExtensions()
+  }
+  
   let { x, y, width, height } = memento
 
   win = new BrowserWindow({

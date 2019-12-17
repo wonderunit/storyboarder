@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo, useEffect, useRef } = React = require('react')
+const { useMemo, useEffect, useRef, useState } = React = require('react')
 const { useUpdate, useThree } = require('react-three-fiber')
 
 
@@ -36,7 +36,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
+const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) => {
   const characterObject = useRef(null)
   const { scene } = useThree()
   const ref = useUpdate(
@@ -64,10 +64,13 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
 
     return []
   }, [sceneObject.model, gltf])
-
   useEffect(() => {
     ref.current.rebindAttachable = rebindAttachable
+    ref.current.saveToStore = saveToStore
   }, []) 
+
+  useEffect(() => {
+  }, [ref.current])
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
@@ -90,10 +93,17 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
     bone.add(ref.current)
-    if(!characterObject.current.attachables) characterObject.current.attachables = []
-    characterObject.current.attachables.push(ref.current)
+    if(!characterObject.current.attachables) {
+      characterObject.current.attachables = []
+      characterObject.current.attachables.push(ref.current)
+    } else {
+      let isAdded = characterObject.current.attachables.some(attachable => attachable.uuid === ref.current.uuid)
+      if(!isAdded) {
+        characterObject.current.attachables.push(ref.current)
+      }
+    }
     ref.current.updateMatrixWorld(true)
-  }, [scene.children])
+  }, [scene.children.length])
   
   useEffect(() => {
     if(!characterObject.current) return 
@@ -130,26 +140,38 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected }) => {
     let prevCharacter = characterObject.current
     characterObject.current = scene.children[1].children.filter(child => child.userData.id === sceneObject.attachToId)[0]
     if(!characterObject.current) return
+    
     let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
     let skeleton = skinnedMesh.skeleton
     let bone = skeleton.getBoneByName(sceneObject.bindBone)
-    ref.current.applyMatrix(prevCharacter.matrixWorld)
-    ref.current.applyMatrix(characterObject.current.getInverseMatrixWorld())
     bone.add(ref.current)
+    let scale = sceneObject.size / characterObject.current.scale.x
+    ref.current.scale.set(scale, scale, scale)
     ref.current.updateWorldMatrix(true, true)
 
-    if(!ref.current.children.length) {
-      gltf.scene.traverse(child => {
-        if (child.isMesh) {
-          let mesh = meshFactory(child)
-          mesh.userData.type === 'attachable'
-          ref.current.add(mesh)
-        }
-      })
-    }
     // Adds a ref of attachable to character if it doesn't exist and adds current attachable
-    if(!characterObject.current.attachables) characterObject.current.attachables = []
-    characterObject.current.attachables.push(ref.current)
+    if(!characterObject.current.attachables) {
+      characterObject.current.attachables = []
+      characterObject.current.attachables.push(ref.current)
+    } else {
+      let isAdded = characterObject.current.attachables.some(attachable => attachable.uuid === ref.current.uuid)
+      if(!isAdded) {
+        characterObject.current.attachables.push(ref.current)
+      }
+    }
+
+    saveToStore()
+  }
+
+  const saveToStore = () => {
+    let position = ref.current.worldPosition()// new THREE.Vector3()
+    let quaternion = ref.current.worldQuaternion()
+    let matrix = ref.current.matrix.clone()
+    matrix.premultiply(ref.current.parent.matrixWorld)
+    matrix.decompose(position, quaternion, new THREE.Vector3())
+    let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
+    updateObject(sceneObject.id, { x: position.x, y: position.y, z: position.z,
+      rotation: {x: rot.x, y: rot.y, z: rot.z}})
   }
 
   return <group
