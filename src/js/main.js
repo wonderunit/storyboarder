@@ -1,9 +1,3 @@
-const env = require('../../env.json')
-
-if (env.mode) {
-  //process.env.NODE_ENV = env.mode
-}
-
 const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
 const fs = require('fs-extra')
