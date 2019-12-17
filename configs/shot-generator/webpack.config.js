@@ -1,9 +1,8 @@
 const path = require('path')
 
 module.exports = {
-  entry: './src/js/windows/shot-generator-new/window.js',
+  entry: './src/js/windows/shot-generator/window.js',
   target: 'electron-main',
-  mode: 'development',
   output: {
     path: path.resolve(__dirname, './../../src/build'),
     filename: 'shot-generator.js'

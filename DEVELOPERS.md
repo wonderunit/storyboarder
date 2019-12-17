@@ -11,7 +11,7 @@ Tested with node v6.1.0.
 
 Storyboarder accepts an argument for the path to a filename to load when starting up:
 
-    $ npm start ../fixtures/example.storyboarder
+    $ npm start ./test/fixtures/example.storyboarder
 
 ## Testing
 
@@ -27,8 +27,8 @@ You can run a quick view test using [`budo`](https://github.com/mattdesl/budo) i
 
 Manually pre-compile the Shot Generator VR client app in production mode:
 
-    $ npm run xr:clean    # trash any existing files in src/js/xr/dist
-    $ npm run xr:build    # build client app to src/js/xr/dist
+    $ npm run clean:xr    # trash any existing files in src/js/xr/dist
+    $ npm run build       # build both a client app to src/js/xr/dist and a shot generator app to the src/build
 
 Then, build the app:
 
