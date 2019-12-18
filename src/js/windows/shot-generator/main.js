@@ -40,6 +40,11 @@ const show = async (onComplete) => {
   
   if (process.env.NODE_ENV === 'development') {
     await installExtensions()
+  } else {
+    const installed = BrowserWindow.getDevToolsExtensions()
+    for (let devtool of Object.values(installed)) {
+      BrowserWindow.removeDevToolsExtension(devtool.name)
+    }
   }
   
   let { x, y, width, height } = memento
