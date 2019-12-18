@@ -1,13 +1,16 @@
 import React, {useCallback} from 'react'
 import {connect} from 'react-redux'
 
+import {remote} from 'electron'
+const {dialog} = remote
+
 import {
   getSceneObjects,
   getSelections,
   getActiveCamera, selectObject, deleteObjects, updateObject
 } from './../../../shared/reducers/shot-generator'
 
-import memoizeResult from './../../../utils/memoizeResult'
+import deepEqualSelector from './../../../utils/deepEqualSelector'
 import Item from "./Item";
 
 const sortPriority = ['camera', 'character', 'object', 'image', 'light', 'volume', 'group']
@@ -32,20 +35,52 @@ const getSortedItems = (sceneObjectsArray) => {
 
 const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject}) => {
   const onSelectItem = useCallback((event, props) => {
-    if (!props || selections.indexOf(props.id) !== -1) {
-      console.log('Already selected')
+    if (!props) {
       return false
     }
 
-    selectObject(props.id)
-  }, [])
+    let currentSelections = props.children ? [...props.children, props.id] : [props.id]
+    if (event.shiftKey) {
+      if (selections.indexOf(props.id) === -1) {
+        currentSelections.push(...selections, props.id)
+      } else {
+        currentSelections = selections.filter(id => currentSelections.indexOf(id) === -1)
+      }
+    }
+    
+    selectObject([...new Set(currentSelections)])
+  }, [selections])
 
   const onHideItem = useCallback((event, props) => {
-    updateObject(props.id, {visible: !props.visible})
+    let nextVisibility = !props.visible
+    updateObject(props.id, {visible: nextVisibility})
+    if (props.children) {
+      for (let child of props.children) {
+        updateObject(child, {visible: nextVisibility})
+      }
+    }
   }, [])
 
   const onLockItem = useCallback((event, props) => {
-    updateObject(props.id, {locked: !props.locked})
+    let nextAvailability = !props.locked
+    updateObject(props.id, {locked: nextAvailability})
+    if (props.children) {
+      for (let child of props.children) {
+        updateObject(child, {locked: nextAvailability})
+      }
+    }
+  }, [])
+  
+  const onDeleteItem = useCallback((event, props) => {
+    let choice = dialog.showMessageBox(null, {
+      type: 'question',
+      buttons: ['Yes', 'No'],
+      message: 'Are you sure?',
+      defaultId: 1 // default to No
+    })
+    if (choice === 0) {
+      deleteObjects(props.children ? [...props.children, props.id] : [props.id])
+    }
   }, [])
   
   const Items = getSortedItems(sceneObjects).map((props, index) => {
@@ -61,12 +96,11 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
           onSelectItem={onSelectItem}
           onHideItem={onHideItem}
           onLockItem={onLockItem}
+          onDeleteItem={onDeleteItem}
           {...props}
       />
     )
   })
-  
-  console.log('Rerender')
   
   return (
       <div>
@@ -82,20 +116,20 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
   )
 })
 
-const getSceneObjectsM = memoizeResult((state) => {
-  return Object.values(getSceneObjects(state)).map((object) => {
+const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => {
+  return Object.values(sceneObjects).map((object) => {
     return {
       id:           object.id,
       displayName:  object.displayName,
-      group:        object.group,
-      children:     object.children,
-      visible:      object.visible,
-      locked:       object.locked,
+      group:        object.group || null,
+      children:     object.children || null,
+      visible:      Boolean(object.visible),
+      locked:       Boolean(object.locked),
       type:         object.type
     }
   })
 })
-const getSelectionsM = memoizeResult(getSelections)
+const getSelectionsM = deepEqualSelector([getSelections], selections => selections)
 
 const mapStateToProps = (state) => ({
   sceneObjects: getSceneObjectsM(state),

@@ -1,6 +1,5 @@
 import React from 'react'
 import classNames from "classnames";
-import {deleteObjects, selectObject, updateObject} from "../../../shared/reducers/shot-generator";
 import {connect} from "react-redux";
 import Icon from "../Icon";
 
@@ -60,6 +59,7 @@ const getDeleteIcon = (props) => {
           style={{
             opacity: !!props.allowDelete ? null : 0.1
           }}
+          onClick={(e) => props.onDeleteItem(e, props)}
       >
         X
       </a>
@@ -67,7 +67,7 @@ const getDeleteIcon = (props) => {
 }
 
 
-const Item = React.memo(({selectObject, deleteObjects, updateObject, ...props}) => {
+const Item = React.memo((props) => {
   const className = classNames({
     'element': true,
     'selected': props.selected,
@@ -127,10 +127,5 @@ const Item = React.memo(({selectObject, deleteObjects, updateObject, ...props}) 
   )
 })
 
-const mapDispatchToProps = {
-  selectObject,
-  deleteObjects,
-  updateObject
-}
 
-export default connect(null, mapDispatchToProps)(Item)
+export default Item
