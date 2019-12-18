@@ -30,7 +30,7 @@ const getLockIcon = (props) => {
             'lock': true,
             'hide-unless-hovered': !props.locked
           })}
-          href='#'
+          onClick={(e) => props.onLockItem(e, props)}
       >
         <Icon src={props.locked ? 'icon-item-lock' : 'icon-item-unlock'}/>
       </a>
@@ -45,7 +45,7 @@ const getVisibilityIcon = (props) => {
             'visibility': true,
             'hide-unless-hovered': props.visible
           })}
-          href='#'
+          onClick={(e) => props.onHideItem(e, props)}
       >
         <Icon src={props.visible ? 'icon-item-visible' : 'icon-item-hidden'}/>
       </a>
@@ -67,7 +67,7 @@ const getDeleteIcon = (props) => {
 }
 
 
-const Item = React.memo(({selectObject, ...props}) => {
+const Item = React.memo(({selectObject, deleteObjects, updateObject, ...props}) => {
   const className = classNames({
     'element': true,
     'selected': props.selected,
@@ -90,7 +90,7 @@ const Item = React.memo(({selectObject, ...props}) => {
             style = {{
               height: ELEMENT_HEIGHT
             }}
-            onClick={() => selectObject(null)}
+            onClick={(e) => props.onSelectItem(e, null)}
         >
           <a
               className='title'
@@ -102,7 +102,6 @@ const Item = React.memo(({selectObject, ...props}) => {
     )
   }
   
-  
   return (
       <div
           className={className}
@@ -110,11 +109,10 @@ const Item = React.memo(({selectObject, ...props}) => {
             height: ELEMENT_HEIGHT,
             paddingLeft: props.group && GROUP_PADDING
           }}
-          onClick={() => selectObject(props.id)}
+          onClick={(e) => props.onSelectItem(e, props)}
       >
         <a
             className='title'
-            href='#'
         >
           <span className='type'>{typeLabels[props.type]}</span>
           <span className='id'>{props.displayName}</span>

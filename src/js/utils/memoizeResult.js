@@ -1,4 +1,4 @@
-import isEqual from "lodash.isequal";
+import isEqual from 'lodash.isequal'
 
 const memoizeResult = (fn) => {
   let lastResult = null

@@ -1,11 +1,10 @@
-
-import React, {useState, useMemo, useEffect, useCallback, useRef} from 'react'
-import {connect} from "react-redux"
+import React, {useCallback} from 'react'
+import {connect} from 'react-redux'
 
 import {
   getSceneObjects,
   getSelections,
-  getActiveCamera
+  getActiveCamera, selectObject, deleteObjects, updateObject
 } from './../../../shared/reducers/shot-generator'
 
 import memoizeResult from './../../../utils/memoizeResult'
@@ -31,7 +30,24 @@ const getSortedItems = (sceneObjectsArray) => {
 }
 
 
-const ItemList = React.memo(({sceneObjects, selections, activeCamera}) => {
+const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject}) => {
+  const onSelectItem = useCallback((event, props) => {
+    if (!props || selections.indexOf(props.id) !== -1) {
+      console.log('Already selected')
+      return false
+    }
+
+    selectObject(props.id)
+  }, [])
+
+  const onHideItem = useCallback((event, props) => {
+    updateObject(props.id, {visible: !props.visible})
+  }, [])
+
+  const onLockItem = useCallback((event, props) => {
+    updateObject(props.id, {locked: !props.locked})
+  }, [])
+  
   const Items = getSortedItems(sceneObjects).map((props, index) => {
     const allowDelete = props.type !== 'camera' || (props.type === 'camera' && activeCamera !== props.id)
     
@@ -42,6 +58,9 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera}) => {
           key={props.id}
           allowDelete={allowDelete}
           activeCamera={activeCamera}
+          onSelectItem={onSelectItem}
+          onHideItem={onHideItem}
+          onLockItem={onLockItem}
           {...props}
       />
     )
@@ -56,6 +75,7 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera}) => {
             index={0}
             displayName='Scene'
             id={null}
+            onSelectItem={onSelectItem}
         />
         {Items}
       </div>
@@ -83,4 +103,10 @@ const mapStateToProps = (state) => ({
   activeCamera: getActiveCamera(state)
 })
 
-export default connect(mapStateToProps)(ItemList)
+const mapDispatchToProps = {
+  selectObject,
+  deleteObjects,
+  updateObject
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(ItemList)
