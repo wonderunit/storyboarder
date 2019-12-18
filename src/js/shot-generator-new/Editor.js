@@ -4,7 +4,7 @@ const path = require('path')
 
 const { Provider, connect } = require('react-redux')
 const React = require('react')
-const { useState, useEffect, useRef, useContext, useMemo } = React
+const { useState, useEffect, useRef, useContext, useMemo, useCallback } = React
 
 const { ipcRenderer, remote } = require('electron')
 const { dialog } = remote
@@ -33,7 +33,7 @@ const {
 const SceneManager = require('./SceneManager')
 const GuidesView = require('./GuidesView')
 const Icon = require('./Icon')
-const Toolbar = require('./Toolbar')
+const Toolbar = require('./components/Toolbar').default
 const FatalErrorBoundary = require('./FatalErrorBoundary')
 
 const {useExportToGltf, loadCameraModel} = require('./use-export-to-gltf')
@@ -131,7 +131,6 @@ const {
 } = require('../shared/reducers/shot-generator')
 
 const notifications = require('../window/notifications')
-
 const Editor = connect(
   state => ({
     mainViewCamera: state.mainViewCamera,
@@ -179,7 +178,6 @@ const Editor = connect(
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
-
     const scene = useRef()
     let [camera, setCamera ] = useState(null)
     const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
@@ -331,22 +329,8 @@ const Editor = connect(
       return { cameraImage, plotImage }
     }
 
-    const onToolbarSaveToBoard = () => {
-      withState((dispatch, state) => {
-        saveShot(dispatch, state)
-      })
-    }
-    const onToolbarInsertAsNewBoard = () => {
-      withState((dispatch, state) => {
-        insertShot(dispatch, state)
-      })
-    }
-
-
-
     useEffect(() => {
       scene.current = new THREE.Scene()
-
       // TODO introspect models
       updateModels({})
 
@@ -355,7 +339,6 @@ const Editor = connect(
         // let the app know we're ready to render
         setReady(true)
       })
-
       return function cleanup () {
         scene.current = null
       }
@@ -745,17 +728,8 @@ const Editor = connect(
         [FatalErrorBoundary,
           ['div.column', { style: { width: '100%', height: '100%' } }, [
             [Toolbar, {
-              // createObject,
-              // selectObject,
-              // loadScene,
-              // saveScene,
-              camera,
-              // setActiveCamera,
-              // resetScene,
-              saveToBoard: onToolbarSaveToBoard,
-              insertAsNewBoard: onToolbarInsertAsNewBoard,
-              // undoGroupStart,
-              // undoGroupEnd,
+              withState,
+              ipcRenderer,
               notifications
             }],
 

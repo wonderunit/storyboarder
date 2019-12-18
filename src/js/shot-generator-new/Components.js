@@ -803,13 +803,6 @@ const ElementsPanel = connect(
             ref={listRef}
         >
           <ItemList/>
-          {/*<WorldElement*/}
-          {/*world={world}*/}
-          {/*isSelected={selections.length === 0}*/}
-          {/*selectObject={selectObject}*/}
-          {/*key={'world-list-item'}*/}
-          {/*/>*/}
-          {/*{Items}*/}
         </div>
     )
 
