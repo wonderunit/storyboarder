@@ -158,9 +158,8 @@ const SelectionManager = connect(
     console.log("Mounted")
   }, [])
 
-  let intersectables = scene.children.filter(o => {
-    console.log("filtering")
-    return o.userData.type === 'object' ||
+  let intersectables = scene.children.filter(o => 
+    o.userData.type === 'object' ||
     o.userData.type === 'character' ||
     o.userData.type === 'light' ||
     o.userData.type === 'volume' ||
@@ -169,7 +168,7 @@ const SelectionManager = connect(
     o.userData.type === 'controlPoint' ||
     o.userData.type === 'objectControl' ||
     o.userData.type === 'attachable' ||
-    (useIcons && o.isPerspectiveCamera)}
+    (useIcons && o.isPerspectiveCamera)
   )
   for(let i = 0; i < intersectables.length; i++) {
     if(intersectables[i].userData.type === 'character' && intersectables[i].attachables) {
@@ -558,9 +557,11 @@ const SelectionManager = connect(
     {
       if(dragTarget.target.userData.type === 'character')
       {
-        let ikRig = SGIkHelper.getInstance().ragDoll;
+        console.log("Dragging character")
+        let ikRig = SGIkHelper.getInstance().ragDoll
         if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown)
         {
+          console.log("Dragging character")
           if(!dragTarget.isObjectControl)
           {
             drag({ x, y }, dragTarget.target)
@@ -579,7 +580,7 @@ const SelectionManager = connect(
     event.preventDefault()
 
     const { x, y } = mouse(event)
-
+    console.log(dragTarget)
     if (dragTarget) {
       endDrag(dragTarget)
       setDragTarget(null)
@@ -613,6 +614,7 @@ const SelectionManager = connect(
           )
           ? null
           : getIntersectionTarget(intersects[0])
+          console.log(target)
           if (target && target.userData.id == lastDownId) {
             if (event.shiftKey) {
               // if there is only one selection and it is the active camera

@@ -20,6 +20,8 @@ import {
   getSceneObjects,
 } from '../../../shared/reducers/shot-generator'
 
+import memoizeResult from './../../../utils/memoizeResult'
+
 function getObjectsFromIcons ( objects ) {
   return objects
       // visible objects
@@ -40,17 +42,8 @@ function getObjectsFromIcons ( objects ) {
 
 const getIntersectionTarget = intersect => {
 
-  if(intersect.object.userData.type === 'attachable'){
-    return intersect.object.parent
-  }
-
   if (intersect.object.type === 'Sprite') {
     return intersect.object.parent.linkedTo
-  }
-
-  // light
-  if (intersect.object.userData.type === 'hitter_light') {
-    return intersect.object.parent
   }
 
   // character
@@ -59,45 +52,43 @@ const getIntersectionTarget = intersect => {
   }
 
   //Transform control
-  if(intersect.object.type === 'gizmo')
-  {
-    if(intersect.object.parent.parent.userData.type === "objectControl")
-    {
-      return intersect.object.parent.parent.parent;
+  if(intersect.object.type === 'gizmo') {
+    if(intersect.object.parent.parent.userData.type === "objectControl") {
+      return intersect.object.parent.parent.parent
     }
-    return intersect.object;
+    return intersect.object
   }
 
-  if(intersect.object.type === 'SkinnedMesh')
-  {
-    return intersect.object.parent;
+  if(intersect.object.userData.type === 'controlPoint' || intersect.object.userData.type === 'objectControl') {
+    return intersect.object
   }
 
-  if(intersect.object.userData.type === 'controlPoint')
-  {
-    return intersect.object;
-  }
-
-  if(intersect.object.userData.type === 'objectControl')
-  {
-    return intersect.object;
-  }
-
-  // object
-  if (intersect.object.parent.userData.type === 'object') {
-    return intersect.object.parent
-  }
-
-  // image
-  if (intersect.object.userData.type === 'image') {
+  if(intersect.object.type === 'SkinnedMesh' || intersect.object.parent.userData.type === 'object' 
+    || intersect.object.userData.type === 'image' || intersect.object.userData.type === 'hitter_light'
+    || intersect.object.userData.type === 'attachable' ) {
     return intersect.object.parent
   }
 }
 
+const getSceneObjectsM = memoizeResult((state) => {
+  return Object.values(getSceneObjects(state)).map((object) => {
+    return {
+      id:           object.id,
+      displayName:  object.displayName,
+      group:        object.group,
+      children:     object.children,
+      visible:      object.visible,
+      locked:       object.locked,
+      type:         object.type
+    }
+  })
+})
+const getSelectionsM = memoizeResult(getSelections)
+
 const SelectionManager = connect(
   state => ({
-    selections: getSelections(state),
-    sceneObjects: getSceneObjects(state),
+    selections: getSelectionsM(state),
+    sceneObjects: getSceneObjectsM(state),
     activeCamera: getActiveCamera(state)
   }),
   {
@@ -140,7 +131,6 @@ React.memo(({
   }) => {
 
   const { scene } = useContext(SceneContext)
-  //const scene  = new THREE.Scene()
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
   const gpuPickerInstance = useRef(null)
@@ -160,10 +150,8 @@ React.memo(({
   }, [])
 
   const filterIntersectables = () => {
-      console.log(sceneObjects)
-    intersectables.current = scene.children.filter(o => {
-        console.log("filtering")
-        return o.userData.type === 'object' ||
+    intersectables.current = scene.children.filter(o => 
+        o.userData.type === 'object' ||
         o.userData.type === 'character' ||
         o.userData.type === 'light' ||
         o.userData.type === 'volume' ||
@@ -172,7 +160,7 @@ React.memo(({
         o.userData.type === 'controlPoint' ||
         o.userData.type === 'objectControl' ||
         o.userData.type === 'attachable' ||
-        (useIcons && o.isPerspectiveCamera)}
+        (useIcons && o.isPerspectiveCamera)
       )
     for(let i = 0; i < intersectables.current.length; i++) {
       if(intersectables.current[i].userData.type === 'character' && intersectables.current[i].attachables) {
@@ -420,24 +408,19 @@ React.memo(({
         target = getIntersectionTarget(intersect)
       }
       else {
-        let controlPoint = intersects.filter((intersect) => intersect.object.name === 'controlPoint' || intersect.object.type === "gizmo")
-        if(controlPoint.length !== 0) {
-          intersects[0] = controlPoint[0];
-        }
         target = getIntersectionTarget(intersects[0])
+        if(!target) return
         if(target.userData && target.userData.type === 'attachable') {
           selectAttachable({id: target.userData.id, bindId: target.userData.bindedId})
           setDragTarget({ target, x, y})
           return 
-        }
-        if(intersects[0].object && intersects[0].object.userData && intersects[0].object.userData.type === 'controlPoint') {
+        } else if(target.userData && target.userData.type === 'controlPoint') {
           let characterId = target.characterId;
           SGIkHelper.getInstance().selectControlPoint(target.uuid, event);
           let characters = intersectables.current.filter(value => value.uuid === characterId);
           target = characters[0];
           isSelectedControlPoint = true;
-        } 
-        else if(target && target.userData && target.userData.type === 'objectControl') {
+        } else if(target.userData && target.userData.type === 'objectControl') {
           let characterId = target.characterId
           let targetElement = target.object
           if(targetElement.type === "Bone") {
@@ -452,11 +435,10 @@ React.memo(({
             setDragTarget({ target, x, y, isObjectControl: true })
             return
           }
-        }
-        else if(intersects[0].object && intersects[0].object.type && intersects[0].object.type === 'gizmo') {
+        } else if(target.type && target.type === 'gizmo') {
           let characterId = target.parent.parent.parent.characterId;
-          SGIkHelper.getInstance().selectControlPoint(target.parent.parent.parent.object.uuid, event);
-          let characters = intersectables.current.filter(value => value.uuid === characterId);
+          SGIkHelper.getInstance().selectControlPoint(target.parent.parent.parent.object.uuid, event)
+          let characters = intersectables.current.filter(value => value.uuid === characterId)
           target = characters[0];
           isSelectedControlPoint = true;
         }
@@ -515,17 +497,16 @@ React.memo(({
       }
 
       selectBone(null)
-      //updateObject(target.userData.id, {isAccessorySelected: false})
       if (selectOnPointerDown) {
         if (event.shiftKey) {
           // if there is only one selection and it is the active camera
           if (selections.length === 1 && selections[0] === activeCamera) {
-            // replace the selection with the object
-            selectObject(target.userData.id)
-          } else {
-            // toggle the object in the multi-selection
-            selectObjectToggle(target.userData.id)
-          }
+               // replace the selection with the object
+               selectObject(target.userData.id)
+            } else {
+                // toggle the object in the multi-selection
+                selectObjectToggle(target.userData.id)
+            }
         } else {
           // if the pointerup'd target is not part of the multi-selection
           if (!selections.includes(target.userData.id)) {
@@ -539,9 +520,9 @@ React.memo(({
           }
         }
         shouldDrag = true
-      } else {
-          setLastDownId(target.userData.id)
-      }
+       } else {
+           setLastDownId(target.userData.id)
+       }
 
       if (shouldDrag) {
         undoGroupStart()
@@ -595,13 +576,7 @@ React.memo(({
         }
         let intersects = getIntersects(mousePosition.current, camera, useIcons, { x, y })
         if (intersects.length === 0) {
-          // selectObject(undefined)
-          // selectBone(null)
           setLastDownId(null)
-          //
-          // endDrag()
-          // setDragTarget(null)
-
         } else {
           // get the intersection target of the object
           // but ignore gizmo and objectControl intersections
@@ -643,13 +618,13 @@ React.memo(({
     setLastDownId(null)
   }
 
-  useEffect(() => {
-    console.log("Add event listener")
+  useLayoutEffect(() => {
+    //console.log("Add event listener")
     el.addEventListener('pointerdown', onPointerDown)
     el.addEventListener('pointermove', onPointerMove)
     window.addEventListener('pointerup', onPointerUp)
     return function cleanup () {
-      console.log("Removed event listener")
+     // console.log("Removed event listener")
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerup', onPointerUp)

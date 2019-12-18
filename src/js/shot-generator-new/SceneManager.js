@@ -1,6 +1,6 @@
 const { Provider, connect } = require('react-redux')
 const React = require('react')
-const { useState, useEffect, useRef, useContext, useMemo } = React
+const { useState, useEffect, useRef, useContext, useMemo, useLayoutEffect } = React
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -39,6 +39,7 @@ const {
 
 const CameraControls = require('./CameraControls')
 const SelectionManager = require('./components/SelectionManager').default
+//const SelectionManager = require('./SelectionManager')
 // const SelectionsMover = require('./SelectionsMover')
 
 const Character = require('./Character')
@@ -98,6 +99,7 @@ const SceneManager = connect(
     let smallRendererEffect = useRef(null)
     let animator = useRef(null)
     let animatorId = useRef(null)
+    let [canvasInFocus, setCanvasInFocus] = useState("None")
 
     let cameraControlsView = useRef(null)
 
@@ -309,6 +311,29 @@ const SceneManager = connect(
     
       orthoCamera.current.updateProjectionMatrix()
     }
+
+    const onPointerMove = (event) => {
+      if(smallCanvasRef.current && largeCanvasRef.current) {
+        const smallRect = smallCanvasRef.current.getBoundingClientRect()
+        const largerRect = largeCanvasRef.current.getBoundingClientRect()
+        if(smallRect.left <= event.clientX && smallRect.top <= event.clientY
+          && smallRect.right >= event.clientX && smallRect.bottom >= event.clientY) {
+            setCanvasInFocus ("Small")
+        } else if(largerRect.left <= event.clientX && largerRect.top <= event.clientY
+          && largerRect.right >= event.clientX && largerRect.bottom >= event.clientY) {
+            setCanvasInFocus ("Large")
+        } else {
+          setCanvasInFocus ("None")
+        }
+      }
+    }
+
+    useLayoutEffect(() => {
+      document.addEventListener("pointermove", onPointerMove)
+      return () => {
+        document.removeEventListener("pointermove", onPointerMove)
+      }
+    }, [onPointerMove])
   
     // autofit ortho camera for scene
     useEffect(autofitOrtho, [sceneObjects, mainViewCamera, aspectRatio])
@@ -760,10 +785,9 @@ const SceneManager = connect(
         )
       }
     ]
-    // TODO Scene parent object??
-    return [
-      [
-        [SelectionManager, {
+    const getFocusedSelectionManager = () => {
+      if(canvasInFocus === "Large") {
+        return [SelectionManager, {
           key: 'selection-manager-large',
           SceneContext,
           camera: mainViewCamera === 'live' ? camera : orthoCamera.current,
@@ -773,9 +797,9 @@ const SceneManager = connect(
           transition,
           gl: largeRenderer.current,
           onDrag: autofitOrtho
-        }],
-
-        /* [SelectionManager, {
+        }]
+      } else if(canvasInFocus === "Small") {
+       return [SelectionManager, {
           key: 'selection-manager-small',
           SceneContext,
           camera: mainViewCamera === 'live' ? orthoCamera.current : camera,
@@ -786,7 +810,15 @@ const SceneManager = connect(
           gl: smallRenderer.current,
           updateObject:updateObject,
           onDrag: autofitOrtho
-        }] */,
+        }]
+      } 
+
+    }
+    const focusedSelectionManager = getFocusedSelectionManager()
+    // TODO Scene parent object??
+    return [
+      canvasInFocus !== "None" && focusedSelectionManager && h(focusedSelectionManager),
+      [
 
         // [SelectionsMover, {
         //   key: 'selections-mover',
