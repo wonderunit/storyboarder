@@ -121,6 +121,7 @@ const CustomModelHelpButton = require('./CustomModelHelpButton')
 
 const ItemList = require('./components/ItemList').default
 const {setShot, ShotSizes, ShotAngles} = require('./cameraUtils')
+const clampElementToView = require('../utils/clampElementToView').default
 
 
 window.THREE = THREE
@@ -193,68 +194,6 @@ const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
-
-// const DebugObject = React.memo(({ id, type }) => {
-//   useEffect(() => {
-//     console.log(type, id, 'added')
-//
-//     return function cleanup () {
-//       console.log(type, id, 'removed')
-//     }
-//   }, [])
-//   console.log(type, id, 'render')
-//
-//   return null
-// })
-
-const WorldElement = React.memo(({ index, world, isSelected, selectObject, style = {} }) => {
-  const onClick = preventDefault(() => {
-    selectObject(null)
-  })
-
-  let className = classNames({
-    'selected': isSelected,
-    'zebra': index % 2
-  })
-
-  return h([
-    'div.element', { className, style: { height: ELEMENT_HEIGHT, ...style } }, [
-      [
-        'a.title[href=#]',
-        { onClick },
-        ['span.type', 'Scene']
-      ]
-    ]
-  ])
-})
-
-const ListItem = (props) => {
-  const { items, models, groupLevel, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, activeCamera, setActiveCamera, undoGroupStart, undoGroupEnd } = props
-  const sceneObject = props.object
-
-  return React.createElement(
-    Element, {
-      index: props.index,
-      style: {},
-      selections,
-      groupLevel,
-      sceneObject,
-      isSelected: selections.includes(sceneObject.id) || (sceneObject.group && selections.includes(sceneObject.group)),
-      isActive: sceneObject.type === 'camera' && sceneObject.id === activeCamera,
-      allowDelete: (
-        sceneObject.type != 'camera' ||
-        (sceneObject.type == 'camera' && activeCamera !== sceneObject.id)
-      ),
-      selectObject,
-      selectObjectToggle,
-      updateObject,
-      deleteObjects,
-      setActiveCamera,
-      undoGroupStart,
-      undoGroupEnd
-    }
-  )
-}
 
 const Inspector = ({
   world,
@@ -685,34 +624,6 @@ const RemoteInputView = ({ remoteInput }) => {
   )
 }
 
-const getListItems = (targetObjects, allObjects, data, index = 1, groupLevel = 0) => {
-   let skipIndices = 0
-   let currentIndex = 0
-  
-   let components = []
-   
-   targetObjects.forEach((object, i) => {
-     currentIndex = index + i + skipIndices
-     
-     components.push(React.createElement(
-         ListItem,
-         {...data, object, index: currentIndex, key: object.id, groupLevel}
-     ))
-  
-     if (object.children && object.children.length > 0) {
-       let children = object.children.map((targetId) => {
-         return allObjects[targetId]
-       })
-    
-       components.push(...getListItems(children, allObjects, data, index + i + skipIndices + 1, groupLevel + 1))
-    
-       skipIndices += children.length
-     }
-   })
-  
-  return components
-}
-
 const ElementsPanel = connect(
   // what changes should we watch for to re-render?
   state => ({
@@ -743,98 +654,14 @@ const ElementsPanel = connect(
   }
 )(
   React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
-    let ref = useRef(null)
-    let size = useComponentSize(ref)
-
-    let listRef = useRef(null)
-
-    // TODO momoized selector
-    // group by type
-    let types = Object
-     .entries(sceneObjects)
-     .reduce((o, [ k, v ]) => {
-       o[v.type] = o[v.type] || {}
-       o[v.type][k.toString()] = v
-       return o
-    }, {})
-    let sceneObjectsSorted = {
-      ...types.camera,
-      ...types.character,
-      ...types.object,
-      ...types.image,
-      ...types.light,
-      ...types.volume,
-      ...types.group
-    }
-    
-    let sceneObjectsArray = Object.values(sceneObjectsSorted).filter((object) => (!!object.group) === false)
-    
-    const Items = getListItems(
-        sceneObjectsArray,
-        sceneObjectsSorted,
-        {
-          items: sceneObjectsArray,
-          models,
-          selections,
-          selectObject,
-          selectObjectToggle,
-          updateObject,
-          deleteObjects,
-          activeCamera,
-          setActiveCamera,
-      
-          undoGroupStart,
-          undoGroupEnd
-        }
-    )
-    
-    Items.unshift(h([
-        WorldElement, {
-          world,
-          isSelected: selections.length === 0,
-          selectObject,
-          key: 'world-list-item'
-        }
-    ]))
-    
-    const ItemsList = (
-        <div
-            className='objects-list'
-            ref={listRef}
-        >
-          <ItemList/>
-        </div>
-    )
-
-    useEffect(() => {
-      if (!listRef.current) {
-        return
-      }
-      
-      let selectedItem = Items.find((item) => item.key === selections[0])
-      let index = selectedItem ? selectedItem.props.index : 0
-      if (index > -1) {
-        // item 0 is always the world item
-        let isInView =
-            ((listRef.current.scrollTop + listRef.current.clientHeight) >= ELEMENT_HEIGHT * (index + 1))
-          && (listRef.current.scrollTop <= ELEMENT_HEIGHT * index)
-        
-        if (!isInView) {
-          listRef.current.scrollTop = ELEMENT_HEIGHT * index
-        }
-      }
-    }, [selections])
-
     let kind = sceneObjects[selections[0]] && sceneObjects[selections[0]].type
     let data = sceneObjects[selections[0]]
 
     return React.createElement(
       'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
         React.createElement(
-          'div', { ref, id: 'listing' },
-          size.width
-            ? ItemsList
-            : null
+          'div', {id: 'listing'},
+          <ItemList/>
         ),
         h(
           [Inspector, {
@@ -1754,173 +1581,6 @@ const BoneEditor = ({ sceneObject, bone, updateCharacterSkeleton }) => {
     ]]
   )
 }
-
-const ELEMENT_HEIGHT = 40
-const Element = React.memo(({ children, index, selections, groupLevel, style, sceneObject, isSelected, isActive, selectObject, selectObjectToggle, updateObject, deleteObjects, setActiveCamera, machineState, transition, allowDelete, undoGroupStart, undoGroupEnd }) => {
-  const onClick = preventDefault(event => {
-    const { shiftKey } = event
-
-    undoGroupStart()
-    
-    let selected = Array.isArray(selections) ? selections : []
-
-    if (sceneObject.type === 'group') {
-      if (shiftKey) {
-        if (selected.includes(sceneObject.id)) {
-          selected = selected.filter((selectedId) => {
-            return (selectedId !== sceneObject.id && !sceneObject.children.includes(selectedId))
-          })
-  
-          selectObject(selected)
-        } else {
-          selectObject([...selected, sceneObject.id, ...sceneObject.children])
-        }
-      } else {
-        selectObject([sceneObject.id, ...sceneObject.children])
-      }
-    } else if (shiftKey) {
-      selectObjectToggle(sceneObject.id)
-
-    } else {
-      selectObject(sceneObject.id)
-
-      if (sceneObject.type === 'camera') {
-        setActiveCamera(sceneObject.id)
-      }
-    }
-
-    undoGroupEnd()
-  })
-
-  const onDeleteClick = preventDefault(event => {
-    let choice = dialog.showMessageBox(null, {
-      type: 'question',
-      buttons: ['Yes', 'No'],
-      message: 'Are you sure?',
-      defaultId: 1 // default to No
-    })
-    if (choice === 0) {
-      let ids = [sceneObject.id]
-      if (sceneObject.children && sceneObject.children.length > 0) {
-        ids.push(...sceneObject.children)
-      }
-      
-      deleteObjects(ids)
-    }
-  })
-
-  const onToggleVisibleClick = preventDefault(event => {
-    let visible = !sceneObject.visible;
-    updateObject(sceneObject.id, {visible})
-    
-    if (sceneObject.children && sceneObject.children.length) {
-      for (let childId of sceneObject.children) {
-        updateObject(childId, {visible})
-      }
-    }
-    
-    if (sceneObject.group && visible) {
-      updateObject(sceneObject.group, {visible})
-    }
-  })
-  
-  const onToggleLockClick = preventDefault(event => {
-    let locked = !sceneObject.locked
-    updateObject(sceneObject.id, {locked})
-  
-    if (sceneObject.children && sceneObject.children.length) {
-      for (let childId of sceneObject.children) {
-        updateObject(childId, {locked})
-      }
-    }
-  
-    if (sceneObject.group && !locked) {
-      updateObject(sceneObject.group, {locked})
-    }
-  })
-
-  let typeLabels = {
-    'camera': [Icon, { src: 'icon-item-camera' }],
-    'character': [Icon, { src: 'icon-item-character' }],
-    'object': [Icon, { src: 'icon-item-object' }],
-    'light': [Icon, { src: 'icon-item-light' }],
-    'volume': [Icon, { src: 'icon-item-volume' }],
-    'image': [Icon, { src: 'icon-item-image' }]
-  }
-
-  let className = classNames({
-    'selected': isSelected,
-    'zebra': index % 2
-  })
-  
-  if (sceneObject.type === 'group') {
-    return h([
-      'div.element-group', {className, style: {paddingLeft: groupLevel * 12}}, [['div.element', {className, style: {height: ELEMENT_HEIGHT}}, [
-        [
-          'a.title[href=#]',
-          { onClick },
-          [
-            [
-              ['span.id', sceneObject.displayName]
-            ]
-          ],
-        ],
-        ['div.row', [
-          sceneObject.locked
-              ? ['a.lock[href=#]', { onClick: onToggleLockClick }, [Icon, { src: 'icon-item-lock' }]]
-              : ['a.lock.hide-unless-hovered[href=#]', { onClick: onToggleLockClick }, [Icon, { src: 'icon-item-unlock' }]],
-            
-          sceneObject.visible
-              ? ['a.visibility.hide-unless-hovered[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
-              : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
-        
-          allowDelete
-              ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
-              : ['a.delete', { style: { opacity: 0.1 } }, 'X']
-        ]]
-      ]]]
-    ])
-  }
-
-  return h([
-    'div.element', { className, style: { height: ELEMENT_HEIGHT, paddingLeft: groupLevel * 12 } }, [
-      [
-        'a.title[href=#]',
-        { onClick },
-        [
-          ['span.type', typeLabels[sceneObject.type]],
-          ...(sceneObject.name
-            ? [
-                ['span.name', sceneObject.name]
-              ]
-            : [
-                ['span.id', sceneObject.displayName]
-              ]
-          ),
-        ],
-      ],
-      ['div.row', [
-          isActive
-            ? ['span.active', { style: { display: 'flex' }},  [Icon, { src: 'icon-item-active' }]]
-            : [],
-  
-          sceneObject.locked
-            ? ['a.lock[href=#]', { onClick: onToggleLockClick }, [Icon, { src: 'icon-item-lock' }]]
-            : ['a.lock.hide-unless-hovered[href=#]', { onClick: onToggleLockClick }, [Icon, { src: 'icon-item-unlock' }]],
-
-          sceneObject.type === 'camera'
-            ? []
-            : sceneObject.visible
-              ? ['a.visibility.hide-unless-hovered[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-visible' }]]
-              : ['a.visibility[href=#]', { onClick: onToggleVisibleClick }, [Icon, { src: 'icon-item-hidden' }]],
-
-          allowDelete
-            ? ['a.delete[href=#]', { onClick: onDeleteClick }, 'X']
-            : ['a.delete', { style: { opacity: 0.1 } }, 'X']
-      ]]
-    ]
-  ])
-})
 
 const PhoneCursor = connect(
   state => ({
