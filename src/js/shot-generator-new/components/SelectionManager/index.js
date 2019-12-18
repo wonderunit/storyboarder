@@ -357,19 +357,21 @@ React.memo(({
     let intersects = getIntersects(mousePosition.current, camera, useIcons, {x, y});
     // if no objects intersected
     if (intersects.length === 0) {
-        // cancel any active dragging
-        endDrag()
-        // clear the drag target
-        setDragTarget(null)
+        if(dragTarget || (selections.length === 1 && selections[0] !== activeCamera) ) {
+            // cancel any active dragging
+            endDrag()
+            // clear the drag target
+            setDragTarget(null)
 
-        // don't do anything on the next pointerup
-        setLastDownId(null)
+            // don't do anything on the next pointerup
+            setLastDownId(null)
 
-        // select the active camera
-        selectObject(activeCamera)
+            // select the active camera
+            selectObject(activeCamera)
 
-        // don't select any bone
-        selectBone(null)
+            // don't select any bone
+            selectBone(null)
+        }
     } else {
       let shouldDrag = false
       let target
