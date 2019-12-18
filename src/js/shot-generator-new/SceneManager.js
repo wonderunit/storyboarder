@@ -38,7 +38,7 @@ const {
 } = require('./Components')
 
 const CameraControls = require('./CameraControls')
-const SelectionManager = require('./SelectionManager')
+const SelectionManager = require('./components/SelectionManager').default
 // const SelectionsMover = require('./SelectionsMover')
 
 const Character = require('./Character')
@@ -772,11 +772,10 @@ const SceneManager = connect(
           useIcons: mainViewCamera !== 'live',
           transition,
           gl: largeRenderer.current,
-          updateObject:updateObject,
           onDrag: autofitOrtho
         }],
 
-        [SelectionManager, {
+        /* [SelectionManager, {
           key: 'selection-manager-small',
           SceneContext,
           camera: mainViewCamera === 'live' ? orthoCamera.current : camera,
@@ -787,7 +786,7 @@ const SceneManager = connect(
           gl: smallRenderer.current,
           updateObject:updateObject,
           onDrag: autofitOrtho
-        }],
+        }] */,
 
         // [SelectionsMover, {
         //   key: 'selections-mover',
