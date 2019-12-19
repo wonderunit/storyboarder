@@ -788,20 +788,18 @@ const SceneManager = connect(
     const getFocusedSelectionManager = () => {
       if(canvasInFocus === "Large") {
         return [SelectionManager, {
-          key: 'selection-manager-large',
-          SceneContext,
-          camera: mainViewCamera === 'live' ? camera : orthoCamera.current,
-          el: largeCanvasRef.current,
-          selectOnPointerDown: mainViewCamera !== 'live',
-          useIcons: mainViewCamera !== 'live',
-          transition,
-          gl: largeRenderer.current,
-          onDrag: autofitOrtho
+          //key: 'selection-manager-large',
+          //camera: mainViewCamera === 'live' ? camera : orthoCamera.current,
+          //el: largeCanvasRef.current,
+          //selectOnPointerDown: mainViewCamera !== 'live',
+          //useIcons: mainViewCamera !== 'live',
+          //transition,
+          //gl: largeRenderer.current,
+          //onDrag: autofitOrtho
         }]
       } else if(canvasInFocus === "Small") {
        return [SelectionManager, {
           key: 'selection-manager-small',
-          SceneContext,
           camera: mainViewCamera === 'live' ? orthoCamera.current : camera,
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',

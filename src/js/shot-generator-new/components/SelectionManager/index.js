@@ -78,10 +78,6 @@ const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => 
       x:            object.x,
       y:            object.y,
       z:            object.z,
-      group:        object.group || null,
-      children:     object.children || null,
-      visible:      Boolean(object.visible),
-      locked:       Boolean(object.locked),
       type:         object.type
     }
   })
@@ -139,17 +135,11 @@ React.memo(({
   const intersectables = useRef(null)
 
   const getGPUPicker = () => {
-    if(gpuPickerInstance.current === null)
-    {
-      gpuPickerInstance.current = new GPUPicker(gl);
+    if(gpuPickerInstance.current === null) {
+      gpuPickerInstance.current = new GPUPicker(gl)
     }
-    return gpuPickerInstance.current;
-  };
-
-  console.log("Rerender")
-  useEffect(() => {
-    console.log("Mounted")
-  }, [])
+    return gpuPickerInstance.current
+  }
 
   const filterIntersectables = () => {
     intersectables.current = scene.children.filter(o => 
@@ -186,19 +176,16 @@ React.memo(({
     raycaster.setFromCamera({x, y}, camera )
     let intersects = [];
 
-    if( useIcons)
-    {
+    if( useIcons) {
       intersects = raycaster.intersectObjects( getObjectsFromIcons(intersectables.current) )
     }
-    else
-    {
+    else {
       x = pointer.x
       y = pointer.y
       raycaster.setFromCamera({x, y}, camera )
       //Check helpers intersection first
       intersects = raycaster.intersectObject(SGIkHelper.getInstance())
-      if(intersects.length > 0)
-      {
+      if(intersects.length > 0) {
         return intersects
       }
       x = mousePosition.x
@@ -514,7 +501,6 @@ React.memo(({
             if (object && object.group) {
               selectObject([object.group, ...sceneObjects[object.group].children])
             } else {
-              console.log("Selectin object")
               selectObject(target.userData.id)
             }
           }
@@ -535,15 +521,11 @@ React.memo(({
     event.preventDefault()
 
     const { x, y } = mouse(event)
-    if (dragTarget)
-    {
-      if(dragTarget.target.userData.type === 'character')
-      {
+    if (dragTarget) {
+      if(dragTarget.target.userData.type === 'character') {
         let ikRig = SGIkHelper.getInstance().ragDoll;
-        if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown)
-        {
-          if(!dragTarget.isObjectControl)
-          {
+        if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown) {
+          if(!dragTarget.isObjectControl) {
             drag({ x, y }, dragTarget.target)
           }
         }
@@ -617,12 +599,10 @@ React.memo(({
   }
 
   useLayoutEffect(() => {
-    //console.log("Add event listener")
-     el.addEventListener('pointerdown', onPointerDown)
-     el.addEventListener('pointermove', onPointerMove)
-     window.addEventListener('pointerup', onPointerUp)
+    el.addEventListener('pointerdown', onPointerDown)
+    el.addEventListener('pointermove', onPointerMove)
+    window.addEventListener('pointerup', onPointerUp)
     return function cleanup () {
-     // console.log("Removed event listener")
       el.removeEventListener('pointerdown', onPointerDown)
       el.removeEventListener('pointermove', onPointerMove)
       window.removeEventListener('pointerup', onPointerUp)
