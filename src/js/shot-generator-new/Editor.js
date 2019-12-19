@@ -178,7 +178,8 @@ const Editor = connect(
     const largeCanvasRef = useRef(null)
     const smallCanvasRef = useRef(null)
     const [ready, setReady] = useState(false)
-    const scene = useRef()
+    const scene = useRef({children:[]})
+    const [localState, setLocalState] = useState({value: {}})
     let [camera, setCamera ] = useState(null)
     const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
     const [ machineState, transition ] = useMachine(editorMachine)
@@ -333,7 +334,7 @@ const Editor = connect(
       scene.current = new THREE.Scene()
       // TODO introspect models
       updateModels({})
-
+      setLocalState({value:{scene: scene.current}})
       // do any other pre-loading stuff here
       document.fonts.ready.then(() => {
         // let the app know we're ready to render
@@ -357,6 +358,10 @@ const Editor = connect(
         window.removeEventListener('beforeunload', onBeforeUnload)
       }
     }, [onBeforeUnload])
+
+    useEffect(() => {
+      setLocalState({value:{scene: scene.current}})
+    }, [scene.current.children])
 
     const loadAttachment = ({ filepath, dispatch }) => {
       switch (path.extname(filepath)) {
@@ -723,7 +728,7 @@ const Editor = connect(
 
     return React.createElement(
       SceneContext.Provider,
-      { value: { scene: scene.current }},
+      { value: localState.value},
       h(
         [FatalErrorBoundary,
           ['div.column', { style: { width: '100%', height: '100%' } }, [

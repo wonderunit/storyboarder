@@ -10,7 +10,7 @@ import {
   selectAttachable,
   updateObjects,
   updateObject,
-
+  
   undoGroupStart,
   undoGroupEnd,
 
@@ -20,7 +20,9 @@ import {
   getSceneObjects,
 } from '../../../shared/reducers/shot-generator'
 
-import memoizeResult from './../../../utils/memoizeResult'
+import { SceneContext } from "../../Components"
+
+import deepEqualSelector from './../../../utils/deepEqualSelector'
 
 function getObjectsFromIcons ( objects ) {
   return objects
@@ -69,27 +71,28 @@ const getIntersectionTarget = intersect => {
     return intersect.object.parent
   }
 }
-
-const getSceneObjectsM = memoizeResult((state) => {
-  return Object.values(getSceneObjects(state)).map((object) => {
+const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => {
+  return Object.values(sceneObjects).map((object) => {
     return {
       id:           object.id,
-      displayName:  object.displayName,
-      group:        object.group,
-      children:     object.children,
-      visible:      object.visible,
-      locked:       object.locked,
+      x:            object.x,
+      y:            object.y,
+      z:            object.z,
+      group:        object.group || null,
+      children:     object.children || null,
+      visible:      Boolean(object.visible),
+      locked:       Boolean(object.locked),
       type:         object.type
     }
   })
 })
-const getSelectionsM = memoizeResult(getSelections)
+const getSelectionsM = deepEqualSelector([getSelections], selections => selections)
 
 const SelectionManager = connect(
   state => ({
     selections: getSelectionsM(state),
     sceneObjects: getSceneObjectsM(state),
-    activeCamera: getActiveCamera(state)
+    activeCamera: getActiveCamera(state),
   }),
   {
     selectObject,
@@ -104,7 +107,6 @@ const SelectionManager = connect(
   }
 )(
 React.memo(({
-    SceneContext,
     camera,
     el,
 
@@ -303,10 +305,9 @@ React.memo(({
   }
   
   const endDrag = () => {
-    if (!objectChanges || !objectChanges.current) {
+    if (!objectChanges || !objectChanges.current || !Object.keys(objectChanges.current).length) {
       return false
     }
-  
     updateObjects(objectChanges.current)
   
     for (let selection of selections) {
@@ -337,12 +338,11 @@ React.memo(({
     mousePosition.current.set(x, y);
     // find all the objects that intersect the mouse coords
     // (uses a different search method if useIcons is true)
-    if(!useIcons)
-    {
-      const rect = el.getBoundingClientRect();
-      mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top);
+    if(!useIcons) {
+      const rect = el.getBoundingClientRect()
+      mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top)
     }
-    let intersects = getIntersects(mousePosition.current, camera, useIcons, {x, y});
+    let intersects = getIntersects(mousePosition.current, camera, useIcons, {x, y})
     // if no objects intersected
     if (intersects.length === 0) {
         if(dragTarget || (selections.length === 1 && selections[0] !== activeCamera) ) {
@@ -495,7 +495,6 @@ React.memo(({
           shouldDrag = true
         }
       }
-
       selectBone(null)
       if (selectOnPointerDown) {
         if (event.shiftKey) {
@@ -515,6 +514,7 @@ React.memo(({
             if (object && object.group) {
               selectObject([object.group, ...sceneObjects[object.group].children])
             } else {
+              console.log("Selectin object")
               selectObject(target.userData.id)
             }
           }
@@ -559,7 +559,6 @@ React.memo(({
     event.preventDefault()
 
     const { x, y } = mouse(event)
-
     if (dragTarget) {
       endDrag(dragTarget)
       setDragTarget(null)
@@ -608,7 +607,6 @@ React.memo(({
                 }
               }
             }
-           
             selectBone(null)
           }
         }
@@ -620,9 +618,9 @@ React.memo(({
 
   useLayoutEffect(() => {
     //console.log("Add event listener")
-    el.addEventListener('pointerdown', onPointerDown)
-    el.addEventListener('pointermove', onPointerMove)
-    window.addEventListener('pointerup', onPointerUp)
+     el.addEventListener('pointerdown', onPointerDown)
+     el.addEventListener('pointermove', onPointerMove)
+     window.addEventListener('pointerup', onPointerUp)
     return function cleanup () {
      // console.log("Removed event listener")
       el.removeEventListener('pointerdown', onPointerDown)
