@@ -1,6 +1,6 @@
 const { Provider, connect } = require('react-redux')
 const React = require('react')
-const { useState, useEffect, useRef, useContext, useMemo, useLayoutEffect } = React
+const { useState, useEffect, useRef, useContext, useMemo, useLayoutEffect, useCallback } = React
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
@@ -241,9 +241,9 @@ const SceneManager = connect(
       setOutlineEffectParams('small')
     }, [])
   
-    const autofitOrtho = () => {
+    const autofitOrtho = useCallback(() => {
       let minMax = [9999,-9999,9999,-9999]
-    
+        
       // go through all appropriate objects and get the min max
       let numVisible = 0
       for (child of scene.children) {
@@ -310,7 +310,7 @@ const SceneManager = connect(
       orthoCamera.current.far = 1000
     
       orthoCamera.current.updateProjectionMatrix()
-    }
+    }, [scene, mainViewCamera, orthoCamera])
 
     const onPointerMove = (event) => {
       if(smallCanvasRef.current && largeCanvasRef.current) {
