@@ -3,9 +3,8 @@ import { remote } from 'electron'
 const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
 import path from 'path'
-import { useState, useMemo, forwardRef, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import { connect } from 'react-redux'
-import { FixedSizeGrid } from 'react-window'
 
 import {
   updateObject,
@@ -77,17 +76,16 @@ const ListItem = React.memo(({ id, isSelected, model, style, index, onSelectItem
   if (!model) return <div/>
   let currentRow = index / NUM_COLS 
   let currentCol = index % (NUM_COLS)
-  console.log("render")
   let newElementStyle = {position: style.position, width: style.width, height: style.height}
   newElementStyle.top = style.height * Math.floor(currentRow)
   newElementStyle.left = style.width * currentCol
 
   return model && <ModelFileItem 
-      style={newElementStyle}
-      id={id}
-      isSelected={isSelected}
-      model={model}
-      onSelectItem={onSelectItem}/>
+      style={ newElementStyle } 
+      id={ id }
+      isSelected={ isSelected }
+      model={ model }
+      onSelectItem={ onSelectItem }/>
 })
 
 const FileSelect = ({ model, onSelectFile }) => {
@@ -116,7 +114,6 @@ const FileSelect = ({ model, onSelectFile }) => {
 
 const ModelSelect = connect(
   state => ({
-    attachments: state.attachments,
     allModels: state.models
   }),
   {
@@ -127,7 +124,6 @@ const ModelSelect = connect(
   React.memo(({
     id,
     model,
-    attachments,
     allModels,
 
     updateObject,
@@ -149,7 +145,6 @@ const ModelSelect = connect(
       })
     }, [id, model])
 
-    console.log("Rerender")
     const onSearchChange = event => {
       event.preventDefault()
       setTerms(event.currentTarget.value)
@@ -195,7 +190,7 @@ const ModelSelect = connect(
           <div className="column" style={{ flex: 1 } }> 
             <input
               placeholder='Search models …'
-              onChange={onSearchChange}> 
+              onChange={ onSearchChange }> 
             </input>
           </div>
           {isCustom ? <div className="column" style={{ padding: 2 }} />
@@ -213,13 +208,13 @@ const ModelSelect = connect(
                    position: "relative",
                    overflow: "auto"}}>
             { results.map((item, index) => <ListItem 
-                      key={index}
-                      model={item} 
-                      style={elementStyle}
-                      id={sceneObject.id}
-                      isSelected={sceneObject.model === item.id}
-                      onSelectItem={onSelectItem}
-                      index={index}
+                      key={ index }
+                      model={ item } 
+                      style={ elementStyle }
+                      id={ sceneObject.id }
+                      isSelected={ sceneObject.model === item.id }
+                      onSelectItem={ onSelectItem }
+                      index={ index }
                       />)}
           </div>
         </div>

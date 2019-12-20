@@ -139,8 +139,8 @@ const ModelSelect = connect(
   }
 )(
   React.memo(({
+    sceneObject,
     id,
-
     attachments,
     model,
     allModels,
@@ -152,7 +152,7 @@ const ModelSelect = connect(
     rows = 3
   }) => {
     const [terms, setTerms] = useState(null)
-    const [sceneObject, setSceneObject] = useState({})
+    //const [sceneObject, setSceneObject] = useState({})
     const models = useMemo(
       () => Object.values(allModels).filter(m => m.type === sceneObject.type),
       [allModels, sceneObject.type]
@@ -160,7 +160,7 @@ const ModelSelect = connect(
 
     useEffect(() => {
       withState((dispatch, state) => {
-        setSceneObject(getSceneObjects(state)[id])
+       // setSceneObject(getSceneObjects(state)[id])
       })
     }, [id])
 
