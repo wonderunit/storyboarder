@@ -3,7 +3,7 @@ import { remote } from 'electron'
 const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
 import path from 'path'
-import { useState, useMemo, forwardRef, useEffect } from 'react'
+import { useState, useMemo, forwardRef, useEffect, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
 
@@ -24,6 +24,10 @@ const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
 
 const NUM_COLS = 4
+const elementStyle = {
+  position:"absolute", 
+  height:ITEM_HEIGHT, 
+  width:ITEM_WIDTH + GUTTER_SIZE}
 
 const filepathFor = model =>
   ModelLoader.getFilepathForModel(
@@ -33,7 +37,8 @@ const filepathFor = model =>
 const ModelFileItem = React.memo(({
   style,
 
-  sceneObject,
+  id,
+  isSelected,
   model,
 
   onSelectItem
@@ -42,13 +47,11 @@ const ModelFileItem = React.memo(({
 
   const onSelect = event => {
     event.preventDefault()
-    onSelectItem(sceneObject.id, { model: model.id })
+    onSelectItem(id, { model: model.id })
   }
-
   const className = classNames('thumbnail-search__item', {
-    'thumbnail-search__item--selected': sceneObject.model === model.id
+    'thumbnail-search__item--selected': isSelected
   })
-
   // allow a little text overlap
   const slop = GUTTER_SIZE
 
@@ -70,22 +73,20 @@ const ModelFileItem = React.memo(({
     </div>
 })
 
-const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  console.log("rerender")
-  const { sceneObject } = data
-  const model = data.models[columnIndex + (rowIndex * NUM_COLS)]
-  const onSelectItem = data.onSelectItem
-
+const ListItem = React.memo(({ id, isSelected, model, style, index, onSelectItem}) => {
   if (!model) return <div/>
+  let currentRow = index / NUM_COLS 
+  let currentCol = index % (NUM_COLS)
+  console.log("render")
+  let newElementStyle = {position: style.position, width: style.width, height: style.height}
+  newElementStyle.top = style.height * Math.floor(currentRow)
+  newElementStyle.left = style.width * currentCol
 
-  const filepath = (model.id !== 'box') && filepathFor(model)
-  const modelData = data.attachments[filepath] && data.attachments[filepath].value
-
-  return <ModelFileItem 
-      style={style}
-      sceneObject={sceneObject}
+  return model && <ModelFileItem 
+      style={newElementStyle}
+      id={id}
+      isSelected={isSelected}
       model={model}
-      modelData={modelData}
       onSelectItem={onSelectItem}/>
 })
 
@@ -125,9 +126,8 @@ const ModelSelect = connect(
 )(
   React.memo(({
     id,
-
-    attachments,
     model,
+    attachments,
     allModels,
 
     updateObject,
@@ -147,7 +147,7 @@ const ModelSelect = connect(
       withState((dispatch, state) => {
         setSceneObject(getSceneObjects(state)[id])
       })
-    }, [id])
+    }, [id, model])
 
     console.log("Rerender")
     const onSearchChange = event => {
@@ -170,9 +170,9 @@ const ModelSelect = connect(
       transition('TYPING_EXIT')
     }
 
-    const onSelectItem = (id, { model }) => {
+    const onSelectItem = useCallback((id, { model }) => {
       updateObject(id, { model })
-    }
+    }, [])
 
     const results = useMemo(() => {
       const matchAll = terms == null || terms.length === 0
@@ -188,22 +188,7 @@ const ModelSelect = connect(
         )
     }, [terms, sceneObject.id])
 
-    // via https://reactjs.org/docs/forwarding-refs.html
-    const innerElementType = forwardRef(({ style, ...rest }, ref) => {
-      return <div 
-          ref={ref}
-          style={{
-            ...style,
-            width: 288, // cut off the right side gutter
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-          {...rest}>
-      </div>
-    })
-
     const isCustom = sceneObject.model && ModelLoader.isCustomModel(sceneObject.model)
-
     return sceneObject.model && 
       <div className="thumbnail-search column"> 
         <div className="row" style={{ padding:'6px 0' }}> 
@@ -222,29 +207,21 @@ const ModelSelect = connect(
             </div>
         </div>
         <div className="thumbnail-search__list">
-          <FixedSizeGrid
-            columnCount= {NUM_COLS}
-            columnWidth={ITEM_WIDTH + GUTTER_SIZE}
-            rowCount={Math.ceil(results.length / NUM_COLS)}
-            rowHeight={ITEM_HEIGHT}
-
-            width={288}
-            height={rows === 2
-              ? 248 // built-in Characters list
-              : rows * ITEM_HEIGHT} // built-in Models list
-
-            innerElementType={innerElementType}
-
-            itemData={{
-              models: results,
-              attachments,
-
-              sceneObject,
-
-              onSelectItem
-            }}
-            children={ListItem}
-          />
+          <div className="row" style={{
+                   width: 288, 
+                   height: rows === 2 ? 248 : rows * ITEM_HEIGHT,
+                   position: "relative",
+                   overflow: "auto"}}>
+            { results.map((item, index) => <ListItem 
+                      key={index}
+                      model={item} 
+                      style={elementStyle}
+                      id={sceneObject.id}
+                      isSelected={sceneObject.model === item.id}
+                      onSelectItem={onSelectItem}
+                      index={index}
+                      />)}
+          </div>
         </div>
       </div> 
     

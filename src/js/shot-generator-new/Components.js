@@ -110,6 +110,7 @@ const NumberSliderTransform = require('./NumberSlider').transforms
 const NumberSliderFormatter = require('./NumberSlider').formatters
 
 const ModelSelect = require('./components/ModelSelect').default
+//const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
 const AttachableEditor = require('./attachables/AttachableEditor')
@@ -1512,6 +1513,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [
         ModelSelect, {
           id:sceneObject.id,
+          //sceneObject,
           updateObject,
           transition,
           model:sceneObject.model,
