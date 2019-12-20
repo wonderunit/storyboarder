@@ -101,14 +101,6 @@ const ModelLoader = require('../services/model-loader')
 const ColorSelect = require('./ColorSelect')
 const Select = require('./Select')
 
-const NumberSliderComponent = require('./NumberSlider')
-const NumberSlider = connect(null, {
-  onDragStart: undoGroupStart,
-  onDragEnd: undoGroupEnd
-})(NumberSliderComponent.NumberSlider)
-const NumberSliderTransform = require('./NumberSlider').transforms
-const NumberSliderFormatter = require('./NumberSlider').formatters
-
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./PosePresetsEditor')
@@ -120,8 +112,10 @@ const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
 
 const ItemList = require('./components/ItemList').default
+const InspectedWorld = require('./components/InspectedWorld').default
+const {NumberSlider, transforms: NumberSliderTransform, formatters: NumberSliderFormatter} = require('./components/NumberSlider')
+
 const {setShot, ShotSizes, ShotAngles} = require('./cameraUtils')
-const clampElementToView = require('../utils/clampElementToView').default
 
 
 window.THREE = THREE
@@ -260,22 +254,13 @@ const Inspector = ({
             }
           ]
         : [
-          InspectedWorld, {
-            world,
-
-            transition,
-
-            updateWorld,
-            updateWorldRoom,
-            updateWorldEnvironment,
-            updateWorldFog
-          }
+          InspectedWorld
         ],
       // [ServerInspector]
   ])
 }
 
-const InspectedWorld = ({ world, transition, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog }) => {
+const InspectedWorldOld = ({ world, transition, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog }) => {
   const onGroundClick = event => {
     event.preventDefault()
     updateWorld({ ground: !world.ground })
@@ -653,42 +638,42 @@ const ElementsPanel = connect(
     undoGroupEnd
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, undoGroupStart, undoGroupEnd }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath }) => {
     let kind = sceneObjects[selections[0]] && sceneObjects[selections[0]].type
     let data = sceneObjects[selections[0]]
+    
+    return (
+        <div style = {{flex: 1, display: 'flex', flexDirection: 'column'}} >
+          <div id='listing'>
+            <ItemList/>
+          </div>
+          <Inspector
+              {...{
+                world,
 
-    return React.createElement(
-      'div', { style: { flex: 1, display: 'flex', flexDirection: 'column' }},
-        React.createElement(
-          'div', {id: 'listing'},
-          <ItemList/>
-        ),
-        h(
-          [Inspector, {
-            world,
+                kind,
+                data,
 
-            kind,
-            data,
+                models, updateObject,
 
-            models, updateObject,
+                machineState, transition,
 
-            machineState, transition,
+                selectedBone, selectBone,
 
-            selectedBone, selectBone,
+                updateCharacterSkeleton,
 
-            updateCharacterSkeleton,
+                updateWorld,
+                updateWorldRoom,
+                updateWorldEnvironment,
+                updateWorldFog,
 
-            updateWorld,
-            updateWorldRoom,
-            updateWorldEnvironment,
-            updateWorldFog,
+                storyboarderFilePath,
 
-            storyboarderFilePath,
-
-            selections
-          }]
-        )
-      )
+                selections
+              }}
+          />
+        </div>
+    )
   }
 ))
 

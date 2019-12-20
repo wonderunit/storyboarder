@@ -1179,6 +1179,86 @@ div.fatal-error-screen__report::selection {
   background: #555;
 }
 
+.inspector-group {
+  margin: 0 0 12px 0;
+}
+
+.inspector-label {
+  margin: 0;
+}
+
+.inspector-row {
+  display: flex;
+  align-items: center;
+  margin: 6px 0 3px 0;
+}
+
+.number-slider {
+  height: 26px;
+}
+
+.number-slider__control {
+  user-select: none;
+}
+
+/* Checkbox block */
+
+.checkbox {
+  align-items: center;
+  display: flex;
+}
+
+.checkbox .checkbox-label {
+  font-size: 15px;
+  padding-right: 4px;
+}
+
+.checkbox input {
+  display: none;
+}
+
+.checkbox input + label {
+  cursor: default;
+  position: relative;
+}
+
+.checkbox input + label span {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  /* margin: -2px 10px 0 0; */
+  vertical-align: middle;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  cursor: default;
+}
+
+.checkbox input:checked + label:before {
+  content:'\2716';
+  padding-left: 5px;
+  padding-top: 4px;
+  text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
+  font-size: 15px;
+  text-align: center;
+  line-height: 1;
+  position: absolute;
+  color: rgba(255,255,255,0.5);
+}
+
+/* End of checkbox */
+
+.objects-list .element,
+#toolbar a,
+a.button,
+.number-slider__control,
+#inspector .button_add {
+  transition: background-color 0.2s;
+}
+
+#toolbar a {
+  cursor: pointer;
+}
+
 @media (max-width: 1504px) {
 
   #toolbar a span,

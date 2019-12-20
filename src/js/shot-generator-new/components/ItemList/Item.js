@@ -59,7 +59,7 @@ const getDeleteIcon = (props) => {
           style={{
             opacity: !!props.allowDelete ? null : 0.1
           }}
-          onClick={(e) => props.onDeleteItem(e, props)}
+          onClick={(e) => props.allowDelete && props.onDeleteItem(e, props)}
       >
         X
       </a>

@@ -37,8 +37,6 @@ const getSortedItems = (sceneObjectsArray) => {
 const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject}) => {
   const listRef = useRef(null)
   
-  console.log('Render')
-  
   const onSelectItem = useCallback((event, props) => {
     if (!props) {
       if (selections.length) {
