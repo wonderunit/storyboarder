@@ -111,7 +111,8 @@ const NumberSliderFormatter = require('./NumberSlider').formatters
 
 const ModelSelect = require('./ModelSelect')
 const AttachmentsSelect = require('./AttachmentsSelect')
-const PosePresetsEditor = require('./PosePresetsEditor')
+//const PosePresetsEditor = require('./PosePresetsEditor')
+const PosePresetsEditor = require('./components/PosePresetsEditor').default
 const AttachableEditor = require('./attachables/AttachableEditor')
 const AttachableInfo = require('./attachables/AttachableInfo')
 const HandPresetsEditor = require('./HandPresetsEditor')
