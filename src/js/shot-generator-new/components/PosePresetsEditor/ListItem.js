@@ -1,5 +1,6 @@
 
 import PosePresetsEditorItem from './PosePresetEditorItem'
+
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
     let { id, posePresetId, updateObject, attachments, thumbnailRenderer } = data
     let preset = data.presets[columnIndex + (rowIndex * 4)]
