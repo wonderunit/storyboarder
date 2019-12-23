@@ -23,27 +23,29 @@ import { searchPresetsForTerms } from '../../utils/searchPresetsForTerms'
 import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL } from './ItemSettings'
 import ListItem from './ListItem'
 import { filepathFor } from '../../utils/filepathFor'
-
+import deepEqualSelector from './../../../utils/deepEqualSelector'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
+const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
+    let filepath = filepathFor(CHARACTER_MODEL)
+    return !attachments[filepath] ? undefined : attachments[filepath].status
+})
 const PosePresetsEditor = connect(
   state => ({
-    attachments: state.attachments,
+    attachmentStatus: getAttachmentM(state),
     posePresets: state.presets.poses,
   }),
   {
     updateObject,
     createPosePreset,
-    getSceneObjects,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
 React.memo(({
   id,
-  posePresetId,
 
   posePresets,
-  attachments,
+  attachmentStatus,
 
   updateObject,
   createPosePreset,
@@ -51,20 +53,40 @@ React.memo(({
 }) => {
   const thumbnailRenderer = useRef()
 
+  const getAttachment = () => {
+    let attachment 
+    withState((dispatch, state) => {
+      let filepath = filepathFor(CHARACTER_MODEL)
+      attachment = state.attachments[filepath].value
+    })
+    return attachment
+  }
+  const [attachment, setAttachment] = useState(getAttachment())
+
   const [ready, setReady] = useState(false)
   const [terms, setTerms] = useState(null)
 
   const presets = useMemo(() => searchPresetsForTerms(Object.values(posePresets), terms), [posePresets, terms])
 
+  const getPosePresetId = () => {
+    let posePresetId
+    withState((dispatch, state) => {
+      posePresetId = getSceneObjects(state)[id].posePresetId
+    })
+    return posePresetId
+  }
+
+
   useEffect(() => {
     if (ready) return
-    let filepath = filepathFor(CHARACTER_MODEL)
-    if (attachments[filepath] && attachments[filepath].value) {
+    if (attachmentStatus === "Success" && !attachment) {
+      let attachment = getAttachment()
+      setAttachment(attachment)
       setTimeout(() => {
         setReady(true)
       }, 100) // slight delay for snappier character selection via click
     }
-  }, [attachments])
+  }, [attachmentStatus])
 
 
   const onChange = event => {
@@ -153,7 +175,7 @@ React.memo(({
         {...rest}/>
   })
 
-  return ready && <div className="thumbnail-search column">
+  return attachment && <div className="thumbnail-search column">
       <div className="row" style={{ padding: '6px 0' } }> 
          <div className="column" style={{ flex: 1 }}> 
           <input placeholder='Search for a pose …'
@@ -181,9 +203,9 @@ React.memo(({
             presets,
 
             id: id,
-            posePresetId: posePresetId,
+            posePresetId: getPosePresetId(),
 
-            attachments,
+            attachment,
             updateObject,
 
             thumbnailRenderer

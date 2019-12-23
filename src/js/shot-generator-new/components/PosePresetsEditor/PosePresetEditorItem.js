@@ -3,14 +3,13 @@ import fs from 'fs-extra'
 import classNames from 'classnames'
 import SkeletonUtils from '../../../vendor/three/examples/js/utils/SkeletonUtils'
 import ThumbnailRenderer from '../../ThumbnailRenderer'
-import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH, CHARACTER_MODEL } from './ItemSettings'
-import { filepathFor } from '../../utils/filepathFor'
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from './ItemSettings'
 import { remote } from 'electron'
 import { useMemo } from 'react'
 
-const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
+const setupRenderer = ({ thumbnailRenderer, attachment, preset }) => {
   if (!thumbnailRenderer.getGroup().children.length) {
-    let modelData = attachments[filepathFor(CHARACTER_MODEL)].value
+    let modelData = attachment
     let group = SkeletonUtils.clone(modelData.scene.children[0])
     let child = group.children[1]
 
@@ -51,7 +50,7 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset }) => {
   }
 }
 
-const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject, attachments, thumbnailRenderer }) => {
+const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, updateObject, attachment, thumbnailRenderer }) => {
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
 
   const onPointerDown = event => {
@@ -70,7 +69,7 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
       thumbnailRenderer.current = thumbnailRenderer.current || new ThumbnailRenderer()
       setupRenderer({
         thumbnailRenderer: thumbnailRenderer.current,
-        attachments,
+        attachment,
         preset
       })
       thumbnailRenderer.current.render()
