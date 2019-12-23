@@ -201,7 +201,7 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   let { id, posePresetId, updateObject, attachments, thumbnailRenderer } = data
   let preset = data.presets[columnIndex + (rowIndex * 4)]
-
+  console.log("Pose Rerender")
   if (!preset) return h(['div', { style }])
 
   return h([
