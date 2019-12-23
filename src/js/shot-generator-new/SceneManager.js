@@ -39,7 +39,6 @@ const {
 
 const CameraControls = require('./CameraControls')
 const SelectionManager = require('./components/SelectionManager').default
-//const SelectionManager = require('./SelectionManager')
 // const SelectionsMover = require('./SelectionsMover')
 
 const Character = require('./Character')
@@ -788,14 +787,14 @@ const SceneManager = connect(
     const getFocusedSelectionManager = () => {
       if(canvasInFocus === "Large") {
         return [SelectionManager, {
-          //key: 'selection-manager-large',
-          //camera: mainViewCamera === 'live' ? camera : orthoCamera.current,
-          //el: largeCanvasRef.current,
-          //selectOnPointerDown: mainViewCamera !== 'live',
-          //useIcons: mainViewCamera !== 'live',
-          //transition,
-          //gl: largeRenderer.current,
-          //onDrag: autofitOrtho
+          key: 'selection-manager-large',
+          camera: mainViewCamera === 'live' ? camera : orthoCamera.current,
+          el: largeCanvasRef.current,
+          selectOnPointerDown: mainViewCamera !== 'live',
+          useIcons: mainViewCamera !== 'live',
+          transition,
+          gl: largeRenderer.current,
+          onDrag: autofitOrtho
         }]
       } else if(canvasInFocus === "Small") {
        return [SelectionManager, {
