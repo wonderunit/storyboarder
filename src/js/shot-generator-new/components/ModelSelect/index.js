@@ -1,116 +1,25 @@
-import classNames from 'classnames'
 import { remote } from 'electron'
 const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
-import path from 'path'
+
 import { useState, useMemo, useEffect, useCallback } from 'react'
 import { connect } from 'react-redux'
-
 import {
   updateObject,
   getSceneObjects,
 } from '../../../shared/reducers/shot-generator'
 import ModelLoader from '../../../services/model-loader'
-import { truncateMiddle } from '../../../utils'
 
 import CustomModelHelpButton from '../../CustomModelHelpButton'
+import FileSelect from './FileSelect'
+import ListItem from './ListItem'
 
-const GUTTER_SIZE = 5
-const ITEM_WIDTH = 68
-const ITEM_HEIGHT = 132
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT } from './ItemSettings'
 
-const IMAGE_WIDTH = ITEM_WIDTH
-const IMAGE_HEIGHT = 100
-
-const NUM_COLS = 4
 const elementStyle = {
   position:"absolute", 
   height:ITEM_HEIGHT, 
   width:ITEM_WIDTH + GUTTER_SIZE}
-
-const filepathFor = model =>
-  ModelLoader.getFilepathForModel(
-    { model: model.id, type: model.type },
-    { storyboarderFilePath: null })
-
-const ModelFileItem = React.memo(({
-  style,
-
-  id,
-  isSelected,
-  model,
-
-  onSelectItem
-}) => {
-  const src = filepathFor(model).replace(/.glb$/, '.jpg')
-
-  const onSelect = event => {
-    event.preventDefault()
-    onSelectItem(id, { model: model.id })
-  }
-  const className = classNames('thumbnail-search__item', {
-    'thumbnail-search__item--selected': isSelected
-  })
-  // allow a little text overlap
-  const slop = GUTTER_SIZE
-
-  return <div className={ className }
-    style={ style }
-    onPointerUp={ onSelect }
-    data-id={ model.id }
-    title={ model.name }> 
-      <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
-        <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }/>
-      </figure>
-      <div className="thumbnail-search__name" 
-        style={{
-          width: ITEM_WIDTH + slop,
-          height: (ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE) + slop
-        }}>
-      { model.name }
-      </div>
-    </div>
-})
-
-const ListItem = React.memo(({ id, isSelected, model, style, index, onSelectItem}) => {
-  if (!model) return <div/>
-  let currentRow = index / NUM_COLS 
-  let currentCol = index % (NUM_COLS)
-  let newElementStyle = {position: style.position, width: style.width, height: style.height}
-  newElementStyle.top = style.height * Math.floor(currentRow)
-  newElementStyle.left = style.width * currentCol
-
-  return model && <ModelFileItem 
-      style={ newElementStyle } 
-      id={ id }
-      isSelected={ isSelected }
-      model={ model }
-      onSelectItem={ onSelectItem }/>
-})
-
-const FileSelect = ({ model, onSelectFile }) => {
-  const isCustom = ModelLoader.isCustomModel(model)
-  const ext = path.extname(model)
-  const basenameWithoutExt = path.basename(model, ext)
-  const displayName = truncateMiddle(basenameWithoutExt, 13)
-
-  const className = classNames({
-    'button__file--selected': isCustom,
-    'button__file': !isCustom
-  })
-
-  return <div className="column" style={{ width: 106 } }> 
-      <a className={className} href='#' 
-          style={{ flex: 1, width: '100%', height: 34, whiteSpace: 'nowrap', overflow: 'hidden' }}
-          onPointerUp={ onSelectFile }
-          title={ isCustom ? path.basename(model) : undefined }>
-        {isCustom
-          ? displayName
-          : 'Select File …'}
-      </a>
-    </div>
-}
-
 
 const ModelSelect = connect(
   state => ({
@@ -184,6 +93,7 @@ const ModelSelect = connect(
     }, [terms, sceneObject.id])
 
     const isCustom = sceneObject.model && ModelLoader.isCustomModel(sceneObject.model)
+
     return sceneObject.model && 
       <div className="thumbnail-search column"> 
         <div className="row" style={{ padding:'6px 0' }}> 
@@ -221,5 +131,4 @@ const ModelSelect = connect(
       </div> 
     
   }))
-
 export default ModelSelect
