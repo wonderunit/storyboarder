@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react'
+import React, {useCallback, useRef, useEffect} from 'react'
 import {connect} from 'react-redux'
 
 import {remote} from 'electron'
@@ -12,6 +12,7 @@ import {
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import Item from "./Item";
+import clampElementToView from "../../../utils/clampElementToView";
 
 const sortPriority = ['camera', 'character', 'object', 'image', 'light', 'volume', 'group']
 
@@ -34,15 +35,21 @@ const getSortedItems = (sceneObjectsArray) => {
 
 
 const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject}) => {
+  const listRef = useRef(null)
+  
   const onSelectItem = useCallback((event, props) => {
     if (!props) {
+      if (selections.length) {
+        selectObject(null)
+      }
+      
       return false
     }
 
-    let currentSelections = props.children ? [...props.children, props.id] : [props.id]
+    let currentSelections = props.children ? [props.id, ...props.children] : [props.id]
     if (event.shiftKey) {
       if (selections.indexOf(props.id) === -1) {
-        currentSelections.push(...selections, props.id)
+        currentSelections.push(props.id, ...selections)
       } else {
         currentSelections = selections.filter(id => currentSelections.indexOf(id) === -1)
       }
@@ -83,7 +90,15 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
     }
   }, [])
   
-  const Items = getSortedItems(sceneObjects).map((props, index) => {
+  const sortedList = getSortedItems(sceneObjects)
+
+  useEffect(() => {
+    if (listRef.current) {
+      clampElementToView(listRef.current, selections[0] ? sortedList.findIndex(object => object.id === selections[0]) + 1 : 0)
+    }
+  }, [listRef.current, selections[0]])
+  
+  const Items = sortedList.map((props, index) => {
     const allowDelete = props.type !== 'camera' || (props.type === 'camera' && activeCamera !== props.id)
     
     return (
@@ -103,7 +118,10 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
   })
   
   return (
-      <div>
+      <div
+          className = 'objects-list'
+          ref={listRef}
+      >
         <Item
             selected={selections.length === 0}
             index={0}
