@@ -103,7 +103,8 @@ const Select = require('./Select')
 
 const ModelSelect = require('./components/ModelSelect').default
 const AttachmentsSelect = require('./AttachmentsSelect')
-const PosePresetsEditor = require('./PosePresetsEditor')
+//const PosePresetsEditor = require('./PosePresetsEditor')
+const PosePresetsEditor = require('./components/PosePresetsEditor').default
 const AttachableEditor = require('./attachables/AttachableEditor')
 const AttachableInfo = require('./attachables/AttachableInfo')
 const HandPresetsEditor = require('./HandPresetsEditor')
@@ -924,7 +925,6 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
   const onFocus = event => transition('TYPING_ENTER')
   const onBlur = event => transition('TYPING_EXIT')
-
   const heightRange =
     sceneObject.type == 'character' && !ModelLoader.isCustomModel(sceneObject.model)
       ? ['adult', 'teen'].some(el => sceneObject.model.includes(el))
@@ -1334,7 +1334,6 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
       sceneObject.type == 'character' && [
         PosePresetsEditor, {
           id: sceneObject.id,
-          posePresetId: sceneObject.posePresetId
         }
       ],
       sceneObject.type == 'character' && [

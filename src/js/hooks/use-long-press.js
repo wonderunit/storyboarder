@@ -24,7 +24,7 @@ module.exports = function useLongPress(callback = () => {}, ms = 300) {
     return () => {
       clearInterval(timerId)
       setLongPress(false)
-    };
+    }
   }, [startLongPress])
   
   useEffect(() => {
@@ -38,7 +38,7 @@ module.exports = function useLongPress(callback = () => {}, ms = 300) {
     
     return () => {
       clearInterval(timerId)
-    };
+    }
   }, [longPress])
   
   const start = useCallback(() => {
@@ -50,9 +50,9 @@ module.exports = function useLongPress(callback = () => {}, ms = 300) {
   }, [])
   
   return {
-    onMouseDown: start,
-    onMouseUp: stop,
-    onMouseLeave: stop,
+    onPointerDown: start,
+    onPointerUp: stop,
+    onPointerLeave: stop,
     onTouchStart: start,
     onTouchEnd: stop
   };

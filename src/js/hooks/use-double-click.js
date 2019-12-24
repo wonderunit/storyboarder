@@ -10,11 +10,11 @@ module.exports = function useDoubleClick(callback = () => {}) {
 
   const onPointerDownDbl = useCallback((event) => {
     if ((event.timeStamp - lastTap.current) < 180) {
-      savedCallback.current()
+      savedCallback.current(event)
     }
 
     lastTap.current = event.timeStamp
-  }, [callback])
+  }, [])
   
   return {
     onPointerDown: onPointerDownDbl,
