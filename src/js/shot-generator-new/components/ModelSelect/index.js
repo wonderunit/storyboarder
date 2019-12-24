@@ -14,6 +14,8 @@ import CustomModelHelpButton from '../../CustomModelHelpButton'
 import FileSelect from './FileSelect'
 import ListItem from './ListItem'
 
+import SimpleGrid from '../SimpleGrid'
+
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT } from './ItemSettings'
 
 const elementStyle = {
@@ -112,21 +114,19 @@ const ModelSelect = connect(
             </div>
         </div>
         <div className="thumbnail-search__list">
-          <div className="row" style={{
-                   width: 288, 
-                   height: rows === 2 ? 248 : rows * ITEM_HEIGHT,
-                   position: "relative",
-                   overflow: "auto"}}>
-            { results.map((item, index) => <ListItem 
-                      key={ index }
-                      model={ item } 
-                      style={ elementStyle }
-                      id={ sceneObject.id }
-                      isSelected={ sceneObject.model === item.id }
-                      onSelectItem={ onSelectItem }
-                      index={ index }
-                      />)}
-          </div>
+          <SimpleGrid 
+            style={{
+              width: 288, 
+              height: rows === 2 ? 248 : rows * ITEM_HEIGHT,
+              position: "relative",
+              overflow: "auto"}}
+              Tag={ ListItem }
+              elements={ results }
+              elementStyle={ elementStyle }
+              selectedFunc={ (item) => sceneObject.model === item.id }
+              id={ sceneObject.id }
+              onSelectItem={ onSelectItem }
+          />
         </div>
       </div> 
     
