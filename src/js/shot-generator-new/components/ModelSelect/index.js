@@ -16,12 +16,7 @@ import ListItem from './ListItem'
 
 import SimpleGrid from '../SimpleGrid'
 
-import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT } from './ItemSettings'
-
-const elementStyle = {
-  position:"absolute", 
-  height:ITEM_HEIGHT, 
-  width:ITEM_WIDTH + GUTTER_SIZE}
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
 
 const ModelSelect = connect(
   state => ({
@@ -95,7 +90,7 @@ const ModelSelect = connect(
     }, [terms, sceneObject.id])
 
     const isCustom = sceneObject.model && ModelLoader.isCustomModel(sceneObject.model)
-
+    console.log("Render")
     return sceneObject.model && 
       <div className="thumbnail-search column"> 
         <div className="row" style={{ padding:'6px 0' }}> 
@@ -122,7 +117,9 @@ const ModelSelect = connect(
               overflow: "auto"}}
               Tag={ ListItem }
               elements={ results }
-              elementStyle={ elementStyle }
+              numCols={ NUM_COLS }
+              itemHeight={ ITEM_HEIGHT }
+              itemWidth={ ITEM_WIDTH + GUTTER_SIZE }
               selectedFunc={ (item) => sceneObject.model === item.id }
               id={ sceneObject.id }
               onSelectItem={ onSelectItem }
