@@ -1,38 +1,38 @@
-const { remote } = require('electron')
-const { useState, useEffect, useMemo, forwardRef, useRef } = React = require('react')
-const { connect } = require('react-redux')
-const path = require('path')
-const fs = require('fs-extra')
-const classNames = require('classnames')
-const prompt = require('electron-prompt')
-const LiquidMetal = require('liquidmetal')
-const THREE = require('three')
+import { remote } from 'electron'
+import { useState, useEffect, useMemo, forwardRef, useRef } from 'react'
+import { connect } from 'react-redux'
+import path from 'path'
+import fs from 'fs-extra'
+import classNames from 'classnames'
+import prompt from 'electron-prompt'
+import LiquidMetal from 'liquidmetal'
+import THREE from 'three'
 window.THREE = THREE
 
 // for pose harvesting (maybe abstract this later?)
-const { machineIdSync } = require('node-machine-id')
-const pkg = require('../../../package.json')
-const request = require('request')
+import { machineIdSync } from 'node-machine-id'
+import pkg from '../../../../../package.json'
+import request from 'request'
 
-const { FixedSizeGrid } = require('react-window')
+import { FixedSizeGrid } from 'react-window'
 
-const h = require('../utils/h')
+import h from '../../../utils/h'
 
-const {
+import {
   updateObject,
   createHandPosePreset,
 
   getSceneObjects
-} = require('../shared/reducers/shot-generator')
+} from '../../../shared/reducers/shot-generator'
 
-const ModelLoader = require('../services/model-loader')
+import ModelLoader from '../../../services/model-loader'
 
-require('../vendor/three/examples/js/utils/SkeletonUtils')
+import '../../../vendor/three/examples/js/utils/SkeletonUtils'
 
-const {createdMirroredHand, applyChangesToSkeleton, getOppositeHandName} = require("../utils/handSkeletonUtils")
+import {createdMirroredHand, applyChangesToSkeleton, getOppositeHandName} from "../../../utils/handSkeletonUtils"
 
-const defaultPosePresets = require('../shared/reducers/shot-generator-presets/hand-poses.json')
-const presetsStorage = require('../shared/store/presetsStorage')
+import defaultPosePresets from '../../../shared/reducers/shot-generator-presets/hand-poses.json'
+import presetsStorage from '../../../shared/store/presetsStorage'
 
 const comparePresetNames = (a, b) => {
   var nameA = a.name.toUpperCase()
@@ -74,7 +74,7 @@ const ITEM_HEIGHT = 132
 const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
 
-const ThumbnailRenderer = require('./ThumbnailRenderer')
+import ThumbnailRenderer from '../../ThumbnailRenderer'
 const filepathFor = model => 
 ModelLoader.getFilepathForModel(
   { model: model.id, type: model.type },
@@ -82,9 +82,9 @@ ModelLoader.getFilepathForModel(
   
 const CHARACTER_MODEL = { id: 'adult-male', type: 'character' }
 
-const setupRenderer = ({ thumbnailRenderer, attachments, preset, selectedHand }) => {
+const setupRenderer = ({ thumbnailRenderer, attachment, preset, selectedHand }) => {
   if (!thumbnailRenderer.getGroup().children.length) {
-    let modelData = attachments[filepathFor(CHARACTER_MODEL)].value
+    let modelData = attachment
 
     let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
     let child = group.children[1]
@@ -133,7 +133,7 @@ const setupRenderer = ({ thumbnailRenderer, attachments, preset, selectedHand })
   bone.parent.parent.parent.updateWorldMatrix(true, true)
 }
 
-const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset, updateObject, attachments, thumbnailRenderer, withState, selectedHand }) => {
+const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand }) => {
   const src = path.join(remote.app.getPath('userData'), 'presets', 'handPoses', `${preset.id}.jpg`)
   const onPointerDown = event => {
     event.preventDefault()
@@ -178,7 +178,7 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
       selectedHand = Object.keys(preset.state.handSkeleton)[0].includes("RightHand") ? "RightHand" : "LeftHand"
       setupRenderer({
         thumbnailRenderer: thumbnailRenderer.current,
-        attachments,
+        attachment,
         preset,
         selectedHand
       })
@@ -235,29 +235,29 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
 
 const clampInstance = (instance, camera ) => {
     let box = new THREE.Box3().setFromObject(instance);
-		let sphere = new THREE.Sphere();
-		box.getBoundingSphere(sphere);
-		let direction = new THREE.Vector3();
+        let sphere = new THREE.Sphere();
+        box.getBoundingSphere(sphere);
+        let direction = new THREE.Vector3();
     camera.getWorldDirection(direction) 
-		let s = new THREE.Vector3(0, 0, -1)
-		let h = sphere.radius / Math.tan( camera.fov / 2 * Math.PI / 180 );
-		let newPos = new THREE.Vector3().addVectors( sphere.center, s.setLength(h) );
-		camera.position.copy(newPos);
+        let s = new THREE.Vector3(0, 0, -1)
+        let h = sphere.radius / Math.tan( camera.fov / 2 * Math.PI / 180 );
+        let newPos = new THREE.Vector3().addVectors( sphere.center, s.setLength(h) );
+        camera.position.copy(newPos);
     camera.lookAt(sphere.center);
     camera.updateMatrixWorld(true)
 }
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  let { id, handPosePresetId, updateObject, attachments, thumbnailRenderer, withState, selectedHand } = data
+  let { id, handPosePresetId, updateObject, attachment, thumbnailRenderer, withState, selectedHand } = data
   let preset = data.presets[columnIndex + (rowIndex * 4)]
 
   if (!preset) return h(['div', { style }])
-  console.log("Render")
+  console.log("render")
   return h([
     HandPresetsEditorItem,
     {
       style,
-      id, handPosePresetId, attachments, updateObject,
+      id, handPosePresetId: handPosePresetId(), attachment, updateObject,
       preset,
 
       thumbnailRenderer,
@@ -267,10 +267,16 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   ])
 })
 
+import deepEqualSelector from './../../../utils/deepEqualSelector'
+
+const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
+    let filepath = filepathFor(CHARACTER_MODEL)
+    return !attachments[filepath] ? undefined : attachments[filepath].status
+})
+
 const HandPresetsEditor = connect(
   state => ({
-    attachments: state.attachments,
-
+    attachmentStatus: getAttachmentM(state),
     handPosePresets: state.presets.handPoses,
   }),
   {
@@ -282,9 +288,9 @@ const HandPresetsEditor = connect(
 React.memo(({
   id,
   handPosePresetId,
-
+  sceneObjectModel,
   handPosePresets,
-  attachments,
+  attachmentStatus,
 
   updateObject,
   createHandPosePreset,
@@ -295,22 +301,35 @@ React.memo(({
 
   const [ready, setReady] = useState(false)
   const [terms, setTerms] = useState(null)
+
+  const getAttachment = () => {
+    let attachment 
+    withState((dispatch, state) => {
+      let filepath = filepathFor(CHARACTER_MODEL)
+      attachment = state.attachments[filepath].value
+    })
+    return attachment
+  }
+  const [attachment, setAttachment] = useState(getAttachment())
   //currentScene = scene
   // !!!!!Should be intialized somewhere else
  // handPosePresets = []
+ console.log("Render")
   const presets = useMemo(() => searchPresetsForTerms(Object.values(handPosePresets), terms), [handPosePresets, terms])
   const [selectedHand, setSelectedHand] = useState("BothHands")
+
+
   useEffect(() => {
     if (ready) return
+    if (attachmentStatus === "Success" && !attachment) {
+        let attachment = getAttachment()
+        setAttachment(attachment)
+        setTimeout(() => {
+          setReady(true)
+        }, 100) // slight delay for snappier character selection via click
+      }
+    }, [attachmentStatus])
 
-    let filepath = filepathFor(CHARACTER_MODEL)
-    if (attachments[filepath] && attachments[filepath].value) {
-      setTimeout(() => {
-        setReady(true)
-      }, 100) // slight delay for snappier character selection via click
-    }
-  }, [attachments])
-  console.log("Render")
   const onChangeHand = event => {
     setSelectedHand(event.target.value)
   }
@@ -420,9 +439,8 @@ React.memo(({
       },
     ])
   })
-
-  return h(
-    ['div.thumbnail-search.column', ready && [
+  return attachment && h(
+    ['div.thumbnail-search.column', [
       ['div.row', { style: { padding: '6px 0' } }, [
         ['div.column', { style: { flex: 1 }}, [
           ['input', {
@@ -468,9 +486,9 @@ React.memo(({
             presets,
 
             id: id,
-            handPosePresetId:  handPosePresetId,
+            handPosePresetId: () => handPosePresetId,
 
-            attachments,
+            attachment,
             updateObject,
 
             thumbnailRenderer,
@@ -484,4 +502,5 @@ React.memo(({
   )
 }))
 
-module.exports = HandPresetsEditor
+export default HandPresetsEditor
+

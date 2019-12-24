@@ -107,7 +107,8 @@ const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./components/PosePresetsEditor').default
 const AttachableEditor = require('./attachables/AttachableEditor')
 const AttachableInfo = require('./attachables/AttachableInfo')
-const HandPresetsEditor = require('./HandPresetsEditor')
+const HandPresetsEditor = require('./components/HandPresetsEditor').default
+//const HandPresetsEditor = require('./HandPresetsEditor')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
@@ -1340,7 +1341,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         HandPresetsEditor, {
           id: sceneObject.id,
           handPosePresetId: sceneObject.handPosePresetId,
-          scene: scene
+          scene: scene,
+          sceneObjectModel: sceneObject.model
         }
       ],
 
