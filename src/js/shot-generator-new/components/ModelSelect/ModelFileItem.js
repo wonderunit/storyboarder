@@ -1,11 +1,6 @@
 import { IMAGE_WIDTH, IMAGE_HEIGHT, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT } from './ItemSettings'
 import classNames from 'classnames'
-import ModelLoader from '../../../services/model-loader'
-
-const filepathFor = model =>
-  ModelLoader.getFilepathForModel(
-    { model: model.id, type: model.type },
-    { storyboarderFilePath: null })
+import { filepathFor } from "../../utils/filepathFor"
 
 const ModelFileItem = React.memo(({
     style,
