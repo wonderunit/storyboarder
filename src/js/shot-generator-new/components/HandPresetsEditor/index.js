@@ -16,8 +16,6 @@ import request from 'request'
 
 import { FixedSizeGrid } from 'react-window'
 
-import h from '../../../utils/h'
-
 import {
   updateObject,
   createHandPosePreset,
@@ -73,6 +71,7 @@ const ITEM_HEIGHT = 132
 
 const IMAGE_WIDTH = ITEM_WIDTH
 const IMAGE_HEIGHT = 100
+const NUM_COLS = 4
 
 import ThumbnailRenderer from '../../ThumbnailRenderer'
 const filepathFor = model => 
@@ -210,27 +209,26 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
     }
   }, [src])
 
-  let className = classNames({
+  let className = classNames('thumbnail-search__item', {
     'thumbnail-search__item--selected': handPosePresetId === preset.id
   })
 
-  return h(['div.thumbnail-search__item', {
-    style,
-    className,
-    onPointerDown,
-    'data-id': preset.id,
-    title: preset.name
-  }, [
-    ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}, [
-      ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }]
-    ]],
-    ['div.thumbnail-search__name', {
-      style: {
-        width: ITEM_WIDTH,
-        height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
-      },
-    }, preset.name]
-  ]])
+  return <div className={ className }
+    style={ style }
+    onPointerDown={ onPointerDown }
+    data-id={ preset.id }
+    title={ preset.name }> 
+      <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
+        <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }/>
+      </figure>
+      <div className="thumbnail-search__name" 
+        style={{
+          width: ITEM_WIDTH ,
+          height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
+        }}>
+      { preset.name }
+      </div>
+    </div>
 })
 
 const clampInstance = (instance, camera ) => {
@@ -249,22 +247,20 @@ const clampInstance = (instance, camera ) => {
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   let { id, handPosePresetId, updateObject, attachment, thumbnailRenderer, withState, selectedHand } = data
-  let preset = data.presets[columnIndex + (rowIndex * 4)]
+  let preset = data.presets[columnIndex + (rowIndex * NUM_COLS)]
 
-  if (!preset) return h(['div', { style }])
+  if (!preset) return <div/>
   console.log("render")
-  return h([
-    HandPresetsEditorItem,
-    {
-      style,
-      id, handPosePresetId: handPosePresetId(), attachment, updateObject,
-      preset,
-
-      thumbnailRenderer,
-      withState, 
-      selectedHand
-    }
-  ])
+  return <HandPresetsEditorItem
+      style={style}
+      id={id}
+      handPosePresetId={handPosePresetId}
+      attachment={attachment} 
+      updateObject={updateObject}
+      preset={preset}
+      thumbnailRenderer={thumbnailRenderer}
+      withState={withState} 
+      selectedHand={selectedHand}/>
 })
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
@@ -425,64 +421,53 @@ React.memo(({
 
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
-    return h([
-      'div',
-      {
-        ref,
-        style: {
-          ...style,
-          width: 288, // cut off the right side gutter
-          position: 'relative',
-          overflow: 'hidden'
-        },
-        ...rest
-      },
-    ])
+    let newStyle = {
+      width:288,
+      position:'relative',
+      overflow:'hidden',
+      ...style
+    }
+    return <div
+        ref={ref}
+        style={newStyle}
+        {...rest}/>
   })
-  return attachment && h(
-    ['div.thumbnail-search.column', [
-      ['div.row', { style: { padding: '6px 0' } }, [
-        ['div.column', { style: { flex: 1 }}, [
-          ['input', {
-            placeholder: 'Search for a pose …',
-            onChange
-          }],
-        ]],
-        ['div.column', { style: { marginLeft: 5 }}, [
-          ['a.button_add[href=#]', {
-            style: { width: 30, height: 34 },
-            onPointerDown: onCreateHandPosePreset
-          }, '+']
-        ]]
-      ]],
-      ['div.row', { style: { padding: '6px 0' } }, [
-        ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'Select hand'],
-        ['div.column', { style: { flex: 1 }}, [
 
-          ['select', {
-            onChange: onChangeHand,
-            value: selectedHand,
-          }, 
-          ['option', {value: "LeftHand"}, 'Left Hand'],
-          ['option', {value: "RightHand"}, 'Right Hand'],
-          ['option', {value: "BothHands"}, 'Both Hands']],
-        ]]
-      ]],
-      ['div.thumbnail-search__list', [
-        FixedSizeGrid,
-        {
-          columnCount: 4,
-          columnWidth: ITEM_WIDTH + GUTTER_SIZE,
+  return attachment && <div className="thumbnail-search column">
+      <div className="row" style={{ padding: '6px 0' } }> 
+         <div className="column" style={{ flex: 1 }}> 
+          <input placeholder='Search for a hand pose …'
+                 onChange={onChange}/>
+        </div>
+        <div className="column" style={{ marginLeft: 5 }}> 
+          <a className="button_add" href="#"
+            style={{ width: 30, height: 34 }}
+            onPointerDown={ onCreateHandPosePreset }
+           >+</a>
+        </div>
+      </div> 
+      <div className= 'row' style= {{ padding: '6px 0' }} >
+        <div style={{ width: 50, display: 'flex', alignSelf: 'center' }}>Select hand</div> 
+        <div className='column' style={{ flex: 1 }}>
+          <select onChange={onChangeHand}
+            value={selectedHand}>
+          <option value="LeftHand">Left Hand</option> 
+          <option value="RightHand">Right Hand</option> 
+          <option value="BothHands">Both Hands</option> 
+          </select>
+        </div>
+      </div>
+      <div className="thumbnail-search__list">
+       <FixedSizeGrid 
+          columnCount={ NUM_COLS }
+          columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
 
-          rowCount: Math.ceil(presets.length / 4),
-          rowHeight: ITEM_HEIGHT,
-
-          width: 288,
-          height: 363,
-
-          innerElementType,
-
-          itemData: {
+          rowCount={ Math.ceil(presets.length / NUM_COLS) }
+          rowHeight={ ITEM_HEIGHT }
+          width={ 288 }
+          height={ 363 }
+          innerElementType={ innerElementType }
+          itemData={{
             presets,
 
             id: id,
@@ -494,12 +479,10 @@ React.memo(({
             thumbnailRenderer,
             withState,
             selectedHand
-          },
-          children: ListItem
-        }
-      ]]
-    ]]
-  )
+        }}
+        children={ ListItem }/>
+    </div>
+  </div> 
 }))
 
 export default HandPresetsEditor
