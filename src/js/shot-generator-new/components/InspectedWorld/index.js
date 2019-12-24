@@ -19,7 +19,7 @@ const InspectedWorld = React.memo(({updateObject, activeCamera}) => {
   //console.log(activeCamera)
   
   const onSetValue = useCallback((value) => {
-    //updateObject(activeCamera.id, {x: value})
+    updateObject(activeCamera.id, {x: value})
   }, [])
   
   return (

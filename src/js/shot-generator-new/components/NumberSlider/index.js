@@ -1,4 +1,4 @@
-import React, {useState, useRef, useCallback} from 'react'
+import React, {useState, useRef, useCallback, useEffect} from 'react'
 import {connect} from 'react-redux'
 import { useDrag } from 'react-use-gesture'
 import {Math as _Math} from 'three'
@@ -9,6 +9,7 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import useDoubleClick from './../../../hooks/use-double-click'
+import useLongPress from './../../../hooks/use-long-press'
 
 export const transforms = {
   // default
@@ -36,6 +37,14 @@ export const formatters = {
   percent: value => Math.round(value).toString() + '%'
 }
 
+const getFormattedInputValue = (value, formatter) => {
+  if (formatters.hasOwnProperty(formatter)) {
+    return parseFloat(formatter(value))
+  }
+  
+  return value
+}
+
 const defaultOnSetValue = value => {}
 
 const NumberSliderComponent = React.memo(({
@@ -54,21 +63,23 @@ const NumberSliderComponent = React.memo(({
   const [isTextInput, setTextInput] = useState(false)
   const [textInputValue, setTextInputValue] = useState(value)
   
+  const onDrag = useCallback(({direction, altKey}) => {
+    const nextValue = transform(value + Math.sign(direction) * step * (altKey ? 0.01 : 1.0), min, max)
+    
+    onSetValue(nextValue)
+  }, [value])
+  
   const bind = useDrag(({event, first, last}) => {
     if (first) {
       onDragStart()
-      if (event.shiftKey) {
-        onSetValue(0)
-      }
       
       inputRef.current.requestPointerLock()
     }
     
-    const nextValue = transform(value + Math.sign(event.movementX) * step * (event.altKey ? 0.01 : 1.0), min, max)
-    
-    if (nextValue !== value) {
-      onSetValue(nextValue)
-    }
+    onDrag({
+      direction: event.movementX,
+      altKey: event.altKey
+    })
 
     if (last) {
       document.exitPointerLock()
@@ -77,32 +88,46 @@ const NumberSliderComponent = React.memo(({
   }, {dragDelay: true})
 
   const bindDoubleClick = useDoubleClick(() => {
+    setTextInputValue(getFormattedInputValue(value, formatter))
     setTextInput(true)
   })
 
   const onTextInputBlur = useCallback(() => {
     setTextInput(false)
+    setTextInputValue(getFormattedInputValue(value, formatter))
   }, [])
 
-  const onTextInputKey = useCallback((event) => {
+  const onTextInputKey = (event) => {
     if (event.key === 'Escape') {
       // reset
-      onSetValue(+textInputValue)
       setTextInput(false)
+      setTextInputValue(getFormattedInputValue(value, formatter))
     } else if (event.key === 'Enter') {
       // TODO validation, tranform, error handling
-      onSetValue(+event.target.value)
+      onSetValue(parseFloat(textInputValue))
       setTextInput(false)
     }
-  }, [])
+  }
 
   const onTextInputChange = useCallback((event) => {
     setTextInputValue(event.target.value)
   }, [])
 
-  const preventSelect = useCallback((event) => {
-    event.preventDefault()
-  }, [])
+  const onNudge = useCallback((direction, event) => {
+    onDrag({
+      direction,
+      altKey: event.altKey
+    })
+  }, [value])
+
+  useEffect(() => {
+    if (isTextInput && inputRef.current) {
+      inputRef.current.focus()
+      setImmediate(() => {
+        inputRef.current.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length)
+      })
+    }
+  }, [isTextInput, inputRef.current])
   
   return (
       <div className='number-slider'>
@@ -110,7 +135,10 @@ const NumberSliderComponent = React.memo(({
         <div
             className='number-slider__control'
         >
-          <div className='number-slider__nudge number-slider__nudge--left'>
+          <div
+              className='number-slider__nudge number-slider__nudge--left'
+              onClick={(event) => onNudge(-1, event)}
+          >
             <div className='number-slider__arrow number-slider__arrow--left'/>
           </div>
 
@@ -130,13 +158,15 @@ const NumberSliderComponent = React.memo(({
                   className="number-slider__input number-slider__input--move"
                   value={formatter(value)}
                   readOnly={true}
-                  onSelect={preventSelect}
                   {...bind()}
                   {...bindDoubleClick}
               />
           }
           
-          <div className="number-slider__nudge number-slider__nudge--right">
+          <div
+              className="number-slider__nudge number-slider__nudge--right"
+              onClick={() => onNudge(1, event)}
+          >
             <div className="number-slider__arrow number-slider__arrow--right"/>
           </div>
         </div>
