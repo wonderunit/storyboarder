@@ -9,12 +9,11 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import useDoubleClick from './../../../hooks/use-double-click'
-import useLongPress from './../../../hooks/use-long-press'
 
 export const transforms = {
   // default
   clamp: (value, min, max) => {
-    return _Math.clamp(value, min, max)
+    return _Math.clamp(Math.round(value * 100) / 100, min, max)
   },
   degrees: (value) => {
     if (value > 180) { return value - 360 }

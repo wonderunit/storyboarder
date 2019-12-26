@@ -553,7 +553,8 @@ select {
 #presets ul li { margin: 0; padding: 6px; }
 #presets a:not(.delete) { color: white; }
 
-.number-slider {
+.number-slider,
+.input-group {
   position: relative;
   margin-bottom: 0.5rem;
   display: flex;
@@ -563,7 +564,8 @@ select {
   border-radius: 4px;
   overflow: hidden;
 }
-.number-slider__label {
+.number-slider__label,
+.input-group__label {
   flex: 1;
   display: flex;
   align-items: center;
@@ -598,6 +600,7 @@ select {
 .number-slider__input--text {
   color: black;
   background-color: #53537c;
+  cursor: text;
 }
 .number-slider__input--move {
 }
@@ -1091,6 +1094,7 @@ div.fatal-error-screen__report::selection {
   cursor: pointer;
 }
 
+/* Select block */
 .select {
   width: 100%;
   height: inherit;
@@ -1178,6 +1182,7 @@ div.fatal-error-screen__report::selection {
 .select__menu-list::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+/* End of select */
 
 .inspector-group {
   margin: 0 0 12px 0;
@@ -1193,12 +1198,41 @@ div.fatal-error-screen__report::selection {
   margin: 6px 0 3px 0;
 }
 
-.number-slider {
+.inspector-offset-row {
+  margin: 6px 0 3px 0;
+}
+
+.inspector-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.number-slider, .input-group {
   height: 26px;
 }
 
 .number-slider__control {
   user-select: none;
+}
+
+.file-input {
+  display: flex;
+  border-radius: 4px;
+  width: 137px;
+  align-items: center;
+  align-content: flex-end;
+  background-color: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+}
+
+.file-input:hover {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.file-input > div {
+  margin: -3px 0 0 9px;
+  flex: 1;
+  cursor: pointer;
 }
 
 /* Checkbox block */
@@ -1218,8 +1252,8 @@ div.fatal-error-screen__report::selection {
 }
 
 .checkbox input + label {
-  cursor: default;
   position: relative;
+  cursor: pointer;
 }
 
 .checkbox input + label span {
@@ -1228,9 +1262,15 @@ div.fatal-error-screen__report::selection {
   height: 22px;
   /* margin: -2px 10px 0 0; */
   vertical-align: middle;
-  background: rgba(255,255,255,0.1);
   border-radius: 3px;
-  cursor: default;
+  cursor: pointer;
+
+  background: rgba(255,255,255,0.1);
+  transition: background-color 0.2s;
+}
+
+.checkbox input + label:active span {
+  /*background: #5c65c0;*/
 }
 
 .checkbox input:checked + label:before {
@@ -1247,15 +1287,38 @@ div.fatal-error-screen__report::selection {
 
 /* End of checkbox */
 
+.help-button {
+  color: #eee;
+  background-color: #444;
+  padding: 2px 0 0 0;
+
+  box-sizing: border-box;
+  display: flex;
+  font-size: 12px;
+  line-height: 1;
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+
 .objects-list .element,
 #toolbar a,
 a.button,
 .number-slider__control,
-#inspector .button_add {
+#inspector .button_add,
+.file-input {
   transition: background-color 0.2s;
 }
 
 #toolbar a {
+  cursor: pointer;
+}
+
+.element .row a {
   cursor: pointer;
 }
 

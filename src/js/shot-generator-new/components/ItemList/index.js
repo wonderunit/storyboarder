@@ -33,6 +33,17 @@ const getSortedItems = (sceneObjectsArray) => {
   return sortedItems
 }
 
+const isSelected = (id, selections, children = []) => {
+  if (!children || children.length === 0) {
+    return selections.indexOf(id) !== -1
+  }
+  
+  const unselectedChildren = children.filter((child) => {
+    return selections.indexOf(child) === -1
+  })
+  
+  return unselectedChildren.length === 0
+}
 
 const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject}) => {
   const listRef = useRef(null)
@@ -103,7 +114,7 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
     
     return (
       <Item
-          selected={selections.indexOf(props.id) !== -1}
+          selected={isSelected(props.id, selections, props.children)}
           index={index}
           key={props.id}
           allowDelete={allowDelete}
