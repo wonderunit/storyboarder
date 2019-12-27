@@ -1,93 +1,29 @@
-import classNames from 'classnames'
 import { remote } from 'electron'
 const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
-import { useState, useMemo, forwardRef, useEffect } from 'react'
+import { useState, useMemo, forwardRef, useEffect, useContext } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
 import prompt from 'electron-prompt'
 import {
-  updateObject,
   createObject,
   selectAttachable,
   getSceneObjects
 } from '../../../shared/reducers/shot-generator'
 import ModelLoader from '../../../services/model-loader'
 import FileSelect from '../../attachables/FileSelect'
-import CustomModelHelpButton from '../../CustomModelHelpButton'
+import HelpButton from '../HelpButton'
 
-const GUTTER_SIZE = 5
-const ITEM_WIDTH = 68
-const ITEM_HEIGHT = 132
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
+import ListItem from './ListItem'
+import deepEqualSelector from "../../../utils/deepEqualSelector"
 
-const IMAGE_WIDTH = ITEM_WIDTH
-const IMAGE_HEIGHT = 100
-
-const NUM_COLS = 4
-const filepathFor = model =>
-  ModelLoader.getFilepathForModel(
-    { model: model.id, type: model.type },
-    { storyboarderFilePath: null })
-
-const ModelFileItem = React.memo(({
-  style,
-
-  sceneObject,
-  model,
-
-  onSelectItem
-}) => {
-  const src = filepathFor(model).replace(/.glb$/, '.jpg')
-
-  const onSelect = event => {
-    event.preventDefault()
-    onSelectItem(sceneObject.id, { model: model })
-  }
-
-  const className = classNames('thumbnail-search__item', {
-    'thumbnail-search__item--selected': sceneObject.model === model.id
-  })
-  // allow a little text overlap
-  const slop = GUTTER_SIZE
-
-  return <div className={ className }
-  style={ style }
-  onPointerUp={ onSelect }
-  data-id={ model.id }
-  title={ model.name }> 
-    <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
-      <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }/>
-    </figure>
-    <div className="thumbnail-search__name" 
-      style={{
-        width: ITEM_WIDTH + slop,
-        height: (ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE) + slop
-      }}>
-    { model.name }
-    </div>
-  </div>
-})
-
-const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  const { sceneObject } = data
-  const model = data.models[columnIndex + (rowIndex * NUM_COLS)]
-  const onSelectItem = data.onSelectItem
-
-  if (!model) return <div/>
-  console.log("render")
-  return <ModelFileItem
-      style={ style }
-      sceneObject={ sceneObject }
-      model={ model }
-      onSelectItem={ onSelectItem } />
-})
-
+const getModelsM = deepEqualSelector([(state) => state.models], (models) => models)
 const AttachableEditor = connect(
   state => ({
-    allModels: state.models
+    allModels: getModelsM(state)
   }),
   {
-    updateObject,
     createObject,
     selectAttachable,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
@@ -95,15 +31,14 @@ const AttachableEditor = connect(
 )(
   React.memo(({
     id,
-    model,
     withState,
-
+    SceneContext,
     allModels,
-    scene,
     createObject,
     transition,
     rows = 3
   }) => {
+  const { scene } = useContext(SceneContext)
   const [terms, setTerms] = useState(null)
   console.log("Render")
   const [sceneObject, setSceneObject] = useState({})
@@ -116,7 +51,7 @@ const AttachableEditor = connect(
     withState((dispatch, state) => {
       setSceneObject(getSceneObjects(state)[id])
     })
-  }, [id, model])
+  }, [id])
 
   const onSearchChange = event => {
     event.preventDefault()
@@ -208,7 +143,6 @@ const AttachableEditor = connect(
     const filepaths = dialog.showOpenDialog(null, {})
     if (filepaths) {
       const filepath = filepaths[0]
-     // updateObject(sceneObject.id, { model: filepath })
       onSelectItem(sceneObject.id, {model:filepath})
     }
 
@@ -245,7 +179,8 @@ const AttachableEditor = connect(
         {...rest}/>
   })
 
-  return sceneObject.model && <div className="thumbnail-search column"> 
+  return sceneObject.model && 
+    <div className="thumbnail-search column"> 
         <div className="row" style={{ padding: "6px 0" }}> 
           <div className="column" style={{ flex: 1 }}> 
             <input
@@ -258,7 +193,9 @@ const AttachableEditor = connect(
             }
             <FileSelect model={ sceneObject.model } onSelectFile={ onSelectFile } />
             <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
-              <CustomModelHelpButton/>
+            <HelpButton
+                url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
+                title="How to Create 3D Models for Custom Objects"/>
             </div>
         </div>
         <div className="thumbnail-search__list">
