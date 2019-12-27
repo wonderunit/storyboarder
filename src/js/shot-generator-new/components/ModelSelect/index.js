@@ -63,7 +63,7 @@ const ModelSelect = connect(
     }
 
     const onSelectItem = useCallback((id, { model }) => {
-      updateObject(id, { model })
+      updateObject(id, { model:model.id })
     }, [])
 
     const selectValue = useCallback(() => {

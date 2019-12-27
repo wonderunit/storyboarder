@@ -1,18 +1,19 @@
 
-import ModelFileItem from "./ModelFileItem"
-import {NUM_COLS} from "./ItemSettings"
-import React from "react"
+import ModelFileItem from '../ModelFileItem'
+import React from 'react'
+import * as ItemSettings from './ItemSettings'
+
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
     const { sceneObject } = data
-    const model = data.models[columnIndex + (rowIndex * NUM_COLS)]
+    const model = data.models[columnIndex + (rowIndex * ItemSettings.NUM_COLS)]
     const onSelectItem = data.onSelectItem
-  
     if (!model) return <div/>
-    console.log("render")
     return <ModelFileItem
+        id={ sceneObject.id }
         style={ style }
-        sceneObject={ sceneObject }
         model={ model }
-        onSelectItem={ onSelectItem } />
+        isSelected={ sceneObject.model === model.id }
+        onSelectItem={ onSelectItem }
+        itemSettings={ ItemSettings } />
   })
   export default ListItem

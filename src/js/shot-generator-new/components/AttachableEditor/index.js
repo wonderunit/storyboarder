@@ -1,17 +1,20 @@
 import { remote } from 'electron'
+import path from 'path'
 const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
-import { useState, useMemo, forwardRef, useEffect, useContext } from 'react'
+import { useState, useMemo, forwardRef, useEffect, useContext, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
 import prompt from 'electron-prompt'
 import {
   createObject,
   selectAttachable,
-  getSceneObjects
+  getSceneObjects,
+  getSelectedAttachable
 } from '../../../shared/reducers/shot-generator'
 import ModelLoader from '../../../services/model-loader'
-import FileSelect from '../../attachables/FileSelect'
+import FileInput from '../FileInput'
+import classNames from 'classnames'
 import HelpButton from '../HelpButton'
 
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
@@ -21,7 +24,8 @@ import deepEqualSelector from "../../../utils/deepEqualSelector"
 const getModelsM = deepEqualSelector([(state) => state.models], (models) => models)
 const AttachableEditor = connect(
   state => ({
-    allModels: getModelsM(state)
+    allModels: getModelsM(state),
+    selectedAttachable: getSelectedAttachable(state)
   }),
   {
     createObject,
@@ -33,20 +37,18 @@ const AttachableEditor = connect(
     id,
     withState,
     SceneContext,
+    selectedAttachable,
     allModels,
     createObject,
-    transition,
     rows = 3
   }) => {
   const { scene } = useContext(SceneContext)
   const [terms, setTerms] = useState(null)
-  console.log("Render")
   const [sceneObject, setSceneObject] = useState({})
   const models = useMemo(
     () => Object.values(allModels).filter(m => m.type === "attachable"),
     [allModels, sceneObject.type]
   )
-
   useEffect(() => {
     withState((dispatch, state) => {
       setSceneObject(getSceneObjects(state)[id])
@@ -59,7 +61,7 @@ const AttachableEditor = connect(
   }
 
   const onSelectItem = (id, { model }) => {
-    let skinnedMesh =  scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh")
+    let skinnedMesh = scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh")
     let originalSkeleton = skinnedMesh.skeleton
 
     let bone = originalSkeleton.getBoneByName(model.bindBone)
@@ -137,19 +139,11 @@ const AttachableEditor = connect(
      selectAttachable({id: element.id, bindId: element.attachToId })
   }
 
-  const onSelectFile = event => {
-    event.preventDefault()
-
-    const filepaths = dialog.showOpenDialog(null, {})
-    if (filepaths) {
-      const filepath = filepaths[0]
-      onSelectItem(sceneObject.id, {model:filepath})
+  const onSelectFile = useCallback((filepath) => {
+    if (filepath.file) {
+      onSelectItem(id, { model: filepath.file })
     }
-
-    // automatically blur to return keyboard control
-    document.activeElement.blur()
-    transition('TYPING_EXIT')
-  }
+  }, [id])
 
   const results = useMemo(() => {
     const matchAll = terms == null || terms.length === 0
@@ -178,6 +172,13 @@ const AttachableEditor = connect(
         style={newStyle}
         {...rest}/>
   })
+  console.log(selectedAttachable)
+
+  const isCustom = selectedAttachable && ModelLoader.isCustomModel(selectedAttachable)
+  const refClassName = classNames( "button__file", {
+    "button__file--selected": isCustom
+  })
+  const wrapperClassName = "button__file__wrapper"
 
   return sceneObject.model && 
     <div className="thumbnail-search column"> 
@@ -188,10 +189,14 @@ const AttachableEditor = connect(
               onChange={ onSearchChange }> 
             </input>
           </div>
-           { ModelLoader.isCustomModel(sceneObject.model) ? <div className="column" style={{ padding: 2 }} />
+           { isCustom ? <div className="column" style={{ padding: 2 }} />
             : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
             }
-            <FileSelect model={ sceneObject.model } onSelectFile={ onSelectFile } />
+            <FileInput value={ isCustom ? selectValue() : "Select File …" } 
+                     title={ isCustom ? path.basename(sceneObject.model) : undefined } 
+                     onChange={ onSelectFile } 
+                     refClassName={ refClassName }
+                     wrapperClassName={ wrapperClassName }/>
             <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
             <HelpButton
                 url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
@@ -202,18 +207,14 @@ const AttachableEditor = connect(
          <FixedSizeGrid 
             columnCount={ NUM_COLS }
             columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
-
             rowCount={ Math.ceil(results.length / NUM_COLS) }
             rowHeight={ ITEM_HEIGHT }
             width={ 288 }
             height={ rows === 2 ? 248 : rows * ITEM_HEIGHT }
             innerElementType={ innerElementType }
-
             itemData={{
                 models: results,
-
                 sceneObject,
-
                 onSelectItem
             }}
             children={ ListItem }/>

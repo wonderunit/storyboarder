@@ -13,7 +13,7 @@ const ModelFileItem = React.memo(({
   
     const onSelect = event => {
       event.preventDefault()
-      onSelectItem(id, { model: model.id })
+      onSelectItem(id, { model: model })
     }
     const className = classNames("thumbnail-search__item", {
       "thumbnail-search__item--selected": isSelected
