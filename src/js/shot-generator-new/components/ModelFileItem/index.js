@@ -1,13 +1,13 @@
-import { IMAGE_WIDTH, IMAGE_HEIGHT, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT } from './ItemSettings'
 import classNames from 'classnames'
-import { filepathFor } from "../../utils/filepathFor"
+import { filepathFor } from '../../utils/filepathFor'
 
 const ModelFileItem = React.memo(({
     style,
     id,
     isSelected,
     model,
-    onSelectItem
+    onSelectItem,
+    itemSettings
   }) => {
     const src = filepathFor(model).replace(/.glb$/, '.jpg')
   
@@ -15,24 +15,24 @@ const ModelFileItem = React.memo(({
       event.preventDefault()
       onSelectItem(id, { model: model.id })
     }
-    const className = classNames('thumbnail-search__item', {
-      'thumbnail-search__item--selected': isSelected
+    const className = classNames("thumbnail-search__item", {
+      "thumbnail-search__item--selected": isSelected
     })
     // allow a little text overlap
-    const slop = GUTTER_SIZE
+    const slop = itemSettings.GUTTER_SIZE
   
     return <div className={ className }
       style={ style }
       onPointerUp={ onSelect }
       data-id={ model.id }
       title={ model.name }> 
-        <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
-          <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }/>
+        <figure style={{ width: itemSettings.IMAGE_WIDTH, height: itemSettings.IMAGE_HEIGHT }}> 
+          <img src={ src } style={{ width: itemSettings.IMAGE_WIDTH, height: itemSettings.IMAGE_HEIGHT }}/>
         </figure>
         <div className="thumbnail-search__name" 
           style={{
-            width: ITEM_WIDTH + slop,
-            height: (ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE) + slop
+            width: itemSettings.ITEM_WIDTH + slop,
+            height: (itemSettings.ITEM_HEIGHT - itemSettings.IMAGE_HEIGHT - itemSettings.GUTTER_SIZE) + slop
           }}>
         { model.name }
         </div>

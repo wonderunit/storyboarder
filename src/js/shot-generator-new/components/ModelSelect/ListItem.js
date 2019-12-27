@@ -1,8 +1,8 @@
-import ModelFileItem from './ModelFileItem'
+import ModelFileItem from '../ModelFileItem'
+import * as ItemSettings from './ItemSettings' 
 
 const ListItem = React.memo(({ id, isSelected, item, index, elementStyle, currentRow, currentColumn, onSelectItem}) => {
     if (!item) return <div/>
-    console.log("Render")
     let newElementStyle = {position: elementStyle.position, width: elementStyle.width, height: elementStyle.height}
     newElementStyle.top = elementStyle.height * Math.floor(currentRow)
     newElementStyle.left = elementStyle.width * currentColumn
@@ -11,6 +11,7 @@ const ListItem = React.memo(({ id, isSelected, item, index, elementStyle, curren
         id={ id }
         isSelected={ isSelected }
         model={ item }
-        onSelectItem={ onSelectItem }/>
+        onSelectItem={ onSelectItem }
+        itemSettings={ ItemSettings }/>
 })
 export default ListItem

@@ -11,7 +11,7 @@ import {
 import ModelLoader from '../../../services/model-loader'
 
 import CustomModelHelpButton from '../../CustomModelHelpButton'
-import FileSelect from './FileSelect'
+import FileSelect from '../FileSelect'
 import ListItem from './ListItem'
 
 import SimpleGrid from '../SimpleGrid'
@@ -90,21 +90,20 @@ const ModelSelect = connect(
     }, [terms, sceneObject.id])
 
     const isCustom = sceneObject.model && ModelLoader.isCustomModel(sceneObject.model)
-    console.log("Render")
     return sceneObject.model && 
       <div className="thumbnail-search column"> 
-        <div className="row" style={{ padding:'6px 0' }}> 
+        <div className="row" style={{ padding: "6px 0" }}> 
           <div className="column" style={{ flex: 1 } }> 
             <input
-              placeholder='Search models …'
+              placeholder="Search models …"
               onChange={ onSearchChange }> 
             </input>
           </div>
           {isCustom ? <div className="column" style={{ padding: 2 }} />
-            : <div className="column" style={{ alignSelf: 'center', padding: 6, lineHeight: 1 } }>or</div>
+            : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
             }
-          <FileSelect model={sceneObject.model} onSelectFile={onSelectFile} />
-            <div className="column" style= {{ width: 20, margin: '0 0 0 6px', alignSelf: 'center', alignItems: 'flex-end' } }>
+          <FileSelect model={ sceneObject.model } onSelectFile={ onSelectFile } />
+            <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" } }>
               <CustomModelHelpButton/>
             </div>
         </div>
