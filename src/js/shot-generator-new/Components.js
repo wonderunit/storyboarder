@@ -256,6 +256,7 @@ const Inspector = ({
             }
           ]
         : [
+          //InspectedWorldOld, { world, transition, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog }
           InspectedWorld
         ],
       // [ServerInspector]
@@ -588,27 +589,6 @@ const InspectedWorldOld = ({ world, transition, updateWorld, updateWorldRoom, up
       ]
     ]
   ])
-}
-
-const RemoteInputView = ({ remoteInput }) => {
-  let input = remoteInput
-
-  let accel = input.accel.map(x => x.toFixed())
-  let mag = input.mag.map(x => x.toFixed())
-  let sensor = input.sensor.map(x => x.toFixed(2))
-  let down = (input.down ? 'Y' : 'N')
-
-  return h(
-    ['div#remoteInputView',
-      ['div',
-        'input',
-        ['div', 'accel: ' + accel ],
-        ['div', 'mag: ' +  mag],
-        ['div', 'sensor: ' + sensor ],
-        ['div', 'down: ' + down ]
-      ]
-    ],
-  )
 }
 
 const ElementsPanel = connect(
