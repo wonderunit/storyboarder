@@ -1,5 +1,5 @@
-import { remote } from 'electron'
-const { dialog } = remote
+import path from 'path'
+import React from 'react'
 import LiquidMetal from 'liquidmetal'
 
 import { useState, useMemo, useEffect, useCallback } from 'react'
@@ -10,13 +10,14 @@ import {
 } from '../../../shared/reducers/shot-generator'
 import ModelLoader from '../../../services/model-loader'
 
-import CustomModelHelpButton from '../../CustomModelHelpButton'
-import FileSelect from '../FileSelect'
+import HelpButton from '../HelpButton'
 import ListItem from './ListItem'
 
 import SimpleGrid from '../SimpleGrid'
-
+import classNames from 'classnames'
+import { truncateMiddle } from '../../../utils'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
+import FileInput from '../FileInput'
 
 const ModelSelect = connect(
   state => ({
@@ -33,7 +34,6 @@ const ModelSelect = connect(
     allModels,
 
     updateObject,
-    transition,
     withState,
 
     rows = 3
@@ -56,28 +56,25 @@ const ModelSelect = connect(
       setTerms(event.currentTarget.value)
     }
 
-    const onSelectFile = event => {
-      event.preventDefault()
-
-      const filepaths = dialog.showOpenDialog(null, {})
-
-      if (filepaths) {
-        const filepath = filepaths[0]
-        updateObject(sceneObject.id, { model: filepath })
+    const onSelectFile = filepath => {
+      if (filepath.file) {
+        updateObject(sceneObject.id, { model: filepath.file })
       }
-
-      // automatically blur to return keyboard control
-      document.activeElement.blur()
-      transition('TYPING_EXIT')
     }
 
     const onSelectItem = useCallback((id, { model }) => {
       updateObject(id, { model })
     }, [])
 
+    const selectValue = useCallback(() => {
+      const ext = path.extname(sceneObject.model)
+      const basenameWithoutExt = path.basename(sceneObject.model, ext)
+      const displayName = truncateMiddle(basenameWithoutExt, 13)
+      return displayName
+    }, [sceneObject.model])
+
     const results = useMemo(() => {
       const matchAll = terms == null || terms.length === 0
-
       return models
         .filter(model =>
           matchAll
@@ -90,6 +87,10 @@ const ModelSelect = connect(
     }, [terms, sceneObject.id])
 
     const isCustom = sceneObject.model && ModelLoader.isCustomModel(sceneObject.model)
+    const refClassName = classNames( "button__file", {
+      "button__file--selected": isCustom
+    })
+    const wrapperClassName = "button__file__wrapper"
     return sceneObject.model && 
       <div className="thumbnail-search column"> 
         <div className="row" style={{ padding: "6px 0" }}> 
@@ -100,11 +101,31 @@ const ModelSelect = connect(
             </input>
           </div>
           {isCustom ? <div className="column" style={{ padding: 2 }} />
-            : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
-            }
-          <FileSelect model={ sceneObject.model } onSelectFile={ onSelectFile } />
+            : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 }}>or</div>
+          }
+          <FileInput value={ isCustom ? selectValue() : "Select File …" } 
+                     title={ isCustom ? path.basename(sceneObject.model) : undefined } 
+                     onChange={ onSelectFile } 
+                     refClassName={ refClassName }
+                     wrapperClassName={ wrapperClassName }/>
             <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" } }>
-              <CustomModelHelpButton/>
+              <HelpButton
+                url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
+                title="How to Create 3D Models for Custom Objects"
+                style={{
+                  boxSizing: "border-box",
+                  display: "flex",
+                  fontSize: "12px",
+                  lineHeight: "1",
+                  borderRadius: "50%",
+                  alignItems: "center",
+                  width: "20px",
+                  height: "20px",
+                  cursor: "pointer",
+                  color: "#eee",
+                  backgroundColor: "#444",
+                  padding: "2px 0 0 0"
+                }}/>
             </div>
         </div>
         <div className="thumbnail-search__list">
@@ -121,10 +142,9 @@ const ModelSelect = connect(
               itemWidth={ ITEM_WIDTH + GUTTER_SIZE }
               selectedFunc={ (item) => sceneObject.model === item.id }
               id={ sceneObject.id }
-              onSelectItem={ onSelectItem }
-          />
+              onSelectItem={ onSelectItem }/>
         </div>
       </div> 
-    
-  }))
+  }
+))
 export default ModelSelect

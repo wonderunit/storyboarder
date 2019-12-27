@@ -1304,7 +1304,6 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [
         ModelSelect, {
           id:sceneObject.id,
-          transition,
           model:sceneObject.model,
 
           rows: sceneObject.type == 'character' ? 2 : 3
