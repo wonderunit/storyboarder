@@ -111,21 +111,7 @@ const ModelSelect = connect(
             <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" } }>
               <HelpButton
                 url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
-                title="How to Create 3D Models for Custom Objects"
-                style={{
-                  boxSizing: "border-box",
-                  display: "flex",
-                  fontSize: "12px",
-                  lineHeight: "1",
-                  borderRadius: "50%",
-                  alignItems: "center",
-                  width: "20px",
-                  height: "20px",
-                  cursor: "pointer",
-                  color: "#eee",
-                  backgroundColor: "#444",
-                  padding: "2px 0 0 0"
-                }}/>
+                title="How to Create 3D Models for Custom Objects"/>
             </div>
         </div>
         <div className="thumbnail-search__list">
