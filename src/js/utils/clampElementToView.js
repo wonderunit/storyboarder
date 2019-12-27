@@ -7,7 +7,11 @@ const clampElementToView = (container, node) => {
   const nodeBehindTheView = (nodeElement.offsetTop < container.scrollTop)
   
   if (nodeOverTheView || nodeBehindTheView) {
-    container.scrollTop = nodeElement.offsetTop
+    container.scrollTo({
+      top: nodeElement.offsetTop,
+      left: nodeElement.offsetLeft,
+      behavior: 'smooth'
+    })
   }
 }
 
