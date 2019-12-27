@@ -1327,122 +1327,38 @@ div.fatal-error-screen__report::selection {
 }
 
 .tabs-body__content {
-  /*top: 0;
-  position: absolute;
-  padding: inherit;*/
-  
   width: 100%;
 }
 
 /* End of tabs */
 
-.fadeInLeft {
-  animation: fadeInLeftKeyframes;
-  transform-origin: top;
-}
+/* Modal block */
 
-.fadeInRight {
-  animation: fadeInRightKeyframes;
-  transform-origin: top;
-}
-
-.fadeOutRight {
-  animation: fadeOutRightKeyframes;
-  transform-origin: top;
-  position: absolute;
+.modal__overlay {
+  position: fixed!important;
   top: 0;
-  padding: inherit;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  
+  display: flex;
+  
+  z-index: 999;
 }
 
-.fadeOutLeft {
-  animation: fadeOutLeftKeyframes;
-  transform-origin: top;
-  position: absolute;
-  top: 0;
-  padding: inherit;
+.modal__overlay > .modal__window {
+  display: block;
+  
+  min-width: 256px;
+  min-height: 128px;
+  padding: 6px;
+  
+  background-color: #30323d;
+  border-radius: 6px;
 }
 
-@keyframes fadeInLeftKeyframes {
-  0% {
-    position: absolute;
-    transform: scale(0.5) translate(-256px, 0);
-    opacity: 0;
-  }
-  100% {
-    position: absolute;
-    transform: scale(1) translate(0, 0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeInRightKeyframes {
-  0% {
-    position: absolute;
-    transform: scale(0.5) translate(256px, 0);
-    opacity: 0;
-  }
-  100% {
-    position: absolute;
-    transform: scale(1) translate(0, 0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOutRightKeyframes {
-  0% {
-    position: absolute;
-    transform: scale(1) translate(0, 0);
-    opacity: 1;
-  }
-  100% {
-    position: absolute;
-    transform: scale(0.5) translate(256px, 0);
-    opacity: 0;
-  }
-}
-
-@keyframes fadeOutLeftKeyframes {
-  0% {
-    position: absolute;
-    transform: scale(1) translate(0, 0);
-    opacity: 1;
-  }
-  100% {
-    position: absolute;
-    transform: scale(0.5) translate(-256px, 0);
-    opacity: 0;
-  }
-}
-
-/*
-BACKUP
-
-@keyframes fadeInLeftKeyframes {
-  0% {
-    position: absolute;
-    transform: translate(-256px, 0);
-    opacity: 0;
-  }
-  100% {
-    position: absolute;
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-}
-
-@keyframes fadeOutRightKeyframes {
-  0% {
-    position: absolute;
-    transform: translate(0, 0);
-    opacity: 1;
-  }
-  100% {
-    position: absolute;
-    transform: translate(256px, 0);
-    opacity: 0;
-  }
-}
- */
+/* End of modal */
 
 .help-button {
   color: #eee;
