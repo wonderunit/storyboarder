@@ -1,15 +1,10 @@
 import { remote } from 'electron'
-import { useState, useEffect, useMemo, forwardRef, useRef } from 'react'
+import React from 'react'
+const  { useState, useEffect, useMemo, forwardRef, useRef } = React
 import { connect } from 'react-redux'
-import path from 'path'
-import fs from 'fs-extra'
-import classNames from 'classnames'
 import prompt from 'electron-prompt'
-import LiquidMetal from 'liquidmetal'
-import THREE from 'three'
+import * as THREE from 'three'
 window.THREE = THREE
-
-// for pose harvesting (maybe abstract this later?)
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../package.json'
 import request from 'request'
@@ -22,248 +17,18 @@ import {
 
   getSceneObjects
 } from '../../../shared/reducers/shot-generator'
-
-import ModelLoader from '../../../services/model-loader'
+import defaultPosePresets from '../../../shared/reducers/shot-generator-presets/hand-poses.json'
+import presetsStorage from '../../../shared/store/presetsStorage'
+import ListItem from './ListItem'
+import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL } from './ItemSettings'
+import { searchPresetsForTerms } from '../../utils/searchPresetsForTerms'
+import { filepathFor } from '../../utils/filepathFor'
 
 import '../../../vendor/three/examples/js/utils/SkeletonUtils'
 
-import {createdMirroredHand, applyChangesToSkeleton, getOppositeHandName} from "../../../utils/handSkeletonUtils"
-
-import defaultPosePresets from '../../../shared/reducers/shot-generator-presets/hand-poses.json'
-import presetsStorage from '../../../shared/store/presetsStorage'
-
-const comparePresetNames = (a, b) => {
-  var nameA = a.name.toUpperCase()
-  var nameB = b.name.toUpperCase()
-
-  if (nameA < nameB) {
-    return -1
-  }
-  if (nameA > nameB) {
-    return 1
-  }
-  return 0
-}
-
-const comparePresetPriority = (a, b) => b.priority - a.priority
-
-const searchPresetsForTerms = (presets, terms) => {
-  const matchAll = terms == null || terms.length === 0
-
-  return presets
-    .sort(comparePresetNames)
-    .filter(preset => {
-      if (matchAll) return true
-
-      return (
-        (LiquidMetal.score(preset.name, terms) > 0.8) ||
-        (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
-      )
-    })
-    .sort(comparePresetPriority)
-}
+import deepEqualSelector from './../../../utils/deepEqualSelector'
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
-
-const GUTTER_SIZE = 5
-const ITEM_WIDTH = 68
-const ITEM_HEIGHT = 132
-
-const IMAGE_WIDTH = ITEM_WIDTH
-const IMAGE_HEIGHT = 100
-const NUM_COLS = 4
-
-import ThumbnailRenderer from '../../ThumbnailRenderer'
-const filepathFor = model => 
-ModelLoader.getFilepathForModel(
-  { model: model.id, type: model.type },
-  { storyboarderFilePath: null })
-  
-const CHARACTER_MODEL = { id: 'adult-male', type: 'character' }
-
-const setupRenderer = ({ thumbnailRenderer, attachment, preset, selectedHand }) => {
-  if (!thumbnailRenderer.getGroup().children.length) {
-    let modelData = attachment
-
-    let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
-    let child = group.children[1]
-
-    let material = new THREE.MeshToonMaterial({
-      color: 0xffffff,
-      emissive: 0x0,
-      specular: 0x0,
-      skinning: true,
-      shininess: 0,
-      flatShading: false,
-      morphNormals: true,
-      morphTargets: true,
-      map: modelData.scene.children[0].children[1].material.map
-    })
-    material.map.needsUpdate = true
-
-    child.material = material
-    thumbnailRenderer.getGroup().add(group)
-    group.rotation.y = Math.PI/20
-
-  }
-
-  // setup thumbnail renderer
-  let mesh = thumbnailRenderer.getGroup().children[0].children[1]
-  let pose = preset.state.handSkeleton
-  let skeleton = mesh.skeleton
-  skeleton.pose()
-  for (let name in pose) {
-    let bone = skeleton.getBoneByName(name)
-    if (bone) {
-      bone.rotation.x = pose[name].rotation.x
-      bone.rotation.y = pose[name].rotation.y
-      bone.rotation.z = pose[name].rotation.z
-      bone.updateMatrixWorld(true)
-    }
-  }
-  let euler = new THREE.Euler(0, 200 * THREE.Math.DEG2RAD, 0)
-  let bone = skeleton.getBoneByName(selectedHand)
-  bone.updateMatrixWorld(true)
-  bone.parent.parent.parent.quaternion.setFromEuler(euler)
-  bone.parent.parent.quaternion.set(0, 0, 0, 1)
-  bone.parent.quaternion.set(0, 0, 0, 1)
-  bone.quaternion.set(0, 0, 0, 1)
-
-  bone.parent.parent.parent.updateWorldMatrix(true, true)
-}
-
-const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand }) => {
-  const src = path.join(remote.app.getPath('userData'), 'presets', 'handPoses', `${preset.id}.jpg`)
-  const onPointerDown = event => {
-    event.preventDefault()
-    let currentSkeleton = null
-    withState((dispatch, state) => {
-      currentSkeleton = getSceneObjects(state)[id].handSkeleton
-    })
-    if(!currentSkeleton) currentSkeleton = {}
-    let handPosePresetId = preset.id
-    let handSkeleton = preset.state.handSkeleton
-    let skeletonBones = Object.keys(handSkeleton)      
-    let currentSkeletonBones = Object.keys(currentSkeleton)      
-    if(skeletonBones.length !== 0) {
-      let presetHand = skeletonBones[0].includes("RightHand") ? "RightHand" : "LeftHand"
-      let oppositeSkeleton = createdMirroredHand(handSkeleton, presetHand)
-      if (selectedHand === "BothHands") {
-        handSkeleton = Object.assign(oppositeSkeleton, handSkeleton)
-      } 
-      else if (selectedHand !== presetHand) {
-        if(currentSkeletonBones.some(bone => bone.includes(presetHand))) {
-          handSkeleton = applyChangesToSkeleton(currentSkeleton, oppositeSkeleton)
-        }
-        else {
-            handSkeleton = oppositeSkeleton
-        }
-      }
-      else {
-        if(currentSkeletonBones.some(bone => bone.includes(getOppositeHandName(presetHand)))) {
-          handSkeleton = applyChangesToSkeleton(currentSkeleton, handSkeleton)
-        }
-      }
-    }
-    updateObject(id, { handPosePresetId, handSkeleton })
-  }
-
-
-  useMemo(() => {
-    let hasRendered = fs.existsSync(src)
-
-    if (!hasRendered) {
-      thumbnailRenderer.current = thumbnailRenderer.current || new ThumbnailRenderer()
-      selectedHand = Object.keys(preset.state.handSkeleton)[0].includes("RightHand") ? "RightHand" : "LeftHand"
-      setupRenderer({
-        thumbnailRenderer: thumbnailRenderer.current,
-        attachment,
-        preset,
-        selectedHand
-      })
-      let bone = thumbnailRenderer.current.getGroup().children[0].children[1].skeleton.getBoneByName(selectedHand)
-      let camera = thumbnailRenderer.current.camera
-
-      let boxGeometry = new THREE.BoxGeometry(2.5, 2)
-      let material = new THREE.MeshBasicMaterial()
-      let mesh = new THREE.Mesh(boxGeometry, material);
-      bone.parent.add(mesh)
-      mesh.scale.multiplyScalar(0.1 / thumbnailRenderer.current.getGroup().children[0].children[1].scale.x)
-      mesh.position.copy(bone.position)
-      mesh.position.y += 0.00095
-      mesh.updateWorldMatrix(true, true)
-      clampInstance(mesh, camera)
-
-      mesh.visible = false;
-      thumbnailRenderer.current.render()
-      let dataURL = thumbnailRenderer.current.toDataURL('image/jpg')
-      thumbnailRenderer.current.clear()
-
-      fs.ensureDirSync(path.dirname(src))
-
-      fs.writeFileSync(
-        src,
-        dataURL.replace(/^data:image\/\w+;base64,/, ''),
-        'base64'
-      )
-    }
-  }, [src])
-
-  let className = classNames('thumbnail-search__item', {
-    'thumbnail-search__item--selected': handPosePresetId === preset.id
-  })
-
-  return <div className={ className }
-    style={ style }
-    onPointerDown={ onPointerDown }
-    data-id={ preset.id }
-    title={ preset.name }> 
-      <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
-        <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }/>
-      </figure>
-      <div className="thumbnail-search__name" 
-        style={{
-          width: ITEM_WIDTH ,
-          height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
-        }}>
-      { preset.name }
-      </div>
-    </div>
-})
-
-const clampInstance = (instance, camera ) => {
-    let box = new THREE.Box3().setFromObject(instance);
-        let sphere = new THREE.Sphere();
-        box.getBoundingSphere(sphere);
-        let direction = new THREE.Vector3();
-    camera.getWorldDirection(direction) 
-        let s = new THREE.Vector3(0, 0, -1)
-        let h = sphere.radius / Math.tan( camera.fov / 2 * Math.PI / 180 );
-        let newPos = new THREE.Vector3().addVectors( sphere.center, s.setLength(h) );
-        camera.position.copy(newPos);
-    camera.lookAt(sphere.center);
-    camera.updateMatrixWorld(true)
-}
-
-const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
-  let { id, handPosePresetId, updateObject, attachment, thumbnailRenderer, withState, selectedHand } = data
-  let preset = data.presets[columnIndex + (rowIndex * NUM_COLS)]
-
-  if (!preset) return <div/>
-  console.log("render")
-  return <HandPresetsEditorItem
-      style={style}
-      id={id}
-      handPosePresetId={handPosePresetId}
-      attachment={attachment} 
-      updateObject={updateObject}
-      preset={preset}
-      thumbnailRenderer={thumbnailRenderer}
-      withState={withState} 
-      selectedHand={selectedHand}/>
-})
-
-import deepEqualSelector from './../../../utils/deepEqualSelector'
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
     let filepath = filepathFor(CHARACTER_MODEL)
@@ -284,7 +49,6 @@ const HandPresetsEditor = connect(
 React.memo(({
   id,
   handPosePresetId,
-  sceneObjectModel,
   handPosePresets,
   attachmentStatus,
 
@@ -307,13 +71,9 @@ React.memo(({
     return attachment
   }
   const [attachment, setAttachment] = useState(getAttachment())
-  //currentScene = scene
-  // !!!!!Should be intialized somewhere else
- // handPosePresets = []
  console.log("Render")
   const presets = useMemo(() => searchPresetsForTerms(Object.values(handPosePresets), terms), [handPosePresets, terms])
   const [selectedHand, setSelectedHand] = useState("BothHands")
-
 
   useEffect(() => {
     if (ready) return
@@ -340,18 +100,21 @@ React.memo(({
 
     // show a prompt to get the desired preset name
     let win = remote.getCurrentWindow()
+    console.log(win)
+    win.webPreferences.webSecurity = false
     prompt({
-      title: 'Preset Name',
-      label: 'Select a Preset Name',
-      value: `HandPose ${shortId(THREE.Math.generateUUID())}`,
-    }, win).then(name => { if( name ) 
+      title: "Preset Name",
+      label: "Select a Preset Name",
+      value: "HandPose ${shortId(THREE.Math.generateUUID())}",
+    }, win)
+     .then(name => { if( name ) 
       prompt({   
-        title: 'Hand chooser',
-        lable: 'Select which hand to save',   
-        type: 'select',
+        title: "Hand chooser ",
+        lable: "Select which hand to save ",   
+        type: "select",
         selectOptions: { 
-            'LeftHand': 'Left Hand',
-            'RightHand': 'Right Hand',
+            "LeftHand": "Left Hand",
+            "RightHand": "Right Hand",
         }}, win).then((handName) => { if(handName) {
             if (name != null && name != '' && name != ' ') {
               withState((dispatch, state) => {
@@ -422,22 +185,22 @@ React.memo(({
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
     let newStyle = {
-      width:288,
-      position:'relative',
-      overflow:'hidden',
+      width: 288,
+      position: "relative",
+      overflow: "hidden",
       ...style
     }
     return <div
-        ref={ref}
-        style={newStyle}
-        {...rest}/>
+        ref={ ref }
+        style={ newStyle }
+        { ...rest }/>
   })
 
   return attachment && <div className="thumbnail-search column">
-      <div className="row" style={{ padding: '6px 0' } }> 
+      <div className="row" style={{ padding: "6px 0" }}> 
          <div className="column" style={{ flex: 1 }}> 
-          <input placeholder='Search for a hand pose …'
-                 onChange={onChange}/>
+          <input placeholder="Search for a hand pose …"
+                 onChange={ onChange} />
         </div>
         <div className="column" style={{ marginLeft: 5 }}> 
           <a className="button_add" href="#"
@@ -446,11 +209,11 @@ React.memo(({
            >+</a>
         </div>
       </div> 
-      <div className= 'row' style= {{ padding: '6px 0' }} >
-        <div style={{ width: 50, display: 'flex', alignSelf: 'center' }}>Select hand</div> 
-        <div className='column' style={{ flex: 1 }}>
-          <select onChange={onChangeHand}
-            value={selectedHand}>
+      <div className="row" style= {{ padding: "6px 0" }} >
+        <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Select hand</div> 
+        <div className="column" style={{ flex: 1 }}>
+          <select onChange={ onChangeHand }
+            value={ selectedHand }>
           <option value="LeftHand">Left Hand</option> 
           <option value="RightHand">Right Hand</option> 
           <option value="BothHands">Both Hands</option> 
@@ -471,7 +234,7 @@ React.memo(({
             presets,
 
             id: id,
-            handPosePresetId: () => handPosePresetId,
+            handPosePresetId,
 
             attachment,
             updateObject,

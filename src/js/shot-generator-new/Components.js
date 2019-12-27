@@ -1341,8 +1341,7 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
         HandPresetsEditor, {
           id: sceneObject.id,
           handPosePresetId: sceneObject.handPosePresetId,
-          scene: scene,
-          sceneObjectModel: sceneObject.model
+          scene: scene
         }
       ],
 
