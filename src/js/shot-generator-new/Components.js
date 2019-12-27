@@ -101,7 +101,7 @@ const ModelLoader = require('../services/model-loader')
 const ColorSelect = require('./ColorSelect')
 const Select = require('./Select')
 
-const ModelSelect = require('./ModelSelect')
+const ModelSelect = require('./components/ModelSelect').default
 const AttachmentsSelect = require('./AttachmentsSelect')
 //const PosePresetsEditor = require('./PosePresetsEditor')
 const PosePresetsEditor = require('./components/PosePresetsEditor').default
@@ -987,9 +987,8 @@ const InspectedElementOld = ({ sceneObject, updateObject, selectedBone, machineS
 
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [
         ModelSelect, {
-          sceneObject,
-          updateObject,
-          transition,
+          id:sceneObject.id,
+          model:sceneObject.model,
 
           rows: sceneObject.type == 'character' ? 2 : 3
         }
