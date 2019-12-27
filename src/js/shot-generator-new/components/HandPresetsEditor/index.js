@@ -71,7 +71,6 @@ React.memo(({
     return attachment
   }
   const [attachment, setAttachment] = useState(getAttachment())
- console.log("Render")
   const presets = useMemo(() => searchPresetsForTerms(Object.values(handPosePresets), terms), [handPosePresets, terms])
   const [selectedHand, setSelectedHand] = useState("BothHands")
 

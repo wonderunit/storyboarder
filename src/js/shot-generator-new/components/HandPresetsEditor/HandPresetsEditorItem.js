@@ -66,9 +66,8 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
       event.preventDefault()
       let currentSkeleton = null
       withState((dispatch, state) => {
-        currentSkeleton = getSceneObjects(state)[id].handSkeleton
+        currentSkeleton = getSceneObjects(state)[id].handSkeleton || {}
       })
-      if(!currentSkeleton) currentSkeleton = {}
       let handPosePresetId = preset.id
       let handSkeleton = preset.state.handSkeleton
       let skeletonBones = Object.keys(handSkeleton)      
@@ -95,7 +94,6 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
       }
       updateObject(id, { handPosePresetId, handSkeleton })
     }
-  
   
     useMemo(() => {
       let hasRendered = fs.existsSync(src)

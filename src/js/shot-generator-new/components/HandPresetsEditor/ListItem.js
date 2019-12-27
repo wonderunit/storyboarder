@@ -7,7 +7,6 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
     let preset = data.presets[columnIndex + (rowIndex * NUM_COLS)]
   
     if (!preset) return <div/>
-    console.log("render")
     return <HandPresetsEditorItem
         style={ style }
         id={ id }
