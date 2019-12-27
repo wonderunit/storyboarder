@@ -13,7 +13,6 @@ import {
   selectAttachable
 } from '../../../shared/reducers/shot-generator'
 import ModelLoader from '../../../services/model-loader'
-import h from '../../../utils/h'
 import FileSelect from '../../attachables/FileSelect'
 import CustomModelHelpButton from '../../CustomModelHelpButton'
 
@@ -47,30 +46,28 @@ const ModelFileItem = React.memo(({
     onSelectItem(sceneObject.id, { model: model })
   }
 
-  const className = classNames({
+  const className = classNames('thumbnail-search__item', {
     'thumbnail-search__item--selected': sceneObject.model === model.id
   })
-
   // allow a little text overlap
   const slop = GUTTER_SIZE
 
-  return h(['div.thumbnail-search__item', {
-    style,
-    className,
-    onPointerUp: onSelect,
-    'data-id': model.id,
-    title: model.name
-  }, [
-    ['figure', { style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }, [
-      ['img', { src, style: { width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }]
-    ]],
-    ['div.thumbnail-search__name', {
-      style: {
+  return <div className={ className }
+  style={ style }
+  onPointerUp={ onSelect }
+  data-id={ model.id }
+  title={ model.name }> 
+    <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
+      <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }/>
+    </figure>
+    <div className="thumbnail-search__name" 
+      style={{
         width: ITEM_WIDTH + slop,
         height: (ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE) + slop
-      }
-    }, model.name]
-  ]])
+      }}>
+    { model.name }
+    </div>
+  </div>
 })
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
@@ -78,22 +75,16 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   const model = data.models[columnIndex + (rowIndex * NUM_COLS)]
   const onSelectItem = data.onSelectItem
 
-  if (!model) return h(['div', { style }])
+  if (!model) return <div/>
 
   const filepath = (model.id !== 'box') && filepathFor(model)
   const modelData = data.attachments[filepath] && data.attachments[filepath].value
-  return h([
-    ModelFileItem, {
-      style,
-
-      sceneObject,
-      model,
-
-      modelData,
-
-      onSelectItem
-    }
-  ])
+  return <ModelFileItem
+      style={ style }
+      sceneObject={ sceneObject }
+      model={ model }
+      modelData={ modelData }
+      onSelectItem={ onSelectItem } />
 })
 
 const AttachableEditor = connect(
@@ -127,7 +118,7 @@ const AttachableEditor = connect(
     [allModels, sceneObject.type]
   )
 
-  const onChange = event => {
+  const onSearchChange = event => {
     event.preventDefault()
     setTerms(event.currentTarget.value)
   }
@@ -242,73 +233,58 @@ const AttachableEditor = connect(
 
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
-    return h([
-      'div',
-      {
-        ref,
-        style: {
-          ...style,
-          width: 288, // cut off the right side gutter
-          position: 'relative',
-          overflow: 'hidden'
-        },
-        ...rest
-      }
-    ])
+    let newStyle = {
+      width:288,
+      position:'relative',
+      overflow:'hidden',
+      ...style
+    }
+    return <div
+        ref={ref}
+        style={newStyle}
+        {...rest}/>
   })
 
   const isCustom = ModelLoader.isCustomModel(sceneObject.model)
 
-  return h(
-    ['div.thumbnail-search.column', [
-      ['div.row', { style: { padding: '6px 0' } }, [
-        ['div.column', { style: { flex: 1 } }, [
-          ['input', {
-            placeholder: 'Search models …',
-            onChange
-          }]
-        ]],
-        isCustom
-          ? ['div.column', { style: { padding: 2 } }]
-          : ['div.column', { style: { alignSelf: 'center', padding: 6, lineHeight: 1 } }, 'or'],
-        [FileSelect, { model: sceneObject.model, onSelectFile }],
-        [
-          'div.column', { style: { width: 20, margin: '0 0 0 6px', alignSelf: 'center', alignItems: 'flex-end' } }, [
-            CustomModelHelpButton
-          ]
-        ]
-      ]],
+  return <div className="thumbnail-search column"> 
+        <div className="row" style={{ padding: "6px 0" }}> 
+          <div className="column" style={{ flex: 1 }}> 
+            <input
+              placeholder="Search models …"
+              onChange={ onSearchChange }> 
+            </input>
+          </div>
+           {isCustom ? <div className="column" style={{ padding: 2 }} />
+            : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
+            }
+            <FileSelect model={ sceneObject.model } onSelectFile={ onSelectFile } />
+            <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
+              <CustomModelHelpButton/>
+            </div>
+        </div>
+        <div className="thumbnail-search__list">
+         <FixedSizeGrid 
+            columnCount={ NUM_COLS }
+            columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
 
-      ['div.thumbnail-search__list', [
-        FixedSizeGrid,
-        {
-          columnCount: NUM_COLS,
-          columnWidth: ITEM_WIDTH + GUTTER_SIZE,
+            rowCount={ Math.ceil(results.length / NUM_COLS) }
+            rowHeight={ ITEM_HEIGHT }
+            width={ 288 }
+            height={ rows === 2 ? 248 : rows * ITEM_HEIGHT }
+            innerElementType={ innerElementType }
 
-          rowCount: Math.ceil(results.length / NUM_COLS),
-          rowHeight: ITEM_HEIGHT,
+            itemData={{
+                models: results,
+                attachments,
 
-          width: 288,
-          height: rows === 2
-            ? 248 // built-in Characters list
-            : rows * ITEM_HEIGHT, // built-in Models list
+                sceneObject,
 
-          innerElementType,
-
-          itemData: {
-            models: results,
-            attachments,
-
-            sceneObject,
-
-            onSelectItem
-          },
-          children: ListItem
-        }
-      ]]
-
-    ]]
-  )
+                onSelectItem
+            }}
+            children={ ListItem }/>
+         </div>
+      </div> 
 }))
 
 export default AttachableEditor
