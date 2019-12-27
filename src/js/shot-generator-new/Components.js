@@ -1328,7 +1328,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
       sceneObject.type == 'character' && [
         AttachableEditor, {
-          sceneObject,
+          id: sceneObject.id,
+          model: sceneObject.model,
           updateObject,
           transition,
           scene: scene,

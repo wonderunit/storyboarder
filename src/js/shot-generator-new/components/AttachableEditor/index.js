@@ -2,15 +2,15 @@ import classNames from 'classnames'
 import { remote } from 'electron'
 const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
-import { useState, useMemo, forwardRef } from 'react'
+import { useState, useMemo, forwardRef, useEffect } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
 import prompt from 'electron-prompt'
 import {
   updateObject,
   createObject,
-  getSceneObjects,
-  selectAttachable
+  selectAttachable,
+  getSceneObjects
 } from '../../../shared/reducers/shot-generator'
 import ModelLoader from '../../../services/model-loader'
 import FileSelect from '../../attachables/FileSelect'
@@ -34,8 +34,6 @@ const ModelFileItem = React.memo(({
 
   sceneObject,
   model,
-
-  modelData,
 
   onSelectItem
 }) => {
@@ -76,47 +74,49 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
   const onSelectItem = data.onSelectItem
 
   if (!model) return <div/>
-
-  const filepath = (model.id !== 'box') && filepathFor(model)
-  const modelData = data.attachments[filepath] && data.attachments[filepath].value
+  console.log("render")
   return <ModelFileItem
       style={ style }
       sceneObject={ sceneObject }
       model={ model }
-      modelData={ modelData }
       onSelectItem={ onSelectItem } />
 })
 
 const AttachableEditor = connect(
   state => ({
-    attachments: state.attachments,
-    sceneObjects: getSceneObjects(state),
     allModels: state.models
   }),
   {
     updateObject,
     createObject,
-    selectAttachable
+    selectAttachable,
+    withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
   React.memo(({
-    sceneObject,
-
-    attachments,
+    id,
+    model,
+    withState,
 
     allModels,
-    sceneObjects,
     scene,
     createObject,
     transition,
     rows = 3
   }) => {
   const [terms, setTerms] = useState(null)
-
+  console.log("Render")
+  const [sceneObject, setSceneObject] = useState({})
   const models = useMemo(
     () => Object.values(allModels).filter(m => m.type === "attachable"),
     [allModels, sceneObject.type]
   )
+
+  useEffect(() => {
+    withState((dispatch, state) => {
+      setSceneObject(getSceneObjects(state)[id])
+    })
+  }, [id, model])
 
   const onSearchChange = event => {
     event.preventDefault()
@@ -245,9 +245,7 @@ const AttachableEditor = connect(
         {...rest}/>
   })
 
-  const isCustom = ModelLoader.isCustomModel(sceneObject.model)
-
-  return <div className="thumbnail-search column"> 
+  return sceneObject.model && <div className="thumbnail-search column"> 
         <div className="row" style={{ padding: "6px 0" }}> 
           <div className="column" style={{ flex: 1 }}> 
             <input
@@ -255,7 +253,7 @@ const AttachableEditor = connect(
               onChange={ onSearchChange }> 
             </input>
           </div>
-           {isCustom ? <div className="column" style={{ padding: 2 }} />
+           { ModelLoader.isCustomModel(sceneObject.model) ? <div className="column" style={{ padding: 2 }} />
             : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
             }
             <FileSelect model={ sceneObject.model } onSelectFile={ onSelectFile } />
@@ -276,7 +274,6 @@ const AttachableEditor = connect(
 
             itemData={{
                 models: results,
-                attachments,
 
                 sceneObject,
 
