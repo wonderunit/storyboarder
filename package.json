@@ -193,6 +193,7 @@
     "ramda": "0.25.0",
     "react": "^16.10.1",
     "react-dom": "16.8.6",
+    "react-pose": "^4.0.10",
     "react-redux": "7.1.0",
     "react-select": "^3.0.8",
     "react-three-fiber": "2.4.3",

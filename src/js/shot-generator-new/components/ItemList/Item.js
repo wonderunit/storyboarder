@@ -109,7 +109,7 @@ const Item = React.memo((props) => {
             height: ELEMENT_HEIGHT,
             paddingLeft: props.group && GROUP_PADDING
           }}
-          onClick={(e) => props.onSelectItem(e, props)}
+          onPointerDown={(e) => props.onSelectItem(e, props)}
       >
         <a
             className='title'
