@@ -1,32 +1,23 @@
-import { remote } from 'electron'
 import path from 'path'
-const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
 import React, { useState, useRef, useMemo, forwardRef, useEffect, useContext, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
-import prompt from 'electron-prompt'
 import {
   createObject,
   selectAttachable,
-  getSceneObjects,
-  getSelectedAttachable
+  getSceneObjects
 } from '../../../shared/reducers/shot-generator'
-import ModelLoader from '../../../services/model-loader'
 import FileInput from '../FileInput'
 import classNames from 'classnames'
 import HelpButton from '../HelpButton'
 
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
 import ListItem from './ListItem'
-import deepEqualSelector from "../../../utils/deepEqualSelector"
 import HandSelectionModal from '../HandSelectionModal'
 
-const getModelsM = deepEqualSelector([(state) => state.models], (models) => models)
 const AttachableEditor = connect(
   state => ({
-    allModels: getModelsM(state),
-    selectedAttachable: getSelectedAttachable(state)
   }),
   {
     createObject,
@@ -38,21 +29,25 @@ const AttachableEditor = connect(
     id,
     withState,
     SceneContext,
-    selectedAttachable,
-    allModels,
     createObject,
     rows = 3
   }) => {
   const { scene } = useContext(SceneContext)
   const [terms, setTerms] = useState(null)
-  const [sceneObject, setSceneObject] = useState({})
-  const selectedModel = useRef(null)
-  const selectedId = useRef(null)
   const [isModalVisible, showModal] = useState(false)
+  const [sceneObject, setSceneObject] = useState({})
+  const selectedId = useRef(null)
+  const selectedModel = useRef(null)
   const models = useMemo(
-    () => Object.values(allModels).filter(m => m.type === "attachable"),
-    [allModels, sceneObject.type]
-  )
+    () => {
+      let attachableModels = null
+      withState((dispatch, state) => {
+        let allModels = state.models
+        attachableModels = Object.values(allModels).filter(m => m.type === "attachable")
+      })
+      return attachableModels
+    }, [sceneObject.type])
+
   useEffect(() => {
     withState((dispatch, state) => {
       setSceneObject(getSceneObjects(state)[id])
@@ -65,8 +60,6 @@ const AttachableEditor = connect(
   }
   const getSkeleton = () => {
     if(!sceneObject) return
-    console.log(id)
-    console.log(scene)
     let character = scene.children.filter(child => child.userData.id === id)[0]
     if(!character) return 
     let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
@@ -82,26 +75,7 @@ const AttachableEditor = connect(
       createAttachableElement(model, originalSkeleton, id, {bindBone: bone})
       return
     }
-
-    let selectOptions = {}
-    for(let i = 0; i < originalSkeleton.bones.length; i++) {
-      if(!originalSkeleton.bones[i].name.includes("leaf"))
-        selectOptions[originalSkeleton.bones[i].name] = originalSkeleton.bones[i].name
-    }
     showModal(true)
-   // let win = remote.getCurrentWindow()
-   /*  prompt({
-      title: 'Preset Name',
-      lable: 'Select which hand to save',   
-      type: 'select',
-      selectOptions
-    }, win).then(name => {
-      if (name != null && name != '' && name != ' ') {
-        createAttachableElement(model, originalSkeleton, id, {name: name})
-        }
-    }).catch(err =>
-      console.error(err)
-    ) */
   }
 
   const createAttachableElement = (model, originalSkeleton, id, {bindBone = null, name = null }) => {
@@ -185,9 +159,8 @@ const AttachableEditor = connect(
         style={newStyle}
         {...rest}/>
   })
-  console.log(selectedAttachable)
 
-  const isCustom = selectedAttachable && ModelLoader.isCustomModel(selectedAttachable)
+  const isCustom = false
   const refClassName = classNames( "button__file", {
     "button__file--selected": isCustom
   })
