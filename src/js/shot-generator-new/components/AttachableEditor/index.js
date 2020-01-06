@@ -2,7 +2,7 @@ import { remote } from 'electron'
 import path from 'path'
 const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
-import { useState, useMemo, forwardRef, useEffect, useContext, useCallback } from 'react'
+import { useState, useRef, useMemo, forwardRef, useEffect, useContext, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
 import prompt from 'electron-prompt'
@@ -20,6 +20,7 @@ import HelpButton from '../HelpButton'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
 import ListItem from './ListItem'
 import deepEqualSelector from "../../../utils/deepEqualSelector"
+import HandSelectionModal from '../HandSelectionModal'
 
 const getModelsM = deepEqualSelector([(state) => state.models], (models) => models)
 const AttachableEditor = connect(
@@ -45,6 +46,9 @@ const AttachableEditor = connect(
   const { scene } = useContext(SceneContext)
   const [terms, setTerms] = useState(null)
   const [sceneObject, setSceneObject] = useState({})
+  const selectedModel = useRef(null)
+  const selectedId = useRef(null)
+  const [isModalVisible, showModal] = useState(false)
   const models = useMemo(
     () => Object.values(allModels).filter(m => m.type === "attachable"),
     [allModels, sceneObject.type]
@@ -59,11 +63,20 @@ const AttachableEditor = connect(
     event.preventDefault()
     setTerms(event.currentTarget.value)
   }
+  const getSkeleton = () => {
+    if(!sceneObject) return
+    console.log(id)
+    console.log(scene)
+    let character = scene.children.filter(child => child.userData.id === id)[0]
+    if(!character) return 
+    let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
+    return skinnedMesh.skeleton
+  }
 
   const onSelectItem = (id, { model }) => {
-    let skinnedMesh = scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh")
-    let originalSkeleton = skinnedMesh.skeleton
-
+    let originalSkeleton = getSkeleton()
+    selectedModel.current = model
+    selectedId.current = id
     let bone = originalSkeleton.getBoneByName(model.bindBone)
     if(bone) {
       createAttachableElement(model, originalSkeleton, id, {bindBone: bone})
@@ -75,9 +88,9 @@ const AttachableEditor = connect(
       if(!originalSkeleton.bones[i].name.includes("leaf"))
         selectOptions[originalSkeleton.bones[i].name] = originalSkeleton.bones[i].name
     }
-
-    let win = remote.getCurrentWindow()
-    prompt({
+    showModal(true)
+   // let win = remote.getCurrentWindow()
+   /*  prompt({
       title: 'Preset Name',
       lable: 'Select which hand to save',   
       type: 'select',
@@ -88,7 +101,7 @@ const AttachableEditor = connect(
         }
     }).catch(err =>
       console.error(err)
-    )
+    ) */
   }
 
   const createAttachableElement = (model, originalSkeleton, id, {bindBone = null, name = null }) => {
@@ -180,7 +193,15 @@ const AttachableEditor = connect(
   })
   const wrapperClassName = "button__file__wrapper"
 
-  return sceneObject.model && 
+  return sceneObject.model && <div>
+    <HandSelectionModal
+        visible={ isModalVisible }
+        model={ selectedModel.current }
+        setVisible={ showModal }
+        id={ selectedId.current }
+        skeleton={ getSkeleton() }
+        onSuccess= { createAttachableElement }
+    />
     <div className="thumbnail-search column"> 
         <div className="row" style={{ padding: "6px 0" }}> 
           <div className="column" style={{ flex: 1 }}> 
@@ -220,6 +241,7 @@ const AttachableEditor = connect(
             children={ ListItem }/>
          </div>
       </div> 
+    </div>
 }))
 
 export default AttachableEditor
