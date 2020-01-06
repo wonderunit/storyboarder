@@ -1,4 +1,5 @@
 import path from 'path'
+import React from 'react'
 import fs from 'fs-extra'
 import classNames from 'classnames'
 import SkeletonUtils from '../../../vendor/three/examples/js/utils/SkeletonUtils'

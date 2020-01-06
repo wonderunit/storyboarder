@@ -2,7 +2,7 @@ import { remote } from 'electron'
 import path from 'path'
 const { dialog } = remote
 import LiquidMetal from 'liquidmetal'
-import { useState, useRef, useMemo, forwardRef, useEffect, useContext, useCallback } from 'react'
+import React, { useState, useRef, useMemo, forwardRef, useEffect, useContext, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
 import prompt from 'electron-prompt'

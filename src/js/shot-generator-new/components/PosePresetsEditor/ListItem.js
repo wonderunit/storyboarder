@@ -1,5 +1,6 @@
 
 import PosePresetsEditorItem from './PosePresetEditorItem'
+import React from 'react'
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
     let { id, posePresetId, updateObject, attachment, thumbnailRenderer } = data

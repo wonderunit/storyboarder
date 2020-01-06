@@ -1,6 +1,6 @@
 import React, {useRef, useMemo, useState} from 'react'
 import Modal from "../Modal"
-import Select from "../../Select"
+import Select from "../Select"
 
 const HandSelectionModal = React.memo(({
     visible,
@@ -25,6 +25,7 @@ const HandSelectionModal = React.memo(({
           }
 
         }
+        setSelectedHand(selectOptions[0])
         return selectOptions
     }, [skeleton])
 

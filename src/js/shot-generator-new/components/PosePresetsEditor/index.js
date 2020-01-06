@@ -1,5 +1,5 @@
 import { remote } from 'electron'
-import { useState, useEffect, useMemo, forwardRef, useRef } from 'react'
+import React, { useState, useEffect, useMemo, forwardRef, useRef } from 'react'
 import { connect } from 'react-redux'
 import prompt from 'electron-prompt'
 import * as THREE from 'three'

@@ -1,3 +1,4 @@
+import React from 'react'
 import ModelFileItem from '../ModelFileItem'
 import * as ItemSettings from './ItemSettings' 
 

@@ -99,7 +99,7 @@ const presetsStorage = require('../shared/store/presetsStorage')
 const ModelLoader = require('../services/model-loader')
 
 const ColorSelect = require('./ColorSelect')
-const Select = require('./Select')
+const Select = require('./components/Select').default
 
 const ModelSelect = require('./components/ModelSelect').default
 const AttachmentsSelect = require('./AttachmentsSelect')
