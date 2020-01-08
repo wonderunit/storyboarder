@@ -225,6 +225,20 @@ const Attachable = React.memo(({ scene, id, updateObject, sceneObject, loaded, m
   useEffect(() => {
     if(!ready) return
     container.current.userData.bindBone = props.bindBone
+    let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
+    let skeleton = skinnedMesh.skeleton
+    let bone = skeleton.getBoneByName(props.bindBone)
+    bone.add(container.current)
+    characterObject.current.updateWorldMatrix(true, true)
+    container.current.parent.updateMatrixWorld(true)
+    let parentMatrixWorld = container.current.parent.matrixWorld
+    let parentInverseMatrixWorld = container.current.parent.getInverseMatrixWorld()
+    container.current.applyMatrix(parentMatrixWorld)
+    container.current.position.set(props.x, props.y, props.z)
+    container.current.rotation.set(props.rotation.x, props.rotation.y, props.rotation.z)
+    container.current.updateMatrixWorld(true)
+    container.current.applyMatrix(parentInverseMatrixWorld)
+    container.current.updateMatrixWorld(true)
   }, [props.bindBone])
 
   useEffect(() => {
