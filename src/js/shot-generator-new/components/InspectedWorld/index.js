@@ -8,6 +8,8 @@ import HelpButton from './../HelpButton'
 import Checkbox from './../Checkbox'
 import FileInput from './../FileInput'
 
+import Scrollable from './../Scrollable'
+
 import {NumberSlider, formatters, transforms} from './../NumberSlider'
 
 import {
@@ -76,7 +78,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   ), [])
   
   return (
-      <div>
+      <Scrollable>
         <h4 className='inspector-label'>Scene</h4>
         <div className='inspector-group'>
           <div className='inspector-row'>
@@ -191,7 +193,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
         </div>
         
-      </div>
+      </Scrollable>
   )
 })
 

@@ -1,6 +1,8 @@
 import React, { createContext, useState, useContext, useMemo, useCallback} from 'react'
 import useConstant from 'use-constant'
 
+import Scrollable from '../Scrollable'
+
 const TabsState = createContext()
 const Elements = createContext()
 
@@ -18,7 +20,9 @@ const Tabs = ({
   return (
     <Elements.Provider value={elements}>
       <TabsState.Provider value={state}>
-        {children}
+        <div className='tabs'>
+          {children}
+        </div>
       </TabsState.Provider>
     </Elements.Provider>
   )
@@ -62,4 +66,33 @@ const usePanelState = () => {
   }
 }
 
-export {Tabs, usePanelState, useTabState}
+const Tab = ({ children }) => {
+  const {onClick, isActive} = useTabState()
+
+  return (
+      <div
+          onClick={onClick}
+          className={`tabs-tab ${isActive && 'active'}`}
+      >
+        {children}
+      </div>
+  )
+}
+
+const Panel = ({children}) => {
+  const {isActive} = usePanelState()
+
+  if (!isActive) {
+    return null
+  }
+
+  return (
+    <Scrollable>
+      <div className='tabs-body__content'>
+        {children}
+      </div>
+    </Scrollable>
+  )
+}
+
+export {Tabs, usePanelState, useTabState, Tab, Panel}
