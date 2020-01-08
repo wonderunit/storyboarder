@@ -18,6 +18,7 @@ const sortPriority = ['camera', 'character', 'object', 'image', 'light', 'volume
 
 const getSortedItems = (sceneObjectsArray) => {
   const headItems = sceneObjectsArray
+    .filter(object => sortPriority.indexOf(object.type) !== -1)
     .sort((prev, current) => sortPriority.indexOf(prev.type) - sortPriority.indexOf(current.type))
     .filter(object => !!object.group === false)
   
@@ -47,6 +48,8 @@ const isSelected = (id, selections, children = []) => {
 
 const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject}) => {
   const listRef = useRef(null)
+  
+  console.log('ItemList Rerender')
   
   const onSelectItem = useCallback((event, props) => {
     if (!props) {
@@ -145,7 +148,8 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
   )
 })
 
-const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => {
+const sceneObjectSelector = (state) => {
+  const sceneObjects = getSceneObjects(state)
   return Object.values(sceneObjects).map((object) => {
     return {
       id:           object.id,
@@ -157,7 +161,8 @@ const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => 
       type:         object.type
     }
   })
-})
+}
+const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects) => sceneObjects)
 const getSelectionsM = deepEqualSelector([getSelections], selections => selections)
 
 const mapStateToProps = (state) => ({

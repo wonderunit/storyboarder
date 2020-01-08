@@ -1,7 +1,7 @@
 import path from 'path'
 import fs from 'fs-extra'
 import classNames from 'classnames'
-import SkeletonUtils from '../../../vendor/three/examples/js/utils/SkeletonUtils'
+import '../../../vendor/three/examples/js/utils/SkeletonUtils'
 import ThumbnailRenderer from '../../ThumbnailRenderer'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from './ItemSettings'
 import { remote } from 'electron'
