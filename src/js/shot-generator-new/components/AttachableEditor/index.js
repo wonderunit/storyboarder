@@ -15,10 +15,10 @@ import HelpButton from '../HelpButton'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
 import ListItem from './ListItem'
 import HandSelectionModal from '../HandSelectionModal'
+import SearchList from '../SearchList'
 
 const AttachableEditor = connect(
-  state => ({
-  }),
+  state => ({}),
   {
     createObject,
     selectAttachable,
@@ -33,20 +33,19 @@ const AttachableEditor = connect(
     rows = 3
   }) => {
   const { scene } = useContext(SceneContext)
-  const [terms, setTerms] = useState(null)
   const [isModalVisible, showModal] = useState(false)
   const [sceneObject, setSceneObject] = useState({})
   const selectedId = useRef(null)
   const selectedModel = useRef(null)
-  const models = useMemo(
-    () => {
-      let attachableModels = null
-      withState((dispatch, state) => {
-        let allModels = state.models
-        attachableModels = Object.values(allModels).filter(m => m.type === "attachable")
-      })
-      return attachableModels
-    }, [sceneObject.type])
+
+  const models = useMemo(() => {
+    let attachableModels = null
+    withState((dispatch, state) => {
+      let allModels = state.models
+      attachableModels = Object.values(allModels).filter(m => m.type === "attachable")
+    })
+    return attachableModels
+  }, [sceneObject.type])
 
   useEffect(() => {
     withState((dispatch, state) => {
@@ -54,10 +53,6 @@ const AttachableEditor = connect(
     })
   }, [id])
 
-  const onSearchChange = event => {
-    event.preventDefault()
-    setTerms(event.currentTarget.value)
-  }
   const getSkeleton = () => {
     if(!sceneObject) return
     let character = scene.children.filter(child => child.userData.id === id)[0]
@@ -132,20 +127,6 @@ const AttachableEditor = connect(
     }
   }, [id])
 
-  const results = useMemo(() => {
-    const matchAll = terms == null || terms.length === 0
-
-    return models
-      .filter(model =>
-        matchAll
-          ? true
-          : LiquidMetal.score(
-            [model.name, model.keywords].filter(Boolean).join(' '),
-            terms
-          ) > 0.8
-      )
-  }, [terms])
-
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
     let newStyle = {
@@ -160,6 +141,18 @@ const AttachableEditor = connect(
         {...rest}/>
   })
 
+  const termsFilter = (terms) => {
+    const matchAll = terms == null || terms.length === 0
+
+    return models.filter(model => matchAll
+          ? true
+          : LiquidMetal.score(
+            [model.name, model.keywords].filter(Boolean).join(' '),
+            terms
+          ) > 0.8
+      )
+  }
+
   const isCustom = false
   const refClassName = classNames( "button__file", {
     "button__file--selected": isCustom
@@ -173,17 +166,11 @@ const AttachableEditor = connect(
         setVisible={ showModal }
         id={ selectedId.current }
         skeleton={ getSkeleton() }
-        onSuccess= { createAttachableElement }
-    />
-    <div className="thumbnail-search column"> 
-        <div className="row" style={{ padding: "6px 0" }}> 
-          <div className="column" style={{ flex: 1 }}> 
-            <input
-              placeholder="Search models …"
-              onChange={ onSearchChange }> 
-            </input>
-          </div>
-           { isCustom ? <div className="column" style={{ padding: 2 }} />
+        onSuccess={ createAttachableElement }/>
+    <SearchList 
+      itemsFilter={ termsFilter }
+      titleContent={ <div className="row">
+            { isCustom ? <div className="column" style={{ padding: 2 }} />
             : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
             }
             <FileInput value={ isCustom ? selectValue() : "Select File …" } 
@@ -191,29 +178,29 @@ const AttachableEditor = connect(
                      onChange={ onSelectFile } 
                      refClassName={ refClassName }
                      wrapperClassName={ wrapperClassName }/>
-            <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
+            <div className="column" style={{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
             <HelpButton
                 url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
                 title="How to Create 3D Models for Custom Objects"/>
             </div>
-        </div>
-        <div className="thumbnail-search__list">
-         <FixedSizeGrid 
-            columnCount={ NUM_COLS }
-            columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
-            rowCount={ Math.ceil(results.length / NUM_COLS) }
-            rowHeight={ ITEM_HEIGHT }
-            width={ 288 }
-            height={ rows === 2 ? 248 : rows * ITEM_HEIGHT }
-            innerElementType={ innerElementType }
-            itemData={{
-                models: results,
-                sceneObject,
-                onSelectItem
-            }}
-            children={ ListItem }/>
-         </div>
-      </div> 
+          </div>
+      }
+      initializeGrid={ (results) => {
+        return <FixedSizeGrid 
+          columnCount={ NUM_COLS }
+          columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
+          rowCount={ Math.ceil(results.length / NUM_COLS) }
+          rowHeight={ ITEM_HEIGHT }
+          width={ 288 }
+          height={ rows === 2 ? 248 : rows * ITEM_HEIGHT }
+          innerElementType={ innerElementType }
+          itemData={{
+             models: results,
+             sceneObject,
+             onSelectItem
+          }}
+          children={ ListItem }/>
+      }}/>
     </div>
 }))
 
