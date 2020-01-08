@@ -1,6 +1,6 @@
 import { remote } from 'electron'
 const { dialog } = remote
-import React, { useMemo, useState, useEffect, useContext } from 'react'
+import React, { useMemo, useState, useEffect, useContext, useRef } from 'react'
 import { connect } from 'react-redux'
 import prompt from 'electron-prompt'
 import {
@@ -10,6 +10,7 @@ import {
 } from '../../../shared/reducers/shot-generator'
 import ListItem from "./ListItem"
 import deepEqualSelector from './../../../utils/deepEqualSelector'
+import HandSelectionModal from '../HandSelectionModal'
 const sceneObjectSelector = (state) => {
     let sceneObjects = getSceneObjects(state)
     let values = Object.values(sceneObjects).filter(object => object.type === "attachable").map((object) => {
@@ -46,9 +47,12 @@ const AttachableInfo = connect(
     SceneContext
   }) => {
     console.log("Render")
-    
+    const [isModalVisible, showModal] = useState(false)
+    const selectedId = useRef(null)
+    const model = useRef(null)
     const { scene } = useContext(SceneContext)
     const [sceneObject, setSceneObject] = useState({})
+
     useEffect(() => {
        withState((dispatch, state) => {
          setSceneObject(getSceneObjects(state)[id])
@@ -56,33 +60,14 @@ const AttachableInfo = connect(
     }, [id])
 
     const onSelectItem = (id, bindBoneName) => {
-        if(!scene) return
-        let skinnedMesh = scene.children.filter(child => child.userData.id === sceneObject.id)[0].getObjectByProperty("type", "SkinnedMesh")
-        let originalSkeleton = skinnedMesh.skeleton
-        let selectOptions = {}
-        for(let i = 0; i < originalSkeleton.bones.length; i++) {
-          if(!originalSkeleton.bones[i].name.includes("leaf"))
-            selectOptions[originalSkeleton.bones[i].name] = originalSkeleton.bones[i].name
-        }
-
-        // show a prompt to get the desired preset name
-        let win = remote.getCurrentWindow()
-        prompt({
-          title: 'Preset Name',
-          lable: 'Select which hand to save',   
-          type: 'select',
-          value: bindBoneName,
-          selectOptions
-        }, win).then(name => { 
-          if (name == null || name == '' || name == ' ') return
-          let bone = originalSkeleton.getBoneByName(name)
-        
-          let {x, y, z} = bone.worldPosition()
-          updateObject(id, {x, y, z,  bindBone: bone.name })
-        })
+      if(!scene) return
+      selectedId.current = id
+      console.log("SelectedItem")
+      showModal(true)
     }
 
     const attachables = useMemo(() => {
+      console.log("Attachable changed")
         let result = []
         withState((dispatch, state) => {
             let sceneObjects = getSceneObjects(state)
@@ -96,6 +81,21 @@ const AttachableInfo = connect(
         })
         return result
     }, [sceneObjects, sceneObject])
+
+    const getSkeleton = () => {
+      if(!sceneObject) return
+      let character = scene.children.filter(child => child.userData.id === id)[0]
+      if(!character) return 
+      let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
+      return skinnedMesh.skeleton
+    }
+
+    const updateAttachableBone = (model, originalSkeleton, id, {name}) => {
+      if (name == null || name == '' || name == ' ' || !originalSkeleton) return
+      let bone = originalSkeleton.getBoneByName(name)
+      let {x, y, z} = bone.worldPosition()
+      updateObject(id, {x, y, z, bindBone: bone.name })
+    }
 
     const onDelete = (attachable) => {
       let choice = dialog.showMessageBox(null, {
@@ -120,23 +120,31 @@ const AttachableInfo = connect(
             sceneObject.id,
             { size: value }
           )}}/>
-
     }
 
-    return attachables && <div className="thumbnail-search.column">
-          <div className="thumbnail-search__list"> 
-              <div> 
-                 { attachables.map((item, index) => <ListItem
-                    key={ index }
-                    attachable={ item } 
-                    props={{
-                      onSelectItem,
-                      onDelete,
-                      getNumberSlider}}/>
-                 )}
+    return attachables && <div>
+        { isModalVisible && <HandSelectionModal
+          visible={ isModalVisible }
+          model={ model.current }
+          setVisible={ showModal }
+          id={ selectedId.current }
+          skeleton={ getSkeleton() }
+          onSuccess={ updateAttachableBone }/> }
+        <div className="thumbnail-search.column">
+              <div className="thumbnail-search__list"> 
+                  <div> 
+                     { attachables.map((item, index) => <ListItem
+                        key={ index }
+                        attachable={ item } 
+                        props={{
+                          onSelectItem,
+                          onDelete,
+                          getNumberSlider}}/>
+                     )}
+                  </div>
               </div>
-          </div>
-      </div>
+        </div>
+    </div>
 }))
 
 export default AttachableInfo
