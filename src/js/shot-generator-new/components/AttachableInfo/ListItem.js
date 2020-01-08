@@ -2,11 +2,10 @@ import React from 'react'
 import AttachableInfoItem from './AttachableInfoItem'
 
 const ListItem = React.memo(({ props, attachable }) => {
-    const { sceneObjects, getNumberSlider, onSelectItem, onDelete} = props
-    let sceneObject = sceneObjects[attachable.userData.id]
+    const { getNumberSlider, onSelectItem, onDelete } = props
     console.log("Render")
     return <AttachableInfoItem
-          sceneObject={ sceneObject }
+          sceneObject={ attachable }
           onSelectItem={ onSelectItem }
           onDelete={ onDelete }
           getNumberSlider={ getNumberSlider }/>

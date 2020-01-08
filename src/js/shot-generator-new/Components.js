@@ -1018,9 +1018,7 @@ const InspectedElementOld = ({ sceneObject, updateObject, selectedBone, machineS
       sceneObject.type == 'character' && [
         AttachableInfo, {
           id: sceneObject.id,
-          sceneObject,
-          updateObject,
-          scene: scene,
+          SceneContext,
           NumberSlider,
         }
       ],
