@@ -1,5 +1,4 @@
 import path from 'path'
-import LiquidMetal from 'liquidmetal'
 import React, { useState, useRef, useMemo, forwardRef, useEffect, useContext, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
@@ -34,9 +33,11 @@ const AttachableEditor = connect(
   }) => {
   const { scene } = useContext(SceneContext)
   const [isModalVisible, showModal] = useState(false)
+  const [results, setResults] = useState([])
   const [sceneObject, setSceneObject] = useState({})
   const selectedId = useRef(null)
   const selectedModel = useRef(null)
+  const sortedAttachables = useRef([])
 
   const models = useMemo(() => {
     let attachableModels = null
@@ -44,6 +45,10 @@ const AttachableEditor = connect(
       let allModels = state.models
       attachableModels = Object.values(allModels).filter(m => m.type === "attachable")
     })
+    setResults(attachableModels)
+    sortedAttachables.current = attachableModels.map((attachable, index) => {
+      return { value: [attachable.name, attachable.keywords].filter(Boolean).join(' '), id: index
+    }})
     return attachableModels
   }, [sceneObject.type])
 
@@ -141,17 +146,13 @@ const AttachableEditor = connect(
         {...rest}/>
   })
 
-  const termsFilter = (terms) => {
-    const matchAll = terms == null || terms.length === 0
-
-    return models.filter(model => matchAll
-          ? true
-          : LiquidMetal.score(
-            [model.name, model.keywords].filter(Boolean).join(' '),
-            terms
-          ) > 0.8
-      )
-  }
+  const saveFilteredPresets = useCallback((filteredPreset) => {
+    let presets = []
+    for(let i = 0; i < filteredPreset.length; i++) {
+      presets.push(models[filteredPreset[i].id])
+    }
+    setResults(presets)
+  }, [models])
 
   const isCustom = false
   const refClassName = classNames( "button__file", {
@@ -167,40 +168,40 @@ const AttachableEditor = connect(
         id={ selectedId.current }
         skeleton={ getSkeleton() }
         onSuccess={ createAttachableElement }/>
-    <SearchList 
-      itemsFilter={ termsFilter }
-      titleContent={ <div className="row">
-            { isCustom ? <div className="column" style={{ padding: 2 }} />
-            : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
-            }
-            <FileInput value={ isCustom ? selectValue() : "Select File …" } 
-                     title={ isCustom ? path.basename(sceneObject.model) : undefined } 
-                     onChange={ onSelectFile } 
-                     refClassName={ refClassName }
-                     wrapperClassName={ wrapperClassName }/>
-            <div className="column" style={{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
-            <HelpButton
-                url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
-                title="How to Create 3D Models for Custom Objects"/>
-            </div>
+      <div className="thumbnail-search column"> 
+        <div className="row" style={{ padding: "6px 0" }}> 
+          <SearchList label="Search models …" list={ sortedAttachables.current} onSearch={saveFilteredPresets}/>
+          { isCustom ? <div className="column" style={{ padding: 2 }} />
+          : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
+          }
+          <FileInput value={ isCustom ? selectValue() : "Select File …" } 
+                   title={ isCustom ? path.basename(sceneObject.model) : undefined } 
+                   onChange={ onSelectFile } 
+                   refClassName={ refClassName }
+                   wrapperClassName={ wrapperClassName }/>
+          <div className="column" style={{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
+          <HelpButton
+              url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
+              title="How to Create 3D Models for Custom Objects"/>
           </div>
-      }
-      initializeGrid={ (results) => {
-        return <FixedSizeGrid 
-          columnCount={ NUM_COLS }
-          columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
-          rowCount={ Math.ceil(results.length / NUM_COLS) }
-          rowHeight={ ITEM_HEIGHT }
-          width={ 288 }
-          height={ rows === 2 ? 248 : rows * ITEM_HEIGHT }
-          innerElementType={ innerElementType }
-          itemData={{
-             models: results,
-             sceneObject,
-             onSelectItem
-          }}
-          children={ ListItem }/>
-      }}/>
+        </div>
+        <div className="thumbnail-search__list">
+          <FixedSizeGrid 
+            columnCount={ NUM_COLS }
+            columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
+            rowCount={ Math.ceil(results.length / NUM_COLS) }
+            rowHeight={ ITEM_HEIGHT }
+            width={ 288 }
+            height={ rows === 2 ? 248 : rows * ITEM_HEIGHT }
+            innerElementType={ innerElementType }
+            itemData={{
+               models: results,
+               sceneObject,
+               onSelectItem
+            }}
+            children={ ListItem }/>
+        </div>
+      </div> 
     </div>
 }))
 
