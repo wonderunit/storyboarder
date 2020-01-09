@@ -71,17 +71,7 @@ const getIntersectionTarget = intersect => {
     return intersect.object.parent
   }
 }
-const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => {
-  return Object.values(sceneObjects).map((object) => {
-    return {
-      id:           object.id,
-      x:            object.x,
-      y:            object.y,
-      z:            object.z,
-      type:         object.type
-    }
-  })
-})
+const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => sceneObjects)
 const getSelectionsM = deepEqualSelector([getSelections], selections => selections)
 
 const SelectionManager = connect(
@@ -332,7 +322,7 @@ React.memo(({
     let intersects = getIntersects(mousePosition.current, camera, useIcons, {x, y})
     // if no objects intersected
     if (intersects.length === 0) {
-        if(dragTarget || (selections.length === 1 && selections[0] !== activeCamera) ) {
+        if(dragTarget || (selections[0] !== activeCamera) ) {
             // cancel any active dragging
             endDrag()
             // clear the drag target

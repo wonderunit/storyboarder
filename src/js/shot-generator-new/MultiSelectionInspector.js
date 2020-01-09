@@ -9,11 +9,11 @@ const {
 
 const MultiSelectionInspector = connect(
   state => ({
-    selections: getSelections(state)
+    selectionsCount: getSelections(state).length
   })
-)(({ selections, count }) => {
+)(({ selectionsCount }) => {
   return h(
-    ['div', { style: { padding: '24px 6px' } }, `Selected ${count} items`]
+    ['div', { style: { padding: '24px 6px' } }, `Selected ${selectionsCount} items`]
   )
 })
 

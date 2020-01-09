@@ -3,7 +3,13 @@ import React, {useCallback} from 'react'
 import {remote} from 'electron'
 const {dialog} = remote
 
-const FileInput = React.memo(({value = '(none)', label, onChange}) => {
+const FileInput = React.memo(({
+  value = "(none)", 
+  label, onChange, 
+  wrapperClassName="input-group",
+  refClassName="file-input",
+  ...props
+}) => {
   const onFileSelect = useCallback((e) => {
     e.preventDefault()
     if (!onChange) {
@@ -13,10 +19,15 @@ const FileInput = React.memo(({value = '(none)', label, onChange}) => {
     let filepaths = dialog.showOpenDialog(null, {})
     
     if (filepaths) {
-      let filepath = filepaths[0]
-      onChange({file: filepath})
+      onChange({
+        file: filepaths[0],
+        files: filepaths
+      })
     } else {
-      onChange({file: undefined})
+      onChange({
+        file: undefined,
+        files: []
+      })
     }
     
     // automatically blur to return keyboard control
@@ -24,19 +35,19 @@ const FileInput = React.memo(({value = '(none)', label, onChange}) => {
   }, [onChange])
   
   return (
-      <div className='input-group'>
-        {label ? <div className='input-group__label'>{label}</div> : null}
+      <div className={ wrapperClassName }>
+        {label ? <div className="input-group__label">{label}</div> : null}
         <div
-            className='file-input'
-            onClick={onFileSelect}
+            className={ refClassName }
+            onClick={ onFileSelect }
+            title={value}
         >
-          <div>
-            <a
-              href='#'
-            >
-              {value}
-            </a>
-          </div>
+          <a
+            href="#"
+            {...props}
+          >
+            {value}
+          </a>
         </div>
       </div>
   )

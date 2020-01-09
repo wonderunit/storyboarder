@@ -271,16 +271,23 @@ kbd {
 
 #inspector {
   flex: 1;
-  overflow: scroll;
+
+  display: flex;
+  flex-direction: column;
+  
+  height: 100%;
   padding: 6px;
   background-color: #333639;
   color: #999;
   text-transform: capitalize;
-  max-width: 288px;
+}
+
+#inspector > div {
+  height: 100%;
 }
 
 #inspector::-webkit-scrollbar {
-  display: none;
+  /*display: none;*/
 }
 #remoteInputView {
   padding-top: 12px;
@@ -922,12 +929,36 @@ input[type="color"]::-webkit-color-swatch {
   justify-content: center;
   align-items: center;
   line-height: 1;
+  flex: 1;
+  width: '100%';
+  height: 34px;
+  overflow: 'hidden';
 }
+
+.thumbnail-search .button__file__wrapper {
+  display: flex;
+  flex-direction: row;
+  width: 106px;
+}
+
 .thumbnail-search .button__file:hover {
   background-color: rgba(255,255,255,0.1);
 }
 .thumbnail-search .button__file--selected {
   color: #fff;
+}
+
+.skeleton-selector__div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 40px 0 4px 0;
+  font-size: 13px;
+}
+.skeleton-selector__div .skeleton-selector__button {
+  font-size: 13px;
+  padding: 5px 5px 5px 5px;
+  background-color: #5c65c0;
 }
 
 .object-property-heading {
@@ -1037,6 +1068,7 @@ div.fatal-error-screen__report::selection {
   justify-content: flex-end;
   align-items: center;
 }
+
 
 .camera-item-label {
   padding-top: 6px;
@@ -1277,7 +1309,7 @@ div.fatal-error-screen__report::selection {
   content:'\2716';
   padding-left: 5px;
   padding-top: 4px;
-  text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, .2);
   font-size: 15px;
   text-align: center;
   line-height: 1;
@@ -1286,6 +1318,94 @@ div.fatal-error-screen__report::selection {
 }
 
 /* End of checkbox */
+
+/* Tabs block */
+.tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tabs-header {
+  display: flex;
+  flex-shrink: 0;
+  width: 100%;
+  overflow-x: hidden;
+  border-bottom: 2px solid rgba(255,255,255,0.05);
+}
+
+.tabs-tab {
+  background-color: rgba(255,255,255,0.05);
+  
+  padding: 4px;
+  
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  
+  margin-right: 3px;
+  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  cursor: pointer;
+}
+
+.tabs-tab:hover {
+  background-color: rgba(255,255,255,0.1);
+}
+
+.tabs-tab.active {
+  background-color: rgba(255,255,255,0.2);
+}
+
+.tabs-body {
+  padding: 8px 0 4px 0;
+  position: relative;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs-body::-webkit-scrollbar {
+  /*display: none;*/
+}
+
+.tabs-body__content {
+  width: 100%;
+  height: 100%;
+}
+
+/* End of tabs */
+
+/* Modal block */
+
+.modal__overlay {
+  position: fixed!important;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  
+  display: flex;
+  
+  z-index: 999;
+}
+
+.modal__overlay > .modal__window {
+  display: block;
+  
+  min-width: 256px;
+  min-height: 128px;
+  padding: 6px;
+  
+  background-color: #30323d;
+  border-radius: 6px;
+}
+
+/* End of modal */
 
 .help-button {
   color: #eee;
@@ -1305,12 +1425,43 @@ div.fatal-error-screen__report::selection {
 }
 
 
+.scrollable {
+  overflow: auto;
+  height: 100%;
+}
+
+.scrollable::-webkit-scrollbar {
+  display: none;
+}
+
+.file-input > a {
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.image-file-input > a {
+  font-style: italic;
+  text-decoration: none;
+  border-bottom-width: 1px;
+  border-bottom-style: dashed;
+  font-size: 12px;
+  line-height: 1;
+  color: rgb(170, 170, 170);
+  text-transform: none;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+
 .objects-list .element,
 #toolbar a,
 a.button,
 .number-slider__control,
 #inspector .button_add,
-.file-input {
+.file-input,
+.tabs-tab {
   transition: background-color 0.2s;
 }
 

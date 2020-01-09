@@ -99,13 +99,13 @@ const presetsStorage = require('../shared/store/presetsStorage')
 const ModelLoader = require('../services/model-loader')
 
 const ColorSelect = require('./ColorSelect')
-const Select = require('./Select')
+const Select = require('./components/Select').default
 
-const ModelSelect = require('./ModelSelect')
+const ModelSelect = require('./components/ModelSelect').default
 const AttachmentsSelect = require('./AttachmentsSelect')
 //const PosePresetsEditor = require('./PosePresetsEditor')
 const PosePresetsEditor = require('./components/PosePresetsEditor').default
-const AttachableEditor = require('./attachables/AttachableEditor')
+const AttachableEditor = require('./components/AttachableEditor').default
 const AttachableInfo = require('./attachables/AttachableInfo')
 const HandPresetsEditor = require('./components/HandPresetsEditor').default
 //const HandPresetsEditor = require('./HandPresetsEditor')
@@ -115,6 +115,7 @@ const CustomModelHelpButton = require('./CustomModelHelpButton')
 
 const ItemList = require('./components/ItemList').default
 const InspectedWorld = require('./components/InspectedWorld').default
+const InspectedElement = require('./components/InspectedElement').default
 const {NumberSlider, transforms: NumberSliderTransform, formatters: NumberSliderFormatter} = require('./components/NumberSlider')
 
 const {setShot, ShotSizes, ShotAngles} = require('./cameraUtils')
@@ -239,11 +240,11 @@ const Inspector = ({
     { ref, onFocus, onBlur },
     (selectedCount > 1)
       ? [
-          MultiSelectionInspector, {count: selectedCount}
+          MultiSelectionInspector
         ]
       : (kind && data)
         ? [
-            InspectedElement, {
+            /*InspectedElement, {
               sceneObject,
               models,
               updateObject,
@@ -253,341 +254,24 @@ const Inspector = ({
               selectBone,
               updateCharacterSkeleton,
               storyboarderFilePath
-            }
+            }*/
+          InspectedElement, {element: (
+              <InspectedElementOld {...{
+                sceneObject,
+                models,
+                updateObject,
+                selectedBone: scene.getObjectByProperty('uuid', selectedBone),
+                machineState,
+                transition,
+                selectBone,
+                updateCharacterSkeleton,
+                storyboarderFilePath
+              }}/>
+            )}
           ]
         : [
-          //InspectedWorldOld, { world, transition, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog }
           InspectedWorld
-        ],
-      // [ServerInspector]
-  ])
-}
-
-const InspectedWorldOld = ({ world, transition, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog }) => {
-  const onGroundClick = event => {
-    event.preventDefault()
-    updateWorld({ ground: !world.ground })
-  }
-
-  return h([
-    'div',
-    ['h4', { style: { margin: 0 } }, 'Scene'],
-    [
-      'div', { style: { marginBottom: 12 }},
-
-      [
-        'div.row',
-        { style: { alignItems: 'center', margin: '6px 0 3px 0' } }, [
-
-          ['div', { style: { width: 50, opacity: world.room.visible ? 0.5 : 1 } }, 'ground'],
-
-          ['input', {
-            type: 'checkbox',
-            checked: world.ground,
-            readOnly: true,
-            style: {
-
-            }
-          }],
-
-          ['label', {
-            onClick: onGroundClick,
-          }, [
-            'span'
-          ]]
         ]
-      ],
-
-      [NumberSlider,
-        {
-          label: 'bg color',
-          value: world.backgroundColor / 0xFFFFFF,
-          min: 0,
-          max: 1,
-          onSetValue: value => {
-            // value is 0..1, scale to component value of 0x00...0xFF (0...255)
-            let c = 0xFF * value
-            // monochrome
-            let backgroundColor = (c << 16) | (c << 8) | c
-            updateWorld({ backgroundColor })
-          }
-        }
-      ],
-
-    ],
-
-    [
-      'div', { style: { marginBottom: 12 }},
-      [
-        ['h5', { style: { margin: 0 } }, 'Room'],
-
-        [
-          'div.row',
-          { style: { alignItems: 'center', margin: '6px 0 3px 0' } }, [
-
-            ['div', { style: { width: 50 } }, 'visible'],
-
-            ['input', {
-              type: 'checkbox',
-              checked: world.room.visible,
-              readOnly: true,
-              style: {
-
-              }
-            }],
-
-            ['label', {
-              onClick: preventDefault(event => {
-                updateWorldRoom({ visible: !world.room.visible })
-              }),
-            }, [
-              'span'
-            ]]
-          ]
-        ],
-
-        ['div.column', [
-          [NumberSlider, { label: 'width', value: world.room.width, min: 1.83, max: 76.2, onSetValue: value => updateWorldRoom({ width: value }) } ],
-          [NumberSlider, { label: 'length', value: world.room.length, min: 1.83, max: 76.2, onSetValue: value => updateWorldRoom({ length: value }) } ],
-          [NumberSlider, { label: 'height', value: world.room.height, min: 1.83, max: 12.19, onSetValue: value => updateWorldRoom({ height: value }) } ],
-        ]]
-      ]
-    ],
-
-    [
-      'div', { style: { marginBottom: 12 }},
-      [
-        ['h5', { style: { margin: 0 } }, 'Environment'],
-
-        [
-          'div.row',
-          { style: { alignItems: 'center', margin: '6px 0 3px 0' } }, [
-
-            ['div', { style: { width: 50 } }, 'visible'],
-
-            ['input', {
-              type: 'checkbox',
-              checked: world.environment.visible,
-              readOnly: true,
-              style: {
-
-              }
-            }],
-
-            ['label', {
-              onClick: preventDefault(event => {
-                updateWorldEnvironment({ visible: !world.environment.visible })
-              }),
-            }, [
-              'span'
-            ]]
-          ]
-        ],
-
-        ['div.column',
-          ['div.number-slider', [
-
-            [
-              'div.number-slider__label',
-              [
-                'div',
-                'File'
-              ],
-              [
-                'div',
-                {
-                  style: {
-                    alignSelf: 'center',
-                    alignItems: 'center',
-                    display: 'flex',
-                    padding: '0 0 0 6px',
-                    width: 15,
-                    height: 26
-                  }
-                },
-                [
-                  CustomModelHelpButton,
-                  {
-                    style: {
-                      color: '#eee',
-                      backgroundColor: '#333',
-                      width: 16,
-                      height: 16,
-                      fontSize: '10px'
-                    }
-                  }
-                ]
-              ]
-            ],
-
-            // number-slider__control
-            [
-              'div',
-              {
-                style: {
-                  display: 'flex',
-                  borderRadius: 4,
-                  width: 137,
-                  alignItems: 'center',
-                  alignContent: 'flex-end',
-                  backgroundColor: 'rgba(255, 255, 255, 0.05)'
-                }
-              },
-              ['div', { style: { flex: 1, margin: '-3px 0 0 9px' } },
-                [
-                  'a[href=#]',
-                  {
-                    onClick: preventDefault(event => {
-                      let filepaths = dialog.showOpenDialog(null, {})
-                      if (filepaths) {
-                        let filepath = filepaths[0]
-                        updateWorldEnvironment({ file: filepath })
-                      } else {
-                        updateWorldEnvironment({ file: undefined })
-                      }
-                      // automatically blur to return keyboard control
-                      document.activeElement.blur()
-                      transition('TYPING_EXIT')
-                    }),
-
-                    style: {
-                      fontStyle: 'italic',
-                      textDecoration: 'none',
-                      borderBottomWidth: '1px',
-                      borderBottomStyle: 'dashed',
-                      fontSize: 13,
-                      lineHeight: 1,
-                      color: '#aaa',
-                      textTransform: 'none'
-                    }
-                  },
-
-                  world.environment.file ? path.basename(world.environment.file) : '(none)'
-                ],
-              ]
-            ]
-          ]]
-        ],
-
-        ['div.column', [
-          [NumberSlider, { label: 'x', value: world.environment.x, min: -30, max: 30, onSetValue: value => updateWorldEnvironment({ x: value }) } ],
-          [NumberSlider, { label: 'y', value: world.environment.y, min: -30, max: 30, onSetValue: value => updateWorldEnvironment({ y: value }) } ],
-          [NumberSlider, { label: 'z', value: world.environment.z, min: -30, max: 30, onSetValue: value => updateWorldEnvironment({ z: value }) } ],
-        ]],
-
-        ['div.row', [
-          [
-            NumberSlider, {
-              label: 'scale',
-              value: world.environment.scale,
-              min: 0.001,
-              max: 2,
-              onSetValue: value => {
-                updateWorldEnvironment({ scale: value })
-              }
-            }
-          ]
-        ]],
-
-        ['div',
-          [NumberSlider, {
-            label: 'rotation',
-            min: -180,
-            max: 180,
-            step: 1,
-            value: THREE.Math.radToDeg(world.environment.rotation),
-            onSetValue: rotation => {
-              updateWorldEnvironment({ rotation: THREE.Math.degToRad(rotation) })
-            },
-            transform: NumberSliderTransform.degrees,
-            formatter: NumberSliderFormatter.degrees
-          }]
-        ]
-
-      ]
-    ],
-
-    [
-      'div', { style: { marginBottom: 12 }},
-      [
-        ['h5', { style: { margin: 0 } }, 'Ambient light'],
-
-        [NumberSlider, { label: 'intensity', value: world.ambient.intensity, min: 0, max: 1, onSetValue: value => updateWorldEnvironment({ intensity: value }) } ],
-      ]
-    ],
-
-    [
-      'div', { style: { marginBottom: 12 }},
-      [
-        ['h5', { style: { margin: 0 } }, 'Directional light'],
-
-        [NumberSlider, { label: 'intensity', value: world.directional.intensity, min: 0, max: 1, onSetValue: value => updateWorldEnvironment({ intensityDirectional: value }) } ],
-        ['div',
-          [NumberSlider, {
-            label: 'rotation',
-            min: -Math.PI,
-            max: Math.PI,
-            step: Math.PI/180,
-            value: world.directional.rotation,
-            onSetValue: rotationDirectional => {
-              updateWorldEnvironment({ rotationDirectional })
-            },
-            transform: NumberSliderTransform.radians,
-            formatter: NumberSliderFormatter.radToDeg
-          }]
-        ],
-        ['div',
-          [NumberSlider, {
-            label: 'tilt',
-            min: -Math.PI,
-            max: Math.PI,
-            step: Math.PI/180,
-            value: world.directional.tilt,
-            onSetValue: tiltDirectional => {
-              updateWorldEnvironment({ tiltDirectional })
-            },
-            transform: NumberSliderTransform.radians,
-            formatter: NumberSliderFormatter.radToDeg
-          }]
-        ]
-      ]
-    ],
-
-    [
-      'div', { style: { marginBottom: 12 } },
-      [
-        ['h5', { style: { margin: 0 } }, 'Fog'],
-
-        [
-          'div.row',
-          { style: { alignItems: 'center', margin: '6px 0 3px 0' } }, [
-            ['div', { style: { width: 50 } }, 'visible'],
-            ['input', {
-              type: 'checkbox',
-              checked: world.fog.visible,
-              readOnly: true
-            }],
-            ['label', {
-              onClick: preventDefault(event => {
-                updateWorldFog({ visible: !world.fog.visible })
-              }),
-            }, [
-              'span'
-            ]]
-          ]
-        ],
-
-        [NumberSlider, {
-          label: 'Distance',
-          value: world.fog.far,
-          min: 10,
-          max: 500,
-          step: 1,
-          formatter: value => Math.round(value).toString(),
-          onSetValue: far => updateWorldFog({ far }) }
-        ]
-      ]
-    ]
   ])
 }
 
@@ -876,7 +560,7 @@ const MORPH_TARGET_LABELS = {
   'ectomorphic': 'Skinny',
   'endomorphic': 'Obese',
 }
-const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath  }) => {
+const InspectedElementOld = ({ sceneObject, updateObject, selectedBone, machineState, transition, selectBone, updateCharacterSkeleton, storyboarderFilePath  }) => {
   const createOnSetValue = (id, name, transform = value => value) => value => updateObject(id, { [name]: transform(value) })
   const { scene } = useContext(SceneContext)
   let positionSliders = [
@@ -1304,9 +988,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
       (sceneObject.type == 'object' || sceneObject.type == 'character') && [
         ModelSelect, {
-          sceneObject,
-          updateObject,
-          transition,
+          id:sceneObject.id,
+          model:sceneObject.model,
 
           rows: sceneObject.type == 'character' ? 2 : 3
         }
@@ -1328,11 +1011,8 @@ const InspectedElement = ({ sceneObject, updateObject, selectedBone, machineStat
 
       sceneObject.type == 'character' && [
         AttachableEditor, {
-          sceneObject,
-          updateObject,
-          transition,
-          scene: scene,
-          rows: sceneObject.type == 'character' ? 2 : 3
+          id: sceneObject.id,
+          SceneContext
         }
       ],
       sceneObject.type == 'character' && [
