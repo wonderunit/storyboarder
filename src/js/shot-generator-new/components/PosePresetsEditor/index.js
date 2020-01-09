@@ -1,11 +1,8 @@
-import { remote } from 'electron'
 import React, { useState, useEffect, useMemo, forwardRef, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
-import prompt from 'electron-prompt'
 import * as THREE from 'three'
 window.THREE = THREE
 
-// for pose harvesting (maybe abstract this later?)
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../package.json'
 import request from 'request'
@@ -22,6 +19,7 @@ import presetsStorage from '../../../shared/store/presetsStorage'
 import { comparePresetNames, comparePresetPriority } from '../../utils/searchPresetsForTerms' 
 import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL } from './ItemSettings'
 import ListItem from './ListItem'
+import Modal from '../Modal'
 import { filepathFor } from '../../utils/filepathFor'
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import SearchList from '../SearchList/index.js'
@@ -64,13 +62,16 @@ React.memo(({
    
     return attachment
   }
+  
   const [attachment, setAttachment] = useState(getAttachment())
 
   const [ready, setReady] = useState(false)
   const [results, setResult] = useState([])
+  const [isModalShown, showModal] = useState(false)
+  const newPresetName = useRef('')
+  const newGeneratedId = useRef()
 
   const presets = useMemo(() => {
-    console.log(posePresets)
     if(!posePresets) return
     let sortedPoses = Object.values(posePresets).sort(comparePresetNames).sort(comparePresetPriority)
     sortedAttachament.current = sortedPoses.map((preset, index) => {
@@ -91,7 +92,6 @@ React.memo(({
     return posePresetId
   }
 
-
   useEffect(() => {
     if (ready) return
     if (attachmentStatus === "Success" && !attachment) {
@@ -103,7 +103,6 @@ React.memo(({
     }
   }, [attachmentStatus])
 
-
   const saveFilteredPresets = useCallback(filteredPreset => {
     let objects = []
     for(let i = 0; i < filteredPreset.length; i++) {
@@ -114,70 +113,65 @@ React.memo(({
 
   const onCreatePosePreset = event => {
     event.preventDefault()
+    newGeneratedId.current = "Pose "+shortId(THREE.Math.generateUUID())
+    newPresetName.current = newGeneratedId.current
+    showModal(true)
+  }
 
-    // show a prompt to get the desired preset name
-    let win = remote.getCurrentWindow()
-    prompt({
-      title: 'Preset Name',
-      label: 'Select a Preset Name',
-      value: `Pose ${shortId(THREE.Math.generateUUID())}`
-    }, win).then(name => {
-      if (name != null && name != '' && name != ' ') {
-        withState((dispatch, state) => {
-          // get the latest skeleton data
-          let sceneObject = getSceneObjects(state)[id]
-          let skeleton = sceneObject.skeleton
-          let model = sceneObject.model
+  const addNewPosePreset = (name) => {
+    if (name != null && name != '' && name != ' ') {
+      withState((dispatch, state) => {
+        // get the latest skeleton data
+        let sceneObject = getSceneObjects(state)[id]
+        let skeleton = sceneObject.skeleton
+        let model = sceneObject.model
 
-          // create a preset out of it
-          let newPreset = {
-            id: THREE.Math.generateUUID(),
-            name,
-            keywords: name, // TODO keyword editing
-            state: {
-              skeleton: skeleton || {}
-            },
-            priority: 0
+        // create a preset out of it
+        let newPreset = {
+          id: THREE.Math.generateUUID(),
+          name,
+          keywords: name, // TODO keyword editing
+          state: {
+            skeleton: skeleton || {}
+          },
+          priority: 0
+        }
+
+        // add it to state
+        createPosePreset(newPreset)
+
+        // save to server
+        // for pose harvesting (maybe abstract this later?)
+        request.post('https://storyboarders.com/api/create_pose', {
+          form: {
+            name: name,
+            json: JSON.stringify(skeleton),
+            model_type: model,
+            storyboarder_version: pkg.version,
+            machine_id: machineIdSync()
           }
-
-          // add it to state
-          createPosePreset(newPreset)
-
-          // save to server
-          // for pose harvesting (maybe abstract this later?)
-          request.post('https://storyboarders.com/api/create_pose', {
-            form: {
-              name: name,
-              json: JSON.stringify(skeleton),
-              model_type: model,
-              storyboarder_version: pkg.version,
-              machine_id: machineIdSync()
-            }
-          })
-
-          // select the preset in the list
-          updateObject(id, { posePresetId: newPreset.id })
-
-          // get updated state (with newly created pose preset)
-          withState((dispatch, state) => {
-            // ... and save it to the presets file
-            let denylist = Object.keys(defaultPosePresets)
-            let filteredPoses = Object.values(state.presets.poses)
-              .filter(pose => denylist.includes(pose.id) === false)
-              .reduce(
-                (coll, pose) => {
-                  coll[pose.id] = pose
-                  return coll
-                },
-                {}
-              )
-            presetsStorage.savePosePresets({ poses: filteredPoses })
-          })
         })
-      }
-    }).catch(err =>
-      console.error(err)
-    )
+
+        // select the preset in the list
+        updateObject(id, { posePresetId: newPreset.id })
+
+        // get updated state (with newly created pose preset)
+        withState((dispatch, state) => {
+          // ... and save it to the presets file
+          let denylist = Object.keys(defaultPosePresets)
+          let filteredPoses = Object.values(state.presets.poses)
+            .filter(pose => denylist.includes(pose.id) === false)
+            .reduce(
+              (coll, pose) => {
+                coll[pose.id] = pose
+                return coll
+              },
+              {}
+            )
+          presetsStorage.savePosePresets({ poses: filteredPoses })
+        })
+      })
+    }
   }
 
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
@@ -194,7 +188,29 @@ React.memo(({
         {...rest}/>
   })
 
-  return presets && <div className="thumbnail-search column">
+  return presets && <div>
+   { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
+      <div style={{ margin:"5px 5px 5px 5px" }}>
+        Select a Preset Name:
+      </div>
+      <div className="column" style={{ flex: 1 }}> 
+        <input 
+          type="text" 
+          placeholder={ newGeneratedId.current }
+          onChange={ (value) => newPresetName.current = value.currentTarget.value }/>
+      </div>
+      <div className="skeleton-selector__div">
+        <button
+          className="skeleton-selector__button"
+          onClick={() => {
+            showModal(false)
+            addNewPosePreset(newPresetName.current)
+          }}>
+            Proceed
+        </button>
+        </div>
+   </Modal> }
+   <div className="thumbnail-search column">
       <div className="row" style={{ padding: "6px 0" } }> 
         <SearchList label="Search for a pose …" list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>
         <div className="column" style={{ marginLeft: 5 }}> 
@@ -229,6 +245,7 @@ React.memo(({
           children={ ListItem }/>
       </div>
     </div> 
+    </div>
 }))
 
 export default PosePresetsEditor

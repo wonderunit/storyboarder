@@ -11,7 +11,7 @@ import { useMemo } from 'react'
 const setupRenderer = ({ thumbnailRenderer, attachment, preset }) => {
   if (!thumbnailRenderer.getGroup().children.length) {
     let modelData = attachment
-    let group = SkeletonUtils.clone(modelData.scene.children[0])
+    let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
     let child = group.children[1]
 
     let material = new THREE.MeshToonMaterial({
