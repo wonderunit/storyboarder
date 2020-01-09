@@ -1,6 +1,6 @@
 import { remote } from 'electron'
 import React from 'react'
-const  { useState, useEffect, useMemo, forwardRef, useRef } = React
+const  { useState, useEffect, useMemo, forwardRef, useRef, useCallback } = React
 import { connect } from 'react-redux'
 import prompt from 'electron-prompt'
 import * as THREE from 'three'
@@ -21,12 +21,13 @@ import defaultPosePresets from '../../../shared/reducers/shot-generator-presets/
 import presetsStorage from '../../../shared/store/presetsStorage'
 import ListItem from './ListItem'
 import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL } from './ItemSettings'
-import { searchPresetsForTerms } from '../../utils/searchPresetsForTerms'
+import { comparePresetNames, comparePresetPriority } from '../../utils/searchPresetsForTerms'
 import { filepathFor } from '../../utils/filepathFor'
 
 import '../../../vendor/three/examples/js/utils/SkeletonUtils'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
+import SearchList from '../SearchList'
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
@@ -60,8 +61,8 @@ React.memo(({
   const thumbnailRenderer = useRef()
 
   const [ready, setReady] = useState(false)
-  const [terms, setTerms] = useState(null)
-
+  const sortedPresets = useRef([])
+  const [results, setResult] = useState([])
   const getAttachment = () => {
     let attachment 
     withState((dispatch, state) => {
@@ -71,8 +72,20 @@ React.memo(({
     return attachment
   }
   const [attachment, setAttachment] = useState(getAttachment())
-  const presets = useMemo(() => searchPresetsForTerms(Object.values(handPosePresets), terms), [handPosePresets, terms])
   const [selectedHand, setSelectedHand] = useState("BothHands")
+  
+  const presets = useMemo(() => {
+    if(!handPosePresets) return
+    let sortedPoses = Object.values(handPosePresets).sort(comparePresetNames).sort(comparePresetPriority)
+    sortedPresets.current = sortedPoses.map((preset, index) => {
+      return {
+        value: preset.name + "|" + preset.keywords,
+        id: index
+      }
+    })
+    setResult(sortedPoses)
+    return sortedPoses
+  }, [handPosePresets])
 
   useEffect(() => {
     if (ready) return
@@ -89,10 +102,13 @@ React.memo(({
     setSelectedHand(event.target.value)
   }
 
-  const onChange = event => {
-    event.preventDefault()
-    setTerms(event.currentTarget.value)
-  }
+  const saveFilteredPresets = useCallback(filteredPreset => {
+    let objects = []
+    for(let i = 0; i < filteredPreset.length; i++) {
+      objects.push(presets[filteredPreset[i].id])
+    }
+    setResult(objects)
+  }, [presets])
 
   const onCreateHandPosePreset = event => {
     event.preventDefault()
@@ -183,6 +199,7 @@ React.memo(({
 
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
+    style.width = 288
     let newStyle = {
       width: 288,
       position: "relative",
@@ -197,10 +214,7 @@ React.memo(({
 
   return attachment && <div className="thumbnail-search column">
       <div className="row" style={{ padding: "6px 0" }}> 
-         <div className="column" style={{ flex: 1 }}> 
-          <input placeholder="Search for a hand pose …"
-                 onChange={ onChange} />
-        </div>
+        <SearchList label="Search for a hand pose …" list={ sortedPresets.current } onSearch={ saveFilteredPresets }/>
         <div className="column" style={{ marginLeft: 5 }}> 
           <a className="button_add" href="#"
             style={{ width: 30, height: 34 }}
@@ -224,13 +238,13 @@ React.memo(({
           columnCount={ NUM_COLS }
           columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
 
-          rowCount={ Math.ceil(presets.length / NUM_COLS) }
+          rowCount={ Math.ceil(results.length / NUM_COLS) }
           rowHeight={ ITEM_HEIGHT }
           width={ 288 }
           height={ 363 }
           innerElementType={ innerElementType }
           itemData={{
-            presets,
+            presets:results,
 
             id: id,
             handPosePresetId,
