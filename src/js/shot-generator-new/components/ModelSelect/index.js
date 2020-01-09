@@ -1,8 +1,7 @@
 import path from 'path'
 import React from 'react'
-import LiquidMetal from 'liquidmetal'
 
-import { useState, useMemo, useEffect, useCallback } from 'react'
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { connect } from 'react-redux'
 import {
   updateObject,
@@ -18,6 +17,7 @@ import classNames from 'classnames'
 import { truncateMiddle } from '../../../utils'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
 import FileInput from '../FileInput'
+import SearchList from '../SearchList'
 
 const ModelSelect = connect(
   state => ({
@@ -38,12 +38,18 @@ const ModelSelect = connect(
 
     rows = 3
   }) => {
-    const [terms, setTerms] = useState(null)
     const [sceneObject, setSceneObject] = useState({})
-    const models = useMemo(
-      () => Object.values(allModels).filter(m => m.type === sceneObject.type),
-      [allModels, sceneObject.type]
-    )
+    const sortedModels = useRef([])
+    const [results, setResults] = useState([])
+    const models = useMemo(() => { 
+      let models = Object.values(allModels).filter(m => m.type === sceneObject.type)
+      sortedModels.current = models.map((model, index) => { return {
+        value: [model.name, model.keywords].filter(Boolean).join(' '),
+        id: index
+      }})
+      setResults(models)
+      return models
+    }, [allModels, sceneObject.type])
 
     useEffect(() => {
       withState((dispatch, state) => {
@@ -51,10 +57,13 @@ const ModelSelect = connect(
       })
     }, [id, model])
 
-    const onSearchChange = event => {
-      event.preventDefault()
-      setTerms(event.currentTarget.value)
-    }
+    const saveFilteredPresets = useCallback((filteredModels) => {
+      let foundModels = []
+      for(let i = 0; i < filteredModels.length; i++) {
+        foundModels.push(models[filteredModels[i].id])
+      }
+      setResults(foundModels)
+    }, [models])
 
     const onSelectFile = filepath => {
       if (filepath.file) {
@@ -73,19 +82,6 @@ const ModelSelect = connect(
       return displayName
     }, [sceneObject.model])
 
-    const results = useMemo(() => {
-      const matchAll = terms == null || terms.length === 0
-      return models
-        .filter(model =>
-          matchAll
-            ? true
-            : LiquidMetal.score(
-              [model.name, model.keywords].filter(Boolean).join(' '),
-              terms
-            ) > 0.8
-        )
-    }, [terms, sceneObject.id])
-
     const isCustom = sceneObject.model && ModelLoader.isCustomModel(sceneObject.model)
     const refClassName = classNames( "button__file", {
       "button__file--selected": isCustom
@@ -94,12 +90,7 @@ const ModelSelect = connect(
     return sceneObject.model && 
       <div className="thumbnail-search column"> 
         <div className="row" style={{ padding: "6px 0" }}> 
-          <div className="column" style={{ flex: 1 } }> 
-            <input
-              placeholder="Search models …"
-              onChange={ onSearchChange }> 
-            </input>
-          </div>
+          <SearchList label="Search models …" list={ sortedModels.current } onSearch={ saveFilteredPresets }/>
           {isCustom ? <div className="column" style={{ padding: 2 }} />
             : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 }}>or</div>
           }

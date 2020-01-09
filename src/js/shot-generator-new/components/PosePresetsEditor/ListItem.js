@@ -11,7 +11,7 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
          id={ id }
          posePresetId={ posePresetId }
          attachment={ attachment }
-         updateObject={ pdateObject }
+         updateObject={ updateObject }
          preset={ preset }
          thumbnailRenderer={ thumbnailRenderer }/>
    })
