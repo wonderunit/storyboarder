@@ -38,7 +38,7 @@ const AttachableEditor = connect(
   const selectedId = useRef(null)
   const selectedModel = useRef(null)
   const sortedAttachables = useRef([])
-
+  console.log("Rerender attachableEditor")
   const models = useMemo(() => {
     let attachableModels = null
     withState((dispatch, state) => {
@@ -66,7 +66,7 @@ const AttachableEditor = connect(
     return skinnedMesh.skeleton
   }
 
-  const onSelectItem = (id, { model }) => {
+  const onSelectItem = useCallback((id, { model }) => {
     let originalSkeleton = getSkeleton()
     selectedModel.current = model
     selectedId.current = id
@@ -76,7 +76,7 @@ const AttachableEditor = connect(
       return
     }
     showModal(true)
-  }
+  }, [scene.children.length])
 
   const createAttachableElement = (model, originalSkeleton, id, {bindBone = null, name = null }) => {
     if(!bindBone && !name) return 
@@ -134,6 +134,7 @@ const AttachableEditor = connect(
 
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
+    style.width = 288
     let newStyle = {
       width:288,
       position:'relative',
