@@ -87,8 +87,8 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
     }
   }, [src])
 
-  let className = classNames('thumbnail-search__item', {
-    'thumbnail-search__item--selected': posePresetId === preset.id
+  let className = classNames("thumbnail-search__item", {
+    "thumbnail-search__item--selected": posePresetId === preset.id
   })
 
   return <div className={ className }

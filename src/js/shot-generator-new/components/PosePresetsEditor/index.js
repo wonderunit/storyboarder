@@ -1,5 +1,5 @@
 import { remote } from 'electron'
-import React, { useState, useEffect, useMemo, forwardRef, useRef } from 'react'
+import React, { useState, useEffect, useMemo, forwardRef, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import prompt from 'electron-prompt'
 import * as THREE from 'three'
@@ -19,11 +19,12 @@ import {
 import defaultPosePresets from '../../../shared/reducers/shot-generator-presets/poses.json'
 import presetsStorage from '../../../shared/store/presetsStorage'
 
-import { searchPresetsForTerms } from '../../utils/searchPresetsForTerms' 
+import { comparePresetNames, comparePresetPriority } from '../../utils/searchPresetsForTerms' 
 import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL } from './ItemSettings'
 import ListItem from './ListItem'
 import { filepathFor } from '../../utils/filepathFor'
 import deepEqualSelector from './../../../utils/deepEqualSelector'
+import SearchList from '../SearchList/index.js'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -53,20 +54,34 @@ React.memo(({
 }) => {
   const thumbnailRenderer = useRef()
 
+  const sortedAttachament = useRef([])
   const getAttachment = () => {
     let attachment 
     withState((dispatch, state) => {
       let filepath = filepathFor(CHARACTER_MODEL)
       attachment = state.attachments[filepath].value
     })
+   
     return attachment
   }
   const [attachment, setAttachment] = useState(getAttachment())
 
   const [ready, setReady] = useState(false)
-  const [terms, setTerms] = useState(null)
+  const [results, setResult] = useState([])
 
-  const presets = useMemo(() => searchPresetsForTerms(Object.values(posePresets), terms), [posePresets, terms])
+  const presets = useMemo(() => {
+    console.log(posePresets)
+    if(!posePresets) return
+    let sortedPoses = Object.values(posePresets).sort(comparePresetNames).sort(comparePresetPriority)
+    sortedAttachament.current = sortedPoses.map((preset, index) => {
+      return {
+        value: preset.name + "|" + preset.keywords,
+        id: index
+      }
+    })
+    setResult(sortedPoses)
+    return sortedPoses
+  }, [posePresets])
 
   const getPosePresetId = () => {
     let posePresetId
@@ -89,10 +104,13 @@ React.memo(({
   }, [attachmentStatus])
 
 
-  const onChange = event => {
-    event.preventDefault()
-    setTerms(event.currentTarget.value)
-  }
+  const saveFilteredPresets = useCallback(filteredPreset => {
+    let objects = []
+    for(let i = 0; i < filteredPreset.length; i++) {
+      objects.push(presets[filteredPreset[i].id])
+    }
+    setResult(objects)
+  }, [presets])
 
   const onCreatePosePreset = event => {
     event.preventDefault()
@@ -163,6 +181,7 @@ React.memo(({
   }
 
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
+    style.width = 288
     let newStyle = {
       width:288,
       position:'relative',
@@ -175,16 +194,13 @@ React.memo(({
         {...rest}/>
   })
 
-  return attachment && <div className="thumbnail-search column">
-      <div className="row" style={{ padding: '6px 0' } }> 
-         <div className="column" style={{ flex: 1 }}> 
-          <input placeholder='Search for a pose …'
-                 onChange={onChange}/>
-        </div>
+  return presets && <div className="thumbnail-search column">
+      <div className="row" style={{ padding: "6px 0" } }> 
+        <SearchList label="Search for a pose …" list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>
         <div className="column" style={{ marginLeft: 5 }}> 
           <a className="button_add" href="#"
             style={{ width: 30, height: 34 }}
-            onPointerDown={onCreatePosePreset}
+            onPointerDown={ onCreatePosePreset }
           >+</a>
         </div>
       </div> 
@@ -200,7 +216,7 @@ React.memo(({
           height={ 363 }
           innerElementType={ innerElementType }
           itemData={{
-            presets,
+            presets:results,
 
             id: id,
             posePresetId: getPosePresetId(),

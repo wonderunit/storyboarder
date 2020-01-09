@@ -38,7 +38,6 @@ const AttachableEditor = connect(
   const selectedId = useRef(null)
   const selectedModel = useRef(null)
   const sortedAttachables = useRef([])
-  console.log("Rerender attachableEditor")
   const models = useMemo(() => {
     let attachableModels = null
     withState((dispatch, state) => {
@@ -171,7 +170,7 @@ const AttachableEditor = connect(
         onSuccess={ createAttachableElement }/>
       <div className="thumbnail-search column"> 
         <div className="row" style={{ padding: "6px 0" }}> 
-          <SearchList label="Search models …" list={ sortedAttachables.current} onSearch={saveFilteredPresets}/>
+          <SearchList label="Search models …" list={ sortedAttachables.current } onSearch={ saveFilteredPresets }/>
           { isCustom ? <div className="column" style={{ padding: 2 }} />
           : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
           }
