@@ -108,7 +108,6 @@ const PosePresetsEditor = require('./components/PosePresetsEditor').default
 const AttachableEditor = require('./components/AttachableEditor').default
 const AttachableInfo = require('./attachables/AttachableInfo')
 const HandPresetsEditor = require('./components/HandPresetsEditor').default
-//const HandPresetsEditor = require('./HandPresetsEditor')
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')

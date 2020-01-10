@@ -67,7 +67,9 @@ React.memo(({
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
   const newGeneratedId = useRef()
-
+  const [selectedHand, setSelectedHand] = useState("BothHands")
+  const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
+  console.log("rerender")
   const getAttachment = () => {
     let attachment 
     withState((dispatch, state) => {
@@ -77,8 +79,7 @@ React.memo(({
     return attachment
   }
   const [attachment, setAttachment] = useState(getAttachment())
-  const [selectedHand, setSelectedHand] = useState("BothHands")
-  const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
+
   
   const presets = useMemo(() => {
     if(!handPosePresets) return
@@ -125,23 +126,25 @@ React.memo(({
 
   const addNewPosePreset = (name, handName) => {
     if (name != null && name != '' && name != ' ') {
+      let sceneObject = []
       withState((dispatch, state) => {
         // get the latest skeleton data
-        let sceneObject = getSceneObjects(state)[id]
-        let skeleton = sceneObject.skeleton
-        let model = sceneObject.model
-        let originalSkeleton = scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh").skeleton.bones
-        let handSkeleton = {}
-        setSelectedHand(handName)
-        for(let i = 0; i < originalSkeleton.length; i++) {
+        sceneObject = getSceneObjects(state)[id]
+      })
+      let skeleton = sceneObject.skeleton
+      let model = sceneObject.model
+      let originalSkeleton = scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh").skeleton.bones
+      let handSkeleton = {}
+      setSelectedHand(handName)
+      for(let i = 0; i < originalSkeleton.length; i++) {
             let key = originalSkeleton[i].name
             if(key.includes(handName) && key !== handName) {
               let rot = originalSkeleton[i].rotation
               handSkeleton[key] = { rotation: { x: rot.x, y: rot.y, z: rot.z } }
             }
-        }
-        // create a preset out of it
-        let newPreset = {
+      }
+      // create a preset out of it
+      let newPreset = {
           id: THREE.Math.generateUUID(),
           name,
           keywords: name, // TODO keyword editing
@@ -149,13 +152,13 @@ React.memo(({
             handSkeleton: handSkeleton || {}
           },
           priority: 0
-        }
-        // add it to state
-        createHandPosePreset(newPreset)
+      }
+      // add it to state
+      createHandPosePreset(newPreset)
     
-        // save to server
-        // for pose harvesting (maybe abstract this later?)
-        request.post('https://storyboarders.com/api/create_pose', {
+      // save to server
+      // for pose harvesting (maybe abstract this later?)
+      request.post('https://storyboarders.com/api/create_pose', {
           form: {
             name: name,
             json: JSON.stringify(skeleton),
@@ -163,13 +166,13 @@ React.memo(({
             storyboarder_version: pkg.version,
             machine_id: machineIdSync()
           }
-        })
+      })
     
-        // select the preset in the list
-        updateObject(id, { handPosePresetId: newPreset.id })
+      // select the preset in the list
+      updateObject(id, { handPosePresetId: newPreset.id })
     
-        // get updated state (with newly created pose preset)
-        withState((dispatch, state) => {
+      // get updated state (with newly created pose preset)
+      withState((dispatch, state) => {
           // ... and save it to the presets file
           let denylist = Object.keys(defaultPosePresets)
           let filteredPoses = Object.values(state.presets.handPoses)
@@ -182,7 +185,6 @@ React.memo(({
               {}
             )
           presetsStorage.saveHandPosePresets({ handPoses: filteredPoses })
-        })
       })
     }
   }
@@ -219,10 +221,10 @@ React.memo(({
       </div>
       <div className="select">
                   <Select 
-                    label='Hand'
+                    label="Hand"
                     value={ selectedModalHand }
                     options={ savePresetHand }
-                    onSetValue={(item) => setSelectedModalHand(item)}/>
+                    onSetValue={ (item) => setSelectedModalHand(item) }/>
                 </div>
       <div className="skeleton-selector__div">
         <button
