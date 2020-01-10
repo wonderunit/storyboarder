@@ -1,5 +1,5 @@
 import HandPresetsEditorItem from './HandPresetsEditorItem'
-import { NUM_COLS } from './ItemSettings'
+import { NUM_COLS } from '../../utils/InspectorElementsSettings'
 import React from 'react'
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {

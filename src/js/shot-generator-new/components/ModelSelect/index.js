@@ -15,7 +15,7 @@ import ListItem from './ListItem'
 import SimpleGrid from '../SimpleGrid'
 import classNames from 'classnames'
 import { truncateMiddle } from '../../../utils'
-import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from '../../utils/InspectorElementsSettings'
 import FileInput from '../FileInput'
 import SearchList from '../SearchList'
 

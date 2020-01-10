@@ -105,7 +105,7 @@ const ModelSelect = require('./components/ModelSelect').default
 const AttachmentsSelect = require('./AttachmentsSelect')
 const PosePresetsEditor = require('./components/PosePresetsEditor').default
 const AttachableEditor = require('./components/AttachableEditor').default
-const AttachableInfo = require('./attachables/AttachableInfo')
+const AttachableInfo = require('./components/AttachableInfo').default
 const HandPresetsEditor = require('./components/HandPresetsEditor').default
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
@@ -1016,9 +1016,7 @@ const InspectedElementOld = ({ sceneObject, updateObject, selectedBone, machineS
       sceneObject.type == 'character' && [
         AttachableInfo, {
           id: sceneObject.id,
-          sceneObject,
-          updateObject,
-          scene: scene,
+          SceneContext,
           NumberSlider,
         }
       ],

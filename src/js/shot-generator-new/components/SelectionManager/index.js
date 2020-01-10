@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect, useRef, useMemo, useContext, useEffect} from 'react'
+import React, { useState, useLayoutEffect, useRef, useMemo, useContext, useEffect} from 'react'
 import { connect } from 'react-redux'
 import '../../../shared/IK/utils/Object3dExtension'
 import GPUPicker from '../../../xr/src/three/GPUPickers/GPUPicker'

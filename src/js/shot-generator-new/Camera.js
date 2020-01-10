@@ -1,4 +1,4 @@
-const { useEffect, useRef, useMemo } = React
+const { useEffect, useRef, useMemo } = React = require('react')
 
 const IconSprites = require('./IconSprites')
 

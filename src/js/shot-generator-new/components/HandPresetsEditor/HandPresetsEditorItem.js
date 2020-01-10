@@ -3,9 +3,9 @@ import path from 'path'
 import { remote } from 'electron'
 import classNames from 'classnames'
 import ThumbnailRenderer from '../../ThumbnailRenderer'
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { createdMirroredHand, applyChangesToSkeleton, getOppositeHandName } from '../../../utils/handSkeletonUtils'
-import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from './ItemSettings'
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../utils/InspectorElementsSettings'
 import { getSceneObjects } from '../../../shared/reducers/shot-generator'
 import clampInstance from '../../utils/clampInstance'
 
@@ -140,7 +140,7 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
   
     return <div className={ className }
       style={ style }
-      onPointerDown={ onPointerDown }
+      onPointerUp={ onPointerDown }
       data-id={ preset.id }
       title={ preset.name }> 
         <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
