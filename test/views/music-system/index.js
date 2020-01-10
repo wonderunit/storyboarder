@@ -21,7 +21,7 @@ window.onclick = function () {
     audio.play()
 
     // attach the music system
-    musicSystem.init({
+    let { sampler } = musicSystem.init({
       urlMap: {
         'C4': '/src/data/shot-generator/xr/snd/vr-instrument-c4.mp3',
         'C5': '/src/data/shot-generator/xr/snd/vr-instrument-c5.mp3',

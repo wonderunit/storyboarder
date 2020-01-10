@@ -10,6 +10,7 @@ const timings = [
 ]
 
 const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
+const dissonant = ['A#', 'G#']
 
 const octaves = [4, 5, 6]
 
@@ -24,6 +25,7 @@ function choose(array, rand) {
 }
 
 function playSequence() {
+  console.info('---')
   if (isPlaying) {
     let timing = choose(timings)
     timing.forEach((time, n) => {
@@ -34,13 +36,28 @@ function playSequence() {
       // humanize
       time += (Math.random() * 2 - 1) * 0.05
 
-      let note = choose(notes)
+      let allowed = [...notes]
+
+      // after the first note, but before the last note
+      // we can have little a dissonant note, as a treat
+      if (
+        n > 0 && n == timing.length - 1 - 1 ||
+        n > 0 && n == timing.length - 1 - 2
+      ) {
+        allowed = [...allowed, ...allowed, ...dissonant]
+        console.info(`allowing dissonant note for ${n} of ${timing.length}`)
+      }
+
+      let note = choose(allowed)
       let octave = choose(octaves, Math.pow(Math.random(), 2))
       let velocity = 0.3
 
+      // humanize velocity
+      velocity += (Math.random() * 2 - 1) * 0.05
+
       sampler.triggerAttackRelease(note + octave, '1n', time, velocity)
 
-      console.log(`MusicSystem#playSequence triggerAR ${note + octave} 1n ${time} ${velocity}`)
+      console.info(`MusicSystem#playSequence ${n} triggerAR ${note + octave} 1n ${time} ${velocity}`)
     })
   }
 }
@@ -65,6 +82,8 @@ function init ({ urlMap, audioContext, audioNode }) {
     urlMap,
     start
   ).chain(delay, reverb, audioNode.getOutput())
+
+  return { sampler }
 }
 
 export {
