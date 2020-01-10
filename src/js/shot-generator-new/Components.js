@@ -481,7 +481,10 @@ const InspectedElementOld = ({ sceneObject, updateObject, selectedBone, machineS
       // character preset
       sceneObject.type == 'character' && [
         [CharacterPresetsEditor, 
-          { sceneObject }],
+          { 
+            id: sceneObject.id,
+            characterPresetId: sceneObject.characterPresetId
+          }],
       ],
 
       sceneObject.type != 'camera' &&

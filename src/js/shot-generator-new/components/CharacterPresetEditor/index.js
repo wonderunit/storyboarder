@@ -1,15 +1,16 @@
-import React, { useMemo } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
 import { connect } from 'react-redux'
 import {
     updateObject,
 
     createCharacterPreset,
+    getSceneObjects,
 
     undoGroupStart,
     undoGroupEnd,
   } from '../../../shared/reducers/shot-generator'
 import presetsStorage from '../../../shared/store/presetsStorage'
-import Select from '../Select'
+import Modal from '../Modal'
 
 const preventDefault = (fn, ...args) => e => {
     e.preventDefault()
@@ -92,42 +93,78 @@ const CharacterPresetsEditor = connect(
 
       // end the undo-able operation
       dispatch(undoGroupEnd())
-    }
+    },
+    withState: (fn) => (dispatch, getState) => fn(dispatch, getState()),
   }
 )(
-  // TODO could optimize by only passing sceneObject properties we actually care about
-  React.memo(({ sceneObject, characterPresets, selectCharacterPreset, createCharacterPreset }) => {
-      console.log("render")
-    const onCreateCharacterPresetClick = event => {
-      // show a prompt to get the desired preset name
-      let id = THREE.Math.generateUUID()
-      prompt({
-        title: 'Preset Name',
-        label: 'Select a Preset Name',
-        value: `Character ${shortId(id)}`
-      }, require('electron').remote.getCurrentWindow()).then(name => {
-        if (name != null && name != '' && name != ' ') {
-          createCharacterPreset({
-            id,
-            name,
-            sceneObject
-          })
-        }
-      }).catch(err => {
-        console.error(err)
+  React.memo(({ 
+    id, 
+    characterPresetId,
+    characterPresets,
+    selectCharacterPreset, 
+    createCharacterPreset, 
+    withState
+   }) => {
+    const [isModalShown, showModal] = useState(false)
+    const newPresetName = useRef('')
+    const newGeneratedId = useRef()
+
+    const getSceneObject = useCallback(() => {
+      let sceneObject = null
+      withState((dispatch, state) => {
+        sceneObject = getSceneObjects(state)[id]
       })
+      return sceneObject
+    }, [id])
+
+    const onCreateCharacterPresetClick = event => {
+      newGeneratedId.current = "Character "+shortId(THREE.Math.generateUUID())
+      newPresetName.current = newGeneratedId.current
+      showModal(true)
     }
+
+    const addNewCharacterPreset = useCallback((name) => {
+      let id = THREE.Math.generateUUID()
+      createCharacterPreset({
+        id,
+        name,
+        sceneObject:getSceneObject()
+      })
+    }, [getSceneObject()])
 
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
-      selectCharacterPreset(sceneObject, characterPresetId, preset)
+      selectCharacterPreset(getSceneObject(), characterPresetId, preset)
     }
 
-    return <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}>
+    return <div>
+      <Modal visible={ isModalShown } onClose={() => showModal(false)}>
+        <div style={{ margin:"5px 5px 5px 5px" }}>
+          Select a Preset Name:
+        </div>
+        <div className="column" style={{ flex: 1 }}> 
+          <input 
+            className="modalInput"
+            type="text" 
+            placeholder={ newGeneratedId.current }
+            onChange={ (value) => newPresetName.current = value.currentTarget.value }/>
+        </div>
+        <div className="skeleton-selector__div">
+          <button
+            className="skeleton-selector__button"
+            onClick={() => {
+              showModal(false)
+              addNewCharacterPreset(newPresetName.current)
+            }}>
+              Proceed
+          </button>
+          </div>
+      </Modal>
+      <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}>
           <div style={{ width: 50, display: "flex", alignSelf: "center" }}>preset</div>
           <select required={ true }
-            value={ sceneObject.characterPresetId || "" }
+            value={ characterPresetId || "" }
             onChange={ preventDefault(onSelectCharacterPreset) }
             style={{ flex: 1,
                   marginBottom: 0,
@@ -137,8 +174,9 @@ const CharacterPresetsEditor = connect(
                 <option key={ index } value={ preset.id }>{ preset.name }</option>
               )}
           </select>
-          <a className="button_add" href="#" style={{ marginLeft: 6 }} onClick={ preventDefault(onCreateCharacterPresetClick) }>+</a> 
+          <a className="button_add" href="#" style={{ marginLeft: 6 }} onPointerUp={ preventDefault(onCreateCharacterPresetClick) }>+</a> 
         </div>
+      </div>
 
   })
 )
