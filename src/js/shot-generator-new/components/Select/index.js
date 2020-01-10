@@ -8,7 +8,8 @@ const Select = React.memo(({
     label = null,
     options = [],
     disabled = false,
-    onSetValue = defaultOnSetValue
+    onSetValue = defaultOnSetValue,
+    className
   } = {}) => {
   const callbackRef = useRef(onSetValue)
   
@@ -24,9 +25,9 @@ const Select = React.memo(({
     isDisabled={ disabled }
     //menuIsOpen: true,// useful to debug
     isSearchable={ false }
-    menuPlacement='auto'
-    menuPosition='fixed'
-    className='select'
+    menuPlacement="auto"
+    menuPosition="fixed"
+    className={"select " + className}
     classNamePrefix='select'/>
 })
 

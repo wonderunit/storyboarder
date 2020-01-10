@@ -134,6 +134,7 @@ const AttachableEditor = connect(
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
     style.width = 288
+    console.log(style)
     let newStyle = {
       width:288,
       position:'relative',
@@ -159,7 +160,7 @@ const AttachableEditor = connect(
     "button__file--selected": isCustom
   })
   const wrapperClassName = "button__file__wrapper"
-
+  const actualRowCount = Math.ceil(results.length / NUM_COLS)
   return sceneObject.model && <div>
     <HandSelectionModal
         visible={ isModalVisible }
@@ -189,10 +190,10 @@ const AttachableEditor = connect(
           <FixedSizeGrid 
             columnCount={ NUM_COLS }
             columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
-            rowCount={ Math.ceil(results.length / NUM_COLS) }
+            rowCount={actualRowCount }
             rowHeight={ ITEM_HEIGHT }
             width={ 288 }
-            height={ rows === 2 ? 248 : rows * ITEM_HEIGHT }
+            height={ actualRowCount <= rows ? actualRowCount * ITEM_HEIGHT : rows === 2 ? 248 : rows * ITEM_HEIGHT }
             innerElementType={ innerElementType }
             itemData={{
                models: results,
