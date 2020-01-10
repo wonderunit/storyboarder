@@ -68,6 +68,8 @@ const Boards = require('./components/ui/Boards')
 const BonesHelper = require('./three/BonesHelper')
 const Voicer = require('./three/Voicer')
 
+const musicSystem = require('./music-system')
+
 const { createSelector } = require('reselect')
 
 // TODO move to selectors if useful
@@ -241,6 +243,18 @@ const SceneContent = connect(
       audio.setVolume(0.3)
       audio.play()
       audio.stop()
+
+      // attach the music system
+      musicSystem.init({
+        urlMap: {
+          'C4': '/data/system/xr/snd/vr-instrument-c4.mp3',
+          'C5': '/data/system/xr/snd/vr-instrument-c5.mp3',
+          'C6': '/data/system/xr/snd/vr-instrument-c6.mp3'
+        },
+        audioContext: audio.context,
+        audioNode: audio
+      })
+
       // audio.add(new THREE.PositionalAudioHelper(audio))
       return audio
     }, [])
