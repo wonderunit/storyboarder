@@ -103,11 +103,10 @@ const Select = require('./components/Select').default
 
 const ModelSelect = require('./components/ModelSelect').default
 const AttachmentsSelect = require('./AttachmentsSelect')
-//const PosePresetsEditor = require('./PosePresetsEditor')
 const PosePresetsEditor = require('./components/PosePresetsEditor').default
 const AttachableEditor = require('./components/AttachableEditor').default
 const AttachableInfo = require('./attachables/AttachableInfo')
-const HandPresetsEditor = require('./HandPresetsEditor')
+const HandPresetsEditor = require('./components/HandPresetsEditor').default
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
