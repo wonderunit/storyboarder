@@ -1,15 +1,15 @@
-const React = require('react')
-const { connect } = require('react-redux')
-const {
+import React, { useMemo } from 'react'
+import { connect } from 'react-redux'
+import {
     updateObject,
 
     createCharacterPreset,
 
     undoGroupStart,
     undoGroupEnd,
-  } = require('../../../shared/reducers/shot-generator')
-const presetsStorage = require('../../../shared/store/presetsStorage')
-const h = require('../../../utils/h')
+  } from '../../../shared/reducers/shot-generator'
+import presetsStorage from '../../../shared/store/presetsStorage'
+import Select from '../Select'
 
 const preventDefault = (fn, ...args) => e => {
     e.preventDefault()
@@ -124,30 +124,22 @@ const CharacterPresetsEditor = connect(
       selectCharacterPreset(sceneObject, characterPresetId, preset)
     }
 
-    return h(
-      ['div.row', { style: { margin: '9px 0 6px 0', paddingRight: 0 } }, [
-        ['div', { style: { width: 50, display: 'flex', alignSelf: 'center' } }, 'preset'],
-        [
-          'select', {
-            required: true,
-            value: sceneObject.characterPresetId || '',
-            onChange: preventDefault(onSelectCharacterPreset),
-            style: {
-              flex: 1,
-              marginBottom: 0,
-              maxWidth: 192
-            }
-          }, [
-              ['option', { value: '', disabled: true }, '---'],
-              Object.values(characterPresets).map(preset =>
-                ['option', { value: preset.id }, preset.name]
-              )
-            ]
-          ]
-        ],
-        ['a.button_add[href=#]', { style: { marginLeft: 6 }, onClick: preventDefault(onCreateCharacterPresetClick) }, '+']
-      ]
-    )
+    return <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}>
+          <div style={{ width: 50, display: "flex", alignSelf: "center" }}>preset</div>
+          <select required={ true }
+            value={ sceneObject.characterPresetId || "" }
+            onChange={ preventDefault(onSelectCharacterPreset) }
+            style={{ flex: 1,
+                  marginBottom: 0,
+                  maxWidth: 192}}>
+              <option value='' disabled={ true }>---</option>
+              { Object.values(characterPresets).map((preset, index) =>
+                <option key={ index } value={ preset.id }>{ preset.name }</option>
+              )}
+          </select>
+          <a className="button_add" href="#" style={{ marginLeft: 6 }} onClick={ preventDefault(onCreateCharacterPresetClick) }>+</a> 
+        </div>
+
   })
 )
-module.exports = CharacterPresetsEditor
+export default CharacterPresetsEditor

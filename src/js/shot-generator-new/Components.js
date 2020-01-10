@@ -107,7 +107,7 @@ const PosePresetsEditor = require('./components/PosePresetsEditor').default
 const AttachableEditor = require('./components/AttachableEditor').default
 const AttachableInfo = require('./components/AttachableInfo').default
 const HandPresetsEditor = require('./components/HandPresetsEditor').default
-const CharacterPresetsEditor = require('./components/CharacterPresetEditor/index')
+const CharacterPresetsEditor = require('./components/CharacterPresetEditor').default
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
@@ -480,7 +480,8 @@ const InspectedElementOld = ({ sceneObject, updateObject, selectedBone, machineS
 
       // character preset
       sceneObject.type == 'character' && [
-        [CharacterPresetsEditor, { sceneObject }],
+        [CharacterPresetsEditor, 
+          { sceneObject }],
       ],
 
       sceneObject.type != 'camera' &&
