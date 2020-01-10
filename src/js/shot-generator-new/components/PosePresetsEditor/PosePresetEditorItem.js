@@ -93,7 +93,7 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
 
   return <div className={ className }
     style={ style }
-    onPointerDown={ onPointerDown }
+    onPointerUp={ onPointerDown }
     data-id={ preset.id }
     title={ preset.name }> 
       <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 

@@ -175,7 +175,7 @@ React.memo(({
   }
 
   return presets && <div>
-   { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
+    <Modal visible={ isModalShown } onClose={() => showModal(false)}>
       <div style={{ margin:"5px 5px 5px 5px" }}>
         Select a Preset Name:
       </div>
@@ -196,7 +196,7 @@ React.memo(({
             Proceed
         </button>
         </div>
-   </Modal> }
+   </Modal>
    <div className="thumbnail-search column">
       <div className="row" style={{ padding: "6px 0" } }> 
         <SearchList label="Search for a pose …" list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>

@@ -29,7 +29,7 @@ const AttachableInfoItem = React.memo(({
               <a className="button_add" 
                 href="#" 
                 style={{ width: 161, height: 35 }}
-                onPointerDown={ onHandSelect }>{ buttonName }</a> 
+                onPointerUp={ onHandSelect }>{ buttonName }</a> 
             </div>
         </div> 
         { getNumberSlider(sceneObject) }

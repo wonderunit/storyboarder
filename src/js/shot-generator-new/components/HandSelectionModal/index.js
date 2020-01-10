@@ -1,4 +1,4 @@
-import React, {useRef, useMemo, useState} from 'react'
+import React, {useRef, useMemo, useState, useEffect} from 'react'
 import Modal from "../Modal"
 import Select from "../Select"
 
@@ -12,8 +12,7 @@ const HandSelectionModal = React.memo(({
     defaultSelectedHand = null
 }) => {
     const originalSkeleton = useRef(null)
-    const [selectedHand, setSelectedHand] = useState({ value:defaultSelectedHand, label:defaultSelectedHand })
-
+    const [selectedHand, setSelectedHand] = useState(null)
     const selectOptions = useMemo(() => {
         if(!skeleton) return []
         originalSkeleton.current = skeleton
@@ -26,11 +25,16 @@ const HandSelectionModal = React.memo(({
           }
 
         }
-        if(!selectedHand.value) { 
+        if(!selectedHand) { 
           setSelectedHand(selectOptions[0])
         }
         return selectOptions
     }, [skeleton])
+
+    useEffect(() => {
+      if(!defaultSelectedHand) return 
+      setSelectedHand({ value:defaultSelectedHand, label:defaultSelectedHand })
+    }, [defaultSelectedHand])
 
     return <Modal visible={visible} onClose={() => setVisible(false)}>
                 <div style={{margin:"5px 5px 5px 5px"}}>

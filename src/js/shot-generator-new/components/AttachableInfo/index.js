@@ -50,7 +50,7 @@ const AttachableInfo = connect(
     const model = useRef(null)
     const { scene } = useContext(SceneContext)
     const [sceneObject, setSceneObject] = useState({})
-    const selectedBindBone = useRef(null)
+    const [selectedBindBone, setSelectedBindBone] = useState(null)
 
     useEffect(() => {
        withState((dispatch, state) => {
@@ -61,7 +61,7 @@ const AttachableInfo = connect(
     const onSelectItem = (id, bindBoneName) => {
       if(!scene) return
       selectedId.current = id
-      selectedBindBone.current = bindBoneName
+      setSelectedBindBone(bindBoneName)
       showModal(true)
     }
 
@@ -120,14 +120,14 @@ const AttachableInfo = connect(
           )}}/>
     }
     return attachables && <div>
-        { isModalVisible && <HandSelectionModal
+        <HandSelectionModal
           visible={ isModalVisible }
           model={ model.current }
           setVisible={ showModal }
           id={ selectedId.current }
           skeleton={ getSkeleton() }
           onSuccess={ updateAttachableBone }
-          defaultSelectedHand={ selectedBindBone.current }/> }
+          defaultSelectedHand={ selectedBindBone }/> 
         <div className="thumbnail-search.column">
             <div className="thumbnail-search__list"> 
                 <div> 
