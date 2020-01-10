@@ -1,4 +1,5 @@
 import path from 'path'
+import React from 'react'
 import fs from 'fs-extra'
 import classNames from 'classnames'
 import '../../../vendor/three/examples/js/utils/SkeletonUtils'
@@ -10,7 +11,7 @@ import { useMemo } from 'react'
 const setupRenderer = ({ thumbnailRenderer, attachment, preset }) => {
   if (!thumbnailRenderer.getGroup().children.length) {
     let modelData = attachment
-    let group = SkeletonUtils.clone(modelData.scene.children[0])
+    let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
     let child = group.children[1]
 
     let material = new THREE.MeshToonMaterial({
@@ -86,8 +87,8 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, preset, upd
     }
   }, [src])
 
-  let className = classNames('thumbnail-search__item', {
-    'thumbnail-search__item--selected': posePresetId === preset.id
+  let className = classNames("thumbnail-search__item", {
+    "thumbnail-search__item--selected": posePresetId === preset.id
   })
 
   return <div className={ className }

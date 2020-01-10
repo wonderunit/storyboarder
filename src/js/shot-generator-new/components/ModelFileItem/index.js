@@ -1,3 +1,4 @@
+import React from 'react'
 import classNames from 'classnames'
 import { filepathFor } from '../../utils/filepathFor'
 
@@ -13,7 +14,7 @@ const ModelFileItem = React.memo(({
   
     const onSelect = event => {
       event.preventDefault()
-      onSelectItem(id, { model: model.id })
+      onSelectItem(id, { model: model })
     }
     const className = classNames("thumbnail-search__item", {
       "thumbnail-search__item--selected": isSelected

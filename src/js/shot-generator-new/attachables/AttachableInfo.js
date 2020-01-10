@@ -1,6 +1,6 @@
 const { remote } = require('electron')
 const { dialog } = remote
-const { useMemo } = require('react')
+const { useMemo } = React = require('react')
 const { connect } = require('react-redux')
 const prompt = require('electron-prompt')
 const {

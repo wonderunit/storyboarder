@@ -14,20 +14,4 @@ const comparePresetNames = (a, b) => {
 }
 const comparePresetPriority = (a, b) => b.priority - a.priority
 
-const searchPresetsForTerms = (presets, terms) => {
-  const matchAll = terms == null || terms.length === 0
-
-  return presets
-    .sort(comparePresetNames)
-    .filter(preset => {
-      if (matchAll) return true
-
-      return (
-        (LiquidMetal.score(preset.name, terms) > 0.8) ||
-        (preset.keywords && LiquidMetal.score(preset.keywords, terms) > 0.8)
-      )
-    })
-    .sort(comparePresetPriority)
-}
-
-export {searchPresetsForTerms}
+export { comparePresetPriority, comparePresetNames }

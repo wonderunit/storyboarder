@@ -948,6 +948,19 @@ input[type="color"]::-webkit-color-swatch {
   color: #fff;
 }
 
+.skeleton-selector__div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 40px 0 4px 0;
+  font-size: 13px;
+}
+.skeleton-selector__div .skeleton-selector__button {
+  font-size: 13px;
+  padding: 5px 5px 5px 5px;
+  background-color: #5c65c0;
+}
+
 .object-property-heading {
   display: inline-block;
   margin: 9px 0 9px 0;
@@ -1055,6 +1068,7 @@ div.fatal-error-screen__report::selection {
   justify-content: flex-end;
   align-items: center;
 }
+
 
 .camera-item-label {
   padding-top: 6px;
