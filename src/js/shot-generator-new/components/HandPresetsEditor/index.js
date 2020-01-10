@@ -69,7 +69,6 @@ React.memo(({
   const newGeneratedId = useRef()
   const [selectedHand, setSelectedHand] = useState("BothHands")
   const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
-  console.log("rerender")
   const getAttachment = () => {
     let attachment 
     withState((dispatch, state) => {

@@ -134,7 +134,6 @@ const AttachableEditor = connect(
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
     style.width = 288
-    console.log(style)
     let newStyle = {
       width:288,
       position:'relative',
