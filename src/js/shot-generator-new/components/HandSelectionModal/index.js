@@ -8,10 +8,11 @@ const HandSelectionModal = React.memo(({
     model,
     skeleton,
     id,
-    onSuccess
+    onSuccess,
+    defaultSelectedHand = null
 }) => {
     const originalSkeleton = useRef(null)
-    const [selectedHand, setSelectedHand] = useState(null)
+    const [selectedHand, setSelectedHand] = useState({ value:defaultSelectedHand, label:defaultSelectedHand })
 
     const selectOptions = useMemo(() => {
         if(!skeleton) return []
@@ -25,7 +26,9 @@ const HandSelectionModal = React.memo(({
           }
 
         }
-        setSelectedHand(selectOptions[0])
+        if(!selectedHand.value) { 
+          setSelectedHand(selectOptions[0])
+        }
         return selectOptions
     }, [skeleton])
 

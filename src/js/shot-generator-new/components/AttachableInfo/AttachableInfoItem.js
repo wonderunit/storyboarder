@@ -21,10 +21,10 @@ const AttachableInfoItem = React.memo(({
             <div className="attachable-card___label">{ attachableName }</div>
             <a className="attachable-card__discard" 
                 href="#" 
-                onClick={() => { onDelete(sceneObject)}}>X</a>
+                onClick={ () => { onDelete(sceneObject)} }>X</a>
         </div> 
         <div className="number-slider">
-            <div className="number-slider__label"> Attached to bone</div> 
+            <div className="number-slider__label">Attached to bone</div> 
             <div className="column" style={{ marginLeft: 5 }}>
               <a className="button_add" 
                 href="#" 

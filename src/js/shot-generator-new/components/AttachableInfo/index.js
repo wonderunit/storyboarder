@@ -2,7 +2,6 @@ import { remote } from 'electron'
 const { dialog } = remote
 import React, { useMemo, useState, useEffect, useContext, useRef } from 'react'
 import { connect } from 'react-redux'
-import prompt from 'electron-prompt'
 import {
   deleteObjects,
   getSceneObjects,
@@ -46,12 +45,12 @@ const AttachableInfo = connect(
     NumberSlider,
     SceneContext
   }) => {
-    console.log("Render")
     const [isModalVisible, showModal] = useState(false)
     const selectedId = useRef(null)
     const model = useRef(null)
     const { scene } = useContext(SceneContext)
     const [sceneObject, setSceneObject] = useState({})
+    const selectedBindBone = useRef(null)
 
     useEffect(() => {
        withState((dispatch, state) => {
@@ -62,12 +61,11 @@ const AttachableInfo = connect(
     const onSelectItem = (id, bindBoneName) => {
       if(!scene) return
       selectedId.current = id
-      console.log("SelectedItem")
+      selectedBindBone.current = bindBoneName
       showModal(true)
     }
 
     const attachables = useMemo(() => {
-      console.log("Attachable changed")
         let result = []
         withState((dispatch, state) => {
             let sceneObjects = getSceneObjects(state)
@@ -121,7 +119,6 @@ const AttachableInfo = connect(
             { size: value }
           )}}/>
     }
-
     return attachables && <div>
         { isModalVisible && <HandSelectionModal
           visible={ isModalVisible }
@@ -129,20 +126,21 @@ const AttachableInfo = connect(
           setVisible={ showModal }
           id={ selectedId.current }
           skeleton={ getSkeleton() }
-          onSuccess={ updateAttachableBone }/> }
+          onSuccess={ updateAttachableBone }
+          defaultSelectedHand={ selectedBindBone.current }/> }
         <div className="thumbnail-search.column">
-              <div className="thumbnail-search__list"> 
-                  <div> 
-                     { attachables.map((item, index) => <ListItem
-                        key={ index }
-                        attachable={ item } 
-                        props={{
-                          onSelectItem,
-                          onDelete,
-                          getNumberSlider}}/>
-                     )}
-                  </div>
-              </div>
+            <div className="thumbnail-search__list"> 
+                <div> 
+                   { attachables.map((item, index) => <ListItem
+                      key={ index }
+                      attachable={ item } 
+                      props={{
+                        onSelectItem,
+                        onDelete,
+                        getNumberSlider}}/>
+                   )}
+                </div>
+            </div>
         </div>
     </div>
 }))
