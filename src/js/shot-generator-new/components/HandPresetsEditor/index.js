@@ -211,7 +211,7 @@ React.memo(({
       </div>
       <div className="column" style={{ flex: 1 }}> 
         <input 
-        className="modalInput"
+          className="modalInput"
           type="text" 
           placeholder={ newGeneratedId.current }
           onChange={ (value) => newPresetName.current = value.currentTarget.value }/>

@@ -178,8 +178,8 @@ React.memo(({
     style.width = 288
     let newStyle = {
       width:288,
-      position:'relative',
-      overflow:'hidden',
+      position:"relative",
+      overflow:"hidden",
       ...style
     }
     return <div
@@ -195,6 +195,7 @@ React.memo(({
       </div>
       <div className="column" style={{ flex: 1 }}> 
         <input 
+          className="modalInput"
           type="text" 
           placeholder={ newGeneratedId.current }
           onChange={ (value) => newPresetName.current = value.currentTarget.value }/>
