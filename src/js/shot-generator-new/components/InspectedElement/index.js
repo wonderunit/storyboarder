@@ -1,52 +1,63 @@
 import React from 'react'
-import { Tabs, useTabState, usePanelState } from '../Tabs'
+import {connect} from 'react-redux'
+
+import {
+  getSelections,
+  getSceneObjects,
+
+  selectObject,
+  deleteObjects,
+  updateObject
+} from './../../../shared/reducers/shot-generator'
+
+import deepEqualSelector from './../../../utils/deepEqualSelector'
+
+import {Tabs, Tab, Panel} from '../Tabs'
+
+import GeneralInspector from './GeneralInspector'
+
 import Icon from '../Icon'
 
-const Tab = ({ children }) => {
-  const {onClick, isActive} = useTabState()
-
-  return (
-      <div 
-          onClick={onClick}
-          className={`tabs-tab ${isActive && 'active'}`}
-      >
-        {children}
-      </div>
-  )
-};
-
-const Panel = ({children}) => {
-  const {isActive} = usePanelState()
-  
-  if (!isActive) {
-    return null
-  }
+const Inspector = React.memo(({element = 10, selectedName}) => {
   
   return (
-      <div className='tabs-body__content'>
-        {children}
-      </div>
+    <React.Fragment>
+      <a href='#' className='object-property-heading'>
+        {selectedName} Properties
+      </a>
+      <Tabs>
+        <div className='tabs-header'>
+          <Tab><Icon src='icon-item-camera'/></Tab>
+          <Tab><Icon src='icon-item-camera'/></Tab>
+          <Tab><Icon src='icon-item-camera'/></Tab>
+          <Tab><Icon src='icon-item-camera'/></Tab>
+          <Tab><Icon src='icon-item-camera'/></Tab>
+        </div>
+
+        <div className='tabs-body'>
+          <Panel>
+            <GeneralInspector/>
+          </Panel>
+          <Panel>{element}</Panel>
+          <Panel>{element}</Panel>
+          <Panel>{element}</Panel>
+          <Panel>{element}</Panel>
+        </div>
+      </Tabs>
+    </React.Fragment>
   )
-};
+})
 
-const Inspector = React.memo(({element}) => (
-    <Tabs>
-      <div className='tabs-header'>
-        <Tab><Icon src='icon-item-camera'/></Tab>
-        <Tab><Icon src='icon-item-camera'/></Tab>
-        <Tab><Icon src='icon-item-camera'/></Tab>
-        <Tab><Icon src='icon-item-camera'/></Tab>
-        <Tab><Icon src='icon-item-camera'/></Tab>
-      </div>
+const setSelectedName = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
+  return sceneObjects[selections[0]] ? sceneObjects[selections[0]].displayName : null
+})
 
-      <div className='tabs-body'>
-        <Panel>{element}</Panel>
-        <Panel>{element}</Panel>
-        <Panel>{element}</Panel>
-        <Panel>{element}</Panel>
-        <Panel>{element}</Panel>
-      </div>
-    </Tabs>
-))
+const mapStateToProps = (state) => ({
+  selectedName: setSelectedName(state)
+})
 
-export default Inspector
+const mapDispatchToProps = {
+  selectObject, deleteObjects, updateObject
+}
+
+export default connect(mapStateToProps)(Inspector)

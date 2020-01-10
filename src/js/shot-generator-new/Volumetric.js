@@ -12,7 +12,7 @@ const textureLoader = new THREE.TextureLoader()
 const IconSprites = require('./IconSprites')
 
 const { isUserFile } = require('../services/model-loader')
-const pathToShotGeneratorData = path.join(__dirname, '..', '..', '..', 'src', 'data', 'shot-generator')
+const pathToShotGeneratorData = path.join(window.__dirname, 'data', 'shot-generator')
 const pathToBuiltInVolumeImages = path.join(pathToShotGeneratorData, 'volumes')
 
 const Volumetric = React.memo(({

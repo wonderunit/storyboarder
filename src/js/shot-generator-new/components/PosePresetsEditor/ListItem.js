@@ -7,12 +7,12 @@ const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
     let preset = data.presets[columnIndex + (rowIndex * 4)]
      if (!preset) return <div/>
      return <PosePresetsEditorItem
-         style={style}
-         id={id}
-         posePresetId={posePresetId}
-         attachment={attachment}
-         updateObject={updateObject}
-         preset={preset}
-         thumbnailRenderer={thumbnailRenderer}/>
+         style={ style }
+         id={ id }
+         posePresetId={ posePresetId }
+         attachment={ attachment }
+         updateObject={ updateObject }
+         preset={ preset }
+         thumbnailRenderer={ thumbnailRenderer }/>
    })
 export default ListItem

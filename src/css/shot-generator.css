@@ -271,16 +271,23 @@ kbd {
 
 #inspector {
   flex: 1;
-  overflow: scroll;
+
+  display: flex;
+  flex-direction: column;
+  
+  height: 100%;
   padding: 6px;
   background-color: #333639;
   color: #999;
   text-transform: capitalize;
-  max-width: 288px;
+}
+
+#inspector > div {
+  height: 100%;
 }
 
 #inspector::-webkit-scrollbar {
-  display: none;
+  /*display: none;*/
 }
 #remoteInputView {
   padding-top: 12px;
@@ -1119,6 +1126,21 @@ div.fatal-error-screen__report::selection {
   cursor: pointer;
 }
 
+.modalInput  {
+  background: rgb(41, 41, 44);
+  border: none;
+  position: relative;
+  display: flex;
+  border: none;
+  color: #999;
+  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  padding: 0 0 0 6px;
+  line-height: initial;
+}
+
+
 /* Select block */
 .select {
   width: 100%;
@@ -1208,6 +1230,9 @@ div.fatal-error-screen__report::selection {
   background: #555;
 }
 /* End of select */
+.italic {
+  font-style: italic;
+}
 
 .inspector-group {
   margin: 0 0 12px 0;
@@ -1224,7 +1249,7 @@ div.fatal-error-screen__report::selection {
 }
 
 .inspector-offset-row {
-  margin: 6px 0 3px 0;
+  padding: 6px 0 3px 0;
 }
 
 .inspector-column {
@@ -1234,6 +1259,20 @@ div.fatal-error-screen__report::selection {
 
 .number-slider, .input-group {
   height: 26px;
+}
+
+.input-group__input {
+  flex: 1;
+  cursor: col-resize;
+  text-align: center;
+  width: 125px;
+  color: #E4E4E4;
+  font-variant-numeric: tabular-nums;
+}
+
+.select.input-group__input {
+  flex: 0;
+  width: 137px;
 }
 
 .number-slider__control {
@@ -1313,9 +1352,15 @@ div.fatal-error-screen__report::selection {
 /* End of checkbox */
 
 /* Tabs block */
+.tabs {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
 
 .tabs-header {
   display: flex;
+  flex-shrink: 0;
   width: 100%;
   overflow-x: hidden;
   border-bottom: 2px solid rgba(255,255,255,0.05);
@@ -1347,12 +1392,21 @@ div.fatal-error-screen__report::selection {
 }
 
 .tabs-body {
-  padding: 4px 0;
+  padding: 8px 0 4px 0;
   position: relative;
+  height: 100%;
+
+  display: flex;
+  flex-direction: column;
+}
+
+.tabs-body::-webkit-scrollbar {
+  /*display: none;*/
 }
 
 .tabs-body__content {
   width: 100%;
+  height: 100%;
 }
 
 /* End of tabs */
@@ -1400,6 +1454,36 @@ div.fatal-error-screen__report::selection {
   width: 20px;
   height: 20px;
   cursor: pointer;
+}
+
+
+.scrollable {
+  overflow: auto;
+  height: 100%;
+}
+
+.scrollable::-webkit-scrollbar {
+  display: none;
+}
+
+.file-input > a {
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.image-file-input > a {
+  font-style: italic;
+  text-decoration: none;
+  border-bottom-width: 1px;
+  border-bottom-style: dashed;
+  font-size: 12px;
+  line-height: 1;
+  color: rgb(170, 170, 170);
+  text-transform: none;
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
 }
 
 

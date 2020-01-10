@@ -15,10 +15,10 @@ export const transforms = {
   clamp: (value, min, max) => {
     return _Math.clamp(Math.round(value * 100) / 100, min, max)
   },
-  degrees: (value) => {
+  degrees: (value, min, max) => {
     if (value > 180) { return value - 360 }
     if (value < -180) { return value + 360 }
-    return value
+    return _Math.clamp(value, min, max)
   },
   round: (value, min, max) => {
     value = Math.round(value)
@@ -63,7 +63,8 @@ const NumberSliderComponent = React.memo(({
   const [textInputValue, setTextInputValue] = useState(value)
   
   const onDrag = useCallback(({direction, altKey}) => {
-    const nextValue = transform(value + Math.sign(direction) * step * (altKey ? 0.01 : 1.0), min, max)
+    const valueToAdd = step * (altKey ? 0.01 : 1.0)
+    const nextValue = transform(value + Math.sign(direction) * (valueToAdd < 0.01 ? 0.01 : valueToAdd), min, max)
     
     onSetValue(nextValue)
   }, [value])

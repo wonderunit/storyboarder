@@ -1,5 +1,4 @@
 import path from 'path'
-import LiquidMetal from 'liquidmetal'
 import React, { useState, useRef, useMemo, forwardRef, useEffect, useContext, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { FixedSizeGrid } from 'react-window'
@@ -15,10 +14,10 @@ import HelpButton from '../HelpButton'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
 import ListItem from './ListItem'
 import HandSelectionModal from '../HandSelectionModal'
+import SearchList from '../SearchList'
 
 const AttachableEditor = connect(
-  state => ({
-  }),
+  state => ({}),
   {
     createObject,
     selectAttachable,
@@ -33,20 +32,24 @@ const AttachableEditor = connect(
     rows = 3
   }) => {
   const { scene } = useContext(SceneContext)
-  const [terms, setTerms] = useState(null)
   const [isModalVisible, showModal] = useState(false)
+  const [results, setResults] = useState([])
   const [sceneObject, setSceneObject] = useState({})
   const selectedId = useRef(null)
   const selectedModel = useRef(null)
-  const models = useMemo(
-    () => {
-      let attachableModels = null
-      withState((dispatch, state) => {
-        let allModels = state.models
-        attachableModels = Object.values(allModels).filter(m => m.type === "attachable")
-      })
-      return attachableModels
-    }, [sceneObject.type])
+  const sortedAttachables = useRef([])
+  const models = useMemo(() => {
+    let attachableModels = null
+    withState((dispatch, state) => {
+      let allModels = state.models
+      attachableModels = Object.values(allModels).filter(m => m.type === "attachable")
+    })
+    setResults(attachableModels)
+    sortedAttachables.current = attachableModels.map((attachable, index) => {
+      return { value: [attachable.name, attachable.keywords].filter(Boolean).join(' '), id: index
+    }})
+    return attachableModels
+  }, [sceneObject.type])
 
   useEffect(() => {
     withState((dispatch, state) => {
@@ -54,10 +57,6 @@ const AttachableEditor = connect(
     })
   }, [id])
 
-  const onSearchChange = event => {
-    event.preventDefault()
-    setTerms(event.currentTarget.value)
-  }
   const getSkeleton = () => {
     if(!sceneObject) return
     let character = scene.children.filter(child => child.userData.id === id)[0]
@@ -66,7 +65,7 @@ const AttachableEditor = connect(
     return skinnedMesh.skeleton
   }
 
-  const onSelectItem = (id, { model }) => {
+  const onSelectItem = useCallback((id, { model }) => {
     let originalSkeleton = getSkeleton()
     selectedModel.current = model
     selectedId.current = id
@@ -76,7 +75,7 @@ const AttachableEditor = connect(
       return
     }
     showModal(true)
-  }
+  }, [scene.children.length])
 
   const createAttachableElement = (model, originalSkeleton, id, {bindBone = null, name = null }) => {
     if(!bindBone && !name) return 
@@ -132,22 +131,9 @@ const AttachableEditor = connect(
     }
   }, [id])
 
-  const results = useMemo(() => {
-    const matchAll = terms == null || terms.length === 0
-
-    return models
-      .filter(model =>
-        matchAll
-          ? true
-          : LiquidMetal.score(
-            [model.name, model.keywords].filter(Boolean).join(' '),
-            terms
-          ) > 0.8
-      )
-  }, [terms])
-
   // via https://reactjs.org/docs/forwarding-refs.html
   const innerElementType = forwardRef(({ style, ...rest }, ref) => {
+    style.width = 288
     let newStyle = {
       width:288,
       position:'relative',
@@ -160,12 +146,20 @@ const AttachableEditor = connect(
         {...rest}/>
   })
 
+  const saveFilteredPresets = useCallback((filteredPreset) => {
+    let presets = []
+    for(let i = 0; i < filteredPreset.length; i++) {
+      presets.push(models[filteredPreset[i].id])
+    }
+    setResults(presets)
+  }, [models])
+
   const isCustom = false
   const refClassName = classNames( "button__file", {
     "button__file--selected": isCustom
   })
   const wrapperClassName = "button__file__wrapper"
-
+  const actualRowCount = Math.ceil(results.length / NUM_COLS)
   return sceneObject.model && <div>
     <HandSelectionModal
         visible={ isModalVisible }
@@ -173,46 +167,40 @@ const AttachableEditor = connect(
         setVisible={ showModal }
         id={ selectedId.current }
         skeleton={ getSkeleton() }
-        onSuccess= { createAttachableElement }
-    />
-    <div className="thumbnail-search column"> 
+        onSuccess={ createAttachableElement }/>
+      <div className="thumbnail-search column"> 
         <div className="row" style={{ padding: "6px 0" }}> 
-          <div className="column" style={{ flex: 1 }}> 
-            <input
-              placeholder="Search models …"
-              onChange={ onSearchChange }> 
-            </input>
+          <SearchList label="Search models …" list={ sortedAttachables.current } onSearch={ saveFilteredPresets }/>
+          { isCustom ? <div className="column" style={{ padding: 2 }} />
+          : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
+          }
+          <FileInput value={ isCustom ? selectValue() : "Select File …" } 
+                   title={ isCustom ? path.basename(sceneObject.model) : undefined } 
+                   onChange={ onSelectFile } 
+                   refClassName={ refClassName }
+                   wrapperClassName={ wrapperClassName }/>
+          <div className="column" style={{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
+          <HelpButton
+              url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
+              title="How to Create 3D Models for Custom Objects"/>
           </div>
-           { isCustom ? <div className="column" style={{ padding: 2 }} />
-            : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
-            }
-            <FileInput value={ isCustom ? selectValue() : "Select File …" } 
-                     title={ isCustom ? path.basename(sceneObject.model) : undefined } 
-                     onChange={ onSelectFile } 
-                     refClassName={ refClassName }
-                     wrapperClassName={ wrapperClassName }/>
-            <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
-            <HelpButton
-                url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
-                title="How to Create 3D Models for Custom Objects"/>
-            </div>
         </div>
         <div className="thumbnail-search__list">
-         <FixedSizeGrid 
+          <FixedSizeGrid 
             columnCount={ NUM_COLS }
             columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
-            rowCount={ Math.ceil(results.length / NUM_COLS) }
+            rowCount={actualRowCount }
             rowHeight={ ITEM_HEIGHT }
             width={ 288 }
-            height={ rows === 2 ? 248 : rows * ITEM_HEIGHT }
+            height={ actualRowCount <= rows ? actualRowCount * ITEM_HEIGHT : rows === 2 ? 248 : rows * ITEM_HEIGHT }
             innerElementType={ innerElementType }
             itemData={{
-                models: results,
-                sceneObject,
-                onSelectItem
+               models: results,
+               sceneObject,
+               onSelectItem
             }}
             children={ ListItem }/>
-         </div>
+        </div>
       </div> 
     </div>
 }))
