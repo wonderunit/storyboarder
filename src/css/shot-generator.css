@@ -1215,6 +1215,9 @@ div.fatal-error-screen__report::selection {
   background: #555;
 }
 /* End of select */
+.italic {
+  font-style: italic;
+}
 
 .inspector-group {
   margin: 0 0 12px 0;
@@ -1231,7 +1234,7 @@ div.fatal-error-screen__report::selection {
 }
 
 .inspector-offset-row {
-  margin: 6px 0 3px 0;
+  padding: 6px 0 3px 0;
 }
 
 .inspector-column {
@@ -1241,6 +1244,20 @@ div.fatal-error-screen__report::selection {
 
 .number-slider, .input-group {
   height: 26px;
+}
+
+.input-group__input {
+  flex: 1;
+  cursor: col-resize;
+  text-align: center;
+  width: 125px;
+  color: #E4E4E4;
+  font-variant-numeric: tabular-nums;
+}
+
+.select.input-group__input {
+  flex: 0;
+  width: 137px;
 }
 
 .number-slider__control {

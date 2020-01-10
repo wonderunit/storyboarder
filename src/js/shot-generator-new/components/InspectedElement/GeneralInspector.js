@@ -14,12 +14,16 @@ import ObjectInspector from './Objects/Object'
 import CameraInspector from './Objects/Camera'
 import ImageInspector from './Objects/Image'
 import LightInspector from './Objects/Light'
+import CharacterInspector from './Objects/Character'
+import VolumeInspector from './Objects/Volume'
 
 const InspectorComponents = {
   object: ObjectInspector,
   camera: CameraInspector,
   image: ImageInspector,
-  light: LightInspector
+  light: LightInspector,
+  character: CharacterInspector,
+  volume: VolumeInspector
 }
 
 const GeneralInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath}) => {
