@@ -4,7 +4,7 @@ import fs from 'fs-extra'
 import classNames from 'classnames'
 import '../../../vendor/three/examples/js/utils/SkeletonUtils'
 import ThumbnailRenderer from '../../ThumbnailRenderer'
-import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from './ItemSettings'
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../utils/InspectorElementsSettings'
 import { remote } from 'electron'
 import { useMemo } from 'react'
 

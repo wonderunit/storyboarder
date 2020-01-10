@@ -1,5 +1,5 @@
 import React from 'react'
-const  { useState, useEffect, useMemo, forwardRef, useRef, useCallback } = React
+const  { useState, useEffect, useMemo, useRef, useCallback } = React
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 window.THREE = THREE
@@ -18,7 +18,7 @@ import {
 import defaultPosePresets from '../../../shared/reducers/shot-generator-presets/hand-poses.json'
 import presetsStorage from '../../../shared/store/presetsStorage'
 import ListItem from './ListItem'
-import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL } from './ItemSettings'
+import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL, innerElementType } from '../../utils/InspectorElementsSettings'
 import { comparePresetNames, comparePresetPriority } from '../../utils/searchPresetsForTerms'
 import { filepathFor } from '../../utils/filepathFor'
 
@@ -187,21 +187,6 @@ React.memo(({
       })
     }
   }
-
-  // via https://reactjs.org/docs/forwarding-refs.html
-  const innerElementType = forwardRef(({ style, ...rest }, ref) => {
-    style.width = 288
-    let newStyle = {
-      width: 288,
-      position: "relative",
-      overflow: "hidden",
-      ...style
-    }
-    return <div
-        ref={ ref }
-        style={ newStyle }
-        { ...rest }/>
-  })
 
   return attachment && <div>
    { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>

@@ -11,7 +11,7 @@ import FileInput from '../FileInput'
 import classNames from 'classnames'
 import HelpButton from '../HelpButton'
 
-import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS } from './ItemSettings'
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, NUM_COLS, innerElementType } from '../../utils/InspectorElementsSettings'
 import ListItem from './ListItem'
 import HandSelectionModal from '../HandSelectionModal'
 import SearchList from '../SearchList'
@@ -130,21 +130,6 @@ const AttachableEditor = connect(
       onSelectItem(id, { model: filepath.file })
     }
   }, [id])
-
-  // via https://reactjs.org/docs/forwarding-refs.html
-  const innerElementType = forwardRef(({ style, ...rest }, ref) => {
-    style.width = 288
-    let newStyle = {
-      width:288,
-      position:'relative',
-      overflow:'hidden',
-      ...style
-    }
-    return <div
-        ref={ref}
-        style={newStyle}
-        {...rest}/>
-  })
 
   const saveFilteredPresets = useCallback((filteredPreset) => {
     let presets = []

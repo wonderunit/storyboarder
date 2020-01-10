@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, forwardRef, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 window.THREE = THREE
@@ -17,7 +17,7 @@ import defaultPosePresets from '../../../shared/reducers/shot-generator-presets/
 import presetsStorage from '../../../shared/store/presetsStorage'
 
 import { comparePresetNames, comparePresetPriority } from '../../utils/searchPresetsForTerms' 
-import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL } from './ItemSettings'
+import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL, innerElementType } from '../../utils/InspectorElementsSettings'
 import ListItem from './ListItem'
 import Modal from '../Modal'
 import { filepathFor } from '../../utils/filepathFor'
@@ -173,20 +173,6 @@ React.memo(({
       })
     }
   }
-
-  const innerElementType = forwardRef(({ style, ...rest }, ref) => {
-    style.width = 288
-    let newStyle = {
-      width:288,
-      position:"relative",
-      overflow:"hidden",
-      ...style
-    }
-    return <div
-        ref={ref}
-        style={newStyle}
-        {...rest}/>
-  })
 
   return presets && <div>
    { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>

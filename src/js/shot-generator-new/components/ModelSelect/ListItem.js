@@ -1,6 +1,6 @@
 import React from 'react'
 import ModelFileItem from '../ModelFileItem'
-import * as ItemSettings from './ItemSettings' 
+import * as ItemSettings from '../../utils/InspectorElementsSettings'
 
 const ListItem = React.memo(({ id, isSelected, item, index, elementStyle, currentRow, currentColumn, onSelectItem}) => {
     if (!item) return <div/>

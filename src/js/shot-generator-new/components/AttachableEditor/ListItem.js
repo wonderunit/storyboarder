@@ -1,7 +1,7 @@
 
 import ModelFileItem from '../ModelFileItem'
 import React from 'react'
-import * as ItemSettings from './ItemSettings'
+import * as ItemSettings from '../../utils/InspectorElementsSettings'
 
 const ListItem = React.memo(({ data, columnIndex, rowIndex, style }) => {
     const { sceneObject } = data
