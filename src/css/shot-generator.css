@@ -1126,6 +1126,21 @@ div.fatal-error-screen__report::selection {
   cursor: pointer;
 }
 
+.modalInput  {
+  background: rgb(41, 41, 44);
+  border: none;
+  position: relative;
+  display: flex;
+  border: none;
+  color: #999;
+  border-radius: 6px;
+  font-size: 14px;
+  border: 1px solid transparent;
+  padding: 0 0 0 6px;
+  line-height: initial;
+}
+
+
 /* Select block */
 .select {
   width: 100%;

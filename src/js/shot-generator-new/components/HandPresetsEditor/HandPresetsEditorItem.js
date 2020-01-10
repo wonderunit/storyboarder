@@ -144,7 +144,7 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset,
       data-id={ preset.id }
       title={ preset.name }> 
         <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
-          <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }/>
+          <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}/>
         </figure>
         <div className="thumbnail-search__name" 
           style={{

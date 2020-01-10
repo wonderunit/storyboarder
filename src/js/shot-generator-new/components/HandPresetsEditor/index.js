@@ -1,8 +1,6 @@
-import { remote } from 'electron'
 import React from 'react'
 const  { useState, useEffect, useMemo, forwardRef, useRef, useCallback } = React
 import { connect } from 'react-redux'
-import prompt from 'electron-prompt'
 import * as THREE from 'three'
 window.THREE = THREE
 import { machineIdSync } from 'node-machine-id'
@@ -28,6 +26,8 @@ import '../../../vendor/three/examples/js/utils/SkeletonUtils'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import SearchList from '../SearchList'
+import Modal from '../Modal'
+import Select from '../Select'
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
@@ -35,7 +35,8 @@ const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attach
     let filepath = filepathFor(CHARACTER_MODEL)
     return !attachments[filepath] ? undefined : attachments[filepath].status
 })
-
+const savePresetHand = [{value:"LeftHand", label:"LeftHand"},
+                        {value:"RightHand", label:"RightHand"}]
 const HandPresetsEditor = connect(
   state => ({
     attachmentStatus: getAttachmentM(state),
@@ -63,6 +64,10 @@ React.memo(({
   const [ready, setReady] = useState(false)
   const sortedPresets = useRef([])
   const [results, setResult] = useState([])
+  const [isModalShown, showModal] = useState(false)
+  const newPresetName = useRef('')
+  const newGeneratedId = useRef()
+
   const getAttachment = () => {
     let attachment 
     withState((dispatch, state) => {
@@ -73,6 +78,7 @@ React.memo(({
   }
   const [attachment, setAttachment] = useState(getAttachment())
   const [selectedHand, setSelectedHand] = useState("BothHands")
+  const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
   
   const presets = useMemo(() => {
     if(!handPosePresets) return
@@ -103,7 +109,7 @@ React.memo(({
   }
 
   const saveFilteredPresets = useCallback(filteredPreset => {
-    let objects = []
+    let objects = [] 
     for(let i = 0; i < filteredPreset.length; i++) {
       objects.push(presets[filteredPreset[i].id])
     }
@@ -112,89 +118,73 @@ React.memo(({
 
   const onCreateHandPosePreset = event => {
     event.preventDefault()
+    newGeneratedId.current = "Pose "+shortId(THREE.Math.generateUUID())
+    newPresetName.current = newGeneratedId.current
+    showModal(true)
+  }
 
-    // show a prompt to get the desired preset name
-    let win = remote.getCurrentWindow()
-    console.log(win)
-    win.webPreferences.webSecurity = false
-    prompt({
-      title: "Preset Name",
-      label: "Select a Preset Name",
-      value: "HandPose ${shortId(THREE.Math.generateUUID())}",
-    }, win)
-     .then(name => { if( name ) 
-      prompt({   
-        title: "Hand chooser ",
-        lable: "Select which hand to save ",   
-        type: "select",
-        selectOptions: { 
-            "LeftHand": "Left Hand",
-            "RightHand": "Right Hand",
-        }}, win).then((handName) => { if(handName) {
-            if (name != null && name != '' && name != ' ') {
-              withState((dispatch, state) => {
-                // get the latest skeleton data
-                let sceneObject = getSceneObjects(state)[id]
-                let skeleton = sceneObject.skeleton
-                let model = sceneObject.model
-                let originalSkeleton = scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh").skeleton.bones
-                let handSkeleton = {}
-                setSelectedHand(handName)
-                for(let i = 0; i < originalSkeleton.length; i++) {
-                    let key = originalSkeleton[i].name
-                    if(key.includes(handName) && key !== handName) {
-                      let rot = originalSkeleton[i].rotation
-                      handSkeleton[key] = { rotation: { x: rot.x, y: rot.y, z: rot.z } }
-                    }
-                }
-                // create a preset out of it
-                let newPreset = {
-                  id: THREE.Math.generateUUID(),
-                  name,
-                  keywords: name, // TODO keyword editing
-                  state: {
-                    handSkeleton: handSkeleton || {}
-                  },
-                  priority: 0
-                }
-                // add it to state
-                createHandPosePreset(newPreset)
-            
-                // save to server
-                // for pose harvesting (maybe abstract this later?)
-                request.post('https://storyboarders.com/api/create_pose', {
-                  form: {
-                    name: name,
-                    json: JSON.stringify(skeleton),
-                    model_type: model,
-                    storyboarder_version: pkg.version,
-                    machine_id: machineIdSync()
-                  }
-                })
-            
-                // select the preset in the list
-                updateObject(id, { handPosePresetId: newPreset.id })
-            
-                // get updated state (with newly created pose preset)
-                withState((dispatch, state) => {
-                  // ... and save it to the presets file
-                  let denylist = Object.keys(defaultPosePresets)
-                  let filteredPoses = Object.values(state.presets.handPoses)
-                    .filter(pose => denylist.includes(pose.id) === false)
-                    .reduce(
-                      (coll, pose) => {
-                        coll[pose.id] = pose
-                        return coll
-                      },
-                      {}
-                    )
-                  presetsStorage.saveHandPosePresets({ handPoses: filteredPoses })
-                })
-              })
-            }}}
-    ).catch(err =>
-      console.error(err)
-    )})
+  const addNewPosePreset = (name, handName) => {
+    if (name != null && name != '' && name != ' ') {
+      withState((dispatch, state) => {
+        // get the latest skeleton data
+        let sceneObject = getSceneObjects(state)[id]
+        let skeleton = sceneObject.skeleton
+        let model = sceneObject.model
+        let originalSkeleton = scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh").skeleton.bones
+        let handSkeleton = {}
+        setSelectedHand(handName)
+        for(let i = 0; i < originalSkeleton.length; i++) {
+            let key = originalSkeleton[i].name
+            if(key.includes(handName) && key !== handName) {
+              let rot = originalSkeleton[i].rotation
+              handSkeleton[key] = { rotation: { x: rot.x, y: rot.y, z: rot.z } }
+            }
+        }
+        // create a preset out of it
+        let newPreset = {
+          id: THREE.Math.generateUUID(),
+          name,
+          keywords: name, // TODO keyword editing
+          state: {
+            handSkeleton: handSkeleton || {}
+          },
+          priority: 0
+        }
+        // add it to state
+        createHandPosePreset(newPreset)
+    
+        // save to server
+        // for pose harvesting (maybe abstract this later?)
+        request.post('https://storyboarders.com/api/create_pose', {
+          form: {
+            name: name,
+            json: JSON.stringify(skeleton),
+            model_type: model,
+            storyboarder_version: pkg.version,
+            machine_id: machineIdSync()
+          }
+        })
+    
+        // select the preset in the list
+        updateObject(id, { handPosePresetId: newPreset.id })
+    
+        // get updated state (with newly created pose preset)
+        withState((dispatch, state) => {
+          // ... and save it to the presets file
+          let denylist = Object.keys(defaultPosePresets)
+          let filteredPoses = Object.values(state.presets.handPoses)
+            .filter(pose => denylist.includes(pose.id) === false)
+            .reduce(
+              (coll, pose) => {
+                coll[pose.id] = pose
+                return coll
+              },
+              {}
+            )
+          presetsStorage.saveHandPosePresets({ handPoses: filteredPoses })
+        })
+      })
+    }
   }
 
   // via https://reactjs.org/docs/forwarding-refs.html
@@ -212,53 +202,87 @@ React.memo(({
         { ...rest }/>
   })
 
-  return attachment && <div className="thumbnail-search column">
-      <div className="row" style={{ padding: "6px 0" }}> 
-        <SearchList label="Search for a hand pose …" list={ sortedPresets.current } onSearch={ saveFilteredPresets }/>
-        <div className="column" style={{ marginLeft: 5 }}> 
-          <a className="button_add" href="#"
-            style={{ width: 30, height: 34 }}
-            onPointerDown={ onCreateHandPosePreset }
-           >+</a>
-        </div>
-      </div> 
-      <div className="row" style= {{ padding: "6px 0" }} >
-        <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Select hand</div> 
-        <div className="column" style={{ flex: 1 }}>
-          <select onChange={ onChangeHand }
-            value={ selectedHand }>
-          <option value="LeftHand">Left Hand</option> 
-          <option value="RightHand">Right Hand</option> 
-          <option value="BothHands">Both Hands</option> 
-          </select>
-        </div>
+  return attachment && <div>
+   { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
+      <div style={{ margin:"5px 5px 5px 5px" }}>
+        Select a Preset Name:
       </div>
-      <div className="thumbnail-search__list">
-       <FixedSizeGrid 
-          columnCount={ NUM_COLS }
-          columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
+      <div className="column" style={{ flex: 1 }}> 
+        <input 
+        className="modalInput"
+          type="text" 
+          placeholder={ newGeneratedId.current }
+          onChange={ (value) => newPresetName.current = value.currentTarget.value }/>
+      </div>
+      <div style={{ margin:"5px 5px 5px 5px" }}>
+        Select a Hand to save:
+      </div>
+      <div className="select">
+                  <Select 
+                    label='Hand'
+                    value={ selectedModalHand }
+                    options={ savePresetHand }
+                    onSetValue={(item) => setSelectedModalHand(item)}/>
+                </div>
+      <div className="skeleton-selector__div">
+        <button
+          className="skeleton-selector__button"
+          onClick={() => {
+            showModal(false)
+            addNewPosePreset(newPresetName.current, selectedModalHand.value)
+          }}>
+            Proceed
+        </button>
+        </div>
+   </Modal> }
+    <div className="thumbnail-search column">
+        <div className="row" style={{ padding: "6px 0" }}> 
+          <SearchList label="Search for a hand pose …" list={ sortedPresets.current } onSearch={ saveFilteredPresets }/>
+          <div className="column" style={{ marginLeft: 5 }}> 
+            <a className="button_add" href="#"
+              style={{ width: 30, height: 34 }}
+              onPointerDown={ onCreateHandPosePreset }
+             >+</a>
+          </div>
+        </div> 
+        <div className="row" style= {{ padding: "6px 0" }} >
+          <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Select hand</div> 
+          <div className="column" style={{ flex: 1 }}>
+            <select onChange={ onChangeHand }
+              value={ selectedHand }>
+            <option value="LeftHand">Left Hand</option> 
+            <option value="RightHand">Right Hand</option> 
+            <option value="BothHands">Both Hands</option> 
+            </select>
+          </div>
+        </div>
+        <div className="thumbnail-search__list">
+         <FixedSizeGrid 
+            columnCount={ NUM_COLS }
+            columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
 
-          rowCount={ Math.ceil(results.length / NUM_COLS) }
-          rowHeight={ ITEM_HEIGHT }
-          width={ 288 }
-          height={ 363 }
-          innerElementType={ innerElementType }
-          itemData={{
-            presets:results,
+            rowCount={ Math.ceil(results.length / NUM_COLS) }
+            rowHeight={ ITEM_HEIGHT }
+            width={ 288 }
+            height={ 363 }
+            innerElementType={ innerElementType }
+            itemData={{
+              presets:results,
 
-            id: id,
-            handPosePresetId,
+              id: id,
+              handPosePresetId,
 
-            attachment,
-            updateObject,
+              attachment,
+              updateObject,
 
-            thumbnailRenderer,
-            withState,
-            selectedHand
-        }}
-        children={ ListItem }/>
-    </div>
-  </div> 
+              thumbnailRenderer,
+              withState,
+              selectedHand
+          }}
+          children={ ListItem }/>
+      </div>
+    </div> 
+  </div>
 }))
 
 export default HandPresetsEditor

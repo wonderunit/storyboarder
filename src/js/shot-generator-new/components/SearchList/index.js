@@ -15,7 +15,7 @@ const SearchList = React.memo(({ list, onSearch, label = "Search models …"}) =
             return false
             })
         onSearch(filteredList)
-    }, [])
+    }, [list])
 
     return <div className="column" style={{ flex: 1 }}> 
             <input
