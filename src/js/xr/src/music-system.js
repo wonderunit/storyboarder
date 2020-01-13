@@ -12,7 +12,7 @@ const timings = [
 const notes = ['C', 'D', 'E', 'F', 'G', 'A', 'B']
 const dissonant = ['A#', 'G#']
 
-const octaves = [4, 5, 6]
+const octaves = [3, 4, 5]
 
 let recurrence = [
   Tone.Time('7m').toMilliseconds(),
@@ -93,7 +93,7 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
   Tone.setContext(audioContext)
 
   reverb = new Tone.Freeverb(0.95)
-  reverb.wet.value = 0.3
+  reverb.wet.value = 0.15
 
   shimmer = new Tone.Chorus(1.5, 3.5, 0.3)
 
