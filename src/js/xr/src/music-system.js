@@ -15,7 +15,6 @@ const octaves = [4, 5, 6]
 
 let sampler
 let reverb
-let delay
 let isPlaying = false
 
 function choose(array, rand) {
