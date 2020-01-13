@@ -14,6 +14,12 @@ const dissonant = ['A#', 'G#']
 
 const octaves = [4, 5, 6]
 
+let recurrence = [
+  Tone.Time('7m').toMilliseconds(),
+  Tone.Time('9m').toMilliseconds(),
+  Tone.Time('11m').toMilliseconds()
+]
+
 let sampler
 let reverb
 let isPlaying = false
@@ -61,12 +67,23 @@ function playSequence() {
   }
 }
 
+function trigger () {
+  console.log('<br/>===')
+  console.log('MusicSystem#trigger')
+  playSequence()
+
+  if (isPlaying) {
+    let next = choose(recurrence)
+    console.log(`- will trigger again in ${next} msecs`)
+    setTimeout(trigger, next)
+  }
+}
+
 function start () {
   console.log('MusicSystem#start')
 
   isPlaying = true
-  // playSequence()
-  setInterval(playSequence, Tone.Time('9m').toMilliseconds())
+  trigger()
 }
 
 function init ({ urlMap, audioContext, audioNode, onComplete }) {
