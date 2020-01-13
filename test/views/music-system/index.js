@@ -39,5 +39,75 @@ window.onclick = function () {
         }
       }
     })
+
+    // for MIDI testing
+    function onMIDIMessage(event) {
+      var str =
+        'MIDI message received at timestamp ' +
+        event.timeStamp +
+        '[' +
+        event.data.length +
+        ' bytes]: '
+      for (var i = 0; i < event.data.length; i++) {
+        str += '0x' + event.data[i].toString(16) + ' '
+      }
+      console.log(str)
+      MIDIMessageEventHandler(event)
+    }
+
+    function noteOn(noteNumber) {
+      console.log('noteOn', noteNumber)
+
+      sampler.triggerAttackRelease(Tone.Frequency(noteNumber, 'midi'), '1n', '+0', 0.5)
+    }
+
+    function noteOff(noteNumber) {
+      console.log('noteOff', noteNumber)
+    }
+
+    function MIDIMessageEventHandler(event) {
+      // mask off the lower nibble (MIDI channel)
+      switch (event.data[0] & 0xf0) {
+        case 0x90:
+          event.data[2] !== 0
+            ? noteOn(event.data[1])
+            : noteOff(event.data[1])
+          break
+        case 0x80:
+          console.log('0x80')
+          break
+      }
+    }
+
+    navigator.requestMIDIAccess({ sysex: true }).then(function (access) {
+      const inputs = access.inputs.values()
+
+      for (var entry of access.inputs) {
+        var input = entry[1]
+
+        console.log(
+          "Input port [type:'" +
+          input.type +
+          "'] id:'" +
+          input.id +
+          "' manufacturer:'" +
+          input.manufacturer +
+          "' name:'" +
+          input.name +
+          "' version:'" +
+          input.version +
+          "'"
+        )
+
+        entry[1].onmidimessage = onMIDIMessage
+
+        console.log(entry)
+      }
+
+      access.onstatechange = function (e) {
+        console.log(e.port.name, e.port.manufacturer, e.port.state)
+      }
+    })
+
   })
 }
