@@ -74,7 +74,7 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
 
   Tone.setContext(audioContext)
 
-  reverb = new Tone.Freeverb(0.9)
+  reverb = new Tone.Freeverb(0.95)
   reverb.wet.value = 0.8
 
   sampler = new Tone.Sampler(
