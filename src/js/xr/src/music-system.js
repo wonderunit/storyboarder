@@ -77,6 +77,7 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
 
   reverb = new Tone.Freeverb(0.9)
   delay = new Tone.FeedbackDelay(0.5, 0.6)
+  delay.wet.value = 0.15
 
   sampler = new Tone.Sampler(
     urlMap,
