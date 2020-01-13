@@ -81,7 +81,7 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
   sampler = new Tone.Sampler(
     urlMap,
     onComplete
-  ).chain(delay, reverb, audioNode.getOutput())
+  ).chain(reverb, audioNode.getOutput())
 
   return { sampler }
 }
