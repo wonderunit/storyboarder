@@ -83,7 +83,7 @@ function start () {
   console.log('MusicSystem#start')
 
   isPlaying = true
-  trigger()
+  setTimeout(trigger, Tone.Time('9m').toMilliseconds())
 }
 
 function init ({ urlMap, audioContext, audioNode, onComplete }) {
