@@ -23,14 +23,15 @@ window.onclick = function () {
     // attach the music system
     let { sampler } = musicSystem.init({
       urlMap: {
-        'C4': '/src/data/shot-generator/xr/snd/vr-instrument-c4.mp3',
-        'C5': '/src/data/shot-generator/xr/snd/vr-instrument-c5.mp3',
-        'C6': '/src/data/shot-generator/xr/snd/vr-instrument-c6.mp3'
+        'C4': '/src/data/shot-generator/xr/snd/vr-instrument-c4.ogg',
+        'C5': '/src/data/shot-generator/xr/snd/vr-instrument-c5.ogg',
+        'C6': '/src/data/shot-generator/xr/snd/vr-instrument-c6.ogg'
       },
       audioContext: audio.context,
       audioNode: audio,
       onComplete: () => {
         // musicSystem.start()
+
         console.log('<br/>click again to play a sequence')
         window.onclick = function () {
           musicSystem.setIsPlaying(true)

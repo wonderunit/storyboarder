@@ -247,9 +247,9 @@ const SceneContent = connect(
       // attach the music system
       musicSystem.init({
         urlMap: {
-          'C4': '/data/system/xr/snd/vr-instrument-c4.mp3',
-          'C5': '/data/system/xr/snd/vr-instrument-c5.mp3',
-          'C6': '/data/system/xr/snd/vr-instrument-c6.mp3'
+          'C4': '/data/system/xr/snd/vr-instrument-c4.ogg',
+          'C5': '/data/system/xr/snd/vr-instrument-c5.ogg',
+          'C6': '/data/system/xr/snd/vr-instrument-c6.ogg'
         },
         audioContext: audio.context,
         audioNode: audio,

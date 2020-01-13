@@ -21,6 +21,7 @@ let recurrence = [
 ]
 
 let sampler
+let shimmer
 let reverb
 let isPlaying = false
 
@@ -92,12 +93,15 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
   Tone.setContext(audioContext)
 
   reverb = new Tone.Freeverb(0.95)
-  reverb.wet.value = 0.8
+  reverb.wet.value = 0.3
+
+  shimmer = new Tone.Chorus(1.5, 3.5, 0.3)
 
   sampler = new Tone.Sampler(
     urlMap,
     onComplete
-  ).chain(reverb, audioNode.getOutput())
+  ).chain(shimmer, reverb, audioNode.getOutput())
+  sampler.volume.value = -28 // db
 
   return { sampler }
 }
