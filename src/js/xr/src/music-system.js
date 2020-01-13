@@ -25,7 +25,7 @@ function choose(array, rand) {
 }
 
 function playSequence() {
-  console.info('---')
+  console.log('---')
   if (isPlaying) {
     let timing = choose(timings)
     timing.forEach((time, n) => {
@@ -45,7 +45,7 @@ function playSequence() {
         n > 0 && n == timing.length - 1 - 2
       ) {
         allowed = [...allowed, ...allowed, ...dissonant]
-        console.info(`allowing dissonant note for ${n} of ${timing.length}`)
+        console.log(`allowing dissonant note for ${n} of ${timing.length}`)
       }
 
       let note = choose(allowed)
@@ -57,7 +57,7 @@ function playSequence() {
 
       sampler.triggerAttackRelease(note + octave, '1n', time, velocity)
 
-      console.info(`MusicSystem#playSequence ${n} triggerAR ${note + octave} 1n ${time} ${velocity}`)
+      console.log(`MusicSystem#playSequence ${n} triggerAR ${note + octave} 1n ${time} ${velocity}`)
     })
   }
 }
