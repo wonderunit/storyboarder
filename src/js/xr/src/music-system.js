@@ -70,7 +70,7 @@ function start () {
   setInterval(playSequence, Tone.Time('9m').toMilliseconds())
 }
 
-function init ({ urlMap, audioContext, audioNode }) {
+function init ({ urlMap, audioContext, audioNode, onComplete }) {
   console.log('MusicSystem#init', audioContext, audioNode)
 
   Tone.setContext(audioContext)
@@ -80,12 +80,19 @@ function init ({ urlMap, audioContext, audioNode }) {
 
   sampler = new Tone.Sampler(
     urlMap,
-    start
+    onComplete
   ).chain(delay, reverb, audioNode.getOutput())
 
   return { sampler }
 }
 
+function setIsPlaying (value) {
+  isPlaying = value
+}
+
 export {
-  init
+  init,
+  start,
+  playSequence,
+  setIsPlaying
 }

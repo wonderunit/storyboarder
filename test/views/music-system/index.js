@@ -28,7 +28,17 @@ window.onclick = function () {
         'C6': '/src/data/shot-generator/xr/snd/vr-instrument-c6.mp3'
       },
       audioContext: audio.context,
-      audioNode: audio
+      audioNode: audio,
+      onComplete: () => {
+        // musicSystem.start()
+        console.log('<br/>click again to play a sequence')
+        window.onclick = function () {
+          musicSystem.setIsPlaying(true)
+          musicSystem.playSequence()
+        }
+      }
+    })
+
     })
   })
 }

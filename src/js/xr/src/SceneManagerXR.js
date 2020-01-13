@@ -252,7 +252,8 @@ const SceneContent = connect(
           'C6': '/data/system/xr/snd/vr-instrument-c6.mp3'
         },
         audioContext: audio.context,
-        audioNode: audio
+        audioNode: audio,
+        onComplete: musicSystem.start
       })
 
       // audio.add(new THREE.PositionalAudioHelper(audio))
