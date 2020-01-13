@@ -1,4 +1,4 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import {
     updateObject,
@@ -28,25 +28,16 @@ const CharacterPresetsEditor = connect(
     updateObject,
     selectCharacterPreset: (sceneObject, characterPresetId, preset) => (dispatch, getState) => {
       dispatch(updateObject(sceneObject.id, {
-        // set characterPresetId
         characterPresetId,
-
-        // apply preset values to character model
         height: preset.state.height,
-        //height: state.models[preset.state.model].baseHeight,
         model: preset.state.model,
-        // gender: 'female',
-        // age: 'adult'
-
         headScale: preset.state.headScale,
         tintColor: preset.state.tintColor,
-
         morphTargets: {
           mesomorphic: preset.state.morphTargets.mesomorphic,
           ectomorphic: preset.state.morphTargets.ectomorphic,
           endomorphic: preset.state.morphTargets.endomorphic
         },
-
         name: sceneObject.name || preset.name
       }))
     },
@@ -57,15 +48,9 @@ const CharacterPresetsEditor = connect(
         name,
         state: {
           height: sceneObject.height,
-          //height: sceneObject.model.originalHeight,
-
           model: sceneObject.model,
-          // gender: 'female',
-          // age: 'adult'
-
           headScale: sceneObject.headScale,
           tintColor: sceneObject.tintColor,
-
           morphTargets: {
             mesomorphic: sceneObject.morphTargets.mesomorphic,
             ectomorphic: sceneObject.morphTargets.ectomorphic,
@@ -117,12 +102,6 @@ const CharacterPresetsEditor = connect(
       return sceneObject
     }, [id])
 
-    const onCreateCharacterPresetClick = event => {
-      newGeneratedId.current = "Character "+shortId(THREE.Math.generateUUID())
-      newPresetName.current = newGeneratedId.current
-      showModal(true)
-    }
-
     const addNewCharacterPreset = useCallback((name) => {
       let id = THREE.Math.generateUUID()
       createCharacterPreset({
@@ -132,6 +111,12 @@ const CharacterPresetsEditor = connect(
       })
     }, [getSceneObject()])
 
+    const onCreateCharacterPresetClick = () => {
+      newGeneratedId.current = "Character " + shortId(THREE.Math.generateUUID())
+      newPresetName.current = newGeneratedId.current
+      showModal(true)
+    }
+
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
@@ -139,8 +124,8 @@ const CharacterPresetsEditor = connect(
     }
 
     return <div>
-      <Modal visible={ isModalShown } onClose={() => showModal(false)}>
-        <div style={{ margin:"5px 5px 5px 5px" }}>
+      <Modal visible={ isModalShown } onClose={ () => showModal(false) }>
+        <div style={{ margin: "5px 5px 5px 5px" }}>
           Select a Preset Name:
         </div>
         <div className="column" style={{ flex: 1 }}> 
@@ -168,8 +153,8 @@ const CharacterPresetsEditor = connect(
             onChange={ preventDefault(onSelectCharacterPreset) }
             style={{ flex: 1,
                   marginBottom: 0,
-                  maxWidth: 192}}>
-              <option value='' disabled={ true }>---</option>
+                  maxWidth: 192 }}>
+              <option value="" disabled={ true }>---</option>
               { Object.values(characterPresets).map((preset, index) =>
                 <option key={ index } value={ preset.id }>{ preset.name }</option>
               )}
@@ -177,7 +162,6 @@ const CharacterPresetsEditor = connect(
           <a className="button_add" href="#" style={{ marginLeft: 6 }} onPointerUp={ preventDefault(onCreateCharacterPresetClick) }>+</a> 
         </div>
       </div>
-
   })
 )
 export default CharacterPresetsEditor
