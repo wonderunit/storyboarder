@@ -51,7 +51,7 @@ window.onclick = function () {
       for (var i = 0; i < event.data.length; i++) {
         str += '0x' + event.data[i].toString(16) + ' '
       }
-      console.log(str)
+      // console.log(str)
       MIDIMessageEventHandler(event)
     }
 
