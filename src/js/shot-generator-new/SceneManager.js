@@ -28,8 +28,7 @@ const {
 
   undoGroupStart,
   undoGroupEnd,
-  getSelectedAttachable,
-  getCameraShots
+  getSelectedAttachable
 } = require('../shared/reducers/shot-generator')
 
 const {
@@ -68,7 +67,7 @@ const SceneManager = connect(
     aspectRatio: state.aspectRatio,
     devices: state.devices,
     meta: state.meta,
-    cameraShots: getCameraShots(state),
+    cameraShots: state.cameraShots,
     // HACK force reset skeleton pose on Board UUID change
     _boardUid: state.board.uid
   }),

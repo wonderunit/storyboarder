@@ -21,7 +21,7 @@ import { useDrag } from 'react-use-gesture'
 const CameraPanelInspector = connect(
     state => ({
       sceneObjects: getSceneObjects(state),
-      activeCamera: getActiveCamera(state),
+      activeCamera: getSceneObjects(state)[getActiveCamera(state)],
       selections: getSelections(state),
       cameraShots: state.cameraShots
     }),
@@ -30,51 +30,47 @@ const CameraPanelInspector = connect(
       setCameraShot
     }
 )(
-  React.memo(({ camera, selections, sceneObjects, activeCamera, cameraShots, updateObject, setCameraShot }) => {
-    if (!camera) return <div className="camera-inspector"/>
+  React.memo(({ activeCamera, cameraShots, updateObject, setCameraShot }) => {
+    if (!activeCamera) return <div className="camera-inspector"/>
     
-    const shotInfo = cameraShots[camera.userData.id] || {}
+    const shotInfo = cameraShots[activeCamera.id] || {}
     const [currentShotSize, setCurrentShotSize] = useState(shotInfo.size)
     const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
   
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
-    }, [shotInfo.size, camera])
+    }, [shotInfo.size, activeCamera])
   
     useEffect(() => {
       setCurrentShotAngle(shotInfo.angle)
-    }, [shotInfo.angle, camera])
+    }, [shotInfo.angle, activeCamera])
     
-    let cameraState = {...sceneObjects[activeCamera]}
-    
-    let fakeCamera = camera.clone() // TODO reuse a single object
-    let focalLength = fakeCamera.getFocalLength()
-    let cameraRoll = Math.round(THREE.Math.radToDeg(cameraState.roll))
-    let cameraPan = Math.round(THREE.Math.radToDeg(cameraState.rotation))
-    let cameraTilt = Math.round(THREE.Math.radToDeg(cameraState.tilt))
+    let cameraRoll = Math.round(THREE.Math.radToDeg(activeCamera.roll))
+    let cameraPan = Math.round(THREE.Math.radToDeg(activeCamera.rotation))
+    let cameraTilt = Math.round(THREE.Math.radToDeg(activeCamera.tilt))
     
     const getValueShifter = (draft) => () => {
       for (let [k, v] of Object.entries(draft)) {
-        cameraState[k] += v
+        activeCamera[k] += v
       }
   
-      updateObject(cameraState.id, cameraState)
+      updateObject(activeCamera.id, activeCamera)
     }
     
     const moveCamera = ([speedX, speedY]) => () => {
-      cameraState = CameraControls.getMovedState(cameraState, {x: speedX, y: speedY})
-      updateObject(cameraState.id, cameraState)
+      activeCamera = CameraControls.getMovedState(activeCamera, { x: speedX, y: speedY })
+      updateObject(activeCamera.id, activeCamera)
     }
   
     const getCameraPanEvents = useDrag(throttle(({ down, delta: [dx, dy] }) => {
       let rotation = THREE.Math.degToRad(cameraPan - dx)
       let tilt = THREE.Math.degToRad(cameraTilt - dy)
       
-      updateObject(cameraState.id, {rotation, tilt})
+      updateObject(activeCamera.id, {rotation, tilt})
     }, 100, {trailing:false}))
     
     const onSetShot = ({size, angle}) => {      
-      setCameraShot(camera.userData.id, {size, angle})
+      setCameraShot(activeCamera.id, {size, angle})
     }
   
     const shotSizes = [
@@ -102,8 +98,8 @@ const CameraPanelInspector = connect(
             <div className="camera-item roll">
                 <div className="camera-item-control">
                     <div className="row">
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({roll: -THREE.Math.DEG2RAD}))}><div className="arrow left"/></div>
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({roll: THREE.Math.DEG2RAD}))}><div className="arrow right"/></div> 
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: -THREE.Math.DEG2RAD }))}><div className="arrow left"/></div>
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: THREE.Math.DEG2RAD }))}><div className="arrow right"/></div> 
                     </div>
                 </div>
                 <div className="camera-item-label">Roll: { cameraRoll }°</div>
@@ -132,22 +128,22 @@ const CameraPanelInspector = connect(
             <div className="camera-item elevate">
                 <div className="camera-item-control">
                     <div className="row"> 
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({z: 0.1}))}><div className="arrow up"/></div> 
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ z: 0.1 }))}><div className="arrow up"/></div> 
                     <div className="row"> 
                     </div>
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({z: -0.1}))}><div className="arrow down"/></div> 
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ z: -0.1 }))}><div className="arrow down"/></div> 
                     </div>
                 </div> 
-                <div className="camera-item-label">Elevate: { cameraState.z.toFixed(2) }m</div> 
+                <div className="camera-item-label">Elevate: { activeCamera.z.toFixed(2) }m</div> 
             </div>
             <div className="camera-item lens">
                 <div className="camera-item-control">
                     <div className="row"> 
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({fov: 0.2}))}><div className="arrow left"/></div> 
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({fov: -0.2}))}><div className="arrow right"/></div> 
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: 0.2 }))}><div className="arrow left"/></div> 
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: -0.2 }))}><div className="arrow right"/></div> 
                     </div>
                 </div>
-                <div className="camera-item-label">Lens: ${ focalLength.toFixed(2) }mm</div>
+                <div className="camera-item-label">Lens: ${ activeCamera.fov.toFixed(2) }mm</div>
             </div>
             <div className="camera-item shots">
                 <div className="select">
