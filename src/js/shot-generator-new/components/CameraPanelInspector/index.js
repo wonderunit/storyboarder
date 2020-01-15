@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useContext } from 'react'
+import React, { useEffect, useState} from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 import {
@@ -6,7 +6,6 @@ import {
     setCameraShot,
 
     getSceneObjects,
-    getSelections,
     getActiveCamera,
 } from '../../../shared/reducers/shot-generator'
 import useLongPress from '../../../hooks/use-long-press'
@@ -20,9 +19,7 @@ import { useDrag } from 'react-use-gesture'
 
 const CameraPanelInspector = connect(
     state => ({
-      sceneObjects: getSceneObjects(state),
       activeCamera: getSceneObjects(state)[getActiveCamera(state)],
-      selections: getSelections(state),
       cameraShots: state.cameraShots
     }),
     {
