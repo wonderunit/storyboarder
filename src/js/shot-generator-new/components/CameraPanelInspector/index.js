@@ -45,21 +45,22 @@ const CameraPanelInspector = connect(
       setCurrentShotAngle(shotInfo.angle)
     }, [shotInfo.angle, activeCamera])
     
+    let cameraState = { ...activeCamera }
     let cameraRoll = Math.round(THREE.Math.radToDeg(activeCamera.roll))
     let cameraPan = Math.round(THREE.Math.radToDeg(activeCamera.rotation))
     let cameraTilt = Math.round(THREE.Math.radToDeg(activeCamera.tilt))
     
     const getValueShifter = (draft) => () => {
       for (let [k, v] of Object.entries(draft)) {
-        activeCamera[k] += v
+        cameraState[k] += v
       }
   
-      updateObject(activeCamera.id, activeCamera)
+      updateObject(activeCamera.id, cameraState)
     }
     
     const moveCamera = ([speedX, speedY]) => () => {
-      activeCamera = CameraControls.getMovedState(activeCamera, { x: speedX, y: speedY })
-      updateObject(activeCamera.id, activeCamera)
+      cameraState = CameraControls.getMovedState(cameraState, { x: speedX, y: speedY })
+      updateObject(activeCamera.id, cameraState)
     }
   
     const getCameraPanEvents = useDrag(throttle(({ down, delta: [dx, dy] }) => {
