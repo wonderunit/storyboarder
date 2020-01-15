@@ -15,8 +15,7 @@ import Select from '../Select'
 import throttle from 'lodash.throttle'
 
 import CameraControls from '../../CameraControls'
-import {setShot, ShotSizes, ShotAngles} from '../../cameraUtils'
-import { SceneContext } from '../../Components'
+import { ShotSizes, ShotAngles } from '../../cameraUtils'
 import { useDrag } from 'react-use-gesture'
 
 const CameraPanelInspector = connect(
@@ -33,22 +32,10 @@ const CameraPanelInspector = connect(
 )(
   React.memo(({ camera, selections, sceneObjects, activeCamera, cameraShots, updateObject, setCameraShot }) => {
     if (!camera) return <div className="camera-inspector"/>
-    const { scene } = useContext(SceneContext)
     
     const shotInfo = cameraShots[camera.userData.id] || {}
     const [currentShotSize, setCurrentShotSize] = useState(shotInfo.size)
     const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
-  
-    const selectionsRef = useRef(selections)
-    const selectedCharacters = useRef([])
-    
-    useEffect(() => {
-      selectionsRef.current = selections;
-  
-      selectedCharacters.current = selections.filter((id) => {
-        return (sceneObjects[id] && sceneObjects[id].type === "character")
-      })
-    }, [selections])
   
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
@@ -86,21 +73,7 @@ const CameraPanelInspector = connect(
       updateObject(cameraState.id, {rotation, tilt})
     }, 100, {trailing:false}))
     
-    const onSetShot = ({size, angle}) => {
-      let selected = scene.children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
-      let characters = scene.children.filter((obj) => obj.userData.type === "character")
-  
-      if (characters.length) {
-        setShot({
-          camera,
-          characters,
-          selected,
-          updateObject,
-          shotSize: size,
-          shotAngle: angle
-        })
-      }
-      
+    const onSetShot = ({size, angle}) => {      
       setCameraShot(camera.userData.id, {size, angle})
     }
   

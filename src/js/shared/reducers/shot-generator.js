@@ -30,6 +30,8 @@ const getSelectedAttachable = state => state.undoable.present.selectedAttachable
 
 const getWorld = state => state.undoable.present.world
 
+const getCameraShots = state => state.cameraShots
+
 
 const getHash = state =>
   hashify(JSON.stringify(getSerializedState(state)))
@@ -1829,6 +1831,7 @@ module.exports = {
 
   getIsSceneDirty,
   getHash,
+  getCameraShots,
 
   getDefaultPosePreset: () => initialState.presets.poses['79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE']
 }
