@@ -3,7 +3,7 @@
 
 import * as Tone from 'tone'
 import * as THREE from 'three'
-import * as musicSystem from '../../../src/js/xr/src/music-system.js'
+import * as musicSystem from '../../../src/js/xr/src/music-system'
 
 window.onclick = function () {
   const scene = new THREE.Scene()
