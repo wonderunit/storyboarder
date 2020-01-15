@@ -14,7 +14,7 @@ const log = require('electron-log')
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
-
+const KeyHandler = require("./components/KeyHandler").default
 const {
   SceneContext,
   ElementsPanel,
@@ -23,7 +23,6 @@ const {
   BoardInspector,
   GuidesInspector,
   CamerasInspector,
-  KeyHandler,
   MenuManager,
   PhoneCursor,
 
