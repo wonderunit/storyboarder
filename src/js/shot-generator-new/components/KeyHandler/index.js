@@ -1,7 +1,6 @@
 
 import React, { useEffect, useContext, useMemo, useRef} from 'react'
 import { connect } from 'react-redux'
-import { dropObject, dropCharacter } from '../../../utils/dropToObjects'
 import getGroupAction from '../../../utils/getGroupAction'
 import { createSelector } from 'reselect'
 import { SceneContext } from '../../Components'
@@ -85,18 +84,10 @@ const KeyHandler = connect(
     updateObject,
     undoGroupStart,
     undoGroupEnd,
-    updateObjects
+    machineState
   }) => {
     const { scene } = useContext(SceneContext)
     const keyCommandsInstance = useRef(KeyCommandsSingleton.getInstance())
-    let sceneChildren = scene ? scene.children.length : 0
-    const dropingPlaces = useMemo(() => {
-      if(!scene) return
-      return scene.children.filter(o =>
-        o.userData.type === 'object' ||
-        o.userData.type === 'character' ||
-        o.userData.type === 'ground')
-    }, [sceneChildren])
 
     useEffect(() => {
         keyCommandsInstance.current.addIPCKeyCommand(DuplicationCommand(selections, _selectedSceneObject, duplicateObjects))
@@ -107,24 +98,6 @@ const KeyHandler = connect(
         keyCommandsInstance.current.addIPCKeyCommand(GroupCommand(selections, sceneObjects, getGroupAction, groupObjects, ungroupObjects, mergeGroups))
         return () => keyCommandsInstance.current.removeIPCKeyCommand(GroupCommand())
     }, [sceneObjects, selections])
-
-/* 
-    const onCommandDrop = () => {
-      let changes = {}
-      for( let i = 0; i < selections.length; i++ ) {
-        let selection = scene.children.find( child => child.userData.id === selections[i] )
-        if( selection.userData.type === "object" ) {
-          dropObject( selection, dropingPlaces )
-          let pos = selection.position
-          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
-        } else if ( selection.userData.type === "character" ) {
-          dropCharacter( selection, dropingPlaces )
-          let pos = selection.position
-          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
-        }
-      }
-      updateObjects(changes)
-    } */
 
     const bindIpcCommands = () => {
         let ipcCommands = keyCommandsInstance.current.ipcKeyCommands
@@ -158,6 +131,8 @@ const KeyHandler = connect(
       }
 
       const onKeyDown = event => {
+        if(machineState.matches('typing')) return 
+
         if (event.key === 'Backspace' || event.key === 'Delete') {
           if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
             let choice = dialog.showMessageBox(null, {
@@ -239,13 +214,20 @@ const KeyHandler = connect(
       }
 
       window.addEventListener('keydown', onKeyDown)
-      bindIpcCommands()
       
       return function cleanup () {
-        window.removeEventListener('keydown', onKeyDown)
-        unbindIpcCommands()
-      }
+          window.removeEventListener('keydown', onKeyDown)
+        }
     }, [mainViewCamera, _cameras, selections, _selectedSceneObject, activeCamera])
+    
+    useEffect(() => {
+        bindIpcCommands()
+        console.log("Ipc commands binded")
+        return () =>{
+            unbindIpcCommands()
+            console.log("Ipc commands unbinded")
+        } 
+    }, [KeyCommandsSingleton.getInstance().ipcKeyCommands.length])
 
     return null
   }

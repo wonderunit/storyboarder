@@ -14,8 +14,8 @@ class KeyCommandsSingleton {
         return instance
     }
 
-    static getInstance(boneMesh){
-        return instance ? instance : new KeyCommandsSingleton(boneMesh)
+    static getInstance(){
+        return instance ? instance : new KeyCommandsSingleton()
     }
 
 

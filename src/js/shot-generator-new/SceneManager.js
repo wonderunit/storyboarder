@@ -1,11 +1,11 @@
 const { Provider, connect } = require('react-redux')
 const React = require('react')
 const { useState, useEffect, useRef, useContext, useMemo, useLayoutEffect, useCallback } = React
-
+const { dropObject, dropCharacter } = require('../utils/dropToObjects')
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
-
+const KeyCommandsSingleton = require('./components/KeyHandler/KeyCommandsSingleton').default
 const h = require('../utils/h')
 const SGIkHelper = require('../shared/IK/SGIkHelper')
 const {
@@ -104,7 +104,44 @@ const SceneManager = connect(
 
     let bonesHelper = useRef(null)
     let lightHelper = useRef(null)
+
     let ikHelper = useRef(null)
+    let sceneChildren = scene ? scene.children.length : 0
+    const dropingPlaces = useMemo(() => {
+      if(!scene) return
+      return scene.children.filter(o =>
+        o.userData.type === 'object' ||
+        o.userData.type === 'character' ||
+        o.userData.type === 'ground')
+    }, [sceneChildren])
+
+    useEffect(() => {
+      console.log("Event added")
+      KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:
+      onCommandDrop})
+      return () => {
+        console.log("Event removed")
+        KeyCommandsSingleton.getInstance().removeIPCKeyCommand({key: "shot-generator:object:drop"})
+      } 
+    }, [sceneObjects, selections, scene])
+
+    const onCommandDrop = useCallback(() => {
+      let changes = {}
+      console.log(selections)
+      for( let i = 0; i < selections.length; i++ ) {
+        let selection = scene.children.find( child => child.userData.id === selections[i] )
+        if( selection.userData.type === "object" ) {
+          dropObject( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        } else if ( selection.userData.type === "character" ) {
+          dropCharacter( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        }
+      }
+      updateObjects(changes)
+    }, [selections, sceneObjects, scene])
 
     let clock = useRef(new THREE.Clock())
     useMemo(() => {

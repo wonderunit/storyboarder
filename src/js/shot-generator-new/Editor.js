@@ -813,7 +813,7 @@ const Editor = connect(
             }
           ],
 
-          !machineState.matches('typing') && [KeyHandler],
+          [KeyHandler, { machineState }],
 
           [MenuManager],
 
