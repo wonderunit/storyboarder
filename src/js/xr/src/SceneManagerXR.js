@@ -910,7 +910,6 @@ const SceneManagerXR = () => {
         uiCreateBuffer, uiDeleteBuffer,
         vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
         xrPosing, xrEndPosing
-
       ]
 
       // fail if any app resources are missing
