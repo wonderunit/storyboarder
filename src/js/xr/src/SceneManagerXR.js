@@ -585,7 +585,7 @@ const SceneContent = connect(
             <primitive object={cameraAudioListener} />
           </primitive>
 
-          { showHUD && 
+          { showHUD &&
             <Boards
               mode={uiCurrent.value.controls}
               locked={uiCurrent.context.locked}
@@ -650,7 +650,7 @@ const SceneContent = connect(
                // : null
             )
           }
-          
+
 
           {
             modelObjectIds.map(id => {
@@ -694,7 +694,7 @@ const SceneContent = connect(
                 </SimpleErrorBoundary>
                 : null
             )
-          } 
+          }
 
           {
             lightIds.map(id =>
@@ -738,8 +738,7 @@ const SceneContent = connect(
                 sceneObject={sceneObject}
                 visibleToCam={sceneObject.visibleToCam}
                 isSelected={selections.includes(id)}/>
-              }
-            )
+            })
           }
 
           {
