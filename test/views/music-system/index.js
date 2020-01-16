@@ -17,7 +17,7 @@ window.onclick = function () {
     const audio = new THREE.PositionalAudio(listener)
     audio.setBuffer(buffer)
     audio.setLoop(true)
-    audio.setVolume(0.3)
+    audio.setVolume(1)
     audio.play()
 
     // attach the music system
