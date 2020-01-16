@@ -3,7 +3,6 @@ import * as Tone from 'tone'
 const sequences = require('./sequences.json')
 
 let sampler
-let reverb
 let isPlaying = false
 
 function last (arr) {
@@ -78,14 +77,11 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
 
   Tone.setContext(audioContext)
 
-  reverb = new Tone.Freeverb(0.95)
-  reverb.wet.value = 0.1
-
   sampler = new Tone.Sampler(
     urlMap,
     onComplete
-  ).chain(reverb, audioNode.getOutput())
   sampler.volume.value = -20 // db
+  ).chain(audioNode.getOutput())
 
   return { sampler }
 }
