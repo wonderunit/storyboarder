@@ -374,7 +374,7 @@ const SceneContent = connect(
           positional: false
         }
       })
-      voicer.setVolume(0.5)
+      voicer.setVolume(1)
       return voicer
     }, [])
 
