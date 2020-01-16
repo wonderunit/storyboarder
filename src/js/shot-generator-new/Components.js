@@ -96,7 +96,7 @@ const {
 
 const ModelLoader = require('../services/model-loader')
 
-const ColorSelect = require('./ColorSelect')
+const ColorSelect = require('./components/ColorSelect').default
 const Select = require('./components/Select').default
 
 const ModelSelect = require('./components/ModelSelect').default
@@ -108,7 +108,6 @@ const HandPresetsEditor = require('./components/HandPresetsEditor').default
 const CharacterPresetsEditor = require('./components/CharacterPresetEditor').default
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
-const CustomModelHelpButton = require('./CustomModelHelpButton')
 
 const ItemList = require('./components/ItemList').default
 const InspectedWorld = require('./components/InspectedWorld').default

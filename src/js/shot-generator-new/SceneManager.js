@@ -39,7 +39,6 @@ const {
 
 const CameraControls = require('./CameraControls')
 const SelectionManager = require('./components/SelectionManager').default
-// const SelectionsMover = require('./SelectionsMover')
 
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
@@ -816,13 +815,6 @@ const SceneManager = connect(
     return [
       canvasInFocus !== "None" && focusedSelectionManager && h(focusedSelectionManager),
       [
-
-        // [SelectionsMover, {
-        //   key: 'selections-mover',
-        //   scene,
-        //   camera
-        // }],
-
         worldComponent,
         ...components
       ].map(c => h(c))
