@@ -31,7 +31,7 @@ const {
   gltfLoader
 } = require('./Components')
 const SceneManager = require('./SceneManager')
-const GuidesView = require('./GuidesView')
+const GuidesView = require('./components/GuidesView').default
 const Icon = require('./Icon')
 const Toolbar = require('./components/Toolbar').default
 const FatalErrorBoundary = require('./FatalErrorBoundary')
