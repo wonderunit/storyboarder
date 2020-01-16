@@ -262,7 +262,7 @@ const SceneContent = connect(
       let voicer = new Voicer(cameraAudioListener, 6, resources.beamAudioBuffer, {
         releaseTime: 0.05
       })
-      voicer.setVolume(1)
+      voicer.setVolume(1.5)
       return voicer
     }, [])
     const teleportAudio = useMemo(() => {
