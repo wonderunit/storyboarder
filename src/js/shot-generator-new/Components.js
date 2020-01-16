@@ -1582,30 +1582,6 @@ const CameraInspector = connect(
 ))
 
 // const { durationOfWords } = require('../utils')
-const BoardInspector = connect(
-  state => ({
-    board: state.board
-  })
-)(
-({ board }) => {
-  const present = value => value && value.length > 1
-
-  // let suggestedDuration = durationOfWords(dialogue, 300) + 300
-  // let suggestedDurationInSeconds = suggestedDuration / 1000
-  // let durationString = `// about ${suggestedDurationInSeconds} seconds`
-
-  return h(
-    ['div.column.board-inspector', [
-      present(board.shot)
-        ? ['div.board-inspector__shot', 'Shot ' + board.shot]
-        : ['div.board-inspector__shot', 'Loading …'],
-
-      present(board.dialogue) && ['p.board-inspector__dialogue', 'DIALOGUE: ' + board.dialogue],
-      present(board.action) && ['p.board-inspector__action', 'ACTION: ' + board.action],
-      present(board.notes) && ['p.board-inspector__notes', 'NOTES: ' + board.notes]
-    ]]
-  )
-})
 
 const CameraPanelInspector = connect(
     state => ({
@@ -2338,7 +2314,6 @@ module.exports = {
   ElementsPanel,
   CameraInspector,
   CameraPanelInspector,
-  BoardInspector,
   CamerasInspector,
   KeyHandler,
   MenuManager,
