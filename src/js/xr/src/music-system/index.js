@@ -50,7 +50,7 @@ function trigger () {
 
   if (isPlaying) {
 
-    let next = (duration * 1000) * 1.5
+    let next = (duration * 1000) * 3
 
     if (Math.random() < 0.2) {
       console.log('\tresting …')
