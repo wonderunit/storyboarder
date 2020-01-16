@@ -32,15 +32,22 @@ class KeyCommandsSingleton {
     }
 
     addKeyCommand({key, keyCustomCheck, value}) {
+        this.removeKeyCommand(key)
         _keyCommands.push({key, keyCustomCheck, execute: value})
     }
     
     addIPCKeyCommand({key, keyCustomCheck, value}) {
+        let object = _ipcKeyCommands.find(object => object.key === key)
+        if(object) {
+            let indexOf = _ipcKeyCommands.indexOf(object)
+            _ipcKeyCommands.splice(indexOf, 1)
+        } 
         _ipcKeyCommands.push({key, keyCustomCheck, execute: value})
     }
 
     removeKeyCommand({key}) {
         let object = _keyCommands.find(object => object.key === key)
+        if(!object) return
         let indexOf = _keyCommands.indexOf(object)
         _keyCommands.splice(indexOf, 1)
     }
