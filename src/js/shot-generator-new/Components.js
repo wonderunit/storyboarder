@@ -100,7 +100,7 @@ const ColorSelect = require('./ColorSelect')
 const Select = require('./components/Select').default
 
 const ModelSelect = require('./components/ModelSelect').default
-const AttachmentsSelect = require('./AttachmentsSelect')
+const AttachmentsSelect = require('./components/AttachmentsSelect').default
 const PosePresetsEditor = require('./components/PosePresetsEditor').default
 const AttachableEditor = require('./components/AttachableEditor').default
 const AttachableInfo = require('./components/AttachableInfo').default
