@@ -242,7 +242,7 @@ const SceneContent = connect(
       audio.setBuffer(resources.atmosphereAudioBuffer)
       audio.setFilter(atmosphereAudioFilter)
       audio.setLoop(true)
-      audio.setVolume(0.3)
+      audio.setVolume(0.4)
       audio.play()
       audio.stop()
 
