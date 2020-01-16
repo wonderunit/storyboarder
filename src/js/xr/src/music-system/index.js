@@ -81,6 +81,7 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
     urlMap,
     onComplete
   ).chain(audioNode.getOutput())
+  sampler.release = 3.0 // let reverb ring out
   sampler.volume.value = -24 // db
 
   return { sampler }
