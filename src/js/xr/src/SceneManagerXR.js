@@ -256,7 +256,6 @@ const SceneContent = connect(
         onComplete: musicSystem.start
       })
 
-      // audio.add(new THREE.PositionalAudioHelper(audio))
       return audio
     }, [])
     const beamVoicer = useMemo(() => {
