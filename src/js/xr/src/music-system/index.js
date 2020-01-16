@@ -52,7 +52,7 @@ function trigger () {
 
     let next = (duration * 1000) * 3
 
-    if (Math.random() < 0.2) {
+    if (Math.random() < 0.3) {
       console.log('\tresting …')
       next = Tone.Time('16m').toMilliseconds()
     }
