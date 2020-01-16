@@ -80,8 +80,8 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
   sampler = new Tone.Sampler(
     urlMap,
     onComplete
-  sampler.volume.value = -20 // db
   ).chain(audioNode.getOutput())
+  sampler.volume.value = -24 // db
 
   return { sampler }
 }
