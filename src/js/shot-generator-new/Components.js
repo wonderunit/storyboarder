@@ -91,8 +91,6 @@ const {
 //} = require('../state')
 } = require('../shared/reducers/shot-generator')
 
-const Icon = require('./Icon')
-
 
 //const presetsStorage = require('../presetsStorage')
 
@@ -1803,52 +1801,6 @@ const CameraPanelInspector = connect(
   }
 ))
 
-const GuidesInspector = connect(
-  state => ({
-    center: state.workspace.guides.center,
-    thirds: state.workspace.guides.thirds,
-    eyeline: state.workspace.guides.eyeline
-  }),
-  {
-    toggleWorkspaceGuide
-  }
-)(
-(({
-  center, thirds, eyeline,
-  toggleWorkspaceGuide
-}) =>
-  h(['div.guides-inspector', [
-    'div.row',
-      ['div.guides-inspector__label', 'Guides'],
-        ['div.round-buttons-panel', [
-          [
-            'a[href=#]',
-            {
-              className: classNames({ active: center }),
-              onClick: preventDefault(() => toggleWorkspaceGuide('center'))
-            },
-            [[Icon, { src: 'icon-guides-center' }]]
-          ],
-          [
-            'a[href=#]',
-            {
-              className: classNames({ active: thirds }),
-              onClick: preventDefault(() => toggleWorkspaceGuide('thirds'))
-            },
-            [[Icon, { src: 'icon-guides-thirds' }]]
-          ],
-          [
-            'a[href=#]',
-            {
-              className: classNames({ active: eyeline }),
-              onClick: preventDefault(() => toggleWorkspaceGuide('eyeline'))
-            },
-            [[Icon, { src: 'icon-guides-eyeline' }]]
-          ]
-        ]]
-      ]]
-)))
-
 const CamerasInspector = connect(
   state => ({
     activeCamera: getActiveCamera(state),
@@ -2387,7 +2339,6 @@ module.exports = {
   CameraInspector,
   CameraPanelInspector,
   BoardInspector,
-  GuidesInspector,
   CamerasInspector,
   KeyHandler,
   MenuManager,

@@ -15,13 +15,13 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
 
+const GuidesInspector = require('./components/GuidesInspector').default
 const {
   SceneContext,
   ElementsPanel,
   CameraInspector,
   CameraPanelInspector,
   BoardInspector,
-  GuidesInspector,
   CamerasInspector,
   KeyHandler,
   MenuManager,
