@@ -264,7 +264,7 @@ const SceneContent = connect(
       let voicer = new Voicer(cameraAudioListener, 6, resources.beamAudioBuffer, {
         releaseTime: 0.05
       })
-      voicer.setVolume(0.75 * SOUND_FX_GAIN)
+      voicer.setVolume(0.5 * SOUND_FX_GAIN)
       return voicer
     }, [])
     const teleportAudio = useMemo(() => {
