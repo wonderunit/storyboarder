@@ -2,7 +2,8 @@ import React, {useCallback, useMemo} from "react"
 import {Math as _Math} from "three"
 import {formatters, NumberSlider, transforms} from "../../NumberSlider"
 import ColorSelect from "../../ColorSelect"
-import {initialState} from "./../../../../shared/reducers/shot-generator"
+import {initialState} from "../../../../shared/reducers/shot-generator"
+import CharacterPresetEditor from '../CharacterPresetEditor'
 
 
 const MORPH_TARGET_LABELS = {
@@ -53,6 +54,8 @@ const CharacterInspector = React.memo(({updateObject, sceneObject}) => {
   return (
     <React.Fragment>
       <div>
+        <CharacterPresetEditor/>
+        
         <NumberSlider label='X' value={props.x} min={-30} max={30} onSetValue={setX}/>
         <NumberSlider label='Y' value={props.y} min={-30} max={30} onSetValue={setY}/>
         <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>

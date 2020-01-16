@@ -101,13 +101,13 @@ const ModelLoader = require('../services/model-loader')
 const ColorSelect = require('./ColorSelect')
 const Select = require('./components/Select').default
 
-const ModelSelect = require('./components/ModelSelect').default
+//const ModelSelect = require('./components/ModelSelect').default
 const AttachmentsSelect = require('./AttachmentsSelect')
-const PosePresetsEditor = require('./components/PosePresetsEditor').default
-const AttachableEditor = require('./components/AttachableEditor').default
-const AttachableInfo = require('./components/AttachableInfo').default
-const HandPresetsEditor = require('./components/HandPresetsEditor').default
-const CharacterPresetsEditor = require('./components/CharacterPresetEditor').default
+//const PosePresetsEditor = require('./components/PosePresetsEditor').default
+//const AttachableEditor = require('./components/AttachableEditor').default
+//const AttachableInfo = require('./components/AttachableInfo').default
+//const HandPresetsEditor = require('./components/HandPresetsEditor').default
+//const CharacterPresetsEditor = require('./components/CharacterPresetEditor').default
 // const ServerInspector = require('./ServerInspector')
 const MultiSelectionInspector = require('./MultiSelectionInspector')
 const CustomModelHelpButton = require('./CustomModelHelpButton')
@@ -190,85 +190,24 @@ objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
 const Inspector = ({
-  world,
   kind, data,
-  models, updateObject, deleteObjects,
-  machineState, transition,
-  selectedBone,
-  selectBone,
-  updateCharacterSkeleton,
-  updateWorld,
-  updateWorldRoom,
-  updateWorldEnvironment,
-  updateWorldFog,
-  storyboarderFilePath,
   selections
 }) => {
   const { scene } = useContext(SceneContext)
-
-  const ref = useRef()
-
-  const onFocus = event => transition('TYPING_ENTER')
-  const onBlur = event => transition('TYPING_EXIT')
 
   let sceneObject = data
   let isGroup = sceneObject && sceneObject.type === 'group'
   let selectedCount = isGroup ? sceneObject.children.length + 1 : selections.length
 
-  // try to exit typing if there is nothing to inspect
-  useEffect(() => {
-    if (!data) transition('TYPING_EXIT')
-  }, [data])
-
-  useEffect(() => {
-    // automatically blur if typing mode was exited but a child of ours is focused
-    if (!machineState.matches('typing')) {
-      if (document.hasFocus()) {
-        const el = document.activeElement
-        if (ref.current.contains(el)) {
-          el.blur()
-        }
-      }
-    }
-  }, [machineState])
-
   return h([
     'div#inspector',
-    { ref, onFocus, onBlur },
     (selectedCount > 1)
       ? [
           MultiSelectionInspector
         ]
       : (kind && data)
-        ? [
-            /*InspectedElement, {
-              sceneObject,
-              models,
-              updateObject,
-              selectedBone: scene.getObjectByProperty('uuid', selectedBone),
-              machineState,
-              transition,
-              selectBone,
-              updateCharacterSkeleton,
-              storyboarderFilePath
-            }*/
-          InspectedElement, {element: (
-              <InspectedElementOld {...{
-                sceneObject,
-                models,
-                updateObject,
-                selectedBone: scene.getObjectByProperty('uuid', selectedBone),
-                machineState,
-                transition,
-                selectBone,
-                updateCharacterSkeleton,
-                storyboarderFilePath
-              }}/>
-            )}
-          ]
-        : [
-          InspectedWorld
-        ]
+        ? [InspectedElement, {scene}]
+        : [InspectedWorld]
   ])
 }
 
@@ -479,13 +418,13 @@ const InspectedElementOld = ({ sceneObject, updateObject, selectedBone, machineS
       ],
 
       // character preset
-      sceneObject.type == 'character' && [
-        [CharacterPresetsEditor, 
-          { 
-            id: sceneObject.id,
-            characterPresetId: sceneObject.characterPresetId
-          }],
-      ],
+      // sceneObject.type == 'character' && [
+      //   [CharacterPresetsEditor, 
+      //     { 
+      //       id: sceneObject.id,
+      //       characterPresetId: sceneObject.characterPresetId
+      //     }],
+      // ],
 
       sceneObject.type != 'camera' &&
         [
@@ -854,42 +793,42 @@ const InspectedElementOld = ({ sceneObject, updateObject, selectedBone, machineS
         ]
       ],
 
-      (sceneObject.type == 'object' || sceneObject.type == 'character') && [
-        ModelSelect, {
-          id:sceneObject.id,
-          model:sceneObject.model,
+      // (sceneObject.type == 'object' || sceneObject.type == 'character') && [
+      //   ModelSelect, {
+      //     id:sceneObject.id,
+      //     model:sceneObject.model,
+      //
+      //     rows: sceneObject.type == 'character' ? 2 : 3
+      //   }
+      // ],
 
-          rows: sceneObject.type == 'character' ? 2 : 3
-        }
-      ],
-
-      sceneObject.type == 'character' && [
-        PosePresetsEditor, {
-          id: sceneObject.id,
-        }
-      ],
-      sceneObject.type == 'character' && [
-        HandPresetsEditor, {
-          id: sceneObject.id,
-          handPosePresetId: sceneObject.handPosePresetId,
-          scene: scene
-        }
-      ],
+      // sceneObject.type == 'character' && [
+      //   PosePresetsEditor, {
+      //     id: sceneObject.id,
+      //   }
+      // ],
+      // sceneObject.type == 'character' && [
+      //   HandPresetsEditor, {
+      //     id: sceneObject.id,
+      //     handPosePresetId: sceneObject.handPosePresetId,
+      //     scene: scene
+      //   }
+      // ],
 
 
-      sceneObject.type == 'character' && [
-        AttachableEditor, {
-          id: sceneObject.id,
-          SceneContext
-        }
-      ],
-      sceneObject.type == 'character' && [
-        AttachableInfo, {
-          id: sceneObject.id,
-          SceneContext,
-          NumberSlider,
-        }
-      ],
+      // sceneObject.type == 'character' && [
+      //   AttachableEditor, {
+      //     id: sceneObject.id,
+      //     SceneContext
+      //   }
+      // ],
+      // sceneObject.type == 'character' && [
+      //   AttachableInfo, {
+      //     id: sceneObject.id,
+      //     SceneContext,
+      //     NumberSlider,
+      //   }
+      // ],
       sceneObject.type == 'character' &&
         selectedBone && [BoneEditor, { sceneObject, bone: selectedBone, updateCharacterSkeleton }],
 

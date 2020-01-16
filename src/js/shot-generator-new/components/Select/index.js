@@ -9,7 +9,7 @@ const Select = React.memo(({
     options = [],
     disabled = false,
     onSetValue = defaultOnSetValue,
-    className
+    className = null
   } = {}) => {
   const callbackRef = useRef(onSetValue)
   

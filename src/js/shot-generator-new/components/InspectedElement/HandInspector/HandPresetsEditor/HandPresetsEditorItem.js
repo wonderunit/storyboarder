@@ -2,12 +2,12 @@ import fs from 'fs-extra'
 import path from 'path'
 import { remote } from 'electron'
 import classNames from 'classnames'
-import ThumbnailRenderer from '../../ThumbnailRenderer'
+import ThumbnailRenderer from '../../../../ThumbnailRenderer'
 import React, { useMemo } from 'react'
-import { createdMirroredHand, applyChangesToSkeleton, getOppositeHandName } from '../../../utils/handSkeletonUtils'
-import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../utils/InspectorElementsSettings'
-import { getSceneObjects } from '../../../shared/reducers/shot-generator'
-import clampInstance from '../../utils/clampInstance'
+import { createdMirroredHand, applyChangesToSkeleton, getOppositeHandName } from '../../../../../utils/handSkeletonUtils'
+import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../../../utils/InspectorElementsSettings'
+import { getSceneObjects } from '../../../../../shared/reducers/shot-generator'
+import clampInstance from '../../../../utils/clampInstance'
 
 const setupRenderer = ({ thumbnailRenderer, attachment, preset, selectedHand }) => {
     if (!thumbnailRenderer.getGroup().children.length) {
@@ -60,7 +60,7 @@ const setupRenderer = ({ thumbnailRenderer, attachment, preset, selectedHand }) 
     bone.parent.parent.parent.updateWorldMatrix(true, true)
 }
   
-const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand }) => {
+const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand }) => {
     const src = path.join(remote.app.getPath('userData'), 'presets', 'handPoses', `${preset.id}.jpg`)
     const onPointerDown = event => {
       event.preventDefault()
