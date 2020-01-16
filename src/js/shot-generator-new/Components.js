@@ -21,7 +21,7 @@ const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 
 
-
+const KeyCommandsSingleton = require('./components/KeyHandler/KeyCommandsSingleton').default
 
 //const robot = require("robotjs")
 
@@ -146,38 +146,7 @@ const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
   fn(e, ...args)
 }
-
-/**
- * Return the first index containing an *item* which is greater than *item*.
- * @arguments _(item)_
- * @example
- *  indexOfGreaterThan([10, 5, 77, 55, 12, 123], 70) // => 2
- * via mohayonao/subcollider
- */
-const indexOfGreaterThan = (array, item) => {
-  for (var i = 0, imax = array.length; i < imax; ++i) {
-    if (array[i] > item) { return i }
-  }
-  return -1
-}
-/**
- * Returns the closest index of the value in the array (collection must be sorted).
- * @arguments _(item)_
- * @example
- *  indexIn([2, 3, 5, 6], 5.2) // => 2
- * via mohayonao/subcollider
- */
- const indexIn = (array, item) => {
-  var i, j = indexOfGreaterThan(array, item)
-  if (j === -1) { return array.length - 1 }
-  if (j ===  0) { return j }
-  i = j - 1
-  return ((item - array[i]) < (array[j] - item)) ? i : j
-}
-
 const SceneContext = React.createContext()
-
-
 
 require('../vendor/three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')
@@ -1653,6 +1622,18 @@ const GuidesInspector = connect(
       ]]
 )))
 
+const numberCheck = (event) => {
+ return event.key === '1' ||
+        event.key === '2' ||
+        event.key === '3' ||
+        event.key === '4' ||
+        event.key === '5' ||
+        event.key === '6' ||
+        event.key === '7' ||
+        event.key === '8' ||
+        event.key === '9'
+}
+
 const CamerasInspector = connect(
   state => ({
     activeCamera: getActiveCamera(state),
@@ -1660,7 +1641,8 @@ const CamerasInspector = connect(
   }),
   {
     setActiveCamera,
-    selectObject
+    selectObject,
+    updateObject
   }
 )(
 ({
@@ -1672,8 +1654,51 @@ const CamerasInspector = connect(
 
   // action creators
   setActiveCamera,
-  selectObject
+  selectObject,
+  updateObject
 }) => {
+
+  const onCameraSelectByIndex = useCallback(index => {
+    if (_cameras[index]) {
+      let id = _cameras[index].id
+      undoGroupStart()
+      selectObject(id)
+      setActiveCamera(id)
+      undoGroupEnd()
+    }
+  }, [_cameras])
+
+  const rollCamera = useCallback(() => {
+    let cameraState = _cameras.find(camera => camera.id === activeCamera)
+    let roll = {
+      'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
+      'x': Math.min(cameraState.roll + THREE.Math.DEG2RAD, 45 * THREE.Math.DEG2RAD)
+    }[event.key]
+
+    updateObject(activeCamera, { roll })
+  }, [_cameras, activeCamera])
+
+  useEffect(() => {
+    KeyCommandsSingleton.getInstance().addKeyCommand({
+      key: "cameraSelector",
+      keyCustomCheck: (event) => numberCheck(event),
+      value: (event) => { onCameraSelectByIndex(parseInt(event.key, 10) - 1) }
+    })
+    return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraSelector" })
+  }, [_cameras])
+
+  useEffect(() => {
+    KeyCommandsSingleton.getInstance().addKeyCommand({
+      key: "cameraRoll",
+      keyCustomCheck: (event) => (event.key === 'z' || event.key === 'x') &&
+                          !event.shiftKey &&
+                          !event.metaKey &&
+                          !event.ctrlKey &&
+                          !event.altKey,
+      value: (event) => {rollCamera(event)}
+    })
+    return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraRoll" })
+  }, [_cameras, activeCamera])
 
   const onClick = (camera, event) => {
     event.preventDefault()
@@ -1713,19 +1738,7 @@ const getSelectedSceneObject = createSelector(
   [getSceneObjects, getSelections],
   (sceneObjects, selections) => Object.values(sceneObjects).find(o => o.id === selections[0])
 )
-const canDelete = (sceneObject, activeCamera) =>
-  // allow objects
-  sceneObject.type === 'object' ||
-  // allow characters
-  sceneObject.type === 'character' ||
-  // allow volumes
-  sceneObject.type === 'volume' ||
-  // allow lights
-  sceneObject.type === 'light' ||
-  // allow images
-  sceneObject.type === 'image' ||
-  // allow cameras which are not the active camera
-  (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
+
 
 const menu = require('../menu')
 const onMenuFocus = () => {

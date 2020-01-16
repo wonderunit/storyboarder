@@ -5,11 +5,8 @@ const { dropObject, dropCharacter } = require('../utils/dropToObjects')
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
-<<<<<<< HEAD
 const KeyCommandsSingleton = require('./components/KeyHandler/KeyCommandsSingleton').default
-=======
 const { setShot } = require('./cameraUtils')
->>>>>>> shot-generator-refactoring-cameraPanelInspector
 const h = require('../utils/h')
 const SGIkHelper = require('../shared/IK/SGIkHelper')
 const {
@@ -34,6 +31,7 @@ const {
   undoGroupEnd,
   getSelectedAttachable
 } = require('../shared/reducers/shot-generator')
+const { createSelector } = require('reselect')
 
 const {
   SceneContext,
@@ -57,6 +55,39 @@ const Attachable = require('./attachables/Attachable')
 const WorldObject = require('./World')
 
 const ModelLoader = require('../services/model-loader')
+/**
+ * Return the first index containing an *item* which is greater than *item*.
+ * @arguments _(item)_
+ * @example
+ *  indexOfGreaterThan([10, 5, 77, 55, 12, 123], 70) // => 2
+ * via mohayonao/subcollider
+ */
+const indexOfGreaterThan = (array, item) => {
+  for (var i = 0, imax = array.length; i < imax; ++i) {
+    if (array[i] > item) { return i }
+  }
+  return -1
+}
+
+/**
+ * Returns the closest index of the value in the array (collection must be sorted).
+ * @arguments _(item)_
+ * @example
+ *  indexIn([2, 3, 5, 6], 5.2) // => 2
+ * via mohayonao/subcollider
+ */
+const indexIn = (array, item) => {
+  var i, j = indexOfGreaterThan(array, item)
+  if (j === -1) { return array.length - 1 }
+  if (j ===  0) { return j }
+  i = j - 1
+  return ((item - array[i]) < (array[j] - item)) ? i : j
+}
+
+const getCameraSceneObjects = createSelector(
+  [getSceneObjects],
+  (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
+)
 
 const SceneManager = connect(
   state => ({
@@ -73,7 +104,8 @@ const SceneManager = connect(
     meta: state.meta,
     cameraShots: state.cameraShots,
     // HACK force reset skeleton pose on Board UUID change
-    _boardUid: state.board.uid
+    _boardUid: state.board.uid,
+    _cameras: getCameraSceneObjects(state)
   }),
   {
     updateObject,
@@ -91,7 +123,7 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -147,6 +179,39 @@ const SceneManager = connect(
       }
       updateObjects(changes)
     }, [selections, sceneObjects, scene])
+
+    const changeCameraFocalLength = useCallback(() => {
+      let cameraState = _cameras.find(camera => camera.id === activeCamera)
+
+      let mms = [12, 16, 18, 22, 24, 35, 50, 85, 100, 120, 200, 300, 500]
+
+      let camera = scene.children.find(child => child.userData.id === activeCamera)
+      let fakeCamera = camera.clone() // TODO reuse a single object
+      let fovs = mms.map(mm => {
+        fakeCamera.setFocalLength(mm)
+        return fakeCamera.fov
+      }).sort((a, b) => a - b)
+      fakeCamera = null
+
+      let index = indexIn(fovs, cameraState.fov)
+      console.log(fovs)
+      let fov = {
+        "[": fovs[Math.min(index + 1, fovs.length)],
+        "]": fovs[Math.max(index - 1, 0)]
+      }[event.key]
+
+      updateObject(activeCamera, { fov })
+    }, [_cameras, activeCamera])
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({
+        key: "changeCameraFOV",
+        keyCustomCheck: (event) => event.key === "[" || event.key === "]",
+        value: changeCameraFocalLength
+      })
+      return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "changeCameraFOV" })
+    }, [_cameras, activeCamera])
+
 
     let clock = useRef(new THREE.Clock())
     useMemo(() => {

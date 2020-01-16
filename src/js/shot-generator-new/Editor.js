@@ -14,11 +14,8 @@ const log = require('electron-log')
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
-<<<<<<< HEAD
 const KeyHandler = require("./components/KeyHandler").default
-=======
 const CameraPanelInspector = require('./components/CameraPanelInspector').default
->>>>>>> shot-generator-refactoring-cameraPanelInspector
 const {
   SceneContext,
   ElementsPanel,
