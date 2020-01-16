@@ -21,7 +21,6 @@ const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 
 
-const KeyCommandsSingleton = require('./components/KeyHandler/KeyCommandsSingleton').default
 
 //const robot = require("robotjs")
 
@@ -1622,123 +1621,9 @@ const GuidesInspector = connect(
       ]]
 )))
 
-const numberCheck = (event) => {
- return event.key === '1' ||
-        event.key === '2' ||
-        event.key === '3' ||
-        event.key === '4' ||
-        event.key === '5' ||
-        event.key === '6' ||
-        event.key === '7' ||
-        event.key === '8' ||
-        event.key === '9'
-}
-
-const CamerasInspector = connect(
-  state => ({
-    activeCamera: getActiveCamera(state),
-    _cameras: getCameraSceneObjects(state)
-  }),
-  {
-    setActiveCamera,
-    selectObject,
-    updateObject
-  }
-)(
-({
-  // props
-  activeCamera,
-
-  // via selectors
-  _cameras,
-
-  // action creators
-  setActiveCamera,
-  selectObject,
-  updateObject
-}) => {
-
-  const onCameraSelectByIndex = useCallback(index => {
-    if (_cameras[index]) {
-      let id = _cameras[index].id
-      undoGroupStart()
-      selectObject(id)
-      setActiveCamera(id)
-      undoGroupEnd()
-    }
-  }, [_cameras])
-
-  const rollCamera = useCallback(() => {
-    let cameraState = _cameras.find(camera => camera.id === activeCamera)
-    let roll = {
-      'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
-      'x': Math.min(cameraState.roll + THREE.Math.DEG2RAD, 45 * THREE.Math.DEG2RAD)
-    }[event.key]
-
-    updateObject(activeCamera, { roll })
-  }, [_cameras, activeCamera])
-
-  useEffect(() => {
-    KeyCommandsSingleton.getInstance().addKeyCommand({
-      key: "cameraSelector",
-      keyCustomCheck: (event) => numberCheck(event),
-      value: (event) => { onCameraSelectByIndex(parseInt(event.key, 10) - 1) }
-    })
-    return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraSelector" })
-  }, [_cameras])
-
-  useEffect(() => {
-    KeyCommandsSingleton.getInstance().addKeyCommand({
-      key: "cameraRoll",
-      keyCustomCheck: (event) => (event.key === 'z' || event.key === 'x') &&
-                          !event.shiftKey &&
-                          !event.metaKey &&
-                          !event.ctrlKey &&
-                          !event.altKey,
-      value: (event) => {rollCamera(event)}
-    })
-    return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraRoll" })
-  }, [_cameras, activeCamera])
-
-  const onClick = (camera, event) => {
-    event.preventDefault()
-
-    undoGroupStart()
-    selectObject(camera.id)
-    setActiveCamera(camera.id)
-    undoGroupEnd()
-  }
-
-  return h(['div.cameras-inspector', [
-    'div.row',
-      ['div.cameras-inspector__label', 'Camera'],
-      ['div.round-buttons-panel',
-        _cameras.map(
-          (camera, n) =>
-            [
-              'a[href=#]',
-              {
-                className: classNames({ active: activeCamera === camera.id }),
-                onClick: onClick.bind(this, camera)
-              },
-              n + 1
-            ]
-        )
-      ]
-  ]])
-})
 
 // TODO move selector logic into reducers/shot-generator?
 // memoized selectors
-const getCameraSceneObjects = createSelector(
-  [getSceneObjects],
-  (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
-)
-const getSelectedSceneObject = createSelector(
-  [getSceneObjects, getSelections],
-  (sceneObjects, selections) => Object.values(sceneObjects).find(o => o.id === selections[0])
-)
-
 
 const menu = require('../menu')
 const onMenuFocus = () => {
@@ -2002,7 +1887,6 @@ module.exports = {
   CameraInspector,
   BoardInspector,
   GuidesInspector,
-  CamerasInspector,
   MenuManager,
   PhoneCursor,
 
