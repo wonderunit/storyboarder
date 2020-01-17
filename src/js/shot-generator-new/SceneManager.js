@@ -35,9 +35,10 @@ const { createSelector } = require('reselect')
 
 const {
   SceneContext,
-  animatedUpdate,
   stats
 } = require('./Components')
+
+const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const CameraControls = require('./CameraControls')
 const SelectionManager = require('./components/SelectionManager').default
@@ -111,7 +112,6 @@ const SceneManager = connect(
     updateObjects,
     selectObject,
     selectObjectToggle,
-    animatedUpdate,
     selectBone,
     updateCharacterSkeleton,
     updateCharacterIkSkeleton,
@@ -119,10 +119,11 @@ const SceneManager = connect(
     updateWorldEnvironment,
     deleteObjects,
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    animatedUpdate
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras, animatedUpdate }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 

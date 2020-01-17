@@ -21,15 +21,13 @@ const KeyHandler = require("./components/KeyHandler").default
 const CameraPanelInspector = require('./components/CameraPanelInspector').default
 const CamerasInspector = require('./components/CamerasInspector').default
 const ElementsPanel = require('./components/ElementsPanel').default
+const { preventDefault } = require('./utils/preventDefault')
 const {
-  SceneContext,
-  CameraInspector,
-  MenuManager,
-  PhoneCursor,
-
-  preventDefault,
-  gltfLoader
+  SceneContext
 } = require('./Components')
+
+const MenuManager = require('./components/MenuManager').default
+const { gltfLoader } = require('./utils/gltfLoader')
 const SceneManager = require('./SceneManager')
 const GuidesView = require('./components/GuidesView').default
 const Icon = require('./components/Icon').default
@@ -793,7 +791,7 @@ const Editor = connect(
               //   [PresetsEditor, { transition }]
               // ]],
 
-              ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
+              //ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
             ],
 
             // [LoadingStatus, { ready }]
