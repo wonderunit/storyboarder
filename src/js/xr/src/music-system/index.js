@@ -43,7 +43,7 @@ function playSequence (index) {
 
   events.forEach(event => {
     let { name, time, duration, velocity } = event
-    console.log(`\t${name} ${time} ${duration}`)
+    console.log(`\t${name} t:${time} d:${duration} v:${velocity}`)
     sampler.triggerAttackRelease(name, duration, `+${time}`, velocity)
   })
 
