@@ -16,7 +16,7 @@ const IconSprites = require('./IconSprites')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 
-const applyDeviceQuaternion = require('./apply-device-quaternion')
+const applyDeviceQuaternion = require('./utils/apply-device-quaternion').default
 
 // character needs:
 //   mesh - SkinnedMesh

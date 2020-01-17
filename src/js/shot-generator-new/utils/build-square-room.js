@@ -69,21 +69,6 @@ const BoundingUVGenerator = {
   }
 }
 
-// let createLineMesh = (pointsArray, material) => {
-//   let geometry = new THREE.Geometry()
-//   for (var i = 0; i < pointsArray.length; i++) {
-//     var n = 2
-//     while (n--) {
-//       geometry.vertices.push(new THREE.Vector3(pointsArray[i][0], pointsArray[i][1], pointsArray[i][2]))
-//     }
-//   }
-//   geometry.translate(-.5, 0, -.5)
-//   let line = new MeshLine()
-//   line.setGeometry(geometry, function (p) { return 1 })
-//   let mesh = new THREE.Mesh(line.geometry, material)
-//   return mesh
-// }
-
 const buildSquareRoom = (w, l, h, { textures }) => {
   var hw = w / 2
   var hl = l / 2
@@ -160,4 +145,4 @@ const buildSquareRoom = (w, l, h, { textures }) => {
   return mesh
 }
 
-module.exports = buildSquareRoom
+export default buildSquareRoom

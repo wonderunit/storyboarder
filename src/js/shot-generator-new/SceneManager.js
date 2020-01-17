@@ -6,7 +6,7 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
 const KeyCommandsSingleton = require('./components/KeyHandler/KeyCommandsSingleton').default
-const { setShot } = require('./cameraUtils')
+const { setShot } = require('./utils/cameraUtils')
 const h = require('../utils/h')
 const SGIkHelper = require('../shared/IK/SGIkHelper')
 const {

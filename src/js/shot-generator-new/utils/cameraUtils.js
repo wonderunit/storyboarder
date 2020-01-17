@@ -1,4 +1,4 @@
-const THREE = require('three')
+import * as THREE from 'three'
 
 const clampCameraToBox = ({
   camera,
@@ -353,7 +353,7 @@ const setShot = ({
   
 }
 
-module.exports = {
+export {
   ShotSizes,
   ShotAngles,
   setShot

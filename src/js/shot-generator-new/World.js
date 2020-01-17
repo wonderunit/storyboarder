@@ -5,8 +5,8 @@ const { useRef, useEffect, useState } = React
 
 const path = require('path')
 
-const buildSquareRoom = require('./build-square-room')
-const onlyOfTypes = require('./only-of-types')
+const buildSquareRoom = require('./utils/build-square-room')
+const onlyOfTypes = require('./utils/only-of-types').default
 
 require('../vendor/three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')

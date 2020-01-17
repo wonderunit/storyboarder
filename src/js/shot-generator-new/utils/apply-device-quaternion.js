@@ -39,4 +39,4 @@ const applyDeviceQuaternion = ({
   return objectQuaternion
 }
 
-module.exports = applyDeviceQuaternion
+export default applyDeviceQuaternion
