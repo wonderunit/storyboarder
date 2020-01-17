@@ -32,7 +32,7 @@ const {
 } = require('./Components')
 const SceneManager = require('./SceneManager')
 const GuidesView = require('./components/GuidesView').default
-const Icon = require('./Icon')
+const Icon = require('./components/Icon').default
 const Toolbar = require('./components/Toolbar').default
 const FatalErrorBoundary = require('./components/FatalErrorBoundary').default
 

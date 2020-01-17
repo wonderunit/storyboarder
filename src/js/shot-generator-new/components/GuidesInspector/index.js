@@ -3,7 +3,7 @@ import React from 'react'
 import classNames from 'classnames'
 import { toggleWorkspaceGuide } from '../../../shared/reducers/shot-generator'
 import { connect } from 'react-redux'
-import Icon from '../../Icon'
+import Icon from '../Icon'
 
 const preventDefault = (fn, ...args) => e => {
     e.preventDefault()
