@@ -36,7 +36,7 @@ const Icon = require('./Icon')
 const Toolbar = require('./components/Toolbar').default
 const FatalErrorBoundary = require('./components/FatalErrorBoundary').default
 
-const {useExportToGltf, loadCameraModel} = require('./use-export-to-gltf')
+const {useExportToGltf, loadCameraModel} = require('../hooks/use-export-to-gltf')
 
 const ModelLoader = require('../services/model-loader')
 
