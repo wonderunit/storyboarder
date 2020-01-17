@@ -7,7 +7,8 @@ const {dialog} = remote
 import {
   getSceneObjects,
   getSelections,
-  getActiveCamera, selectObject, deleteObjects, updateObject
+  getActiveCamera, selectObject, deleteObjects, updateObject,
+  setActiveCamera
 } from './../../../shared/reducers/shot-generator'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
@@ -46,10 +47,8 @@ const isSelected = (id, selections, children = []) => {
   return unselectedChildren.length === 0
 }
 
-const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject}) => {
+const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject, setActiveCamera}) => {
   const listRef = useRef(null)
-  
-  console.log('ItemList Rerender')
   
   const onSelectItem = useCallback((event, props) => {
     if (!props) {
@@ -70,6 +69,9 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
     }
     
     selectObject([...new Set(currentSelections)])
+    if(props.type === "camera") {
+      setActiveCamera(props.id)
+    }
   }, [selections])
 
   const onHideItem = useCallback((event, props) => {
@@ -174,7 +176,8 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = {
   selectObject,
   deleteObjects,
-  updateObject
+  updateObject,
+  setActiveCamera 
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ItemList)

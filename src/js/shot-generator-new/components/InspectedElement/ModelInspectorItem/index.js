@@ -1,21 +1,21 @@
-import React from 'react'
+import React, {useCallback} from 'react'
 import classNames from 'classnames'
-import { filepathFor } from '../../utils/filepathFor'
+import { filepathFor } from '../../../utils/filepathFor'
 
-const ModelFileItem = React.memo(({
+const ModelInspectorItem = React.memo(({
     style,
-    id,
-    isSelected,
-    model,
+    id, 
+    selectedFunc = () => false,
+    data : model,
     onSelectItem,
     itemSettings
   }) => {
     const src = filepathFor(model).replace(/.glb$/, '.jpg')
+    const isSelected = selectedFunc(model)
   
-    const onSelect = event => {
-      event.preventDefault()
-      onSelectItem(id, { model: model })
-    }
+    const onSelect = useCallback(() => {
+      onSelectItem(model)
+    }, [onSelectItem])
     const className = classNames("thumbnail-search__item", {
       "thumbnail-search__item--selected": isSelected
     })
@@ -39,4 +39,4 @@ const ModelFileItem = React.memo(({
         </div>
       </div>
 })
-export default ModelFileItem
+export default ModelInspectorItem

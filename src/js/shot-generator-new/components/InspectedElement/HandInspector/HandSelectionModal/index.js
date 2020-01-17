@@ -1,6 +1,6 @@
 import React, {useRef, useMemo, useState, useEffect} from 'react'
-import Modal from "../Modal"
-import Select from "../Select"
+import Modal from "../../../Modal"
+import Select from "../../../Select"
 
 const HandSelectionModal = React.memo(({
     visible,

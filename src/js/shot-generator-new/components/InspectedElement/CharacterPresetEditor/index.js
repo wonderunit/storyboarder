@@ -1,16 +1,17 @@
 import React, { useState, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import {
-    updateObject,
+  updateObject,
 
-    createCharacterPreset,
-    getSceneObjects,
+  createCharacterPreset,
+  getSceneObjects,
 
-    undoGroupStart,
-    undoGroupEnd,
-  } from '../../../shared/reducers/shot-generator'
-import presetsStorage from '../../../shared/store/presetsStorage'
-import Modal from '../Modal'
+  undoGroupStart,
+  undoGroupEnd, getSelections,
+} from '../../../../shared/reducers/shot-generator'
+import presetsStorage from '../../../../shared/store/presetsStorage'
+import Modal from '../../Modal'
+import deepEqualSelector from "../../../../utils/deepEqualSelector";
 
 const preventDefault = (fn, ...args) => e => {
     e.preventDefault()
@@ -19,10 +20,16 @@ const preventDefault = (fn, ...args) => e => {
 const saveCharacterPresets = state => presetsStorage.saveCharacterPresets({ characters: state.presets.characters })
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
+const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
+  return sceneObjects[selections[0]].characterPresetId
+})
+
 const CharacterPresetsEditor = connect(
   state => ({
     characterPresets: state.presets.characters,
-    models: state.models
+    models: state.models,
+    id: getSelections(state)[0],
+    characterPresetId: getPresetId(state)
   }),
   {
     updateObject,

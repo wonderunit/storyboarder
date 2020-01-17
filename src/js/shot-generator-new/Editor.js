@@ -17,13 +17,13 @@ require('../vendor/OutlineEffect')
 
 const GuidesInspector = require('./components/GuidesInspector').default
 const BoardInspector = require('./components/BoardInspector').default
+const KeyHandler = require("./components/KeyHandler").default
+const CameraPanelInspector = require('./components/CameraPanelInspector').default
+const CamerasInspector = require('./components/CamerasInspector').default
 const {
   SceneContext,
   ElementsPanel,
   CameraInspector,
-  CameraPanelInspector,
-  CamerasInspector,
-  KeyHandler,
   MenuManager,
   PhoneCursor,
 
@@ -772,7 +772,7 @@ const Editor = connect(
                 ['div.inspectors', [
                   // [CameraInspector, { camera }],
                   // [BoardInspector],
-                  [CameraPanelInspector, {camera}],
+                  [CameraPanelInspector],
                   [BoardInspector],
                   ['div', [
                     [CamerasInspector],
@@ -814,7 +814,7 @@ const Editor = connect(
             }
           ],
 
-          !machineState.matches('typing') && [KeyHandler],
+          [KeyHandler, { machineState }],
 
           [MenuManager],
 
