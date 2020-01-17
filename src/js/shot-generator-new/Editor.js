@@ -14,15 +14,15 @@ const log = require('electron-log')
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
+const KeyHandler = require("./components/KeyHandler").default
 const CameraPanelInspector = require('./components/CameraPanelInspector').default
+const CamerasInspector = require('./components/CamerasInspector').default
 const {
   SceneContext,
   ElementsPanel,
   CameraInspector,
   BoardInspector,
   GuidesInspector,
-  CamerasInspector,
-  KeyHandler,
   MenuManager,
   PhoneCursor,
 
@@ -813,7 +813,7 @@ const Editor = connect(
             }
           ],
 
-          !machineState.matches('typing') && [KeyHandler],
+          [KeyHandler, { machineState }],
 
           [MenuManager],
 

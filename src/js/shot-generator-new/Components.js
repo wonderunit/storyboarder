@@ -22,7 +22,6 @@ const useComponentSize = require('../hooks/use-component-size')
 
 
 
-
 //const robot = require("robotjs")
 
 const {
@@ -146,38 +145,7 @@ const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
   fn(e, ...args)
 }
-
-/**
- * Return the first index containing an *item* which is greater than *item*.
- * @arguments _(item)_
- * @example
- *  indexOfGreaterThan([10, 5, 77, 55, 12, 123], 70) // => 2
- * via mohayonao/subcollider
- */
-const indexOfGreaterThan = (array, item) => {
-  for (var i = 0, imax = array.length; i < imax; ++i) {
-    if (array[i] > item) { return i }
-  }
-  return -1
-}
-/**
- * Returns the closest index of the value in the array (collection must be sorted).
- * @arguments _(item)_
- * @example
- *  indexIn([2, 3, 5, 6], 5.2) // => 2
- * via mohayonao/subcollider
- */
- const indexIn = (array, item) => {
-  var i, j = indexOfGreaterThan(array, item)
-  if (j === -1) { return array.length - 1 }
-  if (j ===  0) { return j }
-  i = j - 1
-  return ((item - array[i]) < (array[j] - item)) ? i : j
-}
-
 const SceneContext = React.createContext()
-
-
 
 require('../vendor/three/examples/js/loaders/GLTFLoader')
 require('../vendor/three/examples/js/loaders/OBJLoader2')
@@ -1007,79 +975,9 @@ const GuidesInspector = connect(
       ]]
 )))
 
-const CamerasInspector = connect(
-  state => ({
-    activeCamera: getActiveCamera(state),
-    _cameras: getCameraSceneObjects(state)
-  }),
-  {
-    setActiveCamera,
-    selectObject
-  }
-)(
-({
-  // props
-  activeCamera,
-
-  // via selectors
-  _cameras,
-
-  // action creators
-  setActiveCamera,
-  selectObject
-}) => {
-
-  const onClick = (camera, event) => {
-    event.preventDefault()
-
-    undoGroupStart()
-    selectObject(camera.id)
-    setActiveCamera(camera.id)
-    undoGroupEnd()
-  }
-
-  return h(['div.cameras-inspector', [
-    'div.row',
-      ['div.cameras-inspector__label', 'Camera'],
-      ['div.round-buttons-panel',
-        _cameras.map(
-          (camera, n) =>
-            [
-              'a[href=#]',
-              {
-                className: classNames({ active: activeCamera === camera.id }),
-                onClick: onClick.bind(this, camera)
-              },
-              n + 1
-            ]
-        )
-      ]
-  ]])
-})
 
 // TODO move selector logic into reducers/shot-generator?
 // memoized selectors
-const getCameraSceneObjects = createSelector(
-  [getSceneObjects],
-  (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
-)
-const getSelectedSceneObject = createSelector(
-  [getSceneObjects, getSelections],
-  (sceneObjects, selections) => Object.values(sceneObjects).find(o => o.id === selections[0])
-)
-const canDelete = (sceneObject, activeCamera) =>
-  // allow objects
-  sceneObject.type === 'object' ||
-  // allow characters
-  sceneObject.type === 'character' ||
-  // allow volumes
-  sceneObject.type === 'volume' ||
-  // allow lights
-  sceneObject.type === 'light' ||
-  // allow images
-  sceneObject.type === 'image' ||
-  // allow cameras which are not the active camera
-  (sceneObject.type === 'camera' && sceneObject.id !== activeCamera)
 
 const menu = require('../menu')
 const onMenuFocus = () => {
@@ -1097,208 +995,6 @@ const MenuManager = ({ }) => {
   }, [])
   return null
 }
-
-const { dropObject, dropCharacter } = require("../utils/dropToObjects")
-const getGroupAction = require("../utils/getGroupAction")
-
-const KeyHandler = connect(
-  state => ({
-    mainViewCamera: state.mainViewCamera,
-    activeCamera: getActiveCamera(state),
-    selections: getSelections(state),
-    sceneObjects: getSceneObjects(state),
-
-    _selectedSceneObject: getSelectedSceneObject(state),
-
-    _cameras: getCameraSceneObjects(state)
-  }),
-  {
-    setMainViewCamera,
-    selectObject,
-    setActiveCamera,
-    duplicateObjects,
-    deleteObjects,
-    groupObjects,
-    ungroupObjects,
-    mergeGroups,
-    updateObject,
-    undoGroupStart,
-    undoGroupEnd,
-    updateObjects
-  }
-)(
-  ({
-    mainViewCamera,
-    activeCamera,
-    selections,
-    sceneObjects,
-    _selectedSceneObject,
-    _cameras,
-    setMainViewCamera,
-    selectObject,
-    setActiveCamera,
-    duplicateObjects,
-    deleteObjects,
-    groupObjects,
-    ungroupObjects,
-    mergeGroups,
-    updateObject,
-    undoGroupStart,
-    undoGroupEnd,
-    updateObjects
-  }) => {
-    const { scene } = useContext(SceneContext)
-    let sceneChildren = scene ? scene.children.length : 0
-    const dropingPlaces = useMemo(() => {
-      if(!scene) return
-      return scene.children.filter(o =>
-        o.userData.type === 'object' ||
-        o.userData.type === 'character' ||
-        o.userData.type === 'ground')
-    }, [sceneChildren])
-    const onCommandDuplicate = () => {
-      if (selections) {
-        let selected = (_selectedSceneObject.type === 'group') ? [_selectedSceneObject.id] : selections
-        // NOTE: this will also select the new duplicates, replacing selection
-        duplicateObjects(
-          // ids to duplicate
-            selected,
-          // new ids
-            selected.map(THREE.Math.generateUUID)
-        )
-      }
-    }
-    
-    const onCommandGroup = () => {
-      if (selections) {
-        const groupAction = getGroupAction(sceneObjects, selections)
-        if (groupAction.shouldGroup) {
-          groupObjects(groupAction.objectsIds)
-        } else if (groupAction.shouldUngroup) {
-          ungroupObjects(groupAction.groupsIds[0], groupAction.objectsIds)
-        } else {
-          mergeGroups(groupAction.groupsIds, groupAction.objectsIds)
-        }
-      }
-    }
-
-    const onCommandDrop = () => {
-      let changes = {}
-      for( let i = 0; i < selections.length; i++ ) {
-        let selection = scene.children.find( child => child.userData.id === selections[i] )
-        if( selection.userData.type === "object" ) {
-          dropObject( selection, dropingPlaces )
-          let pos = selection.position
-          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
-        } else if ( selection.userData.type === "character" ) {
-          dropCharacter( selection, dropingPlaces )
-          let pos = selection.position
-          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
-        }
-      }
-      updateObjects(changes)
-    }
-
-    useEffect(() => {
-      const onCameraSelectByIndex = index => {
-        if (_cameras[index]) {
-          let id = _cameras[index].id
-          undoGroupStart()
-          selectObject(id)
-          setActiveCamera(id)
-          undoGroupEnd()
-        }
-      }
-
-      const onKeyDown = event => {
-        if (event.key === 'Backspace' || event.key === 'Delete') {
-          if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
-            let choice = dialog.showMessageBox(null, {
-              type: 'question',
-              buttons: ['Yes', 'No'],
-              message: `Deleting ${selections.length} item${selections.length > 1 ? 's' : ''}. Are you sure?`
-            })
-            if (choice === 0) {
-              deleteObjects(selections)
-            }
-          }
-        }
-        if (event.key === 't') {
-          setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
-        }
-        if (event.key === 'Escape') {
-          selectObject(activeCamera)
-        }
-        if (
-          event.key === '1' ||
-          event.key === '2' ||
-          event.key === '3' ||
-          event.key === '4' ||
-          event.key === '5' ||
-          event.key === '6' ||
-          event.key === '7' ||
-          event.key === '8' ||
-          event.key === '9'
-          ) {
-            onCameraSelectByIndex(parseInt(event.key, 10) - 1)
-          }
-
-        if (
-          (event.key === 'z' || event.key === 'x') &&
-          !event.shiftKey &&
-          !event.metaKey &&
-          !event.ctrlKey &&
-          !event.altKey
-        ) {
-          let cameraState = _cameras.find(camera => camera.id === activeCamera)
-          let roll = {
-            'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
-            'x': Math.min(cameraState.roll + THREE.Math.DEG2RAD, 45 * THREE.Math.DEG2RAD)
-          }[event.key]
-
-          updateObject(activeCamera, { roll })
-        }
-
-        if (event.key === '[' || event.key === ']') {
-          let cameraState = _cameras.find(camera => camera.id === activeCamera)
-
-          let mms = [12, 16, 18, 22, 24, 35, 50, 85, 100, 120, 200, 300, 500]
-
-          let camera = scene.children.find(child => child.userData.id === activeCamera)
-          let fakeCamera = camera.clone() // TODO reuse a single object
-          let fovs = mms.map(mm => {
-            fakeCamera.setFocalLength(mm)
-            return fakeCamera.fov
-          }).sort((a, b) => a - b)
-          fakeCamera = null
-
-          let index = indexIn(fovs, cameraState.fov)
-
-          let fov = {
-            '[': fovs[Math.min(index + 1, fovs.length)],
-            ']': fovs[Math.max(index - 1, 0)]
-          }[event.key]
-
-          updateObject(activeCamera, { fov })
-        }
-      }
-
-      window.addEventListener('keydown', onKeyDown)
-      ipcRenderer.on('shot-generator:object:duplicate', onCommandDuplicate)
-      ipcRenderer.on('shot-generator:object:group', onCommandGroup)
-      ipcRenderer.on('shot-generator:object:drop', onCommandDrop)
-      
-      return function cleanup () {
-        window.removeEventListener('keydown', onKeyDown)
-        ipcRenderer.off('shot-generator:object:drop', onCommandDrop)
-        ipcRenderer.off('shot-generator:object:duplicate', onCommandDuplicate)
-        ipcRenderer.off('shot-generator:object:group', onCommandGroup)
-      }
-    }, [mainViewCamera, _cameras, selections, _selectedSceneObject, activeCamera])
-
-    return null
-  }
-)
 
 // TODO move to selectors file
 const getLoadableSceneObjects = createSelector(
@@ -1545,8 +1241,6 @@ module.exports = {
   CameraInspector,
   BoardInspector,
   GuidesInspector,
-  CamerasInspector,
-  KeyHandler,
   MenuManager,
   PhoneCursor,
 

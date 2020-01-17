@@ -1,10 +1,11 @@
-import React, { useEffect, useState} from 'react'
+import React, { useEffect, useState } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 import {
     updateObject,
     setCameraShot,
-
+    selectObject,
+    setMainViewCamera,
     getSceneObjects,
     getActiveCamera,
 } from '../../../shared/reducers/shot-generator'
@@ -17,17 +18,30 @@ import CameraControls from '../../CameraControls'
 import { ShotSizes, ShotAngles } from '../../cameraUtils'
 import { useDrag } from 'react-use-gesture'
 
+import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
+
 const CameraPanelInspector = connect(
     state => ({
       activeCamera: getSceneObjects(state)[getActiveCamera(state)],
-      cameraShots: state.cameraShots
+      cameraShots: state.cameraShots,
+      mainViewCamera: state.mainViewCamera,
     }),
     {
       updateObject,
-      setCameraShot
+      setCameraShot,
+      selectObject,
+      setMainViewCamera
     }
 )(
-  React.memo(({ activeCamera, cameraShots, updateObject, setCameraShot }) => {
+  React.memo(({ 
+      activeCamera, 
+      cameraShots, 
+      updateObject,
+      setCameraShot, 
+      setMainViewCamera,
+      selectObject,
+      mainViewCamera,
+    }) => {
     if (!activeCamera) return <div className="camera-inspector"/>
     
     const shotInfo = cameraShots[activeCamera.id] || {}
@@ -41,6 +55,20 @@ const CameraPanelInspector = connect(
     useEffect(() => {
       setCurrentShotAngle(shotInfo.angle)
     }, [shotInfo.angle, activeCamera])
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "t", value: () => setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho') })
+      return () => {
+        KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "t", value: () => setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho') })
+      }
+    }, [mainViewCamera])
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "Escape", value: () => selectObject(activeCamera) })
+      return () => { 
+        KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "Escape", value: () =>  selectObject(activeCamera) })
+      }
+    }, [activeCamera])
     
     let cameraState = { ...activeCamera }
     let cameraRoll = Math.round(THREE.Math.radToDeg(activeCamera.roll))
