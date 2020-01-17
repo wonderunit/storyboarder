@@ -4,30 +4,31 @@ import { connect } from 'react-redux'
 import * as THREE from 'three'
 window.THREE = THREE
 import { machineIdSync } from 'node-machine-id'
-import pkg from '../../../../../package.json'
+import pkg from '../../../../../../../package.json'
 import request from 'request'
-
-import { FixedSizeGrid } from 'react-window'
 
 import {
   updateObject,
   createHandPosePreset,
 
-  getSceneObjects
-} from '../../../shared/reducers/shot-generator'
-import defaultPosePresets from '../../../shared/reducers/shot-generator-presets/hand-poses.json'
-import presetsStorage from '../../../shared/store/presetsStorage'
-import ListItem from './ListItem'
-import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL, innerElementType } from '../../utils/InspectorElementsSettings'
-import { comparePresetNames, comparePresetPriority } from '../../utils/searchPresetsForTerms'
-import { filepathFor } from '../../utils/filepathFor'
+  getSceneObjects, getSelections
+} from '../../../../../shared/reducers/shot-generator'
+import defaultPosePresets from '../../../../../shared/reducers/shot-generator-presets/hand-poses.json'
+import presetsStorage from '../../../../../shared/store/presetsStorage'
 
-import '../../../vendor/three/examples/js/utils/SkeletonUtils'
+import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL, innerElementType } from '../../../../utils/InspectorElementsSettings'
+import { comparePresetNames, comparePresetPriority } from '../../../../utils/searchPresetsForTerms'
+import { filepathFor } from '../../../../utils/filepathFor'
 
-import deepEqualSelector from './../../../utils/deepEqualSelector'
-import SearchList from '../SearchList'
-import Modal from '../Modal'
-import Select from '../Select'
+import '../../../../../vendor/three/examples/js/utils/SkeletonUtils'
+
+import deepEqualSelector from './../../../../../utils/deepEqualSelector'
+import SearchList from '../../../SearchList'
+import Modal from '../../../Modal'
+import Select from '../../../Select'
+import Scrollable from '../../../Scrollable'
+import Grid from '../../../Grid'
+import HandPresetsEditorItem from './HandPresetsEditorItem'
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
@@ -35,12 +36,28 @@ const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attach
     let filepath = filepathFor(CHARACTER_MODEL)
     return !attachments[filepath] ? undefined : attachments[filepath].status
 })
-const savePresetHand = [{value:"LeftHand", label:"LeftHand"},
-                        {value:"RightHand", label:"RightHand"}]
+
+const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
+  return sceneObjects[selections[0]].handPosePresetId
+})
+
+const savePresetHand = [
+  {value:"LeftHand", label:"LeftHand"},
+  {value:"RightHand", label:"RightHand"}
+]
+
+const selectedHandOptions = [
+  {value:"LeftHand", label:"Left Hand"},
+  {value:"RightHand", label:"Right Hand"},
+  {value:"BothHands", label:"Both Hands"}
+]
+
 const HandPresetsEditor = connect(
   state => ({
     attachmentStatus: getAttachmentM(state),
     handPosePresets: state.presets.handPoses,
+    id: getSelections(state)[0],
+    handPosePresetId: getPresetId(state)
   }),
   {
     updateObject,
@@ -105,7 +122,7 @@ React.memo(({
     }, [attachmentStatus])
 
   const onChangeHand = event => {
-    setSelectedHand(event.target.value)
+    setSelectedHand(event.value)
   }
 
   const saveFilteredPresets = useCallback(filteredPreset => {
@@ -188,39 +205,40 @@ React.memo(({
     }
   }
 
-  return attachment && <div>
-    <Modal visible={ isModalShown } onClose={() => showModal(false)}>
-      <div style={{ margin:"5px 5px 5px 5px" }}>
-        Select a Preset Name:
-      </div>
-      <div className="column" style={{ flex: 1 }}> 
-        <input 
-          className="modalInput"
-          type="text" 
-          placeholder={ newGeneratedId.current }
-          onChange={ (value) => newPresetName.current = value.currentTarget.value }/>
-      </div>
-      <div style={{ margin:"5px 5px 5px 5px" }}>
-        Select a Hand to save:
-      </div>
-      <div className="select">
-                  <Select 
-                    label="Hand"
-                    value={ selectedModalHand }
-                    options={ savePresetHand }
-                    onSetValue={ (item) => setSelectedModalHand(item) }/>
-                </div>
-      <div className="skeleton-selector__div">
-        <button
-          className="skeleton-selector__button"
-          onClick={() => {
-            showModal(false)
-            addNewPosePreset(newPresetName.current, selectedModalHand.value)
-          }}>
-            Proceed
-        </button>
+  return (
+    <React.Fragment>
+      <Modal visible={ isModalShown } onClose={() => showModal(false)}>
+        <div style={{ margin:"5px 5px 5px 5px" }}>
+          Select a Preset Name:
         </div>
-   </Modal>
+        <div className="column" style={{ flex: 1 }}> 
+          <input 
+            className="modalInput"
+            type="text" 
+            placeholder={ newGeneratedId.current }
+            onChange={ (value) => newPresetName.current = value.currentTarget.value }/>
+        </div>
+        <div style={{ margin:"5px 5px 5px 5px" }}>
+          Select a Hand to save:
+        </div>
+        <div className="select">
+          <Select 
+            label="Hand"
+            value={ selectedModalHand }
+            options={ savePresetHand }
+            onSetValue={ (item) => setSelectedModalHand(item) }/>
+        </div>
+        <div className="skeleton-selector__div">
+          <button
+            className="skeleton-selector__button"
+            onClick={() => {
+              showModal(false)
+              addNewPosePreset(newPresetName.current, selectedModalHand.value)
+            }}>
+              Proceed
+          </button>
+        </div>
+     </Modal>
     <div className="thumbnail-search column">
         <div className="row" style={{ padding: "6px 0" }}> 
           <SearchList label="Search for a hand pose …" list={ sortedPresets.current } onSearch={ saveFilteredPresets }/>
@@ -232,29 +250,18 @@ React.memo(({
           </div>
         </div> 
         <div className="row" style= {{ padding: "6px 0" }} >
-          <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Select hand</div> 
-          <div className="column" style={{ flex: 1 }}>
-            <select onChange={ onChangeHand }
-              value={ selectedHand }>
-            <option value="LeftHand">Left Hand</option> 
-            <option value="RightHand">Right Hand</option> 
-            <option value="BothHands">Both Hands</option> 
-            </select>
-          </div>
+          <Select
+            label='Select hand'
+            value={selectedHandOptions.find(item => item.value === selectedHand)}
+            options={selectedHandOptions}
+            onSetValue={onChangeHand}
+          />
         </div>
-        <div className="thumbnail-search__list">
-         <FixedSizeGrid 
-            columnCount={ NUM_COLS }
-            columnWidth={ ITEM_WIDTH + GUTTER_SIZE }
-
-            rowCount={ Math.ceil(results.length / NUM_COLS) }
-            rowHeight={ ITEM_HEIGHT }
-            width={ 288 }
-            height={ 363 }
-            innerElementType={ innerElementType }
+     
+        <Scrollable>
+          <Grid
+            Component={HandPresetsEditorItem}
             itemData={{
-              presets:results,
-
               id: id,
               handPosePresetId,
 
@@ -264,11 +271,15 @@ React.memo(({
               thumbnailRenderer,
               withState,
               selectedHand
-          }}
-          children={ ListItem }/>
+            }}
+            elements={presets}
+            numCols={NUM_COLS}
+            itemHeight={ITEM_HEIGHT}
+          />
+        </Scrollable>
       </div>
-    </div> 
-  </div>
+    </React.Fragment>
+  )
 }))
 
 export default HandPresetsEditor

@@ -1,25 +1,21 @@
 import React, { createContext, useState, useContext, useMemo, useCallback} from 'react'
 import useConstant from 'use-constant'
 
-import Scrollable from '../Scrollable'
-
 const TabsState = createContext()
 const Elements = createContext()
 
 const Tabs = ({
-  state: outerState,
-  children
+  children,
 }) => {
   const innerState = useState({current: 0, prev: 0})
   const elements = useConstant(() => ({
     tabs: 0,
     panels: 0
   }))
-  const state = outerState || innerState
   
   return (
     <Elements.Provider value={elements}>
-      <TabsState.Provider value={state}>
+      <TabsState.Provider value={innerState}>
         <div className='tabs'>
           {children}
         </div>
@@ -87,11 +83,9 @@ const Panel = ({children}) => {
   }
 
   return (
-    <Scrollable>
       <div className='tabs-body__content'>
         {children}
       </div>
-    </Scrollable>
   )
 }
 

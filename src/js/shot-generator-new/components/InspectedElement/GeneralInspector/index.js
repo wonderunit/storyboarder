@@ -6,16 +6,17 @@ import {
     getSceneObjects,
 
     updateObject
-} from './../../../shared/reducers/shot-generator'
+} from './../../../../shared/reducers/shot-generator'
 
-import deepEqualSelector from './../../../utils/deepEqualSelector'
+import deepEqualSelector from './../../../../utils/deepEqualSelector'
 
-import ObjectInspector from './Objects/Object'
-import CameraInspector from './Objects/Camera'
-import ImageInspector from './Objects/Image'
-import LightInspector from './Objects/Light'
-import CharacterInspector from './Objects/Character'
-import VolumeInspector from './Objects/Volume'
+import ObjectInspector from './Object'
+import CameraInspector from './Camera'
+import ImageInspector from './Image'
+import LightInspector from './Light'
+import CharacterInspector from './Character'
+import VolumeInspector from './Volume'
+import Scrollable from "../../Scrollable"
 
 const InspectorComponents = {
   object: ObjectInspector,
@@ -34,13 +35,13 @@ const GeneralInspector = React.memo(({updateObject, sceneObject, storyboarderFil
   }
     
   return (
-    <div>
+    <Scrollable>
       <Component
         updateObject={updateObject}
         sceneObject={sceneObject}
         storyboarderFilePath={storyboarderFilePath}
       />
-    </div>
+    </Scrollable>
   )
 })
 

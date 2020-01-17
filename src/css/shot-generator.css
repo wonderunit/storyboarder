@@ -847,7 +847,7 @@ input[type="color"]::-webkit-color-swatch {
 
 .thumbnail-search {
   width: 288px;
-  position: relative;
+  height: 100%;
   margin-bottom: 10px;
   text-transform: none;
 }
@@ -871,6 +871,7 @@ input[type="color"]::-webkit-color-swatch {
   outline: none;
 }
 .thumbnail-search__list {
+  height: 100%;
 }
 .thumbnail-search__item {
   cursor: default;
@@ -919,7 +920,6 @@ input[type="color"]::-webkit-color-swatch {
 }
 .thumbnail-search .button__file {
   display: flex;
-  width: 30px;
   color: rgb(152, 152, 152);
   background-color: rgba(255,255,255,0.05);
   padding: 6px 0 4px 0;
@@ -930,7 +930,7 @@ input[type="color"]::-webkit-color-swatch {
   align-items: center;
   line-height: 1;
   flex: 1;
-  width: '100%';
+  width: 100%;
   height: 34px;
   overflow: 'hidden';
 }

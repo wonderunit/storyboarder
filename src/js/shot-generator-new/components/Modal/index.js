@@ -1,4 +1,4 @@
-import React, {useRef} from 'react'
+import React, {useRef, useEffect} from 'react'
 import posed, {PoseGroup} from "react-pose";
 
 import useOnClickOutside from './../../../hooks/use-on-click-outside'
@@ -71,6 +71,12 @@ const Modal = React.memo(({
     justifyContent: hAlignTable[hAlign],
     alignItems: vAlignTable[vAlign],
   }
+  
+  useEffect(() => {
+    if (visible) {
+      document.activeElement.blur()
+    }
+  }, [visible])
   
   return (
     <PoseGroup>

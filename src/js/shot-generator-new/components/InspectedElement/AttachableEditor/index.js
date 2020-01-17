@@ -4,15 +4,17 @@ import React, { useMemo, useState, useEffect, useContext, useRef } from 'react'
 import { connect } from 'react-redux'
 import {
   deleteObjects,
-  getSceneObjects,
+  getSceneObjects, getSelections,
   updateObject
-} from '../../../shared/reducers/shot-generator'
+} from '../../../../shared/reducers/shot-generator'
 import ListItem from "./ListItem"
-import deepEqualSelector from './../../../utils/deepEqualSelector'
-import HandSelectionModal from '../HandSelectionModal'
+import {NumberSlider} from "./../../NumberSlider"
+import deepEqualSelector from './../../../../utils/deepEqualSelector'
+import HandSelectionModal from '../HandInspector/HandSelectionModal'
+
 const sceneObjectSelector = (state) => {
     let sceneObjects = getSceneObjects(state)
-    let values = Object.values(sceneObjects).filter(object => object.type === "attachable").map((object) => {
+    return Object.values(sceneObjects).filter(object => object.type === "attachable").map((object) => {
         return  {
             id:           object.id,
             bindBone:     object.bindBone,
@@ -20,13 +22,13 @@ const sceneObjectSelector = (state) => {
             size:         object.size,
           }
     })
-    return values
 }
 const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], sceneObjects => sceneObjects)
 
-const AttachableInfo = connect(
+const AttachableEditor = connect(
   state => ({
     sceneObjects: getSceneObjectsM(state),
+    id: getSelections(state)[0],
   }),
   {
     updateObject,
@@ -42,13 +44,11 @@ const AttachableInfo = connect(
     withState,
 
     id,
-    NumberSlider,
-    SceneContext
+    scene
   }) => {
     const [isModalVisible, showModal] = useState(false)
     const selectedId = useRef(null)
     const model = useRef(null)
-    const { scene } = useContext(SceneContext)
     const [sceneObject, setSceneObject] = useState({})
     const [selectedBindBone, setSelectedBindBone] = useState(null)
 
@@ -119,7 +119,9 @@ const AttachableInfo = connect(
             { size: value }
           )}}/>
     }
-    return attachables && <div>
+    
+    return (
+      <div>
         <HandSelectionModal
           visible={ isModalVisible }
           model={ model.current }
@@ -131,18 +133,22 @@ const AttachableInfo = connect(
         <div className="thumbnail-search.column">
             <div className="thumbnail-search__list"> 
                 <div> 
-                   { attachables.map((item, index) => <ListItem
+                   { attachables.map((item, index) => 
+                     <ListItem
                       key={ index }
                       attachable={ item } 
                       props={{
                         onSelectItem,
                         onDelete,
-                        getNumberSlider}}/>
+                        getNumberSlider
+                      }}
+                     />
                    )}
                 </div>
             </div>
         </div>
     </div>
+    )
 }))
 
-export default AttachableInfo
+export default AttachableEditor
