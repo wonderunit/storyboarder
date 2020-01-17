@@ -346,7 +346,7 @@ const SceneContent = connect(
     const xrPosing = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.xrPosing)
-      audio.setVolume(1 * SOUND_FX_GAIN)
+      audio.setVolume(0.35 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -355,7 +355,7 @@ const SceneContent = connect(
     const xrEndPosing = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.xrEndPosing)
-      audio.setVolume(1 * SOUND_FX_GAIN)
+      audio.setVolume(0.35 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
