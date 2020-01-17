@@ -1,7 +1,7 @@
 import * as Tone from 'tone'
 
 const sequences = require('./sequences.json')
-const denylist = [91]
+const denylist = [0, 6, 7, 8, 11, 41, 42, 46, 51, 68, 72, 75, 91, 97, 101, 146, 154, 155, 156, 157, 158, 160, 161, 175, 178, 181, 182, 185, 187, 188, 189, 191, 193, 199, 202, 214, 215, 222, 228, 229, 232]
 
 let sampler
 let isPlaying = false
