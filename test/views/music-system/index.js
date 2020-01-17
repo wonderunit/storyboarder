@@ -5,7 +5,16 @@ import * as Tone from 'tone'
 import * as THREE from 'three'
 import * as musicSystem from '../../../src/js/xr/src/music-system'
 
+import React, { setState } from 'react'
+import ReactDOM from 'react-dom'
+
+console.log = function (...rest) {
+  document.getElementById('output').innerHTML += `${rest.join(',')}<br/>`
+}
+
 window.onclick = function () {
+  window.onclick = undefined
+
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000)
   scene.add(camera)
@@ -29,14 +38,52 @@ window.onclick = function () {
       },
       audioContext: audio.context,
       audioNode: audio,
-      onComplete: () => {
-        // musicSystem.start()
+      onComplete: function () {
+        musicSystem.setIsPlaying(true)
 
-        console.log('<br/>click again to play a sequence')
-        window.onclick = function () {
-          musicSystem.setIsPlaying(true)
-          musicSystem.playSequence()
+        let range = []
+        for (let i = 0; i < musicSystem.getSequencesCount(); i++) {
+          range.push(i)
         }
+
+        function Output() {
+          function onStartMusicSystemClick (event) {
+            event.preventDefault()
+            musicSystem.start()
+          }
+          function onPlayClick (n) {
+            console.log('===')
+            event.preventDefault()
+            musicSystem.playSequence(n)
+          }
+          function onPlayRandomClick (event) {
+            event.preventDefault()
+            musicSystem.playSequence()
+          }
+          return <>
+            <div>
+              <a href="#" onClick={onStartMusicSystemClick}>Start Music System</a>
+              <br />
+            </div>
+            <br />
+            <div>
+              <a href="#" onClick={onPlayRandomClick}>Play Random</a>
+              <br />
+            </div>
+            <br/>
+            {range.map(function (n) {
+              return <div key={n}>
+                <a href="#" onClick={() => onPlayClick(n)}>Play index:{n}</a>
+                <br />
+              </div>
+            })}
+          </>
+        }
+
+        ReactDOM.render(
+          <Output />,
+          document.getElementById('app')
+        )
       }
     })
 

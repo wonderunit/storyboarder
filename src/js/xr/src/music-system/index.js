@@ -100,9 +100,14 @@ function setIsPlaying (value) {
   isPlaying = value
 }
 
+function getSequencesCount () {
+  return sequences.length
+}
+
 export {
   init,
   start,
   playSequence,
-  setIsPlaying
+  setIsPlaying,
+  getSequencesCount
 }
