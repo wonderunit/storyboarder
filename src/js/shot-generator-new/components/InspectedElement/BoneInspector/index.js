@@ -3,7 +3,6 @@ import { formatters, NumberSlider, transforms } from '../../NumberSlider'
 
 const BoneInspector = ({ sceneObject, selectedBone, updateCharacterSkeleton }) => {
   const [render, setRender] = useState(false)
-
   let bone = Object.values(sceneObject.skeleton).find(object => object.id === selectedBone)
   let rotation = bone.rotation
   const createOnSetValue = useCallback((key, transform) => value => {
