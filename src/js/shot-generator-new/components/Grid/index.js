@@ -47,6 +47,6 @@ const Grid = React.memo(({
     }
 
     return result
-  }, [elements.length])
+  }, [elements.length, itemData])
 })
 export default Grid
