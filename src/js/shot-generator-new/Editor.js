@@ -20,9 +20,9 @@ const BoardInspector = require('./components/BoardInspector').default
 const KeyHandler = require("./components/KeyHandler").default
 const CameraPanelInspector = require('./components/CameraPanelInspector').default
 const CamerasInspector = require('./components/CamerasInspector').default
+const ElementsPanel = require('./components/ElementsPanel').default
 const {
   SceneContext,
-  ElementsPanel,
   CameraInspector,
   MenuManager,
   PhoneCursor,

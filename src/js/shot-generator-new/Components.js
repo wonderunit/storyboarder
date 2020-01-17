@@ -9,7 +9,7 @@ const React = require('react')
 
 const { useState, useEffect, useRef, useContext, useMemo, useCallback } = React
 
-const { connect } = require('react-redux')
+
 const Stats = require('stats.js')
 const { VariableSizeList } = require('react-window')
 const classNames = require('classnames')
@@ -20,7 +20,7 @@ const { createSelector } = require('reselect')
 const h = require('../utils/h')
 const useComponentSize = require('../hooks/use-component-size')
 
-
+const  { connect } = require('react-redux')
 
 //const robot = require("robotjs")
 
@@ -141,95 +141,8 @@ const gltfLoader = new THREE.GLTFLoader(loadingManager)
 objLoader.setLogging(false, false)
 THREE.Cache.enabled = true
 
-const Inspector = ({
-  kind, data,
-  selections
-}) => {
-  const { scene } = useContext(SceneContext)
 
-  let sceneObject = data
-  let isGroup = sceneObject && sceneObject.type === 'group'
-  let selectedCount = isGroup ? sceneObject.children.length + 1 : selections.length
 
-  return h([
-    'div#inspector',
-    (selectedCount > 1)
-      ? [
-          MultiSelectionInspector
-        ]
-      : (kind && data)
-        ? [InspectedElement, {scene}]
-        : [InspectedWorld]
-  ])
-}
-
-const ElementsPanel = connect(
-  // what changes should we watch for to re-render?
-  state => ({
-    world: getWorld(state),
-    sceneObjects: getSceneObjects(state),
-    selections: getSelections(state),
-    selectedBone: getSelectedBone(state),
-    models: state.models,
-    activeCamera: getActiveCamera(state),
-
-    storyboarderFilePath: state.meta.storyboarderFilePath
-  }),
-  // what actions can we dispatch?
-  {
-    selectObject,
-    selectObjectToggle,
-    updateObject,
-    deleteObjects,
-    setActiveCamera,
-    selectBone,
-    updateCharacterSkeleton,
-    updateWorld,
-    updateWorldRoom,
-    updateWorldEnvironment,
-    updateWorldFog,
-    undoGroupStart,
-    undoGroupEnd
-  }
-)(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, machineState, transition, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath }) => {
-    let kind = sceneObjects[selections[0]] && sceneObjects[selections[0]].type
-    let data = sceneObjects[selections[0]]
-    
-    return (
-        <div style = {{flex: 1, display: 'flex', flexDirection: 'column'}} >
-          <div id='listing'>
-            <ItemList/>
-          </div>
-          <Inspector
-              {...{
-                world,
-
-                kind,
-                data,
-
-                models, updateObject,
-
-                machineState, transition,
-
-                selectedBone, selectBone,
-
-                updateCharacterSkeleton,
-
-                updateWorld,
-                updateWorldRoom,
-                updateWorldEnvironment,
-                updateWorldFog,
-
-                storyboarderFilePath,
-
-                selections
-              }}
-          />
-        </div>
-    )
-  }
-))
 
 const LabelInput = ({ label, setLabel, onFocus, onBlur }) => {
   const [editing, setEditing] = useState(false)
@@ -1152,7 +1065,6 @@ ipcRenderer.on('shot-generator:menu:view:fps-meter', (event, value) => {
 
 module.exports = {
   SceneContext,
-  ElementsPanel,
   CameraInspector,
   MenuManager,
   PhoneCursor,
