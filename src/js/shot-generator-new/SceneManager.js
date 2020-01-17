@@ -5,7 +5,7 @@ const { useState, useEffect, useRef, useContext, useMemo, useLayoutEffect, useCa
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
-
+const { setShot } = require('./cameraUtils')
 const h = require('../utils/h')
 const SGIkHelper = require('../shared/IK/SGIkHelper')
 const {
@@ -67,6 +67,7 @@ const SceneManager = connect(
     aspectRatio: state.aspectRatio,
     devices: state.devices,
     meta: state.meta,
+    cameraShots: state.cameraShots,
     // HACK force reset skeleton pose on Board UUID change
     _boardUid: state.board.uid
   }),
@@ -86,7 +87,7 @@ const SceneManager = connect(
     undoGroupEnd
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -122,6 +123,39 @@ const SceneManager = connect(
       orthoCamera.current.rotation.x = -Math.PI / 2
       orthoCamera.current.layers.enable(2)
     }, [])
+
+  
+    const selectionsRef = useRef(selections)
+    const selectedCharacters = useRef([])
+    
+    useEffect(() => {
+      selectionsRef.current = selections;
+  
+      selectedCharacters.current = selections.filter((id) => {
+        return (sceneObjects[id] && sceneObjects[id].type === "character")
+      })
+    }, [selections])
+
+    useEffect(() => {
+      let selected = scene.children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
+      let characters = scene.children.filter((obj) => obj.userData.type === "character")
+      
+      if (characters.length) {
+        let keys = Object.keys(cameraShots)
+        for(let i = 0; i < keys.length; i++ ) {
+          let key = keys[i]
+          let camera = scene.children.find((object) => object.userData.id === key)
+          setShot({
+            camera,
+            characters,
+            selected,
+            updateObject,
+            shotSize: cameraShots[key].size,
+            shotAngle: cameraShots[key].angle
+          })
+        }
+      }
+    }, [cameraShots])
 
     useEffect(() => {
       const onVisibilityChange = event => {
