@@ -20,15 +20,24 @@ function shuffle (arr) {
   return a
 }
 
+function range (start, end) {
+  let a = []
+  for (let i = start; i <= end; i++) {
+    a.push(i)
+  }
+  return a
+}
+
 let bag = []
-function getSequence () {
-  if (bag.length === 0) bag = shuffle([...sequences])
+function nextIndex () {
+  if (bag.length === 0) bag = shuffle(range(0, sequences.length - 1))
   return bag.shift()
 }
 
-function playSequence () {
-  console.log('---')
-  let sequence = getSequence()
+function playSequence (index) {
+  index = index == null ? nextIndex() : index
+  console.log(`--- sequence index:${index}`)
+  let sequence = sequences[index]
   let events = sequence.notes
 
   events.forEach(event => {
