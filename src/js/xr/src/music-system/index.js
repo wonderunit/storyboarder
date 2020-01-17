@@ -1,6 +1,7 @@
 import * as Tone from 'tone'
 
 const sequences = require('./sequences.json')
+const denylist = [91]
 
 let sampler
 let isPlaying = false
@@ -30,7 +31,7 @@ function range (start, end) {
 
 let bag = []
 function nextIndex () {
-  if (bag.length === 0) bag = shuffle(range(0, sequences.length - 1))
+  if (bag.length === 0) bag = shuffle(range(0, sequences.length - 1).filter(i => !denylist.includes(i)))
   return bag.shift()
 }
 
