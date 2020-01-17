@@ -12,6 +12,11 @@ console.log = function (...rest) {
   document.getElementById('output').innerHTML += `${rest.join(',')}<br/>`
 }
 
+const preventDefault = (fn, ...args) => e => {
+  e.preventDefault()
+  fn(e, ...args)
+}
+
 window.onclick = function () {
   window.onclick = undefined
 
@@ -61,6 +66,13 @@ window.onclick = function () {
             musicSystem.playSequence()
           }
           return <>
+            <div>
+              <a href="#" onClick={preventDefault(() => audio.stop())}>Stop Audio</a>
+              <br />
+              <a href="#" onClick={preventDefault(() => audio.play())}>Play Audio</a>
+              <br />
+            </div>
+            <br />
             <div>
               <a href="#" onClick={onStartMusicSystemClick}>Start Music System</a>
               <br />
