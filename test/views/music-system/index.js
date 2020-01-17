@@ -84,7 +84,7 @@ window.onclick = function () {
             </div>
             <br/>
             <b>Sequences by Index:</b>
-            <div class="sequences" style={{ display: 'flex', flexWrap: 'wrap' }}>
+            <div className="sequences" style={{ display: 'flex', flexWrap: 'wrap' }}>
               {range.map(function (n) {
                 return <div key={n}>
                   <a href="#" onClick={() => onPlayClick(n)}>{n}</a>
