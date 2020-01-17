@@ -345,6 +345,7 @@ const Character = React.memo(({
       bone.applyMatrix(inverseMatrixWorld)
       position.multiplyScalar( object.current.userData.boneLengthScale === 100 ? 100 : 1)
       changedSkeleton.push({ 
+        id: bone.uuid,
         name: bone.name,
         position: { 
           x: position.x, 

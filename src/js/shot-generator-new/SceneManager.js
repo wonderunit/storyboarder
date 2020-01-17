@@ -152,18 +152,15 @@ const SceneManager = connect(
     }, [sceneChildren])
 
     useEffect(() => {
-      console.log("Event added")
       KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:
       onCommandDrop})
       return () => {
-        console.log("Event removed")
         KeyCommandsSingleton.getInstance().removeIPCKeyCommand({key: "shot-generator:object:drop"})
       } 
     }, [sceneObjects, selections, scene])
 
     const onCommandDrop = useCallback(() => {
       let changes = {}
-      console.log(selections)
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children.find( child => child.userData.id === selections[i] )
         if( selection.userData.type === "object" ) {
@@ -193,7 +190,6 @@ const SceneManager = connect(
       fakeCamera = null
 
       let index = indexIn(fovs, cameraState.fov)
-      console.log(fovs)
       let fov = {
         "[": fovs[Math.min(index + 1, fovs.length)],
         "]": fovs[Math.max(index - 1, 0)]
