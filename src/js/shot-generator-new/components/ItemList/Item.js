@@ -3,6 +3,10 @@ import classNames from "classnames";
 import {connect} from "react-redux";
 import Icon from "../Icon";
 
+const stopPropagation = (fn, ...args) => e => {
+  e.stopPropagation()
+  fn(e, ...args)
+}
 
 const ELEMENT_HEIGHT = 40
 const GROUP_PADDING = 12
@@ -29,7 +33,7 @@ const getLockIcon = (props) => {
             'lock': true,
             'hide-unless-hovered': !props.locked
           })}
-          onClick={(e) => props.onLockItem(e, props)}
+          onClick={ stopPropagation((e) => props.onLockItem(e, props)) }
       >
         <Icon src={props.locked ? 'icon-item-lock' : 'icon-item-unlock'}/>
       </a>
@@ -44,7 +48,7 @@ const getVisibilityIcon = (props) => {
             'visibility': true,
             'hide-unless-hovered': props.visible
           })}
-          onClick={(e) => props.onHideItem(e, props)}
+          onClick={ stopPropagation((e) =>props.onHideItem(e, props)) }
       >
         <Icon src={props.visible ? 'icon-item-visible' : 'icon-item-hidden'}/>
       </a>
@@ -59,7 +63,7 @@ const getDeleteIcon = (props) => {
           style={{
             opacity: !!props.allowDelete ? null : 0.1
           }}
-          onClick={(e) => props.allowDelete && props.onDeleteItem(e, props)}
+          onClick={ stopPropagation((e) => props.allowDelete && props.onDeleteItem(e, props)) }
       >
         X
       </a>
@@ -109,7 +113,7 @@ const Item = React.memo((props) => {
             height: ELEMENT_HEIGHT,
             paddingLeft: props.group && GROUP_PADDING
           }}
-          onPointerDown={(e) => props.onSelectItem(e, props)}
+          onClick={(e) => props.onSelectItem(e, props)}
       >
         <a
             className='title'
