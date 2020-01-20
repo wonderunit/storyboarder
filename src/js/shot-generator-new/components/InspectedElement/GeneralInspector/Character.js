@@ -50,7 +50,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
       )
     })
     
-  }, [props.model])
+  }, [props.morphTargets, props.model])
 
   return (
     <React.Fragment>
