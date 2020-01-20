@@ -67,7 +67,7 @@ const NumberSliderComponent = React.memo(({
     const nextValue = transform(value + Math.sign(direction) * (valueToAdd < 0.01 ? 0.01 : valueToAdd), min, max)
     
     onSetValue(nextValue)
-  }, [value])
+  }, [value, onSetValue])
   
   const bind = useDrag(({event, first, last}) => {
     if (first) {

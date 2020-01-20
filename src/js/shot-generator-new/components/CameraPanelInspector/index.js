@@ -15,7 +15,7 @@ import Select from '../Select'
 import throttle from 'lodash.throttle'
 
 import CameraControls from '../../CameraControls'
-import { ShotSizes, ShotAngles } from '../../cameraUtils'
+import { ShotSizes, ShotAngles } from '../../utils/cameraUtils'
 import { useDrag } from 'react-use-gesture'
 
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'

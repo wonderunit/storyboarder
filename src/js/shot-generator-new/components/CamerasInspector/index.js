@@ -20,6 +20,8 @@ import classNames from 'classnames'
 
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 
+import Scrollable from '../Scrollable'
+
 const getCameraSceneObjects = createSelector(
     [getSceneObjects],
     (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
@@ -119,17 +121,19 @@ const CamerasInspector = connect(
   return <div className="cameras-inspector">
         <div className="row">
             <div className="cameras-inspector__label">Camera</div>
-            <div className="round-buttons-panel">
-             { _cameras.map(
-               (camera, n) =>
-                   <a key={ n }
-                     href="#"
-                     className={ classNames({ active: activeCamera === camera.id }) } 
-                     onClick={ onClick.bind(this, camera) }>
-                   { n + 1 }
-                   </a>,
-             ) }
-             </div>
+            <Scrollable>
+              <div className="round-buttons-panel">
+               { _cameras.map(
+                 (camera, n) =>
+                     <a key={ n }
+                       href="#"
+                       className={ classNames({ active: activeCamera === camera.id }) } 
+                       onClick={ onClick.bind(this, camera) }>
+                     { n + 1 }
+                     </a>,
+               ) }
+               </div>
+             </Scrollable>
         </div>
     </div>
 })

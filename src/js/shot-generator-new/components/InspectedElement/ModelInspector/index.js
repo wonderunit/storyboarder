@@ -11,7 +11,7 @@ import ModelLoader from '../../../../services/model-loader'
 
 import HelpButton from '../../HelpButton'
 import ModelInspectorItem from './../ModelInspectorItem'
-
+import Scrollable from '../../Scrollable'
 import Grid from '../../Grid'
 import classNames from 'classnames'
 import { truncateMiddle } from '../../../../utils'
@@ -111,19 +111,21 @@ const ModelInspector = connect(
             </div>
           </div>
           <div className="thumbnail-search__list">
-            <Grid
-              itemData={{
-                id: sceneObject.id,
-                itemSettings,
-                onSelectItem,
+            <Scrollable>
+              <Grid
+                itemData={{
+                  id: sceneObject.id,
+                  itemSettings,
+                  onSelectItem,
 
-                selectedFunc: isSelected
-              }}
-              Component={ModelInspectorItem}
-              elements={results}
-              numCols={itemSettings.NUM_COLS}
-              itemHeight={itemSettings.ITEM_HEIGHT}
-            />
+                  selectedFunc: isSelected
+                }}
+                Component={ModelInspectorItem}
+                elements={results}
+                numCols={itemSettings.NUM_COLS}
+                itemHeight={itemSettings.ITEM_HEIGHT}
+              />
+            </Scrollable>
           </div>
         </div>
     }

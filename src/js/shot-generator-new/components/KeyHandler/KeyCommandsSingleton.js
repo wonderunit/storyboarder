@@ -3,6 +3,8 @@ let instance = null
 let _keyCommands = []
 let _ipcKeyCommands = []
 const _removedIpcCommands = []
+let ipcRemoved = false
+let keyRemoved = false
 class KeyCommandsSingleton {
 
     constructor() {
@@ -31,6 +33,22 @@ class KeyCommandsSingleton {
         return _removedIpcCommands
     }
 
+    get isIpcRemoved () {
+        return ipcRemoved
+    }
+
+    set isIpcRemoved (value) {
+        ipcRemoved = value
+    }
+
+    get isKeyRemoved () {
+        return keyRemoved
+    }
+
+    set isKeyRemoved (value) {
+        keyRemoved = value
+    }
+
     addKeyCommand({key, keyCustomCheck, value}) {
         this.removeKeyCommand(key)
         _keyCommands.push({key, keyCustomCheck, execute: value})
@@ -50,6 +68,7 @@ class KeyCommandsSingleton {
         if(!object) return
         let indexOf = _keyCommands.indexOf(object)
         _keyCommands.splice(indexOf, 1)
+        keyRemoved = true
     }
     
     removeIPCKeyCommand({key}) {
@@ -58,6 +77,7 @@ class KeyCommandsSingleton {
         let indexOf = _ipcKeyCommands.indexOf(object)
         _removedIpcCommands.push(object)
         _ipcKeyCommands.splice(indexOf, 1)
+        ipcRemoved = true
     }
 }
 export default KeyCommandsSingleton

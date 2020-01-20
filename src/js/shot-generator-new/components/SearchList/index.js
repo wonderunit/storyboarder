@@ -4,6 +4,7 @@ import LiquidMetal from 'liquidmetal'
 const SearchList = React.memo(({ list, onSearch, label = "Search models …"}) => {
 
     const onSearchChange = useCallback((event) => {
+        event.stopPropagation()
         let terms = event.currentTarget.value
         const matchAll = terms == null || terms.length === 0
         let filteredList = list.filter(model => {
@@ -17,10 +18,13 @@ const SearchList = React.memo(({ list, onSearch, label = "Search models …"}) =
         onSearch(filteredList)
     }, [list])
 
+    const keyDown = useCallback((event) => event.stopPropagation(), [])
+
     return <div className="column" style={{ flex: 1 }}> 
             <input
               placeholder={ label }
-              onChange={ onSearchChange }> 
+              onChange={ onSearchChange } 
+              onKeyDown={ keyDown }>
             </input>
         </div>
 })

@@ -1,4 +1,4 @@
-import React, {useRef, useEffect} from 'react'
+import React, {useRef, useEffect, useCallback} from 'react'
 import posed, {PoseGroup} from "react-pose";
 
 import useOnClickOutside from './../../../hooks/use-on-click-outside'
@@ -77,15 +77,18 @@ const Modal = React.memo(({
       document.activeElement.blur()
     }
   }, [visible])
+
+  const keyDown = useCallback((event) => event.stopPropagation(), [])
   
   return (
-    <PoseGroup>
+    <PoseGroup >
       {
         visible &&
           <ModalBackground
               className="modal__overlay"
               style={styles}
               key="modalBackground"
+              onKeyDown={ keyDown }
           >
             <ModalBody
                 className={`modal__window ${modalClassName}`}

@@ -1,7 +1,7 @@
-const THREE = require('three')
+import * as THREE from 'three'
 window.THREE = window.THREE || THREE
 
-require('../vendor/OutlineEffect.js')
+import '../../vendor/OutlineEffect'
 
 const IMAGE_WIDTH = 68
 const IMAGE_HEIGHT = 100
@@ -78,4 +78,4 @@ class ThumbnailRenderer {
   }
 }
 
-module.exports = ThumbnailRenderer
+export default ThumbnailRenderer

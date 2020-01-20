@@ -6,7 +6,7 @@ const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
 const KeyCommandsSingleton = require('./components/KeyHandler/KeyCommandsSingleton').default
-const { setShot } = require('./cameraUtils')
+const { setShot } = require('./utils/cameraUtils')
 const h = require('../utils/h')
 const SGIkHelper = require('../shared/IK/SGIkHelper')
 const {
@@ -35,13 +35,13 @@ const { createSelector } = require('reselect')
 
 const {
   SceneContext,
-  animatedUpdate,
   stats
 } = require('./Components')
 
+const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
+
 const CameraControls = require('./CameraControls')
 const SelectionManager = require('./components/SelectionManager').default
-// const SelectionsMover = require('./SelectionsMover')
 
 const Character = require('./Character')
 const SpotLight = require('./SpotLight')
@@ -112,7 +112,6 @@ const SceneManager = connect(
     updateObjects,
     selectObject,
     selectObjectToggle,
-    animatedUpdate,
     selectBone,
     updateCharacterSkeleton,
     updateCharacterIkSkeleton,
@@ -120,10 +119,11 @@ const SceneManager = connect(
     updateWorldEnvironment,
     deleteObjects,
     undoGroupStart,
-    undoGroupEnd
+    undoGroupEnd,
+    animatedUpdate
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, animatedUpdate, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras, animatedUpdate }) => {
     const { scene } = useContext(SceneContext)
     // const modelCacheDispatch = useContext(CacheContext)
 
@@ -153,18 +153,15 @@ const SceneManager = connect(
     }, [sceneChildren])
 
     useEffect(() => {
-      console.log("Event added")
       KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:
       onCommandDrop})
       return () => {
-        console.log("Event removed")
         KeyCommandsSingleton.getInstance().removeIPCKeyCommand({key: "shot-generator:object:drop"})
       } 
     }, [sceneObjects, selections, scene])
 
     const onCommandDrop = useCallback(() => {
       let changes = {}
-      console.log(selections)
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children.find( child => child.userData.id === selections[i] )
         if( selection.userData.type === "object" ) {
@@ -194,7 +191,6 @@ const SceneManager = connect(
       fakeCamera = null
 
       let index = indexIn(fovs, cameraState.fov)
-      console.log(fovs)
       let fov = {
         "[": fovs[Math.min(index + 1, fovs.length)],
         "]": fovs[Math.max(index - 1, 0)]
@@ -956,13 +952,6 @@ const SceneManager = connect(
     return [
       canvasInFocus !== "None" && focusedSelectionManager && h(focusedSelectionManager),
       [
-
-        // [SelectionsMover, {
-        //   key: 'selections-mover',
-        //   scene,
-        //   camera
-        // }],
-
         worldComponent,
         ...components
       ].map(c => h(c))

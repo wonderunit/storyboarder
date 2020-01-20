@@ -29,9 +29,9 @@ import SceneManager from './../../SceneManager'
 //import GuidesView from './GuidesView'
 //import Icon from './Icon'
 import Toolbar from './../Toolbar'
-import FatalErrorBoundary from './../../FatalErrorBoundary'
+import FatalErrorBoundary from './../FatalErrorBoundary'
 
-import {useExportToGltf, loadCameraModel} from './../../use-export-to-gltf'
+import {useExportToGltf, loadCameraModel} from '../../../hooks/use-export-to-gltf'
 
 import ModelLoader from './../../../services/model-loader'
 

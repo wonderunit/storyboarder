@@ -16,4 +16,4 @@ const onlyOfTypes = (object3d, allowlist) => {
   return object3d
 }
 
-module.exports = onlyOfTypes
+export default onlyOfTypes

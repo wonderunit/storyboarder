@@ -1,9 +1,6 @@
-const { useEffect, useRef } = React = require('react')
-const { connect } = require('react-redux')
-
-const h = require('../utils/h')
-
-const Guides = require('../window/guides')
+import React, { useEffect, useRef, useCallback } from 'react'
+import { connect } from 'react-redux'
+import Guides from '../../../window/guides'
 
 const GuidesView = connect(
   state => ({
@@ -40,18 +37,19 @@ const GuidesView = connect(
     guides.current.setState({ center, thirds, eyeline })
   }, [dimensions, center, thirds, eyeline])
 
-  return h([
-    'canvas',
-    { key: 'guides-canvas',
-      ref: guidesCanvasRef,
-      id: 'guides-canvas',
-      ...dimensions,
-      style: {
-        ...dimensions,
-        visibility: visible ? 'visible' : 'hidden'
-      }
-    }
-  ])
+  const visibility = useCallback(() => {
+    return visible ? "visible" : "hidden"
+  }, [visible])
+
+  return <canvas
+     key="guides-canvas"
+      ref={ guidesCanvasRef }
+      id="guides-canvas"
+      { ...dimensions }
+      style={
+        { ...dimensions },
+        { visibility: visibility() }
+      }/>
 })
 
-module.exports = GuidesView
+export default GuidesView

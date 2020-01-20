@@ -4,6 +4,7 @@ import {formatters, NumberSlider, transforms} from "../../NumberSlider"
 import ColorSelect from "../../ColorSelect"
 import {initialState} from "../../../../shared/reducers/shot-generator"
 import CharacterPresetEditor from '../CharacterPresetEditor'
+import BoneInspector from '../BoneInspector'
 
 
 const MORPH_TARGET_LABELS = {
@@ -12,7 +13,7 @@ const MORPH_TARGET_LABELS = {
   'endomorphic': 'Obese',
 }
 
-const CharacterInspector = React.memo(({updateObject, sceneObject}) => {
+const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone, updateCharacterSkeleton}) => {
   const {id, ...props} = sceneObject
 
   const setX = useCallback((x) => updateObject(id, {x}), [])
@@ -27,7 +28,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject}) => {
 
   const validTargets = initialState.models[props.model].validMorphTargets
   const validTargetsExist = (validTargets && Object.values(validTargets).length !== 0)
-  
+
   const morphTargets = useMemo(() => {
     if (!validTargetsExist) {
       return null
@@ -49,7 +50,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject}) => {
       )
     })
     
-  }, [props.morphTargets])
+  }, [props.morphTargets, props.model])
 
   return (
     <React.Fragment>
@@ -91,6 +92,10 @@ const CharacterInspector = React.memo(({updateObject, sceneObject}) => {
         {validTargetsExist && <div className='inspector-offset-row italic'>Morphs</div>}
         {morphTargets}
       </div>
+      { selectedBone && <BoneInspector 
+        selectedBone={ selectedBone }
+        sceneObject={ sceneObject } 
+        updateCharacterSkeleton={ updateCharacterSkeleton }/> }
     </React.Fragment>
   )
 })

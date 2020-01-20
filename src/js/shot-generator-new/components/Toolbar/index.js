@@ -15,7 +15,7 @@ import {
 
 import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 
-import Icon from '../../Icon'
+import Icon from '../Icon'
 
 // TODO DRY
 const preventDefault = (fn, ...args) => e => {

@@ -199,7 +199,7 @@ React.memo(({
           }}>
             Proceed
         </button>
-        </div>
+      </div>
    </Modal>
    <div className="thumbnail-search column">
       <div className="row" style={{ padding: "6px 0" } }> 

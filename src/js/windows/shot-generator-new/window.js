@@ -52,7 +52,6 @@ const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ setBoard } = require('../../shared/reducers/shot-generator')
 
 // const createServer = require('../../services/createServer')
-const createDualShockController = require('../../shot-generator/DualshockController')
 
 const XRServer = require('../../xr/server')
 const service = require('./service')
@@ -173,7 +172,6 @@ const updater = (values, changed) => {
     }
   ))
 }
-createDualShockController(throttle(updater, 16, { leading: true }))
 
 // createServer({
 //   setInputAccel: payload => store.dispatch({ type: 'SET_INPUT_ACCEL', payload }),

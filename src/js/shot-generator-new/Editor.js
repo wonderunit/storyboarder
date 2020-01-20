@@ -14,28 +14,27 @@ const log = require('electron-log')
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
+
+const GuidesInspector = require('./components/GuidesInspector').default
+const BoardInspector = require('./components/BoardInspector').default
 const KeyHandler = require("./components/KeyHandler").default
 const CameraPanelInspector = require('./components/CameraPanelInspector').default
 const CamerasInspector = require('./components/CamerasInspector').default
+const ElementsPanel = require('./components/ElementsPanel').default
+const { preventDefault } = require('./utils/preventDefault')
 const {
-  SceneContext,
-  ElementsPanel,
-  CameraInspector,
-  BoardInspector,
-  GuidesInspector,
-  MenuManager,
-  PhoneCursor,
-
-  preventDefault,
-  gltfLoader
+  SceneContext
 } = require('./Components')
-const SceneManager = require('./SceneManager')
-const GuidesView = require('./GuidesView')
-const Icon = require('./Icon')
-const Toolbar = require('./components/Toolbar').default
-const FatalErrorBoundary = require('./FatalErrorBoundary')
 
-const {useExportToGltf, loadCameraModel} = require('./use-export-to-gltf')
+const MenuManager = require('./components/MenuManager').default
+const { gltfLoader } = require('./utils/gltfLoader')
+const SceneManager = require('./SceneManager')
+const GuidesView = require('./components/GuidesView').default
+const Icon = require('./components/Icon').default
+const Toolbar = require('./components/Toolbar').default
+const FatalErrorBoundary = require('./components/FatalErrorBoundary').default
+
+const {useExportToGltf, loadCameraModel} = require('../hooks/use-export-to-gltf')
 
 const ModelLoader = require('../services/model-loader')
 
@@ -792,7 +791,7 @@ const Editor = connect(
               //   [PresetsEditor, { transition }]
               // ]],
 
-              ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
+              //ready && (remoteInput.mouseMode || remoteInput.orbitMode) && [PhoneCursor, { remoteInput, camera, largeCanvasRef, selectObject, selectBone, sceneObjects, selections, selectedBone }],
             ],
 
             // [LoadingStatus, { ready }]

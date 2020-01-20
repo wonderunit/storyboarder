@@ -10,7 +10,7 @@ const { dialog } = require('electron').remote
 const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
 
-const applyDeviceQuaternion = require('./apply-device-quaternion')
+const applyDeviceQuaternion = require('./utils/apply-device-quaternion').default
 const IconSprites = require('./IconSprites')
 
 const boxRadius = .005

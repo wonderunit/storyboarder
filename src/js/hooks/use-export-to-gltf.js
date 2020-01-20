@@ -1,23 +1,20 @@
-const { useEffect } = React
-const { useSelector } = require('react-redux')
-const { ipcRenderer, shell } = require('electron')
-const path = require('path')
-const fs = require('fs-extra')
-const moment = require('moment')
+import React, { useEffect } from 'react' 
+import { useSelector } from 'react-redux'
+import { ipcRenderer, shell } from 'electron'
+import path from 'path'
+import fs from 'fs-extra'
+import moment from 'moment'
 
-const THREE = require('three')
+import * as THREE from 'three'
 window.THREE = window.THREE || THREE
-require('../vendor/three/examples/js/exporters/GLTFExporter.js')
-require('../vendor/three/examples/js/utils/SkeletonUtils')
-const {gltfLoader} = require('./Components')
-const {
+import '../vendor/three/examples/js/exporters/GLTFExporter.js'
+import '../vendor/three/examples/js/utils/SkeletonUtils'
+import {gltfLoader} from '../shot-generator-new/utils/gltfLoader'
+import {
   getSceneObjects
-} = require('../shared/reducers/shot-generator')
-
-const notifications = require('../window/notifications')
-
-
-const ModelLoader = require('../services/model-loader')
+} from '../shared/reducers/shot-generator'
+import notifications from '../window/notifications'
+import ModelLoader from '../services/model-loader'
 
 const materialFactory = () => new THREE.MeshBasicMaterial({
   color: 0x8c78f1,
@@ -141,9 +138,8 @@ const useExportToGltf = (sceneRef, storyboarderFilePath) => {
         exporter.parse(scene, function (glb) {
 
           if (meta.storyboarderFilePath) {
-
             let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
-            let filename = `${board.url.replace('.png', '')}-${timestamp}.glb`
+            let filename = `${board.shot}-${timestamp}.glb`
             let filepath = path.join(
               path.dirname(meta.storyboarderFilePath),
               'exports',
@@ -170,4 +166,4 @@ const useExportToGltf = (sceneRef, storyboarderFilePath) => {
   }, [board, meta, sceneObjects])
 }
 
-module.exports = {useExportToGltf, loadCameraModel}
+export {useExportToGltf, loadCameraModel}

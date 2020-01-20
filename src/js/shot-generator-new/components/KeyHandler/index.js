@@ -9,11 +9,6 @@ import KeyCommandsSingleton from './KeyCommandsSingleton'
 import DuplicationCommand from './commands/DuplicateCommand'
 import GroupCommand from './commands/GroupCommand'
 
-const getSelectedSceneObject = createSelector(
-  [getSceneObjects, getSelections],
-  (sceneObjects, selections) => Object.values(sceneObjects).find(o => o.id === selections[0])
-)
-
 const canDelete = (sceneObject, activeCamera) =>
   // allow objects
   sceneObject.type === 'object' ||
@@ -41,12 +36,16 @@ import  {
     getActiveCamera,
   } from '../../../shared/reducers/shot-generator'
 
+const getSelectedSceneObject = createSelector(
+  [getSceneObjects, getSelections],
+  (sceneObjects, selections) => Object.values(sceneObjects).find(o => o.id === selections[0])
+)
+
 const KeyHandler = connect(
   state => ({
     activeCamera: getActiveCamera(state),
     selections: getSelections(state),
     sceneObjects: getSceneObjects(state),
-
     _selectedSceneObject: getSelectedSceneObject(state),
   }),
   {
@@ -57,7 +56,7 @@ const KeyHandler = connect(
     mergeGroups,
   }
 )(
-  ({
+  React.memo(({
     activeCamera,
     selections,
     sceneObjects,
@@ -84,15 +83,42 @@ const KeyHandler = connect(
           }
     }, [_selectedSceneObject, activeCamera, selections])
 
-    useEffect(() => {
-        keyCommandsInstance.current.addIPCKeyCommand(DuplicationCommand(selections, _selectedSceneObject, duplicateObjects))
-        return () => keyCommandsInstance.current.removeIPCKeyCommand(DuplicationCommand())
+
+    const onCommandDuplicate = useCallback(() => {
+      if (selections) {
+        let selected = (_selectedSceneObject.type === 'group') ? [_selectedSceneObject.id] : selections
+        // NOTE: this will also select the new duplicates, replacing selection
+        duplicateObjects(
+          // ids to duplicate
+            selected,
+          // new ids
+            selected.map(THREE.Math.generateUUID)
+        )
+      }
     }, [selections, _selectedSceneObject])
+
+    const onCommandGroup = useCallback(() => {
+      if (selections) {
+        const groupAction = getGroupAction(sceneObjects, selections)
+        if (groupAction.shouldGroup) {
+          groupObjects(groupAction.objectsIds)
+        } else if (groupAction.shouldUngroup) {
+          ungroupObjects(groupAction.groupsIds[0], groupAction.objectsIds)
+        } else {
+          mergeGroups(groupAction.groupsIds, groupAction.objectsIds)
+        }
+      }
+    }, [selections, sceneObjects])
+
+    useEffect(() => {
+      keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:duplicate", value: onCommandDuplicate})
+      return () => keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:duplicate" }) 
+    }, [onCommandDuplicate])
     
     useEffect(() => {
-        keyCommandsInstance.current.addIPCKeyCommand(GroupCommand(selections, sceneObjects, getGroupAction, groupObjects, ungroupObjects, mergeGroups))
-        return () => keyCommandsInstance.current.removeIPCKeyCommand(GroupCommand())
-    }, [sceneObjects, selections])
+      keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:group", value: onCommandGroup })
+      return () => keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:group" })
+    }, [onCommandGroup])
 
     useEffect(() => {
         keyCommandsInstance.current.addKeyCommand({
@@ -117,7 +143,7 @@ const KeyHandler = connect(
         for( let i = 0; i < ipcCommands.length; i++) {
             ipcRenderer.off(ipcCommands[i].key, ipcCommands[i].execute)
         }
-        for( let i = removedCommands.length - 1; i >= 0; i--) {
+        for( let i = removedCommands.length - 1; i > -1; i--) {
             ipcRenderer.off(removedCommands[i].key, removedCommands[i].execute)
             removedCommands.splice(i, 1)
         }
@@ -140,17 +166,19 @@ const KeyHandler = connect(
       window.addEventListener('keydown', onKeyDown)
       return function cleanup () {
           window.removeEventListener('keydown', onKeyDown)
+          KeyCommandsSingleton.getInstance().isKeyRemoved = false
         }
-    }, [ KeyCommandsSingleton.getInstance().keyCommands.length])
+    }, [  KeyCommandsSingleton.getInstance().isKeyRemoved])
     
     useEffect(() => {
         bindIpcCommands()
-        return () =>{
-            unbindIpcCommands()
+        return () => {
+          unbindIpcCommands()
+          KeyCommandsSingleton.getInstance().isIpcRemoved = false
         } 
-    }, [KeyCommandsSingleton.getInstance().ipcKeyCommands.length])
+    }, [ KeyCommandsSingleton.getInstance().isIpcRemoved])
 
     return null
   }
-)
+))
 export default KeyHandler

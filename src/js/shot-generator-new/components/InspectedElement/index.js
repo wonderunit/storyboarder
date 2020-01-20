@@ -1,9 +1,10 @@
-import React, {useMemo} from 'react'
+import React, {useMemo, useState} from 'react'
 import {connect} from 'react-redux'
 
 import {
   getSelections,
-  getSceneObjects
+  getSceneObjects,
+  updateObject
 } from './../../../shared/reducers/shot-generator'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
@@ -17,13 +18,15 @@ import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
 
 import Icon from '../Icon'
+import Modal from "../Modal"
 
 const isChar = (type) => type === 'character'
 const isObj = (type) => type === 'object'
 const nullTab = {tab: null, panel: null}
 
-const Inspector = React.memo(({id, selectedName, selectedType, scene}) => {
-
+const Inspector = React.memo(({id, selectedName, selectedType, scene, updateObject}) => {
+  const [isModalShown, showModal] = useState(false)
+  const [changedName, changeNameTo] = useState(false)
   const handPoseTab = useMemo(() => {
     if (!isChar(selectedType)) return nullTab
 
@@ -63,7 +66,29 @@ const Inspector = React.memo(({id, selectedName, selectedType, scene}) => {
   
   return (
     <React.Fragment>
-      <a href='#' className='object-property-heading'>
+      { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
+        <div style={{ margin:"5px 5px 5px 5px" }}>
+          Select a Preset Name:
+        </div>
+        <div className="column" style={{ flex: 1 }}> 
+          <input 
+            className="modalInput"
+            type="text" 
+            placeholder={ selectedName }
+            onChange={ (value) => changeNameTo(value.currentTarget.value) }/>
+        </div>
+        <div className="skeleton-selector__div">
+          <button
+            className="skeleton-selector__button"
+            onClick={() => {
+              showModal(false)
+              updateObject(id, { displayName: changedName, name: changedName })
+            }}>
+              Proceed
+          </button>
+      </div>
+      </Modal> }
+      <a href='#' className='object-property-heading' onClick={ () => showModal(true) }>
         {selectedName} Properties
       </a>
       <Tabs key={id}>
@@ -97,7 +122,7 @@ const getObjectInfo = (state) => {
   
   return {
     id: selected,
-    selectedName: object.displayName,
+    selectedName: object.name || object.displayName,
     selectedType: object.type
   }
 }
@@ -106,4 +131,8 @@ const getObjectInfoM = deepEqualSelector([getObjectInfo], (info) => info)
 
 const mapStateToProps = (state) => getObjectInfoM(state)
 
-export default connect(mapStateToProps)(Inspector)
+const mapDispatchToProps = {
+  updateObject,
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Inspector)

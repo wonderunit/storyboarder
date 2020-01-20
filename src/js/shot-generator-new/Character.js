@@ -16,7 +16,7 @@ const IconSprites = require('./IconSprites')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 
-const applyDeviceQuaternion = require('./apply-device-quaternion')
+const applyDeviceQuaternion = require('./utils/apply-device-quaternion').default
 
 // character needs:
 //   mesh - SkinnedMesh
@@ -345,6 +345,7 @@ const Character = React.memo(({
       bone.applyMatrix(inverseMatrixWorld)
       position.multiplyScalar( object.current.userData.boneLengthScale === 100 ? 100 : 1)
       changedSkeleton.push({ 
+        id: bone.uuid,
         name: bone.name,
         position: { 
           x: position.x, 

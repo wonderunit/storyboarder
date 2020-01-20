@@ -1,11 +1,43 @@
-import React, {useCallback} from "react";
+import React, {useCallback, useState} from "react";
 import {Math as _Math} from "three";
+import { remote } from 'electron'
+import path from 'path'
+import fs from 'fs-extra'
+const { dialog } = remote
 import {formatters, NumberSlider, transforms} from "../../NumberSlider";
-//import Select from "../../../Select";
+import Select from "../../Select";
 
-const VolumeInspector = React.memo(({updateObject, sceneObject}) => {
+const selectOptions = [
+  {
+    label: "Custom",
+    options: [
+      { label: "Custom....", value: "custom" }
+    ]
+  },
+  {
+    label: "Built-in",
+    options: [
+      { label: "rain", value: "rain1,rain2" },
+      { label: "fog", value: "fog1,fog2" },
+      { label: "explosion", value: "debris,explosion" }
+    ]
+  }
+]
+
+const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath}) => {
   const {id, ...props} = sceneObject
 
+  const currentSelectedOption = () => {
+    let builtInOptions = Object.values(Object.values(selectOptions)[1].options)
+    let builtInOption = builtInOptions.find(object => object.value.includes(sceneObject.volumeImageAttachmentIds[0]))
+    if(!builtInOption) {
+      return {label: sceneObject.volumeImageAttachmentIds, value: sceneObject.volumeImageAttachmentIds }
+    } else {
+      return builtInOption
+    }
+  } 
+
+  const [selectedFile, setSelectedFile] = useState(currentSelectedOption())
   const setX = useCallback((x) => updateObject(id, {x}), [])
   const setY = useCallback((y) => updateObject(id, {y}), [])
   const setZ = useCallback((z) => updateObject(id, {z}), [])
@@ -23,22 +55,56 @@ const VolumeInspector = React.memo(({updateObject, sceneObject}) => {
     updateObject(id, {color})
   }, [])
 
-  const setRotation = useCallback((x) => updateObject(id, { rotation: _Math.degToRad(x) }), [])
-  
-  const selectOptions = [
-    {
-      label: 'Custom',
-      options: []
-    },
-    {
-      label: 'Built-in',
-      options: [
-        {label: 'rain', value: 'rain1,rain2'},
-        {label: 'fog', value: 'fog1,fog2'},
-        {label: 'explosion', value: 'debris,explosion'}
-      ]
+  const selectAttachment = (item) => {
+    let selected = item.value
+    let ids = ""
+    if (selected === "custom") {
+
+        let filepaths = dialog.showOpenDialog(null, { properties: ["openFile", "multiSelections"] })
+
+        if (filepaths) {
+          ids = copyFiles(filepaths)
+
+          if (ids.length) {
+            updateObject(sceneObject.id, { volumeImageAttachmentIds: ids })
+            setSelectedFile({label:ids, value: ids})
+          }
+      }
+
+    } else {
+      setSelectedFile(item)
+      // convert value string to ids
+      ids = selected.split(',')
+      updateObject(sceneObject.id, { volumeImageAttachmentIds: ids })
     }
-  ]
+  }
+
+  const copyFiles = (filepaths) => {
+    let projectDir = path.dirname(storyboarderFilePath)
+    let assetsDir = path.join(projectDir, 'models', 'volumes')
+    fs.ensureDirSync(assetsDir)
+
+    let dsts = []
+    //console.log(dsts)
+    for (let src of filepaths) {
+      let dst = path.join(assetsDir, path.basename(src))
+     // console.log('copying from', src, 'to', dst)
+      try {
+        fs.copySync(src, dst)
+        dsts.push(dst)
+      } catch (err) {
+        //console.error('could not copy', src)
+        alert('could not copy ' + src)
+      }
+    }
+
+    let ids = dsts.map(filepath => path.relative(projectDir, filepath))
+    //console.log('setting attachment ids', ids)
+
+    return ids
+  }
+
+  const setRotation = useCallback((x) => updateObject(id, { rotation: _Math.degToRad(x) }), [])
 
   return (
     <React.Fragment>
@@ -50,16 +116,19 @@ const VolumeInspector = React.memo(({updateObject, sceneObject}) => {
       <NumberSlider label='Height' value={props.height} min={0.025} max={5} onSetValue={setHeight}/>
       <NumberSlider label='Depth' value={props.depth} min={0.025} max={5} onSetValue={setDepth}/>
       
-      <div className='input-group'>
+      <div className="input-group">
         <div className="input-group__label">
           Layer Image Files
         </div>
-        {/*<Select
-          label='Select Layer Images'
-          value={null}
-          options={selectOptions}
-          className='input-group__input'
-        />*/}
+    
+        <div className="input-group__input">
+          <Select
+            label="Select Layer Images"
+            value={ selectedFile }
+            options={ selectOptions }
+            onSetValue={(item) => { selectAttachment(item) }}
+            />
+        </div>
       </div>
       
       <NumberSlider label='Layers' value={props.numberOfLayers} min={1} max={10} step={1} onSetValue={setLayers}/>

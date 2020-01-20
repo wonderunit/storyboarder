@@ -73,8 +73,7 @@ React.memo(({
 
   updateObject,
   createHandPosePreset,
-  withState,
-  scene
+  withState
 }) => {
   const thumbnailRenderer = useRef()
 
@@ -121,9 +120,9 @@ React.memo(({
       }
     }, [attachmentStatus])
 
-  const onChangeHand = event => {
+  const onChangeHand = useCallback((event) => {
     setSelectedHand(event.value)
-  }
+  }, [])
 
   const saveFilteredPresets = useCallback(filteredPreset => {
     let objects = [] 
@@ -149,7 +148,7 @@ React.memo(({
       })
       let skeleton = sceneObject.skeleton
       let model = sceneObject.model
-      let originalSkeleton = scene.children.filter(child => child.userData.id === id)[0].getObjectByProperty("type", "SkinnedMesh").skeleton.bones
+      let originalSkeleton = Object.values(skeleton)
       let handSkeleton = {}
       setSelectedHand(handName)
       for(let i = 0; i < originalSkeleton.length; i++) {
@@ -272,7 +271,7 @@ React.memo(({
               withState,
               selectedHand
             }}
-            elements={presets}
+            elements={results}
             numCols={NUM_COLS}
             itemHeight={ITEM_HEIGHT}
           />
