@@ -41,11 +41,11 @@ class XRServer {
     }
 
     app.use('/', express.static(
-      path.join(__dirname, 'dist')
+      path.join(window.__dirname, 'js/xr/dist')
     ))
 
     app.use('/data/system', express.static(
-      path.join(__dirname, '..', '..', 'data', 'shot-generator')
+      path.join(window.__dirname, 'data', 'shot-generator')
     ))
 
     app.use('/data/user', express.static(
@@ -53,7 +53,7 @@ class XRServer {
     ))
 
     app.use('/data/snd', express.static(
-      path.join(__dirname, 'public', 'snd')
+      path.join(window.__dirname, 'public', 'snd')
     ))
 
     app.use('/data/presets/poses', express.static(
@@ -69,7 +69,7 @@ class XRServer {
     ))
 
     app.get('/', function(req, res) {
-      res.sendFile(path.join(__dirname, 'dist', 'index.html'))
+      res.sendFile(path.join(window.__dirname, 'js/xr/dist', 'index.html'))
     })
 
     app.get('/sg.json', (req, res) => {
