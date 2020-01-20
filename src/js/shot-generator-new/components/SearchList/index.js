@@ -4,7 +4,6 @@ import LiquidMetal from 'liquidmetal'
 const SearchList = React.memo(({ list, onSearch, label = "Search models …"}) => {
 
     const onSearchChange = useCallback((event) => {
-        console.log("Searching...")
         event.stopPropagation()
         let terms = event.currentTarget.value
         const matchAll = terms == null || terms.length === 0

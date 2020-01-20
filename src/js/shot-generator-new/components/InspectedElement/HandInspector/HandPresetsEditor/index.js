@@ -120,9 +120,9 @@ React.memo(({
       }
     }, [attachmentStatus])
 
-  const onChangeHand = event => {
+  const onChangeHand = useCallback((event) => {
     setSelectedHand(event.value)
-  }
+  }, [])
 
   const saveFilteredPresets = useCallback(filteredPreset => {
     let objects = [] 
@@ -271,7 +271,7 @@ React.memo(({
               withState,
               selectedHand
             }}
-            elements={presets}
+            elements={results}
             numCols={NUM_COLS}
             itemHeight={ITEM_HEIGHT}
           />
