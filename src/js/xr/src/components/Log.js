@@ -53,7 +53,7 @@ const Log = ({ position }) => {
     let lineHeight = 30
     let offset = -6
     context.fillStyle = '#00aa00'
-    context.font = `${size}px verdana`
+    context.font = `${size}px monospace`
     label.split('\n').forEach((line, n) => {
       context.fillText(line, 0, ((n + 1) * lineHeight) + offset)
     })
