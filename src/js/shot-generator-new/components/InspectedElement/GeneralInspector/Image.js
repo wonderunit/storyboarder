@@ -52,7 +52,7 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
   const setVisibleToCam = useCallback(() => updateObject(id, {visibleToCam: !props.visibleToCam}), [props.visibleToCam])
 
   const setImageFile = useCallback((event) => {
-    if (event.files) {
+    if (event.files.length) {
       loadImages(event.files, storyboarderFilePath)
       .then((ids) => {
         updateObject(sceneObject.id, {imageAttachmentIds: ids})
@@ -61,8 +61,12 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
     }
   }, [])
   
-  const imageFileLabel = sceneObject.imageAttachmentIds[0] !== 'placeholder'
-    ? sceneObject.imageAttachmentIds[0].split(/[\\\/]/).pop()
+  console.log(sceneObject.imageAttachmentIds[0] )
+
+  const imageFileLabel = sceneObject.imageAttachmentIds[0] === 'placeholder'
+    ? '(none)' 
+    : sceneObject.imageAttachmentIds[0] 
+    ? sceneObject.imageAttachmentIds[0].split(/[\\\/]/).pop() 
     : '(none)'
 
   return (
