@@ -413,6 +413,9 @@ kbd {
 .round-buttons-panel {
   display: flex;
   flex-direction: row;
+  width: 208px;
+  position: "relative";
+  overflow: "hidden";
 }
 .round-buttons-panel a {
   display: flex;
