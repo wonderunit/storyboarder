@@ -20,6 +20,7 @@ import Grid from "../../Grid"
 import Scrollable from "../../Scrollable"
 
 import AttachableEditor from './../AttachableEditor/index'
+import {getScene} from "../../../utils/scene"
 
 const AttachableInspector = connect(
   state => ({
@@ -32,12 +33,13 @@ const AttachableInspector = connect(
   }
 )(
   React.memo(({
-                id,
-                withState,
-                scene,
-                createObject,
-                selectAttachable
-              }) => {
+    id,
+    withState,
+    createObject,
+    selectAttachable
+  }) => {
+    const scene = getScene()
+
     const [isModalVisible, showModal] = useState(false)
     const [results, setResults] = useState([])
     const [sceneObject, setSceneObject] = useState({})

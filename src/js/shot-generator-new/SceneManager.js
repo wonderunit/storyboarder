@@ -1,9 +1,9 @@
+import {getScene} from "./utils/scene"
+
 const { Provider, connect } = require('react-redux')
 const React = require('react')
 const { useState, useEffect, useRef, useContext, useMemo, useLayoutEffect, useCallback } = React
 const { dropObject, dropCharacter } = require('../utils/dropToObjects')
-const THREE = require('three')
-window.THREE = window.THREE || THREE
 require('../vendor/OutlineEffect')
 const KeyCommandsSingleton = require('./components/KeyHandler/KeyCommandsSingleton').default
 const { setShot } = require('./utils/cameraUtils')
@@ -33,10 +33,10 @@ const {
 } = require('../shared/reducers/shot-generator')
 const { createSelector } = require('reselect')
 
-const {
-  SceneContext,
-  stats
-} = require('./Components')
+// const {
+//   SceneContext,
+//   stats
+// } = require('./Components')
 
 const animatedUpdate = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
@@ -123,8 +123,12 @@ const SceneManager = connect(
     animatedUpdate
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, machineState, transition, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras, animatedUpdate }) => {
-    const { scene } = useContext(SceneContext)
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras, animatedUpdate }) => {
+    const scene = getScene()
+
+    if (!scene) {
+      return null
+    }
     // const modelCacheDispatch = useContext(CacheContext)
 
     const [shouldRaf, setShouldRaf] = useState(true)
@@ -381,7 +385,7 @@ const SceneManager = connect(
         
       // go through all appropriate objects and get the min max
       let numVisible = 0
-      for (child of scene.children) {
+      for (let child of scene.children) {
         if (
             child.userData &&
             child.userData.type === 'object' ||
@@ -593,7 +597,7 @@ const SceneManager = connect(
         }
 
         animator.current = () => {
-          if (stats) { stats.begin() }
+          //if (stats) { stats.begin() }
           if (scene && camera) {
             updateCharacterIk(scene);
             animatedUpdate((dispatch, state) => {
@@ -631,7 +635,7 @@ const SceneManager = connect(
               }
             })
           }
-          if (stats) { stats.end() }
+          //if (stats) { stats.end() }
           animatorId.current = requestAnimationFrame(animator.current)
         }
 
@@ -711,18 +715,23 @@ const SceneManager = connect(
       if (camera && cameraControlsView.current) {
         if (mainViewCamera === 'ortho') {
           cameraControlsView.current.enabled = false
-          return
-        }
-
-        if (machineState.matches('idle')) {
-          cameraControlsView.current.reset()
-          cameraControlsView.current.enabled = true
-        } else {
-          cameraControlsView.current.reset()
-          cameraControlsView.current.enabled = false
         }
       }
-    }, [machineState.value, camera, cameraControlsView.current, mainViewCamera])
+    }, [camera, cameraControlsView.current, mainViewCamera])
+
+    const onDragStart = useCallback(() => {
+      if (cameraControlsView.current) {
+        cameraControlsView.current.reset()
+        cameraControlsView.current.enabled = false
+      }
+    }, [cameraControlsView.current])
+
+    const onDragEnd = useCallback(() => {
+      if (cameraControlsView.current) {
+        cameraControlsView.current.reset()
+        cameraControlsView.current.enabled = true
+      }
+    }, [cameraControlsView.current])
 
     const components = Object.values(sceneObjects).map(props => {
       let modelCacheKey
@@ -928,21 +937,23 @@ const SceneManager = connect(
           el: largeCanvasRef.current,
           selectOnPointerDown: mainViewCamera !== 'live',
           useIcons: mainViewCamera !== 'live',
-          transition,
           gl: largeRenderer.current,
-          onDrag: autofitOrtho
+          onDrag: autofitOrtho,
+          onDragStart,
+          onDragEnd
         }]
-      } else if(canvasInFocus === "Small") {
+      } else if (canvasInFocus === "Small") {
        return [SelectionManager, {
           key: 'selection-manager-small',
           camera: mainViewCamera === 'live' ? orthoCamera.current : camera,
           el: smallCanvasRef.current,
           selectOnPointerDown: mainViewCamera === 'live',
           useIcons: mainViewCamera === 'live',
-          transition,
           gl: smallRenderer.current,
           updateObject:updateObject,
-          onDrag: autofitOrtho
+          onDrag: autofitOrtho,
+          onDragStart,
+          onDragEnd
         }]
       } 
 
@@ -963,4 +974,4 @@ function updateCharacterIk(scene)
 {
 }
 
-module.exports = SceneManager
+export default SceneManager

@@ -42,6 +42,8 @@ body {
   width: 300px;
   height: 100%;
   background: #111;
+
+  flex-shrink: 0;
 }
 
 img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* Firefox 2+ */ -ms-user-select: none; /* IE 10+ */ user-select: none; /* Standard syntax */ user-drag: none; -webkit-user-drag: none; }

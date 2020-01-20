@@ -23,6 +23,7 @@ import {
 import { SceneContext } from "../../Components"
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
+import {getScene} from '../../utils/scene'
 
 function getObjectsFromIcons ( objects ) {
   return objects
@@ -108,17 +109,18 @@ React.memo(({
     selectBone,
     selectAttachable,
     updateObjects,
-    transition,
     gl,
     
     undoGroupStart,
     undoGroupEnd,
     deselectAttachable,
   
-    onDrag
+    onDrag,
+    onDragStart,
+    onDragEnd,
   }) => {
 
-  const { scene } = useContext(SceneContext)
+  const scene = getScene()
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
   const gpuPickerInstance = useRef(null)
@@ -282,6 +284,8 @@ React.memo(({
   }
   
   const endDrag = () => {
+    onDragEnd && onDragEnd()
+
     if (!objectChanges || !objectChanges.current || !Object.keys(objectChanges.current).length) {
       return false
     }
@@ -307,8 +311,6 @@ React.memo(({
   const onPointerDown = event => {
     event.preventDefault()
     filterIntersectables()
-    // make sure we clear focus of any text fields
-    transition('TYPING_EXIT')
 
     // get the mouse coords
     const { x, y } = mouse(event)
@@ -338,6 +340,8 @@ React.memo(({
             selectBone(null)
         }
     } else {
+      onDragStart && onDragStart()
+
       let shouldDrag = false
       let target
       let isSelectedControlPoint = false;
@@ -602,10 +606,8 @@ React.memo(({
   useLayoutEffect(() => {
     if (dragTarget) {
       el.style.cursor = 'move'
-      transition('EDITING_ENTER')
     } else {
       el.style.cursor = 'auto'
-      transition('EDITING_EXIT')
     }
   }, [dragTarget])
 

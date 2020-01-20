@@ -101,11 +101,24 @@ import {
 
 import notifications from './../../../window/notifications'
 import Icon from "../Icon";
+import MenuManager from "../MenuManager";
+import ElementsPanel from "../ElementsPanel";
+import BoardInspector from "../BoardInspector";
+import GuidesInspector from "../GuidesInspector";
+import createDeepEqualSelector from "../../../utils/deepEqualSelector";
 
-const Editor = React.memo(() => {
+const Editor = React.memo(({
+  mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, undoGroupStart, undoGroupEnd
+}) => {
   const smallCanvasRef = useRef(null)
   const largeCanvasRef = useRef(null)
   const notificationsRef = useRef(null)
+  const mainViewContainerRef = useRef(null)
+
+  const largeCanvasSize = useComponentSize(mainViewContainerRef)
+
+  const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
+  const [camera, setCamera ] = useState(null)
 
   useEffect(() => {
     if (notificationsRef.current) {
@@ -127,6 +140,10 @@ const Editor = React.memo(() => {
       removeScene()
     }
   }, [])
+
+  useEffect(() => {
+    setCamera(getScene().children.find(o => o.userData.id === activeCamera))
+  }, [activeCamera])
 
   return (
     <FatalErrorBoundary>
@@ -157,22 +174,42 @@ const Editor = React.memo(() => {
             </div>
 
             <div id="elements">
-              {/*<ElementsPanel/>*/}
+              <ElementsPanel/>
             </div>
           </div>
 
           <div className="column fill">
-            <div id="camera-view">
-
+            <div id="camera-view" ref={mainViewContainerRef}>
+              <canvas
+                key="camera-canvas"
+                id="camera-canvas"
+                tabIndex={1}
+                ref={largeCanvasRef}
+              />
             </div>
             <div className="inspectors">
-
+              <CameraPanelInspector/>
+              <BoardInspector/>
+              <div>
+                <CamerasInspector/>
+                <GuidesInspector/>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
+      <SceneManager
+        largeCanvasRef={largeCanvasRef}
+        smallCanvasRef={smallCanvasRef}
+        attachments={attachments}
+        orthoCamera={orthoCamera}
+        camera={camera}
+        setCamera={setCamera}
+        largeCanvasSize={largeCanvasSize}
+      />
       <KeyHandler/>
+      <MenuManager/>
 
       <div
         className="notifications"
@@ -183,9 +220,21 @@ const Editor = React.memo(() => {
 })
 
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
+const getSceneObjectsM = createDeepEqualSelector([getSceneObjects], sceneObjects => sceneObjects)
+const getWorldM = createDeepEqualSelector([getWorld], world => world)
+const getAttachmentsM = createDeepEqualSelector([(state) => state.attachments], attachments => attachments)
 
 export default connect(
-  (state) => ({}),
+  (state) => ({
+    mainViewCamera: state.mainViewCamera,
+    activeCamera: getActiveCamera(state),
+    remoteInput: state.input,
+    aspectRatio: state.aspectRatio,
+    sceneObjects: getSceneObjectsM(state),
+    world: getWorldM(state),
+    selectedBone: getSelectedBone(state),
+    attachments: getAttachmentsM(state)
+  }),
   {
     withState
   }
