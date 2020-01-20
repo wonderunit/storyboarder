@@ -28,7 +28,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
 
   const validTargets = initialState.models[props.model].validMorphTargets
   const validTargetsExist = (validTargets && Object.values(validTargets).length !== 0)
-  
+
   const morphTargets = useMemo(() => {
     if (!validTargetsExist) {
       return null
@@ -50,7 +50,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
       )
     })
     
-  }, [props.morphTargets])
+  }, [props.model])
 
   return (
     <React.Fragment>
