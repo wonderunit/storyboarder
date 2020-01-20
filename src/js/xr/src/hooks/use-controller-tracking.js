@@ -48,7 +48,9 @@ function useControllerTracking (controllers, onDrum) {
       if (h[controller.uuid] == null) {
         h[controller.uuid] = {
           slow: new Stream(10),
-          fast: new Stream(10)
+          fast: new Stream(10),
+          prevPosition: new THREE.Vector3(),
+          prevRotation: new THREE.Euler()
         }
       }
 
@@ -67,9 +69,16 @@ function useControllerTracking (controllers, onDrum) {
         log('left controller:')
         log(`${position.x.toPrecision(3)} ${position.y.toPrecision(3)}, ${position.z.toPrecision(3)}`)
         log(`${rotation.x.toPrecision(3)} ${rotation.y.toPrecision(3)}, ${rotation.z.toPrecision(3)}`)
-        log('---')
+
+        let prev = h[controller.uuid].prevPosition
+        let diff = position.clone().sub(prev)
+        log(`${diff.x} ${diff.y} ${diff.z}`)
+
         log('---')
       }
+
+      h[controller.uuid].prevPosition = position.clone()
+      h[controller.uuid].prevRotation = rotation.clone()
     })
   }, false, [controllers])
 }
