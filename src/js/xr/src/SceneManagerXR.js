@@ -1,5 +1,5 @@
 const SHOW_STATS = false
-const SHOW_LOG = false
+const SHOW_LOG = true
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
