@@ -1,5 +1,5 @@
 const { useThree, useRender } = require('react-three-fiber')
-const { useMemo, useRef, useEffect } = React = require('react')
+const { useMemo, useRef, useEffect, useCallback } = React = require('react')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 
@@ -9,6 +9,7 @@ const { produce } = require('immer')
 const { ActionCreators } = require('redux-undo')
 
 const useVrControllers = require('./hooks/use-vr-controllers')
+const useControllerTracking = require('./hooks/use-controller-tracking')
 
 const { log } = require('./components/Log')
 const Mirror = require("./three/Mirror")
@@ -967,6 +968,15 @@ const useInteractionsManager = ({
       }
     }
   }, false, [uiService.state.value.input])
+
+  const onDrum = useCallback(controller => {
+    log(`got drum from ${controller.uuid}`)
+  })
+
+  useControllerTracking(
+    controllers,
+    onDrum
+  )
 
   useMemo(() => {
     // TODO why is this memo called multiple times?
