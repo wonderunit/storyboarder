@@ -1,12 +1,12 @@
 // npx parcel serve test/views/music-system/index.html src/data/shot-generator/xr/snd/** -d test/views/music-system/dist
 // open http://localhost:1234/test/views/music-system/index.html
 
-import * as Tone from 'tone'
-import * as THREE from 'three'
-import * as musicSystem from '../../../src/js/xr/src/music-system'
+const Tone = require('tone')
+const THREE = require('three')
+const musicSystem = require('../../../src/js/xr/src/music-system')
 
-import React, { setState } from 'react'
-import ReactDOM from 'react-dom'
+const React = require('react')
+const ReactDOM = require('react-dom')
 
 console.log = function (...rest) {
   document.getElementById('output').innerHTML += `${rest.join(',')}<br/>`
