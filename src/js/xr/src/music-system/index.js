@@ -31,7 +31,10 @@ function range (start, end) {
 
 let bag = []
 function nextIndex () {
-  if (bag.length === 0) bag = shuffle(range(0, sequences.length - 1).filter(i => !denylist.includes(i)))
+  if (bag.length === 0)
+    bag = shuffle(
+      range(0, sequences.length - 1).filter(i => !denylist.includes(i))
+    )
   return bag.shift()
 }
 
