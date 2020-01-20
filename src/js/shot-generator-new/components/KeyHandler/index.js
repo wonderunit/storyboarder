@@ -66,8 +66,7 @@ const KeyHandler = connect(
     deleteObjects,
     groupObjects,
     ungroupObjects,
-    mergeGroups,
-    machineState
+    mergeGroups
   }) => {
     const keyCommandsInstance = useRef(KeyCommandsSingleton.getInstance())
 
@@ -126,7 +125,6 @@ const KeyHandler = connect(
 
     useEffect(() => {
       const onKeyDown = event => {
-        if(machineState.matches('typing')) return 
 
         let keyCommands = KeyCommandsSingleton.getInstance().keyCommands
         for(let i = 0; i < keyCommands.length; i ++ ) {

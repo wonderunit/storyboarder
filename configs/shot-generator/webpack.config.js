@@ -1,4 +1,5 @@
 const path = require('path')
+const webpack = require('webpack')
 
 module.exports = {
   entry: './src/js/windows/shot-generator-new/window.js',
@@ -33,5 +34,10 @@ module.exports = {
   node: {
     __dirname: false,
     __filename: false
-  }
+  },
+  plugins: [
+    new webpack.ProvidePlugin({
+      'THREE': 'three'
+    })
+  ]
 }

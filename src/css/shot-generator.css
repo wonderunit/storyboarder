@@ -22,6 +22,28 @@ body {
 
 }
 
+#root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+#main {
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  height: 100%;
+}
+
+#aside {
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  height: 100%;
+  background: #111;
+}
+
 img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* Firefox 2+ */ -ms-user-select: none; /* IE 10+ */ user-select: none; /* Standard syntax */ user-drag: none; -webkit-user-drag: none; }
 
 a {
@@ -299,6 +321,7 @@ kbd {
   display: flex;
   align-items: center;
   position: relative;
+  height: 300px;
 }
 .topdown__controls {
   pointer-events: none;
@@ -333,6 +356,10 @@ kbd {
 }
 #camera-canvas:focus {
   outline: none;
+}
+
+#top-down-canvas {
+  width: 100%;
 }
 #top-down-canvas:focus {
   outline: none;
