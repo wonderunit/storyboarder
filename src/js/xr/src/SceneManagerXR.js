@@ -195,7 +195,7 @@ const SceneContent = connect(
     }
     let logComponent = null
     if (SHOW_LOG) {
-      logComponent = <Log position={[0, -0.15, -1]} />
+      logComponent = <Log position={[0.5, 0.1, -1]} />
     }
 
     const [cameraAudioListener] = useState(() => new THREE.AudioListener())
