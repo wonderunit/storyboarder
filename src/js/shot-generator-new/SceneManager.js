@@ -123,7 +123,7 @@ const SceneManager = connect(
     animatedUpdate
   }
 )(
-  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, camera, setCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras, animatedUpdate }) => {
+  ({ world, sceneObjects, updateObject, selectObject, selectObjectToggle, remoteInput, largeCanvasRef, smallCanvasRef, selections, selectedBone, selectBone, mainViewCamera, updateCharacterSkeleton, updateCharacterIkSkeleton, largeCanvasSize, activeCamera, aspectRatio, devices, meta, _boardUid, updateWorldEnvironment, attachments, undoGroupStart, undoGroupEnd, orthoCamera, selectedAttachable, updateObjects, deleteObjects, cameraShots, _cameras, animatedUpdate }) => {
     const scene = getScene()
 
     if (!scene) {
@@ -140,6 +140,7 @@ const SceneManager = connect(
     let animator = useRef(null)
     let animatorId = useRef(null)
     let [canvasInFocus, setCanvasInFocus] = useState("None")
+    const [camera, setCamera ] = useState(null)
 
     let cameraControlsView = useRef(null)
 
@@ -155,6 +156,10 @@ const SceneManager = connect(
         o.userData.type === 'character' ||
         o.userData.type === 'ground')
     }, [sceneChildren])
+
+    useEffect(() => {
+      setCamera(getScene().children.find(o => o.userData.id === activeCamera))
+    }, [activeCamera])
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:

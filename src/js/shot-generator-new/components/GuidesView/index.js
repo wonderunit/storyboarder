@@ -46,10 +46,10 @@ const GuidesView = connect(
       ref={ guidesCanvasRef }
       id="guides-canvas"
       { ...dimensions }
-      style={
-        { ...dimensions },
-        { visibility: visibility() }
-      }/>
+      style={{
+        ...dimensions,
+        visibility: visibility()
+      }}/>
 })
 
 export default GuidesView
