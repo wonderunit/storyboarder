@@ -104,7 +104,7 @@ const Editor = React.memo(({
 
   const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
 
-
+  /** Resources loading */
   const loadAttachment = ({ filepath, dispatch }) => {
     switch (path.extname(filepath)) {
       case '.obj':
@@ -389,6 +389,137 @@ const Editor = React.memo(({
       loadAttachment({ filepath: expectedFilepath, dispatch })
     })
   }
+
+  /** Resources loading end */
+
+  /** Shot generating */
+
+    // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
+  const imageRenderer = useRef()
+
+  const saveShot = (dispatch, state) => {
+    let { cameraImage, plotImage } = renderImagesForBoard(state)
+
+    ipcRenderer.send('saveShot', {
+      uid: state.board.uid,
+      data: getSerializedState(state),
+      images: {
+        'camera': cameraImage,
+        'plot': plotImage
+      }
+    })
+
+    dispatch(markSaved())
+  }
+
+  const insertShot = (dispatch, state) => {
+    let { cameraImage, plotImage } = renderImagesForBoard(state)
+
+    // NOTE we do this first, since we get new data on insertShot complete
+    dispatch(markSaved())
+
+    ipcRenderer.send('insertShot', {
+      data: getSerializedState(state),
+      images: {
+        camera: cameraImage,
+        plot: plotImage
+      },
+      currentBoard: state.board
+    })
+  }
+
+  // setup refs
+  const saveShotFn = useRef()
+  const insertShotFn = useRef()
+  // always point refs to updated functions
+  saveShotFn.current = saveShot
+  insertShotFn.current = insertShot
+  // add handlers once, and use refs for callbacks
+  useEffect(() => {
+    ipcRenderer.on('requestSaveShot', () => {
+      withState((dispatch, state) => {
+        saveShotFn.current(dispatch, state)
+      })
+    })
+    ipcRenderer.on('requestInsertShot', () => {
+      withState((dispatch, state) => {
+        insertShotFn.current(dispatch, state)
+      })
+    })
+  }, [])
+
+  const renderImagesForBoard = state => {
+    if (!imageRenderer.current) {
+      imageRenderer.current = new THREE.OutlineEffect(
+        new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
+      )
+    }
+
+    const scene = getScene()
+
+    let imageRenderCamera = scene.children.find(o => o.userData.id === activeCamera).clone()
+    imageRenderCamera.layers.set(0)
+    imageRenderCamera.layers.enable(3)
+
+
+    //
+    //
+    // Prepare for rendering as an image
+    //
+
+    let selected = scene.children.find(child =>
+      (
+        child.userData.type === 'character' ||
+        child.userData.type === 'object'
+      ) &&
+      child.userData.id === getSelections(state)[0])
+
+    let material = selected &&
+      ((selected.userData.type === 'character')
+        ? selected.userData.mesh.material
+        // TODO support multiple child Object3D’s in a Group
+        : selected.children[0].material)
+
+    // save memento
+    let memento = material && { color: material.userData.outlineParameters.color }
+
+
+
+
+    // override selection outline effect color from selected Object3D’s material
+    if (memento) {
+      material.userData.outlineParameters.color = [0, 0, 0]
+    }
+
+
+
+
+    // render the image
+    imageRenderer.current.setSize(Math.ceil(900 * state.aspectRatio), 900)
+    imageRenderer.current.render(scene, imageRenderCamera)
+    let cameraImage = imageRenderer.current.domElement.toDataURL()
+
+
+
+    // restore from memento
+    if (memento) {
+      material.userData.outlineParameters.color = memento.color
+    }
+
+
+    let savedBackground = scene.background && scene.background.clone()
+    scene.background = new THREE.Color( '#FFFFFF' )
+    imageRenderer.current.setSize(900, 900)
+    imageRenderer.current.render(scene, orthoCamera.current)
+    let plotImage = imageRenderer.current.domElement.toDataURL()
+    scene.background = savedBackground
+
+
+
+    return { cameraImage, plotImage }
+  }
+
+  /** Shot generating end */
 
   useEffect(() => {
     if (notificationsRef.current) {
