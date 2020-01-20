@@ -113,6 +113,21 @@ const Editor = React.memo(() => {
     }
   }, [notificationsRef.current])
 
+  useEffect(() => {
+    createScene()
+    // TODO introspect models
+    //updateModels({})
+    //setLocalState({value:{scene: scene.current}})
+    // do any other pre-loading stuff here
+    document.fonts.ready.then(() => {
+      // let the app know we're ready to render
+      //setReady(true)
+    })
+    return function cleanup () {
+      removeScene()
+    }
+  }, [])
+
   return (
     <FatalErrorBoundary>
       <div id="root">
