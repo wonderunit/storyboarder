@@ -1261,6 +1261,17 @@ div.fatal-error-screen__report::selection {
   height: 26px;
 }
 
+.input-group .input-group__input {
+  flex: 1;
+  cursor: col-resize;
+  text-align: center;
+  width: 125px;
+  height: 26px;
+  color: #E4E4E4;
+  font-variant-numeric: tabular-nums;
+  padding: "0px 0px 0px 6px";
+}
+
 .input-group__input {
   flex: 1;
   cursor: col-resize;
