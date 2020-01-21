@@ -609,7 +609,7 @@ const SceneManager = connect(
               let cameraForSmall = state.mainViewCamera === 'ortho' ? camera : orthoCamera.current
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
 
-              if (cameraControlsView.current && cameraControlsView.current.enabled) {
+              if (cameraControlsView.current) {
                 let cameraState = Object.values(getSceneObjects(state)).find(o => o.id === camera.userData.id)
                 if (!cameraState) {
                   // FIXME
@@ -622,8 +622,9 @@ const SceneManager = connect(
 
                 cameraControlsView.current.object = CameraControls.objectFromCameraState(cameraState)
 
-                // step
-                cameraControlsView.current.update( clock.current.getDelta(), state )
+                // step 
+                if(cameraControlsView.current.enabled)
+                  cameraControlsView.current.update( clock.current.getDelta(), state )
               }
               let tempColor = scene.background.clone()
               if (state.mainViewCamera === 'live') {
