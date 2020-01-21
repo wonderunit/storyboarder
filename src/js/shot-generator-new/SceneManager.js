@@ -546,6 +546,13 @@ const SceneManager = connect(
     }, [largeCanvasSize, mainViewCamera, aspectRatio])
 
     useEffect(() => {
+      if(!cameraControlsView.current) return
+      cameraControlsView.current.dispose()
+      cameraControlsView.current.domElement = mainViewCamera === "live" ? largeCanvasRef.current : smallCanvasRef.current
+      cameraControlsView.current.intializeEvents()
+    }, [mainViewCamera])
+
+    useEffect(() => {
       setCamera(scene.children.find(o => o.userData.id === activeCamera))
     }, [activeCamera])
 
@@ -717,13 +724,16 @@ const SceneManager = connect(
 
     }, [selections, sceneObjects])
 
-    useMemo(() => {
+/*     useMemo(() => {
       if (camera && cameraControlsView.current) {
         if (mainViewCamera === 'ortho') {
           cameraControlsView.current.enabled = false
         }
+        else {
+          cameraControlsView.current.enabled = true
+        }
       }
-    }, [camera, cameraControlsView.current, mainViewCamera])
+    }, [camera, cameraControlsView.current, mainViewCamera]) */
 
     const onDragStart = useCallback(() => {
       if (cameraControlsView.current) {

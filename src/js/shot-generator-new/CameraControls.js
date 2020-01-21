@@ -31,17 +31,21 @@ class CameraControls {
     this.undoGroupEnd = options.undoGroupEnd
     this.onChange = options.onChange
     
+    this.intializeEvents()
+  }
+  
+  set object(value) {
+    this._object = value
+    this._prevValues = {...value}
+  }
+
+  intializeEvents() {
     window.addEventListener( 'pointermove', this.onPointerMove, false )
     this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
     document.addEventListener( 'pointerup', this.onPointerUp, false )
     window.addEventListener( 'keydown', this.onKeyDown, false )
     window.addEventListener( 'keyup', this.onKeyUp, false )
     document.getElementById('camera-view').addEventListener("wheel", this.onWheel, false )
-  }
-  
-  set object(value) {
-    this._object = value
-    this._prevValues = {...value}
   }
   
   dispose () {
