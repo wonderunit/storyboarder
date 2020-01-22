@@ -14,6 +14,8 @@ import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
 import SceneManager from './../../SceneManager'
+import SceneManagerR3fLarge from '../../SceneManagerR3fLarge'
+import SceneManagerR3fSmall from '../../SceneManagerR3fSmall'
 import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
@@ -24,6 +26,8 @@ import ModelLoader from './../../../services/model-loader'
 import {createScene, removeScene, getScene} from './../../utils/scene'
 
 import useComponentSize from './../../../hooks/use-component-size'
+import SceneRender from '../../SceneRenderer'
+import { Canvas } from 'react-three-fiber'
 
 import {
   //
@@ -93,7 +97,7 @@ import GuidesView from "../GuidesView"
 import {gltfLoader} from "../../utils/gltfLoader"
 
 const Editor = React.memo(({
-  mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, undoGroupStart, undoGroupEnd
+  mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, undoGroupStart, undoGroupEnd, store
 }) => {
   const smallCanvasRef = useRef(null)
   const largeCanvasRef = useRef(null)
@@ -596,13 +600,16 @@ const Editor = React.memo(({
           <div id="aside">
 
             <div id="topdown">
-              <canvas
+              <Canvas
                 key="top-down-canvas"
                 id="top-down-canvas"
                 tabIndex={0}
-                ref={smallCanvasRef}
-                onPointerDown={onCanvasPointerDown}
-              />
+                onPointerDown={ onCanvasPointerDown }
+                orthographic={ true }>
+                <Provider store={ store }>
+                  <SceneManagerR3fSmall/>
+                </Provider>
+              </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
                 <div className="row">
@@ -620,13 +627,16 @@ const Editor = React.memo(({
 
           <div className="column fill">
             <div id="camera-view" ref={mainViewContainerRef}>
-              <canvas
+              <Canvas
                 key="camera-canvas"
                 id="camera-canvas"
                 tabIndex={1}
-                ref={largeCanvasRef}
-                onPointerDown={onCanvasPointerDown}
-              />
+               // ref={largeCanvasRef}
+                onPointerDown={onCanvasPointerDown}>
+                <Provider store={ store }>
+                  <SceneManagerR3fLarge/>
+                </Provider>
+              </Canvas>
               <GuidesView
                 dimensions={guidesDimensions}
               />
@@ -643,13 +653,13 @@ const Editor = React.memo(({
         </div>
       </div>
 
-      <SceneManager
+ {/*      <SceneManager
         largeCanvasRef={largeCanvasRef}
         smallCanvasRef={smallCanvasRef}
         attachments={attachments}
         orthoCamera={orthoCamera}
         largeCanvasSize={largeCanvasSize}
-      />
+      /> */}
       <KeyHandler/>
       <MenuManager/>
 

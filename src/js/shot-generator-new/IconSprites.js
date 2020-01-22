@@ -1,17 +1,14 @@
 const path = require('path')
 
 const THREE = require('three')
-const React = require('react')
-const { Object3D } = THREE
-const { Sprite } = THREE
-
-const { useRef, useEffect, useState } = React
+const { useRef, useEffect, useState } = React = require('react')
+const { Object3D, Sprite } = require('three')
 
 window.THREE = window.THREE || THREE
 const createGeometry = require('three-bmfont-text')
 const loadFont = require('load-bmfont')
 
-const SDFShader = require("./shaders/sdf-shader")
+const SDFShader = require('./shaders/sdf-shader')
 
 const allIcons = {
     character: new THREE.SpriteMaterial( { color: 0xffffff } ),
@@ -86,9 +83,9 @@ function IconSprites ( type, text, parent, secondaryText ) {
     }
     
     
-    this.linkedTo = parent
+    //this.linkedTo = parent
     this.icon = icon.clone()
-    
+    console.log(this)
     this.add(this.icon)
 }
 
@@ -231,7 +228,7 @@ const generateSprite = ( color, sprite ) => {
         blancContext.clearRect(0,0,100,100)
         blancContext.fillRect(0, 0, 100, 100)
 
-        spriteTexture = new THREE.CanvasTexture(blancContext)
+        let spriteTexture = new THREE.CanvasTexture(blancContext)
         let spriteMaterial = new THREE.SpriteMaterial({
             color,
             useScreenCoordinates: false,
@@ -260,10 +257,9 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
         img.onload = () => {
             let w = img.width,
                 h = img.height,
-                //svgBox = img.getBBox()
                 ratio = w/h,
                 wantedWidthScale = 2500 * compensatescaling,
-                computedWidthScale = 100 * wantedWidthScale / w
+                computedWidthScale = 100 * wantedWidthScale / w,
                 computedHeightScale = computedWidthScale * ratio
             let tex = new THREE.Texture(img)
             tex.needsUpdate = true

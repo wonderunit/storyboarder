@@ -149,7 +149,7 @@ electronUtil.disableZoom()
 ReactDOM.render(
   h([
     Provider, { store }, [
-      Editor
+      Editor, { store }
     ]
   ]),
   document.getElementById('main')
