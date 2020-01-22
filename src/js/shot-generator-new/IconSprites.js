@@ -40,6 +40,7 @@ function IconSprites ( type, text, parent, secondaryText ) {
             break
         case 'camera':
             icon = allSprites.camera
+            console.log(icon)
             break
         case 'light':
             icon = allSprites.light

@@ -7,6 +7,7 @@ import {
 import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
 import IconsComponent from './components/IconsComponent'
+import CameraIcon from './components/Three/Icons/CameraIcon'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 
@@ -14,20 +15,28 @@ const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
   )
+const getSceneObjectCamerasIds = createSelector(
+    [getSceneObjects],
+    sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
+  ) 
 
 const SceneManagerR3fSmall = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
+        camerasIds: getSceneObjectCamerasIds(state),
         sceneObjects: getSceneObjects(state),
-        world: getWorld(state)
+        world: getWorld(state),
+        aspectRatio: state.aspectRatio,
     }),
     {
 
     }
 )( React.memo(({ 
     modelObjectIds,
+    camerasIds,
     sceneObjects,
-    world
+    world,
+    aspectRatio
 
 }) => {
     const { scene, camera } = useThree()
@@ -48,12 +57,13 @@ const SceneManagerR3fSmall = connect(
     }, [world])
 
     const autofitOrtho = useCallback(() => {
+      console.log("autoFit")
       let minMax = [9999,-9999,9999,-9999]
         
       // go through all appropriate objects and get the min max
       let numVisible = 0
       for (let child of scene.children[0].children) {
-
+        console.log(child)
         if (
             child.userData &&
             child.userData.type === 'object' ||
@@ -61,7 +71,7 @@ const SceneManagerR3fSmall = connect(
             child.userData.type === 'light' ||
             child.userData.type === 'volume' ||
             child.userData.type === 'image' ||
-            child instanceof THREE.PerspectiveCamera
+            child.userData.type === 'camera'
         ) {
           minMax[0] = Math.min(child.position.x, minMax[0])
           minMax[1] = Math.max(child.position.x, minMax[1])
@@ -70,7 +80,7 @@ const SceneManagerR3fSmall = connect(
           numVisible++
         }
       }
-    
+      
       // if only one object is in the scene (a single camera)
       if (numVisible === 1) {
         // add some extra padding
@@ -79,23 +89,23 @@ const SceneManagerR3fSmall = connect(
         minMax[2] -= 2
         minMax[3] += 2
       }
-    
+      
       // add some padding
       minMax[0] -= 2
       minMax[1] += 2
       minMax[2] -= 2
       minMax[3] += 2
-    
+      
       // get the aspect ratio of the container window
       // target aspect ratio
       let rs = 1
-     
-    
+      
+      
       // make sure the min max box fits in the aspect ratio
       let mWidth = minMax[1]-minMax[0]
       let mHeight = minMax[3]-minMax[2]
       let mAspectRatio = (mWidth/mHeight)
-    
+      
       if (mAspectRatio>rs) {
         let padding = (mWidth / rs)-mHeight
         minMax[2] -= padding/2
@@ -105,7 +115,8 @@ const SceneManagerR3fSmall = connect(
         minMax[0] -= padding/2
         minMax[1] += padding/2
       }
-    
+      
+      console.log(minMax)
       camera.position.x = minMax[0]+((minMax[1]-minMax[0])/2)
       camera.position.z = minMax[2]+((minMax[3]-minMax[2])/2)
       camera.left = -(minMax[1]-minMax[0])/2
@@ -114,8 +125,9 @@ const SceneManagerR3fSmall = connect(
       camera.bottom = -(minMax[3]-minMax[2])/2
       camera.near = -1000
       camera.far = 1000
-    
+      camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
+      console.log(camera.clone())
     }, [scene, camera])
 
     useEffect(() => {
@@ -123,9 +135,9 @@ const SceneManagerR3fSmall = connect(
         camera.rotation.x = -Math.PI / 2
         camera.layers.enable(2)
         camera.updateMatrixWorld(true)
-    }, [camera, sceneObjects])
+    }, [])
 
-    useEffect(autofitOrtho, [sceneObjects])
+    useEffect(autofitOrtho, [sceneObjects, aspectRatio])
 
     return <group ref={rootRef}> 
       <ambientLight
@@ -147,6 +159,16 @@ const SceneManagerR3fSmall = connect(
                 key={ index }
                 type={ sceneObject.type }
                 text=""
+                sceneObject={ sceneObject } />
+        })
+    }
+    {
+        camerasIds.map(( object, index) => {
+            let sceneObject = sceneObjects[object]
+            return <CameraIcon
+                key={ index }
+                type={ sceneObject.type }
+                text={ sceneObject.displayName || sceneObject.name }
                 sceneObject={ sceneObject } />
         })
     }

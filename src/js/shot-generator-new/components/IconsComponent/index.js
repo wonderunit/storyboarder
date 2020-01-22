@@ -10,6 +10,7 @@ const IconsComponent = React.memo(({type, text, secondText, sceneObject}) => {
         ref.current.rotation.y = sceneObject.y
     }, [])
     const { x, y, z, rotation} = sceneObject
+    //console.log(sceneObject)
     return <group 
     ref={ ref }
     position={ [x, z, y] }

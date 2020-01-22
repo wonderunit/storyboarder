@@ -605,7 +605,8 @@ const Editor = React.memo(({
                 id="top-down-canvas"
                 tabIndex={0}
                 onPointerDown={ onCanvasPointerDown }
-                orthographic={ true }>
+                orthographic={ true }
+                updateDefaultCamera={ false }>
                 <Provider store={ store }>
                   <SceneManagerR3fSmall />
                 </Provider>
