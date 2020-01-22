@@ -607,7 +607,7 @@ const Editor = React.memo(({
                 onPointerDown={ onCanvasPointerDown }
                 orthographic={ true }>
                 <Provider store={ store }>
-                  <SceneManagerR3fSmall/>
+                  <SceneManagerR3fSmall />
                 </Provider>
               </Canvas>
               <div className="topdown__controls">

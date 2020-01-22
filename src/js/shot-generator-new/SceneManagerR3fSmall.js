@@ -1,10 +1,15 @@
 import { connect } from 'react-redux'
 import React, { useRef, useEffect, useCallback } from 'react'
-
-import { getSceneObjects } from '../shared/reducers/shot-generator'
+import { 
+  getSceneObjects,
+  getWorld
+} from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
 import IconsComponent from './components/IconsComponent'
+import Ground from './components/Three/Ground'
+import useTextureLoader from './hooks/use-texture-loader'
+
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -13,19 +18,34 @@ const getSceneObjectModelObjectIds = createSelector(
 const SceneManagerR3fSmall = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
-        sceneObjects: getSceneObjects(state)
+        sceneObjects: getSceneObjects(state),
+        world: getWorld(state)
     }),
     {
 
     }
 )( React.memo(({ 
     modelObjectIds,
-    sceneObjects
+    sceneObjects,
+    world
 
 }) => {
     const { scene, camera } = useThree()
     const rootRef = useRef()
     const groundRef = useRef()
+
+    const ambientLightRef = useRef()
+    const directionalLightRef = useRef()
+
+    const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
+
+    useEffect(() => { 
+        directionalLightRef.current.intensity = world.directional.intensity
+        directionalLightRef.current.rotation.x = 0
+        directionalLightRef.current.rotation.z = 0
+        directionalLightRef.current.rotation.y = world.directional.rotation
+        directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
+    }, [world])
 
     const autofitOrtho = useCallback(() => {
       let minMax = [9999,-9999,9999,-9999]
@@ -96,7 +116,6 @@ const SceneManagerR3fSmall = connect(
       camera.far = 1000
     
       camera.updateProjectionMatrix()
-      console.log(camera)
     }, [scene, camera])
 
     useEffect(() => {
@@ -108,8 +127,19 @@ const SceneManagerR3fSmall = connect(
 
     useEffect(autofitOrtho, [sceneObjects])
 
-    console.log(scene)
     return <group ref={rootRef}> 
+      <ambientLight
+        ref={ambientLightRef}
+        color={0xffffff}
+        intensity={world.ambient.intensity} />
+
+    <directionalLight
+        ref={directionalLightRef}
+        color={0xffffff}
+        intensity={world.directional.intensity}
+        position={[0, 1.5, 0]}
+        target-position={[0, 0, 0.4]}
+    />
     {
         modelObjectIds.map(( object, index) => {
             let sceneObject = sceneObjects[object]
@@ -120,7 +150,11 @@ const SceneManagerR3fSmall = connect(
                 sceneObject={ sceneObject } />
         })
     }
-    
+    { groundTexture && <Ground
+        objRef={ groundRef }
+        texture={ groundTexture }
+        visible={ !world.room.visible && world.ground } />
+    }
     </group>
 
     })
