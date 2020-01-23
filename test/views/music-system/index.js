@@ -62,8 +62,10 @@ window.onclick = function () {
             musicSystem.playSequence(n)
           }
           function onPlayRandomClick (event) {
-            event.preventDefault()
             musicSystem.playSequence()
+          }
+          function onPlayDrumClick (event) {
+            musicSystem.playDrum()
           }
           return <>
             <div>
@@ -74,12 +76,17 @@ window.onclick = function () {
             </div>
             <br />
             <div>
+              <a href="#" onClick={preventDefault(onPlayDrumClick)}>Play Drum</a>
+              <br />
+            </div>
+            <br />
+            <div>
               <a href="#" onClick={onStartMusicSystemClick}>Start Music System</a>
               <br />
             </div>
             <br />
             <div>
-              <a href="#" onClick={onPlayRandomClick}>Play Random</a>
+              <a href="#" onClick={preventDefault(onPlayRandomClick)}>Play Random</a>
               <br />
             </div>
             <br/>

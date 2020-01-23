@@ -29,17 +29,23 @@ function range (start, end) {
   return a
 }
 
-let bag = []
-function nextIndex () {
-  if (bag.length === 0)
-    bag = shuffle(
-      range(0, sequences.length - 1).filter(i => !denylist.includes(i))
-    )
-  return bag.shift()
+function createSequenceStream () {
+  let bag = []
+  function next () {
+    if (bag.length === 0)
+      bag = shuffle(
+        range(0, sequences.length - 1).filter(i => !denylist.includes(i))
+      )
+    return bag.shift()
+  }
+  return {
+    next
+  }
 }
+const sequenceStream = createSequenceStream()
 
 function playSequence (index) {
-  index = index == null ? nextIndex() : index
+  index = index == null ? sequenceStream.next() : index
   console.log(`--- sequence index:${index}`)
   let sequence = sequences[index]
   let events = sequence.notes
@@ -51,6 +57,30 @@ function playSequence (index) {
   })
 
   return last(events).time + last(events).duration
+}
+
+function createDrumStream () {
+  let drummable = []
+  function next () {
+    if (!drummable.length) {
+      drummable = sequences[sequenceStream.next()].notes.slice(0)
+    }
+    let value = drummable.shift()
+    return value
+  }
+  return {
+    next
+  }
+}
+const drumStream = createDrumStream()
+
+function playDrum () {
+  let event = drumStream.next()
+
+  let { name, duration, velocity } = event
+  let time = 0
+  console.log(`\tdrum ${name} t:${time} d:${duration} v:${velocity}`)
+  sampler.triggerAttackRelease(name, duration, `+${time}`, velocity)
 }
 
 function trigger () {
@@ -112,6 +142,7 @@ module.exports = {
   init,
   start,
   playSequence,
+  playDrum,
   setIsPlaying,
   getSequencesCount
 }
