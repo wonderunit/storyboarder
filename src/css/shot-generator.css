@@ -298,7 +298,7 @@ kbd {
 
   display: flex;
   flex-direction: column;
-  
+
   height: 100%;
   padding: 6px;
   background-color: #333639;
@@ -904,6 +904,7 @@ input[type="color"]::-webkit-color-swatch {
 }
 .thumbnail-search__list {
   height: 100%;
+  overflow: auto;
 }
 .thumbnail-search__item {
   cursor: default;
@@ -1411,18 +1412,18 @@ div.fatal-error-screen__report::selection {
 
 .tabs-tab {
   background-color: rgba(255,255,255,0.05);
-  
+
   padding: 4px;
-  
+
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
-  
+
   margin-right: 3px;
-  
+
   display: flex;
   justify-content: center;
   align-items: center;
-  
+
   cursor: pointer;
 }
 
@@ -1463,19 +1464,19 @@ div.fatal-error-screen__report::selection {
   left: 0;
   right: 0;
   background-color: rgba(0, 0, 0, 0.6);
-  
+
   display: flex;
-  
+
   z-index: 999;
 }
 
 .modal__overlay > .modal__window {
   display: block;
-  
+
   min-width: 256px;
   min-height: 128px;
   padding: 6px;
-  
+
   background-color: #30323d;
   border-radius: 6px;
 }
@@ -1548,6 +1549,27 @@ a.button,
   cursor: pointer;
 }
 
+.thumbnail {
+  width: 100%;
+  height: 100%;
+  animation: 0.2s thumbnailAnimation;
+}
+
+@keyframes thumbnailAnimation {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.center-child {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 @media (max-width: 1504px) {
 
   #toolbar a span,
@@ -1557,4 +1579,21 @@ a.button,
     display: none;
   }
 
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 3px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+  -webkit-animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { -webkit-transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+  to { -webkit-transform: rotate(360deg); }
 }

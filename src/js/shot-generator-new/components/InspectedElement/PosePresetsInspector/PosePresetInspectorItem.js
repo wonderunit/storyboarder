@@ -4,6 +4,7 @@ import fs from 'fs-extra'
 import classNames from 'classnames'
 import '../../../../vendor/three/examples/js/utils/SkeletonUtils'
 import ThumbnailRenderer from '../../../utils/ThumbnailRenderer'
+import Image from '../../Image'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../../utils/InspectorElementsSettings'
 import { remote } from 'electron'
 import { useMemo } from 'react'
@@ -95,11 +96,11 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, data : pres
     style={ style }
     onPointerUp={ onPointerDown }
     data-id={ preset.id }
-    title={ preset.name }> 
-      <figure style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}> 
-        <img src={ src } style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT } }/>
-      </figure>
-      <div className="thumbnail-search__name" 
+    title={ preset.name }>
+      <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
+        <Image src={ src } className="thumbnail"/>
+      </div>
+      <div className="thumbnail-search__name"
         style={{
           width: ITEM_WIDTH ,
           height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
