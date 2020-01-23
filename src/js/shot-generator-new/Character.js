@@ -574,7 +574,7 @@ const Character = React.memo(({
         headBone.scale.setScalar( props.headScale )
       }
     }
-  }, [props.model, props.headScale, props.skeleton, ready])
+  }, [props.model, props.headScale, props.skeleton, props.handSkeleton, ready])
 
   useEffect(() => {
     if (!ready) return

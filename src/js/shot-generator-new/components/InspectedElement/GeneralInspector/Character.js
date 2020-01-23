@@ -26,7 +26,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
 
   const setTintColor = useCallback((tintColor) => updateObject(id, {tintColor}), [])
 
-  const validTargets = initialState.models[props.model].validMorphTargets
+  const validTargets = initialState.models[props.model] && initialState.models[props.model].validMorphTargets
   const validTargetsExist = (validTargets && Object.values(validTargets).length !== 0)
 
   const morphTargets = useMemo(() => {

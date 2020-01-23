@@ -76,7 +76,7 @@ const AttachableInspector = connect(
     const onSelectItem = useCallback((model) => {
       let originalSkeleton = getSkeleton()
       selectedModel.current = model
-      selectedId.current = model.id
+      selectedId.current = model.id || id
       let bone = originalSkeleton.getBoneByName(model.bindBone)
       if(bone) {
         createAttachableElement(model, originalSkeleton, id, {bindBone: bone})
@@ -135,9 +135,9 @@ const AttachableInspector = connect(
 
     const onSelectFile = useCallback((filepath) => {
       if (filepath.file) {
-        onSelectItem(id, { model: filepath.file })
+        onSelectItem(filepath.file )
       }
-    }, [id])
+    }, [id, onSelectItem])
 
     const saveFilteredPresets = useCallback((filteredPreset) => {
       let presets = []

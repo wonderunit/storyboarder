@@ -30,7 +30,7 @@ const BoneInspector = ({ sceneObject, selectedBone, updateCharacterSkeleton }) =
     }, 1)
   }, [sceneObject.posePresetId])
 
-  return bone && <div className="column">
+  return (!bone && <div/> )|| <div className="column">
         <div className="column" style={{ marginBottom: 3 }}>
           <div style={{ flex: 1, margin: "6px 0 3px 0" }}>Bone</div> 
           <small style={{ display: "flex", flex: 1, marginLeft: 1, fontStyle: "italic", opacity: 0.8 }}>{ bone.name }</small>
