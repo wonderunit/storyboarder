@@ -10,6 +10,8 @@ import IconsComponent from './components/IconsComponent'
 import CameraIcon from './components/Three/Icons/CameraIcon'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
+import useFontLoader from './hooks/use-font-loader'
+import path from 'path'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -19,7 +21,7 @@ const getSceneObjectCamerasIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
   ) 
-
+const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
@@ -47,7 +49,8 @@ const SceneManagerR3fSmall = connect(
     const directionalLightRef = useRef()
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
-
+ 
+    const fontMesh =  useFontLoader(fontpath, 'fonts/wonder-unit-bmfont/wonderunit-b.png')
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
         directionalLightRef.current.rotation.x = 0
@@ -57,13 +60,11 @@ const SceneManagerR3fSmall = connect(
     }, [world])
 
     const autofitOrtho = useCallback(() => {
-      console.log("autoFit")
       let minMax = [9999,-9999,9999,-9999]
         
       // go through all appropriate objects and get the min max
       let numVisible = 0
       for (let child of scene.children[0].children) {
-        console.log(child)
         if (
             child.userData &&
             child.userData.type === 'object' ||
@@ -116,7 +117,6 @@ const SceneManagerR3fSmall = connect(
         minMax[1] += padding/2
       }
       
-      console.log(minMax)
       camera.position.x = minMax[0]+((minMax[1]-minMax[0])/2)
       camera.position.z = minMax[2]+((minMax[3]-minMax[2])/2)
       camera.left = -(minMax[1]-minMax[0])/2
@@ -127,7 +127,6 @@ const SceneManagerR3fSmall = connect(
       camera.far = 1000
       camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
-      console.log(camera.clone())
     }, [scene, camera])
 
     useEffect(() => {
@@ -137,8 +136,7 @@ const SceneManagerR3fSmall = connect(
         camera.updateMatrixWorld(true)
     }, [])
 
-    useEffect(autofitOrtho, [sceneObjects, aspectRatio])
-
+    useEffect(autofitOrtho, [sceneObjects, aspectRatio, fontMesh])
     return <group ref={rootRef}> 
       <ambientLight
         ref={ambientLightRef}
@@ -153,23 +151,25 @@ const SceneManagerR3fSmall = connect(
         target-position={[0, 0, 0.4]}
     />
     {
-        modelObjectIds.map(( object, index) => {
+        fontMesh && modelObjectIds.map(( object, index) => {
             let sceneObject = sceneObjects[object]
             return <IconsComponent
                 key={ index }
                 type={ sceneObject.type }
-                text=""
-                sceneObject={ sceneObject } />
+                textArray={ [] }
+                sceneObject={ sceneObject }
+                fontMesh={ fontMesh } />
         })
     }
     {
-        camerasIds.map(( object, index) => {
+        fontMesh && camerasIds.map(( object, index) => {
             let sceneObject = sceneObjects[object]
             return <CameraIcon
                 key={ index }
                 type={ sceneObject.type }
-                text={ sceneObject.displayName || sceneObject.name }
-                sceneObject={ sceneObject } />
+                text={ sceneObject.name || sceneObject.displayName }
+                sceneObject={ sceneObject }
+                fontMesh={ fontMesh } />
         })
     }
     { groundTexture && <Ground

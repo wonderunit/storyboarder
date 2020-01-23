@@ -9,7 +9,6 @@ const useTextureLoader = filepath => {
   const [loader] = useState(() => new THREE.TextureLoader())
   const [_, forceUpdate] = useState(false)
   useEffect(() => {
-      console.log(filepath)
     if (!cache.has(key)) {
       loader.load(filepath, gltf => {
         cache.set(key, gltf)

@@ -3,7 +3,7 @@ import React, { useMemo, useEffect } from 'react'
 import { useUpdate } from 'react-three-fiber'
 
 
-const ModelObject = React.memo(({ gltf, sceneObject, children }) => {
+const ModelObject = React.memo(({ gltf, sceneObject, children, fontMesh }) => {
   const ref = useUpdate(
     self => {
       //self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))

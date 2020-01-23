@@ -27,7 +27,7 @@ const generateSprite = ( color, sprite ) => {
         blancContext.clearRect(0,0,100,100)
         blancContext.fillRect(0, 0, 100, 100)
 
-        spriteTexture = new THREE.CanvasTexture(blancContext)
+        let spriteTexture = new THREE.CanvasTexture(blancContext)
         let spriteMaterial = new THREE.SpriteMaterial({
             color,
             useScreenCoordinates: false,
@@ -59,7 +59,7 @@ const loadIconPromise = (file, sprite, compensatescaling) => {
                 //svgBox = img.getBBox()
                 ratio = w/h,
                 wantedWidthScale = 2500 * compensatescaling,
-                computedWidthScale = 100 * wantedWidthScale / w
+                computedWidthScale = 100 * wantedWidthScale / w,
                 computedHeightScale = computedWidthScale * ratio
             let tex = new THREE.Texture(img)
             tex.needsUpdate = true
