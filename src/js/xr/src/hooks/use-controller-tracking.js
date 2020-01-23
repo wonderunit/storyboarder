@@ -6,79 +6,65 @@ const { useRender } = require('react-three-fiber')
 
 const { log } = require('../components/Log')
 
-// via https://joe.framba.ch/blog/moving-average
-class Stream {
-  constructor(size) {
-    this.size = size
-    this.array = Array(size).fill(null)
-    this.index = 0
-    this.movingSum = 0
-  }
-
-  add(n) {
-    this.array[this.index] = n
-    this.index = (this.index + 1) % this.size
-  }
-}
+let THRESHOLD = 0.09
 
 function useControllerTracking (controllers, onDrum) {
-  const clock = useRef()
-  const getClock = () => {
-    if (clock.current == null) {
-      clock.current = new THREE.Clock()
+  const targets = useRef()
+  const getTargets = () => {
+    if (targets.current == null) {
+      targets.current = {}
     }
-    return clock.current
-  }
-
-  const history = useRef()
-  const getHistory = () => {
-    if (history.current == null) {
-      history.current = {}
-    }
-    return history.current
+    return targets.current
   }
 
   useRender((state, delta) => {
-    let c = getClock()
-    let h = getHistory()
-
     controllers.forEach(controller => {
-      let gamepad = navigator.getGamepads()[controller.userData.gamepad.index]
-
-      if (h[controller.uuid] == null) {
-        h[controller.uuid] = {
-          slow: new Stream(10),
-          fast: new Stream(10),
-          prevPosition: new THREE.Vector3(),
-          prevRotation: new THREE.Euler()
+      if (getTargets()[controller.uuid] == null) {
+        getTargets()[controller.uuid] = {
+          controller,
+          acc: new THREE.Vector3(),
+          accD: new THREE.Vector3(),
+          accF: new THREE.Vector3(),
+          prev: null
         }
       }
 
-      let position = controller.position
-      let rotation = controller.rotation
+      let target = getTargets()[controller.uuid]
 
-      h[controller.uuid].fast.add({ position, rotation })
+      if (target.prev) {
+        let d = target.controller.position.clone().sub(target.prev)
+        target.acc.add(d)
+        target.accD.add(d)
+        target.accF.add(d)
 
-      if (c.getElapsedTime() > 0.25) {
-        c.start()
-        h[controller.uuid].slow.add({ position, rotation })
+        let l = -Number.MAX_SAFE_INTEGER
+        let c
+        for (let i = 0; i < 3; i++) {
+          if (target.accD.getComponent(i) > l) {
+            l = target.accD[i]
+            c = i
+          }
+        }
+        let mc = target.accD.getComponent(c)
+        let dc = d.getComponent(c)
+
+        let signsEq = Math.sign(mc) == Math.sign(dc)
+
+        let len = target.accD.length()
+
+        if (len > THRESHOLD && !signsEq) {
+          log(`DRUM! ${Date.now()}`)
+
+          target.acc.set(0, 0, 0)
+          target.accD.set(0, 0, 0)
+          target.accF.set(0, 0, 0)
+        }
+
+        target.accD.multiplyScalar(0.98)
+        target.accF.multiplyScalar(0.2)
       }
 
-      if (gamepad.hand === 'left') {
-        log('---')
-        log('left controller:')
-        log(`${position.x.toPrecision(3)} ${position.y.toPrecision(3)}, ${position.z.toPrecision(3)}`)
-        log(`${rotation.x.toPrecision(3)} ${rotation.y.toPrecision(3)}, ${rotation.z.toPrecision(3)}`)
-
-        let prev = h[controller.uuid].prevPosition
-        let diff = position.clone().sub(prev)
-        log(`${diff.x} ${diff.y} ${diff.z}`)
-
-        log('---')
-      }
-
-      h[controller.uuid].prevPosition = position.clone()
-      h[controller.uuid].prevRotation = rotation.clone()
+      target.prev = target.controller.position.clone()
     })
   }, false, [controllers])
 }
