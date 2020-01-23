@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    html, body {
+      font-family: Verdana;
+      font-size: 10px;
+      height: 100vh;
+      cursor: pointer;
+      line-height: 1.5;
+    }
+    a {
+      display: inline-block;
+      background-color: #eee;
+      color: #222;
+      padding: 0.5rem;
+      margin: 0.25rem;
+      text-decoration: none;
+    }
+    .sequences a {
+      width: 3rem;
+    }
+  </style>
+</head>
+<body>
+  <div style="display: flex; width: 100%;">
+    <div id="app" style="flex: 1">
+      Click anywhere to enable audio
+    </div>
+    <div id="output" style="flex: 1">
+      <b>Output</b>
+      <br /><br />
+    </div>
+  </div>
+  <script src="index.js"></script>
+</body>
+</html>
