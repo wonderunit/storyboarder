@@ -5,6 +5,7 @@ const { useRef } = React = require('react')
 const { useRender } = require('react-three-fiber')
 
 const { log } = require('../components/Log')
+const { playDrum } = require('../music-system')
 
 let THRESHOLD = 0.09
 
@@ -54,6 +55,8 @@ function useControllerTracking (controllers, onDrum) {
 
         if (len > THRESHOLD && !signsEq) {
           log(`DRUM! ${Date.now()}`)
+
+          playDrum()
 
           target.acc.set(0, 0, 0)
           target.accD.set(0, 0, 0)
