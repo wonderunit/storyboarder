@@ -99,10 +99,10 @@ function useControllerTracking (controllers, onDrum) {
             // let diffY = y - oldY
             // if (diffDelta > 100 && diffY < -0.1) {
 
-            if (diffDelta > 100 && y - avgY < -0.05) {
               log(`DRUM! ${Date.now()}`)
 
               playDrum()
+            if (diffDelta > 100 && y - avgY < -0.025) {
             }
           }
 
