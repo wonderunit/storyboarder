@@ -12,6 +12,8 @@ import {
 import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
 import { CameraHelper } from 'three'
+import ModelLoader from '../services/model-loader'
+
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -22,7 +24,8 @@ const SceneManagerR3fLarge = connect(
         modelObjectIds: getSceneObjectModelObjectIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
-        activeCamera: getSceneObjects(state)[getActiveCamera(state)]
+        activeCamera: getSceneObjects(state)[getActiveCamera(state)],
+        storyboarderFilePath: state.meta.storyboarderFilePath
     }),
     {
 
@@ -31,7 +34,9 @@ const SceneManagerR3fLarge = connect(
     modelObjectIds,
     sceneObjects,
     world,
-    activeCamera
+    activeCamera,
+    getAsset,
+    storyboarderFilePath
 
 }) => {
     const { scene, camera } = useThree()
@@ -39,7 +44,6 @@ const SceneManagerR3fLarge = connect(
     const groundRef = useRef()
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
-
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
@@ -80,10 +84,14 @@ const SceneManagerR3fLarge = connect(
     />
     {
         modelObjectIds.map(object => {
+            let sceneObject = sceneObjects[object]
+            let gltf = sceneObject.model != 'box'
+                ? getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
+                : null
             return <ModelObject
-                key={ sceneObjects[object].id }
-                gltf={ null }
-                sceneObject={ sceneObjects[object] }/>
+                key={ sceneObject.id }
+                gltf={ gltf }
+                sceneObject={ sceneObject }/>
         })
     }
     { groundTexture && <Ground

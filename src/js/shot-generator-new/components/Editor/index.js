@@ -93,7 +93,8 @@ import BoardInspector from "../BoardInspector";
 import GuidesInspector from "../GuidesInspector";
 import createDeepEqualSelector from "../../../utils/deepEqualSelector"
 import GuidesView from "../GuidesView"
-
+import { useAssetsManager } from '../../hooks/use-assets-manager'
+import getFilepathForModelByType from '../../helpers/get-filepath-for-model-by-type'
 import {gltfLoader} from "../../utils/gltfLoader"
 
 const Editor = React.memo(({
@@ -107,6 +108,7 @@ const Editor = React.memo(({
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
 
   const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
+  const { assets, requestAsset, getAsset } = useAssetsManager()
 
   /** Resources loading */
   const loadAttachment = ({ filepath, dispatch }) => {
@@ -149,130 +151,6 @@ const Editor = React.memo(({
           }
         )
         return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-    }
-  }
-
-  const loadSceneObjects = async (dispatch, state) => {
-    let storyboarderFilePath = state.meta.storyboarderFilePath
-    loadCameraModel(storyboarderFilePath)
-    const loadables = Object.values(getSceneObjects(state))
-    // has a value for model
-    .filter(o => o.model != null)
-    // loaded false or undefined or null
-    .filter(o => o.loaded !== true)
-
-    for (let loadable of loadables) {
-      // don't try to load the box
-      if (loadable.type === 'object' && loadable.model === 'box') {
-        continue
-      }
-
-      let expectedFilepath = ModelLoader.getFilepathForModel(loadable, { storyboarderFilePath })
-
-      // grab the latest state
-      withState(async (dispatch, state) => {
-        // if it's in the cache already, skip
-        if (state.attachments[expectedFilepath]) return
-
-        // prevent doubling up
-        dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: expectedFilepath } })
-
-        // if absolute filepath does not exist ...
-        if (!fs.existsSync(expectedFilepath)) {
-          // ... ask the artist to locate it
-          try {
-
-            const choice = dialog.showMessageBox({
-              type: 'question',
-              buttons: ['Yes', 'No'],
-              title: 'Model file not found',
-              message: `Could not find model file at ${expectedFilepath}. Try to find it?`,
-            })
-
-            const shouldRelocate = (choice === 0)
-
-            if (!shouldRelocate) {
-              throw new Error('could not relocate missing file')
-            }
-
-            let updatedFilepath = await new Promise((resolve, reject) => {
-              dialog.showOpenDialog(
-                {
-                  title: 'Locate model file',
-                  defaultPath: path.dirname(expectedFilepath),
-                  filters: [
-                    {
-                      name: 'Model',
-                      extensions: ['gltf', 'glb']
-                    }
-                  ]
-                },
-                filenames => {
-                  if (filenames) {
-                    resolve(filenames[0])
-                  } else {
-                    reject('no alternate filepath provided')
-                  }
-                }
-              )
-            })
-
-
-            // remove the pending absolute path from attachments
-            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
-            // update ALL instances of the model with the new location
-            dispatch({
-              type: 'ATTACHMENTS_RELOCATE',
-              payload: {
-                src: expectedFilepath,
-                dst: updatedFilepath
-              }
-            })
-            return
-
-          } catch (error) {
-            log.error(error)
-
-            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
-            return
-          }
-        }
-        if (ModelLoader.needsCopy(loadable)) {
-          let src = expectedFilepath
-
-          let dst = path.join(
-            path.dirname(storyboarderFilePath),
-            ModelLoader.projectFolder(loadable.type),
-            path.basename(expectedFilepath)
-          )
-
-          log.info('will copy from', src, 'to', dst)
-
-          // make sure the path exists
-          fs.ensureDirSync(path.dirname(dst))
-
-          // as long as they are different files, we need to copy them
-          if (src !== dst) {
-
-            log.info(`copying model file from ${src} to ${dst}`)
-            fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
-          }
-
-          // update it in the data
-          let updatedModel = path.join(
-            ModelLoader.projectFolder(loadable.type),
-            path.basename(dst)
-          )
-
-          dispatch(updateObject(loadable.id, { model: updatedModel }))
-
-          // remove the pending absolute path from attachments
-          dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: src } })
-          return
-        }
-
-        loadAttachment({ filepath: expectedFilepath, dispatch })
-      })
     }
   }
 
@@ -393,6 +271,25 @@ const Editor = React.memo(({
       loadAttachment({ filepath: expectedFilepath, dispatch })
     })
   }
+
+  useEffect(() => {
+
+    let storyboarderFilePath 
+    withState((dispatch, state) => {
+      storyboarderFilePath = state.meta.storyboarderFilePath
+    })
+    Object.values(sceneObjects)
+      // has a value for model
+      .filter(o => o.model != null)
+      // is not a box
+      .filter(o => !(o.type === 'object' && o.model === 'box'))
+      // what's the filepath?
+      .map((object) => ModelLoader.getFilepathForModel(object, { storyboarderFilePath }))
+      // has not been requested
+      .filter(filepath => getAsset(filepath) == null)
+      // request the file
+      .forEach(requestAsset)
+  }, [sceneObjects])
 
   /** Resources loading end */
 
@@ -562,10 +459,6 @@ const Editor = React.memo(({
   }, [])
 
   useEffect(() => {
-    withState(loadSceneObjects)
-  }, [sceneObjects])
-
-  useEffect(() => {
     if (world.environment.file) {
       withState(loadWorldEnvironment)
     }
@@ -608,7 +501,8 @@ const Editor = React.memo(({
                 orthographic={ true }
                 updateDefaultCamera={ false }>
                 <Provider store={ store }>
-                  <SceneManagerR3fSmall />
+                  <SceneManagerR3fSmall 
+                    getAsset={ getAsset }/>
                 </Provider>
               </Canvas>
               <div className="topdown__controls">
@@ -635,7 +529,8 @@ const Editor = React.memo(({
                // ref={largeCanvasRef}
                 onPointerDown={onCanvasPointerDown}>
                 <Provider store={ store }>
-                  <SceneManagerR3fLarge/>
+                  <SceneManagerR3fLarge 
+                  getAsset={ getAsset }/>
                 </Provider>
               </Canvas>
               <GuidesView

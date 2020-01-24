@@ -12,6 +12,8 @@ import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import useFontLoader from './hooks/use-font-loader'
 import path from 'path'
+import ModelObject from './components/Three/ModelObject'
+import ModelLoader from '../services/model-loader'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -29,6 +31,7 @@ const SceneManagerR3fSmall = connect(
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         aspectRatio: state.aspectRatio,
+        storyboarderFilePath: state.meta.storyboarderFilePath
     }),
     {
 
@@ -38,7 +41,9 @@ const SceneManagerR3fSmall = connect(
     camerasIds,
     sceneObjects,
     world,
-    aspectRatio
+    aspectRatio,
+    getAsset,
+    storyboarderFilePath
 
 }) => {
     const { scene, camera } = useThree()
@@ -151,14 +156,15 @@ const SceneManagerR3fSmall = connect(
         target-position={[0, 0, 0.4]}
     />
     {
-        fontMesh && modelObjectIds.map(( object, index) => {
-            let sceneObject = sceneObjects[object]
-            return <IconsComponent
-                key={ index }
-                type={ sceneObject.type }
-                textArray={ [] }
-                sceneObject={ sceneObject }
-                fontMesh={ fontMesh } />
+        modelObjectIds.map(object => {
+          let sceneObject = sceneObjects[object]
+          let gltf = sceneObject.model != 'box'
+              ? getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
+              : null
+          return <ModelObject
+              key={ sceneObject.id }
+              gltf={ gltf }
+              sceneObject={ sceneObject }/>
         })
     }
     {

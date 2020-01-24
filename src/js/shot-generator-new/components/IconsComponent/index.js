@@ -36,6 +36,8 @@ const IconsComponent = React.memo(({type, text, auxiliaryText, sceneObject, font
     }, [auxiliaryText])
 
     const { x, y, z} = sceneObject
+    console.log(sceneObject.width)
+    console.log(sceneObject.depth)
     return <group 
     ref={ ref }
     position={ [x, z, y] }
