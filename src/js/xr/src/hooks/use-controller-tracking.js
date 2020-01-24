@@ -77,28 +77,28 @@ function useControllerTracking (controllers, onDrum) {
             position: { x, y, z },
             delta
           })
-          // get all events from the past 500 msecs
+          // get all recent events (from the past 500 msecs)
           let events = target.stream.array.filter(Boolean).filter(event =>
             (delta - event.delta) < 500
           )
           // if there are at least two to compare
           if (events.length >= 2) {
-            // get the average Y position of the past 500 msecs of events
+            // get the average recent Y position
             let yPos = events.map(event => event.position.y)
             let avgY = yPos.reduce(sum) / yPos.length
 
-            // get the oldest event of the past 500 msecs of events
+            // get the oldest recent event
             let deltas = events.map(event => event.delta)
             let oldestDelta = deltas.reduce(min, Infinity)
             let oldEvent = events.find(event => event.delta == oldestDelta)
 
-            // let oldY = oldEvent.position.y
-            // let diffY = y - oldY
-
             let oldDelta = oldEvent.delta
             let diffDelta = delta - oldDelta
 
+            // let oldY = oldEvent.position.y
+            // let diffY = y - oldY
             // if (diffDelta > 100 && diffY < -0.1) {
+
             if (diffDelta > 100 && y - avgY < -0.05) {
               log(`DRUM! ${Date.now()}`)
 
