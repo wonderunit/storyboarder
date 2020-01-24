@@ -2,7 +2,10 @@ import { connect } from 'react-redux'
 import React, { useRef, useEffect, useCallback } from 'react'
 import { 
   getSceneObjects,
-  getWorld
+  getWorld,
+  selectObject,
+  getSelections,
+  updateObjects
 } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
@@ -14,6 +17,10 @@ import useFontLoader from './hooks/use-font-loader'
 import path from 'path'
 import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
+
+import { useDraggingManager} from './use-dragging-manager'
+
+import SelectionManagerR3fSmall from './use-dragging-manager'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -31,10 +38,12 @@ const SceneManagerR3fSmall = connect(
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         aspectRatio: state.aspectRatio,
-        storyboarderFilePath: state.meta.storyboarderFilePath
+        storyboarderFilePath: state.meta.storyboarderFilePath,
+        selections: getSelections(state)
     }),
     {
-
+      selectObject,
+      updateObjects
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -43,18 +52,52 @@ const SceneManagerR3fSmall = connect(
     world,
     aspectRatio,
     getAsset,
-    storyboarderFilePath
+    storyboarderFilePath,
+    selectObject,
+    selections,
+    updateObjects
 
 }) => {
-    const { scene, camera } = useThree()
+    const { scene, camera, gl } = useThree()
     const rootRef = useRef()
     const groundRef = useRef()
+    const draggedObject = useRef(null)
 
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
+    const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager()
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
  
+    const mouse = event => {
+      const rect = gl.domElement.getBoundingClientRect()
+      return {
+        x: ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1,
+        y: - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1
+      }
+    }
+
+    const onPointerDown = (e) => {
+      selectObject(e.object.userData.id)
+      draggedObject.current = e.object
+      const { x, y } = mouse(e)
+      prepareDrag( draggedObject.current, {x, y, useIcons:true, camera, scene, selections })
+    }
+
+    const onPointerMove = (e) => {
+     // console.log(draggedObject.current)
+      if(!draggedObject.current) return
+      const { x, y } = mouse(e)
+      drag({ x, y }, draggedObject.current, camera, selections)
+      updateStore(updateObjects)
+    }
+
+    const onPointerUp = (e) => {
+      if(!draggedObject.current) return
+      endDrag(updateObjects)
+      draggedObject.current = null
+    } 
+
     const fontMesh =  useFontLoader(fontpath, 'fonts/wonder-unit-bmfont/wonderunit-b.png')
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
@@ -142,7 +185,13 @@ const SceneManagerR3fSmall = connect(
     }, [])
 
     useEffect(autofitOrtho, [sceneObjects, aspectRatio, fontMesh])
-    return <group ref={rootRef}> 
+
+    /////Render components
+    return <group ref={rootRef}
+      onPointerMove={e => {
+        e.stopPropagation()
+        onPointerMove(e)
+        }}> 
       <ambientLight
         ref={ambientLightRef}
         color={0xffffff}
@@ -164,7 +213,17 @@ const SceneManagerR3fSmall = connect(
           return <ModelObject
               key={ sceneObject.id }
               gltf={ gltf }
-              sceneObject={ sceneObject }/>
+              sceneObject={ sceneObject }
+              isSelected={ selections.includes(sceneObject.id) }
+              onPointerUp={e => {
+                e.stopPropagation()
+                onPointerUp(e)
+              }}
+              onPointerDown={e => {
+                e.stopPropagation()
+                onPointerDown(e)
+              }}
+              />
         })
     }
     {
@@ -175,7 +234,18 @@ const SceneManagerR3fSmall = connect(
                 type={ sceneObject.type }
                 text={ sceneObject.name || sceneObject.displayName }
                 sceneObject={ sceneObject }
-                fontMesh={ fontMesh } />
+                fontMesh={ fontMesh } 
+                onPointerUp={e => {
+                  e.stopPropagation()
+                  onPointerUp(e)
+                }}
+                onPointerDown={e => {
+                  console.log("Pointer down", e)
+                  e.stopPropagation()
+                  onPointerDown(e)
+                }}
+                
+                />
         })
     }
     { groundTexture && <Ground

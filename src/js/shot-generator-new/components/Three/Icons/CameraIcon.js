@@ -2,7 +2,7 @@ import React, { useEffect, useRef } from 'react'
 import IconSprites from '../../../IconSprites'
 
 
-const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh}) => {
+const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, ...props}) => {
     const ref = useRef()
     const iconsSprites = useRef()
     const frustumIcons = useRef()
@@ -65,8 +65,10 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh}) 
         position={ [x, z, y] }
         visible={ true }
         userData={{
-            type:type
+            type:type,
+            id: sceneObject.id
         }}
+        {...props}
     >
     </group>
 })

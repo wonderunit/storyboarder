@@ -397,7 +397,7 @@ const Editor = React.memo(({
                 key="top-down-canvas"
                 id="top-down-canvas"
                 tabIndex={0}
-                onPointerDown={ onCanvasPointerDown }
+                /* onPointerDown={ onCanvasPointerDown } */
                 orthographic={ true }
                 updateDefaultCamera={ false }>
                 <Provider store={ store }>
@@ -427,7 +427,8 @@ const Editor = React.memo(({
                 id="camera-canvas"
                 tabIndex={1}
                // ref={largeCanvasRef}
-                onPointerDown={onCanvasPointerDown}>
+                /* onPointerDown={onCanvasPointerDown} */
+                >
                 <Provider store={ store }>
                   <SceneManagerR3fLarge 
                   getAsset={ getAsset }/>

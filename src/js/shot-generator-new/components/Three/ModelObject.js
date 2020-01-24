@@ -1,6 +1,8 @@
 import * as THREE from 'three'
 import React, { useMemo, useEffect } from 'react'
 import { useUpdate } from 'react-three-fiber'
+
+import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
 /* 
 const VirtualCamera = require('../components/VirtualCamera') */
 
@@ -37,7 +39,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const ModelObject = React.memo(({ gltf, sceneObject, children }) => {
+const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => {
   const ref = useUpdate(
     self => {
       //self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
@@ -47,7 +49,9 @@ const ModelObject = React.memo(({ gltf, sceneObject, children }) => {
   const meshes = useMemo(() => {
     if (sceneObject.model === 'box') {
       return [
-        <mesh key={sceneObject.id}>
+        <mesh key={sceneObject.id}
+
+        >
           <boxBufferGeometry
             ref={ref => ref && ref.translate(0, 0.5, 0)}
             attach='geometry'
@@ -77,7 +81,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, children }) => {
     return []
   }, [sceneObject.model, gltf])
 
-/*   useEffect(() => {
+  useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
       if (material.emissive) {
         if (isSelected) {
@@ -89,7 +93,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, children }) => {
         }
       }
     })
-  }, [ref.current, isSelected, sceneObject.tintColor]) */
+  }, [ref.current, isSelected, sceneObject.tintColor])
 
   const { x, y, z, visible, width, height, depth, rotation } = sceneObject
 
@@ -106,6 +110,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, children }) => {
     position={[x, z, y]}
     scale={[width, height, depth]}
     rotation={[rotation.x, rotation.y, rotation.z]}
+    {...props}
   >
     {meshes}
   </group>

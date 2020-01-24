@@ -8,7 +8,9 @@ import useTextureLoader from './hooks/use-texture-loader'
 import { 
     getSceneObjects,
     getWorld,
-    getActiveCamera
+    getActiveCamera,
+    selectObject,
+    getSelections
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
@@ -26,10 +28,11 @@ const SceneManagerR3fLarge = connect(
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         activeCamera: getSceneObjects(state)[getActiveCamera(state)],
-        storyboarderFilePath: state.meta.storyboarderFilePath
+        storyboarderFilePath: state.meta.storyboarderFilePath,
+        selections: getSelections(state)
     }),
     {
-
+        selectObject,
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -37,7 +40,9 @@ const SceneManagerR3fLarge = connect(
     world,
     activeCamera,
     getAsset,
-    storyboarderFilePath
+    storyboarderFilePath,
+    selectObject,
+    selections
 
 }) => {
     const { scene, camera } = useThree()
@@ -91,9 +96,15 @@ const SceneManagerR3fLarge = connect(
                 ? getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
                 : null
             return <ModelObject
-                key={ sceneObject.id }
+               // key={ sceneObject.id }
                 gltf={ gltf }
-                sceneObject={ sceneObject }/>
+                sceneObject={ sceneObject }
+                isSelected={ selections.includes(sceneObject.id) }
+                onClick={e => { 
+                    e.stopPropagation()
+                   // console.log('click group', e) 
+                }}
+                />
         })
     }
     { 

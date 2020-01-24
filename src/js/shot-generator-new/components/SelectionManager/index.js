@@ -323,7 +323,7 @@ React.memo(({
       const rect = el.getBoundingClientRect()
       mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top)
     }
-    let intersects = getIntersects(mousePosition.current, camera, useIcons, {x, y})
+    let intersects =  getIntersects(mousePosition.current, camera, useIcons, {x, y})
     // if no objects intersected
     if (intersects.length === 0) {
         if(dragTarget || (selections[0] !== activeCamera) ) {
