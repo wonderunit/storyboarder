@@ -9,6 +9,23 @@ const { playDrum } = require('../music-system')
 
 let THRESHOLD = 0.09
 
+class Stream {
+  constructor (size) {
+    this.size = size
+    this.array = Array(size).fill(null)
+    this.index = 0
+  }
+
+  add (n) {
+    this.array[this.index] = n
+    this.index = (this.index + 1) % this.size
+  }
+}
+
+function sum (a, b) { return a + b }
+
+function min (acc, x) { return Math.min(acc, x) }
+
 function useControllerTracking (controllers, onDrum) {
   const targets = useRef()
   const getTargets = () => {
@@ -26,7 +43,8 @@ function useControllerTracking (controllers, onDrum) {
           acc: new THREE.Vector3(),
           accD: new THREE.Vector3(),
           accF: new THREE.Vector3(),
-          prev: null
+          prev: null,
+          stream: new Stream(30)
         }
       }
 
@@ -54,9 +72,39 @@ function useControllerTracking (controllers, onDrum) {
         let len = target.accD.length()
 
         if (len > THRESHOLD && !signsEq) {
-          log(`DRUM! ${Date.now()}`)
+          let { x, y, z } = target.controller.position
+          target.stream.add({
+            position: { x, y, z },
+            delta
+          })
+          // get all events from the past 500 msecs
+          let events = target.stream.array.filter(Boolean).filter(event =>
+            (delta - event.delta) < 500
+          )
+          // if there are at least two to compare
+          if (events.length >= 2) {
+            // get the average Y position of the past 500 msecs of events
+            let yPos = events.map(event => event.position.y)
+            let avgY = yPos.reduce(sum) / yPos.length
 
-          playDrum()
+            // get the oldest event of the past 500 msecs of events
+            let deltas = events.map(event => event.delta)
+            let oldestDelta = deltas.reduce(min, Infinity)
+            let oldEvent = events.find(event => event.delta == oldestDelta)
+
+            // let oldY = oldEvent.position.y
+            // let diffY = y - oldY
+
+            let oldDelta = oldEvent.delta
+            let diffDelta = delta - oldDelta
+
+            // if (diffDelta > 100 && diffY < -0.1) {
+            if (diffDelta > 100 && y - avgY < -0.05) {
+              log(`DRUM! ${Date.now()}`)
+
+              playDrum()
+            }
+          }
 
           target.acc.set(0, 0, 0)
           target.accD.set(0, 0, 0)
