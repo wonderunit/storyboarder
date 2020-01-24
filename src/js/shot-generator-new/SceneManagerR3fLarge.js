@@ -1,5 +1,6 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
+import Environment from './components/Three/Environment'
 import React, { useRef, useEffect } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
@@ -44,6 +45,7 @@ const SceneManagerR3fLarge = connect(
     const groundRef = useRef()
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
+
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
@@ -94,11 +96,29 @@ const SceneManagerR3fLarge = connect(
                 sceneObject={ sceneObject }/>
         })
     }
-    { groundTexture && <Ground
-        objRef={ groundRef }
-        texture={ groundTexture }
-        visible={ !world.room.visible && world.ground } />
+    { 
+        groundTexture && <Ground
+            objRef={ groundRef }
+            texture={ groundTexture }
+            visible={ !world.room.visible && world.ground } />
+    }   
+    {
+        world.environment.file &&
+        getAsset(ModelLoader.getFilepathForModel({
+          type: 'environment',
+          model: world.environment.file
+        }, { storyboarderFilePath } ))
+          ? 
+            <Environment
+              gltf={getAsset(ModelLoader.getFilepathForModel({
+                type: 'environment',
+                model: world.environment.file
+              }, { storyboarderFilePath } ))}
+              environment={world.environment}
+              visible={world.environment.visible} />
+          : null
     }
+
     
     </group>
 

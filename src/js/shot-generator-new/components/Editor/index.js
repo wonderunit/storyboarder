@@ -154,124 +154,6 @@ const Editor = React.memo(({
     }
   }
 
-  const loadWorldEnvironment = async (dispatch, state) => {
-    let storyboarderFilePath = state.meta.storyboarderFilePath
-    const world = getWorld(state)
-
-    let expectedFilepath = ModelLoader.getFilepathForModel({
-      model: world.environment.file,
-      type: 'environment'
-    }, { storyboarderFilePath })
-
-    withState(async (dispatch, state) => {
-      if (state.attachments[expectedFilepath]) return
-
-      dispatch({ type: 'ATTACHMENTS_PENDING', payload: { id: expectedFilepath } })
-
-      if (!fs.existsSync(expectedFilepath)) {
-        try {
-
-          const choice = dialog.showMessageBox({
-            type: 'question',
-            buttons: ['Yes', 'No'],
-            title: 'Model file not found',
-            message: `Could not find model file at ${expectedFilepath}. Try to find it?`,
-          })
-
-          const shouldRelocate = (choice === 0)
-
-          if (!shouldRelocate) {
-            throw new Error('could not relocate missing file')
-          }
-
-          let updatedFilepath = await new Promise((resolve, reject) => {
-            dialog.showOpenDialog(
-              {
-                title: 'Locate model file',
-                defaultPath: path.dirname(expectedFilepath),
-                filters: [
-                  {
-                    name: 'Model',
-                    extensions: ['gltf', 'glb']
-                  }
-                ]
-              },
-              filenames => {
-                if (filenames) {
-                  resolve(filenames[0])
-                } else {
-                  reject('no alternate filepath provided')
-                }
-              }
-            )
-          })
-
-          log.info('user selected updatedFilepath:', updatedFilepath)
-
-          // TODO test:
-          // handle case where user relocated to a file in the models/* folder
-          //
-
-          // remove the pending absolute path from attachments
-          dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
-          // update the instance
-          dispatch({
-            type: 'UPDATE_WORLD_ENVIRONMENT',
-            payload: {
-              file: updatedFilepath
-            }
-          })
-          return
-
-        } catch (error) {
-          log.error(error)
-          dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: expectedFilepath } })
-          return
-        }
-      }
-
-      let loadable = {
-        model: world.environment.file,
-        type: 'environment'
-      }
-      if (ModelLoader.needsCopy(loadable)) {
-        let src = expectedFilepath
-
-        let dst = path.join(
-          path.dirname(storyboarderFilePath),
-          ModelLoader.projectFolder(loadable.type),
-          path.basename(expectedFilepath)
-        )
-
-        log.info('will copy from', src, 'to', dst)
-
-        fs.ensureDirSync(path.dirname(dst))
-
-        if (src !== dst) {
-          log.info(`copying model file from ${src} to ${dst}`)
-          fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
-        }
-
-        let updatedModel = path.join(
-          ModelLoader.projectFolder(loadable.type),
-          path.basename(dst)
-        )
-
-        log.info('copied! updated model:', updatedModel)
-        dispatch({
-          type: 'UPDATE_WORLD_ENVIRONMENT',
-          payload: {
-            file: updatedModel
-          }
-        })
-        dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: src } })
-        return
-      }
-
-      loadAttachment({ filepath: expectedFilepath, dispatch })
-    })
-  }
-
   useEffect(() => {
 
     let storyboarderFilePath 
@@ -290,6 +172,30 @@ const Editor = React.memo(({
       // request the file
       .forEach(requestAsset)
   }, [sceneObjects])
+
+  useEffect(() => {
+
+    let storyboarderFilePath 
+    withState((dispatch, state) => {
+      storyboarderFilePath = state.meta.storyboarderFilePath
+    })
+    if (world.environment.file) {
+      console.log(world.environment)
+      // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
+      const environmentPath =  ModelLoader.getFilepathForModel({
+        model: world.environment.file,
+        type: 'environment'
+      }, { storyboarderFilePath })
+
+      delete assets[environmentPath]
+
+      requestAsset(ModelLoader.getFilepathForModel({
+        model: world.environment.file,
+        type: 'environment'
+      }, { storyboarderFilePath })
+      )
+    }
+  }, [world.environment])
 
   /** Resources loading end */
 
@@ -457,12 +363,6 @@ const Editor = React.memo(({
       loadAttachment({ filepath, dispatch })
     })
   }, [])
-
-  useEffect(() => {
-    if (world.environment.file) {
-      withState(loadWorldEnvironment)
-    }
-  }, [world.environment.file])
 
   const guidesDimensions = useMemo(() => {
     return {
