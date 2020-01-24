@@ -1,10 +1,12 @@
 import React, {useCallback} from 'react'
 import classNames from 'classnames'
 import { filepathFor } from '../../../utils/filepathFor'
+import {IMAGE_HEIGHT, IMAGE_WIDTH} from "../../../utils/InspectorElementsSettings";
+import Image from "../../Image"
 
 const ModelInspectorItem = React.memo(({
     style,
-    id, 
+    id,
     selectedFunc = () => false,
     data : model,
     onSelectItem,
@@ -12,7 +14,7 @@ const ModelInspectorItem = React.memo(({
   }) => {
     const src = filepathFor(model).replace(/.glb$/, '.jpg')
     const isSelected = selectedFunc(model)
-  
+
     const onSelect = useCallback(() => {
       onSelectItem(model)
     }, [onSelectItem])
@@ -21,16 +23,16 @@ const ModelInspectorItem = React.memo(({
     })
     // allow a little text overlap
     const slop = itemSettings.GUTTER_SIZE
-  
+
     return <div className={ className }
       style={ style }
       onPointerUp={ onSelect }
       data-id={ model.id }
-      title={ model.name }> 
-        <figure style={{ width: itemSettings.IMAGE_WIDTH, height: itemSettings.IMAGE_HEIGHT }}> 
-          <img src={ src } style={{ width: itemSettings.IMAGE_WIDTH, height: itemSettings.IMAGE_HEIGHT }}/>
-        </figure>
-        <div className="thumbnail-search__name" 
+      title={ model.name }>
+        <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
+          <Image src={ src } className="thumbnail"/>
+        </div>
+        <div className="thumbnail-search__name"
           style={{
             width: itemSettings.ITEM_WIDTH + slop,
             height: (itemSettings.ITEM_HEIGHT - itemSettings.IMAGE_HEIGHT - itemSettings.GUTTER_SIZE) + slop

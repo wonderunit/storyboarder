@@ -121,6 +121,7 @@ React.memo(({
   }) => {
 
   const scene = getScene()
+  const [pointerDowned, setPointerDowned] = useState(false)
   const [lastDownId, setLastDownId] = useState()
   const [dragTarget, setDragTarget] = useState()
   const gpuPickerInstance = useRef(null)
@@ -309,6 +310,7 @@ React.memo(({
   }, [dragTarget])
 
   const onPointerDown = event => {
+    setPointerDowned(true)
     event.preventDefault()
     filterIntersectables()
 
@@ -532,6 +534,7 @@ React.memo(({
   }
 
   const onPointerUp = event => {
+    if(!pointerDowned) return
     event.preventDefault()
 
     const { x, y } = mouse(event)

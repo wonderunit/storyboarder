@@ -546,6 +546,13 @@ const SceneManager = connect(
     }, [largeCanvasSize, mainViewCamera, aspectRatio])
 
     useEffect(() => {
+      if(!cameraControlsView.current) return
+      cameraControlsView.current.dispose()
+      cameraControlsView.current.domElement = mainViewCamera === "live" ? largeCanvasRef.current : smallCanvasRef.current
+      cameraControlsView.current.intializeEvents()
+    }, [mainViewCamera])
+
+    useEffect(() => {
       setCamera(scene.children.find(o => o.userData.id === activeCamera))
     }, [activeCamera])
 
@@ -609,7 +616,7 @@ const SceneManager = connect(
               let cameraForSmall = state.mainViewCamera === 'ortho' ? camera : orthoCamera.current
               let cameraForLarge = state.mainViewCamera === 'live' ? camera : orthoCamera.current
 
-              if (cameraControlsView.current && cameraControlsView.current.enabled) {
+              if (cameraControlsView.current) {
                 let cameraState = Object.values(getSceneObjects(state)).find(o => o.id === camera.userData.id)
                 if (!cameraState) {
                   // FIXME
@@ -622,8 +629,9 @@ const SceneManager = connect(
 
                 cameraControlsView.current.object = CameraControls.objectFromCameraState(cameraState)
 
-                // step
-                cameraControlsView.current.update( clock.current.getDelta(), state )
+                // step 
+                if(cameraControlsView.current.enabled)
+                  cameraControlsView.current.update( clock.current.getDelta(), state )
               }
               let tempColor = scene.background.clone()
               if (state.mainViewCamera === 'live') {
@@ -716,13 +724,16 @@ const SceneManager = connect(
 
     }, [selections, sceneObjects])
 
-    useMemo(() => {
+/*     useMemo(() => {
       if (camera && cameraControlsView.current) {
         if (mainViewCamera === 'ortho') {
           cameraControlsView.current.enabled = false
         }
+        else {
+          cameraControlsView.current.enabled = true
+        }
       }
-    }, [camera, cameraControlsView.current, mainViewCamera])
+    }, [camera, cameraControlsView.current, mainViewCamera]) */
 
     const onDragStart = useCallback(() => {
       if (cameraControlsView.current) {
