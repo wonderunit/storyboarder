@@ -3,7 +3,6 @@ const Tone = require('tone')
 const sequences = require('./sequences.json')
 const denylist = [0, 6, 7, 8, 11, 41, 42, 46, 51, 68, 72, 75, 91, 97, 101, 146, 154, 155, 156, 157, 158, 160, 161, 175, 178, 181, 182, 185, 187, 188, 189, 191, 193, 199, 202, 214, 215, 222, 228, 232]
 
-let sampler
 let isPlaying = false
 
 function last (arr) {
@@ -50,6 +49,8 @@ function playSequence (index) {
   let sequence = sequences[index]
   let events = sequence.notes
 
+  let sampler = samplers.melody
+
   events.forEach(event => {
     let { name, time, duration, velocity } = event
     console.log(`\t${name} t:${time} d:${duration} v:${velocity}`)
@@ -74,7 +75,22 @@ function createDrumStream () {
 }
 const drumStream = createDrumStream()
 
-function playDrum () {
+const samplers = {}
+function createSampler (urlMap, onComplete) {
+  let sampler = new Tone.Sampler(
+    urlMap,
+    () => {
+      sampler.release = 4.0 // let reverb ring out
+      onComplete()
+    }
+  )
+  return sampler
+}
+
+function playDrum (hand, audioNode) {
+  let sampler = samplers[hand]
+  sampler.chain(audioNode.getOutput())
+
   let event = drumStream.next()
 
   let { name, duration, velocity } = event
@@ -120,14 +136,20 @@ function init ({ urlMap, audioContext, audioNode, onComplete }) {
 
   Tone.setContext(audioContext)
 
-  sampler = new Tone.Sampler(
-    urlMap,
-    onComplete
-  ).chain(audioNode.getOutput())
-  sampler.release = 4.0 // let reverb ring out
-  sampler.volume.value = -22 // db
+  samplers.left = createSampler(urlMap, () => {
+    samplers.left.volume.value = 0 // db
+  })
+  samplers.right = createSampler(urlMap, () => {
+    samplers.right.volume.value = 0 // db
+  })
 
-  return { sampler }
+  samplers.melody = createSampler(urlMap, () => {
+    samplers.melody.chain(audioNode.getOutput())
+    samplers.melody.volume.value = -22 // db
+    onComplete()
+  })
+
+  return { sampler: samplers.melody }
 }
 
 function setIsPlaying (value) {
