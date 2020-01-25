@@ -563,6 +563,20 @@ const SceneContent = connect(
     const gamepads = navigator.getGamepads()
     const gamepadFor = controller => gamepads[controller.userData.gamepad.index]
 
+    const controllerAudios = useRef()
+    const getControllerAudios = () => {
+      if (controllerAudios.current == null) controllerAudios.current = {}
+      return controllerAudios.current
+    }
+    const getControllerAudio = useCallback(controller => {
+      let o = getControllerAudios()
+      if (o[controller.uuid] == null) {
+        let audio = new THREE.PositionalAudio(cameraAudioListener)
+        o[controller.uuid] = audio
+      }
+      return o[controller.uuid]
+    })
+
     useEffect(() => {
       thumbnailRenderer.current = new THREE.WebGLRenderer()
       thumbnailRenderer.current.setSize(128 * aspectRatio, 128)
@@ -601,6 +615,7 @@ const SceneContent = connect(
               <Controller
                 gltf={resources.controllerGltf}
                 hand={gamepadFor(controller).hand}
+                audio={getControllerAudio(controller)}
               />
               {gamepadFor(controller).hand === (switchHand ? 'left' : 'right') &&
                 <group>

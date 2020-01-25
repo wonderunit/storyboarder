@@ -1,7 +1,7 @@
 const THREE = require('three')
 const { useMemo } = React = require('react')
 
-const Controller = React.memo(({ gltf, hand }) => {
+const Controller = React.memo(({ gltf, hand, audio }) => {
   const mesh = useMemo(
     () => {
       let child = gltf.scene.children[0].clone()
@@ -31,6 +31,8 @@ const Controller = React.memo(({ gltf, hand }) => {
         <boxBufferGeometry attach="geometry" args={[0.1, 0.1, 0.1]} />
         <meshBasicMaterial attach="material" />
       </mesh>
+      <primitive object={audio} />
+      <positionalAudioHelper args={[audio]} />
     </group>
     : null
 })
