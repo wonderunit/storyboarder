@@ -60,7 +60,7 @@ const Image = require('./components/Image')
 const Environment = require('./components/Environment')
 const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
-const { Log } = require('./components/Log')
+const { Log, log } = require('./components/Log')
 const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
 
 const Controls = require('./components/ui/Controls')
