@@ -42,6 +42,8 @@ const useAudioLoader = require('./hooks/use-audio-loader')
 const { WORLD_SCALE_LARGE, WORLD_SCALE_SMALL, useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
 const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-manager')
 
+const useControllerTracking = require('./hooks/use-controller-tracking')
+
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
 const getFilepathForImage = require('./helpers/get-filepath-for-image')
@@ -535,6 +537,12 @@ const SceneContent = connect(
       playSound,
       stopSound
     })
+
+    const onDrum = useCallback(controller => {
+      log(`drum from ${controller.uuid.slice(0, 7)}`)
+      musicSystem.playDrum(gamepadFor(controller).hand, getControllerAudio(controller))
+    })
+    useControllerTracking(controllers, onDrum)
 
     canvasRendererRef.current.interactionServiceSend = interactionServiceSend
 
