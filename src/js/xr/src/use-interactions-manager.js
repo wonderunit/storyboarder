@@ -302,7 +302,7 @@ const useInteractionsManager = ({
 }) => {
   const { gl, camera, scene } = useThree()
 
-  
+
   const selections = useSelector(getSelections)
   const sceneObjects = useSelector(getSceneObjects)
 
@@ -361,7 +361,7 @@ const useInteractionsManager = ({
     }
     return ikHelper.current
   }
-  
+
   useEffect(() => {
     // create a temporary mesh object to initialize the GPUPicker
     let gpuPicker = getGpuPicker()
@@ -1015,11 +1015,11 @@ const useInteractionsManager = ({
           // in order to prevent ik updates
           ikHelper.updateStarted = true
           ikHelper.ragDoll.isEnabledIk = false
-      
+
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
-          
+
           let headBone = ikHelper.ragDoll.chainObjects['Head'].lastBone
           let leftHandBone = ikHelper.ragDoll.chainObjects['LeftHand'].lastBone
           let rightHandBone = ikHelper.ragDoll.chainObjects['RightHand'].lastBone
@@ -1045,12 +1045,12 @@ const useInteractionsManager = ({
             hmdElement.parent.rotation.x = Math.PI
             hmdElement.parent.rotation.y = 0
             hmdElement.parent.rotation.z = Math.PI
-            
+
             // Calculates delta aka relative angle
             let delta = new THREE.Quaternion()
             delta.multiply(hmdElement.parent.worldQuaternion().conjugate())
             delta.multiply(boneInOriginalMesh.worldQuaternion())
-     
+
             // Applies delta to transform hmdElement rotation to bone space
             let controllerWorldQuaternion = hmdElement.worldQuaternion()
             controllerWorldQuaternion.multiply(delta)
@@ -1062,7 +1062,7 @@ const useInteractionsManager = ({
             boneInOriginalMesh.updateMatrix()
             boneInOriginalMesh.updateWorldMatrix(false, true)
           }
-          
+
           // Atttaches control point to HMDElement(controllers and camera)
           // and sets it's position to (0, 0, 0) in order to put control point in the center of hmd element
           const attachControlPointToHmdElement = (hmdElement, controlPoint,) => {
@@ -1076,11 +1076,11 @@ const useInteractionsManager = ({
 
           // Taking world position of control point
           let worldPosition = headControlPoint.worldPosition()
-  
+
           // Taking world quaternion of head bone
           camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
-          
+
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
@@ -1111,7 +1111,7 @@ const useInteractionsManager = ({
           attachControlPointToHmdElement(camera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
-      
+
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
           ikHelper.ragDoll.originalObject.add(mirror)
           mirror.position.z += 2
@@ -1217,7 +1217,7 @@ const useInteractionsManager = ({
         onDragObjectEntry: (context, event) => {
           let controller = gl.vr.getController(context.draggingController)
           let object = event.intersection.object
-          
+
 
           if (object.userData.type != 'character') {
             if(object.userData.type === "attachable")
