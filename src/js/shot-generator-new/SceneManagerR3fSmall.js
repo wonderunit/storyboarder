@@ -20,8 +20,6 @@ import ModelLoader from '../services/model-loader'
 
 import { useDraggingManager} from './use-dragging-manager'
 
-import SelectionManagerR3fSmall from './use-dragging-manager'
-
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -65,7 +63,7 @@ const SceneManagerR3fSmall = connect(
 
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
-    const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager()
+    const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager(true)
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
  
@@ -77,26 +75,25 @@ const SceneManagerR3fSmall = connect(
       }
     }
 
-    const onPointerDown = (e) => {
+    const onPointerDown = useCallback((e) => {
       selectObject(e.object.userData.id)
       draggedObject.current = e.object
       const { x, y } = mouse(e)
       prepareDrag( draggedObject.current, {x, y, useIcons:true, camera, scene, selections })
-    }
+    }, [scene, camera, selections])
 
-    const onPointerMove = (e) => {
-     // console.log(draggedObject.current)
+    const onPointerMove = useCallback((e) => {
       if(!draggedObject.current) return
       const { x, y } = mouse(e)
       drag({ x, y }, draggedObject.current, camera, selections)
       updateStore(updateObjects)
-    }
+    }, [camera, selections])
 
-    const onPointerUp = (e) => {
+    const onPointerUp = useCallback((e) => {
       if(!draggedObject.current) return
       endDrag(updateObjects)
       draggedObject.current = null
-    } 
+    }, [updateObjects])
 
     const fontMesh =  useFontLoader(fontpath, 'fonts/wonder-unit-bmfont/wonderunit-b.png')
     useEffect(() => { 
@@ -240,7 +237,6 @@ const SceneManagerR3fSmall = connect(
                   onPointerUp(e)
                 }}
                 onPointerDown={e => {
-                  console.log("Pointer down", e)
                   e.stopPropagation()
                   onPointerDown(e)
                 }}

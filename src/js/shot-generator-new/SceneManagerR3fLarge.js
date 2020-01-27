@@ -16,6 +16,7 @@ import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
 import { CameraHelper } from 'three'
 import ModelLoader from '../services/model-loader'
+import InteractionManager from './components/Three/InteractionManager'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -77,6 +78,7 @@ const SceneManagerR3fLarge = connect(
     }, [world.background])
 
     return <group ref={rootRef}> 
+    <InteractionManager/>
     <ambientLight
         ref={ambientLightRef}
         color={0xffffff}
@@ -96,14 +98,11 @@ const SceneManagerR3fLarge = connect(
                 ? getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
                 : null
             return <ModelObject
-               // key={ sceneObject.id }
+                key={ sceneObject.id }
                 gltf={ gltf }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
-                onClick={e => { 
-                    e.stopPropagation()
-                   // console.log('click group', e) 
-                }}
+
                 />
         })
     }

@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import React, { useCallback, useRef } from 'react'
 
-const useDraggingManager = () => {
+const useDraggingManager = (useIcons) => {
     const raycaster = useRef()
     const plane = useRef()
     const intersection = useRef()
@@ -10,7 +10,6 @@ const useDraggingManager = () => {
     const offsets = useRef()
 
     const prepareDrag = useCallback((target, { x, y, camera, scene, selections }) => {
-      console.log(raycaster.current)
       if (!raycaster.current) raycaster.current = new THREE.Raycaster()
       if (!plane.current) plane.current = new THREE.Plane()
       if (!intersection.current) intersection.current = new THREE.Vector3()
@@ -19,7 +18,11 @@ const useDraggingManager = () => {
       objectChanges.current = {}
     
       raycaster.current.setFromCamera({ x, y }, camera )
-      plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
+      if (useIcons) {
+        plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
+      } else {
+        plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
+      }
     
       for (let selection of selections) {
         selectedObjects.current[selection] = scene.children[0].children.find(child => child.userData.id === selection)
@@ -40,24 +43,36 @@ const useDraggingManager = () => {
     const drag = useCallback((mouse, target, camera, selections) => {
       if(!raycaster.current) return
       raycaster.current.setFromCamera( mouse, camera )
-    
-        if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
-          for (let selection of selections) {
-            let target = selectedObjects.current[selection]
-            if (!target || target.userData.locked) continue
-            
-            let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
-            target.position.set( x, target.position.y, z )
-            if (target.orthoIcon) {
-              target.orthoIcon.position.set( x, target.position.y, z )
-            }
-            
-            objectChanges.current[selection] = { x, y: z }
-            if (target.onDrag) {
-              target.onDrag()
+      if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
+        // Calculates new attachable position
+        // Attachable is in no need of switching Y and Z cause they are already in bone space
+        // And bone space is in character space which is already got Y and Z switched
+        // Also, attachable needs to move up and down while other objects don't
+        if(target.userData.type === 'attachable' ) {
+          if(target.userData.isRotationEnabled) return
+          let { x, y, z } = intersection.current.clone().sub( offsets.current[target.userData.id] )
+          let parentMatrixWorld = target.parent.matrixWorld
+          let parentInverseMatrixWorld = target.parent.getInverseMatrixWorld()
+          target.applyMatrix(parentMatrixWorld)
+          target.position.set( x, y, z )
+          target.updateMatrixWorld(true)
+          target.applyMatrix(parentInverseMatrixWorld)
+  
+          objectChanges.current[target.userData.id] = { x, y, z }
+        } else {
+          if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
+            for (let selection of selections) {
+              let target = selectedObjects.current[selection]
+              if (!target || target.userData.locked) continue
+
+              let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
+              target.position.set( x, target.position.y, z )
+
+              objectChanges.current[selection] = { x, y: z }
             }
           }
         }
+      }
     }, [])
     
     const updateStore = useCallback((updateObjects) => {
