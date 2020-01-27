@@ -35,9 +35,6 @@ class TargetControl
         //this.control.attach(movingTarget);
         this.target = movingTarget;
         //this.addEventsToControlTarget(); 
-        movingTarget.layers.disable(0)
-        movingTarget.layers.enable(1)
-        movingTarget.layers.disable(2)
     }
 
     setBone(bone)

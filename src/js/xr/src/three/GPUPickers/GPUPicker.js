@@ -16,6 +16,7 @@ class GPUPicker
         this.controller.initalizeChildren(objects, excludingList);
         this.controller.updateObjects();
         this.controller.setPickingPosition((this.renderer.domElement.width) / 2, (this.renderer.domElement.height) / 2);
+        console.log(this.controller)
     }
 
     pick(position, rotation)

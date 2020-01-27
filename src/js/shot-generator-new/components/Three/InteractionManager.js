@@ -40,9 +40,12 @@ const getIntersectionTarget = intersect => {
     return intersect.object
   }
 
-  if(intersect.object.type === 'SkinnedMesh' || intersect.object.parent.userData.type === 'object' 
-    || intersect.object.userData.type === 'image' || intersect.object.userData.type === 'hitter_light'
-    || intersect.object.userData.type === 'attachable' ) {
+  if(intersect.object.type === 'SkinnedMesh') {
+    return intersect.object.parent.parent
+  }
+
+  if(intersect.object.parent.userData.type === 'object' || intersect.object.userData.type === 'attachable'
+    || intersect.object.userData.type === 'image' || intersect.object.userData.type === 'hitter_light') {
     return intersect.object.parent
   }
 }
@@ -109,6 +112,7 @@ const InteractionManager = connect(
     
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
+        console.log(intersectables.current)
     }
     
     const mouse = event => {
@@ -229,7 +233,7 @@ const InteractionManager = connect(
                     //  and its the one we pointerdown'd ...
                     selections[0] === target.userData.id
                   ) {
-                    if (target.userData.locked) {
+/*                     if (target.userData.locked) {
                       selectObject(null)
                       selectBone(null)
                       setLastDownId(null)
@@ -258,7 +262,7 @@ const InteractionManager = connect(
                       // consider a bone selection the start of a drag
                       setDragTarget({ target, x, y })
                       return
-                    }
+                    } */
               }
             
               if (

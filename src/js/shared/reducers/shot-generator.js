@@ -533,7 +533,7 @@ const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json
 
 const defaultCharacterPreset = {
   height: 1.6256,
-  model: 'adult-female',
+  model: 'adult-female-lod',
   headScale: 1,
   tintColor: '#000000',
   // gender: 'female',
@@ -724,43 +724,43 @@ const initialScene = {
 // TODO sg key
 const initialState = {
   models: {
-    'adult-female': {
-      id: 'adult-female',
+    'adult-female-lod': {
+      id: 'adult-female-lod',
       name: 'Adult Female',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.65
     },
-    'adult-male': {
-      id: 'adult-male',
+    'adult-male-lod': {
+      id: 'adult-male-lod',
       name: 'Adult Male',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.8
     },
-    'teen-female': {
-      id: 'teen-female',
+    'teen-female-lod': {
+      id: 'teen-female-lod',
       name: 'Teen Female',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.6
     },
-    'teen-male': {
-      id: 'teen-male',
+    'teen-male-lod': {
+      id: 'teen-male-lod',
       name: 'Teen Male',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.6
     },
-    'child': {
-      id: 'child',
+    'child-lod': {
+      id: 'child-lod',
       name: 'Child',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'endomorphic'],
       height: 1.2
     },
-    'baby': {
-      id: 'baby',
+    'baby-lod': {
+      id: 'baby-lod',
       name: 'Baby',
       type: 'character',
       validMorphTargets: [],

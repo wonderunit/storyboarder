@@ -99,7 +99,7 @@ const createCharacter = (id, camera, room) => {
     id,
     type: 'character',
     height: 1.8,
-    model: 'adult-male',
+    model: 'adult-male-lod',
 
     x, y, z,
     rotation,

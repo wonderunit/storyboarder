@@ -996,9 +996,9 @@ const TransformControlsGizmo = function () {
 
 				gizmo.add(object);
 
-				object.layers.disable(0)
-				object.layers.enable(1)
-				object.layers.disable(2)
+				//object.layers.disable(0)
+				//object.layers.enable(1)
+				//object.layers.disable(2)
 			}
 
 		}

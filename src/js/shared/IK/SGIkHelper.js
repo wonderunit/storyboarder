@@ -1,11 +1,10 @@
-const THREE = require("three");
-//var InstancedMesh = require('three-instanced-mesh')( THREE );
-const RagDoll = require("./objects/IkObjects/Ragdoll");
-require('./utils/Object3dExtension');
-const {createTransformationControls} = require("./utils/IkUtils")
-const TargetControl = require("./objects/TargetControl");
-const ControlTargetSelection = require( "./objects/ControlTargetSelection");
-let instance = null;
+const THREE = require("three")
+var InstancedMesh = require('three-instanced-mesh')( THREE )
+const RagDoll = require("./objects/IkObjects/Ragdoll")
+require('./utils/Object3dExtension')
+const TargetControl = require("./objects/TargetControl")
+const ControlTargetSelection = require( "./objects/ControlTargetSelection")
+let instance = null
 class SGIKHelper extends THREE.Object3D
 {
     constructor(mesh, scene, camera, domElement)
@@ -28,7 +27,7 @@ class SGIKHelper extends THREE.Object3D
             this.add(this.controlPoints);
             this.add(this.transformControls);
             intializeInstancedMesh(mesh, camera, domElement, scene);
-            //this.add(this.instancedMesh);
+            this.add(this.instancedMesh);
             this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
             this.regularHeight = 1.1;
             this.isInitialized = true;
@@ -48,9 +47,8 @@ class SGIKHelper extends THREE.Object3D
         return instance ? instance : new SGIKHelper(mesh, scene, camera, domElement)
     }
 
-    initialize(scene, object, height, skinnedMesh, props)
+    initialize(object, height, skinnedMesh, props)
     {
-        this.scene = scene;
         let ragDoll = instance.ragDoll;
         if(this.characterObject) ragDoll.controlTargetSelection.initialize();
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
@@ -60,6 +58,7 @@ class SGIKHelper extends THREE.Object3D
         let meshes = this.targetPoints;
         let initializedMeshes = props.poleTargets ? props.poleTargets : [];
         let scaleAspect = height / this.regularHeight / object.scale.x;
+        let defaultScale = 0.1
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
@@ -78,15 +77,15 @@ class SGIKHelper extends THREE.Object3D
             {
                 mesh.userData.isInitialized = false;
             }
-            mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
+            mesh.scale.set(defaultScale, defaultScale, defaultScale).multiplyScalar(scaleAspect);
             
             mesh.userData.scaleAspect = scaleAspect;
         }
         ragDoll.initObject(this, object, this.targetControls, this.poleTargets.children);
         ragDoll.reinitialize();
         ragDoll.controlTargetSelection.initialize();
-       // ragDoll.controlTargetSelection.initialize();
-        //this.updateAllTargetPoints();
+        ragDoll.controlTargetSelection.initialize();
+        this.updateAllTargetPoints();
     }
 
     updatePoleTarget(object, poleTargets)
@@ -210,7 +209,7 @@ class SGIKHelper extends THREE.Object3D
         if(!this.isSelected()) return;
         this.ragDoll.update();
 
-       /*  if(this.selectedControlPoint)
+        if(this.selectedControlPoint)
         {
             let parent = this.selectedControlPoint.parent;
             if(this.selectedControlPoint.userData.type === "controlPoint")
@@ -239,7 +238,7 @@ class SGIKHelper extends THREE.Object3D
         else
         {
             this.updateAllTargetPoints();
-        } */
+        }
     }
 
     updateMatrixWorld(value)
@@ -250,6 +249,7 @@ class SGIKHelper extends THREE.Object3D
         this.update();
         this.isUpdating = false;
     }
+
     raycast(raycaster, intersects)
     {
         if(!this.isSelected() || this.isIkDisabled) return;
@@ -351,7 +351,6 @@ class SGIKHelper extends THREE.Object3D
             this.intializedSkinnedMesh = null;
         }
     }
-    
 }
 
 const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
@@ -370,12 +369,12 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         flatShading: true});
     let newMesh = mesh ? mesh : new THREE.Mesh(sphereGeometry, material);
     instance.material = material;
-    //instance.instancedMesh = new InstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
+    instance.instancedMesh = new InstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
     instance.defaultPosition = new THREE.Vector3(0, 0, 0);
     instance.defaultColor = new THREE.Color(0x6a4dff);
-    //instance.instancedMesh.userData.preventInteraction = true;
-    //instance.instancedMesh.userData.type = "instancedMesh";
-    //instance.instancedMesh.visible = true;
+    instance.instancedMesh.userData.preventInteraction = true;
+    instance.instancedMesh.userData.type = "instancedMesh";
+    instance.instancedMesh.visible = true;
     //instance.instancedMesh.layers.disable(0)
     //instance.instancedMesh.layers.enable(1)
     //instance.instancedMesh.layers.disable(2)
@@ -383,7 +382,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     {
         let controlPoint = new THREE.Mesh(newMesh.geometry, material);
         controlPoint.userData.id = --sizeOfTargets;
-        controlPoint.material.visible = true;
+        controlPoint.material.visible = fals;
         controlPoint.userData.type = "controlPoint";
         controlPoint.name = "controlPoint";
         controlPoint.userData.name = controlsName.shift();
@@ -391,21 +390,18 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         targetControl.initialize(scene, new THREE.Vector3(0, 0, 0), controlPoint);
         instance.controlPoints.add(controlPoint);
         instance.targetControls.push(targetControl);
-       // instance.resetTargetPoint(controlPoint);
+        instance.resetTargetPoint(controlPoint);
     }
     for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(newMesh.geometry, material);
-        poleTarget.material.visible = true;
+        poleTarget.material.visible = false;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
         poleTarget.visible = instance.isPoleTargetsVisible;
-        poleTarget.layers.disable(0)
-        poleTarget.layers.enable(1)
-        poleTarget.layers.disable(2)
         instance.poleTargets.add(poleTarget);
-        //instance.resetTargetPoint(poleTarget);
+        instance.resetTargetPoint(poleTarget);
     }
 }
 module.exports = SGIKHelper;

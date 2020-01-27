@@ -10,30 +10,46 @@ import {
     getWorld,
     getActiveCamera,
     selectObject,
-    getSelections
+    getSelections,
+    updateCharacterSkeleton,
+    updateCharacterIkSkeleton,
+    updateObject,
+    updateObjects,
+    updateCharacterPoleTargets
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
-import { CameraHelper } from 'three'
 import ModelLoader from '../services/model-loader'
+import Character from './components/Three/Character'
 import InteractionManager from './components/Three/InteractionManager'
-
+import SGIkHelper from '../shared/IK/SGIkHelper'
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
   )
+const getSceneObjectCharacterIds = createSelector(
+    [getSceneObjects],
+    sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
+  ) 
 
 const SceneManagerR3fLarge = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
+        characterIds: getSceneObjectCharacterIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         activeCamera: getSceneObjects(state)[getActiveCamera(state)],
         storyboarderFilePath: state.meta.storyboarderFilePath,
-        selections: getSelections(state)
+        selections: getSelections(state),
+        models: state.models,
     }),
     {
         selectObject,
+        updateCharacterSkeleton,
+        updateCharacterIkSkeleton,
+        updateObject,
+        updateCharacterPoleTargets,
+        updateObjects
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -43,14 +59,60 @@ const SceneManagerR3fLarge = connect(
     getAsset,
     storyboarderFilePath,
     selectObject,
-    selections
+    selections,
+    updateCharacterSkeleton,
+    updateCharacterIkSkeleton,
+    updateObject,
+    updateCharacterPoleTargets,
+    models,
+    characterIds,
+    updateObjects
 
 }) => {
-    const { scene, camera } = useThree()
+    const { scene, camera, gl } = useThree()
     const rootRef = useRef()
     const groundRef = useRef()
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
+
+    useEffect(() => {
+      
+        let sgIkHelper = SGIkHelper.getInstance(null, scene.children[0], camera, gl.domElement)
+        const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
+          id: sgIkHelper.characterObject.userData.id,
+          name : name,
+          rotation:
+          {
+            x : rotation.x,
+            y : rotation.y,
+            z : rotation.z,
+          }
+        } )}
+  
+        const updateSkeleton = (skeleton) => { updateCharacterIkSkeleton({
+          id: sgIkHelper.characterObject.userData.id,
+          skeleton: skeleton
+        } )}
+  
+        const updateCharacterPos = ({ x, y, z}) => updateObject(
+          sgIkHelper.characterObject.userData.id,
+          { x, y: z, z: y }
+        )
+  
+        const updatePoleTarget = (poleTargets) => updateCharacterPoleTargets({
+            id: sgIkHelper.characterObject.userData.id,
+            poleTargets: poleTargets
+          }
+        )
+  
+        sgIkHelper.setUpdate(
+          updateCharacterRotation,
+          updateSkeleton,
+          updateCharacterPos,
+          updatePoleTarget,
+          updateObjects
+        )
+      }, [])
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     useEffect(() => { 
@@ -92,18 +154,30 @@ const SceneManagerR3fLarge = connect(
         target-position={[0, 0, 0.4]}
     />
     {
-        modelObjectIds.map(object => {
-            let sceneObject = sceneObjects[object]
+        modelObjectIds.map(id => {
+            let sceneObject = sceneObjects[id]
             let gltf = sceneObject.model != 'box'
                 ? getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
                 : null
             return <ModelObject
-                key={ sceneObject.id }
+                key={ id}
                 gltf={ gltf }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
 
                 />
+        })
+    }
+    {
+        characterIds.map(id => {
+            let sceneObject = sceneObjects[id]
+            let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
+            return <Character
+              key={ id }
+              gltf={ gltf }
+              sceneObject={ sceneObject }
+              modelSettings={ models[sceneObject.model] }
+              isSelected={ selections.includes(id) } />
         })
     }
     { 
