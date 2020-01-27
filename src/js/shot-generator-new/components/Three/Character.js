@@ -13,6 +13,14 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     const attachablesList = useRef([])
     const { scene, camera, gl } = useThree()
     const objectRotationControl = useRef(null)
+
+    useEffect(() => {
+      return () => {
+        ref.current.remove(BonesHelper.getInstance())
+        ref.current.remove(SGIkHelper.getInstance())
+      }
+    }, [])
+
     const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
         () => {
           if(!gltf) {
@@ -143,10 +151,10 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     )
 
     useMemo(() => {
-        if(!camera) return
-        SGIkHelper.getInstance().setCamera(camera)
-        if(objectRotationControl.current)
-            objectRotationControl.current.setCamera(camera)
+      if(!camera) return
+      SGIkHelper.getInstance().setCamera(camera)
+      if(objectRotationControl.current)
+          objectRotationControl.current.setCamera(camera)
     }, [camera])
 
     // headScale (0.8...1.2)
@@ -209,6 +217,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
     useMemo(() => {
       if(!ref.current) return
+      if(!lod) return
       if (isSelected) {
 
         BonesHelper.getInstance().initialize(lod.children[0])
@@ -221,6 +230,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
         
+      }
+      return () => {
       }
     }, [ref.current, isSelected, ready])
 

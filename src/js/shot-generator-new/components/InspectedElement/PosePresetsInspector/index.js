@@ -51,7 +51,8 @@ React.memo(({
 
   updateObject,
   createPosePreset,
-  withState
+  withState,
+  getAsset
 }) => {
   const thumbnailRenderer = useRef()
 
@@ -60,7 +61,7 @@ React.memo(({
     let attachment 
     withState((dispatch, state) => {
       let filepath = filepathFor(CHARACTER_MODEL)
-      attachment = state.attachments[filepath].value
+      attachment = getAsset(filepath)
     })
    
     return attachment
@@ -94,17 +95,6 @@ React.memo(({
     })
     return posePresetId
   }
-
-  useEffect(() => {
-    if (ready) return
-    if (attachmentStatus === "Success" && !attachment) {
-      let attachment = getAttachment()
-      setAttachment(attachment)
-      setTimeout(() => {
-        setReady(true)
-      }, 100) // slight delay for snappier character selection via click
-    }
-  }, [attachmentStatus])
 
   const saveFilteredPresets = useCallback(filteredPreset => {
     let objects = []

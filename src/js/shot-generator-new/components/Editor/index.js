@@ -368,8 +368,12 @@ const Editor = React.memo(({
     requestAsset(ModelLoader.getFilepathForModel({
       model: 'adult-male-lod',
       type: 'character'
-    }, { storyboarderFilePath })
-    )
+    }, { storyboarderFilePath }))
+
+    requestAsset(ModelLoader.getFilepathForModel({
+      model: 'adult-male',
+      type: 'character'
+    }, { storyboarderFilePath }))
     requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
   }, [])
 
@@ -433,7 +437,7 @@ const Editor = React.memo(({
             </div>
 
             <div id="elements">
-              <ElementsPanel/>
+              <ElementsPanel getAsset={ getAsset }/>
             </div>
           </div>
 

@@ -24,7 +24,7 @@ const isChar = (type) => type === 'character'
 const isObj = (type) => type === 'object'
 const nullTab = {tab: null, panel: null}
 
-const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) => {
+const Inspector = React.memo(({id, selectedName, selectedType, updateObject, getAsset}) => {
   const [isModalShown, showModal] = useState(false)
   const [changedName, changeNameTo] = useState(false)
   const handPoseTab = useMemo(() => {
@@ -32,7 +32,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
 
     return {
       tab: <Tab><Icon src='icon-item-camera'/></Tab>,
-      panel: <Panel><HandInspector/></Panel>
+      panel: <Panel><HandInspector getAsset={ getAsset }/></Panel>
     }
   }, [selectedType])
 
@@ -41,7 +41,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
 
     return {
       tab: <Tab><Icon src='icon-item-camera'/></Tab>,
-      panel: <Panel><PosePresetsInspector/></Panel>
+      panel: <Panel><PosePresetsInspector getAsset={ getAsset }/></Panel>
     }
   }, [selectedType])
 
@@ -59,7 +59,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
 
     return {
       tab: <Tab><Icon src='icon-item-camera'/></Tab>,
-      panel: <Panel><AttachableInspector/></Panel>
+      panel: <Panel><AttachableInspector /></Panel>
     }
   }, [selectedType])
   

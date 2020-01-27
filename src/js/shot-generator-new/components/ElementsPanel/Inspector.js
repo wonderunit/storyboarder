@@ -5,7 +5,8 @@ import MultiSelectionInspector from '../../MultiSelectionInspector'
 
 const Inspector = ({
   kind, data,
-  selections
+  selections,
+  getAsset
 }) => {
   let sceneObject = data
   let isGroup = sceneObject && sceneObject.type === "group"
@@ -15,7 +16,7 @@ const Inspector = ({
     {(selectedCount > 1)
       ? <MultiSelectionInspector/>
       : (kind && data)
-        ? <InspectedElement/>
+        ? <InspectedElement getAsset={ getAsset }/>
         : <InspectedWorld/>}
     </div>
 }

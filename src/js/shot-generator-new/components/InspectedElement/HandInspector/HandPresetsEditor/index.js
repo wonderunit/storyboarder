@@ -31,12 +31,6 @@ import Grid from '../../../Grid'
 import HandPresetsEditorItem from './HandPresetsEditorItem'
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
-
-const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
-    let filepath = filepathFor(CHARACTER_MODEL)
-    return !attachments[filepath] ? undefined : attachments[filepath].status
-})
-
 const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
   return sceneObjects[selections[0]].handPosePresetId
 })
@@ -54,7 +48,6 @@ const selectedHandOptions = [
 
 const HandPresetsEditor = connect(
   state => ({
-    attachmentStatus: getAttachmentM(state),
     handPosePresets: state.presets.handPoses,
     id: getSelections(state)[0],
     handPosePresetId: getPresetId(state)
@@ -69,11 +62,11 @@ React.memo(({
   id,
   handPosePresetId,
   handPosePresets,
-  attachmentStatus,
 
   updateObject,
   createHandPosePreset,
-  withState
+  withState,
+  getAsset
 }) => {
   const thumbnailRenderer = useRef()
 
@@ -89,7 +82,7 @@ React.memo(({
     let attachment 
     withState((dispatch, state) => {
       let filepath = filepathFor(CHARACTER_MODEL)
-      attachment = state.attachments[filepath].value
+      attachment = getAsset(filepath)
     })
     return attachment
   }
@@ -109,7 +102,7 @@ React.memo(({
     return sortedPoses
   }, [handPosePresets])
 
-  useEffect(() => {
+ /*  useEffect(() => {
     if (ready) return
     if (attachmentStatus === "Success" && !attachment) {
         let attachment = getAttachment()
@@ -118,7 +111,7 @@ React.memo(({
           setReady(true)
         }, 100) // slight delay for snappier character selection via click
       }
-    }, [attachmentStatus])
+    }, [attachmentStatus]) */
 
   const onChangeHand = useCallback((event) => {
     setSelectedHand(event.value)
