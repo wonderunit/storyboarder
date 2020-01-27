@@ -1,10 +1,9 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useMemo } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
-
 import { 
     getSceneObjects,
     getWorld,
@@ -15,6 +14,7 @@ import {
     updateCharacterIkSkeleton,
     updateObject,
     updateObjects,
+    getSelectedBone,
     updateCharacterPoleTargets
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
@@ -42,6 +42,7 @@ const SceneManagerR3fLarge = connect(
         storyboarderFilePath: state.meta.storyboarderFilePath,
         selections: getSelections(state),
         models: state.models,
+        selectedBone: getSelectedBone(state),
     }),
     {
         selectObject,
@@ -66,7 +67,8 @@ const SceneManagerR3fLarge = connect(
     updateCharacterPoleTargets,
     models,
     characterIds,
-    updateObjects
+    updateObjects,
+    selectedBone
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -74,6 +76,7 @@ const SceneManagerR3fLarge = connect(
     const groundRef = useRef()
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
+
 
     useEffect(() => {
       
@@ -177,7 +180,9 @@ const SceneManagerR3fLarge = connect(
               gltf={ gltf }
               sceneObject={ sceneObject }
               modelSettings={ models[sceneObject.model] }
-              isSelected={ selections.includes(id) } />
+              isSelected={ selections.includes(id) } 
+              selectedBone={ selectedBone }
+              updateCharacterSkeleton={ updateCharacterSkeleton }/>
         })
     }
     { 

@@ -22,6 +22,7 @@ import {
     getSceneObjects,
 } from '../../../shared/reducers/shot-generator'
 import deepEqualSelector from './../../../utils/deepEqualSelector'
+import BonesHelper from '../../../xr/src/three/BonesHelper'
 const getIntersectionTarget = intersect => {
   // character
   if (intersect.object.userData.type === 'hitter' ) {
@@ -112,7 +113,10 @@ const InteractionManager = connect(
     
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
-        console.log(intersectables.current)
+        intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
+            o.userData.type === 'controlTarget' ||
+            o.userData.type === 'controlPoint' ||
+            o.userData.type === 'objectControl' ))
     }
     
     const mouse = event => {
@@ -129,6 +133,11 @@ const InteractionManager = connect(
         raycaster.current.setFromCamera({ x, y }, camera )
         //Check helpers intersection first
         let intersects = raycaster.current.intersectObject(SGIkHelper.getInstance())
+        if(intersects.length > 0) {
+          return intersects
+        }
+        //intersects = raycaster.current.intersectObject(BonesHelper.getInstance())
+       // console.log(intersects)
         if(intersects.length > 0) {
           return intersects
         }
@@ -157,7 +166,7 @@ const InteractionManager = connect(
         const { x, y } = mouse(event)
         const rect = gl.domElement.getBoundingClientRect()
         mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top)
-        let intersects =  getIntersects({ x, y })
+        let intersects = getIntersects({ x, y })
         // if no objects intersected
         if (intersects.length === 0) {
             if(dragTarget || (selections[0] !== activeCamera) ) {
@@ -233,7 +242,7 @@ const InteractionManager = connect(
                     //  and its the one we pointerdown'd ...
                     selections[0] === target.userData.id
                   ) {
-/*                     if (target.userData.locked) {
+                    if (target.userData.locked) {
                       selectObject(null)
                       selectBone(null)
                       setLastDownId(null)
@@ -242,9 +251,7 @@ const InteractionManager = connect(
                       return
                     }
                     // see if we pointerdown'd a bone ...
-                    let raycaster = new THREE.Raycaster()
-                    raycaster.setFromCamera({ x, y }, camera )
-                    let hits = raycaster.intersectObject(target.bonesHelper)
+                   // let raycaster = new THREE.Raycaster()
                     if(!isSelectedControlPoint && selectedObjectControl) {
                       selectBone(selectedObjectControl.uuid)
                       // consider a bone selection the start of a drag
@@ -252,17 +259,18 @@ const InteractionManager = connect(
                       return
                     }
                 
+                    raycaster.current.setFromCamera({ x, y }, camera )
+                    let hits = raycaster.current.intersectObject(BonesHelper.getInstance())
                     // select the bone
                     if (!isSelectedControlPoint && hits.length) {
                       selectObject(target.userData.id)
                       setLastDownId(null)
                       
                       selectBone(hits[0].bone.uuid)
-                      
                       // consider a bone selection the start of a drag
                       setDragTarget({ target, x, y })
                       return
-                    } */
+                    }
               }
             
               if (

@@ -1,15 +1,18 @@
-import React, { useRef, useMemo, useState } from 'react'
+import React, { useRef, useMemo, useState, useEffect } from 'react'
 import * as THREE from 'three'
 import { useUpdate, useThree } from 'react-three-fiber'
 import cloneGltf from '../../helpers/cloneGltf'
 import SGIkHelper from '../../../shared/IK/SGIkHelper'
+import BonesHelper from '../../../xr/src/three/BonesHelper'
+import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
 const isUserModel = model => !!model.match(/\//)
 
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) => {
+const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton }) => {
     const ref = useRef()
     const [ready, setReady] = useState(false)
     const attachablesList = useRef([])
-    const { scene, camera } = useThree()
+    const { scene, camera, gl } = useThree()
+    const objectRotationControl = useRef(null)
     const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
         () => {
           if(!gltf) {
@@ -140,9 +143,10 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
     )
 
     useMemo(() => {
-        console.log(camera)
-        if(camera)
+        if(!camera) return
         SGIkHelper.getInstance().setCamera(camera)
+        if(objectRotationControl.current)
+            objectRotationControl.current.setCamera(camera)
     }, [camera])
 
     // headScale (0.8...1.2)
@@ -181,22 +185,59 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected }) 
       }
     }, [modelSettings, sceneObject.morphTargets, ready])
 
+    useEffect(() => {
+        if(!objectRotationControl.current) return
+        if(!skeleton) return
+        // if there was a prior selected bone
+        if (BonesHelper.getInstance().selectedBone) {
+            BonesHelper.getInstance().resetSelection()
+        }
+        // was a bone selected?
+        if (selectedBone) {
+            // find the 3D Bone matching the selectedBone uuid
+            let bone = skeleton.bones.find(object => object.uuid === selectedBone) 
+              
+            if (bone) {
+              BonesHelper.getInstance().selectBone(bone)
+              objectRotationControl.current.selectObject(bone, selectedBone)
+            }
+        }
+        else {
+            objectRotationControl.current.deselectObject()
+        }
+    }, [selectedBone])
+
     useMemo(() => {
       if(!ref.current) return
       if (isSelected) {
 
-       // BonesHelper.getInstance().initialize(lod.children[0])
-        if(!isUserModel(sceneObject.model) && !SGIkHelper.getInstance().isIkDisabled)
-        {
+        BonesHelper.getInstance().initialize(lod.children[0])
+        if(!isUserModel(sceneObject.model) && !SGIkHelper.getInstance().isIkDisabled) {
             SGIkHelper.getInstance().initialize(ref.current, modelSettings.height, lod.children[0], sceneObject)
             ref.current.add(SGIkHelper.getInstance())
         }
-        //ref.current.add(BonesHelper.getInstance())
+        ref.current.add(BonesHelper.getInstance())
       } else {
-        //ref.current.remove(BonesHelper.getInstance())
+        ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
+        
       }
     }, [ref.current, isSelected, ready])
+
+    useMemo(() => {
+        if(!ref.current) return 
+        objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
+        objectRotationControl.current.setUpdateCharacter((name, rotation) => { updateCharacterSkeleton({
+          id: sceneObject.id,
+          name : name,
+          rotation:
+          {
+            x : rotation.x,
+            y : rotation.y,
+            z : rotation.z,
+          }
+        } ) })
+    }, [ref.current])
 
     return <group
         ref={ref}

@@ -28,7 +28,7 @@ import {createScene, removeScene, getScene} from './../../utils/scene'
 import useComponentSize from './../../../hooks/use-component-size'
 import SceneRender from '../../SceneRenderer'
 import { Canvas } from 'react-three-fiber'
-
+import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
   //
   //
@@ -97,6 +97,12 @@ import { useAssetsManager } from '../../hooks/use-assets-manager'
 import getFilepathForModelByType from '../../helpers/get-filepath-for-model-by-type'
 import {gltfLoader} from "../../utils/gltfLoader"
 
+
+/* const APP_GLTFS = [
+ ,
+  '/data/system/xr/light.glb',
+] */
+
 const Editor = React.memo(({
   mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, undoGroupStart, undoGroupEnd, store
 }) => {
@@ -109,7 +115,6 @@ const Editor = React.memo(({
 
   const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
   const { assets, requestAsset, getAsset } = useAssetsManager()
-
   /** Resources loading */
   const loadAttachment = ({ filepath, dispatch }) => {
     switch (path.extname(filepath)) {
@@ -349,6 +354,7 @@ const Editor = React.memo(({
     }
   }, [])
 
+
   useExportToGltf(getScene())
 
   // HACK
@@ -364,6 +370,7 @@ const Editor = React.memo(({
       type: 'character'
     }, { storyboarderFilePath })
     )
+    requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
   }, [])
 
   const guidesDimensions = useMemo(() => {
@@ -382,6 +389,14 @@ const Editor = React.memo(({
     event.preventDefault()
     setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
   }, [mainViewCamera])
+
+  const boneGltf = useMemo(() => getAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb')))
+  useMemo(() => {
+    if(!boneGltf) return
+    const mesh = boneGltf.scene.children.find(child => child.isMesh)
+    if(mesh)
+        BonesHelper.getInstance(mesh)
+  }, [boneGltf])
 
   return (
     <FatalErrorBoundary>
