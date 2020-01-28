@@ -98,7 +98,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         [gltf])
 
     useEffect(() => {
-      if(!ref.current) return
+      if(!ref.current || !lod) return
       ref.current.add(lod)
       return () => {
         ref.current.remove(lod)
@@ -106,7 +106,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     }, [lod, ref.current])
 
     useEffect(() => {
-      if(!ref.current) return
+      if(!ref.current || !armature) return
       ref.current.add(armature)
       return () => {
         ref.current.remove(armature)

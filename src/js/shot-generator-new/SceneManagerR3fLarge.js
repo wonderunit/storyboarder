@@ -176,9 +176,8 @@ const SceneManagerR3fLarge = connect(
         characterIds.map(id => {
             let sceneObject = sceneObjects[id]
             let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
-            return <SimpleErrorBoundary>
+            return <SimpleErrorBoundary  key={ id }>
               <Character
-                key={ id }
                 gltf={ gltf }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
