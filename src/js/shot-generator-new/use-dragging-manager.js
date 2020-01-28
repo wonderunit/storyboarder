@@ -30,6 +30,12 @@ const useDraggingManager = (useIcons) => {
     
       // remember the offsets of every selected object
       if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
+        if ( target.userData.type === 'attachable' ) {
+          let child = scene.__interaction.find( child => child.userData.id === target.userData.id )
+          let vectorPos = child.worldPosition()
+          offsets.current[target.userData.id] = new THREE.Vector3().copy( intersection.current ).sub( vectorPos )
+          return;
+        }
         for (let selection of selections) {
           offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( selectedObjects.current[selection].position )
         }

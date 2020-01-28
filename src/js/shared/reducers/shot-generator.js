@@ -411,6 +411,10 @@ const updateObject = (draft, state, props, { models }) => {
   if(props.hasOwnProperty('size')) {
     draft.size = props.size
   }
+  
+  if(props.hasOwnProperty('status')) {
+    draft.status = props.status
+  }
 }
 
 // `loaded` status is not serialized

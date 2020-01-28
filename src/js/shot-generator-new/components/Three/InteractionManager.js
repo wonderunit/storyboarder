@@ -155,6 +155,7 @@ const InteractionManager = connect(
     useMemo(() => {
         if(dragTarget){
             let { target, x, y } = dragTarget
+            console.log(target)
             prepareDrag( target, { x, y, useIcons:true, camera, scene, selections })
         }
     }, [dragTarget])
@@ -202,6 +203,7 @@ const InteractionManager = connect(
             target = getIntersectionTarget(intersects[0])
             if(!target) return
             if(target.userData && target.userData.type === 'attachable') {
+              console.log(target)
                 selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
                 setDragTarget({ target, x, y })
                 return 
@@ -219,6 +221,7 @@ const InteractionManager = connect(
                     target = characters[0]
                     selectedObjectControl = targetElement
                 } else if(targetElement.userData.type === "attachable") {
+                 
                     let characters = intersectables.current.filter(value => value.uuid === characterId)
                     target = characters[0]
                     selectAttachable({id: targetElement.userData.id, bindId: targetElement.userData.bindedId})

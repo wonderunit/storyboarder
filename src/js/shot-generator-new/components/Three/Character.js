@@ -8,7 +8,7 @@ import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationCont
 
 const isUserModel = model => !!model.match(/\//)
 
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton }) => {
+const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
     const ref = useRef()
     const [ready, setReady] = useState(false)
     const attachablesList = useRef([])
@@ -113,10 +113,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       }
     }, [armature, ref.current])
 
-    const isLodApplied = () => {
-      return (!ref.current || !lod) ? false : ref.current.children.find(object => object.uuid === lod.uuid)
-    }
-
     useMemo(() => { 
       if(!ready && ref.current) {
         ref.current.remove(BonesHelper.getInstance())
@@ -179,6 +175,39 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       () => sceneObject.height / originalHeight,
       [sceneObject.height, ready]
     )
+
+    useEffect(() => {
+      if(!ref.current || !skeleton ) return
+      let changedSkeleton = []
+  
+      let inverseMatrixWorld = ref.current.getInverseMatrixWorld()
+      let position = new THREE.Vector3()
+      console.log(sceneObject.skeleton)
+      for(let i = 0; i < skeleton.bones.length; i++) {
+        let bone = skeleton.bones[i]
+        if(bone.name.includes("leaf")) continue
+        let rotation = bone.rotation
+        bone.applyMatrix(ref.current.matrixWorld)
+        position = bone.position.clone()
+        bone.applyMatrix(inverseMatrixWorld)
+        changedSkeleton.push({ 
+          id: bone.uuid,
+          name: bone.name,
+          position: { 
+            x: position.x, 
+            y: position.y, 
+            z: position.z 
+          }, 
+          rotation: { 
+            x: rotation.x, 
+            y: rotation.y, 
+            z: rotation.z
+          }
+        })
+      }
+      console.log(changedSkeleton)
+      updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
+    }, [ref.current, skeleton])
 
     useMemo(() => {
       if(!camera) return

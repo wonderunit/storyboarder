@@ -11,16 +11,15 @@ const HandSelectionModal = React.memo(({
     onSuccess,
     defaultSelectedHand = null
 }) => {
-    const originalSkeleton = useRef(null)
     const [selectedHand, setSelectedHand] = useState(null)
     const selectOptions = useMemo(() => {
         if(!skeleton) return []
-        originalSkeleton.current = skeleton
         let selectOptions = []
-        for(let i = 0; i < skeleton.bones.length; i++) {
-          if(!skeleton.bones[i].name.includes("leaf"))
+        let skeletonValues = Object.values(skeleton)
+        for(let i = 0; i < skeletonValues.length; i++) {
+          if(!skeletonValues[i].name.includes("leaf"))
           {
-            let name = skeleton.bones[i].name
+            let name = skeletonValues[i].name
             selectOptions.push({ value: name, label:name})
           }
 
@@ -52,7 +51,7 @@ const HandSelectionModal = React.memo(({
                     className="skeleton-selector__button"
                     onClick={() => {
                       setVisible(false)
-                      onSuccess(model, originalSkeleton.current, id, {name:  selectedHand.value})
+                      onSuccess(model, id, selectedHand.value)
                     }}>
                       Proceed
                   </button>

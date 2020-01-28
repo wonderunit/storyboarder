@@ -21,6 +21,7 @@ import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
+import Attachable from './components/Three/Attachable'
 import InteractionManager from './components/Three/InteractionManager'
 import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
@@ -33,10 +34,16 @@ const getSceneObjectCharacterIds = createSelector(
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
   ) 
 
+  const getSceneObjectAttachableIds = createSelector(
+    [getSceneObjects],
+    sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
+  )
+
 const SceneManagerR3fLarge = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
         characterIds: getSceneObjectCharacterIds(state),
+        attachableIds: getSceneObjectAttachableIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         activeCamera: getSceneObjects(state)[getActiveCamera(state)],
@@ -69,7 +76,8 @@ const SceneManagerR3fLarge = connect(
     models,
     characterIds,
     updateObjects,
-    selectedBone
+    selectedBone,
+    attachableIds
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -183,7 +191,21 @@ const SceneManagerR3fLarge = connect(
                 modelSettings={ models[sceneObject.model] }
                 isSelected={ selections.includes(id) } 
                 selectedBone={ selectedBone }
-                updateCharacterSkeleton={ updateCharacterSkeleton }/>
+                updateCharacterSkeleton={ updateCharacterSkeleton }
+                updateCharacterIkSkeleton={ updateCharacterIkSkeleton }/>
+              </SimpleErrorBoundary>
+        })
+    }
+        {
+        attachableIds.map(id => {
+            let sceneObject = sceneObjects[id]
+            let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
+            return <SimpleErrorBoundary  key={ id }>
+              <Attachable
+                gltf={ gltf }
+                sceneObject={ sceneObject }
+                isSelected={ selections.includes(id) } 
+                updateObject={ updateObject }/>
               </SimpleErrorBoundary>
         })
     }

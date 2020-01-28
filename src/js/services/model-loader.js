@@ -256,6 +256,7 @@ const modelIsInProjectFolder = ({ model, type }) =>
 
 const getFilepathForModel = ({ model, type }, { storyboarderFilePath }) => {
   // is the model built-in?
+  console.log(model)
   if (!isCustomModel(model)) {
     return path.join(builtInFolder(type), `${model}.glb`)
 
