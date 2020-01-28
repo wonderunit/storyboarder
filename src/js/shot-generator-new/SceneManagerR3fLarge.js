@@ -23,6 +23,7 @@ import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import InteractionManager from './components/Three/InteractionManager'
 import SGIkHelper from '../shared/IK/SGIkHelper'
+import SimpleErrorBoundary from './components/SimpleErrorBoundary'
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -175,14 +176,16 @@ const SceneManagerR3fLarge = connect(
         characterIds.map(id => {
             let sceneObject = sceneObjects[id]
             let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
-            return <Character
-              key={ id }
-              gltf={ gltf }
-              sceneObject={ sceneObject }
-              modelSettings={ models[sceneObject.model] }
-              isSelected={ selections.includes(id) } 
-              selectedBone={ selectedBone }
-              updateCharacterSkeleton={ updateCharacterSkeleton }/>
+            return <SimpleErrorBoundary>
+              <Character
+                key={ id }
+                gltf={ gltf }
+                sceneObject={ sceneObject }
+                modelSettings={ models[sceneObject.model] }
+                isSelected={ selections.includes(id) } 
+                selectedBone={ selectedBone }
+                updateCharacterSkeleton={ updateCharacterSkeleton }/>
+              </SimpleErrorBoundary>
         })
     }
     { 

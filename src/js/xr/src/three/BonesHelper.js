@@ -160,6 +160,10 @@ class BonesHelper extends THREE.Object3D
         }
     }
 
+    clone() {
+
+    }
+
     get isSelected()
     {
         return this.parent ? true : false

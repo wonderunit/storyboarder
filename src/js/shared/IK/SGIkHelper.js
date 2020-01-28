@@ -351,6 +351,10 @@ class SGIKHelper extends THREE.Object3D
             this.intializedSkinnedMesh = null;
         }
     }
+
+    clone() {
+        
+    }
 }
 
 const intializeInstancedMesh = (mesh, camera, domElement, scene) =>

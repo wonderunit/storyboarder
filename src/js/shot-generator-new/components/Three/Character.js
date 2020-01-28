@@ -5,6 +5,7 @@ import cloneGltf from '../../helpers/cloneGltf'
 import SGIkHelper from '../../../shared/IK/SGIkHelper'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
+
 const isUserModel = model => !!model.match(/\//)
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton }) => {
@@ -16,6 +17,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
     useEffect(() => {
       return () => {
+        console.log("unmount")
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
       }
@@ -93,6 +95,13 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         },
         [gltf]
       )
+
+    useMemo(() => { 
+      if(!ready && ref.current) {
+        ref.current.remove(BonesHelper.getInstance())
+        ref.current.remove(SGIkHelper.getInstance())
+      }
+    }, [ready])
 
     useMemo(() => {
       if (!skeleton) return
@@ -215,9 +224,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         }
     }, [selectedBone])
 
-    useMemo(() => {
-      if(!ref.current) return
-      if(!lod) return
+    useEffect(() => {
+      if(!ref.current || !ready || !lod || !ref.current.children.length) return
       if (isSelected) {
 
         BonesHelper.getInstance().initialize(lod.children[0])
@@ -231,9 +239,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         ref.current.remove(SGIkHelper.getInstance())
         
       }
-      return () => {
-      }
-    }, [ref.current, isSelected, ready])
+    }, [isSelected, ready])
 
     useMemo(() => {
         if(!ref.current) return 

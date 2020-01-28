@@ -282,6 +282,10 @@ class IKHelper extends THREE.Object3D
             this.parent.remove(this);
         }
     }
+
+    clone() {
+        
+    }
 }
 
 const intializeInstancedMesh = (mesh) =>
