@@ -15,9 +15,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const objectRotationControl = useRef(null)
     useEffect(() => {
-      console.log("mount")
       return () => {
-        console.log("unmount")
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
       }
@@ -94,8 +92,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
           // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
           setReady(true)
           return [skeleton, lod, originalSkeleton, armature, originalHeight]
-        },
-        [gltf])
+        }, [gltf])
 
     useEffect(() => {
       if(!ref.current || !lod) return
@@ -182,7 +179,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
   
       let inverseMatrixWorld = ref.current.getInverseMatrixWorld()
       let position = new THREE.Vector3()
-      console.log(sceneObject.skeleton)
       for(let i = 0; i < skeleton.bones.length; i++) {
         let bone = skeleton.bones[i]
         if(bone.name.includes("leaf")) continue
@@ -205,7 +201,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
           }
         })
       }
-      console.log(changedSkeleton)
       updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }, [ref.current, skeleton])
 
@@ -238,6 +233,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
     useMemo(() => {
       if(!lod) return
+      console.log(modelSettings)
       if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
         lod.children.forEach(skinnedMesh => {
           skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = true
@@ -313,7 +309,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         userData={{
           type: 'character',
           id: sceneObject.id,
-          poleTargets: sceneObject.poleTargets || {}
+          poleTargets: sceneObject.poleTargets || {},
+          height: modelSettings
         }}
 
         position={[sceneObject.x, sceneObject.z, sceneObject.y]}

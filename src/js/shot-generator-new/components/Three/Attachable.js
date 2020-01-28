@@ -34,7 +34,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) => {
+const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, characterModel }) => {
     const characterObject = useRef(null)
     const [ready, setReady] = useState(false)
     const { scene } = useThree()
@@ -61,9 +61,8 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
     }, [sceneObject.model, gltf])
 
     useEffect(() => {
-      ref.current.rebindAttachable = rebindAttachable
-      ref.current.saveToStore = saveToStore
-    }, []) 
+      rebindAttachable()
+    }, [characterModel])
 
     useEffect(() => {
     }, [ref.current])
@@ -104,7 +103,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
             newGroup.position.copy(modelPosition)
             bone.add(newGroup)
             bone.updateWorldMatrix(true, true)
-            console.log(newGroup.clone())
             modelPosition = newGroup.worldPosition()
             quat = newGroup.worldQuaternion()
             bone.remove(newGroup)
@@ -162,27 +160,18 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject}) =
 
     const rebindAttachable = () => {
         let prevCharacter = characterObject.current
-        characterObject.current = scene.children[1].children.filter(child => child.userData.id === sceneObject.attachToId)[0]
-        if(!characterObject.current) return
+        characterObject.current = scene.__interaction.filter(child => child.userData.id === sceneObject.attachToId)[0]
+        if(!characterObject.current ) return
         
         let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
+        console.log(skinnedMesh)
+        if(!skinnedMesh) return
         let skeleton = skinnedMesh.skeleton
         let bone = skeleton.getBoneByName(sceneObject.bindBone)
         bone.add(ref.current)
         let scale = sceneObject.size / characterObject.current.scale.x
         ref.current.scale.set(scale, scale, scale)
         ref.current.updateWorldMatrix(true, true)
-
-        // Adds a ref of attachable to character if it doesn't exist and adds current attachable
-        if(!characterObject.current.attachables) {
-          characterObject.current.attachables = [] 
-          characterObject.current.attachables.push(ref.current)
-        } else {
-          let isAdded = characterObject.current.attachables.some(attachable => attachable.uuid === ref.current.uuid)
-          if(!isAdded) {
-            characterObject.current.attachables.push(ref.current)
-          }
-        }
 
         saveToStore()
     }

@@ -200,12 +200,14 @@ const SceneManagerR3fLarge = connect(
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
             let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
+            let characterGltf = getAsset(ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}))
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
                 gltf={ gltf }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) } 
-                updateObject={ updateObject }/>
+                updateObject={ updateObject }
+                characterModel={ characterGltf }/>
               </SimpleErrorBoundary>
         })
     }

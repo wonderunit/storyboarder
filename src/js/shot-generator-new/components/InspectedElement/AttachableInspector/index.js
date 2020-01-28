@@ -63,7 +63,6 @@ const AttachableInspector = connect(
     useEffect(() => {
       withState((dispatch, state) => {
         setSceneObject(getSceneObjects(state)[id])
-        console.log(getSceneObjects(state)[id])
       })
     }, [id])
 
@@ -94,7 +93,6 @@ const AttachableInspector = connect(
           }
         }
       } 
-      console.log(modelData)
 
       let key = THREE.Math.generateUUID()
       let element = {
@@ -118,7 +116,6 @@ const AttachableInspector = connect(
 
     const onSelectFile = useCallback((filepath) => {
       if (filepath.file) {
-        console.log(filepath.file)
         onSelectItem(filepath.file )
       }
     }, [id, onSelectItem])
