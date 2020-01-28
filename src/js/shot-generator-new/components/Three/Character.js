@@ -14,14 +14,16 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     const attachablesList = useRef([])
     const { scene, camera, gl } = useThree()
     const objectRotationControl = useRef(null)
-
     useEffect(() => {
+      console.log("mount")
       return () => {
         console.log("unmount")
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
       }
     }, [])
+
+   
 
     const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
         () => {
@@ -93,8 +95,27 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
           setReady(true)
           return [skeleton, lod, originalSkeleton, armature, originalHeight]
         },
-        [gltf]
-      )
+        [gltf])
+
+    useEffect(() => {
+      if(!ref.current) return
+      ref.current.add(lod)
+      return () => {
+        ref.current.remove(lod)
+      }
+    }, [lod, ref.current])
+
+    useEffect(() => {
+      if(!ref.current) return
+      ref.current.add(armature)
+      return () => {
+        ref.current.remove(armature)
+      }
+    }, [armature, ref.current])
+
+    const isLodApplied = () => {
+      return (!ref.current || !lod) ? false : ref.current.children.find(object => object.uuid === lod.uuid)
+    }
 
     useMemo(() => { 
       if(!ready && ref.current) {
@@ -239,7 +260,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         ref.current.remove(SGIkHelper.getInstance())
         
       }
-    }, [isSelected, ready])
+    }, [lod, isSelected, ready])
 
     useMemo(() => {
         if(!ref.current) return 
@@ -270,8 +291,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         rotation={[0, sceneObject.rotation, 0]}
         scale={[bodyScale, bodyScale, bodyScale]}
       >
-        <primitive object={lod ? lod : new THREE.Object3D() } />
-        <primitive object={armature ? armature : new THREE.Object3D()} />
+    
       </group>
 })
 
