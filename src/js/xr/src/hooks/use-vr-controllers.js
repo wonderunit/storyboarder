@@ -1,4 +1,4 @@
-const { useThree, useRender } = require('react-three-fiber')
+const { useThree, useFrame } = require('react-three-fiber')
 const { useState, useEffect, useRef } = React = require('react')
 
 window.THREE = window.THREE || THREE
@@ -52,7 +52,7 @@ const useVrControllers = ({
   onPressEndXRef.current = onPressEndX
   onPressStartThumbstickRef.current = onPressStartThumbstick
 
-  useRender(() => {
+  useFrame(() => {
     THREE.VRController.update()
   })
 

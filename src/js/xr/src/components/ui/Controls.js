@@ -1,5 +1,5 @@
 const { useMemo, useRef, useCallback } = React = require('react')
-const { useRender } = require('react-three-fiber')
+const { useFrame } = require('react-three-fiber')
 
 const { log } = require('../../components/Log')
 
@@ -65,7 +65,7 @@ const Controls = React.memo(({ gltf, mode, hand = 'right', locked, getCanvasRend
     if (material) material.opacity = locked ? 0.15 : 0.8
   }, [locked])
 
-  useRender((state, delta) => {
+  useFrame((state, delta) => {
     if (getCanvasRenderer().needsRender) {
       getCanvasRenderer().render()
       getTexture().needsUpdate = true

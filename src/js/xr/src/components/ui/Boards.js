@@ -1,5 +1,5 @@
 const { useEffect, useMemo, useRef, useCallback } = React = require('react')
-const { useRender, useThree } = require('react-three-fiber')
+const { useFrame, useThree } = require('react-three-fiber')
 
 const SCALE = 1
 const POSITION = [0, 0.4, -1]
@@ -66,7 +66,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
   //   if (mesh) mesh.material.opacity = locked ? 0.15 : 0.8
   // }, [locked])
 
-  useRender((state, delta) => {
+  useFrame((state, delta) => {
     if (getCanvasRenderer().boardsNeedsRender) {
       getCanvasRenderer().renderBoards()
       getTexture().needsUpdate = true

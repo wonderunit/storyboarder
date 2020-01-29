@@ -1,4 +1,4 @@
-const { useThree, useRender } = require('react-three-fiber')
+const { useThree, useFrame } = require('react-three-fiber')
 const { useMemo, useRef, useEffect } = React = require('react')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -835,7 +835,7 @@ const useInteractionsManager = ({
   }
 
   // TODO could model these as ... activities? exec:'render' actions?
-  useRender(() => {
+  useFrame(() => {
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
@@ -948,7 +948,7 @@ const useInteractionsManager = ({
   }, false, [set, controllers])
 
   // update ui every frame
-  useRender(() => {
+  useFrame(() => {
     if (uiService.state.value.input == 'dragging') {
       let controller = uiService.state.context.draggingController
 

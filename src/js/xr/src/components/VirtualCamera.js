@@ -1,6 +1,6 @@
 const THREE = require('three')
 const { useMemo, useRef, useCallback, useEffect } = React = require('react')
-const { useRender, useThree, useUpdate } = require('react-three-fiber')
+const { useFrame, useThree, useUpdate } = require('react-three-fiber')
 require('../three/GPUPickers/utils/Object3dExtension')
 
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
@@ -199,7 +199,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
     </group>
   }, [])
 
-  useRender(() => {
+  useFrame(() => {
     if (!ref.current) return
 
     let isClose = false

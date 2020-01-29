@@ -1,4 +1,4 @@
-const { useThree, useRender } = require('react-three-fiber')
+const { useThree, useFrame } = require('react-three-fiber')
 const { useRef, useMemo } = React = require('react')
 
 const rStats = require('../../vendor/rStats.js')
@@ -23,7 +23,7 @@ const useRStats = () => {
     return ref.current
   }
 
-  useRender(() => {
+  useFrame(() => {
     let r = getRStats()
     r('rAF').tick()
     r('FPS').frame()

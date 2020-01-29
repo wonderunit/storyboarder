@@ -196,7 +196,7 @@
     "react-pose": "^4.0.10",
     "react-redux": "7.1.0",
     "react-select": "^3.0.8",
-    "react-three-fiber": "2.4.3",
+    "react-three-fiber": "^4.0.12",
     "react-use-gesture": "^6.0.14",
     "react-window": "1.5.0",
     "redux": "4.0.1",
