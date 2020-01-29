@@ -61,6 +61,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
     }, [sceneObject.model, gltf])
 
     useEffect(() => {
+      if(!characterObject.current) return
       rebindAttachable()
     }, [characterModel])
 
@@ -83,7 +84,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
 
     useEffect(() => {
       if(!scene.children[0]) return 
-      //console.log(sceneObject.status)
         characterObject.current = scene.children[0].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
         if(!characterObject.current) return
         let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
@@ -115,17 +115,8 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
           })
         }
         bone.add(ref.current)
-        if(!characterObject.current.attachables) {
-          characterObject.current.attachables = []
-          characterObject.current.attachables.push(ref.current)
-        } else {
-          let isAdded = characterObject.current.attachables.some(attachable => attachable.uuid === ref.current.uuid)
-          if(!isAdded) {
-            characterObject.current.attachables.push(ref.current)
-          }
-        }
         ref.current.updateMatrixWorld(true)
-    }, [scene.children.length])
+    }, [scene.children.length, ref.current])
     
     useEffect(() => {
         if(!characterObject.current) return 
@@ -164,7 +155,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
         if(!characterObject.current ) return
         
         let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
-        console.log(skinnedMesh)
         if(!skinnedMesh) return
         let skeleton = skinnedMesh.skeleton
         let bone = skeleton.getBoneByName(sceneObject.bindBone)

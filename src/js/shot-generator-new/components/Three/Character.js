@@ -272,6 +272,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
     useEffect(() => {
       if(!ref.current || !ready || !lod || !ref.current.children.length) return
+      console.log(sceneObject)
       if (isSelected) {
 
         BonesHelper.getInstance().initialize(lod.children[0])

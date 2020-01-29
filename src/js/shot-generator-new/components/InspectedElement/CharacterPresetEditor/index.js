@@ -1,9 +1,11 @@
+import * as THREE from 'three'
 import React, { useState, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import {
   updateObject,
 
   createCharacterPreset,
+  createObjects,
   getSceneObjects,
 
   undoGroupStart,
@@ -47,8 +49,12 @@ const CharacterPresetsEditor = connect(
         },
         name: sceneObject.name || preset.name
       }))
+      console.log("initializing attachables")
+      let attachables = initializeAttachables(sceneObject, preset)
+      if(attachables)
+        dispatch(createObjects(attachables))
     },
-    createCharacterPreset: ({ id, name, sceneObject }) => (dispatch, getState) => {
+    createCharacterPreset: ({ id, name, sceneObject, attachables }) => (dispatch, getState) => {
       // add the character data to a named preset
       let preset = {
         id,
@@ -64,6 +70,13 @@ const CharacterPresetsEditor = connect(
             endomorphic: sceneObject.morphTargets.endomorphic
           }
         }
+
+      }
+
+      if(attachables.length) {
+        preset.state.attachables = attachables
+        preset.state.presetPosition = { x:sceneObject.x, y: sceneObject.y, z: sceneObject.z },
+        preset.state.presetRotation = sceneObject.rotation
       }
 
       // start the undo-able operation
@@ -109,12 +122,24 @@ const CharacterPresetsEditor = connect(
       return sceneObject
     }, [id])
 
+    const getAttachables = useCallback(() => {
+      let attachables = null
+      withState((dispatch, state) => {
+        attachables = Object.values(getSceneObjects(state)).filter(object => object.attachToId === id)
+      })
+      console.log(attachables)
+      return attachables
+    }, [id])
+
     const addNewCharacterPreset = useCallback((name) => {
       let id = THREE.Math.generateUUID()
+      let attachables = getAttachables()
+     
       createCharacterPreset({
         id,
         name,
-        sceneObject:getSceneObject()
+        sceneObject:getSceneObject(),
+        attachables
       })
     }, [getSceneObject()])
 
@@ -127,6 +152,7 @@ const CharacterPresetsEditor = connect(
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
+      console.log(preset)
       selectCharacterPreset(getSceneObject(), characterPresetId, preset)
     }
 
@@ -171,4 +197,62 @@ const CharacterPresetsEditor = connect(
       </div>
   })
 )
+
+const initializeAttachables = (sceneObject, preset) => {
+  let attachables = preset.state.attachables
+  console.log(attachables)
+  if(attachables) {
+    let newAttachables = []
+    let currentParent = new THREE.Group()
+    currentParent.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
+    currentParent.rotation.set(0, sceneObject.rotation, 0 )
+    currentParent.updateMatrixWorld(true)
+    let prevParent = new THREE.Group()
+    let attachableObject = new THREE.Object3D()
+    for(let i = 0; i < attachables.length; i++) {
+      let attachable = attachables[i]
+      console.log(attachable)
+      console.log(preset.state.presetPosition)
+      prevParent.position.set(preset.state.presetPosition.x, preset.state.presetPosition.z, preset.state.presetPosition.y)
+      prevParent.rotation.set(0, preset.state.presetRotation, 0 )
+      prevParent.updateMatrixWorld(true)
+      let newAttachable = {}
+      newAttachable.attachToId = sceneObject.id
+      newAttachable.id = THREE.Math.generateUUID()
+      newAttachable.loaded = false
+      newAttachable.model = attachable.model
+      newAttachable.name = attachable.name
+      newAttachable.type = attachable.type
+      newAttachable.size = attachable.size
+      newAttachable.type = "attachable"
+      //newAttachable.status = "PENDING"
+      newAttachable.bindBone = attachable.bindBone
+
+      attachableObject.position.set(attachable.x, attachable.y, attachable.z)
+      attachableObject.rotation.set(attachable.rotation.x, attachable.rotation.y, attachable.rotation.z)
+      attachableObject.updateMatrixWorld(true)
+      prevParent.add(attachableObject)
+      attachableObject.applyMatrix(prevParent.getInverseMatrixWorld())
+      
+      prevParent.position.copy(currentParent.position)
+      prevParent.rotation.copy(currentParent.rotation)
+      prevParent.updateMatrixWorld(true)
+      attachableObject.updateMatrixWorld(true)
+      let { x, y, z }  = attachableObject.worldPosition()
+      newAttachable.x = x
+      newAttachable.y = y
+      newAttachable.z = z
+      let quaternion = attachableObject.worldQuaternion()
+      let euler = new THREE.Euler().setFromQuaternion(quaternion)
+      newAttachable.rotation = { x: euler.x, y: euler.y, z: euler.z }
+
+      newAttachables.push(newAttachable)
+    }
+    console.log(newAttachables)
+    return newAttachables
+  } else { 
+    return false
+  }
+}
+
 export default CharacterPresetsEditor
