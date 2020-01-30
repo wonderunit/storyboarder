@@ -29,17 +29,16 @@ const getSceneObjectCamerasIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
   ) 
-
-const getSceneObjectCharacterIds = createSelector(
+const getSceneObjectIconIds = createSelector(
   [getSceneObjects],
-  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
-) 
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'light' || o.type === 'character').map(o => o.id)
+)
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
         camerasIds: getSceneObjectCamerasIds(state),
-        characterIds: getSceneObjectCharacterIds(state),
+        iconIds: getSceneObjectIconIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         aspectRatio: state.aspectRatio,
@@ -61,7 +60,7 @@ const SceneManagerR3fSmall = connect(
     selectObject,
     selections,
     updateObjects,
-    characterIds
+    iconIds
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -233,7 +232,7 @@ const SceneManagerR3fSmall = connect(
     }
 
     {
-        fontMesh && characterIds.map((object, index) => {
+        fontMesh && iconIds.map((object, index) => {
           let sceneObject = sceneObjects[object]
           return <IconsComponent
               key={ index }

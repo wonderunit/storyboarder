@@ -375,6 +375,7 @@ const Editor = React.memo(({
       type: 'character'
     }, { storyboarderFilePath }))
     requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
+    requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
   }, [])
 
   const guidesDimensions = useMemo(() => {

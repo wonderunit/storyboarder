@@ -49,7 +49,7 @@ const getIntersectionTarget = intersect => {
   }
 
   if(intersect.object.parent.userData.type === 'object' || intersect.object.userData.type === 'attachable'
-    || intersect.object.userData.type === 'image' || intersect.object.userData.type === 'hitter_light') {
+    || intersect.object.userData.type === 'image' || intersect.object.userData.type === 'light') {
     return intersect.object.parent
   }
 }

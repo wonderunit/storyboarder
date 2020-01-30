@@ -22,9 +22,12 @@ import { useThree } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
+import Light from './components/Three/Light'
 import InteractionManager from './components/Three/InteractionManager'
 import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
+import path from 'path'
+
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -38,12 +41,16 @@ const getSceneObjectAttachableIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
 )
-
+const getSceneObjectLightIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'light').map(o => o.id)
+)
 const SceneManagerR3fLarge = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
         characterIds: getSceneObjectCharacterIds(state),
         attachableIds: getSceneObjectAttachableIds(state),
+        lightIds: getSceneObjectLightIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         activeCamera: getSceneObjects(state)[getActiveCamera(state)],
@@ -77,7 +84,8 @@ const SceneManagerR3fLarge = connect(
     characterIds,
     updateObjects,
     selectedBone,
-    attachableIds
+    attachableIds,
+    lightIds
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -196,7 +204,19 @@ const SceneManagerR3fLarge = connect(
               </SimpleErrorBoundary>
         })
     }
-        {
+    {
+        lightIds.map(id => {
+            let sceneObject = sceneObjects[id]
+            let gltf = getAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
+            return <SimpleErrorBoundary  key={ id }>
+              <Light
+                gltf={ gltf }
+                sceneObject={ sceneObject }
+                isSelected={ selections.includes(id) } />
+              </SimpleErrorBoundary>
+        })
+    }
+    {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
             let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))

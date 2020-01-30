@@ -57,6 +57,9 @@ const translateRotation = (sceneObject) => {
     switch(sceneObject.type) {
         case 'character':
             return sceneObject.rotation + Math.PI
+        case 'light':
+            let addRotation = sceneObject.tilt>=0 ? 0 : Math.PI
+            return sceneObject.rotation + addRotation
     }
 }
 
