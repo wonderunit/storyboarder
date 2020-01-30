@@ -5,7 +5,13 @@ import React, { useMemo, useRef, useEffect } from 'react'
 const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
   const mesh = useMemo(() => gltf.scene.children[0].clone(), [gltf])
 
-  const spotLight = useRef()
+  const spotLight = useUpdate(
+    self => {
+      self.target.position.set(0, 0, sceneObject.distance)
+      self.add(self.target)
+    }, [sceneObject.distance])
+  
+
   const ref = useUpdate(self => {
     self.rotation.x = 0
     self.rotation.z = 0
@@ -13,6 +19,7 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
     self.rotateX(sceneObject.tilt || 0)
     self.rotateZ(sceneObject.roll || 0)
   }, [sceneObject.rotation, sceneObject.tilt, sceneObject.roll])
+
 
 
   let lightColor = 0x8c78f1

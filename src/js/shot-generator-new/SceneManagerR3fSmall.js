@@ -82,7 +82,10 @@ const SceneManagerR3fSmall = connect(
     }
 
     const onPointerDown = useCallback((e) => {
-      let match = e.object.parent.parent//findMatchingAncestor(e.object, scene.__interaction)
+      let match
+       e.object.traverseAncestors((o) => {
+         if(o.userData.id) match =  o
+       })
       selectObject(match.userData.id)
       draggedObject.current = match
       const { x, y } = mouse(e)
