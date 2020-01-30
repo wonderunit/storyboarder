@@ -7,7 +7,7 @@ const { useRef } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
-console.clear() // clear the annoying dev tools warning
+//console.clear() // clear the annoying dev tools warning
 const log = require('electron-log')
 log.catchErrors()
 
