@@ -31,7 +31,7 @@ const getSceneObjectCamerasIds = createSelector(
   ) 
 const getSceneObjectIconIds = createSelector(
   [getSceneObjects],
-  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'light' || o.type === 'character').map(o => o.id)
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'light' || o.type === 'character' || o.type === 'volume').map(o => o.id)
 )
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(

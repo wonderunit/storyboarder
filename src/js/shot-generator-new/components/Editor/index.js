@@ -94,8 +94,8 @@ import GuidesInspector from "../GuidesInspector";
 import createDeepEqualSelector from "../../../utils/deepEqualSelector"
 import GuidesView from "../GuidesView"
 import { useAssetsManager } from '../../hooks/use-assets-manager'
-import getFilepathForModelByType from '../../helpers/get-filepath-for-model-by-type'
 import {gltfLoader} from "../../utils/gltfLoader"
+import { getFilePathForImages } from "../../helpers/get-filepath-for-images"
 
 
 /* const APP_GLTFS = [
@@ -184,8 +184,31 @@ const Editor = React.memo(({
     withState((dispatch, state) => {
       storyboarderFilePath = state.meta.storyboarderFilePath
     })
+    const paths = Object.values(sceneObjects)
+    .filter(o => o.volumeImageAttachmentIds && o.volumeImageAttachmentIds.length > 0)
+    .map((object) => getFilePathForImages(object, storyboarderFilePath))
+    for(let i = 0; i < paths.length; i++) {
+      if(!Array.isArray(paths[i])) {
+        if(getAsset(paths[i])) {
+          requestAsset(paths[i])
+        }
+      } else {
+        for(let j = 0; j < paths[i].length; j++) {
+          if(!getAsset(paths[i][j])) {
+            requestAsset(paths[i][j])
+          }
+        }
+      }
+    }
+  }, [sceneObjects])
+
+  useEffect(() => {
+
+    let storyboarderFilePath 
+    withState((dispatch, state) => {
+      storyboarderFilePath = state.meta.storyboarderFilePath
+    })
     if (world.environment.file) {
-      console.log(world.environment)
       // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
       const environmentPath =  ModelLoader.getFilepathForModel({
         model: world.environment.file,
@@ -201,6 +224,7 @@ const Editor = React.memo(({
       )
     }
   }, [world.environment])
+
 
   /** Resources loading end */
 
@@ -378,6 +402,7 @@ const Editor = React.memo(({
     requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
   }, [])
 
+
   const guidesDimensions = useMemo(() => {
     return {
       width: Math.ceil((largeCanvasSize.width || window.innerWidth)),
@@ -453,6 +478,7 @@ const Editor = React.memo(({
                 >
                 <Provider store={ store }>
                   <SceneManagerR3fLarge 
+                  assets={ assets.length }
                   getAsset={ getAsset }/>
                 </Provider>
               </Canvas>

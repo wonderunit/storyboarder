@@ -62,16 +62,16 @@ const useAssetsManager = () => {
     Object.entries(assets)
       .filter(([_, o]) => o.status === 'NotAsked')
       .forEach(([id]) => {
-        if (!id.includes('/images/')) {
+        if (!id.includes('/images/') && !id.includes('/volumes/')) {
           loader.load(
             id,
             value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
             error => dispatch({ type: 'ERROR', payload: { id, error } })
-          )
-          dispatch({ type: 'LOAD', payload: { id } })
-        } else {
-          textureLoader.load(
+            )
+            dispatch({ type: 'LOAD', payload: { id } })
+          } else {
+            textureLoader.load(
             id,
             value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
@@ -91,6 +91,7 @@ const useAssetsManager = () => {
     id => assets[id] && assets[id].value,
     [assets]
   )
+  
 
   return { assets, requestAsset, getAsset }
 }

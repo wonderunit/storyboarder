@@ -23,9 +23,11 @@ import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
 import Light from './components/Three/Light'
+import Volume from './components/Three/Volume'
 import InteractionManager from './components/Three/InteractionManager'
 import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
+import { getFilePathForImages } from "./helpers/get-filepath-for-images"
 import path from 'path'
 
 const getSceneObjectModelObjectIds = createSelector(
@@ -45,12 +47,17 @@ const getSceneObjectLightIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'light').map(o => o.id)
 )
+const getSceneObjectVolumeIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'volume').map(o => o.id)
+)
 const SceneManagerR3fLarge = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
         characterIds: getSceneObjectCharacterIds(state),
         attachableIds: getSceneObjectAttachableIds(state),
         lightIds: getSceneObjectLightIds(state),
+        volumeIds: getSceneObjectVolumeIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         activeCamera: getSceneObjects(state)[getActiveCamera(state)],
@@ -85,7 +92,9 @@ const SceneManagerR3fLarge = connect(
     updateObjects,
     selectedBone,
     attachableIds,
-    lightIds
+    lightIds,
+    volumeIds,
+    assets
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -94,6 +103,7 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
 
+    console.log("rerender")
 
     useEffect(() => {
       
@@ -158,6 +168,10 @@ const SceneManagerR3fLarge = connect(
     useEffect(() => {
         scene.background = new THREE.Color(world.backgroundColor)
     }, [world.background])
+
+    useEffect(() => {
+      console.log(scene)
+    }, [scene])
 
     return <group ref={rootRef}> 
     <InteractionManager/>
@@ -228,6 +242,26 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selections.includes(id) } 
                 updateObject={ updateObject }
                 characterModel={ characterGltf }/>
+              </SimpleErrorBoundary>
+        })
+    }
+    {
+        volumeIds.map(id => {
+            let sceneObject = sceneObjects[id]
+            let textures = []
+            let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
+            for(let i = 0; i < imagesPaths.length; i++ ) {
+              if(!imagesPaths[i]) continue
+              let asset = getAsset(imagesPaths[i])
+              if(!asset) continue
+              textures.push(asset)
+            }
+            console.log(textures)
+            return <SimpleErrorBoundary  key={ id }>
+              <Volume
+                textures={ textures }
+                sceneObject={ sceneObject }
+                numberOfLayers= { sceneObject.numberOfLayers }/>
               </SimpleErrorBoundary>
         })
     }
