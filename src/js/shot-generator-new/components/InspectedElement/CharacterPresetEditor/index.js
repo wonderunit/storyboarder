@@ -49,7 +49,6 @@ const CharacterPresetsEditor = connect(
         },
         name: sceneObject.name || preset.name
       }))
-      console.log("initializing attachables")
       let attachables = initializeAttachables(sceneObject, preset)
       if(attachables)
         dispatch(createObjects(attachables))
@@ -127,7 +126,6 @@ const CharacterPresetsEditor = connect(
       withState((dispatch, state) => {
         attachables = Object.values(getSceneObjects(state)).filter(object => object.attachToId === id)
       })
-      console.log(attachables)
       return attachables
     }, [id])
 
@@ -152,7 +150,6 @@ const CharacterPresetsEditor = connect(
     const onSelectCharacterPreset = event => {
       let characterPresetId = event.target.value
       let preset = characterPresets[characterPresetId]
-      console.log(preset)
       selectCharacterPreset(getSceneObject(), characterPresetId, preset)
     }
 
@@ -200,7 +197,6 @@ const CharacterPresetsEditor = connect(
 
 const initializeAttachables = (sceneObject, preset) => {
   let attachables = preset.state.attachables
-  console.log(attachables)
   if(attachables) {
     let newAttachables = []
     let currentParent = new THREE.Group()
@@ -248,7 +244,6 @@ const initializeAttachables = (sceneObject, preset) => {
 
       newAttachables.push(newAttachable)
     }
-    console.log(newAttachables)
     return newAttachables
   } else { 
     return false

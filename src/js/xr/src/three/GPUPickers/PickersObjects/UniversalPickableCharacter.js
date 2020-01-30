@@ -104,7 +104,6 @@ class UniversalPickableCharacter extends Pickable
     isObjectChanged(excludingList)
     {
         this.excludingList = excludingList;
-        console.log(this.sceneMesh.parent)
         if(!this.sceneMesh.parent || !this.sceneMesh.parent.parent)
         {
             return true;

@@ -12,7 +12,7 @@ const { useRef, useEffect, useState } = React
 const path = require('path')
 
 const BonesHelper = require('./BonesHelper')
-const IconSprites = require('./IconSprites')
+const IconSprites = require('./components/IconsComponent/IconSprites')
 
 const { initialState } = require('../shared/reducers/shot-generator')
 

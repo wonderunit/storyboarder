@@ -3,7 +3,7 @@ const THREE = require('three')
 const React = require('react')
 const { useRef, useEffect, useState } = React
 
-const IconSprites = require('./IconSprites')
+const IconSprites = require('./components/IconsComponent/IconSprites')
 
 
 const SpotLight = React.memo(({ scene, id, type, setLight, icon, ...props }) => {

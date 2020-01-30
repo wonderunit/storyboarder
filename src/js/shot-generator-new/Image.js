@@ -8,7 +8,7 @@ const { useRef, useEffect, useState } = React
 
 const textureLoader = new THREE.TextureLoader()
 
-const IconSprites = require('./IconSprites')
+const IconSprites = require('./components/IconsComponent/IconSprites')
 
 const { isUserFile } = require('../services/model-loader')
 const pathToShotGeneratorData = path.join(window.__dirname, '..', 'src', 'data', 'shot-generator')

@@ -18,16 +18,18 @@ const useDraggingManager = (useIcons) => {
       objectChanges.current = {}
     
       raycaster.current.setFromCamera({ x, y }, camera )
+      console.log(useIcons)
       if (useIcons) {
         plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
       } else {
         plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
       }
+      console.log(scene)
     
       for (let selection of selections) {
         selectedObjects.current[selection] = scene.children[0].children.find(child => child.userData.id === selection)
       }
-    
+      console.log(selectedObjects.current)
       // remember the offsets of every selected object
       if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
         if ( target.userData.type === 'attachable' ) {

@@ -34,10 +34,10 @@ const getSceneObjectCharacterIds = createSelector(
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
   ) 
 
-  const getSceneObjectAttachableIds = createSelector(
-    [getSceneObjects],
-    sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
-  )
+const getSceneObjectAttachableIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
+)
 
 const SceneManagerR3fLarge = connect(
     state => ({

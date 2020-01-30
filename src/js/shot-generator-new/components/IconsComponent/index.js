@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
-import IconsSprites from '../../IconSprites'
+import IconsSprites from './IconSprites'
 
-const IconsComponent = React.memo(({type, text, auxiliaryText, sceneObject, fontMesh}) => {
+const IconsComponent = React.memo(({type, text, auxiliaryText = null, sceneObject, fontMesh,  ...props}) => {
     const ref = useRef()
     const iconsSprites = useRef()
     useEffect(() => {
@@ -9,12 +9,13 @@ const IconsComponent = React.memo(({type, text, auxiliaryText, sceneObject, font
         iconsSprites.current = new IconsSprites(type, fontMesh)
         text && iconsSprites.current.addText(text, 1, { x: 0.7, y: 0, z: 0 })
         auxiliaryText && iconsSprites.current.addText(auxiliaryText, 2, { x: 0.7, y: 0, z: 0.39 })
-        iconsSprites.current.icon.rotation.y = sceneObject.y
+        iconsSprites.current.icon.material.rotation = translateRotation(sceneObject)
         ref.current.add(iconsSprites.current)
     }, [fontMesh])
 
     useEffect(() => {
-        iconsSprites.current.icon.rotation.y = sceneObject.rotation.y
+        iconsSprites.current.icon.material.rotation = translateRotation(sceneObject)
+        iconsSprites.current.icon.updateMatrixWorld(true)
     }, [sceneObject.rotation])
 
     useEffect(() => {
@@ -35,19 +36,28 @@ const IconsComponent = React.memo(({type, text, auxiliaryText, sceneObject, font
         }
     }, [auxiliaryText])
 
-    const { x, y, z} = sceneObject
-    console.log(sceneObject.width)
-    console.log(sceneObject.depth)
+    const { x, y, z } = sceneObject
     return <group 
     ref={ ref }
     position={ [x, z, y] }
     visible={ true }
-    scale={ [sceneObject.width + 0.2, sceneObject.depth + 0.2, 1] }
+    scale={ [1, 1, 1] }
+    onController={ sceneObject.visible ? () => null : null }
     userData={{
-        type:type
+        type:type,
+        id:sceneObject.id,
+        name: sceneObject.name
     }}
+    { ...props }
     >
     </group>
 })
+
+const translateRotation = (sceneObject) => {
+    switch(sceneObject.type) {
+        case 'character':
+            return sceneObject.rotation + Math.PI
+    }
+}
 
 export default IconsComponent

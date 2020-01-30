@@ -1,6 +1,6 @@
 const { useEffect, useRef, useMemo } = React = require('react')
 
-const IconSprites = require('./IconSprites')
+const IconSprites = require('./components/IconsComponent/IconSprites')
 
 const Camera = React.memo(({ scene, id, type, setCamera, icon, ...props }) => {
   let camera = useRef()

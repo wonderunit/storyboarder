@@ -17,8 +17,9 @@ import useFontLoader from './hooks/use-font-loader'
 import path from 'path'
 import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
-
 import { useDraggingManager} from './use-dragging-manager'
+//Move to sg folder
+import findMatchingAncestor from './helpers/find-matching-ancestor'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -28,11 +29,17 @@ const getSceneObjectCamerasIds = createSelector(
     [getSceneObjects],
     sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
   ) 
+
+const getSceneObjectCharacterIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
+) 
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
         camerasIds: getSceneObjectCamerasIds(state),
+        characterIds: getSceneObjectCharacterIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         aspectRatio: state.aspectRatio,
@@ -53,7 +60,8 @@ const SceneManagerR3fSmall = connect(
     storyboarderFilePath,
     selectObject,
     selections,
-    updateObjects
+    updateObjects,
+    characterIds
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -66,7 +74,6 @@ const SceneManagerR3fSmall = connect(
     const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager(true)
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
- 
     const mouse = event => {
       const rect = gl.domElement.getBoundingClientRect()
       return {
@@ -76,10 +83,11 @@ const SceneManagerR3fSmall = connect(
     }
 
     const onPointerDown = useCallback((e) => {
-      selectObject(e.object.userData.id)
-      draggedObject.current = e.object
+      let match = e.object.parent.parent//findMatchingAncestor(e.object, scene.__interaction)
+      selectObject(match.userData.id)
+      draggedObject.current = match
       const { x, y } = mouse(e)
-      prepareDrag( draggedObject.current, {x, y, useIcons:true, camera, scene, selections })
+      prepareDrag( draggedObject.current, {x, y, camera, scene, selections:[match.userData.id] })
     }, [scene, camera, selections])
 
     const onPointerMove = useCallback((e) => {
@@ -221,6 +229,27 @@ const SceneManagerR3fSmall = connect(
                 onPointerDown(e)
               }}
               />
+        })
+    }
+
+    {
+        fontMesh && characterIds.map((object, index) => {
+          let sceneObject = sceneObjects[object]
+          return <IconsComponent
+              key={ index }
+              type={ sceneObject.type }
+              text={ sceneObject.name ? sceneObject.name : sceneObject.displayName }
+              sceneObject={ sceneObject }
+              fontMesh={ fontMesh }
+              onPointerUp={e => {
+                e.stopPropagation()
+                onPointerUp(e)
+              }}
+              onPointerDown={e => {
+                e.stopPropagation()
+                onPointerDown(e)
+              }}
+          />
         })
     }
     {

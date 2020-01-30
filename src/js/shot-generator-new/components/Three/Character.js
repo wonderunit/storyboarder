@@ -233,7 +233,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
     useMemo(() => {
       if(!lod) return
-      console.log(modelSettings)
       if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
         lod.children.forEach(skinnedMesh => {
           skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = true

@@ -11,7 +11,7 @@ const fs = require('fs')
 const ModelLoader = require('../services/model-loader')
 
 const applyDeviceQuaternion = require('./utils/apply-device-quaternion').default
-const IconSprites = require('./IconSprites')
+const IconSprites = require('./components/IconsComponent/IconSprites')
 
 const boxRadius = .005
 const boxRadiusSegments = 5

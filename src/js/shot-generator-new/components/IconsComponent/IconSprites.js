@@ -5,7 +5,7 @@ import { Object3D, Sprite } from 'three'
 import createGeometry from 'three-bmfont-text'
 window.THREE = window.THREE || THREE
 
-import allSprites from './components/IconsComponent/IconContainer'
+import allSprites from './IconContainer'
 class IconSprites extends Object3D {
     constructor(type, mesh) {
         super()

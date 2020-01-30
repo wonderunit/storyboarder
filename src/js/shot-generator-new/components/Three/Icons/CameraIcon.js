@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react'
-import IconSprites from '../../../IconSprites'
+import IconSprites from '../../IconsComponent/IconSprites'
 
 
 const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, ...props}) => {
@@ -62,11 +62,13 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, .
     const { x, y, z} = sceneObject
     return <group 
         ref={ ref }
+        onController={ sceneObject.visible ? () => null : null }
         position={ [x, z, y] }
         visible={ true }
         userData={{
             type:type,
-            id: sceneObject.id
+            id: sceneObject.id,
+            name: sceneObject.name
         }}
         {...props}
     >
