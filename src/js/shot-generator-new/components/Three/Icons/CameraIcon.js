@@ -59,6 +59,11 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, .
         iconsSprites.current.icon.rotation.y = sceneObject.rotation
     }, [sceneObject.rotation])
 
+    useEffect(() => {
+        if(!iconsSprites.current) return
+        iconsSprites.current.setSelected(props.isSelected)
+      }, [props.isSelected])
+
     const { x, y, z} = sceneObject
     return <group 
         ref={ ref }

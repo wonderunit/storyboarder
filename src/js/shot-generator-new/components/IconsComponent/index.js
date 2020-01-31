@@ -36,6 +36,11 @@ const IconsComponent = React.memo(({type, text, auxiliaryText = null, sceneObjec
         }
     }, [auxiliaryText])
 
+    useEffect(() => {
+        if(!iconsSprites.current) return
+        iconsSprites.current.setSelected(props.isSelected)
+      }, [props.isSelected])
+
     const { x, y, z } = sceneObject
     return <group 
     ref={ ref }

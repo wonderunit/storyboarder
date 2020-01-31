@@ -81,6 +81,7 @@ const SceneManagerR3fSmall = connect(
       }
     }
 
+
     const onPointerDown = useCallback((e) => {
       let match
        e.object.traverseAncestors((o) => {
@@ -195,6 +196,9 @@ const SceneManagerR3fSmall = connect(
 
     /////Render components
     return <group ref={rootRef}
+      onPointerDown={ e => {
+        selectObject(null)
+      }}
       onPointerMove={e => {
         e.stopPropagation()
         onPointerMove(e)
@@ -243,6 +247,7 @@ const SceneManagerR3fSmall = connect(
               text={ sceneObject.name ? sceneObject.name : sceneObject.displayName }
               sceneObject={ sceneObject }
               fontMesh={ fontMesh }
+              isSelected={ selections.includes(sceneObject.id) }
               onPointerUp={e => {
                 e.stopPropagation()
                 onPointerUp(e)
@@ -262,6 +267,7 @@ const SceneManagerR3fSmall = connect(
                 type={ sceneObject.type }
                 text={ sceneObject.name || sceneObject.displayName }
                 sceneObject={ sceneObject }
+                isSelected={ selections.includes(sceneObject.id) }
                 fontMesh={ fontMesh } 
                 onPointerUp={e => {
                   e.stopPropagation()
