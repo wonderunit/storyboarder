@@ -242,8 +242,8 @@ const getShotBox = (character, shotType = 0) => {
   }
   
   let shotInfo = ShotSizesInfo[shotType]
-  
-  let bones = character.userData.skeleton.bones.filter((bone) => shotInfo.bones.indexOf(bone.name) !== -1)
+  let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
+  let bones = skinnedMesh.skeleton.bones.filter((bone) => shotInfo.bones.indexOf(bone.name) !== -1)
   
   bones.forEach((bone) => {
     let boneInfo = getBoneStartEndPos(bone)

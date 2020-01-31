@@ -30,6 +30,7 @@ import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
 import { getFilePathForImages } from "./helpers/get-filepath-for-images"
 import path from 'path'
+import { setShot } from './utils/cameraUtils'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -71,6 +72,7 @@ const SceneManagerR3fLarge = connect(
         selections: getSelections(state),
         models: state.models,
         selectedBone: getSelectedBone(state),
+        cameraShots: state.cameraShots,
     }),
     {
         selectObject,
@@ -99,7 +101,8 @@ const SceneManagerR3fLarge = connect(
     attachableIds,
     lightIds,
     volumeIds,
-    imageIds
+    imageIds,
+    cameraShots
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -107,6 +110,7 @@ const SceneManagerR3fLarge = connect(
     const groundRef = useRef()
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
+    const selectedCharacters = useRef()
 
     useEffect(() => {
       
@@ -146,6 +150,37 @@ const SceneManagerR3fLarge = connect(
           updateObjects
         )
       }, [])
+
+    useEffect(() => {  
+      selectedCharacters.current = selections.filter((id) => {
+        return (sceneObjects[id] && sceneObjects[id].type === "character")
+      })
+    }, [selections])
+
+    useEffect(() => {
+      let selected = scene.children[0].children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
+      console.log(selected)
+      let characters = scene.children[0].children.filter((obj) => obj.userData.type === "character")
+      console.log("camera shots changed", cameraShots)
+      if (characters.length) {
+        let keys = Object.keys(cameraShots)
+        for(let i = 0; i < keys.length; i++ ) {
+          let key = keys[i]
+          console.log(key)
+          console.log(scene.children[0].children)
+          console.log(camera)
+          setShot({
+            camera,
+            characters,
+            selected,
+            updateObject,
+            shotSize: cameraShots[key].size,
+            shotAngle: cameraShots[key].angle
+          })
+        }
+      }
+    }, [cameraShots, selectedCharacters.current]) 
+
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     useEffect(() => { 
