@@ -3,7 +3,6 @@ const isUserModel = model => !!model.match(/\//)
 
 const getFilePathForImages = ({ type, volumeImageAttachmentIds}, storyboarderFilePath ) => {
     let paths = []
-    console.log(volumeImageAttachmentIds)
     for(let i = 0; i < volumeImageAttachmentIds.length; i++ ){
         let model = volumeImageAttachmentIds[i]
         if(!isUserModel(model)) {

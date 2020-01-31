@@ -473,12 +473,9 @@ const Editor = React.memo(({
                 key="camera-canvas"
                 id="camera-canvas"
                 tabIndex={1}
-               // ref={largeCanvasRef}
-                /* onPointerDown={onCanvasPointerDown} */
                 >
                 <Provider store={ store }>
                   <SceneManagerR3fLarge 
-                  assets={ assets.length }
                   getAsset={ getAsset }/>
                 </Provider>
               </Canvas>

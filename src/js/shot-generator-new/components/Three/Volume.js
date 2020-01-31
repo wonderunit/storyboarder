@@ -1,4 +1,11 @@
 import React, { useRef, useMemo, useEffect } from 'react'
+import * as THREE from 'three'
+import { Texture } from 'three'
+
+class LAYERS_STATUS {
+    static AVAIBLE = "Avaible"
+    static USED = "INUSE"
+}
 
 const initializeMaterial = (color, opacity, texture) => {
     let c = 0xFF * color / 0xFFFFFF
@@ -13,24 +20,115 @@ const initializeMaterial = (color, opacity, texture) => {
     })
     return volumeMaterial
 } 
+
+const layers = []
+class LayersPool  {
+    constructor() {
+        this.plane = new THREE.PlaneBufferGeometry(1, 1)
+    }
+    // Returning layers
+    getLayers( amount, { texture, color, opacity } ) {
+        let textureLayers = this.getLayersUsedByTexture(texture)
+        let returnLayers = [...textureLayers]
+        // Checks if requested amount less than used
+        if( textureLayers.length > amount ) {
+            // Release/Removes exceeding amount of layers which is used by texture
+            for( let i = textureLayers.length - 1; i > amount - 1; i-- ) {
+                textureLayers[i].status = LAYERS_STATUS.AVAIBLE
+                textureLayers[i].id = null
+                if(textureLayers[i].mesh.parent) textureLayers[i].mesh.parent.remove(textureLayers[i].mesh)
+                returnLayers = textureLayers.splice(i, 1)
+            }
+        } else 
+        // Checks if amount bigger than used
+        if( textureLayers.length < amount ) {
+            let avaibleLayers = this.getAvaibleLayers()
+            let neededLayersAmount = amount - textureLayers.length 
+            let material    
+            // Checks if layer one exists and it's have the material
+            if ( returnLayers[0] && returnLayers[0].material) {
+                material = returnLayers[0].material
+            } else {
+                // Creates new material
+                material = initializeMaterial(color, opacity, texture)
+            }        
+            
+            // Checks if there're enough avaible layers to satisfy amount
+            if( avaibleLayers.length > neededLayersAmount ) {
+                for( let i = 0; i < neededLayersAmount - 1; i++ ) {
+                    returnLayers.push(avaibleLayers[i])
+                    avaibleLayers[i].status = LAYERS_STATUS.INUSE
+                    avaibleLayers[i].id = texture.uuid
+                    avaibleLayers[i].mesh.material = material
+                }
+            } else {
+                // Checks if there're any avaible layers
+                if( avaibleLayers.length ) {
+                    // Counts how many layers from avaible we can use
+                    neededLayersAmount -= avaibleLayers.length
+                    // Uses all avaible layers for texture
+                    for( let i = 0; i < avaibleLayers.lenght - 1; i++ ) {
+                        returnLayers.push(avaibleLayers[i])
+                        avaibleLayers[i].status = LAYERS_STATUS.INUSE
+                        avaibleLayers[i].id = texture.uuid
+                        avaibleLayers[i].mesh.material = material
+                    }
+                }
+                
+                // Creates all requested layers ...
+                for( let i = 0; i < neededLayersAmount - 1; i++ ) {        
+                    let planeMesh = new THREE.Mesh(this.plane, material)
+                    layers.push( { id: texture.uuid, mesh: planeMesh, status: LAYERS_STATUS.INUSE } )
+                    console.log("Creating new layer")
+                    returnLayers.push( layers[layers.length - 1] )
+                }
+            }
+        }
+        return returnLayers.map(o => o.mesh)
+    }
+
+    // Releases layers by unbinding them from texture and setting their status to avaible
+    releaseLayers(textures) {
+        let layersToClean = this.getLayersToCleanUp(textures)
+        for( let i = 0; i < layersToClean.length; i++ ) {
+            if(layersToClean[i].mesh.parent) layersToClean[i].mesh.parent.remove(layersToClean[i].mesh)
+            layersToClean[i].mesh.material = null
+            layersToClean[i].status = LAYERS_STATUS.AVAIBLE
+            layersToClean[i].id = null
+        }
+    }
+
+    getLayersToCleanUp(textures) {
+        return layers.filter((layer) => !textures.some((texture) => texture.uuid === layer.id))
+    }
+
+    getLayersUsedByTexture( texture ) {
+         return layers.filter(layer => layer.id === texture.uuid)
+    }
+
+    getAvaibleLayers() {
+        return layers.filter(layer => layer.status === LAYERS_STATUS.AVAIBLE)
+    }
+}
+
 const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
     const ref = useRef()
+    const layersPool = useRef(new LayersPool())
 
     const meshes = useMemo(() => {
         if(!textures || !textures.length) return []
         let meshes = []
+        layersPool.current.releaseLayers(textures)
         for(let i = 0; i < textures.length; i++) {
-            console.log(textures[i])
-            let material = initializeMaterial(sceneObject.color, sceneObject.opacity, textures[i])
-            for (var j = 0; j < numberOfLayers; j++) {
-                let plane = new THREE.PlaneBufferGeometry(1, 1)
-                let planeMesh = new THREE.Mesh(plane, material)
-                planeMesh.material.opacity = sceneObject.opacity
-                planeMesh.position.z = sceneObject.depth / numberOfLayers * (numberOfLayers - 2 * j) / 2 - sceneObject.depth / numberOfLayers / 2
-                planeMesh.position.y = 1 / 2
+            let layers = layersPool.current.getLayers(numberOfLayers, {texture: textures[i], color:sceneObject.color, opacity:sceneObject.opacity})
+            for (var j = 0; j < layers.length; j++) {
+                let layer = layers[j]
+                layer.material.opacity = sceneObject.opacity
+                layer.position.z = sceneObject.depth / numberOfLayers * (numberOfLayers - 2 * j) / 2 - sceneObject.depth / numberOfLayers / 2
+                layer.position.y = 1 / 2
                 meshes.push( <primitive
-                    key={ planeMesh.uuid }
-                    object={ planeMesh }
+                    key={ layer.uuid }
+                    object={ layer }
                     userData={{type:'volume'}}
                   />)
           
@@ -41,7 +139,7 @@ const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
               }
         }
         return meshes
-    }, [textures.length])
+    }, [textures.length, numberOfLayers])
 
 
     useEffect(() => {
@@ -55,7 +153,7 @@ const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
             meshes[i].props.object.material.needsUpdate = true
           }
         }
-      }, [sceneObject.opacity, sceneObject.color])
+    }, [sceneObject.opacity, sceneObject.color])
 
     const {x, y, z, rotation, width, height } = sceneObject
     return <group 

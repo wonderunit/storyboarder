@@ -81,7 +81,6 @@ const SceneManagerR3fLarge = connect(
     activeCamera,
     getAsset,
     storyboarderFilePath,
-    selectObject,
     selections,
     updateCharacterSkeleton,
     updateCharacterIkSkeleton,
@@ -93,8 +92,7 @@ const SceneManagerR3fLarge = connect(
     selectedBone,
     attachableIds,
     lightIds,
-    volumeIds,
-    assets
+    volumeIds
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -256,7 +254,6 @@ const SceneManagerR3fLarge = connect(
               if(!asset) continue
               textures.push(asset)
             }
-            console.log(textures)
             return <SimpleErrorBoundary  key={ id }>
               <Volume
                 textures={ textures }
