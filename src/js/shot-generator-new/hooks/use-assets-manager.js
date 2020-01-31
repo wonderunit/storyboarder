@@ -91,7 +91,7 @@ const useAssetsManager = () => {
     id => assets[id] && assets[id].value,
     [assets]
   )
-  
+
 
   return { assets, requestAsset, getAsset }
 }

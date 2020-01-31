@@ -195,7 +195,7 @@ const InteractionManager = connect(
         if(intersects.length > 0) {
           return intersects
         }
-        //intersects = raycaster.current.intersectObject(BonesHelper.getInstance())
+        intersects = raycaster.current.intersectObject(BonesHelper.getInstance())
         if(intersects.length > 0) {
           return intersects
         }

@@ -185,7 +185,8 @@ const Editor = React.memo(({
       storyboarderFilePath = state.meta.storyboarderFilePath
     })
     const paths = Object.values(sceneObjects)
-    .filter(o => o.volumeImageAttachmentIds && o.volumeImageAttachmentIds.length > 0)
+    .filter(o => ( o.volumeImageAttachmentIds && o.volumeImageAttachmentIds.length > 0 ) ||
+                  ( o.imageAttachmentIds && o.imageAttachmentIds.length > 0 ))
     .map((object) => getFilePathForImages(object, storyboarderFilePath))
     for(let i = 0; i < paths.length; i++) {
       if(!Array.isArray(paths[i])) {

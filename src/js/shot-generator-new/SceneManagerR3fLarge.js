@@ -24,6 +24,7 @@ import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
 import Light from './components/Three/Light'
 import Volume from './components/Three/Volume'
+import Image from './components/Three/Image'
 import InteractionManager from './components/Three/InteractionManager'
 import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
@@ -51,6 +52,10 @@ const getSceneObjectVolumeIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'volume').map(o => o.id)
 )
+const getSceneObjectImageIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
+)
 const SceneManagerR3fLarge = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
@@ -58,6 +63,7 @@ const SceneManagerR3fLarge = connect(
         attachableIds: getSceneObjectAttachableIds(state),
         lightIds: getSceneObjectLightIds(state),
         volumeIds: getSceneObjectVolumeIds(state),
+        imageIds: getSceneObjectImageIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         activeCamera: getSceneObjects(state)[getActiveCamera(state)],
@@ -92,7 +98,8 @@ const SceneManagerR3fLarge = connect(
     selectedBone,
     attachableIds,
     lightIds,
-    volumeIds
+    volumeIds,
+    imageIds
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -100,8 +107,6 @@ const SceneManagerR3fLarge = connect(
     const groundRef = useRef()
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
-
-    console.log("rerender")
 
     useEffect(() => {
       
@@ -259,6 +264,25 @@ const SceneManagerR3fLarge = connect(
                 textures={ textures }
                 sceneObject={ sceneObject }
                 numberOfLayers= { sceneObject.numberOfLayers }/>
+              </SimpleErrorBoundary>
+        })
+    }
+    {
+        imageIds.map(id => {
+            let sceneObject = sceneObjects[id]
+            let textures = []
+            let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
+            for(let i = 0; i < 1; i++ ) {
+              if(!imagesPaths[i]) continue
+              let asset = getAsset(imagesPaths[i])
+              if(!asset) continue
+              textures.push(asset)
+            }
+            return <SimpleErrorBoundary key={ id }>
+              <Image
+                texture={ textures[0] }
+                sceneObject={ sceneObject }
+                isSelected={ selections.includes(id) }/>
               </SimpleErrorBoundary>
         })
     }

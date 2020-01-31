@@ -79,7 +79,6 @@ class LayersPool  {
                 for( let i = 0; i < neededLayersAmount - 1; i++ ) {        
                     let planeMesh = new THREE.Mesh(this.plane, material)
                     layers.push( { id: texture.uuid, mesh: planeMesh, status: LAYERS_STATUS.INUSE } )
-                    console.log("Creating new layer")
                     returnLayers.push( layers[layers.length - 1] )
                 }
             }

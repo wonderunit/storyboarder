@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import IconsSprites from './IconSprites'
 
-const IconsComponent = React.memo(({type, text, auxiliaryText = null, sceneObject, fontMesh,  ...props}) => {
+const IconsComponent = React.memo(({type, text, auxiliaryText = null, sceneObject, fontMesh, ...props}) => {
     const ref = useRef()
     const iconsSprites = useRef()
     useEffect(() => {
@@ -62,6 +62,8 @@ const translateRotation = (sceneObject) => {
             return sceneObject.rotation + addRotation
         case 'volume':
             return sceneObject.rotation
+        case 'image': 
+            return sceneObject.rotation.y
     }
 }
 

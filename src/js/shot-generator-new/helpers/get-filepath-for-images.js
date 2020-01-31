@@ -1,10 +1,11 @@
 const path = require('path')
 const isUserModel = model => !!model.match(/\//)
 
-const getFilePathForImages = ({ type, volumeImageAttachmentIds}, storyboarderFilePath ) => {
+const getFilePathForImages = ({ type, volumeImageAttachmentIds, imageAttachmentIds}, storyboarderFilePath ) => {
     let paths = []
-    for(let i = 0; i < volumeImageAttachmentIds.length; i++ ){
-        let model = volumeImageAttachmentIds[i]
+    let ids = volumeImageAttachmentIds ? volumeImageAttachmentIds : imageAttachmentIds
+    for(let i = 0; i < ids.length; i++ ){
+        let model = ids[i]
         if(!isUserModel(model)) {
             let folderName = type === "volume" ? "volumes" : "images"
             let extension = type === "volume" ? ".jpg" : ".png"
