@@ -195,10 +195,6 @@ const InteractionManager = connect(
         if(intersects.length > 0) {
           return intersects
         }
-        intersects = raycaster.current.intersectObject(BonesHelper.getInstance())
-        if(intersects.length > 0) {
-          return intersects
-        }
         x = mousePosition.current.x
         y = mousePosition.current.y
         raycaster.current.setFromCamera({ x, y }, camera )
