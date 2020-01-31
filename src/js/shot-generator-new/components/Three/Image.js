@@ -5,8 +5,6 @@ const Image = React.memo(({ sceneObject, isSelected, texture }) => {
   const aspect = useRef(1)
   const ref = useRef()
 
-  const { x, y, z, visible, height, rotation, opacity } = sceneObject
-
   const material = useMemo(() => {
     return new THREE.MeshToonMaterial({ transparent: true })
   }, [])
@@ -37,44 +35,46 @@ const Image = React.memo(({ sceneObject, isSelected, texture }) => {
   }, [ref.current, isSelected])
 
   useEffect(() => {
-    material.opacity = opacity
-  }, [opacity])
+    material.opacity = sceneObject.opacity
+  }, [sceneObject.opacity])
 
 /*   useEffect(() => {
     if (visibleToCam) ref.current.children.forEach(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
     else ref.current.children.forEach(child => child.layers.disable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
   }, [ref.current, visibleToCam]) */
+  const { x, y, z, visible, height, rotation, locked } = sceneObject
   return (
     <group
-      ref={ref}
-      onController={sceneObject.visible ? () => null : null}
+      ref={ ref }
+      onController={ sceneObject.visible ? () => null : null }
       userData={{
-        type: 'image',
-        id: sceneObject.id
+        type: "image",
+        id: sceneObject.id,
+        locked: locked
       }}
-      visible={visible}
-      position={[x, z, y]}
-      scale={[height * aspect.current, height, 1]}
-      rotation={[rotation.x, rotation.y, rotation.z]}
+      visible={ visible }
+      position={ [x, z, y] }
+      scale={ [height * aspect.current, height, 1] }
+      rotation={ [rotation.x, rotation.y, rotation.z] }
     >
       <mesh
         userData={{
-            type: 'image',
+            type: "image",
             id: sceneObject.id
         }}
       >
-        <planeBufferGeometry attach="geometry" args={[1, 1]} />
-        <primitive attach="material" object={material} />
+        <planeBufferGeometry attach="geometry" args={ [1, 1] } />
+        <primitive attach="material" object={ material } />
       </mesh>
       <mesh 
         userData={{
-            type: 'image',
+            type: "image",
             id: sceneObject.id
         }}
-        rotation={[0, Math.PI, 0]} 
-        scale={[-1, 1, 1]}>
-        <planeBufferGeometry attach="geometry" args={[1, 1, 0.01]} />
-        <primitive attach="material" object={material} />
+        rotation={ [0, Math.PI, 0] } 
+        scale={ [-1, 1, 1] }>
+        <planeBufferGeometry attach="geometry" args={ [1, 1, 0.01] } />
+        <primitive attach="material" object={ material } />
       </mesh>
     </group>
   )

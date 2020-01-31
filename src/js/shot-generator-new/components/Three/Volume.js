@@ -154,15 +154,17 @@ const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
         }
     }, [sceneObject.opacity, sceneObject.color])
 
-    const {x, y, z, rotation, width, height } = sceneObject
+    const {x, y, z, rotation, width, height, visible, locked } = sceneObject
     return <group 
         ref={ ref }
         position={ [x, z, y] }
+        visible={ visible }
         rotation={ [0, rotation, 0] }
         scale={ [width, height, 1] }
         userData={{
             type: "volume",
-            id: sceneObject
+            id: sceneObject,
+            locked: locked
         }}
     >
         { meshes }

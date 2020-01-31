@@ -271,7 +271,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
     useEffect(() => {
       if(!ref.current || !ready || !lod || !ref.current.children.length) return
-      console.log(sceneObject)
+
       if (isSelected) {
 
         BonesHelper.getInstance().initialize(lod.children[0])
@@ -301,21 +301,26 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
           }
         } ) })
     }, [ref.current])
-
+  
+    const { x, y, z, visible, rotation, locked } = sceneObject
+    console.log(visible)
+    console.log(ref)
     return <group
-        ref={ref}
+        ref={ ref }
 
-        onController={sceneObject.visible ? () => null : null}
+        onController={ visible ? () => null : null }
         userData={{
-          type: 'character',
+          type: "character",
           id: sceneObject.id,
           poleTargets: sceneObject.poleTargets || {},
-          height: modelSettings
+          height: modelSettings,
+          locked: locked
         }}
 
-        position={[sceneObject.x, sceneObject.z, sceneObject.y]}
-        rotation={[0, sceneObject.rotation, 0]}
-        scale={[bodyScale, bodyScale, bodyScale]}
+        position={ [x, z, y] }
+        rotation={ [0, rotation, 0] }
+        scale={ [bodyScale, bodyScale, bodyScale] }
+        visible={ visible }
       >
     
       </group>

@@ -190,11 +190,11 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
     }
 
     return <group
-        ref={ref}
+        ref={ ref }
 
-        onController={() => null}
+        onController={ () => null }
         userData={{
-          type: 'attachable',
+          type: "attachable",
           id: sceneObject.id,
 
           bindedId: sceneObject.attachToId

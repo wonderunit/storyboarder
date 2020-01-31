@@ -40,19 +40,19 @@ const Environment = React.memo(({ gltf, environment }) => {
   const { x, y, z, visible, rotation, scale } = environment
 
   return <primitive
-    ref={ref}
+    ref={ ref }
 
     userData={{
-      type: 'environment'
+      type: "environment"
     }}
 
-    object={group}
+    object={ group }
 
-    visible={visible}
+    visible={ visible }
 
-    position={[x, z, y]}
-    scale={[scale, scale, scale]}
-    rotation-y={[rotation]}
+    position={ [x, z, y] }
+    scale={ [scale, scale, scale] }
+    rotation-y={ [rotation] }
   >
   </primitive>
 })

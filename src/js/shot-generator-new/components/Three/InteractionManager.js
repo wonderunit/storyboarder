@@ -109,7 +109,6 @@ const InteractionManager = connect(
     const gpuPickerInstance = useRef(null)
     const raycaster = useRef(new THREE.Raycaster())
     const mousePosition = useRef(new THREE.Vector2())
-    const clock = useRef(new THREE.Clock())
     const cameraControlsView = useRef()
 
     const onCameraUpdate = ({active, object}) => {

@@ -95,21 +95,22 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
     })
   }, [ref.current, isSelected, sceneObject.tintColor])
 
-  const { x, y, z, visible, width, height, depth, rotation } = sceneObject
+  const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
 
   return <group
     ref={ref}
 
-    onController={sceneObject.visible ? () => null : null}
+    onController={ sceneObject.visible ? () => null : null} 
     userData={{
       type: 'object',
-      id: sceneObject.id
+      id: sceneObject.id,
+      locked: locked
     }}
 
-    visible={visible}
-    position={[x, z, y]}
-    scale={[width, height, depth]}
-    rotation={[rotation.x, rotation.y, rotation.z]}
+    visible={ visible }
+    position={ [x, z, y] }
+    scale={ [width, height, depth] }
+    rotation={ [rotation.x, rotation.y, rotation.z] }
     {...props}
   >
     {meshes}

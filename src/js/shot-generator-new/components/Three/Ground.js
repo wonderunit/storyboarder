@@ -26,18 +26,18 @@ const Ground = React.memo(({ objRef, texture, visible }) => {
   }, [texture])
 
   return <mesh
-    ref={objRef}
+    ref={ objRef } 
     // slightly offset to allow for outlines
-    position={[0, -0.03, 0]}
-    rotation={[-Math.PI / 2, 0, 0]}
+    position={ [0, -0.03, 0] }
+    rotation={ [-Math.PI / 2, 0, 0] }
     userData={{
       type: 'ground'
     }}
    // onUpdate={self => (self.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))}
   >
-    <planeBufferGeometry attach='geometry' args={[135 / 3, 135 / 3, 32]} />
-    <meshToonMaterial attach='material' side={THREE.FrontSide} visible={visible}>
-      <primitive attach='map' object={texture} />
+    <planeBufferGeometry attach='geometry' args={ [135 / 3, 135 / 3, 32] } />
+    <meshToonMaterial attach='material' side={ THREE.FrontSide } visible={ visible }>
+      <primitive attach='map' object={ texture } />
     </meshToonMaterial>
   </mesh>
 })

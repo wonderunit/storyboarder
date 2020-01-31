@@ -69,12 +69,14 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, .
         ref={ ref }
         onController={ sceneObject.visible ? () => null : null }
         position={ [x, z, y] }
-        visible={ true }
+        visible={ sceneObject.visible }
         userData={{
             type:type,
             id: sceneObject.id,
-            name: sceneObject.name
+            name: sceneObject.name,
+            locked: sceneObject.locked
         }}
+        
         {...props}
     >
     </group>

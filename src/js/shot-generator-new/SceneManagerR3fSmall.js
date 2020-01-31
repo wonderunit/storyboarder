@@ -84,9 +84,10 @@ const SceneManagerR3fSmall = connect(
 
     const onPointerDown = useCallback((e) => {
       let match
-       e.object.traverseAncestors((o) => {
-         if(o.userData.id) match =  o
-       })
+      e.object.traverseAncestors((o) => {
+        if(o.userData.id) match =  o
+      })
+      if(match.userData.locked) return
       selectObject(match.userData.id)
       draggedObject.current = match
       const { x, y } = mouse(e)

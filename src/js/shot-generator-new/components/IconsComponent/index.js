@@ -45,13 +45,14 @@ const IconsComponent = React.memo(({type, text, auxiliaryText = null, sceneObjec
     return <group 
     ref={ ref }
     position={ [x, z, y] }
-    visible={ true }
+    visible={ sceneObject.visible }
     scale={ [1, 1, 1] }
     onController={ sceneObject.visible ? () => null : null }
     userData={{
         type:type,
         id:sceneObject.id,
-        name: sceneObject.name
+        name: sceneObject.name,
+        locked: sceneObject.locked
     }}
     { ...props }
     >

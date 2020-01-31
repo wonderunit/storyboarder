@@ -27,20 +27,21 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
   if (isSelected) {
     lightColor = 0x7256ff
   }
-
+  const { x, y, z, visible, locked } = sceneObject
   return (
     <group
-      ref={ref}
-      onController={sceneObject.visible ? () => null : null}
-      visible={sceneObject.visible}
+      ref={ ref }
+      onController={ visible ? () => null : null }
+      visible={ visible }
       userData={{
         id: sceneObject.id,
-        type: 'light'
+        type: "light",
+        locked: locked
       }}
-      position={[sceneObject.x, sceneObject.z, sceneObject.y]}
+      position={ [x, z, y] }
     >
       <primitive
-        object={mesh}
+        object={ mesh } 
         rotation={[-Math.PI/2, Math.PI, 0]}
         userData={{ 
           type: "light",
@@ -54,15 +55,15 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
       </primitive>
 
       <spotLight
-        ref={spotLight}
-        color={0xffffff}
-        intensity={sceneObject.intensity}
-        position={[0, 0, 0]}
-        rotation={[Math.PI / 2, 0, 0]}
-        angle={sceneObject.angle}
-        distance={sceneObject.distance}
-        penumbra={sceneObject.penumbra}
-        decay={sceneObject.decay}
+        ref={ spotLight }
+        color={ 0xffffff }
+        intensity={ sceneObject.intensity} 
+        position={ [0, 0, 0] }
+        rotation={ [Math.PI / 2, 0, 0] }
+        angle={ sceneObject.angle }
+        distance={ sceneObject.distance }
+        penumbra={ sceneObject.penumbra }
+        decay={ sceneObject.decay }
       />
 
       {children}
