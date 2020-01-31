@@ -25,6 +25,7 @@ import {
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import CameraControls from '../../CameraControls'
+import { computeSphere } from 'three-bmfont-text/lib/utils'
 
 const getIntersectionTarget = intersect => {
   // character
@@ -110,38 +111,19 @@ const InteractionManager = connect(
     const raycaster = useRef(new THREE.Raycaster())
     const mousePosition = useRef(new THREE.Vector2())
     const cameraControlsView = useRef()
-
+    
     const onCameraUpdate = ({active, object}) => {
       if (camera.userData.locked) {
         return false
       }
-
-      if (active) {
-        camera.position.x = object.x
-        camera.position.y = object.z
-        camera.position.z = object.y
-        camera.rotation.x = 0
-        camera.rotation.z = 0
-        camera.rotation.y = object.rotation
-        camera.rotateX(object.tilt)
-        camera.rotateZ(object.roll)
-        camera.fov = object.fov
-        camera.updateProjectionMatrix()
-
-        if (camera.updateIcon) {
-          camera.updateIcon()
-        }
-      } else {
-        //Update camera state if dragging was ended
-        updateObject(camera.userData.id, {
-          x: object.x,
-          y: object.y,
-          z: object.z,
-          rotation: object.rotation,
-          tilt: object.tilt,
-          fov: object.fov
-        })
-      }
+      updateObject(camera.userData.id, {
+        x: object.x,
+        y: object.y,
+        z: object.z,
+        rotation: object.rotation,
+        tilt: object.tilt,
+        fov: object.fov
+      })
     }
 
     useEffect(() => {
@@ -212,10 +194,10 @@ const InteractionManager = connect(
         }
     }, [dragTarget])
 
-
     const onPointerDown = event => {
         event.preventDefault()
         filterIntersectables()
+        cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
         // get the mouse coords
         const { x, y } = mouse(event)
         const rect = gl.domElement.getBoundingClientRect()
@@ -425,23 +407,24 @@ const InteractionManager = connect(
 
     useFrame((state, delta) => {
       if(cameraControlsView.current) {
-        cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
+       
         withState((dispatch, state) => {
+          cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
           cameraControlsView.current.update(delta, state)
         })
       }
     }, 0)
     
     useLayoutEffect(() => {
-        gl.domElement.addEventListener('pointerdown', onPointerDown)
-        gl.domElement.addEventListener('pointermove', onPointerMove)
-        gl.domElement.addEventListener('pointerup', onPointerUp)
-        return function cleanup () {
-           gl.domElement.removeEventListener('pointerdown', onPointerDown)
-           gl.domElement.removeEventListener('pointermove', onPointerMove)
-           gl.domElement.removeEventListener('pointerup', onPointerUp)
-        }
-    }, [onPointerDown, onPointerUp, onPointerMove])
+      gl.domElement.addEventListener('pointerdown', onPointerDown)
+      gl.domElement.addEventListener('pointermove', onPointerMove)
+      gl.domElement.addEventListener('pointerup', onPointerUp)
+      return function cleanup () {
+        gl.domElement.removeEventListener('pointerdown', onPointerDown)
+        gl.domElement.removeEventListener('pointermove', onPointerMove)
+        gl.domElement.removeEventListener('pointerup', onPointerUp)
+      }
+    }, [onPointerDown, onPointerUp, onPointerMove, sceneObjects])
     return null 
 }))
 
