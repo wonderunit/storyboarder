@@ -119,10 +119,12 @@ const KeyHandler = connect(
       keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:duplicate", value: onCommandDuplicate})
       return () => keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:duplicate" }) 
     }, [onCommandDuplicate])
-    
+
     useEffect(() => {
       keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:group", value: onCommandGroup })
-      return () => keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:group" })
+      return () => {
+        keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:group" })
+      } 
     }, [onCommandGroup])
 
     useEffect(() => {
@@ -133,7 +135,6 @@ const KeyHandler = connect(
         })
         return () => keyCommandsInstance.current.removeKeyCommand({ key: "removeElement" })
     }, [_selectedSceneObject, activeCamera, selections])
-
 
     const bindIpcCommands = () => {
         let ipcCommands = keyCommandsInstance.current.ipcKeyCommands
@@ -176,9 +177,9 @@ const KeyHandler = connect(
     }, [ KeyCommandsSingleton.getInstance().keyCommands.length ])
 
     useEffect(() => {
-        bindIpcCommands()
-        return () => {
-          unbindIpcCommands()
+      bindIpcCommands()
+      return () => {
+        unbindIpcCommands()
         } 
     }, [ KeyCommandsSingleton.getInstance().ipcKeyCommands.length,  KeyCommandsSingleton.getInstance().removedIpcCommands.length ])
 
