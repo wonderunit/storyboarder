@@ -1,6 +1,7 @@
 import * as THREE from 'three'
-import React, { useState, useReducer, useMemo, useCallback } from 'react'
+import React, { useState, useReducer, useMemo, useCallback, useEffect } from 'react'
 import '../../vendor/three/examples/js/loaders/GLTFLoader'
+import observable from "../../utils/observable";
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -98,4 +99,96 @@ const useAssetsManager = () => {
 
 export {
   useAssetsManager
+}
+
+const cache = observable({})
+
+const gtlfLoader = new THREE.GLTFLoader()
+const textureLoader = new THREE.TextureLoader()
+
+const LOADING_MODE = {
+  PENDING: 'PENDING',
+  SUCCESS: 'SUCCESS',
+  ERROR: 'ERROR'
+}
+
+const loadAsset = (path) => {
+  const current = cache.get()
+  if (!current[path]) {
+    
+    const current = {data: null, status: LOADING_MODE.PENDING}
+    let loader = null
+    if (!path.includes('/images/') && !path.includes('/volumes/')) {
+      loader = gtlfLoader
+    } else {
+      loader = textureLoader
+    }
+
+    loader.load(
+      path,
+      value => {
+        cache.set({
+          ...cache,
+          [path]: {data: value, status: LOADING_MODE.SUCCESS}
+        })
+      },
+      null, //progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+      error => {
+        cache.set({
+          ...cache,
+          [path]: {data: error, status: LOADING_MODE.ERROR}
+        })
+      }
+    )
+
+    cache.set({
+      ...cache,
+      [path]: current
+    })
+  }
+}
+
+export const useAsset = (path) => {
+  const [updateCount, update] = useState(0)
+  
+  useEffect(() => {
+    const current = cache.get()
+    
+    if (path && !(current[path] && current[path].data)) {
+      loadAsset(path)
+    }
+  }, [path])
+  
+  useEffect(() => {
+    const fn = () => {
+        update(updateCount + 1)
+    }
+    
+    cache.subscribe(fn)
+    
+    return () => {
+      cache.unsubscribe(fn)
+    }
+  }, [updateCount])
+  
+  const asset = useMemo(() => {
+    const current = cache.get()
+    
+    if (current[path] && current[path].data) {
+      if (current[path].status === LOADING_MODE.ERROR) {
+        console.error(current[path].data)
+        
+        return null
+      }
+      
+      return current[path].data
+    }
+    
+    return null
+  }, [updateCount])
+  
+  return {
+    asset,
+    updateCount
+  }
 }

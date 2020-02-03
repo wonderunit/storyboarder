@@ -228,12 +228,9 @@ const SceneManagerR3fLarge = connect(
     {
         modelObjectIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let gltf = sceneObject.model != 'box'
-                ? getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
-                : null
             return <ModelObject
-                key={ id}
-                gltf={ gltf }
+                key={ id }
+                path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
 
@@ -328,17 +325,12 @@ const SceneManagerR3fLarge = connect(
             visible={ !world.room.visible && world.ground } />
     }   
     {
-        world.environment.file &&
-        getAsset(ModelLoader.getFilepathForModel({
-          type: 'environment',
-          model: world.environment.file
-        }, { storyboarderFilePath } ))
-          ? 
-            <Environment
-              gltf={getAsset(ModelLoader.getFilepathForModel({
+        world.environment.file
+          ? <Environment
+              path={ModelLoader.getFilepathForModel({
                 type: 'environment',
                 model: world.environment.file
-              }, { storyboarderFilePath } ))}
+              }, { storyboarderFilePath } )}
               environment={world.environment}
               visible={world.environment.visible} />
           : null

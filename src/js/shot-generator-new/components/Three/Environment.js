@@ -1,7 +1,8 @@
 import * as THREE from 'three'
-import React, { useMemo, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 
 import onlyOfTypes from './../../utils/only-of-types'
+import {useAsset} from "../../hooks/use-assets-manager"
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
@@ -9,15 +10,16 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   flatShading: false
 })
 
-const Environment = React.memo(({ gltf, environment }) => {
+const Environment = React.memo(({ path, environment }) => {
   const ref = useRef()
+  
+  const {asset} = useAsset(path)
+  const group = useRef(new THREE.Group())
 
-  const group = useMemo(() => {
-    if (!gltf) return null
-
-    let group = new THREE.Group()
-
-    let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Mesh', 'Group'])
+  useEffect(() => {
+    if (!asset) return 
+    
+    const sceneData = onlyOfTypes(asset.scene, ['Scene', 'Mesh', 'Group'])
 
     sceneData.traverse(child => {
       if (child.isMesh) {
@@ -32,10 +34,14 @@ const Environment = React.memo(({ gltf, environment }) => {
       }
     })
 
-    group.add(...sceneData.children)
+    group.current.add(...sceneData.children)
 
-    return group
-  }, [gltf])
+    return () => {
+      while (group.current.children.length > 0) {
+        group.current.remove(group.current.children[0])
+      }
+    }
+  }, [Boolean(asset), path])
 
   const { x, y, z, visible, rotation, scale } = environment
 
@@ -46,7 +52,7 @@ const Environment = React.memo(({ gltf, environment }) => {
       type: "environment"
     }}
 
-    object={ group }
+    object={ group.current }
 
     visible={ visible }
 

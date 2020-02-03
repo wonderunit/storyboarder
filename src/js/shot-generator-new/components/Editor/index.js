@@ -26,45 +26,18 @@ import ModelLoader from './../../../services/model-loader'
 import {createScene, removeScene, getScene} from './../../utils/scene'
 
 import useComponentSize from './../../../hooks/use-component-size'
-import SceneRender from '../../SceneRenderer'
 import { Canvas } from 'react-three-fiber'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
-  //
-  //
-  // action creators
-  //
   selectObject,
-  selectObjectToggle,
 
   createObject,
-  updateObject,
-  deleteObjects,
-
-  duplicateObjects,
-
-  selectBone,
   setMainViewCamera,
   loadScene,
-  saveScene,
-  updateCharacterSkeleton,
   setActiveCamera,
   resetScene,
-  createScenePreset,
-  updateScenePreset,
-  deleteScenePreset,
-
-  createPosePreset,
-  updatePosePreset,
-  deletePosePreset,
-
-  updateWorld,
-  updateWorldRoom,
-  updateWorldEnvironment,
 
   markSaved,
-
-  toggleWorkspaceGuide,
 
   undoGroupStart,
   undoGroupEnd,
@@ -81,7 +54,6 @@ import {
   //
   getSerializedState,
   getIsSceneDirty
-//} = require('../state')
 } from './../../../shared/reducers/shot-generator'
 
 
@@ -94,20 +66,11 @@ import GuidesInspector from "../GuidesInspector";
 import createDeepEqualSelector from "../../../utils/deepEqualSelector"
 import GuidesView from "../GuidesView"
 import { useAssetsManager } from '../../hooks/use-assets-manager'
-import {gltfLoader} from "../../utils/gltfLoader"
 import { getFilePathForImages } from "../../helpers/get-filepath-for-images"
 
-
-/* const APP_GLTFS = [
- ,
-  '/data/system/xr/light.glb',
-] */
-
 const Editor = React.memo(({
-  mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, undoGroupStart, undoGroupEnd, store
+  mainViewCamera, activeCamera, aspectRatio, sceneObjects, world, setMainViewCamera, withState, store
 }) => {
-  const smallCanvasRef = useRef(null)
-  const largeCanvasRef = useRef(null)
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
 
@@ -115,51 +78,8 @@ const Editor = React.memo(({
 
   const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
   const { assets, requestAsset, getAsset } = useAssetsManager()
-  /** Resources loading */
-  const loadAttachment = ({ filepath, dispatch }) => {
-    switch (path.extname(filepath)) {
-      case '.obj':
-        objLoader.load(
-          filepath,
-          event => {
-            let value = { scene: event.detail.loaderRootNode }
-            log.info('cache: success', filepath)
-            dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-          },
-          null,
-          error => {
-            log.error('cache: error')
-            log.error(error)
-            alert(error)
-            // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
-            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-          }
-        )
-        return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
 
-      case '.gltf':
-      case '.glb':
-        gltfLoader.load(
-          filepath,
-          value => {
-            log.info('cache: success', filepath)
-            dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-          },
-          null,
-          error => {
-            log.error('cache: error')
-            log.error(error)
-            alert(error)
-            // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
-            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-
-          }
-        )
-        return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-    }
-  }
-
-  useEffect(() => {
+  /*useEffect(() => {
 
     let storyboarderFilePath 
     withState((dispatch, state) => {
@@ -176,7 +96,7 @@ const Editor = React.memo(({
       .filter(filepath => getAsset(filepath) == null)
       // request the file
       .forEach(requestAsset)
-  }, [sceneObjects])
+  }, [sceneObjects])*/
 
   useEffect(() => {
 
@@ -185,8 +105,7 @@ const Editor = React.memo(({
       storyboarderFilePath = state.meta.storyboarderFilePath
     })
     const paths = Object.values(sceneObjects)
-    .filter(o => ( o.volumeImageAttachmentIds && o.volumeImageAttachmentIds.length > 0 ) ||
-                  ( o.imageAttachmentIds && o.imageAttachmentIds.length > 0 ))
+    .filter(o => o.volumeImageAttachmentIds && o.volumeImageAttachmentIds.length > 0)
     .map((object) => getFilePathForImages(object, storyboarderFilePath))
     for(let i = 0; i < paths.length; i++) {
       if(!Array.isArray(paths[i])) {
@@ -203,7 +122,7 @@ const Editor = React.memo(({
     }
   }, [sceneObjects])
 
-  useEffect(() => {
+  /*useEffect(() => {
 
     let storyboarderFilePath 
     withState((dispatch, state) => {
@@ -224,7 +143,7 @@ const Editor = React.memo(({
       }, { storyboarderFilePath })
       )
     }
-  }, [world.environment])
+  }, [world.environment])*/
 
 
   /** Resources loading end */
