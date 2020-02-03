@@ -1,5 +1,5 @@
 
-import React, { useEffect, useMemo, useRef, useCallback} from 'react'
+import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react'
 import { connect } from 'react-redux'
 import getGroupAction from '../../../utils/getGroupAction'
 import { createSelector } from 'reselect'
@@ -65,9 +65,14 @@ const KeyHandler = connect(
     deleteObjects,
     groupObjects,
     ungroupObjects,
-    mergeGroups
+    mergeGroups,
   }) => {
+    const [, updateComponent] = useState()
     const keyCommandsInstance = useRef(KeyCommandsSingleton.getInstance())
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().updateComponent = updateComponent
+    }, [updateComponent])
 
     const deleteSelectedObject = useCallback(() => {
         if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
@@ -144,6 +149,7 @@ const KeyHandler = connect(
             ipcRenderer.off(ipcCommands[i].key, ipcCommands[i].execute)
         }
         for( let i = removedCommands.length - 1; i > -1; i--) {
+
             ipcRenderer.off(removedCommands[i].key, removedCommands[i].execute)
             removedCommands.splice(i, 1)
         }
@@ -166,17 +172,15 @@ const KeyHandler = connect(
       window.addEventListener('keydown', onKeyDown)
       return function cleanup () {
           window.removeEventListener('keydown', onKeyDown)
-          KeyCommandsSingleton.getInstance().isKeyRemoved = false
         }
-    }, [  KeyCommandsSingleton.getInstance().isKeyRemoved])
-    
+    }, [ KeyCommandsSingleton.getInstance().keyCommands.length ])
+
     useEffect(() => {
         bindIpcCommands()
         return () => {
           unbindIpcCommands()
-          KeyCommandsSingleton.getInstance().isIpcRemoved = false
         } 
-    }, [ KeyCommandsSingleton.getInstance().isIpcRemoved])
+    }, [ KeyCommandsSingleton.getInstance().ipcKeyCommands.length,  KeyCommandsSingleton.getInstance().removedIpcCommands.length ])
 
     return null
   }

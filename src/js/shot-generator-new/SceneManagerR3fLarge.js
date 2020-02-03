@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
@@ -31,6 +31,8 @@ import SimpleErrorBoundary from './components/SimpleErrorBoundary'
 import { getFilePathForImages } from "./helpers/get-filepath-for-images"
 import path from 'path'
 import { setShot } from './utils/cameraUtils'
+import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
+import { dropObject, dropCharacter } from '../utils/dropToObjects'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -181,6 +183,40 @@ const SceneManagerR3fLarge = connect(
       }
     }, [cameraShots, selectedCharacters.current]) 
 
+    const sceneChildren = scene && scene.children[0] && scene.children[0].children.length
+
+    const dropingPlaces = useMemo(() => {
+      if(!scene || !scene.children[0]) return
+      return scene.children[0].children.filter(o =>
+        o.userData.type === "object" ||
+        o.userData.type === "character" ||
+        o.userData.type === "ground")
+    }, [sceneChildren])
+
+    const onCommandDrop = useCallback(() => {
+      let changes = {}
+      for( let i = 0; i < selections.length; i++ ) {
+        let selection = scene.children[0].children.find( child => child.userData.id === selections[i] )
+        if( selection.userData.type === "object" ) {
+          dropObject( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        } else if ( selection.userData.type === "character" ) {
+          dropCharacter( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        }
+      }
+      updateObjects(changes)
+    }, [selections, sceneChildren])
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:
+      onCommandDrop})
+      return () => {
+        KeyCommandsSingleton.getInstance().removeIPCKeyCommand({key: "shot-generator:object:drop"})
+      } 
+    }, [onCommandDrop])
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     useEffect(() => { 
