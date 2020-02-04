@@ -71,7 +71,7 @@ const SceneManagerR3fLarge = connect(
         imageIds: getSceneObjectImageIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
-        activeCamera: getSceneObjects(state)[getActiveCamera(state)],
+        activeCamera: getActiveCamera(state),
         storyboarderFilePath: state.meta.storyboarderFilePath,
         selections: getSelections(state),
         models: state.models,
@@ -84,7 +84,8 @@ const SceneManagerR3fLarge = connect(
         updateCharacterIkSkeleton,
         updateObject,
         updateCharacterPoleTargets,
-        updateObjects
+        updateObjects,
+
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -232,14 +233,21 @@ const SceneManagerR3fLarge = connect(
     }, [world])
 
     useEffect(() => {
-        camera.position.set(activeCamera.x, activeCamera.z, activeCamera.y)
-        camera.rotation.set(activeCamera.tilt, activeCamera.rotation, activeCamera.roll)
-        camera.userData.type = activeCamera.type
-        camera.userData.locked = activeCamera.locked
-        camera.userData.id = activeCamera.id
-        camera.fov = activeCamera.fov
-        camera.updateMatrixWorld(true)
-        camera.updateProjectionMatrix()
+      let cameraObject = sceneObjects[activeCamera]
+      camera.position.x = cameraObject.x
+      camera.position.y = cameraObject.z
+      camera.position.z = cameraObject.y
+      camera.rotation.x = 0
+      camera.rotation.z = 0
+      camera.rotation.y = cameraObject.rotation
+      camera.rotateX(cameraObject.tilt)
+      camera.rotateZ(cameraObject.roll)
+      camera.userData.type = cameraObject.type
+      camera.userData.locked = cameraObject.locked
+      camera.userData.id = cameraObject.id
+      camera.fov = cameraObject.fov
+      camera.aspect = cameraObject.aspectRatio
+      camera.updateProjectionMatrix()
     }, [activeCamera])
 
     useEffect(() => {
