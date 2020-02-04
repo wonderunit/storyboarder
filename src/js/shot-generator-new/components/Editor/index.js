@@ -110,6 +110,7 @@ const Editor = React.memo(({
   const largeCanvasRef = useRef(null)
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
+  const largeCanvasInfo = useRef({ width: 0, height: 0 })
 
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
 
@@ -407,7 +408,7 @@ const Editor = React.memo(({
       width: Math.ceil((largeCanvasSize.width || window.innerWidth)),
       height: Math.ceil((largeCanvasSize.width  || window.innerWidth) / aspectRatio)
     }
-  }, [largeCanvasSize.width])
+  }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
   const onCanvasPointerDown = useCallback(event => {
     event.preventDefault()
@@ -426,6 +427,20 @@ const Editor = React.memo(({
     if(mesh)
         BonesHelper.getInstance(mesh)
   }, [boneGltf])
+
+  useMemo(() => {
+    if(!largeCanvasSize.width || !largeCanvasSize.height || !aspectRatio) return
+    let width = Math.ceil(largeCanvasSize.width)
+    // assign a target height, based on scene aspect ratio
+    let height = Math.ceil(width / aspectRatio)
+    
+    if (height > largeCanvasSize.height) {
+      height = Math.ceil(largeCanvasSize.height)
+      width = Math.ceil(height * aspectRatio)
+    }
+    largeCanvasInfo.current.width = width 
+    largeCanvasInfo.current.height = height 
+  }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
   return (
     <FatalErrorBoundary>
@@ -467,20 +482,22 @@ const Editor = React.memo(({
           </div>
 
           <div className="column fill">
-            <div id="camera-view" ref={mainViewContainerRef}>
-              <Canvas
-                key="camera-canvas"
-                id="camera-canvas"
-                tabIndex={1}
-                >
-                <Provider store={ store }>
-                  <SceneManagerR3fLarge 
-                  getAsset={ getAsset }/>
-                </Provider>
-              </Canvas>
-              <GuidesView
-                dimensions={guidesDimensions}
-              />
+            <div id="camera-view" ref={ mainViewContainerRef }>
+              <div style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
+                  <Canvas
+                  tabIndex={ 1 }
+                  key="camera-canvas"
+                  id="camera-canvas"
+                  updateDefaultCamera={ true }>
+                    <Provider store={ store }>
+                      <SceneManagerR3fLarge 
+                      getAsset={ getAsset }/>
+                    </Provider>
+                  </Canvas>
+                  <GuidesView
+                    dimensions={guidesDimensions}
+                  />
+                </div>
             </div>
             <div className="inspectors">
               <CameraPanelInspector/>

@@ -1,31 +1,34 @@
 // via https://github.com/rehooks/component-size/blob/master/index.js
 
-let { useState, useLayoutEffect } = require('react')
+let { useState, useLayoutEffect, useRef } = require('react')
 
-function getSize(el) {
-  if (!el) {
+function getSize(mainElement, asideElement) {
+  if (!mainElement || !asideElement) {
     return {}
   }
 
   return {
-    width: el.offsetWidth,
-    height: el.offsetHeight
+    width: mainElement.offsetWidth - asideElement.offsetWidth,
+    height: mainElement.offsetHeight
   }
 }
 
 function useComponentSize(ref) {
   let [ComponentSize, setComponentSize] = useState(getSize(ref.current))
-
+  let mainElement = useRef()
+  let asideElement = useRef()
   function handleResize() {
     if (ref && ref.current) {
-      setComponentSize(getSize(ref.current))
+      setComponentSize(getSize(mainElement.current, asideElement.current))
     }
   }
 
   useLayoutEffect(() => {
     handleResize()
-
-    if (ResizeObserver) {
+    mainElement.current = document.getElementById("main")
+    asideElement.current = document.getElementById("aside")
+   /*  if (ResizeObserver) {
+      console.log("Settup observer")
       let resizeObserver = new ResizeObserver(() => handleResize())
       resizeObserver.observe(ref.current)
 
@@ -33,7 +36,7 @@ function useComponentSize(ref) {
         resizeObserver.disconnect(ref.current)
         resizeObserver = null
       }
-    } else {
+    } else  */ {
       window.addEventListener('resize', handleResize)
       
       return () => {
@@ -41,7 +44,7 @@ function useComponentSize(ref) {
       }
     }
     
-  }, [])
+  }, [ref.current])
 
   return ComponentSize
 }

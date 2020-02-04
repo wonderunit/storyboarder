@@ -76,7 +76,7 @@ const SceneManagerR3fLarge = connect(
         selections: getSelections(state),
         models: state.models,
         selectedBone: getSelectedBone(state),
-        cameraShots: state.cameraShots,
+        cameraShots: state.cameraShots
     }),
     {
         selectObject,
@@ -106,7 +106,7 @@ const SceneManagerR3fLarge = connect(
     lightIds,
     volumeIds,
     imageIds,
-    cameraShots
+    cameraShots,
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -245,10 +245,6 @@ const SceneManagerR3fLarge = connect(
     useEffect(() => {
         scene.background = new THREE.Color(world.backgroundColor)
     }, [world.background])
-
-    useEffect(() => {
-      console.log(scene)
-    }, [scene])
 
     return <group ref={ rootRef }> 
     <SaveShot isPlot={ false }/>
