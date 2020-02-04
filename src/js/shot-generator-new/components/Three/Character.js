@@ -5,11 +5,16 @@ import cloneGltf from '../../helpers/cloneGltf'
 import SGIkHelper from '../../../shared/IK/SGIkHelper'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
-
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 const isUserModel = model => !!model.match(/\//)
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
-    const ref = useRef()
+  const ref = useUpdate(
+    self => {
+      let lod = self.getObjectByProperty("type", "LOD")
+      lod && lod.traverse(child => child.layers.enable(SHOT_LAYERS))
+    }
+  )
     const [ready, setReady] = useState(false)
     const attachablesList = useRef([])
     const { scene, camera, gl } = useThree()
@@ -303,8 +308,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     }, [ref.current])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
-    console.log(visible)
-    console.log(ref)
     return <group
         ref={ ref }
 

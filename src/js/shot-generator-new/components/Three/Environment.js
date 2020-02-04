@@ -1,7 +1,8 @@
 import * as THREE from 'three'
 import React, { useMemo, useRef } from 'react'
-
+import { useUpdate } from 'react-three-fiber'
 import onlyOfTypes from './../../utils/only-of-types'
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
@@ -10,15 +11,19 @@ const materialFactory = () => new THREE.MeshToonMaterial({
 })
 
 const Environment = React.memo(({ gltf, environment }) => {
-  const ref = useRef()
+  const ref = useUpdate(
+    self => {
+      self.traverse(child => child.layers.enable(SHOT_LAYERS))
+    }
+  )
 
   const group = useMemo(() => {
     if (!gltf) return null
 
     let group = new THREE.Group()
 
-    let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Mesh', 'Group'])
-
+    let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Meh', 'Group'])
+s
     sceneData.traverse(child => {
       if (child.isMesh) {
         let material = materialFactory()

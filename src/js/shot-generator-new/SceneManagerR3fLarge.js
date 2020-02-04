@@ -34,6 +34,7 @@ import { setShot } from './utils/cameraUtils'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
 import SaveShot from './components/Three/SaveShot'
+import { SHOT_LAYERS } from './utils/ShotLayers'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -249,20 +250,23 @@ const SceneManagerR3fLarge = connect(
       console.log(scene)
     }, [scene])
 
-    return <group ref={rootRef}> 
+    return <group ref={ rootRef }> 
     <SaveShot isPlot={ false }/>
     <InteractionManager/>
     <ambientLight
-        ref={ambientLightRef}
-        color={0xffffff}
-        intensity={world.ambient.intensity} />
+        ref={ ambientLightRef }
+        color={ 0xffffff }
+        intensity={ world.ambient.intensity } 
+        onUpdate={ self => (self.layers.enable(SHOT_LAYERS)) }/>
 
     <directionalLight
-        ref={directionalLightRef}
-        color={0xffffff}
-        intensity={world.directional.intensity}
-        position={[0, 1.5, 0]}
-        target-position={[0, 0, 0.4]}
+        ref={ directionalLightRef }
+        color={ 0xffffff }
+        intensity={ world.directional.intensity }
+        position={ [0, 1.5, 0] }
+        target-position={ [0, 0, 0.4] }
+        onUpdate={ self => (self.layers.enable(SHOT_LAYERS)) }
+
     />
     {
         modelObjectIds.map(id => {

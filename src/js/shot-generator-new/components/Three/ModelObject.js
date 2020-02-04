@@ -3,15 +3,7 @@ import React, { useMemo, useEffect } from 'react'
 import { useUpdate } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
-/* 
-const VirtualCamera = require('../components/VirtualCamera') */
-
-// old material
-// const materialFactory = () => new THREE.MeshLambertMaterial({
-//   color: 0xcccccc,
-//   emissive: 0x0,
-//   flatShading: false
-// })
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -42,7 +34,7 @@ const meshFactory = source => {
 const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => {
   const ref = useUpdate(
     self => {
-      //self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+      self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )
 

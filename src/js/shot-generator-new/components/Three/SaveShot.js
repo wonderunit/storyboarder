@@ -7,7 +7,7 @@ import {
  } from '../../../shared/reducers/shot-generator'
  import { ipcRenderer } from 'electron'
 import { useThree } from 'react-three-fiber'
-
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const SaveShot = connect(
@@ -102,8 +102,7 @@ const SaveShot = connect(
         }
         let width = isPlot ? 900 : Math.ceil(900 * state.aspectRatio)
         let imageRenderCamera = camera.clone()
-        imageRenderCamera.layers.set(0)
-        imageRenderCamera.layers.enable(3)
+        imageRenderCamera.layers.set(SHOT_LAYERS)
         // render the image
 
         let savedBackground  

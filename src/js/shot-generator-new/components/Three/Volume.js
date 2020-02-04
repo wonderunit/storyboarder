@@ -1,7 +1,8 @@
 import React, { useRef, useMemo, useEffect } from 'react'
 import * as THREE from 'three'
 import { Texture } from 'three'
-
+import { useUpdate } from 'react-three-fiber'
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 class LAYERS_STATUS {
     static AVAIBLE = "Avaible"
     static USED = "INUSE"
@@ -111,7 +112,11 @@ class LayersPool  {
 }
 
 const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
-    const ref = useRef()
+    const ref = useUpdate(
+        self => {
+          self.traverse(child => child.layers.enable(SHOT_LAYERS))
+        }
+      )
     const layersPool = useRef(new LayersPool())
 
     const meshes = useMemo(() => {

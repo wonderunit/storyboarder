@@ -1,6 +1,6 @@
 import { useUpdate } from 'react-three-fiber'
 import React, { useMemo, useRef, useEffect } from 'react'
-
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
 const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
   const mesh = useMemo(() => gltf.scene.children[0].clone(), [gltf])
@@ -9,6 +9,7 @@ const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
     self => {
       self.target.position.set(0, 0, sceneObject.distance)
       self.add(self.target)
+      self.layers.enable(SHOT_LAYERS)
     }, [sceneObject.distance])
   
 

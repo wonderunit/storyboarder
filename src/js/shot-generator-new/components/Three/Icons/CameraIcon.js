@@ -1,9 +1,14 @@
 import React, { useEffect, useRef } from 'react'
 import IconSprites from '../../IconsComponent/IconSprites'
-
+import { useUpdate } from 'react-three-fiber'
+import { SHOT_LAYERS } from '../../../utils/ShotLayers'
 
 const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, ...props}) => {
-    const ref = useRef()
+    const ref = useUpdate(
+        self => {
+          self.traverse(child => child.layers.enable(SHOT_LAYERS))
+        }
+      )
     const iconsSprites = useRef()
     const frustumIcons = useRef()
     useEffect(() => {
