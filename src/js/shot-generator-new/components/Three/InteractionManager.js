@@ -116,17 +116,6 @@ const InteractionManager = connect(
       if (camera.userData.locked) {
         return false
       }
-
-      camera.position.x = object.x
-      camera.position.y = object.z
-      camera.position.z = object.y
-      camera.rotation.x = 0
-      camera.rotation.z = 0
-      camera.rotation.y = object.rotation
-      camera.rotateX(object.tilt)
-      camera.rotateZ(object.roll)
-      camera.fov = object.fov
-      camera.updateProjectionMatrix()
       
       updateObject(camera.userData.id, {
         x: object.x,

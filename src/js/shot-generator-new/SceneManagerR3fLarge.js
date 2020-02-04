@@ -71,7 +71,7 @@ const SceneManagerR3fLarge = connect(
         imageIds: getSceneObjectImageIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
-        activeCamera: getActiveCamera(state),
+        activeCamera: getSceneObjects(state)[getActiveCamera(state)],
         storyboarderFilePath: state.meta.storyboarderFilePath,
         selections: getSelections(state),
         models: state.models,
@@ -233,7 +233,7 @@ const SceneManagerR3fLarge = connect(
     }, [world])
 
     useEffect(() => {
-      let cameraObject = sceneObjects[activeCamera]
+      let cameraObject = activeCamera
       camera.position.x = cameraObject.x
       camera.position.y = cameraObject.z
       camera.position.z = cameraObject.y
@@ -246,7 +246,6 @@ const SceneManagerR3fLarge = connect(
       camera.userData.locked = cameraObject.locked
       camera.userData.id = cameraObject.id
       camera.fov = cameraObject.fov
-      camera.aspect = cameraObject.aspectRatio
       camera.updateProjectionMatrix()
     }, [activeCamera])
 

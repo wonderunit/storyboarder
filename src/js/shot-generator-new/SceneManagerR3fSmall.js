@@ -84,16 +84,19 @@ const SceneManagerR3fSmall = connect(
 
 
     const onPointerDown = useCallback((e) => {
+      console.log("Pointed down")
+
       let match
       e.object.traverseAncestors((o) => {
         if(o.userData.id) match =  o
       })
       if(match.userData.locked) return
       selectObject(match.userData.id)
+      //if(Object.values(sceneObjects).length === 1) return
       draggedObject.current = match
       const { x, y } = mouse(e)
       prepareDrag( draggedObject.current, {x, y, camera, scene, selections:[match.userData.id] })
-    }, [scene, camera, selections])
+    }, [scene, camera, selections, sceneObjects])
 
     const onPointerMove = useCallback((e) => {
       if(!draggedObject.current) return
@@ -103,7 +106,8 @@ const SceneManagerR3fSmall = connect(
     }, [camera, selections])
 
     const onPointerUp = useCallback((e) => {
-      if(!draggedObject.current) return
+      console.log("Pointed up")
+     // if(!draggedObject.current) return
       endDrag(updateObjects)
       draggedObject.current = null
     }, [updateObjects])
@@ -122,7 +126,8 @@ const SceneManagerR3fSmall = connect(
         
       // go through all appropriate objects and get the min max
       let numVisible = 0
-      for (let child of scene.children[0].children) {
+      for (let i = 0; i < scene.children[0].children.length; i++ ) {
+        let child = scene.children[0].children[i]
         if (
             child.userData &&
             child.userData.type === 'object' ||
@@ -183,7 +188,7 @@ const SceneManagerR3fSmall = connect(
       camera.bottom = -(minMax[3]-minMax[2])/2
       camera.near = -1000
       camera.far = 1000
-      camera.updateMatrixWorld(true)
+      //camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
     }, [scene, camera])
 
@@ -195,6 +200,10 @@ const SceneManagerR3fSmall = connect(
     }, [])
 
     useEffect(autofitOrtho, [sceneObjects, aspectRatio, fontMesh])
+    useEffect(() => {
+      window.addEventListener("pointerup", onPointerUp)
+      return () => window.removeEventListener("pointerup", onPointerUp)
+    }, [onPointerUp])
 
     /////Render components
     return <group ref={rootRef}
@@ -205,6 +214,7 @@ const SceneManagerR3fSmall = connect(
         e.stopPropagation()
         onPointerMove(e)
         }}> 
+   
       <SaveShot isPlot={ true }/>
       <ambientLight
         ref={ambientLightRef}
@@ -284,7 +294,7 @@ const SceneManagerR3fSmall = connect(
                 />
         })
     }
-    { groundTexture && <Ground
+    {  groundTexture && <Ground
         objRef={ groundRef }
         texture={ groundTexture }
         visible={ !world.room.visible && world.ground } />
