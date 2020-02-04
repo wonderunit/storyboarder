@@ -33,6 +33,7 @@ import path from 'path'
 import { setShot } from './utils/cameraUtils'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
+import SaveShot from './components/Three/SaveShot'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -151,6 +152,7 @@ const SceneManagerR3fLarge = connect(
           updatePoleTarget,
           updateObjects
         )
+
       }, [])
 
     useEffect(() => {  
@@ -248,6 +250,7 @@ const SceneManagerR3fLarge = connect(
     }, [scene])
 
     return <group ref={rootRef}> 
+    <SaveShot isPlot={ false }/>
     <InteractionManager/>
     <ambientLight
         ref={ambientLightRef}

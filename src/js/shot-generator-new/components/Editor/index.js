@@ -232,7 +232,7 @@ const Editor = React.memo(({
   /** Shot generating */
 
     // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
-  const imageRenderer = useRef()
+/*   const imageRenderer = useRef()
 
   const saveShot = (dispatch, state) => {
     let { cameraImage, plotImage } = renderImagesForBoard(state)
@@ -297,8 +297,6 @@ const Editor = React.memo(({
     let imageRenderCamera = scene.children.find(o => o.userData.id === activeCamera).clone()
     imageRenderCamera.layers.set(0)
     imageRenderCamera.layers.enable(3)
-
-
     //
     //
     // Prepare for rendering as an image
@@ -354,7 +352,7 @@ const Editor = React.memo(({
 
 
     return { cameraImage, plotImage }
-  }
+  } */
 
   /** Shot generating end */
 
