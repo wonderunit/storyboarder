@@ -31,6 +31,7 @@ import SimpleErrorBoundary from './components/SimpleErrorBoundary'
 import { getFilePathForImages } from "./helpers/get-filepath-for-images"
 import path from 'path'
 import { setShot } from './utils/cameraUtils'
+import {useAsset} from "./hooks/use-assets-manager";
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -87,7 +88,6 @@ const SceneManagerR3fLarge = connect(
     sceneObjects,
     world,
     activeCamera,
-    getAsset,
     storyboarderFilePath,
     selections,
     updateCharacterSkeleton,
@@ -240,10 +240,11 @@ const SceneManagerR3fLarge = connect(
     {
         characterIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
+            //let gltf = useAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
             return <SimpleErrorBoundary  key={ id }>
               <Character
-                gltf={ gltf }
+                //gltf={ gltf }
+                path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
                 isSelected={ selections.includes(id) } 
@@ -256,10 +257,8 @@ const SceneManagerR3fLarge = connect(
     {
         lightIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let gltf = getAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
             return <SimpleErrorBoundary  key={ id }>
               <Light
-                gltf={ gltf }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) } />
               </SimpleErrorBoundary>
@@ -268,15 +267,17 @@ const SceneManagerR3fLarge = connect(
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
-            let characterGltf = getAsset(ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}))
+            //let gltf = useAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
+            //let characterGltf = useAsset(ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}))
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
-                gltf={ gltf }
+                //gltf={ gltf }
+                path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) } 
                 updateObject={ updateObject }
-                characterModel={ characterGltf }/>
+                //characterModel={ characterGltf }
+              />
               </SimpleErrorBoundary>
         })
     }
@@ -287,7 +288,7 @@ const SceneManagerR3fLarge = connect(
             let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
             for(let i = 0; i < imagesPaths.length; i++ ) {
               if(!imagesPaths[i]) continue
-              let asset = getAsset(imagesPaths[i])
+              let asset = useAsset(imagesPaths[i])
               if(!asset) continue
               textures.push(asset)
             }
@@ -302,17 +303,9 @@ const SceneManagerR3fLarge = connect(
     {
         imageIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let textures = []
-            let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
-            for(let i = 0; i < 1; i++ ) {
-              if(!imagesPaths[i]) continue
-              let asset = getAsset(imagesPaths[i])
-              if(!asset) continue
-              textures.push(asset)
-            }
             return <SimpleErrorBoundary key={ id }>
               <Image
-                texture={ textures[0] }
+                imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) }/>
               </SimpleErrorBoundary>

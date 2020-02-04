@@ -1,105 +1,8 @@
 import * as THREE from 'three'
-import React, { useState, useReducer, useMemo, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import '../../vendor/three/examples/js/loaders/GLTFLoader'
 import observable from "../../utils/observable";
 
-const reducer = (state, action) => {
-  const { type, payload } = action
-  const { id, progress, value, error } = payload
-
-  switch (type) {
-    case 'PENDING':
-      // ignore if already exists
-      return (state[id])
-        ? state
-        : {
-          ...state,
-          [id]: { status: 'NotAsked' }
-        }
-    case 'LOAD':
-      // ignore if already loading
-      return (state[id].loading)
-        ? state
-        : {
-          ...state,
-          [id]: { status: 'Loading' }
-        }
-    case 'PROGRESS':
-      return {
-        ...state,
-        [id]: {
-          status: 'Loading',
-          progress: {
-            loaded: progress.loaded,
-            total: progress.total,
-            percent: Math.floor(
-              progress.loaded / progress.total
-            ) * 100
-          }
-        }
-      }
-    case 'SUCCESS':
-      return {
-        ...state,
-        [id]: { status: 'Success', value }
-      }
-    case 'ERROR':
-      return {
-        ...state,
-        [id]: { status: 'Error', error }
-      }
-    default:
-      return state
-  }
-}
-
-const useAssetsManager = () => {
-  const [loader] = useState(() => new THREE.GLTFLoader())
-  const [textureLoader] = useState(() => new THREE.TextureLoader())
-
-  const [assets, dispatch] = useReducer(reducer, {})
-
-  useMemo(() => {
-    Object.entries(assets)
-      .filter(([_, o]) => o.status === 'NotAsked')
-      .forEach(([id]) => {
-        if (!id.includes('/images/') && !id.includes('/volumes/')) {
-          loader.load(
-            id,
-            value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            error => dispatch({ type: 'ERROR', payload: { id, error } })
-            )
-            dispatch({ type: 'LOAD', payload: { id } })
-          } else {
-            textureLoader.load(
-            id,
-            value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            error => dispatch({ type: 'ERROR', payload: { id, error } })
-          )
-          dispatch({ type: 'LOAD', payload: { id } })
-        }
-      })
-  }, [assets])
-
-  const requestAsset = useCallback(
-    id => dispatch({ type: 'PENDING', payload: { id }}),
-    []
-  )
-
-  const getAsset = useCallback(
-    id => assets[id] && assets[id].value,
-    [assets]
-  )
-
-
-  return { assets, requestAsset, getAsset }
-}
-
-export {
-  useAssetsManager
-}
 
 const cache = observable({})
 
@@ -112,40 +15,48 @@ const LOADING_MODE = {
   ERROR: 'ERROR'
 }
 
-const loadAsset = (path) => {
-  const current = cache.get()
-  if (!current[path]) {
+export const loadAsset = (path) => {
+  return new Promise((resolve, reject) => {
+    const current = cache.get()
     
-    const current = {data: null, status: LOADING_MODE.PENDING}
-    let loader = null
-    if (!path.includes('/images/') && !path.includes('/volumes/')) {
-      loader = gtlfLoader
-    } else {
-      loader = textureLoader
-    }
-
-    loader.load(
-      path,
-      value => {
-        cache.set({
-          ...cache,
-          [path]: {data: value, status: LOADING_MODE.SUCCESS}
-        })
-      },
-      null, //progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-      error => {
-        cache.set({
-          ...cache,
-          [path]: {data: error, status: LOADING_MODE.ERROR}
-        })
+    if (!current[path]) {
+      
+      let loader
+      if (!path.match(/(\.(png|jpg|jpeg|gif)$)|((\\|\/)(images|volumes)(\\|\/))/mi)) {
+        loader = gtlfLoader
+      } else {
+        loader = textureLoader
       }
-    )
+  
+      loader.load(
+        path,
+        value => {
+          cache.set({
+            ...cache.get(),
+            [path]: {data: value, status: LOADING_MODE.SUCCESS}
+          })
 
-    cache.set({
-      ...cache,
-      [path]: current
-    })
-  }
+          resolve(current[path])
+        },
+        null, //progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+        error => {
+          cache.set({
+            ...cache.get(),
+            [path]: {data: error, status: LOADING_MODE.ERROR}
+          })
+
+          reject(error)
+        }
+      )
+  
+      cache.set({
+        ...cache.get(),
+        [path]: {data: null, status: LOADING_MODE.PENDING}
+      })
+    } else {
+      resolve(current[path])
+    }
+  })
 }
 
 export const useAsset = (path) => {

@@ -18,7 +18,6 @@ import LightInspector from './Light'
 import CharacterInspector from './Character'
 import VolumeInspector from './Volume'
 import Scrollable from "../../Scrollable"
-import { createSelector } from 'reselect'
 
 const InspectorComponents = {
   object: ObjectInspector,
@@ -52,13 +51,6 @@ const GeneralInspector = React.memo(({updateObject, sceneObject, storyboarderFil
 
 const getObjectData = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
     return sceneObjects[selections[0]]
-})
-
-const getBone = createSelector([getSelections, getSceneObjects, getSelectedBone], (selections, sceneObjects, selectedBone) => {
-  if(!selectedBone) return
-  if(!sceneObjects[selections[0]]) return
-  let sceneObject = sceneObjects[selections[0]]
-  return Object.values(sceneObject.skeleton).find(object => object.id === selectedBone)
 })
 
 const mapStateToProps = (state) => ({

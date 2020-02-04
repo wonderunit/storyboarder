@@ -1,7 +1,5 @@
 import React, {useCallback} from "react"
 import {Math as _Math} from "three"
-import {remote} from 'electron'
-const {dialog} = remote
 
 import fs from 'fs-extra'
 import path from 'path'
@@ -9,7 +7,7 @@ import path from 'path'
 import {formatters, NumberSlider, transforms} from "../../NumberSlider"
 
 import FileInput from "../../FileInput"
-import Checkbox from "../../Checkbox";
+import Checkbox from "../../Checkbox"
 
 const loadImages = (files, baseDir) => {
   return new Promise((resolve, reject) => {
@@ -60,8 +58,6 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
       .catch((src) => alert('could not copy ' + src))
     }
   }, [])
-  
-  console.log(sceneObject.imageAttachmentIds[0] )
 
   const imageFileLabel = sceneObject.imageAttachmentIds[0] === 'placeholder'
     ? '(none)' 

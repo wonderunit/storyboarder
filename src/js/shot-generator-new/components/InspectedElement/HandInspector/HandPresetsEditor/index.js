@@ -29,6 +29,7 @@ import Select from '../../../Select'
 import Scrollable from '../../../Scrollable'
 import Grid from '../../../Grid'
 import HandPresetsEditorItem from './HandPresetsEditorItem'
+import {useAsset} from "../../../../hooks/use-assets-manager"
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
@@ -65,8 +66,7 @@ React.memo(({
 
   updateObject,
   createHandPosePreset,
-  withState,
-  getAsset
+  withState
 }) => {
   const thumbnailRenderer = useRef()
 
@@ -80,9 +80,9 @@ React.memo(({
   const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
   const getAttachment = () => {
     let attachment 
-    withState((dispatch, state) => {
+    withState(() => {
       let filepath = filepathFor(CHARACTER_MODEL)
-      attachment = getAsset(filepath)
+      attachment = useAsset(filepath)
     })
     return attachment
   }

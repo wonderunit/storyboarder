@@ -1,9 +1,13 @@
 import { useUpdate } from 'react-three-fiber'
-import React, { useMemo, useRef, useEffect } from 'react'
+import React, { useMemo } from 'react'
+import {useAsset} from "../../hooks/use-assets-manager"
+
+import path from 'path'
 
 
-const Light = React.memo(({ gltf, sceneObject, isSelected, children }) => {
-  const mesh = useMemo(() => gltf.scene.children[0].clone(), [gltf])
+const Light = React.memo(({sceneObject, isSelected, children }) => {
+  const {asset: gltf} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
+  const mesh = useMemo(() => gltf ? gltf.scene.children[0].clone() : null, [gltf])
 
   const spotLight = useUpdate(
     self => {

@@ -7,21 +7,16 @@ import path from 'path'
 import { ipcRenderer, remote } from 'electron'
 const { dialog } = remote
 
-import log from 'electron-log'
-
 import './../../../vendor/OutlineEffect'
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
-import SceneManager from './../../SceneManager'
 import SceneManagerR3fLarge from '../../SceneManagerR3fLarge'
 import SceneManagerR3fSmall from '../../SceneManagerR3fSmall'
 import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
-import {useExportToGltf, loadCameraModel} from '../../../hooks/use-export-to-gltf'
-
-import ModelLoader from './../../../services/model-loader'
+import {useExportToGltf} from '../../../hooks/use-export-to-gltf'
 
 import {createScene, removeScene, getScene} from './../../utils/scene'
 
@@ -65,11 +60,10 @@ import BoardInspector from "../BoardInspector";
 import GuidesInspector from "../GuidesInspector";
 import createDeepEqualSelector from "../../../utils/deepEqualSelector"
 import GuidesView from "../GuidesView"
-import { useAssetsManager } from '../../hooks/use-assets-manager'
-import { getFilePathForImages } from "../../helpers/get-filepath-for-images"
+import {useAsset} from '../../hooks/use-assets-manager'
 
 const Editor = React.memo(({
-  mainViewCamera, activeCamera, aspectRatio, sceneObjects, world, setMainViewCamera, withState, store
+  mainViewCamera, activeCamera, aspectRatio, setMainViewCamera, withState, store
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
@@ -77,76 +71,6 @@ const Editor = React.memo(({
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
 
   const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
-  const { assets, requestAsset, getAsset } = useAssetsManager()
-
-  /*useEffect(() => {
-
-    let storyboarderFilePath 
-    withState((dispatch, state) => {
-      storyboarderFilePath = state.meta.storyboarderFilePath
-    })
-    Object.values(sceneObjects)
-      // has a value for model
-      .filter(o => o.model != null)
-      // is not a box
-      .filter(o => !(o.type === 'object' && o.model === 'box'))
-      // what's the filepath?
-      .map((object) => ModelLoader.getFilepathForModel(object, { storyboarderFilePath }))
-      // has not been requested
-      .filter(filepath => getAsset(filepath) == null)
-      // request the file
-      .forEach(requestAsset)
-  }, [sceneObjects])*/
-
-  useEffect(() => {
-
-    let storyboarderFilePath 
-    withState((dispatch, state) => {
-      storyboarderFilePath = state.meta.storyboarderFilePath
-    })
-    const paths = Object.values(sceneObjects)
-    .filter(o => o.volumeImageAttachmentIds && o.volumeImageAttachmentIds.length > 0)
-    .map((object) => getFilePathForImages(object, storyboarderFilePath))
-    for(let i = 0; i < paths.length; i++) {
-      if(!Array.isArray(paths[i])) {
-        if(getAsset(paths[i])) {
-          requestAsset(paths[i])
-        }
-      } else {
-        for(let j = 0; j < paths[i].length; j++) {
-          if(!getAsset(paths[i][j])) {
-            requestAsset(paths[i][j])
-          }
-        }
-      }
-    }
-  }, [sceneObjects])
-
-  /*useEffect(() => {
-
-    let storyboarderFilePath 
-    withState((dispatch, state) => {
-      storyboarderFilePath = state.meta.storyboarderFilePath
-    })
-    if (world.environment.file) {
-      // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
-      const environmentPath =  ModelLoader.getFilepathForModel({
-        model: world.environment.file,
-        type: 'environment'
-      }, { storyboarderFilePath })
-
-      delete assets[environmentPath]
-
-      requestAsset(ModelLoader.getFilepathForModel({
-        model: world.environment.file,
-        type: 'environment'
-      }, { storyboarderFilePath })
-      )
-    }
-  }, [world.environment])*/
-
-
-  /** Resources loading end */
 
   /** Shot generating */
 
@@ -301,27 +225,6 @@ const Editor = React.memo(({
 
   useExportToGltf(getScene())
 
-  // HACK
-  // always pre-load the adult-male model
-  // because we use it for PosePresetsEditor thumbnail generation
-  useEffect(() => {
-    let storyboarderFilePath
-    withState((dispatch, state) => {
-      storyboarderFilePath = state.meta.storyboarderFilePath
-    })
-    requestAsset(ModelLoader.getFilepathForModel({
-      model: 'adult-male-lod',
-      type: 'character'
-    }, { storyboarderFilePath }))
-
-    requestAsset(ModelLoader.getFilepathForModel({
-      model: 'adult-male',
-      type: 'character'
-    }, { storyboarderFilePath }))
-    requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
-    requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
-  }, [])
-
 
   const guidesDimensions = useMemo(() => {
     return {
@@ -339,8 +242,9 @@ const Editor = React.memo(({
     event.preventDefault()
     setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
   }, [mainViewCamera])
-
-  const boneGltf = useMemo(() => getAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb')))
+  
+  const {asset} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
+  const boneGltf = asset
   useMemo(() => {
     if(!boneGltf) return
     const mesh = boneGltf.scene.children.find(child => child.isMesh)
@@ -368,8 +272,7 @@ const Editor = React.memo(({
                 orthographic={ true }
                 updateDefaultCamera={ false }>
                 <Provider store={ store }>
-                  <SceneManagerR3fSmall 
-                    getAsset={ getAsset }/>
+                  <SceneManagerR3fSmall/>
                 </Provider>
               </Canvas>
               <div className="topdown__controls">
@@ -383,7 +286,7 @@ const Editor = React.memo(({
             </div>
 
             <div id="elements">
-              <ElementsPanel getAsset={ getAsset }/>
+              <ElementsPanel/>
             </div>
           </div>
 
@@ -395,8 +298,7 @@ const Editor = React.memo(({
                 tabIndex={1}
                 >
                 <Provider store={ store }>
-                  <SceneManagerR3fLarge 
-                  getAsset={ getAsset }/>
+                  <SceneManagerR3fLarge/>
                 </Provider>
               </Canvas>
               <GuidesView

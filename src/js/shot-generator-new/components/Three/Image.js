@@ -1,7 +1,9 @@
 import * as THREE from 'three'
 import { useEffect, useMemo, useRef } from 'react'
+import {useAsset} from "../../hooks/use-assets-manager"
 
-const Image = React.memo(({ sceneObject, isSelected, texture }) => {
+const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
+  const {asset: texture} = useAsset(imagesPaths[0] || null)
   const aspect = useRef(1)
   const ref = useRef()
 

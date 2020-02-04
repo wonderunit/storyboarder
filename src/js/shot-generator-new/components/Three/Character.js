@@ -5,10 +5,13 @@ import cloneGltf from '../../helpers/cloneGltf'
 import SGIkHelper from '../../../shared/IK/SGIkHelper'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
+import {useAsset} from "../../hooks/use-assets-manager"
 
 const isUserModel = model => !!model.match(/\//)
 
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
+    const {asset: gltf} = useAsset(path)
+  
     const ref = useRef()
     const [ready, setReady] = useState(false)
     const attachablesList = useRef([])
@@ -303,8 +306,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     }, [ref.current])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
-    console.log(visible)
-    console.log(ref)
+    
     return <group
         ref={ ref }
 
