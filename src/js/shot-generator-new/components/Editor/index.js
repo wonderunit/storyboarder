@@ -483,7 +483,7 @@ const Editor = React.memo(({
 
           <div className="column fill">
             <div id="camera-view" ref={ mainViewContainerRef }>
-              <div style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
+              <div id="camera-view-view" style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
                   <Canvas
                   tabIndex={ 1 }
                   key="camera-canvas"
