@@ -1,9 +1,12 @@
 import * as THREE from 'three'
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import '../../vendor/three/examples/js/loaders/GLTFLoader'
-import observable from "../../utils/observable";
+import observable from "../../utils/observable"
 
-
+/**
+ * Resources storage
+ * @type {observable}
+ */
 export const cache = observable({})
 
 const gtlfLoader = new THREE.GLTFLoader()
@@ -15,17 +18,32 @@ const LOADING_MODE = {
   ERROR: 'ERROR'
 }
 
+/**
+ * Checks if resource has been loaded
+ * @param path Resource path
+ * @returns {boolean}
+ */
 const isLoaded = (path) => {
   const state = cache.get()
 
   return (state[path] && state[path].status === LOADING_MODE.SUCCESS)
 }
 
+/**
+ * Checks if asset is loaded or if asset fetching has been started
+ * @param path
+ * @returns {boolean}
+ */
 const assetExist = (path) => Boolean(cache.get()[path])
 
+/**
+ * Fetches resource
+ * @param path Resource path
+ * @returns {Promise<null|THREE.Texture|THREE.Object>}
+ */
 export const loadAsset = (path) => {
   if (!path) {
-    return null
+    return Promise.resolve(null)
   }
 
   const current = cache.get()
@@ -43,8 +61,10 @@ export const loadAsset = (path) => {
 
         let loader
         if (!path.match(/(\.(png|jpg|jpeg|gif)$)|((\\|\/)(images|volumes)(\\|\/))/mi)) {
+          /** Current resource is model */
           loader = gtlfLoader
         } else {
+          /** Current resource is texture */
           loader = textureLoader
         }
 
@@ -77,93 +97,41 @@ export const loadAsset = (path) => {
   }
 }
 
-const getAssetId = (path) => {
-  const current = cache.get()
-  
-  if (!path) {
-    return null
-  }
-  
-  if (current[path] && current[path].data) {
-    return current[path].uuid
-  }
-  
-  return null
-}
-
-export const useAsset = (path) => {
-  const [assetId, setAssetId] = useState(getAssetId(path))
-  const currentPath = useRef(path)
-  
-  useEffect(() => {
-    const fn = (state) => {
-      const pt = currentPath.current
-      
-      if (isLoaded(pt)) {
-        setAssetId(getAssetId(pt))
-      }
-    }
-    
-    cache.subscribe(fn)
-    
-    return () => {
-      cache.unsubscribe(fn)
-    }
-  }, [])
-  
-  useEffect(() => {
-    const current = cache.get()
-    currentPath.current = path
-
-    if (!current[path]) {
-      loadAsset(path)
-    }
-
-    setAssetId(getAssetId(path))
-  }, [path])
-  
-  const asset = useMemo(() => {
-    const current = cache.get()
-    
-    if (current[path] && current[path].data) {
-      return current[path].data
-    }
-    
-    return null
-  }, [assetId, path])
-  
-  return {
-    asset,
-    loaded: Boolean(assetId !== null)
-  }
-}
-
-export const requestAsset = (path) => {
-  const current = cache.get()
-  if (!current[path]) {
-    loadAsset(path)
-  }
-}
-
-let used = 0
+/**
+ * Hook that allows components to fetch resources
+ * @param paths Array of resources paths
+ * @returns {{loaded: boolean, assets: Array}}
+ */
 export const useAssets = (paths) => {
-  const [assetsToLoad, setAssetsToLoad] = useState(paths)
-  
+  const [assetsToLoad, setAssetsToLoad] = useState(paths || [])
+
+  /**
+   * Fetch not fetched resources if 'paths' variable was changed
+   */
   useEffect(() => {
     const shouldLoad = paths.filter(asset => !assetExist(asset))
-
-    shouldLoad.map(loadAsset)
-    setAssetsToLoad(shouldLoad)
+    
+    if (shouldLoad.length > 0) {
+      shouldLoad.map(loadAsset) // Fetch here
+      setAssetsToLoad(shouldLoad) // Update 'assetsToLoad' to know, how many objects we are waiting for fetch
+    }
   }, [paths])
 
+  /**
+   * Subscribe to cache on mount, remove subscription on unmount
+   */
   useEffect(() => {
     if (assetsToLoad.length === 0) {
+      // If we don't have assetsToLoad then exit
       return
     }
     
+    // Next function is called when some resource has been loaded
     const fn = () => {
+      // Get resources that haven't fetched yet
       const toLoadNext = assetsToLoad.filter(asset => !isLoaded(asset))
       
+      // If we still have any resources to fetch then update 'assetsToLoad'
       if (toLoadNext.length !== assetsToLoad.length) {
         setAssetsToLoad(toLoadNext)
       }
@@ -176,17 +144,29 @@ export const useAssets = (paths) => {
     }
   }, [assetsToLoad, paths])
 
+  // This returns our assets
   const assets = useMemo(() => {
     const current = cache.get()
 
+    // Get only loaded assets
     return paths.filter(isLoaded).map((path) => {
       return current[path].data
     })
   }, [assetsToLoad, paths])
   
   return {
-    assets,
-    loaded: (assetsToLoad.length === 0),
-    hash: assets.reduce((acc, v) => acc + v.uuid, '') + (++used)
+    assets, // Array of loaded assets
+    loaded: (assetsToLoad.length === 0) // Are assets loaded?
   }
+}
+
+/**
+ * Hook that allows components to fetch single resource
+ * @param path Resources path
+ * @returns {{loaded: boolean, asset: THREE.Texture|THREE.Object}}
+ */
+export const useAsset = (path) => {
+  const {assets, loaded} = useAssets(path ? [path] : [])
+  
+  return {asset: assets[0], loaded}
 }

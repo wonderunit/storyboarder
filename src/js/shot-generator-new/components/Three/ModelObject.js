@@ -3,7 +3,7 @@ import React, { useMemo, useEffect } from 'react'
 import { useUpdate } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
-import {useAsset} from "../../hooks/use-assets-manager"
+import {useAsset, useAssets} from "../../hooks/use-assets-manager"
 /* 
 const VirtualCamera = require('../components/VirtualCamera') */
 

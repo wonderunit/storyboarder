@@ -114,7 +114,7 @@ class LayersPool  {
 
 const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
     
-    const {assets: textures, loaded: texturesReady, hash} = useAssets(imagesPaths)
+    const {assets: textures, loaded: texturesReady} = useAssets(imagesPaths)
     
     const ref = useUpdate(
         self => {
@@ -122,11 +122,15 @@ const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
         }
       )
     const layersPool = useRef(new LayersPool())
+    const group = useRef(new THREE.Group())
 
-    const meshes = useMemo(() => {
-        if(!texturesReady) return []
+    useEffect(() => {
+        if(!texturesReady) return 
         
-        let meshes = []
+        while(group.current.children.length > 0) {
+            group.current.remove(group.current.children[0])
+        }
+        
         layersPool.current.releaseLayers(textures)
         for(let i = 0; i < textures.length; i++) {
             let layers = layersPool.current.getLayers(numberOfLayers, {texture: textures[i], color:sceneObject.color, opacity:sceneObject.opacity})
@@ -135,25 +139,20 @@ const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
                 layer.material.opacity = sceneObject.opacity
                 layer.position.z = sceneObject.depth / numberOfLayers * (numberOfLayers - 2 * j) / 2 - sceneObject.depth / numberOfLayers / 2
                 layer.position.y = 1 / 2
-                meshes.push( <primitive
-                    key={ layer.uuid + j + hash }
-                    object={ layer }
-                    userData={{type:'volume'}}
-                  />)
+                group.current.add(layer)
               }
         }
-        return meshes
-    }, [texturesReady, textures.length, numberOfLayers, hash])
+    }, [texturesReady, textures, numberOfLayers])
 
 
     useEffect(() => {
-        if (meshes.length) {
+        if (group.current.children.length) {
           let c = 0xFF * sceneObject.color / 0xFFFFFF
           let color = (c << 16) | (c << 8) | c
-          for (let i = 0; i < meshes.length; i++) {
-            meshes[i].props.object.material.opacity = sceneObject.opacity
-            meshes[i].props.object.material.color = new THREE.Color(color)
-            meshes[i].props.object.material.needsUpdate = true
+          for (let i = 0; i < group.current.children.length; i++) {
+              group.current.children[i].material.opacity = sceneObject.opacity
+              group.current.children[i].material.color = new THREE.Color(color)
+              group.current.children[i].material.needsUpdate = true
           }
         }
     }, [sceneObject.opacity, sceneObject.color])
@@ -171,7 +170,7 @@ const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
             locked: locked
         }}
     >
-        { meshes }
+        <primitive object={group.current}/>
     </group>
 })
 
