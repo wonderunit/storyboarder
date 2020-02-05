@@ -3,7 +3,7 @@ import * as THREE from 'three'
 import { Texture } from 'three'
 import { useUpdate } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import {useAsset} from "../../hooks/use-assets-manager";
+import {useAsset, useAssets} from "../../hooks/use-assets-manager";
 class LAYERS_STATUS {
     static AVAIBLE = "Avaible"
     static USED = "INUSE"
@@ -112,25 +112,9 @@ class LayersPool  {
     }
 }
 
-const texturesAreReady = (textures) => {
-    for (let texture of textures) {
-        if (!texture.loaded) {
-            return false
-        }
-    }
-    
-    return true
-}
-
 const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
     
-    const texturesAssets = imagesPaths.map((path) => {
-        if (path) {
-            return useAsset(path)
-        }
-    })
-    
-    const texturesReady = texturesAreReady(texturesAssets)
+    const {assets: textures, loaded: texturesReady, hash} = useAssets(imagesPaths)
     
     const ref = useUpdate(
         self => {
@@ -142,7 +126,6 @@ const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
     const meshes = useMemo(() => {
         if(!texturesReady) return []
         
-        const textures = texturesAssets.map(tex => tex.asset)
         let meshes = []
         layersPool.current.releaseLayers(textures)
         for(let i = 0; i < textures.length; i++) {
@@ -153,14 +136,14 @@ const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
                 layer.position.z = sceneObject.depth / numberOfLayers * (numberOfLayers - 2 * j) / 2 - sceneObject.depth / numberOfLayers / 2
                 layer.position.y = 1 / 2
                 meshes.push( <primitive
-                    key={ layer.uuid + j }
+                    key={ layer.uuid + j + hash }
                     object={ layer }
                     userData={{type:'volume'}}
                   />)
               }
         }
         return meshes
-    }, [texturesAssets.length, texturesReady, numberOfLayers])
+    }, [texturesReady, textures.length, numberOfLayers, hash])
 
 
     useEffect(() => {
