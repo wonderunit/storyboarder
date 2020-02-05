@@ -330,17 +330,17 @@ const SceneManagerR3fLarge = connect(
     {
         volumeIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let textures = []
-            let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
-            for(let i = 0; i < imagesPaths.length; i++ ) {
-              if(!imagesPaths[i]) continue
-              let asset = useAsset(imagesPaths[i])
-              if(!asset) continue
-              textures.push(asset)
-            }
+            // let textures = []
+            // let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
+            // for(let i = 0; i < imagesPaths.length; i++ ) {
+            //   if(!imagesPaths[i]) continue
+            //   let asset = useAsset(imagesPaths[i])
+            //   if(!asset) continue
+            //   textures.push(asset)
+            // }
             return <SimpleErrorBoundary  key={ id }>
               <Volume
-                textures={ textures }
+                imagesPaths={ getFilePathForImages(sceneObject, storyboarderFilePath) }
                 sceneObject={ sceneObject }
                 numberOfLayers= { sceneObject.numberOfLayers }/>
               </SimpleErrorBoundary>

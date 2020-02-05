@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import { Texture } from 'three'
 import { useUpdate } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import {useAsset} from "../../hooks/use-assets-manager";
 class LAYERS_STATUS {
     static AVAIBLE = "Avaible"
     static USED = "INUSE"
@@ -111,7 +112,26 @@ class LayersPool  {
     }
 }
 
-const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
+const texturesAreReady = (textures) => {
+    for (let texture of textures) {
+        if (!texture.loaded) {
+            return false
+        }
+    }
+    
+    return true
+}
+
+const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
+    
+    const texturesAssets = imagesPaths.map((path) => {
+        if (path) {
+            return useAsset(path)
+        }
+    })
+    
+    const texturesReady = texturesAreReady(texturesAssets)
+    
     const ref = useUpdate(
         self => {
           self.traverse(child => child.layers.enable(SHOT_LAYERS))
@@ -120,7 +140,9 @@ const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
     const layersPool = useRef(new LayersPool())
 
     const meshes = useMemo(() => {
-        if(!textures || !textures.length) return []
+        if(!texturesReady) return []
+        
+        const textures = texturesAssets.map(tex => tex.asset)
         let meshes = []
         layersPool.current.releaseLayers(textures)
         for(let i = 0; i < textures.length; i++) {
@@ -131,19 +153,14 @@ const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
                 layer.position.z = sceneObject.depth / numberOfLayers * (numberOfLayers - 2 * j) / 2 - sceneObject.depth / numberOfLayers / 2
                 layer.position.y = 1 / 2
                 meshes.push( <primitive
-                    key={ layer.uuid }
+                    key={ layer.uuid + j }
                     object={ layer }
                     userData={{type:'volume'}}
                   />)
-          
-                //planeMesh.layers.disable(0)
-                //planeMesh.layers.enable(1)
-                //planeMesh.layers.disable(2)
-                //planeMesh.layers.enable(3)
               }
         }
         return meshes
-    }, [textures.length, numberOfLayers])
+    }, [texturesAssets.length, texturesReady, numberOfLayers])
 
 
     useEffect(() => {
@@ -151,7 +168,6 @@ const Volume = React.memo(({textures, numberOfLayers, sceneObject}) => {
           let c = 0xFF * sceneObject.color / 0xFFFFFF
           let color = (c << 16) | (c << 8) | c
           for (let i = 0; i < meshes.length; i++) {
-            console.log( meshes[i])
             meshes[i].props.object.material.opacity = sceneObject.opacity
             meshes[i].props.object.material.color = new THREE.Color(color)
             meshes[i].props.object.material.needsUpdate = true

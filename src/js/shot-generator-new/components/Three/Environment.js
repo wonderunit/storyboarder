@@ -12,7 +12,8 @@ const materialFactory = () => new THREE.MeshToonMaterial({
 })
 
 const Environment = React.memo(({ path, environment }) => {
-  const {asset: gltf} = useAsset(path)
+  const {asset: gltf, loaded} = useAsset(path)
+  const group = useRef(new THREE.Group())
   
   const ref = useUpdate(
     self => {
@@ -20,12 +21,10 @@ const Environment = React.memo(({ path, environment }) => {
     }
   )
 
-  const group = useMemo(() => {
-    if (!gltf) return null
+  useEffect(() => {
+    if (!gltf) return
 
-    let group = new THREE.Group()
-
-    let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Meh', 'Group'])
+    let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Mesh', 'Group'])
     sceneData.traverse(child => {
       if (child.isMesh) {
         let material = materialFactory()
@@ -38,6 +37,8 @@ const Environment = React.memo(({ path, environment }) => {
         child.material = material
       }
     })
+    
+    console.log(group.current, sceneData)
 
     group.current.add(...sceneData.children)
 
@@ -46,7 +47,7 @@ const Environment = React.memo(({ path, environment }) => {
         group.current.remove(group.current.children[0])
       }
     }
-  }, [Boolean(gltf), path])
+  }, [gltf])
 
   const { x, y, z, visible, rotation, scale } = environment
 

@@ -4,6 +4,7 @@ import { useUpdate, useThree } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
 import {useAsset} from "../../hooks/use-assets-manager";
+import {SHOT_LAYERS} from "../../utils/ShotLayers";
 const isUserMode = model => !!model.match(/\//)
 
 const materialFactory = () => new THREE.MeshToonMaterial({
