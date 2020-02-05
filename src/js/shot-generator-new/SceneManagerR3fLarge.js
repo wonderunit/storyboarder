@@ -313,16 +313,13 @@ const SceneManagerR3fLarge = connect(
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
-            //let gltf = useAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
-            //let characterGltf = useAsset(ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}))
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
-                //gltf={ gltf }
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) } 
                 updateObject={ updateObject }
-                //characterModel={ characterGltf }
+                сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
               />
               </SimpleErrorBoundary>
         })
@@ -330,14 +327,6 @@ const SceneManagerR3fLarge = connect(
     {
         volumeIds.map(id => {
             let sceneObject = sceneObjects[id]
-            // let textures = []
-            // let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
-            // for(let i = 0; i < imagesPaths.length; i++ ) {
-            //   if(!imagesPaths[i]) continue
-            //   let asset = useAsset(imagesPaths[i])
-            //   if(!asset) continue
-            //   textures.push(asset)
-            // }
             return <SimpleErrorBoundary  key={ id }>
               <Volume
                 imagesPaths={ getFilePathForImages(sceneObject, storyboarderFilePath) }

@@ -36,8 +36,10 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, characterModel }) => {
+const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath }) => {
     const {asset: gltf} = useAsset(path)
+    const {asset: characterModel} = useAsset(сharacterModelPath)
+  
     const characterObject = useRef(null)
     const [ready, setReady] = useState(false)
     const { scene } = useThree()
