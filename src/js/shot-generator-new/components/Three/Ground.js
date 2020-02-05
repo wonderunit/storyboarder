@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import React, { useMemo } from 'react'
-
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
 const groundFactory = ({ texture }) => {
     let material = new THREE.MeshToonMaterial({ map: texture, side: THREE.FrontSide })
@@ -33,7 +33,7 @@ const Ground = React.memo(({ objRef, texture, visible }) => {
     userData={{
       type: 'ground'
     }}
-   // onUpdate={self => (self.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))}
+    onUpdate={self => (self.layers.enable(SHOT_LAYERS))}
   >
     <planeBufferGeometry attach='geometry' args={ [135 / 3, 135 / 3, 32] } />
     <meshToonMaterial attach='material' side={ THREE.FrontSide } visible={ visible }>

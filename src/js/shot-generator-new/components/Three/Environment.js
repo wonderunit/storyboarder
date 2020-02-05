@@ -1,8 +1,9 @@
 import * as THREE from 'three'
-import React, { useEffect, useRef } from 'react'
-
-import onlyOfTypes from './../../utils/only-of-types'
+import React, { useMemo, useEffect, useRef } from 'react'
 import {useAsset} from "../../hooks/use-assets-manager"
+import {useUpdate} from 'react-three-fiber'
+import onlyOfTypes from './../../utils/only-of-types'
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
@@ -11,16 +12,20 @@ const materialFactory = () => new THREE.MeshToonMaterial({
 })
 
 const Environment = React.memo(({ path, environment }) => {
-  const ref = useRef()
+  const {asset: gltf} = useAsset(path)
   
-  const {asset} = useAsset(path)
-  const group = useRef(new THREE.Group())
+  const ref = useUpdate(
+    self => {
+      self.traverse(child => child.layers.enable(SHOT_LAYERS))
+    }
+  )
 
-  useEffect(() => {
-    if (!asset) return 
-    
-    const sceneData = onlyOfTypes(asset.scene, ['Scene', 'Mesh', 'Group'])
+  const group = useMemo(() => {
+    if (!gltf) return null
 
+    let group = new THREE.Group()
+
+    let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Meh', 'Group'])
     sceneData.traverse(child => {
       if (child.isMesh) {
         let material = materialFactory()
@@ -41,7 +46,7 @@ const Environment = React.memo(({ path, environment }) => {
         group.current.remove(group.current.children[0])
       }
     }
-  }, [Boolean(asset), path])
+  }, [Boolean(gltf), path])
 
   const { x, y, z, visible, rotation, scale } = environment
 

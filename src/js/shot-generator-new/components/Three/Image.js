@@ -1,9 +1,11 @@
 import * as THREE from 'three'
 import { useEffect, useMemo, useRef } from 'react'
-import {useAsset} from "../../hooks/use-assets-manager"
+import {useAsset, cache} from "../../hooks/use-assets-manager"
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
   const {asset: texture} = useAsset(imagesPaths[0] || null)
+  
   const aspect = useRef(1)
   const ref = useRef()
 
@@ -24,7 +26,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
         material.map = texture
         material.needsUpdate = true
     } 
-  }, [texture])
+  }, [texture, imagesPaths[0]])
 
   useEffect(() => {
     if (isSelected) {
@@ -40,10 +42,11 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
     material.opacity = sceneObject.opacity
   }, [sceneObject.opacity])
 
-/*   useEffect(() => {
-    if (visibleToCam) ref.current.children.forEach(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
-    else ref.current.children.forEach(child => child.layers.disable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
-  }, [ref.current, visibleToCam]) */
+  useEffect(() => {
+    if (sceneObject.visibleToCam) ref.current.traverse(child => child.layers.enable(SHOT_LAYERS))
+    else ref.current.traverse(child => child.layers.disable(SHOT_LAYERS))
+  }, [ref.current, sceneObject.visibleToCam])
+
   const { x, y, z, visible, height, rotation, locked } = sceneObject
   return (
     <group

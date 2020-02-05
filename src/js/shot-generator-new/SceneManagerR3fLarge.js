@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
@@ -29,9 +29,12 @@ import InteractionManager from './components/Three/InteractionManager'
 import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
 import { getFilePathForImages } from "./helpers/get-filepath-for-images"
-import path from 'path'
 import { setShot } from './utils/cameraUtils'
 import {useAsset} from "./hooks/use-assets-manager";
+import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
+import { dropObject, dropCharacter } from '../utils/dropToObjects'
+import SaveShot from './components/Three/SaveShot'
+import { SHOT_LAYERS } from './utils/ShotLayers'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -68,12 +71,12 @@ const SceneManagerR3fLarge = connect(
         imageIds: getSceneObjectImageIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
-        activeCamera: getSceneObjects(state)[getActiveCamera(state)],
+        activeCamera: getActiveCamera(state),
         storyboarderFilePath: state.meta.storyboarderFilePath,
         selections: getSelections(state),
         models: state.models,
         selectedBone: getSelectedBone(state),
-        cameraShots: state.cameraShots,
+        cameraShots: state.cameraShots
     }),
     {
         selectObject,
@@ -81,7 +84,8 @@ const SceneManagerR3fLarge = connect(
         updateCharacterIkSkeleton,
         updateObject,
         updateCharacterPoleTargets,
-        updateObjects
+        updateObjects,
+
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -102,7 +106,7 @@ const SceneManagerR3fLarge = connect(
     lightIds,
     volumeIds,
     imageIds,
-    cameraShots
+    cameraShots,
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -149,6 +153,7 @@ const SceneManagerR3fLarge = connect(
           updatePoleTarget,
           updateObjects
         )
+
       }, [])
 
     useEffect(() => {  
@@ -181,6 +186,40 @@ const SceneManagerR3fLarge = connect(
       }
     }, [cameraShots, selectedCharacters.current]) 
 
+    const sceneChildren = scene && scene.children[0] && scene.children[0].children.length
+
+    const dropingPlaces = useMemo(() => {
+      if(!scene || !scene.children[0]) return
+      return scene.children[0].children.filter(o =>
+        o.userData.type === "object" ||
+        o.userData.type === "character" ||
+        o.userData.type === "ground")
+    }, [sceneChildren])
+
+    const onCommandDrop = useCallback(() => {
+      let changes = {}
+      for( let i = 0; i < selections.length; i++ ) {
+        let selection = scene.children[0].children.find( child => child.userData.id === selections[i] )
+        if( selection.userData.type === "object" ) {
+          dropObject( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        } else if ( selection.userData.type === "character" ) {
+          dropCharacter( selection, dropingPlaces )
+          let pos = selection.position
+          changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
+        }
+      }
+      updateObjects(changes)
+    }, [selections, sceneChildren])
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:
+      onCommandDrop})
+      return () => {
+        KeyCommandsSingleton.getInstance().removeIPCKeyCommand({key: "shot-generator:object:drop"})
+      } 
+    }, [onCommandDrop])
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     useEffect(() => { 
@@ -193,37 +232,44 @@ const SceneManagerR3fLarge = connect(
     }, [world])
 
     useEffect(() => {
-        camera.position.set(activeCamera.x, activeCamera.z, activeCamera.y)
-        camera.rotation.set(activeCamera.tilt, activeCamera.rotation, activeCamera.roll)
-        camera.userData.type = activeCamera.type
-        camera.userData.locked = activeCamera.locked
-        camera.userData.id = activeCamera.id
-        camera.fov = activeCamera.fov
-        camera.updateMatrixWorld(true)
-        camera.updateProjectionMatrix()
+      let cameraObject = sceneObjects[activeCamera]
+      camera.position.x = cameraObject.x
+      camera.position.y = cameraObject.z
+      camera.position.z = cameraObject.y
+      camera.rotation.x = 0
+      camera.rotation.z = 0
+      camera.rotation.y = cameraObject.rotation
+      camera.rotateX(cameraObject.tilt)
+      camera.rotateZ(cameraObject.roll)
+      camera.userData.type = cameraObject.type
+      camera.userData.locked = cameraObject.locked
+      camera.userData.id = cameraObject.id
+      camera.fov = cameraObject.fov
+      camera.aspect = cameraObject.aspectRatio
+      camera.updateProjectionMatrix()
     }, [activeCamera])
 
     useEffect(() => {
         scene.background = new THREE.Color(world.backgroundColor)
     }, [world.background])
 
-    useEffect(() => {
-      console.log(scene)
-    }, [scene])
-
-    return <group ref={rootRef}> 
+    return <group ref={ rootRef }> 
+    <SaveShot isPlot={ false }/>
     <InteractionManager/>
     <ambientLight
-        ref={ambientLightRef}
-        color={0xffffff}
-        intensity={world.ambient.intensity} />
+        ref={ ambientLightRef }
+        color={ 0xffffff }
+        intensity={ world.ambient.intensity } 
+        onUpdate={ self => (self.layers.enable(SHOT_LAYERS)) }/>
 
     <directionalLight
-        ref={directionalLightRef}
-        color={0xffffff}
-        intensity={world.directional.intensity}
-        position={[0, 1.5, 0]}
-        target-position={[0, 0, 0.4]}
+        ref={ directionalLightRef }
+        color={ 0xffffff }
+        intensity={ world.directional.intensity }
+        position={ [0, 1.5, 0] }
+        target-position={ [0, 0, 0.4] }
+        onUpdate={ self => (self.layers.enable(SHOT_LAYERS)) }
+
     />
     {
         modelObjectIds.map(id => {

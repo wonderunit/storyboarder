@@ -7013,18 +7013,6 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
 
 
 
-  // save camera-plot (re-use context)
-  let plotImage = await exporterCommon.getImage(images.plot)
-  context.canvas.width = 900
-  context.canvas.height = 900
-  context.drawImage(plotImage, 0, 0)
-  saveDataURLtoFile(
-    context.canvas.toDataURL(),
-    boardModel.boardFilenameForCameraPlot(board)
-  )
-
-
-
   // save shot-generator-thumbnail.jpg
   // thumbnail size
   let size = getLayerThumbnailSize(boardData.aspectRatio)
@@ -7060,7 +7048,7 @@ ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
-
+  
   ipcRenderer.send('shot-generator:update', {
     board: boardData.boards.find(board => board.uid === uid)
   })
@@ -7079,6 +7067,21 @@ ipcRenderer.on('insertShot', async (event, { data, images, currentBoard }) => {
   ipcRenderer.send('shot-generator:update', {
     board: boardData.boards[index]
   })
+})
+ipcRenderer.on('saveShotPlot', async (event, { plotImage, currentBoard }) => {
+  // save camera-plot (re-use context)
+  let { width, height } = storyboarderSketchPane.sketchPane
+  let context = createSizedContext([width, height])
+  let exportedPlotImage = await exporterCommon.getImage(plotImage)
+  context.canvas.width = 900
+  context.canvas.height = 900
+  context.drawImage(exportedPlotImage, 0, 0)
+  let index = boardData.boards.findIndex(b => b.uid === currentBoard)
+  let board = boardData.boards[index]
+  saveDataURLtoFile(
+    context.canvas.toDataURL(),
+    boardModel.boardFilenameForCameraPlot(board)
+    )
 })
 ipcRenderer.on('storyboarder:get-boards', event => {
   ipcRenderer.send('shot-generator:get-boards', {

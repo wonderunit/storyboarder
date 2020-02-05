@@ -40,7 +40,11 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, ch
     const characterObject = useRef(null)
     const [ready, setReady] = useState(false)
     const { scene } = useThree()
-    const ref = useRef()
+    const ref = useUpdate(
+      self => {
+        self.traverse(child => child.layers.enable(SHOT_LAYERS))
+      }
+    )
 
     const meshes = useMemo(() => {
         if (gltf) {

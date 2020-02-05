@@ -350,9 +350,11 @@ kbd {
   overflow: hidden;
   background-color: #111114;
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
 }
+
 #camera-canvas {
   position: absolute;
 }

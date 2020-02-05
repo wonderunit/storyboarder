@@ -1,10 +1,10 @@
 import * as THREE from 'three'
-import React, { useState, useMemo, useEffect } from 'react'
+import React, { useState, useMemo, useEffect, useRef } from 'react'
 import '../../vendor/three/examples/js/loaders/GLTFLoader'
 import observable from "../../utils/observable";
 
 
-const cache = observable({})
+export const cache = observable({})
 
 const gtlfLoader = new THREE.GLTFLoader()
 const textureLoader = new THREE.TextureLoader()
@@ -16,6 +16,10 @@ const LOADING_MODE = {
 }
 
 export const loadAsset = (path) => {
+  if (!path) {
+    return null
+  }
+  
   return new Promise((resolve, reject) => {
     const current = cache.get()
     
@@ -27,6 +31,11 @@ export const loadAsset = (path) => {
       } else {
         loader = textureLoader
       }
+
+      // cache.set({
+      //   ...cache.get(),
+      //   [path]: {data: null, status: LOADING_MODE.PENDING}
+      // })
   
       loader.load(
         path,
@@ -48,31 +57,39 @@ export const loadAsset = (path) => {
           reject(error)
         }
       )
-  
-      cache.set({
-        ...cache.get(),
-        [path]: {data: null, status: LOADING_MODE.PENDING}
-      })
     } else {
       resolve(current[path])
     }
   })
 }
 
+const getAssetId = (path) => {
+  const current = cache.get()
+  
+  if (!path) {
+    return null
+  }
+  
+  if (current[path] && current[path].data) {
+    return current[path].uuid
+  }
+  
+  return null
+}
+
 export const useAsset = (path) => {
-  const [updateCount, update] = useState(0)
+  const [assetId, setAssetId] = useState(getAssetId(path))
+  const currentPath = useRef(path)
   
   useEffect(() => {
-    const current = cache.get()
-    
-    if (path && !(current[path] && current[path].data)) {
-      loadAsset(path)
-    }
-  }, [path])
-  
-  useEffect(() => {
-    const fn = () => {
-        update(updateCount + 1)
+    const fn = (state) => {
+      const pt = currentPath.current
+      
+      if (state[pt] && state[pt].status === LOADING_MODE.SUCCESS) {
+        setAssetId(getAssetId(pt))
+      } else if (state[pt] && state[pt].status === LOADING_MODE.ERROR) {
+        console.error(current[path].data)
+      }
     }
     
     cache.subscribe(fn)
@@ -80,26 +97,32 @@ export const useAsset = (path) => {
     return () => {
       cache.unsubscribe(fn)
     }
-  }, [updateCount])
+  }, [])
+  
+  useEffect(() => {
+    const current = cache.get()
+    currentPath.current = path
+
+    if (!current[path]) {
+      loadAsset(path)
+    }
+
+    setAssetId(getAssetId(path))
+  }, [path])
   
   const asset = useMemo(() => {
     const current = cache.get()
     
     if (current[path] && current[path].data) {
-      if (current[path].status === LOADING_MODE.ERROR) {
-        console.error(current[path].data)
-        
-        return null
-      }
-      
       return current[path].data
     }
     
     return null
-  }, [updateCount])
+  }, [assetId, path])
   
   return {
     asset,
-    updateCount
+    assetId,
+    loaded: Boolean(assetId !== null)
   }
 }

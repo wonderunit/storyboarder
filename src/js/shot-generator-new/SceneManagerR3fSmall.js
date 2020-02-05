@@ -20,6 +20,7 @@ import ModelLoader from '../services/model-loader'
 import { useDraggingManager} from './use-dragging-manager'
 //Move to sg folder
 import findMatchingAncestor from './helpers/find-matching-ancestor'
+import SaveShot from './components/Three/SaveShot'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -203,6 +204,7 @@ const SceneManagerR3fSmall = connect(
         e.stopPropagation()
         onPointerMove(e)
         }}> 
+      <SaveShot isPlot={ true }/>
       <ambientLight
         ref={ambientLightRef}
         color={0xffffff}

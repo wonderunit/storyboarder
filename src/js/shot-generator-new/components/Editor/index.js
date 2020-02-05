@@ -67,6 +67,7 @@ const Editor = React.memo(({
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
+  const largeCanvasInfo = useRef({ width: 0, height: 0 })
 
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
 
@@ -75,7 +76,7 @@ const Editor = React.memo(({
   /** Shot generating */
 
     // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
-  const imageRenderer = useRef()
+/*   const imageRenderer = useRef()
 
   const saveShot = (dispatch, state) => {
     let { cameraImage, plotImage } = renderImagesForBoard(state)
@@ -140,8 +141,6 @@ const Editor = React.memo(({
     let imageRenderCamera = scene.children.find(o => o.userData.id === activeCamera).clone()
     imageRenderCamera.layers.set(0)
     imageRenderCamera.layers.enable(3)
-
-
     //
     //
     // Prepare for rendering as an image
@@ -197,7 +196,7 @@ const Editor = React.memo(({
 
 
     return { cameraImage, plotImage }
-  }
+  } */
 
   /** Shot generating end */
 
@@ -231,7 +230,7 @@ const Editor = React.memo(({
       width: Math.ceil((largeCanvasSize.width || window.innerWidth)),
       height: Math.ceil((largeCanvasSize.width  || window.innerWidth) / aspectRatio)
     }
-  }, [largeCanvasSize.width])
+  }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
   const onCanvasPointerDown = useCallback(event => {
     event.preventDefault()
@@ -251,6 +250,20 @@ const Editor = React.memo(({
     if(mesh)
         BonesHelper.getInstance(mesh)
   }, [boneGltf])
+
+  useMemo(() => {
+    if(!largeCanvasSize.width || !largeCanvasSize.height || !aspectRatio) return
+    let width = Math.ceil(largeCanvasSize.width)
+    // assign a target height, based on scene aspect ratio
+    let height = Math.ceil(width / aspectRatio)
+    
+    if (height > largeCanvasSize.height) {
+      height = Math.ceil(largeCanvasSize.height)
+      width = Math.ceil(height * aspectRatio)
+    }
+    largeCanvasInfo.current.width = width 
+    largeCanvasInfo.current.height = height 
+  }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
   return (
     <FatalErrorBoundary>
@@ -291,19 +304,21 @@ const Editor = React.memo(({
           </div>
 
           <div className="column fill">
-            <div id="camera-view" ref={mainViewContainerRef}>
-              <Canvas
-                key="camera-canvas"
-                id="camera-canvas"
-                tabIndex={1}
-                >
-                <Provider store={ store }>
-                  <SceneManagerR3fLarge/>
-                </Provider>
-              </Canvas>
-              <GuidesView
-                dimensions={guidesDimensions}
-              />
+            <div id="camera-view" ref={ mainViewContainerRef }>
+              <div style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
+                  <Canvas
+                  tabIndex={ 1 }
+                  key="camera-canvas"
+                  id="camera-canvas"
+                  updateDefaultCamera={ true }>
+                    <Provider store={ store }>
+                      <SceneManagerR3fLarge/>
+                    </Provider>
+                  </Canvas>
+                  <GuidesView
+                    dimensions={guidesDimensions}
+                  />
+              </div>
             </div>
             <div className="inspectors">
               <CameraPanelInspector/>

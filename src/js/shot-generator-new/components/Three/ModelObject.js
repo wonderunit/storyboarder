@@ -14,6 +14,8 @@ const VirtualCamera = require('../components/VirtualCamera') */
 //   flatShading: false
 // })
 
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
+
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
@@ -43,7 +45,7 @@ const meshFactory = source => {
 const ModelObject = React.memo(({path, sceneObject, isSelected, ...props }) => {
   const ref = useUpdate(
     self => {
-      //self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
+      self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )
   
@@ -82,7 +84,7 @@ const ModelObject = React.memo(({path, sceneObject, isSelected, ...props }) => {
     }
 
     return []
-  }, [sceneObject.model, Boolean(asset)])
+  }, [sceneObject.model, asset])
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
