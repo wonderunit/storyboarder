@@ -40,9 +40,10 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
     const { scene } = useThree()
     const ref = useUpdate(
       self => {
-        self.traverse(child => child.layers.enable(SHOT_LAYERS))
+      //  self.traverse(child => child.layers.enable(SHOT_LAYERS))
       }
     )
+
 
     const meshes = useMemo(() => {
         if (gltf) {
@@ -63,6 +64,13 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
     
         return []
     }, [sceneObject.model, gltf])
+
+    useEffect(() => {
+      return () => {
+        if(!characterObject.current) return
+        ref.current.parent.remove(ref.current)
+      }
+    }, [])
 
     useEffect(() => {
       if(!characterObject.current) return

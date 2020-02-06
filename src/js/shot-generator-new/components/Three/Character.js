@@ -91,9 +91,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
           originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
     
           let armature = scene.getObjectByProperty("type", "Bone").parent
-          console.log(armature.clone())
-          console.log(lod)
-          console.log(gltf)
           let originalHeight
           if (isUserModel(sceneObject.model)) {
             originalHeight = 1
@@ -134,8 +131,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       let hasModifications = Object.values(sceneObject.skeleton).length > 0
 
       if (hasModifications) {
-        console.log("Modifing skeleton")
-        //  let position = new THREE.Vector3()
         // go through all the bones in the skeleton
         for (let bone of skeleton.bones) {
           // if user data exists for a bone, use it
@@ -190,7 +185,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     // for different stuff like list of bones, or selected bone rotation 
     useEffect(() => {
       if(!ref.current || !skeleton ) return
-      console.log("saves current skeleton to store")
       let changedSkeleton = []
       ref.current.updateMatrixWorld(true)
       let inverseMatrixWorld = new THREE.Matrix4()
@@ -223,7 +217,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
     useMemo(() => {
       if(!camera) return
-      console.log("Camera changed")
       SGIkHelper.getInstance().setCamera(camera)
       if(objectRotationControl.current)
           objectRotationControl.current.setCamera(camera)

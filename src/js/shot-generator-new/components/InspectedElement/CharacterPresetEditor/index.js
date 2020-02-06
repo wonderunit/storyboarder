@@ -9,6 +9,7 @@ import {
   getSceneObjects,
 
   undoGroupStart,
+  deleteObjects,
   undoGroupEnd, getSelections,
 } from '../../../../shared/reducers/shot-generator'
 import presetsStorage from '../../../../shared/store/presetsStorage'
@@ -36,6 +37,9 @@ const CharacterPresetsEditor = connect(
   {
     updateObject,
     selectCharacterPreset: (sceneObject, characterPresetId, preset) => (dispatch, getState) => {
+      let sceneObjects = getSceneObjects(getState())
+      let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === sceneObject.id).map(obj => obj.id)
+      dispatch(deleteObjects(attachableIds))
       dispatch(updateObject(sceneObject.id, {
         characterPresetId,
         height: preset.state.height,
@@ -207,8 +211,6 @@ const initializeAttachables = (sceneObject, preset) => {
     let attachableObject = new THREE.Object3D()
     for(let i = 0; i < attachables.length; i++) {
       let attachable = attachables[i]
-      console.log(attachable)
-      console.log(preset.state.presetPosition)
       prevParent.position.set(preset.state.presetPosition.x, preset.state.presetPosition.z, preset.state.presetPosition.y)
       prevParent.rotation.set(0, preset.state.presetRotation, 0 )
       prevParent.updateMatrixWorld(true)
