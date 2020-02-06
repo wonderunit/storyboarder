@@ -160,8 +160,6 @@ const SceneManagerR3fLarge = connect(
 
       }, [])
 
-    
-
     useEffect(() => {  
       selectedCharacters.current = selections.filter((id) => {
         return (sceneObjects[id] && sceneObjects[id].type === "character")
@@ -170,16 +168,11 @@ const SceneManagerR3fLarge = connect(
 
     useEffect(() => {
       let selected = scene.children[0].children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
-      console.log(selected)
       let characters = scene.children[0].children.filter((obj) => obj.userData.type === "character")
-      console.log("camera shots changed", cameraShots)
       if (characters.length) {
         let keys = Object.keys(cameraShots)
         for(let i = 0; i < keys.length; i++ ) {
           let key = keys[i]
-          console.log(key)
-          console.log(scene.children[0].children)
-          console.log(camera)
           setShot({
             camera,
             characters,
