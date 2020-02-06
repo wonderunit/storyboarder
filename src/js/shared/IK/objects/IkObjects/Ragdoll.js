@@ -48,11 +48,6 @@ class Ragdoll extends IkObject
         this.updateCharPosition = updateCharPosition;
     }
 
-    updateCharacterRotation(updateCharacterRotation)
-    {
-        this.updateCharacterRotation = updateCharacterRotation;
-    }
-
     // Runs cycle which is updating object
     update()
     {

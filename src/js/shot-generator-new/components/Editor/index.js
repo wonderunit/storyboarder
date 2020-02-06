@@ -418,6 +418,7 @@ const Editor = React.memo(({
   const onSwapCameraViewsClick = useCallback((event) => {
     event.preventDefault()
     setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
+    selectObject(null)
   }, [mainViewCamera])
 
   const boneGltf = useMemo(() => getAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb')))
@@ -442,6 +443,47 @@ const Editor = React.memo(({
     largeCanvasInfo.current.height = height 
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
+  const getLargeCanvas = () => {
+    return  <Canvas
+              tabIndex={ 1 }
+              key="camera-canvas"
+              id="camera-canvas"
+              updateDefaultCamera={ true }>
+                <Provider store={ store }>
+                  <SceneManagerR3fLarge 
+                  getAsset={ getAsset }/>
+                </Provider>
+              </Canvas>
+  }
+
+  const getSmallCanvas = () => {
+    return <Canvas
+                key="top-down-canvas"
+                id="top-down-canvas"
+                tabIndex={0}
+                /* onPointerDown={ onCanvasPointerDown } */
+                orthographic={ true }
+                updateDefaultCamera={ false }>
+                <Provider store={ store }>
+                  <SceneManagerR3fSmall 
+                    getAsset={ getAsset }/>
+                </Provider>
+              </Canvas>
+  }
+  const largeCanvasData = useRef({})
+  const setLargeCanvasData = (camera, scene, gl) => {
+    largeCanvasData.current.camera = camera
+    largeCanvasData.current.scene = scene
+    largeCanvasData.current.gl = gl
+  }
+
+  const smallCanvasData = useRef({})
+  const setSmallCanvasData = (camera, scene, gl) => {
+    smallCanvasData.current.camera = camera
+    smallCanvasData.current.scene = scene
+    smallCanvasData.current.gl = gl
+  }
+
   return (
     <FatalErrorBoundary>
       <div id="root">
@@ -454,7 +496,7 @@ const Editor = React.memo(({
           <div id="aside">
 
             <div id="topdown">
-              <Canvas
+            <Canvas
                 key="top-down-canvas"
                 id="top-down-canvas"
                 tabIndex={0}
@@ -463,7 +505,10 @@ const Editor = React.memo(({
                 updateDefaultCamera={ false }>
                 <Provider store={ store }>
                   <SceneManagerR3fSmall 
-                    getAsset={ getAsset }/>
+                    getAsset={ getAsset }
+                    renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
+                    setSmallCanvasData={ setSmallCanvasData }
+                    />
                 </Provider>
               </Canvas>
               <div className="topdown__controls">
@@ -485,13 +530,16 @@ const Editor = React.memo(({
             <div id="camera-view" ref={ mainViewContainerRef }>
               <div id="camera-view-view" style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
                   <Canvas
-                  tabIndex={ 1 }
-                  key="camera-canvas"
-                  id="camera-canvas"
-                  updateDefaultCamera={ true }>
+                    tabIndex={ 1 }
+                    key="camera-canvas"
+                    id="camera-canvas"
+                    updateDefaultCamera={ true }>
                     <Provider store={ store }>
                       <SceneManagerR3fLarge 
-                      getAsset={ getAsset }/>
+                      getAsset={ getAsset }
+                      renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
+                      setLargeCanvasData= { setLargeCanvasData }
+                      />
                     </Provider>
                   </Canvas>
                   <GuidesView

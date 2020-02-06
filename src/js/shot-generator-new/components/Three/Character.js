@@ -211,6 +211,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
     useMemo(() => {
       if(!camera) return
+      console.log("Camera changed")
       SGIkHelper.getInstance().setCamera(camera)
       if(objectRotationControl.current)
           objectRotationControl.current.setCamera(camera)

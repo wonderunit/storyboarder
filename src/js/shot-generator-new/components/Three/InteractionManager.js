@@ -100,9 +100,12 @@ const InteractionManager = connect(
 
     undoGroupStart,
     undoGroupEnd,
-    withState
+    withState,
+    renderData
 }) => {
     const { scene, gl, camera } = useThree()
+
+    const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const intersectables = useRef()
     const [lastDownId, setLastDownId] = useState()
     const [dragTarget, setDragTarget] = useState()
@@ -111,6 +114,15 @@ const InteractionManager = connect(
     const raycaster = useRef(new THREE.Raycaster())
     const mousePosition = useRef(new THREE.Vector2())
     const cameraControlsView = useRef()
+
+    useEffect(() => {
+      if(!cameraControlsView.current) return
+      cameraControlsView.current.dispose()
+      cameraControlsView.current.domElement = activeGL.domElement
+      cameraControlsView.current.intializeEvents()
+      if(!gpuPickerInstance.current) return
+      gpuPickerInstance.current.renderer = activeGL
+    }, [activeGL])
     
     const onCameraUpdate = ({active, object}) => {
       if (camera.userData.locked) {
@@ -131,7 +143,7 @@ const InteractionManager = connect(
       if(!activeCamera || cameraControlsView.current ) return
       cameraControlsView.current = new CameraControls(
         CameraControls.objectFromCameraState(sceneObjects[activeCamera]),
-        gl.domElement,
+        activeGL.domElement,
         {
           undoGroupStart,
           undoGroupEnd,
@@ -142,7 +154,7 @@ const InteractionManager = connect(
 
     const getGPUPicker = useCallback(() => {
         if(gpuPickerInstance.current === null) {
-          gpuPickerInstance.current = new GPUPicker(gl)
+          gpuPickerInstance.current = new GPUPicker(activeGL)
         }
         return gpuPickerInstance.current
     }, [])
@@ -161,7 +173,7 @@ const InteractionManager = connect(
     }
     
     const mouse = event => {
-        const rect = gl.domElement.getBoundingClientRect()
+        const rect = activeGL.domElement.getBoundingClientRect()
         return {
           x: ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1,
           y: - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1
@@ -183,7 +195,7 @@ const InteractionManager = connect(
         let gpuPicker = getGPUPicker()
         gpuPicker.setupScene(intersectables.current.filter(object => object.userData.type !== 'volume'))
         gpuPicker.controller.setPickingPosition(mousePosition.current.x, mousePosition.current.y)
-        intersects = gpuPicker.pickWithCamera(camera, gl)
+        intersects = gpuPicker.pickWithCamera(camera, activeGL)
         return intersects
     }  
 
@@ -201,7 +213,7 @@ const InteractionManager = connect(
         cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
         // get the mouse coords
         const { x, y } = mouse(event)
-        const rect = gl.domElement.getBoundingClientRect()
+        const rect = activeGL.domElement.getBoundingClientRect()
         mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top)
         let intersects = getIntersects({ x, y })
         // if no objects intersected
@@ -361,8 +373,8 @@ const InteractionManager = connect(
         }
         enableCameraControls(true)
         SGIkHelper.getInstance().deselectControlPoint(event)
-        if (event.target === gl.domElement) {
-            const rect = gl.domElement.getBoundingClientRect();
+        if (event.target === activeGL.domElement) {
+            const rect = activeGL.domElement.getBoundingClientRect();
             mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top)
             let intersects = getIntersects({ x, y })
             if (intersects.length === 0) {
@@ -417,15 +429,15 @@ const InteractionManager = connect(
     }, 0)
     
     useLayoutEffect(() => {
-      gl.domElement.addEventListener('pointerdown', onPointerDown)
-      gl.domElement.addEventListener('pointermove', onPointerMove)
-      gl.domElement.addEventListener('pointerup', onPointerUp)
+      activeGL.domElement.addEventListener('pointerdown', onPointerDown)
+      activeGL.domElement.addEventListener('pointermove', onPointerMove)
+      activeGL.domElement.addEventListener('pointerup', onPointerUp)
       return function cleanup () {
-        gl.domElement.removeEventListener('pointerdown', onPointerDown)
-        gl.domElement.removeEventListener('pointermove', onPointerMove)
-        gl.domElement.removeEventListener('pointerup', onPointerUp)
+        activeGL.domElement.removeEventListener('pointerdown', onPointerDown)
+        activeGL.domElement.removeEventListener('pointermove', onPointerMove)
+        activeGL.domElement.removeEventListener('pointerup', onPointerUp)
       }
-    }, [onPointerDown, onPointerUp, onPointerMove, sceneObjects])
+    }, [onPointerDown, onPointerUp, onPointerMove, sceneObjects, activeGL])
     return null 
 }))
 

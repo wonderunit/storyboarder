@@ -18,7 +18,7 @@ import {
     updateCharacterPoleTargets
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
-import { useThree } from 'react-three-fiber'
+import { useThree, useFrame } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
@@ -108,7 +108,8 @@ const SceneManagerR3fLarge = connect(
     volumeIds,
     imageIds,
     cameraShots,
-
+    setLargeCanvasData,
+    renderData
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -156,6 +157,8 @@ const SceneManagerR3fLarge = connect(
         )
 
       }, [])
+
+    
 
     useEffect(() => {  
       selectedCharacters.current = selections.filter((id) => {
@@ -222,6 +225,18 @@ const SceneManagerR3fLarge = connect(
       } 
     }, [onCommandDrop])
 
+    useEffect(() => { 
+      setLargeCanvasData(camera, scene, gl)
+    }, [scene, camera, gl])
+
+    useFrame(({scene, camera}) => {
+      if(renderData) {
+        gl.render(renderData.scene, renderData.camera)
+      } else {
+        gl.render(scene, camera)
+      }
+    }, 1)
+
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
@@ -255,7 +270,7 @@ const SceneManagerR3fLarge = connect(
 
     return <group ref={ rootRef }> 
     <SaveShot isPlot={ false }/>
-    <InteractionManager/>
+    <InteractionManager renderData={ renderData }/>
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
