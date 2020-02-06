@@ -108,7 +108,7 @@ const AttachableInspector = connect(
         attachToId: id,
         size: 1,
         status: "PENDING",
-        rotation: modelData
+        rotation: modelData.rotation
       }
       createObject(element)
       selectAttachable({id: element.id, bindId: element.attachToId })
