@@ -15,7 +15,8 @@ import {
     updateObject,
     updateObjects,
     getSelectedBone,
-    updateCharacterPoleTargets
+    updateCharacterPoleTargets,
+    getSelectedAttachable
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
 import { useThree, useFrame } from 'react-three-fiber'
@@ -76,7 +77,8 @@ const SceneManagerR3fLarge = connect(
         selections: getSelections(state),
         models: state.models,
         selectedBone: getSelectedBone(state),
-        cameraShots: state.cameraShots
+        cameraShots: state.cameraShots,
+        selectedAttachable: getSelectedAttachable(state)
     }),
     {
         selectObject,
@@ -85,7 +87,6 @@ const SceneManagerR3fLarge = connect(
         updateObject,
         updateCharacterPoleTargets,
         updateObjects,
-
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -109,7 +110,8 @@ const SceneManagerR3fLarge = connect(
     imageIds,
     cameraShots,
     setLargeCanvasData,
-    renderData
+    renderData,
+    selectedAttachable
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -338,7 +340,7 @@ const SceneManagerR3fLarge = connect(
               <Attachable
                 gltf={ gltf }
                 sceneObject={ sceneObject }
-                isSelected={ selections.includes(id) } 
+                isSelected={ selectedAttachable === sceneObject.id } 
                 updateObject={ updateObject }
                 characterModel={ characterGltf }/>
               </SimpleErrorBoundary>

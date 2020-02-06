@@ -81,8 +81,9 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
     }, [ref.current])
 
     useEffect(() => {
-        traverseMeshMaterials(ref.current, material => {
-            if (material.emissive) {
+      traverseMeshMaterials(ref.current, material => {
+          if (material.emissive) {
+            console.log("material emissive")
             if (isSelected) {
                 material.emissive = new THREE.Color( 0x755bf9 )
                 material.color = new THREE.Color( 0x222222 )
@@ -90,8 +91,8 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
                 material.emissive = new THREE.Color( '#000000' )
                 material.color = new THREE.Color( 0xcccccc )
             }
-            }
-        })
+          }
+      })
     }, [isSelected])
 
     useEffect(() => {
@@ -139,8 +140,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
         bone.add(ref.current)
         ref.current.updateMatrixWorld(true)
     }, [scene.children.length, ref.current])
-
-
     
     useEffect(() => {
         if(!characterObject.current) return 
