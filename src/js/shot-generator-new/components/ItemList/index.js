@@ -31,6 +31,7 @@ const getSortedItems = (sceneObjectsArray) => {
       sortedItems.push(...sceneObjectsArray.filter(target => target.group === object.id))
     }
   }
+  console.log(sortedItems)
   
   return sortedItems
 }
@@ -160,7 +161,8 @@ const sceneObjectSelector = (state) => {
       children:     object.children || null,
       visible:      Boolean(object.visible),
       locked:       Boolean(object.locked),
-      type:         object.type
+      type:         object.type,
+      name:         object.name
     }
   })
 }

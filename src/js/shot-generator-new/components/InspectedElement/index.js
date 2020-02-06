@@ -70,7 +70,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, get
         <div style={{ margin:"5px 5px 5px 5px" }}>
           Select a Preset Name:
         </div>
-        <div className="column" style={{ flex: 1 }}> 
+        <div className="column" style={{ flex: 1}}> 
           <input 
             className="modalInput"
             type="text" 
@@ -82,13 +82,14 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, get
             className="skeleton-selector__button"
             onClick={() => {
               showModal(false)
+              console.log("updateObject", changedName)
               updateObject(id, { displayName: changedName, name: changedName })
             }}>
               Proceed
           </button>
       </div>
       </Modal> }
-      <a href='#' className='object-property-heading' onClick={ () => showModal(true) }>
+      <a href='#' className='object-property-heading' style={{ overflow: "hidden", textOverflow: "ellipsis", maxHeight: 50, width: 300 }} onClick={ () => showModal(true) }>
         {selectedName} Properties
       </a>
       <Tabs key={id}>
