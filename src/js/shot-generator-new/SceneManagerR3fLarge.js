@@ -265,8 +265,8 @@ const SceneManagerR3fLarge = connect(
     }, [activeCamera])
 
     useEffect(() => {
-        scene.background = new THREE.Color(world.backgroundColor)
-    }, [world.background])
+      scene.background = new THREE.Color(world.backgroundColor)
+    }, [world.backgroundColor])
 
     return <group ref={ rootRef }> 
     <SaveShot isPlot={ false }/>
