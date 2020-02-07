@@ -443,33 +443,6 @@ const Editor = React.memo(({
     largeCanvasInfo.current.height = height 
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
-  const getLargeCanvas = () => {
-    return  <Canvas
-              tabIndex={ 1 }
-              key="camera-canvas"
-              id="camera-canvas"
-              updateDefaultCamera={ true }>
-                <Provider store={ store }>
-                  <SceneManagerR3fLarge 
-                  getAsset={ getAsset }/>
-                </Provider>
-              </Canvas>
-  }
-
-  const getSmallCanvas = () => {
-    return <Canvas
-                key="top-down-canvas"
-                id="top-down-canvas"
-                tabIndex={0}
-                /* onPointerDown={ onCanvasPointerDown } */
-                orthographic={ true }
-                updateDefaultCamera={ false }>
-                <Provider store={ store }>
-                  <SceneManagerR3fSmall 
-                    getAsset={ getAsset }/>
-                </Provider>
-              </Canvas>
-  }
   const largeCanvasData = useRef({})
   const setLargeCanvasData = (camera, scene, gl) => {
     largeCanvasData.current.camera = camera
@@ -538,8 +511,7 @@ const Editor = React.memo(({
                       <SceneManagerR3fLarge 
                       getAsset={ getAsset }
                       renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                      setLargeCanvasData= { setLargeCanvasData }
-                      />
+                      setLargeCanvasData= { setLargeCanvasData }/>
                     </Provider>
                   </Canvas>
                   <GuidesView

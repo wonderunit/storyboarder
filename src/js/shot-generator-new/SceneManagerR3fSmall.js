@@ -87,9 +87,10 @@ const SceneManagerR3fSmall = connect(
 
     useEffect(() => {
       if(renderData) {
-        renderData.camera.aspect = gl.domElement.width / gl.domElement.height
-        renderData.camera.updateProjectionMatrix()
-      } 
+        gl.setSize(Math.floor(300), Math.floor(300 / renderData.camera.aspect))
+      } else {
+        gl.setSize(300, 300)
+      }
     }, [renderData])
 
     useEffect(() => { 
@@ -178,7 +179,11 @@ const SceneManagerR3fSmall = connect(
       
       // get the aspect ratio of the container window
       // target aspect ratio
-      let rs = 1
+      let rs = (!renderData)
+          ? 1
+          : aspectRatio
+
+      console.log(rs)
       
       
       // make sure the min max box fits in the aspect ratio
@@ -206,7 +211,7 @@ const SceneManagerR3fSmall = connect(
       camera.far = 1000
       //camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
-    }, [scene, camera])
+    }, [scene, camera, renderData])
 
     useEffect(() => {
         camera.position.y = 900
@@ -215,7 +220,7 @@ const SceneManagerR3fSmall = connect(
         camera.updateMatrixWorld(true)
     }, [])
 
-    useEffect(autofitOrtho, [sceneObjects, aspectRatio, fontMesh])
+    useEffect(autofitOrtho, [sceneObjects, aspectRatio, fontMesh, renderData])
     useEffect(() => {
       window.addEventListener("pointerup", onPointerUp)
       return () => window.removeEventListener("pointerup", onPointerUp)

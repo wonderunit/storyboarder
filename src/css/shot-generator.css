@@ -362,7 +362,7 @@ kbd {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: center;
+  align-items: left;
 }
 
 
@@ -375,6 +375,9 @@ kbd {
 
 #top-down-canvas {
   width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 #top-down-canvas:focus {
   outline: none;

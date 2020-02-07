@@ -83,7 +83,7 @@ class GPUPickerHelper
             }
             camera.clearViewOffset();
             camera.aspect = cameraAspectRatio
-            console.log(camera.clone())
+            camera.updateProjectionMatrix()
             renderer.vr.enabled = vrEnabled ? true : false;
             
             if(!intersectedObject)
