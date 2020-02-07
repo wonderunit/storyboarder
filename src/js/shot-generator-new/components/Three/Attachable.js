@@ -3,6 +3,8 @@ import * as THREE from 'three'
 import { useUpdate, useThree } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
+import {useAsset} from "../../hooks/use-assets-manager";
+import {SHOT_LAYERS} from "../../utils/ShotLayers";
 const isUserMode = model => !!model.match(/\//)
 
 const materialFactory = () => new THREE.MeshToonMaterial({
@@ -34,7 +36,10 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, characterModel }) => {
+const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath }) => {
+    const {asset: gltf} = useAsset(path)
+    const {asset: characterModel} = useAsset(сharacterModelPath)
+  
     const characterObject = useRef(null)
     const [ready, setReady] = useState(false)
     const { scene } = useThree()

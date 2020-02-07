@@ -30,8 +30,8 @@ import InteractionManager from './components/Three/InteractionManager'
 import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
 import { getFilePathForImages } from "./helpers/get-filepath-for-images"
-import path from 'path'
 import { setShot } from './utils/cameraUtils'
+import {useAsset} from "./hooks/use-assets-manager";
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
 import SaveShot from './components/Three/SaveShot'
@@ -93,7 +93,6 @@ const SceneManagerR3fLarge = connect(
     sceneObjects,
     world,
     activeCamera,
-    getAsset,
     storyboarderFilePath,
     selections,
     updateCharacterSkeleton,
@@ -284,12 +283,9 @@ const SceneManagerR3fLarge = connect(
     {
         modelObjectIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let gltf = sceneObject.model != 'box'
-                ? getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
-                : null
             return <ModelObject
-                key={ id}
-                gltf={ gltf }
+                key={ id }
+                path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
 
@@ -299,10 +295,11 @@ const SceneManagerR3fLarge = connect(
     {
         characterIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
+            //let gltf = useAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
             return <SimpleErrorBoundary  key={ id }>
               <Character
-                gltf={ gltf }
+                //gltf={ gltf }
+                path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
                 isSelected={ selections.includes(id) } 
@@ -315,10 +312,8 @@ const SceneManagerR3fLarge = connect(
     {
         lightIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let gltf = getAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
             return <SimpleErrorBoundary  key={ id }>
               <Light
-                gltf={ gltf }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) } />
               </SimpleErrorBoundary>
@@ -327,32 +322,23 @@ const SceneManagerR3fLarge = connect(
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let gltf = getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
-            let characterGltf = getAsset(ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}))
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
-                gltf={ gltf }
+                path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 isSelected={ selectedAttachable === sceneObject.id } 
                 updateObject={ updateObject }
-                characterModel={ characterGltf }/>
+                сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
+              />
               </SimpleErrorBoundary>
         })
     }
     {
         volumeIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let textures = []
-            let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
-            for(let i = 0; i < imagesPaths.length; i++ ) {
-              if(!imagesPaths[i]) continue
-              let asset = getAsset(imagesPaths[i])
-              if(!asset) continue
-              textures.push(asset)
-            }
             return <SimpleErrorBoundary  key={ id }>
               <Volume
-                textures={ textures }
+                imagesPaths={ getFilePathForImages(sceneObject, storyboarderFilePath) }
                 sceneObject={ sceneObject }
                 numberOfLayers= { sceneObject.numberOfLayers }/>
               </SimpleErrorBoundary>
@@ -361,17 +347,9 @@ const SceneManagerR3fLarge = connect(
     {
         imageIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let textures = []
-            let imagesPaths = getFilePathForImages(sceneObject, storyboarderFilePath)
-            for(let i = 0; i < 1; i++ ) {
-              if(!imagesPaths[i]) continue
-              let asset = getAsset(imagesPaths[i])
-              if(!asset) continue
-              textures.push(asset)
-            }
             return <SimpleErrorBoundary key={ id }>
               <Image
-                texture={ textures[0] }
+                imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) }/>
               </SimpleErrorBoundary>
@@ -384,17 +362,12 @@ const SceneManagerR3fLarge = connect(
             visible={ !world.room.visible && world.ground } />
     }   
     {
-        world.environment.file &&
-        getAsset(ModelLoader.getFilepathForModel({
-          type: 'environment',
-          model: world.environment.file
-        }, { storyboarderFilePath } ))
-          ? 
-            <Environment
-              gltf={getAsset(ModelLoader.getFilepathForModel({
+        world.environment.file
+          ? <Environment
+              path={ModelLoader.getFilepathForModel({
                 type: 'environment',
                 model: world.environment.file
-              }, { storyboarderFilePath } ))}
+              }, { storyboarderFilePath } )}
               environment={world.environment}
               visible={world.environment.visible} />
           : null

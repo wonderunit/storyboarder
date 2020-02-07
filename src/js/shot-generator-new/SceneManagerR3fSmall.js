@@ -56,7 +56,6 @@ const SceneManagerR3fSmall = connect(
     sceneObjects,
     world,
     aspectRatio,
-    getAsset,
     storyboarderFilePath,
     selectObject,
     selections,
@@ -280,12 +279,9 @@ const SceneManagerR3fSmall = connect(
     {
         modelObjectIds.map(object => {
           let sceneObject = sceneObjects[object]
-          let gltf = sceneObject.model != 'box'
-              ? getAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
-              : null
           return <ModelObject
               key={ sceneObject.id }
-              gltf={ gltf }
+              path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath})}
               sceneObject={ sceneObject }
               isSelected={ selections.includes(sceneObject.id) }
               onPointerUp={e => {

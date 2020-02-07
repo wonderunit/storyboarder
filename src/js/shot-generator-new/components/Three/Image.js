@@ -1,9 +1,11 @@
 import * as THREE from 'three'
 import { useEffect, useMemo, useRef } from 'react'
-import { useUpdate } from 'react-three-fiber'
+import {useAsset, cache} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
-const Image = React.memo(({ sceneObject, isSelected, texture }) => {
+const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
+  const {asset: texture} = useAsset(imagesPaths[0] || null)
+  
   const aspect = useRef(1)
   const ref = useRef()
 
@@ -24,7 +26,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture }) => {
         material.map = texture
         material.needsUpdate = true
     } 
-  }, [texture])
+  }, [texture, imagesPaths[0]])
 
   useEffect(() => {
     if (isSelected) {

@@ -58,7 +58,7 @@ const ElementsPanel = connect(
     undoGroupEnd
   }
 )(
-  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath, getAsset }) => {
+  React.memo(({ world, sceneObjects, models, selections, selectObject, selectObjectToggle, updateObject, deleteObjects, selectedBone, activeCamera, setActiveCamera, selectBone, updateCharacterSkeleton, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, storyboarderFilePath }) => {
     let kind = sceneObjects[selections[0]] && sceneObjects[selections[0]].type
     let data = sceneObjects[selections[0]]
     
@@ -87,8 +87,7 @@ const ElementsPanel = connect(
 
                 storyboarderFilePath,
 
-                selections,
-                getAsset
+                selections
               }}
           />
         </div>

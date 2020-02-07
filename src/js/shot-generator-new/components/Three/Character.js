@@ -5,16 +5,18 @@ import cloneGltf from '../../helpers/cloneGltf'
 import SGIkHelper from '../../../shared/IK/SGIkHelper'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
+import {useAsset} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 const isUserModel = model => !!model.match(/\//)
 
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
-  const ref = useUpdate(
-    self => {
-      let lod = self.getObjectByProperty("type", "LOD") || self
-      lod && lod.traverse(child => child.layers.enable(SHOT_LAYERS))
-    }
-  )
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
+    const {asset: gltf, loaded} = useAsset(path)
+    const ref = useUpdate(
+      self => {
+        let lod = self.getObjectByProperty("type", "LOD") || self
+        lod && lod.traverse(child => child.layers.enable(SHOT_LAYERS))
+      }
+    )
     const [ready, setReady] = useState(false)
     const { scene, camera, gl } = useThree()
     const objectRotationControl = useRef(null)
@@ -33,38 +35,37 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       }
     }, [gltf])
 
-    const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
-        () => {
-          if(!gltf) {
-            setReady(false)
-            return [null, null, null, null, null]
-          }
-      
-          let lod = new THREE.LOD()
-          let { scene } = cloneGltf(gltf)
-          let map
-    
-          // for built-in Characters
-          // SkinnedMeshes are immediate children
-          let meshes = scene.children.filter(child => child.isSkinnedMesh)
-    
-          // if no SkinnedMeshes are found there, this may be a custom model file
-          if (meshes.length === 0 && scene.children.length && scene.children[0].children) {
+    const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(() => {
+      if(!gltf) {
+        setReady(false)
+        return [null, null, null, null, null]
+      }
+  
+      let lod = new THREE.LOD()
+      let { scene } = cloneGltf(gltf)
+      let map
+
+      // for built-in Characters
+      // SkinnedMeshes are immediate children
+      let meshes = scene.children.filter(child => child.isSkinnedMesh)
+
+      // if no SkinnedMeshes are found there, this may be a custom model file
+      if (meshes.length === 0 && scene.children.length && scene.children[0].children) {
             // try to find the first SkinnedMesh in the first child object's children
             let mesh = scene.children[0].children.find(child => child.isSkinnedMesh)
             if (mesh) {
               meshes = [mesh]
             }
-          }
-    
-          // if there's only 1 mesh
-          let startAt = meshes.length == 1
-            // start at mesh index 0 (for custom characters)
-            ? 0
-            // otherwise start at mesh index 1 (for built-in characters)
-            : 1
-    
-          for (let i = startAt, d = 0; i < meshes.length; i++, d++) {
+      }
+
+      // if there's only 1 mesh
+      let startAt = meshes.length == 1
+        // start at mesh index 0 (for custom characters)
+        ? 0
+        // otherwise start at mesh index 1 (for built-in characters)
+        : 1
+
+      for (let i = startAt, d = 0; i < meshes.length; i++, d++) {
             let mesh = meshes[i]
             mesh.matrixAutoUpdate = false
             map = mesh.material.map
@@ -82,26 +83,26 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
               morphTargets: true
             })
             lod.addLevel(mesh, d * 4)
-          }
-    
-          let skeleton = lod.children[0].skeleton
-          skeleton.pose()
-    
-          let originalSkeleton = skeleton.clone()
-          originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
-    
-          let armature = scene.getObjectByProperty("type", "Bone").parent
-          let originalHeight
-          if (isUserModel(sceneObject.model)) {
+      }
+
+      let skeleton = lod.children[0].skeleton
+      skeleton.pose()
+
+      let originalSkeleton = skeleton.clone()
+      originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
+
+      let armature = scene.getObjectByProperty("type", "Bone").parent
+      let originalHeight
+      if (isUserModel(sceneObject.model)) {
             originalHeight = 1
-          } else {
-            let bbox = new THREE.Box3().setFromObject(lod)
-            originalHeight = bbox.max.y - bbox.min.y
-          }
-          // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
-          setReady(true)
-          return [skeleton, lod, originalSkeleton, armature, originalHeight]
-        }, [gltf])
+      } else {
+        let bbox = new THREE.Box3().setFromObject(lod)
+        originalHeight = bbox.max.y - bbox.min.y
+      }
+      // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
+      setReady(true)
+      return [skeleton, lod, originalSkeleton, armature, originalHeight]
+    }, [gltf])
 
     // Adds lod to scene we add it manualy to insure that lod is on the scene
     // before we start making other necessary changes to character 
@@ -111,7 +112,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       return () => {
         ref.current.remove(lod)
       }
-    }, [lod, ref.current])
+    }, [lod, ref.current, gltf])
 
     // Adds armature to scene same logic as lod
     useEffect(() => {
@@ -315,6 +316,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     }, [ref.current])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
+
     return <group
         ref={ ref }
 

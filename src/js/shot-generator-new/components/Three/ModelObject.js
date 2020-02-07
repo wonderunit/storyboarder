@@ -3,6 +3,17 @@ import React, { useMemo, useEffect } from 'react'
 import { useUpdate } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
+import {useAsset, useAssets} from "../../hooks/use-assets-manager"
+/* 
+const VirtualCamera = require('../components/VirtualCamera') */
+
+// old material
+// const materialFactory = () => new THREE.MeshLambertMaterial({
+//   color: 0xcccccc,
+//   emissive: 0x0,
+//   flatShading: false
+// })
+
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
 const materialFactory = () => new THREE.MeshToonMaterial({
@@ -31,12 +42,14 @@ const meshFactory = source => {
   return mesh
 }
 
-const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => {
+const ModelObject = React.memo(({path, sceneObject, isSelected, ...props }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )
+  
+  const {asset} = useAsset((sceneObject.model === 'box') ? null : path)
 
   const meshes = useMemo(() => {
     if (sceneObject.model === 'box') {
@@ -55,9 +68,9 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
       ]
     }
 
-    if (gltf) {
+    if (asset) {
       let children = []
-      gltf.scene.traverse(child => {
+      asset.scene.traverse(child => {
         if (child.isMesh) {
           children.push(
             <primitive
@@ -71,7 +84,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
     }
 
     return []
-  }, [sceneObject.model, gltf])
+  }, [sceneObject.model, asset])
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
