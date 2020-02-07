@@ -15,10 +15,11 @@ import {
     updateObject,
     updateObjects,
     getSelectedBone,
-    updateCharacterPoleTargets
+    updateCharacterPoleTargets,
+    getSelectedAttachable
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
-import { useThree } from 'react-three-fiber'
+import { useThree, useFrame } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
@@ -71,12 +72,13 @@ const SceneManagerR3fLarge = connect(
         imageIds: getSceneObjectImageIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
-        activeCamera: getActiveCamera(state),
+        activeCamera: getSceneObjects(state)[getActiveCamera(state)],
         storyboarderFilePath: state.meta.storyboarderFilePath,
         selections: getSelections(state),
         models: state.models,
         selectedBone: getSelectedBone(state),
-        cameraShots: state.cameraShots
+        cameraShots: state.cameraShots,
+        selectedAttachable: getSelectedAttachable(state)
     }),
     {
         selectObject,
@@ -85,7 +87,6 @@ const SceneManagerR3fLarge = connect(
         updateObject,
         updateCharacterPoleTargets,
         updateObjects,
-
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -107,7 +108,9 @@ const SceneManagerR3fLarge = connect(
     volumeIds,
     imageIds,
     cameraShots,
-
+    setLargeCanvasData,
+    renderData,
+    selectedAttachable
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -164,16 +167,11 @@ const SceneManagerR3fLarge = connect(
 
     useEffect(() => {
       let selected = scene.children[0].children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
-      console.log(selected)
       let characters = scene.children[0].children.filter((obj) => obj.userData.type === "character")
-      console.log("camera shots changed", cameraShots)
       if (characters.length) {
         let keys = Object.keys(cameraShots)
         for(let i = 0; i < keys.length; i++ ) {
           let key = keys[i]
-          console.log(key)
-          console.log(scene.children[0].children)
-          console.log(camera)
           setShot({
             camera,
             characters,
@@ -221,6 +219,18 @@ const SceneManagerR3fLarge = connect(
       } 
     }, [onCommandDrop])
 
+    useEffect(() => { 
+      setLargeCanvasData(camera, scene, gl)
+    }, [scene, camera, gl, renderData])
+
+    useFrame(({scene, camera}) => {
+      if(renderData) {
+        gl.render(renderData.scene, renderData.camera)
+      } else {
+        gl.render(scene, camera)
+      }
+    }, 1)
+
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
@@ -232,7 +242,7 @@ const SceneManagerR3fLarge = connect(
     }, [world])
 
     useEffect(() => {
-      let cameraObject = sceneObjects[activeCamera]
+      let cameraObject = activeCamera
       camera.position.x = cameraObject.x
       camera.position.y = cameraObject.z
       camera.position.z = cameraObject.y
@@ -245,17 +255,16 @@ const SceneManagerR3fLarge = connect(
       camera.userData.locked = cameraObject.locked
       camera.userData.id = cameraObject.id
       camera.fov = cameraObject.fov
-      camera.aspect = cameraObject.aspectRatio
       camera.updateProjectionMatrix()
     }, [activeCamera])
 
     useEffect(() => {
-        scene.background = new THREE.Color(world.backgroundColor)
-    }, [world.background])
+      scene.background = new THREE.Color(world.backgroundColor)
+    }, [world.backgroundColor])
 
     return <group ref={ rootRef }> 
     <SaveShot isPlot={ false }/>
-    <InteractionManager/>
+    <InteractionManager renderData={ renderData }/>
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
@@ -317,7 +326,7 @@ const SceneManagerR3fLarge = connect(
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
-                isSelected={ selections.includes(id) } 
+                isSelected={ selectedAttachable === sceneObject.id } 
                 updateObject={ updateObject }
                 сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
               />

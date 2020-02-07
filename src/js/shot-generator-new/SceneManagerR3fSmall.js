@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import React, { useRef, useEffect, useCallback } from 'react'
+import React, { useRef, useEffect, useCallback, useMemo } from 'react'
 import { 
   getSceneObjects,
   getWorld,
@@ -8,7 +8,7 @@ import {
   updateObjects
 } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
-import { useThree } from 'react-three-fiber'
+import { useFrame, useThree } from 'react-three-fiber'
 import IconsComponent from './components/IconsComponent'
 import CameraIcon from './components/Three/Icons/CameraIcon'
 import Ground from './components/Three/Ground'
@@ -60,7 +60,9 @@ const SceneManagerR3fSmall = connect(
     selectObject,
     selections,
     updateObjects,
-    iconIds
+    iconIds,
+    setSmallCanvasData,
+    renderData
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -68,41 +70,60 @@ const SceneManagerR3fSmall = connect(
     const groundRef = useRef()
     const draggedObject = useRef(null)
 
+    const actualGL = useMemo(() => renderData ? renderData.gl : gl)
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager(true)
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
-    const mouse = event => {
-      const rect = gl.domElement.getBoundingClientRect()
+    const mouse = useCallback(event => {
+      const rect = actualGL.domElement.getBoundingClientRect()
       return {
         x: ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1,
         y: - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1
       }
-    }
+    }, [actualGL])
 
+    useEffect(() => {
+      if(renderData) {
+        gl.setSize(Math.floor(300), Math.floor(300 / renderData.camera.aspect))
+      } else {
+        gl.setSize(300, 300)
+      }
+    }, [renderData])
+
+    useEffect(() => { 
+      setSmallCanvasData(camera, scene, gl)
+    }, [scene, camera, gl])
+
+    useFrame(({scene, camera}) => {
+      if(renderData) {
+        gl.render(renderData.scene, renderData.camera)
+      } else {
+        gl.render(scene, camera)
+      }
+    }, 1)
 
     const onPointerDown = useCallback((e) => {
       let match
       e.object.traverseAncestors((o) => {
         if(o.userData.id) match =  o
       })
-      if(match.userData.locked) return
+      if(!match.userData || match.userData.locked ) return
       selectObject(match.userData.id)
       draggedObject.current = match
       const { x, y } = mouse(e)
       prepareDrag( draggedObject.current, {x, y, camera, scene, selections:[match.userData.id] })
-    }, [scene, camera, selections])
+    }, [scene, camera, selections, sceneObjects, mouse])
 
     const onPointerMove = useCallback((e) => {
       if(!draggedObject.current) return
       const { x, y } = mouse(e)
       drag({ x, y }, draggedObject.current, camera, selections)
       updateStore(updateObjects)
-    }, [camera, selections])
+    }, [camera, selections, mouse])
 
     const onPointerUp = useCallback((e) => {
-      if(!draggedObject.current) return
       endDrag(updateObjects)
       draggedObject.current = null
     }, [updateObjects])
@@ -121,7 +142,8 @@ const SceneManagerR3fSmall = connect(
         
       // go through all appropriate objects and get the min max
       let numVisible = 0
-      for (let child of scene.children[0].children) {
+      for (let i = 0; i < scene.children[0].children.length; i++ ) {
+        let child = scene.children[0].children[i]
         if (
             child.userData &&
             child.userData.type === 'object' ||
@@ -156,7 +178,11 @@ const SceneManagerR3fSmall = connect(
       
       // get the aspect ratio of the container window
       // target aspect ratio
-      let rs = 1
+      let rs = (!renderData)
+          ? 1
+          : aspectRatio
+
+      console.log(rs)
       
       
       // make sure the min max box fits in the aspect ratio
@@ -182,9 +208,9 @@ const SceneManagerR3fSmall = connect(
       camera.bottom = -(minMax[3]-minMax[2])/2
       camera.near = -1000
       camera.far = 1000
-      camera.updateMatrixWorld(true)
+      //camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
-    }, [scene, camera])
+    }, [scene, camera, renderData])
 
     useEffect(() => {
         camera.position.y = 900
@@ -193,7 +219,39 @@ const SceneManagerR3fSmall = connect(
         camera.updateMatrixWorld(true)
     }, [])
 
-    useEffect(autofitOrtho, [sceneObjects, aspectRatio, fontMesh])
+    useEffect(autofitOrtho, [sceneObjects, aspectRatio, fontMesh, renderData])
+    useEffect(() => {
+      window.addEventListener("pointerup", onPointerUp)
+      return () => window.removeEventListener("pointerup", onPointerUp)
+    }, [onPointerUp])
+
+    const raycaster = useRef(new THREE.Raycaster())
+    const intersectLogic = (e) => {
+      const { x, y } = mouse(e)
+      raycaster.current.setFromCamera({x, y}, camera)
+      var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
+      if(!intersects[0] || (intersects[0].object.userData && intersects[0].object.userData.type === "ground")) {
+        
+        selectObject(null)
+        return
+      }
+      onPointerDown({ clientX: e.clientX, clientY: e.clientY, object: intersects[0].object })
+    }
+
+    useEffect(() => {
+      if(!renderData) return
+      renderData.gl.domElement.addEventListener("pointerdown", intersectLogic)
+      renderData.gl.domElement.addEventListener("pointermove", onPointerMove)
+      renderData.gl.domElement.addEventListener("pointerup", onPointerUp)
+      return () => {
+        if(!renderData) return
+        renderData.gl.domElement.removeEventListener("pointerdown", intersectLogic)
+        renderData.gl.domElement.removeEventListener("pointermove", onPointerMove)
+        renderData.gl.domElement.removeEventListener("pointerup", onPointerUp)
+      }
+    }, [renderData, intersectLogic])
+
+
 
     /////Render components
     return <group ref={rootRef}
@@ -202,8 +260,9 @@ const SceneManagerR3fSmall = connect(
       }}
       onPointerMove={e => {
         e.stopPropagation()
-        onPointerMove(e)
+        renderData || onPointerMove(e)
         }}> 
+   
       <SaveShot isPlot={ true }/>
       <ambientLight
         ref={ambientLightRef}
@@ -227,11 +286,11 @@ const SceneManagerR3fSmall = connect(
               isSelected={ selections.includes(sceneObject.id) }
               onPointerUp={e => {
                 e.stopPropagation()
-                onPointerUp(e)
+                renderData || onPointerUp(e)
               }}
               onPointerDown={e => {
                 e.stopPropagation()
-                onPointerDown(e)
+                renderData ||  onPointerDown(e)
               }}
               />
         })
@@ -249,11 +308,11 @@ const SceneManagerR3fSmall = connect(
               isSelected={ selections.includes(sceneObject.id) }
               onPointerUp={e => {
                 e.stopPropagation()
-                onPointerUp(e)
+                renderData || onPointerUp(e)
               }}
               onPointerDown={e => {
                 e.stopPropagation()
-                onPointerDown(e)
+                renderData || onPointerDown(e)
               }}
           />
         })
@@ -270,17 +329,17 @@ const SceneManagerR3fSmall = connect(
                 fontMesh={ fontMesh } 
                 onPointerUp={e => {
                   e.stopPropagation()
-                  onPointerUp(e)
+                  renderData || onPointerUp(e)
                 }}
                 onPointerDown={e => {
                   e.stopPropagation()
-                  onPointerDown(e)
+                  renderData ||  onPointerDown(e)
                 }}
                 
                 />
         })
     }
-    { groundTexture && <Ground
+    {  groundTexture && <Ground
         objRef={ groundRef }
         texture={ groundTexture }
         visible={ !world.room.visible && world.ground } />

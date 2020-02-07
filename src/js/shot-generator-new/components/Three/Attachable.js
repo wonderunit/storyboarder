@@ -45,9 +45,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     const { scene } = useThree()
     const ref = useUpdate(
       self => {
-        self.traverse(child => child.layers.enable(SHOT_LAYERS))
+        //self.traverse(child => child.layers.enable(SHOT_LAYERS))
       }
     )
+
 
     const meshes = useMemo(() => {
         if (gltf) {
@@ -70,6 +71,13 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [sceneObject.model, gltf])
 
     useEffect(() => {
+      return () => {
+        if(!characterObject.current) return
+        ref.current.parent.remove(ref.current)
+      }
+    }, [])
+
+    useEffect(() => {
       if(!characterObject.current) return
       rebindAttachable()
     }, [characterModel])
@@ -78,8 +86,9 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [ref.current])
 
     useEffect(() => {
-        traverseMeshMaterials(ref.current, material => {
-            if (material.emissive) {
+      traverseMeshMaterials(ref.current, material => {
+          if (material.emissive) {
+            console.log("material emissive")
             if (isSelected) {
                 material.emissive = new THREE.Color( 0x755bf9 )
                 material.color = new THREE.Color( 0x222222 )
@@ -87,8 +96,8 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
                 material.emissive = new THREE.Color( '#000000' )
                 material.color = new THREE.Color( 0xcccccc )
             }
-            }
-        })
+          }
+      })
     }, [isSelected])
 
     useEffect(() => {
@@ -136,8 +145,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         bone.add(ref.current)
         ref.current.updateMatrixWorld(true)
     }, [scene.children.length, ref.current])
-
-
     
     useEffect(() => {
         if(!characterObject.current) return 

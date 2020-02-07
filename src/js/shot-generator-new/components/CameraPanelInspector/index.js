@@ -169,7 +169,7 @@ const CameraPanelInspector = connect(
                         <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: -0.2 }))}><div className="arrow right"/></div> 
                     </div>
                 </div>
-                <div className="camera-item-label">Lens: ${ activeCamera.fov.toFixed(2) }mm</div>
+                <div className="camera-item-label">Lens: { activeCamera.fov.toFixed(2) }mm</div>
             </div>
             <div className="camera-item shots">
                 <div className="select">

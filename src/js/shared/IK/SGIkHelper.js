@@ -174,7 +174,8 @@ class SGIKHelper extends THREE.Object3D
                 this.ragDoll.hipsMouseDown = false;
                 if(this.ragDoll.attached)
                 {
-                    this.ragDoll.updateCharacterRotation(this.ragDoll.originalObject.children[0].name, this.ragDoll.hipsControlTarget.target.rotation);
+                    console.log("Updating character rotation")
+                    this.updateCharacterRotation(this.ragDoll.originalObject.children[0].name, this.ragDoll.hipsControlTarget.target.rotation);
                     this.ragDoll.attached = false;
                     this.ragDoll.originalObject.children[0].isRotated = false;
                 }
@@ -262,9 +263,9 @@ class SGIKHelper extends THREE.Object3D
         }
     }
 
-    setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos, updatePoleTargets, updateObjects)
+    setUpdate(updateCharacterRotation, updateSkeleton, updateCharacterPos, updatePoleTargets, updateObjects)
     {
-        this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
+        this.updateCharacterRotation = updateCharacterRotation;
         this.ragDoll.updateSkeleton(updateSkeleton);
         this.ragDoll.updateCharacterPos(updateCharacterPos);
         this.updateObjects = updateObjects
