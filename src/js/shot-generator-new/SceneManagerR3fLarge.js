@@ -36,6 +36,7 @@ import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
 import SaveShot from './components/Three/SaveShot'
 import { SHOT_LAYERS } from './utils/ShotLayers'
+import Room from './components/Three/Room'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -232,6 +233,7 @@ const SceneManagerR3fLarge = connect(
     }, 1)
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
+    const roomTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_wall2.png')
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
         directionalLightRef.current.rotation.x = 0
@@ -362,18 +364,22 @@ const SceneManagerR3fLarge = connect(
             visible={ !world.room.visible && world.ground } />
     }   
     {
-        world.environment.file
-          ? <Environment
+        world.environment.file &&  <Environment
               path={ModelLoader.getFilepathForModel({
                 type: 'environment',
                 model: world.environment.file
               }, { storyboarderFilePath } )}
               environment={world.environment}
               visible={world.environment.visible} />
-          : null
     }
-
-    
+    {
+        roomTexture && <Room
+              texture={ roomTexture }
+              width={world.room.width}
+              length={world.room.length}
+              height={world.room.height}
+              visible={world.room.visible} />
+    }
     </group>
 
     })

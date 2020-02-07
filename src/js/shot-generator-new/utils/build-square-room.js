@@ -1,5 +1,4 @@
-const THREE = require('three')
-// const { MeshLine, MeshLineMaterial } = require('../vendor/THREE.MeshLine')
+import * as THREE from 'three'
 
 const BoundingUVGenerator = {
   generateTopUV: function (geometry, extrudedShape, extrudeOptions, indexA, indexB, indexC) {
