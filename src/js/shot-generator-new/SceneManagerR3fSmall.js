@@ -85,6 +85,13 @@ const SceneManagerR3fSmall = connect(
       }
     }, [actualGL])
 
+    useEffect(() => {
+      if(renderData) {
+        renderData.camera.aspect = gl.domElement.width / gl.domElement.height
+        renderData.camera.updateProjectionMatrix()
+      } 
+    }, [renderData])
+
     useEffect(() => { 
       setSmallCanvasData(camera, scene, gl)
     }, [scene, camera, gl])

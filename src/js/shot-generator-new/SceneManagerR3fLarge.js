@@ -220,9 +220,19 @@ const SceneManagerR3fLarge = connect(
       } 
     }, [onCommandDrop])
 
+    useEffect(() => {
+      if(renderData)  {
+        renderData.camera.aspect = gl.domElement.width / gl.domElement.height
+        renderData.camera.updateProjectionMatrix();
+      } else  {
+        camera.aspect = gl.domElement.width / gl.domElement.height
+        camera.updateProjectionMatrix();
+      }
+    }, [renderData])
+
     useEffect(() => { 
       setLargeCanvasData(camera, scene, gl)
-    }, [scene, camera, gl])
+    }, [scene, camera, gl, renderData])
 
     useFrame(({scene, camera}) => {
       if(renderData) {
