@@ -49,11 +49,9 @@ const generatePositionAndRotation = (camera, room) => {
 
 const createCamera = (id, cameraState, camera) => {
   let { x, y, z } = camera.position
-
-  let rot = new THREE.Euler().setFromQuaternion( camera.quaternion, "YXZ" )
-  let rotation = rot.y
-  let tilt = rot.x
-  let roll = rot.z
+  let rotation = camera.rotation.y
+  let tilt = camera.rotation.x
+  let roll = camera.rotation.z
 
   // TODO base on current camera rotation so offset is always left-ward
   // offset by ~3 feet
