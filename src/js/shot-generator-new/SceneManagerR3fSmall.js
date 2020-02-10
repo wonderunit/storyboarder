@@ -181,9 +181,6 @@ const SceneManagerR3fSmall = connect(
       let rs = (!renderData)
           ? 1
           : aspectRatio
-
-      console.log(rs)
-      
       
       // make sure the min max box fits in the aspect ratio
       let mWidth = minMax[1]-minMax[0]

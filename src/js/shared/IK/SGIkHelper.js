@@ -7,44 +7,44 @@ const ControlTargetSelection = require( "./objects/ControlTargetSelection")
 let instance = null
 class SGIKHelper extends THREE.Object3D
 {
-    constructor(mesh, scene, camera, domElement)
+    constructor()
     {
         if(!instance)
         {
             super();
             instance = this;
-            this.controlPoints = new THREE.Group();
-            this.selectedContolPoint = null;
-            instance.ragDoll = new RagDoll();
-            this.poleTargets = new THREE.Group();
-            this.transformControls = new THREE.Group();
-            this.targetControls = [];
-            this.selectedControlPoint = null;
-            this.intializedSkinnedMesh = null;
-            this.isIkDisabled = false;
-            this.add(this.poleTargets);
-            this.isPoleTargetsVisible = false;
-            this.add(this.controlPoints);
-            this.add(this.transformControls);
-            intializeInstancedMesh(mesh, camera, domElement, scene);
-            this.add(this.instancedMesh);
-            this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
-            this.regularHeight = 1.1;
-            this.isInitialized = true;
-            this.userData.type = "IkHelper";
-            let controlTargetSelection = new ControlTargetSelection(domElement, camera, this.targetControls);
-            this.ragDoll.controlTargetSelection = controlTargetSelection;
-            this.isUpdating = false;
-     /*        instance.instancedMesh.layers.disable(0)
-            instance.instancedMesh.layers.enable(1)
-            instance.instancedMesh.layers.disable(2) */
         }
         return instance;
     }
     
-    static getInstance(mesh, scene, camera, domElement) 
+    static getInstance() 
     {
-        return instance ? instance : new SGIKHelper(mesh, scene, camera, domElement)
+        return instance ? instance : new SGIKHelper()
+    }
+
+    setUp(mesh, scene, camera, domElement) {
+        this.controlPoints = new THREE.Group();
+        this.selectedContolPoint = null;
+        instance.ragDoll = new RagDoll();
+        this.poleTargets = new THREE.Group();
+        this.transformControls = new THREE.Group();
+        this.targetControls = [];
+        this.selectedControlPoint = null;
+        this.intializedSkinnedMesh = null;
+        this.isIkDisabled = false;
+        this.add(this.poleTargets);
+        this.isPoleTargetsVisible = false;
+        this.add(this.controlPoints);
+        this.add(this.transformControls);
+        intializeInstancedMesh(mesh, camera, domElement, scene);
+        this.add(this.instancedMesh);
+        this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
+        this.regularHeight = 1.1;
+        this.isInitialized = true;
+        this.userData.type = "IkHelper";
+        let controlTargetSelection = new ControlTargetSelection(domElement, camera, this.targetControls);
+        this.ragDoll.controlTargetSelection = controlTargetSelection;
+        this.isUpdating = false;
     }
 
     initialize(object, height, skinnedMesh, props)
@@ -336,6 +336,7 @@ class SGIKHelper extends THREE.Object3D
 
     setCamera(camera)
     {
+        if(!this.ragDoll) return
         this.ragDoll.controlTargetSelection.camera = camera;
         for(let i = 0; i < this.targetControls.length; i++)
         {
@@ -380,9 +381,6 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     instance.instancedMesh.userData.preventInteraction = true;
     instance.instancedMesh.userData.type = "instancedMesh";
     instance.instancedMesh.visible = true;
-    //instance.instancedMesh.layers.disable(0)
-    //instance.instancedMesh.layers.enable(1)
-    //instance.instancedMesh.layers.disable(2)
     for(let i = 0; i < 6; i++)
     {
         let controlPoint = new THREE.Mesh(newMesh.geometry, material);

@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
@@ -119,10 +119,10 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
-
+    console.log("rerender")
     useEffect(() => {
-      
-        let sgIkHelper = SGIkHelper.getInstance(null, scene.children[0], camera, gl.domElement)
+        let sgIkHelper = SGIkHelper.getInstance()
+        sgIkHelper.setUp(null, rootRef.current, camera, gl.domElement)
         const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
           id: sgIkHelper.characterObject.userData.id,
           name : name,
@@ -307,7 +307,8 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selections.includes(id) } 
                 selectedBone={ selectedBone }
                 updateCharacterSkeleton={ updateCharacterSkeleton }
-                updateCharacterIkSkeleton={ updateCharacterIkSkeleton }/>
+                updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
+                />
               </SimpleErrorBoundary>
         })
     }
@@ -324,6 +325,7 @@ const SceneManagerR3fLarge = connect(
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
+            let character = scene.__interaction.filter(o => o.userData.id === sceneObject.attachToId)[0]
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -331,6 +333,7 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selectedAttachable === sceneObject.id } 
                 updateObject={ updateObject }
                 сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
+                characterChildrenLength={ character ? character.children.length : 0 }
               />
               </SimpleErrorBoundary>
         })

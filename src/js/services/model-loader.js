@@ -263,7 +263,7 @@ const getFilepathForModel = ({ model, type }, { storyboarderFilePath }) => {
   } else {
     // does it have an absolute path? (e.g.: from an old save file we need to migrate)
     if (path.isAbsolute(model)) {
-      return model
+        return model
 
     // is it a relative path, and the file is in the models/* folder already?
     } else if (modelIsInProjectFolder({ model, type })) {

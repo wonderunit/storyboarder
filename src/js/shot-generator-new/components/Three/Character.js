@@ -9,8 +9,8 @@ import {useAsset} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 const isUserModel = model => !!model.match(/\//)
 
-const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
-    const {asset: gltf, loaded} = useAsset(path)
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton}) => {
+    const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
@@ -21,6 +21,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const objectRotationControl = useRef(null)
     useEffect(() => {
+      console.log("Initialize character")
       return () => {
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
@@ -101,27 +102,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
       // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
       setReady(true)
+      console.log("Intialized character")
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
 
-    // Adds lod to scene we add it manualy to insure that lod is on the scene
-    // before we start making other necessary changes to character 
-    useEffect(() => {
-      if(!ref.current || !lod) return
-      ref.current.add(lod)
-      return () => {
-        ref.current.remove(lod)
-      }
-    }, [lod, ref.current, gltf])
-
-    // Adds armature to scene same logic as lod
-    useEffect(() => {
-      if(!ref.current || !armature) return
-      ref.current.add(armature)
-      return () => {
-        ref.current.remove(armature)
-      }
-    }, [armature, ref.current])
 
     // Applies skeleton changes
     // Initial skeleton pose is skeleton hand near waist 
@@ -216,7 +200,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }, [ref.current, skeleton])
 
-    useMemo(() => {
+    useEffect(() => {
       if(!camera) return
       SGIkHelper.getInstance().setCamera(camera)
       if(objectRotationControl.current)
@@ -224,7 +208,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [camera])
 
     // headScale (0.8...1.2)
-    useMemo(() => {
+    useEffect(() => {
       if(!skeleton) return
       let headBone = skeleton.getBoneByName('Head')
       if (headBone) {
@@ -236,14 +220,14 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
     }, [skeleton, sceneObject.headScale, ready])
 
-    useMemo(() => {
+    useEffect(() => {
       if(!lod) return
       lod.children.forEach(skinnedMesh => {
         skinnedMesh.material.emissive.set(sceneObject.tintColor)
       })
     }, [sceneObject.tintColor, ready])
 
-    useMemo(() => {
+    useEffect(() => {
       if(!lod) return
       if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
         lod.children.forEach(skinnedMesh => {
@@ -289,7 +273,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
         BonesHelper.getInstance().initialize(lod.children[0])
         if(!isUserModel(sceneObject.model) && !SGIkHelper.getInstance().isIkDisabled) {
-            SGIkHelper.getInstance().initialize(ref.current, modelSettings.height, lod.children[0], sceneObject)
+            SGIkHelper.getInstance().initialize(ref.current, modelSettings ? modelSettings.height : sceneObject.height, lod.children[0], sceneObject)
             ref.current.add(SGIkHelper.getInstance())
         }
         ref.current.add(BonesHelper.getInstance())
@@ -300,7 +284,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
     }, [lod, isSelected, ready])
 
-    useMemo(() => {
+    useEffect(() => {
         if(!ref.current) return 
         objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
         objectRotationControl.current.setUpdateCharacter((name, rotation) => { updateCharacterSkeleton({
@@ -334,7 +318,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         scale={ [bodyScale, bodyScale, bodyScale] }
         visible={ visible }
       >
-    
+      { lod && <primitive object={lod} /> }
+      { armature && <primitive object={armature} /> }
       </group>
 })
 

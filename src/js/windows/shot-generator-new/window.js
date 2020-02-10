@@ -102,10 +102,10 @@ const store = configureStore({
 const preloadData = async () => {
   const { storyboarderFilePath } = await service.getStoryboarderFileData()
 
-  await loadAsset(ModelLoader.getFilepathForModel({
+/*   await loadAsset(ModelLoader.getFilepathForModel({
     model: 'adult-male-lod',
     type: 'character'
-  }, { storyboarderFilePath }))
+  }, { storyboarderFilePath })) */
 
   await loadAsset(ModelLoader.getFilepathForModel({
     model: 'adult-male',

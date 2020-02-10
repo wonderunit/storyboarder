@@ -36,6 +36,8 @@ const isLoaded = (path) => {
  */
 const assetExist = (path) => Boolean(cache.get()[path])
 
+const isAssetPending = (path) => (cache.get()[path] && cache.get()[path].status === LOADING_MODE.PENDING)
+
 /**
  * Fetches resource
  * @param path Resource path
@@ -104,18 +106,19 @@ export const loadAsset = (path) => {
  */
 export const useAssets = (paths) => {
   const [assetsToLoad, setAssetsToLoad] = useState(paths || [])
-
   /**
    * Fetch not fetched resources if 'paths' variable was changed
    */
   useEffect(() => {
     const shouldLoad = paths.filter(asset => !assetExist(asset))
-    
+    const pendingAssets = paths.filter(asset => isAssetPending(asset))
     if (shouldLoad.length > 0) {
       shouldLoad.map(loadAsset) // Fetch here
       setAssetsToLoad(shouldLoad) // Update 'assetsToLoad' to know, how many objects we are waiting for fetch
+    } else if(pendingAssets.length > 0) {
+      setAssetsToLoad(pendingAssets)
     }
-  }, [paths])
+  }, [paths.reduce((acc, v) => acc + v, '')])
 
   /**
    * Subscribe to cache on mount, remove subscription on unmount
