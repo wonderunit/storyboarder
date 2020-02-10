@@ -1249,13 +1249,12 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
 
-          commit(context.selection, object)
+          commit(context.selection, object) 
           if(object.userData.type === 'character') {
-            if(object.attachables) {
-              for(let i = 0; i < object.attachables.length; i++) {
-                commit(object.attachables[i].userData.id, object.attachables[i])
-              }
-            }
+            let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === object.userData.id)
+            for(let i = 0; i < mapAttachables.length; i++) {
+              commit(mapAttachables[i].userData.id, mapAttachables[i])
+            } 
           }
 
           uiService.send({ type: 'UNLOCK' })

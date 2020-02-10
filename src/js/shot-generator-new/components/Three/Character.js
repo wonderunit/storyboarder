@@ -21,7 +21,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const objectRotationControl = useRef(null)
     useEffect(() => {
-      console.log("Initialize character")
       return () => {
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
@@ -102,7 +101,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
       // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
       setReady(true)
-      console.log("Intialized character")
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
 

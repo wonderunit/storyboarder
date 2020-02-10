@@ -13,6 +13,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
   }, [])
 
   useMemo(() => {
+    if(!texture) return
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
     texture.repeat.set(1, 1)

@@ -48,8 +48,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       }
     )
 
-    console.log("Rerender attachables")
-
     const meshes = useMemo(() => {
       if (gltf) {
         let children = []
@@ -94,7 +92,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       if(!ref.current) return
       traverseMeshMaterials(ref.current, material => {
           if (material.emissive) {
-            console.log("material emissive")
             if (isSelected) {
                 material.emissive = new THREE.Color( 0x755bf9 )
                 material.color = new THREE.Color( 0x222222 )
@@ -186,7 +183,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       if(!skinnedMesh) return
-      console.log("rebind attachable")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(sceneObject.bindBone)
       bone.add(ref.current)
