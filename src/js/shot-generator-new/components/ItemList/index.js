@@ -47,7 +47,7 @@ const isSelected = (id, selections, children = []) => {
   return unselectedChildren.length === 0
 }
 
-const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject, setActiveCamera}) => {
+const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObject, deleteObjects, updateObject, setActiveCamera, withState}) => {
   const listRef = useRef(null)
   
   const onSelectItem = useCallback((event, props) => {
@@ -102,7 +102,17 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
       defaultId: 1 // default to No
     })
     if (choice === 0) {
-      deleteObjects(props.children ? [...props.children, props.id] : [props.id])
+
+      let idsToRemove = props.children ? [...props.children, props.id] : [props.id]
+      if(props.type === "character") {
+        console.log("removing character")
+        withState((dispatch, state) => {
+          let sceneObjects = getSceneObjects(state)
+          let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === props.id).map(obj => obj.id)
+          idsToRemove = idsToRemove.concat(attachableIds)
+        })
+      }
+      deleteObjects(idsToRemove)
     }
   }, [])
   
@@ -160,7 +170,8 @@ const sceneObjectSelector = (state) => {
       children:     object.children || null,
       visible:      Boolean(object.visible),
       locked:       Boolean(object.locked),
-      type:         object.type
+      type:         object.type,
+      name:         object.name
     }
   })
 }
@@ -177,7 +188,8 @@ const mapDispatchToProps = {
   selectObject,
   deleteObjects,
   updateObject,
-  setActiveCamera 
+  setActiveCamera,
+  withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(ItemList)

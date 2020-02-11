@@ -1,10 +1,18 @@
 import * as THREE from 'three'
 import { useEffect, useMemo, useRef } from 'react'
-import { useUpdate } from 'react-three-fiber'
+import {extend} from "react-three-fiber"
+import {useAsset} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
+import {patchMaterial, setSelected} from "../../helpers/outlineMaterial"
 
-const Image = React.memo(({ sceneObject, isSelected, texture }) => {
+import RoundedBoxGeometryCreator from "./../../../vendor/three-rounded-box"
+const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
+
+extend({RoundedBoxGeometry})
+
+const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
+  const {asset: texture} = useAsset(imagesPaths[0] || null)
+  
   const aspect = useRef(1)
   const ref = useRef()
 
@@ -14,6 +22,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture }) => {
 
   useMemo(() => {
     if(!texture) return
+    
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
     texture.repeat.set(1, 1)
@@ -25,7 +34,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture }) => {
         material.map = texture
         material.needsUpdate = true
     } 
-  }, [texture])
+  }, [texture, imagesPaths[0]])
 
   useEffect(() => {
     setSelected(material, isSelected)
@@ -61,17 +70,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture }) => {
             id: sceneObject.id
         }}
       >
-        <planeBufferGeometry attach="geometry" args={ [1, 1] } />
-        <primitive attach="material" object={ material } />
-      </mesh>
-      <mesh 
-        userData={{
-            type: "image",
-            id: sceneObject.id
-        }}
-        rotation={ [0, Math.PI, 0] } 
-        scale={ [-1, 1, 1] }>
-        <planeBufferGeometry attach="geometry" args={ [1, 1, 0.01] } />
+        <roundedBoxGeometry attach="geometry" args={ [1, 1, 0.01, 0.01] } />
         <primitive attach="material" object={ material } />
       </mesh>
     </group>

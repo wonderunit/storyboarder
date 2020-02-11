@@ -25,6 +25,7 @@ import PosePresetInspectorItem from './PosePresetInspectorItem'
 import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
 import Scrollable from "../../Scrollable";
+import {useAsset} from "../../../hooks/use-assets-manager"
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -51,8 +52,7 @@ React.memo(({
 
   updateObject,
   createPosePreset,
-  withState,
-  getAsset
+  withState
 }) => {
   const thumbnailRenderer = useRef()
 
@@ -61,7 +61,7 @@ React.memo(({
     let attachment 
     withState((dispatch, state) => {
       let filepath = filepathFor(CHARACTER_MODEL)
-      attachment = getAsset(filepath)
+      attachment = useAsset(filepath)
     })
    
     return attachment

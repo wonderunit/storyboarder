@@ -3,10 +3,12 @@ import React, { useMemo, useEffect } from 'react'
 import { useUpdate, extend } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
+import {useAsset} from "../../hooks/use-assets-manager"
+
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {MeshToonMaterial} from "three"
 
-import RoundedBoxGeometryCreator from 'three-rounded-box'
+import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import {patchMaterial, setSelected} from "../../helpers/outlineMaterial"
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
@@ -38,12 +40,14 @@ const meshFactory = source => {
   return mesh
 }
 
-const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => {
+const ModelObject = React.memo(({path, sceneObject, isSelected, ...props }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )
+  
+  const {asset} = useAsset((sceneObject.model === 'box') ? null : path)
 
   const meshes = useMemo(() => {
     if (sceneObject.model === 'box') {
@@ -52,7 +56,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
           <roundedBoxGeometry
             ref={ref => ref && ref.translate(0, 0.5, 0)}
             attach='geometry'
-            args={[1, 1, 1, 0.015]} />
+            args={[1, 1, 1, 0.01]} />
           <primitive
             attach='material'
             object={materialFactory()} />
@@ -60,9 +64,9 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
       ]
     }
 
-    if (gltf) {
+    if (asset) {
       let children = []
-      gltf.scene.traverse(child => {
+      asset.scene.traverse(child => {
         if (child.isMesh) {
           children.push(
             <primitive
@@ -76,7 +80,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
     }
 
     return []
-  }, [sceneObject.model, gltf])
+  }, [sceneObject.model, asset])
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
@@ -92,7 +96,7 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
         setSelected(child, isSelected)
       }
     })
-  }, [ref.current, isSelected, gltf])
+  }, [ref.current, isSelected, asset])
 
   const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
 

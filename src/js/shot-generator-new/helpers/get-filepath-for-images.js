@@ -1,5 +1,5 @@
 const path = require('path')
-const isUserModel = model => !!model.match(/\//)
+const isUserModel = model => !!model.match(/(\/|\\)/)
 
 const getFilePathForImages = ({ type, volumeImageAttachmentIds, imageAttachmentIds}, storyboarderFilePath ) => {
     let paths = []

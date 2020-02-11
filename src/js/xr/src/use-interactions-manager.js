@@ -555,6 +555,7 @@ const useInteractionsManager = ({
 
     // include all interactables (Model Object, Character, Virtual Camera, etc)
     let list = scene.__interaction.filter(o => o.userData.type !== 'ui')
+    console.log(list)
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
 
@@ -667,6 +668,7 @@ const useInteractionsManager = ({
       list = list.filter(object => object.uuid === interactionService.state.context.selection)
     }
     // setup the GPU picker
+
     getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
@@ -1249,13 +1251,12 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
 
-          commit(context.selection, object)
+          commit(context.selection, object) 
           if(object.userData.type === 'character') {
-            if(object.attachables) {
-              for(let i = 0; i < object.attachables.length; i++) {
-                commit(object.attachables[i].userData.id, object.attachables[i])
-              }
-            }
+            let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === object.userData.id)
+            for(let i = 0; i < mapAttachables.length; i++) {
+              commit(mapAttachables[i].userData.id, mapAttachables[i])
+            } 
           }
 
           uiService.send({ type: 'UNLOCK' })

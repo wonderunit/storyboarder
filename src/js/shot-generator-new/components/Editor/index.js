@@ -12,58 +12,31 @@ import log from 'electron-log'
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
-import SceneManager from './../../SceneManager'
 import SceneManagerR3fLarge from '../../SceneManagerR3fLarge'
 import SceneManagerR3fSmall from '../../SceneManagerR3fSmall'
 import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
-import {useExportToGltf, loadCameraModel} from '../../../hooks/use-export-to-gltf'
-
-import ModelLoader from './../../../services/model-loader'
+import {useExportToGltf} from '../../../hooks/use-export-to-gltf'
 
 import {createScene, removeScene, getScene} from './../../utils/scene'
 
 import useComponentSize from './../../../hooks/use-component-size'
+
 import SceneRender from '../../SceneRenderer'
 import {Canvas, extend, useFrame, useThree} from 'react-three-fiber'
+
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
-  //
-  //
-  // action creators
-  //
   selectObject,
-  selectObjectToggle,
 
   createObject,
-  updateObject,
-  deleteObjects,
-
-  duplicateObjects,
-
-  selectBone,
   setMainViewCamera,
   loadScene,
-  saveScene,
-  updateCharacterSkeleton,
   setActiveCamera,
   resetScene,
-  createScenePreset,
-  updateScenePreset,
-  deleteScenePreset,
-
-  createPosePreset,
-  updatePosePreset,
-  deletePosePreset,
-
-  updateWorld,
-  updateWorldRoom,
-  updateWorldEnvironment,
 
   markSaved,
-
-  toggleWorkspaceGuide,
 
   undoGroupStart,
   undoGroupEnd,
@@ -80,7 +53,6 @@ import {
   //
   getSerializedState,
   getIsSceneDirty
-//} = require('../state')
 } from './../../../shared/reducers/shot-generator'
 
 
@@ -92,15 +64,7 @@ import BoardInspector from "../BoardInspector";
 import GuidesInspector from "../GuidesInspector";
 import createDeepEqualSelector from "../../../utils/deepEqualSelector"
 import GuidesView from "../GuidesView"
-import { useAssetsManager } from '../../hooks/use-assets-manager'
-import {gltfLoader} from "../../utils/gltfLoader"
-import { getFilePathForImages } from "../../helpers/get-filepath-for-images"
-
-
-/* const APP_GLTFS = [
- ,
-  '/data/system/xr/light.glb',
-] */
+import {useAsset} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 
@@ -118,212 +82,16 @@ const Effect = () => {
 }
 
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, sceneObjects, world,  setMainViewCamera, withState, store
+  mainViewCamera, sceneObjects, world, activeCamera, aspectRatio, setMainViewCamera, withState, store
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
   const largeCanvasInfo = useRef({ width: 0, height: 0 })
 
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
-  
-  const { assets, requestAsset, getAsset } = useAssetsManager()
-
-  useEffect(() => {
-
-    let storyboarderFilePath 
-    withState((dispatch, state) => {
-      storyboarderFilePath = state.meta.storyboarderFilePath
-    })
-    Object.values(sceneObjects)
-      // has a value for model
-      .filter(o => o.model != null)
-      // is not a box
-      .filter(o => !(o.type === 'object' && o.model === 'box'))
-      // what's the filepath?
-      .map((object) => ModelLoader.getFilepathForModel(object, { storyboarderFilePath }))
-      // has not been requested
-      .filter(filepath => getAsset(filepath) == null)
-      // request the file
-      .forEach(requestAsset)
-  }, [sceneObjects])
-
-  useEffect(() => {
-
-    let storyboarderFilePath 
-    withState((dispatch, state) => {
-      storyboarderFilePath = state.meta.storyboarderFilePath
-    })
-    const paths = Object.values(sceneObjects)
-    .filter(o => ( o.volumeImageAttachmentIds && o.volumeImageAttachmentIds.length > 0 ) ||
-                  ( o.imageAttachmentIds && o.imageAttachmentIds.length > 0 ))
-    .map((object) => getFilePathForImages(object, storyboarderFilePath))
-    for(let i = 0; i < paths.length; i++) {
-      if(!Array.isArray(paths[i])) {
-        if(getAsset(paths[i])) {
-          requestAsset(paths[i])
-        }
-      } else {
-        for(let j = 0; j < paths[i].length; j++) {
-          if(!getAsset(paths[i][j])) {
-            requestAsset(paths[i][j])
-          }
-        }
-      }
-    }
-  }, [sceneObjects])
-
-  useEffect(() => {
-
-    let storyboarderFilePath 
-    withState((dispatch, state) => {
-      storyboarderFilePath = state.meta.storyboarderFilePath
-    })
-    if (world.environment.file) {
-      // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
-      const environmentPath =  ModelLoader.getFilepathForModel({
-        model: world.environment.file,
-        type: 'environment'
-      }, { storyboarderFilePath })
-
-      delete assets[environmentPath]
-
-      requestAsset(ModelLoader.getFilepathForModel({
-        model: world.environment.file,
-        type: 'environment'
-      }, { storyboarderFilePath })
-      )
-    }
-  }, [world.environment])
 
 
   /** Resources loading end */
-
-  /** Shot generating */
-
-    // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
-/*   const imageRenderer = useRef()
-
-  const saveShot = (dispatch, state) => {
-    let { cameraImage, plotImage } = renderImagesForBoard(state)
-
-    ipcRenderer.send('saveShot', {
-      uid: state.board.uid,
-      data: getSerializedState(state),
-      images: {
-        'camera': cameraImage,
-        'plot': plotImage
-      }
-    })
-
-    dispatch(markSaved())
-  }
-
-  const insertShot = (dispatch, state) => {
-    let { cameraImage, plotImage } = renderImagesForBoard(state)
-
-    // NOTE we do this first, since we get new data on insertShot complete
-    dispatch(markSaved())
-
-    ipcRenderer.send('insertShot', {
-      data: getSerializedState(state),
-      images: {
-        camera: cameraImage,
-        plot: plotImage
-      },
-      currentBoard: state.board
-    })
-  }
-
-  // setup refs
-  const saveShotFn = useRef()
-  const insertShotFn = useRef()
-  // always point refs to updated functions
-  saveShotFn.current = saveShot
-  insertShotFn.current = insertShot
-  // add handlers once, and use refs for callbacks
-  useEffect(() => {
-    ipcRenderer.on('requestSaveShot', () => {
-      withState((dispatch, state) => {
-        saveShotFn.current(dispatch, state)
-      })
-    })
-    ipcRenderer.on('requestInsertShot', () => {
-      withState((dispatch, state) => {
-        insertShotFn.current(dispatch, state)
-      })
-    })
-  }, [])
-
-  const renderImagesForBoard = state => {
-    if (!imageRenderer.current) {
-      imageRenderer.current = new THREE.OutlineEffect(
-        new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
-      )
-    }
-
-    const scene = getScene()
-
-    let imageRenderCamera = scene.children.find(o => o.userData.id === activeCamera).clone()
-    imageRenderCamera.layers.set(0)
-    imageRenderCamera.layers.enable(3)
-    //
-    //
-    // Prepare for rendering as an image
-    //
-
-    let selected = scene.children.find(child =>
-      (
-        child.userData.type === 'character' ||
-        child.userData.type === 'object'
-      ) &&
-      child.userData.id === getSelections(state)[0])
-
-    let material = selected &&
-      ((selected.userData.type === 'character')
-        ? selected.userData.mesh.material
-        // TODO support multiple child Object3D’s in a Group
-        : selected.children[0].material)
-
-    // save memento
-    let memento = material && { color: material.userData.outlineParameters.color }
-
-
-
-
-    // override selection outline effect color from selected Object3D’s material
-    if (memento) {
-      material.userData.outlineParameters.color = [0, 0, 0]
-    }
-
-
-
-
-    // render the image
-    imageRenderer.current.setSize(Math.ceil(900 * state.aspectRatio), 900)
-    imageRenderer.current.render(scene, imageRenderCamera)
-    let cameraImage = imageRenderer.current.domElement.toDataURL()
-
-
-
-    // restore from memento
-    if (memento) {
-      material.userData.outlineParameters.color = memento.color
-    }
-
-
-    let savedBackground = scene.background && scene.background.clone()
-    scene.background = new THREE.Color( '#FFFFFF' )
-    imageRenderer.current.setSize(900, 900)
-    imageRenderer.current.render(scene, orthoCamera.current)
-    let plotImage = imageRenderer.current.domElement.toDataURL()
-    scene.background = savedBackground
-
-
-
-    return { cameraImage, plotImage }
-  } */
-
-  /** Shot generating end */
 
   useEffect(() => {
     if (notificationsRef.current) {
@@ -349,27 +117,6 @@ const Editor = React.memo(({
 
   useExportToGltf(getScene())
 
-  // HACK
-  // always pre-load the adult-male model
-  // because we use it for PosePresetsEditor thumbnail generation
-  useEffect(() => {
-    let storyboarderFilePath
-    withState((dispatch, state) => {
-      storyboarderFilePath = state.meta.storyboarderFilePath
-    })
-    requestAsset(ModelLoader.getFilepathForModel({
-      model: 'adult-male-lod',
-      type: 'character'
-    }, { storyboarderFilePath }))
-
-    requestAsset(ModelLoader.getFilepathForModel({
-      model: 'adult-male',
-      type: 'character'
-    }, { storyboarderFilePath }))
-    requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
-    requestAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
-  }, [])
-
 
   const guidesDimensions = useMemo(() => {
     return {
@@ -386,9 +133,11 @@ const Editor = React.memo(({
   const onSwapCameraViewsClick = useCallback((event) => {
     event.preventDefault()
     setMainViewCamera(mainViewCamera === 'ortho' ? 'live' : 'ortho')
+    selectObject(null)
   }, [mainViewCamera])
-
-  const boneGltf = useMemo(() => getAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb')))
+  
+  const {asset} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
+  const boneGltf = asset
   useMemo(() => {
     if(!boneGltf) return
     const mesh = boneGltf.scene.children.find(child => child.isMesh)
@@ -410,6 +159,20 @@ const Editor = React.memo(({
     largeCanvasInfo.current.height = height 
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
+  const largeCanvasData = useRef({})
+  const setLargeCanvasData = (camera, scene, gl) => {
+    largeCanvasData.current.camera = camera
+    largeCanvasData.current.scene = scene
+    largeCanvasData.current.gl = gl
+  }
+
+  const smallCanvasData = useRef({})
+  const setSmallCanvasData = (camera, scene, gl) => {
+    smallCanvasData.current.camera = camera
+    smallCanvasData.current.scene = scene
+    smallCanvasData.current.gl = gl
+  }
+
   return (
     <FatalErrorBoundary>
       <div id="root">
@@ -422,7 +185,7 @@ const Editor = React.memo(({
           <div id="aside">
 
             <div id="topdown">
-              <Canvas
+            <Canvas
                 key="top-down-canvas"
                 id="top-down-canvas"
                 tabIndex={0}
@@ -431,8 +194,10 @@ const Editor = React.memo(({
                 orthographic={ true }
                 updateDefaultCamera={ false }>
                 <Provider store={ store }>
-                  <SceneManagerR3fSmall 
-                    getAsset={ getAsset }/>
+                  <SceneManagerR3fSmall
+                    renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
+                    setSmallCanvasData={ setSmallCanvasData }
+                    />
                 </Provider>
               </Canvas>
               <div className="topdown__controls">
@@ -446,13 +211,13 @@ const Editor = React.memo(({
             </div>
 
             <div id="elements">
-              <ElementsPanel getAsset={ getAsset }/>
+              <ElementsPanel/>
             </div>
           </div>
 
           <div className="column fill">
             <div id="camera-view" ref={ mainViewContainerRef }>
-              <div style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
+              <div id="camera-view-view" style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
                   <Canvas
                   tabIndex={ 1 }
                   key="camera-canvas"
@@ -460,8 +225,9 @@ const Editor = React.memo(({
                   gl2={true}
                   updateDefaultCamera={ true }>
                     <Provider store={ store }>
-                      <SceneManagerR3fLarge 
-                      getAsset={ getAsset }/>
+                      <SceneManagerR3fLarge
+                      renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
+                      setLargeCanvasData= { setLargeCanvasData }/>
                     </Provider>
                     <Effect/>
                     
@@ -469,7 +235,7 @@ const Editor = React.memo(({
                   <GuidesView
                     dimensions={guidesDimensions}
                   />
-                </div>
+              </div>
             </div>
             <div className="inspectors">
               <CameraPanelInspector/>

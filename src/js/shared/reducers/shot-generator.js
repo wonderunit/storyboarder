@@ -537,7 +537,7 @@ const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json
 
 const defaultCharacterPreset = {
   height: 1.6256,
-  model: 'adult-female-lod',
+  model: 'adult-female',
   headScale: 1,
   tintColor: '#000000',
   // gender: 'female',
@@ -728,43 +728,43 @@ const initialScene = {
 // TODO sg key
 const initialState = {
   models: {
-    'adult-female-lod': {
-      id: 'adult-female-lod',
+    'adult-female': {
+      id: 'adult-female',
       name: 'Adult Female',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.65
     },
-    'adult-male-lod': {
-      id: 'adult-male-lod',
+    'adult-male': {
+      id: 'adult-male',
       name: 'Adult Male',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.8
     },
-    'teen-female-lod': {
-      id: 'teen-female-lod',
+    'teen-female': {
+      id: 'teen-female',
       name: 'Teen Female',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.6
     },
-    'teen-male-lod': {
-      id: 'teen-male-lod',
+    'teen-male': {
+      id: 'teen-male',
       name: 'Teen Male',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'mesomorphic', 'endomorphic'],
       height: 1.6
     },
-    'child-lod': {
-      id: 'child-lod',
+    'child': {
+      id: 'child',
       name: 'Child',
       type: 'character',
       validMorphTargets: ['ectomorphic', 'endomorphic'],
       height: 1.2
     },
-    'baby-lod': {
-      id: 'baby-lod',
+    'baby': {
+      id: 'baby',
       name: 'Baby',
       type: 'character',
       validMorphTargets: [],
@@ -1232,7 +1232,8 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
-        draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
+        draft[action.payload.id].skeleton = action.payload.skeleton.length <= 0 ? {} : draft[action.payload.id].skeleton || {}
+
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
           let position = bone.position

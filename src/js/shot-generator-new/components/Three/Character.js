@@ -5,19 +5,20 @@ import cloneGltf from '../../helpers/cloneGltf'
 import SGIkHelper from '../../../shared/IK/SGIkHelper'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
+import {useAsset} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
 const isUserModel = model => !!model.match(/\//)
 
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
-  const ref = useUpdate(
-    self => {
-      let lod = self.getObjectByProperty("type", "LOD")
-      lod && lod.traverse(child => child.layers.enable(SHOT_LAYERS))
-    }
-  )
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton}) => {
+    const {asset: gltf} = useAsset(path)
+    const ref = useUpdate(
+      self => {
+        let lod = self.getObjectByProperty("type", "LOD") || self
+        lod && lod.traverse(child => child.layers.enable(SHOT_LAYERS))
+      }
+    )
     const [ready, setReady] = useState(false)
-    const attachablesList = useRef([])
     const { scene, camera, gl } = useThree()
     const objectRotationControl = useRef(null)
     useEffect(() => {
@@ -28,39 +29,44 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     }, [])
 
    
+    useEffect(() => {
+      return () => {
+        ref.current.remove(BonesHelper.getInstance())
+        ref.current.remove(SGIkHelper.getInstance())
+      }
+    }, [gltf])
 
-    const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(
-        () => {
-          if(!gltf) {
-            setReady(false)
-            return [null, null, null, null, null]
-          }
-      
-          let lod = new THREE.LOD()
-          let { scene } = cloneGltf(gltf)
-          let map
-    
-          // for built-in Characters
-          // SkinnedMeshes are immediate children
-          let meshes = scene.children.filter(child => child.isSkinnedMesh)
-    
-          // if no SkinnedMeshes are found there, this may be a custom model file
-          if (meshes.length === 0 && scene.children.length && scene.children[0].children) {
+    const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(() => {
+      if(!gltf) {
+        setReady(false)
+        return [null, null, null, null, null]
+      }
+  
+      let lod = new THREE.LOD()
+      let { scene } = cloneGltf(gltf)
+      let map
+
+      // for built-in Characters
+      // SkinnedMeshes are immediate children
+      let meshes = scene.children.filter(child => child.isSkinnedMesh)
+
+      // if no SkinnedMeshes are found there, this may be a custom model file
+      if (meshes.length === 0 && scene.children.length && scene.children[0].children) {
             // try to find the first SkinnedMesh in the first child object's children
             let mesh = scene.children[0].children.find(child => child.isSkinnedMesh)
             if (mesh) {
               meshes = [mesh]
             }
-          }
-    
-          // if there's only 1 mesh
-          let startAt = meshes.length == 1
-            // start at mesh index 0 (for custom characters)
-            ? 0
-            // otherwise start at mesh index 1 (for built-in characters)
-            : 1
-    
-          for (let i = startAt, d = 0; i < meshes.length; i++, d++) {
+      }
+
+      // if there's only 1 mesh
+      let startAt = meshes.length == 1
+        // start at mesh index 0 (for custom characters)
+        ? 0
+        // otherwise start at mesh index 1 (for built-in characters)
+        : 1
+
+      for (let i = startAt, d = 0; i < meshes.length; i++, d++) {
             let mesh = meshes[i]
             mesh.matrixAutoUpdate = false
             map = mesh.material.map
@@ -81,58 +87,38 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
             patchMaterial(mesh.material)
             
             lod.addLevel(mesh, d * 4)
-          }
-    
-          let skeleton = lod.children[0].skeleton
-          skeleton.pose()
-    
-          let originalSkeleton = skeleton.clone()
-          originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
-    
-          let armature = scene.children[0].children[0]
-    
-          let originalHeight
-          if (isUserModel(sceneObject.model)) {
+      }
+
+      let skeleton = lod.children[0].skeleton
+      skeleton.pose()
+
+      let originalSkeleton = skeleton.clone()
+      originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
+
+      let armature = scene.getObjectByProperty("type", "Bone").parent
+      let originalHeight
+      if (isUserModel(sceneObject.model)) {
             originalHeight = 1
-          } else {
-            let bbox = new THREE.Box3().setFromObject(lod)
-            originalHeight = bbox.max.y - bbox.min.y
-          }
-          // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
-          setReady(true)
-          return [skeleton, lod, originalSkeleton, armature, originalHeight]
-        }, [gltf])
-
-    useEffect(() => {
-      if(!ref.current || !lod) return
-      ref.current.add(lod)
-      return () => {
-        ref.current.remove(lod)
+      } else {
+        let bbox = new THREE.Box3().setFromObject(lod)
+        originalHeight = bbox.max.y - bbox.min.y
       }
-    }, [lod, ref.current])
+      // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
+      updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
+      setReady(true)
+      return [skeleton, lod, originalSkeleton, armature, originalHeight]
+    }, [gltf])
 
-    useEffect(() => {
-      if(!ref.current || !armature) return
-      ref.current.add(armature)
-      return () => {
-        ref.current.remove(armature)
-      }
-    }, [armature, ref.current])
 
-    useMemo(() => { 
-      if(!ready && ref.current) {
-        ref.current.remove(BonesHelper.getInstance())
-        ref.current.remove(SGIkHelper.getInstance())
-      }
-    }, [ready])
-
+    // Applies skeleton changes
+    // Initial skeleton pose is skeleton hand near waist 
+    // We need to modify/apply this pose before changing skeleton in store
     useMemo(() => {
       if (!skeleton) return
       // has the user entered data for at least one bone?
       let hasModifications = Object.values(sceneObject.skeleton).length > 0
 
       if (hasModifications) {
-      //  let position = new THREE.Vector3()
         // go through all the bones in the skeleton
         for (let bone of skeleton.bones) {
           // if user data exists for a bone, use it
@@ -142,7 +128,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
 
           // call this state
           let state = modified || original
-
           // if the state differs for this bone
           if (bone.rotation.equals(state.rotation) == false) {
             // rotate the bone
@@ -157,7 +142,8 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         skeleton.pose()
       }
     }, [skeleton, sceneObject.skeleton, ready])
-    
+
+    // Applies hand skeleton changes
     useMemo(() => {
       if (!skeleton) return
       if (!sceneObject.handSkeleton) return
@@ -181,12 +167,16 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       () => sceneObject.height / originalHeight,
       [sceneObject.height, ready]
     )
-
+    
+    // Saves current skeleton to store 
+    // We need full character skeleton and it's bones across the project
+    // for different stuff like list of bones, or selected bone rotation 
     useEffect(() => {
       if(!ref.current || !skeleton ) return
       let changedSkeleton = []
-  
-      let inverseMatrixWorld = ref.current.getInverseMatrixWorld()
+      ref.current.updateMatrixWorld(true)
+      let inverseMatrixWorld = new THREE.Matrix4()
+      inverseMatrixWorld.getInverse(ref.current.matrixWorld)
       let position = new THREE.Vector3()
       for(let i = 0; i < skeleton.bones.length; i++) {
         let bone = skeleton.bones[i]
@@ -213,7 +203,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }, [ref.current, skeleton])
 
-    useMemo(() => {
+    useEffect(() => {
       if(!camera) return
       SGIkHelper.getInstance().setCamera(camera)
       if(objectRotationControl.current)
@@ -221,7 +211,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     }, [camera])
 
     // headScale (0.8...1.2)
-    useMemo(() => {
+    useEffect(() => {
       if(!skeleton) return
       let headBone = skeleton.getBoneByName('Head')
       if (headBone) {
@@ -233,14 +223,14 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       }
     }, [skeleton, sceneObject.headScale, ready])
 
-    useMemo(() => {
+    useEffect(() => {
       if(!lod) return
       lod.children.forEach(skinnedMesh => {
         skinnedMesh.material.emissive.set(sceneObject.tintColor)
       })
     }, [sceneObject.tintColor, ready])
 
-    useMemo(() => {
+    useEffect(() => {
       if(!lod) return
       if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
         lod.children.forEach(skinnedMesh => {
@@ -278,13 +268,14 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         }
     }, [selectedBone])
 
+    // Selects character when character's model has been changed it reselects new character
     useEffect(() => {
       if(!ref.current || !ready || !lod || !ref.current.children.length) return
 
       if (isSelected) {
         BonesHelper.getInstance().initialize(lod.children[0])
         if(!isUserModel(sceneObject.model) && !SGIkHelper.getInstance().isIkDisabled) {
-            SGIkHelper.getInstance().initialize(ref.current, modelSettings.height, lod.children[0], sceneObject)
+            SGIkHelper.getInstance().initialize(ref.current, modelSettings ? modelSettings.height : sceneObject.height, lod.children[0], sceneObject)
             ref.current.add(SGIkHelper.getInstance())
         }
         ref.current.add(BonesHelper.getInstance())
@@ -300,7 +291,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       })
     }, [lod, isSelected, ready])
 
-    useMemo(() => {
+    useEffect(() => {
         if(!ref.current) return 
         objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
         objectRotationControl.current.setUpdateCharacter((name, rotation) => { updateCharacterSkeleton({
@@ -316,6 +307,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
     }, [ref.current])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
+
     return <group
         ref={ ref }
 
@@ -332,7 +324,10 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         rotation={ [0, rotation, 0] }
         scale={ [bodyScale, bodyScale, bodyScale] }
         visible={ visible }
-      />
+      >
+      { lod && <primitive object={lod} /> }
+      { armature && <primitive object={armature} /> }
+      </group>
 })
 
 export default Character

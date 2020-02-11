@@ -16,7 +16,6 @@ const useDraggingManager = (useIcons) => {
       offsets.current = []
       selectedObjects.current = {}
       objectChanges.current = {}
-    
       raycaster.current.setFromCamera({ x, y }, camera )
       if (useIcons) {
         plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
@@ -43,7 +42,7 @@ const useDraggingManager = (useIcons) => {
           offsets.current[selection] = new THREE.Vector3()
         }
       }
-    }, [])
+    }, [plane.current, raycaster.current, intersection.current])
     
     const drag = useCallback((mouse, target, camera, selections) => {
       if(!raycaster.current) return
@@ -78,14 +77,14 @@ const useDraggingManager = (useIcons) => {
           }
         }
       }
-    }, [])
+    }, [plane.current, raycaster.current, intersection.current])
     
     const updateStore = useCallback((updateObjects) => {
         if (!objectChanges.current || !objectChanges.current || !Object.keys(objectChanges.current).length) {
             return false
           }
         updateObjects(objectChanges.current)
-    }, [])
+    }, [plane.current, raycaster.current, intersection.current])
     
     const endDrag = useCallback((updateObjects) => {
       if (!objectChanges.current || !objectChanges.current || !Object.keys(objectChanges.current).length) {

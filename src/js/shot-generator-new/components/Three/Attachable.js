@@ -3,7 +3,11 @@ import * as THREE from 'three'
 import { useUpdate, useThree } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
-const isUserMode = model => !!model.match(/\//)
+import {useAsset} from '../../hooks/use-assets-manager'
+import {SHOT_LAYERS} from '../../utils/ShotLayers'
+import isUserModel from '../../helpers/isUserModel'
+import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
+import ObjectRotationControl from "../../../shared/IK/objects/ObjectRotationControl"
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -34,10 +38,16 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, characterModel }) => {
+const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, characterChildrenLength, deleteObjects, characterModelName }) => {
+    const {asset: gltf} = useAsset(path)
+    const {asset: characterModel} = useAsset(сharacterModelPath)
+    const [characterLOD, setCharacterLOD] = useState()
     const characterObject = useRef(null)
-    const [ready, setReady] = useState(false)
-    const { scene } = useThree()
+    const prevModelName = useRef(null)
+    const isAttachableSelected = useRef(null)
+    const { gl, scene, camera } = useThree()
+    const [isAllowedToInitialize, setAllowToInitialize] = useState(false)
+    const objectRotationControl = useRef(null)
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(SHOT_LAYERS))
@@ -45,59 +55,74 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
     )
 
     const meshes = useMemo(() => {
-        if (gltf) {
-          let children = []
-          gltf.scene.traverse(child => {
-            if (child.isMesh) {
-              children.push(
-                <primitive
-                  key={`${sceneObject.id}-${child.uuid}`}
-                  object={meshFactory(child)}
-                  userData={{type:'attachable'}}
-                />
-              )
-            }
-          })
-          return children
+      if (gltf) {
+        let children = []
+        gltf.scene.traverse(child => {
+          if (child.isMesh) {
+            children.push(
+              <primitive
+                key={`${sceneObject.id}-${child.uuid}-${Math.random()}`}
+                object={meshFactory(child)}
+                userData={{type:'attachable'}}
+              />
+            )
+          }
+        })
+        return children
+      }
+      return null
+    }, [gltf, characterModel])
+
+  
+    useEffect(() => {
+      if(!prevModelName.current) {
+        setAllowToInitialize(true)
+      } else {
+        setAllowToInitialize(false)
+        let isCurrentModelUser = isUserModel(characterModelName)
+        let isPrevModelUser = isUserModel(prevModelName.current)
+        if((!isPrevModelUser && isCurrentModelUser) || 
+           (isPrevModelUser && !isCurrentModelUser) ||
+           (isPrevModelUser && isCurrentModelUser)) {
+          deleteObjects([sceneObject.id])
+        } else {
+          setAllowToInitialize(true)
         }
-    
-        return []
-    }, [sceneObject.model, gltf])
+      }
+      return () => {
+        prevModelName.current = characterModelName
+        setAllowToInitialize(false)
+      }
+    }, [characterModelName])
 
     useEffect(() => {
-      if(!characterObject.current) return
+      isAttachableSelected.current = false
+      return () => {
+        if(!characterObject.current || !ref.current.parent) return
+        ref.current.parent.remove(ref.current)
+      }
+    }, [])
+
+    useEffect(() => {  
+      if(!(characterChildrenLength > 0)) return
+      let object = scene.__interaction.filter(o => o.userData.id === sceneObject.attachToId)[0]
+      setCharacterLOD(object.getObjectByProperty("type", "LOD"))
+    }, [characterChildrenLength])
+
+
+    useEffect(() => {
+      if(!characterObject.current || !isAllowedToInitialize) return
       rebindAttachable()
     }, [characterModel])
-
-    useEffect(() => {
-    }, [ref.current])
-
-    useEffect(() => {
-        traverseMeshMaterials(ref.current, material => {
-            if (material.emissive) {
-            if (isSelected) {
-                material.emissive = new THREE.Color( 0x755bf9 )
-                material.color = new THREE.Color( 0x222222 )
-            } else {
-                material.emissive = new THREE.Color( '#000000' )
-                material.color = new THREE.Color( 0xcccccc )
-            }
-            }
-        })
-    }, [isSelected])
+    
 
     useEffect(() => {
       if(!ref.current || !characterObject.current ) return
-      let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
-      let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
-      let worldPosition = bone.worldPosition()
-      updateObject(sceneObject.id, {
-        x: worldPosition.x, y: worldPosition.y, z: worldPosition.z,
-      })
+      rebindAttachable()
     }, [sceneObject.bindBone])
 
     useEffect(() => {
-      if(!scene.children[0]) return 
+      if(!characterModel || !characterLOD || !isAllowedToInitialize) return 
         characterObject.current = scene.children[0].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
         if(!characterObject.current) return
         let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
@@ -105,7 +130,7 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
         if(sceneObject.status === "PENDING") {
           let modelPosition = new THREE.Vector3()
           let quat = null
-          if(isUserMode(sceneObject.model)) {
+          if(isUserModel(sceneObject.model)) {
             modelPosition.copy(bone.worldPosition())
             quat = bone.worldQuaternion()
           } else {
@@ -129,68 +154,132 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
           })
         }
         bone.add(ref.current)
+
+        // Sets up object rotation control for manipulation of attachale rotation
+        objectRotationControl.current = new ObjectRotationControl(scene, camera, gl.domElement, characterObject.current.uuid)
+        objectRotationControl.current.control.canSwitch = false
+        objectRotationControl.current.setUpdateCharacter((name, rotation) => {
+          let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
+
+          updateObject(ref.current.userData.id, {
+            rotation:
+            {
+              x : euler.x,
+              y : euler.y,
+              z : euler.z,
+            }
+          } )})
         ref.current.updateMatrixWorld(true)
-    }, [scene.children.length, ref.current])
+        ref.current.updateWorldMatrix(true, true)
+    }, [characterLOD, isAllowedToInitialize])
 
-
+    useEffect(() => {
+      if(!ref.current) return
+      if(isSelected) {
+        KeyCommandsSingleton.getInstance().addKeyCommand({
+          key: "Switch attachables to rotation", 
+          value: switchManipulationState,
+          keyCustomCheck: controlPlusRCheck
+        })
+        if(!isAttachableSelected.current) {
+          if(objectRotationControl.current.isEnabled) { 
+            objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+          }
+          isAttachableSelected.current = true
+        }
+      }
+      else {
+        if(isAttachableSelected.current) {
+          objectRotationControl.current.deselectObject()
+          isAttachableSelected.current = false
+        }
+      }
+      return function cleanup () {
+        KeyCommandsSingleton.getInstance().removeKeyCommand({key: "Switch attachables to rotation"})
+      }
+    }, [isSelected])
     
     useEffect(() => {
-        if(!characterObject.current) return 
-        characterObject.current.updateWorldMatrix(true, true)
-        let parentMatrixWorld = ref.current.parent.matrixWorld
-        let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
-        ref.current.applyMatrix(parentMatrixWorld)
-        ref.current.position.set(sceneObject.x, sceneObject.y, sceneObject.z)
-        ref.current.updateMatrixWorld(true)
-        ref.current.applyMatrix(parentInverseMatrixWorld)
-        ref.current.updateMatrixWorld(true)
-    }, [sceneObject.x, sceneObject.y, sceneObject.z])
+      if(!characterObject.current || !ref.current.parent) return 
+      characterObject.current.updateWorldMatrix(true, true)
+      let parentMatrixWorld = ref.current.parent.matrixWorld
+      let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
+      ref.current.applyMatrix(parentMatrixWorld)
+      ref.current.position.set(sceneObject.x, sceneObject.y, sceneObject.z)
+      ref.current.updateMatrixWorld(true)
+      ref.current.applyMatrix(parentInverseMatrixWorld)
+      ref.current.updateMatrixWorld(true)
+    }, [sceneObject.x, sceneObject.y, sceneObject.z, characterLOD])
     
     useEffect(() => {
-        if(!characterObject.current) return 
-        characterObject.current.updateWorldMatrix(true, true)
-        let parentMatrixWorld = ref.current.parent.matrixWorld
-        let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
-        ref.current.applyMatrix(parentMatrixWorld)
-        ref.current.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
-        ref.current.updateMatrixWorld(true)
-        ref.current.applyMatrix(parentInverseMatrixWorld)
-        ref.current.updateMatrixWorld(true)
-    }, [sceneObject.rotation])
+      if(!characterObject.current || !ref.current.parent) return 
+      characterObject.current.updateWorldMatrix(true, true)
+      let parentMatrixWorld = ref.current.parent.matrixWorld
+      let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
+      ref.current.applyMatrix(parentMatrixWorld)
+      ref.current.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
+      ref.current.updateMatrixWorld(true)
+      ref.current.applyMatrix(parentInverseMatrixWorld)
+      ref.current.updateMatrixWorld(true)
+    }, [sceneObject.rotation, characterLOD])
 
     useEffect(() => {
-        if(!characterObject.current) return
-        let scale = sceneObject.size / characterObject.current.scale.x
-        ref.current.scale.set(scale, scale, scale)
-        ref.current.updateMatrixWorld(true)
-    }, [sceneObject.size])
+      if(!characterObject.current || !ref.current.parent) return
+      let scale = sceneObject.size / characterObject.current.scale.x
+      ref.current.scale.set(scale, scale, scale)
+      ref.current.updateMatrixWorld(true)
+    }, [sceneObject.size, characterLOD])
 
     const rebindAttachable = () => {
-        let prevCharacter = characterObject.current
-        characterObject.current = scene.__interaction.filter(child => child.userData.id === sceneObject.attachToId)[0]
-        if(!characterObject.current ) return
-        
-        let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
-        if(!skinnedMesh) return
-        let skeleton = skinnedMesh.skeleton
-        let bone = skeleton.getBoneByName(sceneObject.bindBone)
-        bone.add(ref.current)
-        let scale = sceneObject.size / characterObject.current.scale.x
-        ref.current.scale.set(scale, scale, scale)
-        ref.current.updateWorldMatrix(true, true)
+      let prevCharacter = characterObject.current
+      characterObject.current = scene.__interaction.filter(child => child.userData.id === sceneObject.attachToId)[0]
+      if(!characterObject.current ) return
+      
+      let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
+      if(!skinnedMesh) return
 
-        saveToStore()
+      let skeleton = skinnedMesh.skeleton
+      let bone = skeleton.getBoneByName(sceneObject.bindBone)
+      bone.add(ref.current)
+      let scale = sceneObject.size / characterObject.current.scale.x
+      ref.current.scale.set(scale, scale, scale)
+      ref.current.updateWorldMatrix(true, true)
+      saveToStore()
     }
 
     const saveToStore = () => {
-        let position = ref.current.worldPosition()// new THREE.Vector3()
-        let quaternion = ref.current.worldQuaternion()
-        let matrix = ref.current.matrix.clone()
-        matrix.premultiply(ref.current.parent.matrixWorld)
-        matrix.decompose(position, quaternion, new THREE.Vector3())
-        let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
-        updateObject(sceneObject.id, { x: position.x, y: position.y, z: position.z,
-          rotation: {x: rot.x, y: rot.y, z: rot.z}})
+      let position = ref.current.worldPosition()// new THREE.Vector3()
+      let quaternion = ref.current.worldQuaternion()
+      let matrix = ref.current.matrix.clone()
+      matrix.premultiply(ref.current.parent.matrixWorld)
+      matrix.decompose(position, quaternion, new THREE.Vector3())
+      let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
+      updateObject(sceneObject.id, { x: position.x, y: position.y, z: position.z,
+        rotation: {x: rot.x, y: rot.y, z: rot.z}})
+    }
+
+    const controlPlusRCheck = (event) => {
+      if(event.ctrlKey && event.key === 'r'){
+        event.stopPropagation()
+        return true
+      } 
+    }
+
+    useEffect(() => {
+      if(!objectRotationControl.current) return
+      objectRotationControl.current.setCamera(camera)
+    }, [camera])
+
+    const switchManipulationState = () => {
+      let isRotation = !ref.current.userData.isRotationEnabled
+      ref.current.userData.isRotationEnabled = isRotation
+      if(isRotation) {
+        objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+        objectRotationControl.current.isEnabled = true
+      } else {
+        objectRotationControl.current.deselectObject()
+        objectRotationControl.current.isEnabled = false
+      }
     }
 
     return <group
@@ -201,7 +290,8 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
           type: "attachable",
           id: sceneObject.id,
 
-          bindedId: sceneObject.attachToId
+          bindedId: sceneObject.attachToId,
+          isRotationEnabled: false,
         }}>
         {meshes}
     </group>
