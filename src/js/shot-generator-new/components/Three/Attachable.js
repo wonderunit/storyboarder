@@ -3,9 +3,9 @@ import * as THREE from 'three'
 import { useUpdate, useThree } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
-import {useAsset} from "../../hooks/use-assets-manager";
-import {SHOT_LAYERS} from "../../utils/ShotLayers";
-const isUserMode = model => !!model.match(/\//)
+import {useAsset} from '../../hooks/use-assets-manager'
+import {SHOT_LAYERS} from '../../utils/ShotLayers'
+import isUserModel from '../../helpers/isUserModel'
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -36,12 +36,14 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, characterChildrenLength }) => {
+const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, characterChildrenLength, deleteObjects, characterModelName }) => {
     const {asset: gltf} = useAsset(path)
     const {asset: characterModel} = useAsset(сharacterModelPath)
     const [characterLOD, setCharacterLOD] = useState()
     const characterObject = useRef(null)
+    const prevModelName = useRef(null)
     const { scene } = useThree()
+    const [isAllowedToInitialize, setAllowToInitialize] = useState(false)
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(SHOT_LAYERS))
@@ -67,6 +69,31 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       return null
     }, [gltf, characterModel])
 
+  
+    useEffect(() => {
+      console.log("Model name change to", characterModelName)
+      if(!prevModelName.current) {
+        setAllowToInitialize(true)
+      } else {
+        setAllowToInitialize(false)
+        console.log(characterModelName)
+        let isCurrentModelUser = isUserModel(characterModelName)
+        let isPrevModelUser = isUserModel(prevModelName.current)
+        if((!isPrevModelUser && isCurrentModelUser) || 
+           (isPrevModelUser && !isCurrentModelUser) ||
+           (isPrevModelUser && isCurrentModelUser)) {
+             console.log(`Attachable ${sceneObject.model} removed`)
+          deleteObjects([sceneObject.id])
+        } else {
+          setAllowToInitialize(true)
+        }
+      }
+      return () => {
+        console.log("prev character model name", characterModelName)
+        prevModelName.current = characterModelName
+        setAllowToInitialize(false)
+      }
+    }, [characterModelName])
 
     useEffect(() => {
       return () => {
@@ -83,10 +110,9 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
 
 
     useEffect(() => {
-      if(!characterObject.current) return
+      if(!characterObject.current || !isAllowedToInitialize) return
       rebindAttachable()
     }, [characterModel])
-
 
     useEffect(() => {
       if(!ref.current) return
@@ -109,7 +135,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [sceneObject.bindBone])
 
     useEffect(() => {
-      if(!characterModel || !characterLOD) return 
+      if(!characterModel || !characterLOD || !isAllowedToInitialize) return 
         characterObject.current = scene.children[0].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
         if(!characterObject.current) return
         let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
@@ -117,7 +143,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         if(sceneObject.status === "PENDING") {
           let modelPosition = new THREE.Vector3()
           let quat = null
-          if(isUserMode(sceneObject.model)) {
+          if(isUserModel(sceneObject.model)) {
             modelPosition.copy(bone.worldPosition())
             quat = bone.worldQuaternion()
           } else {
@@ -143,7 +169,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         bone.add(ref.current)
         ref.current.updateMatrixWorld(true)
         ref.current.updateWorldMatrix(true, true)
-    }, [characterLOD])
+    }, [characterLOD, isAllowedToInitialize])
     
     useEffect(() => {
       if(!characterObject.current || !ref.current.parent) return 
@@ -183,6 +209,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       if(!skinnedMesh) return
+
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(sceneObject.bindBone)
       bone.add(ref.current)

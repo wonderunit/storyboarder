@@ -8,15 +8,17 @@ import {
     getSceneObjects,
     getWorld,
     getActiveCamera,
-    selectObject,
     getSelections,
+    getSelectedBone,
+    getSelectedAttachable,
+    selectObject,
     updateCharacterSkeleton,
     updateCharacterIkSkeleton,
     updateObject,
     updateObjects,
-    getSelectedBone,
     updateCharacterPoleTargets,
-    getSelectedAttachable
+    deleteObjects
+
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
 import { useThree, useFrame } from 'react-three-fiber'
@@ -88,6 +90,7 @@ const SceneManagerR3fLarge = connect(
         updateObject,
         updateCharacterPoleTargets,
         updateObjects,
+        deleteObjects
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -111,7 +114,8 @@ const SceneManagerR3fLarge = connect(
     cameraShots,
     setLargeCanvasData,
     renderData,
-    selectedAttachable
+    selectedAttachable,
+    deleteObjects
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -334,6 +338,8 @@ const SceneManagerR3fLarge = connect(
                 updateObject={ updateObject }
                 сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
                 characterChildrenLength={ character ? character.children.length : 0 }
+                deleteObjects={ deleteObjects }
+                characterModelName={ sceneObjects[sceneObject.attachToId].model }
               />
               </SimpleErrorBoundary>
         })

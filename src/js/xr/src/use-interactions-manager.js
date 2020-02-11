@@ -555,6 +555,7 @@ const useInteractionsManager = ({
 
     // include all interactables (Model Object, Character, Virtual Camera, etc)
     let list = scene.__interaction.filter(o => o.userData.type !== 'ui')
+    console.log(list)
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
 
@@ -667,6 +668,7 @@ const useInteractionsManager = ({
       list = list.filter(object => object.uuid === interactionService.state.context.selection)
     }
     // setup the GPU picker
+
     getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
