@@ -166,7 +166,7 @@ const InteractionManager = connect(
     
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
-        intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
+        intersectables.current = intersectables.current.concat(scene.children.filter(o => 
             o.userData.type === 'controlTarget' ||
             o.userData.type === 'controlPoint' ||
             o.userData.type === 'objectControl' ))
@@ -251,7 +251,7 @@ const InteractionManager = connect(
             if(!target) return
             if(target.userData && target.userData.type === 'attachable') {
                 selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
-                setDragTarget({ target, x, y })
+                setDragTarget({ target, x, y})
                 return 
             } else if(target.userData && target.userData.type === 'controlPoint') {
                 let characterId = target.characterId

@@ -6,6 +6,8 @@ import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
 import {useAsset} from '../../hooks/use-assets-manager'
 import {SHOT_LAYERS} from '../../utils/ShotLayers'
 import isUserModel from '../../helpers/isUserModel'
+import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
+import ObjectRotationControl from "../../../shared/IK/objects/ObjectRotationControl"
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -42,8 +44,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     const [characterLOD, setCharacterLOD] = useState()
     const characterObject = useRef(null)
     const prevModelName = useRef(null)
-    const { scene } = useThree()
+    const isAttachableSelected = useRef(null)
+    const { gl, scene, camera } = useThree()
     const [isAllowedToInitialize, setAllowToInitialize] = useState(false)
+    const objectRotationControl = useRef(null)
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(SHOT_LAYERS))
@@ -92,6 +96,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [characterModelName])
 
     useEffect(() => {
+      isAttachableSelected.current = false
       return () => {
         if(!characterObject.current || !ref.current.parent) return
         ref.current.parent.remove(ref.current)
@@ -109,21 +114,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       if(!characterObject.current || !isAllowedToInitialize) return
       rebindAttachable()
     }, [characterModel])
-
-    useEffect(() => {
-      if(!ref.current) return
-      traverseMeshMaterials(ref.current, material => {
-        if (material.emissive) {
-          if (isSelected) {
-              material.emissive = new THREE.Color( 0x755bf9 )
-              material.color = new THREE.Color( 0x222222 )
-          } else {
-              material.emissive = new THREE.Color( '#000000' )
-              material.color = new THREE.Color( 0xcccccc )
-          }
-        }
-      })
-    }, [isSelected])
+    
 
     useEffect(() => {
       if(!ref.current || !characterObject.current ) return
@@ -163,9 +154,50 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
           })
         }
         bone.add(ref.current)
+
+        // Sets up object rotation control for manipulation of attachale rotation
+        objectRotationControl.current = new ObjectRotationControl(scene, camera, gl.domElement, characterObject.current.uuid)
+        objectRotationControl.current.control.canSwitch = false
+        objectRotationControl.current.setUpdateCharacter((name, rotation) => {
+          let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
+
+          updateObject(ref.current.userData.id, {
+            rotation:
+            {
+              x : euler.x,
+              y : euler.y,
+              z : euler.z,
+            }
+          } )})
         ref.current.updateMatrixWorld(true)
         ref.current.updateWorldMatrix(true, true)
     }, [characterLOD, isAllowedToInitialize])
+
+    useEffect(() => {
+      if(!ref.current) return
+      if(isSelected) {
+        KeyCommandsSingleton.getInstance().addKeyCommand({
+          key: "Switch attachables to rotation", 
+          value: switchManipulationState,
+          keyCustomCheck: controlPlusRCheck
+        })
+        if(!isAttachableSelected.current) {
+          if(objectRotationControl.current.isEnabled) { 
+            objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+          }
+          isAttachableSelected.current = true
+        }
+      }
+      else {
+        if(isAttachableSelected.current) {
+          objectRotationControl.current.deselectObject()
+          isAttachableSelected.current = false
+        }
+      }
+      return function cleanup () {
+        KeyCommandsSingleton.getInstance().removeKeyCommand({key: "Switch attachables to rotation"})
+      }
+    }, [isSelected])
     
     useEffect(() => {
       if(!characterObject.current || !ref.current.parent) return 
@@ -226,6 +258,30 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         rotation: {x: rot.x, y: rot.y, z: rot.z}})
     }
 
+    const controlPlusRCheck = (event) => {
+      if(event.ctrlKey && event.key === 'r'){
+        event.stopPropagation()
+        return true
+      } 
+    }
+
+    useEffect(() => {
+      if(!objectRotationControl.current) return
+      objectRotationControl.current.setCamera(camera)
+    }, [camera])
+
+    const switchManipulationState = () => {
+      let isRotation = !ref.current.userData.isRotationEnabled
+      ref.current.userData.isRotationEnabled = isRotation
+      if(isRotation) {
+        objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+        objectRotationControl.current.isEnabled = true
+      } else {
+        objectRotationControl.current.deselectObject()
+        objectRotationControl.current.isEnabled = false
+      }
+    }
+
     return <group
         ref={ ref }
 
@@ -234,7 +290,8 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
           type: "attachable",
           id: sceneObject.id,
 
-          bindedId: sceneObject.attachToId
+          bindedId: sceneObject.attachToId,
+          isRotationEnabled: false,
         }}>
         {meshes}
     </group>
