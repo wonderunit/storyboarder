@@ -36,7 +36,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, characterModel, characterChildrenLength}) => {
+const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, characterModel, characterChildrenLength, rootRef}) => {
     const characterObject = useRef(null)
     const { scene } = useThree()
     const [characterLOD, setCharacterLOD] = useState()
@@ -60,11 +60,27 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
             )
           }
         })
+        console.log(children)
         return children
       }
       return null
     }, [gltf, characterModel])
 
+    useEffect(() => {
+      if(ref.current && rootRef)
+        rootRef.add(ref.current)
+      console.log("Character model changed to", characterModel, ref.current, characterObject.current)
+      return () => {
+        if(ref.current && rootRef)
+          rootRef.add(ref.current)
+      }
+    }, [characterModel])
+
+    useEffect(() => {
+      if(!ref.current) return 
+      let index = scene.__interaction.indexOf(ref.current)
+      if (index === -1) scene.__interaction.push(ref.current) 
+    }, [characterModel])
 
     useEffect(() => {
       return () => {
@@ -83,7 +99,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
       if(!characterObject.current) return
       rebindAttachable()
     }, [characterModel])
-
 
     useEffect(() => {
       if(!ref.current) return
@@ -113,7 +128,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
         let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
         bone.add(ref.current)
         ref.current.updateMatrixWorld(true)
-        ref.current.updateWorldMatrix(true, true)
     }, [characterLOD])
     
     useEffect(() => {
@@ -180,7 +194,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
         userData={{
           type: "attachable",
           id: sceneObject.id,
-
           bindedId: sceneObject.attachToId
         }}>
         {meshes}
