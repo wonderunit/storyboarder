@@ -71,25 +71,21 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
 
   
     useEffect(() => {
-      console.log("Model name change to", characterModelName)
       if(!prevModelName.current) {
         setAllowToInitialize(true)
       } else {
         setAllowToInitialize(false)
-        console.log(characterModelName)
         let isCurrentModelUser = isUserModel(characterModelName)
         let isPrevModelUser = isUserModel(prevModelName.current)
         if((!isPrevModelUser && isCurrentModelUser) || 
            (isPrevModelUser && !isCurrentModelUser) ||
            (isPrevModelUser && isCurrentModelUser)) {
-             console.log(`Attachable ${sceneObject.model} removed`)
           deleteObjects([sceneObject.id])
         } else {
           setAllowToInitialize(true)
         }
       }
       return () => {
-        console.log("prev character model name", characterModelName)
         prevModelName.current = characterModelName
         setAllowToInitialize(false)
       }
@@ -117,15 +113,15 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     useEffect(() => {
       if(!ref.current) return
       traverseMeshMaterials(ref.current, material => {
-          if (material.emissive) {
-            if (isSelected) {
-                material.emissive = new THREE.Color( 0x755bf9 )
-                material.color = new THREE.Color( 0x222222 )
-            } else {
-                material.emissive = new THREE.Color( '#000000' )
-                material.color = new THREE.Color( 0xcccccc )
-            }
+        if (material.emissive) {
+          if (isSelected) {
+              material.emissive = new THREE.Color( 0x755bf9 )
+              material.color = new THREE.Color( 0x222222 )
+          } else {
+              material.emissive = new THREE.Color( '#000000' )
+              material.color = new THREE.Color( 0xcccccc )
           }
+        }
       })
     }, [isSelected])
 

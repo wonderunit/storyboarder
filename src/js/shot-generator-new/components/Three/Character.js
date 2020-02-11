@@ -100,6 +100,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         originalHeight = bbox.max.y - bbox.min.y
       }
       // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
+      updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
       setReady(true)
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])

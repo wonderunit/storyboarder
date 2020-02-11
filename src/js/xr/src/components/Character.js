@@ -24,7 +24,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       }
     }, [])
 
-   
     useEffect(() => {
       return () => {
         ref.current.remove(BonesHelper.getInstance())

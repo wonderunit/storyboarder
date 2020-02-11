@@ -123,7 +123,6 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
-    console.log("rerender")
     useEffect(() => {
         let sgIkHelper = SGIkHelper.getInstance()
         sgIkHelper.setUp(null, rootRef.current, camera, gl.domElement)

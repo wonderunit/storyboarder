@@ -21,6 +21,8 @@ import Scrollable from "../../Scrollable"
 
 import AttachableEditor from './../AttachableEditor/index'
 import {getScene} from "../../../utils/scene"
+
+import isUserModel from '../../../helpers/isUserModel'
 import { ObjectSpaceNormalMap } from 'three'
 
 const AttachableInspector = connect(
@@ -69,15 +71,14 @@ const AttachableInspector = connect(
     const onSelectItem = useCallback((model) => {
       selectedModel.current = model
       selectedId.current = model.id || id
-      if(model.bindBone) {
+      if(model.bindBone && !isUserModel(sceneObject.model)) {
         createAttachableElement(model, id)
         return
       }
       showModal(true)
-    }, [id])
+    }, [id, sceneObject])
 
     const createAttachableElement = (model, id, name = null ) => {
-
       let modelData = model
       if(!(modelData instanceof Object)) {
         modelData = {
@@ -93,6 +94,12 @@ const AttachableInspector = connect(
           }
         }
       } 
+      if(name && modelData.bindBone) {
+        modelData.x = 0
+        modelData.y = 0
+        modelData.z = 0
+        modelData.rotation = { x:0, y:0, z:0 }
+      }
 
       let key = THREE.Math.generateUUID()
       let element = {
@@ -139,7 +146,7 @@ const AttachableInspector = connect(
           visible={ isModalVisible }
           model={ selectedModel.current }
           setVisible={ showModal }
-          id={ selectedId.current }
+          id={ id }
           skeleton={ sceneObject.skeleton }
           onSuccess={ createAttachableElement }/>
         <div className="thumbnail-search column">
