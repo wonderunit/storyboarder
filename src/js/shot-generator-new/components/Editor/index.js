@@ -9,7 +9,6 @@ const { dialog } = remote
 
 import log from 'electron-log'
 
-import './../../../vendor/OutlineEffect'
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -27,7 +26,7 @@ import {createScene, removeScene, getScene} from './../../utils/scene'
 
 import useComponentSize from './../../../hooks/use-component-size'
 import SceneRender from '../../SceneRenderer'
-import { Canvas } from 'react-three-fiber'
+import {Canvas, extend, useFrame, useThree} from 'react-three-fiber'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
   //
@@ -103,62 +102,31 @@ import { getFilePathForImages } from "../../helpers/get-filepath-for-images"
   '/data/system/xr/light.glb',
 ] */
 
+import {OutlineEffect} from './../../../vendor/OutlineEffect'
+
+const Effect = () => {
+  const {gl, size} = useThree()
+
+  const outlineEffect = new OutlineEffect(gl, { defaultThickness:0.003 })
+  
+  useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
+  useFrame(({ gl, scene, camera }) => {
+    outlineEffect.render(scene, camera)
+  }, 1)
+  
+  return null
+}
+
 const Editor = React.memo(({
-  mainViewCamera, createObject, selectObject, updateModels, loadScene, saveScene, activeCamera, setActiveCamera, resetScene, remoteInput, aspectRatio, sceneObjects, world, selections, selectedBone, onBeforeUnload, setMainViewCamera, withState, attachments, undoGroupStart, undoGroupEnd, store
+  mainViewCamera, aspectRatio, sceneObjects, world,  setMainViewCamera, withState, store
 }) => {
-  const smallCanvasRef = useRef(null)
-  const largeCanvasRef = useRef(null)
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
   const largeCanvasInfo = useRef({ width: 0, height: 0 })
 
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
-
-  const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
+  
   const { assets, requestAsset, getAsset } = useAssetsManager()
-  /** Resources loading */
-  const loadAttachment = ({ filepath, dispatch }) => {
-    switch (path.extname(filepath)) {
-      case '.obj':
-        objLoader.load(
-          filepath,
-          event => {
-            let value = { scene: event.detail.loaderRootNode }
-            log.info('cache: success', filepath)
-            dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-          },
-          null,
-          error => {
-            log.error('cache: error')
-            log.error(error)
-            alert(error)
-            // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
-            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-          }
-        )
-        return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-
-      case '.gltf':
-      case '.glb':
-        gltfLoader.load(
-          filepath,
-          value => {
-            log.info('cache: success', filepath)
-            dispatch({ type: 'ATTACHMENTS_SUCCESS', payload: { id: filepath, value } })
-          },
-          null,
-          error => {
-            log.error('cache: error')
-            log.error(error)
-            alert(error)
-            // dispatch({ type: 'ATTACHMENTS_ERROR', payload: { id: filepath, error } })
-            dispatch({ type: 'ATTACHMENTS_DELETE', payload: { id: filepath } })
-
-          }
-        )
-        return dispatch({ type: 'ATTACHMENTS_LOAD', payload: { id: filepath } })
-    }
-  }
 
   useEffect(() => {
 
@@ -458,6 +426,7 @@ const Editor = React.memo(({
                 key="top-down-canvas"
                 id="top-down-canvas"
                 tabIndex={0}
+                gl2={true}
                 /* onPointerDown={ onCanvasPointerDown } */
                 orthographic={ true }
                 updateDefaultCamera={ false }>
@@ -488,11 +457,14 @@ const Editor = React.memo(({
                   tabIndex={ 1 }
                   key="camera-canvas"
                   id="camera-canvas"
+                  gl2={true}
                   updateDefaultCamera={ true }>
                     <Provider store={ store }>
                       <SceneManagerR3fLarge 
                       getAsset={ getAsset }/>
                     </Provider>
+                    <Effect/>
+                    
                   </Canvas>
                   <GuidesView
                     dimensions={guidesDimensions}

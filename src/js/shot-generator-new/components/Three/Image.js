@@ -2,13 +2,14 @@ import * as THREE from 'three'
 import { useEffect, useMemo, useRef } from 'react'
 import { useUpdate } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
 
 const Image = React.memo(({ sceneObject, isSelected, texture }) => {
   const aspect = useRef(1)
   const ref = useRef()
 
   const material = useMemo(() => {
-    return new THREE.MeshToonMaterial({ transparent: true })
+    return patchMaterial(new THREE.MeshToonMaterial({ transparent: true }))
   }, [])
 
   useMemo(() => {
@@ -27,13 +28,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture }) => {
   }, [texture])
 
   useEffect(() => {
-    if (isSelected) {
-      material.emissive = new THREE.Color(0x755bf9)
-      material.color = new THREE.Color(0x222222)
-    } else {
-      material.emissive = new THREE.Color(0x000000)
-      material.color = new THREE.Color(0xcccccc)
-    }
+    setSelected(material, isSelected)
   }, [ref.current, isSelected])
 
   useEffect(() => {

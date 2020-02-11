@@ -6,6 +6,7 @@ import SGIkHelper from '../../../shared/IK/SGIkHelper'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
 const isUserModel = model => !!model.match(/\//)
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton }) => {
@@ -76,6 +77,9 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
               morphNormals: true,
               morphTargets: true
             })
+
+            patchMaterial(mesh.material)
+            
             lod.addLevel(mesh, d * 4)
           }
     
@@ -278,7 +282,6 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       if(!ref.current || !ready || !lod || !ref.current.children.length) return
 
       if (isSelected) {
-
         BonesHelper.getInstance().initialize(lod.children[0])
         if(!isUserModel(sceneObject.model) && !SGIkHelper.getInstance().isIkDisabled) {
             SGIkHelper.getInstance().initialize(ref.current, modelSettings.height, lod.children[0], sceneObject)
@@ -288,8 +291,13 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
       } else {
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
-        
       }
+
+      lod.traverse((child) => {
+        if (child.isMesh) {
+          setSelected(child, isSelected)
+        }
+      })
     }, [lod, isSelected, ready])
 
     useMemo(() => {
@@ -324,9 +332,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, se
         rotation={ [0, rotation, 0] }
         scale={ [bodyScale, bodyScale, bodyScale] }
         visible={ visible }
-      >
-    
-      </group>
+      />
 })
 
 export default Character

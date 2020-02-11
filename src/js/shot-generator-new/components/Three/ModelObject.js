@@ -1,11 +1,18 @@
 import * as THREE from 'three'
 import React, { useMemo, useEffect } from 'react'
-import { useUpdate } from 'react-three-fiber'
+import { useUpdate, extend } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import {MeshToonMaterial} from "three"
 
-const materialFactory = () => new THREE.MeshToonMaterial({
+import RoundedBoxGeometryCreator from 'three-rounded-box'
+import {patchMaterial, setSelected} from "../../helpers/outlineMaterial"
+const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
+
+extend({RoundedBoxGeometry})
+
+const materialFactory = () => patchMaterial(new MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
@@ -15,7 +22,7 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   flatShading: false,
   morphNormals: false,
   morphTargets: false
-})
+}))
 
 const meshFactory = source => {
   let mesh = source.clone()
@@ -41,13 +48,11 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
   const meshes = useMemo(() => {
     if (sceneObject.model === 'box') {
       return [
-        <mesh key={sceneObject.id}
-
-        >
-          <boxBufferGeometry
+        <mesh key={sceneObject.id}>
+          <roundedBoxGeometry
             ref={ref => ref && ref.translate(0, 0.5, 0)}
             attach='geometry'
-            args={[1, 1, 1]} />
+            args={[1, 1, 1, 0.015]} />
           <primitive
             attach='material'
             object={materialFactory()} />
@@ -76,16 +81,18 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, ...props }) => 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
       if (material.emissive) {
-        if (isSelected) {
-          material.emissive = new THREE.Color( 0x755bf9 )
-          material.color = new THREE.Color( 0x222222 )
-        } else {
-          material.emissive = new THREE.Color( sceneObject.tintColor || '#000000' )
-          material.color = new THREE.Color( 0xcccccc )
-        }
+        material.emissive = new THREE.Color( sceneObject.tintColor || '#000000' )
       }
     })
-  }, [ref.current, isSelected, sceneObject.tintColor])
+  }, [ref.current, sceneObject.tintColor])
+
+  useEffect(() => {
+    ref.current.traverse((child) => {
+      if (child.isMesh) {
+        setSelected(child, isSelected)
+      }
+    })
+  }, [ref.current, isSelected, gltf])
 
   const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
 
