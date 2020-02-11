@@ -156,7 +156,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         bone.add(ref.current)
 
         // Sets up object rotation control for manipulation of attachale rotation
-        objectRotationControl.current = new ObjectRotationControl(scene, camera, gl.domElement, characterObject.current.uuid)
+        objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, characterObject.current.uuid)
         objectRotationControl.current.control.canSwitch = false
         objectRotationControl.current.setUpdateCharacter((name, rotation) => {
           let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
