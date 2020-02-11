@@ -5,7 +5,8 @@ import {
   getWorld,
   selectObject,
   getSelections,
-  updateObjects
+  updateObjects,
+  setActiveCamera
 } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
 import { useFrame, useThree } from 'react-three-fiber'
@@ -48,7 +49,8 @@ const SceneManagerR3fSmall = connect(
     }),
     {
       selectObject,
-      updateObjects
+      updateObjects,
+      setActiveCamera
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -62,7 +64,8 @@ const SceneManagerR3fSmall = connect(
     updateObjects,
     iconIds,
     setSmallCanvasData,
-    renderData
+    renderData,
+    setActiveCamera
 
 }) => {
     const { scene, camera, gl } = useThree()
@@ -111,6 +114,9 @@ const SceneManagerR3fSmall = connect(
       })
       if(!match.userData || match.userData.locked ) return
       selectObject(match.userData.id)
+      if(match.userData.type === "camera") {
+        setActiveCamera(match.userData.id)
+      }
       draggedObject.current = match
       const { x, y } = mouse(e)
       prepareDrag( draggedObject.current, {x, y, camera, scene, selections:[match.userData.id] })
@@ -120,7 +126,9 @@ const SceneManagerR3fSmall = connect(
       if(!draggedObject.current) return
       const { x, y } = mouse(e)
       drag({ x, y }, draggedObject.current, camera, selections)
-      updateStore(updateObjects)
+
+      console.log("Icons move")
+      //updateStore(updateObjects)
     }, [camera, selections, mouse])
 
     const onPointerUp = useCallback((e) => {

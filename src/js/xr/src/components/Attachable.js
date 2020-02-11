@@ -60,7 +60,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
             )
           }
         })
-        console.log(children)
         return children
       }
       return null
@@ -69,7 +68,6 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
     useEffect(() => {
       if(ref.current && rootRef)
         rootRef.add(ref.current)
-      console.log("Character model changed to", characterModel, ref.current, characterObject.current)
       return () => {
         if(ref.current && rootRef)
           rootRef.add(ref.current)
