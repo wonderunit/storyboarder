@@ -58,7 +58,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
           <roundedBoxGeometry
             ref={ref => ref && ref.translate(0, 0.5, 0)}
             attach='geometry'
-            args={[1, 1, 1, 0.01]} />
+            args={[1, 1, 1, 0.005, 5]} />
           <primitive
             attach='material'
             object={materialFactory(isIcon)} />
