@@ -59,7 +59,9 @@
  *  - support shader material without objectNormal in its vertexShader
  */
 
-THREE.OutlineEffect = function ( renderer, parameters ) {
+import * as THREE from 'three'
+
+export const OutlineEffect = function ( renderer, parameters ) {
 
 	parameters = parameters || {};
 
@@ -117,8 +119,8 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
     "	const float ratio = 1.0;", // TODO: support outline thickness ratio for each vertex
     "	vec4 pos2 = projectionMatrix * modelViewMatrix * vec4( skinned.xyz + objectNormal, 1.0 );",
     // NOTE: subtract pos2 from pos because BackSide objectNormal is negative
-    "	vec4 norm = normalize( pos - pos2 );",
-    "	return pos + norm * thickness * pos.w * ratio * vec4(aspect,1,1,1);",
+    "	vec4 norm = -normalize( pos - pos2 );",
+    "	return pos + norm * thickness * pos.w * ratio * vec4(aspect,1.0,1.0,1.0);",
 
     "}"
 
@@ -157,7 +159,7 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		"void main() {",
 
 		"	gl_FragColor = vec4( outlineColor, outlineAlpha );",
-
+	
 		"	#include <fog_fragment>",
 
 		"}"
@@ -246,12 +248,21 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 		if ( data === undefined ) {
 
-			data = {
-				material: createMaterial( originalMaterial ),
-				used: true,
-				keepAlive: defaultKeepAlive,
-				count: 0
-			};
+			if (originalMaterial.userData.outlineParameters) {
+				data = {
+					material: createMaterial( originalMaterial ),
+					used: true,
+					keepAlive: defaultKeepAlive,
+					count: 0
+				};
+			} else {
+				data = {
+					material: createInvisibleMaterial(),
+					used: true,
+					keepAlive: defaultKeepAlive,
+					count: 0
+				};
+			}
 
 			cache[ originalMaterial.uuid ] = data;
 
@@ -277,8 +288,10 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 	function setOutlineMaterial( object ) {
 
+		if ( object._numInstances ) return;
 		if ( object.material === undefined ) return;
-		if ( object.userData.type == "instancedMesh" ) return;
+		if ( object.userData.type === "instancedMesh" ) return;
+		
 		if ( Array.isArray( object.material ) ) {
 
 			for ( var i = 0, il = object.material.length; i < il; i ++ ) {
@@ -301,8 +314,10 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 
 	function restoreOriginalMaterial( object ) {
 
+		if ( object._numInstances ) return;
 		if ( object.material === undefined ) return;
-		if ( object.userData.type == "instancedMesh" ) return;
+		if ( object.userData.type === "instancedMesh" ) return;
+		
 		if ( Array.isArray( object.material ) ) {
 
 			for ( var i = 0, il = object.material.length; i < il; i ++ ) {
@@ -489,6 +504,8 @@ THREE.OutlineEffect = function ( renderer, parameters ) {
 		renderer.autoClear = false;
 		renderer.shadowMap.enabled = false;
 
+		scene.updateMatrixWorld(true)
+		
 		scene.traverse( setOutlineMaterial );
 
 		renderer.render( scene, camera );

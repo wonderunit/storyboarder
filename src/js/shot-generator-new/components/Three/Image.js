@@ -1,7 +1,14 @@
 import * as THREE from 'three'
 import { useEffect, useMemo, useRef } from 'react'
-import {useAsset, cache} from "../../hooks/use-assets-manager"
+import {extend} from "react-three-fiber"
+import {useAsset} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import {patchMaterial, setSelected} from "../../helpers/outlineMaterial"
+
+import RoundedBoxGeometryCreator from "./../../../vendor/three-rounded-box"
+const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
+
+extend({RoundedBoxGeometry})
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
   const {asset: texture} = useAsset(imagesPaths[0] || null)
@@ -10,11 +17,12 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
   const ref = useRef()
 
   const material = useMemo(() => {
-    return new THREE.MeshToonMaterial({ transparent: true })
+    return patchMaterial(new THREE.MeshToonMaterial({ transparent: true }))
   }, [])
 
   useMemo(() => {
     if(!texture) return
+    
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
     texture.repeat.set(1, 1)
@@ -29,13 +37,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
   }, [texture, imagesPaths[0]])
 
   useEffect(() => {
-    if (isSelected) {
-      material.emissive = new THREE.Color(0x755bf9)
-      material.color = new THREE.Color(0x222222)
-    } else {
-      material.emissive = new THREE.Color(0x000000)
-      material.color = new THREE.Color(0xcccccc)
-    }
+    setSelected(material, isSelected)
   }, [ref.current, isSelected])
 
   useEffect(() => {
@@ -68,17 +70,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
             id: sceneObject.id
         }}
       >
-        <planeBufferGeometry attach="geometry" args={ [1, 1] } />
-        <primitive attach="material" object={ material } />
-      </mesh>
-      <mesh 
-        userData={{
-            type: "image",
-            id: sceneObject.id
-        }}
-        rotation={ [0, Math.PI, 0] } 
-        scale={ [-1, 1, 1] }>
-        <planeBufferGeometry attach="geometry" args={ [1, 1, 0.01] } />
+        <roundedBoxGeometry attach="geometry" args={ [1, 1, 0.01, 0.01] } />
         <primitive attach="material" object={ material } />
       </mesh>
     </group>

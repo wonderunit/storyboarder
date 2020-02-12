@@ -7,7 +7,8 @@ import path from 'path'
 import { ipcRenderer, remote } from 'electron'
 const { dialog } = remote
 
-import './../../../vendor/OutlineEffect'
+import log from 'electron-log'
+
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -21,7 +22,10 @@ import {useExportToGltf} from '../../../hooks/use-export-to-gltf'
 import {createScene, removeScene, getScene} from './../../utils/scene'
 
 import useComponentSize from './../../../hooks/use-component-size'
-import { Canvas } from 'react-three-fiber'
+
+import SceneRender from '../../SceneRenderer'
+import {Canvas, extend, useFrame, useThree} from 'react-three-fiber'
+
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
   selectObject,
@@ -62,8 +66,23 @@ import createDeepEqualSelector from "../../../utils/deepEqualSelector"
 import GuidesView from "../GuidesView"
 import {useAsset} from '../../hooks/use-assets-manager'
 
+import {OutlineEffect} from './../../../vendor/OutlineEffect'
+
+const Effect = () => {
+  const {gl, size} = useThree()
+
+  const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
+  
+  useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
+  useFrame(({ gl, scene, camera }) => {
+    outlineEffect.render(scene, camera)
+  }, 1)
+  
+  return null
+}
+
 const Editor = React.memo(({
-  mainViewCamera, activeCamera, aspectRatio, setMainViewCamera, withState, store
+  mainViewCamera, sceneObjects, world, activeCamera, aspectRatio, setMainViewCamera, withState, store
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
@@ -71,134 +90,8 @@ const Editor = React.memo(({
 
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
 
-  const orthoCamera = useRef(new THREE.OrthographicCamera( -4, 4, 4, -4, 1, 10000 ))
 
-  /** Shot generating */
-
-    // used by onToolbarSaveToBoard and onToolbarInsertAsNewBoard
-/*   const imageRenderer = useRef()
-
-  const saveShot = (dispatch, state) => {
-    let { cameraImage, plotImage } = renderImagesForBoard(state)
-
-    ipcRenderer.send('saveShot', {
-      uid: state.board.uid,
-      data: getSerializedState(state),
-      images: {
-        'camera': cameraImage,
-        'plot': plotImage
-      }
-    })
-
-    dispatch(markSaved())
-  }
-
-  const insertShot = (dispatch, state) => {
-    let { cameraImage, plotImage } = renderImagesForBoard(state)
-
-    // NOTE we do this first, since we get new data on insertShot complete
-    dispatch(markSaved())
-
-    ipcRenderer.send('insertShot', {
-      data: getSerializedState(state),
-      images: {
-        camera: cameraImage,
-        plot: plotImage
-      },
-      currentBoard: state.board
-    })
-  }
-
-  // setup refs
-  const saveShotFn = useRef()
-  const insertShotFn = useRef()
-  // always point refs to updated functions
-  saveShotFn.current = saveShot
-  insertShotFn.current = insertShot
-  // add handlers once, and use refs for callbacks
-  useEffect(() => {
-    ipcRenderer.on('requestSaveShot', () => {
-      withState((dispatch, state) => {
-        saveShotFn.current(dispatch, state)
-      })
-    })
-    ipcRenderer.on('requestInsertShot', () => {
-      withState((dispatch, state) => {
-        insertShotFn.current(dispatch, state)
-      })
-    })
-  }, [])
-
-  const renderImagesForBoard = state => {
-    if (!imageRenderer.current) {
-      imageRenderer.current = new THREE.OutlineEffect(
-        new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
-      )
-    }
-
-    const scene = getScene()
-
-    let imageRenderCamera = scene.children.find(o => o.userData.id === activeCamera).clone()
-    imageRenderCamera.layers.set(0)
-    imageRenderCamera.layers.enable(3)
-    //
-    //
-    // Prepare for rendering as an image
-    //
-
-    let selected = scene.children.find(child =>
-      (
-        child.userData.type === 'character' ||
-        child.userData.type === 'object'
-      ) &&
-      child.userData.id === getSelections(state)[0])
-
-    let material = selected &&
-      ((selected.userData.type === 'character')
-        ? selected.userData.mesh.material
-        // TODO support multiple child Object3D’s in a Group
-        : selected.children[0].material)
-
-    // save memento
-    let memento = material && { color: material.userData.outlineParameters.color }
-
-
-
-
-    // override selection outline effect color from selected Object3D’s material
-    if (memento) {
-      material.userData.outlineParameters.color = [0, 0, 0]
-    }
-
-
-
-
-    // render the image
-    imageRenderer.current.setSize(Math.ceil(900 * state.aspectRatio), 900)
-    imageRenderer.current.render(scene, imageRenderCamera)
-    let cameraImage = imageRenderer.current.domElement.toDataURL()
-
-
-
-    // restore from memento
-    if (memento) {
-      material.userData.outlineParameters.color = memento.color
-    }
-
-
-    let savedBackground = scene.background && scene.background.clone()
-    scene.background = new THREE.Color( '#FFFFFF' )
-    imageRenderer.current.setSize(900, 900)
-    imageRenderer.current.render(scene, orthoCamera.current)
-    let plotImage = imageRenderer.current.domElement.toDataURL()
-    scene.background = savedBackground
-
-
-
-    return { cameraImage, plotImage }
-  } */
-
-  /** Shot generating end */
+  /** Resources loading end */
 
   useEffect(() => {
     if (notificationsRef.current) {
@@ -296,6 +189,7 @@ const Editor = React.memo(({
                 key="top-down-canvas"
                 id="top-down-canvas"
                 tabIndex={0}
+                gl2={true}
                 /* onPointerDown={ onCanvasPointerDown } */
                 orthographic={ true }
                 updateDefaultCamera={ false }>
@@ -305,6 +199,7 @@ const Editor = React.memo(({
                     setSmallCanvasData={ setSmallCanvasData }
                     />
                 </Provider>
+                <Effect/>
               </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
@@ -325,15 +220,18 @@ const Editor = React.memo(({
             <div id="camera-view" ref={ mainViewContainerRef }>
               <div id="camera-view-view" style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
                   <Canvas
-                    tabIndex={ 1 }
-                    key="camera-canvas"
-                    id="camera-canvas"
-                    updateDefaultCamera={ true }>
+                  tabIndex={ 1 }
+                  key="camera-canvas"
+                  id="camera-canvas"
+                  gl2={true}
+                  updateDefaultCamera={ true }>
                     <Provider store={ store }>
                       <SceneManagerR3fLarge
                       renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                       setLargeCanvasData= { setLargeCanvasData }/>
                     </Provider>
+                    <Effect/>
+                    
                   </Canvas>
                   <GuidesView
                     dimensions={guidesDimensions}

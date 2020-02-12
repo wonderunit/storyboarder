@@ -1,5 +1,5 @@
 const THREE = require("three")
-var InstancedMesh = require('three-instanced-mesh')( THREE )
+var InstancedMesh = require('./../../vendor/three-instanced-mesh')( THREE )
 const RagDoll = require("./objects/IkObjects/Ragdoll")
 require('./utils/Object3dExtension')
 const TargetControl = require("./objects/TargetControl")

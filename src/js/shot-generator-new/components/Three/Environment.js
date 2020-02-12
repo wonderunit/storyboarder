@@ -4,12 +4,13 @@ import {useAsset} from "../../hooks/use-assets-manager"
 import {useUpdate} from 'react-three-fiber'
 import onlyOfTypes from './../../utils/only-of-types'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import {patchMaterial} from "../../helpers/outlineMaterial"
 
-const materialFactory = () => new THREE.MeshToonMaterial({
+const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xffffff,
   emissive: 0x0,
   flatShading: false
-})
+}))
 
 const Environment = React.memo(({ path, environment }) => {
   const {asset: gltf, loaded} = useAsset(path)
@@ -37,8 +38,6 @@ const Environment = React.memo(({ path, environment }) => {
         child.material = material
       }
     })
-    
-    console.log(group.current, sceneData)
 
     group.current.add(...sceneData.children)
 

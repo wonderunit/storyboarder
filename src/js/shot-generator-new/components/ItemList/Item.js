@@ -76,6 +76,7 @@ const Item = React.memo((props) => {
     'selected': props.selected,
     'zebra': props.index % 2
   })
+  
   const typeLabels = {
     'camera': <Icon src='icon-item-camera'/>,
     'character': <Icon src='icon-item-character'/>,

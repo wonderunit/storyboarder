@@ -8,8 +8,9 @@ import {SHOT_LAYERS} from '../../utils/ShotLayers'
 import isUserModel from '../../helpers/isUserModel'
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 import ObjectRotationControl from "../../../shared/IK/objects/ObjectRotationControl"
+import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
 
-const materialFactory = () => new THREE.MeshToonMaterial({
+const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
@@ -19,7 +20,7 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   flatShading: false,
   morphNormals: false,
   morphTargets: false
-})
+}))
 
 const meshFactory = source => {
   let mesh = source.clone()
@@ -204,6 +205,14 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         KeyCommandsSingleton.getInstance().removeKeyCommand({key: "Switch attachables to rotation"})
       }
     }, [isSelected])
+  
+    useEffect(() => {
+      if (!meshes || meshes.length === 0) return
+      
+      for (let mesh of meshes) {
+        setSelected(mesh.props.object, isSelected)
+      }
+    }, [meshes, isSelected])
     
     useEffect(() => {
       if(!characterObject.current || !ref.current.parent) return 

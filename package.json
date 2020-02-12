@@ -214,7 +214,6 @@
     "tether-tooltip": "./src/js/vendor/tether-tooltip",
     "three": "0.107.0",
     "three-bmfont-text": "^2.3.0",
-    "three-instanced-mesh": "^0.96.2",
     "three-rounded-box": "0.1.1",
     "tmp": "0.0.33",
     "tonal": "0.69.9",

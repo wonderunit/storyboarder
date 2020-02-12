@@ -283,6 +283,7 @@ const SceneManagerR3fSmall = connect(
               key={ sceneObject.id }
               path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath})}
               sceneObject={ sceneObject }
+              isIcon={true}
               isSelected={ selections.includes(sceneObject.id) }
               onPointerUp={e => {
                 e.stopPropagation()
