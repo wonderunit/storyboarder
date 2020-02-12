@@ -208,6 +208,7 @@ class SGIKHelper extends THREE.Object3D
     {
         if(!this.isSelected()) return;
         this.ragDoll.update();
+        this.ragDoll.originalObject.updateMatrixWorld(true)
 
         if(this.selectedControlPoint)
         {
