@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 window.THREE = window.THREE || THREE
 
-import '../../vendor/OutlineEffect'
+import {OutlineEffect} from '../../vendor/OutlineEffect'
 
 const IMAGE_WIDTH = 68
 const IMAGE_HEIGHT = 100
@@ -48,7 +48,7 @@ class ThumbnailRenderer {
     this.camera.position.z = 2
     this.scene.add(this.camera)
 
-    this.outlineEffect = new THREE.OutlineEffect(
+    this.outlineEffect = new OutlineEffect(
       this.renderer,
       {
         defaultThickness: 0.018, // 0.008, 0.009

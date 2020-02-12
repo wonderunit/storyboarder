@@ -36,7 +36,8 @@ const PosePresetsEditor = connect(
   state => ({
     attachmentStatus: getAttachmentM(state),
     posePresets: state.presets.poses,
-    id: getSelections(state)[0]
+    id: getSelections(state)[0],
+    characterPath: filepathFor(CHARACTER_MODEL)
   }),
   {
     updateObject,
@@ -49,7 +50,7 @@ React.memo(({
 
   posePresets,
   attachmentStatus,
-
+  characterPath,
   updateObject,
   createPosePreset,
   withState
@@ -57,19 +58,11 @@ React.memo(({
   const thumbnailRenderer = useRef()
 
   const sortedAttachament = useRef([])
-  const getAttachment = () => {
-    let attachment 
-    withState((dispatch, state) => {
-      let filepath = filepathFor(CHARACTER_MODEL)
-      attachment = useAsset(filepath)
-    })
-   
-    return attachment
-  }
-  
-  const [attachment, setAttachment] = useState(getAttachment())
+  const {asset: attachment} = useAsset(characterPath)
 
-  const [ready, setReady] = useState(false)
+  useEffect(() => {
+    console.log(attachment)
+  }, [attachment])
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
