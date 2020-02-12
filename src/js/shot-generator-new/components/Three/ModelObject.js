@@ -25,7 +25,7 @@ const materialFactory = (isIcon) => patchMaterial(new MeshToonMaterial({
   morphNormals: false,
   morphTargets: false
 }), {
-  thickness: isIcon ? 0.02 : 0.008
+  thickness: 0.008
 })
 
 const meshFactory = (source, isIcon) => {
