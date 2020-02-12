@@ -60,9 +60,6 @@ React.memo(({
   const sortedAttachament = useRef([])
   const {asset: attachment} = useAsset(characterPath)
 
-  useEffect(() => {
-    console.log(attachment)
-  }, [attachment])
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')

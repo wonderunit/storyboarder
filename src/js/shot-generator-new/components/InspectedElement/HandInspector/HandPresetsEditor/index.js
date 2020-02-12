@@ -51,7 +51,8 @@ const HandPresetsEditor = connect(
   state => ({
     handPosePresets: state.presets.handPoses,
     id: getSelections(state)[0],
-    handPosePresetId: getPresetId(state)
+    handPosePresetId: getPresetId(state),
+    characterPath: filepathFor(CHARACTER_MODEL)
   }),
   {
     updateObject,
@@ -66,6 +67,7 @@ React.memo(({
 
   updateObject,
   createHandPosePreset,
+  characterPath,
   withState
 }) => {
   const thumbnailRenderer = useRef()
@@ -78,15 +80,7 @@ React.memo(({
   const newGeneratedId = useRef()
   const [selectedHand, setSelectedHand] = useState("BothHands")
   const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
-  const getAttachment = () => {
-    let attachment 
-    withState(() => {
-      let filepath = filepathFor(CHARACTER_MODEL)
-      attachment = useAsset(filepath)
-    })
-    return attachment
-  }
-  const [attachment, setAttachment] = useState(getAttachment())
+  const {asset: attachment} = useAsset(characterPath)
 
   
   const presets = useMemo(() => {
