@@ -20,6 +20,7 @@ import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
 import { useDraggingManager} from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
+import Room from './components/Three/Room'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -76,7 +77,7 @@ const SceneManagerR3fSmall = connect(
     const directionalLightRef = useRef()
     const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager(true)
 
-    const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
+   // const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     const mouse = useCallback(event => {
       const rect = actualGL.domElement.getBoundingClientRect()
       return {
@@ -92,6 +93,11 @@ const SceneManagerR3fSmall = connect(
         gl.setSize(300, 300)
       }
     }, [renderData])
+
+    useEffect(() => {
+      if(!scene) return
+      scene.background = new THREE.Color('#FFFFFF')
+    }, [scene])
 
     useEffect(() => { 
       setSmallCanvasData(camera, scene, gl)
@@ -332,10 +338,12 @@ const SceneManagerR3fSmall = connect(
                 />
         })
     }
-    {  groundTexture && <Ground
-        objRef={ groundRef }
-        texture={ groundTexture }
-        visible={ !world.room.visible && world.ground } />
+    {
+      <Room width={ world.room.width }
+        length={ world.room.length }
+        height={ world.room.height }
+        visible={ world.room.visible }
+        isTopDown={ true } />
     }
     </group>
 

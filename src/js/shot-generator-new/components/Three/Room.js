@@ -3,10 +3,27 @@ import React, { useMemo, useRef } from 'react'
 import buildSquareRoom from '../../utils/build-square-room'
 import SHOT_LAYERS from '../../utils/ShotLayers'
 
-const Room = React.memo(({texture, width, length, height, visible }) => {
+
+const wallsFactory = ({ width, height, length }) => {
+  let geometry = new THREE.BoxBufferGeometry(
+    width,
+    height,
+    length
+  )
+  var edges = new THREE.EdgesGeometry( geometry )
+  var line = new THREE.LineSegments(
+    edges,
+    new THREE.LineBasicMaterial({ color: 0x999999 })
+  )
+  line.position.set(0, height / 2, 0)
+  return line
+}
+
+const Room = React.memo(({texture, width, length, height, visible, isTopDown = false }) => {
   const ref = useRef()
   const mesh = useMemo(
     () => {
+      if(isTopDown) return 
       if(!texture) return
       texture.wrapS = texture.wrapT = THREE.RepeatWrapping
       texture.offset.set(0, 0)
@@ -27,13 +44,18 @@ const Room = React.memo(({texture, width, length, height, visible }) => {
       return mesh
     }, [texture, width, length, height])
 
+  const walls = useMemo(() => {
+    if(!isTopDown) return []
+    return wallsFactory({width, length, height})
+  }, [ width, length, height])
+
   return <primitive
     ref={ref}
     name='room'
     userData={{
       type: 'room'
     }}
-    object={mesh}
+    object={!isTopDown ? mesh : walls}
     visible={visible}
   />
 })

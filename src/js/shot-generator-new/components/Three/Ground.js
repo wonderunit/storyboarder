@@ -2,22 +2,6 @@ import * as THREE from 'three'
 import React, { useMemo } from 'react'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
-const groundFactory = ({ texture }) => {
-    let material = new THREE.MeshToonMaterial({ map: texture, side: THREE.FrontSide })
-    // material.transparent = true
-    // material.blending = THREE.MultiplyBlending
-    material.opacity = 1
-
-    let geometry = new THREE.PlaneGeometry( 135 / 3, 135 / 3, 32 )
-    let object = new THREE.Mesh( geometry, material )
-    object.userData.type = 'ground'
-    object.rotation.x = -Math.PI / 2
-    // shift slightly to allow for OutlineEffect
-    object.position.y = -0.03
-    // object.renderOrder = 0.7
-    return object
-  }
-
 const Ground = React.memo(({ objRef, texture, visible }) => {
   useMemo(() => {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
