@@ -45,7 +45,7 @@ class CameraControls {
     document.addEventListener( 'pointerup', this.onPointerUp, false )
     window.addEventListener( 'keydown', this.onKeyDown, false )
     window.addEventListener( 'keyup', this.onKeyUp, false )
-    document.getElementById('camera-view').addEventListener("wheel", this.onWheel, false )
+    this.domElement.addEventListener("wheel", this.onWheel, false )
   }
   
   dispose () {
@@ -54,7 +54,7 @@ class CameraControls {
     document.removeEventListener( 'pointerup', this.onPointerUp )
     window.removeEventListener( 'keydown', this.onKeyDown )
     window.removeEventListener( 'keyup', this.onKeyUp )
-    document.getElementById('camera-view').removeEventListener("wheel", this.onWheel )
+    this.domElement.removeEventListener("wheel", this.onWheel )
   }
   
   onPointerMove ( event ) {
