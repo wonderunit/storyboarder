@@ -248,12 +248,21 @@ export const OutlineEffect = function ( renderer, parameters ) {
 
 		if ( data === undefined ) {
 
-			data = {
-				material: createMaterial( originalMaterial ),
-				used: true,
-				keepAlive: defaultKeepAlive,
-				count: 0
-			};
+			if (originalMaterial.userData.outlineParameters) {
+				data = {
+					material: createMaterial( originalMaterial ),
+					used: true,
+					keepAlive: defaultKeepAlive,
+					count: 0
+				};
+			} else {
+				data = {
+					material: createInvisibleMaterial(),
+					used: true,
+					keepAlive: defaultKeepAlive,
+					count: 0
+				};
+			}
 
 			cache[ originalMaterial.uuid ] = data;
 
