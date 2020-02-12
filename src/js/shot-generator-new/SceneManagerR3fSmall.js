@@ -18,7 +18,7 @@ import useFontLoader from './hooks/use-font-loader'
 import path from 'path'
 import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
-import { useDraggingManager} from './use-dragging-manager'
+import { useDraggingManager} from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
 
 const getSceneObjectModelObjectIds = createSelector(

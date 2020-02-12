@@ -31,7 +31,6 @@ const getSortedItems = (sceneObjectsArray) => {
       sortedItems.push(...sceneObjectsArray.filter(target => target.group === object.id))
     }
   }
-  console.log(sortedItems)
   
   return sortedItems
 }
