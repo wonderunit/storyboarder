@@ -259,14 +259,6 @@ const SceneManagerR3fLarge = connect(
       setLargeCanvasData(camera, scene, gl)
     }, [scene, camera, gl, renderData])
 
-    useFrame(({scene, camera}) => {
-      if(renderData) {
-        gl.render(renderData.scene, renderData.camera)
-      } else {
-        gl.render(scene, camera)
-      }
-    }, 1)
-
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     const roomTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_wall2.png')
     useEffect(() => { 

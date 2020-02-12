@@ -23,7 +23,6 @@ import {createScene, removeScene, getScene} from './../../utils/scene'
 
 import useComponentSize from './../../../hooks/use-component-size'
 
-import SceneRender from '../../SceneRenderer'
 import {Canvas, extend, useFrame, useThree} from 'react-three-fiber'
 
 import BonesHelper from '../../../xr/src/three/BonesHelper'
@@ -68,14 +67,18 @@ import {useAsset} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 
-const Effect = () => {
+const Effect = ({renderData}) => {
   const {gl, size} = useThree()
 
   const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
   
   useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
   useFrame(({ gl, scene, camera }) => {
-    outlineEffect.render(scene, camera)
+    if(renderData) {
+      outlineEffect.render(renderData.scene, renderData.camera)
+    } else {
+      outlineEffect.render(scene, camera)
+    }
   }, 1)
   
   return null
@@ -199,7 +202,7 @@ const Editor = React.memo(({
                     setSmallCanvasData={ setSmallCanvasData }
                     />
                 </Provider>
-                <Effect/>
+                <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }/>
               </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
@@ -230,7 +233,7 @@ const Editor = React.memo(({
                       renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                       setLargeCanvasData= { setLargeCanvasData }/>
                     </Provider>
-                    <Effect/>
+                    <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current } />
                     
                   </Canvas>
                   <GuidesView

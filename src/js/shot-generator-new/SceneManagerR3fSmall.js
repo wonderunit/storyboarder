@@ -97,14 +97,6 @@ const SceneManagerR3fSmall = connect(
       setSmallCanvasData(camera, scene, gl)
     }, [scene, camera, gl])
 
-    useFrame(({scene, camera}) => {
-      if(renderData) {
-        gl.render(renderData.scene, renderData.camera)
-      } else {
-        gl.render(scene, camera)
-      }
-    }, 1)
-
     const onPointerDown = useCallback((e) => {
       let match
       e.object.traverseAncestors((o) => {
