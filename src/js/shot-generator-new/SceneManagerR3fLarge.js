@@ -39,6 +39,7 @@ import { dropObject, dropCharacter } from '../utils/dropToObjects'
 import SaveShot from './components/Three/SaveShot'
 import { SHOT_LAYERS } from './utils/ShotLayers'
 import Room from './components/Three/Room'
+import Group from './components/Three/Group'
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -65,6 +66,11 @@ const getSceneObjectImageIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
 )
+
+const getSceneObjectGroupIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
+)
 const SceneManagerR3fLarge = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
@@ -72,6 +78,7 @@ const SceneManagerR3fLarge = connect(
         attachableIds: getSceneObjectAttachableIds(state),
         lightIds: getSceneObjectLightIds(state),
         volumeIds: getSceneObjectVolumeIds(state),
+        groupIds: getSceneObjectGroupIds(state),
         imageIds: getSceneObjectImageIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
@@ -105,13 +112,16 @@ const SceneManagerR3fLarge = connect(
     updateObject,
     updateCharacterPoleTargets,
     models,
-    characterIds,
     updateObjects,
     selectedBone,
+    
+    characterIds,
     attachableIds,
     lightIds,
     volumeIds,
     imageIds,
+    groupIds,
+
     cameraShots,
     setLargeCanvasData,
     renderData,
@@ -369,6 +379,19 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selections.includes(id) }/>
               </SimpleErrorBoundary>
         })
+    }
+    {
+       groupIds.map(id => {
+          let sceneObject = sceneObjects[id]
+          return <Group
+            key={ sceneObject.id }
+            scene={ scene }
+            isSelected={ selections.includes(sceneObject.id) }
+            updateObject={ updateObject }
+            { ...sceneObject }
+          />
+       })
+        
     }
     { 
         groundTexture && <Ground
