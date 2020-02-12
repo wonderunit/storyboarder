@@ -49,7 +49,7 @@ const IconsComponent = React.memo(({type, text, auxiliaryText = null, sceneObjec
     const { x, y, z } = sceneObject
     return <group 
     ref={ ref }
-    position={ [x, z, y] }
+    position={ [x, z + 1, y] }
     visible={ sceneObject.visible }
     scale={ [1, 1, 1] }
     onController={ sceneObject.visible ? () => null : null }

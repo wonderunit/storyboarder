@@ -114,43 +114,43 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.canSwitch = true;
 
-	this.addToScene = function() 
+	this.addToScene = () =>
 	{
-		domElement.addEventListener( "pointerdown", onPointerDown, false );
-		domElement.addEventListener( "touchstart", onPointerDown, false );
-		domElement.addEventListener( "pointermove", onPointerHover, false );
-		domElement.addEventListener( "touchmove", onPointerHover, false );
-		domElement.addEventListener( "touchmove", onPointerMove, false );
+		this.domElement.addEventListener( "pointerdown", onPointerDown, false );
+		this.domElement.addEventListener( "touchstart", onPointerDown, false );
+		this.domElement.addEventListener( "pointermove", onPointerHover, false );
+		this.domElement.addEventListener( "touchmove", onPointerHover, false );
+		this.domElement.addEventListener( "touchmove", onPointerMove, false );
 		document.addEventListener( "pointerup", onPointerUp, false );
-		domElement.addEventListener( "touchend", onPointerUp, false );
-		domElement.addEventListener( "touchcancel", onPointerUp, false );
-		domElement.addEventListener( "touchleave", onPointerUp, false );
+		this.domElement.addEventListener( "touchend", onPointerUp, false );
+		this.domElement.addEventListener( "touchcancel", onPointerUp, false );
+		this.domElement.addEventListener( "touchleave", onPointerUp, false );
 		if(this.canSwitch)
 		window.addEventListener( "keydown", onKeyDown, false );
 		
 	}
 	
-	this.reset = function()
+	this.reset = () =>
 	{
 		this.setMode("translate");
 	}
 	
 	this.controlSelected = true;
 	this.removePointerDownEvent = () => {
-		domElement.removeEventListener( "pointerdown", onPointerDown );
+		this.domElement.removeEventListener( "pointerdown", onPointerDown );
 	}
-	this.dispose = function () 
+	this.dispose = () =>
 	{
-		domElement.removeEventListener( "pointerdown", onPointerDown );
+		this.domElement.removeEventListener( "pointerdown", onPointerDown );
 		document.removeEventListener( "pointermove", onPointerMove, false );
-		domElement.removeEventListener( "touchstart", onPointerDown );
-		domElement.removeEventListener( "pointermove", onPointerHover );
-		domElement.removeEventListener( "touchmove", onPointerHover );
-		domElement.removeEventListener( "touchmove", onPointerMove );
+		this.domElement.removeEventListener( "touchstart", onPointerDown );
+		this.domElement.removeEventListener( "pointermove", onPointerHover );
+		this.domElement.removeEventListener( "touchmove", onPointerHover );
+		this.domElement.removeEventListener( "touchmove", onPointerMove );
 		document.removeEventListener( "pointerup", onPointerUp );
-		domElement.removeEventListener( "touchend", onPointerUp );
-		domElement.removeEventListener( "touchcancel", onPointerUp );
-		domElement.removeEventListener( "touchleave", onPointerUp );
+		this.domElement.removeEventListener( "touchend", onPointerUp );
+		this.domElement.removeEventListener( "touchcancel", onPointerUp );
+		this.domElement.removeEventListener( "touchleave", onPointerUp );
 		if(this.canSwitch)
 			window.removeEventListener( "keydown", onKeyDown );
 	};
@@ -568,11 +568,11 @@ const TransformControls = function ( camera, domElement ) {
 		scope.keyDown( event );
 	}
 
-	function getPointer( event ) {
+	const getPointer = ( event ) => {
 
 		var pointer = event.changedTouches ? event.changedTouches[ 0 ] : event;
 
-		var rect = domElement.getBoundingClientRect();
+		var rect = this.domElement.getBoundingClientRect();
 
 		return {
 			x: ( pointer.clientX - rect.left ) / rect.width * 2 - 1,

@@ -174,7 +174,6 @@ class SGIKHelper extends THREE.Object3D
                 this.ragDoll.hipsMouseDown = false;
                 if(this.ragDoll.attached)
                 {
-                    console.log("Updating character rotation")
                     this.updateCharacterRotation(this.ragDoll.originalObject.children[0].name, this.ragDoll.hipsControlTarget.target.rotation);
                     this.ragDoll.attached = false;
                     this.ragDoll.originalObject.children[0].isRotated = false;
@@ -348,14 +347,24 @@ class SGIKHelper extends THREE.Object3D
     {
         if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === uuid)
         {
-            this.ragDoll.controlTargetSelection.dispose()
+            this.ragDoll.controlTargetSelection.dispose();
             this.ragDoll.removeFromScene();
             this.intializedSkinnedMesh = null;
         }
     }
 
-    clone() {
-        
+    changeDomElement(domElement) {
+        this.ragDoll.controlTargetSelection.dispose();
+        this.ragDoll.controlTargetSelection.domElement = domElement;
+        for(let i = 0; i < this.targetControls.length; i++) {
+            let controlPoint = this.targetControls[i];
+            controlPoint.removeEventsFromControlTarget();
+            controlPoint.domElement = domElement;
+            controlPoint.control.dispose();
+            controlPoint.control.domElement = domElement;
+           // controlPoint.addEventsToControlTarget();
+        }
+        this.ragDoll.controlTargetSelection.initialize();
     }
 }
 

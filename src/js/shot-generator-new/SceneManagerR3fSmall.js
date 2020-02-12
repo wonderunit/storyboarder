@@ -18,9 +18,7 @@ import useFontLoader from './hooks/use-font-loader'
 import path from 'path'
 import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
-import { useDraggingManager} from './use-dragging-manager'
-//Move to sg folder
-import findMatchingAncestor from './helpers/find-matching-ancestor'
+import { useDraggingManager} from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
 
 const getSceneObjectModelObjectIds = createSelector(
@@ -126,9 +124,7 @@ const SceneManagerR3fSmall = connect(
       if(!draggedObject.current) return
       const { x, y } = mouse(e)
       drag({ x, y }, draggedObject.current, camera, selections)
-
-      console.log("Icons move")
-      //updateStore(updateObjects)
+      updateStore(updateObjects)
     }, [camera, selections, mouse])
 
     const onPointerUp = useCallback((e) => {
@@ -150,7 +146,7 @@ const SceneManagerR3fSmall = connect(
         
       // go through all appropriate objects and get the min max
       let numVisible = 0
-      for (let i = 0; i < scene.children[0].children.length; i++ ) {
+      for (let i = 0, length = scene.children[0].children.length; i < length; i++ ) {
         let child = scene.children[0].children[i]
         if (
             child.userData &&
@@ -235,6 +231,7 @@ const SceneManagerR3fSmall = connect(
       const { x, y } = mouse(e)
       raycaster.current.setFromCamera({x, y}, camera)
       var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
+      console.log("intersects", intersects)
       if(!intersects[0] || (intersects[0].object.userData && intersects[0].object.userData.type === "ground")) {
         
         selectObject(null)
@@ -255,8 +252,6 @@ const SceneManagerR3fSmall = connect(
         renderData.gl.domElement.removeEventListener("pointerup", onPointerUp)
       }
     }, [renderData, intersectLogic])
-
-
 
     /////Render components
     return <group ref={rootRef}

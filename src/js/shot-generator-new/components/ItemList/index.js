@@ -105,7 +105,6 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
 
       let idsToRemove = props.children ? [...props.children, props.id] : [props.id]
       if(props.type === "character") {
-        console.log("removing character")
         withState((dispatch, state) => {
           let sceneObjects = getSceneObjects(state)
           let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === props.id).map(obj => obj.id)

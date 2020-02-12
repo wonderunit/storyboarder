@@ -5,12 +5,26 @@ import ColorSelect from "../../ColorSelect"
 import {initialState} from "../../../../shared/reducers/shot-generator"
 import CharacterPresetEditor from '../CharacterPresetEditor'
 import BoneInspector from '../BoneInspector'
-
+import ModelLoader from '../../../../services/model-loader'
 
 const MORPH_TARGET_LABELS = {
   'mesomorphic': 'Muscular',
   'ectomorphic': 'Skinny',
   'endomorphic': 'Obese',
+}
+
+const CHARACTER_HEIGHT_RANGE = {
+  character: { min: 1.4732, max: 2.1336 },
+  child: { min: 1.003, max: 1.384 },
+  baby: { min: 0.492, max: 0.94 }
+}
+const feetAndInchesAsString = (feet, inches) => `${feet}′${inches}″`
+
+const metersAsFeetAndInches = meters => {
+  let heightInInches = meters * 39.3701
+  let heightFeet = Math.floor(heightInInches / 12)
+  let heightInches = Math.floor(heightInInches % 12)
+  return [heightFeet, heightInches]
 }
 
 const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone, updateCharacterSkeleton}) => {
@@ -28,6 +42,13 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
 
   const validTargets = initialState.models[props.model] && initialState.models[props.model].validMorphTargets
   const validTargetsExist = (validTargets && Object.values(validTargets).length !== 0)
+
+  const heightRange =
+  sceneObject.type == 'character' && !ModelLoader.isCustomModel(sceneObject.model)
+    ? ['adult', 'teen'].some(el => sceneObject.model.includes(el))
+      ? CHARACTER_HEIGHT_RANGE['character']
+      : CHARACTER_HEIGHT_RANGE[sceneObject.model]
+    : undefined
 
   const morphTargets = useMemo(() => {
     if (!validTargetsExist) {
@@ -62,7 +83,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
         <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>
   
         <NumberSlider
-          label='Rotate X'
+          label='Rotation'
           value={_Math.radToDeg(props.rotation)}
           min={-180}
           max={180}
@@ -71,21 +92,43 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
           transform={transforms.degrees}
           formatter={formatters.degrees}
         />
-        
-        <NumberSlider label='Height' value={props.height} min={0.025} max={5} onSetValue={setHeight}/>
-        <NumberSlider
+        {ModelLoader.isCustomModel(sceneObject.model)
+          ? 
+            <NumberSlider 
+              label='scale'
+              min={ 0.3 }
+              max={ 3.05 }
+              step={ 0.0254 }
+              value={ sceneObject.height } 
+              onSetValue={ setHeight }/>
+          :
+          <NumberSlider 
+            label='Height' 
+            value={props.height} 
+            min={ heightRange.min } 
+            max={ heightRange.max } 
+            step={ 0.0254 }
+            onSetValue={setHeight}
+            formatter={ value => feetAndInchesAsString(
+              ...metersAsFeetAndInches(
+                sceneObject.height
+              )
+            ) }
+          /> 
+        }
+        {ModelLoader.isCustomModel(sceneObject.model) || <NumberSlider
           label='Head'
           value={props.headScale * 100}
           min={80} max={120} step={1}
           formatter={formatters.percent}
           onSetValue={setHeadScale}
-        />
+        />}
   
-        <ColorSelect
+         {ModelLoader.isCustomModel(sceneObject.model) || <ColorSelect
           label='Tint color'
           value={props.tintColor}
           onSetValue={setTintColor}
-        />
+        />}
       </div>
 
       <div className='inspector-offset-row'>

@@ -7,7 +7,6 @@ class ObjectRotationControl
         this.control.rotationOnly = true;
         this.control.setMode('rotate');
         this.control.size = 0.2;
-        this.domElement = domElement;
         this.control.userData.type = "objectControl";
         this.control.traverse(child => {
             child.userData.type = "objectControl";
