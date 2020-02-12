@@ -199,6 +199,7 @@ const Editor = React.memo(({
                     setSmallCanvasData={ setSmallCanvasData }
                     />
                 </Provider>
+                <Effect/>
               </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
