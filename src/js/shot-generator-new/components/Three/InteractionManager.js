@@ -116,10 +116,12 @@ const InteractionManager = connect(
     const cameraControlsView = useRef()
 
     useEffect(() => {
+
       if(!cameraControlsView.current) return
       cameraControlsView.current.dispose()
       cameraControlsView.current.domElement = activeGL.domElement
       cameraControlsView.current.intializeEvents()
+      SGIkHelper.getInstance().changeDomElement(activeGL.domElement)
       if(!gpuPickerInstance.current) return
       gpuPickerInstance.current.renderer = activeGL
     }, [activeGL])

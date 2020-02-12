@@ -253,8 +253,6 @@ const SceneManagerR3fSmall = connect(
       }
     }, [renderData, intersectLogic])
 
-
-
     /////Render components
     return <group ref={rootRef}
       onPointerDown={ e => {

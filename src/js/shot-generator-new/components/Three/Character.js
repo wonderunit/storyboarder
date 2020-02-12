@@ -9,7 +9,7 @@ import {useAsset} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 const isUserModel = model => !!model.match(/\//)
 
-const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton}) => {
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData}) => {
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
@@ -19,6 +19,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     )
     const [ready, setReady] = useState(false)
     const { scene, camera, gl } = useThree()
+    const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const objectRotationControl = useRef(null)
     useEffect(() => {
       return () => {
@@ -206,6 +207,17 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           objectRotationControl.current.setCamera(camera)
     }, [camera])
 
+    useEffect(() => {
+      if(!objectRotationControl.current) return
+      objectRotationControl.current.deselectObject()
+      objectRotationControl.current.control.domElement = activeGL.domElement
+      // find the 3D Bone matching the selectedBone uuid
+      let bone = skeleton.bones.find(object => object.uuid === selectedBone)      
+      if (bone) {
+        objectRotationControl.current.selectObject(bone, selectedBone)
+      }
+    }, [activeGL])
+
     // headScale (0.8...1.2)
     useEffect(() => {
       if(!skeleton) return
@@ -284,7 +296,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [lod, isSelected, ready])
 
     useEffect(() => {
-        if(!ref.current) return 
+        if(!ref.current || objectRotationControl.current) return 
         objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
         objectRotationControl.current.setUpdateCharacter((name, rotation) => { updateCharacterSkeleton({
           id: sceneObject.id,

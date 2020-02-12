@@ -315,6 +315,7 @@ const SceneManagerR3fLarge = connect(
                 selectedBone={ selectedBone }
                 updateCharacterSkeleton={ updateCharacterSkeleton }
                 updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
+                renderData={renderData}
                 />
               </SimpleErrorBoundary>
         })
