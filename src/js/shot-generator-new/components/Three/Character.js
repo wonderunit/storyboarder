@@ -33,6 +33,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       return () => {
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
+        if(objectRotationControl.current)
+          objectRotationControl.current.deselectObject()
       }
     }, [gltf])
 
