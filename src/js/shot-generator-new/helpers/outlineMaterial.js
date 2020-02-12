@@ -2,10 +2,11 @@
 const SELECTED_COLOR = [122/256.0/2, 114/256.0/2, 233/256.0/2]
 const DEFAULT_COLOR = [0.0, 0.0, 0.0]
 
-export const patchMaterial = (material) => {
+export const patchMaterial = (material, customParameters = {}) => {
   material.userData.outlineParameters = {
     thickness: 0.008,
-    color: DEFAULT_COLOR
+    color: DEFAULT_COLOR,
+    ...customParameters
   }
   
   return material

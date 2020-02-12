@@ -71,7 +71,7 @@ import {OutlineEffect} from './../../../vendor/OutlineEffect'
 const Effect = () => {
   const {gl, size} = useThree()
 
-  const outlineEffect = new OutlineEffect(gl, { defaultThickness:0.003 })
+  const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
   
   useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
   useFrame(({ gl, scene, camera }) => {

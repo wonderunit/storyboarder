@@ -14,7 +14,7 @@ const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
-const materialFactory = () => patchMaterial(new MeshToonMaterial({
+const materialFactory = (isIcon) => patchMaterial(new MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
@@ -24,12 +24,14 @@ const materialFactory = () => patchMaterial(new MeshToonMaterial({
   flatShading: false,
   morphNormals: false,
   morphTargets: false
-}))
+}), {
+  thickness: isIcon ? 0.02 : 0.008
+})
 
-const meshFactory = source => {
+const meshFactory = (source, isIcon) => {
   let mesh = source.clone()
 
-  let material = materialFactory()
+  let material = materialFactory(isIcon)
 
   if (mesh.material.map) {
     material.map = mesh.material.map
@@ -40,7 +42,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const ModelObject = React.memo(({path, sceneObject, isSelected, ...props }) => {
+const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, ...props }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(SHOT_LAYERS))
@@ -59,7 +61,7 @@ const ModelObject = React.memo(({path, sceneObject, isSelected, ...props }) => {
             args={[1, 1, 1, 0.01]} />
           <primitive
             attach='material'
-            object={materialFactory()} />
+            object={materialFactory(isIcon)} />
         </mesh>
       ]
     }
@@ -71,7 +73,7 @@ const ModelObject = React.memo(({path, sceneObject, isSelected, ...props }) => {
           children.push(
             <primitive
               key={`${sceneObject.id}-${child.uuid}`}
-              object={meshFactory(child)}
+              object={meshFactory(child, isIcon)}
             />
           )
         }
