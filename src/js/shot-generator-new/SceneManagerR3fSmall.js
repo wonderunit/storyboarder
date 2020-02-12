@@ -238,6 +238,10 @@ const SceneManagerR3fSmall = connect(
       onPointerDown({ clientX: e.clientX, clientY: e.clientY, object: intersects[0].object })
     }
 
+    const deselect = () => {
+        selectObject(null)
+    }
+
     useEffect(() => {
       if(!renderData) return
       renderData.gl.domElement.addEventListener("pointerdown", intersectLogic)
@@ -251,15 +255,22 @@ const SceneManagerR3fSmall = connect(
       }
     }, [renderData, intersectLogic])
 
+    useEffect(() => {
+      if(renderData) return
+        gl.domElement.addEventListener("pointermove", onPointerMove)
+        gl.domElement.addEventListener("pointerdown", deselect)
+      return () => {
+        if(renderData) return
+          gl.domElement.removeEventListener("pointermove", onPointerMove)
+          gl.domElement.removeEventListener("pointerdown", deselect)
+      }
+    }, [onPointerMove])
+
     /////Render components
     return <group ref={rootRef}
       onPointerDown={ e => {
         selectObject(null)
-      }}
-      onPointerMove={e => {
-        e.stopPropagation()
-        renderData || onPointerMove(e)
-        }}> 
+      }}>
    
       <SaveShot isPlot={ true }/>
       <ambientLight
@@ -289,6 +300,7 @@ const SceneManagerR3fSmall = connect(
               }}
               onPointerDown={e => {
                 e.stopPropagation()
+                console.log("Pointer down")
                 renderData ||  onPointerDown(e)
               }}
               />
