@@ -166,10 +166,10 @@ const InteractionManager = connect(
     
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
-        intersectables.current = intersectables.current.concat(scene.children.filter(o => 
+        intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
             o.userData.type === 'controlTarget' ||
-            o.userData.type === 'controlPoint' ||
-            o.userData.type === 'objectControl' ))
+            o.userData.type === 'controlPoint' || 
+            o.userData.type === 'objectControl'))
     }
     
     const mouse = event => {

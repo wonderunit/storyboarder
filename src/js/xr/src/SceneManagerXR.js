@@ -671,19 +671,18 @@ const SceneContent = connect(
               let characterModel = getAsset(getFilepathForModelByType(sceneObjects[sceneObject.attachToId]))
               let gltf = getAsset(getFilepathForModelByType(sceneObjects[id]))
               let character = scene.__interaction.filter(o => o.userData.id === sceneObject.attachToId)[0]
-              return gltf
-                ? <SimpleErrorBoundary key={id}>
+              return <SimpleErrorBoundary key={id}>
                   <Attachable
                     key={id}
-                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
+                    gltf={gltf}
                     sceneObject={sceneObjects[id]}
                     isSelected={ selectedAttachable === id ? true : false}
                     modelSettings={models[sceneObjects[id].model] || undefined}
                     updateObject={updateObject}
                     characterModel={ characterModel }
-                    characterChildrenLength={ character ? character.children.length : 0 } />
+                    characterChildrenLength={ character ? character.children.length : 0 }
+                    rootRef={ rootRef.current } />
                 </SimpleErrorBoundary>
-                : null
             })
           } 
 

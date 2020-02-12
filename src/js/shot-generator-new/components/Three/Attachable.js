@@ -122,6 +122,12 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [sceneObject.bindBone])
 
     useEffect(() => {
+      if(!ref.current) return 
+      let index = scene.__interaction.indexOf(ref.current)
+      if (index === -1) scene.__interaction.push(ref.current) 
+    }, [characterModel])
+
+    useEffect(() => {
       if(!characterModel || !characterLOD || !isAllowedToInitialize) return 
         characterObject.current = scene.children[0].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
         if(!characterObject.current) return
@@ -156,7 +162,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         bone.add(ref.current)
 
         // Sets up object rotation control for manipulation of attachale rotation
-        objectRotationControl.current = new ObjectRotationControl(scene, camera, gl.domElement, characterObject.current.uuid)
+        objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, characterObject.current.uuid)
         objectRotationControl.current.control.canSwitch = false
         objectRotationControl.current.setUpdateCharacter((name, rotation) => {
           let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())

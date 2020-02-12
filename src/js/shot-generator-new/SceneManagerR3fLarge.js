@@ -90,7 +90,8 @@ const SceneManagerR3fLarge = connect(
         updateObject,
         updateCharacterPoleTargets,
         updateObjects,
-        deleteObjects
+        deleteObjects,
+        withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
     modelObjectIds,
@@ -115,7 +116,8 @@ const SceneManagerR3fLarge = connect(
     setLargeCanvasData,
     renderData,
     selectedAttachable,
-    deleteObjects
+    deleteObjects,
+    withState
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -170,12 +172,32 @@ const SceneManagerR3fLarge = connect(
     }, [selections])
 
     useEffect(() => {
+      let cameraObject = activeCamera
+   
+      camera.position.x = cameraObject.x
+      camera.position.y = cameraObject.z
+      camera.position.z = cameraObject.y
+      camera.rotation.x = 0
+      camera.rotation.z = 0
+      camera.rotation.y = cameraObject.rotation
+      camera.rotateX(cameraObject.tilt)
+      camera.rotateZ(cameraObject.roll)
+      camera.userData.type = cameraObject.type
+      camera.userData.locked = cameraObject.locked
+      camera.userData.id = cameraObject.id
+      camera.fov = cameraObject.fov
+      camera.updateProjectionMatrix()
+    }, [activeCamera])
+
+    useEffect(() => {
+      if(!selectedCharacters.current) return
       let selected = scene.children[0].children.find((obj) => selectedCharacters.current.indexOf(obj.userData.id) >= 0)
       let characters = scene.children[0].children.filter((obj) => obj.userData.type === "character")
       if (characters.length) {
         let keys = Object.keys(cameraShots)
         for(let i = 0; i < keys.length; i++ ) {
           let key = keys[i]
+          if((!cameraShots[key].size && !cameraShots[key].angle) || camera.userData.id !== cameraShots[key].cameraId ) continue
           setShot({
             camera,
             characters,
@@ -183,10 +205,10 @@ const SceneManagerR3fLarge = connect(
             updateObject,
             shotSize: cameraShots[key].size,
             shotAngle: cameraShots[key].angle
-          })
+          }) 
         }
       }
-    }, [cameraShots, selectedCharacters.current]) 
+    }, [cameraShots]) 
 
     const sceneChildren = scene && scene.children[0] && scene.children[0].children.length
 
@@ -243,25 +265,7 @@ const SceneManagerR3fLarge = connect(
         directionalLightRef.current.rotation.z = 0
         directionalLightRef.current.rotation.y = world.directional.rotation
         directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
-        
     }, [world])
-
-    useEffect(() => {
-      let cameraObject = activeCamera
-      camera.position.x = cameraObject.x
-      camera.position.y = cameraObject.z
-      camera.position.z = cameraObject.y
-      camera.rotation.x = 0
-      camera.rotation.z = 0
-      camera.rotation.y = cameraObject.rotation
-      camera.rotateX(cameraObject.tilt)
-      camera.rotateZ(cameraObject.roll)
-      camera.userData.type = cameraObject.type
-      camera.userData.locked = cameraObject.locked
-      camera.userData.id = cameraObject.id
-      camera.fov = cameraObject.fov
-      camera.updateProjectionMatrix()
-    }, [activeCamera])
 
     useEffect(() => {
       scene.background = new THREE.Color(world.backgroundColor)

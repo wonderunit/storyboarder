@@ -17,7 +17,7 @@ const HandSelectionModal = React.memo(({
         let selectOptions = []
         let skeletonValues = Object.values(skeleton)
         for(let i = 0; i < skeletonValues.length; i++) {
-          if(!skeletonValues[i].name.includes("leaf"))
+          if(skeletonValues[i].name && !skeletonValues[i].name.includes("leaf"))
           {
             let name = skeletonValues[i].name
             selectOptions.push({ value: name, label:name})
