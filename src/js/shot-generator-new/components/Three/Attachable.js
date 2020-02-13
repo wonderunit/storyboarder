@@ -1,8 +1,6 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { useUpdate, useThree } from 'react-three-fiber'
-
-import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
 import {useAsset} from '../../hooks/use-assets-manager'
 import {SHOT_LAYERS} from '../../utils/ShotLayers'
 import isUserModel from '../../helpers/isUserModel'
@@ -246,7 +244,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [sceneObject.size, characterLOD])
 
     const rebindAttachable = () => {
-      let prevCharacter = characterObject.current
       characterObject.current = scene.__interaction.filter(child => child.userData.id === sceneObject.attachToId)[0]
       if(!characterObject.current ) return
       

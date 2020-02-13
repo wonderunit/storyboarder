@@ -1,5 +1,5 @@
 import log from 'electron-log'
-
+import React from 'react'
 class FatalErrorBoundary extends React.Component {
   constructor(props) {
     super(props)

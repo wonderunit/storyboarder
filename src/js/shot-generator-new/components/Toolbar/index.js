@@ -1,5 +1,5 @@
-import  { connect } from 'react-redux'
-import  { useMemo, useRef }  from 'react'
+import { connect } from 'react-redux'
+import React, { useMemo, useRef }  from 'react'
 import {
   // action creators
   selectObject,

@@ -6,8 +6,6 @@ import { createSelector } from 'reselect'
 import { ipcRenderer, remote} from 'electron'
 const { dialog } = remote
 import KeyCommandsSingleton from './KeyCommandsSingleton'
-import DuplicationCommand from './commands/DuplicateCommand'
-import GroupCommand from './commands/GroupCommand'
 
 const canDelete = (sceneObject, activeCamera) =>
   // allow objects

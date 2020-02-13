@@ -3,12 +3,15 @@ import { connect } from "react-redux"
 import { 
     getSelections,
     getSerializedState,
-    markSaved
+    markSaved,
+    selectObject
  } from '../../../shared/reducers/shot-generator'
  import { ipcRenderer } from 'electron'
 import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import { OutlineEffect } from '../../../vendor/OutlineEffect'
+import { remote } from 'electron'
+const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const SaveShot = connect(
@@ -21,13 +24,21 @@ const SaveShot = connect(
         getSelections,
         getSerializedState,
         withState,
-        markSaved
+        markSaved,
+        selectObject,
+        saveScene: filepath => (dispatch, getState) => {
+            let state = getState()
+            let contents = getSerializedState(state)
+            fs.writeFileSync(filepath, JSON.stringify(contents, null, 2))
+            dialog.showMessageBox(null, { message: 'Saved!' })
+          },
     })
 ( React.memo(({
     withState,
     markSaved,
     data,
-    isPlot = false
+    isPlot = false,
+    selectObject
 }) => {
     const { scene, camera } = useThree()
     const imageRenderer = useRef()
@@ -41,6 +52,7 @@ const SaveShot = connect(
     }, [])
 
     const saveShot = () => {
+        selectObject(null)
         if(!isPlot) {
             withState((dispatch, state) => {
                 let cameraImage = renderImagesForBoard(dispatch, state)
@@ -66,6 +78,7 @@ const SaveShot = connect(
     }
   
     const insertShot = () => {
+        selectObject(null)
         if(!isPlot) {
             withState((dispatch, state) => {
                 let cameraImage = renderImagesForBoard(dispatch, state)

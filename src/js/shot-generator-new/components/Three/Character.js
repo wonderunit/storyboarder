@@ -8,7 +8,7 @@ import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationCont
 import {useAsset} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
-const isUserModel = model => !!model.match(/\//)
+import isUserModel from '../../helpers/isUserModel'
 
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData}) => {
     const {asset: gltf} = useAsset(path)
