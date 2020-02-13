@@ -107,7 +107,7 @@ const SaveShot = connect(
 
         let savedBackground  
         if(isPlot) {
-            scene.background && scene.background.clone()
+            savedBackground = scene.background && scene.background.clone()
             scene.background = new THREE.Color( "#FFFFFF" )
         }
         imageRenderer.current.setSize(width, 900)
