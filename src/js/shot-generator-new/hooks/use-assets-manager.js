@@ -114,10 +114,10 @@ export const useAssets = (paths) => {
     const pendingAssets = paths.filter(asset => isAssetPending(asset))
     if (shouldLoad.length > 0) {
       shouldLoad.map(loadAsset) // Fetch here
-      setAssetsToLoad(shouldLoad) // Update 'assetsToLoad' to know, how many objects we are waiting for fetch
-    } else if(pendingAssets.length > 0) {
-      setAssetsToLoad(pendingAssets)
     }
+
+    // Update 'assetsToLoad' to know, how many objects we are waiting for fetch
+    setAssetsToLoad(shouldLoad.concat(pendingAssets))
   }, [paths.reduce((acc, v) => acc + v, '')])
 
   /**

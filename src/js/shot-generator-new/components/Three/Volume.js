@@ -116,6 +116,8 @@ const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
     
     const {assets: textures, loaded: texturesReady} = useAssets(imagesPaths)
     
+    console.log(textures, texturesReady)
+    
     const ref = useUpdate(
         self => {
           self.traverse(child => child.layers.enable(SHOT_LAYERS))
