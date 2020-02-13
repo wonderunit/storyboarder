@@ -20,7 +20,11 @@ const useDraggingManager = (useIcons) => {
       if (useIcons) {
         plane.current.setFromNormalAndCoplanarPoint( camera.position.clone().normalize(), target.position )
       } else {
-        plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
+        if ( target.userData.type === 'attachable' ) { 
+          plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.worldPosition() )
+        } else {
+          plane.current.setFromNormalAndCoplanarPoint( camera.getWorldDirection( plane.current.normal ), target.position )
+        }
       }
     
       for (let selection of selections) {
@@ -61,6 +65,7 @@ const useDraggingManager = (useIcons) => {
           target.position.set( x, y, z )
           target.updateMatrixWorld(true)
           target.applyMatrix(parentInverseMatrixWorld)
+          target.updateMatrixWorld(true)
   
           objectChanges.current[target.userData.id] = { x, y, z }
         } else {
