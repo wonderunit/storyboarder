@@ -8,6 +8,7 @@ import {
  import { ipcRenderer } from 'electron'
 import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import { OutlineEffect } from '../../../vendor/OutlineEffect'
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const SaveShot = connect(
@@ -30,6 +31,14 @@ const SaveShot = connect(
 }) => {
     const { scene, camera } = useThree()
     const imageRenderer = useRef()
+    const outlineEffect = useRef()
+    
+    useEffect(() => {
+        if (!imageRenderer.current) {
+            imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
+        }
+        outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
+    }, [])
 
     const saveShot = () => {
         if(!isPlot) {
@@ -97,9 +106,6 @@ const SaveShot = connect(
     }, [insertShot])
   
     const renderImagesForBoard = (dispatch, state) => {
-        if (!imageRenderer.current) {
-          imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
-        }
         let width = isPlot ? 900 : Math.ceil(900 * state.aspectRatio)
         let imageRenderCamera = camera.clone()
         imageRenderCamera.layers.set(SHOT_LAYERS)
@@ -110,9 +116,9 @@ const SaveShot = connect(
             savedBackground = scene.background && scene.background.clone()
             scene.background = new THREE.Color( "#FFFFFF" )
         }
-        imageRenderer.current.setSize(width, 900)
-        imageRenderer.current.render(scene, imageRenderCamera)
-        let cameraImage = imageRenderer.current.domElement.toDataURL()
+        outlineEffect.current.setSize(width, 900)
+        outlineEffect.current.render(scene, imageRenderCamera)
+        let cameraImage = outlineEffect.current.domElement.toDataURL()
         if(isPlot) { 
             scene.background = savedBackground
         }
