@@ -88,7 +88,7 @@ const useExportToGltf = (sceneRef, storyboarderFilePath) => {
           timing: 5
         })
         let scene = new THREE.Scene()
-        for (let child of sceneRef.current.children) {
+        for (let child of sceneRef.children[0].children) {
           // HACK test to avoid IconSprites, which fail to .clone
           if (!child.icon) {
             if (child.userData.id && sceneObjects[child.userData.id]) {
@@ -144,7 +144,7 @@ const useExportToGltf = (sceneRef, storyboarderFilePath) => {
               path.dirname(meta.storyboarderFilePath),
               'exports',
               filename
-            )
+              )
 
             fs.ensureDirSync(path.dirname(filepath))
             fs.writeFileSync(filepath, Buffer.from(glb))

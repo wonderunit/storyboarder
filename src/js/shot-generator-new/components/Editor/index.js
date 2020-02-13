@@ -118,7 +118,6 @@ const Editor = React.memo(({
   }, [])
 
 
-  useExportToGltf(getScene())
 
 
   const guidesDimensions = useMemo(() => {
@@ -175,6 +174,9 @@ const Editor = React.memo(({
     smallCanvasData.current.scene = scene
     smallCanvasData.current.gl = gl
   }
+
+
+  useExportToGltf(largeCanvasData.current.scene)
 
   return (
     <FatalErrorBoundary>
