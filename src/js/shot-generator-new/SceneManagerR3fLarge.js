@@ -273,6 +273,15 @@ const SceneManagerR3fLarge = connect(
       scene.background = new THREE.Color(world.backgroundColor)
     }, [world.backgroundColor])
 
+    useEffect(() => {
+      if(!directionalLightRef.current) return
+      directionalLightRef.current.rotation.x = 0
+      directionalLightRef.current.rotation.z = 0
+      directionalLightRef.current.rotation.y = world.directional.rotation
+      directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
+      console.log(directionalLightRef.current)
+    }, [world.directional.rotation, world.directional.tilt])
+
     return <group ref={ rootRef }> 
     <SaveShot isPlot={ false }/>
     <InteractionManager renderData={ renderData }/>
@@ -289,8 +298,9 @@ const SceneManagerR3fLarge = connect(
         position={ [0, 1.5, 0] }
         target-position={ [0, 0, 0.4] }
         onUpdate={ self => (self.layers.enable(SHOT_LAYERS)) }
-
-    />
+    > 
+      <primitive object={directionalLightRef.current ? directionalLightRef.current.target : new THREE.Object3D()}/>
+    </directionalLight>
     {
         modelObjectIds.map(id => {
             let sceneObject = sceneObjects[id]
