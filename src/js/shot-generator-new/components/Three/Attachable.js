@@ -37,7 +37,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, characterChildrenLength, deleteObjects, characterModelName }) => {
+const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, characterChildrenLength, deleteObjects, character }) => {
     const {asset: gltf} = useAsset(path)
     const {asset: characterModel} = useAsset(сharacterModelPath)
     const [characterLOD, setCharacterLOD] = useState()
@@ -78,7 +78,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         setAllowToInitialize(true)
       } else {
         setAllowToInitialize(false)
-        let isCurrentModelUser = isUserModel(characterModelName)
+        let isCurrentModelUser = isUserModel(character.model)
         let isPrevModelUser = isUserModel(prevModelName.current)
         if((!isPrevModelUser && isCurrentModelUser) || 
            (isPrevModelUser && !isCurrentModelUser) ||
@@ -89,10 +89,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         }
       }
       return () => {
-        prevModelName.current = characterModelName
+        prevModelName.current = character.model
         setAllowToInitialize(false)
       }
-    }, [characterModelName])
+    }, [character.model])
 
     useEffect(() => {
       isAttachableSelected.current = false
@@ -128,10 +128,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
 
     useEffect(() => {
       if(!characterModel || !characterLOD || !isAllowedToInitialize) return 
-        characterObject.current = scene.children[0].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
-        if(!characterObject.current) return
-        let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
-        let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
+      characterObject.current = scene.children[0].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
+      if(!characterObject.current) return
+      let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
+      let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
         if(sceneObject.status === "PENDING") {
           let modelPosition = new THREE.Vector3()
           let quat = null
@@ -258,6 +258,13 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       ref.current.updateWorldMatrix(true, true)
       saveToStore()
     }
+
+    let characterPosition = characterObject.current ? characterObject.current.position : {x:0, y:0, z:0} 
+    useEffect(() => {
+      if(!characterObject.current || !ref.current || !characterLOD) return
+      characterObject.current.updateWorldMatrix(false, true)
+      saveToStore()
+    }, [character.x, character.y, character.z, character.rotation, character.skeleton])
 
     const saveToStore = () => {
       let position = ref.current.worldPosition()// new THREE.Vector3()

@@ -343,7 +343,7 @@ const SceneManagerR3fLarge = connect(
                 сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
                 characterChildrenLength={ character ? character.children.length : 0 }
                 deleteObjects={ deleteObjects }
-                characterModelName={ sceneObjects[sceneObject.attachToId].model }
+                character={ sceneObjects[sceneObject.attachToId] }
               />
               </SimpleErrorBoundary>
         })
