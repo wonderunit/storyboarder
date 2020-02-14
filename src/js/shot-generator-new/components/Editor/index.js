@@ -21,6 +21,8 @@ import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
   selectObject,
   setMainViewCamera,
+  getSceneObjects,
+  getWorld
 } from './../../../shared/reducers/shot-generator'
 
 import notifications from './../../../window/notifications'
@@ -33,6 +35,7 @@ import GuidesView from "../GuidesView"
 import {useAsset} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
+import createDeepEqualSelector from "../../../utils/deepEqualSelector"
 
 const Effect = ({renderData}) => {
   const {gl, size} = useThree()
@@ -52,7 +55,7 @@ const Effect = ({renderData}) => {
 }
 
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, setMainViewCamera, withState, store
+  mainViewCamera, aspectRatio, setMainViewCamera, withState, store, sceneObjects, world
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
@@ -208,11 +211,16 @@ const Editor = React.memo(({
 })
 
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
+const getSceneObjectsM = createDeepEqualSelector([getSceneObjects], sceneObjects => sceneObjects)
+const getWorldM = createDeepEqualSelector([getWorld], world => world)
+const getAttachmentsM = createDeepEqualSelector([(state) => state.attachments], attachments => attachments)
 
 export default connect(
   (state) => ({
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
+    sceneObjects: getSceneObjectsM(state),
+    world: getWorldM(state),
   }),
   {
     withState,

@@ -483,7 +483,6 @@ export const OutlineEffect = function ( renderer, parameters ) {
 
 		var currentAutoClear = renderer.autoClear;
 		renderer.autoClear = this.autoClear;
-
 		renderer.render( scene, camera );
 
 		renderer.autoClear = currentAutoClear;
@@ -503,8 +502,6 @@ export const OutlineEffect = function ( renderer, parameters ) {
 		scene.background = null;
 		renderer.autoClear = false;
 		renderer.shadowMap.enabled = false;
-
-		scene.updateMatrixWorld(true)
 		
 		scene.traverse( setOutlineMaterial );
 

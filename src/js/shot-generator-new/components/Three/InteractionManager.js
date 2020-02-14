@@ -428,7 +428,7 @@ const InteractionManager = connect(
         activeGL.domElement.removeEventListener('pointermove', onPointerMove)
         activeGL.domElement.removeEventListener('pointerup', onPointerUp)
       }
-    }, [onPointerDown, onPointerUp, onPointerMove, activeGL])
+    }, [onPointerDown, onPointerUp, onPointerMove, sceneObjects, activeGL])
     return null 
 }))
 
