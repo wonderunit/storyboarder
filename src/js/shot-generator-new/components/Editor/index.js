@@ -34,18 +34,22 @@ import {useAsset} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 
-const Effect = ({renderData}) => {
+import Stats from 'stats.js'
+
+const Effect = ({renderData, stats}) => {
   const {gl, size} = useThree()
 
   const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
   
   useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
   useFrame(({ gl, scene, camera }) => {
+    if(stats) stats.begin()
     if(renderData) {
       outlineEffect.render(renderData.scene, renderData.camera)
     } else {
       outlineEffect.render(scene, camera)
     }
+    if(stats) stats.end()
   }, 1)
   
   return null
@@ -59,7 +63,27 @@ const Editor = React.memo(({
   const largeCanvasInfo = useRef({ width: 0, height: 0 })
 
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
+  const stats = useRef()
 
+  const setStats = (event, value) => {
+    if (!stats.current) {
+      stats.current = new Stats()
+      stats.current.showPanel(0)
+      document.body.appendChild( stats.current.dom )
+      stats.current.dom.style.top = '7px'
+      stats.current.dom.style.left = '460px'
+    } else {
+      document.body.removeChild( stats.current.dom )
+      stats.current = undefined
+    }
+  }
+
+  useEffect(() => {
+    ipcRenderer.on('shot-generator:menu:view:fps-meter', setStats)
+    return () => {
+      ipcRenderer.off('shot-generator:menu:view:fps-meter', setStats)
+    }
+  }, [])
 
   /** Resources loading end */
   useEffect(() => {
@@ -177,7 +201,8 @@ const Editor = React.memo(({
                       renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                       setLargeCanvasData= { setLargeCanvasData }/>
                     </Provider>
-                    <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current } />
+                    <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
+                          stats={ stats.current } />
                     
                   </Canvas>
                   <GuidesView

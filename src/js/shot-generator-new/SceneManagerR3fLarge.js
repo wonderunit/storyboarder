@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
@@ -21,7 +21,7 @@ import {
 
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
-import { useThree, useFrame } from 'react-three-fiber'
+import { useThree } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
@@ -33,7 +33,6 @@ import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
 import { getFilePathForImages } from "./helpers/get-filepath-for-images"
 import { setShot } from './utils/cameraUtils'
-import {useAsset} from "./hooks/use-assets-manager";
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
 import SaveShot from './components/Three/SaveShot'
