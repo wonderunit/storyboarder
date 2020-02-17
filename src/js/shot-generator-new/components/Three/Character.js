@@ -115,6 +115,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     useEffect(() => {
 
       return () => {
+        if(!lod) return
         for(let i = 0; i < lod.children.length; i++) {
             lod.children[i].geometry.dispose()
             lod.children[i].material.dispose()

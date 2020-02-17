@@ -148,6 +148,7 @@ export const useAssets = (paths) => {
     return () => {
       for(let i = 0; i < paths.length; i++) {
         let currentModel = cache.get()[paths[i]]
+        if(!currentModel) continue
         currentModel.usageCount -= 1
       }
     }
