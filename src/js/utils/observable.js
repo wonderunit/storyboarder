@@ -6,10 +6,11 @@ const observable = (initial = {}) => {
 
   const get = () => value.current
 
-  const subscribe = (fn) => listeners.push(fn)
-  const unsubscribe = (fn) => listeners.splice(listeners.indexOf(fn), 1)
+  const subscribe = (fn) => listeners.indexOf(fn) === -1 && listeners.push(fn)
+  const unsubscribe = (fn) => listeners.indexOf(fn) !== -1 && listeners.splice(listeners.indexOf(fn), 1)
   const notify = () => {
-    for(let fn of listeners) {
+    for(let i = listeners.length - 1; i >= 0; i--) {
+      let fn = listeners[i]
       fn(value.current)
     }
   }
