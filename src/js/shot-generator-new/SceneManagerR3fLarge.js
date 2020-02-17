@@ -229,7 +229,7 @@ const SceneManagerR3fLarge = connect(
         o.userData.type === "ground")
     }, [sceneChildren])
 
-    const onCommandDrop = useCallback(() => {
+    const onCommandDrop = () => {
       let changes = {}
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children[0].children.find( child => child.userData.id === selections[i] )
@@ -244,7 +244,7 @@ const SceneManagerR3fLarge = connect(
         }
       }
       updateObjects(changes)
-    }, [selections, sceneChildren])
+    }
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:

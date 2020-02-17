@@ -135,5 +135,12 @@ class UniversalPickableCharacter extends Pickable
         }   
         this.pickingMesh.visible = true;
     }
+
+    dispose() 
+    {
+        super.dispose();
+        this.pickingMesh.geometry.dispose()
+        this.pickingMesh.skeleton.boneTexture.dispose()
+    }
 }
 module.exports = UniversalPickableCharacter;

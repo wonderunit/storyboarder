@@ -8,7 +8,7 @@ import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationCont
 import {useAsset} from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
-import isUserModel from '../../helpers/isUserModel'
+const isUserModel = model => !!model.match(/\//)
 
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData}) => {
     const {asset: gltf} = useAsset(path)
@@ -89,7 +89,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
             patchMaterial(mesh.material)
             
-            lod.addLevel(mesh, d * 8)
+            lod.addLevel(mesh, d * 4)
       }
 
       let skeleton = lod.children[0].skeleton
@@ -111,6 +111,18 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       setReady(true)
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
+
+    useEffect(() => {
+
+      return () => {
+        for(let i = 0; i < lod.children.length; i++) {
+            lod.children[i].geometry.dispose()
+            lod.children[i].material.dispose()
+        }
+
+        SGIkHelper.getInstance().cleanUpCharacter()
+      }
+    }, [])
 
 
     // Applies skeleton changes
