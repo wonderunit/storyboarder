@@ -1,3 +1,4 @@
+import React from 'react'
 class SimpleErrorBoundary extends React.Component {
     constructor (props) {
       super(props)

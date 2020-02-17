@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import React, { useMemo, useEffect, useRef } from 'react'
+import React, { useEffect, useRef } from 'react'
 import {useAsset} from "../../hooks/use-assets-manager"
 import {useUpdate} from 'react-three-fiber'
 import onlyOfTypes from './../../utils/only-of-types'

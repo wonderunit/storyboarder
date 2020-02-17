@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
@@ -21,7 +21,7 @@ import {
 
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
-import { useThree, useFrame } from 'react-three-fiber'
+import { useThree } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
@@ -33,7 +33,6 @@ import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
 import { getFilePathForImages } from "./helpers/get-filepath-for-images"
 import { setShot } from './utils/cameraUtils'
-import {useAsset} from "./hooks/use-assets-manager";
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
 import SaveShot from './components/Three/SaveShot'
@@ -230,7 +229,7 @@ const SceneManagerR3fLarge = connect(
         o.userData.type === "ground")
     }, [sceneChildren])
 
-    const onCommandDrop = useCallback(() => {
+    const onCommandDrop = () => {
       let changes = {}
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children[0].children.find( child => child.userData.id === selections[i] )
@@ -245,7 +244,7 @@ const SceneManagerR3fLarge = connect(
         }
       }
       updateObjects(changes)
-    }, [selections, sceneChildren])
+    }
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:
@@ -273,6 +272,15 @@ const SceneManagerR3fLarge = connect(
       scene.background = new THREE.Color(world.backgroundColor)
     }, [world.backgroundColor])
 
+    useEffect(() => {
+      if(!directionalLightRef.current) return
+      directionalLightRef.current.rotation.x = 0
+      directionalLightRef.current.rotation.z = 0
+      directionalLightRef.current.rotation.y = world.directional.rotation
+      directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
+      console.log(directionalLightRef.current)
+    }, [world.directional.rotation, world.directional.tilt])
+
     return <group ref={ rootRef }> 
     <SaveShot isPlot={ false }/>
     <InteractionManager renderData={ renderData }/>
@@ -289,8 +297,9 @@ const SceneManagerR3fLarge = connect(
         position={ [0, 1.5, 0] }
         target-position={ [0, 0, 0.4] }
         onUpdate={ self => (self.layers.enable(SHOT_LAYERS)) }
-
-    />
+    > 
+      <primitive object={directionalLightRef.current ? directionalLightRef.current.target : new THREE.Object3D()}/>
+    </directionalLight>
     {
         modelObjectIds.map(id => {
             let sceneObject = sceneObjects[id]
@@ -306,10 +315,8 @@ const SceneManagerR3fLarge = connect(
     {
         characterIds.map(id => {
             let sceneObject = sceneObjects[id]
-            //let gltf = useAsset(ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}))
             return <SimpleErrorBoundary  key={ id }>
               <Character
-                //gltf={ gltf }
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
@@ -345,7 +352,7 @@ const SceneManagerR3fLarge = connect(
                 сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
                 characterChildrenLength={ character ? character.children.length : 0 }
                 deleteObjects={ deleteObjects }
-                characterModelName={ sceneObjects[sceneObject.attachToId].model }
+                character={ sceneObjects[sceneObject.attachToId] }
               />
               </SimpleErrorBoundary>
         })

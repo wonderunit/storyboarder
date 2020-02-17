@@ -3,11 +3,15 @@ import { connect } from "react-redux"
 import { 
     getSelections,
     getSerializedState,
-    markSaved
+    markSaved,
+    selectObject
  } from '../../../shared/reducers/shot-generator'
  import { ipcRenderer } from 'electron'
 import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import { OutlineEffect } from '../../../vendor/OutlineEffect'
+import { remote } from 'electron'
+const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const SaveShot = connect(
@@ -20,18 +24,35 @@ const SaveShot = connect(
         getSelections,
         getSerializedState,
         withState,
-        markSaved
+        markSaved,
+        selectObject,
+        saveScene: filepath => (dispatch, getState) => {
+            let state = getState()
+            let contents = getSerializedState(state)
+            fs.writeFileSync(filepath, JSON.stringify(contents, null, 2))
+            dialog.showMessageBox(null, { message: 'Saved!' })
+          },
     })
 ( React.memo(({
     withState,
     markSaved,
     data,
-    isPlot = false
+    isPlot = false,
+    selectObject
 }) => {
     const { scene, camera } = useThree()
     const imageRenderer = useRef()
+    const outlineEffect = useRef()
+    
+    useEffect(() => {
+        if (!imageRenderer.current) {
+            imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
+        }
+        outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
+    }, [])
 
     const saveShot = () => {
+        selectObject(null)
         if(!isPlot) {
             withState((dispatch, state) => {
                 let cameraImage = renderImagesForBoard(dispatch, state)
@@ -57,6 +78,7 @@ const SaveShot = connect(
     }
   
     const insertShot = () => {
+        selectObject(null)
         if(!isPlot) {
             withState((dispatch, state) => {
                 let cameraImage = renderImagesForBoard(dispatch, state)
@@ -97,9 +119,6 @@ const SaveShot = connect(
     }, [insertShot])
   
     const renderImagesForBoard = (dispatch, state) => {
-        if (!imageRenderer.current) {
-          imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
-        }
         let width = isPlot ? 900 : Math.ceil(900 * state.aspectRatio)
         let imageRenderCamera = camera.clone()
         imageRenderCamera.layers.set(SHOT_LAYERS)
@@ -107,12 +126,12 @@ const SaveShot = connect(
 
         let savedBackground  
         if(isPlot) {
-            scene.background && scene.background.clone()
+            savedBackground = scene.background && scene.background.clone()
             scene.background = new THREE.Color( "#FFFFFF" )
         }
-        imageRenderer.current.setSize(width, 900)
-        imageRenderer.current.render(scene, imageRenderCamera)
-        let cameraImage = imageRenderer.current.domElement.toDataURL()
+        outlineEffect.current.setSize(width, 900)
+        outlineEffect.current.render(scene, imageRenderCamera)
+        let cameraImage = outlineEffect.current.domElement.toDataURL()
         if(isPlot) { 
             scene.background = savedBackground
         }

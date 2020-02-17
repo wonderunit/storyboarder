@@ -6,6 +6,7 @@ const _removedIpcCommands = []
 let ipcRemoved = false
 let keyRemoved = false
 let _updateComponent = null
+let _isKeysEnabled = true
 class KeyCommandsSingleton {
 
     constructor() {
@@ -52,6 +53,14 @@ class KeyCommandsSingleton {
 
     set updateComponent (value) {
         _updateComponent = value
+    }
+
+    set isEnabledKeysEvents( value ) {
+        _isKeysEnabled = value
+    }
+
+    get isEnabledKeysEvents() {
+        return _isKeysEnabled
     }
 
     addKeyCommand({key, keyCustomCheck, value}) {

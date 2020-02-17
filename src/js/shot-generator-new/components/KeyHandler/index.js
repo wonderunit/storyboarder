@@ -6,8 +6,6 @@ import { createSelector } from 'reselect'
 import { ipcRenderer, remote} from 'electron'
 const { dialog } = remote
 import KeyCommandsSingleton from './KeyCommandsSingleton'
-import DuplicationCommand from './commands/DuplicateCommand'
-import GroupCommand from './commands/GroupCommand'
 
 const canDelete = (sceneObject, activeCamera) =>
   // allow objects
@@ -158,7 +156,7 @@ const KeyHandler = connect(
 
     useEffect(() => {
       const onKeyDown = event => {
-
+        if(!KeyCommandsSingleton.getInstance().isEnabledKeysEvents) return
         let keyCommands = KeyCommandsSingleton.getInstance().keyCommands
         for(let i = 0; i < keyCommands.length; i ++ ) {
             let keyCommand = keyCommands[i]

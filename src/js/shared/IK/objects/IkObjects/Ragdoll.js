@@ -48,6 +48,34 @@ class Ragdoll extends IkObject
         this.updateCharPosition = updateCharPosition;
     }
 
+    cleanUp() 
+    {
+        if(!this.clonedObject) return
+        let lod = this.clonedObject.getObjectByProperty("type", "LOD");
+        for(let i = 0; i < lod.children.length; i++) {
+            lod.children[i].geometry.dispose();
+            lod.children[i].material.dispose();
+        }
+        this.clonedObject = null;
+        this.originalObject = null;
+        this.rigMesh = null;
+        this.originalMesh = null;
+        this.hipsControlTarget.bone = null;
+        this.hipsControlTarget = null;
+        this.ik = null;
+        this.hips = null;
+        this.ikSwitcher.cleanUp();
+
+        let keys = Object.keys(this.chainObjects);
+        for(let i = 0; i < keys.length; i++) {
+            this.chainObjects[keys[i]].controlTarget.bone = null;
+            let joints = this.chainObjects[keys[i]].chain.joints;
+            for(let i = 0; i < joints.length; i++ ) {
+                joints[i].bone = null;
+            }
+        }
+    }
+
     // Runs cycle which is updating object
     update()
     {

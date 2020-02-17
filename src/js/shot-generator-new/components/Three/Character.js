@@ -106,17 +106,29 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
+      setReady(true)
       // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
       updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
-      setReady(true)
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
+
+    useEffect(() => {
+
+      return () => {
+        for(let i = 0; i < lod.children.length; i++) {
+            lod.children[i].geometry.dispose()
+            lod.children[i].material.dispose()
+        }
+
+        SGIkHelper.getInstance().cleanUpCharacter()
+      }
+    }, [])
 
 
     // Applies skeleton changes
     // Initial skeleton pose is skeleton hand near waist 
     // We need to modify/apply this pose before changing skeleton in store
-    useMemo(() => {
+    useEffect(() => {
       if (!skeleton) return
       // has the user entered data for at least one bone?
       let hasModifications = Object.values(sceneObject.skeleton).length > 0
@@ -147,7 +159,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [skeleton, sceneObject.skeleton, ready])
 
     // Applies hand skeleton changes
-    useMemo(() => {
+    useEffect(() => {
       if (!skeleton) return
       if (!sceneObject.handSkeleton) return
       let hasModifications = Object.values(sceneObject.handSkeleton).length > 0
@@ -339,8 +351,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         scale={ [bodyScale, bodyScale, bodyScale] }
         visible={ visible }
       >
-      { lod && <primitive object={lod} /> }
-      { armature && <primitive object={armature} /> }
+      { <primitive object={lod || new THREE.Object3D()} /> }
+      { <primitive object={armature || new THREE.Object3D()} /> }
       </group>
 })
 

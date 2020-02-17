@@ -13,6 +13,7 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
   const setWidth = useCallback((width) => updateObject(id, {width}), [])
   const setHeight = useCallback((height) => updateObject(id, {height}), [])
   const setDepth = useCallback((depth) => updateObject(id, {depth}), [])
+  const setSize = useCallback((size) => updateObject(id, {width:size, height:size, depth:size}), [])
 
   const setRotateX = useCallback((x) => updateObject(id, { rotation: {x: _Math.degToRad(x)} }), [])
   const setRotateY = useCallback((z) => updateObject(id, { rotation: {z: _Math.degToRad(z)} }), [])
@@ -26,9 +27,10 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       <NumberSlider label='Y' value={props.y} min={-30} max={30} onSetValue={setY}/>
       <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>
 
-      <NumberSlider label='Width' value={props.width} min={0.025} max={5} onSetValue={setWidth}/>
-      <NumberSlider label='Height' value={props.height} min={0.025} max={5} onSetValue={setHeight}/>
-      <NumberSlider label='Depth' value={props.depth} min={0.025} max={5} onSetValue={setDepth}/>
+      { sceneObject.model === "box" &&  <NumberSlider label='Width' value={props.width} min={0.025} max={5} onSetValue={setWidth}/> }
+      { sceneObject.model === "box" &&  <NumberSlider label='Height' value={props.height} min={0.025} max={5} onSetValue={setHeight}/>}
+      { sceneObject.model === "box" &&  <NumberSlider label='Depth' value={props.depth} min={0.025} max={5} onSetValue={setDepth}/> }
+      { sceneObject.model !== "box" &&  <NumberSlider label='Size' value={props.depth} min={0.025} max={5} onSetValue={setSize}/> }
 
       <NumberSlider
         label='Rotate X'

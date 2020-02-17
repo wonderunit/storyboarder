@@ -1,7 +1,7 @@
 import InspectedWorld from '../InspectedWorld'
 import InspectedElement from '../InspectedElement'
 import React, { useContext } from 'react'
-import MultiSelectionInspector from '../../MultiSelectionInspector'
+import MultiSelectionInspector from '../MultiSelectionInspector'
 
 const Inspector = ({
   kind, data,

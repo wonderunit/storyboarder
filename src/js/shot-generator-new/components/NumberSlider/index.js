@@ -9,6 +9,7 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import useDoubleClick from './../../../hooks/use-double-click'
+import KeyCommandSingleton from '../KeyHandler/KeyCommandsSingleton'
 
 export const transforms = {
   // default
@@ -121,7 +122,9 @@ const NumberSliderComponent = React.memo(({
   }, [value])
 
   useEffect(() => {
+    KeyCommandSingleton.getInstance().isEnabledKeysEvents = !isTextInput
     if (isTextInput && inputRef.current) {
+      
       inputRef.current.focus()
       setImmediate(() => {
         inputRef.current.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length)

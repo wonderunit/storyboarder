@@ -1,6 +1,6 @@
 import { connect } from 'react-redux'
 import React, { useRef, useCallback, useLayoutEffect, useState, useMemo, useEffect } from 'react'
-import { useThree, useUpdate, useFrame } from 'react-three-fiber'
+import { useThree, useFrame } from 'react-three-fiber'
 import * as THREE from 'three'
 import { useDraggingManager } from '../../hooks/use-dragging-manager'
 import '../../../shared/IK/utils/Object3dExtension'
@@ -25,7 +25,6 @@ import {
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import CameraControls from '../../CameraControls'
-import { computeSphere } from 'three-bmfont-text/lib/utils'
 
 const getIntersectionTarget = intersect => {
   // character
@@ -55,16 +54,6 @@ const getIntersectionTarget = intersect => {
   }
 }
 
-const sceneObjectSelector = (state) => {
-    const sceneObjects = getSceneObjects(state)
-    return Object.values(sceneObjects).map((object) => {
-      return {
-        id:           object.id,
-        group:        object.group || null,
-        children:     object.children || null,
-      }
-    })
-  }
 const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => sceneObjects)
 const getSelectionsM = deepEqualSelector([getSelections], selections => selections)
 const InteractionManager = connect(

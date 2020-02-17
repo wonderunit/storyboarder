@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useEffect } from 'react'
+import React, { useMemo } from 'react'
 
 import { useUpdate } from 'react-three-fiber'
 import {useAsset} from "../../hooks/use-assets-manager"

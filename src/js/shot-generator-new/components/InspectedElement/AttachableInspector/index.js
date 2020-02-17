@@ -20,10 +20,7 @@ import Grid from "../../Grid"
 import Scrollable from "../../Scrollable"
 
 import AttachableEditor from './../AttachableEditor/index'
-import {getScene} from "../../../utils/scene"
-
 import isUserModel from '../../../helpers/isUserModel'
-import { ObjectSpaceNormalMap } from 'three'
 
 const AttachableInspector = connect(
   state => ({
@@ -41,7 +38,6 @@ const AttachableInspector = connect(
     createObject,
     selectAttachable
   }) => {
-    const scene = getScene()
 
     const [isModalVisible, showModal] = useState(false)
     const [results, setResults] = useState([])
@@ -182,7 +178,7 @@ const AttachableInspector = connect(
               itemHeight={itemSettings.ITEM_HEIGHT}
             />
 
-            <AttachableEditor scene={scene}/>
+            <AttachableEditor/>
           </Scrollable>
         </div>
       </React.Fragment>
