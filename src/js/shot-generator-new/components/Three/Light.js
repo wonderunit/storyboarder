@@ -34,7 +34,7 @@ const Light = React.memo(({sceneObject, isSelected, children }) => {
     lightColor = 0x7256ff
   }
   const { x, y, z, visible, locked } = sceneObject
-  return (
+  return mesh && (
     <group
       ref={ ref }
       onController={ visible ? () => null : null }

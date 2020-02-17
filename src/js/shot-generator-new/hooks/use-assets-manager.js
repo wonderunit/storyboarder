@@ -53,7 +53,7 @@ export const loadAsset = (path) => {
   if (!current[path]) {
     cache.set({
       ...cache.get(),
-      [path]: {data: null, status: LOADING_MODE.PENDING}
+      [path]: {data: null, status: LOADING_MODE.PENDING, usageCount: 0, lastUsedDate: Date.now()}
     })
 
     return new Promise((resolve, reject) => {
@@ -75,7 +75,7 @@ export const loadAsset = (path) => {
           value => {
             cache.set({
               ...cache.get(),
-              [path]: {data: value, status: LOADING_MODE.SUCCESS}
+              [path]: {data: value, status: LOADING_MODE.SUCCESS, usageCount: current[path].usageCount, lastUsedDate: current[path].lastUsedDate }
             })
 
             resolve(current[path])
@@ -84,7 +84,7 @@ export const loadAsset = (path) => {
           error => {
             cache.set({
               ...cache.get(),
-              [path]: {data: null, status: LOADING_MODE.ERROR}
+              [path]: {data: null, status: LOADING_MODE.ERROR, usageCount: current[path].usageCount, lastUsedDate: current[path].lastUsedDate }
             })
             
             console.error(error)
@@ -98,7 +98,6 @@ export const loadAsset = (path) => {
     })
   }
 }
-
 /**
  * Hook that allows components to fetch resources
  * @param paths Array of resources paths
@@ -106,6 +105,20 @@ export const loadAsset = (path) => {
  */
 export const useAssets = (paths) => {
   const [assetsToLoad, setAssetsToLoad] = useState(paths || [])
+
+  const cleanUnusedAssets = () => {
+    let keys = Object.keys(cache.get())
+    for(let i = 0; i < keys.length; i++) {
+      let key = keys[i]
+      let currentAsset = cache.get()[key]
+      if(currentAsset.usageCount === 0) {
+        let difference = (Date.now() - currentAsset.lastUsedDate) / 60000
+        if(difference >= 15) {
+          delete cache.get()[key]
+        }
+      }
+    }
+  } 
   /**
    * Fetch not fetched resources if 'paths' variable was changed
    */
@@ -118,6 +131,17 @@ export const useAssets = (paths) => {
 
     // Update 'assetsToLoad' to know, how many objects we are waiting for fetch
     setAssetsToLoad(shouldLoad.concat(pendingAssets))
+    for(let i = 0; i < paths.length; i++) {
+      cache.get()[paths[i]].usageCount += 1
+      cache.get()[paths[i]].lastUsedDate = Date.now()
+    }
+    cleanUnusedAssets()
+    return () => {
+      for(let i = 0; i < paths.length; i++) {
+        let currentModel = cache.get()[paths[i]]
+        currentModel.usageCount -= 1
+      }
+    }
   }, [paths.reduce((acc, v) => acc + v, '')])
 
   /**
