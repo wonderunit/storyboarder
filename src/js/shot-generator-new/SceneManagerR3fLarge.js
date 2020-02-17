@@ -17,7 +17,8 @@ import {
     updateObject,
     updateObjects,
     updateCharacterPoleTargets,
-    deleteObjects
+    deleteObjects,
+    getDefaultPosePreset
 
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
@@ -134,6 +135,7 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
+
     useEffect(() => {
         let sgIkHelper = SGIkHelper.getInstance()
         sgIkHelper.setUp(null, rootRef.current, camera, gl.domElement)
@@ -325,6 +327,7 @@ const SceneManagerR3fLarge = connect(
                 updateCharacterSkeleton={ updateCharacterSkeleton }
                 updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
                 renderData={renderData}
+                defaultPose={ getDefaultPosePreset() }
                 />
               </SimpleErrorBoundary>
         })

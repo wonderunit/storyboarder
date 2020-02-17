@@ -5,12 +5,12 @@ import cloneGltf from '../../helpers/cloneGltf'
 import SGIkHelper from '../../../shared/IK/SGIkHelper'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
-import {useAsset} from "../../hooks/use-assets-manager"
+import {useAsset} from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
-const isUserModel = model => !!model.match(/\//)
+import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
+import isUserModel from '../../helpers/isUserModel'
 
-const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData}) => {
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, defaultPose}) => {
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
@@ -30,6 +30,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [])
 
    
+
     useEffect(() => {
       return () => {
         ref.current.remove(BonesHelper.getInstance())
@@ -107,8 +108,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         originalHeight = bbox.max.y - bbox.min.y
       }
       setReady(true)
-      // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
-      updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
+
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
 
@@ -123,6 +123,22 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         SGIkHelper.getInstance().cleanUpCharacter()
       }
     }, [])
+
+    useMemo(() => {
+      if(isUserModel(sceneObject.model)) {
+        // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
+        updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
+      } else {
+        let defaultSkeleton = defaultPose.state.skeleton
+        let skeleton = Object.keys(defaultSkeleton).map((key) => {
+            return {
+              name:key,
+              rotation: defaultSkeleton[key].rotation
+            }
+        } )
+        updateCharacterIkSkeleton({id:sceneObject.id, skeleton})
+      }
+    }, [skeleton])
 
 
     // Applies skeleton changes
