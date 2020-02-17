@@ -63,7 +63,7 @@ import BoardInspector from "../BoardInspector";
 import GuidesInspector from "../GuidesInspector";
 import createDeepEqualSelector from "../../../utils/deepEqualSelector"
 import GuidesView from "../GuidesView"
-import {useAsset} from '../../hooks/use-assets-manager'
+import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 
@@ -102,7 +102,7 @@ const Editor = React.memo(({
     }
   }, [notificationsRef.current])
 
-  useEffect(() => {
+/*   useEffect(() => {
     createScene()
     // TODO introspect models
     //updateModels({})
@@ -114,9 +114,19 @@ const Editor = React.memo(({
     })
     return function cleanup () {
       removeScene()
+
+    }
+  }, []) */
+
+
+  useEffect(() => {
+    console.log("Mount")
+    cleanUpCache()
+    return () => {
+      console.log("Unmount")
+      cleanUpCache()
     }
   }, [])
-
 
 
 
