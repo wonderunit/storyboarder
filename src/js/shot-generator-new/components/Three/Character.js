@@ -90,7 +90,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
             patchMaterial(mesh.material)
             
-            lod.addLevel(mesh, d * 4)
+            lod.addLevel(mesh, d * 16)
       }
 
       let skeleton = lod.children[0].skeleton
