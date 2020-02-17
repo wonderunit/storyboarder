@@ -1,4 +1,4 @@
-import React, {useCallback} from 'react'
+import React from 'react'
 import classNames from 'classnames'
 import { filepathFor } from '../../../utils/filepathFor'
 import {IMAGE_HEIGHT, IMAGE_WIDTH} from "../../../utils/InspectorElementsSettings";
@@ -15,9 +15,10 @@ const ModelInspectorItem = React.memo(({
     const src = filepathFor(model).replace(/.glb$/, '.jpg')
     const isSelected = selectedFunc(model)
 
-    const onSelect = useCallback(() => {
+    const onSelect = () => {
       onSelectItem(model)
-    }, [onSelectItem])
+    }
+
     const className = classNames("thumbnail-search__item", {
       "thumbnail-search__item--selected": isSelected
     })
