@@ -348,8 +348,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         scale={ [bodyScale, bodyScale, bodyScale] }
         visible={ visible }
       >
-      { <primitive object={lod || new THREE.Object3D()} /> }
-      { <primitive object={armature || new THREE.Object3D()} /> }
+      { lod && <primitive object={lod} /> }
+      { armature && <primitive object={armature} /> }
       </group>
 })
 

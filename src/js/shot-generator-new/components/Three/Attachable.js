@@ -77,12 +77,12 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       if(!prevModelName.current) {
         setAllowToInitialize(true)
       } else {
-        setAllowToInitialize(false)
         let isCurrentModelUser = isUserModel(character.model)
         let isPrevModelUser = isUserModel(prevModelName.current)
         if((!isPrevModelUser && isCurrentModelUser) || 
            (isPrevModelUser && !isCurrentModelUser) ||
            (isPrevModelUser && isCurrentModelUser)) {
+          setAllowToInitialize(false)
           deleteObjects([sceneObject.id])
         } else {
           setAllowToInitialize(true)
@@ -105,15 +105,14 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     useEffect(() => {  
       if(!(characterChildrenLength > 0)) return
       let object = scene.__interaction.filter(o => o.userData.id === sceneObject.attachToId)[0]
-      setCharacterLOD(object.getObjectByProperty("type", "LOD"))
+      let lod = object.getObjectByProperty("type", "LOD")
+      setCharacterLOD(lod)
     }, [characterChildrenLength])
-
 
     useEffect(() => {
       if(!characterObject.current || !isAllowedToInitialize) return
       rebindAttachable()
-    }, [characterModel])
-    
+    }, [characterModel, characterLOD])    
 
     useEffect(() => {
       if(!ref.current || !characterObject.current ) return
@@ -132,50 +131,48 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       if(!characterObject.current) return
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       let bone = skinnedMesh.skeleton.bones.find(b => b.name === sceneObject.bindBone)
-        if(sceneObject.status === "PENDING") {
-          let modelPosition = new THREE.Vector3()
-          let quat = null
-          if(isUserModel(sceneObject.model)) {
-            modelPosition.copy(bone.worldPosition())
-            quat = bone.worldQuaternion()
-          } else {
-            let {x, y, z} = sceneObject
-            modelPosition.set(x, y, z)
-            modelPosition.multiplyScalar(1 / characterObject.current.worldScale().x)
-            let newGroup = new THREE.Object3D()
-            newGroup.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
-            newGroup.position.copy(modelPosition)
-            bone.add(newGroup)
-            bone.updateWorldMatrix(true, true)
-            modelPosition = newGroup.worldPosition()
-            quat = newGroup.worldQuaternion()
-            bone.remove(newGroup)
-          }
-          let euler = new THREE.Euler().setFromQuaternion(quat)
-          updateObject(sceneObject.id, {
-            x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
-            rotation: { x: euler.x, y: euler.y, z: euler.z },
-            status: "Loaded"
-          })
+      if(sceneObject.status === "PENDING") {
+        let modelPosition = new THREE.Vector3()
+        let quat = null
+        if(isUserModel(sceneObject.model)) {
+          modelPosition.copy(bone.worldPosition())
+          quat = bone.worldQuaternion()
+        } else {
+          let {x, y, z} = sceneObject
+          modelPosition.set(x, y, z)
+          modelPosition.multiplyScalar(1 / characterObject.current.worldScale().x)
+          let newGroup = new THREE.Object3D()
+          newGroup.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
+          newGroup.position.copy(modelPosition)
+          bone.add(newGroup)
+          bone.updateWorldMatrix(true, true)
+          modelPosition = newGroup.worldPosition()
+          quat = newGroup.worldQuaternion()
+          bone.remove(newGroup)
         }
-        bone.add(ref.current)
-
-        // Sets up object rotation control for manipulation of attachale rotation
-        objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, characterObject.current.uuid)
-        objectRotationControl.current.control.canSwitch = false
-        objectRotationControl.current.setUpdateCharacter((name, rotation) => {
-          let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
-
-          updateObject(ref.current.userData.id, {
-            rotation:
-            {
-              x : euler.x,
-              y : euler.y,
-              z : euler.z,
-            }
-          } )})
-        ref.current.updateMatrixWorld(true)
-        ref.current.updateWorldMatrix(true, true)
+        let euler = new THREE.Euler().setFromQuaternion(quat)
+        updateObject(sceneObject.id, {
+          x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
+          rotation: { x: euler.x, y: euler.y, z: euler.z },
+          status: "Loaded"
+        })
+      }
+      bone.add(ref.current)
+      // Sets up object rotation control for manipulation of attachale rotation
+      objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, characterObject.current.uuid)
+      objectRotationControl.current.control.canSwitch = false
+      objectRotationControl.current.setUpdateCharacter((name, rotation) => {
+        let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
+        updateObject(ref.current.userData.id, {
+          rotation:
+          {
+            x : euler.x,
+            y : euler.y,
+            z : euler.z,
+          }
+        } )})
+      ref.current.updateMatrixWorld(true)
+      ref.current.updateWorldMatrix(true, true)
     }, [characterLOD, isAllowedToInitialize])
 
     useEffect(() => {
@@ -249,7 +246,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       if(!skinnedMesh) return
-
+      console.log("Rebind")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(sceneObject.bindBone)
       bone.add(ref.current)
@@ -259,9 +256,8 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       saveToStore()
     }
 
-    let characterPosition = characterObject.current ? characterObject.current.position : {x:0, y:0, z:0} 
     useEffect(() => {
-      if(!characterObject.current || !ref.current || !characterLOD) return
+      if(!characterObject.current || !ref.current || !characterLOD || !ref.current.parent) return
       characterObject.current.updateWorldMatrix(false, true)
       saveToStore()
     }, [character.x, character.y, character.z, character.rotation, character.skeleton])
