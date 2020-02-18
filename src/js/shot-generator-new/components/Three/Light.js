@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react'
+import * as THREE from 'three'
+import React, { useMemo, useEffect, useState } from 'react'
 
-import { useUpdate } from 'react-three-fiber'
+import { useUpdate, useThree } from 'react-three-fiber'
 import {useAsset} from "../../hooks/use-assets-manager"
 
 import path from 'path'
@@ -9,14 +10,7 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 const Light = React.memo(({sceneObject, isSelected, children }) => {
   const {asset: gltf} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
   const mesh = useMemo(() => gltf ? gltf.scene.children[0].clone() : null, [gltf])
-
-  const spotLight = useUpdate(
-    self => {
-      self.target.position.set(0, 0, sceneObject.distance)
-      self.add(self.target)
-      self.layers.enable(SHOT_LAYERS)
-    }, [sceneObject.distance])
-  
+  const [lightColor, setLightColor] = useState(0x8c78f1)
 
   const ref = useUpdate(self => {
     self.rotation.x = 0
@@ -26,16 +20,23 @@ const Light = React.memo(({sceneObject, isSelected, children }) => {
     self.rotateZ(sceneObject.roll || 0)
   }, [sceneObject.rotation, sceneObject.tilt, sceneObject.roll])
 
+  const spotLight = useUpdate(
+    self => {
+      self.target.position.set(0, 0, sceneObject.distance)
+      self.add(self.target)
+      self.layers.enable(SHOT_LAYERS)
+  }, [sceneObject.distance])
+  
+  useEffect(() => {
+    if (isSelected) {
+      setLightColor(0x7256ff)
+    } else {
+      setLightColor(0x8c78f1)
+    }
+  }, [isSelected]) 
 
-
-  let lightColor = 0x8c78f1
-
-  if (isSelected) {
-    lightColor = 0x7256ff
-  }
   const { x, y, z, visible, locked } = sceneObject
-  return mesh && (
-    <group
+  return <group
       ref={ ref }
       onController={ visible ? () => null : null }
       visible={ visible }
@@ -46,7 +47,7 @@ const Light = React.memo(({sceneObject, isSelected, children }) => {
       }}
       position={ [x, z, y] }
     >
-      <primitive
+      { mesh && <primitive
         object={ mesh } 
         rotation={[-Math.PI/2, Math.PI, 0]}
         userData={{ 
@@ -55,10 +56,10 @@ const Light = React.memo(({sceneObject, isSelected, children }) => {
       >
         <meshBasicMaterial
           attach="material"
-          color={lightColor}
+          color={ lightColor }
           flatShading={false}
         />
-      </primitive>
+      </primitive> }
 
       <spotLight
         ref={ spotLight }
@@ -74,7 +75,6 @@ const Light = React.memo(({sceneObject, isSelected, children }) => {
 
       {children}
     </group>
-  )
 })
 
 export default Light
