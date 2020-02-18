@@ -17,8 +17,7 @@ import {
     updateObject,
     updateObjects,
     updateCharacterPoleTargets,
-    deleteObjects,
-    getDefaultPosePreset
+    deleteObjects
 
  } from '../shared/reducers/shot-generator'
 import { createSelector } from 'reselect'
@@ -327,7 +326,6 @@ const SceneManagerR3fLarge = connect(
                 updateCharacterSkeleton={ updateCharacterSkeleton }
                 updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
                 renderData={renderData}
-                defaultPose={ getDefaultPosePreset() }
                 />
               </SimpleErrorBoundary>
         })

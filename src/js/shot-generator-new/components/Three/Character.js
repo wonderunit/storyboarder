@@ -10,7 +10,7 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 
-const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, defaultPose}) => {
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData}) => {
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
@@ -28,8 +28,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         ref.current.remove(SGIkHelper.getInstance())
       }
     }, [])
-
-   
 
     useEffect(() => {
       return () => {
@@ -125,31 +123,13 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
     }, [])
 
-    useMemo(() => {
-      if(isUserModel(sceneObject.model)) {
-        // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
-        updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
-      } else {
-        let defaultSkeleton = defaultPose.state.skeleton
-        let skeleton = Object.keys(defaultSkeleton).map((key) => {
-            return {
-              name:key,
-              rotation: defaultSkeleton[key].rotation
-            }
-        } )
-        updateCharacterIkSkeleton({id:sceneObject.id, skeleton})
-      }
-    }, [skeleton])
-
-
     // Applies skeleton changes
     // Initial skeleton pose is skeleton hand near waist 
     // We need to modify/apply this pose before changing skeleton in store
-    useEffect(() => {
+    useMemo(() => {
       if (!skeleton) return
       // has the user entered data for at least one bone?
       let hasModifications = Object.values(sceneObject.skeleton).length > 0
-
       if (hasModifications) {
         // go through all the bones in the skeleton
         for (let bone of skeleton.bones) {
@@ -176,7 +156,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [skeleton, sceneObject.skeleton, ready])
 
     // Applies hand skeleton changes
-    useEffect(() => {
+    useMemo(() => {
       if (!skeleton) return
       if (!sceneObject.handSkeleton) return
       let hasModifications = Object.values(sceneObject.handSkeleton).length > 0
