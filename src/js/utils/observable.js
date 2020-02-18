@@ -11,6 +11,7 @@ const observable = (initial = {}) => {
   const notify = () => {
     for(let i = listeners.length - 1; i >= 0; i--) {
       let fn = listeners[i]
+      if(!fn) continue
       fn(value.current)
     }
   }

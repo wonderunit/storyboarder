@@ -101,11 +101,9 @@ export const loadAsset = (path) => {
 
 export const cleanUpCache = () => {
   let keys = Object.keys(cache.get())
-  console.log(keys)
   for(let i = 0; i < keys.length; i++) {
     delete cache.get()[keys[i]]
   }
-  console.log(Object.keys(cache.get()))
 }
 /**
  * Hook that allows components to fetch resources
