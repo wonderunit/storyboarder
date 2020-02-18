@@ -177,7 +177,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
     const bodyScale = useMemo(
       () => sceneObject.height / originalHeight,
-      [sceneObject.height, ready]
+      [sceneObject.height, lod]
     )
     
     // Saves current skeleton to store 
