@@ -220,15 +220,6 @@ if (!storyboarderLoaded.get()) {
   preloadData().then(() => storyboarderLoaded.set(true))
 }
 
-
-const SpinnerComponent = () => (
-  <div className="spinner-box">
-    <div className="circle-border">
-      <div className="circle-core"/>
-    </div>
-  </div>
-)
-
 const EditorComponent = () => {
   const [loaded, setLoaded] = useState(storyboarderLoaded.get())
   
@@ -245,7 +236,7 @@ const EditorComponent = () => {
   }, [])
   
   return (
-    loaded ? <Editor store={store}/> : <SpinnerComponent/>
+    <Editor store={store}/>
   )
 }
 
