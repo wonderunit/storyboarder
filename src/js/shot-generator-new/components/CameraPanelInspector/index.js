@@ -70,6 +70,8 @@ const CameraPanelInspector = connect(
       }
     }, [activeCamera])
     
+
+    
     let cameraState = { ...activeCamera }
     let cameraRoll = Math.round(THREE.Math.radToDeg(activeCamera.roll))
     let cameraPan = Math.round(THREE.Math.radToDeg(activeCamera.rotation))
@@ -82,6 +84,20 @@ const CameraPanelInspector = connect(
   
       updateObject(activeCamera.id, cameraState)
     }
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value: getValueShifter({ fov: -0.2 }) })
+      return () => { 
+        KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "[" })
+      }
+    }, [getValueShifter])
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "]", value: getValueShifter({ fov: 0.2 }) })
+      return () => { 
+        KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "]" })
+      }
+    }, [getValueShifter])
     
     const moveCamera = ([speedX, speedY]) => () => {
       cameraState = CameraControls.getMovedState(cameraState, { x: speedX, y: speedY })
