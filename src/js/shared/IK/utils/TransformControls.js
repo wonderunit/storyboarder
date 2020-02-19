@@ -694,7 +694,7 @@ const TransformControlsGizmo = function () {
 	//#endregion
 	// shared materials
 	let rotationalGizmoRadius = 1;
-	let rotationalGizmoTube = rotationalGizmoRadius / 9;
+	let rotationalGizmoTube = rotationalGizmoRadius / 12;
 
 	var gizmoMaterial = new THREE.MeshBasicMaterial({
 		depthTest: false,
@@ -715,6 +715,14 @@ const TransformControlsGizmo = function () {
 	let defaultLineWidth = 1;
 
 	// Make unique material for each axis/color
+	var matX = gizmoMaterial.clone();
+	matX.color.set( 0x640AA1 );
+
+	var matY = gizmoMaterial.clone();
+	matY.color.set( 0x6D22A1 );
+
+	var matZ = gizmoMaterial.clone();
+	matZ.color.set( 0x8951B0);
 
 	var matInvisible = gizmoMaterial.clone();
 	matInvisible.opacity = 0.15;
@@ -831,19 +839,18 @@ const TransformControlsGizmo = function () {
 
 	gizmoRotate = {
 		X: [
-			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
+			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matX ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
 		],
 		Y: [
-			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matYellow ), null, [ Math.PI / 2, 0, 0 ]],
+			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matY ), null, [ Math.PI / 2, 0, 0 ]],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matBlue ), null, [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matZ ), null, [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
-			[ new THREE.Line( CircleGeometry(1.25, 1), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ] ],
+		
 		],
 		XYZE: [
-			[  new THREE.Line( CircleGeometry(1, 1), matLineGray ), null, [ 0, Math.PI / 2, 0 ] ]
 		]
 		};
 
@@ -861,10 +868,10 @@ const TransformControlsGizmo = function () {
 			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 2, 24 ), matInvisible ) ]
+			
 		],
 		XYZE: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.4, 10, 8 ), matInvisible ) ]
+			
 		]
 	};
 
