@@ -47,6 +47,9 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     const { gl, scene, camera } = useThree()
     const [isAllowedToInitialize, setAllowToInitialize] = useState(false)
     const objectRotationControl = useRef(null)
+    const originalPosition = useRef(null)
+    const originalHeight = useRef(null)
+    const offsetToCharacter = useRef(null)
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(SHOT_LAYERS))
@@ -73,9 +76,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [gltf, characterModel])
 
   
-    useEffect(() => {
+    useMemo(() => {
       if(!prevModelName.current) {
         setAllowToInitialize(true)
+     
       } else {
         let isCurrentModelUser = isUserModel(character.model)
         let isPrevModelUser = isUserModel(prevModelName.current)
@@ -88,10 +92,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
           setAllowToInitialize(true)
         }
       }
-      return () => {
-        prevModelName.current = character.model
-        setAllowToInitialize(false)
-      }
+      prevModelName.current = character.model
     }, [character.model])
 
     useEffect(() => {
@@ -126,7 +127,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [characterModel])
 
     useEffect(() => {
-      if(!characterModel || !characterLOD || !isAllowedToInitialize) return 
+      if(!characterModel || !characterLOD || !isAllowedToInitialize || characterObject.current) return 
       characterObject.current = scene.children[0].children.filter(o => o.userData.id === sceneObject.attachToId)[0]
       if(!characterObject.current) return
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
@@ -140,15 +141,19 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         } else {
           let {x, y, z} = sceneObject
           modelPosition.set(x, y, z)
-          modelPosition.multiplyScalar(1 / characterObject.current.worldScale().x)
           let newGroup = new THREE.Object3D()
           newGroup.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
           newGroup.position.copy(modelPosition)
+          newGroup.scale.copy(ref.current.scale)
           bone.add(newGroup)
           bone.updateWorldMatrix(true, true)
+          let scale = getProperCharacterScale()
+          newGroup.position.multiplyScalar(scale)
+          newGroup.updateMatrixWorld(true)
           modelPosition = newGroup.worldPosition()
           quat = newGroup.worldQuaternion()
           bone.remove(newGroup)
+          originalPosition.current = modelPosition
         }
         let euler = new THREE.Euler().setFromQuaternion(quat)
         updateObject(sceneObject.id, {
@@ -171,6 +176,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
             z : euler.z,
           }
         } )})
+
+      originalPosition.current = originalPosition.current || new THREE.Vector3(sceneObject.x, sceneObject.y, sceneObject.z)
+      originalHeight.current = character.height
+
       ref.current.updateMatrixWorld(true)
       ref.current.updateWorldMatrix(true, true)
     }, [characterLOD, isAllowedToInitialize])
@@ -210,6 +219,14 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [meshes, isSelected])
     
     useEffect(() => {
+      if(!characterObject.current || !ref.current.parent) return
+      // 1.8 is height of default character for which attachable was placed
+      let scale = getProperCharacterScale()
+      ref.current.scale.set(scale, scale, scale)
+      ref.current.updateMatrixWorld(true)
+    }, [sceneObject.size, characterLOD])
+
+    useEffect(() => {
       if(!characterObject.current || !ref.current.parent) return 
       characterObject.current.updateWorldMatrix(true, true)
       let parentMatrixWorld = ref.current.parent.matrixWorld
@@ -219,6 +236,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       ref.current.updateMatrixWorld(true)
       ref.current.applyMatrix(parentInverseMatrixWorld)
       ref.current.updateMatrixWorld(true)
+      recalculateOffset()
     }, [sceneObject.x, sceneObject.y, sceneObject.z, characterLOD])
     
     useEffect(() => {
@@ -233,26 +251,29 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       ref.current.updateMatrixWorld(true)
     }, [sceneObject.rotation, characterLOD])
 
-    useEffect(() => {
-      if(!characterObject.current || !ref.current.parent) return
-      let scale = sceneObject.size / characterObject.current.scale.x
-      ref.current.scale.set(scale, scale, scale)
-      ref.current.updateMatrixWorld(true)
-    }, [sceneObject.size, characterLOD])
-
     const rebindAttachable = () => {
       characterObject.current = scene.__interaction.filter(child => child.userData.id === sceneObject.attachToId)[0]
       if(!characterObject.current ) return
       
       let skinnedMesh = characterObject.current.getObjectByProperty("type", "SkinnedMesh")
       if(!skinnedMesh) return
-      console.log("Rebind")
       let skeleton = skinnedMesh.skeleton
       let bone = skeleton.getBoneByName(sceneObject.bindBone)
       bone.add(ref.current)
-      let scale = sceneObject.size / characterObject.current.scale.x
-      ref.current.scale.set(scale, scale, scale)
+      
       ref.current.updateWorldMatrix(true, true)
+
+      let currentOffset = getOffsetBetweenCharacterAndAttachable()
+
+      let offsetDifference = currentOffset.sub(offsetToCharacter.current)
+      ref.current.parent.localToWorld( ref.current.position)
+      ref.current.position.add(offsetDifference)
+      ref.current.parent.worldToLocal( ref.current.position)
+
+      // 1.8 is height of default character for which attachable was placed
+      let scale = getProperCharacterScale()
+      ref.current.scale.set(scale, scale, scale)
+      ref.current.updateMatrixWorld(true)
       saveToStore()
     }
 
@@ -260,7 +281,35 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       if(!characterObject.current || !ref.current || !characterLOD || !ref.current.parent) return
       characterObject.current.updateWorldMatrix(false, true)
       saveToStore()
-    }, [character.x, character.y, character.z, character.rotation, character.skeleton])
+    }, [character.x, character.y, character.z, character.rotation, character.height, character.skeleton])
+
+    const getProperCharacterScale = () => {
+      let scale = sceneObject.size * (character.height / 1.8)
+      if(character.model === "baby") {
+        scale = 1 - (1 - scale) / 1.25
+      }
+      if(character.model === "child") {
+        scale = 1 - (1 - scale) / 1.75
+      }
+      return scale
+    }
+
+    const recalculateOffset = () => {
+      let offset = getOffsetBetweenCharacterAndAttachable()
+      offsetToCharacter.current = !offsetToCharacter.current ? 
+                                  offset.clone() :
+                                  offsetToCharacter.current.set(offset.x, offset.y, offset.z)
+    }
+
+    let vector = new THREE.Vector3()
+    const getOffsetBetweenCharacterAndAttachable = () => {
+      ref.current.parent.updateMatrixWorld(true)
+      ref.current.updateMatrixWorld(true)
+      let characterWorldPos = new THREE.Vector3().setFromMatrixPosition(ref.current.parent.matrixWorld)
+      let attachablesWorldPos = new THREE.Vector3().setFromMatrixPosition(ref.current.matrixWorld)
+      vector.set(characterWorldPos.x - attachablesWorldPos.x, characterWorldPos.y - attachablesWorldPos.y, characterWorldPos.z - attachablesWorldPos.z)
+      return vector
+    }
 
     const saveToStore = () => {
       let position = ref.current.worldPosition()// new THREE.Vector3()
@@ -269,12 +318,16 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       matrix.premultiply(ref.current.parent.matrixWorld)
       matrix.decompose(position, quaternion, new THREE.Vector3())
       let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
-      updateObject(sceneObject.id, { x: position.x, y: position.y, z: position.z,
-        rotation: {x: rot.x, y: rot.y, z: rot.z}})
+      updateObject(sceneObject.id, 
+      { 
+          x: position.x, y: position.y, z: position.z,
+          rotation: { x: rot.x, y: rot.y, z: rot.z },
+      })
     }
 
     const controlPlusRCheck = (event) => {
-      if(event.ctrlKey && event.key === 'r'){
+      event.stopPropagation()
+      if(event.ctrlKey && event.key === 'e'){
         event.stopPropagation()
         return true
       } 
@@ -307,8 +360,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
 
           bindedId: sceneObject.attachToId,
           isRotationEnabled: false,
-        }}>
-        {meshes}
+        }}
+        dispose={ null }
+        >
+          {meshes}
     </group>
 })
 
