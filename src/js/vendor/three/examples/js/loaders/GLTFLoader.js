@@ -84,9 +84,9 @@ THREE.GLTFLoader = ( function () {
 						onLoad( gltf );
 
 						scope.manager.itemEnd( url );
-						scope.parsers[resourcePath].cleanUp()
-						scope.parsers[resourcePath] = null
-						delete scope.parsers[resourcePath]
+						//scope.parsers[resourcePath].cleanUp()
+						//scope.parsers[resourcePath] = null
+						//delete scope.parsers[resourcePath]
 					}, _onError );
 
 				} catch ( e ) {
@@ -233,7 +233,7 @@ THREE.GLTFLoader = ( function () {
 				manager: this.manager
 
 			} )
-			scope.parsers[path] = parser
+			//scope.parsers[path] = parser
 			parser.parse( onLoad, onError );
 		}
 
