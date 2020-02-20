@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-window.THREE = window.THREE || THREE
 
 import {OutlineEffect} from '../../vendor/OutlineEffect'
 

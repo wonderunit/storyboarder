@@ -1,5 +1,4 @@
 import * as THREE from 'three'
-window.THREE = THREE
 
 import('../../vendor/three/examples/js/loaders/GLTFLoader')
 

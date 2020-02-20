@@ -3,7 +3,6 @@
 import * as THREE from 'three'
 import { Object3D, Sprite } from 'three'
 import createGeometry from 'three-bmfont-text'
-window.THREE = window.THREE || THREE
 
 import allSprites from './IconContainer'
 class IconSprites extends Object3D {

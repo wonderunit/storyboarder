@@ -13,7 +13,7 @@ THREE.GLTFLoader = ( function () {
 		this.manager = ( manager !== undefined ) ? manager : THREE.DefaultLoadingManager;
 		this.dracoLoader = null;
 		this.ddsLoader = null;
-
+		this.parsers = [];
 	}
 
 	GLTFLoader.prototype = {
@@ -84,7 +84,9 @@ THREE.GLTFLoader = ( function () {
 						onLoad( gltf );
 
 						scope.manager.itemEnd( url );
-
+						scope.parsers[resourcePath].cleanUp()
+						scope.parsers[resourcePath] = null
+						delete scope.parsers[resourcePath]
 					}, _onError );
 
 				} catch ( e ) {
@@ -136,7 +138,7 @@ THREE.GLTFLoader = ( function () {
 
 			var content;
 			var extensions = {};
-
+			let scope = this
 			if ( typeof data === 'string' ) {
 
 				content = data;
@@ -224,16 +226,15 @@ THREE.GLTFLoader = ( function () {
 
 			}
 
-			var parser = new GLTFParser( json, extensions, {
+			let parser = new GLTFParser( json, extensions, {
 
 				path: path || this.resourcePath || '',
 				crossOrigin: this.crossOrigin,
 				manager: this.manager
 
-			} );
-
+			} )
+			scope.parsers[path] = parser
 			parser.parse( onLoad, onError );
-			parser.cache.removeAll()
 		}
 
 	};
@@ -1559,6 +1560,19 @@ THREE.GLTFLoader = ( function () {
 
 		}
 
+	}
+
+	GLTFParser.prototype.cleanUp = function () {
+		this.json = {};
+		this.options = {};
+		this.extensions = {};
+
+		this.cache.removeAll();
+		this.cache = null;
+		this.primitiveCache = {};
+
+		this.textureLoader = null;
+		this.fileLoader = null;
 	}
 
 	GLTFParser.prototype.parse = function ( onLoad, onError ) {

@@ -1,5 +1,4 @@
 const THREE = require('three')
-window.THREE = window.THREE || THREE
 
 const path = require('path')
 

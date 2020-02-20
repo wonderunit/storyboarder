@@ -222,7 +222,7 @@ const SceneManagerR3fLarge = connect(
 
     const sceneChildren = scene && scene.children[0] && scene.children[0].children.length
 
-    const dropingPlaces = useMemo(() => {
+    const getDropingPlaces = useCallback(() => {
       if(!scene || !scene.children[0]) return
       return scene.children[0].children.filter(o =>
         o.userData.type === "object" ||
@@ -234,12 +234,13 @@ const SceneManagerR3fLarge = connect(
       let changes = {}
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children[0].children.find( child => child.userData.id === selections[i] )
+        let droppingPlaces = getDropingPlaces()
         if( selection.userData.type === "object" ) {
-          dropObject( selection, dropingPlaces )
+          dropObject( selection,  droppingPlaces)
           let pos = selection.position
           changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
         } else if ( selection.userData.type === "character" ) {
-          dropCharacter( selection, dropingPlaces )
+          dropCharacter( selection, droppingPlaces )
           let pos = selection.position
           changes[ selections[i] ] = { x: pos.x, y: pos.z, z: pos.y }
         }

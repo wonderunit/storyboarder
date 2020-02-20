@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
-window.THREE = THREE
 
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../package.json'

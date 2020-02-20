@@ -1,5 +1,4 @@
 import THREE from 'three'
-window.THREE = window.THREE || THREE
 
 import React, { useRef, useEffect } from 'react'
 
