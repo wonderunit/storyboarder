@@ -16,6 +16,7 @@ import {
 import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 
 import Icon from '../Icon'
+import useTooltip from '../../../hooks/use-tooltip'
 
 // TODO DRY
 const preventDefault = (fn, ...args) => e => {
@@ -172,37 +173,50 @@ const Toolbar = connect(
         onClick: () => require('electron').shell.openExternal(server.xrUri)
       })
     )
+
+    const cameraTooltipEvents = useTooltip("Camera", "Creates camera", null, "bottom center")
+    const objectTooltipEvents = useTooltip("Object", "Creates object", null, "bottom center")
+    const characterTooltipEvents = useTooltip("Character", "Creates character", null, "bottom center")
+    const lightTooltipEvents = useTooltip("Light", "Creates light", null, "bottom center")
+    const volumeTooltipEvents = useTooltip("Volume", "Creates volume", null, "bottom center")
+    const imageTooltipEvents = useTooltip("Image", "Creates image", null, "bottom center")
  
     return (
       <div id='toolbar' key='toolbar'> 
         <div className='toolbar__addition row'>
           <a href='#' 
-             onClick={preventDefault(onCreateCameraClick)}>
+             onClick={preventDefault(onCreateCameraClick)}
+             {...cameraTooltipEvents}>
             <Icon src='icon-toolbar-camera'/>
             <span>Camera</span>
           </a>
           <a href='#' 
-             onClick={preventDefault(onCreateObjectClick)}>
+             onClick={preventDefault(onCreateObjectClick)}
+             {...objectTooltipEvents}>
             <Icon src='icon-toolbar-object'/>
             <span>Object</span>
           </a>
           <a href='#' 
-             onClick={preventDefault(onCreateCharacterClick)}>
+             onClick={preventDefault(onCreateCharacterClick)}
+             {...characterTooltipEvents}>
             <Icon src='icon-toolbar-character'/>
             <span>Character</span>
           </a>
           <a href='#' 
-             onClick={preventDefault(onCreateLightClick)}>
+             onClick={preventDefault(onCreateLightClick)}
+             {...lightTooltipEvents}>
             <Icon src='icon-toolbar-light'/>
             <span>Light</span>
           </a>
           <a href='#' 
-             onClick={preventDefault(onCreateVolumeClick)}>
+             onClick={preventDefault(onCreateVolumeClick)}
+             {...volumeTooltipEvents}>
             <Icon src='icon-toolbar-volume'/>
             <span>Volume</span>
           </a>
           <a href='#' 
-             onClick={preventDefault(onCreateImageClick)}>
+             onClick={preventDefault(onCreateImageClick)}
+             {...imageTooltipEvents}>
             <Icon src='icon-toolbar-image'/>
             <span>Image</span>
           </a>
