@@ -72,7 +72,7 @@ class TargetControl
     //#region Selection of control point
     selectControlPoint()
     {
-        if(!this.isControlPointSelected && !this.bone.isRotated)
+        if(!this.isControlPointSelected && this.bone && !this.bone.isRotated)
         {
             this.isControlPointSelected = true;
             this.scene.add(this.control);

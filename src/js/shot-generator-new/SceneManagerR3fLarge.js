@@ -230,7 +230,7 @@ const SceneManagerR3fLarge = connect(
         o.userData.type === "ground")
     }, [sceneChildren])
 
-    const onCommandDrop = () => {
+    const onCommandDrop = useCallback(() => {
       let changes = {}
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children[0].children.find( child => child.userData.id === selections[i] )
@@ -246,7 +246,7 @@ const SceneManagerR3fLarge = connect(
         }
       }
       updateObjects(changes)
-    }
+    }, [getDropingPlaces, selections])
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addIPCKeyCommand({key: "shot-generator:object:drop", value:
@@ -280,7 +280,6 @@ const SceneManagerR3fLarge = connect(
       directionalLightRef.current.rotation.z = 0
       directionalLightRef.current.rotation.y = world.directional.rotation
       directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
-      console.log(directionalLightRef.current)
     }, [world.directional.rotation, world.directional.tilt])
 
     return <group ref={ rootRef }> 

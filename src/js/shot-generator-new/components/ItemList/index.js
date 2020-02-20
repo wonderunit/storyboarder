@@ -108,7 +108,8 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
         withState((dispatch, state) => {
           let sceneObjects = getSceneObjects(state)
           let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === props.id).map(obj => obj.id)
-          idsToRemove = idsToRemove.concat(attachableIds)
+          console.log(attachableIds)
+          idsToRemove = attachableIds.concat(idsToRemove)
         })
       }
       deleteObjects(idsToRemove)

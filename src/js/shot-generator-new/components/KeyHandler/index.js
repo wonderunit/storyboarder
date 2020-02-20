@@ -80,7 +80,16 @@ const KeyHandler = connect(
               message: `Deleting ${selections.length} item${selections.length > 1 ? 's' : ''}. Are you sure?`
             })
             if (choice === 0) {
-              deleteObjects(selections)
+              let objectsToDelete = selections.concat()
+              for(let i = 0; i < selections.length; i++) {
+                let sceneObject = sceneObjects[selections[i]]
+                if(sceneObject.type === "character") {
+                    let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === selections[i]).map(obj => obj.id)
+                    objectsToDelete = attachableIds.concat(objectsToDelete)
+                }
+              }
+         
+              deleteObjects(objectsToDelete)
               keyCommandsInstance.current.removeKeyCommand({ key: "removeElement" })
             }
           }
