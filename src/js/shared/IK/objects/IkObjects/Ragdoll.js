@@ -65,15 +65,34 @@ class Ragdoll extends IkObject
         this.ik = null;
         this.hips = null;
         this.ikSwitcher.cleanUp();
+        this.ikSwitcher = null;
 
         let keys = Object.keys(this.chainObjects);
         for(let i = 0; i < keys.length; i++) {
-            this.chainObjects[keys[i]].controlTarget.bone = null;
-            let joints = this.chainObjects[keys[i]].chain.joints;
+            let chainObject = this.chainObjects[keys[i]]
+            chainObject.controlTarget.bone = null;
+            chainObject.controlTarget = null;
+            let joints = chainObject.chain.joints;
             for(let i = 0; i < joints.length; i++ ) {
-                joints[i].bone = null;
+                joints[i].bone = null; 
+                joints[i].constraints = [];
+                joints[i].ikConstraints = [];
+                joints[i] = null;
             }
+            let chain = chainObject.chain;
+            chain.joints = [];
+            chain.chains = [];
+            chain.base = null;
+            chain.effector = null;
+            chain.effectorIndex = null;
+            chain.target = null;
+            chainObject.chain = null;
+            chainObject.constraints = [];
+            if(chainObject.poleConstraint) chainObject.poleConstraint.poleTarget = null;
+            chainObject.poleConstraint = null;
+            chainObject.lastBone = null;
         }
+        this.chainObjects = [];
     }
 
     // Runs cycle which is updating object

@@ -155,6 +155,27 @@ const TransformControls = function ( camera, domElement ) {
 			window.removeEventListener( "keydown", onKeyDown );
 	};
 
+	this.cleanUp = () => 
+	{
+		this.camera = null;
+		domElement = null;
+		this.dispose();
+		_gizmo.traverse((child) => {
+			child.material && child.material.dispose();
+			child.geometry && child.geometry.dispose();
+		})
+		_gizmo.gizmo = {}; 
+		_gizmo.picker = {}; 
+		_gizmo.helper = {}; 
+		_gizmo = null;
+		_plane.traverse((child) => {
+			child.material && child.material.dispose();
+			child.geometry && child.geometry.dispose();
+		})
+		_plane = null;
+
+	}
+
 	this.changeCamera = (camera) =>
 	{
 		this.camera = camera;

@@ -22,12 +22,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const objectRotationControl = useRef(null)
-    useEffect(() => {
-      return () => {
-        ref.current.remove(BonesHelper.getInstance())
-        ref.current.remove(SGIkHelper.getInstance())
-      }
-    }, [])
 
     useEffect(() => {
       return () => {
@@ -110,19 +104,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
 
-    useEffect(() => {
-
-      return () => {
-        if(!lod) return
-        for(let i = 0; i < lod.children.length; i++) {
-            lod.children[i].geometry.dispose()
-            lod.children[i].material.dispose()
-        }
-
-        SGIkHelper.getInstance().cleanUpCharacter()
-      }
-    }, [])
-
     // Applies skeleton changes
     // Initial skeleton pose is skeleton hand near waist 
     // We need to modify/apply this pose before changing skeleton in store
@@ -154,6 +135,22 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         skeleton.pose()
       }
     }, [skeleton, sceneObject.skeleton, ready])
+
+    useEffect(() => {
+      return () => {
+        ref.current.remove(BonesHelper.getInstance())
+        ref.current.remove(SGIkHelper.getInstance())
+        objectRotationControl.current.cleanUp()
+        objectRotationControl.current = null
+        if(!lod) return
+        for(let i = 0; i < lod.children.length; i++) {
+            lod.children[i].geometry.dispose()
+            lod.children[i].material.dispose()
+        }
+
+        SGIkHelper.getInstance().cleanUpCharacter()
+      }
+    }, [])
 
     // Applies hand skeleton changes
     useMemo(() => {

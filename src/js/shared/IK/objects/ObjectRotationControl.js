@@ -63,5 +63,13 @@ class ObjectRotationControl
         this.control.changeCamera(camera);
         this.control.updateMatrixWorld();
     }
+
+    cleanUp()
+    {
+        this.deselectObject();
+        this.control.cleanUp();
+        this.control = null;
+        this.scene = null;
+    }
 }
 module.exports = ObjectRotationControl;
