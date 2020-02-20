@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import React, { useState, useMemo, useEffect, useRef } from 'react'
 import '../../vendor/three/examples/js/loaders/GLTFLoader'
 import observable from "../../utils/observable"
+import { gltfLoader } from "../utils/gltfLoader"
 
 /**
  * Resources storage
@@ -9,7 +10,6 @@ import observable from "../../utils/observable"
  */
 export const cache = observable({})
 
-const gtlfLoader = new THREE.GLTFLoader()
 const textureLoader = new THREE.TextureLoader()
 
 const LOADING_MODE = {
@@ -64,7 +64,7 @@ export const loadAsset = (path) => {
         let loader
         if (!path.match(/(\.(png|jpg|jpeg|gif)$)|((\\|\/)(images|volumes)(\\|\/))/mi)) {
           /** Current resource is model */
-          loader = gtlfLoader
+          loader = gltfLoader
         } else {
           /** Current resource is texture */
           loader = textureLoader
@@ -77,7 +77,6 @@ export const loadAsset = (path) => {
               ...cache.get(),
               [path]: {data: value, status: LOADING_MODE.SUCCESS, usageCount: current[path].usageCount, lastUsedDate: current[path].lastUsedDate }
             })
-
             resolve(current[path])
           },
           null, //progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
@@ -86,9 +85,6 @@ export const loadAsset = (path) => {
               ...cache.get(),
               [path]: {data: null, status: LOADING_MODE.ERROR, usageCount: current[path].usageCount, lastUsedDate: current[path].lastUsedDate }
             })
-            
-            console.error(error)
-
             reject(error)
           }
         )

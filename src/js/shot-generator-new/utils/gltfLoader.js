@@ -1,12 +1,10 @@
-const  THREE = require('three')
+import * as THREE from 'three'
 window.THREE = THREE
 
-require('../../vendor/three/examples/js/loaders/GLTFLoader')
-require('../../vendor/three/examples/js/loaders/OBJLoader2')
+import('../../vendor/three/examples/js/loaders/GLTFLoader')
+
 const loadingManager = new THREE.LoadingManager()
-const objLoader = new THREE.OBJLoader2(loadingManager)
 const gltfLoader = new THREE.GLTFLoader(loadingManager)
-objLoader.setLogging(false, false)
-THREE.Cache.enabled = true
+//THREE.Cache.enabled = true
 
 export { gltfLoader }

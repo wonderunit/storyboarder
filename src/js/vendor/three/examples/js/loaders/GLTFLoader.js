@@ -233,7 +233,7 @@ THREE.GLTFLoader = ( function () {
 			} );
 
 			parser.parse( onLoad, onError );
-
+			parser.cache.removeAll()
 		}
 
 	};
