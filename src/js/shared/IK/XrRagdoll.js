@@ -175,6 +175,16 @@ class XRRagdoll extends XRIKObject
             {
                 poleTarget = new PoleTarget();
                 poleTarget.mesh = poleTargetMesh;
+                
+                let boneMatrix = this.resourceManager.getMatrix4();
+                this.takeBoneInTheMeshSpace(this.rigMesh, poleTargetMesh, boneMatrix);
+                let bonePosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+                this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
+                let hipsPosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+                this.resourceManager.release(boneMatrix);
+
+                let hipsOffset = bonePosition.sub(hipsPosition);
+                poleTarget.offsetWithoutHips = hipsOffset.clone();
             }
             else
             {
@@ -182,7 +192,7 @@ class XRRagdoll extends XRIKObject
             }
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
-            this.chainObjects[chainName].poleConstraint = poleConstraint;
+            chainObjects[i].poleConstraint = poleConstraint;
         }
 
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
@@ -208,10 +218,17 @@ class XRRagdoll extends XRIKObject
     calculatePoleTargetOffset(poleTarget, chain)
     {
         let offset = poleTarget.initialOffset;
-        let position = chain.joints[chain.joints.length - 2].bone.worldPosition();
-        let hipsOffset = position.clone().sub(this.hips.worldPosition())
-        hipsOffset.add(this.hips.position);
+        let bone = chain.joints[chain.joints.length - 2].bone;
+        let boneMatrix = this.resourceManager.getMatrix4();
+        this.takeBoneInTheMeshSpace(this.rigMesh, bone, boneMatrix);
+        let bonePosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+        this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
+        let hipsPosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+        this.resourceManager.release(boneMatrix);
+        let hipsOffset = bonePosition.sub(hipsPosition);
         hipsOffset.add(offset);
+        poleTarget.offsetWithoutHips = hipsOffset.clone();
+        hipsOffset.add(this.hips.position);
         poleTarget.poleOffset = hipsOffset;
     }
 

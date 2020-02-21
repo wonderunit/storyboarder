@@ -88,7 +88,10 @@ class Ragdoll extends IkObject
             chain.target = null;
             chainObject.chain = null;
             chainObject.constraints = [];
-            if(chainObject.poleConstraint) chainObject.poleConstraint.poleTarget = null;
+            if(chainObject.poleConstraint) {
+                chainObject.poleConstraint.poleTarget
+                chainObject.poleConstraint.poleTarget = null;
+            }
             chainObject.poleConstraint = null;
             chainObject.lastBone = null;
         }
@@ -234,8 +237,10 @@ class Ragdoll extends IkObject
             let poleTarget = null;
             if(poleTargetMesh.userData.isInitialized)
             {
+                
                 poleTarget = new PoleTarget();
                 poleTarget.mesh = poleTargetMesh;
+                console.log(poleTargetMesh)
                 
                 let boneMatrix = this.resourceManager.getMatrix4();
                 this.takeBoneInTheMeshSpace(this.rigMesh, poleTargetMesh, boneMatrix);
@@ -249,6 +254,8 @@ class Ragdoll extends IkObject
             }
             else
             {
+                console.log(poleTargetMesh)
+                console.log("REintializing pole mesh", chainName)
                 poleTarget = this.initPoleTargets(chain, polePositions[chainName], poleTargetMesh);
             }
             let poleConstraint = new PoleConstraint(chain, poleTarget);
@@ -267,6 +274,7 @@ class Ragdoll extends IkObject
     {
         let poleTarget = new PoleTarget();
         poleTarget.mesh = poleTargetMesh;
+        poleTargetMesh.position.copy(offset)
         poleTarget.initialOffset = offset.multiplyScalar(poleTargetMesh.userData.scaleAspect);
         this.calculatePoleTargetOffset(poleTarget, chain);
         poleTarget.initialize(poleTarget.poleOffset);

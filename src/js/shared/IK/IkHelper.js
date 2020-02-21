@@ -52,9 +52,9 @@ class IKHelper extends THREE.Object3D
             {
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
-                this.intializedSkinnedMesh.worldToLocal(mesh.position);
-                mesh.updateMatrixWorld();
+                mesh.updateMatrixWorld(true);
                 mesh.userData.isInitialized = true;
+               // console.log( mesh.position);
             }
             else
             {
@@ -95,6 +95,7 @@ class IKHelper extends THREE.Object3D
         if(this.selectedControlPoint)
         {  
             this.ragDoll.isEnabledIk = false;
+            let characterObject = this.intializedSkinnedMesh.parent.parent;
             if(this.selectedControlPoint.userData.type === "controlPoint")
             {
                 this.controlPoints.attach(this.selectedControlPoint);
@@ -103,7 +104,13 @@ class IKHelper extends THREE.Object3D
             {
                 this.poleTargets.attach(this.selectedControlPoint);
                 this.poleTargets.updateMatrixWorld(true)
-                let worldPosition = this.selectedControlPoint.worldPosition();
+                let characterMatrix = characterObject.matrixWorld
+                let characterInverseMatrix = characterObject.getInverseMatrixWorld()
+                this.selectedControlPoint.applyMatrix(characterInverseMatrix)
+                this.selectedControlPoint.updateMatrixWorld(true)
+                let worldPosition = this.selectedControlPoint.position;
+                this.selectedControlPoint.applyMatrix(characterMatrix)
+                this.selectedControlPoint.updateMatrixWorld(true)
                 this.selectedControlPoint.userData.isInitialized = true;
                 let poleTargets = {};
                 poleTargets[this.selectedControlPoint.name] = 
@@ -129,7 +136,7 @@ class IKHelper extends THREE.Object3D
             }
             this.selectedControlPoint = null;
             this.ragDoll.updateReact();
-            let characterObject = this.intializedSkinnedMesh.parent.parent;
+           // let characterObject = this.intializedSkinnedMesh.parent.parent;
             let changes = {};
             if(characterObject.attachables) {
                 for(let i = 0; i < characterObject.attachables.length; i++) {

@@ -33,7 +33,7 @@ class SGIKHelper extends THREE.Object3D
         this.intializedSkinnedMesh = null;
         this.isIkDisabled = false;
         this.add(this.poleTargets);
-        this.isPoleTargetsVisible = false;
+        this.isPoleTargetsVisible = true;
         this.add(this.controlPoints);
         this.add(this.transformControls);
         intializeInstancedMesh(mesh, camera, domElement, scene);
@@ -51,7 +51,7 @@ class SGIKHelper extends THREE.Object3D
     {
         let ragDoll = instance.ragDoll;
         if(this.characterObject) ragDoll.controlTargetSelection.initialize();
-        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        //if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
         this.characterObject = object;
         
         this.intializedSkinnedMesh = skinnedMesh;
@@ -59,33 +59,40 @@ class SGIKHelper extends THREE.Object3D
         let initializedMeshes = props.poleTargets ? props.poleTargets : [];
         let scaleAspect = height / this.regularHeight / object.scale.x;
         let defaultScale = 0.1
+        console.log(props.poleTargets)
+        ragDoll.cleanUp();
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
             let intializedMesh = initializedMeshes[mesh.name];
+            mesh.position.set(0, 0, 0);
+            mesh.rotation.set(0, 0, 0);
+            //mesh.rotation.set(0, 0, 0);
+            mesh.userData.isInitialized = false;
+            mesh.updateMatrixWorld(true);
             // Checks if there's already info for current mesh
             // Info like position
             if(intializedMesh)
             {
+                console.log("Mesh initialized", intializedMesh)
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
-                this.characterObject.worldToLocal(mesh.position);
-                mesh.updateMatrixWorld();
+              //  mesh.position.applyMatrix4(skinnedMesh.matrixWorld)
+                mesh.updateMatrixWorld(true);
                 mesh.userData.isInitialized = true;
-            }
-            else
-            {
-                mesh.userData.isInitialized = false;
+                console.log(pos)
+                console.log( mesh.position.clone())
             }
             mesh.scale.set(defaultScale, defaultScale, defaultScale).multiplyScalar(scaleAspect);
             
             mesh.userData.scaleAspect = scaleAspect;
         }
-        ragDoll.cleanUp();
+       
         ragDoll.initObject(this, object, this.targetControls, this.poleTargets.children);
         ragDoll.reinitialize();
         ragDoll.controlTargetSelection.initialize();
-        ragDoll.controlTargetSelection.initialize();
+        ragDoll.update();
+        //ragDoll.controlTargetSelection.initialize();
         this.updateAllTargetPoints();
     }
 

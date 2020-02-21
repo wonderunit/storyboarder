@@ -297,6 +297,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         if(!isUserModel(sceneObject.model) && !SGIkHelper.getInstance().isIkDisabled) {
             SGIkHelper.getInstance().initialize(ref.current, modelSettings ? modelSettings.height : sceneObject.height, lod.children[0], sceneObject)
             ref.current.add(SGIkHelper.getInstance())
+            ref.current.updateWorldMatrix(true, true)
         }
         ref.current.add(BonesHelper.getInstance())
       } else {
