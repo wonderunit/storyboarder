@@ -54,7 +54,6 @@ class IKHelper extends THREE.Object3D
                 mesh.position.set(pos.x, pos.y, pos.z);
                 mesh.updateMatrixWorld(true);
                 mesh.userData.isInitialized = true;
-               // console.log( mesh.position);
             }
             else
             {

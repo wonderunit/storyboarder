@@ -681,7 +681,8 @@ const SceneContent = connect(
                     updateObject={updateObject}
                     characterModel={ characterModel }
                     characterChildrenLength={ character ? character.children.length : 0 }
-                    rootRef={ rootRef.current } />
+                    rootRef={ rootRef.current } 
+                    character={ sceneObjects[sceneObject.attachToId] }/>
                 </SimpleErrorBoundary>
             })
           } 

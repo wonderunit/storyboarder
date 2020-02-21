@@ -36,7 +36,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, characterModel, characterChildrenLength, rootRef}) => {
+const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, characterModel, characterChildrenLength, rootRef, character}) => {
     const characterObject = useRef(null)
     const { scene } = useThree()
     const [characterLOD, setCharacterLOD] = useState()
@@ -158,6 +158,12 @@ const Attachable = React.memo(({ gltf, sceneObject, isSelected, updateObject, ch
       ref.current.scale.set(scale, scale, scale)
       ref.current.updateMatrixWorld(true)
     }, [sceneObject.size, characterLOD])
+
+    useEffect(() => {
+      if(!characterObject.current || !ref.current || !characterLOD || !ref.current.parent) return
+      characterObject.current.updateWorldMatrix(false, true)
+      saveToStore()
+    }, [character.x, character.y, character.z, character.rotation, character.height, character.skeleton])
 
     const rebindAttachable = () => {
       characterObject.current = scene.__interaction.filter(child => child.userData.id === sceneObject.attachToId)[0]

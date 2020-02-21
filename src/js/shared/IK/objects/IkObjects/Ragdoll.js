@@ -240,7 +240,6 @@ class Ragdoll extends IkObject
                 
                 poleTarget = new PoleTarget();
                 poleTarget.mesh = poleTargetMesh;
-                console.log(poleTargetMesh)
                 
                 let boneMatrix = this.resourceManager.getMatrix4();
                 this.takeBoneInTheMeshSpace(this.rigMesh, poleTargetMesh, boneMatrix);
@@ -254,8 +253,6 @@ class Ragdoll extends IkObject
             }
             else
             {
-                console.log(poleTargetMesh)
-                console.log("REintializing pole mesh", chainName)
                 poleTarget = this.initPoleTargets(chain, polePositions[chainName], poleTargetMesh);
             }
             let poleConstraint = new PoleConstraint(chain, poleTarget);

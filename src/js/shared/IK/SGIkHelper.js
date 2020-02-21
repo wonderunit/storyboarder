@@ -33,7 +33,7 @@ class SGIKHelper extends THREE.Object3D
         this.intializedSkinnedMesh = null;
         this.isIkDisabled = false;
         this.add(this.poleTargets);
-        this.isPoleTargetsVisible = true;
+        this.isPoleTargetsVisible = false;
         this.add(this.controlPoints);
         this.add(this.transformControls);
         intializeInstancedMesh(mesh, camera, domElement, scene);
@@ -59,7 +59,7 @@ class SGIKHelper extends THREE.Object3D
         let initializedMeshes = props.poleTargets ? props.poleTargets : [];
         let scaleAspect = height / this.regularHeight / object.scale.x;
         let defaultScale = 0.1
-        console.log(props.poleTargets)
+
         ragDoll.cleanUp();
         for(let i = 0; i < meshes.length; i++)
         {
@@ -67,21 +67,16 @@ class SGIKHelper extends THREE.Object3D
             let intializedMesh = initializedMeshes[mesh.name];
             mesh.position.set(0, 0, 0);
             mesh.rotation.set(0, 0, 0);
-            //mesh.rotation.set(0, 0, 0);
             mesh.userData.isInitialized = false;
             mesh.updateMatrixWorld(true);
             // Checks if there's already info for current mesh
             // Info like position
             if(intializedMesh)
             {
-                console.log("Mesh initialized", intializedMesh)
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
-              //  mesh.position.applyMatrix4(skinnedMesh.matrixWorld)
                 mesh.updateMatrixWorld(true);
                 mesh.userData.isInitialized = true;
-                console.log(pos)
-                console.log( mesh.position.clone())
             }
             mesh.scale.set(defaultScale, defaultScale, defaultScale).multiplyScalar(scaleAspect);
             
