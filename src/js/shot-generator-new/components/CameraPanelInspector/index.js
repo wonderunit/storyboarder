@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 import {
@@ -47,7 +47,7 @@ const CameraPanelInspector = connect(
     const shotInfo = cameraShots[activeCamera.id] || {}
     const [currentShotSize, setCurrentShotSize] = useState(shotInfo.size)
     const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
-  
+    const isDragging = useRef(false)
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
     }, [shotInfo.size, activeCamera])
@@ -71,11 +71,24 @@ const CameraPanelInspector = connect(
     }, [activeCamera])
     
 
-    
+    let [cameraRoll, setCameraRoll] = useState()
+    let [cameraTilt, setCameraTilt] = useState()
+    let [cameraPan, setCameraPan] = useState()
     let cameraState = { ...activeCamera }
-    let cameraRoll = Math.round(THREE.Math.radToDeg(activeCamera.roll))
-    let cameraPan = Math.round(THREE.Math.radToDeg(activeCamera.rotation))
-    let cameraTilt = Math.round(THREE.Math.radToDeg(activeCamera.tilt))
+    useEffect(() => {
+      if(isDragging.current) return
+      setCameraRoll(Math.round(THREE.Math.radToDeg(activeCamera.roll)))
+    }, [activeCamera.roll])
+
+    useEffect(() => {
+      if(isDragging.current) return
+      setCameraPan(Math.round(THREE.Math.radToDeg(activeCamera.rotation)))
+    }, [activeCamera.rotation])
+
+    useEffect(() => {
+      if(isDragging.current) return
+      setCameraTilt(Math.round(THREE.Math.radToDeg(activeCamera.tilt)))
+    }, [activeCamera.tilt])
     
     const getValueShifter = (draft) => () => {
       for (let [k, v] of Object.entries(draft)) {
@@ -105,11 +118,15 @@ const CameraPanelInspector = connect(
     }
   
     const getCameraPanEvents = useDrag(throttle(({ down, delta: [dx, dy] }) => {
-      let rotation = THREE.Math.degToRad(cameraPan - dx)
-      let tilt = THREE.Math.degToRad(cameraTilt - dy)
+      let newPan = cameraPan - dx
+      let newTilt = cameraTilt - dy
+      setCameraPan(newPan)
+      setCameraTilt(newTilt)
+      let rotation = THREE.Math.degToRad(newPan)
+      let tilt = THREE.Math.degToRad(newTilt)
       
       updateObject(activeCamera.id, {rotation, tilt})
-    }, 100, {trailing:false}))
+    }, 26, {trailing:false}))
     
     const onSetShot = ({size, angle}) => {      
       setCameraShot(activeCamera.id, {size, angle})
@@ -135,7 +152,15 @@ const CameraPanelInspector = connect(
       { value: ShotAngles.LOW,              label: "Low" },
       { value: ShotAngles.WORMS_EYE,        label: "Worm\'s Eye" }
     ]
+
+    const onPanStarted = () => {
+      isDragging.current = true
+    }
     
+    const onPanEnded = () => {
+      isDragging.current = false
+    }
+
     return <div className="camera-inspector">
             <div className="camera-item roll">
                 <div className="camera-item-control">
@@ -149,7 +174,7 @@ const CameraPanelInspector = connect(
             <div className="camera-item pan">
                 <div className="camera-item-control">
                     <div className="row">
-                        <div className="pan-control" {...getCameraPanEvents()}><div className="pan-control-target"/></div>
+                        <div className="pan-control" onPointerDown={ onPanStarted } onPointerUp={ onPanEnded }  {...getCameraPanEvents()}><div className="pan-control-target"/></div>
                     </div>
                 </div>
                 <div className="camera-item-label">Pan: { cameraPan }° // Tilt: { cameraTilt }°</div>

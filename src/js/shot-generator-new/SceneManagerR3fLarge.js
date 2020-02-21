@@ -39,6 +39,8 @@ import SaveShot from './components/Three/SaveShot'
 import { SHOT_LAYERS } from './utils/ShotLayers'
 import Room from './components/Three/Room'
 import Group from './components/Three/Group'
+import CameraUpdate from './CameraUpdate'
+import deepEqualSelector from "../utils/deepEqualSelector"
 
 const getSceneObjectModelObjectIds = createSelector(
     [getSceneObjects],
@@ -70,6 +72,21 @@ const getSceneObjectGroupIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
 )
+const sceneObjectSelector = (state) => {
+  const sceneObjects = getSceneObjects(state)
+
+  let newSceneObjects = {}
+  let keys = Object.keys(sceneObjects)
+  for(let i = 0; i < keys.length; i++) {
+    let key = keys[i]
+    if(sceneObjects[key].type !== "camera")
+      newSceneObjects[key] = sceneObjects[key]
+  }
+  return newSceneObjects
+}
+
+const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects) => sceneObjects)
+
 const SceneManagerR3fLarge = connect(
     state => ({
         modelObjectIds: getSceneObjectModelObjectIds(state),
@@ -79,9 +96,8 @@ const SceneManagerR3fLarge = connect(
         volumeIds: getSceneObjectVolumeIds(state),
         groupIds: getSceneObjectGroupIds(state),
         imageIds: getSceneObjectImageIds(state),
-        sceneObjects: getSceneObjects(state),
+        sceneObjects: getSceneObjectsM(state),
         world: getWorld(state),
-        activeCamera: getSceneObjects(state)[getActiveCamera(state)],
         storyboarderFilePath: state.meta.storyboarderFilePath,
         selections: getSelections(state),
         models: state.models,
@@ -103,7 +119,6 @@ const SceneManagerR3fLarge = connect(
     modelObjectIds,
     sceneObjects,
     world,
-    activeCamera,
     storyboarderFilePath,
     selections,
     updateCharacterSkeleton,
@@ -134,7 +149,6 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
-
     useEffect(() => {
         let sgIkHelper = SGIkHelper.getInstance()
         sgIkHelper.setUp(null, rootRef.current, camera, gl.domElement)
@@ -180,24 +194,6 @@ const SceneManagerR3fLarge = connect(
         return (sceneObjects[id] && sceneObjects[id].type === "character")
       })
     }, [selections])
-
-    useEffect(() => {
-      let cameraObject = activeCamera
-   
-      camera.position.x = cameraObject.x
-      camera.position.y = cameraObject.z
-      camera.position.z = cameraObject.y
-      camera.rotation.x = 0
-      camera.rotation.z = 0
-      camera.rotation.y = cameraObject.rotation
-      camera.rotateX(cameraObject.tilt)
-      camera.rotateZ(cameraObject.roll)
-      camera.userData.type = cameraObject.type
-      camera.userData.locked = cameraObject.locked
-      camera.userData.id = cameraObject.id
-      camera.fov = cameraObject.fov
-      camera.updateProjectionMatrix()
-    }, [activeCamera])
 
     useEffect(() => {
       if(!selectedCharacters.current) return
@@ -283,6 +279,7 @@ const SceneManagerR3fLarge = connect(
     }, [world.directional.rotation, world.directional.tilt])
 
     return <group ref={ rootRef }> 
+    <CameraUpdate/>
     <SaveShot isPlot={ false }/>
     <InteractionManager renderData={ renderData }/>
     <ambientLight

@@ -56,7 +56,7 @@ const Effect = ({renderData, stats}) => {
 }
 
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, setMainViewCamera, withState, store, sceneObjects, world
+  mainViewCamera, aspectRatio, setMainViewCamera, withState, store,
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
