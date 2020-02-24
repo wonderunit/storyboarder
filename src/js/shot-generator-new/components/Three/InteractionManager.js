@@ -288,6 +288,13 @@ const InteractionManager = connect(
                     setDragTarget({ target, x, y, isObjectControl: true })
                     return
                 }
+                else if(targetElement.userData.type === "object") {
+                  let characters = intersectables.current.filter(value => value.uuid === characterId)
+                  target = characters[0]
+                  selectedObjectControl = targetElement
+                  setDragTarget({ target, x, y, isObjectControl: true })
+                  return
+              }
             } else if(target.type && target.type === 'gizmo') {
                 let characterId = target.parent.parent.parent.characterId
                 SGIkHelper.getInstance().selectControlPoint(target.parent.parent.parent.object.uuid, event)
@@ -363,13 +370,11 @@ const InteractionManager = connect(
       const selections = takeSelections()
 
       const { x, y } = mouse(event)
-      if (dragTarget) {
+      if (dragTarget && !dragTarget.isObjectControl) {
         if(dragTarget.target.userData.type === 'character') {
           let ikRig = SGIkHelper.getInstance().ragDoll;
           if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown) {
-            if(!dragTarget.isObjectControl) {
-              drag({ x, y }, dragTarget.target, camera, selections)
-            }
+            drag({ x, y }, dragTarget.target, camera, selections)
           }
         }
         else {
@@ -406,7 +411,6 @@ const InteractionManager = connect(
               )
               ? null
               : getIntersectionTarget(intersects[0])
-              console.log(target, lastDownId)
               if (target && target.userData.id == lastDownId) {
                 if (event.shiftKey) {
                   // if there is only one selection and it is the active camera
