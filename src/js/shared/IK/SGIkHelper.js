@@ -33,7 +33,7 @@ class SGIKHelper extends THREE.Object3D
         this.intializedSkinnedMesh = null;
         this.isIkDisabled = false;
         this.add(this.poleTargets);
-        this.isPoleTargetsVisible = false;
+        this.isPoleTargetsVisible = true;
         this.add(this.controlPoints);
         this.add(this.transformControls);
         intializeInstancedMesh(mesh, camera, domElement, scene);
@@ -283,13 +283,13 @@ class SGIKHelper extends THREE.Object3D
         this.updatePoleTargets = updatePoleTargets;
     }
 
-    resetTargetPoint(targetPoint)
+    resetTargetPoint(targetPoint, color = this.defaultColor)
     {
         targetPoint.position.copy(this.defaultPosition);
         targetPoint.rotation.set(0, 0, 0);
         targetPoint.quaternion.set(0, 0, 0, 1);
         targetPoint.scale.set(1, 1, 1);
-        this.updateInstancedTargetPoint(targetPoint, this.defaultColor);
+        this.updateInstancedTargetPoint(targetPoint, color);
     }
 
     resetAllTargetPoints()
@@ -393,7 +393,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         depthWrite: false,
         transparent: true,
         opacity: 1,
-        flatShading: true});
+        flatShading: false});
     let newMesh = mesh ? mesh : new THREE.Mesh(sphereGeometry, material);
     instance.material = material;
     instance.instancedMesh = new InstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
@@ -402,7 +402,8 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
     instance.instancedMesh.userData.preventInteraction = true;
     instance.instancedMesh.userData.type = "instancedMesh";
     instance.instancedMesh.visible = true;
-    for(let i = 0; i < 6; i++)
+    let sizeOfControlPoints = controlsName.length;
+    for(let i = 0; i < sizeOfControlPoints; i++)
     {
         let controlPoint = new THREE.Mesh(newMesh.geometry, material);
         controlPoint.userData.id = --sizeOfTargets;
@@ -416,16 +417,18 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         instance.targetControls.push(targetControl);
         instance.resetTargetPoint(controlPoint);
     }
+    let poleTargetColor = new THREE.Color(0xb271c1);
     for(let i = 0; i < 4; i++)
     {
         let poleTarget = new THREE.Mesh(newMesh.geometry, material);
         poleTarget.material.visible = false;
+       // poleTarget.material.needsUpdate = true;
         poleTarget.userData.id = --sizeOfTargets;
         poleTarget.userData.type = "poleTarget";
         poleTarget.name = listOfControlTargets.shift();
         poleTarget.visible = instance.isPoleTargetsVisible;
         instance.poleTargets.add(poleTarget);
-        instance.resetTargetPoint(poleTarget);
+        instance.resetTargetPoint(poleTarget, poleTargetColor);
     }
 }
 module.exports = SGIKHelper;
