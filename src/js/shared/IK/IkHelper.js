@@ -103,7 +103,7 @@ class IKHelper extends THREE.Object3D
             {
                 this.poleTargets.attach(this.selectedControlPoint);
                 this.poleTargets.updateMatrixWorld(true)
-                let characterMatrix = characterObject.matrixWorld
+/*                 let characterMatrix = characterObject.matrixWorld
                 let characterInverseMatrix = characterObject.getInverseMatrixWorld()
                 this.selectedControlPoint.applyMatrix(characterInverseMatrix)
                 this.selectedControlPoint.updateMatrixWorld(true)
@@ -120,8 +120,8 @@ class IKHelper extends THREE.Object3D
                         y: worldPosition.y,
                         z: worldPosition.z,
                     }
-                };
-                this.updatePoleTargets(poleTargets);
+                }; */
+                this.ragDoll.updateAllPoleTargets();
             }
             if(this.selectedControlPoint.name === "Hips")
             {
@@ -208,11 +208,12 @@ class IKHelper extends THREE.Object3D
 
     setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos, updatePoleTargets, updateObjects)
     {
+        console.log("set update")
         this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
         this.ragDoll.updateSkeleton(updateSkeleton);
         this.ragDoll.updateCharacterPos(updateCharacterPos);
+        this.ragDoll.setUpdatePoleTargets(updatePoleTargets);
         this.updateObjects = updateObjects;
-        this.updatePoleTargets = updatePoleTargets;
     }
 
     resetTargetPoint(targetPoint)

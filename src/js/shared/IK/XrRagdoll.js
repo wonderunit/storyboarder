@@ -38,6 +38,12 @@ class XRRagdoll extends XRIKObject
         this.updateCharPosition = updateCharPosition;
     }
 
+    setUpdatePoleTargets(updatePoleTargets)
+    {
+        console.log("Set update pole taget method")
+        this.updatePoleTargets = updatePoleTargets;
+    }
+
     // Runs cycle which is updating object
     update()
     {
@@ -192,7 +198,7 @@ class XRRagdoll extends XRIKObject
             }
             let poleConstraint = new PoleConstraint(chain, poleTarget);
             chain.joints[0].addIkConstraint(poleConstraint);
-            chainObjects[i].poleConstraint = poleConstraint;
+            this.chainObjects[chainName].poleConstraint = poleConstraint;
         }
 
         let copyRotation = new CopyRotation(backChain, backChain.joints[4]);
@@ -207,7 +213,11 @@ class XRRagdoll extends XRIKObject
         poleTarget.mesh = poleTargetMesh;
         poleTarget.initialOffset = offset.multiplyScalar(poleTargetMesh.userData.scaleAspect);
         this.calculatePoleTargetOffset(poleTarget, chain);
+        console.log(poleTarget.mesh.position.clone())
         poleTarget.initialize(poleTarget.poleOffset);
+        console.log(poleTarget.mesh.position.clone())
+        console.log(poleTarget.mesh.position)
+        console.log(poleTarget.mesh)
         
         return poleTarget;
     }
@@ -322,6 +332,37 @@ class XRRagdoll extends XRIKObject
             ikBones.push(bone);
         }
         this.updateCharacterSkeleton(ikBones);
+    }
+
+    updateAllPoleTargets()
+    {
+        let chainObjects = this.chainObjectsValues;
+        let poleTargetsPosition = {};
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            if(!chainObjects[i].poleConstraint) continue;
+            let poleTarget = chainObjects[i].poleConstraint.poleTarget;
+            let characterMatrix = this.originalMesh.matrixWorld;
+            let characterInverseMatrix = new THREE.Matrix4().getInverse(characterMatrix)
+            console.log(this)
+
+            poleTarget.mesh.applyMatrix(characterInverseMatrix);
+            poleTarget.mesh.updateMatrixWorld(true);
+            let worldPosition = poleTarget.mesh.position;
+            poleTarget.mesh.applyMatrix(characterMatrix);
+            poleTarget.mesh.updateMatrixWorld(true);
+            
+            poleTargetsPosition[poleTarget.mesh.name] = 
+            {
+                position: 
+                {
+                    x: worldPosition.x,
+                    y: worldPosition.y,
+                    z: worldPosition.z,
+                }
+            };
+        }
+        this.updatePoleTargets(poleTargetsPosition)
     }
 
     // Sets limbs rotation to control target rotation
