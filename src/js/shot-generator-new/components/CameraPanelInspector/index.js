@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 import {
@@ -19,6 +19,35 @@ import { ShotSizes, ShotAngles } from '../../utils/cameraUtils'
 import { useDrag } from 'react-use-gesture'
 
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
+
+/**
+ * Return the first index containing an *item* which is greater than *item*.
+ * @arguments _(item)_
+ * @example
+ *  indexOfGreaterThan([10, 5, 77, 55, 12, 123], 70) // => 2
+ * via mohayonao/subcollider
+ */
+const indexOfGreaterThan = (array, item) => {
+  for (var i = 0, imax = array.length; i < imax; ++i) {
+    if (array[i] > item) { return i }
+  }
+  return -1
+}
+/**
+ * Returns the closest index of the value in the array (collection must be sorted).
+ * @arguments _(item)_
+ * @example
+ *  indexIn([2, 3, 5, 6], 5.2) // => 2
+ * via mohayonao/subcollider
+ */
+const indexIn = (array, item) => {
+  var i, j = indexOfGreaterThan(array, item)
+  if (j === -1) { return array.length - 1 }
+  if (j ===  0) { return j }
+  i = j - 1
+  return ((item - array[i]) < (array[j] - item)) ? i : j
+}
+
 
 const CameraPanelInspector = connect(
     state => ({
@@ -98,19 +127,37 @@ const CameraPanelInspector = connect(
       updateObject(activeCamera.id, cameraState)
     }
 
+    const fovs = useMemo(() => {
+      const mms = [12, 16, 18, 22, 24, 35, 50, 85, 100, 120, 200, 300, 500]
+      return mms.map(mm => {
+        let vExtentSlope = 0.5 * 35 / mm;
+        let fov = THREE.Math.RAD2DEG * 2 * Math.atan( vExtentSlope );
+        return fov
+      }).sort((a, b) => a - b)
+    }, [])
+   
+
+    const switchCameraFocalLength = useCallback((iterator) => {
+      let index = indexIn(fovs, activeCamera.fov)
+      let switchTo = index + iterator
+      let fov = fovs[Math.max(Math.min(switchTo, fovs.length), 0)]
+      updateObject(activeCamera.id, { fov })
+    }, [activeCamera] )
+
+
     useEffect(() => {
-      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value: getValueShifter({ fov: -0.2 }) })
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value:  () => switchCameraFocalLength( 1 ) })
       return () => { 
         KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "[" })
       }
-    }, [getValueShifter])
+    }, [switchCameraFocalLength])
 
     useEffect(() => {
-      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "]", value: getValueShifter({ fov: 0.2 }) })
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "]", value:  () => switchCameraFocalLength( -1 ) })
       return () => { 
         KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "]" })
       }
-    }, [getValueShifter])
+    }, [switchCameraFocalLength])
     
     const moveCamera = ([speedX, speedY]) => () => {
       cameraState = CameraControls.getMovedState(cameraState, { x: speedX, y: speedY })

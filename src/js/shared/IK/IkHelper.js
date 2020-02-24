@@ -208,7 +208,6 @@ class IKHelper extends THREE.Object3D
 
     setUpdate(updateCharacterSkeleton, updateSkeleton, updateCharacterPos, updatePoleTargets, updateObjects)
     {
-        console.log("set update")
         this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
         this.ragDoll.updateSkeleton(updateSkeleton);
         this.ragDoll.updateCharacterPos(updateCharacterPos);

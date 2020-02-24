@@ -195,7 +195,6 @@ const InteractionManager = connect(
         raycaster.current.setFromCamera({ x, y }, camera )
         //Check helpers intersection first
         let intersects = raycaster.current.intersectObject(SGIkHelper.getInstance())
-        console.log(intersects)
         if(intersects.length > 0) {
           return intersects
         }

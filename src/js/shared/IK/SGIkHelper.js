@@ -70,7 +70,6 @@ class SGIKHelper extends THREE.Object3D
             {
                 let pos = intializedMesh.position;
                 mesh.position.set(pos.x, pos.y, pos.z);
-                console.log(mesh.position.clone());
                 mesh.updateMatrixWorld(true);
                 mesh.userData.isInitialized = true;
             }
