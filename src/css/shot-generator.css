@@ -666,6 +666,7 @@ select {
   padding: 5px 5px 0 5px;
   margin-top: -1px; /* optical */
   font-size: 87.5%;
+  word-break: break-all;
 }
 
 .attachable-card___button {
