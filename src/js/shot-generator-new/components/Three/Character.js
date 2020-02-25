@@ -296,7 +296,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       if (isSelected) {
         BonesHelper.getInstance().initialize(lod.children[0])
         if(!isUserModel(sceneObject.model) && !SGIkHelper.getInstance().isIkDisabled) {
-          SGIkHelper.getInstance().initialize(ref.current, modelSettings ? modelSettings.height : sceneObject.height, lod.children[0], sceneObject)
+          SGIkHelper.getInstance().initialize(ref.current, originalHeight, lod.children[0], sceneObject)
           ref.current.add(SGIkHelper.getInstance())
           ref.current.updateWorldMatrix(true, true)
         }
@@ -338,7 +338,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           type: "character",
           id: sceneObject.id,
           poleTargets: sceneObject.poleTargets || {},
-          height: modelSettings,
+          height: originalHeight,
           locked: locked
         }}
 

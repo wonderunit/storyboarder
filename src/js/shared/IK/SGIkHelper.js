@@ -40,7 +40,7 @@ class SGIKHelper extends THREE.Object3D
         intializeInstancedMesh(mesh, camera, domElement, scene);
         this.add(this.instancedMesh);
         this.targetPoints = this.poleTargets.children.concat(this.controlPoints.children);
-        this.regularHeight = 1.1;
+        this.regularHeight = 1.8;
         this.isInitialized = true;
         this.userData.type = "IkHelper";
         let controlTargetSelection = new ControlTargetSelection(domElement, camera, this.targetControls);
@@ -66,14 +66,23 @@ class SGIKHelper extends THREE.Object3D
             mesh.userData.isInitialized = false;
             // Checks if there's already info for current mesh
             // Info like position
+            mesh.scale.set(defaultScale, defaultScale, defaultScale).multiplyScalar(scaleAspect);
             if(intializedMesh)
             {
                 let pos = intializedMesh.position;
-                mesh.position.set(pos.x, pos.y, pos.z);
+                let characterHeight = intializedMesh.currentCharacterHeight
+                let scaleDifference = 1
+                if(characterHeight) {
+                    let heightDifference = height / characterHeight
+                    let newScale = defaultScale * heightDifference
+                    scaleDifference = newScale / defaultScale
+                }
+             
+                mesh.position.set(pos.x, pos.y, pos.z).multiplyScalar( scaleDifference);
+
                 mesh.updateMatrixWorld(true);
                 mesh.userData.isInitialized = true;
             }
-            mesh.scale.set(defaultScale, defaultScale, defaultScale).multiplyScalar(scaleAspect);
             
             mesh.userData.scaleAspect = scaleAspect;
         }
@@ -187,7 +196,8 @@ class SGIKHelper extends THREE.Object3D
                         x: worldPosition.x,
                         y: worldPosition.y,
                         z: worldPosition.z,
-                    }
+                    },
+                    currentCharacterHeight: this.characterObject.userData.height,
                 };
                 this.ragDoll.updatePoleTargets(poleTargets);
 
@@ -397,7 +407,7 @@ class SGIKHelper extends THREE.Object3D
 
 const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
 {
-    let sphereGeometry = new THREE.SphereBufferGeometry( 0.2, 8, 6 );
+    let sphereGeometry = new THREE.SphereBufferGeometry( 0.35, 8, 6 );
     let instance = SGIKHelper.getInstance();
     let controlsName = [ "Head", "LeftHand", "RightHand", "LeftLeg", "RightLeg", "Hips"];
     let listOfControlTargets = ["leftArmPole", "rightArmPole", "leftLegPole", "rightLegPole"];

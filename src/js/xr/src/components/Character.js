@@ -204,7 +204,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
         BonesHelper.getInstance().initialize(lod.children[0])
         if(!isUserModel(sceneObject.model) && !IKHelper.getInstance().isIkDisabled) {
-            IKHelper.getInstance().initialize(lod.children[0], modelSettings ? modelSettings.height : sceneObject.height)
+            IKHelper.getInstance().initialize(lod.children[0], originalHeight)
             ref.current.add(IKHelper.getInstance())
         }
         ref.current.add(BonesHelper.getInstance())
@@ -225,7 +225,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
           type: "character",
           id: sceneObject.id,
           poleTargets: sceneObject.poleTargets || {},
-          height: modelSettings,
+          height: originalHeight,
           locked: locked
         }}
 

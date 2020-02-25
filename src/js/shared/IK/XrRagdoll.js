@@ -213,12 +213,7 @@ class XRRagdoll extends XRIKObject
         poleTarget.mesh = poleTargetMesh;
         poleTarget.initialOffset = offset.multiplyScalar(poleTargetMesh.userData.scaleAspect);
         this.calculatePoleTargetOffset(poleTarget, chain);
-        console.log(poleTarget.mesh.position.clone())
         poleTarget.initialize(poleTarget.poleOffset);
-        console.log(poleTarget.mesh.position.clone())
-        console.log(poleTarget.mesh.position)
-        console.log(poleTarget.mesh)
-        
         return poleTarget;
     }
 
