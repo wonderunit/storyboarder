@@ -172,7 +172,7 @@ class SGIKHelper extends THREE.Object3D
             {
                 this.poleTargets.attach(this.selectedControlPoint);
                 this.poleTargets.updateMatrixWorld(true)
-         /*        let characterMatrix = this.characterObject.matrixWorld
+                let characterMatrix = this.characterObject.matrixWorld
                 let characterInverseMatrix = this.characterObject.getInverseMatrixWorld()
                 this.selectedControlPoint.applyMatrix(characterInverseMatrix)
                 this.selectedControlPoint.updateMatrixWorld(true)
@@ -190,8 +190,8 @@ class SGIKHelper extends THREE.Object3D
                     }
                 };
                 this.ragDoll.updatePoleTargets(poleTargets);
- */
-                this.ragDoll.updateAllPoleTargets();
+
+                //this.ragDoll.updateAllPoleTargets();
             }
             if(this.selectedControlPoint.userData.name === "Hips")
             {
