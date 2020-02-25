@@ -21,6 +21,7 @@ import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
   selectObject,
   setMainViewCamera,
+  getIsSceneDirty
 } from './../../../shared/reducers/shot-generator'
 
 import notifications from './../../../window/notifications'
@@ -56,7 +57,7 @@ const Effect = ({renderData, stats}) => {
 }
 
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, setMainViewCamera, withState, store,
+  mainViewCamera, aspectRatio, setMainViewCamera, withState, store, onBeforeUnload
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
@@ -98,6 +99,13 @@ const Editor = React.memo(({
       cleanUpCache()
     }
   }, [])
+
+  useEffect(() => {
+    window.addEventListener('beforeunload', onBeforeUnload)
+    return function cleanup () {
+      window.removeEventListener('beforeunload', onBeforeUnload)
+    }
+  }, [onBeforeUnload])
 
   const guidesDimensions = useMemo(() => {
     return {
@@ -249,5 +257,12 @@ export default connect(
     withState,
     setMainViewCamera,
     selectObject,
+    onBeforeUnload: event => (dispatch, getState) => {
+      if (getIsSceneDirty(getState())) {
+        // pass electron-specific flag
+        // to trigger `will-prevent-unload` on BrowserWindow
+        event.returnValue = false
+      }
+    },
   }
 )(Editor)
