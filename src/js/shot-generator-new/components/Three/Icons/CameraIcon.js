@@ -65,7 +65,6 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, .
     }, [text])
 
     useEffect(() => {
-        console.log("FOV changed", sceneObject.fov)
         fakeCamera.current.fov = sceneObject.fov
         let valueText = fakeCamera.current.getFocalLength().toFixed(2) + "mm, " + sceneObject.z.toFixed(2) + "m"
         iconsSprites.current.changeText(2, valueText)
