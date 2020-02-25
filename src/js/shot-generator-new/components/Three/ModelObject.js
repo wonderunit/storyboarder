@@ -90,6 +90,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
 
 
   useEffect(() => {
+    if(isIcon) return
     objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
     objectRotationControl.current.control.canSwitch = false
     objectRotationControl.current.setUpdateCharacter((name, rotation) => {
@@ -146,6 +147,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
   }, [ref.current, isSelected, asset])
 
   useEffect(() => {
+    if(isIcon) return
     if(!ref.current) return
     if(isSelected) {
       KeyCommandsSingleton.getInstance().addKeyCommand({
