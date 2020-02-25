@@ -40,13 +40,13 @@ function nextIndex () {
 
 function playSequence (index) {
   index = index == null ? nextIndex() : index
-  console.log(`--- sequence index:${index}`)
+  // console.log(`--- sequence index:${index}`)
   let sequence = sequences[index]
   let events = sequence.notes
 
   events.forEach(event => {
     let { name, time, duration, velocity } = event
-    console.log(`\t${name} t:${time} d:${duration} v:${velocity}`)
+    // console.log(`\t${name} t:${time} d:${duration} v:${velocity}`)
     sampler.triggerAttackRelease(name, duration, `+${time}`, velocity)
   })
 
@@ -54,39 +54,39 @@ function playSequence (index) {
 }
 
 function trigger () {
-  console.log('<br/>===')
-  console.log('MusicSystem#trigger')
+  // console.log('<br/>===')
+  // console.log('MusicSystem#trigger')
   let duration = playSequence()
 
-  console.log('\tduration', duration * 1000)
+  // console.log('\tduration', duration * 1000)
 
   if (isPlaying) {
 
     let next = (duration * 1000) * 3
 
     if (Math.random() < 0.3) {
-      console.log('\tresting …')
+      // console.log('\tresting …')
       next = Tone.Time('16m').toMilliseconds()
     }
 
-    console.log(`- will trigger again in ${next} msecs`)
+    // console.log(`- will trigger again in ${next} msecs`)
     setTimeout(trigger, next)
   }
 }
 
 function start () {
-  console.log('MusicSystem#start')
+  // console.log('MusicSystem#start')
 
   let next = Tone.Time('5m').toMilliseconds()
 
-  console.log(`- scheduled first sequence at ${next} msecs`)
+  // console.log(`- scheduled first sequence at ${next} msecs`)
 
   isPlaying = true
   setTimeout(trigger, next)
 }
 
 function init ({ urlMap, audioContext, audioNode, onComplete }) {
-  console.log('MusicSystem#init', audioContext, audioNode)
+  // console.log('MusicSystem#init', audioContext, audioNode)
 
   Tone.setContext(audioContext)
 
