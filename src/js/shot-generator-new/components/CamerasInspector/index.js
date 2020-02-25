@@ -118,22 +118,48 @@ const CamerasInspector = connect(
     undoGroupEnd()
   }
 
+  const getFirstElementStyle = (camera, n) => {
+    if(n === 0) {
+      return <a key={ n }
+            href="#"
+            className={ classNames({ active: activeCamera === camera.id }) } 
+            onClick={ onClick.bind(this, camera) }
+            style={{marginLeft: "auto"}}>
+          { n + 1 }
+      </a>
+    } else {
+      return <a key={ n }
+            href="#"
+            className={ classNames({ active: activeCamera === camera.id }) } 
+            onClick={ onClick.bind(this, camera) }>
+          { n + 1 }
+      </a>
+    }
+  }
+
+  useEffect(() => {
+    let scrollContainer = document.getElementsByClassName("cameras-inspector")[0].children[0].children[1]
+    let selectedCamera = scrollContainer.children[0].getElementsByClassName("active")[0]
+    scrollContainer.scrollTo({
+      top: selectedCamera.offsetTop,
+      left: selectedCamera.clientWidth * (parseInt(selectedCamera.text) - 1),
+      behavior: 'smooth'
+    })
+  }, [_cameras, activeCamera])
+
   return <div className="cameras-inspector">
         <div className="row">
             <div className="cameras-inspector__label">Camera</div>
-            <Scrollable>
-              <div className="round-buttons-panel">
+            <Scrollable >
+              <div className="round-buttons-panel" style={{ justifyContent: "flex-start"}} >
                { _cameras.map(
                  (camera, n) =>
-                     <a key={ n }
-                       href="#"
-                       className={ classNames({ active: activeCamera === camera.id }) } 
-                       onClick={ onClick.bind(this, camera) }>
-                     { n + 1 }
-                     </a>,
+                  getFirstElementStyle(camera, n),
                ) }
                </div>
              </Scrollable>
+
+
         </div>
     </div>
 })

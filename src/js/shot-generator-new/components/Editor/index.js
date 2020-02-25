@@ -220,7 +220,7 @@ const Editor = React.memo(({
             <div className="inspectors">
               <CameraPanelInspector/>
               <BoardInspector/>
-              <div>
+              <div style={{ flex: "1 1 auto" }}>
                 <CamerasInspector/>
                 <GuidesInspector/>
               </div>
