@@ -11,11 +11,19 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, .
       )
     const iconsSprites = useRef()
     const frustumIcons = useRef()
+    const fakeCamera = useRef()
+
+    useEffect(() => {
+        fakeCamera.current = new THREE.PerspectiveCamera(sceneObject.fov, 2.348927875243665)
+    }, [])
+    
     useEffect(() => {
         if(!fontMesh) return
         iconsSprites.current = new IconSprites(type, fontMesh)
         iconsSprites.current.addText(text, 1)
-        let valueText = Math.round(sceneObject.fov) + "mm, " + sceneObject.z.toFixed(2) + "m"
+        fakeCamera.current = fakeCamera.current || new THREE.PerspectiveCamera(sceneObject.fov, 2.348927875243665)
+        fakeCamera.current.fov = sceneObject.fov
+        let valueText = fakeCamera.current.getFocalLength().toFixed(2) + "mm, " + sceneObject.z.toFixed(2) + "m"
         iconsSprites.current.addText(valueText, 2, { x: 0.7, y: 0, z: 0.39 }, 0.0055)
         ref.current.add(iconsSprites.current)
         iconsSprites.current.icon.material.rotation = ref.current.rotation.y
@@ -44,7 +52,8 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, .
             frustumIcons.current.left.icon.material.rotation = hFOV/2 + sceneObject.rotation
             frustumIcons.current.right.icon.material.rotation = -hFOV/2 + sceneObject.rotation
             
-            let focal = sceneObject.fov
+            fakeCamera.current.fov = sceneObject.fov
+            let focal = fakeCamera.current.getFocalLength().toFixed(2)
             let meters = parseFloat(Math.round(sceneObject.z * 100) / 100).toFixed(2)
             if (iconsSprites.current.iconSecondText)
                 iconsSprites.current.changeSecondText(`${Math.round(focal)}mm, ${meters}m`)
@@ -56,7 +65,9 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, .
     }, [text])
 
     useEffect(() => {
-        let valueText = Math.round(sceneObject.fov) + "mm, " + sceneObject.z.toFixed(2) + "m"
+        console.log("FOV changed", sceneObject.fov)
+        fakeCamera.current.fov = sceneObject.fov
+        let valueText = fakeCamera.current.getFocalLength().toFixed(2) + "mm, " + sceneObject.z.toFixed(2) + "m"
         iconsSprites.current.changeText(2, valueText)
     }, [ sceneObject.fov, sceneObject.z ])
 

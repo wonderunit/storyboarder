@@ -186,7 +186,7 @@ const SceneManagerR3fLarge = connect(
           updatePoleTarget,
           updateObjects
         )
-
+        console.log(camera)
       }, [])
 
     useEffect(() => {  

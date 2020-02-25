@@ -77,6 +77,7 @@ const CameraPanelInspector = connect(
     const [currentShotSize, setCurrentShotSize] = useState(shotInfo.size)
     const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
     const isDragging = useRef(false)
+    const fakeCamera = useRef()
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
     }, [shotInfo.size, activeCamera])
@@ -127,12 +128,21 @@ const CameraPanelInspector = connect(
       updateObject(activeCamera.id, cameraState)
     }
 
+    useEffect(() => {
+      if(fakeCamera.current) {
+        fakeCamera.current.fov = activeCamera.fov
+        fakeCamera.current.updateProjectionMatrix()
+      } else {
+        fakeCamera.current = new THREE.PerspectiveCamera(activeCamera.fov, 2.348927875243665)
+      }
+    }, [activeCamera])
+
     const fovs = useMemo(() => {
       const mms = [12, 16, 18, 22, 24, 35, 50, 85, 100, 120, 200, 300, 500]
+      fakeCamera.current = fakeCamera.current || new THREE.PerspectiveCamera(activeCamera.fov,  2.348927875243665)
       return mms.map(mm => {
-        let vExtentSlope = 0.5 * 35 / mm;
-        let fov = THREE.Math.RAD2DEG * 2 * Math.atan( vExtentSlope );
-        return fov
+        fakeCamera.current.setFocalLength(mm)
+        return fakeCamera.current.fov
       }).sort((a, b) => a - b)
     }, [])
    
@@ -141,9 +151,16 @@ const CameraPanelInspector = connect(
       let index = indexIn(fovs, activeCamera.fov)
       let switchTo = index + iterator
       let fov = fovs[Math.max(Math.min(switchTo, fovs.length), 0)]
+      console.log( activeCamera.fov)
+      console.log(fovs)
+      console.log(fov)
+      console.log(Math.min(switchTo, fovs.length))
+      console.log(Math.max(Math.min(switchTo, fovs.length), 0))
+      console.log(switchTo)
+      fakeCamera.current.fov = fov
+      fakeCamera.current.updateProjectionMatrix()
       updateObject(activeCamera.id, { fov })
     }, [activeCamera] )
-
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value:  () => switchCameraFocalLength( 1 ) })
@@ -257,7 +274,7 @@ const CameraPanelInspector = connect(
                         <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: -0.2 }))}><div className="arrow right"/></div> 
                     </div>
                 </div>
-                <div className="camera-item-label">Lens: { activeCamera.fov.toFixed(2) }mm</div>
+                <div className="camera-item-label">Lens: { fakeCamera.current.getFocalLength().toFixed(2) }mm</div>
             </div>
             <div className="camera-item shots">
                 <div className="select">
