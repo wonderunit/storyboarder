@@ -158,8 +158,7 @@ const Editor = React.memo(({
   }
 
 
-  //useExportToGltf(largeCanvasData.current.scene)
-
+  useExportToGltf(largeCanvasData.current.scene, withState)
   return (
     <FatalErrorBoundary>
       <div id="root">
