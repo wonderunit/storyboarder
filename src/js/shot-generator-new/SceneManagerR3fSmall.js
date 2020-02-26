@@ -113,17 +113,13 @@ const SceneManagerR3fSmall = connect(
       if(!draggedObject.current) return
       const { x, y } = mouse(e)
       drag({ x, y }, draggedObject.current, camera, selections)
+      
     }, [camera, selections, mouse])
 
     const onPointerUp = useCallback((e) => {
       endDrag(updateObjects)
       draggedObject.current = null
     }, [updateObjects])
-
-
-    const throttleUpdateDraggableObject = throttle(() => {  
-      updateStore(updateObjects)
-    }, 16, {trailing: true} )
 
     const fontMesh =  useFontLoader(fontpath, 'fonts/wonder-unit-bmfont/wonderunit-b.png')
     useEffect(() => { 
@@ -133,6 +129,11 @@ const SceneManagerR3fSmall = connect(
         directionalLightRef.current.rotation.y = world.directional.rotation
         directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world])
+
+    setInterval(() => {
+      //if(draggedObject.current)
+        updateStore(updateObjects)
+    }, 16)
 
     const autofitOrtho = useCallback(() => {
       let minMax = [9999,-9999,9999,-9999]
@@ -252,12 +253,12 @@ const SceneManagerR3fSmall = connect(
     useEffect(() => {
       if(renderData) return
         gl.domElement.addEventListener("pointermove", onPointerMove)
-        gl.domElement.addEventListener("pointermove", throttleUpdateDraggableObject)
+       // gl.domElement.addEventListener("pointermove", throttleUpdateDraggableObject)
         gl.domElement.addEventListener("pointerdown", deselect)
       return () => {
         if(renderData) return
           gl.domElement.removeEventListener("pointermove", onPointerMove)
-          gl.domElement.removeEventListener("pointermove", throttleUpdateDraggableObject)
+          //gl.domElement.removeEventListener("pointermove", throttleUpdateDraggableObject)
           gl.domElement.removeEventListener("pointerdown", deselect)
       }
     }, [onPointerMove])
