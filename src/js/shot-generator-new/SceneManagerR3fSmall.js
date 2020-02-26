@@ -18,6 +18,7 @@ import ModelLoader from '../services/model-loader'
 import { useDraggingManager} from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
 import Room from './components/Three/Room'
+import throttle from 'lodash.throttle'
 
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
@@ -48,7 +49,6 @@ const SceneManagerR3fSmall = connect(
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
-    const groundRef = useRef()
     const draggedObject = useRef(null)
 
     const actualGL = useMemo(() => renderData ? renderData.gl : gl)
@@ -113,13 +113,17 @@ const SceneManagerR3fSmall = connect(
       if(!draggedObject.current) return
       const { x, y } = mouse(e)
       drag({ x, y }, draggedObject.current, camera, selections)
-      updateStore(updateObjects)
     }, [camera, selections, mouse])
 
     const onPointerUp = useCallback((e) => {
       endDrag(updateObjects)
       draggedObject.current = null
     }, [updateObjects])
+
+
+    const throttleUpdateDraggableObject = throttle(() => {  
+      updateStore(updateObjects)
+    }, 16, {trailing: true} )
 
     const fontMesh =  useFontLoader(fontpath, 'fonts/wonder-unit-bmfont/wonderunit-b.png')
     useEffect(() => { 
@@ -248,10 +252,12 @@ const SceneManagerR3fSmall = connect(
     useEffect(() => {
       if(renderData) return
         gl.domElement.addEventListener("pointermove", onPointerMove)
+        gl.domElement.addEventListener("pointermove", throttleUpdateDraggableObject)
         gl.domElement.addEventListener("pointerdown", deselect)
       return () => {
         if(renderData) return
           gl.domElement.removeEventListener("pointermove", onPointerMove)
+          gl.domElement.removeEventListener("pointermove", throttleUpdateDraggableObject)
           gl.domElement.removeEventListener("pointerdown", deselect)
       }
     }, [onPointerMove])
