@@ -121,6 +121,31 @@ const InteractionManager = connect(
       })
       return selection
     }, [])
+  
+    const onCameraUpdate = useCallback(({active, object}) => {
+      if (!active) {
+        updateObject(camera.userData.id, {
+          x: object.x,
+          y: object.y,
+          z: object.z,
+          rotation: object.rotation,
+          tilt: object.tilt,
+          fov: object.fov
+        })
+      } else {
+        camera.position.x = object.x
+        camera.position.y = object.z
+        camera.position.z = object.y
+        camera.rotation.x = 0
+        camera.rotation.z = 0
+        camera.rotation.y = object.rotation
+        camera.rotateX(object.tilt)
+        camera.rotateZ(object.roll)
+        camera.fov = object.fov
+        camera.updateProjectionMatrix()
+      }
+      
+    }, [camera])
 
     useEffect(() => {
 
@@ -132,24 +157,11 @@ const InteractionManager = connect(
       if(!gpuPickerInstance.current) return
       gpuPickerInstance.current.renderer = activeGL
     }, [activeGL])
-    
-    const onCameraUpdate = throttle(({active, object}) => {
-      if (camera.userData.locked) {
-        return false
-      }
-      updateObject(camera.userData.id, {
-        x: object.x,
-        y: object.y,
-        z: object.z,
-        rotation: object.rotation,
-        tilt: object.tilt,
-        fov: object.fov
-      })
-    }, 26, {trailing:false})
 
     useEffect(() => {
       if(!activeCamera || cameraControlsView.current ) return
       let sceneObjects = takeSceneObjects()
+
       cameraControlsView.current = new CameraControls(
         CameraControls.objectFromCameraState(sceneObjects[activeCamera]),
         activeGL.domElement,
