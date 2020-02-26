@@ -12,8 +12,6 @@ import {
 import useLongPress from '../../../hooks/use-long-press'
 import Select from '../Select'
 
-import throttle from 'lodash.throttle'
-
 import CameraControls from '../../CameraControls'
 import { ShotSizes, ShotAngles } from '../../utils/cameraUtils'
 import { useDrag } from 'react-use-gesture'
@@ -48,6 +46,8 @@ const CameraPanelInspector = connect(
     const [currentShotSize, setCurrentShotSize] = useState(shotInfo.size)
     const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
     const isDragging = useRef(false)
+    const dragInfo = useRef({prev: [0, 0], current: [0, 0]})
+    
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
     }, [shotInfo.size, activeCamera])
@@ -71,9 +71,9 @@ const CameraPanelInspector = connect(
     }, [activeCamera])
     
 
-    let [cameraRoll, setCameraRoll] = useState()
-    let [cameraTilt, setCameraTilt] = useState()
-    let [cameraPan, setCameraPan] = useState()
+    let [cameraRoll, setCameraRoll] = useState(activeCamera.roll)
+    let [cameraTilt, setCameraTilt] = useState(activeCamera.tilt)
+    let [cameraPan, setCameraPan] = useState(activeCamera.rotation)
     let cameraState = { ...activeCamera }
     useEffect(() => {
       if(isDragging.current) return
@@ -116,17 +116,41 @@ const CameraPanelInspector = connect(
       cameraState = CameraControls.getMovedState(cameraState, { x: speedX, y: speedY })
       updateObject(activeCamera.id, cameraState)
     }
-  
-    const getCameraPanEvents = useDrag(throttle(({ down, delta: [dx, dy] }) => {
-      let newPan = cameraPan - dx
-      let newTilt = cameraTilt - dy
-      setCameraPan(newPan)
-      setCameraTilt(newTilt)
-      let rotation = THREE.Math.degToRad(newPan)
-      let tilt = THREE.Math.degToRad(newTilt)
+    
+    useEffect(() => {
+      let lastData = [activeCamera.rotation, activeCamera.tilt]
+      let requestID = null
+      const onFrame = () => {
+        if (dragInfo.current.prev[0] !== dragInfo.current.current[0] || dragInfo.current.prev[1] !== dragInfo.current.current[1]) {
+          const [dx, dy] = dragInfo.current.current
+
+          let newPan = lastData[0] - dx
+          let newTilt = lastData[1] - dy
+
+          lastData[0] = newPan
+          lastData[1] = newTilt
+          
+          let rotation = THREE.Math.degToRad(newPan)
+          let tilt = THREE.Math.degToRad(newTilt)
+
+          updateObject(activeCamera.id, {rotation, tilt})
+        }
+
+        dragInfo.current.prev[0] = dragInfo.current.current[0]
+        dragInfo.current.prev[1] = dragInfo.current.current[1]
+        requestID = requestAnimationFrame(onFrame)
+      }
+
+      requestID = requestAnimationFrame(onFrame)
       
-      updateObject(activeCamera.id, {rotation, tilt})
-    }, 26, {trailing:false}))
+      return () => {
+        cancelAnimationFrame(requestID)
+      }
+    }, [cameraPan, cameraTilt])
+  
+    const getCameraPanEvents = useDrag(({delta }) => {
+      dragInfo.current.current = delta
+    })
     
     const onSetShot = ({size, angle}) => {      
       setCameraShot(activeCamera.id, {size, angle})
@@ -177,7 +201,7 @@ const CameraPanelInspector = connect(
                         <div className="pan-control" onPointerDown={ onPanStarted } onPointerUp={ onPanEnded }  {...getCameraPanEvents()}><div className="pan-control-target"/></div>
                     </div>
                 </div>
-                <div className="camera-item-label">Pan: { cameraPan }° // Tilt: { cameraTilt }°</div>
+                <div className="camera-item-label">Pan: { Math.round(THREE.Math.radToDeg(activeCamera.rotation)) }° // Tilt: { Math.round(THREE.Math.radToDeg(activeCamera.tilt)) }°</div>
             </div>
             <div className="camera-item move">
                 <div className="camera-item-control"> 
