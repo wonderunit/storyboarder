@@ -84,12 +84,12 @@ const useDraggingManager = (useIcons) => {
       }
     }, [plane.current, raycaster.current, intersection.current])
     
-    const updateStore = useCallback((updateObjects) => {
+    const updateStore = (updateObjects) => {
         if (!objectChanges.current || !objectChanges.current || !Object.keys(objectChanges.current).length) {
             return false
           }
         updateObjects(objectChanges.current)
-    }, [plane.current, raycaster.current, intersection.current])
+    }
     
     const endDrag = useCallback((updateObjects) => {
       if (!objectChanges.current || !objectChanges.current || !Object.keys(objectChanges.current).length) {
