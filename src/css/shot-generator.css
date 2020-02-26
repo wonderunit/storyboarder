@@ -352,7 +352,7 @@ kbd {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: left;
+  align-items: center;
 }
 
 #camera-view-view {
@@ -362,7 +362,7 @@ kbd {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  align-items: left;
+  align-items: center;
 }
 
 
