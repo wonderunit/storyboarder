@@ -259,7 +259,6 @@ const updateObject = (draft, state, props, { models }) => {
         // ... otherwise, a reasonable value
         : 1.6
     }
-    
     draft = withDisplayName(draft)
   }
 
@@ -307,10 +306,15 @@ let countByType = {}
 // decorate target SceneObject with a calculated displayName
 const withDisplayName = sceneObject => {
   let key = sceneObject.name || sceneObject.model || sceneObject.type;
-  
-  countByType[key] = countByType[key]
+  let arrayOfStrings = key.split('/');
+  key = arrayOfStrings[arrayOfStrings.length - 1]
+
+  if(!sceneObject.displayName || sceneObject.displayName !== capitalize(`${key} ${countByType[key]}`) ) {
+    countByType[key] = countByType[key]
       ? countByType[key] + 1
       : 1
+  }
+
   
   let number = countByType[key]
   
@@ -327,7 +331,8 @@ const withDisplayNames = draft => {
   for (let id in draft) {
     let sceneObject = draft[id]
     let key = sceneObject.name || sceneObject.model || sceneObject.type;
-
+    let arrayOfStrings = key.split('/');
+    key = arrayOfStrings[arrayOfStrings.length - 1]
     countByType[key] = countByType[key]
       ? countByType[key] + 1
       : 1
