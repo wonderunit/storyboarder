@@ -115,6 +115,7 @@ const InteractionManager = connect(
       return selection
     }, [])
 
+
     useEffect(() => {
 
       if(!cameraControlsView.current) return
@@ -143,11 +144,10 @@ const InteractionManager = connect(
      })
     }
 
-
-
     useEffect(() => {
       if(!activeCamera || cameraControlsView.current ) return
       let sceneObjects = takeSceneObjects()
+
       cameraControlsView.current = new CameraControls(
         CameraControls.objectFromCameraState(sceneObjects[activeCamera]),
         activeGL.domElement,
