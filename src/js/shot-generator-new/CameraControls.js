@@ -212,7 +212,7 @@ class CameraControls {
     if ( this.enabled === false ) return
     
     this._object.fov += this.zoomSpeed
-    this._object.fov = Math.max(3, this._object.fov)
+    this._object.fov = Math.max(1, this._object.fov)
     this._object.fov = Math.min(71, this._object.fov)
     
     this.zoomSpeed = this.zoomSpeed * 0.0001

@@ -99,7 +99,7 @@ class RagdollEvents
         let ragdoll = this.ragdoll;
         if(ragdoll.hipsMouseDown)
         {
-            ragdoll.resetPoleTarget();
+            //ragdoll.resetPoleTarget();
         }
     }
 

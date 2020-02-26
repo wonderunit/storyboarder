@@ -229,7 +229,6 @@ const SceneManagerR3fSmall = connect(
       const { x, y } = mouse(e)
       raycaster.current.setFromCamera({x, y}, camera)
       var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
-      console.log("intersects", intersects)
       if(!intersects[0] || (intersects[0].object.userData && intersects[0].object.userData.type === "ground")) {
         
         selectObject(null)
@@ -300,7 +299,6 @@ const SceneManagerR3fSmall = connect(
               }}
               onPointerDown={e => {
                 e.stopPropagation()
-                console.log("Pointer down")
                 renderData ||  onPointerDown(e)
               }}
               />

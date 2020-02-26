@@ -186,7 +186,7 @@ const SceneManagerR3fLarge = connect(
           updatePoleTarget,
           updateObjects
         )
-
+        console.log(camera)
       }, [])
 
     useEffect(() => {  
@@ -306,7 +306,7 @@ const SceneManagerR3fLarge = connect(
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
-
+                updateObject={ updateObject }
                 />
         })
     }

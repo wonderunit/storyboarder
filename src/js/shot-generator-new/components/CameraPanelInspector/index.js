@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 import {
@@ -17,6 +17,35 @@ import { ShotSizes, ShotAngles } from '../../utils/cameraUtils'
 import { useDrag } from 'react-use-gesture'
 
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
+
+/**
+ * Return the first index containing an *item* which is greater than *item*.
+ * @arguments _(item)_
+ * @example
+ *  indexOfGreaterThan([10, 5, 77, 55, 12, 123], 70) // => 2
+ * via mohayonao/subcollider
+ */
+const indexOfGreaterThan = (array, item) => {
+  for (var i = 0, imax = array.length; i < imax; ++i) {
+    if (array[i] > item) { return i }
+  }
+  return -1
+}
+/**
+ * Returns the closest index of the value in the array (collection must be sorted).
+ * @arguments _(item)_
+ * @example
+ *  indexIn([2, 3, 5, 6], 5.2) // => 2
+ * via mohayonao/subcollider
+ */
+const indexIn = (array, item) => {
+  var i, j = indexOfGreaterThan(array, item)
+  if (j === -1) { return array.length - 1 }
+  if (j ===  0) { return j }
+  i = j - 1
+  return ((item - array[i]) < (array[j] - item)) ? i : j
+}
+
 
 const CameraPanelInspector = connect(
     state => ({
@@ -48,6 +77,7 @@ const CameraPanelInspector = connect(
     const isDragging = useRef(false)
     const dragInfo = useRef({prev: [0, 0], current: [0, 0]})
     
+    const fakeCamera = useRef()
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
     }, [shotInfo.size, activeCamera])
@@ -98,19 +128,44 @@ const CameraPanelInspector = connect(
       updateObject(activeCamera.id, cameraState)
     }
 
+    const fovs = useMemo(() => {
+      const mms = [12, 16, 18, 22, 24, 35, 50, 85, 100, 120, 200, 300, 500]
+      fakeCamera.current = fakeCamera.current || new THREE.PerspectiveCamera(activeCamera.fov,  2.348927875243665)
+      return mms.map(mm => {
+        fakeCamera.current.setFocalLength(mm)
+        return fakeCamera.current.fov
+      }).sort((a, b) => a - b)
+    }, [])
+   
+
+    const switchCameraFocalLength = useCallback((iterator) => {
+      let index = indexIn(fovs, activeCamera.fov)
+      let switchTo = index + iterator
+      let fov = fovs[Math.max(Math.min(switchTo, fovs.length), 0)]
+      fakeCamera.current.fov = fov
+      //fakeCamera.current.updateProjectionMatrix()
+      updateObject(activeCamera.id, { fov })
+    }, [activeCamera] )
+
+    const focalLength = useMemo(() => {
+      if(!fakeCamera.current) return
+      fakeCamera.current.fov = activeCamera.fov
+      return fakeCamera.current.getFocalLength()
+    }, [activeCamera.fov])
+
     useEffect(() => {
-      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value: getValueShifter({ fov: -0.2 }) })
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value:  () => switchCameraFocalLength( 1 ) })
       return () => { 
         KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "[" })
       }
-    }, [getValueShifter])
+    }, [switchCameraFocalLength])
 
     useEffect(() => {
-      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "]", value: getValueShifter({ fov: 0.2 }) })
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "]", value:  () => switchCameraFocalLength( -1 ) })
       return () => { 
         KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "]" })
       }
-    }, [getValueShifter])
+    }, [switchCameraFocalLength])
     
     const moveCamera = ([speedX, speedY]) => () => {
       cameraState = CameraControls.getMovedState(cameraState, { x: speedX, y: speedY })
@@ -234,7 +289,7 @@ const CameraPanelInspector = connect(
                         <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: -0.2 }))}><div className="arrow right"/></div> 
                     </div>
                 </div>
-                <div className="camera-item-label">Lens: { activeCamera.fov.toFixed(2) }mm</div>
+                <div className="camera-item-label">Lens: { focalLength.toFixed(2) }mm</div>
             </div>
             <div className="camera-item shots">
                 <div className="select">

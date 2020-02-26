@@ -111,9 +111,7 @@ function init()
         allSprites[o].material.renderOrder = 10
         allSprites[o].material.depthTest = false
     }
-    loadIcons().then(() => {
-        console.log('sprites updated')
-    })
+    loadIcons()
     return allSprites
 }
 init()

@@ -555,13 +555,11 @@ const useInteractionsManager = ({
 
     // include all interactables (Model Object, Character, Virtual Camera, etc)
     let list = scene.__interaction.filter(o => o.userData.type !== 'ui')
-    console.log(list)
     // setup the GPU picker
     getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
     let hits = getGpuPicker().pick(controller.worldPosition(), controller.worldQuaternion())
-    console.log(hits)
     // if one intersects
     if (hits.length) {
       // grab the first intersection
@@ -973,7 +971,6 @@ const useInteractionsManager = ({
 
   useMemo(() => {
     // TODO why is this memo called multiple times?
-    console.log('useInteractionsManager')
   }, [])
 
   const [interactionServiceCurrent, interactionServiceSend, interactionService] = useMachine(

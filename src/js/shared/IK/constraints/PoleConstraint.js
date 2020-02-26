@@ -42,7 +42,7 @@ class PoleConstraint extends IkConstraint
         // Taking Ik target position
         let ikTargetPose = endGlobalPose;
         let rootPose = rootGlobalPose;
-        let target = this.poleTarget.mesh.getWorldPosition(reusableVector);
+        let target =  this.poleTarget.target ? this.poleTarget.target.getWorldPosition(reusableVector) : this.poleTarget.mesh.getWorldPosition(reusableVector);;
 
         // Projecting pole target on to line between ikTarget and rootPose
         let projectedPole = this.projectPointOnLine(ikTargetPose, rootPose, target);

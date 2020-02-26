@@ -1,15 +1,16 @@
 import * as THREE from 'three'
-import React, { useMemo, useEffect } from 'react'
-import { useUpdate, extend } from 'react-three-fiber'
+import React, { useMemo, useEffect, useRef } from 'react'
+import { useUpdate, extend, useThree } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
 import {useAsset} from "../../hooks/use-assets-manager"
 
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {MeshToonMaterial} from "three"
-
+import ObjectRotationControl from "../../../shared/IK/objects/ObjectRotationControl"
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import {patchMaterial, setSelected} from "../../helpers/outlineMaterial"
+import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
@@ -48,6 +49,9 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )
+  const { scene, camera, gl } = useThree()
+  const isObjectSelected = useRef(null)
+  const objectRotationControl = useRef(null)
   
   const {asset} = useAsset((sceneObject.model === 'box') ? null : path)
 
@@ -84,6 +88,48 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     return []
   }, [sceneObject.model, asset])
 
+
+  useEffect(() => {
+    if(isIcon) return
+    objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
+    objectRotationControl.current.control.canSwitch = false
+    objectRotationControl.current.setUpdateCharacter((name, rotation) => {
+      let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
+      props.updateObject(ref.current.userData.id, {
+        rotation:
+        {
+          x : euler.x,
+          y : euler.y,
+          z : euler.z,
+        }
+      } )})
+  }, [])
+
+  const controlPlusRCheck = (event) => {
+    event.stopPropagation()
+    if(event.ctrlKey && event.key === 'e'){
+      event.stopPropagation()
+      return true
+    } 
+  }
+
+  useEffect(() => {
+    if(!objectRotationControl.current) return
+    objectRotationControl.current.setCamera(camera)
+  }, [camera])
+
+  const switchManipulationState = () => {
+    let isRotation = !ref.current.userData.isRotationEnabled
+    ref.current.userData.isRotationEnabled = isRotation
+    if(isRotation) {
+      objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+      objectRotationControl.current.isEnabled = true
+    } else {
+      objectRotationControl.current.deselectObject()
+      objectRotationControl.current.isEnabled = false
+    }
+  }
+
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
       if (material.emissive) {
@@ -100,6 +146,33 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     })
   }, [ref.current, isSelected, asset])
 
+  useEffect(() => {
+    if(isIcon) return
+    if(!ref.current) return
+    if(isSelected) {
+      KeyCommandsSingleton.getInstance().addKeyCommand({
+        key: "Switch objects to rotation", 
+        value: switchManipulationState,
+        keyCustomCheck: controlPlusRCheck
+      })
+      if(!isObjectSelected.current) {
+        if(objectRotationControl.current.isEnabled) { 
+          objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+        }
+        isObjectSelected.current = true
+      }
+    }
+    else {
+      if(isObjectSelected.current) {
+        objectRotationControl.current.deselectObject()
+        isObjectSelected.current = false
+      }
+    }
+    return function cleanup () {
+      KeyCommandsSingleton.getInstance().removeKeyCommand({key: "Switch objects to rotation"})
+    }
+  }, [isSelected])
+
   const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
 
   return <group
@@ -109,7 +182,8 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     userData={{
       type: 'object',
       id: sceneObject.id,
-      locked: locked
+      locked: locked,
+      isRotationEnabled: false,
     }}
 
     visible={ visible }

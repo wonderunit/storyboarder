@@ -29,13 +29,12 @@ class TargetControl
         movingTarget.position.copy(position);
         movingTarget.scale.set(0.4, 0.4, 0.4);
         movingTarget.renderOrder = 9;
-        movingTarget.userData.type = "controlPoint";
-        movingTarget.name = "controlPoint";
         movingTarget.scope = this;
         //this.control.attach(movingTarget);
         this.target = movingTarget;
         //this.addEventsToControlTarget(); 
     }
+
 
     setBone(bone)
     {

@@ -82,7 +82,6 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
             className="skeleton-selector__button"
             onClick={() => {
               showModal(false)
-              console.log("updateObject", changedName)
               updateObject(id, { displayName: changedName, name: changedName })
             }}>
               Proceed

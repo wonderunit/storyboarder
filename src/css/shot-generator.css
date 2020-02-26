@@ -458,7 +458,8 @@ kbd {
 .round-buttons-panel {
   display: flex;
   flex-direction: row;
-  width: 208px;
+  max-width: 208px;
+  min-width: 52px;
   position: "relative";
   overflow: "hidden";
 }
@@ -1101,7 +1102,7 @@ div.fatal-error-screen__report::selection {
 
   margin: 2px;
 
-  cursor: pointer;
+  cursor: default;
   transition: 0.3s;
 }
 
@@ -1172,7 +1173,7 @@ div.fatal-error-screen__report::selection {
   height: 26px;
 
   margin: 3px;
-  cursor: pointer;
+  cursor: default;
 }
 
 .modalInput  {
@@ -1227,7 +1228,7 @@ div.fatal-error-screen__report::selection {
   align-items: center;
   overflow: hidden;
 
-  cursor: pointer;
+  cursor: default;
 }
 
 .select .select__control:hover {
@@ -1346,7 +1347,7 @@ div.fatal-error-screen__report::selection {
   align-items: center;
   align-content: flex-end;
   background-color: rgba(255, 255, 255, 0.05);
-  cursor: pointer;
+  cursor: default;
 }
 
 .file-input:hover {
@@ -1356,7 +1357,7 @@ div.fatal-error-screen__report::selection {
 .file-input > div {
   margin: -3px 0 0 9px;
   flex: 1;
-  cursor: pointer;
+  cursor: default;
 }
 
 /* Checkbox block */
@@ -1377,7 +1378,7 @@ div.fatal-error-screen__report::selection {
 
 .checkbox input + label {
   position: relative;
-  cursor: pointer;
+  cursor: default;
 }
 
 .checkbox input + label span {
@@ -1387,7 +1388,7 @@ div.fatal-error-screen__report::selection {
   /* margin: -2px 10px 0 0; */
   vertical-align: middle;
   border-radius: 3px;
-  cursor: pointer;
+  cursor: default;
 
   background: rgba(255,255,255,0.1);
   transition: background-color 0.2s;
@@ -1440,7 +1441,7 @@ div.fatal-error-screen__report::selection {
   justify-content: center;
   align-items: center;
 
-  cursor: pointer;
+  cursor: default;
 }
 
 .tabs-tab:hover {
@@ -1513,7 +1514,7 @@ div.fatal-error-screen__report::selection {
   justify-content: center;
   width: 20px;
   height: 20px;
-  cursor: pointer;
+  cursor: default;
 }
 
 
@@ -1528,7 +1529,7 @@ div.fatal-error-screen__report::selection {
 
 .file-input > a {
   padding: 0 4px;
-  cursor: pointer;
+  cursor: default;
 }
 
 .image-file-input > a {
@@ -1558,11 +1559,11 @@ a.button,
 }
 
 #toolbar a {
-  cursor: pointer;
+  cursor: default;
 }
 
 .element .row a {
-  cursor: pointer;
+  cursor: default;
 }
 
 .thumbnail {
