@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useMemo, useCallback } from 'react'
+import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
 
@@ -62,27 +62,27 @@ const Editor = React.memo(({
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
   const largeCanvasInfo = useRef({ width: 0, height: 0 })
-
+  const [stats, setStats] = useState()
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
-  const stats = useRef()
-
-  const setStats = (event, value) => {
-    if (!stats.current) {
-      stats.current = new Stats()
-      stats.current.showPanel(0)
-      document.body.appendChild( stats.current.dom )
-      stats.current.dom.style.top = '7px'
-      stats.current.dom.style.left = '460px'
+  const toggleStats = (event, value) => {
+    if (!stats) {
+      let newStats
+      newStats = new Stats()
+      newStats.showPanel(0)
+      document.body.appendChild( newStats.dom )
+      newStats.dom.style.top = '7px'
+      newStats.dom.style.left = '460px'
+      setStats(newStats)
     } else {
-      document.body.removeChild( stats.current.dom )
-      stats.current = undefined
+      document.body.removeChild( stats.dom )
+      setStats(undefined)
+      }
     }
-  }
 
   useEffect(() => {
-    ipcRenderer.on('shot-generator:menu:view:fps-meter', setStats)
+    ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
     return () => {
-      ipcRenderer.off('shot-generator:menu:view:fps-meter', setStats)
+      ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
     }
   }, [])
 
@@ -158,7 +158,7 @@ const Editor = React.memo(({
   }
 
 
-  useExportToGltf(largeCanvasData.current.scene)
+  //useExportToGltf(largeCanvasData.current.scene)
 
   return (
     <FatalErrorBoundary>
@@ -217,7 +217,7 @@ const Editor = React.memo(({
                       setLargeCanvasData= { setLargeCanvasData }/>
                     </Provider>
                     <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                          stats={ stats.current } />
+                          stats={ stats } />
                     
                   </Canvas>
                   <GuidesView

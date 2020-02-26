@@ -22,7 +22,6 @@ import {
     deselectAttachable,
     getSceneObjects,
 } from '../../../shared/reducers/shot-generator'
-import deepEqualSelector from './../../../utils/deepEqualSelector'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import CameraControls from '../../CameraControls'
 import throttle from 'lodash.throttle'
@@ -56,12 +55,8 @@ const getIntersectionTarget = intersect => {
   }
 }
 
-const getSceneObjectsM = deepEqualSelector([getSceneObjects], (sceneObjects) => sceneObjects)
-const getSelectionsM = deepEqualSelector([getSelections], selections => selections)
 const InteractionManager = connect(
     state => ({
-       // selections: getSelectionsM(state),
-        //sceneObjects: getSceneObjectsM(state),
         activeCamera: getActiveCamera(state)
     }),
     {
@@ -77,8 +72,6 @@ const InteractionManager = connect(
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )(React.memo(({
-    //sceneObjects,
-   // selections,
     activeCamera,
     selectObject,
     selectObjectToggle,
@@ -133,19 +126,24 @@ const InteractionManager = connect(
       gpuPickerInstance.current.renderer = activeGL
     }, [activeGL])
     
-    const onCameraUpdate = throttle(({active, object}) => {
+    const updatedCameraObject = useRef(null)
+
+    const onCameraUpdate = ({active, object}) => {
       if (camera.userData.locked) {
         return false
       }
-      updateObject(camera.userData.id, {
-        x: object.x,
-        y: object.y,
-        z: object.z,
-        rotation: object.rotation,
-        tilt: object.tilt,
-        fov: object.fov
-      })
-    }, 26, {trailing:false})
+      updatedCameraObject.current = ({
+       id: camera.userData.id,
+       x: object.x,
+       y: object.y,
+       z: object.z,
+       rotation: object.rotation,
+       tilt: object.tilt,
+       fov: object.fov
+     })
+    }
+
+
 
     useEffect(() => {
       if(!activeCamera || cameraControlsView.current ) return
@@ -360,9 +358,24 @@ const InteractionManager = connect(
         }
     }
 
-    const throttleUpdateDraggableObject = throttle(() => {
+    const throttleUpdateDraggableObject = throttle(() => {  
       updateStore(updateObjects)
-    }, 50, {trailing: true} )
+    }, 16, {trailing: true} )
+
+    setInterval(() =>{
+      if(updatedCameraObject.current) {
+        let object = updatedCameraObject.current
+        updateObject(object.id, {     
+          x: object.x,
+          y: object.y,
+          z: object.z,
+          rotation: object.rotation,
+          tilt: object.tilt,
+          fov: object.fov
+          })
+          updatedCameraObject.current = null;
+        }
+    }, 16)
     
     const onPointerMove = event => {
       event.preventDefault()

@@ -8,12 +8,9 @@ import {
   updateObjects,
   setActiveCamera
 } from '../shared/reducers/shot-generator'
-import { createSelector } from 'reselect'
-import { useFrame, useThree } from 'react-three-fiber'
+import { useThree } from 'react-three-fiber'
 import IconsComponent from './components/IconsComponent'
 import CameraIcon from './components/Three/Icons/CameraIcon'
-import Ground from './components/Three/Ground'
-import useTextureLoader from './hooks/use-texture-loader'
 import useFontLoader from './hooks/use-font-loader'
 import path from 'path'
 import ModelObject from './components/Three/ModelObject'
@@ -22,24 +19,9 @@ import { useDraggingManager} from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
 import Room from './components/Three/Room'
 
-const getSceneObjectModelObjectIds = createSelector(
-    [getSceneObjects],
-    sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
-  )
-const getSceneObjectCamerasIds = createSelector(
-    [getSceneObjects],
-    sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
-  ) 
-const getSceneObjectIconIds = createSelector(
-  [getSceneObjects],
-  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'light' || o.type === 'character' || o.type === 'volume' || o.type === 'image').map(o => o.id)
-)
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
     state => ({
-        modelObjectIds: getSceneObjectModelObjectIds(state),
-        camerasIds: getSceneObjectCamerasIds(state),
-        iconIds: getSceneObjectIconIds(state),
         sceneObjects: getSceneObjects(state),
         world: getWorld(state),
         aspectRatio: state.aspectRatio,
@@ -52,8 +34,6 @@ const SceneManagerR3fSmall = connect(
       setActiveCamera
     }
 )( React.memo(({ 
-    modelObjectIds,
-    camerasIds,
     sceneObjects,
     world,
     aspectRatio,
@@ -61,7 +41,6 @@ const SceneManagerR3fSmall = connect(
     selectObject,
     selections,
     updateObjects,
-    iconIds,
     setSmallCanvasData,
     renderData,
     setActiveCamera
@@ -76,8 +55,20 @@ const SceneManagerR3fSmall = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager(true)
+    const sceneObjectLength = Object.values(sceneObjects).length
 
-   // const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
+    const modelObjectIds = useMemo(() => {
+     return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
+    }, [sceneObjectLength])
+
+    const camerasIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'camera').map(o => o.id)
+    }, [sceneObjectLength]) 
+
+    const iconIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'light' || o.type === 'character' || o.type === 'volume' || o.type === 'image').map(o => o.id)
+    }, [sceneObjectLength]) 
+
     const mouse = useCallback(event => {
       const rect = actualGL.domElement.getBoundingClientRect()
       return {

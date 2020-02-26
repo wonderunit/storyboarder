@@ -1,13 +1,12 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
     getSceneObjects,
     getWorld,
-    getActiveCamera,
     getSelections,
     getSelectedBone,
     getSelectedAttachable,
@@ -17,10 +16,9 @@ import {
     updateObject,
     updateObjects,
     updateCharacterPoleTargets,
-    deleteObjects
+    deleteObjects,
 
  } from '../shared/reducers/shot-generator'
-import { createSelector } from 'reselect'
 import { useThree } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
@@ -42,36 +40,6 @@ import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from "../utils/deepEqualSelector"
 
-const getSceneObjectModelObjectIds = createSelector(
-    [getSceneObjects],
-    sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
-  )
-const getSceneObjectCharacterIds = createSelector(
-    [getSceneObjects],
-    sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
-  ) 
-
-const getSceneObjectAttachableIds = createSelector(
-  [getSceneObjects],
-  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
-)
-const getSceneObjectLightIds = createSelector(
-  [getSceneObjects],
-  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'light').map(o => o.id)
-)
-const getSceneObjectVolumeIds = createSelector(
-  [getSceneObjects],
-  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'volume').map(o => o.id)
-)
-const getSceneObjectImageIds = createSelector(
-  [getSceneObjects],
-  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
-)
-
-const getSceneObjectGroupIds = createSelector(
-  [getSceneObjects],
-  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
-)
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
 
@@ -89,13 +57,6 @@ const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects)
 
 const SceneManagerR3fLarge = connect(
     state => ({
-        modelObjectIds: getSceneObjectModelObjectIds(state),
-        characterIds: getSceneObjectCharacterIds(state),
-        attachableIds: getSceneObjectAttachableIds(state),
-        lightIds: getSceneObjectLightIds(state),
-        volumeIds: getSceneObjectVolumeIds(state),
-        groupIds: getSceneObjectGroupIds(state),
-        imageIds: getSceneObjectImageIds(state),
         sceneObjects: getSceneObjectsM(state),
         world: getWorld(state),
         storyboarderFilePath: state.meta.storyboarderFilePath,
@@ -116,8 +77,8 @@ const SceneManagerR3fLarge = connect(
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
-    modelObjectIds,
     sceneObjects,
+
     world,
     storyboarderFilePath,
     selections,
@@ -128,13 +89,6 @@ const SceneManagerR3fLarge = connect(
     models,
     updateObjects,
     selectedBone,
-    
-    characterIds,
-    attachableIds,
-    lightIds,
-    volumeIds,
-    imageIds,
-    groupIds,
 
     cameraShots,
     setLargeCanvasData,
@@ -149,6 +103,37 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
+
+    const sceneObjectLength = Object.values(sceneObjects).length
+
+    const modelObjectIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
+    }, [sceneObjectLength])
+
+    const characterIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'character').map(o => o.id)
+    }, [sceneObjectLength]) 
+
+    const lightIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'light').map(o => o.id)
+    }, [sceneObjectLength])
+
+    const attachableIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
+    }, [sceneObjectLength])
+
+    const volumeIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'volume').map(o => o.id)
+    }, [sceneObjectLength]) 
+
+    const imageIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
+    }, [sceneObjectLength])
+
+    const groupIds = useMemo(() => {
+      return Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
+    }, [sceneObjectLength]) 
+
     useEffect(() => {
         let sgIkHelper = SGIkHelper.getInstance()
         sgIkHelper.setUp(null, rootRef.current, camera, gl.domElement)
@@ -301,16 +286,17 @@ const SceneManagerR3fLarge = connect(
     {
         modelObjectIds.map(id => {
             let sceneObject = sceneObjects[id]
-            return <ModelObject
-                key={ id }
+            return <SimpleErrorBoundary  key={ id }>
+              <ModelObject
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
                 updateObject={ updateObject }
                 />
+            </SimpleErrorBoundary>
         })
     }
-    {
+    {    
         characterIds.map(id => {
             let sceneObject = sceneObjects[id]
             return <SimpleErrorBoundary  key={ id }>

@@ -20,6 +20,8 @@ const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
 //
 const getSceneObjects = state => state.undoable.present.sceneObjects
 
+const getSceneObjectIds = state => Object.values(state.undoable.present.sceneObjects).map(sceneObject => { return {id: sceneObject.id, type: sceneObject.type} })
+
 const getSelections = state => state.undoable.present.selections
 
 const getActiveCamera = state => state.undoable.present.activeCamera
@@ -218,11 +220,6 @@ const migrateWorldFog = world => ({
 
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
-  
-  if (props.visible != null) {
-    draft.visible = props.visible
-  }
-  
   if (props.hasOwnProperty('locked')) {
     if (props.locked) {
       draft.locked = true
@@ -234,38 +231,11 @@ const updateObject = (draft, state, props, { models }) => {
   if (draft.locked) {
     return
   }
-
-  // update skeleton first
-  // so that subsequent changes to height and headScale take effect
-  if (props.hasOwnProperty('skeleton')) {
-    draft.skeleton = props.skeleton
-  }
-
-  if (props.hasOwnProperty('handSkeleton')) {
-    draft.handSkeleton = props.handSkeleton
+  let keys = Object.keys(props)
+  for(let i = 0; i < keys.length; i++ ){
+    draft[keys[i]] = props[keys[i]]
   }
   
-  if (props.x != null) {
-    draft.x = props.x
-  }
-  if (props.y != null) {
-    draft.y = props.y
-  }
-  if (props.z != null) {
-    draft.z = props.z
-  }
-  
-  if (props.children != null) {
-    draft.children = props.children
-  }
-  
-  if (props.group != null) {
-    draft.group = props.group
-  }
-
-  if (props.fov != null) {
-    draft.fov = props.fov
-  }
   if (props.rotation != null) {
     if (draft.type === 'object' || draft.type === 'image') {
       // MERGE
@@ -276,12 +246,6 @@ const updateObject = (draft, state, props, { models }) => {
     } else {
       draft.rotation = props.rotation
     }
-  }
-  if (props.tilt != null) {
-    draft.tilt = props.tilt
-  }
-  if (props.roll != null) {
-    draft.roll = props.roll
   }
   if (props.model != null) {
     draft.model = props.model
@@ -299,85 +263,11 @@ const updateObject = (draft, state, props, { models }) => {
     draft = withDisplayName(draft)
   }
 
-  if (props.width != null) {
-    draft.width = props.width
-  }
-  if (props.height != null) {
-    draft.height = props.height
-  }
-  if (props.depth != null) {
-    draft.depth = props.depth
-  }
-
-  if (props.headScale != null) {
-    draft.headScale = props.headScale
-  }
-
-  if (props.tintColor != null) {
-    draft.tintColor = props.tintColor
-  }
 
   if (props.morphTargets != null) {
     Object.entries(props.morphTargets).forEach(([key, value]) => {
       draft.morphTargets[key] = value
     })
-  }
-
-  // allow a null value for name
-  if (props.hasOwnProperty('name')) {
-    draft.name = props.name
-  }
-
-  if (props.intensity != null) {
-    draft.intensity = props.intensity
-  }
-
-  if (props.angle != null) {
-    draft.angle = props.angle
-  }
-
-  if (props.penumbra != null) {
-    draft.penumbra = props.penumbra
-  }
-
-  if (props.decay != null) {
-    draft.decay = props.decay
-  }
-
-  if (props.distance != null) {
-    draft.distance = props.distance
-  }
-
-
-
-  // for volumes
-  if (props.numberOfLayers != null) {
-    draft.numberOfLayers = props.numberOfLayers
-  }
-  if (props.distanceBetweenLayers != null) {
-    draft.distanceBetweenLayers = props.distanceBetweenLayers
-  }
-  if (props.opacity != null) {
-    draft.opacity = props.opacity
-  }
-  if (props.color != null) {
-    draft.color = props.color
-  }
-  if (props.volumeImageAttachmentIds != null) {
-    draft.volumeImageAttachmentIds = props.volumeImageAttachmentIds
-  }
-
-  // for images
-  if (props.imageAttachmentIds != null) {
-    draft.imageAttachmentIds = props.imageAttachmentIds
-  }
-
-  if (props.visibleToCam != null) {
-    draft.visibleToCam = props.visibleToCam
-  }
-
-  if (props.hasOwnProperty('characterPresetId')) {
-    draft.characterPresetId = props.characterPresetId
   }
 
   if (props.hasOwnProperty('posePresetId')) {
@@ -386,34 +276,6 @@ const updateObject = (draft, state, props, { models }) => {
       draft.handPosePresetId = null
       draft.handSkeleton = []
     }
-  }
-
-  if (props.hasOwnProperty('handPosePresetId')) {
-    draft.handPosePresetId = props.handPosePresetId
-  }
-  
-  if (props.hasOwnProperty('loaded')) {
-    draft.loaded = props.loaded
-  }
-
-  if(props.hasOwnProperty('isAttachableSelected')) {
-    draft.isAttachableSelected = props.isAttachableSelected
-  }
-
-  if(props.hasOwnProperty('isDragging')) {
-    draft.isDragging = props.isDragging
-  }
-
-  if(props.hasOwnProperty('bindBone')) {
-    draft.bindBone = props.bindBone
-  }
-
-  if(props.hasOwnProperty('size')) {
-    draft.size = props.size
-  }
-  
-  if(props.hasOwnProperty('status')) {
-    draft.status = props.status
   }
 }
 
@@ -791,7 +653,6 @@ const initialState = {
     world: initialScene.world,
     activeCamera: initialScene.activeCamera,
     sceneObjects: withDisplayNames(initialScene.sceneObjects),
-
     selections: [],
     selectedBone: null,
     selectedAttachable: null
@@ -1282,6 +1143,7 @@ const sceneObjectsReducer = (state = {}, action) => {
     }
   })
 }
+
 
 const metaReducer = (state = {}, action, appState) => {
   return produce(state, draft => {
@@ -1836,6 +1698,7 @@ module.exports = {
 
   getIsSceneDirty,
   getHash,
+  getSceneObjectIds,
 
   getDefaultPosePreset: () => initialState.presets.poses['79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE']
 }

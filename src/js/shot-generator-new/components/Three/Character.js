@@ -22,7 +22,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const objectRotationControl = useRef(null)
-
     useEffect(() => {
       return () => {
         ref.current.remove(BonesHelper.getInstance())
