@@ -152,6 +152,30 @@ const CameraPanelInspector = connect(
       return fakeCamera.current.getFocalLength()
     }, [activeCamera.fov])
 
+
+    const rollCamera = useCallback(() => {
+      let cameraState = activeCamera
+      let roll = {
+        'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
+        'x': Math.min(cameraState.roll + THREE.Math.DEG2RAD, 45 * THREE.Math.DEG2RAD)
+      }[event.key]
+  
+      updateObject(activeCamera.id, { roll })
+    }, [activeCamera])
+  
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({
+        key: "cameraRoll",
+        keyCustomCheck: (event) => (event.key === 'z' || event.key === 'x') &&
+                            !event.shiftKey &&
+                            !event.metaKey &&
+                            !event.ctrlKey &&
+                            !event.altKey,
+        value: (event) => { rollCamera(event) }
+      })
+      return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraRoll" })
+    }, [activeCamera, rollCamera])
+
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value:  () => switchCameraFocalLength( 1 ) })
       return () => { 
