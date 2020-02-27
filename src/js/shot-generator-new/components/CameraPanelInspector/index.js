@@ -204,12 +204,10 @@ const CameraPanelInspector = connect(
       return () => {
         cancelAnimationFrame(requestID)
       }
-    }, [cameraInfo.current])
+    }, [cameraInfo.current, activeCamera.id])
   
     const getCameraPanEvents = useDrag(({first, last, vxvy }) => {
       dragInfo.current.current = vxvy
-      // dragInfo.current.current[0] = delta[0] * 0.5
-      // dragInfo.current.current[1] = delta[1] * 0.5
       
       if (first) {
         isDragging.current = true

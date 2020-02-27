@@ -45,7 +45,7 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, m
     }, [fontMesh])
   
     useFrame(() => {
-      if (!mainCamera || !iconsSprites.current || !fontMesh) return false
+      if (!mainCamera || sceneObject.id !== mainCamera.userData.id || !iconsSprites.current || !fontMesh) return false
       const currentRotation = new THREE.Euler().setFromQuaternion(mainCamera.quaternion, 'YXZ').y
       iconsSprites.current.icon.material.rotation = currentRotation
       
