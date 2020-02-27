@@ -40,6 +40,7 @@ const indexOfGreaterThan = (array, item) => {
  */
 const indexIn = (array, item) => {
   var i, j = indexOfGreaterThan(array, item)
+  console.log(array, item)
   if (j === -1) { return array.length - 1 }
   if (j ===  0) { return j }
   i = j - 1
@@ -124,7 +125,6 @@ const CameraPanelInspector = connect(
       for (let [k, v] of Object.entries(draft)) {
         cameraState[k] += v
       }
-  
       updateObject(activeCamera.id, cameraState)
     }
 
@@ -141,9 +141,8 @@ const CameraPanelInspector = connect(
     const switchCameraFocalLength = useCallback((iterator) => {
       let index = indexIn(fovs, activeCamera.fov)
       let switchTo = index + iterator
-      let fov = fovs[Math.max(Math.min(switchTo, fovs.length), 0)]
+      let fov = fovs[Math.max(Math.min(switchTo, fovs.length - 1), 0)]
       fakeCamera.current.fov = fov
-      //fakeCamera.current.updateProjectionMatrix()
       updateObject(activeCamera.id, { fov })
     }, [activeCamera] )
 
