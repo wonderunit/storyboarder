@@ -100,24 +100,27 @@ const CameraPanelInspector = connect(
       }
     }, [activeCamera])
     
-
+    let cameraInfo = useRef({...activeCamera})
     let [cameraRoll, setCameraRoll] = useState(activeCamera.roll)
     let [cameraTilt, setCameraTilt] = useState(activeCamera.tilt)
     let [cameraPan, setCameraPan] = useState(activeCamera.rotation)
     let cameraState = { ...activeCamera }
     useEffect(() => {
       if(isDragging.current) return
-      setCameraRoll(Math.round(THREE.Math.radToDeg(activeCamera.roll)))
+      cameraInfo.current.roll = Math.round(THREE.Math.radToDeg(activeCamera.roll))
+      setCameraRoll(cameraInfo.current.roll)
     }, [activeCamera.roll])
 
     useEffect(() => {
       if(isDragging.current) return
-      setCameraPan(Math.round(THREE.Math.radToDeg(activeCamera.rotation)))
+      cameraInfo.current.rotation = Math.round(THREE.Math.radToDeg(activeCamera.rotation))
+      setCameraPan(cameraInfo.current.rotation)
     }, [activeCamera.rotation])
 
     useEffect(() => {
       if(isDragging.current) return
-      setCameraTilt(Math.round(THREE.Math.radToDeg(activeCamera.tilt)))
+      cameraInfo.current.tilt = Math.round(THREE.Math.radToDeg(activeCamera.tilt))
+      setCameraTilt(cameraInfo.current.tilt)
     }, [activeCamera.tilt])
     
     const getValueShifter = (draft) => () => {
@@ -173,17 +176,17 @@ const CameraPanelInspector = connect(
     }
     
     useEffect(() => {
-      let lastData = [activeCamera.rotation, activeCamera.tilt]
+      if (!cameraInfo.current) return
       let requestID = null
       const onFrame = () => {
         if (dragInfo.current.prev[0] !== dragInfo.current.current[0] || dragInfo.current.prev[1] !== dragInfo.current.current[1]) {
           const [dx, dy] = dragInfo.current.current
 
-          let newPan = lastData[0] - dx
-          let newTilt = lastData[1] - dy
+          let newPan = cameraInfo.current.rotation - dx
+          let newTilt = cameraInfo.current.tilt - dy
 
-          lastData[0] = newPan
-          lastData[1] = newTilt
+          cameraInfo.current.rotation = newPan
+          cameraInfo.current.tilt = newTilt
           
           let rotation = THREE.Math.degToRad(newPan)
           let tilt = THREE.Math.degToRad(newTilt)
@@ -201,10 +204,18 @@ const CameraPanelInspector = connect(
       return () => {
         cancelAnimationFrame(requestID)
       }
-    }, [cameraPan, cameraTilt])
+    }, [cameraInfo.current])
   
-    const getCameraPanEvents = useDrag(({delta }) => {
-      dragInfo.current.current = delta
+    const getCameraPanEvents = useDrag(({first, last, vxvy }) => {
+      dragInfo.current.current = vxvy
+      // dragInfo.current.current[0] = delta[0] * 0.5
+      // dragInfo.current.current[1] = delta[1] * 0.5
+      
+      if (first) {
+        isDragging.current = true
+      } else if (last) {
+        isDragging.current = false
+      }
     })
     
     const onSetShot = ({size, angle}) => {      
@@ -232,14 +243,6 @@ const CameraPanelInspector = connect(
       { value: ShotAngles.WORMS_EYE,        label: "Worm\'s Eye" }
     ]
 
-    const onPanStarted = () => {
-      isDragging.current = true
-    }
-    
-    const onPanEnded = () => {
-      isDragging.current = false
-    }
-
     return <div className="camera-inspector">
             <div className="camera-item roll">
                 <div className="camera-item-control">
@@ -253,7 +256,7 @@ const CameraPanelInspector = connect(
             <div className="camera-item pan">
                 <div className="camera-item-control">
                     <div className="row">
-                        <div className="pan-control" onPointerDown={ onPanStarted } onPointerUp={ onPanEnded }  {...getCameraPanEvents()}><div className="pan-control-target"/></div>
+                        <div className="pan-control" {...getCameraPanEvents()}><div className="pan-control-target"/></div>
                     </div>
                 </div>
                 <div className="camera-item-label">Pan: { Math.round(THREE.Math.radToDeg(activeCamera.rotation)) }° // Tilt: { Math.round(THREE.Math.radToDeg(activeCamera.tilt)) }°</div>

@@ -133,15 +133,28 @@ const InteractionManager = connect(
       if (camera.userData.locked) {
         return false
       }
-      updatedCameraObject.current = ({
-       id: camera.userData.id,
-       x: object.x,
-       y: object.y,
-       z: object.z,
-       rotation: object.rotation,
-       tilt: object.tilt,
-       fov: object.fov
-     })
+
+      if (!active) {
+        updateObject(camera.userData.id, {
+          x: object.x,
+          y: object.y,
+          z: object.z,
+          rotation: object.rotation,
+          tilt: object.tilt,
+          fov: object.fov
+        })
+      } else {
+        camera.position.x = object.x
+        camera.position.y = object.z
+        camera.position.z = object.y
+        camera.rotation.x = 0
+        camera.rotation.z = 0
+        camera.rotation.y = object.rotation
+        camera.rotateX(object.tilt)
+        camera.rotateZ(object.roll)
+        camera.fov = object.fov
+        camera.updateProjectionMatrix()
+      }
     }
 
     useEffect(() => {
@@ -361,21 +374,6 @@ const InteractionManager = connect(
     const throttleUpdateDraggableObject = throttle(() => {  
       updateStore(updateObjects)
     }, 16, {trailing: true} )
-
-    setInterval(() =>{
-      if(updatedCameraObject.current) {
-        let object = updatedCameraObject.current
-        updateObject(object.id, {     
-          x: object.x,
-          y: object.y,
-          z: object.z,
-          rotation: object.rotation,
-          tilt: object.tilt,
-          fov: object.fov
-          })
-          updatedCameraObject.current = null;
-        }
-    }, 16)
     
     const onPointerMove = event => {
       event.preventDefault()

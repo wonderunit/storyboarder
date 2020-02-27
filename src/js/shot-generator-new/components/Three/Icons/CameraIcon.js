@@ -1,14 +1,15 @@
 import React, { useEffect, useRef } from 'react'
 import IconSprites from '../../IconsComponent/IconSprites'
-import { useUpdate } from 'react-three-fiber'
+import { useUpdate, useFrame } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../../utils/ShotLayers'
 
-const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, ...props}) => {
+const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, mainCamera, ...props}) => {
     const ref = useUpdate(
         self => {
           self.traverse(child => child.layers.enable(SHOT_LAYERS))
         }
-      )
+    )
+  
     const iconsSprites = useRef()
     const frustumIcons = useRef()
     const fakeCamera = useRef()
@@ -41,8 +42,17 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, .
         frustumIcons.current.add(frustumIcons.current.left)
         frustumIcons.current.add(frustumIcons.current.right)
         iconsSprites.current.add(frustumIcons.current)
-
     }, [fontMesh])
+  
+    useFrame(() => {
+      if (!mainCamera || !iconsSprites.current || !fontMesh) return false
+      const currentRotation = new THREE.Euler().setFromQuaternion(mainCamera.quaternion, 'YXZ').y
+      iconsSprites.current.icon.material.rotation = currentRotation
+      
+      let hFOV = 2 * Math.atan( Math.tan( mainCamera.fov * Math.PI / 180 / 2 ) * 1 )
+      frustumIcons.current.left.icon.material.rotation = hFOV/2 + currentRotation
+      frustumIcons.current.right.icon.material.rotation = -hFOV/2 + currentRotation
+    })
 
     useEffect(() => {
         if (fontMesh && ref.current) {
