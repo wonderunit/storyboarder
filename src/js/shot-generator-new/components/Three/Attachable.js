@@ -52,7 +52,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     const offsetToCharacter = useRef(null)
 
     const [characterChildrenLength, setCharacterChildrenLength] = useState(0)
-    console.log("Character initialized", characterModel)
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(SHOT_LAYERS))

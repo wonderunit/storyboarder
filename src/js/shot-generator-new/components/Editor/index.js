@@ -61,9 +61,9 @@ const Editor = React.memo(({
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
-  const largeCanvasInfo = useRef({ width: 0, height: 0 })
   const [stats, setStats] = useState()
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
+  const [largeCanvasInfo, setLargeCanvasInfo] = useState({width: 0, height: 0})
   const toggleStats = (event, value) => {
     if (!stats) {
       let newStats
@@ -139,8 +139,7 @@ const Editor = React.memo(({
       height = Math.ceil(largeCanvasSize.height)
       width = Math.ceil(height * aspectRatio)
     }
-    largeCanvasInfo.current.width = width 
-    largeCanvasInfo.current.height = height 
+    setLargeCanvasInfo({width, height})
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
   const largeCanvasData = useRef({})
@@ -203,7 +202,7 @@ const Editor = React.memo(({
 
           <div className="column fill">
             <div id="camera-view" ref={ mainViewContainerRef }>
-              <div id="camera-view-view" style={{ width: largeCanvasInfo.current.width, height: largeCanvasInfo.current.height }}>
+              <div id="camera-view-view" style={{ width: largeCanvasInfo.width, height: largeCanvasInfo.height }}>
                   <Canvas
                   tabIndex={ 1 }
                   key="camera-canvas"
