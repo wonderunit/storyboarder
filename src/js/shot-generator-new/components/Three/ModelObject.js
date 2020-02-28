@@ -93,6 +93,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     if(isIcon) return
     objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
     objectRotationControl.current.control.canSwitch = false
+    objectRotationControl.current.isEnabled = true
     objectRotationControl.current.setUpdateCharacter((name, rotation) => {
       let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
       props.updateObject(ref.current.userData.id, {
@@ -105,20 +106,20 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       } )})
   }, [])
 
-  const controlPlusRCheck = (event) => {
+/*   const controlPlusRCheck = (event) => {
     event.stopPropagation()
     if(event.ctrlKey && event.key === 'e'){
       event.stopPropagation()
       return true
     } 
-  }
+  } */
 
   useEffect(() => {
     if(!objectRotationControl.current) return
     objectRotationControl.current.setCamera(camera)
   }, [camera])
 
-  const switchManipulationState = () => {
+/*   const switchManipulationState = () => {
     let isRotation = !ref.current.userData.isRotationEnabled
     ref.current.userData.isRotationEnabled = isRotation
     if(isRotation) {
@@ -128,7 +129,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       objectRotationControl.current.deselectObject()
       objectRotationControl.current.isEnabled = false
     }
-  }
+  } */
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
@@ -150,11 +151,6 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     if(isIcon) return
     if(!ref.current) return
     if(isSelected) {
-      KeyCommandsSingleton.getInstance().addKeyCommand({
-        key: "Switch objects to rotation", 
-        value: switchManipulationState,
-        keyCustomCheck: controlPlusRCheck
-      })
       if(!isObjectSelected.current) {
         if(objectRotationControl.current.isEnabled) { 
           objectRotationControl.current.selectObject(ref.current, sceneObject.id)
@@ -167,9 +163,6 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
         objectRotationControl.current.deselectObject()
         isObjectSelected.current = false
       }
-    }
-    return function cleanup () {
-      KeyCommandsSingleton.getInstance().removeKeyCommand({key: "Switch objects to rotation"})
     }
   }, [isSelected])
 

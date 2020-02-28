@@ -326,7 +326,6 @@ const SceneManagerR3fLarge = connect(
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
-            let character = scene.__interaction.filter(o => o.userData.id === sceneObject.attachToId)[0]
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -334,7 +333,6 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selectedAttachable === sceneObject.id } 
                 updateObject={ updateObject }
                 сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
-                characterChildrenLength={ character ? character.children.length : 0 }
                 deleteObjects={ deleteObjects }
                 character={ sceneObjects[sceneObject.attachToId] }
               />

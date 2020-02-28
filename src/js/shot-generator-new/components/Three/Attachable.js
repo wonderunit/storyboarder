@@ -1,6 +1,6 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { useUpdate, useThree } from 'react-three-fiber'
+import { useUpdate, useThree, useFrame } from 'react-three-fiber'
 import {useAsset} from '../../hooks/use-assets-manager'
 import {SHOT_LAYERS} from '../../utils/ShotLayers'
 import isUserModel from '../../helpers/isUserModel'
@@ -37,7 +37,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, characterChildrenLength, deleteObjects, character }) => {
+const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, deleteObjects, character }) => {
     const {asset: gltf} = useAsset(path)
     const {asset: characterModel} = useAsset(сharacterModelPath)
     const [characterLOD, setCharacterLOD] = useState()
@@ -50,6 +50,8 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     const originalPosition = useRef(null)
     const originalHeight = useRef(null)
     const offsetToCharacter = useRef(null)
+
+    const [characterChildrenLength, setCharacterChildrenLength] = useState(0)
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(SHOT_LAYERS))
@@ -71,10 +73,16 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
           }
         })
         return children
+
       }
       return null
     }, [gltf, characterModel])
 
+    const sceneCharacter = scene.__interaction.filter(o => o.userData.id === sceneObject.attachToId)[0]
+    const length = sceneCharacter && sceneCharacter.children.length
+    useEffect(() => {
+      setCharacterChildrenLength(length)
+    }, [length])
   
     useMemo(() => {
       if(!prevModelName.current) {
