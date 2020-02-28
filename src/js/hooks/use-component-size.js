@@ -27,7 +27,7 @@ function useComponentSize(ref) {
     handleResize()
     mainElement.current = document.getElementById("main")
     asideElement.current = document.getElementById("aside")
-    if (ResizeObserver) {
+    /* if (ResizeObserver) {
       let resizeObserver = new ResizeObserver(() => handleResize())
       resizeObserver.observe(ref.current)
 
@@ -35,7 +35,7 @@ function useComponentSize(ref) {
         resizeObserver.disconnect(ref.current)
         resizeObserver = null
       }
-    } else  {
+    } else  */ {
       window.addEventListener('resize', handleResize)
       
       return () => {

@@ -19,6 +19,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
     )
     const [ready, setReady] = useState(false)
+    const isFullyUpdate = useRef(false)
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const objectRotationControl = useRef(null)
@@ -136,7 +137,12 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [skeleton, sceneObject.posePresetId, ready])
 
     useEffect(() => {
-      setSkeletonModified({})
+      if(!isFullyUpdate.current)
+      {
+        setSkeletonModified({})
+      } else {
+        isFullyUpdate.current = false
+      }
     }, [sceneObject.posePresetId, sceneObject.skeleton, sceneObject.handPosePresetId])
 
     useEffect(() => {
@@ -187,7 +193,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     useEffect(() => {
       if(!ref.current || !skeleton ) return
       let changedSkeleton = []
-      ref.current.updateMatrixWorld(true)
+      ref.current.updateWorldMatrix(true, true)
       let inverseMatrixWorld = new THREE.Matrix4()
       inverseMatrixWorld.getInverse(ref.current.matrixWorld)
       let position = new THREE.Vector3()
@@ -223,6 +229,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           }
         })
       }
+      isFullyUpdate.current = true
       updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }, [skeleton, skeletonModified, ready])
 

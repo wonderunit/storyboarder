@@ -447,7 +447,6 @@ class Ragdoll extends IkObject
             bone.updateMatrixWorld(true)
             let rotation = bone.rotation
             position.copy(bone.position)
-            position.multiplyScalar( this.originalObject.userData.boneLengthScale === 100 ? 100 : 1)
             changedSkeleton.push({ 
               name: bone.name,
               position: {
@@ -462,6 +461,7 @@ class Ragdoll extends IkObject
               }
             })
         }
+        if(changedSkeleton.length > 0)
         this.updateCharacterSkeleton(changedSkeleton);
     }
 
