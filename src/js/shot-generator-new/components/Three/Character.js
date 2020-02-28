@@ -22,6 +22,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const objectRotationControl = useRef(null)
+    const [skeletonModified, setSkeletonModified] = useState(null) 
     useEffect(() => {
       return () => {
         ref.current.remove(BonesHelper.getInstance())
@@ -127,13 +128,16 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             // and update
             bone.updateMatrixWorld()
           }
-
         }
       } else {
         // reset the pose
         skeleton.pose()
       }
-    }, [skeleton, sceneObject.skeleton, ready])
+    }, [skeleton, sceneObject.posePresetId, ready])
+
+    useEffect(() => {
+      setSkeletonModified({})
+    }, [sceneObject.posePresetId, sceneObject.handPosePresetId])
 
     useEffect(() => {
       return () => {
@@ -168,8 +172,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           bone.rotation.y = handBone.rotation.y
           bone.rotation.z = handBone.rotation.z
         }
+        setSkeletonModified({})
       }
-    }, [skeleton, sceneObject.skeleton, sceneObject.handSkeleton, ready])
+    }, [skeleton, sceneObject.posePresetId, sceneObject.handPosePresetId, ready])
 
     const bodyScale = useMemo(
       () => sceneObject.height / originalHeight,
@@ -190,9 +195,13 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         let bone = skeleton.bones[i]
         if(bone.name.includes("leaf")) continue
         let rotation = bone.rotation
-        bone.applyMatrix(ref.current.matrixWorld)
-        position = bone.position.clone()
-        bone.applyMatrix(inverseMatrixWorld)
+        let boneMatrix = bone.matrixWorld.clone()
+        boneMatrix.premultiply(inverseMatrixWorld)
+        //bone.updateMatrixWorld(true)
+        position = position.setFromMatrixPosition(boneMatrix)
+        let quaternion = new THREE.Quaternion().setFromRotationMatrix(boneMatrix)
+        boneMatrix.premultiply(ref.current.matrixWorld)
+        //bone.updateMatrixWorld(true)
         changedSkeleton.push({ 
           id: bone.uuid,
           name: bone.name,
@@ -205,11 +214,17 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             x: rotation.x, 
             y: rotation.y, 
             z: rotation.z
+          },
+          quaternion: {
+            x: quaternion.x,
+            y: quaternion.y,
+            z: quaternion.z,
+            w: quaternion.w
           }
         })
       }
       updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
-    }, [ref.current, skeleton])
+    }, [skeleton, skeletonModified, ready])
 
     useEffect(() => {
       if(!camera) return
