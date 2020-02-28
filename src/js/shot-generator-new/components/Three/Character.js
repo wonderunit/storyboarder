@@ -137,7 +137,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
     useEffect(() => {
       setSkeletonModified({})
-    }, [sceneObject.posePresetId, sceneObject.handPosePresetId])
+    }, [sceneObject.posePresetId, sceneObject.skeleton, sceneObject.handPosePresetId])
 
     useEffect(() => {
       return () => {
@@ -172,7 +172,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           bone.rotation.y = handBone.rotation.y
           bone.rotation.z = handBone.rotation.z
         }
-        setSkeletonModified({})
+        //setSkeletonModified({})
       }
     }, [skeleton, sceneObject.posePresetId, sceneObject.handPosePresetId, ready])
 

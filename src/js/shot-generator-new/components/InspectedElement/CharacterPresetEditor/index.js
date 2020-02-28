@@ -43,25 +43,24 @@ const CharacterPresetsEditor = connect(
       let character = Object.values(sceneObjects).filter(obj => obj.id === sceneObject.id)[0]
       let defaultCharacterPreset = getDefaultPosePreset()
       dispatch(deleteObjects(attachableIds))
-  
       let attachables = initializeAttachables(character, preset)
       if(attachables)
         dispatch(createObjects(attachables))
-        dispatch(updateObject(sceneObject.id, {
-          characterPresetId,
-          height: preset.state.height,
-          model: preset.state.model,
-          headScale: preset.state.headScale,
-          tintColor: preset.state.tintColor,
-          morphTargets: {
-            mesomorphic: preset.state.morphTargets.mesomorphic,
-            ectomorphic: preset.state.morphTargets.ectomorphic,
-            endomorphic: preset.state.morphTargets.endomorphic
-          },
-          posePresetId: defaultCharacterPreset.id,
-          name: sceneObject.name || preset.name,
-          skeleton: defaultCharacterPreset.state.skeleton
-        }))
+      dispatch(updateObject(sceneObject.id, {
+        characterPresetId,
+        height: preset.state.height,
+        model: preset.state.model,
+        headScale: preset.state.headScale,
+        tintColor: preset.state.tintColor,
+        morphTargets: {
+          mesomorphic: preset.state.morphTargets.mesomorphic,
+          ectomorphic: preset.state.morphTargets.ectomorphic,
+          endomorphic: preset.state.morphTargets.endomorphic
+        },
+        name: sceneObject.name || preset.name,
+        posePresetId: defaultCharacterPreset.id,
+        skeleton: defaultCharacterPreset.state.skeleton
+      }))
     },
     createCharacterPreset: ({ id, name, sceneObject, attachables }) => (dispatch, getState) => {
       // add the character data to a named preset
