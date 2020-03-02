@@ -1,8 +1,8 @@
 import * as THREE from 'three'
-import React, { useMemo, useRef } from 'react'
+import React, { useMemo, useRef, useEffect } from 'react'
 import buildSquareRoom from '../../utils/build-square-room'
-import SHOT_LAYERS from '../../utils/ShotLayers'
-
+import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import { useUpdate } from "react-three-fiber"
 
 const wallsFactory = ({ width, height, length }) => {
   let geometry = new THREE.BoxBufferGeometry(
@@ -20,7 +20,13 @@ const wallsFactory = ({ width, height, length }) => {
 }
 
 const Room = React.memo(({texture, width, length, height, visible, isTopDown = false }) => {
-  const ref = useRef()
+
+  const ref = useUpdate(
+    self => {
+      self.layers.enable(SHOT_LAYERS) 
+    }
+  )
+
   const mesh = useMemo(
     () => {
       if(isTopDown) return 
@@ -36,18 +42,29 @@ const Room = React.memo(({texture, width, length, height, visible, isTopDown = f
         {
           textures: {
             wall: texture
-          }
+          },
         }
       )
       mesh.position.y = -0.03
-      mesh.layers.enable(SHOT_LAYERS)
+     // mesh.layers.enable(SHOT_LAYERS)
       return mesh
-    }, [texture, width, length, height])
+  }, [texture, width, length, height])
 
   const walls = useMemo(() => {
     if(!isTopDown) return []
     return wallsFactory({width, length, height})
   }, [ width, length, height])
+
+  useEffect(() => {
+    if(!walls || !isTopDown) return
+    console.log(SHOT_LAYERS)
+    walls.layers.enable(SHOT_LAYERS)
+  }, [walls, walls.length])
+
+  useEffect(() => {
+    if(!mesh || isTopDown) return
+    mesh.layers.enable(SHOT_LAYERS)
+  }, [mesh])
 
   return <primitive
     ref={ref}
