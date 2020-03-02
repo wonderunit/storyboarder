@@ -180,6 +180,7 @@ const Editor = React.memo(({
                 <Provider store={ store }>
                   <SceneManagerR3fSmall
                     renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
+                    mainRenderData={ mainViewCamera === "live" ? largeCanvasData.current : smallCanvasData.current }
                     setSmallCanvasData={ setSmallCanvasData }
                     />
                 </Provider>
