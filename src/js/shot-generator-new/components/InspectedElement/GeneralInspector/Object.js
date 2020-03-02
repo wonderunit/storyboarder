@@ -1,7 +1,7 @@
-import React, {useCallback} from "react";
-import {Math as _Math} from "three";
-import {formatters, NumberSlider, transforms} from "../../NumberSlider";
-import ColorSelect from "../../ColorSelect";
+import React, {useCallback} from 'react'
+import {Math as _Math} from 'three'
+import {formatters, NumberSlider, transforms} from '../../NumberSlider'
+import ColorSelect from '../../ColorSelect'
 
 const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
   const {id, ...props} = sceneObject
@@ -23,17 +23,17 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
 
   return (
     <React.Fragment>
-      <NumberSlider label='X' value={props.x} min={-30} max={30} onSetValue={setX}/>
-      <NumberSlider label='Y' value={props.y} min={-30} max={30} onSetValue={setY}/>
-      <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>
+      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
+      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
+      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
 
-      { sceneObject.model === "box" &&  <NumberSlider label='Width' value={props.width} min={0.025} max={5} onSetValue={setWidth}/> }
-      { sceneObject.model === "box" &&  <NumberSlider label='Height' value={props.height} min={0.025} max={5} onSetValue={setHeight}/>}
-      { sceneObject.model === "box" &&  <NumberSlider label='Depth' value={props.depth} min={0.025} max={5} onSetValue={setDepth}/> }
-      { sceneObject.model !== "box" &&  <NumberSlider label='Size' value={props.depth} min={0.025} max={5} onSetValue={setSize}/> }
+      { sceneObject.model === "box" &&  <NumberSlider label="Width" value={props.width} min={0.025} max={5} onSetValue={setWidth}/> }
+      { sceneObject.model === "box" &&  <NumberSlider label="Height" value={props.height} min={0.025} max={5} onSetValue={setHeight}/>}
+      { sceneObject.model === "box" &&  <NumberSlider label="Depth" value={props.depth} min={0.025} max={5} onSetValue={setDepth}/> }
+      { sceneObject.model !== "box" &&  <NumberSlider label="Size" value={props.depth} min={0.025} max={5} onSetValue={setSize}/> }
 
       <NumberSlider
-        label='Rotate X'
+        label="Rotate X"
         value={_Math.radToDeg(props.rotation.x)}
         min={-180}
         max={180}
@@ -44,7 +44,7 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label='Rotate Y'
+        label="Rotate Y"
         value={_Math.radToDeg(props.rotation.z)}
         min={-180}
         max={180}
@@ -55,7 +55,7 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label='Rotate Z'
+        label="Rotate Z"
         value={_Math.radToDeg(props.rotation.y)}
         min={-180}
         max={180}
@@ -66,7 +66,7 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <ColorSelect
-        label='Tint color'
+        label="Tint color"
         value={props.tintColor}
         onSetValue={setTintColor}
       />

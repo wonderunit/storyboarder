@@ -13,7 +13,7 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
 }))
 
 const Environment = React.memo(({ path, environment }) => {
-  const {asset: gltf, loaded} = useAsset(path)
+  const {asset: gltf} = useAsset(path)
   const group = useRef(new THREE.Group())
   
   const ref = useUpdate(

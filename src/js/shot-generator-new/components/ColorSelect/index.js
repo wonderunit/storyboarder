@@ -12,14 +12,14 @@ const ColorSelect = React.memo(({
   }, [onSetValue])
 
   return (
-    <div className='color-select'>
-      {label ? <div className='color-select__label'>{label}</div> : null}
+    <div className="color-select">
+      {label ? <div className="color-select__label">{label}</div> : null}
       <div
-        className='color-select__control'
+        className="color-select__control"
       >
         <input
-          className='color-select__input'
-          type='color'
+          className="color-select__input"
+          type="color"
           value={value}
           onChange={onChange}
         />

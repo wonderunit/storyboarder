@@ -148,16 +148,16 @@ const NumberSliderComponent = React.memo(({
   }, [isTextInput, inputRef.current])
   
   return (
-      <div className='number-slider'>
-        {label ? <div className='number-slider__label'>{label}</div> : null}
+      <div className="number-slider">
+        {label ? <div className="number-slider__label">{label}</div> : null}
         <div
-            className='number-slider__control'
+            className="number-slider__control"
         >
           <div
-              className='number-slider__nudge number-slider__nudge--left'
+              className="number-slider__nudge number-slider__nudge--left"
               onClick={(event) => onNudge(-1, event)}
           >
-            <div className='number-slider__arrow number-slider__arrow--left'/>
+            <div className="number-slider__arrow number-slider__arrow--left"/>
           </div>
 
           { isTextInput 

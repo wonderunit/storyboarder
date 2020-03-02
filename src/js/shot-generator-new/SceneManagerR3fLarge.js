@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
@@ -29,7 +29,7 @@ import Image from './components/Three/Image'
 import InteractionManager from './components/Three/InteractionManager'
 import SGIkHelper from '../shared/IK/SGIkHelper'
 import SimpleErrorBoundary from './components/SimpleErrorBoundary'
-import { getFilePathForImages } from "./helpers/get-filepath-for-images"
+import { getFilePathForImages } from './helpers/get-filepath-for-images'
 import { setShot } from './utils/cameraUtils'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
@@ -38,7 +38,7 @@ import { SHOT_LAYERS } from './utils/ShotLayers'
 import Room from './components/Three/Room'
 import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
-import deepEqualSelector from "../utils/deepEqualSelector"
+import deepEqualSelector from '../utils/deepEqualSelector'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -95,7 +95,6 @@ const SceneManagerR3fLarge = connect(
     renderData,
     selectedAttachable,
     deleteObjects,
-    withState
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -382,7 +381,7 @@ const SceneManagerR3fLarge = connect(
     {
         world.environment.file &&  <Environment
               path={ModelLoader.getFilepathForModel({
-                type: 'environment',
+                type: "environment",
                 model: world.environment.file
               }, { storyboarderFilePath } )}
               environment={world.environment}

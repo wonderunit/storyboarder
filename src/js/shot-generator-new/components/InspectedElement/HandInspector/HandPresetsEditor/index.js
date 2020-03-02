@@ -15,7 +15,7 @@ import {
 import defaultPosePresets from '../../../../../shared/reducers/shot-generator-presets/hand-poses.json'
 import presetsStorage from '../../../../../shared/store/presetsStorage'
 
-import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL, innerElementType } from '../../../../utils/InspectorElementsSettings'
+import {NUM_COLS, ITEM_HEIGHT, CHARACTER_MODEL} from '../../../../utils/InspectorElementsSettings'
 import { comparePresetNames, comparePresetPriority } from '../../../../utils/searchPresetsForTerms'
 import { filepathFor } from '../../../../utils/filepathFor'
 
@@ -28,7 +28,7 @@ import Select from '../../../Select'
 import Scrollable from '../../../Scrollable'
 import Grid from '../../../Grid'
 import HandPresetsEditorItem from './HandPresetsEditorItem'
-import {useAsset} from "../../../../hooks/use-assets-manager"
+import {useAsset} from '../../../../hooks/use-assets-manager'
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
@@ -70,8 +70,6 @@ React.memo(({
   withState
 }) => {
   const thumbnailRenderer = useRef()
-
-  const [ready, setReady] = useState(false)
   const sortedPresets = useRef([])
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
@@ -94,17 +92,6 @@ React.memo(({
     setResult(sortedPoses)
     return sortedPoses
   }, [handPosePresets])
-
- /*  useEffect(() => {
-    if (ready) return
-    if (attachmentStatus === "Success" && !attachment) {
-        let attachment = getAttachment()
-        setAttachment(attachment)
-        setTimeout(() => {
-          setReady(true)
-        }, 100) // slight delay for snappier character selection via click
-      }
-    }, [attachmentStatus]) */
 
   const onChangeHand = useCallback((event) => {
     setSelectedHand(event.value)
@@ -236,7 +223,7 @@ React.memo(({
         </div> 
         <div className="row" style= {{ padding: "6px 0" }} >
           <Select
-            label='Select hand'
+            label="Select hand"
             value={selectedHandOptions.find(item => item.value === selectedHand)}
             options={selectedHandOptions}
             onSetValue={onChangeHand}

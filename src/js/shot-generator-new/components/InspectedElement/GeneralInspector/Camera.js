@@ -1,6 +1,6 @@
-import React, {useCallback} from "react";
-import {Math as _Math} from "three";
-import {formatters, NumberSlider, transforms} from "../../NumberSlider";
+import React, {useCallback} from 'react'
+import {Math as _Math} from 'three'
+import {formatters, NumberSlider, transforms} from '../../NumberSlider'
 
 const CameraInspector = React.memo(({updateObject, sceneObject}) => {
   const {id, ...props} = sceneObject
@@ -19,12 +19,12 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
 
   return (
     <React.Fragment>
-      <NumberSlider label='X' value={props.x} min={-30} max={30} onSetValue={setX}/>
-      <NumberSlider label='Y' value={props.y} min={-30} max={30} onSetValue={setY}/>
-      <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>
+      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
+      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
+      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
 
       <NumberSlider
-        label='Rotation'
+        label="Rotation"
         value={_Math.radToDeg(props.rotation)}
         min={-180}
         max={180}
@@ -35,7 +35,7 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label='Roll'
+        label="Roll"
         value={_Math.radToDeg(props.roll)}
         min={-45}
         max={45}
@@ -46,7 +46,7 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label='Tilt'
+        label="Tilt"
         value={_Math.radToDeg(props.tilt)}
         min={-90}
         max={90}
@@ -57,7 +57,7 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label='F.O.V.'
+        label="F.O.V."
         value={props.fov}
         min={1}
         max={120}

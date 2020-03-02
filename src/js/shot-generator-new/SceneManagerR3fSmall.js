@@ -15,10 +15,9 @@ import useFontLoader from './hooks/use-font-loader'
 import path from 'path'
 import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
-import { useDraggingManager} from './hooks/use-dragging-manager'
+import { useDraggingManager } from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
 import Room from './components/Three/Room'
-import throttle from 'lodash.throttle'
 
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
@@ -250,12 +249,10 @@ const SceneManagerR3fSmall = connect(
     useEffect(() => {
       if(renderData) return
         gl.domElement.addEventListener("pointermove", onPointerMove)
-        //gl.domElement.addEventListener("pointermove", throttleUpdateDraggableObject)
         gl.domElement.addEventListener("pointerdown", deselect)
       return () => {
         if(renderData) return
           gl.domElement.removeEventListener("pointermove", onPointerMove)
-         // gl.domElement.removeEventListener("pointermove", throttleUpdateDraggableObject)
           gl.domElement.removeEventListener("pointerdown", deselect)
       }
     }, [onPointerMove])

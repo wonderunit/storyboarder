@@ -1,11 +1,11 @@
 import * as THREE from 'three'
 import React, { useEffect, useMemo, useRef } from 'react'
-import {extend} from "react-three-fiber"
-import {useAsset} from "../../hooks/use-assets-manager"
+import { extend } from 'react-three-fiber'
+import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import {patchMaterial, setSelected} from "../../helpers/outlineMaterial"
+import { patchMaterial, setSelected } from '../../helpers/outlineMaterial'
 
-import RoundedBoxGeometryCreator from "./../../../vendor/three-rounded-box"
+import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})

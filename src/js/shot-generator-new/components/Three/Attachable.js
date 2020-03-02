@@ -1,11 +1,11 @@
 import React, { useMemo, useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
-import { useUpdate, useThree, useFrame } from 'react-three-fiber'
+import { useUpdate, useThree } from 'react-three-fiber'
 import {useAsset} from '../../hooks/use-assets-manager'
 import {SHOT_LAYERS} from '../../utils/ShotLayers'
 import isUserModel from '../../helpers/isUserModel'
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
-import ObjectRotationControl from "../../../shared/IK/objects/ObjectRotationControl"
+import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
 import {patchMaterial, setSelected} from "../../helpers/outlineMaterial";
 
 const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({

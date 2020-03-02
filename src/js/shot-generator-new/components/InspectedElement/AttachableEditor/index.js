@@ -1,14 +1,14 @@
 import { remote } from 'electron'
 const { dialog } = remote
-import React, { useMemo, useState, useEffect, useContext, useRef } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { connect } from 'react-redux'
 import {
   deleteObjects,
   getSceneObjects, getSelections,
   updateObject
 } from '../../../../shared/reducers/shot-generator'
-import ListItem from "./ListItem"
-import {NumberSlider} from "./../../NumberSlider"
+import ListItem from './ListItem'
+import {NumberSlider} from './../../NumberSlider'
 import deepEqualSelector from './../../../../utils/deepEqualSelector'
 import HandSelectionModal from '../HandInspector/HandSelectionModal'
 

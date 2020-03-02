@@ -3,18 +3,17 @@ import React, { useMemo, useEffect, useRef } from 'react'
 import { useUpdate, extend, useThree } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
-import {useAsset} from "../../hooks/use-assets-manager"
+import { useAsset } from "../../hooks/use-assets-manager"
 
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import {MeshToonMaterial} from "three"
-import ObjectRotationControl from "../../../shared/IK/objects/ObjectRotationControl"
+import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
-import {patchMaterial, setSelected} from "../../helpers/outlineMaterial"
+import { patchMaterial, setSelected } from "../../helpers/outlineMaterial"
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
-const materialFactory = (isIcon) => patchMaterial(new MeshToonMaterial({
+const materialFactory = (isIcon) => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,

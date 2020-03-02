@@ -40,7 +40,6 @@ const indexOfGreaterThan = (array, item) => {
  */
 const indexIn = (array, item) => {
   var i, j = indexOfGreaterThan(array, item)
-  console.log(array, item)
   if (j === -1) { return array.length - 1 }
   if (j ===  0) { return j }
   i = j - 1

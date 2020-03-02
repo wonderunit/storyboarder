@@ -2,7 +2,7 @@ import React from 'react'
 
 const Scrollable = React.memo(({children}) => {
   return (
-    <div className='scrollable'>
+    <div className="scrollable">
       {children}
     </div>
   )

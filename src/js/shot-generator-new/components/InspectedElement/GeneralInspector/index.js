@@ -17,7 +17,7 @@ import ImageInspector from './Image'
 import LightInspector from './Light'
 import CharacterInspector from './Character'
 import VolumeInspector from './Volume'
-import Scrollable from "../../Scrollable"
+import Scrollable from '../../Scrollable'
 
 const InspectorComponents = {
   object: ObjectInspector,

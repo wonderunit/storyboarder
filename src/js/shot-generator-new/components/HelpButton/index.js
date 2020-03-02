@@ -14,8 +14,8 @@ const HelpButton = React.memo(({
   
   return (
       <a
-        href='#'
-        className='help-button'
+        href="#"
+        className="help-button"
         style={style}
         onPointerUp={onPointerUp}
         title={`${title}\n\n${url}`}

@@ -8,9 +8,9 @@ import { createdMirroredHand, applyChangesToSkeleton, getOppositeHandName } from
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../../../utils/InspectorElementsSettings'
 import { getSceneObjects } from '../../../../../shared/reducers/shot-generator'
 import clampInstance from '../../../../utils/clampInstance'
-import Image from "../../../Image"
+import Image from '../../../Image'
 import cloneGltf from '../../../../helpers/cloneGltf'
-import {patchMaterial, setSelected} from "../../../../helpers/outlineMaterial";
+import {patchMaterial} from '../../../../helpers/outlineMaterial'
 
 const createCharacter = (gltf) => {
   let lod = new THREE.LOD()

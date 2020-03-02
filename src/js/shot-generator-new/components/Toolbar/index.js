@@ -182,61 +182,61 @@ const Toolbar = connect(
     const imageTooltipEvents = useTooltip("Image", "Creates image", null, "bottom center")
  
     return (
-      <div id='toolbar' key='toolbar'> 
-        <div className='toolbar__addition row'>
-          <a href='#' 
+      <div id="toolbar" key="toolbar"> 
+        <div className="toolbar__addition row">
+          <a href="#" 
              onClick={preventDefault(onCreateCameraClick)}
              {...cameraTooltipEvents}>
-            <Icon src='icon-toolbar-camera'/>
+            <Icon src="icon-toolbar-camera"/>
             <span>Camera</span>
           </a>
-          <a href='#' 
+          <a href="#" 
              onClick={preventDefault(onCreateObjectClick)}
              {...objectTooltipEvents}>
-            <Icon src='icon-toolbar-object'/>
+            <Icon src="icon-toolbar-object"/>
             <span>Object</span>
           </a>
-          <a href='#' 
+          <a href="#" 
              onClick={preventDefault(onCreateCharacterClick)}
              {...characterTooltipEvents}>
-            <Icon src='icon-toolbar-character'/>
+            <Icon src="icon-toolbar-character"/>
             <span>Character</span>
           </a>
-          <a href='#' 
+          <a href="#" 
              onClick={preventDefault(onCreateLightClick)}
              {...lightTooltipEvents}>
-            <Icon src='icon-toolbar-light'/>
+            <Icon src="icon-toolbar-light"/>
             <span>Light</span>
           </a>
-          <a href='#' 
+          <a href="#" 
              onClick={preventDefault(onCreateVolumeClick)}
              {...volumeTooltipEvents}>
-            <Icon src='icon-toolbar-volume'/>
+            <Icon src="icon-toolbar-volume"/>
             <span>Volume</span>
           </a>
-          <a href='#' 
+          <a href="#" 
              onClick={preventDefault(onCreateImageClick)}
              {...imageTooltipEvents}>
-            <Icon src='icon-toolbar-image'/>
+            <Icon src="icon-toolbar-image"/>
             <span>Image</span>
           </a>
         </div>
         <div className="toolbar__board-actions row">
           {server.xrUri && (
-            <a href='#'
+            <a href="#"
                onClick={preventDefault(onOpenVR) }>
-              <Icon src='icon-toolbar-vr'/>
+              <Icon src="icon-toolbar-vr"/>
               <span>Open in VR</span>
             </a>
           )}
-        <a href='#' 
+        <a href="#" 
            onClick={preventDefault(onSaveToBoardClick)}>
-          <Icon src='icon-toolbar-save-to-board'/>
+          <Icon src="icon-toolbar-save-to-board"/>
           <span>Save to Board</span>
         </a>
-        <a href='#' 
+        <a href="#" 
            onClick={preventDefault(onInsertNewBoardClick)}>
-          <Icon src='icon-toolbar-insert-as-new-board'/>
+          <Icon src="icon-toolbar-insert-as-new-board"/>
           <span>Insert As New Board</span>
         </a>
         </div>

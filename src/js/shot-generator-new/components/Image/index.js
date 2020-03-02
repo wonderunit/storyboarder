@@ -1,6 +1,5 @@
-import React, {useEffect, useState, useRef} from 'react'
-import CancelablePromise from "../../../utils/CancelablePromise"
-import makeCancelable from "../../../utils/makeCancelable"
+import React, {useEffect, useState} from 'react'
+import makeCancelable from '../../../utils/makeCancelable'
 
 const loadImage = (src) => {
   return new Promise((resolve, reject) => {

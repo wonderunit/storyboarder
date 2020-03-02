@@ -15,9 +15,9 @@ import HelpButton from '../../HelpButton'
 import * as itemSettings from '../../../utils/InspectorElementsSettings'
 import HandSelectionModal from '../HandInspector/HandSelectionModal'
 import SearchList from '../../SearchList'
-import ModelInspectorItem from "../ModelInspectorItem"
-import Grid from "../../Grid"
-import Scrollable from "../../Scrollable"
+import ModelInspectorItem from '../ModelInspectorItem'
+import Grid from '../../Grid'
+import Scrollable from '../../Scrollable'
 
 import AttachableEditor from './../AttachableEditor/index'
 import isUserModel from '../../../helpers/isUserModel'

@@ -113,7 +113,6 @@ class Ragdoll extends IkObject
         if(!this.isEnabledIk)
         {
             this.ikSwitcher.applyToIk();
-            this.resetPoleTarget();
             this.moveRagdoll();
             this.setUpControlTargetsInitialPosition();
             this.setUpHipsControlTargetRotation();
@@ -136,11 +135,9 @@ class Ragdoll extends IkObject
                 this.resourceManager.release(worldQuaternion);
                 this.resourceManager.release(inverseParentQuat);
                 this.resourceManager.release(vector);
-                this.resetPoleTarget();
             }
             this.limbsFollowRotation();
             this.ikSwitcher.applyChangesToOriginal();
-           // this.recalculateAllPoleTargets();
         }
     }
 
@@ -317,29 +314,6 @@ class Ragdoll extends IkObject
         }
     }
 
-    // Resets pole target position when object moved his hips position changed
-    resetPoleTarget()
-    {
- /*        let chainObjects = this.chainObjectsValues;
-        for(let i = 0; i < chainObjects.length; i++)
-        {
-            if(!chainObjects[i].poleConstraint) continue;
-            let poleTarget = chainObjects[i].poleConstraint.poleTarget;
-            let bone = chainObjects[i].chain.joints[0].bone.parent;
-
-            let boneMatrix = this.resourceManager.getMatrix4();
-            this.takeBoneInTheMeshSpace(this.rigMesh, bone, boneMatrix);
-
-            poleTarget.inverseMatrixOfBone && poleTarget.target.applyMatrix(poleTarget.inverseMatrixOfBone);
-            poleTarget.target.updateMatrixWorld(true);
-            poleTarget.target.applyMatrix(boneMatrix);
-            poleTarget.target.updateMatrixWorld(true);
-            poleTarget.inverseMatrixOfBone = new THREE.Matrix4().getInverse(boneMatrix);
-
-            this.resourceManager.release(boneMatrix);
-        } */
-    }
-
     setUpControlTargetsInitialPosition()
     {
         let chainObjects = this.chainObjectsValues;
@@ -361,35 +335,6 @@ class Ragdoll extends IkObject
 
             target.inverseInitialQuaternion = bone.worldQuaternion().inverse().multiply(this.hips.worldQuaternion());
         }
-    }
-
-    updateAllPoleTargets()
-    {
-/*         let chainObjects = this.chainObjectsValues;
-        for(let i = 0; i < chainObjects.length; i++)
-        {
-            if(!chainObjects[i].poleConstraint) continue;
-            let poleTarget = chainObjects[i].poleConstraint.poleTarget;
-            let characterMatrix = this.rigMesh.matrixWorld
-            let characterInverseMatrix = this.rigMesh.getInverseMatrixWorld()
-
-            poleTarget.target.applyMatrix(characterInverseMatrix)
-            poleTarget.target.updateMatrixWorld(true)
-            let worldPosition = poleTarget.target.position;
-            poleTarget.target.applyMatrix(characterMatrix)
-            poleTarget.target.updateMatrixWorld(true)
-            
-            this.poleTargetsPosition[poleTarget.target.name] = 
-            {
-                position: 
-                {
-                    x: worldPosition.x,
-                    y: worldPosition.y,
-                    z: worldPosition.z,
-                }
-            };
-        }
-        this.updatePoleTargets(this.poleTargetsPosition) */
     }
 
     setUpHipsControlTargetRotation()

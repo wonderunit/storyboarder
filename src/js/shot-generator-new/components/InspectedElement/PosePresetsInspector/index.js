@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../package.json'
 import request from 'request'
-import { FixedSizeGrid } from 'react-window'
 import {
   updateObject,
   createPosePreset,
@@ -16,15 +15,15 @@ import defaultPosePresets from '../../../../shared/reducers/shot-generator-prese
 import presetsStorage from '../../../../shared/store/presetsStorage'
 
 import { comparePresetNames, comparePresetPriority } from '../../../utils/searchPresetsForTerms' 
-import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL, innerElementType } from '../../../utils/InspectorElementsSettings'
+import { NUM_COLS, ITEM_HEIGHT, CHARACTER_MODEL } from '../../../utils/InspectorElementsSettings'
 import Modal from '../../Modal'
 import { filepathFor } from '../../../utils/filepathFor'
 import deepEqualSelector from './../../../../utils/deepEqualSelector'
 import PosePresetInspectorItem from './PosePresetInspectorItem'
 import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
-import Scrollable from "../../Scrollable";
-import {useAsset} from "../../../hooks/use-assets-manager"
+import Scrollable from '../../Scrollable';
+import { useAsset } from '../../../hooks/use-assets-manager'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -48,7 +47,6 @@ React.memo(({
   id,
 
   posePresets,
-  attachmentStatus,
   characterPath,
   updateObject,
   createPosePreset,

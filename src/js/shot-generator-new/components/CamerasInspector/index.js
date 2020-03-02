@@ -20,7 +20,7 @@ import classNames from 'classnames'
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 
 import Scrollable from '../Scrollable'
-import deepEqualSelector from "../../../utils/deepEqualSelector"
+import deepEqualSelector from '../../../utils/deepEqualSelector'
 
 const cameraSceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)

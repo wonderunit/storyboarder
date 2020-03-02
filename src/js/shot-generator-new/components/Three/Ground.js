@@ -15,13 +15,13 @@ const Ground = React.memo(({ objRef, texture, visible }) => {
     position={ [0, -0.03, 0] }
     rotation={ [-Math.PI / 2, 0, 0] }
     userData={{
-      type: 'ground'
+      type: "ground"
     }}
     onUpdate={self => (self.layers.enable(SHOT_LAYERS))}
   >
-    <planeBufferGeometry attach='geometry' args={ [135 / 3, 135 / 3, 32] } />
-    <meshToonMaterial attach='material' side={ THREE.FrontSide } visible={ visible }>
-      <primitive attach='map' object={ texture } />
+    <planeBufferGeometry attach="geometry" args={ [135 / 3, 135 / 3, 32] } />
+    <meshToonMaterial attach="material" side={ THREE.FrontSide } visible={ visible }>
+      <primitive attach="map" object={ texture } />
     </meshToonMaterial>
   </mesh>
 })

@@ -131,7 +131,6 @@ class IKHelper extends THREE.Object3D
                     currentCharacterHeight: characterObject.userData.height,
                 };
                 this.ragDoll.updatePoleTargets(poleTargets);
-               // this.ragDoll.updateAllPoleTargets();
             }
             if(this.selectedControlPoint.name === "Hips")
             {
@@ -145,7 +144,6 @@ class IKHelper extends THREE.Object3D
             }
             this.selectedControlPoint = null;
             this.ragDoll.updateReact();
-           // let characterObject = this.intializedSkinnedMesh.parent.parent;
             let changes = {};
             if(characterObject.attachables) {
                 for(let i = 0; i < characterObject.attachables.length; i++) {

@@ -1,8 +1,8 @@
-import React, {useCallback, useMemo} from "react"
-import {Math as _Math} from "three"
-import {formatters, NumberSlider, transforms} from "../../NumberSlider"
-import ColorSelect from "../../ColorSelect"
-import {initialState} from "../../../../shared/reducers/shot-generator"
+import React, {useCallback, useMemo} from 'react'
+import {Math as _Math} from 'three'
+import {formatters, NumberSlider, transforms} from '../../NumberSlider'
+import ColorSelect from '../../ColorSelect'
+import {initialState} from '../../../../shared/reducers/shot-generator'
 import CharacterPresetEditor from '../CharacterPresetEditor'
 import BoneInspector from '../BoneInspector'
 import ModelLoader from '../../../../services/model-loader'
@@ -78,12 +78,12 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
       <div>
         <CharacterPresetEditor/>
         
-        <NumberSlider label='X' value={props.x} min={-30} max={30} onSetValue={setX}/>
-        <NumberSlider label='Y' value={props.y} min={-30} max={30} onSetValue={setY}/>
-        <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>
+        <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
+        <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
+        <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
   
         <NumberSlider
-          label='Rotation'
+          label="Rotation"
           value={_Math.radToDeg(props.rotation)}
           min={-180}
           max={180}
@@ -95,7 +95,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
         {ModelLoader.isCustomModel(sceneObject.model)
           ? 
             <NumberSlider 
-              label='scale'
+              label="scale"
               min={ 0.3 }
               max={ 3.05 }
               step={ 0.0254 }
@@ -103,7 +103,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
               onSetValue={ setHeight }/>
           :
           <NumberSlider 
-            label='Height' 
+            label="Height" 
             value={props.height} 
             min={ heightRange.min } 
             max={ heightRange.max } 
@@ -117,7 +117,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
           /> 
         }
         {ModelLoader.isCustomModel(sceneObject.model) || <NumberSlider
-          label='Head'
+          label="Head"
           value={props.headScale * 100}
           min={80} max={120} step={1}
           formatter={formatters.percent}
@@ -125,14 +125,14 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
         />}
   
          {ModelLoader.isCustomModel(sceneObject.model) || <ColorSelect
-          label='Tint color'
+          label="Tint color"
           value={props.tintColor}
           onSetValue={setTintColor}
         />}
       </div>
 
-      <div className='inspector-offset-row'>
-        {validTargetsExist && <div className='inspector-offset-row italic'>Morphs</div>}
+      <div className="inspector-offset-row">
+        {validTargetsExist && <div className="inspector-offset-row italic">Morphs</div>}
         {morphTargets}
       </div>
       { selectedBone && <BoneInspector 

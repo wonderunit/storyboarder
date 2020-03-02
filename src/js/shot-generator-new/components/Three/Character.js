@@ -202,11 +202,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         let rotation = bone.rotation
         let boneMatrix = bone.matrixWorld.clone()
         boneMatrix.premultiply(inverseMatrixWorld)
-        //bone.updateMatrixWorld(true)
         position = position.setFromMatrixPosition(boneMatrix)
         let quaternion = new THREE.Quaternion().setFromRotationMatrix(boneMatrix)
         boneMatrix.premultiply(ref.current.matrixWorld)
-        //bone.updateMatrixWorld(true)
         changedSkeleton.push({ 
           id: bone.uuid,
           name: bone.name,
@@ -304,7 +302,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             }
         }
         else {
-            SGIkHelper.getInstance().ragDoll.updateAllPoleTargets()
             objectRotationControl.current.deselectObject()
         }
     }, [selectedBone])

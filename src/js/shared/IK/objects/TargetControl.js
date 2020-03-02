@@ -30,11 +30,8 @@ class TargetControl
         movingTarget.scale.set(0.4, 0.4, 0.4);
         movingTarget.renderOrder = 9;
         movingTarget.scope = this;
-        //this.control.attach(movingTarget);
         this.target = movingTarget;
-        //this.addEventsToControlTarget(); 
     }
-
 
     setBone(bone)
     {

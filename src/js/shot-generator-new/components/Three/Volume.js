@@ -1,9 +1,8 @@
-import React, { useRef, useMemo, useEffect } from 'react'
+import React, { useRef, useEffect } from 'react'
 import * as THREE from 'three'
-import { Texture } from 'three'
 import { useUpdate } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import {useAsset, useAssets} from "../../hooks/use-assets-manager";
+import { useAssets } from '../../hooks/use-assets-manager'
 class LAYERS_STATUS {
     static AVAIBLE = "Avaible"
     static USED = "INUSE"

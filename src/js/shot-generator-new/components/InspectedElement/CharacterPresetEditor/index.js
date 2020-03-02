@@ -15,7 +15,7 @@ import {
 } from '../../../../shared/reducers/shot-generator'
 import presetsStorage from '../../../../shared/store/presetsStorage'
 import Modal from '../../Modal'
-import deepEqualSelector from "../../../../utils/deepEqualSelector";
+import deepEqualSelector from '../../../../utils/deepEqualSelector'
 
 const preventDefault = (fn, ...args) => e => {
     e.preventDefault()

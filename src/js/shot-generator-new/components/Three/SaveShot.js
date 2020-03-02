@@ -1,5 +1,5 @@
-import React, { useRef, useEffect } from "react"
-import { connect } from "react-redux"
+import React, { useRef, useEffect } from 'react'
+import { connect } from 'react-redux'
 import { 
     getSelections,
     getSerializedState,
@@ -11,6 +11,7 @@ import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import { OutlineEffect } from '../../../vendor/OutlineEffect'
 import { remote } from 'electron'
+
 const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 

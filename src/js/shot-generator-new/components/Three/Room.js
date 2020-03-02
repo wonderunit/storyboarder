@@ -1,8 +1,8 @@
 import * as THREE from 'three'
-import React, { useMemo, useRef, useEffect } from 'react'
+import React, { useMemo } from 'react'
 import buildSquareRoom from '../../utils/build-square-room'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import { useUpdate } from "react-three-fiber"
+import { useUpdate } from 'react-three-fiber'
 
 const wallsFactory = ({ width, height, length }) => {
   let geometry = new THREE.BoxBufferGeometry(
@@ -56,9 +56,9 @@ const Room = React.memo(({texture, width, length, height, visible, isTopDown = f
 
   return <primitive
     ref={ref}
-    name='room'
+    name="room"
     userData={{
-      type: 'room'
+      type: "room"
     }}
     object={!isTopDown ? mesh : walls}
     visible={visible}

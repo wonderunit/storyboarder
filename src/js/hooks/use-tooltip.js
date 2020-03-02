@@ -1,6 +1,6 @@
 import React, {useCallback, useRef} from 'react'
 
-import {acceleratorAsHtml} from "../utils"
+import {acceleratorAsHtml} from '../utils'
 
 const triangleSize = 10.0
 

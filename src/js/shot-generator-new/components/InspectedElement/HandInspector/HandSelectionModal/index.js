@@ -1,6 +1,6 @@
 import React, {useRef, useMemo, useState, useEffect} from 'react'
-import Modal from "../../../Modal"
-import Select from "../../../Select"
+import Modal from '../../../Modal'
+import Select from '../../../Select'
 
 const HandSelectionModal = React.memo(({
     visible,
@@ -41,7 +41,7 @@ const HandSelectionModal = React.memo(({
                 </div>
                 <div className="select">
                   <Select 
-                    label='Hand'
+                    label="Hand"
                     value={ selectedHand }
                     options={ selectOptions }
                     onSetValue={(item) => setSelectedHand(item)}/>

@@ -12,8 +12,8 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
-import Item from "./Item";
-import clampElementToView from "../../../utils/clampElementToView";
+import Item from './Item'
+import clampElementToView from '../../../utils/clampElementToView'
 
 const sortPriority = ['camera', 'character', 'object', 'image', 'light', 'volume', 'group']
 
@@ -144,13 +144,13 @@ const ItemList = React.memo(({sceneObjects, selections, activeCamera, selectObje
   
   return (
       <div
-          className = 'objects-list'
+          className = "objects-list"
           ref={listRef}
       >
         <Item
             selected={selections.length === 0}
             index={0}
-            displayName='Scene'
+            displayName="Scene"
             id={null}
             onSelectItem={onSelectItem}
         />

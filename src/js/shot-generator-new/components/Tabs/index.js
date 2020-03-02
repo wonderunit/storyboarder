@@ -83,7 +83,7 @@ const Panel = ({children}) => {
   }
 
   return (
-      <div className='tabs-body__content'>
+      <div className="tabs-body__content">
         {children}
       </div>
   )

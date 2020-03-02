@@ -11,11 +11,11 @@ import SceneManagerR3fSmall from '../../SceneManagerR3fSmall'
 import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
-import {useExportToGltf} from '../../../hooks/use-export-to-gltf'
+import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
 
-import {Canvas, useFrame, useThree} from 'react-three-fiber'
+import { Canvas, useFrame, useThree } from 'react-three-fiber'
 
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
@@ -25,12 +25,12 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import notifications from './../../../window/notifications'
-import Icon from "../Icon";
-import MenuManager from "../MenuManager";
-import ElementsPanel from "../ElementsPanel";
-import BoardInspector from "../BoardInspector";
-import GuidesInspector from "../GuidesInspector";
-import GuidesView from "../GuidesView"
+import Icon from '../Icon'
+import MenuManager from '../MenuManager'
+import ElementsPanel from '../ElementsPanel'
+import BoardInspector from '../BoardInspector'
+import GuidesInspector from '../GuidesInspector'
+import GuidesView from '../GuidesView'
 import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
@@ -70,8 +70,8 @@ const Editor = React.memo(({
       newStats = new Stats()
       newStats.showPanel(0)
       document.body.appendChild( newStats.dom )
-      newStats.dom.style.top = '7px'
-      newStats.dom.style.left = '460px'
+      newStats.dom.style.top = "7px"
+      newStats.dom.style.left = "460px"
       setStats(newStats)
     } else {
       document.body.removeChild( stats.dom )
@@ -189,8 +189,8 @@ const Editor = React.memo(({
               <div className="topdown__controls">
                 <div className="row"/>
                 <div className="row">
-                  <a href='#' onClick={onSwapCameraViewsClick}>
-                    <Icon src='icon-camera-view-expand'/>
+                  <a href="#" onClick={onSwapCameraViewsClick}>
+                    <Icon src="icon-camera-view-expand"/>
                   </a>
                 </div>
               </div>

@@ -1,6 +1,6 @@
 import THREE from 'three'
 
-import React, { useRef, useEffect } from 'react'
+import React, { useRef } from 'react'
 
 const Group = React.memo(({ scene, id, type, ...props }) => {
   const ref = useRef()

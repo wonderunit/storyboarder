@@ -21,7 +21,7 @@ import { truncateMiddle } from '../../../../utils'
 import * as itemSettings from '../../../utils/InspectorElementsSettings'
 import FileInput from '../../FileInput'
 import SearchList from '../../SearchList'
-import deepEqualSelector from "../../../../utils/deepEqualSelector"
+import deepEqualSelector from '../../../../utils/deepEqualSelector'
 import isUserModel from '../../../helpers/isUserModel'
 
 const getModelData = deepEqualSelector([(state) => {
