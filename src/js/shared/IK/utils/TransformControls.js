@@ -857,16 +857,17 @@ const TransformControlsGizmo = function () {
 	var gizmoScale  = {};
 	var pickerScale = {};
 	var helperScale = {};
-
+	let tubularSegments = 50;
+	let offset = -0.01;
 	gizmoRotate = {
 		X: [
-			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matX ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
+			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matX ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
 		],
 		Y: [
-			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matY ), null, [ Math.PI / 2, 0, 0 ]],
+			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matY ), null, [ Math.PI / 2, 0, 0 ]],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matZ ), null, [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matZ ), null, [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
 		
@@ -880,13 +881,13 @@ const TransformControlsGizmo = function () {
 
 	pickerRotate = {
 		X: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
 		],
 		Y: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matGreen ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matBlue ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
 			
