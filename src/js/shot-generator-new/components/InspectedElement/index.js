@@ -88,7 +88,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           </button>
       </div>
       </Modal> }
-      <a href='#' className='object-property-heading' style={{ overflow: "hidden", textOverflow: "ellipsis", maxHeight: 50, width: 288 }} onClick={ () => showModal(true) }>
+      <a href='#' className='object-property-heading' style={{ overflow: "hidden", textOverflow: "ellipsis", flexShrink:0, width: 288 }} onClick={ () => showModal(true) }>
         {selectedName} Properties
       </a>
       <Tabs key={id}>

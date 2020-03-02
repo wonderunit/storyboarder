@@ -46,7 +46,6 @@ const Room = React.memo(({texture, width, length, height, visible, isTopDown = f
         }
       )
       mesh.position.y = -0.03
-     // mesh.layers.enable(SHOT_LAYERS)
       return mesh
   }, [texture, width, length, height])
 
@@ -54,17 +53,6 @@ const Room = React.memo(({texture, width, length, height, visible, isTopDown = f
     if(!isTopDown) return []
     return wallsFactory({width, length, height})
   }, [ width, length, height])
-
-  useEffect(() => {
-    if(!walls || !isTopDown) return
-    console.log(SHOT_LAYERS)
-    walls.layers.enable(SHOT_LAYERS)
-  }, [walls, walls.length])
-
-  useEffect(() => {
-    if(!mesh || isTopDown) return
-    mesh.layers.enable(SHOT_LAYERS)
-  }, [mesh])
 
   return <primitive
     ref={ref}
