@@ -286,7 +286,6 @@ const InteractionManager = connect(
                     return
                 }
                 else if(targetElement.userData.type === "object") {
-                  console.log("Object  rotation control")
                   let objects = intersectables.current.filter(value => value.uuid === objectId)
                   target = objects[0]
                   selectedObjectControl = targetElement

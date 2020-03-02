@@ -16,6 +16,11 @@ class ObjectRotationControl
         this.control.characterId = characterId;
         this.isEnabled = false;
     }
+
+    set IsEnabled(value) 
+    {
+        this.control.enabled = value
+    }
     //#region Events
     onMouseDown = event => {this.object.isRotated = true;};
     onMouseMove = event => {this.updateCharacter(this.object.name, this.object.rotation);};

@@ -152,6 +152,11 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
 
   const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
 
+  useEffect(() => {
+    if(!objectRotationControl.current) return
+    objectRotationControl.current.IsEnabled = !locked
+  }, [locked])
+
   return <group
     ref={ref}
 
