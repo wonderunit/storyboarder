@@ -178,7 +178,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           bone.rotation.y = handBone.rotation.y
           bone.rotation.z = handBone.rotation.z
         }
-        //setSkeletonModified({})
       }
     }, [skeleton, sceneObject.posePresetId, sceneObject.handPosePresetId, ready])
 

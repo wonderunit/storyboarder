@@ -468,12 +468,12 @@ const InteractionManager = connect(
       activeGL.domElement.addEventListener('pointerdown', onPointerDown)
       activeGL.domElement.addEventListener('pointermove', onPointerMove)
       activeGL.domElement.addEventListener('pointermove', throttleUpdateDraggableObject)
-      activeGL.domElement.addEventListener('pointerup', onPointerUp)
+      window.addEventListener('pointerup', onPointerUp)
       return function cleanup () {
         activeGL.domElement.removeEventListener('pointerdown', onPointerDown)
         activeGL.domElement.removeEventListener('pointermove', onPointerMove)
         activeGL.domElement.removeEventListener('pointermove', throttleUpdateDraggableObject)
-        activeGL.domElement.removeEventListener('pointerup', onPointerUp)
+        window.removeEventListener('pointerup', onPointerUp)
       }
     }, [onPointerDown, onPointerUp, onPointerMove, activeGL])
     return null 

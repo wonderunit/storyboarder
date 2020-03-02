@@ -10,7 +10,6 @@ import {MeshToonMaterial} from "three"
 import ObjectRotationControl from "../../../shared/IK/objects/ObjectRotationControl"
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import {patchMaterial, setSelected} from "../../helpers/outlineMaterial"
-import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
@@ -106,30 +105,10 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       } )})
   }, [])
 
-/*   const controlPlusRCheck = (event) => {
-    event.stopPropagation()
-    if(event.ctrlKey && event.key === 'e'){
-      event.stopPropagation()
-      return true
-    } 
-  } */
-
   useEffect(() => {
     if(!objectRotationControl.current) return
     objectRotationControl.current.setCamera(camera)
   }, [camera])
-
-/*   const switchManipulationState = () => {
-    let isRotation = !ref.current.userData.isRotationEnabled
-    ref.current.userData.isRotationEnabled = isRotation
-    if(isRotation) {
-      objectRotationControl.current.selectObject(ref.current, sceneObject.id)
-      objectRotationControl.current.isEnabled = true
-    } else {
-      objectRotationControl.current.deselectObject()
-      objectRotationControl.current.isEnabled = false
-    }
-  } */
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
