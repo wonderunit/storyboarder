@@ -19,6 +19,7 @@ class BonesHelper extends THREE.Object3D
             this.add(this.bonesGroup)
             this.intializedSkinnedMeshUuid = null;
             this.selectedBoneColor = new THREE.Color(0xffffff)
+            this.userData.type = "BonesHelper"
         }
         return instance;
     }
@@ -157,6 +158,10 @@ class BonesHelper extends THREE.Object3D
             super.updateMatrixWorld(force);
             this.update();
         }
+    }
+
+    clone() {
+
     }
 
     get isSelected()

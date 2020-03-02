@@ -1,5 +1,5 @@
 const { useMemo, useRef, useCallback } = React = require('react')
-const { useRender } = require('react-three-fiber')
+const { useFrame } = require('react-three-fiber')
 
 const SCALE = 0.4
 const POSITION = [0, 0.02 + 0.30, 0.01 - 0.25]
@@ -31,7 +31,7 @@ const Help = React.memo(({ mode, locked, getCanvasRenderer }) => {
   //   if (mesh) mesh.material.opacity = locked ? 0.15 : 0.8
   // }, [locked])
 
-  useRender((state, delta) => {
+  useFrame((state, delta) => {
     if (getCanvasRenderer().helpNeedsRender) {
       getCanvasRenderer().renderHelp()
       getTexture().needsUpdate = true

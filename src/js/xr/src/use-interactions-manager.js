@@ -1,4 +1,4 @@
-const { useThree, useRender } = require('react-three-fiber')
+const { useThree, useFrame } = require('react-three-fiber')
 const { useMemo, useRef, useEffect } = React = require('react')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -667,6 +667,7 @@ const useInteractionsManager = ({
       list = list.filter(object => object.uuid === interactionService.state.context.selection)
     }
     // setup the GPU picker
+
     getGpuPicker().setupScene(list, getExcludeList(scene))
 
     // gather all hits to tracked scene object3ds
@@ -835,7 +836,7 @@ const useInteractionsManager = ({
   }
 
   // TODO could model these as ... activities? exec:'render' actions?
-  useRender(() => {
+  useFrame(() => {
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
@@ -948,7 +949,7 @@ const useInteractionsManager = ({
   }, false, [set, controllers])
 
   // update ui every frame
-  useRender(() => {
+  useFrame(() => {
     if (uiService.state.value.input == 'dragging') {
       let controller = uiService.state.context.draggingController
 
@@ -970,7 +971,6 @@ const useInteractionsManager = ({
 
   useMemo(() => {
     // TODO why is this memo called multiple times?
-    console.log('useInteractionsManager')
   }, [])
 
   const [interactionServiceCurrent, interactionServiceSend, interactionService] = useMachine(
@@ -1249,13 +1249,12 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
 
-          commit(context.selection, object)
+          commit(context.selection, object) 
           if(object.userData.type === 'character') {
-            if(object.attachables) {
-              for(let i = 0; i < object.attachables.length; i++) {
-                commit(object.attachables[i].userData.id, object.attachables[i])
-              }
-            }
+            let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === object.userData.id)
+            for(let i = 0; i < mapAttachables.length; i++) {
+              commit(mapAttachables[i].userData.id, mapAttachables[i])
+            } 
           }
 
           uiService.send({ type: 'UNLOCK' })

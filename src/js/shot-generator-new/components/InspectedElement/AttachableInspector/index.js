@@ -15,16 +15,16 @@ import HelpButton from '../../HelpButton'
 import * as itemSettings from '../../../utils/InspectorElementsSettings'
 import HandSelectionModal from '../HandInspector/HandSelectionModal'
 import SearchList from '../../SearchList'
-import ModelInspectorItem from "../ModelInspectorItem"
-import Grid from "../../Grid"
-import Scrollable from "../../Scrollable"
+import ModelInspectorItem from '../ModelInspectorItem'
+import Grid from '../../Grid'
+import Scrollable from '../../Scrollable'
 
 import AttachableEditor from './../AttachableEditor/index'
-import {getScene} from "../../../utils/scene"
+import isUserModel from '../../../helpers/isUserModel'
 
 const AttachableInspector = connect(
   state => ({
-    id: getSelections(state)[0],
+    id: getSelections(state)[0]
   }),
   {
     createObject,
@@ -38,7 +38,6 @@ const AttachableInspector = connect(
     createObject,
     selectAttachable
   }) => {
-    const scene = getScene()
 
     const [isModalVisible, showModal] = useState(false)
     const [results, setResults] = useState([])
@@ -65,69 +64,54 @@ const AttachableInspector = connect(
       })
     }, [id])
 
-    const getSkeleton = () => {
-      if(!sceneObject) return
-      let character = scene.children.filter(child => child.userData.id === id)[0]
-      if(!character) return
-      let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
-      return skinnedMesh.skeleton
-    }
-
     const onSelectItem = useCallback((model) => {
-      let originalSkeleton = getSkeleton()
       selectedModel.current = model
       selectedId.current = model.id || id
-      let bone = originalSkeleton.getBoneByName(model.bindBone)
-      if(bone) {
-        createAttachableElement(model, originalSkeleton, id, {bindBone: bone})
+      if(model.bindBone && !isUserModel(sceneObject.model)) {
+        createAttachableElement(model, id)
         return
       }
       showModal(true)
-    }, [scene.children.length])
+    }, [id, sceneObject])
 
-    const createAttachableElement = (model, originalSkeleton, id, {bindBone = null, name = null }) => {
-      if(!bindBone && !name) return
-      let bone = bindBone ? bindBone : originalSkeleton.getBoneByName(name)
-      let character = originalSkeleton.bones[0].parent
-      bone.updateWorldMatrix(true, true)
+    const createAttachableElement = (model, id, name = null ) => {
       let modelData = model
-      let modelPosition = new THREE.Vector3()
-      let quat = null
       if(!(modelData instanceof Object)) {
         modelData = {
           id: model,
-          name: model
+          name: model,
+          x:0,
+          y:0,
+          z:0,
+          rotation: {   
+            x:0,
+            y:0,
+            z:0
+          }
         }
-        modelPosition.copy(bone.worldPosition())
-        quat = bone.worldQuaternion()
-      } else {
-        let {x, y, z} = model
-        modelPosition.set(x, y, z)
-        modelPosition.multiplyScalar(1 / character.worldScale().x)
-        let newGroup = new THREE.Object3D()
-        newGroup.rotation.set(model.rotation.x, model.rotation.y, model.rotation.z)
-        newGroup.position.copy(modelPosition)
-        bone.add(newGroup)
-        bone.updateWorldMatrix(true, true)
-        modelPosition = newGroup.worldPosition()
-        quat = newGroup.worldQuaternion()
-        bone.remove(newGroup)
+      } 
+      if(name && modelData.bindBone) {
+        modelData.x = 0
+        modelData.y = 0
+        modelData.z = 0
+        modelData.rotation = { x:0, y:0, z:0 }
       }
 
-      let euler = new THREE.Euler().setFromQuaternion(quat)
       let key = THREE.Math.generateUUID()
       let element = {
         id: key,
         type: 'attachable',
-
-        x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
+        x: modelData.x,
+        y: modelData.y,
+        z: modelData.z,
 
         model: modelData.id,
         name: modelData.name,
-        bindBone: bone.name,
+        bindBone: name || modelData.bindBone,
         attachToId: id,
         size: 1,
-        rotation: { x: euler.x, y: euler.y, z: euler.z },
+        status: "PENDING",
+        rotation: modelData.rotation
       }
       createObject(element)
       selectAttachable({id: element.id, bindId: element.attachToId })
@@ -158,8 +142,8 @@ const AttachableInspector = connect(
           visible={ isModalVisible }
           model={ selectedModel.current }
           setVisible={ showModal }
-          id={ selectedId.current }
-          skeleton={ getSkeleton() }
+          id={ id }
+          skeleton={ sceneObject.skeleton }
           onSuccess={ createAttachableElement }/>
         <div className="thumbnail-search column">
           <div className="row" style={{ padding: "6px 0" }}>
@@ -194,7 +178,7 @@ const AttachableInspector = connect(
               itemHeight={itemSettings.ITEM_HEIGHT}
             />
 
-            <AttachableEditor scene={scene}/>
+            <AttachableEditor/>
           </Scrollable>
         </div>
       </React.Fragment>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 import {
@@ -12,13 +12,40 @@ import {
 import useLongPress from '../../../hooks/use-long-press'
 import Select from '../Select'
 
-import throttle from 'lodash.throttle'
-
 import CameraControls from '../../CameraControls'
 import { ShotSizes, ShotAngles } from '../../utils/cameraUtils'
 import { useDrag } from 'react-use-gesture'
 
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
+
+/**
+ * Return the first index containing an *item* which is greater than *item*.
+ * @arguments _(item)_
+ * @example
+ *  indexOfGreaterThan([10, 5, 77, 55, 12, 123], 70) // => 2
+ * via mohayonao/subcollider
+ */
+const indexOfGreaterThan = (array, item) => {
+  for (var i = 0, imax = array.length; i < imax; ++i) {
+    if (array[i] > item) { return i }
+  }
+  return -1
+}
+/**
+ * Returns the closest index of the value in the array (collection must be sorted).
+ * @arguments _(item)_
+ * @example
+ *  indexIn([2, 3, 5, 6], 5.2) // => 2
+ * via mohayonao/subcollider
+ */
+const indexIn = (array, item) => {
+  var i, j = indexOfGreaterThan(array, item)
+  if (j === -1) { return array.length - 1 }
+  if (j ===  0) { return j }
+  i = j - 1
+  return ((item - array[i]) < (array[j] - item)) ? i : j
+}
+
 
 const CameraPanelInspector = connect(
     state => ({
@@ -47,7 +74,10 @@ const CameraPanelInspector = connect(
     const shotInfo = cameraShots[activeCamera.id] || {}
     const [currentShotSize, setCurrentShotSize] = useState(shotInfo.size)
     const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
-  
+    const isDragging = useRef(false)
+    const dragInfo = useRef({prev: [0, 0], current: [0, 0]})
+    
+    const fakeCamera = useRef()
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
     }, [shotInfo.size, activeCamera])
@@ -70,30 +100,143 @@ const CameraPanelInspector = connect(
       }
     }, [activeCamera])
     
+    let cameraInfo = useRef({...activeCamera})
+    let [cameraRoll, setCameraRoll] = useState(activeCamera.roll)
+    let [cameraTilt, setCameraTilt] = useState(activeCamera.tilt)
+    let [cameraPan, setCameraPan] = useState(activeCamera.rotation)
     let cameraState = { ...activeCamera }
-    let cameraRoll = Math.round(THREE.Math.radToDeg(activeCamera.roll))
-    let cameraPan = Math.round(THREE.Math.radToDeg(activeCamera.rotation))
-    let cameraTilt = Math.round(THREE.Math.radToDeg(activeCamera.tilt))
+    useEffect(() => {
+      if(isDragging.current) return
+      cameraInfo.current.roll = Math.round(THREE.Math.radToDeg(activeCamera.roll))
+      setCameraRoll(cameraInfo.current.roll)
+    }, [activeCamera.roll])
+
+    useEffect(() => {
+      if(isDragging.current) return
+      cameraInfo.current.rotation = Math.round(THREE.Math.radToDeg(activeCamera.rotation))
+      setCameraPan(cameraInfo.current.rotation)
+    }, [activeCamera.rotation])
+
+    useEffect(() => {
+      if(isDragging.current) return
+      cameraInfo.current.tilt = Math.round(THREE.Math.radToDeg(activeCamera.tilt))
+      setCameraTilt(cameraInfo.current.tilt)
+    }, [activeCamera.tilt])
     
     const getValueShifter = (draft) => () => {
       for (let [k, v] of Object.entries(draft)) {
         cameraState[k] += v
       }
-  
       updateObject(activeCamera.id, cameraState)
     }
+
+    const fovs = useMemo(() => {
+      const mms = [12, 16, 18, 22, 24, 35, 50, 85, 100, 120, 200, 300, 500]
+      fakeCamera.current = fakeCamera.current || new THREE.PerspectiveCamera(activeCamera.fov,  2.348927875243665)
+      return mms.map(mm => {
+        fakeCamera.current.setFocalLength(mm)
+        return fakeCamera.current.fov
+      }).sort((a, b) => a - b)
+    }, [])
+   
+
+    const switchCameraFocalLength = useCallback((iterator) => {
+      let index = indexIn(fovs, activeCamera.fov)
+      let switchTo = index + iterator
+      let fov = fovs[Math.max(Math.min(switchTo, fovs.length - 1), 0)]
+      fakeCamera.current.fov = fov
+      updateObject(activeCamera.id, { fov })
+    }, [activeCamera] )
+
+    const focalLength = useMemo(() => {
+      if(!fakeCamera.current) return
+      fakeCamera.current.fov = activeCamera.fov
+      return fakeCamera.current.getFocalLength()
+    }, [activeCamera.fov])
+
+
+    const rollCamera = useCallback(() => {
+      let cameraState = activeCamera
+      let roll = {
+        'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
+        'x': Math.min(cameraState.roll + THREE.Math.DEG2RAD, 45 * THREE.Math.DEG2RAD)
+      }[event.key]
+  
+      updateObject(activeCamera.id, { roll })
+    }, [activeCamera])
+  
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({
+        key: "cameraRoll",
+        keyCustomCheck: (event) => (event.key === 'z' || event.key === 'x') &&
+                            !event.shiftKey &&
+                            !event.metaKey &&
+                            !event.ctrlKey &&
+                            !event.altKey,
+        value: (event) => { rollCamera(event) }
+      })
+      return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraRoll" })
+    }, [activeCamera, rollCamera])
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value:  () => switchCameraFocalLength( 1 ) })
+      return () => { 
+        KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "[" })
+      }
+    }, [switchCameraFocalLength])
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().addKeyCommand({ key: "]", value:  () => switchCameraFocalLength( -1 ) })
+      return () => { 
+        KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "]" })
+      }
+    }, [switchCameraFocalLength])
     
     const moveCamera = ([speedX, speedY]) => () => {
       cameraState = CameraControls.getMovedState(cameraState, { x: speedX, y: speedY })
       updateObject(activeCamera.id, cameraState)
     }
-  
-    const getCameraPanEvents = useDrag(throttle(({ down, delta: [dx, dy] }) => {
-      let rotation = THREE.Math.degToRad(cameraPan - dx)
-      let tilt = THREE.Math.degToRad(cameraTilt - dy)
+    
+    useEffect(() => {
+      if (!cameraInfo.current) return
+      let requestID = null
+      const onFrame = () => {
+        if (dragInfo.current.prev[0] !== dragInfo.current.current[0] || dragInfo.current.prev[1] !== dragInfo.current.current[1]) {
+          const [dx, dy] = dragInfo.current.current
+
+          let newPan = cameraInfo.current.rotation - dx
+          let newTilt = cameraInfo.current.tilt - dy
+
+          cameraInfo.current.rotation = newPan
+          cameraInfo.current.tilt = newTilt
+          
+          let rotation = THREE.Math.degToRad(newPan)
+          let tilt = THREE.Math.degToRad(newTilt)
+
+          updateObject(activeCamera.id, {rotation, tilt})
+        }
+
+        dragInfo.current.prev[0] = dragInfo.current.current[0]
+        dragInfo.current.prev[1] = dragInfo.current.current[1]
+        requestID = requestAnimationFrame(onFrame)
+      }
+
+      requestID = requestAnimationFrame(onFrame)
       
-      updateObject(activeCamera.id, {rotation, tilt})
-    }, 100, {trailing:false}))
+      return () => {
+        cancelAnimationFrame(requestID)
+      }
+    }, [cameraInfo.current, activeCamera.id])
+  
+    const getCameraPanEvents = useDrag(({first, last, vxvy }) => {
+      dragInfo.current.current = vxvy
+      
+      if (first) {
+        isDragging.current = true
+      } else if (last) {
+        isDragging.current = false
+      }
+    })
     
     const onSetShot = ({size, angle}) => {      
       setCameraShot(activeCamera.id, {size, angle})
@@ -119,7 +262,7 @@ const CameraPanelInspector = connect(
       { value: ShotAngles.LOW,              label: "Low" },
       { value: ShotAngles.WORMS_EYE,        label: "Worm\'s Eye" }
     ]
-    
+
     return <div className="camera-inspector">
             <div className="camera-item roll">
                 <div className="camera-item-control">
@@ -136,7 +279,7 @@ const CameraPanelInspector = connect(
                         <div className="pan-control" {...getCameraPanEvents()}><div className="pan-control-target"/></div>
                     </div>
                 </div>
-                <div className="camera-item-label">Pan: { cameraPan }° // Tilt: { cameraTilt }°</div>
+                <div className="camera-item-label">Pan: { Math.round(THREE.Math.radToDeg(activeCamera.rotation)) }° // Tilt: { Math.round(THREE.Math.radToDeg(activeCamera.tilt)) }°</div>
             </div>
             <div className="camera-item move">
                 <div className="camera-item-control"> 
@@ -169,7 +312,7 @@ const CameraPanelInspector = connect(
                         <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: -0.2 }))}><div className="arrow right"/></div> 
                     </div>
                 </div>
-                <div className="camera-item-label">Lens: ${ activeCamera.fov.toFixed(2) }mm</div>
+                <div className="camera-item-label">Lens: { focalLength.toFixed(2) }mm</div>
             </div>
             <div className="camera-item shots">
                 <div className="select">

@@ -63,8 +63,8 @@ const ElementsPanel = connect(
     let data = sceneObjects[selections[0]]
     
     return (
-        <div style = {{flex: 1, display: 'flex', flexDirection: 'column'}} >
-          <div id='listing'>
+        <div style = {{flex: 1, display: "flex", flexDirection: "column"}} >
+          <div id="listing">
             <ItemList/>
           </div>
           <Inspector

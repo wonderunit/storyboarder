@@ -1,5 +1,5 @@
-import React, {useRef, useEffect, useCallback} from 'react'
-import posed, {PoseGroup} from "react-pose";
+import React, { useRef, useEffect, useCallback } from 'react'
+import posed, { PoseGroup } from 'react-pose'
 
 import useOnClickOutside from './../../../hooks/use-on-click-outside'
 

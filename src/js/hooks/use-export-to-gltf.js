@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react' 
+import React, { useEffect, useCallback } from 'react' 
 import { useSelector } from 'react-redux'
 import { ipcRenderer, shell } from 'electron'
 import path from 'path'
@@ -75,20 +75,24 @@ const loadCameraModel = (storyboarderFilePath) => {
   })
 }
 
-const useExportToGltf = (sceneRef, storyboarderFilePath) => {
-  const meta = useSelector(state => state.meta)
-  const board = useSelector(state => state.board)
-  const sceneObjects = useSelector(getSceneObjects)
+const useExportToGltf = (sceneRef, withState) => {
 
-  useEffect(() => {
-    if (board && meta && meta.storyboarderFilePath) {
-      ipcRenderer.on('shot-generator:export-gltf', () => {
-        notifications.notify({
-          message: 'Preparing to export GLTF…',
-          timing: 5
-        })
-        let scene = new THREE.Scene()
-        for (let child of sceneRef.current.children) {
+
+  const exportGLTF = useCallback(() => {
+    let meta 
+    let board 
+    let sceneObjects  
+    withState((dispatch, state) => {
+      meta = state.meta
+      board = state.board
+      sceneObjects = getSceneObjects(state)
+    })
+    notifications.notify({
+      message: 'Preparing to export GLTF…',
+      timing: 5
+    })
+    let scene = new THREE.Scene()
+    for (let child of sceneRef.children[0].children) {
           // HACK test to avoid IconSprites, which fail to .clone
           if (!child.icon) {
             if (child.userData.id && sceneObjects[child.userData.id]) {
@@ -128,14 +132,14 @@ const useExportToGltf = (sceneRef, storyboarderFilePath) => {
               scene.add(clone)
             } 
           }
-        }
-        
-        let exporter = new THREE.GLTFExporter()
-        let options = {
+    }
+    
+    let exporter = new THREE.GLTFExporter()
+    let options = {
           binary: true,
           embedImages: true,
-        }
-        exporter.parse(scene, function (glb) {
+    }
+    exporter.parse(scene, function (glb) {
 
           if (meta.storyboarderFilePath) {
             let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
@@ -144,7 +148,7 @@ const useExportToGltf = (sceneRef, storyboarderFilePath) => {
               path.dirname(meta.storyboarderFilePath),
               'exports',
               filename
-            )
+              )
 
             fs.ensureDirSync(path.dirname(filepath))
             fs.writeFileSync(filepath, Buffer.from(glb))
@@ -156,14 +160,17 @@ const useExportToGltf = (sceneRef, storyboarderFilePath) => {
 
             shell.showItemInFolder(filepath)
           }
-        }, options)
-      })
-    }
+    }, options)
+  }, [sceneRef])
 
+  useEffect(() => {
+    ipcRenderer.on('shot-generator:export-gltf', exportGLTF)
     return function cleanup() {
       ipcRenderer.removeAllListeners('shot-generator:export-gltf')
     }
-  }, [board, meta, sceneObjects])
+  }, [exportGLTF])
+
+  return null
 }
 
 export {useExportToGltf, loadCameraModel}

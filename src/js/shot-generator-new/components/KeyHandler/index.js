@@ -1,13 +1,11 @@
 
-import React, { useEffect, useMemo, useRef, useCallback} from 'react'
+import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react'
 import { connect } from 'react-redux'
 import getGroupAction from '../../../utils/getGroupAction'
 import { createSelector } from 'reselect'
 import { ipcRenderer, remote} from 'electron'
 const { dialog } = remote
 import KeyCommandsSingleton from './KeyCommandsSingleton'
-import DuplicationCommand from './commands/DuplicateCommand'
-import GroupCommand from './commands/GroupCommand'
 
 const canDelete = (sceneObject, activeCamera) =>
   // allow objects
@@ -65,9 +63,14 @@ const KeyHandler = connect(
     deleteObjects,
     groupObjects,
     ungroupObjects,
-    mergeGroups
+    mergeGroups,
   }) => {
+    const [, updateComponent] = useState()
     const keyCommandsInstance = useRef(KeyCommandsSingleton.getInstance())
+
+    useEffect(() => {
+      KeyCommandsSingleton.getInstance().updateComponent = updateComponent
+    }, [updateComponent])
 
     const deleteSelectedObject = useCallback(() => {
         if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
@@ -77,7 +80,16 @@ const KeyHandler = connect(
               message: `Deleting ${selections.length} item${selections.length > 1 ? 's' : ''}. Are you sure?`
             })
             if (choice === 0) {
-              deleteObjects(selections)
+              let objectsToDelete = selections.concat()
+              for(let i = 0; i < selections.length; i++) {
+                let sceneObject = sceneObjects[selections[i]]
+                if(sceneObject.type === "character") {
+                    let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === selections[i]).map(obj => obj.id)
+                    objectsToDelete = attachableIds.concat(objectsToDelete)
+                }
+              }
+         
+              deleteObjects(objectsToDelete)
               keyCommandsInstance.current.removeKeyCommand({ key: "removeElement" })
             }
           }
@@ -114,10 +126,12 @@ const KeyHandler = connect(
       keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:duplicate", value: onCommandDuplicate})
       return () => keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:duplicate" }) 
     }, [onCommandDuplicate])
-    
+
     useEffect(() => {
       keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:group", value: onCommandGroup })
-      return () => keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:group" })
+      return () => {
+        keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:group" })
+      } 
     }, [onCommandGroup])
 
     useEffect(() => {
@@ -128,7 +142,6 @@ const KeyHandler = connect(
         })
         return () => keyCommandsInstance.current.removeKeyCommand({ key: "removeElement" })
     }, [_selectedSceneObject, activeCamera, selections])
-
 
     const bindIpcCommands = () => {
         let ipcCommands = keyCommandsInstance.current.ipcKeyCommands
@@ -144,6 +157,7 @@ const KeyHandler = connect(
             ipcRenderer.off(ipcCommands[i].key, ipcCommands[i].execute)
         }
         for( let i = removedCommands.length - 1; i > -1; i--) {
+
             ipcRenderer.off(removedCommands[i].key, removedCommands[i].execute)
             removedCommands.splice(i, 1)
         }
@@ -151,7 +165,7 @@ const KeyHandler = connect(
 
     useEffect(() => {
       const onKeyDown = event => {
-
+        if(!KeyCommandsSingleton.getInstance().isEnabledKeysEvents) return
         let keyCommands = KeyCommandsSingleton.getInstance().keyCommands
         for(let i = 0; i < keyCommands.length; i ++ ) {
             let keyCommand = keyCommands[i]
@@ -166,17 +180,15 @@ const KeyHandler = connect(
       window.addEventListener('keydown', onKeyDown)
       return function cleanup () {
           window.removeEventListener('keydown', onKeyDown)
-          KeyCommandsSingleton.getInstance().isKeyRemoved = false
         }
-    }, [  KeyCommandsSingleton.getInstance().isKeyRemoved])
-    
+    }, [ KeyCommandsSingleton.getInstance().keyCommands.length ])
+
     useEffect(() => {
-        bindIpcCommands()
-        return () => {
-          unbindIpcCommands()
-          KeyCommandsSingleton.getInstance().isIpcRemoved = false
+      bindIpcCommands()
+      return () => {
+        unbindIpcCommands()
         } 
-    }, [ KeyCommandsSingleton.getInstance().isIpcRemoved])
+    }, [ KeyCommandsSingleton.getInstance().ipcKeyCommands.length,  KeyCommandsSingleton.getInstance().removedIpcCommands.length ])
 
     return null
   }

@@ -138,5 +138,14 @@ class IKSwitcher
         cloneBone.updateWorldMatrix(true, true);
     }
     //#endregion
+
+    cleanUp() 
+    {
+        this.originalObject = null;
+        this.clonedObject = null;
+        this.originalObjectMatrix = {};
+        this.cloneObjectMatrix = {};
+        this.bonesDelta = {};
+    }
 }
 module.exports = IKSwitcher;

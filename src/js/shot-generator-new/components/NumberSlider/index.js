@@ -9,6 +9,7 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import useDoubleClick from './../../../hooks/use-double-click'
+import KeyCommandSingleton from '../KeyHandler/KeyCommandsSingleton'
 
 export const transforms = {
   // default
@@ -42,6 +43,16 @@ const getFormattedInputValue = (value, formatter) => {
   }
   
   return value
+}
+
+const isNumber = (value) => {
+  if ((undefined === value) || (null === value)) {
+    return false;
+  }
+  if (typeof value == 'number') {
+      return true;
+  }
+  return !isNaN(value - 0);
 }
 
 const defaultOnSetValue = value => {}
@@ -103,8 +114,13 @@ const NumberSliderComponent = React.memo(({
       setTextInput(false)
       setTextInputValue(getFormattedInputValue(value, formatter))
     } else if (event.key === 'Enter') {
-      // TODO validation, tranform, error handling
-      onSetValue(parseFloat(textInputValue))
+      if(isNumber(textInputValue)) {
+        let constrainedNumber = Math.min(Math.max(textInputValue, min), max)
+        onSetValue(parseFloat(constrainedNumber))
+      }
+      else {
+        setTextInputValue(getFormattedInputValue(value, formatter))
+      }
       setTextInput(false)
     }
   }
@@ -121,7 +137,9 @@ const NumberSliderComponent = React.memo(({
   }, [value])
 
   useEffect(() => {
+    KeyCommandSingleton.getInstance().isEnabledKeysEvents = !isTextInput
     if (isTextInput && inputRef.current) {
+      
       inputRef.current.focus()
       setImmediate(() => {
         inputRef.current.setSelectionRange(inputRef.current.value.length, inputRef.current.value.length)
@@ -130,16 +148,16 @@ const NumberSliderComponent = React.memo(({
   }, [isTextInput, inputRef.current])
   
   return (
-      <div className='number-slider'>
-        {label ? <div className='number-slider__label'>{label}</div> : null}
+      <div className="number-slider">
+        {label ? <div className="number-slider__label">{label}</div> : null}
         <div
-            className='number-slider__control'
+            className="number-slider__control"
         >
           <div
-              className='number-slider__nudge number-slider__nudge--left'
+              className="number-slider__nudge number-slider__nudge--left"
               onClick={(event) => onNudge(-1, event)}
           >
-            <div className='number-slider__arrow number-slider__arrow--left'/>
+            <div className="number-slider__arrow number-slider__arrow--left"/>
           </div>
 
           { isTextInput 

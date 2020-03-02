@@ -15,17 +15,22 @@ import {
 import React, { useEffect, useCallback } from 'react'
 import { connect } from 'react-redux'
 
-import { createSelector } from 'reselect'
 import classNames from 'classnames'
 
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 
 import Scrollable from '../Scrollable'
+import deepEqualSelector from '../../../utils/deepEqualSelector'
 
-const getCameraSceneObjects = createSelector(
-    [getSceneObjects],
-    (sceneObjects) => Object.values(sceneObjects).filter(o => o.type === 'camera')
-  )
+const cameraSceneObjectSelector = (state) => {
+  const sceneObjects = getSceneObjects(state)
+  return Object.values(sceneObjects).filter(object => object.type === "camera").map((object) => {
+    return {
+      id:           object.id,
+    }
+  })
+}
+const getCameraSceneObjects = deepEqualSelector([cameraSceneObjectSelector], (sceneObjects) => sceneObjects)
 
 const numberCheck = (event) => {
  return event.key === '1' ||
@@ -62,7 +67,6 @@ const CamerasInspector = connect(
   // action creators
   setActiveCamera,
   selectObject,
-  updateObject,
   undoGroupStart,
   undoGroupEnd,
 }) => {
@@ -77,15 +81,7 @@ const CamerasInspector = connect(
     }
   }, [_cameras])
 
-  const rollCamera = useCallback(() => {
-    let cameraState = _cameras.find(camera => camera.id === activeCamera)
-    let roll = {
-      'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
-      'x': Math.min(cameraState.roll + THREE.Math.DEG2RAD, 45 * THREE.Math.DEG2RAD)
-    }[event.key]
 
-    updateObject(activeCamera, { roll })
-  }, [_cameras, activeCamera])
 
   useEffect(() => {
     KeyCommandsSingleton.getInstance().addKeyCommand({
@@ -96,18 +92,6 @@ const CamerasInspector = connect(
     return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraSelector" })
   }, [_cameras])
 
-  useEffect(() => {
-    KeyCommandsSingleton.getInstance().addKeyCommand({
-      key: "cameraRoll",
-      keyCustomCheck: (event) => (event.key === 'z' || event.key === 'x') &&
-                          !event.shiftKey &&
-                          !event.metaKey &&
-                          !event.ctrlKey &&
-                          !event.altKey,
-      value: (event) => { rollCamera(event) }
-    })
-    return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraRoll" })
-  }, [_cameras, activeCamera])
 
   const onClick = (camera, event) => {
     event.preventDefault()
@@ -118,22 +102,48 @@ const CamerasInspector = connect(
     undoGroupEnd()
   }
 
+  const getFirstElementStyle = (camera, n) => {
+    if(n === 0) {
+      return <a key={ n }
+            href="#"
+            className={ classNames({ active: activeCamera === camera.id }) } 
+            onClick={ onClick.bind(this, camera) }
+            style={{marginLeft: "auto"}}>
+          { n + 1 }
+      </a>
+    } else {
+      return <a key={ n }
+            href="#"
+            className={ classNames({ active: activeCamera === camera.id }) } 
+            onClick={ onClick.bind(this, camera) }>
+          { n + 1 }
+      </a>
+    }
+  }
+
+  useEffect(() => {
+    let scrollContainer = document.getElementsByClassName("cameras-inspector")[0].children[0].children[1]
+    let selectedCamera = scrollContainer.children[0].getElementsByClassName("active")[0]
+    scrollContainer.scrollTo({
+      top: selectedCamera.offsetTop,
+      left: selectedCamera.clientWidth * (parseInt(selectedCamera.text) - 1),
+      behavior: 'smooth'
+    })
+  }, [_cameras, activeCamera])
+
   return <div className="cameras-inspector">
         <div className="row">
             <div className="cameras-inspector__label">Camera</div>
-            <Scrollable>
-              <div className="round-buttons-panel">
+            <Scrollable >
+              <div className="round-buttons-panel" style={{ justifyContent: "flex-start"}} >
                { _cameras.map(
                  (camera, n) =>
-                     <a key={ n }
-                       href="#"
-                       className={ classNames({ active: activeCamera === camera.id }) } 
-                       onClick={ onClick.bind(this, camera) }>
-                     { n + 1 }
-                     </a>,
+                  getFirstElementStyle(camera, n),
                ) }
                </div>
              </Scrollable>
+
+
         </div>
     </div>
 })

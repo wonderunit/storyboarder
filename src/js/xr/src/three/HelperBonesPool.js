@@ -1,5 +1,5 @@
 const THREE = require('three')
-require( 'three-instanced-mesh' )(THREE);
+require( './../../../vendor/three-instanced-mesh' )(THREE);
 class HelperBonesPool
 {
     constructor(poolSize, boneMesh)

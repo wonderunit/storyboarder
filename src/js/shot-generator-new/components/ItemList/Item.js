@@ -118,7 +118,7 @@ const Item = React.memo((props) => {
             className='title'
         >
           <span className='type'>{typeLabels[props.type]}</span>
-          <span className='id'>{props.displayName}</span>
+          <span className='id' style={{ overflow: "hidden", textOverflow: "ellipsis", width: "125px"}}>{ props.name || props.displayName}</span>
         </a>
         <div className='row'>
           {getActiveIcon(props)}

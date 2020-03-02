@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
-window.THREE = THREE
 
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../package.json'
 import request from 'request'
-import { FixedSizeGrid } from 'react-window'
 import {
   updateObject,
   createPosePreset,
@@ -17,14 +15,15 @@ import defaultPosePresets from '../../../../shared/reducers/shot-generator-prese
 import presetsStorage from '../../../../shared/store/presetsStorage'
 
 import { comparePresetNames, comparePresetPriority } from '../../../utils/searchPresetsForTerms' 
-import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL, innerElementType } from '../../../utils/InspectorElementsSettings'
+import { NUM_COLS, ITEM_HEIGHT, CHARACTER_MODEL } from '../../../utils/InspectorElementsSettings'
 import Modal from '../../Modal'
 import { filepathFor } from '../../../utils/filepathFor'
 import deepEqualSelector from './../../../../utils/deepEqualSelector'
 import PosePresetInspectorItem from './PosePresetInspectorItem'
 import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
-import Scrollable from "../../Scrollable";
+import Scrollable from '../../Scrollable';
+import { useAsset } from '../../../hooks/use-assets-manager'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -35,7 +34,8 @@ const PosePresetsEditor = connect(
   state => ({
     attachmentStatus: getAttachmentM(state),
     posePresets: state.presets.poses,
-    id: getSelections(state)[0]
+    id: getSelections(state)[0],
+    characterPath: filepathFor(CHARACTER_MODEL)
   }),
   {
     updateObject,
@@ -47,8 +47,7 @@ React.memo(({
   id,
 
   posePresets,
-  attachmentStatus,
-
+  characterPath,
   updateObject,
   createPosePreset,
   withState
@@ -56,19 +55,8 @@ React.memo(({
   const thumbnailRenderer = useRef()
 
   const sortedAttachament = useRef([])
-  const getAttachment = () => {
-    let attachment 
-    withState((dispatch, state) => {
-      let filepath = filepathFor(CHARACTER_MODEL)
-      attachment = state.attachments[filepath].value
-    })
-   
-    return attachment
-  }
-  
-  const [attachment, setAttachment] = useState(getAttachment())
+  const {asset: attachment} = useAsset(characterPath)
 
-  const [ready, setReady] = useState(false)
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
@@ -94,17 +82,6 @@ React.memo(({
     })
     return posePresetId
   }
-
-  useEffect(() => {
-    if (ready) return
-    if (attachmentStatus === "Success" && !attachment) {
-      let attachment = getAttachment()
-      setAttachment(attachment)
-      setTimeout(() => {
-        setReady(true)
-      }, 100) // slight delay for snappier character selection via click
-    }
-  }, [attachmentStatus])
 
   const saveFilteredPresets = useCallback(filteredPreset => {
     let objects = []

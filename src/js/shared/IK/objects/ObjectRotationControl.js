@@ -7,7 +7,6 @@ class ObjectRotationControl
         this.control.rotationOnly = true;
         this.control.setMode('rotate');
         this.control.size = 0.2;
-        this.domElement = domElement;
         this.control.userData.type = "objectControl";
         this.control.traverse(child => {
             child.userData.type = "objectControl";
@@ -16,6 +15,11 @@ class ObjectRotationControl
         this.scene = scene;
         this.control.characterId = characterId;
         this.isEnabled = false;
+    }
+
+    set IsEnabled(value) 
+    {
+        this.control.enabled = value
     }
     //#region Events
     onMouseDown = event => {this.object.isRotated = true;};
@@ -63,6 +67,14 @@ class ObjectRotationControl
     {
         this.control.changeCamera(camera);
         this.control.updateMatrixWorld();
+    }
+
+    cleanUp()
+    {
+        this.deselectObject();
+        this.control.cleanUp();
+        this.control = null;
+        this.scene = null;
     }
 }
 module.exports = ObjectRotationControl;

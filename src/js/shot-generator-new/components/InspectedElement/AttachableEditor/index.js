@@ -1,14 +1,14 @@
 import { remote } from 'electron'
 const { dialog } = remote
-import React, { useMemo, useState, useEffect, useContext, useRef } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import { connect } from 'react-redux'
 import {
   deleteObjects,
   getSceneObjects, getSelections,
   updateObject
 } from '../../../../shared/reducers/shot-generator'
-import ListItem from "./ListItem"
-import {NumberSlider} from "./../../NumberSlider"
+import ListItem from './ListItem'
+import {NumberSlider} from './../../NumberSlider'
 import deepEqualSelector from './../../../../utils/deepEqualSelector'
 import HandSelectionModal from '../HandInspector/HandSelectionModal'
 
@@ -43,8 +43,7 @@ const AttachableEditor = connect(
     deleteObjects,
     withState,
 
-    id,
-    scene
+    id
   }) => {
     const [isModalVisible, showModal] = useState(false)
     const selectedId = useRef(null)
@@ -59,7 +58,6 @@ const AttachableEditor = connect(
     }, [id])
 
     const onSelectItem = (id, bindBoneName) => {
-      if(!scene) return
       selectedId.current = id
       setSelectedBindBone(bindBoneName)
       showModal(true)
@@ -80,19 +78,9 @@ const AttachableEditor = connect(
         return result
     }, [sceneObjects, sceneObject])
 
-    const getSkeleton = () => {
-      if(!sceneObject) return
-      let character = scene.children.filter(child => child.userData.id === id)[0]
-      if(!character) return 
-      let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
-      return skinnedMesh.skeleton
-    }
-
-    const updateAttachableBone = (model, originalSkeleton, id, {name}) => {
-      if (name == null || name == '' || name == ' ' || !originalSkeleton) return
-      let bone = originalSkeleton.getBoneByName(name)
-      let {x, y, z} = bone.worldPosition()
-      updateObject(id, {x, y, z, bindBone: bone.name })
+    const updateAttachableBone = (model, id, name) => {
+      if (name == null || name == '' || name == ' ') return
+      updateObject(id, { bindBone: name })
     }
 
     const onDelete = (attachable) => {
@@ -127,7 +115,7 @@ const AttachableEditor = connect(
           model={ model.current }
           setVisible={ showModal }
           id={ selectedId.current }
-          skeleton={ getSkeleton() }
+          skeleton={ sceneObject.skeleton }
           onSuccess={ updateAttachableBone }
           defaultSelectedHand={ selectedBindBone }/> 
         <div className="thumbnail-search.column">

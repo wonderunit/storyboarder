@@ -28,7 +28,7 @@ const Select = React.memo(({
     menuPlacement="auto"
     menuPosition="fixed"
     className={"select " + className}
-    classNamePrefix='select'/>
+    classNamePrefix="select"/>
 })
 
 export default Select

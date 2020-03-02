@@ -1,7 +1,6 @@
-import React, {useCallback} from "react";
-import {Math as _Math} from "three";
-import {formatters, NumberSlider, transforms} from "../../NumberSlider";
-import ColorSelect from "../../ColorSelect";
+import React, {useCallback} from 'react'
+import {Math as _Math} from 'three'
+import {formatters, NumberSlider, transforms} from '../../NumberSlider'
 
 const LightInspector = React.memo(({updateObject, sceneObject}) => {
   const {id, ...props} = sceneObject
@@ -21,14 +20,14 @@ const LightInspector = React.memo(({updateObject, sceneObject}) => {
 
   return (
     <React.Fragment>
-      <NumberSlider label='X' value={props.x} min={-30} max={30} onSetValue={setX}/>
-      <NumberSlider label='Y' value={props.y} min={-30} max={30} onSetValue={setY}/>
-      <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>
+      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
+      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
+      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
 
-      <NumberSlider label='Intensity' value={props.intensity} min={0.025} max={1} onSetValue={setIntensity}/>
+      <NumberSlider label="Intensity" value={props.intensity} min={0.025} max={1} onSetValue={setIntensity}/>
 
       <NumberSlider
-        label='Angle'
+        label="Angle"
         value={_Math.radToDeg(props.angle)}
         min={1}
         max={90}
@@ -38,12 +37,12 @@ const LightInspector = React.memo(({updateObject, sceneObject}) => {
         formatter={formatters.degrees}
       />
 
-      <NumberSlider label='Distance' value={props.distance} min={0.025} max={100} onSetValue={setDistance}/>
-      <NumberSlider label='Penumbra' value={props.penumbra} min={0} max={1} onSetValue={setPenumbra}/>
-      <NumberSlider label='Decay' value={props.decay} min={1} max={2} onSetValue={setDecay}/>
+      <NumberSlider label="Distance" value={props.distance} min={0.025} max={100} onSetValue={setDistance}/>
+      <NumberSlider label="Penumbra" value={props.penumbra} min={0} max={1} onSetValue={setPenumbra}/>
+      <NumberSlider label="Decay" value={props.decay} min={1} max={2} onSetValue={setDecay}/>
 
       <NumberSlider
-        label='Rotation'
+        label="Rotation"
         value={_Math.radToDeg(props.rotation)}
         min={-180}
         max={180}
@@ -54,7 +53,7 @@ const LightInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label='Tilt'
+        label="Tilt"
         value={_Math.radToDeg(props.tilt)}
         min={-90}
         max={90}

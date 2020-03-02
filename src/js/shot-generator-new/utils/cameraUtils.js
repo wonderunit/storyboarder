@@ -232,7 +232,8 @@ const getShotBox = (character, shotType = 0) => {
   
   /** If shot isn't provided, use eyes to calculate shot angle */
   if (!ShotSizesInfo[shotType]) {
-    let bone = character.userData.skeleton.bones.find((bone) => bone.name === 'leaf')
+    let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
+    let bone = skinnedMesh.skeleton.bones.find((bone) => bone.name === 'leaf')
     
     let boneInfo = getBoneStartEndPos(bone)
     box.expandByPoint(boneInfo.start)
@@ -242,8 +243,8 @@ const getShotBox = (character, shotType = 0) => {
   }
   
   let shotInfo = ShotSizesInfo[shotType]
-  
-  let bones = character.userData.skeleton.bones.filter((bone) => shotInfo.bones.indexOf(bone.name) !== -1)
+  let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
+  let bones = skinnedMesh.skeleton.bones.filter((bone) => shotInfo.bones.indexOf(bone.name) !== -1)
   
   bones.forEach((bone) => {
     let boneInfo = getBoneStartEndPos(bone)

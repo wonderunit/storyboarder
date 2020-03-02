@@ -5,7 +5,10 @@ import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
 import { connect } from 'react-redux'
 import {
   updateObject,
-  getSceneObjects, getSelections,
+  getSceneObjects, 
+  getSelections,
+  getDefaultPosePreset,
+  updateCharacterIkSkeleton
 } from '../../../../shared/reducers/shot-generator'
 import ModelLoader from '../../../../services/model-loader'
 
@@ -18,7 +21,8 @@ import { truncateMiddle } from '../../../../utils'
 import * as itemSettings from '../../../utils/InspectorElementsSettings'
 import FileInput from '../../FileInput'
 import SearchList from '../../SearchList'
-import deepEqualSelector from "../../../../utils/deepEqualSelector"
+import deepEqualSelector from '../../../../utils/deepEqualSelector'
+import isUserModel from '../../../helpers/isUserModel'
 
 const getModelData = deepEqualSelector([(state) => {
   const selectedId = getSelections(state)[0]
@@ -36,6 +40,7 @@ const ModelInspector = connect(
   getModelData,
   {
     updateObject,
+    updateCharacterIkSkeleton,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState()),
   }
 )(
@@ -46,7 +51,8 @@ const ModelInspector = connect(
     sceneObject,
 
     updateObject,
-    withState,
+    updateCharacterIkSkeleton,
+
   }) => {
       const sortedModels = useRef([])
       const [results, setResults] = useState([])
@@ -68,8 +74,35 @@ const ModelInspector = connect(
         setResults(foundModels)
       }, [models])
 
+      const prevModel = useRef(null)
+      useEffect(() => {
+        prevModel.current = sceneObject.model
+      }, [sceneObject.model])
+
+      const resetSkeleton = (currentModel) => {
+        if(prevModel.current) {
+          let isPrevModelUser = isUserModel(prevModel.current)
+          let isCurrentModelUser = isUserModel(currentModel)
+          if(isPrevModelUser && !isCurrentModelUser) {
+            let defaultSkeleton = getDefaultPosePreset().state.skeleton
+            let skeleton = Object.keys(defaultSkeleton).map((key) => {
+                return {
+                  name:key,
+                  rotation: defaultSkeleton[key].rotation
+                }
+            })
+            updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton})
+          } else if(!isPrevModelUser && isCurrentModelUser) {
+            // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
+            updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
+          }
+        } 
+        prevModel.current = currentModel
+      }
+  
       const onSelectFile = filepath => {
         if (filepath.file) {
+          resetSkeleton(filepath.file)
           updateObject(sceneObject.id, { model: filepath.file })
         }
       }
@@ -77,6 +110,7 @@ const ModelInspector = connect(
       const isSelected = useCallback((item) => model === item.id, [model])
 
       const onSelectItem = useCallback((model) => {
+        resetSkeleton(model.id)
         updateObject(sceneObject.id, { model: model.id})
       }, [sceneObject.id])
 

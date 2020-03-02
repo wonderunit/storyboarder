@@ -4,8 +4,8 @@ import { remote } from 'electron'
 import path from 'path'
 import fs from 'fs-extra'
 const { dialog } = remote
-import {formatters, NumberSlider, transforms} from "../../NumberSlider";
-import Select from "../../Select";
+import {formatters, NumberSlider, transforms} from '../../NumberSlider'
+import Select from '../../Select'
 
 const selectOptions = [
   {
@@ -108,13 +108,13 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
 
   return (
     <React.Fragment>
-      <NumberSlider label='X' value={props.x} min={-30} max={30} onSetValue={setX}/>
-      <NumberSlider label='Y' value={props.y} min={-30} max={30} onSetValue={setY}/>
-      <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>
+      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
+      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
+      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
 
-      <NumberSlider label='Width' value={props.width} min={0.025} max={5} onSetValue={setWidth}/>
-      <NumberSlider label='Height' value={props.height} min={0.025} max={5} onSetValue={setHeight}/>
-      <NumberSlider label='Depth' value={props.depth} min={0.025} max={5} onSetValue={setDepth}/>
+      <NumberSlider label="Width" value={props.width} min={0.025} max={5} onSetValue={setWidth}/>
+      <NumberSlider label="Height" value={props.height} min={0.025} max={5} onSetValue={setHeight}/>
+      <NumberSlider label="Depth" value={props.depth} min={0.025} max={5} onSetValue={setDepth}/>
       
       <div className="input-group">
         <div className="input-group__label">
@@ -131,12 +131,12 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
         </div>
       </div>
       
-      <NumberSlider label='Layers' value={props.numberOfLayers} min={1} max={10} step={1} onSetValue={setLayers}/>
-      <NumberSlider label='Opacity' value={props.opacity} min={0} max={1} onSetValue={setOpacity}/>
-      <NumberSlider label='Color' value={props.color/0xFFFFFF} min={0} max={1} onSetValue={setColor}/>
+      <NumberSlider label="Layers" value={props.numberOfLayers} min={1} max={10} step={1} onSetValue={setLayers}/>
+      <NumberSlider label="Opacity" value={props.opacity} min={0} max={1} onSetValue={setOpacity}/>
+      <NumberSlider label="Color" value={props.color/0xFFFFFF} min={0} max={1} onSetValue={setColor}/>
       
       <NumberSlider
-        label='Rotation'
+        label="Rotation"
         value={_Math.radToDeg(props.rotation)}
         min={-180}
         max={180}

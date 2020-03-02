@@ -1,4 +1,5 @@
-const THREE = require('three')
+import * as THREE from 'three'
+import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 
 class CameraControls {
   
@@ -43,18 +44,21 @@ class CameraControls {
     window.addEventListener( 'pointermove', this.onPointerMove, false )
     this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
     document.addEventListener( 'pointerup', this.onPointerUp, false )
-    window.addEventListener( 'keydown', this.onKeyDown, false )
+    KeyCommandsSingleton.getInstance().addKeyCommand({
+      key: "camera-controls", 
+      keyCustomCheck: this.onKeyDown,
+      value: () => {}})
     window.addEventListener( 'keyup', this.onKeyUp, false )
-    document.getElementById('camera-view').addEventListener("wheel", this.onWheel, false )
+    this.domElement.addEventListener("wheel", this.onWheel, false )
   }
   
   dispose () {
     window.removeEventListener( 'pointermove', this.onPointerMove )
     this.domElement.removeEventListener( 'pointerdown', this.onPointerDown )
     document.removeEventListener( 'pointerup', this.onPointerUp )
-    window.removeEventListener( 'keydown', this.onKeyDown )
+    KeyCommandsSingleton.getInstance().removeKeyCommand({key: "camera-controls"})
     window.removeEventListener( 'keyup', this.onKeyUp )
-    document.getElementById('camera-view').removeEventListener("wheel", this.onWheel )
+    this.domElement.removeEventListener("wheel", this.onWheel )
   }
   
   onPointerMove ( event ) {
@@ -111,7 +115,6 @@ class CameraControls {
   onKeyDown ( event ) {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
-    
     this.addKey(event.keyCode)
     
     switch ( event.keyCode ) {
@@ -209,7 +212,7 @@ class CameraControls {
     if ( this.enabled === false ) return
     
     this._object.fov += this.zoomSpeed
-    this._object.fov = Math.max(3, this._object.fov)
+    this._object.fov = Math.max(1, this._object.fov)
     this._object.fov = Math.min(71, this._object.fov)
     
     this.zoomSpeed = this.zoomSpeed * 0.0001
@@ -357,5 +360,4 @@ CameraControls.objectFromCameraState = cameraState =>
       roll: cameraState.roll
     })
 
-
-module.exports = CameraControls
+export default CameraControls

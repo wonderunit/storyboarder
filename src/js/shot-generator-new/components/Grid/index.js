@@ -87,7 +87,7 @@ const Grid = React.memo(({
       }
 
       result.push(
-        <div className='row' key={`row-${i}`}>{row}</div>
+        <div className="row" key={`row-${i}`}>{row}</div>
       )
     }
 

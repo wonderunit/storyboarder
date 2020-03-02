@@ -62,12 +62,12 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
         <span>File</span>
         {
           <HelpButton
-            url='https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator'
-            title='How to Create 3D Models for Custom Objects'
+            url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
+            title="How to Create 3D Models for Custom Objects"
             style={{
               marginLeft: 6,
-              color: '#eee',
-              backgroundColor: '#333',
+              color: "#eee",
+              backgroundColor: "#333",
               width: 16,
               height: 16,
               fontSize: 10
@@ -79,20 +79,20 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   
   return (
       <Scrollable>
-        <h4 className='inspector-label'>Scene</h4>
-        <div className='inspector-group'>
-          <div className='inspector-row'>
+        <h4 className="inspector-label">Scene</h4>
+        <div className="inspector-group">
+          <div className="inspector-row">
             <Checkbox 
-                label='Ground'
+                label="Ground"
                 checked={world.ground}
                 onClick={setGround}
                 style={{opacity: world.room.visible ? 0.5 : 1}}
             />
           </div>
 
-          <div className='inspector-row'>
+          <div className="inspector-row">
             <NumberSlider
-                label='Bg color'
+                label="Bg color"
                 value={world.backgroundColor / 0xFFFFFF}
                 min={0}
                 max={1}
@@ -101,39 +101,39 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
         </div>
 
-        <h5 className='inspector-label'>Room</h5>
+        <h5 className="inspector-label">Room</h5>
 
-        <div className='inspector-group'>
-          <div className='inspector-row'>
-            <Checkbox label='Visible' checked={world.room.visible} onClick={setRoomVisible}/>
+        <div className="inspector-group">
+          <div className="inspector-row">
+            <Checkbox label="Visible" checked={world.room.visible} onClick={setRoomVisible}/>
           </div>
 
-          <div className='inspector-column inspector-offset-row'>
-            <NumberSlider label='Width' value={world.room.width} min={1.83} max={76.2} onSetValue={setRoomWidth}/>
-            <NumberSlider label='Length' value={world.room.length} min={1.83} max={76.2} onSetValue={setRoomLength}/>
-            <NumberSlider label='Height' value={world.room.height} min={1.83} max={12.19} onSetValue={setRoomHeight}/>
+          <div className="inspector-column inspector-offset-row">
+            <NumberSlider label="Width" value={world.room.width} min={1.83} max={76.2} onSetValue={setRoomWidth}/>
+            <NumberSlider label="Length" value={world.room.length} min={1.83} max={76.2} onSetValue={setRoomLength}/>
+            <NumberSlider label="Height" value={world.room.height} min={1.83} max={12.19} onSetValue={setRoomHeight}/>
           </div>
         </div>
 
-        <h5 className='inspector-label'>Environment</h5>
+        <h5 className="inspector-label">Environment</h5>
 
-        <div className='inspector-group'>
-          <div className='inspector-row'>
-            <Checkbox label='Visible' checked={world.environment.visible} onClick={setEnvVisible}/>
+        <div className="inspector-group">
+          <div className="inspector-row">
+            <Checkbox label="Visible" checked={world.environment.visible} onClick={setEnvVisible}/>
           </div>
 
-          <div className='inspector-column inspector-offset-row'>
+          <div className="inspector-column inspector-offset-row">
             <FileInput
               onChange={setEnvFile}
               label={EnvironmentModelLabel}
               value={world.environment.file && path.basename(world.environment.file)}
             />
-            <NumberSlider label='X' value={world.environment.x} min={-30} max={30} onSetValue={setEnvX}/>
-            <NumberSlider label='Y' value={world.environment.y} min={-30} max={30} onSetValue={setEnvY}/>
-            <NumberSlider label='Z' value={world.environment.z} min={-30} max={30} onSetValue={setEnvZ}/>
-            <NumberSlider label='Scale' value={world.environment.scale} min={0.001} max={2} onSetValue={setEnvScale}/>
+            <NumberSlider label="X" value={world.environment.x} min={-30} max={30} onSetValue={setEnvX}/>
+            <NumberSlider label="Y" value={world.environment.y} min={-30} max={30} onSetValue={setEnvY}/>
+            <NumberSlider label="Z" value={world.environment.z} min={-30} max={30} onSetValue={setEnvZ}/>
+            <NumberSlider label="Scale" value={world.environment.scale} min={0.001} max={2} onSetValue={setEnvScale}/>
             <NumberSlider
-                label='Rotation'
+                label="Rotation"
                 value={_Math.degToRad(world.environment.rotation)}
                 min={-180}
                 max={180}
@@ -145,21 +145,21 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
         </div>
 
-        <h5 className='inspector-label'>Ambient light</h5>
+        <h5 className="inspector-label">Ambient light</h5>
 
-        <div className='inspector-group'>
-          <div className='inspector-column inspector-offset-row'>
-            <NumberSlider label='Intensity' value={world.ambient.intensity} min={0} max={1} onSetValue={setAmbientIntensity}/>
+        <div className="inspector-group">
+          <div className="inspector-column inspector-offset-row">
+            <NumberSlider label="Intensity" value={world.ambient.intensity} min={0} max={1} onSetValue={setAmbientIntensity}/>
           </div>
         </div>
 
-        <h5 className='inspector-label'>Directional light</h5>
+        <h5 className="inspector-label">Directional light</h5>
 
-        <div className='inspector-group'>
-          <div className='inspector-column inspector-offset-row'>
-            <NumberSlider label='Intensity' value={world.directional.intensity} min={0} max={1} onSetValue={setDirectionalIntensity}/>
+        <div className="inspector-group">
+          <div className="inspector-column inspector-offset-row">
+            <NumberSlider label="Intensity" value={world.directional.intensity} min={0} max={1} onSetValue={setDirectionalIntensity}/>
             <NumberSlider
-                label='Rotation'
+                label="Rotation"
                 value={_Math.radToDeg(world.directional.rotation)}
                 min={-180}
                 max={180}
@@ -169,7 +169,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                 transform={transforms.degrees}
             />
             <NumberSlider
-                label='Tilt'
+                label="Tilt"
                 value={_Math.radToDeg(world.directional.tilt)}
                 min={-180}
                 max={180}
@@ -181,15 +181,15 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
         </div>
 
-        <h5 className='inspector-label'>Fog</h5>
+        <h5 className="inspector-label">Fog</h5>
 
-        <div className='inspector-group'>
-          <div className='inspector-row'>
-            <Checkbox label='Visible' checked={world.fog.visible} onClick={setFogVisible}/>
+        <div className="inspector-group">
+          <div className="inspector-row">
+            <Checkbox label="Visible" checked={world.fog.visible} onClick={setFogVisible}/>
           </div>
           
-          <div className='inspector-column inspector-offset-row'>
-            <NumberSlider label='Distance' value={world.fog.far} min={10} max={500} step={1} onSetValue={setFogDistance}/>
+          <div className="inspector-column inspector-offset-row">
+            <NumberSlider label="Distance" value={world.fog.far} min={10} max={500} step={1} onSetValue={setFogDistance}/>
           </div>
         </div>
         

@@ -61,10 +61,13 @@ class UniversalPickableCharacter extends Pickable
         let parent = this.characterContainer;
         let ikHelper = parent.children.find(child => child.userData.type === "IkHelper");
         if(ikHelper) parent.remove(ikHelper);
+        let bonesHelper = parent.children.find(child => child.userData.type === "BonesHelper");
+        if(bonesHelper) parent.remove(bonesHelper);
         this.node = SkeletonUtils.clone(parent);
         if(ikHelper) parent.add(ikHelper);
-        let lod = this.node.children[0];
-        if(lod.type === "LOD")
+        if(bonesHelper) parent.add(bonesHelper);
+        let lod = this.node.getObjectByProperty("type", "LOD");
+        if(lod)
         {
             this.node.attach(lod.children[lod.children.length - 1]);
             this.node.remove(lod);
@@ -101,7 +104,7 @@ class UniversalPickableCharacter extends Pickable
     isObjectChanged(excludingList)
     {
         this.excludingList = excludingList;
-        if(!this.sceneMesh.parent)
+        if(!this.sceneMesh.parent || !this.sceneMesh.parent.parent)
         {
             return true;
         }
@@ -131,6 +134,13 @@ class UniversalPickableCharacter extends Pickable
             i--;
         }   
         this.pickingMesh.visible = true;
+    }
+
+    dispose() 
+    {
+        super.dispose();
+        this.pickingMesh.geometry.dispose()
+        this.pickingMesh.skeleton.boneTexture.dispose()
     }
 }
 module.exports = UniversalPickableCharacter;

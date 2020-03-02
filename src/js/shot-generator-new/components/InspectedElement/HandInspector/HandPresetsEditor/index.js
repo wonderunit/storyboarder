@@ -2,7 +2,6 @@ import React from 'react'
 const  { useState, useEffect, useMemo, useRef, useCallback } = React
 import { connect } from 'react-redux'
 import * as THREE from 'three'
-window.THREE = THREE
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../../package.json'
 import request from 'request'
@@ -16,7 +15,7 @@ import {
 import defaultPosePresets from '../../../../../shared/reducers/shot-generator-presets/hand-poses.json'
 import presetsStorage from '../../../../../shared/store/presetsStorage'
 
-import { NUM_COLS, GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, CHARACTER_MODEL, innerElementType } from '../../../../utils/InspectorElementsSettings'
+import {NUM_COLS, ITEM_HEIGHT, CHARACTER_MODEL} from '../../../../utils/InspectorElementsSettings'
 import { comparePresetNames, comparePresetPriority } from '../../../../utils/searchPresetsForTerms'
 import { filepathFor } from '../../../../utils/filepathFor'
 
@@ -29,14 +28,9 @@ import Select from '../../../Select'
 import Scrollable from '../../../Scrollable'
 import Grid from '../../../Grid'
 import HandPresetsEditorItem from './HandPresetsEditorItem'
+import {useAsset} from '../../../../hooks/use-assets-manager'
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
-
-const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
-    let filepath = filepathFor(CHARACTER_MODEL)
-    return !attachments[filepath] ? undefined : attachments[filepath].status
-})
-
 const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
   return sceneObjects[selections[0]].handPosePresetId
 })
@@ -54,10 +48,10 @@ const selectedHandOptions = [
 
 const HandPresetsEditor = connect(
   state => ({
-    attachmentStatus: getAttachmentM(state),
     handPosePresets: state.presets.handPoses,
     id: getSelections(state)[0],
-    handPosePresetId: getPresetId(state)
+    handPosePresetId: getPresetId(state),
+    characterPath: filepathFor(CHARACTER_MODEL)
   }),
   {
     updateObject,
@@ -69,15 +63,13 @@ React.memo(({
   id,
   handPosePresetId,
   handPosePresets,
-  attachmentStatus,
 
   updateObject,
   createHandPosePreset,
+  characterPath,
   withState
 }) => {
   const thumbnailRenderer = useRef()
-
-  const [ready, setReady] = useState(false)
   const sortedPresets = useRef([])
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
@@ -85,15 +77,7 @@ React.memo(({
   const newGeneratedId = useRef()
   const [selectedHand, setSelectedHand] = useState("BothHands")
   const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
-  const getAttachment = () => {
-    let attachment 
-    withState((dispatch, state) => {
-      let filepath = filepathFor(CHARACTER_MODEL)
-      attachment = state.attachments[filepath].value
-    })
-    return attachment
-  }
-  const [attachment, setAttachment] = useState(getAttachment())
+  const {asset: attachment} = useAsset(characterPath)
 
   
   const presets = useMemo(() => {
@@ -108,17 +92,6 @@ React.memo(({
     setResult(sortedPoses)
     return sortedPoses
   }, [handPosePresets])
-
-  useEffect(() => {
-    if (ready) return
-    if (attachmentStatus === "Success" && !attachment) {
-        let attachment = getAttachment()
-        setAttachment(attachment)
-        setTimeout(() => {
-          setReady(true)
-        }, 100) // slight delay for snappier character selection via click
-      }
-    }, [attachmentStatus])
 
   const onChangeHand = useCallback((event) => {
     setSelectedHand(event.value)
@@ -250,7 +223,7 @@ React.memo(({
         </div> 
         <div className="row" style= {{ padding: "6px 0" }} >
           <Select
-            label='Select hand'
+            label="Select hand"
             value={selectedHandOptions.find(item => item.value === selectedHand)}
             options={selectedHandOptions}
             onSetValue={onChangeHand}

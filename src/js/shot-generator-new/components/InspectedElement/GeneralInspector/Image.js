@@ -1,15 +1,13 @@
-import React, {useCallback} from "react"
-import {Math as _Math} from "three"
-import {remote} from 'electron'
-const {dialog} = remote
+import React, {useCallback} from 'react'
+import {Math as _Math} from 'three'
 
 import fs from 'fs-extra'
 import path from 'path'
 
-import {formatters, NumberSlider, transforms} from "../../NumberSlider"
+import {formatters, NumberSlider, transforms} from '../../NumberSlider'
 
-import FileInput from "../../FileInput"
-import Checkbox from "../../Checkbox";
+import FileInput from '../../FileInput'
+import Checkbox from '../../Checkbox'
 
 const loadImages = (files, baseDir) => {
   return new Promise((resolve, reject) => {
@@ -60,8 +58,6 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
       .catch((src) => alert('could not copy ' + src))
     }
   }, [])
-  
-  console.log(sceneObject.imageAttachmentIds[0] )
 
   const imageFileLabel = sceneObject.imageAttachmentIds[0] === 'placeholder'
     ? '(none)' 
@@ -71,14 +67,14 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
 
   return (
     <React.Fragment>
-      <NumberSlider label='X' value={props.x} min={-30} max={30} onSetValue={setX}/>
-      <NumberSlider label='Y' value={props.y} min={-30} max={30} onSetValue={setY}/>
-      <NumberSlider label='Z' value={props.z} min={-30} max={30} onSetValue={setZ}/>
+      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
+      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
+      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
 
-      <NumberSlider label='Size' value={props.height} min={0.025} max={5} onSetValue={setSize}/>
+      <NumberSlider label="Size" value={props.height} min={0.025} max={5} onSetValue={setSize}/>
 
       <NumberSlider
-        label='Rotate X'
+        label="Rotate X"
         value={_Math.radToDeg(props.rotation.x)}
         min={-180}
         max={180}
@@ -89,7 +85,7 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
       />
 
       <NumberSlider
-        label='Rotate Y'
+        label="Rotate Y"
         value={_Math.radToDeg(props.rotation.z)}
         min={-180}
         max={180}
@@ -100,7 +96,7 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
       />
 
       <NumberSlider
-        label='Rotate Z'
+        label="Rotate Z"
         value={_Math.radToDeg(props.rotation.y)}
         min={-180}
         max={180}
@@ -110,17 +106,17 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
         formatter={formatters.degrees}
       />
 
-      <NumberSlider label='Opacity' value={props.opacity} min={0.1} max={1} onSetValue={setOpacity}/>
+      <NumberSlider label="Opacity" value={props.opacity} min={0.1} max={1} onSetValue={setOpacity}/>
 
       <FileInput
         onChange={setImageFile}
-        label='Image File'
+        label="Image File"
         value={imageFileLabel}
-        refClassName='file-input image-file-input'
+        refClassName="file-input image-file-input"
       />
       
       <Checkbox
-        label='Visible to camera'
+        label="Visible to camera"
         checked={props.visibleToCam}
         onClick={setVisibleToCam}
       />

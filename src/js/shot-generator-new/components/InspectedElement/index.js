@@ -18,7 +18,7 @@ import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
 
 import Icon from '../Icon'
-import Modal from "../Modal"
+import Modal from '../Modal'
 
 const isChar = (type) => type === 'character'
 const isObj = (type) => type === 'object'
@@ -59,7 +59,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
 
     return {
       tab: <Tab><Icon src='icon-item-camera'/></Tab>,
-      panel: <Panel><AttachableInspector/></Panel>
+      panel: <Panel><AttachableInspector /></Panel>
     }
   }, [selectedType])
   
@@ -70,7 +70,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
         <div style={{ margin:"5px 5px 5px 5px" }}>
           Select a Preset Name:
         </div>
-        <div className="column" style={{ flex: 1 }}> 
+        <div className="column" style={{ flex: 1}}> 
           <input 
             className="modalInput"
             type="text" 
@@ -88,19 +88,19 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           </button>
       </div>
       </Modal> }
-      <a href='#' className='object-property-heading' onClick={ () => showModal(true) }>
+      <a href="#" className="object-property-heading" style={{ overflow: "hidden", textOverflow: "ellipsis", flexShrink:0, width: 288 }} onClick={ () => showModal(true) }>
         {selectedName} Properties
       </a>
       <Tabs key={id}>
-        <div className='tabs-header'>
-          <Tab><Icon src='icon-item-camera'/></Tab>
+        <div className="tabs-header">
+          <Tab><Icon src="icon-item-camera"/></Tab>
           {handPoseTab.tab}
           {charPoseTab.tab}
           {modelTab.tab}
           {attachmentTab.tab}
         </div>
 
-        <div className='tabs-body'>
+        <div className="tabs-body">
           <Panel><GeneralInspector/></Panel>
           {handPoseTab.panel}
           {charPoseTab.panel}

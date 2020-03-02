@@ -8,57 +8,102 @@ import { createdMirroredHand, applyChangesToSkeleton, getOppositeHandName } from
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../../../utils/InspectorElementsSettings'
 import { getSceneObjects } from '../../../../../shared/reducers/shot-generator'
 import clampInstance from '../../../../utils/clampInstance'
-import Image from "../../../Image"
+import Image from '../../../Image'
+import cloneGltf from '../../../../helpers/cloneGltf'
+import {patchMaterial} from '../../../../helpers/outlineMaterial'
+
+const createCharacter = (gltf) => {
+  let lod = new THREE.LOD()
+  let { scene } = cloneGltf(gltf)
+  let map
+
+  // for built-in Characters
+  // SkinnedMeshes are immediate children
+  let meshes = scene.children.filter(child => child.isSkinnedMesh)
+
+  // if no SkinnedMeshes are found there, this may be a custom model file
+  if (meshes.length === 0 && scene.children.length && scene.children[0].children) {
+        // try to find the first SkinnedMesh in the first child object's children
+        let mesh = scene.children[0].children.find(child => child.isSkinnedMesh)
+        if (mesh) {
+          meshes = [mesh]
+        }
+  }
+
+  // if there's only 1 mesh
+  let startAt = meshes.length == 1
+    // start at mesh index 0 (for custom characters)
+    ? 0
+    // otherwise start at mesh index 1 (for built-in characters)
+    : 1
+
+  for (let i = startAt, d = 0; i < startAt+1; i++, d++) {
+        let mesh = meshes[i]
+        mesh.matrixAutoUpdate = false
+        map = mesh.material.map
+
+        mesh.material = new THREE.MeshToonMaterial({
+          map: map,
+          color: 0xffffff,
+          emissive: 0x0,
+          specular: 0x0,
+          reflectivity: 0x0,
+          skinning: true,
+          shininess: 0,
+          flatShading: false,
+          morphNormals: true,
+          morphTargets: true
+        })
+
+        patchMaterial(mesh.material)
+        
+        lod.addLevel(mesh, d * 4)
+  }
+
+  let skeleton = lod.children[0].skeleton
+  skeleton.pose()
+
+  let originalSkeleton = skeleton.clone()
+  originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
+
+  let armature = scene.getObjectByProperty("type", "Bone").parent
+  let character = new THREE.Group()
+  character.add(lod)
+  character.add(armature)
+  return character
+}
 
 const setupRenderer = ({ thumbnailRenderer, attachment, preset, selectedHand }) => {
-    if (!thumbnailRenderer.getGroup().children.length) {
-      let modelData = attachment
+  if (!thumbnailRenderer.getGroup().children.length) {
+    let modelData = attachment
+    let group = createCharacter(modelData)
 
-      let group = THREE.SkeletonUtils.clone(modelData.scene.children[0])
-      let child = group.children[1]
+    thumbnailRenderer.getGroup().add(group)
+    group.rotation.y = Math.PI/20
+  }
 
-      let material = new THREE.MeshToonMaterial({
-        color: 0xffffff,
-        emissive: 0x0,
-        specular: 0x0,
-        skinning: true,
-        shininess: 0,
-        flatShading: false,
-        morphNormals: true,
-        morphTargets: true,
-        map: modelData.scene.children[0].children[1].material.map
-      })
-      material.map.needsUpdate = true
-
-      child.material = material
-      thumbnailRenderer.getGroup().add(group)
-      group.rotation.y = Math.PI/20
-
+  // setup thumbnail renderer
+  let mesh = thumbnailRenderer.getGroup().getObjectByProperty("type", "SkinnedMesh")
+  let pose = preset.state.handSkeleton
+  let skeleton = mesh.skeleton
+  skeleton.pose()
+  for (let name in pose) {
+    let bone = skeleton.getBoneByName(name)
+    if (bone) {
+      bone.rotation.x = pose[name].rotation.x
+      bone.rotation.y = pose[name].rotation.y
+      bone.rotation.z = pose[name].rotation.z
+      bone.updateMatrixWorld(true)
     }
-
-    // setup thumbnail renderer
-    let mesh = thumbnailRenderer.getGroup().children[0].children[1]
-    let pose = preset.state.handSkeleton
-    let skeleton = mesh.skeleton
-    skeleton.pose()
-    for (let name in pose) {
-      let bone = skeleton.getBoneByName(name)
-      if (bone) {
-        bone.rotation.x = pose[name].rotation.x
-        bone.rotation.y = pose[name].rotation.y
-        bone.rotation.z = pose[name].rotation.z
-        bone.updateMatrixWorld(true)
-      }
-    }
-    let euler = new THREE.Euler(0, 200 * THREE.Math.DEG2RAD, 0)
-    let bone = skeleton.getBoneByName(selectedHand)
-    bone.updateMatrixWorld(true)
-    bone.parent.parent.parent.quaternion.setFromEuler(euler)
-    bone.parent.parent.quaternion.set(0, 0, 0, 1)
-    bone.parent.quaternion.set(0, 0, 0, 1)
-    bone.quaternion.set(0, 0, 0, 1)
-
-    bone.parent.parent.parent.updateWorldMatrix(true, true)
+  }
+  let euler = new THREE.Euler(0, 200 * THREE.Math.DEG2RAD, 0)
+  let bone = skeleton.getBoneByName(selectedHand)
+  bone.updateMatrixWorld(true)
+  bone.parent.parent.parent.quaternion.setFromEuler(euler)
+  bone.parent.parent.quaternion.set(0, 0, 0, 1)
+  bone.parent.quaternion.set(0, 0, 0, 1)
+  bone.quaternion.set(0, 0, 0, 1)
+  bone.parent.parent.parent.updateWorldMatrix(true, true)
 }
 
 const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand }) => {
@@ -108,16 +153,17 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : 
           preset,
           selectedHand
         })
-        let bone = thumbnailRenderer.current.getGroup().children[0].children[1].skeleton.getBoneByName(selectedHand)
+        let character = thumbnailRenderer.current.getGroup().getObjectByProperty("type", "SkinnedMesh")
+        let bone = character.skeleton.getBoneByName(selectedHand)
         let camera = thumbnailRenderer.current.camera
 
         let boxGeometry = new THREE.BoxGeometry(2.5, 2)
         let material = new THREE.MeshBasicMaterial()
         let mesh = new THREE.Mesh(boxGeometry, material);
         bone.parent.add(mesh)
-        mesh.scale.multiplyScalar(0.1 / thumbnailRenderer.current.getGroup().children[0].children[1].scale.x)
+        mesh.scale.multiplyScalar(0.1 / character.scale.x)
         mesh.position.copy(bone.position)
-        mesh.position.y += 0.00095
+        mesh.position.y += 0.095
         mesh.updateWorldMatrix(true, true)
         clampInstance(mesh, camera)
 
