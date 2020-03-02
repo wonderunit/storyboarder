@@ -11,7 +11,6 @@ const CameraUpdate = connect(
     activeCamera: getSceneObjects(state)[getActiveCamera(state)],
 }),
 {
-
 }
 )( React.memo(({ 
     activeCamera

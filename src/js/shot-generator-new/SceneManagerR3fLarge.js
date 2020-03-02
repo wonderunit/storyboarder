@@ -135,44 +135,43 @@ const SceneManagerR3fLarge = connect(
     }, [sceneObjectLength]) 
 
     useEffect(() => {
-        let sgIkHelper = SGIkHelper.getInstance()
-        sgIkHelper.setUp(null, rootRef.current, camera, gl.domElement)
-        const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
+      let sgIkHelper = SGIkHelper.getInstance()
+      sgIkHelper.setUp(null, rootRef.current, camera, gl.domElement)
+      const updateCharacterRotation = (name, rotation) => { updateCharacterSkeleton({
+        id: sgIkHelper.characterObject.userData.id,
+        name : name,
+        rotation:
+        {
+          x : rotation.x,
+          y : rotation.y,
+          z : rotation.z,
+        }
+      } )}
+
+      const updateSkeleton = (skeleton) => { updateCharacterIkSkeleton({
+        id: sgIkHelper.characterObject.userData.id,
+        skeleton: skeleton
+      } )}
+
+      const updateCharacterPos = ({ x, y, z}) => updateObject(
+        sgIkHelper.characterObject.userData.id,
+        { x, y: z, z: y }
+      )
+
+      const updatePoleTarget = (poleTargets) => updateCharacterPoleTargets({
           id: sgIkHelper.characterObject.userData.id,
-          name : name,
-          rotation:
-          {
-            x : rotation.x,
-            y : rotation.y,
-            z : rotation.z,
-          }
-        } )}
-  
-        const updateSkeleton = (skeleton) => { updateCharacterIkSkeleton({
-          id: sgIkHelper.characterObject.userData.id,
-          skeleton: skeleton
-        } )}
-  
-        const updateCharacterPos = ({ x, y, z}) => updateObject(
-          sgIkHelper.characterObject.userData.id,
-          { x, y: z, z: y }
-        )
-  
-        const updatePoleTarget = (poleTargets) => updateCharacterPoleTargets({
-            id: sgIkHelper.characterObject.userData.id,
-            poleTargets: poleTargets
-          }
-        )
-  
-        sgIkHelper.setUpdate(
-          updateCharacterRotation,
-          updateSkeleton,
-          updateCharacterPos,
-          updatePoleTarget,
-          updateObjects
-        )
-        console.log(camera)
-      }, [])
+          poleTargets: poleTargets
+        }
+      )
+
+      sgIkHelper.setUpdate(
+        updateCharacterRotation,
+        updateSkeleton,
+        updateCharacterPos,
+        updatePoleTarget,
+        updateObjects
+      )
+    }, [])
 
     useEffect(() => {  
       selectedCharacters.current = selections.filter((id) => {

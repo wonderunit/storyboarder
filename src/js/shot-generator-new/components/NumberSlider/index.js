@@ -2,8 +2,6 @@ import React, {useState, useRef, useCallback, useEffect} from 'react'
 import {connect} from 'react-redux'
 import { useDrag } from 'react-use-gesture'
 import {Math as _Math} from 'three'
-import infixToPostfix from 'infix-to-postfix'
-import postfixCalculator from 'postfix-calculator'
 
 import {
   undoGroupStart,
