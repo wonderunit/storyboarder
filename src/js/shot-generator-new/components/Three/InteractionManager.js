@@ -270,15 +270,15 @@ const InteractionManager = connect(
                 target = characters[0]
                 isSelectedControlPoint = true
             } else if(target.userData && target.userData.type === 'objectControl') {
-                let characterId = target.characterId
+                let objectId = target.characterId
                 let targetElement = target.object
                 if(targetElement.type === "Bone") {
-                    let characters = intersectables.current.filter(value => value.uuid === characterId)
+                    let characters = intersectables.current.filter(value => value.uuid === objectId)
                     target = characters[0]
                     selectedObjectControl = targetElement
                 } else if(targetElement.userData.type === "attachable") {
                  
-                    let characters = intersectables.current.filter(value => value.uuid === characterId)
+                    let characters = intersectables.current.filter(value => value.uuid === objectId)
                     target = characters[0]
                     selectAttachable({id: targetElement.userData.id, bindId: targetElement.userData.bindedId})
                     selectedObjectControl = targetElement
@@ -286,8 +286,9 @@ const InteractionManager = connect(
                     return
                 }
                 else if(targetElement.userData.type === "object") {
-                  let characters = intersectables.current.filter(value => value.uuid === characterId)
-                  target = characters[0]
+                  console.log("Object  rotation control")
+                  let objects = intersectables.current.filter(value => value.uuid === objectId)
+                  target = objects[0]
                   selectedObjectControl = targetElement
                   setDragTarget({ target, x, y, isObjectControl: true })
                   return

@@ -103,6 +103,11 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
           z : euler.z,
         }
       } )})
+    return function CleanUp() {
+      objectRotationControl.current.cleanUp();
+      objectRotationControl.current = null
+      isObjectSelected.current = false
+    }
   }, [])
 
   useEffect(() => {
@@ -154,8 +159,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     userData={{
       type: 'object',
       id: sceneObject.id,
-      locked: locked,
-      isRotationEnabled: false,
+      locked: locked
     }}
 
     visible={ visible }
