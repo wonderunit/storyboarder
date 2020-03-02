@@ -44,6 +44,7 @@ const SceneManagerR3fSmall = connect(
     updateObjects,
     setSmallCanvasData,
     renderData,
+    mainRenderData,
     setActiveCamera
 
 }) => {
@@ -328,6 +329,7 @@ const SceneManagerR3fSmall = connect(
                 type={ sceneObject.type }
                 text={ sceneObject.name || sceneObject.displayName }
                 sceneObject={ sceneObject }
+                mainCamera={ mainRenderData.camera }
                 isSelected={ selections.includes(sceneObject.id) }
                 fontMesh={ fontMesh } 
                 onPointerUp={e => {
