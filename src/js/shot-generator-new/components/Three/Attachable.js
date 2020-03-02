@@ -106,6 +106,8 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     useEffect(() => {
       isAttachableSelected.current = false
       return () => {
+        objectRotationControl.current.cleanUp();
+        objectRotationControl.current = null
         if(!characterObject.current || !ref.current.parent) return
         ref.current.parent.remove(ref.current)
       }
