@@ -226,15 +226,13 @@ const updateObject = (draft, state, props, { models }) => {
     } else {
       draft.locked = false
     }
+    delete props["locked"]
   }
   
   if (draft.locked) {
     return
   }
-  let keys = Object.keys(props)
-  for(let i = 0; i < keys.length; i++ ){
-    draft[keys[i]] = props[keys[i]]
-  }
+
   
   if (props.rotation != null) {
     if (draft.type === 'object' || draft.type === 'image') {
@@ -246,20 +244,22 @@ const updateObject = (draft, state, props, { models }) => {
     } else {
       draft.rotation = props.rotation
     }
+    delete props["rotation"]
   }
   if (props.model != null) {
     draft.model = props.model
-
+    
     // if a character's model is changing
     if (draft.type === 'character') {
       // reset the height ...
       draft.height = models[props.model]
-        // ... to default (if known) ...
-        ? models[props.model].height
-        // ... otherwise, a reasonable value
-        : 1.6
+      // ... to default (if known) ...
+      ? models[props.model].height
+      // ... otherwise, a reasonable value
+      : 1.6
     }
     draft = withDisplayName(draft)
+    delete props["model"]
   }
 
 
@@ -267,14 +267,21 @@ const updateObject = (draft, state, props, { models }) => {
     Object.entries(props.morphTargets).forEach(([key, value]) => {
       draft.morphTargets[key] = value
     })
+    delete props["morphTargets"]
   }
-
+  
   if (props.hasOwnProperty('posePresetId')) {
     draft.posePresetId = props.posePresetId
     if( draft.handPosePresetId) {
       draft.handPosePresetId = null
       draft.handSkeleton = []
     }
+    delete props["posePresetId"]
+  }
+
+  let keys = Object.keys(props)
+  for(let i = 0; i < keys.length; i++ ){
+    draft[keys[i]] = props[keys[i]]
   }
 }
 
