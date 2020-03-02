@@ -2,6 +2,8 @@ import React, {useState, useRef, useCallback, useEffect} from 'react'
 import {connect} from 'react-redux'
 import { useDrag } from 'react-use-gesture'
 import {Math as _Math} from 'three'
+import infixToPostfix from 'infix-to-postfix'
+import postfixCalculator from 'postfix-calculator'
 
 import {
   undoGroupStart,
@@ -43,6 +45,16 @@ const getFormattedInputValue = (value, formatter) => {
   }
   
   return value
+}
+
+const isNumber = (value) => {
+  if ((undefined === value) || (null === value)) {
+    return false;
+  }
+  if (typeof value == 'number') {
+      return true;
+  }
+  return !isNaN(value - 0);
 }
 
 const defaultOnSetValue = value => {}
@@ -104,8 +116,13 @@ const NumberSliderComponent = React.memo(({
       setTextInput(false)
       setTextInputValue(getFormattedInputValue(value, formatter))
     } else if (event.key === 'Enter') {
-      // TODO validation, tranform, error handling
-      onSetValue(parseFloat(textInputValue))
+      if(isNumber(textInputValue)) {
+        let constrainedNumber = Math.min(Math.max(textInputValue, min), max)
+        onSetValue(parseFloat(constrainedNumber))
+      }
+      else {
+        setTextInputValue(getFormattedInputValue(value, formatter))
+      }
       setTextInput(false)
     }
   }
