@@ -23,6 +23,7 @@ import FileInput from '../../FileInput'
 import SearchList from '../../SearchList'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
 import isUserModel from '../../../helpers/isUserModel'
+import CopyFile from '../../../utils/CopyFile'
 
 const getModelData = deepEqualSelector([(state) => {
   const selectedId = getSelections(state)[0]
@@ -52,6 +53,7 @@ const ModelInspector = connect(
 
     updateObject,
     updateCharacterIkSkeleton,
+    withState
 
   }) => {
       const sortedModels = useRef([])
@@ -86,10 +88,10 @@ const ModelInspector = connect(
           if(isPrevModelUser && !isCurrentModelUser) {
             let defaultSkeleton = getDefaultPosePreset().state.skeleton
             let skeleton = Object.keys(defaultSkeleton).map((key) => {
-                return {
-                  name:key,
-                  rotation: defaultSkeleton[key].rotation
-                }
+              return {
+                name:key,
+                rotation: defaultSkeleton[key].rotation
+              }
             })
             updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton})
           } else if(!isPrevModelUser && isCurrentModelUser) {
@@ -102,16 +104,21 @@ const ModelInspector = connect(
   
       const onSelectFile = filepath => {
         if (filepath.file) {
-          resetSkeleton(filepath.file)
-          updateObject(sceneObject.id, { model: filepath.file })
+          let storyboarderFilePath
+          withState((dispatch, state) => {
+            storyboarderFilePath = state.meta.storyboarderFilePath
+          })
+          let updatedModel = CopyFile(storyboarderFilePath, filepath.file, sceneObject.type)
+          updateObject(sceneObject.id, { model: updatedModel })
+          if(sceneObject.type === "character") resetSkeleton(filepath.file)
         }
       }
       
       const isSelected = useCallback((item) => model === item.id, [model])
 
       const onSelectItem = useCallback((model) => {
-        resetSkeleton(model.id)
         updateObject(sceneObject.id, { model: model.id})
+        if(sceneObject.type === "character") resetSkeleton(model.id)
       }, [sceneObject.id])
 
       const selectValue = useCallback(() => {

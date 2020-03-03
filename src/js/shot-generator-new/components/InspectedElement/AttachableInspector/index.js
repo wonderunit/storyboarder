@@ -21,6 +21,7 @@ import Scrollable from '../../Scrollable'
 
 import AttachableEditor from './../AttachableEditor/index'
 import isUserModel from '../../../helpers/isUserModel'
+import CopyFile from '../../../utils/CopyFile'
 
 const AttachableInspector = connect(
   state => ({
@@ -66,11 +67,13 @@ const AttachableInspector = connect(
 
     const onSelectItem = useCallback((model) => {
       selectedModel.current = model
+      console.log(model)
       selectedId.current = model.id || id
       if(model.bindBone && !isUserModel(sceneObject.model)) {
         createAttachableElement(model, id)
         return
       }
+
       showModal(true)
     }, [id, sceneObject])
 
@@ -119,7 +122,12 @@ const AttachableInspector = connect(
 
     const onSelectFile = useCallback((filepath) => {
       if (filepath.file) {
-        onSelectItem(filepath.file )
+        let storyboarderFilePath
+        withState((dispatch, state) => {
+          storyboarderFilePath = state.meta.storyboarderFilePath
+        })
+        let updatedModel = CopyFile(storyboarderFilePath, filepath.file, 'attachable')
+        onSelectItem(updatedModel)
       }
     }, [id, onSelectItem])
 
