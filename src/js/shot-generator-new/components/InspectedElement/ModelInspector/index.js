@@ -2,7 +2,7 @@ import path from 'path'
 import React from 'react'
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
-import { connect } from 'react-redux'
+import { connect, batch } from 'react-redux'
 import {
   updateObject,
   getSceneObjects, 
@@ -85,19 +85,28 @@ const ModelInspector = connect(
         if(prevModel.current) {
           let isPrevModelUser = isUserModel(prevModel.current)
           let isCurrentModelUser = isUserModel(currentModel)
-          if(isPrevModelUser && !isCurrentModelUser) {
-            let defaultSkeleton = getDefaultPosePreset().state.skeleton
-            let skeleton = Object.keys(defaultSkeleton).map((key) => {
-              return {
-                name:key,
-                rotation: defaultSkeleton[key].rotation
-              }
-            })
-            updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton})
-          } else if(!isPrevModelUser && isCurrentModelUser) {
-            // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
-            updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
-          }
+          withState((dispatch, state) => 
+          {
+            if(isPrevModelUser && !isCurrentModelUser) {
+              let defaultSkeleton = getDefaultPosePreset().state.skeleton
+              let skeleton = Object.keys(defaultSkeleton).map((key) => {
+                return {
+                  name:key,
+                  rotation: defaultSkeleton[key].rotation
+                }
+              })
+              batch(() => {
+                dispatch(updateObject(sceneObject.id, { model: currentModel }))
+                dispatch(updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton}))
+              })
+            } else if(!isPrevModelUser && isCurrentModelUser) {
+              // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
+              batch(() => {
+                dispatch(updateObject(sceneObject.id, { model: currentModel }))
+                dispatch(updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]}))
+              })
+            }
+          })
         } 
         prevModel.current = currentModel
       }
@@ -109,8 +118,11 @@ const ModelInspector = connect(
             storyboarderFilePath = state.meta.storyboarderFilePath
           })
           let updatedModel = CopyFile(storyboarderFilePath, filepath.file, sceneObject.type)
-          updateObject(sceneObject.id, { model: updatedModel })
-          if(sceneObject.type === "character") resetSkeleton(filepath.file)
+          if(sceneObject.type === "character") {
+            resetSkeleton(updatedModel)
+          } else {
+            updateObject(sceneObject.id, { model: updatedModel })
+          }
         }
       }
       
