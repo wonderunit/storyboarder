@@ -18,6 +18,8 @@ import { useDrag } from 'react-use-gesture'
 
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 
+import useTooltip from '../../../hooks/use-tooltip'
+
 /**
  * Return the first index containing an *item* which is greater than *item*.
  * @arguments _(item)_
@@ -60,28 +62,28 @@ const CameraPanelInspector = connect(
       setMainViewCamera
     }
 )(
-  React.memo(({ 
-      activeCamera, 
-      cameraShots, 
+  React.memo(({
+      activeCamera,
+      cameraShots,
       updateObject,
-      setCameraShot, 
+      setCameraShot,
       setMainViewCamera,
       selectObject,
       mainViewCamera,
     }) => {
     if (!activeCamera) return <div className="camera-inspector"/>
-    
+
     const shotInfo = cameraShots[activeCamera.id] || {}
     const [currentShotSize, setCurrentShotSize] = useState(shotInfo.size)
     const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
     const isDragging = useRef(false)
     const dragInfo = useRef({prev: [0, 0], current: [0, 0]})
-    
+
     const fakeCamera = useRef()
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
     }, [shotInfo.size, activeCamera])
-  
+
     useEffect(() => {
       setCurrentShotAngle(shotInfo.angle)
     }, [shotInfo.angle, activeCamera])
@@ -95,11 +97,11 @@ const CameraPanelInspector = connect(
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addKeyCommand({ key: "Escape", value: () => selectObject(activeCamera) })
-      return () => { 
+      return () => {
         KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "Escape", value: () =>  selectObject(activeCamera) })
       }
     }, [activeCamera])
-    
+
     let cameraInfo = useRef({...activeCamera})
     let [cameraRoll, setCameraRoll] = useState(activeCamera.roll)
     let [cameraTilt, setCameraTilt] = useState(activeCamera.tilt)
@@ -122,7 +124,7 @@ const CameraPanelInspector = connect(
       cameraInfo.current.tilt = Math.round(THREE.Math.radToDeg(activeCamera.tilt))
       setCameraTilt(cameraInfo.current.tilt)
     }, [activeCamera.tilt])
-    
+
     const getValueShifter = (draft) => () => {
       for (let [k, v] of Object.entries(draft)) {
         cameraState[k] += v
@@ -138,7 +140,7 @@ const CameraPanelInspector = connect(
         return fakeCamera.current.fov
       }).sort((a, b) => a - b)
     }, [])
-   
+
 
     const switchCameraFocalLength = useCallback((iterator) => {
       let index = indexIn(fovs, activeCamera.fov)
@@ -161,10 +163,10 @@ const CameraPanelInspector = connect(
         'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
         'x': Math.min(cameraState.roll + THREE.Math.DEG2RAD, 45 * THREE.Math.DEG2RAD)
       }[event.key]
-  
+
       updateObject(activeCamera.id, { roll })
     }, [activeCamera])
-  
+
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addKeyCommand({
         key: "cameraRoll",
@@ -180,23 +182,23 @@ const CameraPanelInspector = connect(
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addKeyCommand({ key: "[", value:  () => switchCameraFocalLength( 1 ) })
-      return () => { 
+      return () => {
         KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "[" })
       }
     }, [switchCameraFocalLength])
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().addKeyCommand({ key: "]", value:  () => switchCameraFocalLength( -1 ) })
-      return () => { 
+      return () => {
         KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "]" })
       }
     }, [switchCameraFocalLength])
-    
+
     const moveCamera = ([speedX, speedY]) => () => {
       cameraState = CameraControls.getMovedState(cameraState, { x: speedX, y: speedY })
       updateObject(activeCamera.id, cameraState)
     }
-    
+
     useEffect(() => {
       if (!cameraInfo.current) return
       let requestID = null
@@ -209,7 +211,7 @@ const CameraPanelInspector = connect(
 
           cameraInfo.current.rotation = newPan
           cameraInfo.current.tilt = newTilt
-          
+
           let rotation = THREE.Math.degToRad(newPan)
           let tilt = THREE.Math.degToRad(newTilt)
 
@@ -222,26 +224,26 @@ const CameraPanelInspector = connect(
       }
 
       requestID = requestAnimationFrame(onFrame)
-      
+
       return () => {
         cancelAnimationFrame(requestID)
       }
     }, [cameraInfo.current, activeCamera.id])
-  
+
     const getCameraPanEvents = useDrag(({first, last, vxvy }) => {
       dragInfo.current.current = vxvy
-      
+
       if (first) {
         isDragging.current = true
       } else if (last) {
         isDragging.current = false
       }
     })
-    
-    const onSetShot = ({size, angle}) => {      
+
+    const onSetShot = ({size, angle}) => {
       setCameraShot(activeCamera.id, {size, angle})
     }
-  
+
     const shotSizes = [
       { value: ShotSizes.EXTREME_CLOSE_UP,  label: "Extreme Close Up" },
       { value: ShotSizes.VERY_CLOSE_UP,     label: "Very Close Up" },
@@ -254,7 +256,7 @@ const CameraPanelInspector = connect(
       { value: ShotSizes.EXTREME_LONG,      label: "Extreme Long Shot" },
       { value: ShotSizes.ESTABLISHING,      label: "Establishing Shot" }
     ]
-  
+
     const shotAngles = [
       { value: ShotAngles.BIRDS_EYE,        label: "Bird\'s Eye" },
       { value: ShotAngles.HIGH,             label: "High" },
@@ -263,17 +265,24 @@ const CameraPanelInspector = connect(
       { value: ShotAngles.WORMS_EYE,        label: "Worm\'s Eye" }
     ]
 
+    const rollTooltipEvents = useTooltip("Roll Camera Angle", "Rotate the camera around the roll axis to create a dutch angle.", "Z|X", "top center")
+    const panTooltipEvents = useTooltip("Pan / Tilt Camera Angle", "Pan or tilt the camera by clicking and dragging on this control, or clicking and dragging on the 3D viewport. You can also move while clicking and dragging.", null, "top center")
+    const moveTooltipEvents = useTooltip("Move Camera", "Move the camera forward, backward, left and right. You can also pan while moving the camera. You can hold shift to move faster.", "W|A|S|D", "top center")
+    const elevateTooltipEvents = useTooltip("Elevate Camera", "Elevate the camera up and down. You can hold shift to elevate faster.", "R|F", "top center")
+    const lensTooltipEvents = useTooltip("Change Camera Lens (Zoom)", "Change the field of view of the camera's lens. If you press the bracket keys, it will snap to standard prime lens angles.", "[|]", "top center")
+    const shotsizeTooltipEvents = useTooltip("Auto Shot Framing", "Select a character and then select the Shot Size and or Camera Angle to automatically position the camera to frame the shot.", null, "top center")
+
     return <div className="camera-inspector">
-            <div className="camera-item roll">
+            <div className="camera-item roll" {...rollTooltipEvents}>
                 <div className="camera-item-control">
                     <div className="row">
                         <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: -THREE.Math.DEG2RAD }))}><div className="arrow left"/></div>
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: THREE.Math.DEG2RAD }))}><div className="arrow right"/></div> 
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: THREE.Math.DEG2RAD }))}><div className="arrow right"/></div>
                     </div>
                 </div>
                 <div className="camera-item-label">Roll: { cameraRoll }°</div>
             </div>
-            <div className="camera-item pan">
+            <div className="camera-item pan" {...panTooltipEvents}>
                 <div className="camera-item-control">
                     <div className="row">
                         <div className="pan-control" {...getCameraPanEvents()}><div className="pan-control-target"/></div>
@@ -281,49 +290,50 @@ const CameraPanelInspector = connect(
                 </div>
                 <div className="camera-item-label">Pan: { Math.round(THREE.Math.radToDeg(activeCamera.rotation)) }° // Tilt: { Math.round(THREE.Math.radToDeg(activeCamera.tilt)) }°</div>
             </div>
-            <div className="camera-item move">
-                <div className="camera-item-control"> 
+            <div className="camera-item move" {...moveTooltipEvents}>
+                <div className="camera-item-control">
                     <div className="row" style={{ justifyContent: "center" }}>
                         <div className="camera-item-button" {...useLongPress(moveCamera([0, -0.1]))}><div className="arrow up"/></div>
                     </div>
-                    <div className="row"> 
-                        <div className="camera-item-button" {...useLongPress(moveCamera([-0.1, 0]))}><div className="arrow left"/></div> 
-                        <div className="camera-item-button" {...useLongPress(moveCamera([0, 0.1]))}><div className="arrow down"/></div> 
-                        <div className="camera-item-button" {...useLongPress(moveCamera([0.1, 0]))}><div className="arrow right"/></div> 
+                    <div className="row">
+                        <div className="camera-item-button" {...useLongPress(moveCamera([-0.1, 0]))}><div className="arrow left"/></div>
+                        <div className="camera-item-button" {...useLongPress(moveCamera([0, 0.1]))}><div className="arrow down"/></div>
+                        <div className="camera-item-button" {...useLongPress(moveCamera([0.1, 0]))}><div className="arrow right"/></div>
                     </div>
                 </div>
                 <div className="camera-item-label">Move</div>
             </div>
-            <div className="camera-item elevate">
+            <div className="camera-item elevate" {...elevateTooltipEvents}>
                 <div className="camera-item-control">
-                    <div className="row"> 
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({ z: 0.1 }))}><div className="arrow up"/></div> 
-                    <div className="row"> 
+                    <div className="row">
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ z: 0.1 }))}><div className="arrow up"/></div>
+                    <div className="row">
                     </div>
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({ z: -0.1 }))}><div className="arrow down"/></div> 
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ z: -0.1 }))}><div className="arrow down"/></div>
                     </div>
-                </div> 
-                <div className="camera-item-label">Elevate: { activeCamera.z.toFixed(2) }m</div> 
+                </div>
+                <div className="camera-item-label">Elevate: { activeCamera.z.toFixed(2) }m</div>
             </div>
-            <div className="camera-item lens">
+            <div className="camera-item lens" {...lensTooltipEvents}>
+
                 <div className="camera-item-control">
-                    <div className="row"> 
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: 0.2 }))}><div className="arrow left"/></div> 
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: -0.2 }))}><div className="arrow right"/></div> 
+                    <div className="row">
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: 0.2 }))}><div className="arrow left"/></div>
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: -0.2 }))}><div className="arrow right"/></div>
                     </div>
                 </div>
                 <div className="camera-item-label">Lens: { focalLength.toFixed(2) }mm</div>
             </div>
-            <div className="camera-item shots">
+            <div className="camera-item shots" {...shotsizeTooltipEvents}>
                 <div className="select">
-                    <Select 
+                    <Select
                         label="Shot Size"
                         value={ shotSizes.find(option => option.value === currentShotSize) }
                         options={ shotSizes }
                         onSetValue={ (item) => onSetShot({ size: item.value, angle: shotInfo.angle }) }/>
                 </div>
                 <div className="select">
-                    <Select 
+                    <Select
                         label="Camera Angle"
                         value={ shotAngles.find(option => option.value === currentShotAngle) }
                         options={ shotAngles }
