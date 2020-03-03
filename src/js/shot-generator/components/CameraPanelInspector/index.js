@@ -267,7 +267,7 @@ const CameraPanelInspector = connect(
 
     const rollTooltipEvents = useTooltip("Roll Camera Angle", "Rotate the camera around the roll axis to create a dutch angle.", "Z|X", "top center")
     const panTooltipEvents = useTooltip("Pan / Tilt Camera Angle", "Pan or tilt the camera by clicking and dragging on this control, or clicking and dragging on the 3D viewport. You can also move while clicking and dragging.", null, "top center")
-    const moveTooltipEvents = useTooltip("Move Camera", "Move the camera forward, backward, left and right. You can also pan while moving the camera. You can hold shift to move faster.", "W|A|S|D", "top center")
+    const moveTooltipEvents = useTooltip("Move Camera", "Move the camera forward, backward, left and right. You can also pan while moving the camera. You can hold shift to move faster.", "W+A+S+D", "top center")
     const elevateTooltipEvents = useTooltip("Elevate Camera", "Elevate the camera up and down. You can hold shift to elevate faster.", "R|F", "top center")
     const lensTooltipEvents = useTooltip("Change Camera Lens (Zoom)", "Change the field of view of the camera's lens. If you press the bracket keys, it will snap to standard prime lens angles.", "[|]", "top center")
     const shotsizeTooltipEvents = useTooltip("Auto Shot Framing", "Select a character and then select the Shot Size and or Camera Angle to automatically position the camera to frame the shot.", null, "top center")
