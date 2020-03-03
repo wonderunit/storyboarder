@@ -2,7 +2,7 @@ import path from 'path'
 import React from 'react'
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react'
-import { connect } from 'react-redux'
+import { connect, batch } from 'react-redux'
 import {
   updateObject,
   getSceneObjects, 
@@ -23,6 +23,7 @@ import FileInput from '../../FileInput'
 import SearchList from '../../SearchList'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
 import isUserModel from '../../../helpers/isUserModel'
+import CopyFile from '../../../utils/CopyFile'
 
 const getModelData = deepEqualSelector([(state) => {
   const selectedId = getSelections(state)[0]
@@ -52,6 +53,7 @@ const ModelInspector = connect(
 
     updateObject,
     updateCharacterIkSkeleton,
+    withState
 
   }) => {
       const sortedModels = useRef([])
@@ -83,35 +85,52 @@ const ModelInspector = connect(
         if(prevModel.current) {
           let isPrevModelUser = isUserModel(prevModel.current)
           let isCurrentModelUser = isUserModel(currentModel)
-          if(isPrevModelUser && !isCurrentModelUser) {
-            let defaultSkeleton = getDefaultPosePreset().state.skeleton
-            let skeleton = Object.keys(defaultSkeleton).map((key) => {
+          withState((dispatch, state) => 
+          {
+            if(isPrevModelUser && !isCurrentModelUser) {
+              let defaultSkeleton = getDefaultPosePreset().state.skeleton
+              let skeleton = Object.keys(defaultSkeleton).map((key) => {
                 return {
                   name:key,
                   rotation: defaultSkeleton[key].rotation
                 }
-            })
-            updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton})
-          } else if(!isPrevModelUser && isCurrentModelUser) {
-            // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
-            updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
-          }
+              })
+              batch(() => {
+                dispatch(updateObject(sceneObject.id, { model: currentModel }))
+                dispatch(updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton}))
+              })
+            } else if(!isPrevModelUser && isCurrentModelUser) {
+              // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
+              batch(() => {
+                dispatch(updateObject(sceneObject.id, { model: currentModel }))
+                dispatch(updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]}))
+              })
+            }
+          })
         } 
         prevModel.current = currentModel
       }
   
       const onSelectFile = filepath => {
         if (filepath.file) {
-          resetSkeleton(filepath.file)
-          updateObject(sceneObject.id, { model: filepath.file })
+          let storyboarderFilePath
+          withState((dispatch, state) => {
+            storyboarderFilePath = state.meta.storyboarderFilePath
+          })
+          let updatedModel = CopyFile(storyboarderFilePath, filepath.file, sceneObject.type)
+          if(sceneObject.type === "character") {
+            resetSkeleton(updatedModel)
+          } else {
+            updateObject(sceneObject.id, { model: updatedModel })
+          }
         }
       }
       
       const isSelected = useCallback((item) => model === item.id, [model])
 
       const onSelectItem = useCallback((model) => {
-        resetSkeleton(model.id)
         updateObject(sceneObject.id, { model: model.id})
+        if(sceneObject.type === "character") resetSkeleton(model.id)
       }, [sceneObject.id])
 
       const selectValue = useCallback(() => {

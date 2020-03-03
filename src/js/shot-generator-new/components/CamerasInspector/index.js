@@ -22,6 +22,8 @@ import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 import Scrollable from '../Scrollable'
 import deepEqualSelector from '../../../utils/deepEqualSelector'
 
+import useTooltip from '../../../hooks/use-tooltip'
+
 const cameraSceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
   return Object.values(sceneObjects).filter(object => object.type === "camera").map((object) => {
@@ -106,7 +108,7 @@ const CamerasInspector = connect(
     if(n === 0) {
       return <a key={ n }
             href="#"
-            className={ classNames({ active: activeCamera === camera.id }) } 
+            className={ classNames({ active: activeCamera === camera.id }) }
             onClick={ onClick.bind(this, camera) }
             style={{marginLeft: "auto"}}>
           { n + 1 }
@@ -114,7 +116,7 @@ const CamerasInspector = connect(
     } else {
       return <a key={ n }
             href="#"
-            className={ classNames({ active: activeCamera === camera.id }) } 
+            className={ classNames({ active: activeCamera === camera.id }) }
             onClick={ onClick.bind(this, camera) }>
           { n + 1 }
       </a>
@@ -131,8 +133,10 @@ const CamerasInspector = connect(
     })
   }, [_cameras, activeCamera])
 
+  const cameraTooltipEvents = useTooltip("Change Active Camera", "If there are multiple cameras in the scene, you can change the active camera for the shot.", "1|2|3", "top right")
+
   return <div className="cameras-inspector">
-        <div className="row">
+        <div className="row" {...cameraTooltipEvents}>
             <div className="cameras-inspector__label">Camera</div>
             <Scrollable >
               <div className="round-buttons-panel" style={{ justifyContent: "flex-start"}} >

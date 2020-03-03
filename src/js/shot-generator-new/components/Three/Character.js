@@ -134,7 +134,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         // reset the pose
         skeleton.pose()
       }
-    }, [skeleton, sceneObject.posePresetId, ready])
+    }, [skeleton, sceneObject.skeleton, ready])
 
     useEffect(() => {
       if(!isFullyUpdate.current)

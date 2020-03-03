@@ -3,7 +3,6 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { extend } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import { patchMaterial, setSelected } from '../../helpers/outlineMaterial'
 
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
@@ -17,7 +16,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
   const ref = useRef()
 
   const material = useMemo(() => {
-    return patchMaterial(new THREE.MeshToonMaterial({ transparent: true }))
+    return new THREE.MeshToonMaterial({ transparent: true })
   }, [])
 
   useMemo(() => {
@@ -35,10 +34,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
         material.needsUpdate = true
     } 
   }, [texture, imagesPaths[0]])
-
-  useEffect(() => {
-    setSelected(material, isSelected)
-  }, [ref.current, isSelected])
 
   useEffect(() => {
     material.opacity = sceneObject.opacity

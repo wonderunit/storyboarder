@@ -1135,7 +1135,7 @@ const sceneObjectsReducer = (state = {}, action) => {
           }
           draft[action.payload.id].skeleton[bone.name].name = bone.name
           draft[action.payload.id].skeleton[bone.name].id = bone.id
-       
+        
         }
         return
 
