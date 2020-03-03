@@ -2,16 +2,21 @@ const { ipcRenderer, shell } = electron = require('electron')
 const { app } = electron.remote
 const electronUtil = require('electron-util')
 
+const path = require('path')
+
 const React = require('react')
-const { useRef } = React
+const { useState, useEffect } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
-console.clear() // clear the annoying dev tools warning
+//console.clear() // clear the annoying dev tools warning
 const log = require('electron-log')
 log.catchErrors()
 
-
+const observable = require("../../utils/observable").default
+const {loadAsset, cleanUpCache} = require("../../shot-generator/hooks/use-assets-manager")
+const ModelLoader = require("./../../services/model-loader")
+const {getFilePathForImages} = require("./../../shot-generator/helpers/get-filepath-for-images")
 
 //
 // configureStore:
@@ -45,21 +50,17 @@ const configureStore = function configureStore (preloadedState) {
   return store
 }
 
-
-
-const h = require('../../utils/h')
-const Editor = require('../../shot-generator/Editor')
+const Editor = require('../../shot-generator/components/Editor').default
 
 const presetsStorage = require('../../shared/store/presetsStorage')
-const { initialState, loadScene, resetScene, updateDevice, /*updateServer,*/ setBoard } = require('../../shared/reducers/shot-generator')
-
-// const createServer = require('../../services/createServer')
-const createDualShockController = require('../../shot-generator/DualshockController')
+const { initialState, setBoard } = require('../../shared/reducers/shot-generator')
 
 const XRServer = require('../../xr/server')
 const service = require('./service')
 
 let xrServer
+
+const storyboarderLoaded = observable(false)
 
 
 window.addEventListener('load', () => {
@@ -96,13 +97,69 @@ const store = configureStore({
     }
   },
 })
+const preloadData = async () => {
+  const { storyboarderFilePath } = await service.getStoryboarderFileData()
 
-const loadBoard = board => {
+/*   await loadAsset(ModelLoader.getFilepathForModel({
+    model: 'adult-male-lod',
+    type: 'character'
+  }, { storyboarderFilePath })) */
+
+  await loadAsset(ModelLoader.getFilepathForModel({
+    model: 'adult-male',
+    type: 'character'
+  }, { storyboarderFilePath }))
+  await loadAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
+  await loadAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
+}
+
+const loadBoard = async (board) => {
   loadBoardFromData(board, store.dispatch)
+  
+  if (!board.sg) {
+    return false
+  }
+
+  const { storyboarderFilePath } = await service.getStoryboarderFileData()
+  const {sceneObjects, world} = board.sg.data
+
+  await Object.values(sceneObjects)
+  // has a value for model
+  .filter(o => o.model != null)
+  // is not a box
+  .filter(o => !(o.type === 'object' && o.model === 'box'))
+  // what's the filepath?
+  .map((object) => ModelLoader.getFilepathForModel(object, { storyboarderFilePath }))
+  // request the file
+  .map(loadAsset)
+
+  if (world.environment.file) {
+    await loadAsset(
+      ModelLoader.getFilepathForModel({
+        model: world.environment.file,
+        type: 'environment'
+      }, { storyboarderFilePath })
+    )
+  }
+
+  const paths = Object.values(sceneObjects)
+  .filter(o => o.volumeImageAttachmentIds && o.volumeImageAttachmentIds.length > 0)
+  .map((object) => getFilePathForImages(object, storyboarderFilePath))
+
+  for(let i = 0; i < paths.length; i++) {
+    if(!Array.isArray(paths[i])) {
+      await loadAsset(paths[i])
+    } else {
+      for(let j = 0; j < paths[i].length; j++) {
+        await loadAsset(paths[i][j])
+      }
+    }
+  }
 }
 
 // load via Storyboarder request
 ipcRenderer.on('shot-generator:reload', async (event) => {
+  storyboarderLoaded.set(false)
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
 
@@ -117,20 +174,32 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     payload: aspectRatio
   })
 
-  loadBoard(board)
+  await loadBoard(board)
 
   if (!xrServer) {
     xrServer = new XRServer({ store, service })
   }
+
+  await preloadData()
+
+  storyboarderLoaded.set(true)
 })
 ipcRenderer.on('update', (event, { board }) => {
+  
   store.dispatch(setBoard(board))
+  storyboarderLoaded.set(true)
 })
 
 // load via server request (e.g.: triggered by VR)
 ipcRenderer.on('loadBoardByUid', async (event, uid) => {
+  storyboarderLoaded.set(false)
+  cleanUpCache()
+  await preloadData()
+
   let board = await service.getBoard(uid)
-  loadBoard(board)
+  await loadBoard(board)
+  
+  storyboarderLoaded.set(true)
 })
 
 ipcRenderer.on('shot-generator:edit:undo', () => {
@@ -149,41 +218,29 @@ window.$r = { store }
 log.info('ready!')
 electronUtil.disableZoom()
 
+const EditorComponent = () => {
+  const [loaded, setLoaded] = useState(storyboarderLoaded.get())
+  
+  useEffect(() => {
+    const onLoadChange = (value) => {
+      setLoaded(value)
+    }
+
+    storyboarderLoaded.subscribe(onLoadChange)
+    
+    return () => {
+      storyboarderLoaded.unsubscribe(onLoadChange)
+    }
+  }, [])
+  
+  return (
+    <Editor store={store}/>
+  )
+}
+
 ReactDOM.render(
-  h([
-    Provider, { store }, [
-      Editor
-    ]
-  ]),
+  <Provider store={store}>
+    <EditorComponent/>
+  </Provider>,
   document.getElementById('main')
 )
-
-const throttle = require('lodash.throttle')
-const updater = (values, changed) => {
-  store.dispatch(updateDevice(
-    0,
-    {
-      analog: {
-        ...values.analog
-      },
-      motion: {
-        ...values.motion
-      },
-      digital: {
-        ...values.digital
-      }
-    }
-  ))
-}
-createDualShockController(throttle(updater, 16, { leading: true }))
-
-// createServer({
-//   setInputAccel: payload => store.dispatch({ type: 'SET_INPUT_ACCEL', payload }),
-//   setInputMag: payload => store.dispatch({ type: 'SET_INPUT_MAG', payload }),
-//   setInputSensor: payload => store.dispatch({ type: 'SET_INPUT_SENSOR', payload }),
-//   setInputDown: payload => store.dispatch({ type: 'SET_INPUT_DOWN', payload }),
-//   setInputMouseMode: payload => store.dispatch({ type: 'SET_INPUT_MOUSEMODE', payload }),
-//   setInputOrbitMode: payload => store.dispatch({ type: 'SET_INPUT_ORBITMODE', payload }),
-//
-//   updateServer: payload => store.dispatch(updateServer(payload))
-// })

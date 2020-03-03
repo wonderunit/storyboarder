@@ -17,6 +17,15 @@ const installExtensions = async () => {
   ).catch(console.log);
 };
 
+// Removes any extension from the production version
+const removeExtensions = () => {
+  const installed = BrowserWindow.getDevToolsExtensions()
+
+  for (let extension of Object.keys(installed)) {
+    BrowserWindow.removeDevToolsExtension(extension)
+  }
+}
+
 let win
 
 let memento = {
@@ -33,15 +42,17 @@ const reveal = onComplete => {
 }
 
 const show = async (onComplete) => {
+  if (process.env.NODE_ENV === 'development') {
+    await installExtensions()
+  } else {
+    removeExtensions()
+  }
+
   if (win) {
     reveal(onComplete)
     return
   }
-  
-  if (process.env.NODE_ENV === 'development') {
-    await installExtensions()
-  }
-  
+
   let { x, y, width, height } = memento
 
   win = new BrowserWindow({

@@ -147,6 +147,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
     useEffect(() => {
       return () => {
+        SGIkHelper.getInstance().cleanUpCharacter()
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
         objectRotationControl.current.cleanUp()
@@ -157,7 +158,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             lod.children[i].material.dispose()
         }
 
-        SGIkHelper.getInstance().cleanUpCharacter()
+        
       }
     }, [])
 

@@ -2,7 +2,7 @@ const path = require('path')
 const webpack = require('webpack')
 
 module.exports = {
-  entry: './src/js/windows/shot-generator-new/window.js',
+  entry: './src/js/windows/shot-generator/window.js',
   target: 'electron-main',
   output: {
     path: path.resolve(__dirname, './../../src/build'),

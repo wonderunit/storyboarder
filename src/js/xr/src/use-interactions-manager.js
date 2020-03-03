@@ -19,7 +19,7 @@ const {
 const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
-const applyDeviceQuaternion = require('../../shot-generator/apply-device-quaternion')
+const applyDeviceQuaternion = require('../../shot-generator/utils/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')

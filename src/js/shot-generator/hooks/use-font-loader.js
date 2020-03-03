@@ -4,12 +4,23 @@ import createGeometry from 'three-bmfont-text'
 import loadFont from 'load-bmfont'
 import SDFShader from '../shaders/sdf-shader'
 
-const useTextureLoader = (fontPath, fontPngPath) => {
+
+
+const useFontLoader = (fontPath, fontPngPath) => {
 
     const key = useMemo(() => ({}), [fontPath])
     const [cache] = useState(() => new WeakMap())
     const [loader] = useState(() => new THREE.TextureLoader())
     const [_, forceUpdate] = useState(false)
+    
+    let mounted
+    useEffect(() => {
+        mounted = true
+        return () => {
+            mounted = false
+        }
+    }, [])
+    
     useEffect(() => {
         if (!cache.has(key)) {
             loadFont(fontPath, (err, font) => {
@@ -45,11 +56,14 @@ const useTextureLoader = (fontPath, fontPngPath) => {
                     let mesh = new THREE.Mesh(geometry, material)
                     mesh.textGeometry = geometry
                     cache.set(key, mesh)
-                    forceUpdate(i => !i)
+                    mounted && forceUpdate(i => !i)
                 })
             })
         }
+        
+        
     }, [fontPath])
     return cache.get(key) || null
 }
-export default useTextureLoader
+
+export default useFontLoader

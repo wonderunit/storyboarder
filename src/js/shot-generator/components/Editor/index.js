@@ -57,7 +57,7 @@ const Effect = ({renderData, stats}) => {
 }
 
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, setMainViewCamera, withState, store, onBeforeUnload
+  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
 }) => {
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
@@ -85,6 +85,13 @@ const Editor = React.memo(({
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
     }
   }, [])
+  
+  useEffect(() => {
+    cleanUpCache()
+    return () => {
+      cleanUpCache()
+    }
+  }, [board.uid])
 
   /** Resources loading end */
   useEffect(() => {
@@ -92,13 +99,6 @@ const Editor = React.memo(({
       notifications.init(notificationsRef.current, true)
     }
   }, [notificationsRef.current])
-  
-  useEffect(() => {
-    cleanUpCache()
-    return () => {
-      cleanUpCache()
-    }
-  }, [])
 
   useEffect(() => {
     window.addEventListener('beforeunload', onBeforeUnload)
@@ -159,7 +159,7 @@ const Editor = React.memo(({
 
   useExportToGltf(largeCanvasData.current.scene, withState)
   return (
-    <FatalErrorBoundary>
+    <FatalErrorBoundary key={board.uid}>
       <div id="root">
         <Toolbar
           withState={withState}
@@ -250,7 +250,8 @@ const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 export default connect(
   (state) => ({
     mainViewCamera: state.mainViewCamera,
-    aspectRatio: state.aspectRatio
+    aspectRatio: state.aspectRatio,
+    board: state.board
   }),
   {
     withState,

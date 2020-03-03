@@ -70,6 +70,10 @@ const KeyHandler = connect(
 
     useEffect(() => {
       KeyCommandsSingleton.getInstance().updateComponent = updateComponent
+      
+      return () => {
+        KeyCommandsSingleton.getInstance().updateComponent = null
+      }
     }, [updateComponent])
 
     const deleteSelectedObject = useCallback(() => {

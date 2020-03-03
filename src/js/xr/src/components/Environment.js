@@ -6,7 +6,7 @@ const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const onlyOfTypes = require('../../../shot-generator/only-of-types')
+const onlyOfTypes = require('../../../shot-generator/utils/only-of-types')
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,

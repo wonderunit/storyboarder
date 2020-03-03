@@ -9,7 +9,7 @@ import * as THREE from 'three'
 window.THREE = window.THREE || THREE
 import '../vendor/three/examples/js/exporters/GLTFExporter.js'
 import '../vendor/three/examples/js/utils/SkeletonUtils'
-import {gltfLoader} from '../shot-generator-new/utils/gltfLoader'
+import {gltfLoader} from '../shot-generator/utils/gltfLoader'
 import {
   getSceneObjects
 } from '../shared/reducers/shot-generator'

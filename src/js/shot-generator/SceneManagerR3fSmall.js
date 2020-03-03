@@ -121,7 +121,7 @@ const SceneManagerR3fSmall = connect(
       draggedObject.current = null
     }, [updateObjects])
 
-    const fontMesh =  useFontLoader(fontpath, 'fonts/wonder-unit-bmfont/wonderunit-b.png')
+    const fontMesh = useFontLoader(fontpath, 'fonts/wonder-unit-bmfont/wonderunit-b.png')
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
         directionalLightRef.current.rotation.x = 0

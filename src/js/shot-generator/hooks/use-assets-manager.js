@@ -83,7 +83,7 @@ export const loadAsset = (path) => {
           error => {
             cache.set({
               ...cache.get(),
-              [path]: {data: null, status: LOADING_MODE.ERROR, usageCount: current[path].usageCount, lastUsedDate: current[path].lastUsedDate }
+              [path]: {data: null, status: LOADING_MODE.ERROR}
             })
             reject(error)
           }
@@ -96,10 +96,7 @@ export const loadAsset = (path) => {
 }
 
 export const cleanUpCache = () => {
-  let keys = Object.keys(cache.get())
-  for(let i = 0; i < keys.length; i++) {
-    delete cache.get()[keys[i]]
-  }
+  cache.set({})
 }
 /**
  * Hook that allows components to fetch resources

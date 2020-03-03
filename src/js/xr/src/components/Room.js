@@ -3,7 +3,7 @@ const { useMemo, useRef } = React = require('react')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const buildSquareRoom = require('../../../shot-generator/build-square-room')
+const buildSquareRoom = require('../../../shot-generator/utils/build-square-room')
 
 const Room = React.memo(({ texture, width, length, height, visible }) => {
   const ref = useRef()
