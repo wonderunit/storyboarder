@@ -89,13 +89,6 @@ const Editor = React.memo(({
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
     }
   }, [])
-  
-  useEffect(() => {
-    //cleanUpCache()
-    return () => {
-      //cleanUpCache()
-    }
-  }, [board.uid])
 
   /** Resources loading end */
   useEffect(() => {
