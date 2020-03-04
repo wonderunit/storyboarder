@@ -330,6 +330,11 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [lod, isSelected, ready])
 
     useEffect(() => {
+      if(!ref.current || !ready || !lod || !ref.current.children.length || !isSelected) return
+      SGIkHelper.getInstance().initPoleTarget(originalHeight, sceneObject, true)
+    }, [sceneObject.poleTargets])
+
+    useEffect(() => {
         if(!ref.current || objectRotationControl.current) return 
         objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
         objectRotationControl.current.setUpdateCharacter((name, rotation) => { updateCharacterSkeleton({

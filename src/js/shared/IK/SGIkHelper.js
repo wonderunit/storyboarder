@@ -54,6 +54,21 @@ class SGIKHelper extends THREE.Object3D
         if(this.characterObject) ragDoll.controlTargetSelection.initialize();
      
         this.characterObject = object;
+        this.initPoleTarget(height, props)
+        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
+        this.intializedSkinnedMesh = skinnedMesh;
+        ragDoll.cleanUp();
+        let endEffectors = this.targetControls.slice(0, this.controlPoints.children.length);
+        let poleTargets = this.targetControls.slice(this.controlPoints.children.length);
+        ragDoll.initObject(this, object, endEffectors, poleTargets);
+        ragDoll.reinitialize();
+        ragDoll.controlTargetSelection.initialize();
+        this.updateAllTargetPoints();
+    }
+
+    initPoleTarget(height, props, forceUpdate = false)
+    {
+        if(!instance.ragDoll || !this.characterObject) return
         let meshes = this.targetPoints;
         let initializedMeshes = props.poleTargets ? props.poleTargets : [];
         let scaleAspect = height / this.regularHeight;
@@ -86,16 +101,14 @@ class SGIKHelper extends THREE.Object3D
             
             mesh.userData.scaleAspect = scaleAspect;
         }
-        if(this.intializedSkinnedMesh && this.intializedSkinnedMesh.uuid === skinnedMesh.uuid) return;
-        this.intializedSkinnedMesh = skinnedMesh;
-        ragDoll.cleanUp();
-        let endEffectors = this.targetControls.slice(0, this.controlPoints.children.length);
-        let poleTargets = this.targetControls.slice(this.controlPoints.children.length);
-        ragDoll.initObject(this, object, endEffectors, poleTargets);
-        ragDoll.reinitialize();
-        ragDoll.controlTargetSelection.initialize();
-       // ragDoll.controlTargetSelection.initialize();
-        this.updateAllTargetPoints();
+        if(forceUpdate) {
+            let endEffectors = this.targetControls.slice(0, this.controlPoints.children.length);
+            let poleTargets = this.targetControls.slice(this.controlPoints.children.length);
+            this.ragDoll.initObject(this, this.characterObject, endEffectors, poleTargets);
+            this.ragDoll.reinitialize();
+            this.ragDoll.controlTargetSelection.initialize();
+            this.updateAllTargetPoints();
+        }
     }
 
     cleanUpCharacter() 
@@ -131,7 +144,6 @@ class SGIKHelper extends THREE.Object3D
         if(!this.selectedControlPoint) return;
         this.ragDoll.isEnabledIk = true;
         this.selectedControlPoint.isActivated = true;
-       //console.log(this.selectedControlPoint)
         if(this.selectedControlPoint.userData.type === "poleTarget") 
         {
             return;
