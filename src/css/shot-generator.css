@@ -119,13 +119,13 @@ kbd {
 }
 
 #testCursor {
-   position: absolute;
-   width: 21px;
-   height: 45px;
-   z-index: 1000;
-   background-image: url(../img/shot-generator/white_cursor.png);
-   background-repeat: no-repeat;
-   background-size: contain;
+  position: absolute;
+  width: 21px;
+  height: 45px;
+  z-index: 1000;
+  background-image: url(../img/shot-generator/white_cursor.png);
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 
 #toolbar {
@@ -1795,7 +1795,7 @@ a.button,
   color: #fff;
   white-space: pre-wrap;
   will-change: transform;
-  
+
   position: fixed;
   z-index: 9999;
 
@@ -1811,10 +1811,10 @@ a.button,
 .tooltip::before {
   content: '';
   position: absolute;
-  
+
   width: 0;
   height: 0;
-  
+
   /*border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
 
@@ -1849,7 +1849,7 @@ a.button,
 }
 
 .tooltip {
-  animation-duration: 0.2s;
+  animation-duration: 0.15s;
   animation-timing-function: ease-out;
   animation-iteration-count: 1;
   animation-fill-mode: forwards;
@@ -1859,18 +1859,21 @@ a.button,
 @keyframes appear {
   0% {
     opacity: 0.5;
-    transform: translate(0, -24px) scale(0.8);
+    transform: scale(0.8);
   }
   80% {
     transform: scale(1.015);
   }
   100% {
     opacity: 1;
-    transform: translate(0, 0) scale(1);
+    transform: scale(1);
   }
 }
 
 /** TOP */
+.tooltip[class*="top-"] {
+  transform-origin: center bottom;
+}
 .tooltip[class*="top-"]::before {
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
@@ -1891,6 +1894,9 @@ a.button,
 }
 
 /** BOTTOM */
+.tooltip[class*="bottom-"] {
+  transform-origin: center top;
+}
 .tooltip[class*="bottom-"]::before {
   border-left: 10px solid transparent;
   border-right: 10px solid transparent;
@@ -1911,6 +1917,9 @@ a.button,
 }
 
 /** RIGHT */
+.tooltip[class*="right-"] {
+  transform-origin: left center;
+}
 .tooltip[class*="right-"]::before {
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;
@@ -1932,6 +1941,9 @@ a.button,
 }
 
 /** LEFT */
+.tooltip[class*="left-"] {
+  transform-origin: right center;
+}
 .tooltip[class*="left-"]::before {
   border-top: 10px solid transparent;
   border-bottom: 10px solid transparent;

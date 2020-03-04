@@ -31,7 +31,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     if (!isChar(selectedType)) return nullTab
 
     return {
-      tab: <Tab><Icon src='icon-item-camera'/></Tab>,
+      tab: <Tab><Icon src='icon-tab-hand'/></Tab>,
       panel: <Panel><HandInspector/></Panel>
     }
   }, [selectedType])
@@ -40,7 +40,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     if (!isChar(selectedType)) return nullTab
 
     return {
-      tab: <Tab><Icon src='icon-item-camera'/></Tab>,
+      tab: <Tab><Icon src='icon-tab-pose'/></Tab>,
       panel: <Panel><PosePresetsInspector/></Panel>
     }
   }, [selectedType])
@@ -49,7 +49,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     if (!isChar(selectedType) && !isObj(selectedType)) return nullTab
 
     return {
-      tab: <Tab><Icon src='icon-item-camera'/></Tab>,
+      tab: <Tab><Icon src='icon-tab-model'/></Tab>,
       panel: <Panel><ModelInspector/></Panel>
     }
   }, [selectedType])
@@ -58,22 +58,22 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     if (!isChar(selectedType)) return nullTab
 
     return {
-      tab: <Tab><Icon src='icon-item-camera'/></Tab>,
+      tab: <Tab><Icon src='icon-tab-attachable'/></Tab>,
       panel: <Panel><AttachableInspector /></Panel>
     }
   }, [selectedType])
-  
-  
+
+
   return (
     <React.Fragment>
       { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
         <div style={{ margin:"5px 5px 5px 5px" }}>
           Select a Preset Name:
         </div>
-        <div className="column" style={{ flex: 1}}> 
-          <input 
+        <div className="column" style={{ flex: 1}}>
+          <input
             className="modalInput"
-            type="text" 
+            type="text"
             placeholder={ selectedName }
             onChange={ (value) => changeNameTo(value.currentTarget.value) }/>
         </div>
@@ -93,7 +93,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
       </a>
       <Tabs key={id}>
         <div className="tabs-header">
-          <Tab><Icon src="icon-item-camera"/></Tab>
+          <Tab><Icon src="icon-tab-parameters"/></Tab>
           {handPoseTab.tab}
           {charPoseTab.tab}
           {modelTab.tab}
@@ -115,11 +115,11 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
 const getObjectInfo = (state) => {
   const selected = getSelections(state)[0]
   const object = getSceneObjects(state)[selected]
-  
+
   if (!object) {
     return null
   }
-  
+
   return {
     id: selected,
     selectedName: object.name || object.displayName,
