@@ -59,6 +59,10 @@ const Effect = ({renderData, stats}) => {
 const Editor = React.memo(({
   mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
 }) => {
+  if (!board.uid) {
+    return null
+  }
+  
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
   const [stats, setStats] = useState()
@@ -85,13 +89,6 @@ const Editor = React.memo(({
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
     }
   }, [])
-  
-  useEffect(() => {
-    cleanUpCache()
-    return () => {
-      cleanUpCache()
-    }
-  }, [board.uid])
 
   /** Resources loading end */
   useEffect(() => {
@@ -156,8 +153,8 @@ const Editor = React.memo(({
     smallCanvasData.current.gl = gl
   }
 
-
   useExportToGltf(largeCanvasData.current.scene, withState)
+  
   return (
     <FatalErrorBoundary key={board.uid}>
       <div id="root">
@@ -214,8 +211,8 @@ const Editor = React.memo(({
                   noEvents={ true }>
                     <Provider store={ store }>
                       <SceneManagerR3fLarge
-                      renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                      setLargeCanvasData= { setLargeCanvasData }/>
+                        renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
+                        setLargeCanvasData= { setLargeCanvasData }/>
                     </Provider>
                     <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                           stats={ stats } />
