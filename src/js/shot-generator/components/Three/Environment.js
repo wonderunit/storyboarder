@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useMemo } from 'react'
 import {useAsset} from "../../hooks/use-assets-manager"
 import {useUpdate} from 'react-three-fiber'
 import onlyOfTypes from './../../utils/only-of-types'
@@ -14,17 +14,17 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
 
 const Environment = React.memo(({ path, environment }) => {
   const {asset: gltf} = useAsset(path)
-  const group = useRef(new THREE.Group())
   
   const ref = useUpdate(
     self => {
+      console.log(self)
       self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )
 
-  useEffect(() => {
-    if (!gltf) return
-
+  const meshes = useMemo(() => {
+    if (!gltf) return []
+    let children = []
     let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Mesh', 'Group'])
     sceneData.traverse(child => {
       if (child.isMesh) {
@@ -36,28 +36,24 @@ const Environment = React.memo(({ path, environment }) => {
         }
 
         child.material = material
+        children.push( <primitive
+          key={`${child.uuid}`}
+          object={child}
+        />)
       }
     })
+    return children
 
-    group.current.add(...sceneData.children)
-
-    return () => {
-      while (group.current.children.length > 0) {
-        group.current.remove(group.current.children[0])
-      }
-    }
   }, [gltf])
 
   const { x, y, z, visible, rotation, scale } = environment
 
-  return <primitive
+  return <group
     ref={ ref }
 
     userData={{
       type: "environment"
     }}
-
-    object={ group.current }
 
     visible={ visible }
 
@@ -65,7 +61,8 @@ const Environment = React.memo(({ path, environment }) => {
     scale={ [scale, scale, scale] }
     rotation-y={ [rotation] }
   >
-  </primitive>
+     {meshes}
+  </group>
 })
 
 export default Environment

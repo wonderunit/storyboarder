@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect, useCallback } from 'react'
 import { connect } from 'react-redux'
 import { 
     getSelections,
@@ -11,15 +11,13 @@ import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import { OutlineEffect } from '../../../vendor/OutlineEffect'
 import { remote } from 'electron'
+import { image } from 'qr-image'
 
 const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const SaveShot = connect(
     state => ({
-        selections: getSelections(state),
-        data: getSerializedState(state)
-
     }),
     {
         getSelections,
@@ -37,7 +35,6 @@ const SaveShot = connect(
 ( React.memo(({
     withState,
     markSaved,
-    data,
     isPlot = false,
     selectObject
 }) => {
@@ -50,6 +47,10 @@ const SaveShot = connect(
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
+        return () => {
+            imageRenderer.current = null
+            outlineEffect.current = null
+        }
     }, [])
 
     const saveShot = () => {
@@ -59,7 +60,7 @@ const SaveShot = connect(
                 let cameraImage = renderImagesForBoard(dispatch, state)
                 ipcRenderer.send('saveShot', {
                   uid: state.board.uid,
-                  data: data,
+                  data: getSerializedState(state),
                   images: {
                     'camera': cameraImage,
                   }
@@ -78,17 +79,16 @@ const SaveShot = connect(
         }
     }
   
-    const insertShot = () => {
+    const insertShot = useCallback(() => {
         selectObject(null)
         if(!isPlot) {
             withState((dispatch, state) => {
                 let cameraImage = renderImagesForBoard(dispatch, state)
-
                 // NOTE we do this first, since we get new data on insertShot complete
-                dispatch(markSaved())
+                markSaved()
 
                 ipcRenderer.send('insertShot', {
-                  data: data,
+                  data: getSerializedState(state),
                   images: {
                     camera: cameraImage
                   },
@@ -106,7 +106,7 @@ const SaveShot = connect(
               }, 100)
      
         }
-    }
+    }, [scene])
   
     // add handlers once, and use refs for callbacks
     useEffect(() => {
