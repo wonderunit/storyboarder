@@ -43,12 +43,6 @@ SubMenuFragments.help = [
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq/#How-do-I-get-started') }
   },
   {
-    label: 'Shot Generator Tutorial…',
-    click () {
-      ipcRenderer.send('shot-generator:menu:help:tutorial')
-    }
-  },
-  {
     label: 'Frequently Asked Questions…',
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq') }
   },
