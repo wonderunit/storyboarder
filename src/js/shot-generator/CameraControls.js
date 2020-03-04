@@ -82,7 +82,8 @@ class CameraControls {
     this.mouseY = event.pageY
     this.mouseDragOn = true
     
-    this.undoGroupStart()
+    if(this.enabled === true )
+      this.undoGroupStart()
   
     this.onChange({active: this.mouseDragOn, object: this._object})
   }
@@ -90,7 +91,7 @@ class CameraControls {
   onPointerUp ( event ) {
     event.preventDefault()
     
-    if (this.mouseDragOn) {
+    if (this.mouseDragOn && this.enabled === true ) {
       this.onChange({active: false, object: this._object})
       this.undoGroupEnd()
     }

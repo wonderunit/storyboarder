@@ -157,8 +157,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             lod.children[i].geometry.dispose()
             lod.children[i].material.dispose()
         }
-
-        
       }
     }, [])
 

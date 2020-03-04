@@ -396,7 +396,16 @@ const InteractionManager = connect(
     const onPointerUp = event => {
         event.preventDefault()
         const { x, y } = mouse(event)
+        SGIkHelper.getInstance().deselectControlPoint(event)
         if (dragTarget) {
+          console.log(dragTarget)
+          if(dragTarget.target.userData.type === "character") {
+            let attachables = scene.__interaction.filter(object => object.userData.bindedId === dragTarget.target.userData.id)
+            console.log(attachables)
+            for(let i = 0; i < attachables.length; i ++) {
+              attachables[i].saveToStore()
+            }
+          }
           endDrag(updateObjects)
           setDragTarget(null)
     
@@ -405,7 +414,7 @@ const InteractionManager = connect(
         enableCameraControls(true)
         const selections = takeSelections()
         const sceneObjects = takeSceneObjects()
-        SGIkHelper.getInstance().deselectControlPoint(event)
+      
         if (event.target === activeGL.domElement) {
             const rect = activeGL.domElement.getBoundingClientRect();
             mousePosition.current.set(event.clientX - rect.left, event.clientY - rect.top)

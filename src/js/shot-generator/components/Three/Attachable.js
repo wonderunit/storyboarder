@@ -291,7 +291,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       if(!characterObject.current || !ref.current || !characterLOD || !ref.current.parent) return
       characterObject.current.updateWorldMatrix(false, true)
       saveToStore()
-    }, [character.x, character.y, character.z, character.rotation, character.height, character.skeleton])
+    }, [character.rotation, character.height, character.posePresetId, character.handPosePresetId])
 
     const getProperCharacterScale = () => {
       let scale = sceneObject.size * (character.height / 1.8)
@@ -367,10 +367,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
         userData={{
           type: "attachable",
           id: sceneObject.id,
-
           bindedId: sceneObject.attachToId,
           isRotationEnabled: false,
         }}
+        saveToStore={saveToStore}
         >
           {meshes}
     </group>
