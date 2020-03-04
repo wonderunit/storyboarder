@@ -17,32 +17,21 @@ function useComponentSize(ref) {
   let [ComponentSize, setComponentSize] = useState(getSize(ref.current))
   let mainElement = useRef()
   let asideElement = useRef()
-  function handleResize() {
+  const handleResize = () => {
     if (ref && ref.current) {
       setComponentSize(getSize(mainElement.current, asideElement.current))
     }
   }
 
   useLayoutEffect(() => {
-    handleResize()
     mainElement.current = document.getElementById("main")
     asideElement.current = document.getElementById("aside")
-    /* if (ResizeObserver) {
-      let resizeObserver = new ResizeObserver(() => handleResize())
-      resizeObserver.observe(ref.current)
-
-      return () => {
-        resizeObserver.disconnect(ref.current)
-        resizeObserver = null
-      }
-    } else  */ {
-      window.addEventListener('resize', handleResize)
-      
-      return () => {
-        window.removeEventListener('resize', handleResize) 
-      }
-    }
+    handleResize()
+    window.addEventListener('resize', handleResize)
     
+    return () => {
+      window.removeEventListener('resize', handleResize) 
+    }
   }, [ref.current])
 
   return ComponentSize

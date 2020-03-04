@@ -45,7 +45,6 @@ const SceneManagerR3fSmall = connect(
     renderData,
     mainRenderData,
     setActiveCamera
-
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -97,7 +96,7 @@ const SceneManagerR3fSmall = connect(
     const onPointerDown = useCallback((e) => {
       let match
       e.object.traverseAncestors((o) => {
-        if(o.userData.id) match =  o
+        if(o.userData.id) match = o
       })
       if(!match.userData || match.userData.locked ) return
       selectObject(match.userData.id)
@@ -129,7 +128,6 @@ const SceneManagerR3fSmall = connect(
         directionalLightRef.current.rotation.y = world.directional.rotation
         directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world])
-
 
     const autofitOrtho = useCallback(() => {
       let minMax = [9999,-9999,9999,-9999]
@@ -305,7 +303,6 @@ const SceneManagerR3fSmall = connect(
         isTopDown={ true } />
     }
     </group>
-
     })
 )
 export default SceneManagerR3fSmall

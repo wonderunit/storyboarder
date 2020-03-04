@@ -396,7 +396,6 @@ const SceneManagerR3fLarge = connect(
               visible={world.room.visible} />
     }
     </group>
-
     })
 )
 export default SceneManagerR3fLarge
