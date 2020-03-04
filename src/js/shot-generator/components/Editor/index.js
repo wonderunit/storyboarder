@@ -176,7 +176,8 @@ const Editor = React.memo(({
                 tabIndex={0}
                 gl2={true}
                 orthographic={ true }
-                updateDefaultCamera={ false }>
+                updateDefaultCamera={ false }
+                noEvents={ true }>
                 <Provider store={ store }>
                   <SceneManagerR3fSmall
                     renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
@@ -209,7 +210,8 @@ const Editor = React.memo(({
                   key="camera-canvas"
                   id="camera-canvas"
                   gl2={true}
-                  updateDefaultCamera={ true }>
+                  updateDefaultCamera={ true }
+                  noEvents={ true }>
                     <Provider store={ store }>
                       <SceneManagerR3fLarge
                       renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }

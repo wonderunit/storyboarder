@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import React, { useRef, useEffect, useCallback, useMemo } from 'react'
+import React, { useRef, useEffect, useCallback, useMemo, useLayoutEffect } from 'react'
 import { 
   getSceneObjects,
   getWorld,
@@ -51,7 +51,7 @@ const SceneManagerR3fSmall = connect(
     const rootRef = useRef()
     const draggedObject = useRef(null)
 
-    const actualGL = useMemo(() => renderData ? renderData.gl : gl)
+    const actualGL = useMemo(() => renderData ? renderData.gl : gl, [renderData])
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager(true)
@@ -107,14 +107,14 @@ const SceneManagerR3fSmall = connect(
       draggedObject.current = match
       const { x, y } = mouse(e)
       prepareDrag( draggedObject.current, {x, y, camera, scene, selections:[match.userData.id] })
-    }, [scene, camera, selections, sceneObjects, mouse])
+    }, [selections, mouse])
 
     const onPointerMove = useCallback((e) => {
       if(!draggedObject.current) return
       const { x, y } = mouse(e)
       drag({ x, y }, draggedObject.current, camera, selections)
       updateStore(updateObjects)
-    }, [camera, selections, mouse])
+    }, [selections, mouse])
 
     const onPointerUp = useCallback((e) => {
       endDrag(updateObjects)
@@ -217,51 +217,35 @@ const SceneManagerR3fSmall = connect(
     }, [onPointerUp])
 
     const raycaster = useRef(new THREE.Raycaster())
-    const intersectLogic = (e) => {
+    const intersectLogic = useCallback((e) => {
       const { x, y } = mouse(e)
       raycaster.current.setFromCamera({x, y}, camera)
       var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
-      if(!intersects[0] || (intersects[0].object.userData && intersects[0].object.userData.type === "ground")) {
-        
-        selectObject(null)
+      let target = intersects[0]
+      if(!target || (target.object.userData && target.object.userData.type === "ground")) {
+        deselect()
         return
       }
-      onPointerDown({ clientX: e.clientX, clientY: e.clientY, object: intersects[0].object })
-    }
+      onPointerDown({ clientX: e.clientX, clientY: e.clientY, object: target.object })
+    }, [onPointerDown, actualGL])
 
     const deselect = () => {
         selectObject(null)
     }
 
-    useEffect(() => {
-      if(!renderData) return
-      renderData.gl.domElement.addEventListener("pointerdown", intersectLogic)
-      renderData.gl.domElement.addEventListener("pointermove", onPointerMove)
-      renderData.gl.domElement.addEventListener("pointerup", onPointerUp)
+    useLayoutEffect(() => {
+      actualGL.domElement.addEventListener("pointerdown", intersectLogic)
+      actualGL.domElement.addEventListener("pointermove", onPointerMove)
+      actualGL.domElement.addEventListener("pointerup", onPointerUp)
       return () => {
-        if(!renderData) return
-        renderData.gl.domElement.removeEventListener("pointerdown", intersectLogic)
-        renderData.gl.domElement.removeEventListener("pointermove", onPointerMove)
-        renderData.gl.domElement.removeEventListener("pointerup", onPointerUp)
+        actualGL.domElement.removeEventListener("pointerdown", intersectLogic)
+        actualGL.domElement.removeEventListener("pointermove", onPointerMove)
+        actualGL.domElement.removeEventListener("pointerup", onPointerUp)
       }
-    }, [renderData, intersectLogic])
-
-    useEffect(() => {
-      if(renderData) return
-        gl.domElement.addEventListener("pointermove", onPointerMove)
-        gl.domElement.addEventListener("pointerdown", deselect)
-      return () => {
-        if(renderData) return
-          gl.domElement.removeEventListener("pointermove", onPointerMove)
-          gl.domElement.removeEventListener("pointerdown", deselect)
-      }
-    }, [onPointerMove])
+    }, [actualGL, intersectLogic, onPointerMove])
 
     /////Render components
-    return <group ref={rootRef}
-      onPointerDown={ e => {
-        selectObject(null)
-      }}>
+    return <group ref={rootRef}>
    
       <SaveShot isPlot={ true }/>
       <ambientLight
@@ -284,16 +268,7 @@ const SceneManagerR3fSmall = connect(
               path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath})}
               sceneObject={ sceneObject }
               isIcon={true}
-              isSelected={ selections.includes(sceneObject.id) }
-              onPointerUp={e => {
-                e.stopPropagation()
-                renderData || onPointerUp(e)
-              }}
-              onPointerDown={e => {
-                e.stopPropagation()
-                renderData ||  onPointerDown(e)
-              }}
-              />
+              isSelected={ selections.includes(sceneObject.id) }/>
         })
     }
 
@@ -306,16 +281,7 @@ const SceneManagerR3fSmall = connect(
               text={ sceneObject.name ? sceneObject.name : sceneObject.displayName }
               sceneObject={ sceneObject }
               fontMesh={ fontMesh }
-              isSelected={ selections.includes(sceneObject.id) }
-              onPointerUp={e => {
-                e.stopPropagation()
-                renderData || onPointerUp(e)
-              }}
-              onPointerDown={e => {
-                e.stopPropagation()
-                renderData || onPointerDown(e)
-              }}
-          />
+              isSelected={ selections.includes(sceneObject.id) }/>
         })
     }
     {
@@ -328,17 +294,7 @@ const SceneManagerR3fSmall = connect(
                 sceneObject={ sceneObject }
                 mainCamera={ mainRenderData.camera }
                 isSelected={ selections.includes(sceneObject.id) }
-                fontMesh={ fontMesh } 
-                onPointerUp={e => {
-                  e.stopPropagation()
-                  renderData || onPointerUp(e)
-                }}
-                onPointerDown={e => {
-                  e.stopPropagation()
-                  renderData ||  onPointerDown(e)
-                }}
-                
-                />
+                fontMesh={ fontMesh } />
         })
     }
     {
