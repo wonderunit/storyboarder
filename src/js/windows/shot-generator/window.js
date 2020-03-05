@@ -61,8 +61,6 @@ const service = require('./service')
 
 let xrServer
 
-const storyboarderLoaded = observable(false)
-
 
 window.addEventListener('load', () => {
   ipcRenderer.send('shot-generator:window:loaded')
@@ -160,7 +158,6 @@ const loadBoard = async (board) => {
 
 // load via Storyboarder request
 ipcRenderer.on('shot-generator:reload', async (event) => {
-  storyboarderLoaded.set(false)
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
 
@@ -182,25 +179,18 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
   }
 
   await preloadData()
-
-  storyboarderLoaded.set(true)
 })
 ipcRenderer.on('update', (event, { board }) => {
-  
   store.dispatch(setBoard(board))
-  storyboarderLoaded.set(true)
 })
 
 // load via server request (e.g.: triggered by VR)
 ipcRenderer.on('loadBoardByUid', async (event, uid) => {
-  storyboarderLoaded.set(false)
   cleanUpCache()
   await preloadData()
 
   let board = await service.getBoard(uid)
   await loadBoard(board)
-  
-  storyboarderLoaded.set(true)
 })
 
 ipcRenderer.on('shot-generator:edit:undo', () => {
@@ -219,29 +209,9 @@ window.$r = { store }
 log.info('ready!')
 electronUtil.disableZoom()
 
-const EditorComponent = () => {
-  const [loaded, setLoaded] = useState(storyboarderLoaded.get())
-  
-  useEffect(() => {
-    const onLoadChange = (value) => {
-      setLoaded(value)
-    }
-
-    storyboarderLoaded.subscribe(onLoadChange)
-    
-    return () => {
-      storyboarderLoaded.unsubscribe(onLoadChange)
-    }
-  }, [])
-  
-  return (
-    <Editor store={store}/>
-  )
-}
-
 ReactDOM.render(
   <Provider store={store}>
-    <EditorComponent/>
+    <Editor store={store}/>
   </Provider>,
   document.getElementById('main')
 )
