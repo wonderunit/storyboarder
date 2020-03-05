@@ -68,6 +68,8 @@ const Boards = require('./components/ui/Boards')
 const BonesHelper = require('./three/BonesHelper')
 const Voicer = require('./three/Voicer')
 
+const musicSystem = require('./music-system')
+
 const { createSelector } = require('reselect')
 
 // TODO move to selectors if useful
@@ -198,6 +200,8 @@ const SceneContent = connect(
       logComponent = <Log position={[0, -0.15, -1]} />
     }
 
+    // music and sound
+    const SOUND_FX_GAIN = 2
     const [cameraAudioListener] = useState(() => new THREE.AudioListener())
     const [atmosphereAudioFilter] = useState(() => {
       const audioContext = THREE.AudioContext.getContext()
@@ -228,7 +232,7 @@ const SceneContent = connect(
       const audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.welcomeAudioBuffer)
       audio.setLoop(false)
-      audio.setVolume(0.35)
+      audio.setVolume(0.35 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -238,24 +242,36 @@ const SceneContent = connect(
       audio.setBuffer(resources.atmosphereAudioBuffer)
       audio.setFilter(atmosphereAudioFilter)
       audio.setLoop(true)
-      audio.setVolume(0.3)
+      audio.setVolume(0.4)
       audio.play()
       audio.stop()
-      // audio.add(new THREE.PositionalAudioHelper(audio))
+
+      // attach the music system
+      musicSystem.init({
+        urlMap: {
+          'C4': '/data/system/xr/snd/vr-instrument-c4.ogg',
+          'C5': '/data/system/xr/snd/vr-instrument-c5.ogg',
+          'C6': '/data/system/xr/snd/vr-instrument-c6.ogg'
+        },
+        audioContext: audio.context,
+        audioNode: audio,
+        onComplete: musicSystem.start
+      })
+
       return audio
     }, [])
     const beamVoicer = useMemo(() => {
       let voicer = new Voicer(cameraAudioListener, 6, resources.beamAudioBuffer, {
         releaseTime: 0.05
       })
-      voicer.setVolume(1)
+      voicer.setVolume(0.5 * SOUND_FX_GAIN)
       return voicer
     }, [])
     const teleportAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.teleportAudioBuffer)
       audio.setLoop(false)
-      audio.setVolume(1)
+      audio.setVolume(1 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -264,7 +280,7 @@ const SceneContent = connect(
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.selectAudioBuffer)
       audio.setLoop(false)
-      audio.setVolume(0.5)
+      audio.setVolume(0.5 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -274,7 +290,7 @@ const SceneContent = connect(
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.undoBuffer)
       audio.setLoop(false)
-      audio.setVolume(1)
+      audio.setVolume(1 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -283,28 +299,28 @@ const SceneContent = connect(
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.redoBuffer)
       audio.setLoop(false)
-      audio.setVolume(1)
+      audio.setVolume(1 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
     }, [])
     const boneHoverVoicer = useMemo(() => {
       let voicer = new Voicer(cameraAudioListener, 8, resources.boneHoverBuffer)
-      voicer.setVolume(1)
+      voicer.setVolume(1 * SOUND_FX_GAIN)
       return voicer
     }, [])
     const boneDroneVoicer = useMemo(() => {
       let voicer = new Voicer(cameraAudioListener, 8, resources.boneDroneBuffer, {
         releaseTime: 0.2
       })
-      voicer.setVolume(0.6)
+      voicer.setVolume(0.6 * SOUND_FX_GAIN)
       return voicer
     }, [])
     const fastSwooshAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.fastSwooshBuffer)
       audio.setLoop(false)
-      audio.setVolume(0.1)
+      audio.setVolume(0.1 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -314,13 +330,14 @@ const SceneContent = connect(
       audio.setBuffer(resources.dropBuffer)
       audio.play()
       audio.stop()
+      audio.setVolume(1 * SOUND_FX_GAIN)
       return audio
     }, [])
     const uiCreateAudio = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiCreateBuffer)
       audio.setLoop(false)
-      audio.setVolume(1)
+      audio.setVolume(1 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -329,7 +346,7 @@ const SceneContent = connect(
     const xrPosing = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.xrPosing)
-      audio.setVolume(1)
+      audio.setVolume(0.35 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -338,7 +355,7 @@ const SceneContent = connect(
     const xrEndPosing = useMemo(() => {
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.xrEndPosing)
-      audio.setVolume(1)
+      audio.setVolume(0.35 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -348,7 +365,7 @@ const SceneContent = connect(
       let audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.uiDeleteBuffer)
       audio.setLoop(false)
-      audio.setVolume(1)
+      audio.setVolume(1 * SOUND_FX_GAIN)
       audio.play()
       audio.stop()
       return audio
@@ -360,7 +377,7 @@ const SceneContent = connect(
           positional: false
         }
       })
-      voicer.setVolume(0.5)
+      voicer.setVolume(0.5 * SOUND_FX_GAIN)
       return voicer
     }, [])
 
@@ -570,7 +587,7 @@ const SceneContent = connect(
             <primitive object={cameraAudioListener} />
           </primitive>
 
-          { showHUD && 
+          { showHUD &&
             <Boards
               mode={uiCurrent.value.controls}
               locked={uiCurrent.context.locked}
@@ -635,7 +652,7 @@ const SceneContent = connect(
                // : null
             )
           }
-          
+
 
           {
             modelObjectIds.map(id => {
@@ -685,8 +702,7 @@ const SceneContent = connect(
                     character={ sceneObjects[sceneObject.attachToId] }/>
                 </SimpleErrorBoundary>
             })
-          } 
-
+          }
           {
             lightIds.map(id =>
               <Light
@@ -729,8 +745,7 @@ const SceneContent = connect(
                 sceneObject={sceneObject}
                 visibleToCam={sceneObject.visibleToCam}
                 isSelected={selections.includes(id)}/>
-              }
-            )
+            })
           }
 
           {
@@ -902,7 +917,6 @@ const SceneManagerXR = () => {
         uiCreateBuffer, uiDeleteBuffer,
         vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
         xrPosing, xrEndPosing
-
       ]
 
       // fail if any app resources are missing

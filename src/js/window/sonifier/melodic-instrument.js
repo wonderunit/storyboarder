@@ -1,5 +1,4 @@
 const Tone = require('tone')
-const tonal = require('tonal')
 
 const { remote } = require('electron')
 const prefsModule = require('electron').remote.require('./prefs')
