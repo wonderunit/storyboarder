@@ -102,9 +102,11 @@ class SGIKHelper extends THREE.Object3D
             mesh.userData.scaleAspect = scaleAspect;
         }
         if(forceUpdate) {
+            //this.ragDoll.cleanUp()
             let endEffectors = this.targetControls.slice(0, this.controlPoints.children.length);
             let poleTargets = this.targetControls.slice(this.controlPoints.children.length);
-            this.ragDoll.initObject(this, this.characterObject, endEffectors, poleTargets);
+            this.updateMatrixWorld(true);
+            this.ragDoll.createPoleTargets(poleTargets);//  initObject(this, this.characterObject, endEffectors, poleTargets);
             this.ragDoll.reinitialize();
             this.ragDoll.controlTargetSelection.initialize();
             this.updateAllTargetPoints();

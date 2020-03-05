@@ -346,7 +346,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
     useEffect(() => {
       if(!ref.current || !ready || !lod || !ref.current.children.length || !isSelected) return
-      SGIkHelper.getInstance().initPoleTarget(originalHeight, sceneObject)
+      ref.current.remove(SGIkHelper.getInstance())
+      SGIkHelper.getInstance().initPoleTarget(originalHeight, sceneObject, true)
+      ref.current.add(SGIkHelper.getInstance())
     }, [sceneObject.poleTargets])
 
     useEffect(() => {
