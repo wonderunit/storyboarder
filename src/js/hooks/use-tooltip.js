@@ -1,4 +1,4 @@
-import React, {useCallback, useRef} from 'react'
+import React, {useCallback, useEffect, useRef} from 'react'
 
 import {acceleratorAsHtml} from '../utils'
 
@@ -116,10 +116,18 @@ const useTooltip = (title, description, keys, position = 'top center', time = 20
       content.current.parentNode.removeChild(content.current)
     }
   }, [])
+  
+  useEffect(() => () => {
+    if (content.current.parentNode) {
+      content.current.parentNode.removeChild(content.current)
+    }
+  }, [])
 
   return {
     onPointerEnter,
-    onPointerLeave
+    onPointerLeave,
+    onPointerDown: onPointerLeave,
+    onPointerUp: onPointerLeaveg
   };
 }
 
