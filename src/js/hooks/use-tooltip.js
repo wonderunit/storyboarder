@@ -127,7 +127,7 @@ const useTooltip = (title, description, keys, position = 'top center', time = 20
     onPointerEnter,
     onPointerLeave,
     onPointerDown: onPointerLeave,
-    onPointerUp: onPointerLeaveg
+    onPointerUp: onPointerLeave
   };
 }
 
