@@ -23,8 +23,7 @@ class ObjectRotationControl
     }
     //#region Events
     onMouseDown = event => {this.object.isRotated = true;};
-    onMouseMove = event => {this.updateCharacter(this.object.name, this.object.rotation);};
-    onMouseUp = event => {this.object.isRotated = false; this.object.isRotationChanged = true;};
+    onMouseUp = event => {this.updateCharacter(this.object.name, this.object.rotation); this.object.isRotated = false; this.object.isRotationChanged = true;};
     //#enderegion
 
     selectObject(object, hitmeshid)
@@ -42,7 +41,6 @@ class ObjectRotationControl
         this.control.attach(object);
         this.object = object;
         this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
-        this.control.addEventListener("transformMoved", this.onMouseMove, false);
         this.control.addEventListener("transformMouseUp", this.onMouseUp, false);
     }
 
@@ -59,7 +57,6 @@ class ObjectRotationControl
         this.control.dispose();
         this.object = null;
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
-        this.control.removeEventListener("transformMoved", this.onMouseMove);
         this.control.removeEventListener("transformMouseUp", this.onMouseUp);
     }
 
