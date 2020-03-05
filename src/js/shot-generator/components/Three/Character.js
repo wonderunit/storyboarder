@@ -10,7 +10,7 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 
-const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData}) => {
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState}) => {
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
@@ -23,7 +23,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const objectRotationControl = useRef(null)
-    const [skeletonModified, setSkeletonModified] = useState(null) 
     useEffect(() => {
       return () => {
         ref.current.remove(BonesHelper.getInstance())
@@ -137,15 +136,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [skeleton, sceneObject.skeleton, ready])
 
     useEffect(() => {
-      if(!isFullyUpdate.current)
-      {
-        setSkeletonModified({})
-      } else {
-        isFullyUpdate.current = false
-      }
-    }, [sceneObject.posePresetId, sceneObject.skeleton, sceneObject.handPosePresetId])
-
-    useEffect(() => {
       return () => {
         SGIkHelper.getInstance().cleanUpCharacter()
         ref.current.remove(BonesHelper.getInstance())
@@ -184,11 +174,36 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       () => sceneObject.height / originalHeight,
       [sceneObject.height, lod]
     )
+
+    useEffect(() => {
+      if(!isFullyUpdate.current)
+      {
+        withState((dispatch, state) => {
+          let type = state.lastAction.type
+          if(!type.includes("UNDO") && !type.includes("REDO"))
+            fullyUpdateIkSkeleton()
+        })
+      } else {
+        isFullyUpdate.current = false
+      }
+    }, [sceneObject.posePresetId, sceneObject.skeleton, skeleton, sceneObject.handPosePresetId])
     
     // Saves current skeleton to store 
     // We need full character skeleton and it's bones across the project
     // for different stuff like list of bones, or selected bone rotation 
     useEffect(() => {
+      if(!ref.current || !skeleton ) return
+      //fullyUpdateIkSkeleton()
+    }, [skeleton])
+    // Saves current skeleton to store 
+    // We need full character skeleton and it's bones across the project
+    // for different stuff like list of bones, or selected bone rotation 
+    useEffect(() => {
+      if(!ref.current || !skeleton ) return
+      //fullyUpdateIkSkeleton()
+    }, [skeleton])
+
+    const fullyUpdateIkSkeleton = () => {
       if(!ref.current || !skeleton ) return
       let changedSkeleton = []
       ref.current.updateWorldMatrix(true, true)
@@ -227,7 +242,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
       isFullyUpdate.current = true
       updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
-    }, [skeleton, skeletonModified, ready])
+    }
 
     useEffect(() => {
       if(!camera) return
@@ -331,21 +346,23 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
     useEffect(() => {
       if(!ref.current || !ready || !lod || !ref.current.children.length || !isSelected) return
-      SGIkHelper.getInstance().initPoleTarget(originalHeight, sceneObject, true)
+      SGIkHelper.getInstance().initPoleTarget(originalHeight, sceneObject)
     }, [sceneObject.poleTargets])
 
     useEffect(() => {
         if(!ref.current || objectRotationControl.current) return 
         objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
-        objectRotationControl.current.setUpdateCharacter((name, rotation) => { updateCharacterSkeleton({
-          id: sceneObject.id,
-          name : name,
-          rotation:
-          {
-            x : rotation.x,
-            y : rotation.y,
-            z : rotation.z,
-          }
+        objectRotationControl.current.setUpdateCharacter((name, rotation) => { 
+          
+          updateCharacterSkeleton({
+            id: sceneObject.id,
+            name : name,
+            rotation:
+            {
+              x : rotation.x,
+              y : rotation.y,
+              z : rotation.z,
+            }
         } ) })
     }, [ref.current])
   

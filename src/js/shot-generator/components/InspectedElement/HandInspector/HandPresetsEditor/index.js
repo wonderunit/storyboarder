@@ -10,7 +10,10 @@ import {
   updateObject,
   createHandPosePreset,
 
-  getSceneObjects, getSelections
+  getSceneObjects, 
+  getSelections,
+  undoGroupStart,
+  undoGroupEnd,
 } from '../../../../../shared/reducers/shot-generator'
 import defaultPosePresets from '../../../../../shared/reducers/shot-generator-presets/hand-poses.json'
 import presetsStorage from '../../../../../shared/store/presetsStorage'
@@ -56,6 +59,8 @@ const HandPresetsEditor = connect(
   {
     updateObject,
     createHandPosePreset,
+    undoGroupStart,
+    undoGroupEnd,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -67,6 +72,8 @@ React.memo(({
   updateObject,
   createHandPosePreset,
   characterPath,
+  undoGroupStart,
+  undoGroupEnd,
   withState
 }) => {
   const thumbnailRenderer = useRef()
@@ -242,7 +249,9 @@ React.memo(({
 
               thumbnailRenderer,
               withState,
-              selectedHand
+              selectedHand,
+              undoGroupStart,
+              undoGroupEnd,
             }}
             elements={results}
             numCols={NUM_COLS}

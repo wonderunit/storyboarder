@@ -42,6 +42,7 @@ const CharacterPresetsEditor = connect(
       let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === sceneObject.id).map(obj => obj.id)
       let character = Object.values(sceneObjects).filter(obj => obj.id === sceneObject.id)[0]
       let defaultCharacterPreset = getDefaultPosePreset()
+      dispatch(undoGroupStart())
       dispatch(deleteObjects(attachableIds))
       let attachables = initializeAttachables(character, preset)
       if(attachables)
@@ -61,6 +62,7 @@ const CharacterPresetsEditor = connect(
         posePresetId: defaultCharacterPreset.id,
         skeleton: defaultCharacterPreset.state.skeleton
       }))
+      dispatch(undoGroupEnd())
     },
     createCharacterPreset: ({ id, name, sceneObject, attachables }) => (dispatch, getState) => {
       // add the character data to a named preset

@@ -8,7 +8,10 @@ import request from 'request'
 import {
   updateObject,
   createPosePreset,
-  getSceneObjects, getSelections
+  getSceneObjects,
+  getSelections,
+  undoGroupStart,
+  undoGroupEnd,
 } from '../../../../shared/reducers/shot-generator'
 
 import defaultPosePresets from '../../../../shared/reducers/shot-generator-presets/poses.json'
@@ -40,6 +43,8 @@ const PosePresetsEditor = connect(
   {
     updateObject,
     createPosePreset,
+    undoGroupStart,
+    undoGroupEnd,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -50,6 +55,8 @@ React.memo(({
   characterPath,
   updateObject,
   createPosePreset,
+  undoGroupStart,
+  undoGroupEnd,
   withState
 }) => {
   const thumbnailRenderer = useRef()
@@ -132,9 +139,10 @@ React.memo(({
           }
         })
 
+        undoGroupStart()
         // select the preset in the list
         updateObject(id, { posePresetId: newPreset.id })
-
+        undoGroupEnd()
         // get updated state (with newly created pose preset)
         withState((dispatch, state) => {
           // ... and save it to the presets file

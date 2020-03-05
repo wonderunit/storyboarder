@@ -8,7 +8,9 @@ import {
   getSceneObjects, 
   getSelections,
   getDefaultPosePreset,
-  updateCharacterIkSkeleton
+  updateCharacterIkSkeleton,
+  undoGroupStart,
+  undoGroupEnd,
 } from '../../../../shared/reducers/shot-generator'
 import ModelLoader from '../../../../services/model-loader'
 
@@ -42,6 +44,8 @@ const ModelInspector = connect(
   {
     updateObject,
     updateCharacterIkSkeleton,
+    undoGroupStart,
+    undoGroupEnd,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState()),
   }
 )(
@@ -53,8 +57,10 @@ const ModelInspector = connect(
 
     updateObject,
     updateCharacterIkSkeleton,
-    withState
-
+    undoGroupStart,
+    undoGroupEnd,
+    
+    withState,
   }) => {
       const sortedModels = useRef([])
       const [results, setResults] = useState([])
@@ -87,6 +93,7 @@ const ModelInspector = connect(
           let isCurrentModelUser = isUserModel(currentModel)
           withState((dispatch, state) => 
           {
+            undoGroupStart()
             if(isPrevModelUser && !isCurrentModelUser) {
               let defaultSkeleton = getDefaultPosePreset().state.skeleton
               let skeleton = Object.keys(defaultSkeleton).map((key) => {
@@ -101,11 +108,16 @@ const ModelInspector = connect(
               })
             } else if(!isPrevModelUser && isCurrentModelUser) {
               // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
+
               batch(() => {
                 dispatch(updateObject(sceneObject.id, { model: currentModel }))
                 dispatch(updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]}))
               })
+           
+            } else {
+              updateObject(sceneObject.id, { model: currentModel })
             }
+            undoGroupEnd()
           })
         } 
         prevModel.current = currentModel
@@ -129,8 +141,11 @@ const ModelInspector = connect(
       const isSelected = useCallback((item) => model === item.id, [model])
 
       const onSelectItem = useCallback((model) => {
-        updateObject(sceneObject.id, { model: model.id})
-        if(sceneObject.type === "character") resetSkeleton(model.id)
+        if(sceneObject.type === "character") {
+          resetSkeleton(model.id)
+        } else {
+          updateObject(sceneObject.id, { model: model.id })
+        }
       }, [sceneObject.id])
 
       const selectValue = useCallback(() => {

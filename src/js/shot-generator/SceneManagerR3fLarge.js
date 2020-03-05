@@ -95,6 +95,7 @@ const SceneManagerR3fLarge = connect(
     renderData,
     selectedAttachable,
     deleteObjects,
+    withState
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -307,6 +308,7 @@ const SceneManagerR3fLarge = connect(
                 updateCharacterSkeleton={ updateCharacterSkeleton }
                 updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
                 renderData={renderData}
+                withState={ withState }
                 />
               </SimpleErrorBoundary>
         })

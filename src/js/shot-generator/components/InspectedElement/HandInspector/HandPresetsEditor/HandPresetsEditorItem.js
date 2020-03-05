@@ -106,7 +106,7 @@ const setupRenderer = ({ thumbnailRenderer, attachment, preset, selectedHand }) 
   bone.parent.parent.parent.updateWorldMatrix(true, true)
 }
 
-const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand }) => {
+const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand, undoGroupStart, undoGroupEnd, }) => {
     const src = path.join(remote.app.getPath('userData'), 'presets', 'handPoses', `${preset.id}.jpg`)
     const onPointerDown = event => {
       event.preventDefault()
@@ -138,7 +138,9 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : 
           }
         }
       }
+      undoGroupStart()
       updateObject(id, { handPosePresetId, handSkeleton })
+      undoGroupEnd()
     }
 
     useMemo(() => {

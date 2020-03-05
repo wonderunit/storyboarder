@@ -33,7 +33,8 @@ const actionSanitizer = action => (
 const stateSanitizer = state => state.attachments ? { ...state, attachments: '<<ATTACHMENTS>>' } : state
 const reduxDevtoolsExtensionOptions = {
   actionSanitizer,
-  stateSanitizer
+  stateSanitizer,
+  trace: true,
 }
 const composeEnhancers = (
     window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&

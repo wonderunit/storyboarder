@@ -180,6 +180,7 @@ const InteractionManager = connect(
     }, [])
 
     const enableCameraControls = (state) => {
+      if(!cameraControlsView.current) return
       cameraControlsView.current.reset()
       cameraControlsView.current.enabled = state
     }
@@ -225,12 +226,13 @@ const InteractionManager = connect(
           let { target, x, y } = dragTarget
           prepareDrag( target, { x, y, useIcons:true, camera, scene, selections })
           enableCameraControls(false)
+          undoGroupStart()
         }
     }, [dragTarget])
 
     const onPointerDown = event => {
-        event.preventDefault()
-        filterIntersectables()
+      event.preventDefault()
+      filterIntersectables()
         let sceneObjects = takeSceneObjects()
         let selections = takeSelections()
         cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
@@ -256,6 +258,7 @@ const InteractionManager = connect(
                 // don't select any bone
                 selectBone(null)
             }
+            cameraControlsView.current.onPointerDown(event)
         } else {
     
             let shouldDrag = false
@@ -365,8 +368,10 @@ const InteractionManager = connect(
               setLastDownId(target.userData.id)
             
              if (shouldDrag) {
-                undoGroupStart()
                 setDragTarget({ target, x, y })
+             }
+             else {
+              cameraControlsView.current.onPointerDown(event)
              }
         }
     }

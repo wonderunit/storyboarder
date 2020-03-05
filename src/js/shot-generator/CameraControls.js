@@ -42,7 +42,7 @@ class CameraControls {
 
   intializeEvents() {
     window.addEventListener( 'pointermove', this.onPointerMove, false )
-    this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
+    //this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
     document.addEventListener( 'pointerup', this.onPointerUp, false )
     KeyCommandsSingleton.getInstance().addKeyCommand({
       key: "camera-controls", 
@@ -54,7 +54,7 @@ class CameraControls {
   
   dispose () {
     window.removeEventListener( 'pointermove', this.onPointerMove )
-    this.domElement.removeEventListener( 'pointerdown', this.onPointerDown )
+  //  this.domElement.removeEventListener( 'pointerdown', this.onPointerDown )
     document.removeEventListener( 'pointerup', this.onPointerUp )
     KeyCommandsSingleton.getInstance().removeKeyCommand({key: "camera-controls"})
     window.removeEventListener( 'keyup', this.onKeyUp )
@@ -82,8 +82,10 @@ class CameraControls {
     this.mouseY = event.pageY
     this.mouseDragOn = true
     
-    if(this.enabled === true )
+    if(this.enabled === true ) {
+      console.log("Undo group start for camera")
       this.undoGroupStart()
+    }
   
     this.onChange({active: this.mouseDragOn, object: this._object})
   }
@@ -116,7 +118,7 @@ class CameraControls {
   onKeyDown ( event ) {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
-    this.addKey(event.keyCode)
+    let shouldRemoveKey = true
     
     switch ( event.keyCode ) {
       case 38: /*up*/
@@ -137,6 +139,8 @@ class CameraControls {
       case 16:
         this.runMode = true
         break
+      default:
+        shouldRemoveKey = false
     }
     
     switch ( event.keyCode ) {
@@ -150,12 +154,15 @@ class CameraControls {
       case 68: /*D*/ this.moveRight = true; break
       case 82: /*R*/ this.moveUp = true; break
       case 70: /*F*/ this.moveDown = true; break
+      default:
+        shouldRemoveKey = false
     }
+    if(shouldRemoveKey)
+      this.addKey(event.keyCode)
   }
   
   onKeyUp ( event ) {
-    this.removeKey(event.keyCode)
-    
+    let shouldRemoveKey = true
     switch ( event.keyCode ) {
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;
@@ -168,7 +175,11 @@ class CameraControls {
       case 82: /*R*/ this.moveUp = false; break;
       case 70: /*F*/ this.moveDown = false; break;
       case 16: /* shift */ this.runMode = false; break;
+      default:
+        shouldRemoveKey = false
     }
+    if(shouldRemoveKey)
+      this.removeKey(event.keyCode)
   }
   
   onWheel ( event ) {

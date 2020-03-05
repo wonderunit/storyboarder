@@ -691,6 +691,7 @@ const initialState = {
     mouseMode: false,
     orbitMode: false
   },
+  lastAction: { type:null },
   devices: {
     0: {
       analog: {
@@ -1105,8 +1106,8 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
-        draft[action.payload.id].skeleton = {}
-
+        if(!draft[action.payload.id]) return;
+       // draft[action.payload.id].skeleton = {}
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
           let position = bone.position
@@ -1355,6 +1356,8 @@ const presetsReducer = (state = initialState.presets, action) => {
 
 const mainReducer = (state/* = initialState*/, action) => {
   return produce(state, draft => {
+    draft.lastAction.type = action.type
+
     switch (action.type) {
       case 'LOAD_SCENE':
         draft.mainViewCamera = 'live'
@@ -1589,7 +1592,7 @@ const rootReducer = reduceReducers(
     const meta = metaReducer(state.meta, action, state)
   
     return (meta !== state.meta) ? { ...state, meta} : state
-  }
+  },
 )
 
 module.exports = {
