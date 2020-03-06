@@ -37,7 +37,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, deleteObjects, character }) => {
+const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, deleteObjects, character, withState }) => {
     const {asset: gltf} = useAsset(path)
     const {asset: characterModel} = useAsset(сharacterModelPath)
     const [characterLOD, setCharacterLOD] = useState()
@@ -322,6 +322,11 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }
 
     const saveToStore = () => {
+      withState((dispatch, state) => {
+        let type = state.lastAction.type
+        if(type.includes("UNDO") || type.includes("REDO"))
+          return;
+      })
       let position = ref.current.worldPosition()// new THREE.Vector3()
       let quaternion = ref.current.worldQuaternion()
       let matrix = ref.current.matrix.clone()
