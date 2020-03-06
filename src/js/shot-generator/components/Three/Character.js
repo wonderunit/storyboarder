@@ -193,14 +193,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     // for different stuff like list of bones, or selected bone rotation 
     useEffect(() => {
       if(!ref.current || !skeleton ) return
-      //fullyUpdateIkSkeleton()
-    }, [skeleton])
-    // Saves current skeleton to store 
-    // We need full character skeleton and it's bones across the project
-    // for different stuff like list of bones, or selected bone rotation 
-    useEffect(() => {
-      if(!ref.current || !skeleton ) return
-      //fullyUpdateIkSkeleton()
+      fullyUpdateIkSkeleton()
     }, [skeleton])
 
     const fullyUpdateIkSkeleton = () => {

@@ -83,7 +83,6 @@ class CameraControls {
     this.mouseDragOn = true
     
     if(this.enabled === true ) {
-      console.log("Undo group start for camera")
       this.undoGroupStart()
     }
   
