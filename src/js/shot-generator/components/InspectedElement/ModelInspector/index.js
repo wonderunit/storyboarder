@@ -117,7 +117,9 @@ const ModelInspector = connect(
             } else {
               updateObject(sceneObject.id, { model: currentModel })
             }
-            undoGroupEnd()
+            setTimeout(() => {
+              undoGroupEnd()
+            }, 100)
           })
         } 
         prevModel.current = currentModel

@@ -25,12 +25,13 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const objectRotationControl = useRef(null)
     useEffect(() => {
       return () => {
-        ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
+
+        ref.current.remove(BonesHelper.getInstance())
         if(objectRotationControl.current)
           objectRotationControl.current.deselectObject()
       }
-    }, [gltf])
+    }, [sceneObject.model])
 
     const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(() => {
       if(!gltf) {
@@ -188,13 +189,13 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
     }, [sceneObject.posePresetId, sceneObject.skeleton, skeleton, sceneObject.handPosePresetId])
     
-    // Saves current skeleton to store 
+/*     // Saves current skeleton to store 
     // We need full character skeleton and it's bones across the project
     // for different stuff like list of bones, or selected bone rotation 
     useEffect(() => {
       if(!ref.current || !skeleton ) return
       fullyUpdateIkSkeleton()
-    }, [skeleton])
+    }, [skeleton]) */
 
     const fullyUpdateIkSkeleton = () => {
       if(!ref.current || !skeleton ) return

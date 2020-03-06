@@ -32,6 +32,9 @@ class SGIKHelper extends THREE.Object3D
         this.selectedControlPoint = null;
         this.intializedSkinnedMesh = null;
         this.isIkDisabled = false;
+        for( var i = this.children.length - 1; i >= 0; i--) { 
+            this.remove(this.children[i])
+        }
         this.add(this.poleTargets);
         this.isPoleTargetsVisible = true;
         this.add(this.controlPoints);
@@ -46,6 +49,7 @@ class SGIKHelper extends THREE.Object3D
         let controlTargetSelection = new ControlTargetSelection(domElement, camera, this.targetControls);
         this.ragDoll.controlTargetSelection = controlTargetSelection;
         this.isUpdating = false;
+ 
     }
 
     initialize(object, height, skinnedMesh, props)
@@ -115,7 +119,8 @@ class SGIKHelper extends THREE.Object3D
 
     cleanUpCharacter() 
     {
-        if(!this.ragDoll || !this.ragDoll.originalObject) return;
+        console.log("Clean up character")
+        if(!this.ragDoll) return;
         this.ragDoll.updateReact();
         this.intializedSkinnedMesh = null;
         this.characterObject = null;
@@ -295,6 +300,7 @@ class SGIKHelper extends THREE.Object3D
     { 
         super.updateMatrixWorld(value); 
         if(this.isUpdating) return;
+        if(!this.characterObject.getObjectByProperty("type", "LOD")) return;
         this.isUpdating = true;
         this.update();
         this.isUpdating = false;
