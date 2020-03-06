@@ -102,17 +102,17 @@ const ModelInspector = connect(
                   rotation: defaultSkeleton[key].rotation
                 }
               })
-              batch(() => {
-                dispatch(updateObject(sceneObject.id, { model: currentModel }))
-                dispatch(updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton}))
-              })
+             // batch(() => {
+              updateObject(sceneObject.id, { model: currentModel })
+              updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton})
+            //  })
             } else if(!isPrevModelUser && isCurrentModelUser) {
               // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
 
-              batch(() => {
-                dispatch(updateObject(sceneObject.id, { model: currentModel }))
-                dispatch(updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]}))
-              })
+           //   batch(() => {
+              updateObject(sceneObject.id, { model: currentModel })
+              updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
+            //  })
            
             } else {
               updateObject(sceneObject.id, { model: currentModel })

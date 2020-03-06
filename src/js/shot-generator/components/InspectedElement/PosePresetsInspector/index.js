@@ -208,7 +208,9 @@ React.memo(({
             attachment,
             updateObject,
 
-            thumbnailRenderer
+            thumbnailRenderer,
+            undoGroupStart,
+            undoGroupEnd,
           }}
           Component={PosePresetInspectorItem}
           elements={results}

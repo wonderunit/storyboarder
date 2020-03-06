@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import React, { useState, useRef, useCallback } from 'react'
-import { connect } from 'react-redux'
+import { connect, batch } from 'react-redux'
 import {
   updateObject,
 
@@ -42,27 +42,35 @@ const CharacterPresetsEditor = connect(
       let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === sceneObject.id).map(obj => obj.id)
       let character = Object.values(sceneObjects).filter(obj => obj.id === sceneObject.id)[0]
       let defaultCharacterPreset = getDefaultPosePreset()
-      dispatch(undoGroupStart())
-      dispatch(deleteObjects(attachableIds))
-      let attachables = initializeAttachables(character, preset)
-      if(attachables)
-        dispatch(createObjects(attachables))
-      dispatch(updateObject(sceneObject.id, {
-        characterPresetId,
-        height: preset.state.height,
-        model: preset.state.model,
-        headScale: preset.state.headScale,
-        tintColor: preset.state.tintColor,
-        morphTargets: {
-          mesomorphic: preset.state.morphTargets.mesomorphic,
-          ectomorphic: preset.state.morphTargets.ectomorphic,
-          endomorphic: preset.state.morphTargets.endomorphic
-        },
-        name: sceneObject.name || preset.name,
-        posePresetId: defaultCharacterPreset.id,
-        skeleton: defaultCharacterPreset.state.skeleton
-      }))
-      dispatch(undoGroupEnd())
+        dispatch(undoGroupStart())
+        dispatch(deleteObjects(attachableIds))
+
+        dispatch(updateObject(sceneObject.id, {
+          characterPresetId,
+          height: preset.state.height,
+          model: preset.state.model,
+          headScale: preset.state.headScale,
+          tintColor: preset.state.tintColor,
+          rotation: 0,
+          morphTargets: {
+            mesomorphic: preset.state.morphTargets.mesomorphic,
+            ectomorphic: preset.state.morphTargets.ectomorphic,
+            endomorphic: preset.state.morphTargets.endomorphic
+          },
+          name: sceneObject.name || preset.name,
+          posePresetId: defaultCharacterPreset.id,
+          skeleton: defaultCharacterPreset.state.skeleton
+        }))
+        setTimeout(() => {
+          sceneObjects = getSceneObjects(getState())
+          character = Object.values(sceneObjects).filter(obj => obj.id === sceneObject.id)[0]
+          let attachables = initializeAttachables(character, preset)
+          if(attachables)
+          dispatch(createObjects(attachables))
+
+          dispatch(undoGroupEnd())
+        }, 200)
+
     },
     createCharacterPreset: ({ id, name, sceneObject, attachables }) => (dispatch, getState) => {
       // add the character data to a named preset
@@ -229,7 +237,8 @@ const initializeAttachables = (sceneObject, preset) => {
     prevParent.rotation.set(0, preset.state.presetRotation, 0 )
     prevParent.updateMatrixWorld(true)
 
-
+    console.log(prevParent)
+    console.log(sceneObject.skeleton)
     // Init prev parent position
   
     let attachableObject = new THREE.Object3D()
@@ -259,7 +268,6 @@ const initializeAttachables = (sceneObject, preset) => {
       newAttachable.type = attachable.type
       newAttachable.size = attachable.size
       newAttachable.type = "attachable"
-      //newAttachable.status = "PENDING"
       newAttachable.bindBone = attachable.bindBone
 
       attachableObject.position.set(attachable.x, attachable.y, attachable.z)
@@ -277,7 +285,6 @@ const initializeAttachables = (sceneObject, preset) => {
       let quaternion = attachableObject.quaternion
       let euler = new THREE.Euler().setFromQuaternion(quaternion)
       newAttachable.rotation = { x: euler.x, y: euler.y, z: euler.z }
-    //  prevBoneGroup.remove(attachableObject)
       newAttachables.push(newAttachable)
       prevParent.remove(prevBoneGroup)
       currentParent.remove(currentBoneGroup)
