@@ -42,6 +42,7 @@ class IKHelper extends THREE.Object3D
         let meshes = this.targetPoints;
         let initializedMeshes = skinnedMesh.parent.parent.userData.poleTargets ? skinnedMesh.parent.parent.userData.poleTargets : [];
         let scaleAspect = height / this.regularHeight;
+        let defaultScale = 0.1;
         for(let i = 0; i < meshes.length; i++)
         {
             let mesh = meshes[i];
@@ -51,16 +52,22 @@ class IKHelper extends THREE.Object3D
             if(intializedMesh)
             {
                 let pos = intializedMesh.position;
-                mesh.position.set(pos.x, pos.y, pos.z);
-                this.intializedSkinnedMesh.worldToLocal(mesh.position);
-                mesh.updateMatrixWorld();
+                let characterHeight = intializedMesh.currentCharacterHeight;
+                let scaleDifference = 1;
+                if(characterHeight) {
+                    let heightDifference = height / characterHeight;
+                    let newScale = defaultScale * heightDifference;
+                    scaleDifference = newScale / defaultScale;
+                }
+                mesh.position.set(pos.x, pos.y, pos.z).multiplyScalar( scaleDifference);
+                mesh.updateMatrixWorld(true);
                 mesh.userData.isInitialized = true;
             }
             else
             {
                 mesh.userData.isInitialized = false;
             }
-            mesh.scale.set(0.1, 0.1, 0.1).multiplyScalar(scaleAspect);
+            mesh.scale.set(defaultScale, defaultScale, defaultScale).multiplyScalar(scaleAspect);
             mesh.userData.scaleAspect = scaleAspect;
         }
         ragDoll.initObject(skinnedMesh.parent.parent, this.controlPoints.children, this.poleTargets.children);
@@ -95,6 +102,7 @@ class IKHelper extends THREE.Object3D
         if(this.selectedControlPoint)
         {  
             this.ragDoll.isEnabledIk = false;
+            let characterObject = this.intializedSkinnedMesh.parent.parent;
             if(this.selectedControlPoint.userData.type === "controlPoint")
             {
                 this.controlPoints.attach(this.selectedControlPoint);
@@ -103,7 +111,13 @@ class IKHelper extends THREE.Object3D
             {
                 this.poleTargets.attach(this.selectedControlPoint);
                 this.poleTargets.updateMatrixWorld(true)
-                let worldPosition = this.selectedControlPoint.worldPosition();
+                let characterMatrix = characterObject.matrixWorld
+                let characterInverseMatrix = characterObject.getInverseMatrixWorld()
+                this.selectedControlPoint.applyMatrix(characterInverseMatrix)
+                this.selectedControlPoint.updateMatrixWorld(true)
+                let worldPosition = this.selectedControlPoint.position;
+                this.selectedControlPoint.applyMatrix(characterMatrix)
+                this.selectedControlPoint.updateMatrixWorld(true)
                 this.selectedControlPoint.userData.isInitialized = true;
                 let poleTargets = {};
                 poleTargets[this.selectedControlPoint.name] = 
@@ -113,9 +127,10 @@ class IKHelper extends THREE.Object3D
                         x: worldPosition.x,
                         y: worldPosition.y,
                         z: worldPosition.z,
-                    }
+                    },
+                    currentCharacterHeight: characterObject.userData.height,
                 };
-                this.updatePoleTargets(poleTargets);
+                this.ragDoll.updatePoleTargets(poleTargets);
             }
             if(this.selectedControlPoint.name === "Hips")
             {
@@ -129,7 +144,6 @@ class IKHelper extends THREE.Object3D
             }
             this.selectedControlPoint = null;
             this.ragDoll.updateReact();
-            let characterObject = this.intializedSkinnedMesh.parent.parent;
             let changes = {};
             if(characterObject.attachables) {
                 for(let i = 0; i < characterObject.attachables.length; i++) {
@@ -205,8 +219,8 @@ class IKHelper extends THREE.Object3D
         this.ragDoll.updateCharacterRotation(updateCharacterSkeleton);
         this.ragDoll.updateSkeleton(updateSkeleton);
         this.ragDoll.updateCharacterPos(updateCharacterPos);
+        this.ragDoll.setUpdatePoleTargets(updatePoleTargets);
         this.updateObjects = updateObjects;
-        this.updatePoleTargets = updatePoleTargets;
     }
 
     resetTargetPoint(targetPoint)
@@ -281,6 +295,10 @@ class IKHelper extends THREE.Object3D
         {
             this.parent.remove(this);
         }
+    }
+
+    clone() {
+        
     }
 }
 

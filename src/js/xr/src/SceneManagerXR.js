@@ -683,21 +683,26 @@ const SceneContent = connect(
           }
 
           {
-            attachablesIds.map(id =>
-              getAsset(getFilepathForModelByType(sceneObjects[id]))
-                ? <SimpleErrorBoundary key={id}>
+            attachablesIds.map(id => {
+              let sceneObject = sceneObjects[id]
+              let characterModel = getAsset(getFilepathForModelByType(sceneObjects[sceneObject.attachToId]))
+              let gltf = getAsset(getFilepathForModelByType(sceneObjects[id]))
+              let character = scene.__interaction.filter(o => o.userData.id === sceneObject.attachToId)[0]
+              return <SimpleErrorBoundary key={id}>
                   <Attachable
                     key={id}
-                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
+                    gltf={gltf}
                     sceneObject={sceneObjects[id]}
                     isSelected={ selectedAttachable === id ? true : false}
                     modelSettings={models[sceneObjects[id].model] || undefined}
-                    updateObject={updateObject}/>
+                    updateObject={updateObject}
+                    characterModel={ characterModel }
+                    characterChildrenLength={ character ? character.children.length : 0 }
+                    rootRef={ rootRef.current } 
+                    character={ sceneObjects[sceneObject.attachToId] }/>
                 </SimpleErrorBoundary>
-                : null
-            )
+            })
           }
-
           {
             lightIds.map(id =>
               <Light

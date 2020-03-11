@@ -19,7 +19,7 @@ const getFilepathForModelByType = ({ type, model }) => {
   } else {
     switch (type) {
       case 'character':
-        return `/data/system/dummies/gltf/${model}-lod.glb`
+        return `/data/system/dummies/gltf/${model}.glb`
       case 'object':
         return `/data/system/objects/${model}.glb`
       case 'attachable':

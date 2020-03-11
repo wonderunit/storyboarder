@@ -7,7 +7,6 @@ class ObjectRotationControl
         this.control.rotationOnly = true;
         this.control.setMode('rotate');
         this.control.size = 0.2;
-        this.domElement = domElement;
         this.control.userData.type = "objectControl";
         this.control.traverse(child => {
             child.userData.type = "objectControl";
@@ -17,10 +16,14 @@ class ObjectRotationControl
         this.control.characterId = characterId;
         this.isEnabled = false;
     }
+
+    set IsEnabled(value) 
+    {
+        this.control.enabled = value
+    }
     //#region Events
     onMouseDown = event => {this.object.isRotated = true;};
-    onMouseMove = event => {this.updateCharacter(this.object.name, this.object.rotation);};
-    onMouseUp = event => {this.object.isRotated = false; this.object.isRotationChanged = true;};
+    onMouseUp = event => {this.updateCharacter(this.object.name, this.object.rotation); this.object.isRotated = false; this.object.isRotationChanged = true;};
     //#enderegion
 
     selectObject(object, hitmeshid)
@@ -38,7 +41,6 @@ class ObjectRotationControl
         this.control.attach(object);
         this.object = object;
         this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
-        this.control.addEventListener("transformMoved", this.onMouseMove, false);
         this.control.addEventListener("transformMouseUp", this.onMouseUp, false);
     }
 
@@ -55,7 +57,6 @@ class ObjectRotationControl
         this.control.dispose();
         this.object = null;
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
-        this.control.removeEventListener("transformMoved", this.onMouseMove);
         this.control.removeEventListener("transformMouseUp", this.onMouseUp);
     }
 
@@ -63,6 +64,14 @@ class ObjectRotationControl
     {
         this.control.changeCamera(camera);
         this.control.updateMatrixWorld();
+    }
+
+    cleanUp()
+    {
+        this.deselectObject();
+        this.control.cleanUp();
+        this.control = null;
+        this.scene = null;
     }
 }
 module.exports = ObjectRotationControl;

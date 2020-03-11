@@ -114,46 +114,67 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.canSwitch = true;
 
-	this.addToScene = function() 
+	this.addToScene = () =>
 	{
-		domElement.addEventListener( "pointerdown", onPointerDown, false );
-		domElement.addEventListener( "touchstart", onPointerDown, false );
-		domElement.addEventListener( "pointermove", onPointerHover, false );
-		domElement.addEventListener( "touchmove", onPointerHover, false );
-		domElement.addEventListener( "touchmove", onPointerMove, false );
+		this.domElement.addEventListener( "pointerdown", onPointerDown, false );
+		this.domElement.addEventListener( "touchstart", onPointerDown, false );
+		this.domElement.addEventListener( "pointermove", onPointerHover, false );
+		this.domElement.addEventListener( "touchmove", onPointerHover, false );
+		this.domElement.addEventListener( "touchmove", onPointerMove, false );
 		document.addEventListener( "pointerup", onPointerUp, false );
-		domElement.addEventListener( "touchend", onPointerUp, false );
-		domElement.addEventListener( "touchcancel", onPointerUp, false );
-		domElement.addEventListener( "touchleave", onPointerUp, false );
+		this.domElement.addEventListener( "touchend", onPointerUp, false );
+		this.domElement.addEventListener( "touchcancel", onPointerUp, false );
+		this.domElement.addEventListener( "touchleave", onPointerUp, false );
 		if(this.canSwitch)
 		window.addEventListener( "keydown", onKeyDown, false );
 		
 	}
 	
-	this.reset = function()
+	this.reset = () =>
 	{
 		this.setMode("translate");
 	}
 	
 	this.controlSelected = true;
 	this.removePointerDownEvent = () => {
-		domElement.removeEventListener( "pointerdown", onPointerDown );
+		this.domElement.removeEventListener( "pointerdown", onPointerDown );
 	}
-	this.dispose = function () 
+	this.dispose = () =>
 	{
-		domElement.removeEventListener( "pointerdown", onPointerDown );
+		this.domElement.removeEventListener( "pointerdown", onPointerDown );
 		document.removeEventListener( "pointermove", onPointerMove, false );
-		domElement.removeEventListener( "touchstart", onPointerDown );
-		domElement.removeEventListener( "pointermove", onPointerHover );
-		domElement.removeEventListener( "touchmove", onPointerHover );
-		domElement.removeEventListener( "touchmove", onPointerMove );
+		this.domElement.removeEventListener( "touchstart", onPointerDown );
+		this.domElement.removeEventListener( "pointermove", onPointerHover );
+		this.domElement.removeEventListener( "touchmove", onPointerHover );
+		this.domElement.removeEventListener( "touchmove", onPointerMove );
 		document.removeEventListener( "pointerup", onPointerUp );
-		domElement.removeEventListener( "touchend", onPointerUp );
-		domElement.removeEventListener( "touchcancel", onPointerUp );
-		domElement.removeEventListener( "touchleave", onPointerUp );
+		this.domElement.removeEventListener( "touchend", onPointerUp );
+		this.domElement.removeEventListener( "touchcancel", onPointerUp );
+		this.domElement.removeEventListener( "touchleave", onPointerUp );
 		if(this.canSwitch)
 			window.removeEventListener( "keydown", onKeyDown );
 	};
+
+	this.cleanUp = () => 
+	{
+		this.camera = null;
+		domElement = null;
+		this.dispose();
+		_gizmo.traverse((child) => {
+			child.material && child.material.dispose();
+			child.geometry && child.geometry.dispose();
+		})
+		_gizmo.gizmo = {}; 
+		_gizmo.picker = {}; 
+		_gizmo.helper = {}; 
+		_gizmo = null;
+		_plane.traverse((child) => {
+			child.material && child.material.dispose();
+			child.geometry && child.geometry.dispose();
+		})
+		_plane = null;
+
+	}
 
 	this.changeCamera = (camera) =>
 	{
@@ -568,11 +589,11 @@ const TransformControls = function ( camera, domElement ) {
 		scope.keyDown( event );
 	}
 
-	function getPointer( event ) {
+	const getPointer = ( event ) => {
 
 		var pointer = event.changedTouches ? event.changedTouches[ 0 ] : event;
 
-		var rect = domElement.getBoundingClientRect();
+		var rect = this.domElement.getBoundingClientRect();
 
 		return {
 			x: ( pointer.clientX - rect.left ) / rect.width * 2 - 1,
@@ -694,7 +715,7 @@ const TransformControlsGizmo = function () {
 	//#endregion
 	// shared materials
 	let rotationalGizmoRadius = 1;
-	let rotationalGizmoTube = rotationalGizmoRadius / 9;
+	let rotationalGizmoTube = rotationalGizmoRadius / 12;
 
 	var gizmoMaterial = new THREE.MeshBasicMaterial({
 		depthTest: false,
@@ -715,6 +736,14 @@ const TransformControlsGizmo = function () {
 	let defaultLineWidth = 1;
 
 	// Make unique material for each axis/color
+	var matX = gizmoMaterial.clone();
+	matX.color.set( 0x640AA1 );
+
+	var matY = gizmoMaterial.clone();
+	matY.color.set( 0x6D22A1 );
+
+	var matZ = gizmoMaterial.clone();
+	matZ.color.set( 0x8951B0);
 
 	var matInvisible = gizmoMaterial.clone();
 	matInvisible.opacity = 0.15;
@@ -828,22 +857,22 @@ const TransformControlsGizmo = function () {
 	var gizmoScale  = {};
 	var pickerScale = {};
 	var helperScale = {};
-
+	let tubularSegments = 50;
+	let offset = -0.01;
 	gizmoRotate = {
 		X: [
-			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
+			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matX ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
 		],
 		Y: [
-			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matYellow ), null, [ Math.PI / 2, 0, 0 ]],
+			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matY ), null, [ Math.PI / 2, 0, 0 ]],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matBlue ), null, [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matZ ), null, [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
-			[ new THREE.Line( CircleGeometry(1.25, 1), matLineYellowTransparent ), null, [ 0, Math.PI / 2, 0 ] ],
+		
 		],
 		XYZE: [
-			[  new THREE.Line( CircleGeometry(1, 1), matLineGray ), null, [ 0, Math.PI / 2, 0 ] ]
 		]
 		};
 
@@ -852,19 +881,19 @@ const TransformControlsGizmo = function () {
 
 	pickerRotate = {
 		X: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
 		],
 		Y: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matGreen ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
 		],
 		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, 24 ), matInvisible ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matBlue ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 		],
 		E: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 2, 24 ), matInvisible ) ]
+			
 		],
 		XYZE: [
-			[ new THREE.Mesh( new THREE.SphereBufferGeometry( 0.4, 10, 8 ), matInvisible ) ]
+			
 		]
 	};
 
@@ -996,9 +1025,9 @@ const TransformControlsGizmo = function () {
 
 				gizmo.add(object);
 
-				object.layers.disable(0)
-				object.layers.enable(1)
-				object.layers.disable(2)
+				//object.layers.disable(0)
+				//object.layers.enable(1)
+				//object.layers.disable(2)
 			}
 
 		}

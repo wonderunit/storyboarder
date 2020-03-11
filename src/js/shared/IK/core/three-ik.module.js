@@ -1217,12 +1217,12 @@ var IKHelper = function (_Object3D2) {
 }(Object3D);
 
 if (typeof window !== 'undefined' && _typeof(window.THREE) === 'object') {
-  window.THREE.IK = IK;
-  window.THREE.IKChain = IKChain;
-  window.THREE.IKJoint = IKJoint;
-  window.THREE.IKBallConstraint = IKBallConstraint;
-  window.THREE.IKHingeConstraint = IKHingeConstraint;
-  window.THREE.IKHelper = IKHelper;
+  THREE.IK = IK;
+  THREE.IKChain = IKChain;
+  THREE.IKJoint = IKJoint;
+  THREE.IKBallConstraint = IKBallConstraint;
+  THREE.IKHingeConstraint = IKHingeConstraint;
+  THREE.IKHelper = IKHelper;
 }
 
 module.exports =  { IK, IKChain, IKJoint, IKBallConstraint, IKHingeConstraint, IKHelper };

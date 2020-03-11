@@ -38,6 +38,12 @@ class XRRagdoll extends XRIKObject
         this.updateCharPosition = updateCharPosition;
     }
 
+    setUpdatePoleTargets(updatePoleTargets)
+    {
+        console.log("Set update pole taget method")
+        this.updatePoleTargets = updatePoleTargets;
+    }
+
     // Runs cycle which is updating object
     update()
     {
@@ -175,6 +181,16 @@ class XRRagdoll extends XRIKObject
             {
                 poleTarget = new PoleTarget();
                 poleTarget.mesh = poleTargetMesh;
+                
+                let boneMatrix = this.resourceManager.getMatrix4();
+                this.takeBoneInTheMeshSpace(this.rigMesh, poleTargetMesh, boneMatrix);
+                let bonePosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+                this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
+                let hipsPosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+                this.resourceManager.release(boneMatrix);
+
+                let hipsOffset = bonePosition.sub(hipsPosition);
+                poleTarget.offsetWithoutHips = hipsOffset.clone();
             }
             else
             {
@@ -198,7 +214,6 @@ class XRRagdoll extends XRIKObject
         poleTarget.initialOffset = offset.multiplyScalar(poleTargetMesh.userData.scaleAspect);
         this.calculatePoleTargetOffset(poleTarget, chain);
         poleTarget.initialize(poleTarget.poleOffset);
-        
         return poleTarget;
     }
 
@@ -208,10 +223,17 @@ class XRRagdoll extends XRIKObject
     calculatePoleTargetOffset(poleTarget, chain)
     {
         let offset = poleTarget.initialOffset;
-        let position = chain.joints[chain.joints.length - 2].bone.worldPosition();
-        let hipsOffset = position.clone().sub(this.hips.worldPosition())
-        hipsOffset.add(this.hips.position);
+        let bone = chain.joints[chain.joints.length - 2].bone;
+        let boneMatrix = this.resourceManager.getMatrix4();
+        this.takeBoneInTheMeshSpace(this.rigMesh, bone, boneMatrix);
+        let bonePosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+        this.takeBoneInTheMeshSpace(this.rigMesh, this.hips, boneMatrix);
+        let hipsPosition = new THREE.Vector3().setFromMatrixPosition(boneMatrix)
+        this.resourceManager.release(boneMatrix);
+        let hipsOffset = bonePosition.sub(hipsPosition);
         hipsOffset.add(offset);
+        poleTarget.offsetWithoutHips = hipsOffset.clone();
+        hipsOffset.add(this.hips.position);
         poleTarget.poleOffset = hipsOffset;
     }
 
@@ -305,6 +327,37 @@ class XRRagdoll extends XRIKObject
             ikBones.push(bone);
         }
         this.updateCharacterSkeleton(ikBones);
+    }
+
+    updateAllPoleTargets()
+    {
+        let chainObjects = this.chainObjectsValues;
+        let poleTargetsPosition = {};
+        for(let i = 0; i < chainObjects.length; i++)
+        {
+            if(!chainObjects[i].poleConstraint) continue;
+            let poleTarget = chainObjects[i].poleConstraint.poleTarget;
+            let characterMatrix = this.originalMesh.matrixWorld;
+            let characterInverseMatrix = new THREE.Matrix4().getInverse(characterMatrix)
+            console.log(this)
+
+            poleTarget.mesh.applyMatrix(characterInverseMatrix);
+            poleTarget.mesh.updateMatrixWorld(true);
+            let worldPosition = poleTarget.mesh.position;
+            poleTarget.mesh.applyMatrix(characterMatrix);
+            poleTarget.mesh.updateMatrixWorld(true);
+            
+            poleTargetsPosition[poleTarget.mesh.name] = 
+            {
+                position: 
+                {
+                    x: worldPosition.x,
+                    y: worldPosition.y,
+                    z: worldPosition.z,
+                }
+            };
+        }
+        this.updatePoleTargets(poleTargetsPosition)
     }
 
     // Sets limbs rotation to control target rotation

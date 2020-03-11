@@ -39,6 +39,8 @@ jspm_packages
 dist/
 !src/js/vendor/**/dist
 
+src/build
+
 .vscode
 
 .DS_Store

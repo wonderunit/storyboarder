@@ -20,6 +20,8 @@ const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
 //
 const getSceneObjects = state => state.undoable.present.sceneObjects
 
+const getSceneObjectIds = state => Object.values(state.undoable.present.sceneObjects).map(sceneObject => { return {id: sceneObject.id, type: sceneObject.type} })
+
 const getSelections = state => state.undoable.present.selections
 
 const getActiveCamera = state => state.undoable.present.activeCamera
@@ -218,54 +220,20 @@ const migrateWorldFog = world => ({
 
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
-  
-  if (props.visible != null) {
-    draft.visible = props.visible
-  }
-  
   if (props.hasOwnProperty('locked')) {
     if (props.locked) {
       draft.locked = true
     } else {
       draft.locked = false
     }
+    delete props["locked"]
   }
   
   if (draft.locked) {
     return
   }
 
-  // update skeleton first
-  // so that subsequent changes to height and headScale take effect
-  if (props.hasOwnProperty('skeleton')) {
-    draft.skeleton = props.skeleton
-  }
-
-  if (props.hasOwnProperty('handSkeleton')) {
-    draft.handSkeleton = props.handSkeleton
-  }
   
-  if (props.x != null) {
-    draft.x = props.x
-  }
-  if (props.y != null) {
-    draft.y = props.y
-  }
-  if (props.z != null) {
-    draft.z = props.z
-  }
-  
-  if (props.children != null) {
-    draft.children = props.children
-  }
-  
-  if (props.group != null) {
-    draft.group = props.group
-  }
-
-  if (props.fov != null) {
-    draft.fov = props.fov
-  }
   if (props.rotation != null) {
     if (draft.type === 'object' || draft.type === 'image') {
       // MERGE
@@ -276,140 +244,44 @@ const updateObject = (draft, state, props, { models }) => {
     } else {
       draft.rotation = props.rotation
     }
-  }
-  if (props.tilt != null) {
-    draft.tilt = props.tilt
-  }
-  if (props.roll != null) {
-    draft.roll = props.roll
+    delete props["rotation"]
   }
   if (props.model != null) {
     draft.model = props.model
-
+    
     // if a character's model is changing
     if (draft.type === 'character') {
       // reset the height ...
       draft.height = models[props.model]
-        // ... to default (if known) ...
-        ? models[props.model].height
-        // ... otherwise, a reasonable value
-        : 1.6
+      // ... to default (if known) ...
+      ? models[props.model].height
+      // ... otherwise, a reasonable value
+      : 1.6
     }
-    
     draft = withDisplayName(draft)
+    delete props["model"]
   }
 
-  if (props.width != null) {
-    draft.width = props.width
-  }
-  if (props.height != null) {
-    draft.height = props.height
-  }
-  if (props.depth != null) {
-    draft.depth = props.depth
-  }
-
-  if (props.headScale != null) {
-    draft.headScale = props.headScale
-  }
-
-  if (props.tintColor != null) {
-    draft.tintColor = props.tintColor
-  }
 
   if (props.morphTargets != null) {
     Object.entries(props.morphTargets).forEach(([key, value]) => {
       draft.morphTargets[key] = value
     })
+    delete props["morphTargets"]
   }
-
-  // allow a null value for name
-  if (props.hasOwnProperty('name')) {
-    draft.name = props.name
-  }
-
-  if (props.intensity != null) {
-    draft.intensity = props.intensity
-  }
-
-  if (props.angle != null) {
-    draft.angle = props.angle
-  }
-
-  if (props.penumbra != null) {
-    draft.penumbra = props.penumbra
-  }
-
-  if (props.decay != null) {
-    draft.decay = props.decay
-  }
-
-  if (props.distance != null) {
-    draft.distance = props.distance
-  }
-
-
-
-  // for volumes
-  if (props.numberOfLayers != null) {
-    draft.numberOfLayers = props.numberOfLayers
-  }
-  if (props.distanceBetweenLayers != null) {
-    draft.distanceBetweenLayers = props.distanceBetweenLayers
-  }
-  if (props.opacity != null) {
-    draft.opacity = props.opacity
-  }
-  if (props.color != null) {
-    draft.color = props.color
-  }
-  if (props.volumeImageAttachmentIds != null) {
-    draft.volumeImageAttachmentIds = props.volumeImageAttachmentIds
-  }
-
-  // for images
-  if (props.imageAttachmentIds != null) {
-    draft.imageAttachmentIds = props.imageAttachmentIds
-  }
-
-  if (props.visibleToCam != null) {
-    draft.visibleToCam = props.visibleToCam
-  }
-
-  if (props.hasOwnProperty('characterPresetId')) {
-    draft.characterPresetId = props.characterPresetId
-  }
-
+  
   if (props.hasOwnProperty('posePresetId')) {
     draft.posePresetId = props.posePresetId
     if( draft.handPosePresetId) {
       draft.handPosePresetId = null
       draft.handSkeleton = []
     }
+    delete props["posePresetId"]
   }
 
-  if (props.hasOwnProperty('handPosePresetId')) {
-    draft.handPosePresetId = props.handPosePresetId
-  }
-  
-  if (props.hasOwnProperty('loaded')) {
-    draft.loaded = props.loaded
-  }
-
-  if(props.hasOwnProperty('isAttachableSelected')) {
-    draft.isAttachableSelected = props.isAttachableSelected
-  }
-
-  if(props.hasOwnProperty('isDragging')) {
-    draft.isDragging = props.isDragging
-  }
-
-  if(props.hasOwnProperty('bindBone')) {
-    draft.bindBone = props.bindBone
-  }
-
-  if(props.hasOwnProperty('size')) {
-    draft.size = props.size
+  let keys = Object.keys(props)
+  for(let i = 0; i < keys.length; i++ ){
+    draft[keys[i]] = props[keys[i]]
   }
 }
 
@@ -441,10 +313,15 @@ let countByType = {}
 // decorate target SceneObject with a calculated displayName
 const withDisplayName = sceneObject => {
   let key = sceneObject.name || sceneObject.model || sceneObject.type;
-  
-  countByType[key] = countByType[key]
+  let arrayOfStrings = key.split('/');
+  key = arrayOfStrings[arrayOfStrings.length - 1]
+
+  if(!sceneObject.displayName || sceneObject.displayName !== capitalize(`${key} ${countByType[key]}`) ) {
+    countByType[key] = countByType[key]
       ? countByType[key] + 1
       : 1
+  }
+
   
   let number = countByType[key]
   
@@ -461,7 +338,8 @@ const withDisplayNames = draft => {
   for (let id in draft) {
     let sceneObject = draft[id]
     let key = sceneObject.name || sceneObject.model || sceneObject.type;
-
+    let arrayOfStrings = key.split('/');
+    key = arrayOfStrings[arrayOfStrings.length - 1]
     countByType[key] = countByType[key]
       ? countByType[key] + 1
       : 1
@@ -787,7 +665,6 @@ const initialState = {
     world: initialScene.world,
     activeCamera: initialScene.activeCamera,
     sceneObjects: withDisplayNames(initialScene.sceneObjects),
-
     selections: [],
     selectedBone: null,
     selectedAttachable: null
@@ -814,6 +691,7 @@ const initialState = {
     mouseMode: false,
     orbitMode: false
   },
+  lastAction: { type:null },
   devices: {
     0: {
       analog: {
@@ -1228,10 +1106,12 @@ const sceneObjectsReducer = (state = {}, action) => {
 
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
-        draft[action.payload.id].skeleton = draft[action.payload.id].skeleton || {}
+        if(!draft[action.payload.id]) return;
+       // draft[action.payload.id].skeleton = {}
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
           let position = bone.position
+          let quaternion = bone.quaternion
           if(draft[action.payload.id].skeleton[bone.name]) {
             draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
                                                                       draft[action.payload.id].skeleton[bone.name].rotation : 
@@ -1239,6 +1119,9 @@ const sceneObjectsReducer = (state = {}, action) => {
             draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
                                                                       draft[action.payload.id].skeleton[bone.name].position : 
                                                                       { x: position.x, y: position.y, z: position.z }
+            draft[action.payload.id].skeleton[bone.name].quaternion = !bone.quaternion ?
+                                                                      draft[action.payload.id].skeleton[bone.name].quaternion : 
+                                                                      { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
           } else {
             draft[action.payload.id].skeleton[bone.name] = {}
             draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
@@ -1247,8 +1130,13 @@ const sceneObjectsReducer = (state = {}, action) => {
             draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
             {} : 
             { x: position.x, y: position.y, z: position.z }
+            draft[action.payload.id].skeleton[bone.name].quaternion = !bone.quaternion ?
+            {} : 
+            { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
           }
-       
+          draft[action.payload.id].skeleton[bone.name].name = bone.name
+          draft[action.payload.id].skeleton[bone.name].id = bone.id
+        
         }
         return
 
@@ -1275,6 +1163,7 @@ const sceneObjectsReducer = (state = {}, action) => {
     }
   })
 }
+
 
 const metaReducer = (state = {}, action, appState) => {
   return produce(state, draft => {
@@ -1467,6 +1356,8 @@ const presetsReducer = (state = initialState.presets, action) => {
 
 const mainReducer = (state/* = initialState*/, action) => {
   return produce(state, draft => {
+    draft.lastAction.type = action.type
+
     switch (action.type) {
       case 'LOAD_SCENE':
         draft.mainViewCamera = 'live'
@@ -1701,7 +1592,7 @@ const rootReducer = reduceReducers(
     const meta = metaReducer(state.meta, action, state)
   
     return (meta !== state.meta) ? { ...state, meta} : state
-  }
+  },
 )
 
 module.exports = {
@@ -1829,6 +1720,7 @@ module.exports = {
 
   getIsSceneDirty,
   getHash,
+  getSceneObjectIds,
 
   getDefaultPosePreset: () => initialState.presets.poses['79BBBD0D-6BA2-4D84-9B71-EE661AB6E5AE']
 }

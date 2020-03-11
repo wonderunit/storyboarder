@@ -38,7 +38,20 @@ class IkObject
         this.scene = scene;
         let chains = [];
         objectSkeleton.updateMatrixWorld(true);
-        let clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
+        let clonedSkeleton
+        try {
+
+            let ikHelper = objectSkeleton.children.find(child => child.userData.type === "IkHelper");
+            if(ikHelper) objectSkeleton.remove(ikHelper);
+            let bonesHelper = objectSkeleton.children.find(child => child.userData.type === "BonesHelper");
+            if(bonesHelper) objectSkeleton.remove(bonesHelper);
+            clonedSkeleton = SkeletonUtils.clone(objectSkeleton);
+            if(ikHelper) objectSkeleton.add(ikHelper);
+            if(bonesHelper) objectSkeleton.add(bonesHelper);
+        }
+        catch(exception) {
+            return 
+        }
         this.clonedObject = clonedSkeleton;
         this.originalObject = objectSkeleton;
         this.ikSwitcher = new IKSwitcher(objectSkeleton, clonedSkeleton);

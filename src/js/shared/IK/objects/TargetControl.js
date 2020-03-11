@@ -29,15 +29,8 @@ class TargetControl
         movingTarget.position.copy(position);
         movingTarget.scale.set(0.4, 0.4, 0.4);
         movingTarget.renderOrder = 9;
-        movingTarget.userData.type = "controlPoint";
-        movingTarget.name = "controlPoint";
         movingTarget.scope = this;
-        //this.control.attach(movingTarget);
         this.target = movingTarget;
-        //this.addEventsToControlTarget(); 
-        movingTarget.layers.disable(0)
-        movingTarget.layers.enable(1)
-        movingTarget.layers.disable(2)
     }
 
     setBone(bone)
@@ -75,7 +68,7 @@ class TargetControl
     //#region Selection of control point
     selectControlPoint()
     {
-        if(!this.isControlPointSelected && !this.bone.isRotated)
+        if(!this.isControlPointSelected && this.bone && !this.bone.isRotated)
         {
             this.isControlPointSelected = true;
             this.scene.add(this.control);
