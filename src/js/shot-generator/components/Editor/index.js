@@ -34,7 +34,7 @@ import GuidesView from '../GuidesView'
 import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
-
+import ShotExplorer from '../ShotExplorer'
 import Stats from 'stats.js'
 
 const Effect = ({renderData, stats}) => {
@@ -154,6 +154,7 @@ const Editor = React.memo(({
   }
 
   useExportToGltf(largeCanvasData.current.scene, withState)
+  const [shotExplorerVisibility, setShotExplorerVisiblity] = useState(false)
   
   return (
     <FatalErrorBoundary key={board.uid}>
@@ -224,6 +225,7 @@ const Editor = React.memo(({
               </div>
             </div>
             <div className="inspectors">
+              <a onPointerDown={ () => ipcRenderer.send('shot-generator:open:shot-explorer')}>Enable shot explorer</a>
               <CameraPanelInspector/>
               <BoardInspector/>
               <div style={{ flex: "1 1 auto" }}>
@@ -234,9 +236,13 @@ const Editor = React.memo(({
           </div>
         </div>
       </div>
+{/*       <ShotExplorer sceneInfo={ largeCanvasData.current } 
+                    visible={ shotExplorerVisibility }
+                    withState={ withState }
+                    aspectRatio={ aspectRatio }
+                    setShotExplorerVisiblity={ setShotExplorerVisiblity }/> */}
       <KeyHandler/>
       <MenuManager/>
-
       <div
         className="notifications"
         ref={notificationsRef}

@@ -54,7 +54,6 @@ const show = async (onComplete) => {
   }
 
   let { x, y, width, height } = memento
-
   win = new BrowserWindow({
     minWidth: isDev ? undefined : 1200,
     minHeight: isDev ? undefined : 800,
@@ -146,6 +145,10 @@ ipcMain.on('shot-generator:edit:undo', () => {
 })
 ipcMain.on('shot-generator:edit:redo', () => {
   win.webContents.send('shot-generator:edit:redo')
+})
+
+ipcMain.on('shot-generator:open:shot-explorer', () => {
+  win.webContents.send('shot-generator:open:shot-explorer')
 })
 
 ipcMain.on('shot-generator:export-gltf', () =>

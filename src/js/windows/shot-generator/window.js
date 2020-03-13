@@ -3,7 +3,7 @@ const { app } = electron.remote
 const electronUtil = require('electron-util')
 
 const path = require('path')
-
+const shotExplorer = require('../shot-explorer/main')
 const React = require('react')
 const { useState, useEffect } = React
 const { Provider, connect } = require('react-redux')
@@ -25,7 +25,7 @@ const thunkMiddleware = require('redux-thunk').default
 const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const loadBoardFromData = require('../../shared/actions/load-board-from-data')
-
+let sendedAction = null
 const actionSanitizer = action => (
   action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
   { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
@@ -45,11 +45,19 @@ const configureStore = function configureStore (preloadedState) {
     reducer,
     preloadedState,
     composeEnhancers(
-      applyMiddleware(thunkMiddleware)
-    )
+      applyMiddleware(thunkMiddleware, store => next => action => {
+        if(sendedAction !== action) {
+          ipcRenderer.send('shot-explorer:updateStore', action)
+        }
+        next(action)
+        
+      })
+    ),
+  
   )
   return store
 }
+
 
 const Editor = require('../../shot-generator/components/Editor').default
 
@@ -196,11 +204,29 @@ ipcRenderer.on('loadBoardByUid', async (event, uid) => {
 ipcRenderer.on('shot-generator:edit:undo', () => {
   store.dispatch( ActionCreators.undo() )
 })
+
 ipcRenderer.on('shot-generator:edit:redo', () => {
   store.dispatch( ActionCreators.redo() )
 })
 
+ipcRenderer.on('shot-generator:open:shot-explorer', () => {
+  shotExplorer.show((win) => {
+  }, electron.remote.getCurrentWindow() )
+ 
+})
 
+ipcRenderer.on('shot-explorer:updateStore', (event, action) => {
+  let win = shotExplorer.getWindow()
+  log.info("SG", action)
+  if (win) {
+    win.webContents.send('shot-explorer:updateStore', action)
+  }
+})
+
+ipcRenderer.on('shot-generator:updateStore', (event, action) => {
+  sendedAction = action
+  store.dispatch(action)
+})
 window.$r = { store }
 
 // disabled for now so we can reload the window easily during development

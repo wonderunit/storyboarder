@@ -269,6 +269,7 @@ const getShotBox = (character, shotType = 0) => {
 }
 
 const getClosestCharacter = (characters, camera) => {
+  console.log("Getting closes character")
   let resultAngle = Math.PI
   let resultDistance = Infinity
   let resultObject = null
@@ -309,6 +310,7 @@ const setShot = ({
   shotAngle,
   shotSize
 }) => {
+  console.log(selected)
   let {clampedInfo, direction} = getShotInfo({
     selected: selected || getClosestCharacter(characters, camera),
     characters,
@@ -342,8 +344,7 @@ const setShot = ({
   camera.updateMatrixWorld(true)
   
   let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
-
-  updateObject(camera.userData.id, {
+  updateObject && updateObject(camera.userData.id, {
     x: camera.position.x,
     y: camera.position.z,
     z: camera.position.y,

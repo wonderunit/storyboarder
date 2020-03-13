@@ -373,7 +373,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           id: sceneObject.id,
           poleTargets: sceneObject.poleTargets || {},
           height: originalHeight,
-          locked: locked
+          locked: locked,
+          name: sceneObject.displayName
         }}
 
         position={ [x, z, y] }

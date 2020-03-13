@@ -40,6 +40,7 @@ import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
 
+
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
 
@@ -187,6 +188,10 @@ const SceneManagerR3fLarge = connect(
         let keys = Object.keys(cameraShots)
         for(let i = 0; i < keys.length; i++ ) {
           let key = keys[i]
+          if(cameraShots[key].character) {
+            console.log(cameraShots[key].character)
+            selected = scene.__interaction.filter((object) => object.userData.id === cameraShots[key].character)[0]
+          }
           if((!cameraShots[key].size && !cameraShots[key].angle) || camera.userData.id !== cameraShots[key].cameraId ) continue
           setShot({
             camera,

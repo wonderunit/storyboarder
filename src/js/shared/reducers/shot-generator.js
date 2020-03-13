@@ -747,6 +747,7 @@ const cameraShotsReducer = (state = {}, action) => {
         
         camera.size = action.payload.size || camera.size
         camera.angle = action.payload.angle || camera.angle
+        camera.character = action.payload.character 
         return
         
         // select a single object
