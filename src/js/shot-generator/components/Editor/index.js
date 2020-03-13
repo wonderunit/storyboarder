@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
 
-import { ipcRenderer } from 'electron'
+import { ipcRenderer} from 'electron'
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -34,7 +34,6 @@ import GuidesView from '../GuidesView'
 import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
-import ShotExplorer from '../ShotExplorer'
 import Stats from 'stats.js'
 
 const Effect = ({renderData, stats}) => {
@@ -236,11 +235,7 @@ const Editor = React.memo(({
           </div>
         </div>
       </div>
-{/*       <ShotExplorer sceneInfo={ largeCanvasData.current } 
-                    visible={ shotExplorerVisibility }
-                    withState={ withState }
-                    aspectRatio={ aspectRatio }
-                    setShotExplorerVisiblity={ setShotExplorerVisiblity }/> */}
+
       <KeyHandler/>
       <MenuManager/>
       <div

@@ -211,15 +211,38 @@ ipcRenderer.on('shot-generator:edit:redo', () => {
 
 ipcRenderer.on('shot-generator:open:shot-explorer', () => {
   shotExplorer.show((win) => {
+    console.log("Sending shot-explorer open")
+    win.webContents.send('shot-generator:open:shot-explorer')
   }, electron.remote.getCurrentWindow() )
  
 })
 
 ipcRenderer.on('shot-explorer:updateStore', (event, action) => {
   let win = shotExplorer.getWindow()
-  log.info("SG", action)
   if (win) {
     win.webContents.send('shot-explorer:updateStore', action)
+  }
+})
+
+ipcRenderer.on('shot-generator:get-storyboarder-file-data', (event, data) => {
+  let win = shotExplorer.getWindow()
+  if (win) {
+    win.send('shot-generator:get-storyboarder-file-data', data)
+  }
+})
+
+
+ipcRenderer.on('shot-generator:get-board', (event, board) => {
+  let win = shotExplorer.getWindow()
+  if (win) {
+    win.send('shot-generator:get-board', board)
+  }
+})
+
+ipcRenderer.on('shot-generator:get-state', (event, data) => {
+  let win = shotExplorer.getWindow()
+  if (win) {
+    win.send('shot-generator:get-state', data)
   }
 })
 
