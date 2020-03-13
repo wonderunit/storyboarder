@@ -6,6 +6,8 @@ import { ShotSizes, ShotAngles, setShot } from '../shot-generator/utils/cameraUt
 import { OutlineEffect } from '../vendor/OutlineEffect'
 import { 
     setCameraShot, 
+    getSceneObjects,
+    getActiveCamera
 } from '../shared/reducers/shot-generator'
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength-1))
@@ -23,6 +25,30 @@ const ShotMaker = React.memo(({
     const [shots, setShots] = useState([])
     const imageRenderer = useRef()
     const outlineEffect = useRef()
+    const setSelectedShot = (selectedShot) => {
+        // TODO filter character once amount of objects in the scene changed
+        let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character')
+        // Set camera to default before applying shot changes
+        withState((dispatch, state) => {
+            let activeCamera = getSceneObjects(state)[getActiveCamera(state)]
+            let cameraObject = activeCamera
+            sceneInfo.camera.position.x = cameraObject.x
+            sceneInfo.camera.position.y = cameraObject.z
+            sceneInfo.camera.position.z = cameraObject.y
+            sceneInfo.camera.rotation.x = 0
+            sceneInfo.camera.rotation.z = 0
+            sceneInfo.camera.rotation.y = cameraObject.rotation
+            sceneInfo.camera.rotateX(cameraObject.tilt)
+            sceneInfo.camera.rotateZ(cameraObject.roll)
+            sceneInfo.camera.userData.type = cameraObject.type
+            sceneInfo.camera.userData.locked = cameraObject.locked
+            sceneInfo.camera.userData.id = cameraObject.id
+            sceneInfo.camera.fov = cameraObject.fov
+            sceneInfo.camera.updateProjectionMatrix()
+        })
+        setShot({camera: sceneInfo.camera, characters, selected:selectedShot.character, shotAngle:selectedShot.angle, shotSize:selectedShot.size})
+        selectShot(selectedShot)
+    }
     useMemo(() => {
         if (!imageRenderer.current) {
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
@@ -64,7 +90,8 @@ const ShotMaker = React.memo(({
             shot.renderImage = renderSceneWithCamera(cameraCopy)
             shotsArray.push(shot)
         }
-        selectShot(shotsArray[0])
+        setSelectedShot(shotsArray[0])
+    
         setShots(shotsArray)
     }, [renderSceneWithCamera])
 
@@ -114,7 +141,7 @@ const ShotMaker = React.memo(({
             {
                 shots.map((object, index) => {
                     return <div className="shot-explorer-shot" key={ index } style={{  minWidth:  ((900 * aspectRatio) / scale) / 3, maxWidth:  ((900 * aspectRatio) / scale) / 3, height: (900 / scale) / 3 }}>
-                         <img className="shot-explorer-image" src={object.renderImage} onPointerDown={() =>{ selectShot(object) }}/>
+                         <img className="shot-explorer-image" src={object.renderImage} onPointerDown={() =>{ setSelectedShot(object) }}/>
                          <div style={{overflow: "hidden", fontSize: "12px"}}>{object.toString()}</div>
                          </div>
                 })

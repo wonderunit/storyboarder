@@ -3,7 +3,7 @@ import ShotMaker from './ShotMaker'
 import { Provider, connect} from 'react-redux'
 import { Canvas } from 'react-three-fiber'
 import { useThree, useFrame } from 'react-three-fiber'
-import SceneManagerR3fLarge from '../shot-generator/SceneManagerR3fLarge'
+import ShotExplorerSceneManager from './ShotExplorerSceneManager'
 import FatalErrorBoundary from '../shot-generator/components/FatalErrorBoundary'
 import {OutlineEffect} from '../vendor/OutlineEffect'
 const Effect = ({}) => {
@@ -43,9 +43,9 @@ const ShotExplorer = React.memo(({
             updateDefaultCamera={ true }
             noEvents={ true }
             className="shot-explorer-shot-selected" 
-            style={{ width: (900 * aspectRatio) / 2, height: 900 / 2 }}>
+            style={{ width: (900 * aspectRato) / 2, height: 900 / 2 }}>
             <Provider store={store}>
-                <SceneManagerR3fLarge
+                <ShotExplorerSceneManager
                             setLargeCanvasData= { setLargeCanvasData }
                             isPreview={ true }/>
             </Provider>
