@@ -6,13 +6,16 @@ import { useThree, useFrame } from 'react-three-fiber'
 import ShotExplorerSceneManager from './ShotExplorerSceneManager'
 import FatalErrorBoundary from '../shot-generator/components/FatalErrorBoundary'
 import {OutlineEffect} from '../vendor/OutlineEffect'
+import TWEEN from '@tweenjs/tween.js'
+
 const Effect = ({}) => {
     const {gl, size} = useThree()
   
     const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
     
     useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
-    useFrame(({ gl, scene, camera }) => {
+    useFrame(({ gl, scene, camera }, time) => {
+        TWEEN.update()
         outlineEffect.render(scene, camera)
     }, 1)
     
@@ -43,7 +46,7 @@ const ShotExplorer = React.memo(({
             updateDefaultCamera={ true }
             noEvents={ true }
             className="shot-explorer-shot-selected" 
-            style={{ width: (900 * aspectRato) / 2, height: 900 / 2 }}>
+            style={{ width: (900 * aspectRatio) / 2, height: 900 / 2 }}>
             <Provider store={store}>
                 <ShotExplorerSceneManager
                             setLargeCanvasData= { setLargeCanvasData }
