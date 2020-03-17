@@ -23,7 +23,8 @@ const {
   resetScene,
 } = require('../../shared/reducers/shot-generator')
 
-let sendedAction = null
+let sendedAction = []
+
 const actionSanitizer = action => (
     action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
     { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
@@ -45,8 +46,11 @@ const actionSanitizer = action => (
       composeEnhancers(
         applyMiddleware(
             thunkMiddleware, store => next => action => {
-              if(action && sendedAction && action !== sendedAction) {
+              let indexOf = sendedAction.indexOf(action)
+              if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
+              } else if(indexOf !== -1) {
+                sendedAction.splice(indexOf, 1)
               }
               next(action)
             })
@@ -80,7 +84,8 @@ const store = configureStore({
   },
 })
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
-  sendedAction = action
+  sendedAction.push(action)
+  //console.log("Action added", action)
   store.dispatch(action)
 })
 
@@ -89,15 +94,18 @@ const loadBoard = async (board, storyboarderFilePath) => {
   log.info(board)
 
   let shot = board.sg
-  storedAction = setBoard(board)
-  store.dispatch(storedAction)
+  let action = setBoard(board)
+  sendedAction.push(action)
+  store.dispatch(action)
   
   if (shot) {
-    storedAction = loadScene(shot.data)
-    store.dispatch(storedAction)
+    action = loadScene(shot.data)
+    sendedAction.push(action)
+    store.dispatch(action)
   } else {
-    storedAction = resetScene()
-    store.dispatch(storedAction)
+    action = resetScene()
+    sendedAction.push(action)
+    store.dispatch(action)
   }
   
   
@@ -146,16 +154,18 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
-  sendedAction = {
+  let action  = {
     type: 'SET_META_STORYBOARDER_FILE_PATH',
     payload: storyboarderFilePath
   }
-  store.dispatch(sendedAction)
-  sendedAction = {
+  sendedAction.push(action)
+  store.dispatch(action)
+  action = {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   }
-  store.dispatch(sendedAction)
+  sendedAction.push(action)
+  store.dispatch(action)
 
   await loadBoard(board, storyboarderFilePath)
 })

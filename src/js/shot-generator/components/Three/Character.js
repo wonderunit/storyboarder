@@ -235,7 +235,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         })
       }
       isFullyUpdate.current = true
-      updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
+      updateCharacterIkSkeleton && updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }
 
     useEffect(() => {

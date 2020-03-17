@@ -180,8 +180,8 @@ const ShotExplorerSceneManager = connect(
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
                 selectedBone={ selectedBone }
-                updateCharacterSkeleton={ updateCharacterSkeleton }
-                updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
+                updateCharacterSkeleton={ () => {} }
+               // updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
                 renderData={renderData}
                 withState={ withState }
                 isPreview={ isPreview }
@@ -205,7 +205,7 @@ const ShotExplorerSceneManager = connect(
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
-                updateObject={ updateObject }
+                updateObject={ () => {}  }
                 сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
                 deleteObjects={ deleteObjects }
                 character={ sceneObjects[sceneObject.attachToId] }
