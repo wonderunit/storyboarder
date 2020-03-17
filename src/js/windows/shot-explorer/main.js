@@ -38,6 +38,7 @@ let memento = {
 const reveal = onComplete => {
     win.show()
     win.focus()
+    win.webContents.openDevTools()
     onComplete(win)
   }
 

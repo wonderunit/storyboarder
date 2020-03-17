@@ -10,6 +10,7 @@ import {
     getActiveCamera
 } from '../shared/reducers/shot-generator'
 import objectTween from './objectTween'
+import ShotElement from './ShotElement'
 
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength-1))
@@ -21,6 +22,7 @@ const ShotMaker = React.memo(({
     
     withState,
     aspectRatio,
+    newAssetsLoaded
 }) => {
     const camera = useRef()
     const [selectedShot, selectShot] = useState(null)
@@ -81,14 +83,26 @@ const ShotMaker = React.memo(({
             outlineEffect.current = null
         }
     }, [])
+    
+    const convertCanvasToImage = async (canvas) => {
+        return new Promise((resolve, reject) => {
+            let image = canvas.toDataURL('image/jpeg', 0.7)
+            resolve(image);
+        })
+    }
 
-    const renderSceneWithCamera = useCallback((camera) => {
+    const renderSceneWithCamera = useCallback((shotsArray) => {
         let width = Math.ceil(900 * aspectRatio)
-        let imageRenderCamera = camera
+
         outlineEffect.current.setSize(width, 900)
-        outlineEffect.current.render(sceneInfo.scene, imageRenderCamera)
-        let cameraImage = outlineEffect.current.domElement.toDataURL()
-        return cameraImage
+        for(let i = 0; i < shotsArray.length; i++) {
+            let shot = shotsArray[i]
+            outlineEffect.current.render(sceneInfo.scene, shot.camera)
+            convertCanvasToImage(outlineEffect.current.domElement).then((cameraImage) => {
+                shot.renderImage = cameraImage
+            })
+        }
+
     }, [sceneInfo])
 
     const generateShot = useCallback(() => {
@@ -107,12 +121,14 @@ const ShotMaker = React.memo(({
             let randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length)]]
 
             let character = characters[getRandomNumber(characters.length)]
+            if(!character.getObjectByProperty("type", "SkinnedMesh")) continue
             let shot = new ShotItem(randomAngle, randomSize, character)
             setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
-            shot.renderImage = renderSceneWithCamera(cameraCopy)
+            shot.camera = cameraCopy.clone()
             shotsArray.push(shot)
         }
-        setSelectedShot(shotsArray[0])
+        renderSceneWithCamera(shotsArray)
+        shotsArray[0] && setSelectedShot(shotsArray[0])
     
         setShots(shotsArray)
     }, [renderSceneWithCamera])
@@ -122,9 +138,7 @@ const ShotMaker = React.memo(({
             camera.current = sceneInfo.camera.clone()
             generateShot()
         }
-    }, [sceneInfo])
-
-
+    }, [sceneInfo, newAssetsLoaded])
 
     const updateCamera = useCallback(() => {
         withState((dispatch, state) => {
@@ -148,7 +162,7 @@ const ShotMaker = React.memo(({
       }
     }, [])
 
-    return ( selectedShot &&
+    return ( 
         <div style={{ maxHeight: "100%", height: "100%" }}>
     {/*         <div className="shot-explorer-shot-selected" style={{ width: (900 * aspectRatio) / scale, height: 900 / scale }}>
                 <img className="shot-explorer-image" src={selectedShot && selectedShot.renderImage}/>
@@ -162,10 +176,13 @@ const ShotMaker = React.memo(({
             <div className="shots-container" style={{ maxWidth: (900 * aspectRatio) / scale + 30, height: windowHeight / scale - 45 }}>
             {
                 shots.map((object, index) => {
-                    return <div className="shot-explorer-shot" key={ index } style={{  minWidth:  ((900 * aspectRatio) / scale) / 3, maxWidth:  ((900 * aspectRatio) / scale) / 3, height: (900 / scale) / 3 }}>
-                         <img className="shot-explorer-image" src={object.renderImage} onPointerDown={() =>{ setSelectedShot(object) }}/>
-                         <div style={{overflow: "hidden", fontSize: "12px"}}>{object.toString()}</div>
-                         </div>
+                    return <ShotElement
+                    key={index}
+                    setSelectedShot={setSelectedShot}
+                    object={object}
+                    aspectRatio={aspectRatio}
+                    scale={scale}
+                    />
                 })
             }
             </div>

@@ -6,6 +6,7 @@ import { useThree, useFrame } from 'react-three-fiber'
 import ShotExplorerSceneManager from './ShotExplorerSceneManager'
 import FatalErrorBoundary from '../shot-generator/components/FatalErrorBoundary'
 import {OutlineEffect} from '../vendor/OutlineEffect'
+import {useAsset, cleanUpCache, cache} from '../shot-generator/hooks/use-assets-manager'
 import TWEEN from '@tweenjs/tween.js'
 
 const Effect = ({}) => {
@@ -29,12 +30,19 @@ const ShotExplorer = React.memo(({
     store,
 }) => {
     const [sceneInfo, setSceneInfo] = useState(null)
+    const [newAssetsLoaded, setLoadedAssets] = useState()
     const setLargeCanvasData = (camera, scene, gl) => {
-        // TODO REMOVE timeout
-        setTimeout(() => {
-            setSceneInfo({camera, scene, gl})
-        }, 1000)
+        setSceneInfo({camera, scene, gl})
     }
+
+    const updateAssets = () => {setLoadedAssets({})}
+
+    useEffect(() => {
+        cache.subscribe(updateAssets)
+        return () => {
+            cache.unsubscribe(updateAssets)
+        }
+    }, [])
     
     return (
     <FatalErrorBoundary>
@@ -56,7 +64,8 @@ const ShotExplorer = React.memo(({
         </Canvas>
         <ShotMaker sceneInfo={ sceneInfo } 
                     withState={ withState }
-                    aspectRatio={ aspectRatio }/> 
+                    aspectRatio={ aspectRatio }
+                    newAssetsLoaded={ newAssetsLoaded } /> 
     </FatalErrorBoundary>
     )
 })
