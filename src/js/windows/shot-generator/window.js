@@ -213,7 +213,7 @@ ipcRenderer.on('shot-generator:open:shot-explorer', () => {
   shotExplorer.show((win) => {
     console.log("Sending shot-explorer open")
     win.webContents.send('shot-generator:open:shot-explorer')
-  }, electron.remote.getCurrentWindow() )
+  }, electron.remote.getCurrentWindow(), store.getState().aspectRatio )
  
 })
 
