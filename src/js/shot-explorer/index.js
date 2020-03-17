@@ -8,6 +8,9 @@ import FatalErrorBoundary from '../shot-generator/components/FatalErrorBoundary'
 import {OutlineEffect} from '../vendor/OutlineEffect'
 import {useAsset, cleanUpCache, cache} from '../shot-generator/hooks/use-assets-manager'
 import TWEEN from '@tweenjs/tween.js'
+import {
+   updateObject
+  } from '../shared/reducers/shot-generator'
 
 const Effect = ({}) => {
     const {gl, size} = useThree()
@@ -27,6 +30,7 @@ const Effect = ({}) => {
 const ShotExplorer = React.memo(({
     withState,
     aspectRatio,
+    updateObject,
     store,
 }) => {
     const [sceneInfo, setSceneInfo] = useState(null)
@@ -65,7 +69,8 @@ const ShotExplorer = React.memo(({
         <ShotMaker sceneInfo={ sceneInfo } 
                     withState={ withState }
                     aspectRatio={ aspectRatio }
-                    newAssetsLoaded={ newAssetsLoaded } /> 
+                    newAssetsLoaded={ newAssetsLoaded }
+                    updateObject={ updateObject } /> 
     </FatalErrorBoundary>
     )
 })
@@ -77,6 +82,7 @@ export default connect(
     aspectRatio: state.aspectRatio
 }), 
 {
-    withState
+    withState,
+    updateObject
 })
 (ShotExplorer)
