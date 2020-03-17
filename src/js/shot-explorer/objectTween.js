@@ -20,22 +20,25 @@ const transitionTime = (start, end) => {
   return new THREE.Vector3(end.x, end.y, end.z).sub(new THREE.Vector3(start.x, start.y, start.z)).length() * MS_TO_METER
 }
 
-export default (ref) => {
-  let currentTween = null
+class ObjectTween {
+  constructor(ref) {
+    this.currentTween = null
+    this.prevRotationEuler = new THREE.Euler()
+    this.prevRotationQuaternion = new THREE.Quaternion()
+    this.ref = ref
+  }
 
-  let prevRotationEuler = new THREE.Euler()
-  let prevRotationQuaternion = new THREE.Quaternion()
-
-  return (position = null, rotation = null, time = null) => {
-    if (currentTween) {
-      currentTween.stop()
+  startTween(position = null, rotation = null, time = null) {
+    let ref = this.ref
+    if (this.currentTween) {
+      this.currentTween.stop()
     }
 
     if (rotation) {
       if (rotation.isQuaternion) {
-        prevRotationQuaternion.copy(ref.quaternion)
+        this.prevRotationQuaternion.copy(ref.quaternion)
       } else {
-        prevRotationEuler.set(
+        this.prevRotationEuler.set(
             ref.rotation.x,
             ref.rotation.y,
             ref.rotation.z,
@@ -43,24 +46,24 @@ export default (ref) => {
       }
     }
 
-    currentTween = new TWEEN.Tween([ref.position.x, ref.position.y, ref.position.z, 0])
-    currentTween.to([position.x, position.y, position.z, 1], time || transitionTime(ref.position, position))
+    this.currentTween = new TWEEN.Tween([ref.position.x, ref.position.y, ref.position.z, 0])
+    this.currentTween.to([position.x, position.y, position.z, 1], time || transitionTime(ref.position, position))
 
-    currentTween.onUpdate(([x, y, z, dt]) => {
+    this.currentTween.onUpdate(([x, y, z, dt]) => {
       if (ref) {
         ref.position.set(x, y, z)
 
         if (rotation) {
           if (rotation.isQuaternion) {
             THREE.Quaternion.slerp(
-                prevRotationQuaternion,
+              this.prevRotationQuaternion,
                 rotation,
                 ref.quaternion,
                 dt
             )
           } else {
             rotationLerp(
-                prevRotationEuler,
+              this.prevRotationEuler,
                 rotation,
                 ref.rotation,
                 dt
@@ -70,6 +73,15 @@ export default (ref) => {
       }
     })
 
-    currentTween.start()
+    this.currentTween.start()
   }
+
+  stopTween() {
+    if (this.currentTween) {
+      this.currentTween.stop()
+    }
+  }
+
 }
+
+export default ObjectTween

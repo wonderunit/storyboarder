@@ -310,7 +310,6 @@ const setShot = ({
   shotAngle,
   shotSize
 }) => {
-  console.log(selected)
   let {clampedInfo, direction} = getShotInfo({
     selected: selected || getClosestCharacter(characters, camera),
     characters,

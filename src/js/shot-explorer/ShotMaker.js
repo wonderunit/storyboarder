@@ -9,7 +9,7 @@ import {
     getSceneObjects,
     getActiveCamera
 } from '../shared/reducers/shot-generator'
-import objectTween from './objectTween'
+import ObjectTween from './objectTween'
 import ShotElement from './ShotElement'
 
 const getRandomNumber = (maxLength) => {
@@ -32,45 +32,13 @@ const ShotMaker = React.memo(({
     const tweenObject = useRef()
     const setSelectedShot = (newSelectedShot) => {
         // TODO filter character once amount of objects in the scene changed
-        let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character')
         // Set camera to default before applying shot changes
-        let clonnedCamera 
-        withState((dispatch, state) => {
-            clonnedCamera = sceneInfo.camera.clone()
-            let activeCamera = getSceneObjects(state)[getActiveCamera(state)]
-            let cameraObject = activeCamera
-            clonnedCamera.position.x = cameraObject.x
-            clonnedCamera.position.y = cameraObject.z
-            clonnedCamera.position.z = cameraObject.y
-            clonnedCamera.rotation.x = 0
-            clonnedCamera.rotation.z = 0
-            clonnedCamera.rotation.y = cameraObject.rotation
-            clonnedCamera.rotateX(cameraObject.tilt)
-            clonnedCamera.rotateZ(cameraObject.roll)
-            clonnedCamera.fov = cameraObject.fov
-            clonnedCamera.updateProjectionMatrix()
-            clonnedCamera.updateMatrixWorld(true)
-            selectedShot && setShot({camera: clonnedCamera, characters, selected:selectedShot.character, shotAngle:selectedShot.angle, shotSize:selectedShot.size})
-            let rot = new THREE.Euler().setFromQuaternion(clonnedCamera.quaternion, "YXZ")
+        let clonnedCamera = newSelectedShot.camera
+        tweenObject.current = tweenObject.current || new ObjectTween(sceneInfo.camera)
+        tweenObject.current.stopTween()
+        selectedShot && sceneInfo.camera.copy(selectedShot.camera)
 
-            sceneInfo.camera.position.x = clonnedCamera.position.x
-            sceneInfo.camera.position.y = clonnedCamera.position.y
-            sceneInfo.camera.position.z = clonnedCamera.position.z 
-            sceneInfo.camera.rotation.x = 0
-            sceneInfo.camera.rotation.z = 0
-            sceneInfo.camera.rotation.y = rot.y
-            sceneInfo.camera.rotateX(rot.x)
-            sceneInfo.camera.rotateZ(rot.z)
-            sceneInfo.camera.fov = clonnedCamera.fov
-            sceneInfo.camera.updateProjectionMatrix()
-            sceneInfo.camera.updateMatrixWorld(true)
-            clonnedCamera = sceneInfo.camera.clone()
-            clonnedCamera.updateMatrixWorld(true)
-
-        })
-        tweenObject.current = objectTween(sceneInfo.camera)
-        setShot({camera: clonnedCamera, characters, selected:newSelectedShot.character, shotAngle:newSelectedShot.angle, shotSize:newSelectedShot.size})
-        tweenObject.current(clonnedCamera.worldPosition(), clonnedCamera.worldQuaternion())
+        tweenObject.current.startTween(clonnedCamera.worldPosition(), clonnedCamera.worldQuaternion())
         selectShot(newSelectedShot)
     }
     useMemo(() => {
@@ -164,10 +132,6 @@ const ShotMaker = React.memo(({
 
     return ( 
         <div style={{ maxHeight: "100%", height: "100%" }}>
-    {/*         <div className="shot-explorer-shot-selected" style={{ width: (900 * aspectRatio) / scale, height: 900 / scale }}>
-                <img className="shot-explorer-image" src={selectedShot && selectedShot.renderImage}/>
-                <div>{selectedShot && selectedShot.toString()}</div>
-            </div> */}
             <div className="insert-camera" onPointerDown={() => updateCamera()}>
                 <a>
                     Insert Camera
