@@ -11,6 +11,7 @@ import {
 } from '../shared/reducers/shot-generator'
 import ObjectTween from './objectTween'
 import ShotElement from './ShotElement'
+import InfiniteScroll from './InfiniteScroll'
 
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength-1))
@@ -74,9 +75,7 @@ const ShotMaker = React.memo(({
 
     }, [sceneInfo])
 
-    const generateShot = useCallback(() => {
-        let shotsArray = []
-        let shotsCount = 12
+    const generateShot = useCallback((shotsArray, shotsCount) => {
         let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character')
         if(!characters.length) {
             return;
@@ -96,18 +95,28 @@ const ShotMaker = React.memo(({
             shot.camera = cameraCopy.clone()
             shotsArray.push(shot)
         }
-        renderSceneWithCamera(shotsArray)
-        shotsArray[0] && setSelectedShot(shotsArray[0])
-    
-        setShots(shotsArray)
     }, [renderSceneWithCamera])
 
     useMemo(() => {
         if(sceneInfo ) {
             camera.current = sceneInfo.camera.clone()
-            generateShot()
+            let shotsArray = []
+            let shotsCount = 12
+            generateShot(shotsArray, shotsCount)
+
+            renderSceneWithCamera(shotsArray)
+            shotsArray[0] && setSelectedShot(shotsArray[0])
+            setShots(shotsArray)
         }
     }, [sceneInfo, newAssetsLoaded])
+
+    const generateMoreShots = useCallback(() => {
+        let shotsArray = []
+        let shotsCount = 3
+        generateShot(shotsArray, shotsCount)
+        renderSceneWithCamera(shotsArray)
+        setShots(shots.concat(shotsArray))
+    }, [sceneInfo, generateShot, shots])
 
     const updateCamera = useCallback(() => {
         withState((dispatch, state) => {
@@ -147,18 +156,16 @@ const ShotMaker = React.memo(({
                     Insert Camera
                 </a>
             </div>
-            <div className="shots-container" style={{ maxWidth: (900 * aspectRatio) / scale + 30, height: windowHeight / scale - 45 }}>
-            {
-                shots.map((object, index) => {
-                    return <ShotElement
-                    key={index}
-                    setSelectedShot={setSelectedShot}
-                    object={object}
-                    aspectRatio={aspectRatio}
-                    scale={scale}
-                    />
-                })
-            }
+            <div>
+                <InfiniteScroll 
+                    Component={ ShotElement }
+                    elements={ shots }
+                    className="shots-container"
+                    style={{ maxWidth: (900 * aspectRatio) / scale + 30, height: windowHeight / scale - 45 }}
+                    setSelectedShot={ setSelectedShot }
+                    fetchMoreElements={ generateMoreShots }
+                    aspectRatio={ aspectRatio }
+                    scale={ scale }/>
             </div>
         </div>
     )
