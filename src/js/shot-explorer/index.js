@@ -25,9 +25,12 @@ const Effect = ({}) => {
     
     return null
   }
+const stopUnload = (event) => {
+    event.returnValue = false
+}
 
-  
 const ShotExplorer = React.memo(({
+    key,
     withState,
     aspectRatio,
     updateObject,
@@ -42,11 +45,16 @@ const ShotExplorer = React.memo(({
     const updateAssets = () => {setLoadedAssets({})}
 
     useEffect(() => {
+        console.log("Mount")
         cache.subscribe(updateAssets)
+        window.addEventListener("beforeunload", stopUnload)
         return () => {
+            console.log("Unmount")
             cache.unsubscribe(updateAssets)
+            window.removeEventListener("beforeunload", stopUnload)
         }
     }, [])
+
     
     return (
     <FatalErrorBoundary>

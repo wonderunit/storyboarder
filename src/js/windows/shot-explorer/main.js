@@ -35,14 +35,14 @@ let memento = {
   height: 1080
 }
 
-const reveal = onComplete => {
+const reveal = () => {
     win.show()
     win.focus()
     win.webContents.openDevTools()
-    onComplete(win)
+    //onComplete(win)
   }
 
-const show = async (onComplete, aspectRatio) => {
+const createWindow = async ( onComplete, aspectRatio) => {
     if (process.env.NODE_ENV === 'development') {
       await installExtensions()
     } else {
@@ -50,7 +50,7 @@ const show = async (onComplete, aspectRatio) => {
     }
   
     if (win) {
-      reveal(onComplete)
+      //reveal(onComplete)
       return
     }
   
@@ -85,7 +85,11 @@ const show = async (onComplete, aspectRatio) => {
   
     win.on('resize', () => memento = win.getBounds())
     win.on('move', () => memento = win.getBounds())
-  
+    win.webContents.on('will-prevent-unload', event => {
+      event.preventDefault()
+      win.hide()
+    })
+
     win.once('closed', () => {
       win = null
     })
@@ -100,11 +104,12 @@ const show = async (onComplete, aspectRatio) => {
   
     // use this to show sooner
     win.once('ready-to-show', () => {
-      reveal(onComplete)
+      onComplete()
     })
   }
 
 module.exports = {
-  show,
-  getWindow: () => win
+  createWindow,
+  getWindow: () => win,
+  reveal
 }

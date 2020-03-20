@@ -1,8 +1,10 @@
 const ReactDOM = require('react-dom')
 const React = require('react')
 const { ipcRenderer, shell } = electron = require('electron')
-const { Provider } = require('react-redux')
+const { Provider, batch } = require('react-redux')
+const { dialog } = electron.remote
 const log = require('electron-log')
+const THREE = require('three')
 log.catchErrors()
 const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
@@ -24,6 +26,13 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 let sendedAction = []
+let updateStore = true
+let dialogShowed = false
+let componentKey = THREE.Math.generateUUID()
+let shotExplorerElement 
+let isVisible = electron.remote.getCurrentWindow().visible
+electron.remote.getCurrentWindow().on("show", () => { isVisible = true, pushUpdates() })
+electron.remote.getCurrentWindow().on("hide", () => isVisible = false)
 
 const actionSanitizer = action => (
     action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
@@ -83,11 +92,43 @@ const store = configureStore({
     }
   },
 })
+const pushUpdates = () => {
+  componentKey = THREE.Math.generateUUID()
+  shotExplorerElement = renderShotExplorer()
+  batch(() => {
+    for(let i = 0; i < sendedAction.length; ) {
+      store.dispatch(sendedAction[i])
+    }
+  })
+  renderDom()
+}
+const showUpdateDialog = () => {
+  if(dialogShowed) return
+  let options = {
+    type: 'question',
+    buttons: ['Yes', 'No'],
+    title: 'Confirm',
+    message: 'The Shot Generator scene was changed. Do you want to update Shots?'
+  }
+  dialog.showMessageBox(electron.remote.getCurrentWindow(), options, (response) => {
+    console.log(response)
+
+    console.log(sendedAction, shotExplorerElement)
+    pushUpdates()
+
+    console.log(componentKey)
+    dialogShowed = false
+  })
+  dialogShowed = true
+}
+
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
+  if(isVisible) showUpdateDialog()
   sendedAction.push(action)
   //console.log("Action added", action)
-  store.dispatch(action)
+  // store.dispatch(action)
 })
+
 
 
 const loadBoard = async (board, storyboarderFilePath) => {
@@ -170,10 +211,20 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   await loadBoard(board, storyboarderFilePath)
 })
 
-ReactDOM.render(
-  (store && <Provider store={ store }>
-    <ShotExplorer store={ store }/>
-  </Provider> ),
-document.getElementById('main')
-  )
+const renderShotExplorer = () => {
+  console.log(componentKey)
+  return <ShotExplorer key={ componentKey } store={ store }/>
+}
+shotExplorerElement = renderShotExplorer()
+
+
+const renderDom = () => {
+  ReactDOM.render(
+    (store && <Provider store={ store }>
+     { shotExplorerElement }
+    </Provider> ),
+  document.getElementById('main')
+    )
+}
+renderDom()
 
