@@ -211,10 +211,15 @@ ipcRenderer.on('shot-generator:edit:redo', () => {
 
 ipcRenderer.on('shot-generator:open:shot-explorer', () => {
   shotExplorer.show((win) => {
-    console.log("Sending shot-explorer open")
+    console.log("Sending shot-explorer open", win)
     win.webContents.send('shot-generator:open:shot-explorer')
-  }, electron.remote.getCurrentWindow(), store.getState().aspectRatio )
- 
+  }, store.getState().aspectRatio )
+})
+
+electron.remote.getCurrentWindow().on("close", () => {
+  let shotExplorerWindow = shotExplorer.getWindow()
+  if(shotExplorerWindow)
+    shotExplorerWindow.close()
 })
 
 ipcRenderer.on('shot-explorer:updateStore', (event, action) => {

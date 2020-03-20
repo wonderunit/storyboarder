@@ -1,3 +1,7 @@
+#main {
+  -webkit-app-region: drag;
+}
+
 .shots-container {
   display: flex;
   flex-wrap: wrap;

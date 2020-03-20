@@ -42,7 +42,7 @@ const reveal = onComplete => {
     onComplete(win)
   }
 
-const show = async (onComplete, parentWindow, aspectRatio) => {
+const show = async (onComplete, aspectRatio) => {
     if (process.env.NODE_ENV === 'development') {
       await installExtensions()
     } else {
@@ -55,7 +55,6 @@ const show = async (onComplete, parentWindow, aspectRatio) => {
     }
   
     let { x, y, width, height } = memento
-  
     win = new BrowserWindow({
       minWidth: isDev ? undefined : (900 * aspectRatio) / 2,
       minHeight: isDev ? undefined : 800,
@@ -82,7 +81,6 @@ const show = async (onComplete, parentWindow, aspectRatio) => {
         experimentalFeatures: true,
         backgroundThrottling: true,
       },
-      parent: parentWindow
     })
   
     win.on('resize', () => memento = win.getBounds())
