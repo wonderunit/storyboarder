@@ -1,8 +1,8 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, useLayoutEffect } from 'react'
 import { batch } from 'react-redux'
-import * as THREE from 'three'
 import ShotItem from './ShotItem'
 import { ShotSizes, ShotAngles, setShot } from '../shot-generator/utils/cameraUtils'
+import * as THREE from 'three'
 import { OutlineEffect } from '../vendor/OutlineEffect'
 import { 
     setCameraShot, 
@@ -63,13 +63,14 @@ const ShotMaker = React.memo(({
 
     const renderSceneWithCamera = useCallback((shotsArray) => {
         let width = Math.ceil(900 * aspectRatio)
-
         outlineEffect.current.setSize(width, 900)
         for(let i = 0; i < shotsArray.length; i++) {
             let shot = shotsArray[i]
             outlineEffect.current.render(sceneInfo.scene, shot.camera)
             convertCanvasToImage(outlineEffect.current.domElement).then((cameraImage) => {
-                shot.renderImage = cameraImage
+                //shot.renderImage = cameraImage
+                // NOTE() : a bad practice to update component but it's okay for now
+                shot.setRenderImage( cameraImage )
             })
         }
 
@@ -165,7 +166,8 @@ const ShotMaker = React.memo(({
                     setSelectedShot={ setSelectedShot }
                     fetchMoreElements={ generateMoreShots }
                     aspectRatio={ aspectRatio }
-                    scale={ scale }/>
+                    scale={ scale }
+                    sceneInfo={ sceneInfo }/>
             </div>
         </div>
     )
