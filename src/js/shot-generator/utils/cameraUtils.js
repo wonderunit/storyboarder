@@ -310,7 +310,7 @@ const setShot = ({
   shotAngle,
   shotSize
 }) => {
-  let {clampedInfo, direction} = getShotInfo({
+  let {clampedInfo, direction, box} = getShotInfo({
     selected: selected || getClosestCharacter(characters, camera),
     characters,
     shotSize,
@@ -351,7 +351,7 @@ const setShot = ({
     roll: rot.z,
     tilt: rot.x
   })
-  
+  return box
 }
 
 export {

@@ -11,7 +11,7 @@ import TWEEN from '@tweenjs/tween.js'
 import {
    updateObject
   } from '../shared/reducers/shot-generator'
-
+  import CameraUpdate from '../shot-generator/CameraUpdate'
 const Effect = ({}) => {
     const {gl, size} = useThree()
   

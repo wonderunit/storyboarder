@@ -12,6 +12,7 @@ import {
 import ObjectTween from './objectTween'
 import ShotElement from './ShotElement'
 import InfiniteScroll from './InfiniteScroll'
+import generateRule from './ShotsRule/RulesGenerator'
 
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength-1))
@@ -32,6 +33,8 @@ const ShotMaker = React.memo(({
     const imageRenderer = useRef()
     const outlineEffect = useRef()
     const tweenObject = useRef()
+    const cameraCenter = useRef()
+    const desiredPosition = useRef()
     const setSelectedShot = (newSelectedShot) => {
         // TODO filter character once amount of objects in the scene changed
         // Set camera to default before applying shot changes
@@ -44,6 +47,11 @@ const ShotMaker = React.memo(({
         selectShot(newSelectedShot)
     }
     useMemo(() => {
+
+        let material = new THREE.MeshBasicMaterial()
+        let geometry = new THREE.BoxGeometry(0.1, 0.1)
+        cameraCenter.current = new THREE.Mesh(geometry, material)
+        desiredPosition.current = new THREE.Mesh(geometry, material)
         if (!imageRenderer.current) {
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         }
@@ -92,7 +100,10 @@ const ShotMaker = React.memo(({
             let character = characters[getRandomNumber(characters.length)]
             if(!character.getObjectByProperty("type", "SkinnedMesh")) continue
             let shot = new ShotItem(randomAngle, randomSize, character)
-            setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
+            let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
+            // Calculate camera rotation for one third
+            shot.rule = generateRule(box, cameraCopy)            
+            shot.rule && shot.rule.applyRule()
             shot.camera = cameraCopy.clone()
             shotsArray.push(shot)
         }
@@ -100,6 +111,20 @@ const ShotMaker = React.memo(({
 
     useMemo(() => {
         if(sceneInfo ) {
+            withState((dispatch, state) => {
+                let cameraObject = getSceneObjects(state)[getActiveCamera(state)]
+                sceneInfo.camera.position.x = cameraObject.x
+                sceneInfo.camera.position.y = cameraObject.z
+                sceneInfo.camera.position.z = cameraObject.y
+                sceneInfo.camera.rotation.x = 0
+                sceneInfo.camera.rotation.z = 0
+                sceneInfo.camera.rotation.y = cameraObject.rotation
+                sceneInfo.camera.rotateX(cameraObject.tilt)
+                sceneInfo.camera.rotateZ(cameraObject.roll)
+                sceneInfo.camera.fov = cameraObject.fov
+                sceneInfo.camera.updateProjectionMatrix()
+            })
+
             camera.current = sceneInfo.camera.clone()
             let shotsArray = []
             let shotsCount = 12

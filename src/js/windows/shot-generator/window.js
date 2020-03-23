@@ -46,7 +46,7 @@ const configureStore = function configureStore (preloadedState) {
     preloadedState,
     composeEnhancers(
       applyMiddleware(thunkMiddleware, store => next => action => {
-        if(sendedAction !== action && shotExplorer.getWindow()) {
+        if(sendedAction !== action) {
           ipcRenderer.send('shot-explorer:updateStore', action)
         }
         next(action)
