@@ -5,9 +5,9 @@ const getRandomNumber = (maxLength) => {
 }
 
 const generateRule = (box, camera) => {
-    let i = getRandomNumber(2)
+    let i = getRandomNumber(3)
     console.log(i)
-    return i && box && new HorizontalOneThirdRule(box, camera)
+    return i && box && new HorizontalOneThirdRule(box, camera, i > 1 ? "left" : "right")
 }
 
 export default generateRule
