@@ -212,6 +212,7 @@ shotExplorer.createWindow(() => {shotExplorer.getWindow().webContents.send('shot
 
 ipcRenderer.on('shot-generator:open:shot-explorer', () => {
   shotExplorer.reveal()
+  shotExplorer.getWindow().webContents.send('shot-explorer:show')
 })
 
 electron.remote.getCurrentWindow().on("close", () => {
@@ -253,6 +254,14 @@ ipcRenderer.on('shot-generator:updateStore', (event, action) => {
   sendedAction = action
   store.dispatch(action)
 })
+
+ipcRenderer.on('shot-explorer:show', (event) => {
+  let win = shotExplorer.getWindow()
+  if (win) {
+    win.send('shot-explorer:show')
+  }
+})
+
 window.$r = { store }
 
 // disabled for now so we can reload the window easily during development

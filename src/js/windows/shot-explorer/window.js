@@ -31,7 +31,11 @@ let dialogShowed = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
 let isVisible = electron.remote.getCurrentWindow().visible
-electron.remote.getCurrentWindow().on("show", () => { isVisible = true, pushUpdates() })
+
+ipcRenderer.on('shot-explorer:show', (event) => {
+  isVisible = true;
+  pushUpdates();
+})
 electron.remote.getCurrentWindow().on("hide", () => isVisible = false)
 
 const actionSanitizer = action => (
