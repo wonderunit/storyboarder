@@ -213,7 +213,7 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 
 const renderShotExplorer = () => {
   console.log(componentKey)
-  return <ShotExplorer key={ componentKey } store={ store }/>
+  return <ShotExplorer elementKey={ componentKey } store={ store }/>
 }
 shotExplorerElement = renderShotExplorer()
 

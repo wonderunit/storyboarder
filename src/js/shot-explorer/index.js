@@ -35,6 +35,7 @@ const ShotExplorer = React.memo(({
     aspectRatio,
     updateObject,
     store,
+    elementKey
 }) => {
     const [sceneInfo, setSceneInfo] = useState(null)
     const [newAssetsLoaded, setLoadedAssets] = useState()
@@ -55,7 +56,7 @@ const ShotExplorer = React.memo(({
         }
     }, [])
 
-    
+    console.log(cache.get()); 
     return (
     <FatalErrorBoundary>
         <Canvas
@@ -74,7 +75,8 @@ const ShotExplorer = React.memo(({
             </Provider>
             <Effect />
         </Canvas>
-        <ShotMaker sceneInfo={ sceneInfo } 
+        <ShotMaker key={ elementKey }
+                    sceneInfo={ sceneInfo } 
                     withState={ withState }
                     aspectRatio={ aspectRatio }
                     newAssetsLoaded={ newAssetsLoaded }
