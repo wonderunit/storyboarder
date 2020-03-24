@@ -47,7 +47,10 @@ const configureStore = function configureStore (preloadedState) {
     composeEnhancers(
       applyMiddleware(thunkMiddleware, store => next => action => {
         if(sendedAction !== action) {
-          ipcRenderer.send('shot-explorer:updateStore', action)
+          let win = shotExplorer.getWindow()
+          if (win && !win.isDestroyed()) {
+            win.webContents.send('shot-explorer:updateStore', action)
+          }
         }
         next(action)
         
@@ -219,13 +222,6 @@ electron.remote.getCurrentWindow().on("close", () => {
   let shotExplorerWindow = shotExplorer.getWindow()
   if(shotExplorerWindow)
     shotExplorerWindow.close()
-})
-
-ipcRenderer.on('shot-explorer:updateStore', (event, action) => {
-  let win = shotExplorer.getWindow()
-  if (win && !win.isDestroyed()) {
-    win.webContents.send('shot-explorer:updateStore', action)
-  }
 })
 
 ipcRenderer.on('shot-generator:get-storyboarder-file-data', (event, data) => {

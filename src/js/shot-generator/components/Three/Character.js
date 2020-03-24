@@ -101,7 +101,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         originalHeight = bbox.max.y - bbox.min.y
       }
       setReady(true)
-      console.log("Loading character")
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
 
@@ -189,13 +188,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       }
     }, [sceneObject.posePresetId, sceneObject.skeleton, skeleton, sceneObject.handPosePresetId])
     
-/*     // Saves current skeleton to store 
-    // We need full character skeleton and it's bones across the project
-    // for different stuff like list of bones, or selected bone rotation 
-    useEffect(() => {
-      if(!ref.current || !skeleton ) return
-      fullyUpdateIkSkeleton()
-    }, [skeleton]) */
 
     const fullyUpdateIkSkeleton = () => {
       if(!ref.current || !skeleton ) return

@@ -1522,14 +1522,6 @@ ipcMain.on('shot-generator:requestInsertShot', (event, uid) => {
   }
 })
 
-
-ipcMain.on('shot-explorer:updateStore', (event, action) => {
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.webContents.send('shot-explorer:updateStore', action)
-  }
-})
-
 ipcMain.on('shot-generator:updateStore', (event, action) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {

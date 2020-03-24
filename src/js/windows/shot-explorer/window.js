@@ -26,7 +26,6 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 let sendedAction = []
-let updateStore = true
 let dialogShowed = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
@@ -59,6 +58,7 @@ const actionSanitizer = action => (
       composeEnhancers(
         applyMiddleware(
             thunkMiddleware, store => next => action => {
+              if(!isVisible) return 
               let indexOf = sendedAction.indexOf(action)
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
@@ -115,22 +115,16 @@ const showUpdateDialog = () => {
     message: 'The Shot Generator scene was changed. Do you want to update Shots?'
   }
   dialog.showMessageBox(electron.remote.getCurrentWindow(), options, (response) => {
-    console.log(response)
-
-    console.log(sendedAction, shotExplorerElement)
-    pushUpdates()
-
-    console.log(componentKey)
+    
+    if(response === 0) pushUpdates()
     dialogShowed = false
   })
   dialogShowed = true
 }
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
-  if(isVisible) showUpdateDialog()
   sendedAction.push(action)
-  //console.log("Action added", action)
-  // store.dispatch(action)
+  if(isVisible) showUpdateDialog()
 })
 
 

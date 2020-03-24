@@ -80,6 +80,7 @@ const createWindow = async ( onComplete, aspectRatio) => {
         allowRunningInsecureContent: true,
         experimentalFeatures: true,
         backgroundThrottling: true,
+        backgroundThrottling: true
       },
     })
   

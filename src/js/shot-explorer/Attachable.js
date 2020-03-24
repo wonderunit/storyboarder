@@ -35,7 +35,7 @@ const meshFactory = source => {
   return mesh
 }
 
-const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, сharacterModelPath, deleteObjects, character, withState }) => {
+const Attachable = React.memo(({ path, sceneObject, isSelected, сharacterModelPath, character }) => {
     const {asset: gltf} = useAsset(path)
     const {asset: characterModel} = useAsset(сharacterModelPath)
     const [characterLOD, setCharacterLOD] = useState()
@@ -92,7 +92,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
            (isPrevModelUser && !isCurrentModelUser) ||
            (isPrevModelUser && isCurrentModelUser)) {
           setAllowToInitialize(false)
-          deleteObjects([sceneObject.id])
         } else {
           setAllowToInitialize(true)
         }
@@ -161,11 +160,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
           originalPosition.current = modelPosition
         }
         let euler = new THREE.Euler().setFromQuaternion(quat)
-        updateObject(sceneObject.id, {
-          x: modelPosition.x, y: modelPosition.y, z: modelPosition.z,
-          rotation: { x: euler.x, y: euler.y, z: euler.z },
-          status: "Loaded"
-        })
       }
       bone.add(ref.current)
 

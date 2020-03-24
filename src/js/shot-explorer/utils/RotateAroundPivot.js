@@ -13,11 +13,7 @@ const rotateAroundPivot = (point, object, rotation) => {
     pivot.updateMatrixWorld(true)
     object.updateMatrixWorld(true)
     let quaternion = pivot.worldQuaternion()
-    console.log(quaternion)
-    console.log(quaternion)
     pivot.remove(object)
-    //object.applyMatrix(new THREE.Matrix4().getInverse(pivot.matrixWorld))
-
     object.updateMatrixWorld(true)
     object.quaternion.copy(quaternion)
     object.position.copy(position)
