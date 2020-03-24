@@ -221,7 +221,7 @@ ipcRenderer.on('shot-generator:open:shot-explorer', () => {
 electron.remote.getCurrentWindow().on("close", () => {
   let shotExplorerWindow = shotExplorer.getWindow()
   if(shotExplorerWindow)
-    shotExplorerWindow.close()
+    shotExplorerWindow.destroy()
 })
 
 ipcRenderer.on('shot-generator:get-storyboarder-file-data', (event, data) => {
