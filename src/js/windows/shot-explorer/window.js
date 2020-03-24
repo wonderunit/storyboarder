@@ -109,10 +109,13 @@ const pushUpdates = () => {
 const showUpdateDialog = () => {
   if(dialogShowed) return
   let options = {
-    type: 'question',
+    type: 'info',
     buttons: ['Yes', 'No'],
     title: 'Confirm',
-    message: 'The Shot Generator scene was changed. Do you want to update Shots?'
+    message: 'The Shot Generator scene was changed. Do you want to update Shots?',
+    defaultId: 0,
+    focus: false
+    
   }
   dialog.showMessageBox(electron.remote.getCurrentWindow(), options, (response) => {
     
@@ -120,6 +123,7 @@ const showUpdateDialog = () => {
     dialogShowed = false
   })
   dialogShowed = true
+  electron.remote.getCurrentWindow().blur()
 }
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
