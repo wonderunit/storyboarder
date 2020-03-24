@@ -13,7 +13,7 @@ const InfiniteScroll = React.memo(({
     const handleScroll = () => {
         let shotsContainer = ref.current
         let containerHeight = window.outerHeight - shotsContainer.offsetTop
-        if (containerHeight + shotsContainer.scrollTop < shotsContainer.scrollHeight - 25) return;
+        if (containerHeight + shotsContainer.scrollTop < shotsContainer.scrollHeight - 10 * itemData.aspectRatio) return;
         setIsFetching(true)
     }
 

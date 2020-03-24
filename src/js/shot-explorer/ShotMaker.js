@@ -178,10 +178,13 @@ const ShotMaker = React.memo(({
 
     return ( 
         <div style={{ maxHeight: "100%", height: "100%" }}>
-            <div className="insert-camera" onPointerDown={() => updateCamera()}>
-                <a>
-                    Insert Camera
-                </a>
+            <div style={{display:"flex"}} >
+                <div className="description-selected"><div>{ selectedShot && selectedShot.toString()}</div></div>
+                <div className="insert-camera" style={{marginLeft:"auto"}} onPointerDown={() => updateCamera()}>
+                    <a>
+                        Insert Camera
+                    </a>
+                </div>
             </div>
             <div>
                 <InfiniteScroll 

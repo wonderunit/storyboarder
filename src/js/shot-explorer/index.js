@@ -58,7 +58,6 @@ const ShotExplorer = React.memo(({
         }
     }, [])
 
-    console.log(cache.get()); 
     // padding for right side of canvas
     let paddingToRight = 10 * aspectRatio
     return (
