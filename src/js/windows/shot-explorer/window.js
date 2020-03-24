@@ -30,6 +30,7 @@ let dialogShowed = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
 let isVisible = electron.remote.getCurrentWindow().visible
+let defaultWidth = 400
 
 ipcRenderer.on('shot-explorer:show', (event) => {
   isVisible = true;
@@ -197,6 +198,10 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
+
+  electron.remote.getCurrentWindow().setMaximumSize(Math.ceil(defaultWidth * aspectRatio), 100000)
+  electron.remote.getCurrentWindow().setMinimumSize(Math.ceil(defaultWidth * aspectRatio), 800)
+
   let action  = {
     type: 'SET_META_STORYBOARDER_FILE_PATH',
     payload: storyboarderFilePath
@@ -215,7 +220,10 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 
 const renderShotExplorer = () => {
   console.log(componentKey)
-  return <ShotExplorer elementKey={ componentKey } store={ store }/>
+  return <ShotExplorer 
+                elementKey={ componentKey } 
+                store={ store }
+                defaultWidth={ defaultWidth }/>
 }
 shotExplorerElement = renderShotExplorer()
 

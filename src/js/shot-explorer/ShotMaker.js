@@ -25,7 +25,8 @@ const ShotMaker = React.memo(({
     withState,
     aspectRatio,
     updateObject,
-    newAssetsLoaded
+    newAssetsLoaded,
+    defaultWidth
 }) => {
     const camera = useRef()
     const [selectedShot, selectShot] = useState(null)
@@ -187,12 +188,13 @@ const ShotMaker = React.memo(({
                     Component={ ShotElement }
                     elements={ shots }
                     className="shots-container"
-                    style={{ maxWidth: (900 * aspectRatio) / scale + 30, height: windowHeight / scale - 45 }}
+                    style={{ maxWidth: (defaultWidth * aspectRatio), height: windowHeight / scale - 45 }}
                     setSelectedShot={ setSelectedShot }
                     fetchMoreElements={ generateMoreShots }
                     aspectRatio={ aspectRatio }
                     scale={ scale }
-                    sceneInfo={ sceneInfo }/>
+                    sceneInfo={ sceneInfo }
+                    defaultWidth={ defaultWidth }/>
             </div>
         </div>
     )

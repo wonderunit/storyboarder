@@ -53,12 +53,13 @@ const createWindow = async ( onComplete, aspectRatio) => {
       //reveal(onComplete)
       return
     }
-  
+    console.log((900 * aspectRatio) / 2)
     let { x, y, width, height } = memento
     win = new BrowserWindow({
-      minWidth: isDev ? undefined : (900 * aspectRatio) / 2,
-      minHeight: isDev ? undefined : 800,
-  
+     // minWidth: (500 * aspectRatio),
+      minHeight: 800,
+
+     // maxWidth: (300 * aspectRatio),
       x,
       y,
       width,

@@ -182,7 +182,7 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
-
+  shotExplorer.createWindow(() => {shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')}, aspectRatio)
   await loadBoard(board)
 
   if (!xrServer) {
@@ -211,7 +211,6 @@ ipcRenderer.on('shot-generator:edit:undo', () => {
 ipcRenderer.on('shot-generator:edit:redo', () => {
   store.dispatch( ActionCreators.redo() )
 })
-shotExplorer.createWindow(() => {shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')}, store.getState().aspectRatio)
 
 ipcRenderer.on('shot-generator:open:shot-explorer', () => {
   shotExplorer.reveal()

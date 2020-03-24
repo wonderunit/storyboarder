@@ -26,6 +26,7 @@ const Effect = ({}) => {
     return null
   }
 const stopUnload = (event) => {
+
     event.returnValue = false
 }
 
@@ -35,7 +36,8 @@ const ShotExplorer = React.memo(({
     aspectRatio,
     updateObject,
     store,
-    elementKey
+    elementKey,
+    defaultWidth
 }) => {
     const [sceneInfo, setSceneInfo] = useState(null)
     const [newAssetsLoaded, setLoadedAssets] = useState()
@@ -57,6 +59,8 @@ const ShotExplorer = React.memo(({
     }, [])
 
     console.log(cache.get()); 
+    // padding for right side of canvas
+    let paddingToRight = 10 * aspectRatio
     return (
     <FatalErrorBoundary>
         <Canvas
@@ -67,7 +71,7 @@ const ShotExplorer = React.memo(({
             updateDefaultCamera={ true }
             noEvents={ true }
             className="shot-explorer-shot-selected" 
-            style={{ width: (900 * aspectRatio) / 2, height: 900 / 2 }}>
+            style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: 900 / 2, paddingTop: "20px" }}>
             <Provider store={store}>
                 <ShotExplorerSceneManager
                             setLargeCanvasData= { setLargeCanvasData }
@@ -80,7 +84,8 @@ const ShotExplorer = React.memo(({
                     withState={ withState }
                     aspectRatio={ aspectRatio }
                     newAssetsLoaded={ newAssetsLoaded }
-                    updateObject={ updateObject } /> 
+                    updateObject={ updateObject }
+                    defaultWidth={ defaultWidth }/> 
     </FatalErrorBoundary>
     )
 })

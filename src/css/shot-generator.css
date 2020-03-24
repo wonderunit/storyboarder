@@ -389,48 +389,6 @@ kbd {
   pointer-events: none;
 }
 
-.shots-container {
-  display: flex;
-  flex-wrap: wrap;
-  overflow-y: auto;
-}
-
-.shot-explorer-shot-selected {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 5px 5px 20px 5px
-}
-
-.shot-explorer-shot {
-  display: flex;
-  flex-wrap: wrap;
-  margin: 5px 5px 20px 5px
-}
-
-.shot-explorer-image {
-  max-width: 100%;
-  max-height: 100%; 
-  align-content: center;
-}
-
-.insert-camera {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.insert-camera a {
-  color: #e0e0e0;
-  text-decoration: none;
-
-  margin: 0 12px 0 0;
-  padding: 6px 12px;
-  border-radius: 6px;
-  justify-content: center;
-  align-items: center;
-  display: flex;
-  background-color: rgba(255,255,255,0.10);
-  color: white;
-}
 
 .inspectors {
   display: flex;
