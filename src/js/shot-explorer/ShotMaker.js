@@ -20,6 +20,7 @@ const getRandomNumber = (maxLength) => {
 }
 
 const ShotMaker = React.memo(({
+    elementKey,
     sceneInfo,
     
     withState,
@@ -47,8 +48,8 @@ const ShotMaker = React.memo(({
         tweenObject.current.startTween(clonnedCamera.worldPosition(), clonnedCamera.worldQuaternion())
         selectShot(newSelectedShot)
     }
-    useMemo(() => {
-
+    useEffect(() => {
+        console.log("mount")
         let material = new THREE.MeshBasicMaterial()
         let geometry = new THREE.BoxGeometry(0.1, 0.1)
         cameraCenter.current = new THREE.Mesh(geometry, material)
@@ -58,15 +59,28 @@ const ShotMaker = React.memo(({
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
         return () => {
+            console.log("unmount")
             imageRenderer.current = null
             outlineEffect.current = null
+            cleanUpShots()
+           // setShots([])
         }
     }, [])
-    
-    const convertCanvasToImage = async (canvas) => {
+
+    const cleanUpShots = () => {
+        for(let i = 0; i < shots.length; i++) {
+            shots[i].destroy()
+        }
+    }
+
+    const convertCanvasToImage = async (outlineEffect, scene, camera) => {
         return new Promise((resolve, reject) => {
-            let image = canvas.toDataURL('image/jpeg', 0.7)
-            resolve(image);
+            setTimeout(() => {
+                outlineEffect.render(scene, camera)
+                let image = outlineEffect.domElement.toDataURL('image/jpeg', 0.5)
+                resolve(image);
+            }, 10)
+        
         })
     }
 
@@ -75,11 +89,10 @@ const ShotMaker = React.memo(({
         outlineEffect.current.setSize(width, 900)
         for(let i = 0; i < shotsArray.length; i++) {
             let shot = shotsArray[i]
-            outlineEffect.current.render(sceneInfo.scene, shot.camera)
-            convertCanvasToImage(outlineEffect.current.domElement).then((cameraImage) => {
-                //shot.renderImage = cameraImage
+            convertCanvasToImage(outlineEffect.current, sceneInfo.scene, shot.camera).then((cameraImage) => {
                 // NOTE() : a bad practice to update component but it's okay for now
                 shot.setRenderImage( cameraImage )
+                console.log("Render image")
             })
         }
 
@@ -110,8 +123,10 @@ const ShotMaker = React.memo(({
         }
     }, [renderSceneWithCamera])
 
-    useMemo(() => {
-        if(sceneInfo ) {
+    useEffect(() => {
+        if(sceneInfo) {
+            console.log("Intializing")
+
             withState((dispatch, state) => {
                 let cameraObject = getSceneObjects(state)[getActiveCamera(state)]
                 sceneInfo.camera.position.x = cameraObject.x
@@ -128,14 +143,12 @@ const ShotMaker = React.memo(({
 
             camera.current = sceneInfo.camera.clone()
             let shotsArray = []
-            let shotsCount = 12
+            let shotsCount = 9
             generateShot(shotsArray, shotsCount)
 
             renderSceneWithCamera(shotsArray)
             shotsArray[0] && setSelectedShot(shotsArray[0])
-            for(let i = 0; i < shots.length; i++) {
-                shots[i].destroy()
-            }
+            cleanUpShots()
             setShots(shotsArray)
         }
     }, [sceneInfo, newAssetsLoaded])
@@ -178,7 +191,7 @@ const ShotMaker = React.memo(({
         window.removeEventListener('resize', handleResize) 
       }
     }, [])
-
+    console.log(elementKey, shots)
     return ( 
         <div style={{ maxHeight: "100%", height: "100%" }}>
             <div style={{display:"flex"}} >
@@ -191,6 +204,7 @@ const ShotMaker = React.memo(({
             </div>
             <div>
                 <InfiniteScroll 
+                    key={ elementKey }
                     Component={ ShotElement }
                     elements={ shots }
                     className="shots-container"

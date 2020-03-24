@@ -38,7 +38,7 @@ let memento = {
 const reveal = () => {
     win.show()
     win.focus()
-    win.webContents.openDevTools()
+  //  win.webContents.openDevTools()
     //onComplete(win)
   }
 
@@ -57,7 +57,7 @@ const createWindow = async ( onComplete, aspectRatio) => {
     let { x, y, width, height } = memento
     win = new BrowserWindow({
      // minWidth: (500 * aspectRatio),
-      minHeight: 800,
+      //minHeight: 800,
 
      // maxWidth: (300 * aspectRatio),
       x,

@@ -38,7 +38,7 @@ class ShotItem {
         this.renderImage = null;
         this.cameraRotation = null;
         this.subscribers = [];
-        this.rule.destroy()
+        this.rule && this.rule.destroy()
         this.rule = null;
         this.camera = null;
     }

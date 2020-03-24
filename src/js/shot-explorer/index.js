@@ -84,7 +84,8 @@ const ShotExplorer = React.memo(({
                     aspectRatio={ aspectRatio }
                     newAssetsLoaded={ newAssetsLoaded }
                     updateObject={ updateObject }
-                    defaultWidth={ defaultWidth }/> 
+                    defaultWidth={ defaultWidth }
+                    elementKey={ elementKey }/> 
     </FatalErrorBoundary>
     )
 })

@@ -98,7 +98,7 @@ const store = configureStore({
   },
 })
 const pushUpdates = () => {
-  componentKey = THREE.Math.generateUUID()
+  
   shotExplorerElement = renderShotExplorer()
   batch(() => {
     for(let i = 0; i < sendedAction.length; ) {
@@ -199,8 +199,8 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
-  electron.remote.getCurrentWindow().setMaximumSize(Math.ceil(defaultWidth * aspectRatio), 100000)
   electron.remote.getCurrentWindow().setMinimumSize(Math.ceil(defaultWidth * aspectRatio), 800)
+  electron.remote.getCurrentWindow().setMaximumSize(Math.ceil(defaultWidth * aspectRatio), 100000)
 
   let action  = {
     type: 'SET_META_STORYBOARDER_FILE_PATH',
@@ -219,7 +219,7 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 })
 
 const renderShotExplorer = () => {
-  console.log(componentKey)
+  componentKey = THREE.Math.generateUUID()
   return <ShotExplorer 
                 elementKey={ componentKey } 
                 store={ store }
