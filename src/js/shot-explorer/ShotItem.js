@@ -5,7 +5,9 @@ class ShotItem {
         this.character = character;
         this.renderImage = renderImage;
         this.cameraRotation = cameraRotation;
-        this.subscribers = []
+        this.subscribers = [];
+        this.rule = null;
+        this.camera = null;
     }
 
     setRenderImage(renderImage) {
@@ -27,6 +29,18 @@ class ShotItem {
 
     toString() {
         return `${this.size}, ${this.angle} on ${this.character.userData.name}`;
+    }
+
+    destroy() {
+        this.angle = null;
+        this.size = null;
+        this.character = null;
+        this.renderImage = null;
+        this.cameraRotation = null;
+        this.subscribers = [];
+        this.rule.destroy()
+        this.rule = null;
+        this.camera = null;
     }
 }
 export default ShotItem;

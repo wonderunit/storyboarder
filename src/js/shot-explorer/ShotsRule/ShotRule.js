@@ -7,5 +7,10 @@ class ShotRule {
     applyRule() {
 
     }
+
+    destroy() {
+        this.box = null;
+        this.camera = null;
+    }
 }
 export default ShotRule

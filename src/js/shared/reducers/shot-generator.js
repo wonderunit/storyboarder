@@ -114,8 +114,8 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   // check to see if pose has changed from preset
   // and invalidate if so
-
-  let posePresetId = getSceneObjects(draft)[actionPayloadId].posePresetId
+  let object = getSceneObjects(draft)[actionPayloadId]
+  let posePresetId = object && object.posePresetId
   if (posePresetId) {
     let statePreset = state.presets.poses[posePresetId]
 

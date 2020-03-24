@@ -133,6 +133,9 @@ const ShotMaker = React.memo(({
 
             renderSceneWithCamera(shotsArray)
             shotsArray[0] && setSelectedShot(shotsArray[0])
+            for(let i = 0; i < shots.length; i++) {
+                shots[i].destroy()
+            }
             setShots(shotsArray)
         }
     }, [sceneInfo, newAssetsLoaded])

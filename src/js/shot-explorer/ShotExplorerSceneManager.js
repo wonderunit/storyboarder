@@ -1,18 +1,13 @@
 import { connect } from 'react-redux'
 import ModelObject from '../shot-generator/components/Three/ModelObject'
 import Environment from '../shot-generator/components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useRef, useEffect, useMemo } from 'react'
 import Ground from '../shot-generator/components/Three/Ground'
 import useTextureLoader from '../shot-generator/hooks/use-texture-loader'
 import { 
     getSceneObjects,
     getWorld,
     getSelectedBone,
-    updateCharacterSkeleton,
-    updateCharacterIkSkeleton,
-    updateObject,
-    updateObjects,
-    deleteObjects,
 
  } from '../shared/reducers/shot-generator'
 import { useThree } from 'react-three-fiber'
@@ -26,7 +21,6 @@ import SimpleErrorBoundary from '../shot-generator/components/SimpleErrorBoundar
 import { getFilePathForImages } from '../shot-generator/helpers/get-filepath-for-images'
 import { SHOT_LAYERS } from '../shot-generator/utils/ShotLayers'
 import Room from '../shot-generator/components/Three/Room'
-import Group from '../shot-generator/components/Three/Group'
 import CameraUpdate from '../shot-generator/CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
 
@@ -55,11 +49,6 @@ const ShotExplorerSceneManager = connect(
         selectedBone: getSelectedBone(state),
     }),
     {
-        updateCharacterSkeleton,
-        updateCharacterIkSkeleton,
-        updateObject,
-        updateObjects,
-        deleteObjects,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
@@ -67,17 +56,10 @@ const ShotExplorerSceneManager = connect(
 
     world,
     storyboarderFilePath,
-    updateCharacterSkeleton,
-    updateCharacterIkSkeleton,
-    updateObject,
     models,
-    selectedBone,
-
     setLargeCanvasData,
     renderData,
-    deleteObjects,
     withState,
-    isPreview
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -110,10 +92,6 @@ const ShotExplorerSceneManager = connect(
     const imageIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'image').map(o => o.id)
     }, [sceneObjectLength])
-
-    const groupIds = useMemo(() => {
-      return Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
-    }, [sceneObjectLength]) 
 
     useEffect(() => { 
       setLargeCanvasData(camera, scene, gl)
@@ -166,7 +144,7 @@ const ShotExplorerSceneManager = connect(
               <ModelObject
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
-                updateObject={ updateObject }
+                updateObject={ () => {} }
                 />
             </SimpleErrorBoundary>
         })
@@ -179,12 +157,6 @@ const ShotExplorerSceneManager = connect(
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
-                selectedBone={ selectedBone }
-                updateCharacterSkeleton={ () => {} }
-               // updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
-                renderData={renderData}
-                withState={ withState }
-                isPreview={ isPreview }
                 />
               </SimpleErrorBoundary>
         })
@@ -205,9 +177,7 @@ const ShotExplorerSceneManager = connect(
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
-                updateObject={ () => {}  }
                 сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
-                deleteObjects={ deleteObjects }
                 character={ sceneObjects[sceneObject.attachToId] }
                 withState={ withState }
               />
@@ -234,18 +204,6 @@ const ShotExplorerSceneManager = connect(
                 sceneObject={ sceneObject }/>
               </SimpleErrorBoundary>
         })
-    }
-    {
-       groupIds.map(id => {
-          let sceneObject = sceneObjects[id]
-          return <Group
-            key={ sceneObject.id }
-            scene={ scene }
-            updateObject={ updateObject }
-            { ...sceneObject }
-          />
-       })
-        
     }
     { 
         groundTexture && <Ground

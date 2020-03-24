@@ -8,7 +8,7 @@ import { SHOT_LAYERS } from '../shot-generator/utils/ShotLayers'
 import {patchMaterial} from '../shot-generator/helpers/outlineMaterial'
 import isUserModel from '../shot-generator/helpers/isUserModel'
 
-const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, isPreview}) => {
+const Character = React.memo(({ path, sceneObject, modelSettings}) => {
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
@@ -86,7 +86,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         originalHeight = bbox.max.y - bbox.min.y
       }
       setReady(true)
-      console.log("Loading character")
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
 
