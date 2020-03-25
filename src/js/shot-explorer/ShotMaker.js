@@ -13,7 +13,7 @@ import ObjectTween from './objectTween'
 import ShotElement from './ShotElement'
 import InfiniteScroll from './InfiniteScroll'
 import generateRule from './ShotsRule/RulesGenerator'
-
+import isUserModel from '../shot-generator/helpers/isUserModel'
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength-1))
     return number
@@ -98,7 +98,7 @@ const ShotMaker = React.memo(({
     }, [sceneInfo])
 
     const generateShot = useCallback((shotsArray, shotsCount) => {
-        let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character')
+        let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character' && !isUserModel(object.userData.modelName))
         if(!characters.length) {
             return;
         }

@@ -190,7 +190,6 @@ const SceneManagerR3fLarge = connect(
         for(let i = 0; i < keys.length; i++ ) {
           let key = keys[i]
           if(cameraShots[key].character) {
-            console.log(cameraShots[key].character)
             selected = scene.__interaction.filter((object) => object.userData.id === cameraShots[key].character)[0]
           }
           if((!cameraShots[key].size && !cameraShots[key].angle) || camera.userData.id !== cameraShots[key].cameraId ) continue

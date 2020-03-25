@@ -48,11 +48,9 @@ const ShotExplorer = React.memo(({
     const updateAssets = () => {setLoadedAssets({})}
 
     useEffect(() => {
-        console.log("Mount")
         cache.subscribe(updateAssets)
         window.addEventListener("beforeunload", stopUnload)
         return () => {
-            console.log("Unmount")
             cache.unsubscribe(updateAssets)
             window.removeEventListener("beforeunload", stopUnload)
         }
