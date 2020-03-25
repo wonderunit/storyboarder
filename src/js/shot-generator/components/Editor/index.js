@@ -224,7 +224,6 @@ const Editor = React.memo(({
               </div>
             </div>
             <div className="inspectors">
-              <a onPointerDown={ () => ipcRenderer.send('shot-generator:open:shot-explorer')}>Enable shot explorer</a>
               <CameraPanelInspector/>
               <BoardInspector/>
               <div style={{ flex: "1 1 auto" }}>

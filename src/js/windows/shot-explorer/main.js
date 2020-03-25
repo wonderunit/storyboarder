@@ -53,7 +53,6 @@ const createWindow = async ( onComplete, aspectRatio) => {
       //reveal(onComplete)
       return
     }
-    console.log((900 * aspectRatio) / 2)
     let { x, y, width, height } = memento
     win = new BrowserWindow({
      // minWidth: (500 * aspectRatio),
@@ -71,7 +70,7 @@ const createWindow = async ( onComplete, aspectRatio) => {
   
       backgroundColor: '#333333',
       titleBarStyle: 'hiddenInset',
-  
+      title: "Shot Explorer",
       acceptFirstMouse: true,
       simpleFullscreen: true,
       webPreferences: {

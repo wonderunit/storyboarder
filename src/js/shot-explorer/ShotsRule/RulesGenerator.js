@@ -20,6 +20,7 @@ const generateRule = (box, camera) => {
             break;
     }
     return result
+    
 }
 
 export default generateRule
