@@ -92,7 +92,6 @@ const ShotMaker = React.memo(({
             convertCanvasToImage(outlineEffect.current, sceneInfo.scene, shot.camera).then((cameraImage) => {
                 // NOTE() : a bad practice to update component but it's okay for now
                 shot.setRenderImage( cameraImage )
-                console.log("Render image")
             })
         }
 

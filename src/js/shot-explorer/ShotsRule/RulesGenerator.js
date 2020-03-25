@@ -6,8 +6,7 @@ const getRandomNumber = (maxLength) => {
 }
 
 const generateRule = (box, camera) => {
-    let i = getRandomNumber(4)
-    console.log(i)
+    let i = getRandomNumber(6)
     let result = null
     switch(i) {
         case 1:

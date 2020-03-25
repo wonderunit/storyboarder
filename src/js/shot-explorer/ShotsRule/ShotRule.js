@@ -1,7 +1,7 @@
 class ShotRule {
     constructor(box, camera) {
-        this.box = box
-        this.camera = camera
+        this.box = box;
+        this.camera = camera;
     }
 
     applyRule() {
