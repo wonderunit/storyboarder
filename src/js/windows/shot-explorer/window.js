@@ -3,9 +3,7 @@ const React = require('react')
 const { ipcRenderer, shell } = electron = require('electron')
 const { Provider, batch } = require('react-redux')
 const { dialog } = electron.remote
-const log = require('electron-log')
 const THREE = require('three')
-log.catchErrors()
 const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
 const { reducer } = require('../../shared/reducers/shot-generator')
@@ -15,7 +13,6 @@ const { initialState } = require('../../shared/reducers/shot-generator')
 const poses = require('../../shared/reducers/shot-generator-presets/poses.json')
 const ShotExplorer = require('../../shot-explorer').default
 const service = require('../shot-generator/service')
-const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 const {loadAsset, cleanUpCache} = require("../../shot-generator/hooks/use-assets-manager")
 const ModelLoader = require("./../../services/model-loader")
 const {getFilePathForImages} = require("./../../shot-generator/helpers/get-filepath-for-images")
@@ -32,27 +29,23 @@ let shotExplorerElement
 let isVisible = electron.remote.getCurrentWindow().visible
 let defaultWidth = 400
 
-ipcRenderer.on('shot-explorer:show', (event) => {
-  isVisible = true;
-  pushUpdates();
-})
-electron.remote.getCurrentWindow().on("hide", () => isVisible = false)
-
 const actionSanitizer = action => (
     action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
     { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
-  )
-  const stateSanitizer = state => state.attachments ? { ...state, attachments: '<<ATTACHMENTS>>' } : state
-  const reduxDevtoolsExtensionOptions = {
-    actionSanitizer,
-    stateSanitizer,
-    trace: true,
-  }
-  const composeEnhancers = (
-      window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&
-      window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(reduxDevtoolsExtensionOptions)
-    ) || compose
-  const configureStore = function configureStore (preloadedState) {
+)
+const stateSanitizer = state => state.attachments ? { ...state, attachments: '<<ATTACHMENTS>>' } : state
+const reduxDevtoolsExtensionOptions = {
+  actionSanitizer,
+  stateSanitizer,
+  trace: true,
+}
+
+const composeEnhancers = (
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ &&
+    window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(reduxDevtoolsExtensionOptions)
+  ) || compose
+
+const configureStore = function configureStore (preloadedState) {
     const store = createStore(
       reducer,
       preloadedState,
@@ -71,8 +64,7 @@ const actionSanitizer = action => (
       )
     )
     return store
-  }
-
+}
 
 const store = configureStore({
   ...initialState,
@@ -97,6 +89,43 @@ const store = configureStore({
     }
   },
 })
+
+ipcRenderer.on('shot-explorer:show', (event) => {
+  isVisible = true;
+  pushUpdates();
+})
+
+ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
+  const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
+  const { board } = await service.getStoryboarderState()
+  let aspectRatio = parseFloat(boardData.aspectRatio)
+
+  electron.remote.getCurrentWindow().setMinimumSize(Math.ceil(defaultWidth * aspectRatio), 800)
+  electron.remote.getCurrentWindow().setMaximumSize(Math.ceil(defaultWidth * aspectRatio), 100000)
+
+  let action  = {
+    type: 'SET_META_STORYBOARDER_FILE_PATH',
+    payload: storyboarderFilePath
+  }
+  sendedAction.push(action)
+  store.dispatch(action)
+  action = {
+    type: 'SET_ASPECT_RATIO',
+    payload: aspectRatio
+  }
+  sendedAction.push(action)
+  store.dispatch(action)
+
+  await loadBoard(board, storyboarderFilePath)
+})
+
+ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
+  sendedAction.push(action)
+  if(isVisible) showUpdateDialog()
+})
+
+electron.remote.getCurrentWindow().on("hide", () => isVisible = false)
+
 const pushUpdates = () => {
   
   shotExplorerElement = renderShotExplorer()
@@ -107,6 +136,7 @@ const pushUpdates = () => {
   })
   renderDom()
 }
+
 const showUpdateDialog = () => {
   if(dialogShowed) return
   let options = {
@@ -127,16 +157,7 @@ const showUpdateDialog = () => {
   electron.remote.getCurrentWindow().blur()
 }
 
-ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
-  sendedAction.push(action)
-  if(isVisible) showUpdateDialog()
-})
-
-
-
 const loadBoard = async (board, storyboarderFilePath) => {
-  log.info(board)
-
   let shot = board.sg
   let action = setBoard(board)
   sendedAction.push(action)
@@ -194,30 +215,6 @@ const loadBoard = async (board, storyboarderFilePath) => {
   }
 }
 
-ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
-  const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
-  const { board } = await service.getStoryboarderState()
-  let aspectRatio = parseFloat(boardData.aspectRatio)
-
-  electron.remote.getCurrentWindow().setMinimumSize(Math.ceil(defaultWidth * aspectRatio), 800)
-  electron.remote.getCurrentWindow().setMaximumSize(Math.ceil(defaultWidth * aspectRatio), 100000)
-
-  let action  = {
-    type: 'SET_META_STORYBOARDER_FILE_PATH',
-    payload: storyboarderFilePath
-  }
-  sendedAction.push(action)
-  store.dispatch(action)
-  action = {
-    type: 'SET_ASPECT_RATIO',
-    payload: aspectRatio
-  }
-  sendedAction.push(action)
-  store.dispatch(action)
-
-  await loadBoard(board, storyboarderFilePath)
-})
-
 const renderShotExplorer = () => {
   componentKey = THREE.Math.generateUUID()
   return <ShotExplorer 
@@ -226,7 +223,6 @@ const renderShotExplorer = () => {
                 defaultWidth={ defaultWidth }/>
 }
 shotExplorerElement = renderShotExplorer()
-
 
 const renderDom = () => {
   ReactDOM.render(

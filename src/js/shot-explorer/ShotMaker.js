@@ -49,7 +49,6 @@ const ShotMaker = React.memo(({
         selectShot(newSelectedShot)
     }
     useEffect(() => {
-        console.log("mount")
         let material = new THREE.MeshBasicMaterial()
         let geometry = new THREE.BoxGeometry(0.1, 0.1)
         cameraCenter.current = new THREE.Mesh(geometry, material)
@@ -59,11 +58,9 @@ const ShotMaker = React.memo(({
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
         return () => {
-            console.log("unmount")
             imageRenderer.current = null
             outlineEffect.current = null
             cleanUpShots()
-           // setShots([])
         }
     }, [])
 
@@ -124,8 +121,6 @@ const ShotMaker = React.memo(({
 
     useEffect(() => {
         if(sceneInfo) {
-            console.log("Intializing")
-
             withState((dispatch, state) => {
                 let cameraObject = getSceneObjects(state)[getActiveCamera(state)]
                 sceneInfo.camera.position.x = cameraObject.x
@@ -190,7 +185,6 @@ const ShotMaker = React.memo(({
         window.removeEventListener('resize', handleResize) 
       }
     }, [])
-    console.log(elementKey, shots)
     return ( 
         <div style={{ maxHeight: "100%", height: "100%" }}>
             <div style={{display:"flex"}} >
