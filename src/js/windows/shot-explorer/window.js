@@ -54,6 +54,7 @@ const configureStore = function configureStore (preloadedState) {
             thunkMiddleware, store => next => action => {
               if(!isVisible) return 
               let indexOf = sendedAction.indexOf(action)
+              console.log(action)
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
               } else if(indexOf !== -1) {

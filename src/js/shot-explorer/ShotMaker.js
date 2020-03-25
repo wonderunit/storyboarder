@@ -7,7 +7,8 @@ import { OutlineEffect } from '../vendor/OutlineEffect'
 import { 
     setCameraShot, 
     getSceneObjects,
-    getActiveCamera
+    getActiveCamera,
+    updateObject
 } from '../shared/reducers/shot-generator'
 import ObjectTween from './objectTween'
 import ShotElement from './ShotElement'
@@ -25,7 +26,6 @@ const ShotMaker = React.memo(({
     
     withState,
     aspectRatio,
-    updateObject,
     newAssetsLoaded,
     defaultWidth
 }) => {
@@ -158,17 +158,14 @@ const ShotMaker = React.memo(({
     const updateCamera = useCallback(() => {
         withState((dispatch, state) => {
             let rot = new THREE.Euler().setFromQuaternion(sceneInfo.camera.quaternion, "YXZ")
-            batch(() => {
-                dispatch(updateObject(updateObject(camera.current.userData.id, {
-                    x: sceneInfo.camera.position.x,
-                    y: sceneInfo.camera.position.z,
-                    z: sceneInfo.camera.position.y,
-                    rotation: rot.y,
-                    tilt: rot.x,
-                    roll: rot.z
-                  })))
-                dispatch(setCameraShot(camera.current.userData.id, {size: selectedShot.size, angle: selectedShot.angle, character: selectedShot.character.userData.id }))
-            })
+            dispatch(updateObject(sceneInfo.camera.userData.id, {
+                x: sceneInfo.camera.position.x,
+                y: sceneInfo.camera.position.z,
+                z: sceneInfo.camera.position.y,
+                rotation: rot.y,
+                tilt: rot.x,
+                roll: rot.z
+              }))
         })
     }, [selectedShot])
 
