@@ -16,6 +16,7 @@ import InfiniteScroll from './InfiniteScroll'
 import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
 import VerticalOneThirdRule from './ShotsRule/VerticalOneThirdRule'
+import OrbitingRule from './ShotsRule/OrbitingRule'
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength))
     return number
@@ -137,12 +138,14 @@ const ShotMaker = React.memo(({
             // TODO() : Fixed ots vertical oneThird
             // Applies vertical oneThird rule; Should be always applied
             shot.verticalRule = new VerticalOneThirdRule(headCenter, cameraCopy)          
+            shot.orbitingRule = new OrbitingRule(headCenter, cameraCopy, (10 * getRandomNumber(36)) * THREE.Math.DEG2RAD)          
+            shot.orbitingRule.applyRule()
             if(shot.size !== ShotSizes.ESTABLISHING) {
                     shot.rule && shot.rule.applyRule()
                     shot.verticalRule.applyRule(center)
                 }
 
-            shot.camera = cameraCopy.clone()
+            shot.camera = cameraCopy
             shotsArray.push(shot)
         }
     }, [renderSceneWithCamera])
