@@ -11,7 +11,7 @@ class HorizontalOneThirdRule extends ShotRule {
         let vFOV = THREE.Math.degToRad( this.camera.fov ); // convert vertical fov to radians
         let height = 2 * Math.tan( vFOV / 2 ) * this.camera.position.distanceTo(centerOfView); // visible height
         let y = height * ( 2/3 );
-        let desiredPos = new THREE.Vector3(centerOfView.x, y, centerOfView.z);
+        let desiredPos = new THREE.Vector3(centerOfView.x, y, center.z);
         let minHeight = height / 2 - centerOfView.y;
         desiredPos.y -= minHeight;
 

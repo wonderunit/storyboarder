@@ -106,7 +106,7 @@ const ShotMaker = React.memo(({
             let randomAngle = ShotAngles[shotAngleKeys[getRandomNumber(shotAngleKeys.length)]]
             
             let shotSizeKeys = Object.keys(ShotSizes)
-            let randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length)]]
+            let randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
 
             let character = characters[getRandomNumber(characters.length)]
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
@@ -133,12 +133,14 @@ const ShotMaker = React.memo(({
 
             // Generates random rule for shot
             shot.rule = generateRule(center, cameraCopy)  
-            shot.rule && shot.rule.applyRule()
-
+            
             // TODO() : Fixed ots vertical oneThird
             // Applies vertical oneThird rule; Should be always applied
             shot.verticalRule = new VerticalOneThirdRule(headCenter, cameraCopy)          
-            if(shot.size !== ShotSizes.OTS_LEFT || shot.size !== ShotSizes.OTS_RIGHT) shot.verticalRule.applyRule(center)
+            if(shot.size !== ShotSizes.ESTABLISHING) {
+                    shot.rule && shot.rule.applyRule()
+                    shot.verticalRule.applyRule(center)
+                }
 
             shot.camera = cameraCopy.clone()
             shotsArray.push(shot)
