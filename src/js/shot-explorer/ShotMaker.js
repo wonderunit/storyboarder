@@ -16,9 +16,8 @@ import InfiniteScroll from './InfiniteScroll'
 import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
 import VerticalOneThirdRule from './ShotsRule/VerticalOneThirdRule'
-import { forEach } from 'ramda'
 const getRandomNumber = (maxLength) => {
-    let number = Math.floor(Math.random() * (maxLength-1))
+    let number = Math.floor(Math.random() * (maxLength))
     return number
 }
 

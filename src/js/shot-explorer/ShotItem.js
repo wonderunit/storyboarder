@@ -28,7 +28,7 @@ class ShotItem {
 
 
     toString() {
-        return `${this.size}, ${this.angle} on ${this.character.userData.name}`;
+        return `${this.size}, ${this.angle} on ${this.character && this.character.userData.name}`;
     }
 
     destroy() {
