@@ -15,6 +15,8 @@ import ShotElement from './ShotElement'
 import InfiniteScroll from './InfiniteScroll'
 import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
+import VerticalOneThirdRule from './ShotsRule/VerticalOneThirdRule'
+import { forEach } from 'ramda'
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength-1))
     return number
@@ -108,12 +110,37 @@ const ShotMaker = React.memo(({
             let randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length)]]
 
             let character = characters[getRandomNumber(characters.length)]
-            if(!character.getObjectByProperty("type", "SkinnedMesh")) continue
+            let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
+            if(!skinnedMesh) continue
             let shot = new ShotItem(randomAngle, randomSize, character)
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
-            // Calculate camera rotation for one third
-            shot.rule = generateRule(box, cameraCopy)            
+
+            //#region Finds Headbone and it's children and calculates their center for vertical oneThird
+            let headBone = skinnedMesh.skeleton.bones.filter(bone => bone.name === "Head")[0]
+            let headPoints = []
+            headPoints.push(headBone.worldPosition())
+            for(let i = 0; i < headBone.children.length; i++) {
+                if(headBone.children[i].name.includes('leaf'))
+                    headPoints.push(headBone.children[i].worldPosition())
+            }
+            let headBox = new THREE.Box3().setFromPoints(headPoints)
+            let headCenter = new THREE.Vector3()
+            headBox.getCenter(headCenter)
+            //#endregion
+
+            // Calculates box center in order to calculate camera height
+            let center = new THREE.Vector3()
+            box.getCenter(center)
+
+            // Generates random rule for shot
+            shot.rule = generateRule(center, cameraCopy)  
             shot.rule && shot.rule.applyRule()
+
+            // TODO() : Fixed ots vertical oneThird
+            // Applies vertical oneThird rule; Should be always applied
+            shot.verticalRule = new VerticalOneThirdRule(headCenter, cameraCopy)          
+            if(shot.size !== ShotSizes.OTS_LEFT || shot.size !== ShotSizes.OTS_RIGHT) shot.verticalRule.applyRule(center)
+
             shot.camera = cameraCopy.clone()
             shotsArray.push(shot)
         }

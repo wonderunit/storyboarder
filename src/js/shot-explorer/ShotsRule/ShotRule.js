@@ -1,6 +1,6 @@
 class ShotRule {
-    constructor(box, camera) {
-        this.box = box;
+    constructor(focusedCenter, camera) {
+        this.focusedCenter = focusedCenter;
         this.camera = camera;
     }
 
@@ -9,7 +9,7 @@ class ShotRule {
     }
 
     destroy() {
-        this.box = null;
+        this.focusedCenter = null;
         this.camera = null;
     }
 }
