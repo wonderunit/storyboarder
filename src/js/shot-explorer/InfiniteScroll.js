@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
 
 const InfiniteScroll = React.memo(({
     elements, 
@@ -9,16 +9,14 @@ const InfiniteScroll = React.memo(({
     ...itemData
 }) => {
     const ref = useRef(null)
+    const bottomRef = useRef(null)
+    const fetchStatus = useRef("Fetching...")
     const [isFetching, setIsFetching] = useState(false);
-    const handleScroll = () => {
-        let shotsContainer = ref.current
-        let containerHeight = window.outerHeight - shotsContainer.offsetTop
-        if (containerHeight + shotsContainer.scrollTop < shotsContainer.scrollHeight - 10 * itemData.aspectRatio) return;
-        setIsFetching(true)
-    }
 
-    useEffect(() => {
+    useMemo(() => {
+        fetchStatus.current = ""
         if(!isFetching) return
+        fetchStatus.current = "Fetching..."
         fetchMoreElements()
     }, [isFetching])
 
@@ -26,25 +24,37 @@ const InfiniteScroll = React.memo(({
         setIsFetching(false)
     }, [elements])
 
+    const observer = useRef( new window.IntersectionObserver(entries => {
+        entries.forEach(en => {
+            if (en.intersectionRatio > 0) {
+                setIsFetching(true)
+            }
+        });
+      }, {threshold: 0.60}))
+
     useEffect(() => {
-        if(!ref.current) return;
-        ref.current.addEventListener('scroll', handleScroll);
-        return () => {
-                ref.current.removeEventListener('scroll', handleScroll);
-        } 
-    }, [ref.current])
+        const { current : currentObserver } = observer
+        currentObserver.disconnect()
+        if (bottomRef.current && elements.length > 0) {
+            currentObserver.observe(bottomRef.current);
+        }
+        return () => currentObserver.disconnect()
+    }, [bottomRef, elements]);
 
     return(
-    <div ref={ref} className={ className } style={ style }>{
-        elements.map((object, index) => {
-            return <Component
-            key={ index }
-            object={ object }
-            { ...itemData }
-            />
-        })
-    }
-    { isFetching && <div>Fetching new elements...</div>}
+    <div ref={ref} className="shots-container">
+        <div  className={ className } style={ style }>
+        {
+            elements.map((object, index) => {
+                return <Component
+                key={ index }
+                object={ object }
+                { ...itemData }
+                />
+            })
+        }
+        <div className="infinite-scroll-bottom" ref={bottomRef}><div>{ fetchStatus.current }</div></div>
+        </div>
     </div>
     )
 })

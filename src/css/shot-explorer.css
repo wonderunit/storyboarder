@@ -6,6 +6,7 @@
   display: flex;
   flex-wrap: wrap;
   overflow-y: auto;
+  width: 100%;
 }
 
 .shot-explorer-shot-selected {
@@ -54,4 +55,14 @@
   font-size: 20px; 
   color:#9d9d9d;
   margin: 0 0 0 10px;
+}
+
+.infinite-scroll-bottom {
+  display: flex;
+  justify-content: center;
+  width:100%;
+  min-height: 50px;
+  height: 70px;
+  font-size: 18px;
+  color: #9d9d9d;
 }
