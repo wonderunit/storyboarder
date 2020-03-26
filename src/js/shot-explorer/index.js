@@ -63,7 +63,7 @@ const ShotExplorer = React.memo(({
             updateDefaultCamera={ true }
             noEvents={ true }
             className="shot-explorer-shot-selected" 
-            style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: 900 / 2, paddingTop: "20px" }}>
+            style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: defaultWidth, paddingTop: "20px" }}>
             <Provider store={store}>
                 <ShotExplorerSceneManager
                             setLargeCanvasData= { setLargeCanvasData }
