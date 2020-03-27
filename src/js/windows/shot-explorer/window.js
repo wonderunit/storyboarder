@@ -23,7 +23,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 let sendedAction = []
-let dialogShowed = false
+let isBoardLoaded = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
 let isVisible = electron.remote.getCurrentWindow().visible
@@ -54,7 +54,6 @@ const configureStore = function configureStore (preloadedState) {
             thunkMiddleware, store => next => action => {
               if(!isVisible) return 
               let indexOf = sendedAction.indexOf(action)
-              console.log(action)
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
               } else if(indexOf !== -1) {
@@ -94,6 +93,7 @@ const store = configureStore({
 ipcRenderer.on('shot-explorer:show', (event) => {
   isVisible = true;
   pushUpdates();
+  isBoardLoaded = true;
 })
 
 ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
@@ -118,46 +118,32 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   store.dispatch(action)
 
   await loadBoard(board, storyboarderFilePath)
+
 })
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
   let object = JSON.parse(action)
   sendedAction.push(object)
-  if(isVisible) showUpdateDialog()
 })
 
-electron.remote.getCurrentWindow().on("hide", () => isVisible = false)
+electron.remote.getCurrentWindow().on("hide", () => {
+  isVisible = false
+})
 
 const pushUpdates = () => {
-  
-  shotExplorerElement = renderShotExplorer()
-  batch(() => {
-    for(let i = 0; i < sendedAction.length; ) {
-      store.dispatch(sendedAction[i])
-    }
-  })
-  renderDom()
-}
-
-const showUpdateDialog = () => {
-  if(dialogShowed) return
-  let options = {
-    type: 'info',
-    buttons: ['Yes', 'No'],
-    title: 'Confirm',
-    message: 'The Shot Generator scene was changed. Do you want to update Shots?',
-    defaultId: 0,
-    focus: false
-    
+    shotExplorerElement = renderShotExplorer()
+    batch(() => {
+      for(let i = 0; i < sendedAction.length; ) {
+        store.dispatch(sendedAction[i])
+      }
+    })
+    renderDom()
   }
-  dialog.showMessageBox(electron.remote.getCurrentWindow(), options, (response) => {
-    
-    if(response === 0) pushUpdates()
-    dialogShowed = false
-  })
-  dialogShowed = true
-  electron.remote.getCurrentWindow().blur()
-}
+
+electron.remote.getCurrentWindow().on("focus", () => {
+    if(!sendedAction.length || !isBoardLoaded) return
+    pushUpdates()
+})
 
 const loadBoard = async (board, storyboarderFilePath) => {
   let shot = board.sg
