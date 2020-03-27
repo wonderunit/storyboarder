@@ -166,7 +166,8 @@ const ShotExplorerSceneManager = connect(
             let sceneObject = sceneObjects[id]
             return <SimpleErrorBoundary  key={ id }>
               <Light
-                sceneObject={ sceneObject } />
+                sceneObject={ sceneObject }
+                show={ false } />
               </SimpleErrorBoundary>
         })
     }
