@@ -5,10 +5,14 @@ import { ShotSizes, ShotAngles, setShot } from '../shot-generator/utils/cameraUt
 import * as THREE from 'three'
 import { OutlineEffect } from '../vendor/OutlineEffect'
 import { 
-    setCameraShot, 
     getSceneObjects,
     getActiveCamera,
-    updateObject
+    // action creators
+    selectObject,
+    undoGroupStart,
+    undoGroupEnd,
+    setActiveCamera,
+    createObject
 } from '../shared/reducers/shot-generator'
 import ObjectTween from './objectTween'
 import ShotElement from './ShotElement'
@@ -209,14 +213,25 @@ const ShotMaker = React.memo(({
     const updateCamera = useCallback(() => {
         withState((dispatch, state) => {
             let rot = new THREE.Euler().setFromQuaternion(sceneInfo.camera.quaternion, "YXZ")
-            dispatch(updateObject(sceneInfo.camera.userData.id, {
-                x: sceneInfo.camera.position.x,
-                y: sceneInfo.camera.position.z,
-                z: sceneInfo.camera.position.y,
-                rotation: rot.y,
-                tilt: rot.x,
-                roll: rot.z
-              }))
+            let id = THREE.Math.generateUUID()
+            let { x, y, z } = sceneInfo.camera.position
+            let rotation = rot.y
+            let tilt = rot.x
+            let roll = rot.z
+            let object = {
+              id,
+              type: 'camera',
+          
+              fov: sceneInfo.camera.fov,
+          
+              x, y: z, z: y,
+              rotation, tilt, roll
+            }
+            dispatch(undoGroupStart())
+            dispatch(createObject(object))
+            dispatch(selectObject(id))
+            dispatch(setActiveCamera(id))
+            dispatch(undoGroupEnd())
         })
     }, [selectedShot])
 
