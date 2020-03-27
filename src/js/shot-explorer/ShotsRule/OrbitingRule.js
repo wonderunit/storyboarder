@@ -1,26 +1,30 @@
 import ShotRule from "./ShotRule"
-const rotateAroundPoint = (obj, point, axis, theta, pointIsWorld) => {
-    pointIsWorld = (pointIsWorld === undefined)? false : pointIsWorld;
+import getRandomNumber from "../utils/getRandomNumber"
+import rotateAroundPoint from "../utils/rotateAroundPoint"
 
-    if(pointIsWorld){
-        obj.parent.localToWorld(obj.position); // compensate for world coordinate
+const getOrbitingAngle = () => {
+    let sidePercentage = getRandomNumber(100)
+    let frontAndBackAngle = 110
+    let sidesAngle = 70
+    let angle 
+    // Front side
+    if(sidePercentage < 35) {
+        angle = getRandomNumber(frontAndBackAngle) - frontAndBackAngle / 2
+    } else if(sidePercentage >= 35 && sidePercentage < 50) {
+        angle = -getRandomNumber(sidesAngle) - frontAndBackAngle / 2
+    } else if(sidePercentage >= 50 && sidePercentage < 85) {
+        angle = getRandomNumber(frontAndBackAngle) - frontAndBackAngle / 2
+        angle = angle >= 0 ? 180 - angle : -(180 + angle)
+    } else if(sidePercentage >= 85 && sidePercentage < 100) {
+        angle = getRandomNumber(sidesAngle) + frontAndBackAngle / 2
     }
-
-    obj.position.sub(point); // remove the offset
-    obj.position.applyAxisAngle(axis, theta); // rotate the POSITION
-    obj.position.add(point); // re-add the offset
-
-    if(pointIsWorld){
-        obj.parent.worldToLocal(obj.position); // undo world coordinates compensation
-    }
-
-    obj.rotateOnAxis(axis, theta); // rotate the OBJECT
+    return angle
 }
 
 class OrbitingRule extends ShotRule {
-    constructor(focusedCenter, camera, angle) {
+    constructor(focusedCenter, camera) {
         super(focusedCenter, camera);
-        this.angle = angle;
+        this.angle = getOrbitingAngle() * THREE.Math.DEG2RAD;
     }
 
     applyRule() {
