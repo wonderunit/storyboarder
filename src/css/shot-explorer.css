@@ -1,5 +1,25 @@
-#main {
+body {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-family: 'wonderunitsans';
+  font-weight: 300;
+  background: #333639;
+  color: #777;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor:default;
+  min-height: 100vh;
+  overflow: hidden;
+  cursor: default;
+  border: 0;
+  height: 100vh;
+  width: 100vw;
+
+  display: flex;
+  flex-direction: column;
   -webkit-app-region: drag;
+
 }
 
 .shots-container {
@@ -7,18 +27,19 @@
   flex-wrap: wrap;
   overflow-y: auto;
   width: 100%;
+  padding: 0 0 0 5px;
 }
 
 .shot-explorer-shot-selected {
   display: flex;
   flex-wrap: wrap;
-  margin: 5px 5px 20px 8px
+  margin: 5px 5px 20px 5px
 }
 
 .shot-explorer-shot {
   display: flex;
   flex-wrap: wrap;
-  margin: 5px 5px 20px 9px
+  margin: 5px 5px 20px 5px
 }
 
 .shot-explorer-image {

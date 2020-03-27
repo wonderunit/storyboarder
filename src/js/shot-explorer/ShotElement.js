@@ -26,8 +26,10 @@ const ShotElement = React.memo((
         setRenderImage(object.renderImage)
     }, [object.renderImage, imageChanged])
 
-    const paddingSize = 20
-    return <div className="shot-explorer-shot" style={{  minWidth:  ((defaultWidth * aspectRatio)) / 3 - paddingSize, maxWidth:  ((defaultWidth * aspectRatio)) / 3 - 40, height: (defaultWidth) / 3 }}>
+    const paddingSize = 5 * aspectRatio
+    const width = ((defaultWidth * aspectRatio)) / 3 - paddingSize
+    console.log(aspectRatio)
+    return <div className="shot-explorer-shot" style={{  minWidth:  width, maxWidth: width, height: (defaultWidth) / 3 - paddingSize }}>
             <img className="shot-explorer-image" src={ renderImage } onPointerDown={() =>{ setSelectedShot(object) }}/>
             <div className="description">{object.toString()}</div>
         </div>
