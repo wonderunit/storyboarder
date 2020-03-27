@@ -154,8 +154,6 @@ const ShotMaker = React.memo(({
             let center = new THREE.Vector3()
             box.getCenter(center)
 
-    
-            
             // TODO() : Fixed ots vertical oneThird
             // Applies vertical oneThird rule; Should be always applied
             shot.verticalRule = new VerticalOneThirdRule(headCenter, cameraCopy)          
@@ -165,7 +163,7 @@ const ShotMaker = React.memo(({
 
             // Generates random rule for shot
             shot.rules = generateRule(center, character, shot, cameraCopy)  
-            
+
             for(let i = 0; i < shot.rules.length; i++) {
                 shot.rules[i].applyRule()
             }
