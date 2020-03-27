@@ -56,8 +56,6 @@ const configureStore = function configureStore (preloadedState) {
               let indexOf = sendedAction.indexOf(action)
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
-              } else if(indexOf !== -1) {
-                sendedAction.splice(indexOf, 1)
               }
               next(action)
             })
@@ -92,6 +90,7 @@ const store = configureStore({
 
 ipcRenderer.on('shot-explorer:show', (event) => {
   isVisible = true;
+  console.log("Show window")
   pushUpdates();
   isBoardLoaded = true;
 })
@@ -132,17 +131,16 @@ electron.remote.getCurrentWindow().on("hide", () => {
 
 const pushUpdates = () => {
     shotExplorerElement = renderShotExplorer()
-    batch(() => {
-      for(let i = 0; i < sendedAction.length; ) {
-        store.dispatch(sendedAction[i])
-      }
-    })
+    for(let i = 0; i < sendedAction.length; i++) {
+      store.dispatch(sendedAction[i])
+    }
+    sendedAction = []
     renderDom()
   }
 
 electron.remote.getCurrentWindow().on("focus", () => {
-    if(!sendedAction.length || !isBoardLoaded) return
-    pushUpdates()
+  if(!sendedAction.length || !isBoardLoaded) return
+  pushUpdates()
 })
 
 const loadBoard = async (board, storyboarderFilePath) => {
