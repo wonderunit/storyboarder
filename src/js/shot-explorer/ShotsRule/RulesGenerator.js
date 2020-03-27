@@ -1,11 +1,12 @@
 import HorizontalOneThirdRule from "./HorizontalOneThirdRule"
 import RollRule from "./HorizontalOneThirdRule"
+import * as THREE from 'three'
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength));
     return number;
 }
 
-const generateRule = (focusedCenter, camera) => {
+const generateRule = (focusedCenter, character, shot, camera) => {
     let i = getRandomNumber(100);
     let results = [];
 
@@ -13,7 +14,10 @@ const generateRule = (focusedCenter, camera) => {
         results.push(new RollRule(focusedCenter, camera))
     }
     if(i < 50) {
-        results.push(new HorizontalOneThirdRule(focusedCenter, camera, i < 25 ? "left" : "right"));
+        let characterRotation = character.rotation.y * THREE.Math.RAD2DEG
+        let cameraRotation = shot.cameraRotation ? shot.cameraRotation * THREE.Math.RAD2DEG : 0
+        let characterFacingRotation = cameraRotation + (characterRotation)
+        results.push(new HorizontalOneThirdRule(focusedCenter, camera, characterFacingRotation < 0 ? "left" : "right"));
     }
 
     return results

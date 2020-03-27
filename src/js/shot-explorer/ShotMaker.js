@@ -154,14 +154,18 @@ const ShotMaker = React.memo(({
             let center = new THREE.Vector3()
             box.getCenter(center)
 
-            // Generates random rule for shot
-            shot.rules = generateRule(center, cameraCopy)  
+    
             
             // TODO() : Fixed ots vertical oneThird
             // Applies vertical oneThird rule; Should be always applied
             shot.verticalRule = new VerticalOneThirdRule(headCenter, cameraCopy)          
             shot.orbitingRule = new OrbitingRule(headCenter, cameraCopy)          
             shot.orbitingRule.applyRule()
+            shot.cameraRotation = shot.orbitingRule.angle
+
+            // Generates random rule for shot
+            shot.rules = generateRule(center, character, shot, cameraCopy)  
+            
             for(let i = 0; i < shot.rules.length; i++) {
                 shot.rules[i].applyRule()
             }
