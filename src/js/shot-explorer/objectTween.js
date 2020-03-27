@@ -28,7 +28,7 @@ class ObjectTween {
     this.ref = ref
   }
 
-  startTween(position = null, rotation = null, time = null) {
+  startTween(position = null, rotation = null, time = null, customUpdate = () => {}) {
     let ref = this.ref
     if (this.currentTween) {
       this.currentTween.stop()
@@ -48,7 +48,7 @@ class ObjectTween {
 
     this.currentTween = new TWEEN.Tween([ref.position.x, ref.position.y, ref.position.z, 0])
     this.currentTween.to([position.x, position.y, position.z, 1], time || transitionTime(ref.position, position))
-
+    //this.currentTween.onComplete(onComplete)
     this.currentTween.onUpdate(([x, y, z, dt]) => {
       if (ref) {
         ref.position.set(x, y, z)
@@ -70,6 +70,7 @@ class ObjectTween {
             )
           }
         }
+        customUpdate(dt)
       }
     })
 

@@ -22,6 +22,17 @@ const getRandomNumber = (maxLength) => {
     return number
 }
 
+const getRandomFov = (aspectRatio) => {
+
+    const mms = [12, 16, 18, 22, 24, 35, 50, 85, 100]
+    let randomMms = getRandomNumber(mms.length)
+    let filemHeight = 35 / Math.max( aspectRatio, 1 );
+    var vExtentSlope = 0.5 * filemHeight / mms[randomMms];
+
+    let fov = THREE.Math.RAD2DEG * 2 * Math.atan( vExtentSlope );
+    return fov
+}
+
 const ShotMaker = React.memo(({
     elementKey,
     sceneInfo,
@@ -46,8 +57,12 @@ const ShotMaker = React.memo(({
         tweenObject.current = tweenObject.current || new ObjectTween(sceneInfo.camera)
         tweenObject.current.stopTween()
         selectedShot && sceneInfo.camera.copy(selectedShot.camera)
-
-        tweenObject.current.startTween(clonnedCamera.worldPosition(), clonnedCamera.worldQuaternion())
+        sceneInfo.camera.updateProjectionMatrix()
+        tweenObject.current.startTween(clonnedCamera.worldPosition(), clonnedCamera.worldQuaternion(), 1000, (delta) => {
+            let distance = clonnedCamera.fov - sceneInfo.camera.fov
+            sceneInfo.camera.fov = sceneInfo.camera.fov + ( distance * delta )
+            sceneInfo.camera.updateProjectionMatrix()
+        })
         selectShot(newSelectedShot)
     }
     useEffect(() => {
@@ -113,6 +128,9 @@ const ShotMaker = React.memo(({
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
             if(!skinnedMesh) continue
             let shot = new ShotItem(randomAngle, randomSize, character)
+            cameraCopy.fov = getRandomFov(aspectRatio)
+            cameraCopy.updateMatrixWorld(true)
+            cameraCopy.updateProjectionMatrix()
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
 
             //#region Finds Headbone and it's children and calculates their center for vertical oneThird
