@@ -29,6 +29,7 @@ let shotExplorerElement
 let isVisible = electron.remote.getCurrentWindow().visible
 let defaultHeight = 800
 let defaultWidth = 400
+let minimumWidth = 300
 
 const actionSanitizer = action => (
     action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
@@ -103,6 +104,7 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 
   defaultWidth = defaultHeight * 0.45
   let scaledWidth = Math.ceil(defaultWidth * aspectRatio)
+  scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
   console.log(scaledWidth, defaultWidth, aspectRatio, defaultHeight)
   electron.remote.getCurrentWindow().setSize(scaledWidth, defaultHeight)
   electron.remote.getCurrentWindow().setMinimumSize(scaledWidth, defaultHeight)

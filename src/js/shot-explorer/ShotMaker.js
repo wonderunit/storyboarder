@@ -239,8 +239,10 @@ const ShotMaker = React.memo(({
 
     let scale = 2
     const [windowHeight, setWindowHeight] = useState(window.innerHeight)
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const handleResize = () => {
         setWindowHeight(window.innerHeight)
+        setWindowWidth(window.innerWidth)
       }
     
     useLayoutEffect(() => {
@@ -254,7 +256,7 @@ const ShotMaker = React.memo(({
         <div style={{ maxHeight: "100%", height: "100%" }}>
             <div style={{display:"flex"}} >
                 <div className="description-selected"><div>{ selectedShot && selectedShot.toString()}</div></div>
-                <div className="insert-camera" style={{marginLeft:"auto"}} onPointerDown={() => updateCamera()}>
+                <div className="insert-camera" style={{marginLeft:"auto", paddingRight:"5px"}} onPointerDown={() => updateCamera()}>
                     <a>
                         Insert Camera
                     </a>
@@ -266,13 +268,15 @@ const ShotMaker = React.memo(({
                     Component={ ShotElement }
                     elements={ shots }
                     className="shots-container"
-                    style={{ maxWidth: (defaultWidth * aspectRatio), height: windowHeight / scale - 45 }}
+                    style={{ maxWidth: windowWidth, height: windowHeight / scale - 45, display: "flex", justifyContent: "space-around", marginTop: "5px" }}
                     setSelectedShot={ setSelectedShot }
                     fetchMoreElements={ generateMoreShots }
                     aspectRatio={ aspectRatio }
                     scale={ scale }
                     sceneInfo={ sceneInfo }
-                    defaultWidth={ defaultWidth }/>
+                    defaultWidth={ defaultWidth }
+                    windowWidth={ windowWidth }
+                    />
             </div>
         </div>
     )

@@ -32,13 +32,26 @@ const ShotExplorer = React.memo(({
     aspectRatio,
     store,
     elementKey,
-    defaultWidth
+    defaultWidth,
 }) => {
     const [sceneInfo, setSceneInfo] = useState(null)
     const [newAssetsLoaded, setLoadedAssets] = useState()
     const setLargeCanvasData = (camera, scene, gl) => {
         setSceneInfo({camera, scene, gl})
     }
+
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+    const handleResize = () => {
+        setWindowWidth(window.innerWidth)
+      }
+    
+    useLayoutEffect(() => {
+      window.addEventListener('resize', handleResize)
+      
+      return () => {
+        window.removeEventListener('resize', handleResize) 
+      }
+    }, [])
 
     const updateAssets = () => {setLoadedAssets({})}
 
@@ -54,23 +67,25 @@ const ShotExplorer = React.memo(({
     let paddingToRight = 10
     return (
     <FatalErrorBoundary>
-        <Canvas
-            tabIndex={ 1 }
-            key="camera-canvas"
-            id="camera-canvas"
-            gl2={true}
-            updateDefaultCamera={ true }
-            noEvents={ true }
-            className="shot-explorer-shot-selected" 
-            style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: defaultWidth - paddingToRight, paddingTop: "20px" }}
-            >
-            <Provider store={store}>
-                <ShotExplorerSceneManager
-                            setLargeCanvasData= { setLargeCanvasData }
-                            isPreview={ true }/>
-            </Provider>
-            <Effect />
-        </Canvas>
+        <div className="shot-explorer-shot-preview" style={{ width: windowWidth }}>
+            <Canvas
+                tabIndex={ 1 }
+                key="camera-canvas"
+                id="camera-canvas"
+                gl2={true}
+                updateDefaultCamera={ true }
+                noEvents={ true }
+                className="shot-explorer-shot-selected" 
+                style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: defaultWidth - paddingToRight}}
+                >
+                <Provider store={store}>
+                    <ShotExplorerSceneManager
+                                setLargeCanvasData= { setLargeCanvasData }
+                                isPreview={ true }/>
+                </Provider>
+                <Effect />
+            </Canvas>
+        </div>
         <ShotMaker key={ elementKey }
                     sceneInfo={ sceneInfo } 
                     withState={ withState }
