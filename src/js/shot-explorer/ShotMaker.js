@@ -78,6 +78,7 @@ const ShotMaker = React.memo(({
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
+        handleResize()
         return () => {
             imageRenderer.current = null
             outlineEffect.current = null
@@ -241,8 +242,9 @@ const ShotMaker = React.memo(({
     const [windowHeight, setWindowHeight] = useState(window.innerHeight)
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const handleResize = () => {
-        setWindowHeight(window.innerHeight)
+        let offsetTop = document.getElementsByClassName("shots-container")[0].offsetTop
         setWindowWidth(window.innerWidth)
+        setWindowHeight(window.innerHeight - offsetTop - 10)
       }
     
     useLayoutEffect(() => {
@@ -268,7 +270,7 @@ const ShotMaker = React.memo(({
                     Component={ ShotElement }
                     elements={ shots }
                     className="shots-container"
-                    style={{ maxWidth: windowWidth, height: windowHeight / scale - 45, display: "flex", justifyContent: "space-around", marginTop: "5px" }}
+                    style={{ maxWidth: windowWidth, height: windowHeight, display: "flex", justifyContent: "space-around", marginTop: "5px" }}
                     setSelectedShot={ setSelectedShot }
                     fetchMoreElements={ generateMoreShots }
                     aspectRatio={ aspectRatio }
