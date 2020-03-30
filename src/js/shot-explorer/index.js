@@ -50,9 +50,8 @@ const ShotExplorer = React.memo(({
             window.removeEventListener("beforeunload", stopUnload)
         }
     }, [])
-
     // padding for right side of canvas
-    let paddingToRight = 10 * aspectRatio
+    let paddingToRight = 10
     return (
     <FatalErrorBoundary>
         <Canvas
@@ -63,7 +62,8 @@ const ShotExplorer = React.memo(({
             updateDefaultCamera={ true }
             noEvents={ true }
             className="shot-explorer-shot-selected" 
-            style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: defaultWidth, paddingTop: "20px" }}>
+            style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: defaultWidth - paddingToRight, paddingTop: "20px" }}
+            >
             <Provider store={store}>
                 <ShotExplorerSceneManager
                             setLargeCanvasData= { setLargeCanvasData }

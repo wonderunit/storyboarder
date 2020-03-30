@@ -27,6 +27,7 @@ let isBoardLoaded = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
 let isVisible = electron.remote.getCurrentWindow().visible
+let defaultHeight = 800
 let defaultWidth = 400
 
 const actionSanitizer = action => (
@@ -100,8 +101,12 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
-  setTimeout(() => electron.remote.getCurrentWindow().setMinimumSize(Math.ceil(defaultWidth * aspectRatio), 800), 100)
-  electron.remote.getCurrentWindow().setMaximumSize(Math.ceil(defaultWidth * aspectRatio), 100000)
+  defaultWidth = defaultHeight * 0.45
+  let scaledWidth = Math.ceil(defaultWidth * aspectRatio)
+  console.log(scaledWidth, defaultWidth, aspectRatio, defaultHeight)
+  electron.remote.getCurrentWindow().setSize(scaledWidth, defaultHeight)
+  electron.remote.getCurrentWindow().setMinimumSize(scaledWidth, defaultHeight)
+  electron.remote.getCurrentWindow().setMaximumSize(scaledWidth, 100000)
 
   let action  = {
     type: 'SET_META_STORYBOARDER_FILE_PATH',
