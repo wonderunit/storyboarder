@@ -21,6 +21,7 @@ import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
 import VerticalOneThirdRule from './ShotsRule/VerticalOneThirdRule'
 import OrbitingRule from './ShotsRule/OrbitingRule'
+import { findLastIndex } from 'ramda'
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength))
     return number
@@ -54,6 +55,7 @@ const ShotMaker = React.memo(({
     const tweenObject = useRef()
     const cameraCenter = useRef()
     const desiredPosition = useRef()
+    const [noCharacterWarn, setNoCharacterWarn] = useState(false)
     const setSelectedShot = (newSelectedShot) => {
         // TODO filter character once amount of objects in the scene changed
         // Set camera to default before applying shot changes
@@ -119,8 +121,12 @@ const ShotMaker = React.memo(({
     const generateShot = useCallback((shotsArray, shotsCount) => {
         let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character' && !isUserModel(object.userData.modelName))
         if(!characters.length) {
+            setNoCharacterWarn(true)
             return;
+        } else {
+            setNoCharacterWarn(false)
         }
+
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
             let shotAngleKeys = Object.keys(ShotAngles)
@@ -179,6 +185,7 @@ const ShotMaker = React.memo(({
 
     useEffect(() => {
         if(sceneInfo) {
+            console.log("generate new shots")
             withState((dispatch, state) => {
                 let cameraObject = getSceneObjects(state)[getActiveCamera(state)]
                 sceneInfo.camera.position.x = cameraObject.x
@@ -264,7 +271,7 @@ const ShotMaker = React.memo(({
                     </a>
                 </div>
             </div>
-            <div>
+            {!noCharacterWarn &&<div>
                 <InfiniteScroll 
                     key={ elementKey }
                     Component={ ShotElement }
@@ -279,7 +286,8 @@ const ShotMaker = React.memo(({
                     defaultWidth={ defaultWidth }
                     windowWidth={ windowWidth }
                     />
-            </div>
+            </div>}
+            {noCharacterWarn && <div style={{ textAlign:"center" }}>You need to add at least one built-in character to scene </div>}
         </div>
     )
 })
