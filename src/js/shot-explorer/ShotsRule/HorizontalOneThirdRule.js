@@ -19,6 +19,8 @@ class HorizontalOneThirdRule extends ShotRule {
         let opposite = desiredPos.distanceTo(center);
         let angle = opposite / hypotenus;
         this.cameraRotation = this.side === "right" ? angle : -angle;
+
+        
         this.camera.rotateY(this.side === "right" ? angle : -angle);
         this.camera.updateMatrixWorld(true);
     }
