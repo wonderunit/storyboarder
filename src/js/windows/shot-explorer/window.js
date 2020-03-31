@@ -105,7 +105,6 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   defaultWidth = defaultHeight * 0.45
   let scaledWidth = Math.ceil(defaultWidth * aspectRatio)
   scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
-  console.log(scaledWidth, defaultWidth, aspectRatio, defaultHeight)
   electron.remote.getCurrentWindow().setSize(scaledWidth, defaultHeight)
   electron.remote.getCurrentWindow().setMinimumSize(scaledWidth, defaultHeight)
   electron.remote.getCurrentWindow().setMaximumSize(scaledWidth, 100000)
