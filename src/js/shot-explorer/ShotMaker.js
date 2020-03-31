@@ -125,7 +125,6 @@ const ShotMaker = React.memo(({
         } else {
             setNoCharacterWarn(false)
         }
-        console.log(characters)
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
             let shotAngleKeys = Object.keys(ShotAngles)
@@ -183,7 +182,7 @@ const ShotMaker = React.memo(({
                 shot.rules[i].applyRule()
             }
             if(shot.size !== ShotSizes.ESTABLISHING) {
-                    shot.verticalRule.applyRule(center)
+              //      shot.verticalRule.applyRule(center)
                 }
 
             shot.camera = cameraCopy
@@ -229,9 +228,9 @@ const ShotMaker = React.memo(({
 
     const updateCamera = useCallback(() => {
         withState((dispatch, state) => {
-            let rot = new THREE.Euler().setFromQuaternion(sceneInfo.camera.quaternion, "YXZ")
             let id = THREE.Math.generateUUID()
             let { x, y, z } = sceneInfo.camera.position
+            let rot = new THREE.Euler().setFromQuaternion(sceneInfo.camera.quaternion, "YXZ")
             let rotation = rot.y
             let tilt = rot.x
             let roll = rot.z
