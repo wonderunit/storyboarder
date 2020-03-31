@@ -92,7 +92,6 @@ const store = configureStore({
 
 ipcRenderer.on('shot-explorer:show', (event) => {
   isVisible = true;
-  console.log("Show window")
   pushUpdates();
   isBoardLoaded = true;
 })
@@ -127,8 +126,13 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 })
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
+  console.log("Sended action", action)
   let object = JSON.parse(action)
   sendedAction.push(object)
+})
+
+electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
+  isBoardLoaded = false
 })
 
 electron.remote.getCurrentWindow().on("hide", () => {
@@ -138,7 +142,8 @@ electron.remote.getCurrentWindow().on("hide", () => {
 const pushUpdates = () => {
     shotExplorerElement = renderShotExplorer()
     for(let i = 0; i < sendedAction.length; i++) {
-      store.dispatch(sendedAction[i])
+      let action = sendedAction[i]
+      store.dispatch(action)
     }
     sendedAction = []
     renderDom()
