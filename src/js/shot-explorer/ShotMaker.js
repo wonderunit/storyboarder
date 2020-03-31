@@ -138,7 +138,7 @@ const ShotMaker = React.memo(({
             if(randomAngle === ShotAngles.WORMS_EYE) {
                 while(randomSize === ShotSizes.EXTREME_CLOSE_UP || randomSize === ShotSizes.VERY_CLOSE_UP
                     || randomSize === ShotSizes.MEDIUM_CLOSE_UP || randomSize === ShotSizes.ESTABLISHING
-                    || randomSize === ShotSizes.EXTREME_LONG) {
+                    || randomSize === ShotSizes.EXTREME_LONG || randomSize === ShotSizes.LONG) {
                     randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
                 }
             }
@@ -147,7 +147,7 @@ const ShotMaker = React.memo(({
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
             if(!skinnedMesh) continue
             let shot = new ShotItem(randomAngle, randomSize, character)
-            cameraCopy.fov = getRandomFov(aspectRatio)
+            //cameraCopy.fov = getRandomFov(aspectRatio)
             cameraCopy.updateMatrixWorld(true)
             cameraCopy.updateProjectionMatrix()
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})

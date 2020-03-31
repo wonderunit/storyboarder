@@ -64,7 +64,7 @@ const ShotExplorer = React.memo(({
         }
     }, [])
     // padding for right side of canvas
-    let paddingToRight = 10
+    let paddingToRight = 5
     return (
     <FatalErrorBoundary>
         <div className="shot-explorer-shot-preview" style={{ width: windowWidth }}>
@@ -76,7 +76,7 @@ const ShotExplorer = React.memo(({
                 updateDefaultCamera={ true }
                 noEvents={ true }
                 className="three-canvas" 
-                style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: defaultWidth - paddingToRight, userSelect: "none" }}
+                style={{ width: (defaultWidth - paddingToRight ) * aspectRatio, height: defaultWidth - paddingToRight, userSelect: "none" }}
                 >
                 <Provider store={store}>
                     <ShotExplorerSceneManager
