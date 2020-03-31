@@ -96,7 +96,6 @@ const ModelInspector = connect(
             undoGroupStart()
             updateObject(sceneObject.id, { model: currentModel })
             if(isPrevModelUser && !isCurrentModelUser) {
-              console.log( getDefaultPosePreset())
               let defaultSkeleton = getDefaultPosePreset().state.skeleton
               let skeleton = Object.keys(defaultSkeleton).map((key) => {
                 return {

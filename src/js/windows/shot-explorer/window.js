@@ -126,7 +126,6 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 })
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
-  console.log("Sended action", action)
   let object = JSON.parse(action)
   sendedAction.push(object)
 })

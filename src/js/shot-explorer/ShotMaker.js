@@ -21,7 +21,6 @@ import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
 import VerticalOneThirdRule from './ShotsRule/VerticalOneThirdRule'
 import OrbitingRule from './ShotsRule/OrbitingRule'
-import { findLastIndex } from 'ramda'
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength))
     return number
@@ -185,7 +184,6 @@ const ShotMaker = React.memo(({
 
     useEffect(() => {
         if(sceneInfo) {
-            console.log("generate new shots")
             withState((dispatch, state) => {
                 let cameraObject = getSceneObjects(state)[getActiveCamera(state)]
                 sceneInfo.camera.position.x = cameraObject.x

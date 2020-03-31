@@ -42,20 +42,18 @@ const InfiniteScroll = React.memo(({
     }, [bottomRef, elements]);
 
     return(
-   // <div ref={ref} className="shots-container" style={ style }>
         <div ref={ref} className={ className } style={ style }>
-        {
-            elements.map((object, index) => {
-                return <Component
-                key={ index }
-                object={ object }
-                { ...itemData }
-                />
-            })
-        }
-        <div className="infinite-scroll-bottom" ref={bottomRef}><div>{ fetchStatus.current }</div></div>
+            {
+                elements.map((object, index) => {
+                    return <Component
+                    key={ index }
+                    object={ object }
+                    { ...itemData }
+                    />
+                })
+            }
+            <div className="infinite-scroll-bottom" ref={bottomRef}><div>{ fetchStatus.current }</div></div>
         </div>
-  //  </div>
     )
 })
 export default InfiniteScroll
