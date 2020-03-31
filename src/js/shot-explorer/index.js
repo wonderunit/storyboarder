@@ -75,8 +75,8 @@ const ShotExplorer = React.memo(({
                 gl2={true}
                 updateDefaultCamera={ true }
                 noEvents={ true }
-                className="shot-explorer-shot-selected" 
-                style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: defaultWidth - paddingToRight}}
+                className="three-canvas" 
+                style={{ width: (defaultWidth * aspectRatio) - paddingToRight, height: defaultWidth - paddingToRight, userSelect: "none" }}
                 >
                 <Provider store={store}>
                     <ShotExplorerSceneManager
