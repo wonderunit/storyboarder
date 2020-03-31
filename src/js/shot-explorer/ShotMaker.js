@@ -125,7 +125,7 @@ const ShotMaker = React.memo(({
         } else {
             setNoCharacterWarn(false)
         }
-
+        console.log(characters)
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
             let shotAngleKeys = Object.keys(ShotAngles)
@@ -133,6 +133,15 @@ const ShotMaker = React.memo(({
             
             let shotSizeKeys = Object.keys(ShotSizes)
             let randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
+
+            // Limits worms shot size so that shot doesn't look awful
+            if(randomAngle === ShotAngles.WORMS_EYE) {
+                while(randomSize === ShotSizes.EXTREME_CLOSE_UP || randomSize === ShotSizes.VERY_CLOSE_UP
+                    || randomSize === ShotSizes.MEDIUM_CLOSE_UP || randomSize === ShotSizes.ESTABLISHING
+                    || randomSize === ShotSizes.EXTREME_LONG) {
+                    randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
+                }
+            }
 
             let character = characters[getRandomNumber(characters.length)]
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
@@ -275,7 +284,7 @@ const ShotMaker = React.memo(({
                     Component={ ShotElement }
                     elements={ shots }
                     className="shots-container"
-                    style={{ maxWidth: windowWidth, height: windowHeight, display: "flex", justifyContent: "space-around", marginTop: "5px" }}
+                    style={{ maxWidth: windowWidth, height: windowHeight }}
                     setSelectedShot={ setSelectedShot }
                     fetchMoreElements={ generateMoreShots }
                     aspectRatio={ aspectRatio }
@@ -289,4 +298,5 @@ const ShotMaker = React.memo(({
         </div>
     )
 })
+
 export default ShotMaker

@@ -19,6 +19,7 @@ body {
   -webkit-app-region: drag;
 }
 
+
 img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* Firefox 2+ */ -ms-user-select: none; /* IE 10+ */ user-select: none; /* Standard syntax */ user-drag: none; -webkit-user-drag: none; }
 
 .three-canvas {
@@ -36,13 +37,16 @@ img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* 
   flex-wrap: wrap;
   overflow-y: auto;
   width: 100%;
+  display: flex;
+  justify-content: space-around;
+  margin-top: 5px; 
 }
 
 .shot-explorer-shot-preview {
-  padding-top: 20px;
+  padding-top: 30px;
   display: flex; 
   justify-content: center;
- padding-bottom: 20px;
+  padding-bottom: 20px;
 }
 
 
