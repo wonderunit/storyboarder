@@ -8,6 +8,8 @@ const isDev = require('electron-is-dev')
 
 const app = express()
 const http = require('http').Server(app)
+const io = require('socket.io')(http, { wsEngine: 'ws', serveClient: false })
+const {serve} = require('./sockets')
 
 const log = require('electron-log')
 
@@ -19,6 +21,8 @@ const getIpAddress = require('../utils/getIpAddress')
 class XRServer {
   constructor ({ store, service }) {
     const validSameBoard = uid => store.getState().board.uid === uid
+
+    serve(io, store)
 
     app.use(express.json({
       limit: '5mb'

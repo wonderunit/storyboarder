@@ -16,6 +16,8 @@ const { produce } = require('immer')
 
 const RemoteData = require('../../client/RemoteData')
 
+const XRClient = require('./../../client/index')
+
 const useIsVrPresenting = require('../../hooks/use-is-vr-presenting')
 const { setCookie, getCookie } = require('../../helpers/cookies')
 const isUserModel = require('../../helpers/is-user-model')
@@ -139,7 +141,7 @@ const percent = value => `${value * 100}`
 const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
 
 class CanvasRenderer {
-  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio, client) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -157,7 +159,6 @@ class CanvasRenderer {
     this.send = send
     this.cameraAspectRatio = cameraAspectRatio
     this.getImageByFilepath = getImageByFilepath
-    this.client = client
 
     this.state = {
       activeCamera: null,
@@ -250,24 +251,24 @@ class CanvasRenderer {
     // roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
 
     this.state.boardsData = RemoteData.init()
-    this.client.getBoards().then(result => {
-      this.state.boardsData = RemoteData.success(result)
-      this.boardsNeedsRender = true
-    }).catch(err => {
-      this.state.boardsData = RemoteData.failure(err)
-      this.boardsNeedsRender = true
-    })
+    // this.client.getBoards().then(result => {
+    //   this.state.boardsData = RemoteData.success(result)
+    //   this.boardsNeedsRender = true
+    // }).catch(err => {
+    //   this.state.boardsData = RemoteData.failure(err)
+    //   this.boardsNeedsRender = true
+    // })
 
     this.state.sgCurrentState = RemoteData.init()
-    this.client.getState().then(result => {
-      this.state.sgCurrentState = RemoteData.success(result)
-      this.boardsNeedsRender = true
-      this.send('SET_BOARDUID', { uid: result.board.uid })
-    }).catch(err => {
-      this.state.sgCurrentState = RemoteData.failure(err)
-      this.boardsNeedsRender = true
-      this.send('SET_BOARDUID', { uid: null })
-    })
+    // this.client.getState().then(result => {
+    //   this.state.sgCurrentState = RemoteData.success(result)
+    //   this.boardsNeedsRender = true
+    //   this.send('SET_BOARDUID', { uid: result.board.uid })
+    // }).catch(err => {
+    //   this.state.sgCurrentState = RemoteData.failure(err)
+    //   this.boardsNeedsRender = true
+    //   this.send('SET_BOARDUID', { uid: null })
+    // })
 
     this.needsRender = false
   }
@@ -1230,7 +1231,7 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const useUiManager = ({ playSound, stopSound, getXrClient }) => {
+const useUiManager = ({ playSound, stopSound }) => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
@@ -1714,7 +1715,6 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     if (canvasRendererRef.current === null) {
       const getRoom = () => scene.getObjectByName('room' )
       const getImageByFilepath = filepath => THREE.Cache.get(filepath)
-      const client = getXrClient()
 
       canvasRendererRef.current = new CanvasRenderer(
         1024,
@@ -1724,8 +1724,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
         camera,
         getRoom,
         getImageByFilepath,
-        cameraAspectRatio,
-        client
+        cameraAspectRatio
       )
     }
     return canvasRendererRef.current

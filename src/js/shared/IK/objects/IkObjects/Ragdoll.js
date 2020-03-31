@@ -378,6 +378,10 @@ class Ragdoll extends IkObject
 
     updateReact()
     {       
+        if (!this.originalObject) {
+            return false
+        }
+        
         let changedSkeleton = [];
         let position = new THREE.Vector3();
         let skinnedMesh = this.originalObject.getObjectByProperty("type", "SkinnedMesh");
@@ -388,7 +392,6 @@ class Ragdoll extends IkObject
             {
                 continue;
             }
-            changedSkeleton.push(bone)
             bone.updateMatrixWorld(true)
             let rotation = bone.rotation
             position.copy(bone.position)

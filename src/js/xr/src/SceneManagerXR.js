@@ -3,12 +3,15 @@ const SHOW_LOG = false
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate } = require('react-three-fiber')
+const { Canvas, useThree, useUpdate, useFrame } = require('react-three-fiber')
 
 const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, useCallback } = React = require('react')
 require('./three/GPUPickers/utils/Object3dExtension')
+
+const RemoteProvider = require('../../shot-generator/components/RemoteProvider').default
+const RemoteClients = require('../../shot-generator/components/RemoteClients').default
 
 // to use three's version:
 // const { WEBVR } = require('three/examples/jsm/vr/WebVR')
@@ -16,8 +19,6 @@ require('./three/GPUPickers/utils/Object3dExtension')
 // use vendor'd version
 require('../../vendor/three/examples/js/vr/WebVR')
 const WEBVR = THREE.WEBVR
-
-const XRClient = require('./client')
 
 const {
   // selectors
@@ -131,7 +132,9 @@ const SceneContent = connect(
 
     characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
-    resources, getAsset
+    resources, getAsset,
+
+    SGConnection
   }) => {
     const { gl, camera, scene } = useThree()
 
@@ -518,15 +521,7 @@ const SceneContent = connect(
     const groundRef = useRef()
     const rootRef = useRef()
     const thumbnailRenderer = useRef()
-
-    const xrClient = useRef()
-    const getXrClient = () => {
-      if (!xrClient.current) {
-        xrClient.current = XRClient()
-      }
-      return xrClient.current
-    }
-    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, getXrClient })
+    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound })
 
     const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
@@ -534,6 +529,13 @@ const SceneContent = connect(
       uiService,
       playSound,
       stopSound
+    })
+    
+    useFrame(({camera}) => {
+      SGConnection.sendInfo({
+        matrix: camera.matrixWorld.toArray(),
+        controllers: controllers.filter(gamepadFor).map((object) => object.matrixWorld.toArray())
+      })
     })
 
     canvasRendererRef.current.interactionServiceSend = interactionServiceSend
@@ -765,6 +767,10 @@ const SceneContent = connect(
               </SimpleErrorBoundary>
               : null
           }
+          
+          <RemoteProvider>
+            <RemoteClients/>
+          </RemoteProvider>
 
           <Ground
             objRef={groundRef}
@@ -803,7 +809,7 @@ const APP_GLTFS = [
   '/data/system/xr/teleport-target.glb'
 ]
 
-const SceneManagerXR = () => {
+const SceneManagerXR = ({SGConnection}) => {
   useMemo(() => {
     THREE.Cache.enabled = true
   }, [])
@@ -999,9 +1005,10 @@ const SceneManagerXR = () => {
                   uiDeleteBuffer,
 
                   vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
-                  xrPosing, xrEndPosing
+                  xrPosing, xrEndPosing,
                 }}
-                getAsset={getAsset} />
+                getAsset={getAsset}
+                SGConnection={SGConnection} />
               : null
           }
         </Provider>

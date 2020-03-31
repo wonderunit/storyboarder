@@ -39,6 +39,10 @@ class UniversalPickableCharacter extends Pickable
 
     getCharacterContainer()
     {
+        if (!this.sceneMesh) {
+            return null
+        }
+        
         if(this.sceneMesh.parent.type === "LOD")
         {
             return this.sceneMesh.parent.parent;
@@ -59,6 +63,11 @@ class UniversalPickableCharacter extends Pickable
         this.pickingMaterial.morphNormals = true;
         this.pickingMaterial.morphTargets = true;
         let parent = this.characterContainer;
+
+        if (!this.characterContainer) {
+            return false
+        }
+        
         let ikHelper = parent.children.find(child => child.userData.type === "IkHelper");
         if(ikHelper) parent.remove(ikHelper);
         let bonesHelper = parent.children.find(child => child.userData.type === "BonesHelper");
@@ -115,6 +124,11 @@ class UniversalPickableCharacter extends Pickable
     {
         this.getMeshFromSceneObject(this.excludingList);
         this.characterContainer = this.getCharacterContainer();
+        
+        if (!this.characterContainer) {
+            return false
+        }
+        
         let parent = this.characterContainer;
         let node = SkeletonUtils.clone(parent);
         let lod = node.children[0];

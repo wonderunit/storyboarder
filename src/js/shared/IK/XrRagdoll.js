@@ -324,7 +324,23 @@ class XRRagdoll extends XRIKObject
                 continue;
             }
             bone.updateWorldMatrix(true, true)
-            ikBones.push(bone);
+
+            let position = new THREE.Vector3()
+            position.copy(bone.position)
+            
+            ikBones.push({
+                name: bone.name,
+                position: {
+                    x: position.x,
+                    y: position.y,
+                    z: position.z
+                },
+                rotation: {
+                    x: bone.rotation.x,
+                    y: bone.rotation.y,
+                    z: bone.rotation.z
+                }
+            })
         }
         this.updateCharacterSkeleton(ikBones);
     }

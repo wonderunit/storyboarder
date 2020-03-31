@@ -26,6 +26,8 @@ const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 
+const {SGMiddleware} = require('./../../xr/sockets')
+
 const actionSanitizer = action => (
   action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
   { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
@@ -45,7 +47,7 @@ const configureStore = function configureStore (preloadedState) {
     reducer,
     preloadedState,
     composeEnhancers(
-      applyMiddleware(thunkMiddleware)
+      applyMiddleware(thunkMiddleware, SGMiddleware)
     )
   )
   return store
@@ -110,6 +112,7 @@ const preloadData = async () => {
   }, { storyboarderFilePath }))
   await loadAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
   await loadAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
+  await loadAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'hmd.glb'))
 }
 
 const loadBoard = async (board) => {

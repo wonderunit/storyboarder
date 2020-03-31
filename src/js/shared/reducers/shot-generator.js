@@ -1,5 +1,6 @@
 const THREE = require('three')
 const { produce } = require('immer')
+const merge = require('lodash.merge')
 const undoable = require('redux-undo').default
 const crypto = require('crypto')
 const reduceReducers = require('../../vendor/reduce-reducers')
@@ -1460,6 +1461,9 @@ const mainReducer = (state/* = initialState*/, action) => {
       case 'UNDO_GROUP_END':
         batchGroupBy.end(action.payload)
         return
+
+      case 'MERGE_STATE':
+        return merge(draft, action.payload)
     }
   })
 }
@@ -1704,6 +1708,8 @@ module.exports = {
 
   undoGroupStart: payload => ({ type: 'UNDO_GROUP_START', payload }),
   undoGroupEnd: payload => ({ type: 'UNDO_GROUP_END', payload }),
+  
+  mergeState: payload => ({ type: 'MERGE_STATE', payload }),
 
   //
   //
