@@ -56,7 +56,6 @@ class ShotItem {
         indexOf !== -1 && this.subscribers.splice(indexOf, 1)
     }
 
-
     toString() {
         let focalLength = this.camera.getFocalLength()
         let index = indexIn(mms, focalLength)

@@ -32,7 +32,7 @@ const ShotExplorer = React.memo(({
     aspectRatio,
     store,
     elementKey,
-    defaultWidth,
+    canvasHeight,
 }) => {
     const [sceneInfo, setSceneInfo] = useState(null)
     const [newAssetsLoaded, setLoadedAssets] = useState()
@@ -76,7 +76,7 @@ const ShotExplorer = React.memo(({
                 updateDefaultCamera={ true }
                 noEvents={ true }
                 className="three-canvas" 
-                style={{ width: (defaultWidth - paddingToRight ) * aspectRatio, height: defaultWidth - paddingToRight, userSelect: "none" }}
+                style={{ width: (canvasHeight - paddingToRight ) * aspectRatio, height: canvasHeight - paddingToRight, userSelect: "none" }}
                 >
                 <Provider store={store}>
                     <ShotExplorerSceneManager
@@ -91,7 +91,7 @@ const ShotExplorer = React.memo(({
                     withState={ withState }
                     aspectRatio={ aspectRatio }
                     newAssetsLoaded={ newAssetsLoaded }
-                    defaultWidth={ defaultWidth }
+                    canvasHeight={ canvasHeight }
                     elementKey={ elementKey }/> 
     </FatalErrorBoundary>
     )

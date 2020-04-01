@@ -28,7 +28,7 @@ let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
 let isVisible = electron.remote.getCurrentWindow().visible
 let defaultHeight = 800
-let defaultWidth = 400
+let canvasHeight = 400
 let minimumWidth = 300
 
 const actionSanitizer = action => (
@@ -101,8 +101,8 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
-  defaultWidth = defaultHeight * 0.45
-  let scaledWidth = Math.ceil(defaultWidth * aspectRatio)
+  canvasHeight = defaultHeight * 0.45
+  let scaledWidth = Math.ceil(canvasHeight * aspectRatio)
   scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
   electron.remote.getCurrentWindow().setSize(scaledWidth, defaultHeight)
   electron.remote.getCurrentWindow().setMinimumSize(scaledWidth, defaultHeight)
@@ -216,7 +216,7 @@ const renderShotExplorer = () => {
   return <ShotExplorer 
                 elementKey={ componentKey } 
                 store={ store }
-                defaultWidth={ defaultWidth }/>
+                canvasHeight={ canvasHeight }/>
 }
 shotExplorerElement = renderShotExplorer()
 

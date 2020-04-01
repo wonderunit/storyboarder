@@ -43,7 +43,7 @@ const ShotMaker = React.memo(({
     withState,
     aspectRatio,
     newAssetsLoaded,
-    defaultWidth
+    canvasHeight
 }) => {
     const camera = useRef()
     const [selectedShot, selectShot] = useState(null)
@@ -53,13 +53,13 @@ const ShotMaker = React.memo(({
     const tweenObject = useRef()
     const [noCharacterWarn, setNoCharacterWarn] = useState(false)
     const [windowHeight, setWindowHeight] = useState(0)
-    const [windowWidth, setWindowWidth] = useState(0)
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const containerHeight = useRef()
 
     const handleResize = () => {
-        let offsetTop = document.getElementsByClassName("shots-container")[0].offsetTop
+        let container = document.getElementsByClassName("shots-container")
         setWindowWidth(window.innerWidth)
-        let height = window.innerHeight - offsetTop - 10
+        let height = window.innerHeight - container[0].offsetTop - 10
         containerHeight.current = height
         setWindowHeight(height)
       }
@@ -213,8 +213,8 @@ const ShotMaker = React.memo(({
             })
 
             const paddingSize = 5
-            const newDefaultWidth = defaultWidth - (paddingSize * 3)
-            let height = (newDefaultWidth / 3)
+            const canvasHeightWithPadding = canvasHeight - (paddingSize * 3)
+            let height = (canvasHeightWithPadding / 3)
 
             camera.current = sceneInfo.camera.clone()
             let shotsArray = []
@@ -292,7 +292,7 @@ const ShotMaker = React.memo(({
                     aspectRatio={ aspectRatio }
                     scale={ scale }
                     sceneInfo={ sceneInfo }
-                    defaultWidth={ defaultWidth }
+                    canvasHeight={ canvasHeight }
                     windowWidth={ windowWidth }
                     />}
             </div>
