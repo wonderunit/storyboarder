@@ -72,6 +72,7 @@ const XRServer = require('../../xr/server')
 const service = require('./service')
 
 let xrServer
+let showShotExplorerOnRead = false
 
 
 window.addEventListener('load', () => {
@@ -183,7 +184,13 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
-  shotExplorer.createWindow(() => {shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')}, aspectRatio)
+  shotExplorer.createWindow(() => {
+    shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')
+    if(showShotExplorerOnRead){
+      shotExplorer.reveal()
+      shotExplorer.getWindow().webContents.send('shot-explorer:show')
+    }
+  }, aspectRatio)
   await loadBoard(board)
 
   if (!xrServer) {
@@ -214,7 +221,11 @@ ipcRenderer.on('shot-generator:edit:redo', () => {
 })
 
 ipcRenderer.on('shot-generator:show:shot-explorer', () => {
-  if(!shotExplorer.isLoaded()) return
+
+  if(!shotExplorer.isLoaded()) {
+    showShotExplorerOnRead = true
+    return
+  }
   shotExplorer.reveal()
   shotExplorer.getWindow().webContents.send('shot-explorer:show')
 })

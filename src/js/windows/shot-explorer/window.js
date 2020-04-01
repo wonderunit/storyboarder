@@ -116,7 +116,6 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
-  console.log("Loading board")
   canvasHeight = defaultHeight * 0.45
   let scaledWidth = Math.ceil(canvasHeight * aspectRatio)
   scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
