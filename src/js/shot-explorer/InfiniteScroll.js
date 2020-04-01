@@ -10,13 +10,10 @@ const InfiniteScroll = React.memo(({
 }) => {
     const ref = useRef(null)
     const bottomRef = useRef(null)
-    const fetchStatus = useRef("Fetching...")
     const [isFetching, setIsFetching] = useState(false);
 
     useMemo(() => {
-        fetchStatus.current = ""
         if(!isFetching) return
-        fetchStatus.current = "Fetching..."
         fetchMoreElements()
     }, [isFetching])
 
@@ -52,7 +49,7 @@ const InfiniteScroll = React.memo(({
                     />
                 })
             }
-            <div className="infinite-scroll-bottom" ref={bottomRef}><div>{ fetchStatus.current }</div></div>
+            <div className="infinite-scroll-bottom" ref={bottomRef}><div></div></div>
         </div>
     )
 })
