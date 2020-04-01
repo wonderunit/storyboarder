@@ -1,4 +1,4 @@
-import HorizontalOneThirdRule from "./HorizontalOneThirdRule"
+import VerticalOneThirdRule from "./VerticalOneThirdRule"
 import RollRule from "./RollRule"
 import * as THREE from 'three'
 
@@ -29,7 +29,7 @@ const generateRule = (focusedCenter, character, shot, camera) => {
         let cameraRotation = shot.cameraRotation ? shot.cameraRotation * THREE.Math.RAD2DEG : 0
         let characterFacingRotation = cameraRotation - (characterRotation)
         characterFacingRotation = clamRotationTo(characterFacingRotation)
-        results.push(new HorizontalOneThirdRule(focusedCenter, camera, characterFacingRotation < 0 ? "left" : "right"));
+        results.push(new VerticalOneThirdRule(focusedCenter, camera, characterFacingRotation < 0 ? "left" : "right"));
     }
 
     return results

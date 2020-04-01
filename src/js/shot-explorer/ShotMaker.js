@@ -18,7 +18,7 @@ import ShotElement from './ShotElement'
 import InfiniteScroll from './InfiniteScroll'
 import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
-import VerticalOneThirdRule from './ShotsRule/VerticalOneThirdRule'
+import HorizontalOneThirdRule from './ShotsRule/HorizontalOneThirdRule'
 import OrbitingRule from './ShotsRule/OrbitingRule'
 const getRandomNumber = (maxLength) => {
     let number = Math.floor(Math.random() * (maxLength))
@@ -141,9 +141,7 @@ const ShotMaker = React.memo(({
 
             // Limits worms shot size so that shot doesn't look awful
             if(randomAngle === ShotAngles.WORMS_EYE) {
-                while(randomSize === ShotSizes.EXTREME_CLOSE_UP || randomSize === ShotSizes.VERY_CLOSE_UP
-                    || randomSize === ShotSizes.MEDIUM_CLOSE_UP || randomSize === ShotSizes.ESTABLISHING
-                    || randomSize === ShotSizes.EXTREME_LONG || randomSize === ShotSizes.LONG) {
+                while(randomSize === ShotSizes.ESTABLISHING) {
                     randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
                 }
             }
@@ -176,7 +174,7 @@ const ShotMaker = React.memo(({
 
             // TODO() : Fixed ots vertical oneThird
             // Applies vertical oneThird rule; Should be always applied
-            shot.verticalRule = new VerticalOneThirdRule(headCenter, cameraCopy)          
+            shot.verticalRule = new HorizontalOneThirdRule(headCenter, cameraCopy)          
             shot.orbitingRule = new OrbitingRule(headCenter, cameraCopy)          
             shot.orbitingRule.applyRule()
             shot.cameraRotation = shot.orbitingRule.angle

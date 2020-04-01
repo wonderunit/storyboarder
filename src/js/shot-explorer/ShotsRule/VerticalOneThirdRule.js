@@ -1,28 +1,29 @@
 import ShotRule from './ShotRule'
-class HorizontalOneThirdRule extends ShotRule {
-    constructor(focusedCenter, camera) {
-        super(focusedCenter, camera)
+class VerticalOneThirdRule extends ShotRule {
+    constructor(focusedCenter, camera, side = "right") {
+        super(focusedCenter, camera);
+        this.side = side;
     }
 
-    applyRule(centerOfView) {
-        super.applyRule()
-        let center = this.focusedCenter;
-        
+    applyRule() {
+        super.applyRule();
+        let center = this.focusedCenter; 
         let vFOV = THREE.Math.degToRad( this.camera.fov ); // convert vertical fov to radians
-        let height = 2 * Math.tan( vFOV / 2 ) * this.camera.position.distanceTo(centerOfView); // visible height
-        let y = height * ( 2/3 );
-        let desiredPos = new THREE.Vector3(centerOfView.x, y, center.z);
-        let minHeight = height / 2 - centerOfView.y;
-        desiredPos.y -= minHeight;
-
+        let height = 2 * Math.tan( vFOV / 2 ) * this.camera.position.distanceTo(center); // visible height
+        let width = height * this.camera.aspect;  
+        let x = width * ( 2/3 );
+        let desiredPos = new THREE.Vector3(x, center.y, center.z);
+        let minWidth = width / 2 - center.x;
+        desiredPos.x -= minWidth;
         let hypotenus = desiredPos.distanceTo(this.camera.position);
         let opposite = desiredPos.distanceTo(center);
         let angle = opposite / hypotenus;
-        angle = desiredPos.y > center.y ? -angle : angle;
-        this.cameraRotation = angle;
-        this.camera.rotateX(angle);
+        this.cameraRotation = this.side === "right" ? angle : -angle;
+
+        
+        this.camera.rotateY(this.side === "right" ? angle : -angle);
         this.camera.updateMatrixWorld(true);
     }
 }
 
-export default HorizontalOneThirdRule
+export default VerticalOneThirdRule
