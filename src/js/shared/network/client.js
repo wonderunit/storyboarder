@@ -26,7 +26,7 @@ export const connect = (URI = '') => {
     })
 
     client.on('id', (data) => {
-      //remoteStore.dispatch(setId(data))
+      remoteStore.dispatch(setId(data))
     })
 
     client.on('action', (data) => {
