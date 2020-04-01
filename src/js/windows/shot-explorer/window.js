@@ -23,6 +23,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 let sendedAction = []
+let isBoardShown = false
 let isBoardLoaded = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
@@ -90,17 +91,32 @@ const store = configureStore({
   },
 })
 
-ipcRenderer.on('shot-explorer:show', (event) => {
+const showShotExplorer = () => {
+  if(!isBoardLoaded) {
+    console.log("Board isn't loaded")
+    setTimeout( () => {
+      showShotExplorer()
+    }, 100)
+    return
+  }
+  console.log("Board is loaded")
   isVisible = true;
   pushUpdates();
-  isBoardLoaded = true;
+  isBoardShown = true;
+}
+
+ipcRenderer.on('shot-explorer:show', (event) => {
+  console.log("Showing shot explorer")
+  showShotExplorer()
 })
 
 ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
+  console.log("Openning shot explorer")
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
+  console.log("Loading board")
   canvasHeight = defaultHeight * 0.45
   let scaledWidth = Math.ceil(canvasHeight * aspectRatio)
   scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
@@ -122,8 +138,10 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   sendedAction.push(action)
   store.dispatch(action)
 
+  console.log("Loading board")
   await loadBoard(board, storyboarderFilePath)
-
+  isBoardLoaded = true
+  console.log(isBoardLoaded)
 })
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
@@ -132,7 +150,7 @@ ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
 })
 
 electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
-  isBoardLoaded = false
+  isBoardShown = false
 })
 
 electron.remote.getCurrentWindow().on("hide", () => {
@@ -150,7 +168,7 @@ const pushUpdates = () => {
   }
 
 electron.remote.getCurrentWindow().on("focus", () => {
-  if(!sendedAction.length || !isBoardLoaded) return
+  if(!sendedAction.length || !isBoardShown || !isBoardLoaded) return
   pushUpdates()
 })
 

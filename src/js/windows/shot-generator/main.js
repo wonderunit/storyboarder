@@ -152,6 +152,10 @@ ipcMain.on('shot-generator:open:shot-explorer', () => {
   win.webContents.send('shot-generator:open:shot-explorer')
 })
 
+ipcMain.on('shot-generator:show:shot-explorer', () => {
+  win.webContents.send('shot-generator:show:shot-explorer')
+})
+
 ipcMain.on('shot-generator:export-gltf', () =>
   win.webContents.send('shot-generator:export-gltf'))
 

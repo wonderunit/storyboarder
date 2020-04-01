@@ -901,7 +901,7 @@ const shotGeneratorMenu = [
         accelerator: 'CommandOrControl+j',
         label: 'Open Shot Explorer',
         click () {
-          ipcRenderer.send('shot-generator:open:shot-explorer')
+          ipcRenderer.send('shot-generator:show:shot-explorer')
         }
       },
       

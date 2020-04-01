@@ -52,7 +52,7 @@ const ShotMaker = React.memo(({
     const outlineEffect = useRef()
     const tweenObject = useRef()
     const [noCharacterWarn, setNoCharacterWarn] = useState(false)
-    const [windowHeight, setWindowHeight] = useState(0)
+    const [windowHeight, setWindowHeight] = useState(window.innerWidth)
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const containerHeight = useRef()
 

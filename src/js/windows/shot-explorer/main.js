@@ -27,6 +27,7 @@ const removeExtensions = () => {
 }
 
 let win
+let loaded = false
 
 let memento = {
   x: undefined,
@@ -101,16 +102,18 @@ const createWindow = async ( onComplete, aspectRatio) => {
     }))
   
     // use this to wait until the window has completely loaded
-    // ipcMain.on('shot-generator:window:loaded', () => { })
+    //ipcMain.on('shot-generator:window:loaded', () => {  })
   
     // use this to show sooner
     win.once('ready-to-show', () => {
       onComplete()
+      loaded = true
     })
   }
 
 module.exports = {
   createWindow,
   getWindow: () => win,
-  reveal
+  reveal,
+  isLoaded: () => loaded
 }

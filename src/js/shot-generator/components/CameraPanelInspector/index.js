@@ -342,7 +342,7 @@ const CameraPanelInspector = connect(
                 <div className="select">
                   <div className="select-shot-explorer">
                       <a className="select-shot-explorer-text" 
-                        onPointerDown={ () => ipcRenderer.send('shot-generator:open:shot-explorer')}>
+                        onPointerDown={ () => ipcRenderer.send('shot-generator:show:shot-explorer')}>
                       Open Shot Explorer
                       </a>
                     </div>

@@ -213,7 +213,8 @@ ipcRenderer.on('shot-generator:edit:redo', () => {
   store.dispatch( ActionCreators.redo() )
 })
 
-ipcRenderer.on('shot-generator:open:shot-explorer', () => {
+ipcRenderer.on('shot-generator:show:shot-explorer', () => {
+  if(!shotExplorer.isLoaded()) return
   shotExplorer.reveal()
   shotExplorer.getWindow().webContents.send('shot-explorer:show')
 })
