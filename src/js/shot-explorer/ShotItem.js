@@ -60,7 +60,7 @@ class ShotItem {
     toString() {
         let focalLength = this.camera.getFocalLength()
         let index = indexIn(mms, focalLength)
-        return `${this.size}, ${this.angle} on ${this.character && this.character.userData.name} ${mms[index]}mm`;
+        return `${this.size}, ${this.angle} on ${this.character && this.character.userData.name}, ${mms[index]}mm`;
     }
 
     destroy() {
