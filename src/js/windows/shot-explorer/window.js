@@ -104,10 +104,11 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   canvasHeight = defaultHeight * 0.45
   let scaledWidth = Math.ceil(canvasHeight * aspectRatio)
   scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
-  electron.remote.getCurrentWindow().setSize(scaledWidth, defaultHeight)
-  electron.remote.getCurrentWindow().setMinimumSize(scaledWidth, defaultHeight)
-  electron.remote.getCurrentWindow().setMaximumSize(scaledWidth, 100000)
-
+  let win = electron.remote.getCurrentWindow()
+  win.setSize(scaledWidth, defaultHeight)
+  win.setMinimumSize(scaledWidth, defaultHeight)
+  win.setMaximumSize(scaledWidth, 100000)
+  win.center();
   let action  = {
     type: 'SET_META_STORYBOARDER_FILE_PATH',
     payload: storyboarderFilePath
