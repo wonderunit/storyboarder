@@ -27,7 +27,7 @@ const getRandomNumber = (maxLength) => {
 
 const getRandomFov = (aspectRatio) => {
 
-    const mms = [12, 16, 18, 22, 24, 35, 50, 85, 100]
+    const mms = [12, 16, 18, 22, 24, 35, 50]
     let randomMms = getRandomNumber(mms.length)
     let filemHeight = 35 / Math.max( aspectRatio, 1 );
     var vExtentSlope = 0.5 * filemHeight / mms[randomMms];
@@ -141,7 +141,7 @@ const ShotMaker = React.memo(({
 
             // Limits worms shot size so that shot doesn't look awful
             if(randomAngle === ShotAngles.WORMS_EYE) {
-                while(randomSize === ShotSizes.ESTABLISHING) {
+                while(randomSize === ShotSizes.ESTABLISHING || randomSize === ShotSizes.EXTREME_CLOSE_UP) {
                     randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
                 }
             }
@@ -174,7 +174,7 @@ const ShotMaker = React.memo(({
 
             // TODO() : Fixed ots vertical oneThird
             // Applies vertical oneThird rule; Should be always applied
-            shot.verticalRule = new HorizontalOneThirdRule(headCenter, cameraCopy)          
+            shot.horizontalRule = new HorizontalOneThirdRule(headCenter, cameraCopy)          
             shot.orbitingRule = new OrbitingRule(headCenter, character, cameraCopy)          
             shot.orbitingRule.applyRule()
             shot.cameraRotation = shot.orbitingRule.angle
@@ -185,9 +185,9 @@ const ShotMaker = React.memo(({
             for(let i = 0; i < shot.rules.length; i++) {
                 shot.rules[i].applyRule()
             }
-            if(shot.size !== ShotSizes.ESTABLISHING) {
-                    shot.verticalRule.applyRule(center)
-                }
+            if(shot.size !== ShotSizes.ESTABLISHING && shot.angle !== ShotAngles.WORMS_EYE) {
+                    shot.horizontalRule.applyRule(center)
+            }
 
             shot.camera = cameraCopy
             shotsArray.push(shot)

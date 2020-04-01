@@ -7,15 +7,19 @@ const getOrbitingAngle = () => {
     let frontAndBackAngle = 110
     let sidesAngle = 70
     let angle 
+    let frontChance = 40
+    let leftChance = 25
+    let rightChance = 25
+    let backChance = 10
     // Front side
-    if(sidePercentage < 35) {
+    if(sidePercentage < frontChance) {
         angle = getRandomNumber(frontAndBackAngle) - frontAndBackAngle / 2
-    } else if(sidePercentage >= 35 && sidePercentage < 60) {
+    } else if(sidePercentage >= frontChance && sidePercentage < frontChance + leftChance) {
         angle = -getRandomNumber(sidesAngle) - frontAndBackAngle / 2
-    } else if(sidePercentage >= 60 && sidePercentage < 75) {
+    } else if(sidePercentage >= frontChance + leftChance && sidePercentage < frontChance + leftChance + backChance) {
         angle = getRandomNumber(frontAndBackAngle) - frontAndBackAngle / 2
         angle = angle >= 0 ? 180 - angle : -(180 + angle)
-    } else if(sidePercentage >= 75 && sidePercentage < 100) {
+    } else if(sidePercentage >= frontChance + leftChance + backChance && sidePercentage < frontChance + leftChance + backChance + rightChance) {
         angle = getRandomNumber(sidesAngle) + frontAndBackAngle / 2
     }
     return angle

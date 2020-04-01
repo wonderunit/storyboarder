@@ -18,10 +18,10 @@ class VerticalOneThirdRule extends ShotRule {
         let hypotenus = desiredPos.distanceTo(this.camera.position);
         let opposite = desiredPos.distanceTo(center);
         let angle = opposite / hypotenus;
-        this.cameraRotation = this.side === "right" ? angle : -angle;
+        angle = this.side === "right" ? angle : -angle;
+        this.cameraRotation = angle
 
-        
-        this.camera.rotateY(this.side === "right" ? angle : -angle);
+        this.camera.rotateY(angle) 
         this.camera.updateMatrixWorld(true);
     }
 }
