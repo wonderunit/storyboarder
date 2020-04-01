@@ -1,5 +1,4 @@
 import React, { useState, useCallback, useRef, useEffect, useMemo, useLayoutEffect } from 'react'
-import { batch } from 'react-redux'
 import ShotItem from './ShotItem'
 import { ShotSizes, ShotAngles, setShot } from '../shot-generator/utils/cameraUtils'
 import * as THREE from 'three'
@@ -52,9 +51,19 @@ const ShotMaker = React.memo(({
     const imageRenderer = useRef()
     const outlineEffect = useRef()
     const tweenObject = useRef()
-    const cameraCenter = useRef()
-    const desiredPosition = useRef()
     const [noCharacterWarn, setNoCharacterWarn] = useState(false)
+    const [windowHeight, setWindowHeight] = useState(0)
+    const [windowWidth, setWindowWidth] = useState(0)
+    const containerHeight = useRef()
+
+    const handleResize = () => {
+        let offsetTop = document.getElementsByClassName("shots-container")[0].offsetTop
+        setWindowWidth(window.innerWidth)
+        let height = window.innerHeight - offsetTop - 10
+        containerHeight.current = height
+        setWindowHeight(height)
+      }
+
     const setSelectedShot = (newSelectedShot) => {
         // TODO filter character once amount of objects in the scene changed
         // Set camera to default before applying shot changes
@@ -71,16 +80,14 @@ const ShotMaker = React.memo(({
         selectShot(newSelectedShot)
     }
     useEffect(() => {
-        let material = new THREE.MeshBasicMaterial()
-        let geometry = new THREE.BoxGeometry(0.1, 0.1)
-        cameraCenter.current = new THREE.Mesh(geometry, material)
-        desiredPosition.current = new THREE.Mesh(geometry, material)
+        console.log("Mount")
         if (!imageRenderer.current) {
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
         handleResize()
         return () => {
+            console.log("Unmount")
             imageRenderer.current = null
             outlineEffect.current = null
             cleanUpShots()
@@ -100,7 +107,6 @@ const ShotMaker = React.memo(({
                 let image = outlineEffect.domElement.toDataURL('image/jpeg', 0.5)
                 resolve(image);
             }, 10)
-        
         })
     }
 
@@ -206,9 +212,13 @@ const ShotMaker = React.memo(({
                 sceneInfo.camera.updateProjectionMatrix()
             })
 
+            const paddingSize = 5
+            const newDefaultWidth = defaultWidth - (paddingSize * 3)
+            let height = (newDefaultWidth / 3)
+
             camera.current = sceneInfo.camera.clone()
             let shotsArray = []
-            let shotsCount = 9
+            let shotsCount =  Math.ceil(containerHeight.current / (height + 20)) * 3
             generateShot(shotsArray, shotsCount)
 
             renderSceneWithCamera(shotsArray)
@@ -252,13 +262,6 @@ const ShotMaker = React.memo(({
     }, [selectedShot])
 
     let scale = 2
-    const [windowHeight, setWindowHeight] = useState(window.innerHeight)
-    const [windowWidth, setWindowWidth] = useState(window.innerWidth)
-    const handleResize = () => {
-        let offsetTop = document.getElementsByClassName("shots-container")[0].offsetTop
-        setWindowWidth(window.innerWidth)
-        setWindowHeight(window.innerHeight - offsetTop - 10)
-      }
     
     useLayoutEffect(() => {
       window.addEventListener('resize', handleResize)
@@ -277,8 +280,8 @@ const ShotMaker = React.memo(({
                     </a>
                 </div>
             </div>
-            {!noCharacterWarn &&<div>
-                <InfiniteScroll 
+            <div>
+               { <InfiniteScroll 
                     key={ elementKey }
                     Component={ ShotElement }
                     elements={ shots }
@@ -291,8 +294,8 @@ const ShotMaker = React.memo(({
                     sceneInfo={ sceneInfo }
                     defaultWidth={ defaultWidth }
                     windowWidth={ windowWidth }
-                    />
-            </div>}
+                    />}
+            </div>
             {noCharacterWarn && <div style={{ textAlign:"center" }}>You need to add at least one built-in character to scene </div>}
         </div>
     )
