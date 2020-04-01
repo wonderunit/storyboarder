@@ -26,11 +26,6 @@ class HorizontalOneThirdRule extends ShotRule {
         let roll = rot.z
         let tilt = rot.x
 
-        console.log("rotation", rotation)
-        console.log("roll", roll)
-        console.log("this.camera.rotation.x", this.camera.rotation.x)
-        console.log("tilt", tilt)
-        console.log("angle", angle)
         this.camera.rotation.x = 0
         this.camera.rotation.z = 0
         this.camera.rotation.y = rotation 

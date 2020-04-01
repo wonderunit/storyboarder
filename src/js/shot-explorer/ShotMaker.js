@@ -175,7 +175,7 @@ const ShotMaker = React.memo(({
             // TODO() : Fixed ots vertical oneThird
             // Applies vertical oneThird rule; Should be always applied
             shot.verticalRule = new HorizontalOneThirdRule(headCenter, cameraCopy)          
-            shot.orbitingRule = new OrbitingRule(headCenter, cameraCopy)          
+            shot.orbitingRule = new OrbitingRule(headCenter, character, cameraCopy)          
             shot.orbitingRule.applyRule()
             shot.cameraRotation = shot.orbitingRule.angle
 

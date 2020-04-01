@@ -22,9 +22,10 @@ const getOrbitingAngle = () => {
 }
 
 class OrbitingRule extends ShotRule {
-    constructor(focusedCenter, camera) {
+    constructor(focusedCenter, character, camera) {
         super(focusedCenter, camera);
-        this.angle = getOrbitingAngle() * THREE.Math.DEG2RAD;
+        this.character = character
+        this.angle = getOrbitingAngle() * THREE.Math.DEG2RAD + character.rotation.y;
     }
 
     applyRule() {
