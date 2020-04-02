@@ -5,7 +5,6 @@ const electronUtil = require('electron-util')
 const path = require('path')
 const shotExplorer = require('../shot-explorer/main')
 const React = require('react')
-const { useState, useEffect } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')

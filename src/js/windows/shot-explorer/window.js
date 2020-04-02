@@ -106,7 +106,6 @@ const showShotExplorer = () => {
 }
 
 ipcRenderer.on('shot-explorer:show', (event) => {
-  console.log("Showing shot explorer")
   showShotExplorer()
 })
 

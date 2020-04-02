@@ -23,7 +23,7 @@ import { SHOT_LAYERS } from '../shot-generator/utils/ShotLayers'
 import Room from '../shot-generator/components/Three/Room'
 import CameraUpdate from '../shot-generator/CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
-
+import InteractionManager from "../shot-generator/components/Three/InteractionManager"
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -120,6 +120,7 @@ const ShotExplorerSceneManager = connect(
     }, [world.directional.rotation, world.directional.tilt])
 
     return <group ref={ rootRef }> 
+    <InteractionManager renderData={ renderData }/>
     <CameraUpdate/>
     <ambientLight
         ref={ ambientLightRef }

@@ -139,13 +139,6 @@ const ShotMaker = React.memo(({
             let shotSizeKeys = Object.keys(ShotSizes)
             let randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
 
-            // Limits worms shot size so that shot doesn't look awful
-            if(randomAngle === ShotAngles.WORMS_EYE) {
-                while(randomSize === ShotSizes.ESTABLISHING || randomSize === ShotSizes.EXTREME_CLOSE_UP) {
-                    randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
-                }
-            }
-
             let character = characters[getRandomNumber(characters.length)]
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
             if(!skinnedMesh) continue
@@ -178,16 +171,13 @@ const ShotMaker = React.memo(({
             shot.orbitingRule = new OrbitingRule(headCenter, character, cameraCopy)          
             shot.orbitingRule.applyRule()
             shot.cameraRotation = shot.orbitingRule.angle
-
             // Generates random rule for shot
             shot.rules = generateRule(center, character, shot, cameraCopy)  
 
             for(let i = 0; i < shot.rules.length; i++) {
                 shot.rules[i].applyRule()
             }
-            if(shot.size !== ShotSizes.ESTABLISHING && shot.angle !== ShotAngles.WORMS_EYE) {
-                    shot.horizontalRule.applyRule(center)
-            }
+            shot.horizontalRule.applyRule(center, sceneInfo.scene)
 
             shot.camera = cameraCopy
             shotsArray.push(shot)
