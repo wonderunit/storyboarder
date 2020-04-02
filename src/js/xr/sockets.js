@@ -39,7 +39,7 @@ export const serve = (io, store) => {
 }
 
 export const SGMiddleware = store => next => action => {
-  if (!IO.current || (action.meta && action.meta.isRemote) || (RestrictedActions.indexOf(action.type) !== -1)) {
+  if (!IO.current || (RestrictedActions.indexOf(action.type) !== -1)) {
     return next(action)
   }
   
