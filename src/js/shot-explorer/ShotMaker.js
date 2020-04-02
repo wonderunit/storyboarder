@@ -132,7 +132,9 @@ const ShotMaker = React.memo(({
             setNoCharacterWarn(false)
         }
         for(let i = 0; i < shotsCount; i++) {
+            console.log(camera.current.aspect)
             let cameraCopy = camera.current.clone()
+            console.log(cameraCopy)
             let shotAngleKeys = Object.keys(ShotAngles)
             let randomAngle = ShotAngles[shotAngleKeys[getRandomNumber(shotAngleKeys.length)]]
             
@@ -146,6 +148,7 @@ const ShotMaker = React.memo(({
             cameraCopy.fov = getRandomFov(aspectRatio)
             cameraCopy.updateMatrixWorld(true)
             cameraCopy.updateProjectionMatrix()
+            console.log(cameraCopy)
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
 
             //#region Finds Headbone and it's children and calculates their center for vertical oneThird
@@ -165,7 +168,6 @@ const ShotMaker = React.memo(({
             let center = new THREE.Vector3()
             box.getCenter(center)
 
-            // TODO() : Fixed ots vertical oneThird
             // Applies vertical oneThird rule; Should be always applied
             shot.horizontalRule = new HorizontalOneThirdRule(headCenter, cameraCopy)          
             shot.orbitingRule = new OrbitingRule(headCenter, character, cameraCopy)          
@@ -177,7 +179,7 @@ const ShotMaker = React.memo(({
             for(let i = 0; i < shot.rules.length; i++) {
                 shot.rules[i].applyRule()
             }
-            shot.horizontalRule.applyRule(center, sceneInfo.scene)
+            shot.horizontalRule.applyRule(center)
 
             shot.camera = cameraCopy
             shotsArray.push(shot)
@@ -196,6 +198,7 @@ const ShotMaker = React.memo(({
                 sceneInfo.camera.rotation.y = cameraObject.rotation
                 sceneInfo.camera.rotateX(cameraObject.tilt)
                 sceneInfo.camera.rotateZ(cameraObject.roll)
+                sceneInfo.camera.aspect = aspectRatio
                 sceneInfo.camera.fov = cameraObject.fov
                 sceneInfo.camera.updateProjectionMatrix()
             })

@@ -5,7 +5,7 @@ class HorizontalOneThirdRule extends ShotRule {
         super(focusedCenter, camera)
     }
 
-    applyRule(centerOfView, scene) {
+    applyRule(centerOfView) {
         super.applyRule()
         let center = this.focusedCenter;
         let vFOV = THREE.Math.degToRad( this.camera.fov ); // convert vertical fov to radians
