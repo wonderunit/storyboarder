@@ -29,6 +29,10 @@ export const connect = (URI = '') => {
       remoteStore.dispatch(setId(data))
     })
 
+    client.on('remoteAction', (data) => {
+      remoteStore.dispatch(data)
+    })
+
     client.on('action', (data) => {
       store.dispatch(data)
     })

@@ -17,7 +17,10 @@ export const serve = (io, store) => {
 
   io.on('connection', function (socket) {
     
-    remoteStore.dispatch(addUser(socket.id))
+    const connectAction = addUser(socket.id)
+    remoteStore.dispatch(connectAction)
+    io.emit('remoteAction', connectAction)
+    
     dispatchRemote(mergeState(store.getState()))
     io.emit('id', socket.id)
 
@@ -26,11 +29,17 @@ export const serve = (io, store) => {
     })
 
     socket.on('remote', (info) => {
-      remoteStore.dispatch(updateUser(socket.id, info))
+      const infoAction = updateUser(socket.id, info)
+      
+      remoteStore.dispatch(infoAction)
+      io.emit('remoteAction', infoAction)
     })
     
     socket.on('disconnect', () => {
-      remoteStore.dispatch(removeUser(socket.id))
+      const disconnectAction = removeUser(socket.id)
+      
+      remoteStore.dispatch(disconnectAction)
+      io.emit('remoteAction', disconnectAction)
     })
     
     
