@@ -93,6 +93,7 @@ img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* 
   display:flex;
   justify-self:center;
   margin-right:auto;
+  user-select: none;
 }
 
 .description-selected {
@@ -100,6 +101,7 @@ img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* 
   font-size: 20px; 
   color:#9d9d9d;
   margin: 0 0 0 10px;
+  user-select: none;
 }
 
 .infinite-scroll-bottom {

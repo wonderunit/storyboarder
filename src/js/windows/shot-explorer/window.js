@@ -92,13 +92,11 @@ const store = configureStore({
 
 const showShotExplorer = () => {
   if(!isBoardLoaded) {
-    console.log("Board isn't loaded")
     setTimeout( () => {
       showShotExplorer()
     }, 100)
     return
   }
-  console.log("Board is loaded")
   isVisible = true;
   pushUpdates();
   isBoardShown = true;
@@ -135,10 +133,8 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   sendedAction.push(action)
   store.dispatch(action)
 
-  console.log("Loading board")
   await loadBoard(board, storyboarderFilePath)
   isBoardLoaded = true
-  console.log(isBoardLoaded)
 })
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
@@ -158,7 +154,6 @@ const pushUpdates = () => {
     shotExplorerElement = renderShotExplorer()
     for(let i = 0; i < sendedAction.length; i++) {
       let action = sendedAction[i]
-      console.log(action)
       store.dispatch(action)
     }
     sendedAction = []
