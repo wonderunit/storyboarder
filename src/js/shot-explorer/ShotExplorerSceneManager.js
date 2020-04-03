@@ -68,7 +68,6 @@ const ShotExplorerSceneManager = connect(
     const directionalLightRef = useRef()
 
     const sceneObjectLength = Object.values(sceneObjects).length
-    console.log("rerender")
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
     }, [sceneObjectLength])

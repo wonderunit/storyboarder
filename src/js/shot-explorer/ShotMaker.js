@@ -80,14 +80,12 @@ const ShotMaker = React.memo(({
         selectShot(newSelectedShot)
     }
     useEffect(() => {
-        console.log("Mount")
         if (!imageRenderer.current) {
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
         handleResize()
         return () => {
-            console.log("Unmount")
             imageRenderer.current = null
             outlineEffect.current = null
             cleanUpShots()
@@ -266,6 +264,7 @@ const ShotMaker = React.memo(({
                     </a>
                 </div>
             </div>
+            {noCharacterWarn && <div style={{ textAlign:"center" }}>You need to add at least one built-in character to scene </div>}
             <div>
                { <InfiniteScroll 
                     key={ elementKey }
@@ -281,7 +280,7 @@ const ShotMaker = React.memo(({
                     windowWidth={ windowWidth }
                     />}
             </div>
-            {noCharacterWarn && <div style={{ textAlign:"center" }}>You need to add at least one built-in character to scene </div>}
+         
         </div>
     )
 })

@@ -237,8 +237,6 @@ const initializeAttachables = (sceneObject, preset) => {
     prevParent.rotation.set(0, preset.state.presetRotation, 0 )
     prevParent.updateMatrixWorld(true)
 
-    console.log(prevParent)
-    console.log(sceneObject.skeleton)
     // Init prev parent position
   
     let attachableObject = new THREE.Object3D()

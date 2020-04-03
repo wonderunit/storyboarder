@@ -1,5 +1,4 @@
 import ShotRule from './ShotRule'
-import rotateAroundPoint from '../utils/rotateAroundPoint';
 class VerticalOneThirdRule extends ShotRule {
     constructor(focusedCenter, camera, side = "right") {
         super(focusedCenter, camera);

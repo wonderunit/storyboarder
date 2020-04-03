@@ -38,4 +38,5 @@ const generateRule = (focusedCenter, character, shot, camera, headBone) => {
     
 }
 
+
 export default generateRule
