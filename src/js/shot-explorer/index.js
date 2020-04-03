@@ -8,13 +8,15 @@ import FatalErrorBoundary from '../shot-generator/components/FatalErrorBoundary'
 import {OutlineEffect} from '../vendor/OutlineEffect'
 import {useAsset, cleanUpCache, cache} from '../shot-generator/hooks/use-assets-manager'
 import TWEEN from '@tweenjs/tween.js'
-const Effect = ({}) => {
+import electron from 'electron'
+const Effect = ({ shouldRender }) => {
     const {gl, size} = useThree()
   
     const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
     
     useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
     useFrame(({ gl, scene, camera }, time) => {
+        if(!shouldRender) return
         TWEEN.update()
         outlineEffect.render(scene, camera)
     }, 1)
@@ -32,10 +34,11 @@ const ShotExplorer = React.memo(({
     aspectRatio,
     store,
     elementKey,
-    canvasHeight,
+    canvasHeight
 }) => {
     const [sceneInfo, setSceneInfo] = useState(null)
     const [newAssetsLoaded, setLoadedAssets] = useState()
+    const [shouldRender, setShouldRender] = useState(false)
     const setLargeCanvasData = (camera, scene, gl) => {
         setSceneInfo({camera, scene, gl})
     }
@@ -44,25 +47,32 @@ const ShotExplorer = React.memo(({
     const handleResize = () => {
         setWindowWidth(window.innerWidth)
       }
+
+    const show = () => setShouldRender(true) 
+    const hide = () => setShouldRender(false) 
     
     useLayoutEffect(() => {
       window.addEventListener('resize', handleResize)
-      
       return () => {
         window.removeEventListener('resize', handleResize) 
+    
       }
     }, [])
-
     const updateAssets = () => {setLoadedAssets({})}
 
     useEffect(() => {
         cache.subscribe(updateAssets)
         window.addEventListener("beforeunload", stopUnload)
+        electron.remote.getCurrentWindow().on("blur", hide)
+        electron.remote.getCurrentWindow().on("focus", show)
         return () => {
             cache.unsubscribe(updateAssets)
             window.removeEventListener("beforeunload", stopUnload)
+            electron.remote.getCurrentWindow().removeListener("blur", hide)
+            electron.remote.getCurrentWindow().removeListener("focus", show)
         }
     }, [])
+
     // padding for right side of canvas
     let paddingToRight = 5
     return (
@@ -81,9 +91,10 @@ const ShotExplorer = React.memo(({
                 <Provider store={store}>
                     <ShotExplorerSceneManager
                                 setLargeCanvasData= { setLargeCanvasData }
-                                isPreview={ true }/>
+                                isPreview={ true }
+                                shouldRender={ shouldRender }/>
                 </Provider>
-                <Effect />
+                <Effect shouldRender={ shouldRender }/> 
             </Canvas>
         </div>
         <ShotMaker key={ elementKey }

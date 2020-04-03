@@ -59,6 +59,7 @@ const ShotExplorerSceneManager = connect(
     setLargeCanvasData,
     renderData,
     withState,
+    shouldRender
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -67,7 +68,7 @@ const ShotExplorerSceneManager = connect(
     const directionalLightRef = useRef()
 
     const sceneObjectLength = Object.values(sceneObjects).length
-
+    console.log("rerender")
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
     }, [sceneObjectLength])
@@ -119,7 +120,7 @@ const ShotExplorerSceneManager = connect(
     }, [world.directional.rotation, world.directional.tilt])
 
     return <group ref={ rootRef }> 
-    <CameraUpdate/>
+    { shouldRender && <CameraUpdate/> }
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
