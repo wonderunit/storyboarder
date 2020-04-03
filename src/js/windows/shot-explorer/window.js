@@ -55,7 +55,6 @@ const configureStore = function configureStore (preloadedState) {
       composeEnhancers(
         applyMiddleware(
             thunkMiddleware, store => next => action => {
-              if(!isVisible) return 
               let indexOf = sendedAction.indexOf(action)
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
@@ -159,6 +158,7 @@ const pushUpdates = () => {
     shotExplorerElement = renderShotExplorer()
     for(let i = 0; i < sendedAction.length; i++) {
       let action = sendedAction[i]
+      console.log(action)
       store.dispatch(action)
     }
     sendedAction = []

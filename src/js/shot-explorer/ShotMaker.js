@@ -132,9 +132,7 @@ const ShotMaker = React.memo(({
             setNoCharacterWarn(false)
         }
         for(let i = 0; i < shotsCount; i++) {
-            console.log(camera.current.aspect)
             let cameraCopy = camera.current.clone()
-            console.log(cameraCopy)
             let shotAngleKeys = Object.keys(ShotAngles)
             let randomAngle = ShotAngles[shotAngleKeys[getRandomNumber(shotAngleKeys.length)]]
             
@@ -148,7 +146,6 @@ const ShotMaker = React.memo(({
             cameraCopy.fov = getRandomFov(aspectRatio)
             cameraCopy.updateMatrixWorld(true)
             cameraCopy.updateProjectionMatrix()
-            console.log(cameraCopy)
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
 
             //#region Finds Headbone and it's children and calculates their center for vertical oneThird
@@ -227,7 +224,7 @@ const ShotMaker = React.memo(({
         setShots(shots.concat(shotsArray))
     }, [sceneInfo, generateShot, shots])
 
-    const updateCamera = useCallback(() => {
+    const updateCamera = () => {
         withState((dispatch, state) => {
             let id = THREE.Math.generateUUID()
             let { x, y, z } = sceneInfo.camera.position
@@ -250,9 +247,7 @@ const ShotMaker = React.memo(({
             dispatch(setActiveCamera(id))
             dispatch(undoGroupEnd())
         })
-    }, [selectedShot])
-
-    let scale = 2
+    }
     
     useLayoutEffect(() => {
       window.addEventListener('resize', handleResize)
@@ -281,7 +276,6 @@ const ShotMaker = React.memo(({
                     setSelectedShot={ setSelectedShot }
                     fetchMoreElements={ generateMoreShots }
                     aspectRatio={ aspectRatio }
-                    scale={ scale }
                     sceneInfo={ sceneInfo }
                     canvasHeight={ canvasHeight }
                     windowWidth={ windowWidth }

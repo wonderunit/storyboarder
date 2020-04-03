@@ -45,8 +45,10 @@ const configureStore = function configureStore (preloadedState) {
     preloadedState,
     composeEnhancers(
       applyMiddleware(thunkMiddleware, store => next => action => {
+        if(!action) return
         if(sendedAction !== action) {
           let win = shotExplorer.getWindow()
+          console.log(action)
           if (win && !win.isDestroyed()) {
             let json =  JSON.stringify(action)
             win.webContents.send('shot-explorer:updateStore', json)

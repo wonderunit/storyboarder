@@ -1,12 +1,10 @@
 import React, { useEffect, useState, useMemo } from 'react'
-import { render } from 'react-three-fiber'
 
 const ShotElement = React.memo((
     {
         setSelectedShot, 
         object,
         aspectRatio,
-        scale,
         canvasHeight,
         windowWidth
 }) => {
