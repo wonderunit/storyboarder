@@ -171,10 +171,10 @@ const ShotMaker = React.memo(({
             shot.orbitingRule.applyRule()
             shot.cameraRotation = shot.orbitingRule.angle
             // Generates random rule for shot
-            shot.rules = generateRule(center, character, shot, cameraCopy)  
+            shot.rules = generateRule(center, character, shot, cameraCopy, headBone)  
 
             for(let i = 0; i < shot.rules.length; i++) {
-                shot.rules[i].applyRule()
+                shot.rules[i].applyRule(headCenter)
             }
             shot.horizontalRule.applyRule(center)
 

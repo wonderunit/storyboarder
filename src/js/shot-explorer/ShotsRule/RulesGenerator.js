@@ -17,7 +17,7 @@ const getRandomNumber = (maxLength) => {
     return number;
 }
 
-const generateRule = (focusedCenter, character, shot, camera) => {
+const generateRule = (focusedCenter, character, shot, camera, headBone) => {
     let i = getRandomNumber(100);
     let results = [];
 
@@ -25,7 +25,9 @@ const generateRule = (focusedCenter, character, shot, camera) => {
         results.push(new RollRule(focusedCenter, camera))
     }
     if(i < 70) {
-        let characterRotation = character.rotation.y * THREE.Math.RAD2DEG
+        let headQuaternion = headBone.worldQuaternion()
+        let rotation = new THREE.Euler().setFromQuaternion(headQuaternion)
+        let characterRotation = rotation.y * THREE.Math.RAD2DEG
         let cameraRotation = shot.cameraRotation ? shot.cameraRotation * THREE.Math.RAD2DEG : 0
         let characterFacingRotation = cameraRotation - (characterRotation)
         characterFacingRotation = clamRotationTo(characterFacingRotation)
