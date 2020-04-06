@@ -143,7 +143,6 @@ const ShotMaker = React.memo(({
             if(!skinnedMesh) continue
             let shot = new ShotItem(randomAngle, randomSize, character)
             cameraCopy.fov = getRandomFov(aspectRatio)
-           // 
             cameraCopy.updateProjectionMatrix()
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
             cameraCopy.updateMatrixWorld(true)
@@ -172,10 +171,13 @@ const ShotMaker = React.memo(({
             // Generates random rule for shot
             shot.rules = generateRule(center, character, shot, cameraCopy, headBone)  
 
-            for(let i = 0; i < shot.rules.length; i++) {
-                shot.rules[i].applyRule(headCenter)
+            if(ShotSizes.ESTABLISHING !== shot.size) {
+                for(let i = 0; i < shot.rules.length; i++) {
+                    shot.rules[i].applyRule(headCenter)
+                }
+                shot.horizontalRule.applyRule(center)
             }
-            shot.horizontalRule.applyRule(center)
+
 
             shot.camera = cameraCopy
             shotsArray.push(shot)
