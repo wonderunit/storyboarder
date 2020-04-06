@@ -49,7 +49,7 @@ const configureStore = function configureStore (preloadedState) {
         if(sendedAction !== action) {
           let win = shotExplorer.getWindow()
           if (win && !win.isDestroyed()) {
-            let json =  JSON.stringify(action)
+            let json = JSON.stringify(action)
             win.webContents.send('shot-explorer:updateStore', json)
           }
         }

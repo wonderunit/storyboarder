@@ -138,8 +138,7 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 })
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
-  let object = JSON.parse(action)
-  sendedAction.push(object)
+  sendedAction.push(action)
 })
 
 electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
@@ -154,7 +153,11 @@ const pushUpdates = () => {
   shotExplorerElement = renderShotExplorer()
   batch(() => {
     for(let i = 0; i < sendedAction.length; i++) {
-      let action = sendedAction[i]
+      let object = sendedAction[i]
+      let action = object
+      if(!action.type) {
+        action = JSON.parse(object)
+      }
       store.dispatch(action)
     }
   })
