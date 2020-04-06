@@ -51,7 +51,7 @@ const ShotMaker = React.memo(({
     const imageRenderer = useRef()
     const outlineEffect = useRef()
     const tweenObject = useRef()
-    const [noCharacterWarn, setNoCharacterWarn] = useState(false)
+    const [noCharacterWarn, setNoCharacterWarn] = useState(sceneInfo ? false : true)
     const [windowHeight, setWindowHeight] = useState(window.innerWidth)
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const containerHeight = useRef()
@@ -121,7 +121,7 @@ const ShotMaker = React.memo(({
 
     }, [sceneInfo])
 
-    const generateShot = useCallback((shotsArray, shotsCount) => {
+    const generateShot = (shotsArray, shotsCount) => {
         let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character' && !isUserModel(object.userData.modelName))
         if(!characters.length) {
             setNoCharacterWarn(true)
@@ -129,6 +129,7 @@ const ShotMaker = React.memo(({
         } else {
             setNoCharacterWarn(false)
         }
+        console.log(characters)
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
             let shotAngleKeys = Object.keys(ShotAngles)
@@ -142,10 +143,10 @@ const ShotMaker = React.memo(({
             if(!skinnedMesh) continue
             let shot = new ShotItem(randomAngle, randomSize, character)
             cameraCopy.fov = getRandomFov(aspectRatio)
-            cameraCopy.updateMatrixWorld(true)
+           // 
             cameraCopy.updateProjectionMatrix()
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
-
+            cameraCopy.updateMatrixWorld(true)
             //#region Finds Headbone and it's children and calculates their center for vertical oneThird
             let headBone = skinnedMesh.skeleton.bones.filter(bone => bone.name === "Head")[0]
             let headPoints = []
@@ -179,30 +180,31 @@ const ShotMaker = React.memo(({
             shot.camera = cameraCopy
             shotsArray.push(shot)
         }
-    }, [renderSceneWithCamera])
+    }
 
     useEffect(() => {
         if(sceneInfo) {
+            camera.current = sceneInfo.camera.clone()
             withState((dispatch, state) => {
                 let cameraObject = getSceneObjects(state)[getActiveCamera(state)]
-                sceneInfo.camera.position.x = cameraObject.x
-                sceneInfo.camera.position.y = cameraObject.z
-                sceneInfo.camera.position.z = cameraObject.y
-                sceneInfo.camera.rotation.x = 0
-                sceneInfo.camera.rotation.z = 0
-                sceneInfo.camera.rotation.y = cameraObject.rotation
-                sceneInfo.camera.rotateX(cameraObject.tilt)
-                sceneInfo.camera.rotateZ(cameraObject.roll)
-                sceneInfo.camera.aspect = aspectRatio
-                sceneInfo.camera.fov = cameraObject.fov
-                sceneInfo.camera.updateProjectionMatrix()
+                camera.current.position.x = cameraObject.x
+                camera.current.position.y = cameraObject.z
+                camera.current.position.z = cameraObject.y
+                camera.current.rotation.x = 0
+                camera.current.rotation.z = 0
+                camera.current.rotation.y = cameraObject.rotation
+                camera.current.rotateX(cameraObject.tilt)
+                camera.current.rotateZ(cameraObject.roll)
+                camera.current.aspect = aspectRatio
+                camera.current.fov = cameraObject.fov
+                camera.current.updateMatrixWorld(true)
+                camera.current.updateProjectionMatrix()
             })
 
             const paddingSize = 5
             const canvasHeightWithPadding = canvasHeight - (paddingSize * 3)
             let height = (canvasHeightWithPadding / 3)
 
-            camera.current = sceneInfo.camera.clone()
             let shotsArray = []
             let shotsCount =  Math.ceil(containerHeight.current / (height + 20)) * 3
             generateShot(shotsArray, shotsCount)

@@ -119,7 +119,7 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   win.setSize(scaledWidth, defaultHeight)
   win.setMinimumSize(scaledWidth, defaultHeight)
   win.setMaximumSize(scaledWidth, 100000)
-  win.center();
+  win.center()
   let action  = {
     type: 'SET_META_STORYBOARDER_FILE_PATH',
     payload: storyboarderFilePath
@@ -151,14 +151,16 @@ electron.remote.getCurrentWindow().on("hide", () => {
 })
 
 const pushUpdates = () => {
-    shotExplorerElement = renderShotExplorer()
+  shotExplorerElement = renderShotExplorer()
+  batch(() => {
     for(let i = 0; i < sendedAction.length; i++) {
       let action = sendedAction[i]
       store.dispatch(action)
     }
-    sendedAction = []
-    renderDom()
-  }
+  })
+  sendedAction = []
+  renderDom()
+}
 
 electron.remote.getCurrentWindow().on("focus", () => {
   if(!sendedAction.length || !isBoardShown || !isBoardLoaded) return

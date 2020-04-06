@@ -23,10 +23,7 @@ const Effect = ({ shouldRender }) => {
     
     return null
   }
-const stopUnload = (event) => {
 
-    event.returnValue = false
-}
 
 const ShotExplorer = React.memo(({
     key,
@@ -34,11 +31,17 @@ const ShotExplorer = React.memo(({
     aspectRatio,
     store,
     elementKey,
-    canvasHeight
+    canvasHeight,
+    board
 }) => {
     const [sceneInfo, setSceneInfo] = useState(null)
     const [newAssetsLoaded, setLoadedAssets] = useState()
     const [shouldRender, setShouldRender] = useState(false)
+   // const [boardId, setUpdateSceneInfo] = useState(null)
+
+    const stopUnload = (event) => {
+        event.returnValue = false
+    }
     const setLargeCanvasData = (camera, scene, gl) => {
         setSceneInfo({camera, scene, gl})
     }
@@ -48,6 +51,11 @@ const ShotExplorer = React.memo(({
         setWindowWidth(window.innerWidth)
       }
 
+/*     useEffect(() => {
+        setSceneInfo(null)
+        setUpdateSceneInfo({})
+    }, [board.uid]) */
+      
     const show = () => setShouldRender(true) 
     const hide = () => setShouldRender(false) 
     
@@ -58,6 +66,7 @@ const ShotExplorer = React.memo(({
     
       }
     }, [])
+
     const updateAssets = () => {setLoadedAssets({})}
 
     useEffect(() => {
@@ -76,7 +85,7 @@ const ShotExplorer = React.memo(({
     // padding for right side of canvas
     let paddingToRight = 5
     return (
-    <FatalErrorBoundary>
+    <FatalErrorBoundary key={ board.uid }>
         <div className="shot-explorer-shot-preview" style={{ width: windowWidth }}>
             <Canvas
                 tabIndex={ 1 }
@@ -92,18 +101,20 @@ const ShotExplorer = React.memo(({
                     <ShotExplorerSceneManager
                                 setLargeCanvasData= { setLargeCanvasData }
                                 isPreview={ true }
-                                shouldRender={ shouldRender }/>
+                                shouldRender={ shouldRender }
+                                />
                 </Provider>
                 <Effect shouldRender={ shouldRender }/> 
             </Canvas>
         </div>
-        <ShotMaker key={ elementKey }
+        {sceneInfo && <ShotMaker key={ elementKey }
                     sceneInfo={ sceneInfo } 
                     withState={ withState }
                     aspectRatio={ aspectRatio }
                     newAssetsLoaded={ newAssetsLoaded }
                     canvasHeight={ canvasHeight }
                     elementKey={ elementKey }/> 
+    }
     </FatalErrorBoundary>
     )
 })
@@ -112,7 +123,8 @@ const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 export default connect(
 (state) => ({
     mainViewCamera: state.mainViewCamera,
-    aspectRatio: state.aspectRatio
+    aspectRatio: state.aspectRatio,
+    board: state.board,
 }), 
 {
     withState,

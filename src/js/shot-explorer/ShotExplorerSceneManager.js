@@ -57,9 +57,8 @@ const ShotExplorerSceneManager = connect(
     storyboarderFilePath,
     models,
     setLargeCanvasData,
-    renderData,
     withState,
-    shouldRender
+    shouldRender,
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -93,8 +92,9 @@ const ShotExplorerSceneManager = connect(
     }, [sceneObjectLength])
 
     useEffect(() => { 
+      console.log("Camera changed")
       setLargeCanvasData(camera, scene, gl)
-    }, [scene, camera, gl, renderData])
+    }, [scene.__interaction.length, camera, gl])
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     const roomTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_wall2.png')
