@@ -1,13 +1,15 @@
 import ShotRule from './ShotRule'
 class VerticalOneThirdRule extends ShotRule {
-    constructor(focusedCenter, camera, side = "right") {
+    constructor(focusedCenter, camera, headCenter, side = "right") {
         super(focusedCenter, camera);
         this.side = side;
+        this.centerOfView = headCenter
     }
 
-    applyRule(centerOfView) {
+    applyRule() {
         super.applyRule();
         let center = this.focusedCenter; 
+        let centerOfView = this.centerOfView;
 
         let vFOV = THREE.Math.degToRad( this.camera.fov ); // convert vertical fov to radians
         let height = 2 * Math.tan( vFOV / 2 ) * centerOfView.distanceTo(this.camera.position); // visible height

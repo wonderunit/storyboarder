@@ -18,8 +18,7 @@ import ShotElement from './ShotElement'
 import InfiniteScroll from './InfiniteScroll'
 import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
-import HorizontalOneThirdRule from './ShotsRule/HorizontalOneThirdRule'
-import OrbitingRule from './ShotsRule/OrbitingRule'
+
 import getRandomNumber from './utils/getRandomNumber'
 
 const getRandomFov = (aspectRatio) => {
@@ -142,38 +141,20 @@ const ShotMaker = React.memo(({
             cameraCopy.updateProjectionMatrix()
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
             cameraCopy.updateMatrixWorld(true)
-            //#region Finds Headbone and it's children and calculates their center for vertical oneThird
-            let headBone = skinnedMesh.skeleton.bones.filter(bone => bone.name === "Head")[0]
-            let headPoints = []
-            headPoints.push(headBone.worldPosition())
-            for(let i = 0; i < headBone.children.length; i++) {
-                if(headBone.children[i].name.includes('leaf'))
-                    headPoints.push(headBone.children[i].worldPosition())
-            }
-            let headBox = new THREE.Box3().setFromPoints(headPoints)
-            let headCenter = new THREE.Vector3()
-            headBox.getCenter(headCenter)
-            //#endregion
 
             // Calculates box center in order to calculate camera height
             let center = new THREE.Vector3()
             box.getCenter(center)
 
-            // Applies vertical oneThird rule; Should be always applied
-            shot.horizontalRule = new HorizontalOneThirdRule(headCenter, cameraCopy)          
-            shot.orbitingRule = new OrbitingRule(headCenter, character, cameraCopy)          
-            shot.orbitingRule.applyRule()
-            shot.cameraRotation = shot.orbitingRule.angle
             // Generates random rule for shot
-            shot.rules = generateRule(center, character, shot, cameraCopy, headBone)  
-
+            shot.rules = generateRule(center, character, shot, cameraCopy, skinnedMesh)  
+            
             // Removes applying rule to Establishing, cause Establishing take in cosiderationg multiple chracters while 
             // rule is designed to apply to one character 
             if(ShotSizes.ESTABLISHING !== shot.size) {
                 for(let i = 0; i < shot.rules.length; i++) {
-                    shot.rules[i].applyRule(headCenter)
+                    shot.rules[i].applyRule()
                 }
-                shot.horizontalRule.applyRule(center)
             }
             shot.camera = cameraCopy
             shotsArray.push(shot)
