@@ -20,10 +20,7 @@ import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
 import HorizontalOneThirdRule from './ShotsRule/HorizontalOneThirdRule'
 import OrbitingRule from './ShotsRule/OrbitingRule'
-const getRandomNumber = (maxLength) => {
-    let number = Math.floor(Math.random() * (maxLength))
-    return number
-}
+import getRandomNumber from './utils/getRandomNumber'
 
 const getRandomFov = (aspectRatio) => {
 
@@ -129,7 +126,6 @@ const ShotMaker = React.memo(({
         } else {
             setNoCharacterWarn(false)
         }
-        console.log(characters)
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
             let shotAngleKeys = Object.keys(ShotAngles)
@@ -171,14 +167,14 @@ const ShotMaker = React.memo(({
             // Generates random rule for shot
             shot.rules = generateRule(center, character, shot, cameraCopy, headBone)  
 
+            // Removes applying rule to Establishing, cause Establishing take in cosiderationg multiple chracters while 
+            // rule is designed to apply to one character 
             if(ShotSizes.ESTABLISHING !== shot.size) {
                 for(let i = 0; i < shot.rules.length; i++) {
                     shot.rules[i].applyRule(headCenter)
                 }
                 shot.horizontalRule.applyRule(center)
             }
-
-
             shot.camera = cameraCopy
             shotsArray.push(shot)
         }
@@ -253,11 +249,11 @@ const ShotMaker = React.memo(({
     
     useLayoutEffect(() => {
       window.addEventListener('resize', handleResize)
-      
       return () => {
         window.removeEventListener('resize', handleResize) 
       }
     }, [])
+
     return ( 
         <div style={{ maxHeight: "100%", height: "100%" }}>
             <div style={{display:"flex"}} >

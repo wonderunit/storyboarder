@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useRef, useEffect, useMemo, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect } from 'react'
 import ShotMaker from './ShotMaker'
 import { Provider, connect} from 'react-redux'
 import { Canvas } from 'react-three-fiber'
@@ -6,7 +6,7 @@ import { useThree, useFrame } from 'react-three-fiber'
 import ShotExplorerSceneManager from './ShotExplorerSceneManager'
 import FatalErrorBoundary from '../shot-generator/components/FatalErrorBoundary'
 import {OutlineEffect} from '../vendor/OutlineEffect'
-import {useAsset, cleanUpCache, cache} from '../shot-generator/hooks/use-assets-manager'
+import {cache} from '../shot-generator/hooks/use-assets-manager'
 import TWEEN from '@tweenjs/tween.js'
 import electron from 'electron'
 const Effect = ({ shouldRender }) => {
@@ -22,11 +22,9 @@ const Effect = ({ shouldRender }) => {
     }, 1)
     
     return null
-  }
-
+}
 
 const ShotExplorer = React.memo(({
-    key,
     withState,
     aspectRatio,
     store,
@@ -37,7 +35,6 @@ const ShotExplorer = React.memo(({
     const [sceneInfo, setSceneInfo] = useState(null)
     const [newAssetsLoaded, setLoadedAssets] = useState()
     const [shouldRender, setShouldRender] = useState(false)
-   // const [boardId, setUpdateSceneInfo] = useState(null)
 
     const stopUnload = (event) => {
         event.returnValue = false
@@ -49,12 +46,7 @@ const ShotExplorer = React.memo(({
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const handleResize = () => {
         setWindowWidth(window.innerWidth)
-      }
-
-/*     useEffect(() => {
-        setSceneInfo(null)
-        setUpdateSceneInfo({})
-    }, [board.uid]) */
+    }
       
     const show = () => setShouldRender(true) 
     const hide = () => setShouldRender(false) 

@@ -19,7 +19,6 @@ import Volume from '../shot-generator/components/Three/Volume'
 import Image from '../shot-generator/components/Three/Image'
 import SimpleErrorBoundary from '../shot-generator/components/SimpleErrorBoundary'
 import { getFilePathForImages } from '../shot-generator/helpers/get-filepath-for-images'
-import { SHOT_LAYERS } from '../shot-generator/utils/ShotLayers'
 import Room from '../shot-generator/components/Three/Room'
 import CameraUpdate from '../shot-generator/CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
@@ -123,8 +122,7 @@ const ShotExplorerSceneManager = connect(
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
-        intensity={ world.ambient.intensity } 
-        onUpdate={ self => (self.layers.enable(SHOT_LAYERS)) }/>
+        intensity={ world.ambient.intensity } />
 
     <directionalLight
         ref={ directionalLightRef }
@@ -132,7 +130,6 @@ const ShotExplorerSceneManager = connect(
         intensity={ world.directional.intensity }
         position={ [0, 1.5, 0] }
         target-position={ [0, 0, 0.4] }
-        onUpdate={ self => (self.layers.enable(SHOT_LAYERS)) }
     > 
       <primitive object={directionalLightRef.current ? directionalLightRef.current.target : new THREE.Object3D()}/>
     </directionalLight>
