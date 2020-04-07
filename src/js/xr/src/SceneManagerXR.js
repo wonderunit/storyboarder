@@ -1,3 +1,5 @@
+import XRClient from "./components/XRClient";
+
 const SHOW_STATS = false
 const SHOW_LOG = false
 
@@ -568,7 +570,7 @@ const SceneContent = connect(
     useEffect(() => {
       thumbnailRenderer.current = new THREE.WebGLRenderer()
       thumbnailRenderer.current.setSize(128 * aspectRatio, 128)
-      return destroyContext = () => {
+      return () => {
         thumbnailRenderer.current.forceContextLoss()
         thumbnailRenderer.current.context = null
         thumbnailRenderer.current.domElement = null
@@ -769,7 +771,9 @@ const SceneContent = connect(
           }
           
           <RemoteProvider>
-            <RemoteClients/>
+            <RemoteClients
+              Component={(props) => <XRClient {...props} helmet={resources.hmdGltf} controller={resources.controllerGltf}/>}
+            />
           </RemoteProvider>
 
           <Ground
@@ -806,7 +810,8 @@ const APP_GLTFS = [
   '/data/system/dummies/bone.glb',
   '/data/system/xr/virtual-camera.glb',
   '/data/system/xr/light.glb',
-  '/data/system/xr/teleport-target.glb'
+  '/data/system/xr/teleport-target.glb',
+  '/data/system/xr/hmd.glb'
 ]
 
 const SceneManagerXR = ({SGConnection}) => {
@@ -988,6 +993,7 @@ const SceneManagerXR = ({SGConnection}) => {
                   virtualCameraGltf: getAsset('/data/system/xr/virtual-camera.glb'),
                   lightGltf: getAsset('/data/system/xr/light.glb'),
                   teleportTargetGltf: getAsset('/data/system/xr/teleport-target.glb'),
+                  hmdGltf: getAsset('/data/system/xr/hmd.glb'),
 
                   welcomeAudioBuffer,
                   atmosphereAudioBuffer,

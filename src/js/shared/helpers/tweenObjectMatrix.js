@@ -1,7 +1,12 @@
 import * as THREE from "three"
 import anime from "animejs"
 
-const tweenObjectMatrix = (object, matrix, parameters = {}) => {
+const defaultClear = () => {}
+const tweenObjectMatrix = (object, matrix = null, parameters = {}) => {
+  if (!matrix) {
+    return defaultClear
+  }
+  
   const pos = new THREE.Vector3()
   const rot = new THREE.Quaternion()
   const scale = new THREE.Vector3()

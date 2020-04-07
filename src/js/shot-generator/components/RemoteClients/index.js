@@ -1,16 +1,15 @@
 import React from 'react'
 import {connect} from 'react-redux'
 import {getRemoteDevices, RemoteContext} from "../../../shared/reducers/remoteDevice"
-import XRClient from "../Three/XRClient"
 
-const RemoteClients = React.memo(({clients, id}) => {
+const RemoteClients = React.memo(({clients, id, Component}) => {
   return Object.keys(clients).map((clientId) => {
     if (id === clientId) {
       return null
     }
     
     return (
-      <XRClient
+      <Component
         key={clientId}
         {...clients[clientId]}
       />

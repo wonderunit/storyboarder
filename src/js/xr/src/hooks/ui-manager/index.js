@@ -16,8 +16,6 @@ const { produce } = require('immer')
 
 const RemoteData = require('../../client/RemoteData')
 
-const XRClient = require('./../../client/index')
-
 const useIsVrPresenting = require('../../hooks/use-is-vr-presenting')
 const { setCookie, getCookie } = require('../../helpers/cookies')
 const isUserModel = require('../../helpers/is-user-model')
@@ -28,7 +26,6 @@ const {
   drawSlider,
   drawToggleButton,
   roundRect,
-  wrapText,
   drawPaneBGs,
   drawGrid,
   drawRow

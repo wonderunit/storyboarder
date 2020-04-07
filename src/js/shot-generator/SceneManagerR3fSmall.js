@@ -18,6 +18,9 @@ import ModelLoader from '../services/model-loader'
 import { useDraggingManager } from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
 import Room from './components/Three/Room'
+import RemoteClients from "./components/RemoteClients"
+import XRClient from "./components/Three/XRClient"
+import RemoteProvider from "./components/RemoteProvider"
 
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
@@ -302,6 +305,12 @@ const SceneManagerR3fSmall = connect(
         visible={ world.room.visible }
         isTopDown={ true } />
     }
+
+      <RemoteProvider>
+        <RemoteClients
+          Component={XRClient}
+        />
+      </RemoteProvider>
     </group>
     })
 )
