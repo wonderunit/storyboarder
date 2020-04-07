@@ -1,5 +1,3 @@
-import XRClient from "./components/XRClient";
-
 const SHOW_STATS = false
 const SHOW_LOG = false
 
@@ -14,6 +12,8 @@ require('./three/GPUPickers/utils/Object3dExtension')
 
 const RemoteProvider = require('../../shot-generator/components/RemoteProvider').default
 const RemoteClients = require('../../shot-generator/components/RemoteClients').default
+
+const XRClient = require("./components/XRClient").default
 
 // to use three's version:
 // const { WEBVR } = require('three/examples/jsm/vr/WebVR')
