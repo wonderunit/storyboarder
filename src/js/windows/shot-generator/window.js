@@ -50,7 +50,7 @@ const configureStore = function configureStore (preloadedState) {
           let win = shotExplorer.getWindow()
           if (win && !win.isDestroyed()) {
             let json
-            if(action.payload && action.payload.skelton) {
+            if(action.payload && action.payload.skeleton) {
               json = JSON.stringify(action)
             } else {
               json = action
