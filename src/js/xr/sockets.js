@@ -15,14 +15,14 @@ const dispatchRemote = (action) => {
 export const serve = (io, store) => {
   IO.current = io
 
-  io.on('connection', function (socket) {
+  io.on('connection', (socket) =>g {
     
     const connectAction = addUser(socket.id)
     remoteStore.dispatch(connectAction)
     io.emit('remoteAction', connectAction)
     
     dispatchRemote(mergeState(store.getState()))
-    io.emit('id', socket.id)
+    socket.emit('id', socket.id)
 
     socket.on('action', (action) => {
       store.dispatch(action)
