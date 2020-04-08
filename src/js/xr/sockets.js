@@ -15,7 +15,7 @@ const dispatchRemote = (action) => {
 export const serve = (io, store) => {
   IO.current = io
 
-  io.on('connection', (socket) =>g {
+  io.on('connection', (socket) => {
     
     const connectAction = addUser(socket.id)
     remoteStore.dispatch(connectAction)
