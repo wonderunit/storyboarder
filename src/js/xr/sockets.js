@@ -48,8 +48,6 @@ export const serve = (io, store) => {
 }
 
 export const SGMiddleware = store => next => action => {
-  console.log(action)
-  
   if (!IO.current || (RestrictedActions.indexOf(action.type) !== -1)) {
     return next(action)
   }

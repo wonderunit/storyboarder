@@ -32,7 +32,7 @@ const meshFactory = (source) => {
   return mesh
 }
 
-const XRClient = React.memo((props, helmet, controller) => {
+const XRClient = React.memo(({helmet, controller, ...props}) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.disable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
@@ -103,7 +103,8 @@ const XRClient = React.memo((props, helmet, controller) => {
     userData={{
       type: 'remote-client',
       id: props.id,
-      locked: true
+      locked: true,
+      preventInteraction: true
     }}
 
     visible={ true }

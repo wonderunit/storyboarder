@@ -772,7 +772,11 @@ const SceneContent = connect(
           
           <RemoteProvider>
             <RemoteClients
-              Component={(props) => <XRClient {...props} helmet={resources.hmdGltf} controller={resources.controllerGltf}/>}
+              clientProps={{
+                helmet: resources.hmdGltf,
+                controller: resources.controllerGltf,
+              }}
+              Component={XRClient}
             />
           </RemoteProvider>
 

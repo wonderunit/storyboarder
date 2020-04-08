@@ -2,7 +2,7 @@ import React from 'react'
 import {connect} from 'react-redux'
 import {getRemoteDevices, RemoteContext} from "../../../shared/reducers/remoteDevice"
 
-const RemoteClients = React.memo(({clients, id, Component}) => {
+const RemoteClients = React.memo(({clients, id, Component, clientProps}) => {
   return Object.keys(clients).map((clientId) => {
     if (id === clientId) {
       return null
@@ -11,6 +11,7 @@ const RemoteClients = React.memo(({clients, id, Component}) => {
     return (
       <Component
         key={clientId}
+        {...clientProps}
         {...clients[clientId]}
       />
     )
