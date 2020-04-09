@@ -159,7 +159,7 @@ class IKHelper extends THREE.Object3D
 
     update()
     {
-        if(!this.isSelected()) return;
+        if(!this.isSelected() || !this.ragDoll || !this.ragDoll.originalObject) return;
         this.ragDoll.update();
         if(this.selectedControlPoint)
         {
