@@ -274,17 +274,19 @@ const InteractionManager = connect(
             }
 
             target = getIntersectionTarget(intersects[0])
+            console.log(target)
             if(!target) return
             if(target.userData && target.userData.type === 'attachable') {
-                selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
-                setDragTarget({ target, x, y})
-                return 
+              selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
+              setDragTarget({ target, x, y})
+              return 
             } else if(target.userData && (target.userData.type === 'controlPoint' || target.userData.type === 'poleTarget')) {
-                let characterId = target.characterId
-                SGIkHelper.getInstance().selectControlPoint(target.uuid, event)
-                let characters = intersectables.current.filter(value => value.uuid === characterId)
-                target = characters[0]
-                isSelectedControlPoint = true
+              let characterId = target.characterId
+              SGIkHelper.getInstance().selectControlPoint(target.uuid, event)
+              let characters = intersectables.current.filter(value => value.uuid === characterId)
+              target = characters[0]
+              isSelectedControlPoint = true
+              console.log(target)
             } else if(target.userData && target.userData.type === 'objectControl') {
                 let objectId = target.characterId
                 let targetElement = target.object

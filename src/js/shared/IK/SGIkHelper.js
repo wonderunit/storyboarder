@@ -121,7 +121,6 @@ class SGIKHelper extends THREE.Object3D
     {
         console.log("Clean up character")
         if(!this.ragDoll) return;
-        this.ragDoll.updateReact();
         this.intializedSkinnedMesh = null;
         this.characterObject = null;
         this.ragDoll.cleanUp();
@@ -260,7 +259,7 @@ class SGIKHelper extends THREE.Object3D
 
     update()
     {
-        if(!this.isSelected()) return;
+        if(!this.isSelected() || !this.ragDoll || !this.ragDoll.originalObject) return;
         this.ragDoll.update();
         this.ragDoll.originalObject.updateMatrixWorld(true)
 
