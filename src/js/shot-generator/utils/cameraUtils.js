@@ -357,5 +357,6 @@ const setShot = ({
 export {
   ShotSizes,
   ShotAngles,
-  setShot
+  setShot,
+  getClosestCharacter
 }

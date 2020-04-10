@@ -3,6 +3,7 @@ import RollRule from "./RollRule"
 import * as THREE from 'three'
 import HorizontalOneThirdRule from './HorizontalOneThirdRule'
 import OrbitingRule from './OrbitingRule'
+import AreaShotRule from './AreaShotRule'
 const clamRotationTo = (rotation, clampDegree = 180) => {
     if(rotation === clampDegree || rotation === -clampDegree) return rotation
     let clampLimit = Math.max(-clampDegree, Math.min(clampDegree, rotation))
@@ -18,7 +19,7 @@ const getRandomNumber = (maxLength) => {
     return number;
 }
 
-const generateRule = (focusedCenter, character, shot, camera, skinnedMesh) => {
+const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, characters) => {
     let i = getRandomNumber(100);
     let results = [];
 
@@ -55,6 +56,11 @@ const generateRule = (focusedCenter, character, shot, camera, skinnedMesh) => {
     }
     if(i < 100) {
         results.push( new HorizontalOneThirdRule(headCenter, camera, focusedCenter))
+    }
+    if(i < 100) {
+        let areaShotRule = new AreaShotRule(headCenter, camera, characters, shot)
+        results.push(areaShotRule)
+
     }
 
     return results

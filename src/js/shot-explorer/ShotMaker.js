@@ -125,6 +125,10 @@ const ShotMaker = React.memo(({
         } else {
             setNoCharacterWarn(false)
         }
+        let geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2)
+        let material = new THREE.MeshBasicMaterial({color:"#ff0000"})
+        let mesh = new THREE.Mesh(geometry, material)
+        sceneInfo.scene.add(mesh)
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
             let shotAngleKeys = Object.keys(ShotAngles)
@@ -145,15 +149,14 @@ const ShotMaker = React.memo(({
             // Calculates box center in order to calculate camera height
             let center = new THREE.Vector3()
             box.getCenter(center)
-
-            // Generates random rule for shot
-            shot.rules = generateRule(center, character, shot, cameraCopy, skinnedMesh)  
             
+            // Generates random rule for shot
+            shot.rules = generateRule(center, character, shot, cameraCopy, skinnedMesh, characters)
             // Removes applying rule to Establishing, cause Establishing take in cosiderationg multiple chracters while 
             // rule is designed to apply to one character 
             if(ShotSizes.ESTABLISHING !== shot.size) {
                 for(let i = 0; i < shot.rules.length; i++) {
-                    shot.rules[i].applyRule()
+                    shot.rules[i].applyRule(sceneInfo.scene)
                 }
             }
             shot.camera = cameraCopy
