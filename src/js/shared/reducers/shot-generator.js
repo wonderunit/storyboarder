@@ -809,6 +809,10 @@ const selectionsReducer = (state = [], action) => {
           draft.splice(n, 1)
         }
         return
+      case 'DESELECT_OBJECT':
+        let objectsToDeselect = Array.isArray(action.payload) ? action.payload : [action.payload]
+        draft = draft.filter((target) => objectsToDeselect.indexOf(target) === -1)
+        return
       case 'SELECT_ATTACHABLE':
         return [action.payload.bindId]
         
@@ -1608,6 +1612,8 @@ module.exports = {
   //
   // action creators
   //
+  deselectObject: id => ({ type: 'DESELECT_OBJECT', payload: id }),
+  
   selectObject: id => ({ type: 'SELECT_OBJECT', payload: id }),
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 

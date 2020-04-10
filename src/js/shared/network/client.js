@@ -1,7 +1,8 @@
 import SocketClient from 'socket.io-client'
 
 import {mergeState} from './../reducers/shot-generator'
-import {RestrictedActions, remoteStore, setId} from "../reducers/remoteDevice"
+import {RestrictedActions, remoteStore, setId, SelectActions} from "../reducers/remoteDevice"
+import {deselectObject} from "../reducers/shot-generator"
 
 const each = (fn, countRef) => {
   let times = 0
@@ -14,6 +15,10 @@ const each = (fn, countRef) => {
     }
   }
 }
+
+export const preventSelect = (action) => {
+  
+};
 
 export const connect = (URI = '') => {
   const client = SocketClient.connect(URI)
@@ -40,15 +45,14 @@ export const connect = (URI = '') => {
 
   const ClientMiddleware = store => next => action => {
     if (action.meta && action.meta.isSG || (RestrictedActions.indexOf(action.type) !== -1)) {
+      if (SelectActions.indexOf(action.type) !== -1) {
+        client.emit('action', deselectObject(action.payload))
+      }
+      
       return next(action)
     }
 
-    const RemoteAction = {
-      ...action,
-      meta: {isRemote: true}
-    }
-
-    client.emit('action', RemoteAction)
+    client.emit('action', action)
     
     // Not send actions to the reducer, instead wait for the server answer
   }

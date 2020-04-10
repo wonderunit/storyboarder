@@ -1,5 +1,12 @@
-import {mergeState} from './../shared/reducers/shot-generator'
-import {remoteStore, RestrictedActions, addUser, updateUser, removeUser} from './../shared/reducers/remoteDevice'
+import {deselectObject, mergeState} from './../shared/reducers/shot-generator'
+import {
+  remoteStore,
+  RestrictedActions,
+  addUser,
+  updateUser,
+  removeUser,
+  SelectActions
+} from './../shared/reducers/remoteDevice'
 
 const IO = {current: null}
 
@@ -49,6 +56,10 @@ export const serve = (io, store) => {
 
 export const SGMiddleware = store => next => action => {
   if (!IO.current || (RestrictedActions.indexOf(action.type) !== -1)) {
+    if (SelectActions.indexOf(action.type) !== -1) {
+      dispatchRemote(deselectObject(action.payload))
+    }
+    
     return next(action)
   }
   

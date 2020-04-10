@@ -78,6 +78,12 @@ export const RestrictedActions = [
   'DESELECT_ATTACHABLE'
 ]
 
+export const SelectActions = [
+  'SELECT_OBJECT',
+  'SELECT_OBJECT_TOGGLE',
+  'SELECT_ATTACHABLE'
+]
+
 
 export const RemoteContext = createContext(null)
 export const remoteStore = createStore(mainReducer)
