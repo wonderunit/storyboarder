@@ -1159,7 +1159,6 @@ const TransformControlsGizmo = function () {
 				}
 				let domElement = this.parent.domElement;
 				matLine.resolution.set( domElement.clientWidth, domElement.clientHeight );
-				//console.log(distance);
 			}
 			// TODO: simplify helpers and consider decoupling from gizmo
 

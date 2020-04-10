@@ -274,7 +274,6 @@ const InteractionManager = connect(
             }
 
             target = getIntersectionTarget(intersects[0])
-            console.log(target)
             if(!target) return
             if(target.userData && target.userData.type === 'attachable') {
               selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
@@ -286,7 +285,6 @@ const InteractionManager = connect(
               let characters = intersectables.current.filter(value => value.uuid === characterId)
               target = characters[0]
               isSelectedControlPoint = true
-              console.log(target)
             } else if(target.userData && target.userData.type === 'objectControl') {
                 let objectId = target.characterId
                 let targetElement = target.object

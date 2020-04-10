@@ -40,7 +40,6 @@ class XRRagdoll extends XRIKObject
 
     setUpdatePoleTargets(updatePoleTargets)
     {
-        console.log("Set update pole taget method")
         this.updatePoleTargets = updatePoleTargets;
     }
 
@@ -339,7 +338,6 @@ class XRRagdoll extends XRIKObject
             let poleTarget = chainObjects[i].poleConstraint.poleTarget;
             let characterMatrix = this.originalMesh.matrixWorld;
             let characterInverseMatrix = new THREE.Matrix4().getInverse(characterMatrix)
-            console.log(this)
 
             poleTarget.mesh.applyMatrix(characterInverseMatrix);
             poleTarget.mesh.updateMatrixWorld(true);
