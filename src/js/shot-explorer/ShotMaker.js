@@ -125,10 +125,6 @@ const ShotMaker = React.memo(({
         } else {
             setNoCharacterWarn(false)
         }
-        let geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2)
-        let material = new THREE.MeshBasicMaterial({color:"#ff0000"})
-        let mesh = new THREE.Mesh(geometry, material)
-        sceneInfo.scene.add(mesh)
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
             let shotAngleKeys = Object.keys(ShotAngles)

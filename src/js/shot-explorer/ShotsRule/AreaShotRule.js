@@ -22,12 +22,25 @@ class AreaShotRule extends ShotRule {
         let charactersInRange = [];
         let characterPosition = character.worldPosition();
         let headPoints = [];
+        let frustum = new THREE.Frustum();
+        this.camera.updateMatrixWorld(true);
+        this.camera.updateProjectionMatrix();
+
+        frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera.projectionMatrix, this.camera.matrixWorldInverse ) );
         for( let i = 0; i < this.characters.length; i++) {
             let position = this.characters[i].worldPosition();
             if(Math.pow(position.x - characterPosition.x, 2) + Math.pow(position.y - characterPosition.y, 2) < Math.pow(this.radius, 2)) {
                 let shotCharacter = this.characters[i];
-                charactersInRange.push(shotCharacter);
-                headPoints = headPoints.concat(this.getCharacterShotPoints(shotCharacter));
+                let skinnedMesh = shotCharacter.getObjectByProperty("type", "SkinnedMesh");
+                let box = new THREE.Box3();
+                for(let i = 0; i < skinnedMesh.skeleton.bones.length; i++) {
+                    let bone = skinnedMesh.skeleton.bones[i];
+                    box.expandByPoint(bone.worldPosition());
+                }
+                if(skinnedMesh && frustum.intersectsBox(box)) {
+                    charactersInRange.push(shotCharacter);
+                    headPoints = headPoints.concat(this.getCharacterShotPoints(skinnedMesh));
+                }
             }
         }
         let box = new THREE.Box3().setFromPoints(headPoints);
@@ -56,7 +69,6 @@ class AreaShotRule extends ShotRule {
             direction.negate();
             let depth = sphere.radius / Math.tan(this.camera.fov / 2 * Math.PI / 180.0);
             let newPos = new THREE.Vector3().addVectors(sphere.center, direction.clone().setLength(depth));
-            console.log(sphere.center.distanceTo(this.camera.position), sphere.center.distanceTo(newPos) + this.radius)
             if(sphere.center.distanceTo(newPos) + this.radius > sphere.center.distanceTo(this.camera.position)) {
                 this.camera.position.copy(newPos)
             }
@@ -115,9 +127,9 @@ class AreaShotRule extends ShotRule {
 
 
     //#region private methods
-    getCharacterShotPoints(character) {
+    getCharacterShotPoints(skinnedMesh) {
         let headPoints = [];
-        let shotBones = character.getObjectByProperty("type", "SkinnedMesh").skeleton.bones.filter(bone => isBoneInShot(bone));
+        let shotBones = skinnedMesh.skeleton.bones.filter(bone => isBoneInShot(bone));
         for(let i = 0; i < shotBones.length; i++) {
             headPoints.push(shotBones[i].worldPosition());
         }
