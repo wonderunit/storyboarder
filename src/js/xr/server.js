@@ -22,7 +22,7 @@ class XRServer {
   constructor ({ store, service }) {
     const validSameBoard = uid => store.getState().board.uid === uid
 
-    serve(io, store)
+    serve(io, store, service)
 
     app.use(express.json({
       limit: '5mb'

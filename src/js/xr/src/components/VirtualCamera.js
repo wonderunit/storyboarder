@@ -75,10 +75,9 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   const saveCameraThumbnail = () => {
     // Render on separate canvas
     thumbnailRenderer.current.render(scene, virtualCamera.current)
-    const base64String = thumbnailRenderer.current.domElement.toDataURL('image/png')
 
     // Trigger HUD rerender
-    cameraThumbnail.current.src = base64String
+    cameraThumbnail.current.src = thumbnailRenderer.current.domElement.toDataURL('image/png')
     const thumbnailName = `${boardUid}_${sceneObject.displayName}`
     cr.current.state.cameraThumbnails[thumbnailName] = cameraThumbnail.current
 

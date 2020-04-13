@@ -16,10 +16,6 @@ const each = (fn, countRef) => {
   }
 }
 
-export const preventSelect = (action) => {
-  
-};
-
 export const connect = (URI = '') => {
   const client = SocketClient.connect(URI)
 
@@ -64,6 +60,7 @@ export const connect = (URI = '') => {
   return {
     connectStore,
     sendInfo: (info, immediate) => sendRemoteInfo([info], immediate),
+    log: (info) => client.emit('debug', info),
     ClientMiddleware,
     setFrameRate: (value) => {
       FRAME_RATE.current = value

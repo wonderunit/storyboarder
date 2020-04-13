@@ -19,20 +19,28 @@ const dispatchRemote = (action) => {
   IO.current.emit('action', SGAction)
 }
 
-export const serve = (io, store) => {
+const onUserConnect = (io, socket, store) => {
+  const connectAction = addUser(socket.id)
+  remoteStore.dispatch(connectAction)
+  io.emit('remoteAction', connectAction)
+
+  dispatchRemote(mergeState(store.getState()))
+  socket.emit('id', socket.id)
+}
+
+export const serve = (io, store, service) => {
   IO.current = io
 
   io.on('connection', (socket) => {
-    
-    const connectAction = addUser(socket.id)
-    remoteStore.dispatch(connectAction)
-    io.emit('remoteAction', connectAction)
-    
-    dispatchRemote(mergeState(store.getState()))
-    socket.emit('id', socket.id)
 
+    onUserConnect(io, socket, store)
+    
     socket.on('action', (action) => {
       store.dispatch(action)
+    })
+
+    socket.on('debug', (data) => {
+      console.log('%c Log', 'color: #0088ff', data)
     })
 
     socket.on('remote', (info) => {

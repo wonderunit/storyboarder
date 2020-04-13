@@ -48,7 +48,7 @@ const mainReducer =  (state = initState, action) => {
         for (let key of Object.keys(action.payload)) {
           user[key] = action.payload[key]
         }
-        
+         
         return
       
       case 'SET_ID':

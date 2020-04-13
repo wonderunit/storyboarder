@@ -790,6 +790,7 @@ const selectionsReducer = (state = [], action) => {
     switch (action.type) {
       case 'LOAD_SCENE':
       case 'UPDATE_SCENE_FROM_XR':
+      case 'MERGE_STATE':
         // clear selections
         return []
 
@@ -1610,7 +1611,7 @@ module.exports = {
 
   //
   //
-  // action creators
+  // action creators 
   //
   deselectObject: id => ({ type: 'DESELECT_OBJECT', payload: id }),
   

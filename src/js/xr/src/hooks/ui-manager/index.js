@@ -138,7 +138,7 @@ const percent = value => `${value * 100}`
 const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
 
 class CanvasRenderer {
-  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio, shotGenerator) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -151,6 +151,7 @@ class CanvasRenderer {
     this.boardsCanvas.width = this.boardsCanvas.height = size
     this.boardsContext = this.boardsCanvas.getContext('2d')
 
+    this.shotGenerator = shotGenerator
     this.dispatch = dispatch
     this.service = service
     this.send = send
@@ -767,6 +768,9 @@ class CanvasRenderer {
     const sceneCameras = Object.values(this.state.sceneObjects).filter(model => model.type === 'camera')
     const activeCameraIndex = Object.values(sceneCameras).findIndex(camera => camera.id === this.state.activeCamera)
 
+    this.shotGenerator.log(sceneCameras)
+    this.shotGenerator.log(this.state.boardsData)
+
     this.state.boardsData.cata({
       SUCCESS: data => {
         if (this.state.sgCurrentState.board) {
@@ -1228,7 +1232,7 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const useUiManager = ({ playSound, stopSound }) => {
+const useUiManager = ({ playSound, stopSound, SG }) => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
@@ -1444,6 +1448,7 @@ const useUiManager = ({ playSound, stopSound }) => {
           }
 
           playSound('create')
+          uiSend('GO_HOME')
         },
 
         onDuplicate (context, event) {
@@ -1452,6 +1457,7 @@ const useUiManager = ({ playSound, stopSound }) => {
           if (selections.length) {
             store.dispatch(duplicateObjects([selections[0]], [id]))
             playSound('create')
+            uiSend('GO_HOME')
           }
         },
 
@@ -1464,6 +1470,7 @@ const useUiManager = ({ playSound, stopSound }) => {
             store.dispatch(deleteObjects([selections[0]]))
             store.dispatch(undoGroupEnd())
             playSound('delete')
+            uiSend('GO_HOME')
           }
         },
 
@@ -1721,7 +1728,8 @@ const useUiManager = ({ playSound, stopSound }) => {
         camera,
         getRoom,
         getImageByFilepath,
-        cameraAspectRatio
+        cameraAspectRatio,
+        SG
       )
     }
     return canvasRendererRef.current
@@ -1746,9 +1754,15 @@ const useUiManager = ({ playSound, stopSound }) => {
     if (selections.length) {
       uiSend('GO_PROPERTIES')
     } else {
-      uiSend('GO_HOME')
+      //uiSend('GO_HOME')
     }
   }, [selections, sceneObjects, poses, models, activeCamera, world, handPoses])
+
+  useMemo(() => {
+    if (selections.length === 0 && getCanvasRenderer().state.mode === 'properties') {
+      uiSend('GO_HOME')
+    }
+  }, [selections.length])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls

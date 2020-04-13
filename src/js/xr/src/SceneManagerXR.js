@@ -523,7 +523,7 @@ const SceneContent = connect(
     const groundRef = useRef()
     const rootRef = useRef()
     const thumbnailRenderer = useRef()
-    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound })
+    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, SG: SGConnection })
 
     const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
