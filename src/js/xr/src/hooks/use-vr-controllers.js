@@ -6,14 +6,14 @@ require('../../vendor/VRController')
 
 const modifyEvent = (event, gl) => {
   let gamepad = event.target.gamepad
-  event.target = gl.vr.getController(event.target.gamepad.index)
+  event.target = gl.xr.getController(event.target.gamepad.index)
   event.target.gamepad = gamepad
   return event
 }
 
 const getList = (controllers, gl) =>
   controllers.filter(Boolean).map(c => {
-    let object = gl.vr.getController(c.gamepad.index)
+    let object = gl.xr.getController(c.gamepad.index)
     object.userData.gamepad = { index: c.gamepad.index }
     return object
   })
@@ -60,7 +60,7 @@ const useVrControllers = ({
     console.log('onVRControllerConnected', event)
 
     let controller = event.detail
-    controller.standingMatrix = gl.vr.getStandingMatrix()
+    controller.standingMatrix = gl.xr.getStandingMatrix()
     setList(getList(THREE.VRController.controllers, gl))
 
     controller.addEventListener('trigger press began', event => onTriggerStartRef.current(modifyEvent(event, gl)))

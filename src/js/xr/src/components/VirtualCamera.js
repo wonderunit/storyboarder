@@ -89,7 +89,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
 
   const renderCamera = () => {
     if (virtualCamera.current && getRenderTarget()) {
-      gl.vr.enabled = false
+      gl.xr.enabled = false
       scene.autoUpdate = false
       gl.setRenderTarget(getRenderTarget())
 
@@ -97,7 +97,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
 
       gl.setRenderTarget(null)
       scene.autoUpdate = true
-      gl.vr.enabled = true
+      gl.xr.enabled = true
     }
   }
 
@@ -162,7 +162,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
 
     const geometry = new THREE.PlaneBufferGeometry(1, 1)
     const material = new THREE.MeshBasicMaterial({ side: THREE.DoubleSide, color: 0xcccccc, opacity: 0.8, transparent: true })
-    const instancedBorderMesh = new THREE.InstancedMesh(geometry, material, 4, false, false, false)
+    const instancedBorderMesh = new THREE.CustomInstancedMesh(geometry, material, 4, false, false, false)
     const instancedBorderGroup = new THREE.Group()
 
     for (let i = 0; i < 4; i++) {
@@ -214,7 +214,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
       camera.projectionMatrix,
       camera.matrixWorldInverse
     )
-    frustum.setFromMatrix(cameraViewProjectionMatrix)
+    frustum.setFromProjectionMatrix(cameraViewProjectionMatrix)
     // frustum is now ready to check all the objects you need
 
     const mesh = ref.current.children.find(c => c.isMesh)

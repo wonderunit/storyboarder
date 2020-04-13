@@ -869,7 +869,7 @@ const useInteractionsManager = ({
     }
 
     if (mode === 'drag_teleport') {
-      let controller = gl.vr.getController(context.teleportDragController)
+      let controller = gl.xr.getController(context.teleportDragController)
 
       let hits = getControllerIntersections(controller, [groundRef.current])
       if (hits.length) {
@@ -887,7 +887,7 @@ const useInteractionsManager = ({
     }
 
     if (mode == 'drag_object') {
-      let controller = gl.vr.getController(context.draggingController)
+      let controller = gl.xr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
       let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
@@ -916,7 +916,7 @@ const useInteractionsManager = ({
     }
 
     if (mode == 'rotate_bone') {
-      let controller = gl.vr.getController(context.draggingController)
+      let controller = gl.xr.getController(context.draggingController)
       let selectedBone = getSelectedBone(store.getState())
 
       // find the bone
@@ -1157,7 +1157,7 @@ const useInteractionsManager = ({
             // if a controller is dragging the character ...
             if (context.draggingController != null) {
               // ... find out which controller it is
-              let controller = gl.vr.getController(context.draggingController)
+              let controller = gl.xr.getController(context.draggingController)
               // ... and add the difference to that controller's selectOffset
               controller.userData.selectOffset.add(positionDifference)
             }
@@ -1198,7 +1198,7 @@ const useInteractionsManager = ({
 
         onDragControlPointEntry: (context, event) =>
         {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
           getIkHelper().selectControlPoint(object.name)
           controller.attach(object)
@@ -1215,7 +1215,7 @@ const useInteractionsManager = ({
         },
 
         onDragObjectEntry: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
           
 
@@ -1233,7 +1233,7 @@ const useInteractionsManager = ({
           uiService.send({ type: 'LOCK' })
         },
         onDragObjectExit: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           let root = rootRef.current
@@ -1260,7 +1260,7 @@ const useInteractionsManager = ({
           uiService.send({ type: 'UNLOCK' })
         },
         onSnapStart: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           let root = rootRef.current
@@ -1277,7 +1277,7 @@ const useInteractionsManager = ({
           object.updateMatrixWorld(true)
         },
         onSnapEnd: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           if (object.userData.staticRotation) {
@@ -1291,7 +1291,7 @@ const useInteractionsManager = ({
         },
 
         moveAndRotateObject: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let { worldScale } = useStoreApi.getState()
 

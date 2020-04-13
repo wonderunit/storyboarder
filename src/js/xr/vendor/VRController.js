@@ -38,7 +38,7 @@
 	   window.addEventlistener('vr controller connected', (controller)=>{}).
 	2. When you receive a controller instance -- again, just an Object3D --
 	   you ought to set its standingMatrix property equal to your
-	   renderer.vr.getStandingMatrix(). If you are expecting a 3DOF controller
+	   renderer.xr.getStandingMatrix(). If you are expecting a 3DOF controller
 	   you must set its head property equal to your camera.
 	3. Experiment and HAVE FUN!
 
@@ -74,7 +74,7 @@ THREE.VRController = function( gamepad ){
 	//
 	//  You ought to overwrite these TWO special properties on the instance in
 	//  your own code. For example for 6DOF controllers:
-	//    controller.standingMatrix = renderer.vr.getStandingMatrix()
+	//    controller.standingMatrix = renderer.xr.getStandingMatrix()
 	//  And for 3DOF controllers:
 	//    controller.head = camera
 	//  Quick FYI: “DOF” means “Degrees of Freedom”. If you can rotate about 

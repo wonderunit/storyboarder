@@ -806,7 +806,7 @@ const TransformControlsGizmo = function () {
 	var scaleHandleGeometry = new THREE.BoxBufferGeometry( 0.125, 0.125, 0.125);
 
 	var lineGeometry = new THREE.BufferGeometry( );
-	lineGeometry.addAttribute('position', new THREE.Float32BufferAttribute( [ 0, 0, 0,	1, 0, 0 ], 3 ) );
+	lineGeometry.setAttribute('position', new THREE.Float32BufferAttribute( [ 0, 0, 0,	1, 0, 0 ], 3 ) );
 
 	var CircleGeometry = function( radius, arc ) {
 
@@ -819,7 +819,7 @@ const TransformControlsGizmo = function () {
 
 		}
 
-		geometry.addAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+		geometry.setAttribute('position', new THREE.Float32BufferAttribute( vertices, 3 ) );
 
 		return geometry;
 
@@ -831,7 +831,7 @@ const TransformControlsGizmo = function () {
 
 		var geometry = new THREE.BufferGeometry()
 
-		geometry.addAttribute('position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 1, 1, 1 ], 3 ) );
+		geometry.setAttribute('position', new THREE.Float32BufferAttribute( [ 0, 0, 0, 1, 1, 1 ], 3 ) );
 
 		return geometry;
 
@@ -1015,7 +1015,7 @@ const TransformControlsGizmo = function () {
 				object.updateMatrix();
 				
 				var tempGeometry = object.geometry;
-				tempGeometry.applyMatrix(object.matrix);
+				tempGeometry.applyMatrix4(object.matrix);
 				object.geometry = tempGeometry;
 				
 

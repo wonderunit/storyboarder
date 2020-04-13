@@ -12,7 +12,6 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
-  reflectivity: 0x0,
   skinning: false,
   shininess: 0,
   flatShading: false,
@@ -243,10 +242,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       characterObject.current.updateWorldMatrix(true, true)
       let parentMatrixWorld = ref.current.parent.matrixWorld
       let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
-      ref.current.applyMatrix(parentMatrixWorld)
+      ref.current.applyMatrix4(parentMatrixWorld)
       ref.current.position.set(sceneObject.x, sceneObject.y, sceneObject.z)
       ref.current.updateMatrixWorld(true)
-      ref.current.applyMatrix(parentInverseMatrixWorld)
+      ref.current.applyMatrix4(parentInverseMatrixWorld)
       ref.current.updateMatrixWorld(true)
       recalculateOffset()
     }, [sceneObject.x, sceneObject.y, sceneObject.z, characterLOD])
@@ -256,10 +255,10 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       characterObject.current.updateWorldMatrix(true, true)
       let parentMatrixWorld = ref.current.parent.matrixWorld
       let parentInverseMatrixWorld = ref.current.parent.getInverseMatrixWorld()
-      ref.current.applyMatrix(parentMatrixWorld)
+      ref.current.applyMatrix4(parentMatrixWorld)
       ref.current.rotation.set(sceneObject.rotation.x, sceneObject.rotation.y, sceneObject.rotation.z)
       ref.current.updateMatrixWorld(true)
-      ref.current.applyMatrix(parentInverseMatrixWorld)
+      ref.current.applyMatrix4(parentInverseMatrixWorld)
       ref.current.updateMatrixWorld(true)
     }, [sceneObject.rotation, characterLOD])
 

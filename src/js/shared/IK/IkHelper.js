@@ -1,5 +1,6 @@
 const THREE = require("three");
 const RagDoll = require("./XrRagdoll");
+require('./../../vendor/three-instanced-mesh')
 require('./utils/Object3dExtension');
 let instance = null;
 class IKHelper extends THREE.Object3D
@@ -113,10 +114,10 @@ class IKHelper extends THREE.Object3D
                 this.poleTargets.updateMatrixWorld(true)
                 let characterMatrix = characterObject.matrixWorld
                 let characterInverseMatrix = characterObject.getInverseMatrixWorld()
-                this.selectedControlPoint.applyMatrix(characterInverseMatrix)
+                this.selectedControlPoint.applyMatrix4(characterInverseMatrix)
                 this.selectedControlPoint.updateMatrixWorld(true)
                 let worldPosition = this.selectedControlPoint.position;
-                this.selectedControlPoint.applyMatrix(characterMatrix)
+                this.selectedControlPoint.applyMatrix4(characterMatrix)
                 this.selectedControlPoint.updateMatrixWorld(true)
                 this.selectedControlPoint.userData.isInitialized = true;
                 let poleTargets = {};
@@ -266,11 +267,11 @@ class IKHelper extends THREE.Object3D
         }
         else
         {
-            targetPoint.applyMatrix(this.instancedMesh.parent.parent.getInverseMatrixWorld());
+            targetPoint.applyMatrix4(this.instancedMesh.parent.parent.getInverseMatrixWorld());
             this.instancedMesh.setPositionAt( id , targetPoint.position );
             this.instancedMesh.setQuaternionAt( id , targetPoint.quaternion );
             this.instancedMesh.setScaleAt( id , targetPoint.scale);
-            targetPoint.applyMatrix(this.instancedMesh.parent.parent.matrixWorld);
+            targetPoint.applyMatrix4(this.instancedMesh.parent.parent.matrixWorld);
         }
         
         if(color)
@@ -318,7 +319,7 @@ const intializeInstancedMesh = (mesh) =>
         flatShading: true});
     let newMesh = mesh ? mesh : new THREE.Mesh(sphereGeometry, material);
     instance.material = material;
-    instance.instancedMesh = new THREE.InstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
+    instance.instancedMesh = new THREE.CustomInstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
     instance.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
     instance.defaultColor = new THREE.Color(0x6a4dff);
     instance.instancedMesh.userData.preventInteraction = true;
