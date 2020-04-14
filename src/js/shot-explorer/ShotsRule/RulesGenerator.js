@@ -57,7 +57,7 @@ const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, chara
     if(i < 100) {
         results.push( new HorizontalOneThirdRule(headCenter, camera, focusedCenter))
     }
-    if(i < 100) {
+    if(i < 10) {
         let areaShotRule = new AreaShotRule(headCenter, camera, characters, shot)
         results.push(areaShotRule)
 
