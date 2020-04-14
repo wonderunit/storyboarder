@@ -1,3 +1,5 @@
+// Package is vendored because it hasn't been updated since 11.13.2016 and in recent version of three.js (r110)
+// they changed "geometry.addAttribute" to "geometry.setAttribute". They also removed AttributeBuffer.setArray
 var flatten = require('flatten-vertex-data')
 var warned = false;
 

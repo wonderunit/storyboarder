@@ -1,3 +1,6 @@
+// Package is vendored because it's use package (three-buffer-vertex-data) which has old version of three.js
+// and it hasn't been updated since 11.13.2016
+
 var createLayout = require('layout-bmfont-text')
 var inherits = require('inherits')
 var createIndices = require('quad-indices')
