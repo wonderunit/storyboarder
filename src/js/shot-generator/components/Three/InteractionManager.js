@@ -187,10 +187,11 @@ const InteractionManager = connect(
     
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
+        console.log(scene.__interaction)
         intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
             o.userData.type === 'controlTarget' ||
             o.userData.type === 'controlPoint' || 
-            o.userData.type === 'objectControl'))
+            o.userData.type === 'objectControl' ))
     }
     
     const mouse = event => {
@@ -214,9 +215,11 @@ const InteractionManager = connect(
         y = mousePosition.current.y
         raycaster.current.setFromCamera({ x, y }, camera )
         let gpuPicker = getGPUPicker()
+        console.log(intersectables.current)
         gpuPicker.setupScene(intersectables.current.filter(object => object.userData.type !== 'volume'))
         gpuPicker.controller.setPickingPosition(mousePosition.current.x, mousePosition.current.y)
         intersects = gpuPicker.pickWithCamera(camera, activeGL)
+        console.log(intersects)
         return intersects
     }  
 

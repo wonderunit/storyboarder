@@ -35,7 +35,7 @@ class Pickable
 
     isSceneObjectRemoved()
     {
-        if(!this.sceneMesh || !this.sceneMesh.parent || !this.sceneObject || !this.sceneObject.parent ){
+        if(!this.sceneObject || !this.sceneObject.parent ){
             return true
         }
         return false

@@ -82,7 +82,7 @@ class UniversalPickableCharacter extends Pickable
 
     update()
     {
-        if(this.isSceneObjectRemoved())
+        if(!this.sceneMesh || !this.sceneMesh.parent || this.isSceneObjectRemoved())
         {
             this.needsRemoval = true;
             return;
