@@ -168,7 +168,7 @@ const getShotInfo = ({
       box.expandByObject(characters[i])
     }
     
-    if (characters.length > 1) {
+/*     if (characters.length > 1) {
       direction = new THREE.Vector3()
       
       for (let i = 0; i < characters.length - 1; i += 2) {
@@ -179,7 +179,7 @@ const getShotInfo = ({
       
       direction = camera.position.clone().sub(direction)
       direction.y = camera.y
-    }
+    } */
   } else if (!ShotSizesInfo[shotSize]) {
     let center = new THREE.Vector3()
     box.getCenter(center)
@@ -329,13 +329,14 @@ const setShot = ({
     
     direction.applyQuaternion(quaternion)
     direction.setLength(currentDistance)
-  
+    
     clampedInfo.position.copy(clampedInfo.target).sub(direction)
   }
   
   if (clampedInfo.position.y < 0) {
-    clampedInfo.position.sub(direction.clone().setY(0).setLength(clampedInfo.position.y))
+    let currentDistance = clampedInfo.position.distanceTo(clampedInfo.target)
     clampedInfo.position.y = 0
+    clampedInfo.position.z = clampedInfo.target.z + currentDistance
   }
   
   camera.position.copy(clampedInfo.position)
