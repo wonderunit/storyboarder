@@ -40,10 +40,6 @@ const generateSprite = ( color, sprite ) => {
         sprite.renderOrder = 10
         sprite.scale.set(1,1,1)
         sprite.material = spriteMaterial
-        //sprite.material.needsUpdate = true
-        sprite.layers.disable(0)
-        sprite.layers.disable(1)
-        sprite.layers.enable(2)
         
         resolve(sprite)
     })
@@ -104,9 +100,6 @@ const loadIcons = () => {
 function init()
 {
     for (let o in allSprites) {
-        allSprites[o].layers.disable(0)
-        allSprites[o].layers.disable(1)
-        allSprites[o].layers.enable(2)
 
         allSprites[o].material.renderOrder = 10
         allSprites[o].material.depthTest = false

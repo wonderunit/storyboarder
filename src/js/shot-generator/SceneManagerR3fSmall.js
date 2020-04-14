@@ -98,7 +98,7 @@ const SceneManagerR3fSmall = connect(
       e.object.traverseAncestors((o) => {
         if(o.userData.id) match = o
       })
-      if(!match.userData || match.userData.locked ) return
+      if(!match || !match.userData || match.userData.locked ) return
       selectObject(match.userData.id)
       if(match.userData.type === "camera") {
         setActiveCamera(match.userData.id)
@@ -218,6 +218,8 @@ const SceneManagerR3fSmall = connect(
     const intersectLogic = useCallback((e) => {
       const { x, y } = mouse(e)
       raycaster.current.setFromCamera({x, y}, camera)
+      console.log(camera.layers)
+      console.log(scene.children[0].children)
       var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
       let target = intersects[0]
       if(!target || (target.object.userData && target.object.userData.type === "ground")) {
