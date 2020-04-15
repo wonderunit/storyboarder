@@ -17,10 +17,10 @@ const forge = require('node-forge')
 function generateCertificate (host) {
   let certDirectory = electronApp.getPath('userData')
 
-  log.info('Looking for key.pem and cert.pem in', certDirectory)
-
   let privateKeyPath = path.join(certDirectory, 'key.pem')
   let certPath = path.join(certDirectory, 'cert.pem')
+
+  log.info('Looking for key.pem and cert.pem in', certDirectory)
 
   const cachedKey = fs.existsSync(privateKeyPath) && fs.readFileSync(privateKeyPath)
   const cachedCert = fs.existsSync(certPath) && fs.readFileSync(certPath)
