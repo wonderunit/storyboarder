@@ -20,12 +20,11 @@ function generateCertificate (host) {
   let privateKeyPath = path.join(certDirectory, 'key.pem')
   let certPath = path.join(certDirectory, 'cert.pem')
 
-  log.info('Looking for key.pem and cert.pem in', certDirectory)
-
   const cachedKey = fs.existsSync(privateKeyPath) && fs.readFileSync(privateKeyPath)
   const cachedCert = fs.existsSync(certPath) && fs.readFileSync(certPath)
 
   if (cachedKey && cachedCert) {
+    log.info('Using existing key.pem and cert.pem from', certDirectory)
     return {
       key: cachedKey,
       cert: cachedCert
