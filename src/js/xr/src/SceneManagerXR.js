@@ -14,9 +14,9 @@ require('./three/GPUPickers/utils/Object3dExtension')
 // const { WEBVR } = require('three/examples/jsm/vr/WebVR')
 //
 // use vendor'd version
-require('../../vendor/three/examples/js/vr/WebVR')
-const WEBVR = THREE.WEBVR
+//const { VRButton } = require('three')
 
+const { VRButton } = require('three/examples/jsm/webxr/VRButton.js')
 const XRClient = require('./client')
 
 const {
@@ -790,7 +790,7 @@ const SceneContent = connect(
 
 const XRStartButton = ({ }) => {
   const { gl } = useThree()
-  useMemo(() => document.body.appendChild(WEBVR.createButton(gl)), [])
+  useMemo(() => document.body.appendChild(VRButton.createButton(gl)), [])
   return null
 }
 
