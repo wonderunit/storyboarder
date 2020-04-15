@@ -55,7 +55,6 @@ const ShotExplorer = React.memo(({
       window.addEventListener('resize', handleResize)
       return () => {
         window.removeEventListener('resize', handleResize) 
-    
       }
     }, [])
 
@@ -73,7 +72,7 @@ const ShotExplorer = React.memo(({
             electron.remote.getCurrentWindow().removeListener("focus", show)
         }
     }, [])
-
+    
     // padding for right side of canvas
     let paddingToRight = 5
     return (
@@ -99,7 +98,7 @@ const ShotExplorer = React.memo(({
                 <Effect shouldRender={ shouldRender }/> 
             </Canvas>
         </div>
-        {sceneInfo && <ShotMaker key={ elementKey }
+        { <ShotMaker key={ elementKey }
                     sceneInfo={ sceneInfo } 
                     withState={ withState }
                     aspectRatio={ aspectRatio }
