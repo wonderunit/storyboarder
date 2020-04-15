@@ -45,10 +45,12 @@ const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, chara
     if(i < 10) {
         results.push(new RollRule(focusedCenter, camera))
     }
-    if(i < 70) {
-        let headQuaternion = headBone.worldQuaternion()
+    if(i < 80) {
+        let headQuaternion = new THREE.Quaternion()
+        headBone.getWorldQuaternion(headQuaternion)
+        headQuaternion.premultiply(character.quaternion.clone())
         let rotation = new THREE.Euler().setFromQuaternion(headQuaternion)
-        let characterRotation = rotation.y * THREE.Math.RAD2DEG
+        let characterRotation = character.rotation.y * THREE.Math.RAD2DEG
         let cameraRotation = shot.cameraRotation ? shot.cameraRotation * THREE.Math.RAD2DEG : 0
         let characterFacingRotation = cameraRotation - (characterRotation)
         characterFacingRotation = clamRotationTo(characterFacingRotation)
