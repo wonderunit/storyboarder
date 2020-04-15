@@ -2,7 +2,6 @@ const ReactDOM = require('react-dom')
 const React = require('react')
 const { ipcRenderer, shell } = electron = require('electron')
 const { Provider, batch } = require('react-redux')
-const { dialog } = electron.remote
 const THREE = require('three')
 const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
@@ -27,7 +26,6 @@ let isBoardShown = false
 let isBoardLoaded = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
-let isVisible = electron.remote.getCurrentWindow().visible
 let defaultHeight = 800
 let canvasHeight = 400
 let minimumWidth = 300
@@ -97,7 +95,6 @@ const showShotExplorer = () => {
     }, 100)
     return
   }
-  isVisible = true;
   pushUpdates();
   isBoardShown = true;
 }
@@ -107,7 +104,6 @@ ipcRenderer.on('shot-explorer:show', (event) => {
 })
 
 ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
-  console.log("Openning shot explorer")
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
@@ -143,10 +139,6 @@ ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
 
 electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
   isBoardShown = false
-})
-
-electron.remote.getCurrentWindow().on("hide", () => {
-  isVisible = false
 })
 
 const pushUpdates = () => {
@@ -191,7 +183,6 @@ const loadBoard = async (board, storyboarderFilePath) => {
     return false
   }
 
-  //const { storyboarderFilePath } = await service.getStoryboarderFileData()
   const {sceneObjects, world} = board.sg.data
 
   await Object.values(sceneObjects)
