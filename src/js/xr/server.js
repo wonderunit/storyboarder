@@ -332,7 +332,7 @@ class XRServer {
       let ip = getIpAddress()
 
       // via https://expressjs.com/en/4x/api.html#app.listen
-      const server = https.createServer({ ...generateCertificate(ip) }, app)
+      const server = https.createServer({ ...generateCertificate() }, app)
 
       server.on('error', err => {
         console.error(err)
