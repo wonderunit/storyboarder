@@ -30,7 +30,6 @@ const generateSprite = ( color, sprite ) => {
         let spriteTexture = new THREE.CanvasTexture(blancContext)
         let spriteMaterial = new THREE.SpriteMaterial({
             color,
-            useScreenCoordinates: false,
             depthTest: false
         })
         
