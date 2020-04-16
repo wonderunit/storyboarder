@@ -386,6 +386,40 @@ const SceneContent = connect(
       }
     }, [isXrPresenting])
 
+    let [inputs, setInputs] = useState([])
+
+    useEffect(() => {
+      if (gl.xr.getSession()) {
+        let getList = () => {
+          let list = []
+          let inputSources = gl.xr.getSession().inputSources
+          for (let i = 0; i < inputSources.length; i++) {
+            if (inputSources[i]) {
+              list[i] = [
+                inputSources[i],
+                gl.xr.getController(i),
+                gl.xr.getControllerGrip(i)
+              ]
+            }
+          }
+          return list
+        }
+
+        let update = () => setInputs(getList())
+
+        gl.xr.getController(0).addEventListener('connected', update)
+        gl.xr.getController(1).addEventListener('connected', update)
+        gl.xr.getController(0).addEventListener('disconnected', update)
+        gl.xr.getController(1).addEventListener('disconnected', update)
+
+        return () => {
+          gl.xr.getController(0).removeEventListener('connected', update)
+          gl.xr.getController(1).removeEventListener('connected', update)
+          gl.xr.getController(0).removeEventListener('disconnected', update)
+          gl.xr.getController(1).removeEventListener('disconnected', update)
+        }
+      }
+    }, [isXrPresenting])
 
     const playSound = useCallback((name, object3d = null) => {
       switch (name) {
@@ -523,7 +557,7 @@ const SceneContent = connect(
     }
     const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, getXrClient })
 
-    const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
+    const { interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
       rootRef,
       uiService,
@@ -554,9 +588,6 @@ const SceneContent = connect(
 
       ref.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
-
-    const gamepads = navigator.getGamepads()
-    const gamepadFor = controller => gamepads[controller.userData.gamepad.index]
 
     useEffect(() => {
       thumbnailRenderer.current = new THREE.WebGLRenderer()
@@ -591,30 +622,32 @@ const SceneContent = connect(
               showSettings={canvasRendererRef.current.state.showSettings} />
           }
 
-          {controllers.filter(gamepadFor).map(controller =>
-            <primitive key={controller.uuid} object={controller} >
-              <Controller
-                gltf={resources.controllerGltf}
-                hand={gamepadFor(controller).hand}
-              />
-              {gamepadFor(controller).hand === (switchHand ? 'left' : 'right') &&
-                <group>
-                  <Controls
-                    gltf={resources.controlsGltf}
-                    mode={uiCurrent.value.controls}
-                    hand={switchHand ? 'left' : 'right'}
-                    locked={uiCurrent.context.locked}
-                    getCanvasRenderer={getCanvasRenderer} />
-                  { showHelp &&
-                    <Help
+          { inputs
+            .map(([source, controller, grip]) =>
+              <primitive key={controller.uuid} object={controller/*grip*/} >
+                <Controller
+                  gltf={resources.controllerGltf}
+                  hand={source.handedness}
+                />
+                {source.handedness === (switchHand ? 'left' : 'right') &&
+                  <group>
+                    <Controls
+                      gltf={resources.controlsGltf}
                       mode={uiCurrent.value.controls}
+                      hand={switchHand ? 'left' : 'right'}
                       locked={uiCurrent.context.locked}
                       getCanvasRenderer={getCanvasRenderer} />
-                  }
-                </group>
-              }
-            </primitive>
-          )}
+                    { showHelp &&
+                      <Help
+                        mode={uiCurrent.value.controls}
+                        locked={uiCurrent.context.locked}
+                        getCanvasRenderer={getCanvasRenderer} />
+                    }
+                  </group>
+                }
+              </primitive>
+            )
+          }
         </group>
 
         <group ref={rootRef} scale={[worldScale, worldScale, worldScale]}>
