@@ -608,7 +608,7 @@ class CanvasRenderer {
         let spaceForTitle = titleHeight
         if(grids.tab === "handPoses") spaceForTitle *= 2
         this.drawGrid(ctx, 30, 30 + spaceForTitle, 440 - 55, 670 - 55 - spaceForTitle, list, grids.tab, rowCount, sceneObject, this.state.selectedHand)
-        
+
         let buttonSize = 310
 
         this.paneComponents['grid']['poses-title'] = {
@@ -663,7 +663,7 @@ class CanvasRenderer {
           }
         }
 
-       
+
 
         this.paneComponents['grid']['hand-poses-title']['left-hand'] = {
           id: 'left-hand',
@@ -785,7 +785,7 @@ class CanvasRenderer {
       ctx.fillStyle = 'rgba(0,0,0)'
       roundRect(ctx, 0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30, 25, true, false)
 
-      const labels = this.state.boards.confirmDialogType === 'overwrite' ? 
+      const labels = this.state.boards.confirmDialogType === 'overwrite' ?
         [`Shot Generator has unsaved changes.`, `Are you sure you want to overwrite with VR changes?`] :
         [`Changes have not been saved.`, `Are you sure you want to change board without saving?`]
 
@@ -1546,7 +1546,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             let confirmed = await checkConfirmStatus('unsaved')
             if (!confirmed) return
           }
-          
+
           let board = await cr.client.selectBoardByUid(event.uid)
 
           try {
