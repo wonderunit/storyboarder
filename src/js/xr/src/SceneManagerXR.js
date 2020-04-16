@@ -393,13 +393,15 @@ const SceneContent = connect(
         let getList = () => {
           let list = []
           let inputSources = gl.xr.getSession().inputSources
-          for (let i = 0; i < inputSources.length; i++) {
-            if (inputSources[i]) {
-              list[i] = [
-                inputSources[i],
-                gl.xr.getController(i),
-                gl.xr.getControllerGrip(i)
-              ]
+          if (inputSources) {
+            for (let i = 0; i < inputSources.length; i++) {
+              if (inputSources[i]) {
+                list[i] = [
+                  inputSources[i],
+                  gl.xr.getController(i),
+                  gl.xr.getControllerGrip(i)
+                ]
+              }
             }
           }
           return list
