@@ -16,7 +16,7 @@ const { produce } = require('immer')
 
 const RemoteData = require('../../client/RemoteData')
 
-const useIsVrPresenting = require('../../hooks/use-is-vr-presenting')
+const useIsXrPresenting = require('../../hooks/use-is-xr-presenting')
 const { setCookie, getCookie } = require('../../helpers/cookies')
 const isUserModel = require('../../helpers/is-user-model')
 const {
@@ -1764,9 +1764,9 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     getCanvasRenderer().needsRender = true
   }, [uiCurrent.context])
 
-  const isVrPresenting = useIsVrPresenting()
+  const isXrPresenting = useIsXrPresenting()
   useEffect(() => {
-    if (!isVrPresenting) return
+    if (!isXrPresenting) return
 
     // if the user hasn't seen help before
     if (getCookie('sawHelp') !== 'true') {
@@ -1779,7 +1779,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
         }
       }, 2000)
     }
-  }, [isVrPresenting])
+  }, [isXrPresenting])
 
   return { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef }
 }

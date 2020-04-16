@@ -34,7 +34,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
-const useIsVrPresenting = require('./hooks/use-is-vr-presenting')
+const useIsXrPresenting = require('./hooks/use-is-xr-presenting')
 const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
@@ -381,15 +381,16 @@ const SceneContent = connect(
       return voicer
     }, [])
 
-    const isVrPresenting = useIsVrPresenting()
+    const isXrPresenting = useIsXrPresenting()
+
     useEffect(() => {
-      if (isVrPresenting) {
+      if (isXrPresenting) {
         welcomeAudio.play()
         if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
       } else {
         welcomeAudio.isPlaying && welcomeAudio.stop()
       }
-    }, [isVrPresenting])
+    }, [isXrPresenting])
 
 
     const playSound = useCallback((name, object3d = null) => {
