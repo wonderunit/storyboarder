@@ -17,7 +17,8 @@ class XRGPUPickerFactory extends AbstractGPUPickerFactory
 
     createCharacter(object, excludingList)
     {
-        return new UniversalPickableCharacter(object, excludingList);
+        let characterObject = new UniversalPickableCharacter(object, excludingList);
+        return characterObject.characterContainer ? characterObject : null
     }
 
     //TODO(): don't pass idPool
