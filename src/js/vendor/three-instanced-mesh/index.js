@@ -382,8 +382,7 @@ THREE.CustomInstancedMesh.prototype._setAttributes = function(){
 			attribute = new THREE.InstancedBufferAttribute(a[0],a[1],a[3])
 			attribute.normalized = a[2]
 		}
-			
-		attribute.dynamic = this._dynamic
+		if(this._dynamic) attribute.setUsage(THREE.DynamicDrawUsage)
 		this.geometry.setAttribute(name, attribute)
 	})
 
