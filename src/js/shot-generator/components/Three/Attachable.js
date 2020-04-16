@@ -376,7 +376,6 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
           bindedId: sceneObject.attachToId,
           isRotationEnabled: false,
         }}
-        saveToStore={saveToStore}
         >
           {meshes}
     </group>

@@ -1,4 +1,4 @@
-import { connect } from 'react-redux'
+import { connect, batch } from 'react-redux'
 import React, { useRef, useCallback, useLayoutEffect, useState, useMemo, useEffect } from 'react'
 import { useThree, useFrame } from 'react-three-fiber'
 import * as THREE from 'three'
@@ -25,6 +25,7 @@ import {
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import CameraControls from '../../CameraControls'
 import throttle from 'lodash.throttle'
+import { duration } from 'moment'
 
 const getIntersectionTarget = intersect => {
   // character
@@ -403,13 +404,29 @@ const InteractionManager = connect(
         const { x, y } = mouse(event)
         SGIkHelper.getInstance().deselectControlPoint(event)
         if (dragTarget) {
+          endDrag(updateObjects)
           if(dragTarget.target.userData.type === "character") {
             let attachables = scene.__interaction.filter(object => object.userData.bindedId === dragTarget.target.userData.id)
-            for(let i = 0; i < attachables.length; i ++) {
-              attachables[i].saveToStore()
-            }
+            withState((dispatch, state) => {
+              batch(() => {
+                for(let i = 0; i < attachables.length; i ++) {
+                  let attachable = attachables[i]
+                  attachable.parent.updateWorldMatrix(true, true)
+                  let position = attachable.worldPosition()// new THREE.Vector3()
+                  let quaternion = attachable.worldQuaternion()
+                  let matrix = attachable.matrix.clone()
+                  matrix.premultiply(attachable.parent.matrixWorld)
+                  matrix.decompose(position, quaternion, new THREE.Vector3())
+                  let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
+                  dispatch(updateObject(attachable.userData.id, 
+                  { 
+                      x: position.x, y: position.y, z: position.z,
+                      rotation: { x: rot.x, y: rot.y, z: rot.z },
+                  }))
+                }
+              })
+            })
           }
-          endDrag(updateObjects)
           setDragTarget(null)
           undoGroupEnd()
         }
