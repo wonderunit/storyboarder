@@ -425,7 +425,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIn
     if (startItem >= items.length) break
     const item = items[startItem]
 
-    const activeBoard = this.state.sgCurrentState.board && item.uid === this.state.sgCurrentState.board.uid
+    const activeBoard = this.state.board && item.uid === this.state.board.uid
     const isActive = type === 'boards' ? activeBoard : item.id === this.state.activeCamera
     ctx.fillStyle = isActive ? '#7256ff' : '#6E6E6E'
     roundRect(
@@ -448,7 +448,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIn
     ctx.fillText(text, x + 8 + (itemWidth + padding * 0.5) * i - offset, y + padding + itemHeight + textHeight * 0.5)
 
     if (type === 'boards') {
-      const filepath = this.client.uriForThumbnail(item.thumbnail)
+      const filepath = this.shotGenerator.uriForThumbnail(item.thumbnail)
 
       this.drawLoadableImage(
         filepath,
@@ -483,7 +483,7 @@ const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIn
         y + padding + itemHeight + textHeight * 0.5
       )
 
-      const thumbnailName = `${this.state.sgCurrentState.board.uid}_${item.displayName}`
+      const thumbnailName = `${this.state.board.uid}_${item.displayName}`
       const cameraThumbnail = this.state.cameraThumbnails[thumbnailName]
       
       if (cameraThumbnail) {

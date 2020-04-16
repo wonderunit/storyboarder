@@ -1,4 +1,4 @@
-import {deselectObject, mergeState} from './../shared/reducers/shot-generator'
+import {deselectObject, mergeState, getIsSceneDirty} from './../shared/reducers/shot-generator'
 import {
   remoteStore,
   RestrictedActions,
@@ -11,6 +11,10 @@ import {
 const IO = {current: null}
 
 const dispatchRemote = (action) => {
+  if (!IO.current) {
+    return false
+  }
+  
   const SGAction = {
     ...action,
     meta: {isSG: true}
@@ -30,6 +34,8 @@ const onUserConnect = (io, socket, store) => {
 
 export const serve = (io, store, service) => {
   IO.current = io
+
+  const validSameBoard = uid => store.getState().board.uid === uid
 
   io.on('connection', (socket) => {
 
@@ -56,7 +62,32 @@ export const serve = (io, store, service) => {
       remoteStore.dispatch(disconnectAction)
       io.emit('remoteAction', disconnectAction)
     })
-    
+
+    socket.on('getBoards', async () => {
+      console.log('boards', await service.getBoards())
+      socket.emit('getBoards', await service.getBoards())
+    })
+
+    socket.on('saveShot', async () => {
+      console.log('Saving')
+      await service.saveShot()
+      socket.emit('saveShot')
+    })
+
+    socket.on('insertShot', async () => {
+      await service.insertShot()
+      socket.emit('insertShot')
+    })
+
+    socket.on('getSg', async () => {
+      let board = await service.getBoard(store.getState().board.uid)
+      console.log('Board', board)
+      socket.emit('getSg', board)
+    })
+
+    socket.on('isSceneDirty', () => {
+      socket.emit('isSceneDirty', getIsSceneDirty(store.getState()))
+    })
     
   })
 

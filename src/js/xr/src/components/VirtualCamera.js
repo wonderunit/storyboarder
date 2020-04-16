@@ -69,7 +69,7 @@ const VirtualCamera = React.memo(({ gltf, aspectRatio, sceneObject, isSelected, 
   }, [])
 
   useEffect(() => {
-    if (boardUid) saveCameraThumbnail()
+    if (boardUid && thumbnailRenderer.current) saveCameraThumbnail()
   }, [boardUid])
 
   const saveCameraThumbnail = () => {

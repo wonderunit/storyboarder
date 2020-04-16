@@ -39,6 +39,41 @@ export const connect = (URI = '') => {
     })
   }
 
+  const getBoards = async () => {
+    return new Promise((resolve) => {
+      client.once('getBoards', resolve)
+      client.emit('getBoards')
+    })
+  };
+
+  const saveShot = async () => {
+    return new Promise((resolve) => {
+      client.once('saveShot', resolve)
+      client.emit('saveShot')
+    })
+  };
+
+  const insertShot = () => {
+    return new Promise((resolve) => {
+      client.once('insertShot', resolve)
+      client.emit('insertShot')
+    })
+  };
+
+  const getSg = () => {
+    return new Promise((resolve) => {
+      client.once('getSg', resolve)
+      client.emit('getSg')
+    })
+  };
+
+  const isSceneDirty = () => {
+    return new Promise((resolve) => {
+      client.once('isSceneDirty', resolve)
+      client.emit('isSceneDirty')
+    })
+  };
+
   const ClientMiddleware = store => next => action => {
     if (action.meta && action.meta.isSG || (RestrictedActions.indexOf(action.type) !== -1)) {
       if (SelectActions.indexOf(action.type) !== -1) {
@@ -59,11 +94,22 @@ export const connect = (URI = '') => {
 
   return {
     connectStore,
+    
     sendInfo: (info, immediate) => sendRemoteInfo([info], immediate),
     log: (info) => client.emit('debug', info),
+    
     ClientMiddleware,
+    
     setFrameRate: (value) => {
       FRAME_RATE.current = value
-    }
+    },
+
+    uriForThumbnail: filename => `${URI}/boards/images/${filename}`,
+    
+    getBoards,
+    saveShot,
+    insertShot,
+    getSg,
+    isSceneDirty
   }
 }

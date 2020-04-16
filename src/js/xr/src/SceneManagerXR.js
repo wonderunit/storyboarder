@@ -115,6 +115,7 @@ const SceneContent = connect(
     selections: getSelections(state),
     models: state.models,
     selectedAttachable: getSelectedAttachable(state),
+    boardUid: state.board.uid,
 
     characterIds: getSceneObjectCharacterIds(state),
     modelObjectIds: getSceneObjectModelObjectIds(state),
@@ -132,7 +133,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton, updateObject,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
     resources, getAsset,
 
@@ -173,7 +174,6 @@ const SceneContent = connect(
     const showHelp = useUiStore(state => state.showHelp)
     const showHUD = useUiStore(state => state.showHUD)
     const showConfirm = useUiStore(state => state.showConfirm)
-    const boardUid = useUiStore(state => state.boardUid)
 
     const fog = useRef()
     const getFog = () => {
@@ -576,7 +576,7 @@ const SceneContent = connect(
         thumbnailRenderer.current.domElement = null
         thumbnailRenderer.current = null
       }
-    }, [])
+    }, [aspectRatio])
 
     return (
       <>

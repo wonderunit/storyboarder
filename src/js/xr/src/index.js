@@ -37,31 +37,9 @@ const configureStore = preloadedState => {
 
 const SceneManagerXR = require('./SceneManagerXR')
 
-const setupXR = async ({
-  stateJsonUri = '/state.json'
-}) => {
+const setupXR = async () => {
   const store = configureStore({...initialState})
   SGConnection.connectStore(store)
-  
-  // TODO don't send to server if data change was just a new board loaded from the server
-  //      (avoid re-sending what SG already knows about)
-  if (!process.env.XR_STANDALONE_DEMO) {
-    // after 5s, start POST'ing changes back
-    setTimeout(() => {
-      store.subscribe(async () => {
-        let state = store.getState(stateJsonUri)
-        let uid = state.board.uid
-        let serializedState = getSerializedState(state)
-        try {
-          console.log('Send state')
-          //await client.sendState(uid, serializedState, stateJsonUri)
-        } catch (err) {
-          // TODO if error is that board has changed in SG, notify user, and reload in VR
-          console.error(err)
-        }
-      })
-    }, 5000)
-  }
 
   ReactDOM.render(
     <Provider store={store}>

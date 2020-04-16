@@ -17,7 +17,6 @@ const Environment = React.memo(({ path, environment }) => {
   
   const ref = useUpdate(
     self => {
-      console.log(self)
       self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )

@@ -183,7 +183,7 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
 
   await preloadData()
 })
-ipcRenderer.on('update', (event, { board }) => {
+ipcRenderer.on('update', (event, { board }) => {111
   store.dispatch(setBoard(board))
 })
 
