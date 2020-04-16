@@ -10,13 +10,7 @@ const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, useCallback } = React = require('react')
 require('./three/GPUPickers/utils/Object3dExtension')
 
-// to use three's version:
-// const { WEBVR } = require('three/examples/jsm/vr/WebVR')
-//
-// use vendor'd version
-//const { VRButton } = require('three')
-
-const { VRButton } = require('three/examples/jsm/webxr/VRButton.js')
+const { VRButton } = require('three/examples/jsm/webxr/VRButton')
 const XRClient = require('./client')
 
 const {
