@@ -376,50 +376,12 @@ const SceneContent = connect(
     }, [])
 
     const isXrPresenting = useIsXrPresenting()
-
     useEffect(() => {
       if (isXrPresenting) {
         welcomeAudio.play()
         if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
       } else {
         welcomeAudio.isPlaying && welcomeAudio.stop()
-      }
-    }, [isXrPresenting])
-
-    let [inputs, setInputs] = useState([])
-
-    useEffect(() => {
-      if (gl.xr.getSession()) {
-        let getList = () => {
-          let list = []
-          let inputSources = gl.xr.getSession().inputSources
-          if (inputSources) {
-            for (let i = 0; i < inputSources.length; i++) {
-              if (inputSources[i]) {
-                list[i] = [
-                  inputSources[i],
-                  gl.xr.getController(i),
-                  gl.xr.getControllerGrip(i)
-                ]
-              }
-            }
-          }
-          return list
-        }
-
-        let update = () => setInputs(getList())
-
-        gl.xr.getController(0).addEventListener('connected', update)
-        gl.xr.getController(1).addEventListener('connected', update)
-        gl.xr.getController(0).addEventListener('disconnected', update)
-        gl.xr.getController(1).addEventListener('disconnected', update)
-
-        return () => {
-          gl.xr.getController(0).removeEventListener('connected', update)
-          gl.xr.getController(1).removeEventListener('connected', update)
-          gl.xr.getController(0).removeEventListener('disconnected', update)
-          gl.xr.getController(1).removeEventListener('disconnected', update)
-        }
       }
     }, [isXrPresenting])
 
@@ -559,7 +521,7 @@ const SceneContent = connect(
     }
     const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, getXrClient })
 
-    const { interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
+    const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
       rootRef,
       uiService,
@@ -624,14 +586,18 @@ const SceneContent = connect(
               showSettings={canvasRendererRef.current.state.showSettings} />
           }
 
-          { inputs
-            .map(([source, controller, grip]) =>
-              <primitive key={controller.uuid} object={controller/*grip*/} >
+          {controllers
+            .map(controller =>
+              controller.userData.inputSource && <primitive
+                key={controller.uuid}
+                // for grip, use gl.xr.getControllerGrip(controller.userData.inputSourceIndex)
+                object={controller}
+              >
                 <Controller
                   gltf={resources.controllerGltf}
-                  hand={source.handedness}
+                  hand={controller.userData.inputSource.handedness}
                 />
-                {source.handedness === (switchHand ? 'left' : 'right') &&
+                {controller.userData.inputSource.handedness === (switchHand ? 'left' : 'right') &&
                   <group>
                     <Controls
                       gltf={resources.controlsGltf}

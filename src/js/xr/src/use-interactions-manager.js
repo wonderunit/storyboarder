@@ -1,5 +1,5 @@
 const { useThree, useFrame } = require('react-three-fiber')
-const { useMemo, useRef, useEffect } = React = require('react')
+const { useMemo, useRef, useEffect, useState } = React = require('react')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 
@@ -8,7 +8,7 @@ const { produce } = require('immer')
 
 const { ActionCreators } = require('redux-undo')
 
-const useVrControllers = require('./hooks/use-vr-controllers')
+const useIsXrPresenting = require('./hooks/use-is-xr-presenting')
 
 const { log } = require('./components/Log')
 const Mirror = require("./three/Mirror")
@@ -808,18 +808,51 @@ const useInteractionsManager = ({
     }
   }
 
-  // controller state via THREE.VRController
-  const controllers = useVrControllers({
-    onTriggerStart,
-    onTriggerEnd,
-    onGripDown,
-    onGripUp,
-    onAxesChanged,
-    onPressEndA,
-    onPressEndB,
-    onPressEndX,
-    onPressStartThumbstick
-  })
+  const [controllers, setControllers] = useState(
+    [ gl.xr.getController(0), gl.xr.getController(1) ]
+  )
+  const isXrPresenting = useIsXrPresenting()
+  useEffect(() => {
+      setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+
+      // inspired by https://github.com/mrdoob/three.js/pull/18197
+      let connected = event => {
+        event.target.userData.inputSource = event.data
+        event.target.userData.inputSourceIndex = [...gl.xr.getSession().inputSources].indexOf(event.data)
+        // setInputs(getList())
+        setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+      }
+      let disconnected = event => {
+        event.target.userData.inputSource = null
+        event.target.userData.inputSourceIndex = null
+        // setInputs(getList())
+        setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+      }
+      for (let controller of controllers) {
+        // via three/src/renderers/webxr/WebXRManager.js
+        controller.addEventListener('connected', connected)
+        controller.addEventListener('disconnected', disconnected)
+
+        // via https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API/Inputs#Actions
+        controller.addEventListener('selectstart', onTriggerStart)
+        controller.addEventListener('select', onTriggerEnd)
+        controller.addEventListener('squeezestart', onGripDown)
+        controller.addEventListener('squeeze', onGripUp)
+      }
+      return () => {
+        for (let controller of controllers) {
+          controller.removeEventListener('connected', connected)
+          controller.removeEventListener('disconnected', disconnected)
+          controller.removeEventListener('selectstart', onTriggerStart)
+          controller.removeEventListener('select', onTriggerEnd)
+          controller.removeEventListener('squeezestart', onGripDown)
+          controller.removeEventListener('squeeze', onGripUp)
+        }
+      }
+    // }
+  }, [isXrPresenting])
+
+
 
   const reusableVector = useRef()
   const getReusableVector = () => {
