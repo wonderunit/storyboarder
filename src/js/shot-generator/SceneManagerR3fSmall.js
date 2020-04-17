@@ -197,7 +197,6 @@ const SceneManagerR3fSmall = connect(
       camera.bottom = -(minMax[3]-minMax[2])/2
       camera.near = -1000
       camera.far = 1000
-      //camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
     }, [scene, camera, renderData])
 
@@ -218,8 +217,6 @@ const SceneManagerR3fSmall = connect(
     const intersectLogic = useCallback((e) => {
       const { x, y } = mouse(e)
       raycaster.current.setFromCamera({x, y}, camera)
-      console.log(camera.layers)
-      console.log(scene.children[0].children)
       var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
       let target = intersects[0]
       if(!target || (target.object.userData && target.object.userData.type === "ground")) {

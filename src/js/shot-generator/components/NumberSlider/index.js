@@ -10,10 +10,7 @@ import {
 
 import useDoubleClick from './../../../hooks/use-double-click'
 import KeyCommandSingleton from '../KeyHandler/KeyCommandsSingleton'
-const roundValue = (value, precision) => {
-  let multiplier = Math.pow(10, precision)
-  return Math.round((value + Number.EPSILON) * multiplier) / multiplier
-}
+
 export const transforms = {
   // default
   clamp: (value, min, max) => {
@@ -86,7 +83,6 @@ const NumberSliderComponent = React.memo(({
   }, [value]) 
 
   useEffect(() => {
-    console.log("Update value", value)
     if(prevValue.current === value) {
       setSliderValue(value)
     }
