@@ -10,7 +10,10 @@ import {
 
 import useDoubleClick from './../../../hooks/use-double-click'
 import KeyCommandSingleton from '../KeyHandler/KeyCommandsSingleton'
-
+const roundValue = (value, precision) => {
+  let multiplier = Math.pow(10, precision)
+  return Math.round((value + Number.EPSILON) * multiplier) / multiplier
+}
 export const transforms = {
   // default
   clamp: (value, min, max) => {
@@ -62,7 +65,7 @@ const NumberSliderComponent = React.memo(({
   value = 0,
   min = -10,
   max = 10,
-  step = 0.3, 
+  step = 0.2, 
   formatter = formatters.toFixed2,
   onSetValue = defaultOnSetValue,
   transform = transforms.clamp,
@@ -73,6 +76,7 @@ const NumberSliderComponent = React.memo(({
   const [isTextInput, setTextInput] = useState(false)
   const [sliderValue, setSliderValue] = useState(0)
   const [textInputValue, setTextInputValue] = useState(value)
+  const prevValue = useRef(null)
   const isDragging = useRef(false)
   
   useMemo(() => {
@@ -81,12 +85,20 @@ const NumberSliderComponent = React.memo(({
     }
   }, [value]) 
 
+  useEffect(() => {
+    console.log("Update value", value)
+    if(prevValue.current === value) {
+      setSliderValue(value)
+    }
+  }, [sliderValue])
+
   const onDrag = useCallback(({direction, altKey}) => {
     const valueToAdd = step * (altKey ? 0.01 : 1.0)
     const nextValue = transform(sliderValue + Math.sign(direction) * (valueToAdd < 0.01 ? 0.01 : valueToAdd), min, max)
-    setSliderValue(nextValue)
+    prevValue.current = value
     onSetValue(nextValue)
-  }, [sliderValue, onSetValue])
+    setSliderValue(nextValue)
+  }, [sliderValue, onSetValue, value])
   
   const bind = useDrag(({event, first, last}) => {
     if (first) {
