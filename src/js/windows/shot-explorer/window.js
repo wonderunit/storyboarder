@@ -107,7 +107,6 @@ ipcRenderer.on('shot-explorer:show', (event) => {
 })
 
 ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
-  console.log("Openning shot explorer")
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
@@ -191,7 +190,6 @@ const loadBoard = async (board, storyboarderFilePath) => {
     return false
   }
 
-  //const { storyboarderFilePath } = await service.getStoryboarderFileData()
   const {sceneObjects, world} = board.sg.data
 
   await Object.values(sceneObjects)

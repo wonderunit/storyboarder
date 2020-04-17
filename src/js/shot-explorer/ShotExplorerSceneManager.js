@@ -91,7 +91,6 @@ const ShotExplorerSceneManager = connect(
     }, [sceneObjectLength])
 
     useEffect(() => { 
-      console.log("Camera changed")
       setLargeCanvasData(camera, scene, gl)
     }, [scene.__interaction.length, camera, gl])
 

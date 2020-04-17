@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 
 const InfiniteScroll = React.memo(({
     elements, 

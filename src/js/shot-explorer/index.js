@@ -55,7 +55,6 @@ const ShotExplorer = React.memo(({
       window.addEventListener('resize', handleResize)
       return () => {
         window.removeEventListener('resize', handleResize) 
-    
       }
     }, [])
 
