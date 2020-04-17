@@ -1533,6 +1533,26 @@ const useUiManager = ({ playSound, stopSound, SG }) => {
           setBoardUid(event.uid)
         },
 
+        async onChangeBoard (context, event) {
+          let cr = getCanvasRenderer()
+
+          let hasUnsavedChanges = await checkForUnsavedChanges()
+          if (hasUnsavedChanges) {
+            let confirmed = await checkConfirmStatus('unsaved')
+            if (!confirmed) return
+          }
+
+          try {
+            await cr.shotGenerator.setBoard(event.uid)
+            
+            cr.boardsNeedsRender = true
+            setBoardUid(board.uid)
+          } catch (err) {
+            // TODO if the uid does not match, notify user, reload
+            alert('Error\n' + err)
+          }
+        },
+
         async onSaveBoard () {
           let cr = getCanvasRenderer()
 

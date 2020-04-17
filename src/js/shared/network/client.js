@@ -67,6 +67,13 @@ export const connect = (URI = '') => {
     })
   };
 
+  const setBoard = (board) => {
+    return new Promise((resolve) => {
+      client.once('setBoard', resolve)
+      client.emit('setBoard', board)
+    })
+  };
+
   const isSceneDirty = () => {
     return new Promise((resolve) => {
       client.once('isSceneDirty', resolve)
@@ -110,6 +117,7 @@ export const connect = (URI = '') => {
     saveShot,
     insertShot,
     getSg,
+    setBoard,
     isSceneDirty
   }
 }

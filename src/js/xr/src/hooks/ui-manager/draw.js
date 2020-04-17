@@ -396,7 +396,7 @@ const drawGrid = function drawGrid(ctx, x, y, width, height, items, type, rowCou
   // ctx.lineWidth = 1
   // roundRect(ctx, width + 37, y, 12, height, 6, false, true)
   }
-}
+} 
 
 const drawRow = function drawRow(ctx, x, y, width, height, items, type, activeIndex) {
   ctx.save()

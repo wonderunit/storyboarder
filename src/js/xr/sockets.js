@@ -64,12 +64,20 @@ export const serve = (io, store, service) => {
     })
 
     socket.on('getBoards', async () => {
-      console.log('boards', await service.getBoards())
       socket.emit('getBoards', await service.getBoards())
     })
 
+    socket.on('setBoard', async (uid) => {
+      let boards = await service.getBoards()
+      if (boards.find(board => board.uid === uid)) {
+        console.log('New board ID: ', uid)
+        await service.loadBoardByUid(uid)
+      }
+      
+      socket.emit('setBoard')
+    })
+
     socket.on('saveShot', async () => {
-      console.log('Saving')
       await service.saveShot()
       socket.emit('saveShot')
     })
@@ -81,7 +89,6 @@ export const serve = (io, store, service) => {
 
     socket.on('getSg', async () => {
       let board = await service.getBoard(store.getState().board.uid)
-      console.log('Board', board)
       socket.emit('getSg', board)
     })
 
