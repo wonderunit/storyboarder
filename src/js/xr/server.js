@@ -150,7 +150,7 @@ const { getSerializedState, updateServer, updateSceneFromXR, getHash } = require
 const getIpAddress = require('../utils/getIpAddress')
 
 class XRServer {
-  constructor ({ store, service }) {
+  constructor ({ store, service, staticPath = window.__dirname }) {
     const validSameBoard = uid => store.getState().board.uid === uid
 
     app.use(express.json({
@@ -174,11 +174,11 @@ class XRServer {
     }
 
     app.use('/', express.static(
-      path.join(window.__dirname, 'js/xr/dist')
+      path.join(staticPath, 'js/xr/dist')
     ))
 
     app.use('/data/system', express.static(
-      path.join(window.__dirname, 'data', 'shot-generator')
+      path.join(staticPath, 'data', 'shot-generator')
     ))
 
     app.use('/data/user', express.static(
@@ -186,7 +186,7 @@ class XRServer {
     ))
 
     app.use('/data/snd', express.static(
-      path.join(window.__dirname, 'public', 'snd')
+      path.join(staticPath, 'public', 'snd')
     ))
 
     app.use('/data/presets/poses', express.static(
@@ -202,7 +202,7 @@ class XRServer {
     ))
 
     app.get('/', function(req, res) {
-      res.sendFile(path.join(window.__dirname, 'js/xr/dist', 'index.html'))
+      res.sendFile(path.join(staticPath, 'js/xr/dist', 'index.html'))
     })
 
     app.get('/sg.json', (req, res) => {
