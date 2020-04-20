@@ -10,14 +10,17 @@ import {
 
 const IO = {current: null}
 
-const dispatchRemote = (action) => {
+const dispatchRemote = (action, meta = {}) => {
   if (!IO.current) {
     return false
   }
   
   const SGAction = {
     ...action,
-    meta: {isSG: true}
+    meta: {
+      ...meta,
+      isSG: true
+    }
   }
 
   IO.current.emit('action', SGAction)
@@ -35,12 +38,9 @@ const onUserConnect = (io, socket, store) => {
 export const serve = (io, store, service) => {
   IO.current = io
 
-  const validSameBoard = uid => store.getState().board.uid === uid
-
   io.on('connection', (socket) => {
 
     onUserConnect(io, socket, store)
-    
     socket.on('action', (action) => {
       store.dispatch(action)
     })
@@ -83,8 +83,7 @@ export const serve = (io, store, service) => {
     })
 
     socket.on('insertShot', async () => {
-      await service.insertShot()
-      socket.emit('insertShot')
+      socket.emit('insertShot', await service.insertShot())
     })
 
     socket.on('getSg', async () => {
@@ -109,7 +108,7 @@ export const SGMiddleware = store => next => action => {
     return next(action)
   }
   
-  dispatchRemote(action)
+  dispatchRemote(action, action.meta)
   
   return next(action)
 }

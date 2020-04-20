@@ -250,14 +250,6 @@ class CanvasRenderer {
     // roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
 
     this.state.boardsData = RemoteData.init()
-    this.shotGenerator.getBoards().then(result => {
-      this.state.boardsData = RemoteData.success(result)
-      this.boardsNeedsRender = true
-    }).catch(err => {
-      this.state.boardsData = RemoteData.failure(err)
-      this.boardsNeedsRender = true
-    })
-
     this.state.sgCurrentState = RemoteData.init()
     // this.client.getState().then(result => {
     //   this.state.sgCurrentState = RemoteData.success(result)
@@ -1534,6 +1526,10 @@ const useUiManager = ({ playSound, stopSound, SG }) => {
         },
 
         async onChangeBoard (context, event) {
+          if (!event.uid) {
+            return false
+          }
+          
           let cr = getCanvasRenderer()
 
           let hasUnsavedChanges = await checkForUnsavedChanges()
@@ -1674,6 +1670,17 @@ const useUiManager = ({ playSound, stopSound, SG }) => {
       //uiSend('GO_HOME')
     }
   }, [selections, sceneObjects, poses, models, activeCamera, world, handPoses, board])
+  
+  useEffect(() => {
+    const renderer = getCanvasRenderer()
+    renderer.shotGenerator.getBoards().then(result => {
+      renderer.state.boardsData = RemoteData.success(result)
+      renderer.boardsNeedsRender = true
+    }).catch(err => {
+      renderer.state.boardsData = RemoteData.failure(err)
+      renderer.boardsNeedsRender = true
+    })
+  }, [board.uid])
 
   useMemo(() => {
     if (selections.length === 0 && getCanvasRenderer().state.mode === 'properties') {

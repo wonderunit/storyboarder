@@ -20,6 +20,18 @@ export const connect = (URI = '') => {
   const client = SocketClient.connect(URI)
 
   let FRAME_RATE = {current: 10}
+
+  const dispatchRemote = (action, meta = {}) => {
+    const XRAction = {
+      ...action,
+      meta: {
+        ...meta,
+        isXR: true
+      }
+    }
+
+    client.emit('action', XRAction)
+  }
   
   const connectStore = (store) => {
     client.on('state', (data) => {
@@ -82,16 +94,33 @@ export const connect = (URI = '') => {
   };
 
   const ClientMiddleware = store => next => action => {
-    if (action.meta && action.meta.isSG || (RestrictedActions.indexOf(action.type) !== -1)) {
+    /* Not send restricted actions */
+    if (RestrictedActions.indexOf(action.type) !== -1) {
+
+      /* Send deselect if we select something */
       if (SelectActions.indexOf(action.type) !== -1) {
-        client.emit('action', deselectObject(action.payload))
+        let meta = {ignore: [remoteStore.getState().id]}
+        dispatchRemote(deselectObject(action.payload), meta)
       }
-      
+
+      /* Dispatch */
       return next(action)
     }
-
-    client.emit('action', action)
     
+    /* Dispatch if the message came from SG */
+    if (action.meta && action.meta.isSG) {
+      client.emit('debug', action)
+      
+      /* Are we listed on the ignore list? */
+      let isIgnored = action.meta.ignore && action.meta.ignore.indexOf(remoteStore.getState().id) !== 1
+      
+      if (!isIgnored) {
+        return next(action)
+      }
+    } else {
+      /* Send to the SG */
+      dispatchRemote(action)
+    }
     // Not send actions to the reducer, instead wait for the server answer
   }
   

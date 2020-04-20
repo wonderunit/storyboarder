@@ -812,8 +812,7 @@ const selectionsReducer = (state = [], action) => {
         return
       case 'DESELECT_OBJECT':
         let objectsToDeselect = Array.isArray(action.payload) ? action.payload : [action.payload]
-        draft = draft.filter((target) => objectsToDeselect.indexOf(target) === -1)
-        return
+        return draft.filter((target) => objectsToDeselect.indexOf(target) === -1)
       case 'SELECT_ATTACHABLE':
         return [action.payload.bindId]
         
