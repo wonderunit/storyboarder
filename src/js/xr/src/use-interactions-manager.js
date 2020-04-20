@@ -19,6 +19,11 @@ const {
 const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
+
+// via https://github.com/immersive-web/webxr-input-profiles/blob/8a7807f/packages/registry/profiles/oculus/oculus-touch-v2.json
+const profile = require('./helpers/vr-gamepads/oculus-touch-v2.json')
+const { addGamepad, removeGamepad } = require('./helpers/vr-gamepads')
+
 const applyDeviceQuaternion = require('../../shot-generator/utils/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
@@ -273,14 +278,10 @@ const [useStore, useStoreApi] = create((set, get) => ({
 }))
 
 const getControllerByName = (controllers, name) => {
-  if(controllers[0] && controllers[0].gamepad ) {
-    if(controllers[0].gamepad.hand === name) return controllers[0]
-    else return controllers[1]
-
-  }
-  else if(controllers[1] && controllers[1].gamepad) {
-    if(controllers[1].gamepad.hand === name) return controllers[1]
-    else return controllers[0]
+  for (let controller of controllers) {
+    if (controller.userData.inputSource.handedness === name) {
+      return controller
+    }
   }
 }
 const getExcludeList = parent => {
@@ -715,6 +716,10 @@ const useInteractionsManager = ({
     interactionService.send({ type: 'AXES_CHANGED', controller: event.target, axes: event.axes })
   }
 
+  const onAxesStop = event => {
+    interactionService.send({ type: 'AXES_CHANGED', controller: event.target, axes: [0, 0] })
+  }
+
   const onPressEndA = event => {
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
@@ -813,44 +818,86 @@ const useInteractionsManager = ({
   )
   const isXrPresenting = useIsXrPresenting()
   useEffect(() => {
+    setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+
+    // via by https://github.com/mrdoob/three.js/pull/18197
+    let connected = event => {
+      addGamepad(
+        event.target,
+        event.data,
+        [...gl.xr.getSession().inputSources].indexOf(event.data),
+        {
+          layout: profile.layouts[event.data.handedness]
+        }
+      )
+
+      // force update
       setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+    }
+    let disconnected = event => {
+      removeGamepad(event.target)
 
-      // inspired by https://github.com/mrdoob/three.js/pull/18197
-      let connected = event => {
-        event.target.userData.inputSource = event.data
-        event.target.userData.inputSourceIndex = [...gl.xr.getSession().inputSources].indexOf(event.data)
-        // setInputs(getList())
-        setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
-      }
-      let disconnected = event => {
-        event.target.userData.inputSource = null
-        event.target.userData.inputSourceIndex = null
-        // setInputs(getList())
-        setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
-      }
+      // force update
+      setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+    }
+
+    for (let controller of controllers) {
+      // via three/src/renderers/webxr/WebXRManager.js
+      controller.addEventListener('connected', connected)
+      controller.addEventListener('disconnected', disconnected)
+
+      // via https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API/Inputs#Actions
+      controller.addEventListener('selectstart', onTriggerStart)
+      controller.addEventListener('select', onTriggerEnd)
+      controller.addEventListener('squeezestart', onGripDown)
+      controller.addEventListener('squeeze', onGripUp)
+
+      // left
+      controller.addEventListener('button/a-button/stop', onPressEndA)
+      controller.addEventListener('button/b-button/stop', onPressEndB)
+      // right
+      controller.addEventListener('button/x-button/stop', onPressEndX)
+      // both
+      controller.addEventListener('button/xr-standard-thumbstick/start', onPressStartThumbstick)
+      controller.addEventListener('axes/0/change', onAxesChanged)
+      controller.addEventListener('axes/0/stop', onAxesStop)
+    }
+    return () => {
       for (let controller of controllers) {
-        // via three/src/renderers/webxr/WebXRManager.js
-        controller.addEventListener('connected', connected)
-        controller.addEventListener('disconnected', disconnected)
+        controller.removeEventListener('connected', connected)
+        controller.removeEventListener('disconnected', disconnected)
 
-        // via https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API/Inputs#Actions
-        controller.addEventListener('selectstart', onTriggerStart)
-        controller.addEventListener('select', onTriggerEnd)
-        controller.addEventListener('squeezestart', onGripDown)
-        controller.addEventListener('squeeze', onGripUp)
+        controller.removeEventListener('selectstart', onTriggerStart)
+        controller.removeEventListener('select', onTriggerEnd)
+        controller.removeEventListener('squeezestart', onGripDown)
+        controller.removeEventListener('squeeze', onGripUp)
+
+        // left
+        controller.removeEventListener('button/a-button/stop', onPressEndA)
+        controller.removeEventListener('button/b-button/stop', onPressEndB)
+        // right
+        controller.removeEventListener('button/x-button/stop', onPressEndX)
+        // both
+        controller.removeEventListener('button/xr-standard-thumbstick/start', onPressStartThumbstick)
+        controller.removeEventListener('axes/0/change', onAxesChanged)
+        controller.removeEventListener('axes/0/stop', onAxesStop)
       }
-      return () => {
-        for (let controller of controllers) {
-          controller.removeEventListener('connected', connected)
-          controller.removeEventListener('disconnected', disconnected)
-          controller.removeEventListener('selectstart', onTriggerStart)
-          controller.removeEventListener('select', onTriggerEnd)
-          controller.removeEventListener('squeezestart', onGripDown)
-          controller.removeEventListener('squeeze', onGripUp)
+    }
+  }, [isXrPresenting])
+
+  // poll controllers every frame
+  useFrame(() => {
+    if (gl.xr.getSession()) {
+      for (let i = 0; i < 2; i++) {
+        let controller = gl.xr.getController(i)
+        let { inputSource } = controller.userData
+        if (inputSource) {
+          let { gamepad } = inputSource
+          controller.userData.gamepadSource.emitter(gamepad)
         }
       }
-    // }
-  }, [isXrPresenting])
+    }
+  })
 
 
 
