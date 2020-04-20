@@ -745,18 +745,25 @@ const useInteractionsManager = ({
   }
 
   const onPressStartThumbstick = event => {
-    let rightController = getControllerByName(controllers, "right");
+    let rightController = getControllerByName(controllers, 'right')
     let worldScale = useStoreApi.getState().worldScale
     let hmd = camera.parent
     let elevationDisplacement = 0.5
-    if(event.target.uuid === rightController.uuid) {
+
+    if (event.target.uuid === rightController.uuid) {
       hmd.position.y += elevationDisplacement
-    }
-    else {
-      if(hmd.position.y !== 0)
+    } else {
+      if (hmd.position.y !== 0) {
         hmd.position.y -= elevationDisplacement
+      }
     }
-    teleport(camera, (hmd.position.x + camera.position.x) * worldScale, hmd.position.y * worldScale, (hmd.position.z + camera.position.z) * worldScale)
+
+    teleport(
+      camera,
+      (hmd.position.x + camera.position.x) * worldScale,
+      hmd.position.y * worldScale,
+      (hmd.position.z + camera.position.z) * worldScale
+    )
   }
 
   const thumbStickSensitivity = 0.25
