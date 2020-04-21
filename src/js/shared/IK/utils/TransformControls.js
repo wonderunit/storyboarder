@@ -895,7 +895,7 @@ const TransformControlsGizmo = function (shownAxis) {
 			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matGreen ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
 		];
 	}
-	if(shownAxis & axis.Z_axix) {
+	if(shownAxis & axis.Z_axis) {
 		pickerRotate.Z = [
 			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matBlue ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 		];
