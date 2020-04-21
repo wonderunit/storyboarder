@@ -3,8 +3,6 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { extend } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
-import { useThree } from 'react-three-fiber'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
@@ -15,30 +13,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   
   const aspect = useRef(1)
   const ref = useRef()
-
-  const { scene, camera, gl } = useThree()
-  const objectRotationControl = useRef()
-
-  useEffect(() => {
-    objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
-    objectRotationControl.current.control.canSwitch = false
-    objectRotationControl.current.isEnabled = true
-    objectRotationControl.current.setUpdateCharacter((name, rotation) => {
-      let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
-      props.updateObject(ref.current.userData.id, {
-        rotation: {
-          x : euler.x,
-          y : euler.y,
-          z : euler.z,
-        }
-      } )})
-      return () => {
-        if(objectRotationControl.current) {
-          objectRotationControl.current.deselectObject()
-          objectRotationControl.current = null
-        }
-      }
-  }, [])
 
   const material = useMemo(() => {
     return new THREE.MeshToonMaterial({ transparent: true })
@@ -71,13 +45,32 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
   useEffect(() => {
     if (isSelected) {
-      objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+      props.objectRotationControl.setUpdateCharacter((name, rotation) => {
+        let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
+        props.updateObject(ref.current.userData.id, {
+          rotation: {
+            x : euler.x,
+            y : euler.y,
+            z : euler.z,
+          }
+        } )})
+      props.objectRotationControl.setCharacterId(ref.current.uuid)
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+      props.objectRotationControl.IsEnabled = !sceneObject.locked
     } else {
-      objectRotationControl.current.deselectObject()
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      } 
     }
   }, [isSelected]) 
 
   const { x, y, z, visible, height, rotation, locked } = sceneObject
+
+  useEffect(() => {
+    if(!props.objectRotationControl || !isSelected) return
+    props.objectRotationControl.IsEnabled = !locked
+  }, [locked])
+
   return (
     <group
       ref={ ref }

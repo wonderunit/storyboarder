@@ -1,12 +1,11 @@
 import * as THREE from 'three'
 import React, { useMemo, useEffect, useRef } from 'react'
-import { useUpdate, extend, useThree } from 'react-three-fiber'
+import { useUpdate, extend } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
 import { useAsset } from "../../hooks/use-assets-manager"
 
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { patchMaterial, setSelected } from "../../helpers/outlineMaterial"
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
@@ -47,9 +46,6 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )
-  const { scene, camera, gl } = useThree()
-  const isObjectSelected = useRef(null)
-  const objectRotationControl = useRef(null)
   
   const {asset} = useAsset((sceneObject.model === 'box') ? null : path)
 
@@ -86,34 +82,6 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     return []
   }, [sceneObject.model, asset])
 
-
-  useEffect(() => {
-    if(isIcon) return
-    objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
-    objectRotationControl.current.control.canSwitch = false
-    objectRotationControl.current.isEnabled = true
-    objectRotationControl.current.setUpdateCharacter((name, rotation) => {
-      let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
-      props.updateObject(ref.current.userData.id, {
-        rotation:
-        {
-          x : euler.x,
-          y : euler.y,
-          z : euler.z,
-        }
-      } )})
-    return function CleanUp() {
-      objectRotationControl.current.cleanUp();
-      objectRotationControl.current = null
-      isObjectSelected.current = false
-    }
-  }, [])
-
-  useEffect(() => {
-    if(!objectRotationControl.current) return
-    objectRotationControl.current.setCamera(camera)
-  }, [camera])
-
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {
       if (material.emissive) {
@@ -134,17 +102,23 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     if(isIcon) return
     if(!ref.current) return
     if(isSelected) {
-      if(!isObjectSelected.current) {
-        if(objectRotationControl.current.isEnabled) { 
-          objectRotationControl.current.selectObject(ref.current, sceneObject.id)
-        }
-        isObjectSelected.current = true
-      }
+      props.objectRotationControl.setUpdateCharacter((name, rotation) => {
+        let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
+        props.updateObject(ref.current.userData.id, {
+          rotation:
+          {
+            x : euler.x,
+            y : euler.y,
+            z : euler.z,
+          }
+        } )})
+      props.objectRotationControl.setCharacterId(ref.current.uuid)
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+      props.objectRotationControl.IsEnabled = !sceneObject.locked
     }
     else {
-      if(isObjectSelected.current) {
-        objectRotationControl.current.deselectObject()
-        isObjectSelected.current = false
+      if(props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
       }
     }
   }, [isSelected])
@@ -152,8 +126,8 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
   const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
 
   useEffect(() => {
-    if(!objectRotationControl.current) return
-    objectRotationControl.current.IsEnabled = !locked
+    if(!props.objectRotationControl || !isSelected) return
+    props.objectRotationControl.IsEnabled = !locked
   }, [locked])
 
   return <group

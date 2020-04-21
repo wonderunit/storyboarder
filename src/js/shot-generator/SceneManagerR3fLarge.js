@@ -39,6 +39,7 @@ import Room from './components/Three/Room'
 import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
+import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -104,6 +105,7 @@ const SceneManagerR3fLarge = connect(
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
 
+    const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
 
     const modelObjectIds = useMemo(() => {
@@ -171,7 +173,24 @@ const SceneManagerR3fLarge = connect(
         updatePoleTarget,
         updateObjects
       )
+
+      //#region initialization of objectRotationControl 
+      objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement)
+      objectRotationControl.current.control.canSwitch = false
+      objectRotationControl.current.isEnabled = true
+      //#endregion
+      return () => {
+        if(objectRotationControl.current) {
+          objectRotationControl.current.cleanUp()
+          objectRotationControl.current = null
+        }
+      }
     }, [])
+
+    useEffect(() => {
+      if(!objectRotationControl.current) return
+      objectRotationControl.current.setCamera(camera)
+    }, [camera])
 
     useEffect(() => {  
       selectedCharacters.current = selections.filter((id) => {
@@ -291,6 +310,7 @@ const SceneManagerR3fLarge = connect(
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
                 updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
                 />
             </SimpleErrorBoundary>
         })
@@ -322,6 +342,7 @@ const SceneManagerR3fLarge = connect(
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) } 
                 updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
                 />
               </SimpleErrorBoundary>
         })
@@ -363,6 +384,7 @@ const SceneManagerR3fLarge = connect(
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) }
                 updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
                 />
               </SimpleErrorBoundary>
         })

@@ -239,9 +239,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       if(!camera) return
       SGIkHelper.getInstance().setCamera(camera)
       if(characterRotationControl.current)
-      characterRotationControl.current.setCamera(camera)
+        characterRotationControl.current.setCamera(camera)
       if(boneRotationControl.current)
-          boneRotationControl.current.setCamera(camera)
+        boneRotationControl.current.setCamera(camera)
     }, [camera])
 
     useEffect(() => {
@@ -333,11 +333,13 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           ref.current.updateWorldMatrix(true, true)
         }
         ref.current.add(BonesHelper.getInstance())
-        characterRotationControl.current.selectObject(ref.current, sceneObject.id)
+        characterRotationControl.current.selectObject(ref.current, ref.current.uuid)
+        characterRotationControl.current.IsEnabled = !sceneObject.locked
       } else { 
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
-        characterRotationControl.current.deselectObject()
+        if(characterRotationControl.current)
+          characterRotationControl.current.deselectObject()
       }
 
       lod.traverse((child) => {
@@ -355,32 +357,39 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [sceneObject.poleTargets])
 
     useEffect(() => {
-        if(!ref.current || boneRotationControl.current) return 
-        boneRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
-        boneRotationControl.current.setUpdateCharacter((name, rotation) => { 
-          
-          updateCharacterSkeleton({
-            id: sceneObject.id,
-            name : name,
-            rotation:
-            {
-              x : rotation.x,
-              y : rotation.y,
-              z : rotation.z,
-            }
-        } ) })
+      if(!ref.current || boneRotationControl.current) return 
+      boneRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
+      boneRotationControl.current.setCharacterId(ref.current.uuid)
+      boneRotationControl.current.control.canSwitch = false
+      boneRotationControl.current.isEnabled = true
+      boneRotationControl.current.setUpdateCharacter((name, rotation) => { 
+        updateCharacterSkeleton({
+          id: sceneObject.id,
+          name : name,
+          rotation:
+          {
+            x : rotation.x,
+            y : rotation.y,
+            z : rotation.z,
+          }
+      } ) })
 
-        characterRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid, axis.Y_axis)
-        characterRotationControl.current.control.canSwitch = false
-        characterRotationControl.current.isEnabled = true
-        characterRotationControl.current.setUpdateCharacter((name, rotation) => { 
-          let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion(), "YXZ")
-          props.updateObject(sceneObject.id, {
-            rotation: euler.y,
-          } )})
+      characterRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid, axis.Y_axis)
+      characterRotationControl.current.setCharacterId(ref.current.uuid)
+      characterRotationControl.current.control.canSwitch = false
+      characterRotationControl.current.isEnabled = true
+      characterRotationControl.current.setUpdateCharacter((name, rotation) => { 
+        let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion(), "YXZ")
+        props.updateObject(sceneObject.id, {
+          rotation: euler.y,
+        } )})
     }, [ref.current])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
+
+    useEffect(() => {
+      characterRotationControl.current.IsEnabled = !locked
+    }, [locked])
 
     return <group
         ref={ ref }

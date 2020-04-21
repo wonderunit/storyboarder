@@ -13,7 +13,6 @@ class ObjectRotationControl
         });
         this.object = null;
         this.scene = scene;
-        this.control.characterId = characterId;
         this.isEnabled = false;
     }
 
@@ -26,13 +25,18 @@ class ObjectRotationControl
     onMouseUp = event => {this.updateCharacter(this.object.name, this.object.rotation); this.object.isRotated = false; this.object.isRotationChanged = true;};
     //#enderegion
 
+    setCharacterId(characterId) {
+        this.control.characterId = characterId;
+    }
+
     selectObject(object, hitmeshid)
     {
         if(this.object !== null)
         {
             this.control.detach();
+            this.deselectObject();
         }
-        else if (object)
+        if (object)
         {
             this.scene.add(this.control);
             this.control.addToScene();
@@ -53,7 +57,7 @@ class ObjectRotationControl
     {
         this.control.detach();
         this.scene.remove(this.control);
-        
+        this.IsEnabled = true;
         this.control.dispose();
         this.object = null;
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
@@ -64,6 +68,10 @@ class ObjectRotationControl
     {
         this.control.changeCamera(camera);
         this.control.updateMatrixWorld();
+    }
+
+    isSelected(object) {
+        return this.object === object
     }
 
     cleanUp()

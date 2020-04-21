@@ -1,43 +1,16 @@
 import * as THREE from 'three'
 import React, { useMemo, useEffect, useState, useRef } from 'react'
 
-import { useUpdate, useThree } from 'react-three-fiber'
+import { useUpdate } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 
 import path from 'path'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
 
 const Light = React.memo(({sceneObject, isSelected, children, ...props }) => {
   const {asset: gltf} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
   const mesh = useMemo(() => gltf ? gltf.scene.children[0].clone() : null, [gltf])
   const [lightColor, setLightColor] = useState(0x8c78f1)
-  const { scene, camera, gl } = useThree()
-  const objectRotationControl = useRef()
-
-  useEffect(() => {
-    objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
-    objectRotationControl.current.control.canSwitch = false
-    objectRotationControl.current.isEnabled = true
-    objectRotationControl.current.setUpdateCharacter((name, rotation) => {
-      let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion(), "YXZ")
-      props.updateObject(ref.current.userData.id, {
-        rotation: euler.y,
-        tilt: euler.x,
-        roll: euler.z
-      } )})
-      return () => {
-        if(objectRotationControl.current) {
-          objectRotationControl.current.deselectObject()
-          objectRotationControl.current = null
-        }
-      }
-  }, [])
-
-  useEffect(() => {
-    if(!objectRotationControl.current) return
-    objectRotationControl.current.setCamera(camera)
-  }, [camera])
 
   const ref = useUpdate(self => {
     self.rotation.x = 0
@@ -57,10 +30,21 @@ const Light = React.memo(({sceneObject, isSelected, children, ...props }) => {
   useEffect(() => {
     if (isSelected) {
       setLightColor(0x7256ff)
-      objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+      props.objectRotationControl.setUpdateCharacter((name, rotation) => {
+        let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion(), "YXZ")
+        props.updateObject(ref.current.userData.id, {
+          rotation: euler.y,
+          tilt: euler.x,
+          roll: euler.z
+        } )})
+      props.objectRotationControl.setCharacterId(ref.current.uuid)
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+      props.objectRotationControl.IsEnabled = !sceneObject.locked
     } else {
       setLightColor(0x8c78f1)
-      objectRotationControl.current.deselectObject()
+      if(props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      }
     }
   }, [isSelected]) 
 
