@@ -1,4 +1,4 @@
-const TransformControls = require( "../utils/TransformControls");
+const { TransformControls } = require( "../utils/TransformControls");
 
 // TargetControl is class which is resposible for TransformControl and Mesh
 class TargetControl

@@ -1,4 +1,4 @@
-const TransformControls = require( "../utils/TransformControls");
+const { TransformControls } = require( "../utils/TransformControls");
 class ObjectRotationControl
 {
     constructor(scene, camera, domElement, characterId)
