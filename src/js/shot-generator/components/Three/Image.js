@@ -3,17 +3,42 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { extend } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-
+import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
+import { useThree } from 'react-three-fiber'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
-const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
+const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
   const {asset: texture} = useAsset(imagesPaths[0] || null)
   
   const aspect = useRef(1)
   const ref = useRef()
+
+  const { scene, camera, gl } = useThree()
+  const objectRotationControl = useRef()
+
+  useEffect(() => {
+    objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
+    objectRotationControl.current.control.canSwitch = false
+    objectRotationControl.current.isEnabled = true
+    objectRotationControl.current.setUpdateCharacter((name, rotation) => {
+      let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
+      props.updateObject(ref.current.userData.id, {
+        rotation: {
+          x : euler.x,
+          y : euler.y,
+          z : euler.z,
+        }
+      } )})
+      return () => {
+        if(objectRotationControl.current) {
+          objectRotationControl.current.deselectObject()
+          objectRotationControl.current = null
+        }
+      }
+  }, [])
 
   const material = useMemo(() => {
     return new THREE.MeshToonMaterial({ transparent: true })
@@ -43,6 +68,14 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
     if (sceneObject.visibleToCam) ref.current.traverse(child => child.layers.enable(SHOT_LAYERS))
     else ref.current.traverse(child => child.layers.disable(SHOT_LAYERS))
   }, [ref.current, sceneObject.visibleToCam])
+
+  useEffect(() => {
+    if (isSelected) {
+      objectRotationControl.current.selectObject(ref.current, sceneObject.id)
+    } else {
+      objectRotationControl.current.deselectObject()
+    }
+  }, [isSelected]) 
 
   const { x, y, z, visible, height, rotation, locked } = sceneObject
   return (
