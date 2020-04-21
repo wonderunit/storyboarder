@@ -320,7 +320,9 @@ const SceneManagerR3fLarge = connect(
             return <SimpleErrorBoundary  key={ id }>
               <Light
                 sceneObject={ sceneObject }
-                isSelected={ selections.includes(id) } />
+                isSelected={ selections.includes(id) } 
+                updateObject={ updateObject }
+                />
               </SimpleErrorBoundary>
         })
     }
