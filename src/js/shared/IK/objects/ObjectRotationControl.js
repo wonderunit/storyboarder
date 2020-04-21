@@ -1,9 +1,9 @@
 const { TransformControls } = require( "../utils/TransformControls");
 class ObjectRotationControl
 {
-    constructor(scene, camera, domElement, characterId)
+    constructor(scene, camera, domElement, characterId, axis = null)
     {
-        this.control = new TransformControls(camera, domElement);
+        this.control = axis ? new TransformControls(camera, domElement, axis) : new TransformControls(camera, domElement);
         this.control.rotationOnly = true;
         this.control.setMode('rotate');
         this.control.size = 0.2;

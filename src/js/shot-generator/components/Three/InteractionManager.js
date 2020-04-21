@@ -301,7 +301,7 @@ const InteractionManager = connect(
                     setDragTarget({ target, x, y, isObjectControl: true })
                     return
                 }
-                else if(targetElement.userData.type === "object") {
+                else {
                   let objects = intersectables.current.filter(value => value.uuid === objectId)
                   target = objects[0]
                   selectedObjectControl = targetElement

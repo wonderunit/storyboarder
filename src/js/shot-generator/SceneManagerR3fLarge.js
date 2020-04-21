@@ -309,6 +309,7 @@ const SceneManagerR3fLarge = connect(
                 updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
                 renderData={renderData}
                 withState={ withState }
+                updateObject={ updateObject }
                 />
               </SimpleErrorBoundary>
         })
