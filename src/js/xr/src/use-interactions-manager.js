@@ -824,6 +824,29 @@ const useInteractionsManager = ({
     [ gl.xr.getController(0), gl.xr.getController(1) ]
   )
   const isXrPresenting = useIsXrPresenting()
+
+  const onTriggerStartRef = useRef()
+  const onTriggerEndRef = useRef()
+  const onGripDownRef = useRef()
+  const onGripUpRef = useRef()
+  const onPressEndARef = useRef()
+  const onPressEndBRef = useRef()
+  const onPressEndXRef = useRef()
+  const onPressStartThumbstickRef = useRef()
+  const onAxesChangedRef = useRef()
+  const onAxesStopRef = useRef()
+
+  onTriggerStartRef.current = onTriggerStart
+  onTriggerEndRef.current = onTriggerEnd
+  onGripDownRef.current = onGripDown
+  onGripUpRef.current = onGripUp
+  onPressEndARef.current = onPressEndA
+  onPressEndBRef.current = onPressEndB
+  onPressEndXRef.current = onPressEndX
+  onPressStartThumbstickRef.current = onPressStartThumbstick
+  onAxesChangedRef.current = onAxesChanged
+  onAxesStopRef.current = onAxesStop
+
   useEffect(() => {
     setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
 
@@ -848,46 +871,56 @@ const useInteractionsManager = ({
       setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
     }
 
+    // bind
+    const _triggerStart = event => onTriggerStartRef.current(event)
+    const _triggerEnd = event => onTriggerEndRef.current(event)
+    const _gripDown = event => onGripDownRef.current(event)
+    const _gripUp = event => onGripUpRef.current(event)
+    const _pressEndA = event => onPressEndARef.current(event)
+    const _pressEndB = event => onPressEndBRef.current(event)
+    const _pressEndX = event => onPressEndXRef.current(event)
+    const _pressStartThumbstick = event => onPressStartThumbstickRef.current(event)
+    const _axesChanged = event => onAxesChangedRef.current(event)
+    const _axesStop = event => onAxesStopRef.current(event)
+
     for (let controller of controllers) {
       // via three/src/renderers/webxr/WebXRManager.js
       controller.addEventListener('connected', connected)
       controller.addEventListener('disconnected', disconnected)
 
       // via https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API/Inputs#Actions
-      controller.addEventListener('selectstart', onTriggerStart)
-      controller.addEventListener('select', onTriggerEnd)
-      controller.addEventListener('squeezestart', onGripDown)
-      controller.addEventListener('squeeze', onGripUp)
+      console.log('setting selectstart to', onTriggerStartRef.current)
+
+      controller.addEventListener('selectstart', _triggerStart)
+      controller.addEventListener('select', _triggerEnd)
+      controller.addEventListener('squeezestart', _gripDown)
+      controller.addEventListener('squeeze', _gripUp)
 
       // left
-      controller.addEventListener('button/a-button/stop', onPressEndA)
-      controller.addEventListener('button/b-button/stop', onPressEndB)
+      controller.addEventListener('button/a-button/stop', _pressEndA)
+      controller.addEventListener('button/b-button/stop', _pressEndB)
       // right
-      controller.addEventListener('button/x-button/stop', onPressEndX)
+      controller.addEventListener('button/x-button/stop', _pressEndX)
       // both
-      controller.addEventListener('button/xr-standard-thumbstick/start', onPressStartThumbstick)
-      controller.addEventListener('axes/0/change', onAxesChanged)
-      controller.addEventListener('axes/0/stop', onAxesStop)
+      controller.addEventListener('button/xr-standard-thumbstick/start', _pressStartThumbstick)
+      controller.addEventListener('axes/0/change', _axesChanged)
+      controller.addEventListener('axes/0/stop', _axesStop)
     }
     return () => {
       for (let controller of controllers) {
         controller.removeEventListener('connected', connected)
         controller.removeEventListener('disconnected', disconnected)
 
-        controller.removeEventListener('selectstart', onTriggerStart)
-        controller.removeEventListener('select', onTriggerEnd)
-        controller.removeEventListener('squeezestart', onGripDown)
-        controller.removeEventListener('squeeze', onGripUp)
-
-        // left
-        controller.removeEventListener('button/a-button/stop', onPressEndA)
-        controller.removeEventListener('button/b-button/stop', onPressEndB)
-        // right
-        controller.removeEventListener('button/x-button/stop', onPressEndX)
-        // both
-        controller.removeEventListener('button/xr-standard-thumbstick/start', onPressStartThumbstick)
-        controller.removeEventListener('axes/0/change', onAxesChanged)
-        controller.removeEventListener('axes/0/stop', onAxesStop)
+        controller.removeEventListener('selectstart', _triggerStart)
+        controller.removeEventListener('select', _triggerEnd)
+        controller.removeEventListener('squeezestart', _gripDown)
+        controller.removeEventListener('squeeze', _gripUp)
+        controller.removeEventListener('button/a-button/stop', _pressEndA)
+        controller.removeEventListener('button/b-button/stop', _pressEndB)
+        controller.removeEventListener('button/x-button/stop', _pressEndX)
+        controller.removeEventListener('button/xr-standard-thumbstick/start', _pressStartThumbstick)
+        controller.removeEventListener('axes/0/change', _axesChanged)
+        controller.removeEventListener('axes/0/stop', _axesStop)
       }
     }
   }, [isXrPresenting])
