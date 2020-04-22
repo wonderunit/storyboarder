@@ -3,26 +3,11 @@ import * as THREE from 'three'
 import React, { useRef, useEffect, useMemo } from 'react'
 import { batch } from 'react-redux'
 import { useThree } from 'react-three-fiber'
-import ObjectRotationControl from '../../../shared/IK/objects/ObjectRotationControl'
 import { axis } from "../../../shared/IK/utils/TransformControls"
 
 const Group = React.memo(({ id, type, ...props }) => {
   const ref = useRef()
- // const group = useRef(new THREE.Group())
-  const { scene, camera, gl } = useThree()
-  const objectRotationControl = useRef()
-  useEffect(() => {
-    objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, 1, axis.Y_axis )
-    objectRotationControl.current.control.canSwitch = false
-    objectRotationControl.current.isEnabled = true
-    return () => {
-     // addArrayToObject(scene.children[0], children, false) 
-      if(objectRotationControl.current) {
-        objectRotationControl.current.cleanUp()
-        objectRotationControl.current = null
-      } 
-    }
-  }, [])
+  const { scene } = useThree()
 
   const children = useMemo(() => {
     return scene.__interaction.filter((object) => props.children.includes(object.userData.id))
@@ -107,19 +92,22 @@ const Group = React.memo(({ id, type, ...props }) => {
   useEffect(() => {
     if (props.isSelected) {
 
-      objectRotationControl.current.setUpdateCharacter((name, rotation) => {
+      props.objectRotationControl.setUpdateCharacter((name, rotation) => {
         updateAllChildren()
       })
       ref.current.position.copy(getCenterPosition())
       ref.current.updateMatrixWorld(true)
-      objectRotationControl.current.setCharacterId(ref.current.uuid)
-      objectRotationControl.current.selectObject(ref.current, ref.current.uuid)
-      objectRotationControl.current.IsEnabled = !props.locked
-      objectRotationControl.current.customOnMouseDownAction = () => { addArrayToObject(ref.current, children) };
-      objectRotationControl.current.customOnMouseUpAction = () => { addArrayToObject(scene.children[0], children, false) };
-
+      props.objectRotationControl.setCharacterId(ref.current.uuid)
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+      props.objectRotationControl.IsEnabled = !props.locked
+      props.objectRotationControl.customOnMouseDownAction = () => { addArrayToObject(ref.current, children) };
+      props.objectRotationControl.customOnMouseUpAction = () => { addArrayToObject(scene.children[0], children, false) };
+      props.objectRotationControl.control.setShownAxis(axis.Y_axis)
+      
     } else {
-      objectRotationControl.current.deselectObject()
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      }
     }
   }, [props.isSelected])
 

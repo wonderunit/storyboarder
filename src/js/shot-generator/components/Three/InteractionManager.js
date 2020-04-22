@@ -369,7 +369,7 @@ const InteractionManager = connect(
               }
             }
               selectBone(null)
-              setLastDownId(target.userData.id)s
+              setLastDownId(target.userData.id)
              if (shouldDrag) {
                 setDragTarget({ target, x, y })
              }

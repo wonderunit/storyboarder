@@ -121,6 +121,37 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 
 	this.canSwitch = true;
 
+	let gizmoArray = {
+		rotate : {}
+	}
+	let pickerArray = {
+		rotate : {}
+	}
+
+	this.setShownAxis = (shownAxis) => {
+		let axisArray = ["X", "Y", "Z"]
+		for(let i = _gizmo.gizmo["rotate"].children.length-1 ; i > -1; i--) {
+			let gizmo = _gizmo.gizmo["rotate"].children[i]
+			let picker = _gizmo.picker["rotate"].children[i]
+			if(! (axis[`${gizmo.name}_axis`] & shownAxis ? true : false)) {
+				gizmoArray.rotate[gizmo.name] = gizmo;
+				pickerArray.rotate[gizmo.name] = picker;
+				_gizmo.gizmo["rotate"].remove(gizmo);
+				_gizmo.picker["rotate"].remove(picker);
+			}
+		}
+
+		for(let j = 0; j < axisArray.length; j++) {
+			let checkingAxis = axisArray[j]
+			if( axis[`${checkingAxis}_axis`] & shownAxis) {
+				gizmoArray.rotate[checkingAxis] && _gizmo.gizmo["rotate"].add(gizmoArray.rotate[checkingAxis]);
+				pickerArray.rotate[checkingAxis] && _gizmo.picker["rotate"].add(pickerArray.rotate[checkingAxis]);
+				gizmoArray.rotate[checkingAxis] = null
+				pickerArray.rotate[checkingAxis] = null
+			}
+		}
+	}
+
 	this.addToScene = () =>
 	{
 		this.domElement.addEventListener( "pointerdown", onPointerDown, false );

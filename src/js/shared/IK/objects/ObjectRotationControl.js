@@ -42,7 +42,7 @@ class ObjectRotationControl
 
     selectObject(object, hitmeshid)
     {
-        if(this.object !== null && !isSelected(object))
+        if(this.object !== null && !this.isSelected(object))
         {
             this.control.detach();
             this.deselectObject();

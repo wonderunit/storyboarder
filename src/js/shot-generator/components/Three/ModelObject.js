@@ -8,6 +8,8 @@ import { useAsset } from "../../hooks/use-assets-manager"
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { patchMaterial, setSelected } from "../../helpers/outlineMaterial"
+import { axis } from "../../../shared/IK/utils/TransformControls"
+
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
@@ -114,6 +116,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
         } )})
       props.objectRotationControl.setCharacterId(ref.current.uuid)
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+      props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
       props.objectRotationControl.IsEnabled = !sceneObject.locked
     }
     else {

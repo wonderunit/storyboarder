@@ -4,6 +4,7 @@ import { extend } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
+import { axis } from "../../../shared/IK/utils/TransformControls"
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
@@ -57,6 +58,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.setCharacterId(ref.current.uuid)
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
       props.objectRotationControl.IsEnabled = !sceneObject.locked
+      props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
     } else {
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()

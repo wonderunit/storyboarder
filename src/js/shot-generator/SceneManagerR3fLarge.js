@@ -342,6 +342,7 @@ const SceneManagerR3fLarge = connect(
                 renderData={renderData}
                 withState={ withState }
                 updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
                 />
               </SimpleErrorBoundary>
         })
@@ -410,6 +411,7 @@ const SceneManagerR3fLarge = connect(
             isSelected={ selections.includes(sceneObject.id) }
             updateObject={ updateObject }
             withState={ withState }
+            objectRotationControl={ objectRotationControl.current }
             { ...sceneObject }
 
           />

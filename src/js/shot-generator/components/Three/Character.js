@@ -29,8 +29,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       return () => {
         ref.current.remove(SGIkHelper.getInstance())
         ref.current.remove(BonesHelper.getInstance())
-        if(characterRotationControl.current) 
-          characterRotationControl.current.deselectObject()
         if(boneRotationControl.current)
           boneRotationControl.current.deselectObject()
       }
@@ -144,8 +142,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         SGIkHelper.getInstance().cleanUpCharacter()
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
-        characterRotationControl.current.cleanUp()
-        characterRotationControl.current = null
         boneRotationControl.current.cleanUp()
         boneRotationControl.current = null
         if(!lod) return
@@ -238,8 +234,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     useEffect(() => {
       if(!camera) return
       SGIkHelper.getInstance().setCamera(camera)
-      if(characterRotationControl.current)
-        characterRotationControl.current.setCamera(camera)
       if(boneRotationControl.current)
         boneRotationControl.current.setCamera(camera)
     }, [camera])
@@ -254,13 +248,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           boneRotationControl.current.selectObject(bone, selectedBone)
         }
       } 
-      if(characterRotationControl.current) {
-        characterRotationControl.current.deselectObject()
-        characterRotationControl.current.control.domElement = activeGL.domElement
-        // find the 3D Bone matching the selectedBone uuid
-        characterRotationControl.current.selectObject(ref.current, sceneObject.id)
-      }
-    
     }, [activeGL])
 
     // headScale (0.8...1.2)
@@ -333,13 +320,25 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           ref.current.updateWorldMatrix(true, true)
         }
         ref.current.add(BonesHelper.getInstance())
-        characterRotationControl.current.selectObject(ref.current, ref.current.uuid)
-        characterRotationControl.current.IsEnabled = !sceneObject.locked
+        //#region Character's object rotation control
+        props.objectRotationControl.setCharacterId(ref.current.uuid)
+        props.objectRotationControl.control.canSwitch = false
+        props.objectRotationControl.isEnabled = true
+        props.objectRotationControl.setUpdateCharacter((name, rotation) => { 
+          let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion(), "YXZ")
+          props.updateObject(sceneObject.id, {
+            rotation: euler.y,
+          } )})
+        props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+        props.objectRotationControl.control.setShownAxis(axis.Y_axis)
+        props.objectRotationControl.IsEnabled = !sceneObject.locked
+        //#endregion
       } else { 
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
-        if(characterRotationControl.current)
-          characterRotationControl.current.deselectObject()
+        if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+          props.objectRotationControl.deselectObject()
+        }
       }
 
       lod.traverse((child) => {
@@ -373,22 +372,13 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             z : rotation.z,
           }
       } ) })
-
-      characterRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid, axis.Y_axis)
-      characterRotationControl.current.setCharacterId(ref.current.uuid)
-      characterRotationControl.current.control.canSwitch = false
-      characterRotationControl.current.isEnabled = true
-      characterRotationControl.current.setUpdateCharacter((name, rotation) => { 
-        let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion(), "YXZ")
-        props.updateObject(sceneObject.id, {
-          rotation: euler.y,
-        } )})
     }, [ref.current])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
 
     useEffect(() => {
-      characterRotationControl.current.IsEnabled = !locked
+      if(!props.objectRotationControl || !isSelected) return
+      props.objectRotationControl.IsEnabled = !locked
     }, [locked])
     
     return <group
