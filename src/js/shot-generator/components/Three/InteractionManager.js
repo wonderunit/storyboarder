@@ -190,7 +190,8 @@ const InteractionManager = connect(
         intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
             o.userData.type === 'controlTarget' ||
             o.userData.type === 'controlPoint' || 
-            o.userData.type === 'objectControl'))
+            o.userData.type === 'objectControl' ||
+            o.userData.type === 'group'))     
     }
     
     const mouse = event => {
@@ -221,7 +222,7 @@ const InteractionManager = connect(
     }  
 
     useMemo(() => {
-        if(dragTarget){
+        if(dragTarget && dragTarget.target){
           let selections = takeSelections()
           let { target, x, y } = dragTarget
           prepareDrag( target, { x, y, useIcons:true, camera, scene, selections })
@@ -300,6 +301,9 @@ const InteractionManager = connect(
                     selectedObjectControl = targetElement
                     setDragTarget({ target, x, y, isObjectControl: true })
                     return
+                } else if(targetElement.userData.type === "group") {
+                    setDragTarget({ target:null, x, y, isObjectControl: true })
+                    return
                 }
                 else {
                   let objects = intersectables.current.filter(value => value.uuid === objectId)
@@ -365,8 +369,7 @@ const InteractionManager = connect(
               }
             }
               selectBone(null)
-              setLastDownId(target.userData.id)
-            
+              setLastDownId(target.userData.id)s
              if (shouldDrag) {
                 setDragTarget({ target, x, y })
              }
@@ -402,7 +405,7 @@ const InteractionManager = connect(
         event.preventDefault()
         const { x, y } = mouse(event)
         SGIkHelper.getInstance().deselectControlPoint(event)
-        if (dragTarget) {
+        if (dragTarget && dragTarget.target) {
           if(dragTarget.target.userData.type === "character") {
             let attachables = scene.__interaction.filter(object => object.userData.bindedId === dragTarget.target.userData.id)
             for(let i = 0; i < attachables.length; i ++) {

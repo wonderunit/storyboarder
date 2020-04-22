@@ -390,7 +390,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     useEffect(() => {
       characterRotationControl.current.IsEnabled = !locked
     }, [locked])
-
+    
     return <group
         ref={ ref }
 

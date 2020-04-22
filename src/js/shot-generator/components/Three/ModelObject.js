@@ -117,7 +117,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       props.objectRotationControl.IsEnabled = !sceneObject.locked
     }
     else {
-      if(props.objectRotationControl.isSelected(ref.current)) {
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
       }
     }

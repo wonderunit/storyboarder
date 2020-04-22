@@ -107,6 +107,7 @@ const SceneManagerR3fLarge = connect(
 
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
+    const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
 
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -186,6 +187,17 @@ const SceneManagerR3fLarge = connect(
         }
       }
     }, [])
+
+    useEffect(() => {
+      if(objectRotationControl.current) {
+        let object = objectRotationControl.current.object
+        let meshId = objectRotationControl.current.meshId
+        objectRotationControl.current.deselectObject()
+        objectRotationControl.current.control.domElement = activeGL.domElement
+        // find the 3D Bone matching the selectedBone uuid
+        objectRotationControl.current.selectObject(object, meshId)
+      }
+    }, [activeGL])
 
     useEffect(() => {
       if(!objectRotationControl.current) return
@@ -397,7 +409,9 @@ const SceneManagerR3fLarge = connect(
             scene={ scene }
             isSelected={ selections.includes(sceneObject.id) }
             updateObject={ updateObject }
+            withState={ withState }
             { ...sceneObject }
+
           />
        })
         

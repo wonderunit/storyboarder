@@ -40,6 +40,7 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 	defineProperty( "camera", camera );
 	defineProperty( "object", undefined );
 	defineProperty( "enabled", true );
+	defineProperty( "hovered", false );
 	defineProperty( "axis", null );
 	defineProperty( "mode", "translate" );
 	defineProperty( "translationSnap", null );
@@ -283,17 +284,16 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 	this.pointerHover = function( pointer ) {
 
 		if ( this.object === undefined || this.dragging === true || ( pointer.button !== undefined && pointer.button !== 0 ) ) return;
-
 		ray.setFromCamera( pointer, this.camera );
 
 		var intersect = ray.intersectObjects( _gizmo.picker[ this.mode ].children, true )[ 0 ] || false;
-
+		
 		if ( intersect ) {
-
+			scope.hovered = true;
 			this.axis = intersect.object.name;
-
+			
 		} else {
-
+			scope.hovered = false;
 			this.axis = null;
 
 		}
@@ -614,7 +614,6 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 	function onPointerHover( event ) {
 
 		if ( !scope.enabled ) return;
-
 		scope.pointerHover( getPointer( event ) );
 
 	}
@@ -627,6 +626,7 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 		scope.buttonPressed = event.button;
 		scope.pointerHover( getPointer( event ) );
 		scope.pointerDown( getPointer( event ) );
+		if( !scope.hovered ) return;
 		scope.dispatchEvent({ type: "transformMouseDown", value: event });
 
 	}
@@ -635,6 +635,7 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 
 		if ( !scope.enabled ) return;
 		scope.pointerMove( getPointer( event ) );
+		if( !scope.hovered ) return;
 		scope.dispatchEvent({ type: "transformMoved", value: event });
 
 	}
@@ -647,6 +648,7 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 
 		scope.pointerUp( getPointer( event ) );
 		scope.buttonPressed = -1;
+		if( !scope.hovered ) return;
 		scope.dispatchEvent({ type: "transformMouseUp", value: event });
 	}
 

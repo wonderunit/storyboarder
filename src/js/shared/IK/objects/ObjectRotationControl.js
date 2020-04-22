@@ -14,6 +14,8 @@ class ObjectRotationControl
         this.object = null;
         this.scene = scene;
         this.isEnabled = false;
+        this.customOnMouseDownAction = null;
+        this.customOnMouseUpAction = null;
     }
 
     set IsEnabled(value) 
@@ -21,8 +23,17 @@ class ObjectRotationControl
         this.control.enabled = value
     }
     //#region Events
-    onMouseDown = event => {this.object.isRotated = true;};
-    onMouseUp = event => {this.updateCharacter(this.object.name, this.object.rotation); this.object.isRotated = false; this.object.isRotationChanged = true;};
+    onMouseDown = event => {
+        this.object.isRotated = true;
+        this.customOnMouseDownAction && this.customOnMouseDownAction();
+    };
+
+    onMouseUp = event => {
+        this.updateCharacter && this.updateCharacter(this.object.name, this.object.rotation);
+        this.object.isRotated = false;
+        this.object.isRotationChanged = true;
+        this.customOnMouseUpAction && this.customOnMouseUpAction();
+    };
     //#enderegion
 
     setCharacterId(characterId) {
@@ -31,7 +42,7 @@ class ObjectRotationControl
 
     selectObject(object, hitmeshid)
     {
-        if(this.object !== null)
+        if(this.object !== null && !isSelected(object))
         {
             this.control.detach();
             this.deselectObject();
@@ -62,6 +73,8 @@ class ObjectRotationControl
         this.object = null;
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);
         this.control.removeEventListener("transformMouseUp", this.onMouseUp);
+        this.customOnMouseDownAction = null;
+        this.customOnMouseUpAction = null;
     }
 
     setCamera(camera)
