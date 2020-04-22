@@ -130,7 +130,7 @@ const addGamepad = (controller, inputSource, inputSourceIndex, { layout, ...opti
                 : {}
           )
         }
-        console.log(event)
+        // console.log(event)
         controller.dispatchEvent(event)
       }
     })
