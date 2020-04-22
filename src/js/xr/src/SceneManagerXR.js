@@ -385,6 +385,7 @@ const SceneContent = connect(
       if (isXrPresenting) {
         welcomeAudio.play()
         if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
+        SGConnection.sendInfo({active: true}, true)
       } else {
         welcomeAudio.isPlaying && welcomeAudio.stop()
       }
@@ -529,7 +530,7 @@ const SceneContent = connect(
     useFrame(({camera}) => {
       SGConnection.sendInfo({
         matrix: camera.matrixWorld.toArray(),
-        controllers: controllers.filter(gamepadFor).map((object) => object.matrixWorld.toArray())
+        controllers: controllers.map((object) => object.matrixWorld.toArray())
       })
     })
 

@@ -14,7 +14,6 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
-  reflectivity: 0x0,
   skinning: false,
   shininess: 0,
   flatShading: false,
@@ -123,7 +122,7 @@ const XRClient = React.memo((props) => {
       locked: true
     }}
 
-    visible={ true }
+    visible={ props.active }
     scale={ [1.0, 1.0, 1.0] }
   >
     <group ref={hmdRef}>{meshes.helmet}</group>

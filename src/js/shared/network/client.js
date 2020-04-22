@@ -109,8 +109,6 @@ export const connect = (URI = '') => {
     
     /* Dispatch if the message came from SG */
     if (action.meta && action.meta.isSG) {
-      client.emit('debug', action)
-      
       /* Are we listed on the ignore list? */
       let isIgnored = action.meta.ignore && action.meta.ignore.indexOf(remoteStore.getState().id) !== 1
       
