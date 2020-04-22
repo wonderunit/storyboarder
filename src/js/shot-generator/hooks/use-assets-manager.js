@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import React, { useState, useMemo, useEffect } from 'react'
-import '../../vendor/three/examples/js/loaders/GLTFLoader'
 import observable from '../../utils/observable'
 import { gltfLoader } from '../utils/gltfLoader'
 

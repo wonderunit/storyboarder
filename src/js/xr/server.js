@@ -6,23 +6,158 @@ const electronApp = electron.app ? electron.app : electron.remote.app
 
 const isDev = require('electron-is-dev')
 
-const app = express()
-const http = require('http').Server(app)
-const io = require('socket.io')(http, { wsEngine: 'ws', serveClient: false })
-const {serve} = require('./sockets')
-
 const log = require('electron-log')
 
-const portNumber = 1234
+const app = express()
+
+//const http = require('http').Server(app)
+const https = require('https')
+const io = require('socket.io')//(https, { wsEngine: 'ws', serveClient: false })
+const {serve} = require('./sockets')
+
+const fs = require('fs-extra')
+const forge = require('node-forge')
+// via https://github.com/parcel-bundler/parcel/blob/8e80016d8b61c5d68759bfd1caa9fb827e46643c/packages/core/utils/src/generateCertificate.js
+function generateCertificate (host) {
+  let certDirectory = electronApp.getPath('userData')
+
+  let privateKeyPath = path.join(certDirectory, 'key.pem')
+  let certPath = path.join(certDirectory, 'cert.pem')
+
+  const cachedKey = fs.existsSync(privateKeyPath) && fs.readFileSync(privateKeyPath)
+  const cachedCert = fs.existsSync(certPath) && fs.readFileSync(certPath)
+
+  if (cachedKey && cachedCert) {
+    log.info('Using existing key.pem and cert.pem from', certDirectory)
+    return {
+      key: cachedKey,
+      cert: cachedCert
+    }
+  }
+
+  log.info('Generating SSL Certificate …')
+
+  const pki = forge.pki
+  const keys = pki.rsa.generateKeyPair(2048)
+  const cert = pki.createCertificate()
+
+  cert.publicKey = keys.publicKey
+  cert.serialNumber = Date.now().toString()
+  cert.validity.notBefore = new Date()
+  cert.validity.notAfter = new Date()
+  cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1)
+
+  const attrs = [
+    {
+      name: 'commonName',
+      value: 'wonderunit.com',
+    },
+    {
+      name: 'countryName',
+      value: 'US',
+    },
+    {
+      shortName: 'ST',
+      value: 'New York',
+    },
+    {
+      name: 'localityName',
+      value: 'New York',
+    },
+    {
+      name: 'organizationName',
+      value: 'wonderunit',
+    },
+    {
+      shortName: 'OU',
+      value: 'Test',
+    },
+  ]
+
+  let altNames = [
+    {
+      type: 2, // DNS
+      value: 'localhost',
+    },
+    {
+      type: 7, // IP
+      ip: '127.0.0.1',
+    },
+  ]
+
+  if (host) {
+    altNames.push({
+      type: 2, // DNS
+      value: host,
+    })
+  }
+
+  cert.setSubject(attrs)
+  cert.setIssuer(attrs)
+  cert.setExtensions([
+    {
+      name: 'basicConstraints',
+      cA: false,
+    },
+    {
+      name: 'keyUsage',
+      keyCertSign: true,
+      digitalSignature: true,
+      nonRepudiation: true,
+      keyEncipherment: true,
+      dataEncipherment: true,
+    },
+    {
+      name: 'extKeyUsage',
+      serverAuth: true,
+      clientAuth: true,
+      codeSigning: true,
+      emailProtection: true,
+      timeStamping: true,
+    },
+    {
+      name: 'nsCertType',
+      client: true,
+      server: true,
+      email: true,
+      objsign: true,
+      sslCA: true,
+      emailCA: true,
+      objCA: true,
+    },
+    {
+      name: 'subjectAltName',
+      altNames,
+    },
+    {
+      name: 'subjectKeyIdentifier',
+    },
+  ])
+
+  cert.sign(keys.privateKey, forge.md.sha256.create())
+
+  const privPem = pki.privateKeyToPem(keys.privateKey)
+  const certPem = pki.certificateToPem(cert)
+
+  fs.writeFileSync(privateKeyPath, privPem)
+  fs.writeFileSync(certPath, certPem)
+
+  return {
+    key: privPem,
+    cert: certPem
+  }
+}
+
+const PORT = 1234
 
 const { getSerializedState, updateServer, updateSceneFromXR, getHash } = require('../shared/reducers/shot-generator')
 const getIpAddress = require('../utils/getIpAddress')
 
 class XRServer {
-  constructor ({ store, service }) {
+  constructor ({ store, service, staticPath = window.__dirname }) {
     const validSameBoard = uid => store.getState().board.uid === uid
 
-    serve(io, store, service)
+    //serve(io(https, { wsEngine: 'ws', serveClient: false }), store, service)
 
     app.use(express.json({
       limit: '5mb'
@@ -45,11 +180,11 @@ class XRServer {
     }
 
     app.use('/', express.static(
-      path.join(window.__dirname, 'js/xr/dist')
+      path.join(staticPath, 'js/xr/dist')
     ))
 
     app.use('/data/system', express.static(
-      path.join(window.__dirname, 'data', 'shot-generator')
+      path.join(staticPath, 'data', 'shot-generator')
     ))
 
     app.use('/data/user', express.static(
@@ -57,13 +192,13 @@ class XRServer {
     ))
 
     app.use('/data/snd', express.static(
-      path.join(window.__dirname, 'public', 'snd')
+      path.join(staticPath, 'public', 'snd')
     ))
 
     app.use('/data/presets/poses', express.static(
       path.join(electronApp.getPath('userData'), 'presets', 'poses')
     ))
-    
+
     app.use('/data/presets/handPoses', express.static(
       path.join(electronApp.getPath('userData'), 'presets', 'handPoses')
     ))
@@ -73,7 +208,7 @@ class XRServer {
     ))
 
     app.get('/', function(req, res) {
-      res.sendFile(path.join(window.__dirname, 'js/xr/dist', 'index.html'))
+      res.sendFile(path.join(staticPath, 'js/xr/dist', 'index.html'))
     })
 
     app.get('/sg.json', (req, res) => {
@@ -101,7 +236,7 @@ class XRServer {
         curl -X POST \
           -H "Content-Type: application/json" \
           -d '{"uid":"RRO6K"}' \
-          http://localhost:1234/sg.json
+          https://localhost:1234/sg.json
 
     */
     app.post('/sg.json', async (req, res) => {
@@ -198,27 +333,37 @@ class XRServer {
       res.status(404).send('Not found')
     })
 
-    http.on('error', err => {
-      console.error(err)
-      log.error(err)
-    })
-
-    http.listen(portNumber, function() {
-      let desc = `XRServer running at`
-
+    try {
       let ip = getIpAddress()
 
-      if (ip) {
-        log.info(`${desc} http://${ip}:${portNumber}`)
+      // via https://expressjs.com/en/4x/api.html#app.listen
+      const server = https.createServer({ ...generateCertificate() }, app)
+      serve(io(server, { wsEngine: 'ws', serveClient: false }), store, service)
 
-        // there are two servers:
-        // createServer creates one on :8000/8001 which is the old default remote input server
-        // XRServer creates one on :1234 for XR/VR
-        store.dispatch(updateServer({ xrUri: `http://${ip}:${portNumber}` }))
-      } else {
-        log.error('Could not determine IP address')
-      }
-    })
+      server.on('error', err => {
+        console.error(err)
+        log.error(err)
+      })
+
+      server.listen(PORT, function() {
+        let desc = `XRServer running at`
+
+        if (ip) {
+          log.info(`${desc} https://${ip}:${PORT}`)
+
+          // there are two servers:
+          // createServer creates one on :8000/8001 which is the old default remote input server
+          // XRServer creates one on :1234 for XR/VR
+          store.dispatch(updateServer({ xrUri: `https://${ip}:${PORT}` }))
+        } else {
+          log.error('Could not determine IP address')
+        }
+      })
+    } catch (err) {
+      log.error('HTTPS server failed. Could not find key.pem or cert.pem')
+      log.error(err)
+      throw err
+    }
   }
 }
 

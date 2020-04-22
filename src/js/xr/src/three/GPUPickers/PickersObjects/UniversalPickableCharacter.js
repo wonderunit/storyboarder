@@ -17,6 +17,7 @@ class UniversalPickableCharacter extends Pickable
         this.sceneMesh = this.getSkinnedMesh(this.sceneObject, excludingList);
     }
 
+
     getSkinnedMesh(object, excludingList)
     {
         if(object.isSkinnedMesh && !excludingList.some(obj => obj.uuid === object.uuid))
@@ -39,10 +40,7 @@ class UniversalPickableCharacter extends Pickable
 
     getCharacterContainer()
     {
-        if (!this.sceneMesh) {
-            return null
-        }
-        
+        if(!this.sceneMesh) return null
         if(this.sceneMesh.parent.type === "LOD")
         {
             return this.sceneMesh.parent.parent;
@@ -62,6 +60,10 @@ class UniversalPickableCharacter extends Pickable
         this.pickingMaterial.skinning = true;
         this.pickingMaterial.morphNormals = true;
         this.pickingMaterial.morphTargets = true;
+        if(!this.characterContainer) {
+            this.needsRemoval = true
+            return
+        }
         let parent = this.characterContainer;
 
         if (!this.characterContainer) {
@@ -91,7 +93,7 @@ class UniversalPickableCharacter extends Pickable
 
     update()
     {
-        if(this.isSceneObjectRemoved())
+        if(!this.sceneMesh || !this.sceneMesh.parent || this.isSceneObjectRemoved())
         {
             this.needsRemoval = true;
             return;
@@ -124,11 +126,11 @@ class UniversalPickableCharacter extends Pickable
     {
         this.getMeshFromSceneObject(this.excludingList);
         this.characterContainer = this.getCharacterContainer();
-        
-        if (!this.characterContainer) {
-            return false
+        if(!this.characterContainer) {
+            this.needsRemoval = true
+            return
         }
-        
+
         let parent = this.characterContainer;
         let node = SkeletonUtils.clone(parent);
         let lod = node.children[0];

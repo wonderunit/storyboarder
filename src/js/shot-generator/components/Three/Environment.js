@@ -20,31 +20,30 @@ const Environment = React.memo(({ path, environment }) => {
       self.traverse(child => child.layers.enable(SHOT_LAYERS))
     }
   )
-
   const meshes = useMemo(() => {
     if (!gltf) return []
     let children = []
     let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Mesh', 'Group'])
     sceneData.traverse(child => {
       if (child.isMesh) {
+        let mesh = child.clone()
         let material = materialFactory()
 
-        if (child.material.map) {
-          material.map = child.material.map
+        if (mesh.material.map) {
+          material.map = mesh.material.map
           material.map.needsUpdate = true
         }
 
-        child.material = material
+        mesh.material = material
         children.push( <primitive
-          key={`${child.uuid}`}
-          object={child}
+          key={`${mesh.uuid}`}
+          object={mesh}
         />)
       }
     })
     return children
 
   }, [gltf])
-
   const { x, y, z, visible, rotation, scale } = environment
 
   return <group

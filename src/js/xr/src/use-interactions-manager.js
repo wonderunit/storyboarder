@@ -1,5 +1,5 @@
 const { useThree, useFrame } = require('react-three-fiber')
-const { useMemo, useRef, useEffect } = React = require('react')
+const { useMemo, useRef, useEffect, useState } = React = require('react')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 
@@ -8,7 +8,7 @@ const { produce } = require('immer')
 
 const { ActionCreators } = require('redux-undo')
 
-const useVrControllers = require('./hooks/use-vr-controllers')
+const useIsXrPresenting = require('./hooks/use-is-xr-presenting')
 
 const { log } = require('./components/Log')
 const Mirror = require("./three/Mirror")
@@ -19,6 +19,11 @@ const {
 const findMatchingAncestor = require('./helpers/find-matching-ancestor')
 const rotatePoint = require('./helpers/rotate-point')
 const teleportParent = require('./helpers/teleport-parent')
+
+// via https://github.com/immersive-web/webxr-input-profiles/blob/8a7807f/packages/registry/profiles/oculus/oculus-touch-v2.json
+const profile = require('./helpers/vr-gamepads/oculus-touch-v2.json')
+const { addGamepad, removeGamepad } = require('./helpers/vr-gamepads')
+
 const applyDeviceQuaternion = require('../../shot-generator/utils/apply-device-quaternion')
 
 const BonesHelper = require('./three/BonesHelper')
@@ -273,14 +278,10 @@ const [useStore, useStoreApi] = create((set, get) => ({
 }))
 
 const getControllerByName = (controllers, name) => {
-  if(controllers[0] && controllers[0].gamepad ) {
-    if(controllers[0].gamepad.hand === name) return controllers[0]
-    else return controllers[1]
-
-  }
-  else if(controllers[1] && controllers[1].gamepad) {
-    if(controllers[1].gamepad.hand === name) return controllers[1]
-    else return controllers[0]
+  for (let controller of controllers) {
+    if (controller.userData.inputSource.handedness === name) {
+      return controller
+    }
   }
 }
 const getExcludeList = parent => {
@@ -302,7 +303,7 @@ const useInteractionsManager = ({
 }) => {
   const { gl, camera, scene } = useThree()
 
-  
+
   const selections = useSelector(getSelections)
   const sceneObjects = useSelector(getSceneObjects)
 
@@ -361,7 +362,7 @@ const useInteractionsManager = ({
     }
     return ikHelper.current
   }
-  
+
   useEffect(() => {
     // create a temporary mesh object to initialize the GPUPicker
     let gpuPicker = getGpuPicker()
@@ -715,6 +716,10 @@ const useInteractionsManager = ({
     interactionService.send({ type: 'AXES_CHANGED', controller: event.target, axes: event.axes })
   }
 
+  const onAxesStop = event => {
+    interactionService.send({ type: 'AXES_CHANGED', controller: event.target, axes: [0, 0] })
+  }
+
   const onPressEndA = event => {
     // to relay through state machine instead:
     // interactionService.send({ type: 'PRESS_END_A', controller: event.target })
@@ -740,18 +745,25 @@ const useInteractionsManager = ({
   }
 
   const onPressStartThumbstick = event => {
-    let rightController = getControllerByName(controllers, "right");
+    let rightController = getControllerByName(controllers, 'right')
     let worldScale = useStoreApi.getState().worldScale
     let hmd = camera.parent
     let elevationDisplacement = 0.5
-    if(event.target.uuid === rightController.uuid) {
+
+    if (event.target.uuid === rightController.uuid) {
       hmd.position.y += elevationDisplacement
-    }
-    else {
-      if(hmd.position.y !== 0)
+    } else {
+      if (hmd.position.y !== 0) {
         hmd.position.y -= elevationDisplacement
+      }
     }
-    teleport(camera, (hmd.position.x + camera.position.x) * worldScale, hmd.position.y * worldScale, (hmd.position.z + camera.position.z) * worldScale)
+
+    teleport(
+      camera,
+      (hmd.position.x + camera.position.x) * worldScale,
+      hmd.position.y * worldScale,
+      (hmd.position.z + camera.position.z) * worldScale
+    )
   }
 
   const thumbStickSensitivity = 0.25
@@ -808,18 +820,93 @@ const useInteractionsManager = ({
     }
   }
 
-  // controller state via THREE.VRController
-  const controllers = useVrControllers({
-    onTriggerStart,
-    onTriggerEnd,
-    onGripDown,
-    onGripUp,
-    onAxesChanged,
-    onPressEndA,
-    onPressEndB,
-    onPressEndX,
-    onPressStartThumbstick
+  const [controllers, setControllers] = useState(
+    [ gl.xr.getController(0), gl.xr.getController(1) ]
+  )
+  const isXrPresenting = useIsXrPresenting()
+  useEffect(() => {
+    setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+
+    // via by https://github.com/mrdoob/three.js/pull/18197
+    let connected = event => {
+      addGamepad(
+        event.target,
+        event.data,
+        [...gl.xr.getSession().inputSources].indexOf(event.data),
+        {
+          layout: profile.layouts[event.data.handedness]
+        }
+      )
+
+      // force update
+      setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+    }
+    let disconnected = event => {
+      removeGamepad(event.target)
+
+      // force update
+      setControllers([ gl.xr.getController(0), gl.xr.getController(1) ])
+    }
+
+    for (let controller of controllers) {
+      // via three/src/renderers/webxr/WebXRManager.js
+      controller.addEventListener('connected', connected)
+      controller.addEventListener('disconnected', disconnected)
+
+      // via https://developer.mozilla.org/en-US/docs/Web/API/WebXR_Device_API/Inputs#Actions
+      controller.addEventListener('selectstart', onTriggerStart)
+      controller.addEventListener('select', onTriggerEnd)
+      controller.addEventListener('squeezestart', onGripDown)
+      controller.addEventListener('squeeze', onGripUp)
+
+      // left
+      controller.addEventListener('button/a-button/stop', onPressEndA)
+      controller.addEventListener('button/b-button/stop', onPressEndB)
+      // right
+      controller.addEventListener('button/x-button/stop', onPressEndX)
+      // both
+      controller.addEventListener('button/xr-standard-thumbstick/start', onPressStartThumbstick)
+      controller.addEventListener('axes/0/change', onAxesChanged)
+      controller.addEventListener('axes/0/stop', onAxesStop)
+    }
+    return () => {
+      for (let controller of controllers) {
+        controller.removeEventListener('connected', connected)
+        controller.removeEventListener('disconnected', disconnected)
+
+        controller.removeEventListener('selectstart', onTriggerStart)
+        controller.removeEventListener('select', onTriggerEnd)
+        controller.removeEventListener('squeezestart', onGripDown)
+        controller.removeEventListener('squeeze', onGripUp)
+
+        // left
+        controller.removeEventListener('button/a-button/stop', onPressEndA)
+        controller.removeEventListener('button/b-button/stop', onPressEndB)
+        // right
+        controller.removeEventListener('button/x-button/stop', onPressEndX)
+        // both
+        controller.removeEventListener('button/xr-standard-thumbstick/start', onPressStartThumbstick)
+        controller.removeEventListener('axes/0/change', onAxesChanged)
+        controller.removeEventListener('axes/0/stop', onAxesStop)
+      }
+    }
+  }, [isXrPresenting])
+
+  // poll controllers every frame
+  useFrame(() => {
+    if (gl.xr.getSession()) {
+      for (let i = 0; i < 2; i++) {
+        let controller = gl.xr.getController(i)
+        let { inputSource } = controller.userData
+        if (inputSource) {
+          let { gamepad } = inputSource
+          controller.userData.gamepadSource.emitter(gamepad)
+        }
+      }
+    }
   })
+
+
 
   const reusableVector = useRef()
   const getReusableVector = () => {
@@ -869,7 +956,7 @@ const useInteractionsManager = ({
     }
 
     if (mode === 'drag_teleport') {
-      let controller = gl.vr.getController(context.teleportDragController)
+      let controller = gl.xr.getController(context.teleportDragController)
 
       let hits = getControllerIntersections(controller, [groundRef.current])
       if (hits.length) {
@@ -887,7 +974,7 @@ const useInteractionsManager = ({
     }
 
     if (mode == 'drag_object') {
-      let controller = gl.vr.getController(context.draggingController)
+      let controller = gl.xr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
       let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
@@ -916,7 +1003,7 @@ const useInteractionsManager = ({
     }
 
     if (mode == 'rotate_bone') {
-      let controller = gl.vr.getController(context.draggingController)
+      let controller = gl.xr.getController(context.draggingController)
       let selectedBone = getSelectedBone(store.getState())
 
       // find the bone
@@ -1015,11 +1102,11 @@ const useInteractionsManager = ({
           // in order to prevent ik updates
           ikHelper.updateStarted = true
           ikHelper.ragDoll.isEnabledIk = false
-      
+
           let headControlPoint = ikHelper.getControlPointByName("Head")
           let leftArmControlPoint = ikHelper.getControlPointByName("LeftHand")
           let rightArmControlPoint = ikHelper.getControlPointByName("RightHand")
-          
+
           let headBone = ikHelper.ragDoll.chainObjects['Head'].lastBone
           let leftHandBone = ikHelper.ragDoll.chainObjects['LeftHand'].lastBone
           let rightHandBone = ikHelper.ragDoll.chainObjects['RightHand'].lastBone
@@ -1045,12 +1132,12 @@ const useInteractionsManager = ({
             hmdElement.parent.rotation.x = Math.PI
             hmdElement.parent.rotation.y = 0
             hmdElement.parent.rotation.z = Math.PI
-            
+
             // Calculates delta aka relative angle
             let delta = new THREE.Quaternion()
             delta.multiply(hmdElement.parent.worldQuaternion().conjugate())
             delta.multiply(boneInOriginalMesh.worldQuaternion())
-     
+
             // Applies delta to transform hmdElement rotation to bone space
             let controllerWorldQuaternion = hmdElement.worldQuaternion()
             controllerWorldQuaternion.multiply(delta)
@@ -1062,7 +1149,7 @@ const useInteractionsManager = ({
             boneInOriginalMesh.updateMatrix()
             boneInOriginalMesh.updateWorldMatrix(false, true)
           }
-          
+
           // Atttaches control point to HMDElement(controllers and camera)
           // and sets it's position to (0, 0, 0) in order to put control point in the center of hmd element
           const attachControlPointToHmdElement = (hmdElement, controlPoint,) => {
@@ -1076,11 +1163,11 @@ const useInteractionsManager = ({
 
           // Taking world position of control point
           let worldPosition = headControlPoint.worldPosition()
-  
+
           // Taking world quaternion of head bone
           camera.parent.userData.prevPosition = useStoreApi.getState().teleportPos
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
-          
+
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
@@ -1111,7 +1198,7 @@ const useInteractionsManager = ({
           attachControlPointToHmdElement(camera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
-      
+
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
           ikHelper.ragDoll.originalObject.add(mirror)
           mirror.position.z += 2
@@ -1157,7 +1244,7 @@ const useInteractionsManager = ({
             // if a controller is dragging the character ...
             if (context.draggingController != null) {
               // ... find out which controller it is
-              let controller = gl.vr.getController(context.draggingController)
+              let controller = gl.xr.getController(context.draggingController)
               // ... and add the difference to that controller's selectOffset
               controller.userData.selectOffset.add(positionDifference)
             }
@@ -1198,7 +1285,7 @@ const useInteractionsManager = ({
 
         onDragControlPointEntry: (context, event) =>
         {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
           getIkHelper().selectControlPoint(object.name)
           controller.attach(object)
@@ -1215,9 +1302,9 @@ const useInteractionsManager = ({
         },
 
         onDragObjectEntry: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
-          
+
 
           if (object.userData.type != 'character') {
             if(object.userData.type === "attachable")
@@ -1233,7 +1320,7 @@ const useInteractionsManager = ({
           uiService.send({ type: 'LOCK' })
         },
         onDragObjectExit: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           let root = rootRef.current
@@ -1249,18 +1336,18 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
 
-          commit(context.selection, object) 
+          commit(context.selection, object)
           if(object.userData.type === 'character') {
             let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === object.userData.id)
             for(let i = 0; i < mapAttachables.length; i++) {
               commit(mapAttachables[i].userData.id, mapAttachables[i])
-            } 
+            }
           }
 
           uiService.send({ type: 'UNLOCK' })
         },
         onSnapStart: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           let root = rootRef.current
@@ -1277,7 +1364,7 @@ const useInteractionsManager = ({
           object.updateMatrixWorld(true)
         },
         onSnapEnd: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           if (object.userData.staticRotation) {
@@ -1291,7 +1378,7 @@ const useInteractionsManager = ({
         },
 
         moveAndRotateObject: (context, event) => {
-          let controller = gl.vr.getController(context.draggingController)
+          let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let { worldScale } = useStoreApi.getState()
 

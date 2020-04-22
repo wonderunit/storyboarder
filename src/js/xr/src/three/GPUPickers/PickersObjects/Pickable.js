@@ -35,7 +35,10 @@ class Pickable
 
     isSceneObjectRemoved()
     {
-        return this.sceneObject.parent ? false : true;
+        if(!this.sceneObject || !this.sceneObject.parent ){
+            return true
+        }
+        return false
     }
 
     getUUID()

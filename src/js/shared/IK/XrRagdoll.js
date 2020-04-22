@@ -40,7 +40,6 @@ class XRRagdoll extends XRIKObject
 
     setUpdatePoleTargets(updatePoleTargets)
     {
-        console.log("Set update pole taget method")
         this.updatePoleTargets = updatePoleTargets;
     }
 
@@ -139,9 +138,9 @@ class XRRagdoll extends XRIKObject
         let armatureInverseMatrixWorld = this.resourceManager.getMatrix4();
         armatureInverseMatrixWorld.getInverse(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
         
-        hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
+        hipsTarget.applyMatrix4(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
         let hipsWP = this.resourceManager.getVector3().copy(hipsTarget.position);
-        hipsTarget.applyMatrix(armatureInverseMatrixWorld);
+        hipsTarget.applyMatrix4(armatureInverseMatrixWorld);
 
         let originalObjectWp = this.resourceManager.getVector3().copy(this.originalObject.position);
         this.objectTargetDiff.subVectors(hipsWP, originalObjectWp);
@@ -355,12 +354,11 @@ class XRRagdoll extends XRIKObject
             let poleTarget = chainObjects[i].poleConstraint.poleTarget;
             let characterMatrix = this.originalMesh.matrixWorld;
             let characterInverseMatrix = new THREE.Matrix4().getInverse(characterMatrix)
-            console.log(this)
 
-            poleTarget.mesh.applyMatrix(characterInverseMatrix);
+            poleTarget.mesh.applyMatrix4(characterInverseMatrix);
             poleTarget.mesh.updateMatrixWorld(true);
             let worldPosition = poleTarget.mesh.position;
-            poleTarget.mesh.applyMatrix(characterMatrix);
+            poleTarget.mesh.applyMatrix4(characterMatrix);
             poleTarget.mesh.updateMatrixWorld(true);
             
             poleTargetsPosition[poleTarget.mesh.name] = 

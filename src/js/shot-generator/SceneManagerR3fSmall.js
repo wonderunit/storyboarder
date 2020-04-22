@@ -101,7 +101,7 @@ const SceneManagerR3fSmall = connect(
       e.object.traverseAncestors((o) => {
         if(o.userData.id) match = o
       })
-      if(!match.userData || match.userData.locked ) return
+      if(!match || !match.userData || match.userData.locked ) return
       selectObject(match.userData.id)
       if(match.userData.type === "camera") {
         setActiveCamera(match.userData.id)
@@ -200,7 +200,6 @@ const SceneManagerR3fSmall = connect(
       camera.bottom = -(minMax[3]-minMax[2])/2
       camera.near = -1000
       camera.far = 1000
-      //camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
     }, [scene, camera, renderData])
 

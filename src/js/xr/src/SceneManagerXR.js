@@ -14,13 +14,7 @@ const RemoteProvider = require('../../shot-generator/components/RemoteProvider')
 const RemoteClients = require('../../shot-generator/components/RemoteClients').default
 
 const XRClient = require("./components/XRClient").default
-
-// to use three's version:
-// const { WEBVR } = require('three/examples/jsm/vr/WebVR')
-//
-// use vendor'd version
-require('../../vendor/three/examples/js/vr/WebVR')
-const WEBVR = THREE.WEBVR
+const { VRButton } = require('three/examples/jsm/webxr/VRButton')
 
 const {
   // selectors
@@ -37,7 +31,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
-const useIsVrPresenting = require('./hooks/use-is-vr-presenting')
+const useIsXrPresenting = require('./hooks/use-is-xr-presenting')
 const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
@@ -386,16 +380,15 @@ const SceneContent = connect(
       return voicer
     }, [])
 
-    const isVrPresenting = useIsVrPresenting()
+    const isXrPresenting = useIsXrPresenting()
     useEffect(() => {
-      if (isVrPresenting) {
+      if (isXrPresenting) {
         welcomeAudio.play()
         if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
       } else {
         welcomeAudio.isPlaying && welcomeAudio.stop()
       }
-    }, [isVrPresenting])
-
+    }, [isXrPresenting])
 
     const playSound = useCallback((name, object3d = null) => {
       switch (name) {
@@ -564,9 +557,6 @@ const SceneContent = connect(
       ref.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
-    const gamepads = navigator.getGamepads()
-    const gamepadFor = controller => gamepads[controller.userData.gamepad.index]
-
     useEffect(() => {
       thumbnailRenderer.current = new THREE.WebGLRenderer()
       thumbnailRenderer.current.setSize(128 * aspectRatio, 128)
@@ -600,30 +590,36 @@ const SceneContent = connect(
               showSettings={canvasRendererRef.current.state.showSettings} />
           }
 
-          {controllers.filter(gamepadFor).map(controller =>
-            <primitive key={controller.uuid} object={controller} >
-              <Controller
-                gltf={resources.controllerGltf}
-                hand={gamepadFor(controller).hand}
-              />
-              {gamepadFor(controller).hand === (switchHand ? 'left' : 'right') &&
-                <group>
-                  <Controls
-                    gltf={resources.controlsGltf}
-                    mode={uiCurrent.value.controls}
-                    hand={switchHand ? 'left' : 'right'}
-                    locked={uiCurrent.context.locked}
-                    getCanvasRenderer={getCanvasRenderer} />
-                  { showHelp &&
-                    <Help
+          {controllers
+            .map(controller =>
+              controller.userData.inputSource && <primitive
+                key={controller.uuid}
+                // for grip, use gl.xr.getControllerGrip(controller.userData.inputSourceIndex)
+                object={controller}
+              >
+                <Controller
+                  gltf={resources.controllerGltf}
+                  hand={controller.userData.inputSource.handedness}
+                />
+                {controller.userData.inputSource.handedness === (switchHand ? 'left' : 'right') &&
+                  <group>
+                    <Controls
+                      gltf={resources.controlsGltf}
                       mode={uiCurrent.value.controls}
+                      hand={switchHand ? 'left' : 'right'}
                       locked={uiCurrent.context.locked}
                       getCanvasRenderer={getCanvasRenderer} />
-                  }
-                </group>
-              }
-            </primitive>
-          )}
+                    { showHelp &&
+                      <Help
+                        mode={uiCurrent.value.controls}
+                        locked={uiCurrent.context.locked}
+                        getCanvasRenderer={getCanvasRenderer} />
+                    }
+                  </group>
+                }
+              </primitive>
+            )
+          }
         </group>
 
         <group ref={rootRef} scale={[worldScale, worldScale, worldScale]}>
@@ -804,7 +800,7 @@ const SceneContent = connect(
 
 const XRStartButton = ({ }) => {
   const { gl } = useThree()
-  useMemo(() => document.body.appendChild(WEBVR.createButton(gl)), [])
+  useMemo(() => document.body.appendChild(VRButton.createButton(gl)), [])
   return null
 }
 
