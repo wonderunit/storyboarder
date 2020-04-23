@@ -57,7 +57,8 @@ const getIntersectionTarget = intersect => {
 
 const InteractionManager = connect(
     state => ({
-        activeCamera: getActiveCamera(state)
+        activeCamera: getActiveCamera(state),
+        selections: getSelections(state)
     }),
     {
         selectObject,
@@ -85,7 +86,8 @@ const InteractionManager = connect(
     undoGroupStart,
     undoGroupEnd,
     withState,
-    renderData
+    renderData,
+    selections
 }) => {
     const { scene, gl, camera } = useThree()
 
@@ -141,6 +143,7 @@ const InteractionManager = connect(
           z: object.z,
           rotation: object.rotation,
           tilt: object.tilt,
+          roll: object.roll,
           fov: object.fov
         })
       } else {
@@ -219,6 +222,26 @@ const InteractionManager = connect(
         intersects = gpuPicker.pickWithCamera(camera, activeGL)
         return intersects
     }  
+
+    const setCameraControlTarget = (selections) => {
+      if(selections.length === 1 && selections[0] === activeCamera) return
+      let selectedObjects = scene.__interaction.filter(object => object.userData.type !== 'camera' && object.userData.type !== 'volume' 
+                                                        && selections.includes(object.userData.id) )
+      if(!selectedObjects.length) {
+        cameraControlsView.current.target = null
+        return
+      }
+      let target = new THREE.Vector3()
+      for(let i = 0; i < selectedObjects.length; i++) {
+        target.add(selectedObjects[i].worldPosition())
+      }
+      target.divideScalar(selectedObjects.length)
+      cameraControlsView.current.target = target
+    }
+
+    useEffect(() => {
+      setCameraControlTarget(selections)
+    }, [selections])
 
     useMemo(() => {
         if(dragTarget){

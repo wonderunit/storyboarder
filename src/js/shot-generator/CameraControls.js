@@ -1,9 +1,8 @@
 import * as THREE from 'three'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
-
 class CameraControls {
   
-  constructor ( object, domElement, options = {} ) {
+  constructor ( object, domElement, options = {}, target = null ) {
     this._object = object
     this._prevValues = {...object}
     this.domElement = domElement
@@ -16,7 +15,9 @@ class CameraControls {
     this.zoomSpeed = 0
     
     this.keydowns = new Set()
-    
+
+    this.target = target;
+
     this.onPointerMove = this.onPointerMove.bind(this)
     this.onPointerDown = this.onPointerDown.bind(this)
     this.onPointerUp = this.onPointerUp.bind(this)
@@ -33,6 +34,17 @@ class CameraControls {
     this.onChange = options.onChange
     
     this.intializeEvents()
+  }
+
+  set Target(target) {
+    if(target instanceof THREE.Object3D) {
+      this.target = target.getWorldPosition()
+    } else if(target instanceof THREE.Vector3) {
+      this.target = target
+    } else {
+      this.target = null
+      console.warn("Target should type of Vector3")
+    }
   }
   
   set object(value) {
@@ -118,8 +130,10 @@ class CameraControls {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
     let shouldRemoveKey = true
-    
     switch ( event.keyCode ) {
+      case 17: /*control*/
+        this.controlPressed = true
+        break;
       case 38: /*up*/
       case 87: /*W*/
       case 37: /*left*/
@@ -143,6 +157,7 @@ class CameraControls {
     }
     
     switch ( event.keyCode ) {
+      case 17: /*control*/ this.controlPressed = true; break;
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = true; break
       case 37: /*left*/
@@ -163,6 +178,9 @@ class CameraControls {
   onKeyUp ( event ) {
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
+      case 17: /*control*/ 
+      this.controlPressed = this.mouseDragOn ? true : false
+      break;
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;
       case 37: /*left*/
@@ -187,6 +205,7 @@ class CameraControls {
   
   
   reset () {
+    this.controlPressed = !this.keydowns.has(17) ? false : true // checks if control key was released
     this.moveForward = false
     this.moveLeft = false
     this.moveBackward = false
@@ -242,12 +261,57 @@ class CameraControls {
     }
     
     if (this.mouseDragOn) {
-      let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
-      this._object.rotation = rotation
-      let tilt = this.initialTilt - (this.mouseY - this.initialMouseY)*0.001
-      this._object.tilt = Math.max(Math.min(tilt, Math.PI / 2), -Math.PI / 2)
-    }
-    
+      if(this.controlPressed && this.target) {
+        let camera = new THREE.PerspectiveCamera()
+
+        let spherical = new THREE.Spherical()
+        let offset = new THREE.Vector3()
+        let target = this.target
+   
+        camera.position.set(this._object.x, this._object.z, this._object.y)
+        camera.updateMatrixWorld(true)
+        camera.rotation.x = 0
+        camera.rotation.z = 0
+        camera.rotation.y = this._object.rotation
+        camera.rotateX(this._object.tilt)
+        camera.rotateZ(this._object.roll)
+        camera.updateMatrixWorld(true)
+
+        var quat = new THREE.Quaternion().setFromUnitVectors( camera.up, new THREE.Vector3( 0, 1, 0 ) );
+        var quatInverse = quat.clone().inverse();
+
+        offset.subVectors(camera.position, target)
+        offset.applyQuaternion(quat)
+        spherical.setFromVector3(offset)
+
+        let rotation = (this.mouseX - this.initialMouseX)*0.005
+        let tilt = (this.mouseY - this.initialMouseY)*0.005
+        spherical.theta += rotation
+        spherical.phi += tilt
+        spherical.makeSafe();
+        offset.setFromSpherical( spherical );
+			  offset.applyQuaternion( quatInverse );
+
+        camera.position.addVectors( target, offset );
+        camera.updateMatrixWorld(true)
+        camera.lookAt( target );
+        let position = camera.position
+        let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
+        this._object.tilt = rot.x
+        this._object.rotation = rot.y
+        this._object.roll = rot.z
+        this._object.x = position.x
+        this._object.y = position.z
+        this._object.z = position.y
+
+      } else {
+        let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
+        this._object.rotation = rotation
+        let tilt = this.initialTilt - (this.mouseY - this.initialMouseY)*0.001
+        this._object.tilt = Math.max(Math.min(tilt, Math.PI / 2), -Math.PI / 2)
+      }
+
+    } 
     // rotation
     let rStickX = (state.devices[0].analog.rStickX/127) - 1
     let rStickY = (state.devices[0].analog.rStickY/127) - 1
