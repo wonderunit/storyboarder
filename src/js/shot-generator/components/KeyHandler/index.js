@@ -126,7 +126,9 @@ const KeyHandler = connect(
           selectObject(groupAction.objectsIds)
           ungroupObjects(groupAction.groupsIds[0], groupAction.objectsIds)
         } else {
-          mergeGroups(groupAction.groupsIds, groupAction.objectsIds)
+          selectObject(null)
+          let group =  mergeGroups(groupAction.groupsIds, groupAction.objectsIds)
+          selectObject([group.payload.groupIds[0], ...group.payload.ids])
         }
       }
     }, [selections, sceneObjects])
