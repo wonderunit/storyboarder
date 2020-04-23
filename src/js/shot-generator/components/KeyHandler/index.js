@@ -53,7 +53,7 @@ const KeyHandler = connect(
     groupObjects,
     ungroupObjects,
     mergeGroups,
-    selectObject
+    selectObject,
   }
 )(
   React.memo(({
@@ -120,7 +120,8 @@ const KeyHandler = connect(
       if (selections) {
         const groupAction = getGroupAction(sceneObjects, selections)
         if (groupAction.shouldGroup) {
-          groupObjects(groupAction.objectsIds)
+          let group = groupObjects(groupAction.objectsIds)
+          selectObject([group.payload.groupId, ...group.payload.ids])
         } else if (groupAction.shouldUngroup) {
           selectObject(groupAction.objectsIds)
           ungroupObjects(groupAction.groupsIds[0], groupAction.objectsIds)
