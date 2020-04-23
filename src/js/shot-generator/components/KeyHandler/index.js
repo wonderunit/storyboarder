@@ -26,6 +26,7 @@ import  {
     groupObjects,
     ungroupObjects,
     mergeGroups,
+    selectObject,
   
     duplicateObjects,
 
@@ -52,12 +53,14 @@ const KeyHandler = connect(
     groupObjects,
     ungroupObjects,
     mergeGroups,
+    selectObject
   }
 )(
   React.memo(({
     activeCamera,
     selections,
     sceneObjects,
+    selectObject,
     _selectedSceneObject,
     duplicateObjects,
     deleteObjects,
@@ -119,6 +122,7 @@ const KeyHandler = connect(
         if (groupAction.shouldGroup) {
           groupObjects(groupAction.objectsIds)
         } else if (groupAction.shouldUngroup) {
+          selectObject(groupAction.objectsIds)
           ungroupObjects(groupAction.groupsIds[0], groupAction.objectsIds)
         } else {
           mergeGroups(groupAction.groupsIds, groupAction.objectsIds)

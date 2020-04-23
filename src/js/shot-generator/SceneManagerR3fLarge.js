@@ -407,7 +407,6 @@ const SceneManagerR3fLarge = connect(
           let sceneObject = sceneObjects[id]
           return <Group
             key={ sceneObject.id }
-            scene={ scene }
             isSelected={ selections.includes(sceneObject.id) }
             updateObject={ updateObject }
             withState={ withState }
