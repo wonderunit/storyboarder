@@ -755,7 +755,8 @@ const TransformControlsGizmo = function (shownAxis) {
 	// shared materials
 	let rotationalGizmoRadius = 1;
 	let rotationalGizmoTube = rotationalGizmoRadius / 12;
-
+	let pickerTolerance = 0.025
+	rotationalGizmoTube += pickerTolerance
 	var gizmoMaterial = new THREE.MeshBasicMaterial({
 		depthTest: false,
 		depthWrite: false,
@@ -920,17 +921,17 @@ const TransformControlsGizmo = function (shownAxis) {
 	pickerRotate = {};
 	if(shownAxis & axis.X_axis) {
 		pickerRotate.X = [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments + pickerTolerance ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
 		];
 	} 
 	if(shownAxis & axis.Y_axis)  {
 		pickerRotate.Y = [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matGreen ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments + pickerTolerance ), matGreen ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
 		];
 	}
 	if(shownAxis & axis.Z_axis) {
 		pickerRotate.Z = [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matBlue ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius , rotationalGizmoTube + offset, 4, tubularSegments + pickerTolerance ), matBlue ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
 		];
 	}
 
