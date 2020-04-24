@@ -527,9 +527,15 @@ const SceneContent = connect(
       stopSound
     })
     
-    useFrame(({camera}) => {
+    const session = gl.xr.getSession()
+    const emptyCamera = useMemo(() => {
+      return camera.clone()
+    }, [camera && camera.uuid])
+    
+    useFrame(({camera, gl}) => {
+      session && gl.xr.getCamera(emptyCamera)
       SGConnection.sendInfo({
-        matrix: camera.matrixWorld.toArray(),
+        matrix: emptyCamera.matrixWorld.toArray(),
         controllers: controllers.map((object) => object.matrixWorld.toArray())
       })
     })
@@ -950,7 +956,7 @@ const SceneManagerXR = ({SGConnection}) => {
       setIsLoading(false)
 
       let assetsWithErrors = Object.entries(assets).reduce((arr, [key, asset]) => {
-        if (asset.status == 'Error') {
+        if (asset.status === 'Error') {
           arr[key] = asset
         }
         return arr
@@ -973,7 +979,9 @@ const SceneManagerXR = ({SGConnection}) => {
       <Canvas
         // initialize camera for browser view at a standing height off the floor
         // (this will change once the HMD initializes)
-        camera={{ 'position-y': 1.6, 'position-z': 0 }}
+        camera={{
+          //'position-y': 1.6, 'position-z': 0
+        }}
         // enable VR
         vr
       >

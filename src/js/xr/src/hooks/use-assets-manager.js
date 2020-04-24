@@ -1,6 +1,6 @@
 const THREE = require('three')
 const React = require('react')
-const { useState, useReducer, useMemo, useCallback } = React
+const { useState, useReducer, useMemo, useEffect, useCallback } = React
 
 const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
 
@@ -60,7 +60,7 @@ const useAssetsManager = () => {
 
   const [assets, dispatch] = useReducer(reducer, {})
 
-  useMemo(() => {
+  useEffect(() => {
     Object.entries(assets)
       .filter(([_, o]) => o.status === 'NotAsked')
       .forEach(([id]) => {

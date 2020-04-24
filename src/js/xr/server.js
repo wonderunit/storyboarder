@@ -171,7 +171,7 @@ class XRServer {
         res.header('Access-Control-Allow-Methods', 'GET, PUT, POST, DELETE')
 
         // intercept OPTIONS method
-        if (req.method == 'OPTIONS') {
+        if (req.method === 'OPTIONS') {
           res.sendStatus(200)
         } else {
           next()
