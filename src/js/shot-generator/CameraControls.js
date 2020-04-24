@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
+import { TetrahedronGeometry } from 'three'
 class CameraControls {
   
   constructor ( object, domElement, options = {}, target = null ) {
@@ -32,18 +33,22 @@ class CameraControls {
     this.undoGroupStart = options.undoGroupStart
     this.undoGroupEnd = options.undoGroupEnd
     this.onChange = options.onChange
-    
+
+    this.panOffset = new THREE.Vector3()
     this.intializeEvents()
   }
 
   set Target(target) {
     if(target instanceof THREE.Object3D) {
       this.target = target.getWorldPosition()
+      this.isLockedOnObject = true
     } else if(target instanceof THREE.Vector3) {
       this.target = target
+      this.isLockedOnObject = true
+      
     } else {
       this.target = null
-      console.warn("Target should type of Vector3")
+      this.isLockedOnObject = false
     }
   }
   
@@ -90,6 +95,10 @@ class CameraControls {
     
     this.initialMouseX = event.pageX
     this.initialMouseY = event.pageY
+
+    this.prevMouseX = this.initialMouseX
+    this.prevMouseY = this.initialMouseY
+
     this.mouseX = event.pageX
     this.mouseY = event.pageY
     this.mouseDragOn = true
@@ -108,7 +117,7 @@ class CameraControls {
       this.onChange({active: false, object: this._object})
       this.undoGroupEnd()
     }
-    
+    this.target = this.isLockedOnObject ? this.target : null
     this.mouseDragOn = false
   }
   
@@ -133,6 +142,7 @@ class CameraControls {
     switch ( event.keyCode ) {
       case 17: /*control*/
         this.controlPressed = true
+        this.onChange({active: false, object: this._object})
         break;
       case 38: /*up*/
       case 87: /*W*/
@@ -261,13 +271,97 @@ class CameraControls {
     }
     
     if (this.mouseDragOn) {
-      if(this.controlPressed && this.target) {
+      if(this.controlPressed) {
         let camera = new THREE.PerspectiveCamera()
 
         let spherical = new THREE.Spherical()
         let offset = new THREE.Vector3()
+        camera.position.set(this._object.x, this._object.z, this._object.y)
+        camera.updateMatrixWorld(true)
+        camera.rotation.x = 0
+        camera.rotation.z = 0
+        camera.rotation.y = this._object.rotation
+        camera.rotateX(this._object.tilt)
+        camera.rotateZ(this._object.roll)
+        camera.updateMatrixWorld(true)
+        camera.updateProjectionMatrix()
+
+        let cameraClone 
+        let cloneToOriginDelta
+        if(this.isLockedOnObject) {
+          cameraClone = camera.clone()
+          cameraClone.lookAt( this.target );
+          cameraClone.updateMatrixWorld()
+  
+          cloneToOriginDelta = new THREE.Quaternion();
+          cloneToOriginDelta.multiply(cameraClone.worldQuaternion().conjugate());
+          cloneToOriginDelta.multiply(camera.worldQuaternion());
+  
+          cameraClone = camera.clone()
+        }
+
+        if(!this.target) {
+          let cameraDirection = new THREE.Vector3()
+          let origin = new THREE.Vector3().setFromMatrixPosition(camera.matrixWorld)
+          camera.getWorldDirection(cameraDirection)
+          cameraDirection.normalize()
+
+          cameraDirection.setLength(7)
+          this.target = cameraDirection.clone().add(origin)
+    
+          camera.updateMatrixWorld(true)
+        }
         let target = this.target
-   
+
+        var quat = new THREE.Quaternion().setFromUnitVectors( camera.up, new THREE.Vector3( 0, 1, 0 ) );
+        var quatInverse = quat.clone().inverse();
+
+        offset.subVectors(camera.position, target)
+        offset.applyQuaternion(quat)
+        spherical.setFromVector3(offset)
+        let rotation = (this.mouseX - this.prevMouseX)*0.005
+        let tilt = (this.mouseY - this.prevMouseY)*0.005
+  
+        spherical.theta += rotation
+        spherical.phi += tilt
+        spherical.makeSafe();
+
+        offset.setFromSpherical( spherical );
+			  offset.applyQuaternion( quatInverse );
+
+        camera.position.addVectors( target, offset );
+        camera.lookAt( target );
+
+        if(this.isLockedOnObject) { 
+          let cloneGlobalQuat = camera.worldQuaternion();
+          cloneGlobalQuat.multiply(cloneToOriginDelta);
+          let transformMatrix = new THREE.Matrix4();
+          transformMatrix.multiply(cameraClone.matrix);
+          transformMatrix.multiply(cameraClone.matrixWorld.inverse());
+          cloneGlobalQuat.applyMatrix(transformMatrix);
+          camera.quaternion.copy(cloneGlobalQuat);
+          camera.updateMatrixWorld(true)
+        }
+
+        let position = camera.position
+        let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
+
+        this._object.tilt = rot.x
+        this._object.rotation = rot.y
+        this._object.roll = rot.z
+        this._object.x = position.x
+        this._object.y = position.z
+        this._object.z = position.y
+
+      } else {
+        let rotation = (this.mouseX - this.prevMouseX)*0.001
+        this._object.rotation -= rotation
+        let tilt = (this.mouseY - this.prevMouseY)*0.001
+        this._object.tilt -= tilt 
+        this._object.tilt = Math.max(Math.min(this._object.tilt, Math.PI / 2), -Math.PI / 2)
+/*         
+        //trucking offset
+        let camera = new THREE.Object3D()
         camera.position.set(this._object.x, this._object.z, this._object.y)
         camera.updateMatrixWorld(true)
         camera.rotation.x = 0
@@ -277,39 +371,17 @@ class CameraControls {
         camera.rotateZ(this._object.roll)
         camera.updateMatrixWorld(true)
 
-        var quat = new THREE.Quaternion().setFromUnitVectors( camera.up, new THREE.Vector3( 0, 1, 0 ) );
-        var quatInverse = quat.clone().inverse();
+        let leftRotation = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0)
+        let topRotation = leftRotation.clone()
+        leftRotation.multiplyScalar(rotation)
+        this.panOffset.add(leftRotation) 
 
-        offset.subVectors(camera.position, target)
-        offset.applyQuaternion(quat)
-        spherical.setFromVector3(offset)
-
-        let rotation = (this.mouseX - this.initialMouseX)*0.005
-        let tilt = (this.mouseY - this.initialMouseY)*0.005
-        spherical.theta += rotation
-        spherical.phi += tilt
-        spherical.makeSafe();
-        offset.setFromSpherical( spherical );
-			  offset.applyQuaternion( quatInverse );
-
-        camera.position.addVectors( target, offset );
-        camera.updateMatrixWorld(true)
-        camera.lookAt( target );
-        let position = camera.position
-        let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
-        this._object.tilt = rot.x
-        this._object.rotation = rot.y
-        this._object.roll = rot.z
-        this._object.x = position.x
-        this._object.y = position.z
-        this._object.z = position.y
-
-      } else {
-        let rotation = this.initialRotation - (this.mouseX - this.initialMouseX)*0.001
-        this._object.rotation = rotation
-        let tilt = this.initialTilt - (this.mouseY - this.initialMouseY)*0.001
-        this._object.tilt = Math.max(Math.min(tilt, Math.PI / 2), -Math.PI / 2)
+        topRotation.crossVectors(camera.up, topRotation)
+        topRotation.multiplyScalar(tilt)
+        this.panOffset.add(leftRotation)  */
       }
+      this.prevMouseX = this.mouseX
+      this.prevMouseY = this.mouseY
 
     } 
     // rotation
@@ -401,6 +473,7 @@ class CameraControls {
     }
     
     this._prevValues = {...this._object}
+
     
     // if (state.devices[0].digital.r1 || state.devices[0].digital.l1) {
     //   this.zoomSpeed += 0.002
@@ -432,7 +505,8 @@ CameraControls.objectFromCameraState = cameraState =>
       rotation: cameraState.rotation,
       tilt: cameraState.tilt,
       fov: cameraState.fov,
-      roll: cameraState.roll
+      roll: cameraState.roll,
+      
     })
 
 export default CameraControls

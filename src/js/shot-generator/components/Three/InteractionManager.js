@@ -156,7 +156,6 @@ const InteractionManager = connect(
         camera.rotateX(object.tilt)
         camera.rotateZ(object.roll)
         camera.fov = object.fov
-        camera.updateProjectionMatrix()
       }
     }
 
@@ -228,7 +227,7 @@ const InteractionManager = connect(
       let selectedObjects = scene.__interaction.filter(object => object.userData.type !== 'camera' && object.userData.type !== 'volume' 
                                                         && selections.includes(object.userData.id) )
       if(!selectedObjects.length) {
-        cameraControlsView.current.target = null
+        cameraControlsView.current.Target = null
         return
       }
       let target = new THREE.Vector3()
@@ -236,7 +235,7 @@ const InteractionManager = connect(
         target.add(selectedObjects[i].worldPosition())
       }
       target.divideScalar(selectedObjects.length)
-      cameraControlsView.current.target = target
+      cameraControlsView.current.Target = target
     }
 
     useEffect(() => {
@@ -489,8 +488,6 @@ const InteractionManager = connect(
       if(cameraControlsView.current) {
        
         withState((dispatch, state) => {
-          let sceneObjects = takeSceneObjects()
-          cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
           cameraControlsView.current.update(delta, state)
         })
       }
