@@ -765,6 +765,7 @@ const TransformControlsGizmo = function (shownAxis) {
 		fog: false
 	});
 
+	
 	var gizmoLineMaterial = new THREE.LineBasicMaterial({
 		depthTest: false,
 		depthWrite: false,

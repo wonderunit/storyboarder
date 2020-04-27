@@ -44,7 +44,7 @@ const Light = React.memo(({sceneObject, isSelected, children, ...props }) => {
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
     } else {
       setLightColor(0x8c78f1)
-      if(props.objectRotationControl.isSelected(ref.current)) {
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
       }
     }
