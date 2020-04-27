@@ -25,6 +25,7 @@ import {
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import CameraControls from '../../CameraControls'
 import throttle from 'lodash.throttle'
+import isUserModel from '../../helpers/isUserModel'
 
 const getIntersectionTarget = intersect => {
   // character
@@ -232,7 +233,20 @@ const InteractionManager = connect(
       }
       let target = new THREE.Vector3()
       for(let i = 0; i < selectedObjects.length; i++) {
-        target.add(selectedObjects[i].worldPosition())
+        let selectedObject = selectedObjects[i]
+        if(selectedObject.userData.type === "character") {
+          if(!isUserModel(selectedObject.userData.model)) {
+            let skinnedMesh = selectedObject.getObjectByProperty("type", "SkinnedMesh")
+            let bone = skinnedMesh.skeleton.getBoneByName("Head")
+            target.add(bone.worldPosition())
+          } else {
+            let position = selectedObjects[i].worldPosition()
+            position.y = camera.position.y
+            target.add(position)
+          }
+        } else {
+          target.add(selectedObjects[i].worldPosition())
+        }
       }
       target.divideScalar(selectedObjects.length)
       cameraControlsView.current.Target = target
