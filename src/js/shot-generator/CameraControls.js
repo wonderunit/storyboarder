@@ -1,5 +1,7 @@
 import * as THREE from 'three'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
+import ResourceManager from '../shared/IK/ResourceManager'
+import { Vector3 } from 'three'
 class CameraControls {
   
   constructor ( object, domElement, options = {}, target = null ) {
@@ -32,8 +34,6 @@ class CameraControls {
     this.undoGroupStart = options.undoGroupStart
     this.undoGroupEnd = options.undoGroupEnd
     this.onChange = options.onChange
-
-    this.panOffset = new THREE.Vector3()
     this.intializeEvents()
   }
 
@@ -137,7 +137,6 @@ class CameraControls {
   onKeyDown ( event ) {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
-    console.log(event)
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
       case 17: /*control*/
@@ -275,11 +274,10 @@ class CameraControls {
     } else {
       this.moveAnalogue = false
     }
-    
+    let resourceManager = ResourceManager.getInstance()
     if (this.mouseDragOn) {
-      let camera = new THREE.PerspectiveCamera()
+      let camera = resourceManager.getCustom(THREE.PerspectiveCamera)
       camera.position.set(this._object.x, this._object.z, this._object.y)
-      camera.updateMatrixWorld(true)
       camera.rotation.x = 0
       camera.rotation.z = 0
       camera.rotation.y = this._object.rotation
@@ -288,27 +286,26 @@ class CameraControls {
       camera.updateMatrixWorld(true)
       // Camera Orbiting logic
       if(this.controlPressed) {
-
-        let spherical = new THREE.Spherical()
-        let offset = new THREE.Vector3()
+        let spherical = resourceManager.getCustom(THREE.Spherical)
+        let offset = resourceManager.getVector3()
 
         let cameraClone 
         let cloneToOriginDelta
+        // Checks if locked on object and calculates rotation delta 
         if(this.isLockedOnObject) {
-          cameraClone = camera.clone()
-          cameraClone.lookAt( this.target );
-          cameraClone.updateMatrixWorld()
+          cameraClone = resourceManager.getCustom(THREE.PerspectiveCamera).copy(camera)
+          cameraClone.lookAt( this.target )
+          cameraClone.updateMatrixWorld(true)
   
-          cloneToOriginDelta = new THREE.Quaternion();
-          cloneToOriginDelta.multiply(cameraClone.worldQuaternion().conjugate());
-          cloneToOriginDelta.multiply(camera.worldQuaternion());
-  
-          cameraClone = camera.clone()
+          cloneToOriginDelta = resourceManager.getQuaternion()
+          cloneToOriginDelta.multiply(cameraClone.worldQuaternion().conjugate())
+          cloneToOriginDelta.multiply(camera.worldQuaternion())
+          cameraClone = cameraClone.copy(camera)
         }
-
+        // Checks if we have target and creates a targe in the center of view with distance of 7 if needed  
         if(!this.target) {
-          let cameraDirection = new THREE.Vector3()
-          let origin = new THREE.Vector3().setFromMatrixPosition(camera.matrixWorld)
+          let cameraDirection = resourceManager.getVector3()
+          let origin = resourceManager.getVector3().setFromMatrixPosition(camera.matrixWorld)
           camera.getWorldDirection(cameraDirection)
           cameraDirection.normalize()
 
@@ -316,11 +313,15 @@ class CameraControls {
           this.target = cameraDirection.clone().add(origin)
     
           camera.updateMatrixWorld(true)
+          resourceManager.release(cameraDirection)
+          resourceManager.release(origin)
         }
-        let target = this.target
 
-        var quat = new THREE.Quaternion().setFromUnitVectors( camera.up, new THREE.Vector3( 0, 1, 0 ) );
-        var quatInverse = quat.clone().inverse();
+        //#region Main orbiting logic
+        let target = this.target
+        let customUp = resourceManager.getVector3().set( 0, 1, 0 )
+        let quat = resourceManager.getQuaternion().setFromUnitVectors( camera.up, customUp )
+        let quatInverse = quat.clone().inverse()
 
         offset.subVectors(camera.position, target)
         offset.applyQuaternion(quat)
@@ -337,21 +338,24 @@ class CameraControls {
 
         camera.position.addVectors( target, offset );
         camera.lookAt( target );
-
+        //#endregion 
+        // Applies change of basis to maintain object initial rotation in new rotation and position
         if(this.isLockedOnObject) { 
-          let cloneGlobalQuat = camera.worldQuaternion();
-          cloneGlobalQuat.multiply(cloneToOriginDelta);
-          let transformMatrix = new THREE.Matrix4();
-          transformMatrix.multiply(cameraClone.matrix);
-          transformMatrix.multiply(cameraClone.matrixWorld.inverse());
-          cloneGlobalQuat.applyMatrix(transformMatrix);
-          camera.quaternion.copy(cloneGlobalQuat);
+          let cloneGlobalQuat = camera.worldQuaternion()
+          cloneGlobalQuat.multiply(cloneToOriginDelta)
+          let transformMatrix = resourceManager.getMatrix4()
+          transformMatrix.multiply(cameraClone.matrix)
+          transformMatrix.multiply(cameraClone.matrixWorld.inverse())
+          cloneGlobalQuat.applyMatrix(transformMatrix)
+          camera.quaternion.copy(cloneGlobalQuat)
           camera.updateMatrixWorld(true)
+          resourceManager.release(transformMatrix)
         }
 
         let position = camera.position
-        let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
+        let rot = resourceManager.getCustom(THREE.Euler).setFromQuaternion(camera.quaternion, "YXZ")
 
+        // Save camera changes
         this._object.tilt = rot.x
         this._object.rotation = rot.y
         this._object.roll = rot.z
@@ -359,6 +363,14 @@ class CameraControls {
         this._object.y = position.z
         this._object.z = position.y
 
+        cameraClone && resourceManager.release(cameraClone)
+        cloneToOriginDelta && resourceManager.release(cloneToOriginDelta)
+
+        resourceManager.release(customUp)
+        resourceManager.release(rot)
+        resourceManager.release(quat)
+        resourceManager.release(spherical)
+        resourceManager.release(offset)
       } 
       // Camera dollying and trucking
       else if(this.altPressed) {
@@ -372,8 +384,8 @@ class CameraControls {
         this._object.y = result.y */
   
 
-        let cameraVerticalDirection = new THREE.Vector3()
-        let cameraHorizontalDirection = new THREE.Vector3()
+        let cameraVerticalDirection = resourceManager.getVector3()
+        let cameraHorizontalDirection = resourceManager.getVector3()
         camera.getWorldDirection(cameraVerticalDirection)
         cameraVerticalDirection.normalize()
         let e = camera.matrixWorld.elements;
@@ -389,7 +401,8 @@ class CameraControls {
         this._object.x = position.x
         this._object.y = position.z
         this._object.z = position.y
-
+        resourceManager.release(cameraVerticalDirection)
+        resourceManager.release(cameraHorizontalDirection)
       }
       // Camera panning logic
       else {
@@ -401,7 +414,7 @@ class CameraControls {
       }
       this.prevMouseX = this.mouseX
       this.prevMouseY = this.mouseY
-
+      resourceManager.release(camera)
     } 
     // rotation
     let rStickX = (state.devices[0].analog.rStickX/127) - 1
@@ -439,34 +452,42 @@ class CameraControls {
     }
     
     if ( this.moveForward ) {
-      let loc = new THREE.Vector2(this._object.x, this._object.y)
-      let result = new THREE.Vector2(0+loc.x, -this.movementSpeed+loc.y).rotateAround(loc,-this._object.rotation)
+      let loc = resourceManager.getCustom(THREE.Vector2).set(this._object.x, this._object.y)
+      let result = resourceManager.getCustom(THREE.Vector2).set(0+loc.x, -this.movementSpeed+loc.y).rotateAround(loc,-this._object.rotation)
       
       this._object.x = result.x
       this._object.y = result.y
+      resourceManager.release(loc)
+      resourceManager.release(result)
     }
     
     if ( this.moveBackward ) {
-      let loc = new THREE.Vector2(this._object.x, this._object.y)
-      let result = new THREE.Vector2(0+loc.x, this.movementSpeed+loc.y).rotateAround(loc,-this._object.rotation)
+      let loc = resourceManager.getCustom(THREE.Vector2).set(this._object.x, this._object.y)
+      let result = resourceManager.getCustom(THREE.Vector2).set(0+loc.x, this.movementSpeed+loc.y).rotateAround(loc,-this._object.rotation)
       
       this._object.x = result.x
       this._object.y = result.y
+      resourceManager.release(loc)
+      resourceManager.release(result)
     }
     
     if ( this.moveLeft ) {
-      let loc = new THREE.Vector2(this._object.x, this._object.y)
-      let result = new THREE.Vector2(-this.movementSpeed+loc.x, 0+loc.y).rotateAround(loc,-this._object.rotation)
+      let loc = resourceManager.getCustom(THREE.Vector2).set(this._object.x, this._object.y)
+      let result = resourceManager.getCustom(THREE.Vector2).set(-this.movementSpeed+loc.x, 0+loc.y).rotateAround(loc,-this._object.rotation)
       
       this._object.x = result.x
       this._object.y = result.y
+      resourceManager.release(loc)
+      resourceManager.release(result)
     }
     if ( this.moveRight ) {
-      let loc = new THREE.Vector2(this._object.x, this._object.y)
-      let result = new THREE.Vector2(this.movementSpeed+loc.x, 0+loc.y).rotateAround(loc,-this._object.rotation)
+      let loc = resourceManager.getCustom(THREE.Vector2).set(this._object.x, this._object.y)
+      let result = resourceManager.getCustom(THREE.Vector2).set(this.movementSpeed+loc.x, 0+loc.y).rotateAround(loc,-this._object.rotation)
       
       this._object.x = result.x
       this._object.y = result.y
+      resourceManager.release(loc)
+      resourceManager.release(result)
     }
 
     if ( this.moveUp ) {
