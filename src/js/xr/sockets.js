@@ -102,14 +102,18 @@ export const serve = (io, store, service) => {
 export const SGMiddleware = store => next => action => {
   if (!IO.current || (RestrictedActions.indexOf(action.type) !== -1)) {
     if (SelectActions.indexOf(action.type) !== -1) {
-      dispatchRemote(deselectObject(action.payload))
+      let copy = {...action}
+      dispatchRemote(deselectObject(copy.payload), {ignoreSG: true})
     }
     
     return next(action)
   }
   
-  dispatchRemote(action, action.meta)
+  if (action.meta && action.meta.ignoreSG) {g
+    return false
+  }
   
+  dispatchRemote(action, action.meta)
   return next(action)
 }
 
