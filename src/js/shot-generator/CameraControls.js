@@ -1,6 +1,5 @@
 import * as THREE from 'three'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
-import { TetrahedronGeometry } from 'three'
 class CameraControls {
   
   constructor ( object, domElement, options = {}, target = null ) {
@@ -138,11 +137,15 @@ class CameraControls {
   onKeyDown ( event ) {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
+    console.log(event)
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
       case 17: /*control*/
         this.controlPressed = true
         this.onChange({active: false, object: this._object})
+        break;
+      case 18: /*alt*/
+        this.altPressed = true
         break;
       case 38: /*up*/
       case 87: /*W*/
@@ -189,8 +192,11 @@ class CameraControls {
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
       case 17: /*control*/ 
-      this.controlPressed = this.mouseDragOn ? true : false
-      break;
+        this.controlPressed = this.mouseDragOn ? true : false
+        break;
+      case 18: /*alt*/
+        this.altPressed = false
+        break;
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;
       case 37: /*left*/
@@ -271,20 +277,20 @@ class CameraControls {
     }
     
     if (this.mouseDragOn) {
+      let camera = new THREE.PerspectiveCamera()
+      camera.position.set(this._object.x, this._object.z, this._object.y)
+      camera.updateMatrixWorld(true)
+      camera.rotation.x = 0
+      camera.rotation.z = 0
+      camera.rotation.y = this._object.rotation
+      camera.rotateX(this._object.tilt)
+      camera.rotateZ(this._object.roll)
+      camera.updateMatrixWorld(true)
+      // Camera Orbiting logic
       if(this.controlPressed) {
-        let camera = new THREE.PerspectiveCamera()
 
         let spherical = new THREE.Spherical()
         let offset = new THREE.Vector3()
-        camera.position.set(this._object.x, this._object.z, this._object.y)
-        camera.updateMatrixWorld(true)
-        camera.rotation.x = 0
-        camera.rotation.z = 0
-        camera.rotation.y = this._object.rotation
-        camera.rotateX(this._object.tilt)
-        camera.rotateZ(this._object.roll)
-        camera.updateMatrixWorld(true)
-        camera.updateProjectionMatrix()
 
         let cameraClone 
         let cloneToOriginDelta
@@ -353,32 +359,45 @@ class CameraControls {
         this._object.y = position.z
         this._object.z = position.y
 
-      } else {
+      } 
+      // Camera dollying and trucking
+      else if(this.altPressed) {
+        let horizontalDelta = (this.mouseX - this.prevMouseX)*0.005
+        let verticalDelta = (this.mouseY - this.prevMouseY)*0.015
+      /* 
+        let loc = new THREE.Vector2(this._object.x, this._object.y)
+        let result = new THREE.Vector2(horizontalDelta+loc.x, verticalDelta+loc.y).rotateAround(loc,-this._object.rotation)
+
+        this._object.x = result.x
+        this._object.y = result.y */
+  
+
+        let cameraVerticalDirection = new THREE.Vector3()
+        let cameraHorizontalDirection = new THREE.Vector3()
+        camera.getWorldDirection(cameraVerticalDirection)
+        cameraVerticalDirection.normalize()
+        let e = camera.matrixWorld.elements;
+
+        cameraHorizontalDirection.set( e[ 0 ], e[ 1 ], e[ 2 ] ).normalize();
+
+        cameraVerticalDirection.multiplyScalar(verticalDelta)
+        cameraHorizontalDirection.multiplyScalar(horizontalDelta)
+      
+        camera.position.add(cameraHorizontalDirection)
+        camera.position.sub(cameraVerticalDirection)
+        let position = camera.position
+        this._object.x = position.x
+        this._object.y = position.z
+        this._object.z = position.y
+
+      }
+      // Camera panning logic
+      else {
         let rotation = (this.mouseX - this.prevMouseX)*0.001
         this._object.rotation -= rotation
         let tilt = (this.mouseY - this.prevMouseY)*0.001
         this._object.tilt -= tilt 
         this._object.tilt = Math.max(Math.min(this._object.tilt, Math.PI / 2), -Math.PI / 2)
-/*         
-        //trucking offset
-        let camera = new THREE.Object3D()
-        camera.position.set(this._object.x, this._object.z, this._object.y)
-        camera.updateMatrixWorld(true)
-        camera.rotation.x = 0
-        camera.rotation.z = 0
-        camera.rotation.y = this._object.rotation
-        camera.rotateX(this._object.tilt)
-        camera.rotateZ(this._object.roll)
-        camera.updateMatrixWorld(true)
-
-        let leftRotation = new THREE.Vector3().setFromMatrixColumn(camera.matrixWorld, 0)
-        let topRotation = leftRotation.clone()
-        leftRotation.multiplyScalar(rotation)
-        this.panOffset.add(leftRotation) 
-
-        topRotation.crossVectors(camera.up, topRotation)
-        topRotation.multiplyScalar(tilt)
-        this.panOffset.add(leftRotation)  */
       }
       this.prevMouseX = this.mouseX
       this.prevMouseY = this.mouseY
