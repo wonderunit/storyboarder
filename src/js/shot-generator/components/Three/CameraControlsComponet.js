@@ -108,12 +108,15 @@ const CameraControlComponent = connect(
             onChange: onCameraUpdate
           }
         )
+        cameraControlsView.current.updateObjectInfo = () => {
+          let sceneObjects = takeSceneObjects()
+          cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
+        }
     }, [activeCamera])
 
     useEffect(() => {
         if(!pointerDownEvent) return
-        let sceneObjects = takeSceneObjects()
-        cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
+        cameraControlsView.current.updateObjectInfo()
         cameraControlsView.current.onPointerDown(pointerDownEvent)
     }, [pointerDownEvent])
 

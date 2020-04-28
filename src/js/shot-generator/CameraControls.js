@@ -136,6 +136,7 @@ class CameraControls {
   onKeyDown ( event ) {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
+    this.updateObjectInfo()
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
       case 16: /*control*/
@@ -362,11 +363,9 @@ class CameraControls {
         // Save camera changes
         this._object.tilt = rot.x
         this._object.rotation = rot.y
-        this._object.roll = rot.z
         this._object.x = position.x
         this._object.y = position.z
         this._object.z = position.y
-
         cameraClone && resourceManager.release(cameraClone)
         cloneToOriginDelta && resourceManager.release(cloneToOriginDelta)
 
