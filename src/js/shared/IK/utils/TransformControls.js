@@ -753,9 +753,9 @@ const TransformControlsGizmo = function (shownAxis) {
 	let maximumScale = new THREE.Vector3(0.2, 0.2, 0.2);
 	//#endregion
 	// shared materials
-	let rotationalGizmoRadius = 1;
+	let rotationalGizmoRadius = 1.3;
 	let rotationalGizmoTube = rotationalGizmoRadius / 12;
-	let pickerTolerance = 0.025
+	let pickerTolerance = 0.05
 	rotationalGizmoTube += pickerTolerance
 	var gizmoMaterial = new THREE.MeshBasicMaterial({
 		depthTest: false,

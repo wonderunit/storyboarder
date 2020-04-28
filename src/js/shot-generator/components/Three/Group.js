@@ -13,11 +13,9 @@ const Group = React.memo(({ id, type, ...props }) => {
     return scene.__interaction.filter((object) => props.children.includes(object.userData.id))
   }, [props.children])
 
-  const addArrayToObject = (object, array, isAttach = true) => {
-    console.log("Container", object)
+  const addArrayToObject = (object, array) => {
     for(let i = 0; i < array.length; i++) {
-      if(isAttach) object.attach(array[i])
-      else object.add(array[i])
+      object.attach(array[i])
     }
   } 
 
@@ -38,7 +36,6 @@ const Group = React.memo(({ id, type, ...props }) => {
               case "object":
               euler.setFromQuaternion(child.worldQuaternion())
               state.rotation = { x : euler.x, y : euler.y, z : euler.z }
-              state.position = child.worldPosition()
               break;
             case "light":
               euler.setFromQuaternion(child.worldQuaternion(), "YXZ")
@@ -47,13 +44,13 @@ const Group = React.memo(({ id, type, ...props }) => {
                 tilt: euler.x,
                 roll: euler.z
               }
-              state.position = child.worldPosition()
               break;
           }
           let position = child.worldPosition()
           state.x = position.x 
           state.y = position.z
           state.z = position.y
+          
           dispatch(props.updateObject(child.userData.id, state))
 
           if(child.userData.type === "character") {
@@ -101,7 +98,7 @@ const Group = React.memo(({ id, type, ...props }) => {
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
       props.objectRotationControl.IsEnabled = !props.locked
       props.objectRotationControl.customOnMouseDownAction = () => { addArrayToObject(ref.current, children) };
-      props.objectRotationControl.customOnMouseUpAction = () => { addArrayToObject(scene.children[0], children, false) };
+      props.objectRotationControl.customOnMouseUpAction = () => { addArrayToObject(scene.children[0], children) };
       props.objectRotationControl.control.setShownAxis(axis.Y_axis)
       
     } else {

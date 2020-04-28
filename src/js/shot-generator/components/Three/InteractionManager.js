@@ -269,7 +269,7 @@ const InteractionManager = connect(
             
             for (let intersect of intersects) {
                 target = getIntersectionTarget(intersect)
-                if (target.userData.type === 'character' && target.userData.locked) {
+                if (target && target.userData.type === 'character' && target.userData.locked) {
                 return
                 }
             }
