@@ -157,6 +157,7 @@ const InteractionManager = connect(
         camera.rotateX(object.tilt)
         camera.rotateZ(object.roll)
         camera.fov = object.fov
+        camera.isSynchronized = false
       }
     }
 
