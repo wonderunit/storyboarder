@@ -101,7 +101,7 @@ class CameraControls {
       this.undoGroupStart()
     }
     if(event.button === 2) {
-      this.isOrbiting = true
+      this.isRightButtonPressed = true
     }
   
     this.onChange({active: this.mouseDragOn, object: this._object})
@@ -116,6 +116,7 @@ class CameraControls {
     }
     this.target = this.isLockedOnObject ? this.target : null
     this.mouseDragOn = false
+    this.isRightButtonPressed = false
   }
   
   addKey (key) {
@@ -169,7 +170,7 @@ class CameraControls {
     }
     
     switch ( event.keyCode ) {
-      case 17: /*control*/ this.isOrbiting = true; break;
+      case 17: /*control*/ this.controlPressed = true; break;
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = true; break
       case 37: /*left*/
@@ -194,7 +195,7 @@ class CameraControls {
         this.shiftPressed = false
         break;
       case 17: /*control*/ 
-        this.isOrbiting = false
+        this.controlPressed = false
         this.target = this.isLockedOnObject ? this.target : null
         break;
       case 18: /*alt*/
@@ -288,7 +289,7 @@ class CameraControls {
       camera.rotateZ(this._object.roll)
       camera.updateMatrixWorld(true)
       // Camera Orbiting logic
-      if(this.isOrbiting) {
+      if(this.controlPressed || this.isRightButtonPressed) {
         let spherical = resourceManager.getCustom(THREE.Spherical)
         let offset = resourceManager.getVector3()
 
@@ -376,7 +377,7 @@ class CameraControls {
         resourceManager.release(offset)
       } 
       // Camera dollying and trucking
-      else if(this.altPressed) {
+      else if(this.shiftPressed) {
         let verticalDelta = (this.mouseY - this.prevMouseY)*0.015
     
         /* 
@@ -399,7 +400,7 @@ class CameraControls {
         this._object.z = position.y
         resourceManager.release(cameraVerticalDirection)
       }
-      else if(this.shiftPressed) {
+      else if(this.altPressed) {
         let horizontalDelta = (this.mouseX - this.prevMouseX)*0.005
         let cameraHorizontalDirection = resourceManager.getVector3()
         let e = camera.matrixWorld.elements;
