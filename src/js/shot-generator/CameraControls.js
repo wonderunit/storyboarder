@@ -1,7 +1,6 @@
 import * as THREE from 'three'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import ResourceManager from '../shared/IK/ResourceManager'
-import { Vector3 } from 'three'
 class CameraControls {
   
   constructor ( object, domElement, options = {}, target = null ) {
@@ -58,8 +57,6 @@ class CameraControls {
 
   intializeEvents() {
     window.addEventListener( 'pointermove', this.onPointerMove, false )
-    //this.domElement.addEventListener( 'pointerdown', this.onPointerDown, false )
-    document.addEventListener( 'pointerup', this.onPointerUp, false )
     KeyCommandsSingleton.getInstance().addKeyCommand({
       key: "camera-controls", 
       keyCustomCheck: this.onKeyDown,
@@ -70,8 +67,6 @@ class CameraControls {
   
   dispose () {
     window.removeEventListener( 'pointermove', this.onPointerMove )
-  //  this.domElement.removeEventListener( 'pointerdown', this.onPointerDown )
-    document.removeEventListener( 'pointerup', this.onPointerUp )
     KeyCommandsSingleton.getInstance().removeKeyCommand({key: "camera-controls"})
     window.removeEventListener( 'keyup', this.onKeyUp )
     this.domElement.removeEventListener("wheel", this.onWheel )
@@ -191,7 +186,8 @@ class CameraControls {
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
       case 17: /*control*/ 
-        this.controlPressed = this.mouseDragOn ? true : false
+        this.controlPressed = false
+        this.target = this.isLockedOnObject ? this.target : null
         break;
       case 18: /*alt*/
         this.altPressed = false
@@ -220,7 +216,6 @@ class CameraControls {
   
   
   reset () {
-    this.controlPressed = !this.keydowns.has(17) ? false : true // checks if control key was released
     this.moveForward = false
     this.moveLeft = false
     this.moveBackward = false

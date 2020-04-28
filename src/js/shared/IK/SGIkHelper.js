@@ -411,6 +411,7 @@ class SGIKHelper extends THREE.Object3D
     }
 
     changeDomElement(domElement) {
+        if(!this.ragDoll) return
         this.ragDoll.controlTargetSelection.dispose();
         this.ragDoll.controlTargetSelection.domElement = domElement;
         for(let i = 0; i < this.targetControls.length; i++) {
