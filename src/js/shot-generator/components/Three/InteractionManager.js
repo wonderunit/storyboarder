@@ -371,7 +371,7 @@ const InteractionManager = connect(
               selectBone(null)
               setLastDownId(target.userData.id)
              if (shouldDrag) {
-                setDragTarget({ target, x, y })
+                setDragTarget({ target, x, y, isObjectControl: target.isRotated })
              }
              else {
               cameraControlsView.current.onPointerDown(event)

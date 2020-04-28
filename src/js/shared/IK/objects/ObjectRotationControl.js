@@ -32,7 +32,6 @@ class ObjectRotationControl
         this.customOnMouseUpAction && this.customOnMouseUpAction();
         this.updateCharacter && this.updateCharacter(this.object.name, this.object.rotation);
         this.object.isRotated = false;
-        this.object.isRotationChanged = true;
     };
     //#enderegion
 
