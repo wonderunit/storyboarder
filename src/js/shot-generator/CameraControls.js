@@ -100,6 +100,9 @@ class CameraControls {
     if(this.enabled === true ) {
       this.undoGroupStart()
     }
+    if(event.button === 2) {
+      this.isOrbiting = true
+    }
   
     this.onChange({active: this.mouseDragOn, object: this._object})
   }
@@ -134,8 +137,10 @@ class CameraControls {
     if (event.metaKey) return
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
+      case 16: /*control*/
+        this.shiftPressed = true
+        break;
       case 17: /*control*/
-        this.controlPressed = true
         this.onChange({active: false, object: this._object})
         break;
       case 18: /*alt*/
@@ -164,7 +169,7 @@ class CameraControls {
     }
     
     switch ( event.keyCode ) {
-      case 17: /*control*/ this.controlPressed = true; break;
+      case 17: /*control*/ this.isOrbiting = true; break;
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = true; break
       case 37: /*left*/
@@ -185,8 +190,11 @@ class CameraControls {
   onKeyUp ( event ) {
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
+      case 16: /*control*/
+        this.shiftPressed = false
+        break;
       case 17: /*control*/ 
-        this.controlPressed = false
+        this.isOrbiting = false
         this.target = this.isLockedOnObject ? this.target : null
         break;
       case 18: /*alt*/
@@ -280,7 +288,7 @@ class CameraControls {
       camera.rotateZ(this._object.roll)
       camera.updateMatrixWorld(true)
       // Camera Orbiting logic
-      if(this.controlPressed) {
+      if(this.isOrbiting) {
         let spherical = resourceManager.getCustom(THREE.Spherical)
         let offset = resourceManager.getVector3()
 
@@ -369,34 +377,40 @@ class CameraControls {
       } 
       // Camera dollying and trucking
       else if(this.altPressed) {
-        let horizontalDelta = (this.mouseX - this.prevMouseX)*0.005
         let verticalDelta = (this.mouseY - this.prevMouseY)*0.015
-      /* 
+    
+        /* 
         let loc = new THREE.Vector2(this._object.x, this._object.y)
         let result = new THREE.Vector2(horizontalDelta+loc.x, verticalDelta+loc.y).rotateAround(loc,-this._object.rotation)
 
         this._object.x = result.x
         this._object.y = result.y */
   
-
         let cameraVerticalDirection = resourceManager.getVector3()
-        let cameraHorizontalDirection = resourceManager.getVector3()
         camera.getWorldDirection(cameraVerticalDirection)
         cameraVerticalDirection.normalize()
-        let e = camera.matrixWorld.elements;
-
-        cameraHorizontalDirection.set( e[ 0 ], e[ 1 ], e[ 2 ] ).normalize();
 
         cameraVerticalDirection.multiplyScalar(verticalDelta)
-        cameraHorizontalDirection.multiplyScalar(horizontalDelta)
       
-        camera.position.add(cameraHorizontalDirection)
         camera.position.sub(cameraVerticalDirection)
         let position = camera.position
         this._object.x = position.x
         this._object.y = position.z
         this._object.z = position.y
         resourceManager.release(cameraVerticalDirection)
+      }
+      else if(this.shiftPressed) {
+        let horizontalDelta = (this.mouseX - this.prevMouseX)*0.005
+        let cameraHorizontalDirection = resourceManager.getVector3()
+        let e = camera.matrixWorld.elements;
+        
+        cameraHorizontalDirection.set( e[ 0 ], e[ 1 ], e[ 2 ] ).normalize();
+        cameraHorizontalDirection.multiplyScalar(horizontalDelta)
+        camera.position.add(cameraHorizontalDirection)
+        let position = camera.position
+        this._object.x = position.x
+        this._object.y = position.z
+        this._object.z = position.y
         resourceManager.release(cameraHorizontalDirection)
       }
       // Camera panning logic
