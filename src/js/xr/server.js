@@ -157,8 +157,6 @@ class XRServer {
   constructor ({ store, service, staticPath = window.__dirname }) {
     const validSameBoard = uid => store.getState().board.uid === uid
 
-    //serve(io(https, { wsEngine: 'ws', serveClient: false }), store, service)
-
     app.use(express.json({
       limit: '5mb'
     }))
@@ -329,9 +327,9 @@ class XRServer {
       res.json(board)
     })
 
-    app.use(function (req, res, next) {
-      res.status(404).send('Not found')
-    })
+    // app.use(function (req, res, next) {
+    //   res.status(404).send('Not found')
+    // })
 
     try {
       let ip = getIpAddress()

@@ -189,9 +189,13 @@ const InteractionManager = connect(
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
         intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
-            o.userData.type === 'controlTarget' ||
-            o.userData.type === 'controlPoint' || 
-            o.userData.type === 'objectControl' ))
+          o.userData.type === 'controlTarget' ||
+          o.userData.type === 'controlPoint' ||
+          o.userData.type === 'object' ||
+          o.userData.type === 'image' ||
+          o.userData.type === 'character' ||
+          o.userData.type === 'light' ||
+          o.userData.type === 'objectControl' ))
     }
     
     const mouse = event => {
@@ -215,7 +219,7 @@ const InteractionManager = connect(
         y = mousePosition.current.y
         raycaster.current.setFromCamera({ x, y }, camera )
         let gpuPicker = getGPUPicker()
-        gpuPicker.setupScene(intersectables.current.filter(object => object.userData.type !== 'volume'))
+        gpuPicker.setupScene((intersectables.current || []).filter(object => object.userData.type !== 'volume'))
         gpuPicker.controller.setPickingPosition(mousePosition.current.x, mousePosition.current.y)
         intersects = gpuPicker.pickWithCamera(camera, activeGL)
         return intersects
@@ -268,10 +272,10 @@ const InteractionManager = connect(
             let selectedObjectControl
             
             for (let intersect of intersects) {
-                target = getIntersectionTarget(intersect)
-                if (!target || (target.userData.type === 'character' && target.userData.locked)) {
-                  return
-                }
+              target = getIntersectionTarget(intersect)
+              if (target.userData.type === 'character' && target.userData.locked) {
+                return
+              }
             }
 
             target = getIntersectionTarget(intersects[0])

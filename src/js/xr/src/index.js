@@ -33,6 +33,12 @@ const SceneManagerXR = require('./SceneManagerXR')
 const store = configureStore({...initialState})
 SGConnection.connectStore(store)
 
+window.addEventListener("error", function (e) {
+  //console.log(e)
+  SGConnection.log(e.error.message)
+  return false;
+})
+
 ReactDOM.render(
   <Provider store={store}>
     <SceneManagerXR SGConnection={SGConnection}/>

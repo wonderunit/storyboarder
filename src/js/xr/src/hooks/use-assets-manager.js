@@ -1,8 +1,8 @@
 const THREE = require('three')
 const React = require('react')
-const { useState, useReducer, useMemo, useEffect, useCallback } = React
+const { useState, useReducer, useMemo, useCallback } = React
 
-const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
+const { GLTFLoader} = require("./../../../vendor/three/examples/jsm/GLTFLoader")
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -45,6 +45,7 @@ const reducer = (state, action) => {
         [id]: { status: 'Success', value }
       }
     case 'ERROR':
+      throw new Error(id + ': ' + error.toString())
       return {
         ...state,
         [id]: { status: 'Error', error }
@@ -60,9 +61,10 @@ const useAssetsManager = () => {
 
   const [assets, dispatch] = useReducer(reducer, {})
 
-  useEffect(() => {
+  useMemo(() => {
     Object.entries(assets)
       .filter(([_, o]) => o.status === 'NotAsked')
+      .filter(([id]) => id !== false)
       .forEach(([id]) => {
         if (!id.includes('/images/')) {
           loader.load(
@@ -85,12 +87,18 @@ const useAssetsManager = () => {
   }, [assets])
 
   const requestAsset = useCallback(
-    id => dispatch({ type: 'PENDING', payload: { id }}),
+    id => {
+      if (id && (!assets[id])) {
+        dispatch({ type: 'PENDING', payload: { id }})
+      }
+      
+      return null
+    },
     []
   )
 
   const getAsset = useCallback(
-    id => assets[id] && assets[id].value,
+    id => assets[id] ? assets[id].value : requestAsset(id),
     [assets]
   )
 

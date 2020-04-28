@@ -528,14 +528,10 @@ const SceneContent = connect(
     })
     
     const session = gl.xr.getSession()
-    const emptyCamera = useMemo(() => {
-      return camera.clone()
-    }, [camera && camera.uuid])
-    
     useFrame(({camera, gl}) => {
-      session && gl.xr.getCamera(emptyCamera)
+      session && gl.xr.getCamera(camera)
       SGConnection.sendInfo({
-        matrix: emptyCamera.matrixWorld.toArray(),
+        matrix: camera.matrixWorld.toArray(),
         controllers: controllers.map((object) => object.matrixWorld.toArray())
       })
     })
@@ -884,7 +880,7 @@ const SceneManagerXR = ({SGConnection}) => {
       // has a value for model
       .filter(o => o.model != null)
       // is not a box
-      .filter(o => !(o.type === 'object' && o.model === 'box'))
+      .filter(o => !(o.type === 'object' && o.model === 'box') && o.type !== 'environment').map((i) => {console.log(i); return i})
       // what's the filepath?
       .map(getFilepathForModelByType)
       // has not been requested
@@ -905,7 +901,7 @@ const SceneManagerXR = ({SGConnection}) => {
       .forEach(requestAsset)
   }, [sceneObjects])
 
-  // world model files
+  /*// world model files
   useEffect(() => {
     if (world.environment.file) {
       // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
@@ -923,7 +919,7 @@ const SceneManagerXR = ({SGConnection}) => {
         })
       )
     }
-  }, [world.environment])
+  }, [world.environment, world.environment.file])*/
 
   useEffect(() => {
     if (!appAssetsLoaded) {
@@ -938,8 +934,8 @@ const SceneManagerXR = ({SGConnection}) => {
       ]
 
       // fail if any app resources are missing
-      if ([...appResources, ...soundResources, ...uiResources].some(n => n == null)) return
-      if (APP_GLTFS.map(getAsset).some(n => n == null)) return
+      if ([...appResources, ...soundResources, ...uiResources].some(n => n === null)) return
+      if (APP_GLTFS.map(getAsset).some(n => n === null)) return
 
       setAppAssetsLoaded(true)
     }

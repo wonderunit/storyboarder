@@ -140,7 +140,7 @@ const addGamepad = (controller, inputSource, inputSourceIndex, { layout, ...opti
 }
 
 const removeGamepad = controller => {
-  controller.userData.gamepadSourceUnsubscribe()
+  controller.userData.gamepadSourceUnsubscribe && controller.userData.gamepadSourceUnsubscribe()
   controller.userData.inputSource = null
   controller.userData.inputSourceIndex = null
   controller.userData.gamepadSource = null

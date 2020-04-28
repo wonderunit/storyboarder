@@ -89,7 +89,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
           userData={{
             type: 'ui',
             id: 'boards'
-          }}></primitive>
+          }}/>
         {showConfirm && <primitive
           object={confirmMesh}
           onController={() => null}
@@ -97,7 +97,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
           userData={{
             type: 'ui',
             id: 'boards'
-          }}></primitive>}
+          }}/>}
         {showSettings && <primitive
           object={settingsMesh}
           onController={() => null}
@@ -105,7 +105,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
           userData={{
             type: 'ui',
             id: 'boards'
-          }}></primitive>}
+          }}/>}
       </group>
     </group>
   ) : null

@@ -966,14 +966,14 @@ const useInteractionsManager = ({
     let context = interactionService.state.context
 
     // highlight hovered bone
-    if (mode == 'selected') {
+    if (mode === 'selected') {
       let match
       for (let i = 0, n = controllers.length; i < n; i++) {
         let controller = controllers[i]
 
         let intersects = []
         BonesHelper.getInstance().raycast(getControllerRaycaster(controller), intersects)
-        intersection = intersects.find(h => h.bone)
+        let intersection = intersects.find(h => h.bone)
 
         if (intersection) {
           match = intersection
@@ -1006,7 +1006,7 @@ const useInteractionsManager = ({
       }
     }
 
-    if (mode == 'drag_object') {
+    if (mode === 'drag_object') {
       let controller = gl.xr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
@@ -1035,7 +1035,7 @@ const useInteractionsManager = ({
       }
     }
 
-    if (mode == 'rotate_bone') {
+    if (mode === 'rotate_bone') {
       let controller = gl.xr.getController(context.draggingController)
       let selectedBone = getSelectedBone(store.getState())
 
@@ -1070,10 +1070,10 @@ const useInteractionsManager = ({
 
   // update ui every frame
   useFrame(() => {
-    if (uiService.state.value.input == 'dragging') {
+    if (uiService.state.value.input === 'dragging') {
       let controller = uiService.state.context.draggingController
 
-      let uis = scene.__interaction.filter(o => o.userData.type == 'ui')
+      let uis = scene.__interaction.filter(o => o.userData.type === 'ui')
       let intersections = getControllerIntersections(controller, uis)
       let intersection = intersections.length && intersections[0]
 
