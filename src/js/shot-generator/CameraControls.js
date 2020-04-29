@@ -407,11 +407,23 @@ class CameraControls {
         cameraHorizontalDirection.set( e[ 0 ], e[ 1 ], e[ 2 ] ).normalize();
         cameraHorizontalDirection.multiplyScalar(horizontalDelta)
         camera.position.add(cameraHorizontalDirection)
+     
+        resourceManager.release(cameraHorizontalDirection)
+
+        let verticalDelta = (this.mouseY - this.prevMouseY)*0.005
+        let cameraVerticalDirection = resourceManager.getVector3()
+
+        cameraVerticalDirection.set( e[ 4 ], e[ 5 ], e[ 6 ] ).normalize();
+        cameraVerticalDirection.multiplyScalar(verticalDelta)
+        camera.position.sub(cameraVerticalDirection)
+
+        resourceManager.release(cameraHorizontalDirection)
+
+
         let position = camera.position
         this._object.x = position.x
         this._object.y = position.z
         this._object.z = position.y
-        resourceManager.release(cameraHorizontalDirection)
       }
       // Camera panning logic
       else {
