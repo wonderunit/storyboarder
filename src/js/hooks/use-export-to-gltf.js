@@ -15,6 +15,7 @@ import {
 } from '../shared/reducers/shot-generator'
 import notifications from '../window/notifications'
 import ModelLoader from '../services/model-loader'
+import SkeletonUtils from "../shared/IK/utils/SkeletonUtils";
 
 const materialFactory = () => new THREE.MeshBasicMaterial({
   color: 0x8c78f1,
@@ -92,7 +93,9 @@ const useExportToGltf = (sceneRef, withState) => {
       timing: 5
     })
     let scene = new THREE.Scene()
-    for (let child of sceneRef.children[0].children) {
+    let attachables = sceneRef.__interaction.filter(object => object.userData.type === "attachable")
+    let children = sceneRef.children[0].children.concat(attachables)
+    for (let child of children) {
           // HACK test to avoid IconSprites, which fail to .clone
           if (!child.icon) {
             if (child.userData.id && sceneObjects[child.userData.id]) {
@@ -101,13 +104,8 @@ const useExportToGltf = (sceneRef, withState) => {
 
               } else if (sceneObject.type === 'character') {
 
-                let skinnedMesh = child.getObjectByProperty('type', 'SkinnedMesh')
-
-                let simpleMesh = new THREE.Mesh(skinnedMesh.geometry, new THREE.MeshStandardMaterial())
-                simpleMesh.scale.copy(skinnedMesh.worldScale())
-                simpleMesh.quaternion.copy(skinnedMesh.worldQuaternion())
-                simpleMesh.position.copy(skinnedMesh.worldPosition())
-                scene.add( simpleMesh)
+                let skinnedMesh = SkeletonUtils.clone(child)
+                scene.add( skinnedMesh)
                 
               } else if (sceneObject.type === "camera") { 
                 let camera = virtualCameraObject.clone()
@@ -117,7 +115,8 @@ const useExportToGltf = (sceneRef, withState) => {
                 scene.add(camera)
               } else if (sceneObject) {
                 let clone = child.clone()
-                
+                clone.applyMatrix(child.parent.matrixWorld)
+
                 clone.userData = {}
                 
                 clone.material = new THREE.MeshStandardMaterial()
