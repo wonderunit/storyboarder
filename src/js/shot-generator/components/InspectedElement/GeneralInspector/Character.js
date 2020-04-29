@@ -27,6 +27,14 @@ const metersAsFeetAndInches = meters => {
   return [heightFeet, heightInches]
 }
 
+const feetAndInchesAsMeters = (value) => {
+  const [ , feet, inches ] = value.match( /(\d+)'\s*(\d+)(?:''|")/ )
+  let cm = feet * 30.48 + inches * 2.54
+  let meter = Math.floor(cm / 100)
+  cm = Math.floor(cm % 100)
+  return meter + cm
+}
+
 const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone, updateCharacterSkeleton}) => {
   const {id, ...props} = sceneObject
 
@@ -114,6 +122,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
                 sceneObject.height
               )
             ) }
+            textFormatter={ value => feetAndInchesAsMeters(value)}
           /> 
         }
         {ModelLoader.isCustomModel(sceneObject.model) || <NumberSlider

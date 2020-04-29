@@ -64,6 +64,7 @@ const NumberSliderComponent = React.memo(({
   max = 10,
   step = 0.1, 
   formatter = formatters.toFixed2,
+  textFormatter = null,
   onSetValue = defaultOnSetValue,
   transform = transforms.clamp,
   onDragStart,
@@ -119,7 +120,14 @@ const NumberSliderComponent = React.memo(({
         onSetValue(parseFloat(constrainedNumber))
       }
       else {
-        setTextInputValue(getFormattedInputValue(value, formatter))
+        let formattedValue = getFormattedInputValue(value, formatter)
+        let formattedText = textFormatter && textFormatter(textInputValue)
+        if(isNumber(formattedText)) {
+          let constrainedNumber = Math.min(Math.max(formattedText, min), max)
+          onSetValue(parseFloat(constrainedNumber))
+        } else {
+          setTextInputValue(formattedValue)
+        }
       }
       setTextInput(false)
     }
