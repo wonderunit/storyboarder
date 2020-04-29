@@ -31,7 +31,7 @@ const feetAndInchesAsMeters = (value) => {
   const [ , feet, inches ] = value.match( /(\d+)'\s*(\d+)(?:''|")/ )
   let cm = feet * 30.48 + inches * 2.54
   let meter = Math.floor(cm / 100)
-  cm = Math.floor(cm % 100)
+  cm = (cm % 100) / 100
   return meter + cm
 }
 
