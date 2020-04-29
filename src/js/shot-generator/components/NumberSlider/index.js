@@ -36,6 +36,23 @@ export const formatters = {
   degrees: value => Math.round(value).toString() + '°',
   percent: value => Math.round(value).toString() + '%'
 }
+const feetAndInchesAsMeters = (value) => {
+  const match = value.match( /(\d+)'*\s*(\d+)*(?:''|")*/ )
+  if(!match) return
+  let feet = !match[1] ? 0 : match[1]
+  let inches = !match[2] ? 0 : match[2]
+  let cm = feet * 30.48 
+  cm += inches * 2.54
+  let meter = Math.floor(cm / 100)
+  cm = (cm % 100) / 100
+  return meter + cm
+}
+
+export const textFormatters = {
+  default: null,
+  imperialToMetric: value => feetAndInchesAsMeters(value)
+}
+
 
 const getFormattedInputValue = (value, formatter) => {
   if (formatters.hasOwnProperty(formatter)) {
@@ -64,7 +81,7 @@ const NumberSliderComponent = React.memo(({
   max = 10,
   step = 0.1, 
   formatter = formatters.toFixed2,
-  textFormatter = null,
+  textFormatter = textFormatters.default,
   onSetValue = defaultOnSetValue,
   transform = transforms.clamp,
   onDragStart,
