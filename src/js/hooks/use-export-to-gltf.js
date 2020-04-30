@@ -1,5 +1,4 @@
 import React, { useEffect, useCallback } from 'react' 
-import { useSelector } from 'react-redux'
 import { ipcRenderer, shell } from 'electron'
 import path from 'path'
 import fs from 'fs-extra'
@@ -77,7 +76,6 @@ const loadCameraModel = (storyboarderFilePath) => {
 }
 
 const useExportToGltf = (sceneRef, withState) => {
-
 
   const exportGLTF = useCallback(() => {
     let meta 

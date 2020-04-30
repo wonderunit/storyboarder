@@ -139,11 +139,13 @@ const Editor = React.memo(({
     setLargeCanvasInfo({width, height})
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
+  const [mainCanvasData, setMainCanvasData] = useState({})
   const largeCanvasData = useRef({})
   const setLargeCanvasData = (camera, scene, gl) => {
     largeCanvasData.current.camera = camera
     largeCanvasData.current.scene = scene
     largeCanvasData.current.gl = gl
+    setMainCanvasData(largeCanvasData.current)
   }
 
   const smallCanvasData = useRef({})
@@ -153,7 +155,7 @@ const Editor = React.memo(({
     smallCanvasData.current.gl = gl
   }
 
-  useExportToGltf(largeCanvasData.current.scene, withState)
+  useExportToGltf( mainCanvasData.scene, withState)
   
   return (
     <FatalErrorBoundary key={board.uid}>
