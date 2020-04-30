@@ -876,11 +876,12 @@ const SceneManagerXR = ({SGConnection}) => {
   const world = useSelector(getWorld)
 
   useEffect(() => {
+    console.log(sceneObjects)
     Object.values(sceneObjects)
       // has a value for model
       .filter(o => o.model != null)
       // is not a box
-      .filter(o => !(o.type === 'object' && o.model === 'box') && o.type !== 'environment').map((i) => {console.log(i); return i})
+      .filter(o => !(o.type === 'object' && o.model === 'box'))
       // what's the filepath?
       .map(getFilepathForModelByType)
       // has not been requested
@@ -901,8 +902,9 @@ const SceneManagerXR = ({SGConnection}) => {
       .forEach(requestAsset)
   }, [sceneObjects])
 
-  /*// world model files
+  // world model files
   useEffect(() => {
+    console.log(world)
     if (world.environment.file) {
       // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
       const environmentPath = getFilepathForModelByType({
@@ -912,14 +914,9 @@ const SceneManagerXR = ({SGConnection}) => {
 
       delete assets[environmentPath]
 
-      requestAsset(
-        getFilepathForModelByType({
-          type: 'environment',
-          model: world.environment.file
-        })
-      )
+      requestAsset(environmentPath)
     }
-  }, [world.environment, world.environment.file])*/
+  }, [world.environment])
 
   useEffect(() => {
     if (!appAssetsLoaded) {
@@ -976,7 +973,7 @@ const SceneManagerXR = ({SGConnection}) => {
         // initialize camera for browser view at a standing height off the floor
         // (this will change once the HMD initializes)
         camera={{
-          //'position-y': 1.6, 'position-z': 0
+          'position-y': 1.6, 'position-z': 0
         }}
         // enable VR
         vr

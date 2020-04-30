@@ -310,6 +310,7 @@ const useInteractionsManager = ({
   const canUndo = useSelector(state => state.undoable.past.length > 0)
   const canRedo = useSelector(state => state.undoable.future.length > 0)
   const attachableParent = useRef(null)
+  const targetObject = useRef(null)
 
   const gpuPicker = useRef(null)
   const getGpuPicker = () => {
@@ -1311,7 +1312,7 @@ const useInteractionsManager = ({
           let controller = event.controller
           log('-- onSelectNone', controller)
 
-          controller.userData.selectOffset = null
+          if (controller) controller.userData.selectOffset = null
           dispatch(selectObject(null))
           BonesHelper.getInstance().resetSelection()
         },
@@ -1339,11 +1340,18 @@ const useInteractionsManager = ({
           let object = event.intersection.object
 
 
-          if (object.userData.type != 'character') {
+          if (object.userData.type !== 'character') {
             if(object.userData.type === "attachable")
             {
               attachableParent.current = object.parent
             }
+            
+            targetObject.current = object
+            targetObject.current.userData.startData = {
+              pos: object.position.clone(),
+              rot: object.rotation.clone()
+            }
+            
             controller.attach(object)
             object.updateMatrixWorld(true)
           }
@@ -1352,12 +1360,22 @@ const useInteractionsManager = ({
 
           uiService.send({ type: 'LOCK' })
         },
+        
+        onSelectionClear: (context, event) => {
+          if (targetObject.current && targetObject.current.userData.startData) {
+            targetObject.current.position.copy(targetObject.current.userData.startData.pos)
+            targetObject.current.rotation.copy(targetObject.current.userData.startData.rot)
+
+            targetObject.current.updateMatrixWorld(true)
+          }
+        },
+        
         onDragObjectExit: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
-          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+          let object = targetObject.current
 
           let root = rootRef.current
-          if (object.parent != root) {
+          if (object && object.parent !== root) {
             if(object.userData.type !== "attachable"){
               root.attach(object)
             }
@@ -1368,6 +1386,10 @@ const useInteractionsManager = ({
           }
 
           stopSound('beam', object)
+          
+          if (!context.selection) {
+            return false
+          }
 
           commit(context.selection, object)
           if(object.userData.type === 'character') {
@@ -1379,6 +1401,7 @@ const useInteractionsManager = ({
 
           uiService.send({ type: 'UNLOCK' })
         },
+        
         onSnapStart: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
@@ -1400,7 +1423,7 @@ const useInteractionsManager = ({
           let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          if (object.userData.staticRotation) {
+          if (object && object.userData.staticRotation) {
             object.userData.staticRotation = null
           }
         },
@@ -1514,6 +1537,13 @@ const useInteractionsManager = ({
       logger: log
     }
   )
+
+  useEffect(() => {
+    if (selections.length === 0) {
+      
+      interactionService.send({type: 'CLEAR_SELECTION'})
+    }
+  }, [selections.length])
 
   return { controllers, interactionServiceCurrent, interactionServiceSend }
 }

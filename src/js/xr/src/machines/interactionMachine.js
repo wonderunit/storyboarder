@@ -98,6 +98,10 @@ const machine = Machine({
           cond: 'eventHasCharacterIntersection',
           target: 'character_posing'
         },
+
+        CLEAR_SELECTION: {
+          target: 'idle'
+        }
       }
     },
     drag_control_point :
@@ -150,6 +154,11 @@ const machine = Machine({
         PRESS_END_X: {
           actions: 'onDropLowest'
         },
+
+        CLEAR_SELECTION: {
+          actions: ['onSnapEnd', 'onSelectionClear'],
+          target: 'selected'
+        }
       }
     },
     drag_teleport: {

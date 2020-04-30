@@ -34,8 +34,7 @@ const store = configureStore({...initialState})
 SGConnection.connectStore(store)
 
 window.addEventListener("error", function (e) {
-  //console.log(e)
-  SGConnection.log(e.error.message)
+  SGConnection.log([e.error.message, e.error.stack])
   return false;
 })
 

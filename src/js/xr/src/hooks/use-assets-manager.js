@@ -2,7 +2,7 @@ const THREE = require('three')
 const React = require('react')
 const { useState, useReducer, useMemo, useCallback } = React
 
-const { GLTFLoader} = require("./../../../vendor/three/examples/jsm/GLTFLoader")
+const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -45,13 +45,38 @@ const reducer = (state, action) => {
         [id]: { status: 'Success', value }
       }
     case 'ERROR':
-      throw new Error(id + ': ' + error.toString())
       return {
         ...state,
         [id]: { status: 'Error', error }
       }
     default:
       return state
+  }
+}
+
+/**
+ * HACK
+ * @todo Fix unexpected 404 error from the server
+ * Sometimes, server returns 404 error, but file exist.
+ * Request file multiple times, if still getting 404 then call onerror callback.
+ * */
+const MaxTimes = 3
+const load = (loader, path, events, times = 1) => {
+  try {
+    loader.load(
+      path,
+      events.onload,
+      events.onprogress,
+      (error) => {
+        if (times >= MaxTimes || (error.code && error.code !== 404)) {
+          events.onerror(error)
+        } else {
+          load(loader, path, events, times + 1)
+        }
+      }
+    )
+  } catch (e) {
+    console.error(e)
   }
 }
 
@@ -67,20 +92,18 @@ const useAssetsManager = () => {
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
         if (!id.includes('/images/')) {
-          loader.load(
-            id,
-            value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            error => dispatch({ type: 'ERROR', payload: { id, error } })
-          )
+          load(loader, id, {
+            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
+            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+          })
           dispatch({ type: 'LOAD', payload: { id } })
         } else {
-          textureLoader.load(
-            id,
-            value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            error => dispatch({ type: 'ERROR', payload: { id, error } })
-          )
+          load(textureLoader, id, {
+            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
+            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+          })
           dispatch({ type: 'LOAD', payload: { id } })
         }
       })

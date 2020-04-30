@@ -10,9 +10,8 @@ const log = require('electron-log')
 
 const app = express()
 
-//const http = require('http').Server(app)
 const https = require('https')
-const io = require('socket.io')//(https, { wsEngine: 'ws', serveClient: false })
+const io = require('socket.io')
 const {serve} = require('./sockets')
 
 const fs = require('fs-extra')
@@ -156,6 +155,9 @@ const getIpAddress = require('../utils/getIpAddress')
 class XRServer {
   constructor ({ store, service, staticPath = window.__dirname }) {
     const validSameBoard = uid => store.getState().board.uid === uid
+    
+    const projectPath = path.dirname(store.getState().meta.storyboarderFilePath)
+    const userDataPath = electronApp.getPath('userData')
 
     app.use(express.json({
       limit: '5mb'
@@ -177,16 +179,14 @@ class XRServer {
       })
     }
 
-    app.use('/', express.static(
-      path.join(staticPath, 'js/xr/dist')
-    ))
-
     app.use('/data/system', express.static(
-      path.join(staticPath, 'data', 'shot-generator')
+      path.join(staticPath, 'data', 'shot-generator'),
+      {etag: false}
     ))
 
     app.use('/data/user', express.static(
-      path.join(path.dirname(store.getState().meta.storyboarderFilePath), 'models')
+      path.join(projectPath, 'models'),
+      {etag: false}
     ))
 
     app.use('/data/snd', express.static(
@@ -194,15 +194,24 @@ class XRServer {
     ))
 
     app.use('/data/presets/poses', express.static(
-      path.join(electronApp.getPath('userData'), 'presets', 'poses')
+      path.join(userDataPath, 'presets', 'poses')
     ))
 
     app.use('/data/presets/handPoses', express.static(
-      path.join(electronApp.getPath('userData'), 'presets', 'handPoses')
+      path.join(userDataPath, 'presets', 'handPoses')
     ))
 
     app.use('/boards/images', express.static(
-      path.join(path.dirname(store.getState().meta.storyboarderFilePath), 'images')
+      path.join(projectPath, 'images')
+    ))
+
+    /**
+     * Middleware functions are executed sequentially, therefore the order of middleware inclusion is important.
+     * http://expressjs.com/en/4x/api.html#app.use
+     * So it will match each route described before, that's why it should be placed after previous USEs
+     */
+    app.use('/', express.static(
+      path.join(staticPath, 'js/xr/dist')
     ))
 
     app.get('/', function(req, res) {

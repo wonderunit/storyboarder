@@ -2,7 +2,7 @@ const { useEffect, useMemo, useRef, useCallback } = React = require('react')
 const { useFrame, useThree } = require('react-three-fiber')
 
 const SCALE = 1
-const POSITION = [0, 0.4, -1]
+const POSITION = [0, -0.2, -1]
 
 const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showSettings, rotation = -Math.PI * 1 }) => {
   const { camera } = useThree()
