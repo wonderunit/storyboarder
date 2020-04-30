@@ -44,52 +44,54 @@ class GPUPickerHelper
         let vrEnabled = renderer.vr.enabled;
         renderer.vr.enabled = false;
         const pixelRatio = renderer.getPixelRatio();
-        let cameraAspectRatio = camera.aspect
+        let cameraAspectRatio = camera.aspect;
+        let cameraOffsetSize = 300;
         camera.setViewOffset(
             renderer.domElement.width,
             renderer.domElement.height,
-            cssPosition.x * pixelRatio | 0,
-            cssPosition.y * pixelRatio | 0,
-            1,
-            1);
+            (cssPosition.x * pixelRatio | 0) - cameraOffsetSize / 2,
+            (cssPosition.y * pixelRatio | 0) - cameraOffsetSize / 2,
+            cameraOffsetSize,
+            cameraOffsetSize);
+           
             
-            this.readRenderedPixel(renderer, scene, camera, pickingTexture, pixelBuffer);
-            
-            let id = (pixelBuffer[0] << 16) |
-            (pixelBuffer[1] << 8) |
-            (pixelBuffer[2]);
-            
-            const intersectedObject = selectables[id];
-            let canvasPos = this.reusableVector.set(0, 0, 0);
-            if(intersectedObject)
+        this.readRenderedPixel(renderer, scene, camera, pickingTexture, pixelBuffer);
+
+        let id = (pixelBuffer[0] << 16) |
+        (pixelBuffer[1] << 8) |
+        (pixelBuffer[2]);
+        
+        const intersectedObject = selectables[id];
+        let canvasPos = this.reusableVector.set(0, 0, 0);
+        if(intersectedObject)
+        {
+            this.pickedObject = intersectedObject.originObject;
+            let selectedObject = intersectedObject.pickerObject;
+            if(this.pickedObject.type === "SkinnedMesh")
             {
-                this.pickedObject = intersectedObject.originObject;
-                let selectedObject = intersectedObject.pickerObject;
-                if(this.pickedObject.type === "SkinnedMesh")
-                {
-                    this.depthScene.overrideMaterial = this.skinningDepthMaterial;
-                }
-                else
-                {
-                    this.depthScene.overrideMaterial = this.depthMaterial;
-                }
-                let objectParent = selectedObject.parent;
-                this.depthScene.attach(selectedObject);
-                selectedObject.updateMatrixWorld(true);
-                this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
-                objectParent.attach(selectedObject);
-                selectedObject.updateMatrixWorld(true);
-                unpackRGBAToScenePosition(canvasPos, pixelBuffer, cssPosition, camera, renderer);
+                this.depthScene.overrideMaterial = this.skinningDepthMaterial;
             }
-            camera.clearViewOffset();
-            camera.aspect = cameraAspectRatio
-            camera.updateProjectionMatrix()
-            renderer.vr.enabled = vrEnabled ? true : false;
-            
-            if(!intersectedObject)
+            else
             {
-                return [];
+                this.depthScene.overrideMaterial = this.depthMaterial;
             }
+            let objectParent = selectedObject.parent;
+            this.depthScene.attach(selectedObject);
+            selectedObject.updateMatrixWorld(true);
+            this.readRenderedPixel(renderer, this.depthScene, camera, pickingTexture, pixelBuffer);
+            objectParent.attach(selectedObject);
+            selectedObject.updateMatrixWorld(true);
+            unpackRGBAToScenePosition(canvasPos, pixelBuffer, cssPosition, camera, renderer);
+        }
+        camera.clearViewOffset();
+        camera.aspect = cameraAspectRatio
+        camera.updateProjectionMatrix()
+        renderer.vr.enabled = vrEnabled ? true : false;
+        
+        if(!intersectedObject)
+        {
+            return [];
+        }
         
         return [{ object: this.pickedObject, point: canvasPos, distance: camera.worldPosition().distanceTo(canvasPos)}];
     }
