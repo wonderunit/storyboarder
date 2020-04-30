@@ -1,3 +1,4 @@
+import { ipcRenderer } from 'electron'
 import React, {useCallback, useMemo} from 'react'
 import {Math as _Math} from 'three'
 import {formatters, NumberSlider, transforms} from '../../NumberSlider'
@@ -129,6 +130,12 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
           value={props.tintColor}
           onSetValue={setTintColor}
         />}
+
+        <div className="drop_button__wrappper">
+          <div className="drop_button" onClick={ () => ipcRenderer.send('shot-generator:object:drops')}>
+            Drop character
+          </div>
+        </div>
       </div>
 
       <div className="inspector-offset-row">
