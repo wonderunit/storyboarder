@@ -37,10 +37,19 @@ export const formatters = {
   percent: value => Math.round(value).toString() + '%'
 }
 const feetAndInchesAsMeters = (value) => {
-  const match = value.match( /(\d+)'*\s*(\d+)*(?:''|")*/ )
+  let text = value
+  let match = text.split("\'")
+  let feet = 0
+  let inches = 0
+  if(match.length > 1) {
+    feet = match[0]
+    text = match[1]
+  }
+  match = text.split("\"")
+  if(match.length > 1) {
+    inches = match[0]
+  }
   if(!match) return
-  let feet = !match[1] ? 0 : match[1]
-  let inches = !match[2] ? 0 : match[2]
   let cm = feet * 30.48 
   cm += inches * 2.54
   let meter = Math.floor(cm / 100)
@@ -51,6 +60,11 @@ const feetAndInchesAsMeters = (value) => {
 export const textFormatters = {
   default: null,
   imperialToMetric: value => feetAndInchesAsMeters(value)
+}
+
+export const textConstraints = {
+  default: value => value,
+  sizeConstraint: value => Math.max(value, 0.01)
 }
 
 
@@ -82,6 +96,7 @@ const NumberSliderComponent = React.memo(({
   step = 0.1, 
   formatter = formatters.toFixed2,
   textFormatter = textFormatters.default,
+  textConstraint = textConstraints.default,
   onSetValue = defaultOnSetValue,
   transform = transforms.clamp,
   onDragStart,
@@ -133,14 +148,14 @@ const NumberSliderComponent = React.memo(({
       setTextInputValue(getFormattedInputValue(value, formatter))
     } else if (event.key === 'Enter') {
       if(isNumber(textInputValue)) {
-        let constrainedNumber = Math.min(Math.max(textInputValue, min), max)
+        let constrainedNumber = textConstraint(textInputValue)
         onSetValue(parseFloat(constrainedNumber))
       }
       else {
         let formattedValue = getFormattedInputValue(value, formatter)
         let formattedText = textFormatter && textFormatter(textInputValue)
         if(isNumber(formattedText)) {
-          let constrainedNumber = Math.min(Math.max(formattedText, min), max)
+          let constrainedNumber = textConstraint(formattedText)
           onSetValue(parseFloat(constrainedNumber))
         } else {
           setTextInputValue(formattedValue)

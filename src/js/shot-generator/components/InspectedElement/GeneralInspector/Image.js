@@ -4,7 +4,7 @@ import {Math as _Math} from 'three'
 import fs from 'fs-extra'
 import path from 'path'
 
-import {formatters, NumberSlider, transforms, textFormatters} from '../../NumberSlider'
+import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 
 import FileInput from '../../FileInput'
 import Checkbox from '../../Checkbox'
@@ -71,7 +71,7 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
       <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY} textFormatter={ textFormatters.imperialToMetric }/>
       <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ} textFormatter={ textFormatters.imperialToMetric }/>
 
-      <NumberSlider label="Size" value={props.height} min={0.025} max={5} onSetValue={setSize}/>
+      <NumberSlider label="Size" value={props.height} min={0.025} max={5} onSetValue={setSize} textConstraint={ textConstraints.sizeConstraint }/>
 
       <NumberSlider
         label="Rotate X"

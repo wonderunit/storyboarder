@@ -1,6 +1,6 @@
 import React, {useCallback, useMemo} from 'react'
 import {Math as _Math} from 'three'
-import {formatters, NumberSlider, transforms, textFormatters} from '../../NumberSlider'
+import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 import ColorSelect from '../../ColorSelect'
 import {initialState} from '../../../../shared/reducers/shot-generator'
 import CharacterPresetEditor from '../CharacterPresetEditor'
@@ -100,7 +100,10 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
               max={ 3.05 }
               step={ 0.0254 }
               value={ sceneObject.height } 
-              onSetValue={ setHeight }/>
+              onSetValue={ setHeight }
+              textFormatter={ textFormatters.imperialToMetric }
+              textConstraint={ textConstraints.sizeConstraint }
+              />
           :
           <NumberSlider 
             label="Height" 
