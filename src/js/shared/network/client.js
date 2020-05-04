@@ -121,15 +121,20 @@ export const connect = (URI = '') => {
     }
     // Not send actions to the reducer, instead wait for the server answer
   }
-  
+
   const sendRemoteInfo = each((info) => {
     client.emit('remote', info)
   }, FRAME_RATE)
+
+  const setActive = (active = true) => {
+    client.emit('remote', {active})
+  }
 
   return {
     connectStore,
     
     sendInfo: (info, immediate) => sendRemoteInfo([info], immediate),
+    setActive,
     log: (info) => client.emit('debug', info),
     
     ClientMiddleware,

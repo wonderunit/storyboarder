@@ -385,8 +385,9 @@ const SceneContent = connect(
       if (isXrPresenting) {
         welcomeAudio.play()
         if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
-        SGConnection.sendInfo({active: true}, true)
+        SGConnection.setActive(true)
       } else {
+        SGConnection.setActive(false)
         welcomeAudio.isPlaying && welcomeAudio.stop()
       }
     }, [isXrPresenting])
