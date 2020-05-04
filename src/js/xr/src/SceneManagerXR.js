@@ -529,7 +529,7 @@ const SceneContent = connect(
     
     const session = gl.xr.getSession()
     useFrame(({camera, gl}) => {
-      session && gl.xr.getCamera(camera)
+      //session && gl.xr.getCamera(camera);
       SGConnection.sendInfo({
         matrix: camera.matrixWorld.toArray(),
         controllers: controllers.map((object) => object.matrixWorld.toArray())

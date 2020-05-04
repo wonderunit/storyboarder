@@ -33,6 +33,8 @@ const SceneManagerXR = require('./SceneManagerXR')
 const store = configureStore({...initialState})
 SGConnection.connectStore(store)
 
+window.SG = SGConnection
+
 window.addEventListener("error", function (e) {
   SGConnection.log([e.error.message, e.error.stack])
   return false;

@@ -448,7 +448,7 @@ const useInteractionsManager = ({
     const controller = event.target
     let intersection = null
 
-    let uis = scene.__interaction.filter(o => o.userData.type == 'ui' && o.name !== 'gui-boards')
+    let uis = scene.__interaction.filter(o => o.userData.type === 'ui' && o.name !== 'gui-boards')
     let intersections = getControllerIntersections(controller, uis)
     intersection = intersections.length && intersections[0]
     if (intersection) {
