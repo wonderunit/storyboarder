@@ -10,7 +10,6 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
-  reflectivity: 0x0,
   skinning: false,
   shininess: 0,
   flatShading: false,
@@ -49,7 +48,7 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
       controller: [[], []]
     }
 
-    if (!helmet || !controller) {
+    if (!helmet || !controller || !props.active) {
       return result
     }
 
@@ -76,7 +75,7 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
     ))
     
     return result
-  }, [helmet, controller])
+  }, [helmet, controller, props.active])
   
   let controllersValue = (props.controllers.length === 2) ? [...props.controllers[0], ...props.controllers[1]] : props.controllers.length
 
