@@ -11,13 +11,16 @@ import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import { OutlineEffect } from '../../../vendor/OutlineEffect'
 import { remote } from 'electron'
-import { image } from 'qr-image'
+import { ShadingType } from '../../../vendor/shading-effects/ShadingType'
+import WireframeShading from '../../../vendor/shading-effects/WireframeShading'
+import FlatShading from '../../../vendor/shading-effects/FlatShading'
 
 const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const SaveShot = connect(
     state => ({
+        shadingMode: state.shaderMode
     }),
     {
         getSelections,
@@ -36,7 +39,8 @@ const SaveShot = connect(
     withState,
     markSaved,
     isPlot = false,
-    selectObject
+    selectObject,
+    shadingMode
 }) => {
     const { scene, camera } = useThree()
     const imageRenderer = useRef()
@@ -46,12 +50,30 @@ const SaveShot = connect(
         if (!imageRenderer.current) {
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         }
-        outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
         return () => {
             imageRenderer.current = null
-            outlineEffect.current = null
         }
     }, [])
+
+    useEffect(() => {
+        console.log(imageRenderer.current)
+        switch(shadingMode) {
+            case ShadingType.Wireframe:
+                outlineEffect.current = new WireframeShading(imageRenderer.current)
+                break
+            case ShadingType.Flat:
+                outlineEffect.current = new FlatShading(imageRenderer.current)
+                break
+            case ShadingType.Outline:
+            default:
+                outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
+                break
+        }
+        console.log( outlineEffect.current)
+        return () => {
+            outlineEffect.current = null
+        }
+    }, [shadingMode])
 
     const saveShot = () => {
         selectObject(null)

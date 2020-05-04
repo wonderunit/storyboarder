@@ -1401,6 +1401,10 @@ const mainReducer = (state/* = initialState*/, action) => {
         draft.aspectRatio = action.payload
         return
 
+      case 'SET_SHADER_MODE':
+        draft.shaderMode = action.payload
+        return  
+
       case 'SET_MAIN_VIEW_CAMERA':
         draft.mainViewCamera = action.payload
         return
@@ -1644,6 +1648,8 @@ module.exports = {
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
+
+  setShaderMode: name => ({ type: 'SET_SHADER_MODE', payload: name }),
   
   setCameraShot: (cameraId, values) => ({ type: 'SET_CAMERA_SHOT', payload: { cameraId, ...values } }),
 

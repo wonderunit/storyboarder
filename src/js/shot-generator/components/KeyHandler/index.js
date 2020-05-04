@@ -6,6 +6,7 @@ import { createSelector } from 'reselect'
 import { ipcRenderer, remote} from 'electron'
 const { dialog } = remote
 import KeyCommandsSingleton from './KeyCommandsSingleton'
+import { ShadingType } from '../../../vendor/shading-effects/ShadingType'
 
 const canDelete = (sceneObject, activeCamera) =>
   // allow objects
@@ -32,6 +33,7 @@ import  {
     getSceneObjects,
     getSelections,
     getActiveCamera,
+    setShaderMode
   } from '../../../shared/reducers/shot-generator'
 
 const getSelectedSceneObject = createSelector(
@@ -52,6 +54,7 @@ const KeyHandler = connect(
     groupObjects,
     ungroupObjects,
     mergeGroups,
+    withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
   React.memo(({
@@ -64,6 +67,7 @@ const KeyHandler = connect(
     groupObjects,
     ungroupObjects,
     mergeGroups,
+    withState
   }) => {
     const [, updateComponent] = useState()
     const keyCommandsInstance = useRef(KeyCommandsSingleton.getInstance())
@@ -126,6 +130,18 @@ const KeyHandler = connect(
       }
     }, [selections, sceneObjects])
 
+    const onShaderSwitch = useCallback(() => {
+      withState((dispatch, state) => {
+        let shaderMode = state.shaderMode
+        let values = Object.values(ShadingType)
+        let indexOf = values.indexOf(shaderMode)
+        indexOf++;
+        indexOf = indexOf >= values.length ? 0 : indexOf
+        console.log(values[indexOf])
+        dispatch(setShaderMode(values[indexOf]))
+      })
+    }, [])
+
     useEffect(() => {
       keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:duplicate", value: onCommandDuplicate})
       return () => keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:duplicate" }) 
@@ -135,6 +151,13 @@ const KeyHandler = connect(
       keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:group", value: onCommandGroup })
       return () => {
         keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:group" })
+      } 
+    }, [onCommandGroup])
+
+    useEffect(() => {
+      keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:object:switchshader", value: onShaderSwitch})
+      return () => {
+        keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:switchshader" })
       } 
     }, [onCommandGroup])
 

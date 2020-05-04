@@ -897,6 +897,14 @@ const shotGeneratorMenu = [
           ipcRenderer.send('shot-generator:object:group')
         }
       },
+
+      {
+        accelerator: 'CommandOrControl+k',
+        label: 'Switch shader mode',
+        click () {
+          ipcRenderer.send('shot-generator:object:switchshader')
+        }
+      },
       
       // {role: 'pasteandmatchstyle'},
       {role: 'delete'},

@@ -35,20 +35,38 @@ import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 
+import WireframeShading from '../../../vendor/shading-effects/WireframeShading'
+import FlatShading from '../../../vendor/shading-effects/FlatShading'
+import { ShadingType } from '../../../vendor/shading-effects/ShadingType'
 import Stats from 'stats.js'
 
-const Effect = ({renderData, stats}) => {
+const Effect = ({renderData, stats, shadingMode}) => {
   const {gl, size} = useThree()
 
-  const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
+  const renderer = useMemo(() => {
+    let renderer
+    switch(shadingMode) {
+      case ShadingType.Wireframe:
+        renderer = new WireframeShading(gl)
+        break
+      case ShadingType.Flat:
+        renderer = new FlatShading(gl)
+        break
+      case ShadingType.Outline:
+      default:
+        renderer = new OutlineEffect(gl, { defaultThickness: 0.015 })
+        break
+    }
+    return renderer
+  }, [shadingMode])
   
-  useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
+  useEffect(() => void renderer.setSize(size.width, size.height), [size])
   useFrame(({ gl, scene, camera }) => {
     if(stats) stats.begin()
     if(renderData) {
-      outlineEffect.render(renderData.scene, renderData.camera)
+      renderer.render(renderData.scene, renderData.camera)
     } else {
-      outlineEffect.render(scene, camera)
+      renderer.render(scene, camera)
     }
     if(stats) stats.end()
   }, 1)
@@ -57,7 +75,7 @@ const Effect = ({renderData, stats}) => {
 }
 
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
+  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload, shadingMode
 }) => {
   if (!board.uid) {
     return null
@@ -182,7 +200,8 @@ const Editor = React.memo(({
                     setSmallCanvasData={ setSmallCanvasData }
                     />
                 </Provider>
-                <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }/>
+                <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
+                      shadingMode={ shadingMode }/>
               </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
@@ -215,7 +234,8 @@ const Editor = React.memo(({
                         setLargeCanvasData= { setLargeCanvasData }/>
                     </Provider>
                     <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                          stats={ stats } />
+                          stats={ stats } 
+                          shadingMode={ shadingMode }/>
                     
                   </Canvas>
                   <GuidesView
@@ -250,7 +270,8 @@ export default connect(
   (state) => ({
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
-    board: state.board
+    board: state.board,
+    shadingMode: state.shaderMode
   }),
   {
     withState,
