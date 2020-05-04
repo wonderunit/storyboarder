@@ -109,7 +109,7 @@ export const SGMiddleware = store => next => action => {
     return next(action)
   }
   
-  if (action.meta && action.meta.ignoreSG) {g
+  if (action.meta && action.meta.ignoreSG) {
     return false
   }
   

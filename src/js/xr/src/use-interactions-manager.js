@@ -431,8 +431,8 @@ const useInteractionsManager = ({
         z: position.z,
         rotation: {x: rot.x, y: rot.y, z: rot.z}
       }))
-    }else {
-      let rotation = object.userData.type == 'character'
+    } else {
+      let rotation = object.userData.type === 'character'
         ? euler.y
         : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
       dispatch(updateObject(id, {
@@ -1362,17 +1362,19 @@ const useInteractionsManager = ({
         },
         
         onSelectionClear: (context, event) => {
-          if (targetObject.current && targetObject.current.userData.startData) {
+          if (targetObject.current && targetObject.current.userData.type !== 'character' && targetObject.current.userData.startData) {
             targetObject.current.position.copy(targetObject.current.userData.startData.pos)
             targetObject.current.rotation.copy(targetObject.current.userData.startData.rot)
 
             targetObject.current.updateMatrixWorld(true)
           }
+
+          targetObject.current = null
         },
         
         onDragObjectExit: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
-          let object = targetObject.current
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           let root = rootRef.current
           if (object && object.parent !== root) {
@@ -1386,13 +1388,9 @@ const useInteractionsManager = ({
           }
 
           stopSound('beam', object)
-          
-          if (!context.selection) {
-            return false
-          }
 
           commit(context.selection, object)
-          if(object.userData.type === 'character') {
+          if (object.userData.type === 'character') {
             let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === object.userData.id)
             for(let i = 0; i < mapAttachables.length; i++) {
               commit(mapAttachables[i].userData.id, mapAttachables[i])
@@ -1436,9 +1434,10 @@ const useInteractionsManager = ({
         moveAndRotateObject: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
+          
           let { worldScale } = useStoreApi.getState()
 
-          let shouldMoveWithCursor = (object.userData.type == 'character')
+          let shouldMoveWithCursor = (object.userData.type === 'character')
           let target = shouldMoveWithCursor
             ? controller.getObjectByName('cursor')
             : object
@@ -1540,7 +1539,6 @@ const useInteractionsManager = ({
 
   useEffect(() => {
     if (selections.length === 0) {
-      
       interactionService.send({type: 'CLEAR_SELECTION'})
     }
   }, [selections.length])

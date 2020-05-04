@@ -100,6 +100,7 @@ const machine = Machine({
         },
 
         CLEAR_SELECTION: {
+          actions: 'onSelectionClear',
           target: 'idle'
         }
       }
