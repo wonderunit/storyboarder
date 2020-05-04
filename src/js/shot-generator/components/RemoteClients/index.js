@@ -4,7 +4,7 @@ import {getRemoteDevices, RemoteContext} from "../../../shared/reducers/remoteDe
 
 const RemoteClients = React.memo(({clients, id, Component, clientProps}) => {
   return Object.keys(clients).map((clientId) => {
-    if (id === clientId) {
+    if (id === clientId || !clients[clientId].active) {
       return null
     }
     
