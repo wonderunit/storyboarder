@@ -12,14 +12,14 @@ class WireframeShading extends ShadingEffect {
 
     cleanupCache() {
         super.cleanupCache();
-        let edgeMeshes = Object.values(this.edgesCache)
-        for(let i = edgeMeshes.length - 1; i > -1; i--) {
-            let edgeMesh = edgeMeshes[i]
-            edgeMesh.geometry.dispose();
-            edgeMesh.material.dispose();
-            edgeMesh = null;
-            delete edgeMeshes[i];
+        let edgesKeys = Object.keys(this.edgesCache)
+        for ( var i = 0, il = edgesKeys.length; i < il; i ++ ) {
+            let edgesObject =  this.edgesCache[edgesKeys[i]];
+            edgesObject.geometry.dispose();
+            edgesObject.material.dispose();
+            this.edgesCache[edgesKeys[i]] = undefined;
         }
+        this.edgesCache = undefined;
     }
 
     setWireframe( state, scene ) {

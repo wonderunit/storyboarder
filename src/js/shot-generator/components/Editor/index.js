@@ -37,12 +37,19 @@ import {OutlineEffect} from './../../../vendor/OutlineEffect'
 
 import WireframeShading from '../../../vendor/shading-effects/WireframeShading'
 import FlatShading from '../../../vendor/shading-effects/FlatShading'
+import DepthShading from '../../../vendor/shading-effects/DepthShading'
 import { ShadingType } from '../../../vendor/shading-effects/ShadingType'
 import Stats from 'stats.js'
 
 const Effect = ({renderData, stats, shadingMode}) => {
   const {gl, size} = useThree()
   const [renderer, setRenderer] = useState(new OutlineEffect(gl, { defaultThickness: 0.015 }))
+
+  useEffect(() => {
+    return () => {
+      renderer && renderer.cleanupCache()
+    }
+  }, [])
 
   useEffect(() => {
     renderer.cleanupCache()
@@ -53,6 +60,9 @@ const Effect = ({renderData, stats, shadingMode}) => {
         break
       case ShadingType.Flat:
         newRenderer = new FlatShading(gl)
+        break
+      case ShadingType.Depth:
+        newRenderer = new DepthShading(gl)
         break
       case ShadingType.Outline:
       default:

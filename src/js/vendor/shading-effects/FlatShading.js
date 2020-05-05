@@ -13,14 +13,6 @@ class FlatShading extends ShadingEffect {
             && object.userData.type !== "attachable" 
             && object.userData.type !== 'image'
         }
-        this.depthMaterial = new THREE.MeshDepthMaterial(
-            { 
-                depthTest: true,
-                depthWrite: true,
-                depthPacking: THREE.RGBADepthPacking,
-                side: THREE.FrontSide,
-                blending: THREE.NoBlending
-            });
     }
 
     setFlatShading( state ) {
