@@ -385,9 +385,9 @@ const SceneContent = connect(
       if (isXrPresenting) {
         welcomeAudio.play()
         if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
-        //SGConnection.setActive(true)
+        SGConnection.setActive(true)
       } else {
-        //SGConnection.setActive(false)
+        SGConnection.setActive(false)
         welcomeAudio.isPlaying && welcomeAudio.stop()
       }
     }, [isXrPresenting])
@@ -530,7 +530,7 @@ const SceneContent = connect(
     
     const session = gl.xr.getSession()
     useFrame(({camera, gl}) => {
-      session && gl.xr.getCamera(camera);
+      session && gl.xr.getCamera(camera)
       SGConnection.sendInfo({
         matrix: camera.matrixWorld.toArray(),
         controllers: controllers.map((object) => object.matrixWorld.toArray())

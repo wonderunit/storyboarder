@@ -5,6 +5,7 @@ import {
   addUser,
   updateUser,
   removeUser,
+  setId,
   SelectActions
 } from './../shared/reducers/remoteDevice'
 
@@ -32,7 +33,7 @@ const onUserConnect = (io, socket, store) => {
   io.emit('remoteAction', connectAction)
 
   dispatchRemote(mergeState(store.getState()))
-  socket.emit('id', socket.id)
+  socket.emit('remoteAction', setId(socket.id))
 }
 
 export const serve = (io, store, service) => {

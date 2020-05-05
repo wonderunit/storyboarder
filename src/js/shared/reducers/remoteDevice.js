@@ -19,7 +19,7 @@ const getEmptyUser = (id = null) => ({
   matrix: new Array(16).fill(0),
   controllers: [],
   hasControllers: false,
-  active: true,
+  active: false,
   id
 })
 

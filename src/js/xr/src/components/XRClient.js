@@ -32,12 +32,6 @@ const meshFactory = (source) => {
 }
 
 const XRClient = React.memo(({helmet, controller, ...props}) => {
-  const ref = useUpdate(
-    self => {
-      self.traverse(child => child.layers.disable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
-    }
-  )
-  
   const hmdRef = useRef(null)
   const leftControllerRef = useRef(null)
   const rightControllerRef = useRef(null)
@@ -96,8 +90,6 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
   }, [hmdRef.current, leftControllerRef.current, rightControllerRef.current, ...props.matrix, controllersValue])
 
   return <group
-    ref={ref}
-
     onController={() => null}
     userData={{
       type: 'remote-client',

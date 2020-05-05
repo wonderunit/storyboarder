@@ -1,6 +1,5 @@
 import SocketClient from 'socket.io-client'
 
-import {mergeState} from './../reducers/shot-generator'
 import {RestrictedActions, remoteStore, setId, SelectActions} from "../reducers/remoteDevice"
 import {deselectObject} from "../reducers/shot-generator"
 
@@ -34,14 +33,6 @@ export const connect = (URI = '') => {
   }
   
   const connectStore = (store) => {
-    client.on('state', (data) => {
-      store.dispatch(mergeState(data))
-    })
-
-    client.on('id', (data) => {
-      remoteStore.dispatch(setId(data))
-    })
-
     client.on('remoteAction', (data) => {
       remoteStore.dispatch(data)
     })
