@@ -528,11 +528,15 @@ const SceneContent = connect(
       stopSound
     })
     
+    const emptyCamera = useMemo(() => {
+      return new THREE.PerspectiveCamera()
+    }, [])
+    
     const session = gl.xr.getSession()
     useFrame(({camera, gl}) => {
-      session && gl.xr.getCamera(camera)
+      session && gl.xr.getCamera(emptyCamera)
       SGConnection.sendInfo({
-        matrix: camera.matrixWorld.toArray(),
+        matrix: emptyCamera.matrixWorld.toArray(),
         controllers: controllers.map((object) => object.matrixWorld.toArray())
       })
     })
