@@ -532,9 +532,9 @@ const SceneContent = connect(
       return new THREE.PerspectiveCamera()
     }, [])
     
-    const session = gl.xr.getSession()
     useFrame(({camera, gl}) => {
-      session && gl.xr.getCamera(emptyCamera)
+      gl.xr.getSession() && gl.xr.getCamera(emptyCamera)
+      emptyCamera.matrixWorld.multiplyMatrices( camera.parent.matrixWorld, emptyCamera.matrixWorld )
       SGConnection.sendInfo({
         matrix: emptyCamera.matrixWorld.toArray(),
         controllers: controllers.map((object) => object.matrixWorld.toArray())
