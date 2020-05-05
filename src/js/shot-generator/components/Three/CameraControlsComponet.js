@@ -91,6 +91,7 @@ const CameraControlComponent = connect(
           camera.rotateX(object.tilt)
           camera.rotateZ(object.roll)
           camera.fov = object.fov
+          camera.updateProjectionMatrix()
           camera.isSynchronized = false
         }
     }

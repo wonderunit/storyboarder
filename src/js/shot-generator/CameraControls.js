@@ -71,6 +71,12 @@ class CameraControls {
     window.removeEventListener( 'keyup', this.onKeyUp )
     this.domElement.removeEventListener("wheel", this.onWheel )
   }
+
+  calculateInitialHeight (position) {
+    let vFOV = THREE.Math.degToRad(this._object.fov )
+    let dist = position.distanceTo(this.target)
+    this.initialHeight = 2 * Math.tan( ( vFOV / 2)) * dist
+  }
   
   onPointerMove ( event ) {
     
@@ -95,6 +101,12 @@ class CameraControls {
 
     this.mouseX = event.pageX
     this.mouseY = event.pageY
+
+    if(this.target) {
+      let position = new THREE.Vector3(this._object.x, this._object.z, this._object.y)
+      this.calculateInitialHeight(position)
+    }
+
     this.mouseDragOn = true
     
     if(this.enabled === true ) {
@@ -103,7 +115,7 @@ class CameraControls {
     if(event.button === 2) {
       this.isRightButtonPressed = true
     }
-  
+
     this.onChange({active: this.mouseDragOn, object: this._object})
   }
   
@@ -142,10 +154,10 @@ class CameraControls {
       case 16: /*control*/
         this.shiftPressed = true
         break;
-      case 17: /*control*/
+        case 17: /*control*/
         this.onChange({active: false, object: this._object})
         break;
-      case 18: /*alt*/
+        case 18: /*alt*/
         this.altPressed = true
         break;
       case 38: /*up*/
@@ -194,6 +206,7 @@ class CameraControls {
     switch ( event.keyCode ) {
       case 16: /*control*/
         this.shiftPressed = false
+        this.target = this.isLockedOnObject && this.controlPressed ? this.target : null
         break;
       case 17: /*control*/ 
         this.controlPressed = false
@@ -201,6 +214,7 @@ class CameraControls {
         break;
       case 18: /*alt*/
         this.altPressed = false
+        this.target = this.isLockedOnObject && this.controlPressed ? this.target : null
         break;
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;
@@ -263,7 +277,7 @@ class CameraControls {
     
     this._object.fov += this.zoomSpeed
     this._object.fov = Math.max(1, this._object.fov)
-    this._object.fov = Math.min(71, this._object.fov)
+    this._object.fov = Math.min(90, this._object.fov)
     
     this.zoomSpeed = this.zoomSpeed * 0.0001
     
@@ -289,8 +303,45 @@ class CameraControls {
       camera.rotateX(this._object.tilt)
       camera.rotateZ(this._object.roll)
       camera.updateMatrixWorld(true)
+      // dolly zoom in
+      if(this.shiftPressed && this.altPressed) {
+        let verticalDelta = (this.mouseY - this.prevMouseY)*0.010
+        camera.fov = this._object.fov;
+
+        let cameraVerticalDirection = resourceManager.getVector3()
+        camera.getWorldDirection(cameraVerticalDirection)
+        cameraVerticalDirection.normalize()
+
+        if(!this.target) {
+          let cameraDirection = resourceManager.getVector3()
+          let origin = resourceManager.getVector3().setFromMatrixPosition(camera.matrixWorld)
+          camera.getWorldDirection(cameraDirection)
+          cameraDirection.normalize()
+          
+          cameraDirection.setLength(7)
+          this.target = cameraDirection.clone().add(origin)
+          this.calculateInitialHeight(camera.position)
+
+          camera.updateMatrixWorld(true)
+          resourceManager.release(cameraDirection)
+          resourceManager.release(origin)
+        }
+        
+        cameraVerticalDirection.multiplyScalar(verticalDelta)
+        camera.position.sub(cameraVerticalDirection)
+        let distance = camera.position.distanceTo(this.target)
+        let fov = 2 * Math.atan( this.initialHeight / ( 2 * distance)) * THREE.Math.RAD2DEG
+        let position = camera.position
+        if((fov > 15 && fov < 90)) {
+          this._object.x = position.x
+          this._object.y = position.z
+          this._object.z = position.y
+          this._object.fov = fov
+        }
+        resourceManager.release(cameraVerticalDirection)
+      } 
       // Camera Orbiting logic
-      if(this.controlPressed || this.isRightButtonPressed) {
+      else if(this.controlPressed || this.isRightButtonPressed) {
         let spherical = resourceManager.getCustom(THREE.Spherical)
         let offset = resourceManager.getVector3()
 
@@ -378,13 +429,6 @@ class CameraControls {
       // Camera dollying and trucking
       else if(this.shiftPressed) {
         let verticalDelta = (this.mouseY - this.prevMouseY)*0.015
-    
-        /* 
-        let loc = new THREE.Vector2(this._object.x, this._object.y)
-        let result = new THREE.Vector2(horizontalDelta+loc.x, verticalDelta+loc.y).rotateAround(loc,-this._object.rotation)
-
-        this._object.x = result.x
-        this._object.y = result.y */
   
         let cameraVerticalDirection = resourceManager.getVector3()
         camera.getWorldDirection(cameraVerticalDirection)
