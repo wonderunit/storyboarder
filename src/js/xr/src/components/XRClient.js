@@ -87,7 +87,7 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
       cancelLControllerTween()
       cancelRControllerTween()
     }
-  }, [hmdRef.current, leftControllerRef.current, rightControllerRef.current, ...props.matrix, controllersValue])
+  }, [...props.matrix, controllersValue])
 
   return <group
     onController={() => null}

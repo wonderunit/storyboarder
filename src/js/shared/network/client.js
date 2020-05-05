@@ -16,7 +16,8 @@ const each = (fn, countRef) => {
 }
 
 export const connect = (URI = '') => {
-  const client = SocketClient.connect(URI)
+  const client = SocketClient.connect(URI, {rejectUnauthorized: false})
+  console.log(client)
 
   let FRAME_RATE = {current: 10}
 

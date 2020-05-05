@@ -30,7 +30,7 @@ const dispatchRemote = (action, meta = {}) => {
 const onUserConnect = (io, socket, store) => {
   const connectAction = addUser(socket.id)
   remoteStore.dispatch(connectAction)
-  io.emit('remoteAction', connectAction)
+  socket.broadcast.emit('remoteAction', connectAction)
 
   dispatchRemote(mergeState(store.getState()))
   socket.emit('remoteAction', setId(socket.id))
@@ -39,6 +39,7 @@ const onUserConnect = (io, socket, store) => {
 export const serve = (io, store, service) => {
   IO.current = io
 
+  console.log(io)
   io.on('connection', (socket) => {
 
     onUserConnect(io, socket, store)
@@ -54,14 +55,14 @@ export const serve = (io, store, service) => {
       const infoAction = updateUser(socket.id, info)
       
       remoteStore.dispatch(infoAction)
-      io.emit('remoteAction', infoAction)
+      socket.broadcast.emit('remoteAction', infoAction)
     })
     
     socket.on('disconnect', () => {
       const disconnectAction = removeUser(socket.id)
       
       remoteStore.dispatch(disconnectAction)
-      io.emit('remoteAction', disconnectAction)
+      socket.broadcast.emit('remoteAction', disconnectAction)
     })
 
     socket.on('getBoards', async () => {

@@ -533,12 +533,14 @@ const SceneContent = connect(
     }, [])
     
     useFrame(({camera, gl}) => {
-      gl.xr.getSession() && gl.xr.getCamera(emptyCamera)
-      emptyCamera.matrixWorld.multiplyMatrices( camera.parent.matrixWorld, emptyCamera.matrixWorld )
-      SGConnection.sendInfo({
-        matrix: emptyCamera.matrixWorld.toArray(),
-        controllers: controllers.map((object) => object.matrixWorld.toArray())
-      })
+      if (gl.xr.getSession() && isXrPresenting) {
+        gl.xr.getCamera(emptyCamera)
+        emptyCamera.matrixWorld.multiplyMatrices(camera.parent.matrixWorld, emptyCamera.matrixWorld)
+        SGConnection.sendInfo({
+          matrix: emptyCamera.matrixWorld.toArray(),
+          controllers: controllers.map((object) => object.matrixWorld.toArray())
+        })
+      }
     })
 
     canvasRendererRef.current.interactionServiceSend = interactionServiceSend
