@@ -135,9 +135,9 @@ const KeyHandler = connect(
         let shaderMode = state.shaderMode
         let values = Object.values(ShadingType)
         let indexOf = values.indexOf(shaderMode)
+        if(indexOf === -1) indexOf = 0
         indexOf++;
         indexOf = indexOf >= values.length ? 0 : indexOf
-        console.log(values[indexOf])
         dispatch(setShaderMode(values[indexOf]))
       })
     }, [])

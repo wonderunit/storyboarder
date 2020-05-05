@@ -160,7 +160,6 @@ const loadBoard = async (board) => {
 ipcRenderer.on('shot-generator:reload', async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
-
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
   store.dispatch({
@@ -170,6 +169,10 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
   store.dispatch({
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
+  })
+  store.dispatch({
+    type: 'SET_SHADER_MODE',
+    payload: board.sg.data.shaderMode
   })
 
   await loadBoard(board)

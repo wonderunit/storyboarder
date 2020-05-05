@@ -56,7 +56,8 @@ const getSerializedState = state => {
   return {
     world: getWorld(state),
     sceneObjects,
-    activeCamera: getActiveCamera(state)
+    activeCamera: getActiveCamera(state),
+    shaderMode: state.shaderMode,
   }
 }
 
