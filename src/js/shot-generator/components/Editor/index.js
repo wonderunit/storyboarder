@@ -42,25 +42,27 @@ import Stats from 'stats.js'
 
 const Effect = ({renderData, stats, shadingMode}) => {
   const {gl, size} = useThree()
+  const [renderer, setRenderer] = useState(new OutlineEffect(gl, { defaultThickness: 0.015 }))
 
-  const renderer = useMemo(() => {
-    let renderer
+  useEffect(() => {
+    renderer.cleanupCache()
+    let newRenderer
     switch(shadingMode) {
       case ShadingType.Wireframe:
-        renderer = new WireframeShading(gl)
+        newRenderer = new WireframeShading(gl)
         break
       case ShadingType.Flat:
-        renderer = new FlatShading(gl)
+        newRenderer = new FlatShading(gl)
         break
       case ShadingType.Outline:
       default:
-        renderer = new OutlineEffect(gl, { defaultThickness: 0.015 })
+        newRenderer = new OutlineEffect(gl, { defaultThickness: 0.015 })
         break
     }
-    return renderer
+    setRenderer(newRenderer)
   }, [shadingMode])
   
-  useEffect(() => void renderer.setSize(size.width, size.height), [size])
+  useEffect(() => void renderer.setSize(size.width, size.height), [renderer, size])
   useFrame(({ gl, scene, camera }) => {
     if(stats) stats.begin()
     if(renderData) {

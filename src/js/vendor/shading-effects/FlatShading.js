@@ -24,11 +24,24 @@ class FlatShading extends ShadingEffect {
     }
 
     setFlatShading( state ) {
-        for(let i = 0; i < this.materials.length; i++) {
-            let material = this.materials[i];
-            material.flatShading = state;
-            material.needsUpdate = true;
+        for(let i = 0; i < this.objects.length; i++) {
 
+            let object = this.objects[i]
+            if ( Array.isArray( object.material ) ) {
+
+                for ( let j = 0, il = object.material.length; j < il; j ++ ) {
+    
+                    let material = object.material[j];
+                    material.flatShading = state;
+                    material.needsUpdate = true;
+
+                }
+    
+            } else {
+                let material = object.material;
+                material.flatShading = state;
+                material.needsUpdate = true;
+            }
         }
     }
 

@@ -4,7 +4,7 @@ import IconSprites from '../../shot-generator/components/IconsComponent/IconSpri
 class ShadingEffects {
     constructor(gl) {
         this.renderer = gl;
-        this.materials = [];
+        this.objects = [];
         this.autoClear = this.renderer.autoClear;
         this.domElement = this.renderer.domElement;
         this.shadowMap = this.renderer.shadowMap;
@@ -16,6 +16,13 @@ class ShadingEffects {
             && object.parent.userData.type !== "environment" 
             && object.userData.type !== "attachable" 
         };
+    }
+
+    cleanupCache() {
+        this.objects = null;
+        this.autoClear = null;
+        this.domElement = null;
+        this.shadowMap = null;
     }
 
     getPixelRatio() {
@@ -42,31 +49,19 @@ class ShadingEffects {
 
 	}
 
-    getAllMaterials(scene) {    
-        this.materials = []
+    getAllobjects(scene) {    
+        this.objects = []
         scene.traverse((object) => {
             if ( object._numInstances ) return;
             if ( object.material === undefined ) return;
             if ( object.userData.type === "instancedMesh" ) return;
-            if ( this.objectsFilter(object) ) return
-            if ( Array.isArray( object.material ) ) {
-
-                for ( var i = 0, il = object.material.length; i < il; i ++ ) {
-    
-                    this.materials.push(object.material[ i ] );
-
-                }
-    
-            } else {
-                
-                this.materials.push(object.material);
-                
-            }
+            if ( this.objectsFilter(object) ) return;
+            this.objects.push(object);
         })
     }
 
     render(scene, camera) {
-        this.getAllMaterials(scene);
+        this.getAllobjects(scene);
     }
 }
 
