@@ -20,19 +20,21 @@ const tweenObjectMatrix = (object, matrix = null, parameters = {}) => {
 
   const targets = {delta: 0}
 
-  anime({
-    targets,
-    delta: 1.0,
-    duration: 200,
-    easing: 'linear',
-    ...parameters,
-    update: (animation) => {
-      const dt = animation.progress / 100.0
+  object.position.copy(pos)
 
-      object.position.lerpVectors(prevPos, pos, dt)
-      THREE.Quaternion.slerp(prevRot, rot, object.quaternion, dt)
-    }
-  })
+  // anime({
+  //   targets,
+  //   delta: 1.0,
+  //   duration: 200,
+  //   easing: 'linear',
+  //   ...parameters,
+  //   update: (animation) => {
+  //     const dt = animation.progress / 100.0
+  //
+  //     object.position.lerpVectors(prevPos, pos, dt)
+  //     THREE.Quaternion.slerp(prevRot, rot, object.quaternion, dt)
+  //   }
+  // })
 
   return () => {
     anime.remove(targets)
