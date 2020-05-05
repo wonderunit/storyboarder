@@ -42,7 +42,7 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
       controller: [[], []]
     }
 
-    if (!helmet || !controller || !props.active) {
+    if (!helmet || !controller) {
       return result
     }
 
