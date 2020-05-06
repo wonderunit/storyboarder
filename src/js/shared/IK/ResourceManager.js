@@ -24,7 +24,7 @@ class ResourceManager
     {
         if(this.quaternions.length !== 0)
         {
-            return this.quaternions.shift();
+            return this.quaternions.pop();
         }
         else
         {
@@ -36,7 +36,7 @@ class ResourceManager
     {
         if(this.vectors.length !== 0)
         {
-            return this.vectors.shift();
+            return this.vectors.pop();
         }
         else
         {
@@ -48,7 +48,7 @@ class ResourceManager
     {
         if(this.matrices.length !== 0)
         {
-            return this.matrices.shift();
+            return this.matrices.pop();
         }
         else
         {
@@ -63,7 +63,7 @@ class ResourceManager
             this.customObjects[name] = [];
             return new type();
         } else {
-            return this.customObjects[name].shift()
+            return this.customObjects[name].pop()
         }
     }
 

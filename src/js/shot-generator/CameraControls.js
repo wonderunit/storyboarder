@@ -74,7 +74,16 @@ class CameraControls {
 
   calculateInitialHeight (position) {
     let vFOV = THREE.Math.degToRad(this._object.fov )
-    let dist = position.distanceTo(this.target)
+    let direction = new THREE.Vector3()
+    this.camera.getWorldDirection(direction)
+    let a = new THREE.Vector2(position.x, position.z)
+    let b = new THREE.Vector2(this.target.x, this.target.z)
+    let distance = a.distanceTo(b)
+    direction.normalize()
+    direction.setLength(distance)
+  
+    let newTarget = direction.add(position)
+    let dist = position.distanceTo(newTarget)
     this.initialHeight = 2 * Math.tan( ( vFOV / 2)) * dist
   }
   
@@ -148,17 +157,20 @@ class CameraControls {
   onKeyDown ( event ) {
     // Ignore Cmd + R (reload) and Cmd + D (duplicate)
     if (event.metaKey) return
-    this.updateObjectInfo()
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
       case 16: /*control*/
         this.shiftPressed = true
         break;
         case 17: /*control*/
-        this.onChange({active: false, object: this._object})
+        this.controlPressed = true;
         break;
         case 18: /*alt*/
         this.altPressed = true
+        break;
+      case 90: /*z*/
+      case 88: /*x*/
+        event.mousePressed = this.mouseDragOn
         break;
       case 38: /*up*/
       case 87: /*W*/
@@ -183,7 +195,9 @@ class CameraControls {
     }
     
     switch ( event.keyCode ) {
+      case 16: /*shift*/ this.shiftPressed = true; break;
       case 17: /*control*/ this.controlPressed = true; break;
+      case 18: /*alt*/ this.altPressed = true; break;
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = true; break
       case 37: /*left*/
@@ -204,17 +218,17 @@ class CameraControls {
   onKeyUp ( event ) {
     let shouldRemoveKey = true
     switch ( event.keyCode ) {
-      case 16: /*control*/
+      case 16: /*shift*/
         this.shiftPressed = false
-        this.target = this.isLockedOnObject && this.controlPressed ? this.target : null
+        this.target = this.isLockedOnObject ? this.target : null
         break;
       case 17: /*control*/ 
         this.controlPressed = false
         this.target = this.isLockedOnObject ? this.target : null
         break;
-      case 18: /*alt*/
+        case 18: /*alt*/
         this.altPressed = false
-        this.target = this.isLockedOnObject && this.controlPressed ? this.target : null
+        this.target = this.isLockedOnObject ? this.target : null
         break;
       case 38: /*up*/
       case 87: /*W*/ this.moveForward = false; break;
@@ -295,6 +309,7 @@ class CameraControls {
     }
     let resourceManager = ResourceManager.getInstance()
     if (this.mouseDragOn) {
+     // console.log("before",this._object.x, this._object.y, this._object.z)
       let camera = resourceManager.getCustom(THREE.PerspectiveCamera)
       camera.position.set(this._object.x, this._object.z, this._object.y)
       camera.rotation.x = 0
@@ -302,6 +317,7 @@ class CameraControls {
       camera.rotation.y = this._object.rotation
       camera.rotateX(this._object.tilt)
       camera.rotateZ(this._object.roll)
+      camera.updateMatrix()
       camera.updateMatrixWorld(true)
       // dolly zoom in
       if(this.shiftPressed && this.altPressed) {
@@ -310,6 +326,7 @@ class CameraControls {
 
         let cameraVerticalDirection = resourceManager.getVector3()
         camera.getWorldDirection(cameraVerticalDirection)
+        let direction = cameraVerticalDirection.clone()
         cameraVerticalDirection.normalize()
 
         if(!this.target) {
@@ -329,10 +346,17 @@ class CameraControls {
         
         cameraVerticalDirection.multiplyScalar(verticalDelta)
         camera.position.sub(cameraVerticalDirection)
-        let distance = camera.position.distanceTo(this.target)
+        let a = new THREE.Vector2(camera.position.x, camera.position.z)
+        let b = new THREE.Vector2(this.target.x, this.target.z)
+        let dist = a.distanceTo(b)
+        direction.normalize()
+        direction.setLength(dist)
+       
+        let newTarget = direction.add(camera.position)
+        let distance = camera.position.distanceTo(newTarget)
         let fov = 2 * Math.atan( this.initialHeight / ( 2 * distance)) * THREE.Math.RAD2DEG
         let position = camera.position
-        if((fov > 15 && fov < 90)) {
+        if((fov > 15 && fov < 90) && distance >= 1 ) {
           this._object.x = position.x
           this._object.y = position.z
           this._object.z = position.y
@@ -361,17 +385,18 @@ class CameraControls {
         // Checks if we have target and creates a targe in the center of view with distance of 7 if needed  
         if(!this.target) {
           let cameraDirection = resourceManager.getVector3()
+          camera.updateMatrixWorld(true)
           let origin = resourceManager.getVector3().setFromMatrixPosition(camera.matrixWorld)
           camera.getWorldDirection(cameraDirection)
           cameraDirection.normalize()
+          
+          cameraDirection = cameraDirection.setLength(7)
+          this.target = origin.clone().add(cameraDirection)
 
-          cameraDirection.setLength(7)
-          this.target = cameraDirection.clone().add(origin)
-    
-          camera.updateMatrixWorld(true)
           resourceManager.release(cameraDirection)
           resourceManager.release(origin)
         }
+        console.log("Use target")
 
         //#region Main orbiting logic
         let target = this.target

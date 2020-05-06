@@ -109,6 +109,7 @@ const CameraControlComponent = connect(
             onChange: onCameraUpdate
           }
         )
+        cameraControlsView.current.camera = camera
         cameraControlsView.current.updateObjectInfo = () => {
           let sceneObjects = takeSceneObjects()
           cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
