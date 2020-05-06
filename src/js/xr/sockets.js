@@ -39,7 +39,6 @@ const onUserConnect = (io, socket, store) => {
 export const serve = (io, store, service) => {
   IO.current = io
 
-  console.log(io)
   io.on('connection', (socket) => {
 
     onUserConnect(io, socket, store)

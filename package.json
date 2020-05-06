@@ -147,10 +147,10 @@
   },
   "dependencies": {
     "@ffmpeg-installer/ffmpeg": "1.0.13",
+    "@tweenjs/tween.js": "^18.5.0",
     "@xstate/react": "0.7.1",
     "ag-psd": "^6.2.0",
     "alchemancy": "github:wonderunit/alchemancy#38c4670",
-    "animejs": "^3.1.0",
     "archiver": "2.0.3",
     "caf": "7.0.4",
     "callbag-basics": "3.2.0",

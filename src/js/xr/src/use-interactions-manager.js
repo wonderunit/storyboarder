@@ -1539,7 +1539,7 @@ const useInteractionsManager = ({
 
   useEffect(() => {
     if (selections.length === 0) {
-      interactionService.send({type: 'CLEAR_SELECTION'})
+      //interactionService.send({type: 'CLEAR_SELECTION'})
     }
   }, [selections.length])
 

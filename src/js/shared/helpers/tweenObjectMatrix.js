@@ -1,5 +1,5 @@
 import * as THREE from "three"
-import anime from "animejs"
+import TWEEN from '@tweenjs/tween.js'
 
 const defaultClear = () => {}
 const tweenObjectMatrix = (object, matrix = null, parameters = {}) => {
@@ -18,9 +18,15 @@ const tweenObjectMatrix = (object, matrix = null, parameters = {}) => {
   const prevPos = object.position.clone()
   const prevRot = object.quaternion.clone()
 
-  const targets = {delta: 0}
-
-  object.position.copy(pos)
+  let dt = {time: 0.0}
+  const tween = new TWEEN.Tween(dt)
+  .to({time: 1.0}, 200)
+  .easing(TWEEN.Easing.Quadratic.Out)
+  .onUpdate(() => {
+    object.position.lerpVectors(prevPos, pos, dt.time)
+    THREE.Quaternion.slerp(prevRot, rot, object.quaternion, dt.time)
+  })
+  .start()
 
   // anime({
   //   targets,
@@ -37,7 +43,7 @@ const tweenObjectMatrix = (object, matrix = null, parameters = {}) => {
   // })
 
   return () => {
-    anime.remove(targets)
+    tween.stop()
   }
 }
 

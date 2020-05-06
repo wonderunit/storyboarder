@@ -2,10 +2,10 @@ const { useEffect, useMemo, useRef, useCallback } = React = require('react')
 const { useFrame, useThree } = require('react-three-fiber')
 
 const SCALE = 1
-const POSITION = [0, -0.2, -1]
+const POSITION = [0, 0, 0]
 
 const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showSettings, rotation = -Math.PI * 1 }) => {
-  const { camera } = useThree()
+  const { camera, gl } = useThree()
 
   const ref = useRef()
 
@@ -20,11 +20,23 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
   }, [])
 
   useEffect(() => {
-    camera.rotation.order = 'YXZ'
+    if (ref.current && gl.xr.getSession()) {
+      const copyCamera = new THREE.PerspectiveCamera()
+      gl.xr.getCamera(copyCamera)
+      
+      const absoluteMatrix = new THREE.Matrix4().multiplyMatrices(camera.parent.matrixWorld, copyCamera.matrixWorld)
+      
+      const position = new THREE.Vector3()
+      const rotation = new THREE.Quaternion()
+      const scale = new THREE.Vector3()
 
-    if (ref.current) {
-      ref.current.parent.rotation.y = camera.rotation.y
-      ref.current.parent.position.copy(camera.position)
+      copyCamera.matrixWorld.decompose(position, rotation, scale)
+      
+      const direction = new THREE.Vector3(0.0, 0.0, -1.0).applyQuaternion(rotation).setComponent(1, 0.0).normalize()
+      position.setFromMatrixPosition(absoluteMatrix)
+      
+      ref.current.parent.position.set(direction.x, position.y, direction.z)
+      ref.current.parent.lookAt(position.x, position.y, position.z)
     }
   }, [])
 

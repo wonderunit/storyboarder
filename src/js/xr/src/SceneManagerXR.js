@@ -4,6 +4,7 @@ const SHOW_LOG = false
 const THREE = require('three')
 window.THREE = window.THREE || THREE
 const { Canvas, useThree, useUpdate, useFrame } = require('react-three-fiber')
+const TWEEN = require('@tweenjs/tween.js').default
 
 const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
@@ -533,6 +534,7 @@ const SceneContent = connect(
     }, [])
     
     useFrame(({camera, gl}) => {
+      TWEEN.update()
       if (gl.xr.getSession() && isXrPresenting) {
         gl.xr.getCamera(emptyCamera)
         emptyCamera.matrixWorld.multiplyMatrices(camera.parent.matrixWorld, emptyCamera.matrixWorld)
