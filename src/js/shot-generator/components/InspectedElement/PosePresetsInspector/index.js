@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
+import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 
@@ -17,7 +17,6 @@ import {
 
 import defaultPosePresets from '../../../../shared/reducers/shot-generator-presets/poses.json'
 import presetsStorage from '../../../../shared/store/presetsStorage'
-import posturesJson from '../../../../shared/reducers/shot-generator-presets/postures.json'
 
 import { comparePresetNames, comparePresetPriority } from '../../../utils/searchPresetsForTerms' 
 import { NUM_COLS, ITEM_HEIGHT, CHARACTER_MODEL } from '../../../utils/InspectorElementsSettings'
@@ -29,23 +28,7 @@ import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
-import {formatters, NumberSlider, transforms} from '../../NumberSlider'
-
-const getBoneParentName = (name) => {
-  switch(name) {
-    case "Spine":
-      return "Hips"
-    case "Spine1":
-      return "Spine"
-    case "Spine2":
-      return "Spine1"
-    case "Neck":
-    case "LeftShoulder":
-    case "RightShoulder":
-      return "Spine2"
-  }
-}
-
+import PostureComponent from './PostureComponent'
 const defaultPostureValue = 0.5
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
@@ -78,7 +61,6 @@ React.memo(({
   createPosePreset,
   undoGroupStart,
   undoGroupEnd,
-  updateCharacterIkSkeleton,
   withState
 }) => {
   const thumbnailRenderer = useRef()
@@ -87,11 +69,9 @@ React.memo(({
   const {asset: attachment} = useAsset(characterPath)
 
   const [results, setResult] = useState([])
-  const [postureValue, setPostureValue] = useState(defaultPostureValue)
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
   const newGeneratedId = useRef()
-  const postureDeltas = useRef({})
 
   const presets = useMemo(() => {
     if(!posePresets) return
@@ -128,17 +108,6 @@ React.memo(({
     newPresetName.current = newGeneratedId.current
     showModal(true)
   }
-
-  useEffect(() => {
-    let sceneObject 
-    withState((dispatch, state) => {
-      sceneObject = getSceneObjects(state)[id]
-    })
-    let posturePercentage = sceneObject.posturePercentage || 0.5
-    posturePercentage = posturePercentage * (100  * 2) - 100
-
-    setPostureValue(posturePercentage)
-  }, [id])
 
   const addNewPosePreset = (name) => {
     if (name != null && name != '' && name != ' ') {
@@ -206,17 +175,6 @@ React.memo(({
       })
     }
   }
-
-  const setUpPosture = (value) => {
-    let sceneObject 
-    withState((dispatch, state) => {
-      sceneObject = getSceneObjects(state)[id]
-    })
-    let croppedValue = ( value  + 100 ) / (100 * 2)
-    updateObject(sceneObject.id, {posturePercentage: croppedValue})
-    setPostureValue(value)
-  } 
-
   return (
     <React.Fragment>
     <Modal visible={ isModalShown } onClose={() => showModal(false)}>
@@ -251,13 +209,13 @@ React.memo(({
           >+</a>
         </div>
       </div> 
-      <NumberSlider
-          label="Posture"
-          value={postureValue}
-          min={-100} max={100} step={10}
-          formatter={formatters.percent}
-          onSetValue={setUpPosture}
-        />
+      <PostureComponent
+        id={ id }
+        withState={ withState }
+        updateObject={ updateObject }
+        getSceneObjects={ getSceneObjects }
+      />
+
       <Scrollable>
        <Grid
           itemData={{
