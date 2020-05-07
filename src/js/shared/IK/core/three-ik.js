@@ -1019,7 +1019,7 @@ var BoneHelper = function (_Object3D) {
     var _this = possibleConstructorReturn(this, (BoneHelper.__proto__ || Object.getPrototypeOf(BoneHelper)).call(this));
     if (height !== 0) {
       var geo = new three.ConeBufferGeometry(boneSize, height, 4);
-      geo.applyMatrix(new three.Matrix4().makeRotationAxis(new three.Vector3(1, 0, 0), Math.PI / 2));
+      geo.applyMatrix4(new three.Matrix4().makeRotationAxis(new three.Vector3(1, 0, 0), Math.PI / 2));
       _this.boneMesh = new three.Mesh(geo, new three.MeshBasicMaterial({
         color: 0xff0000,
         wireframe: true,

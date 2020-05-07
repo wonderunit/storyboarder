@@ -114,7 +114,8 @@ class XRGPUPickerController extends GPUPickerController
         switch(sceneMesh.userData.type)
         {
             case 'character':
-                meshes.push(this.gpuPickerFactory.createCharacter(sceneMesh, excludingList));
+                let characterObject = this.gpuPickerFactory.createCharacter(sceneMesh, excludingList);
+                if(characterObject) meshes.push(characterObject);
                 break;
             case 'gui':
                 meshes.push(this.gpuPickerFactory.createGUI(sceneMesh, this.idPool, excludingList));

@@ -22,8 +22,9 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
+import CopyFile from "../../utils/CopyFile"
 
-const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world}) => {
+const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
   const setEnvVisible = useCallback(() => updateWorldEnvironment({visible: !world.environment.visible}), [world.environment.visible])
@@ -41,7 +42,11 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   
   const setEnvScale = useCallback((scale) => updateWorldEnvironment({scale}), [])
   const setEnvRotation = useCallback((rotation) => updateWorldEnvironment({rotation: _Math.radToDeg(rotation)}), [])
-  const setEnvFile = useCallback((event) => updateWorldEnvironment({file: event.file}), [])
+  const setEnvFile = useCallback((event) => {
+    if (event.file) {
+      updateWorldEnvironment({file: CopyFile(storyboarderFilePath, event.file, 'environment')})
+    }
+  }, [])
   
   const setAmbientIntensity = useCallback((intensity) => updateWorldEnvironment({intensity}), [])
   const setDirectionalIntensity = useCallback((intensityDirectional) => updateWorldEnvironment({intensityDirectional}), [])
@@ -200,7 +205,8 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
 const getWorldM = deepEqualSelector([getWorld], world => world)
 
 const mapStateToProps = (state) => ({
-  world: getWorldM(state)
+  world: getWorldM(state),
+  storyboarderFilePath: state.meta.storyboarderFilePath
 })
 
 const mapDispatchToProps = {

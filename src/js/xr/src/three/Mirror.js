@@ -36,7 +36,7 @@ class Mirror extends THREE.Object3D
     {
         let gl = this.gl;
         this.scene.remove(this);
-        gl.vr.enabled = false
+        gl.xr.enabled = false
         this.scene.autoUpdate = false;
         gl.setRenderTarget(this.renderTarget);
         gl.render(this.scene, this.camera);
@@ -45,7 +45,7 @@ class Mirror extends THREE.Object3D
         this.mesh.material.needsUpdate = true;
         this.scene.attach(this);
         this.scene.autoUpdate = true;
-        gl.vr.enabled = true
+        gl.xr.enabled = true
     }
 }
 module.exports = Mirror;

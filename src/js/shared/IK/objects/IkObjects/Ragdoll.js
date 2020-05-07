@@ -191,9 +191,9 @@ class Ragdoll extends IkObject
         let armatureInverseMatrixWorld = this.resourceManager.getMatrix4();
         armatureInverseMatrixWorld.getInverse(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
 
-        hipsTarget.applyMatrix(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
+        hipsTarget.applyMatrix4(this.rigMesh.skeleton.bones[0].parent.matrixWorld);
         let hipsWP = this.resourceManager.getVector3().copy(hipsTarget.position);
-        hipsTarget.applyMatrix(armatureInverseMatrixWorld);
+        hipsTarget.applyMatrix4(armatureInverseMatrixWorld);
 
         let originalObjectWp = this.resourceManager.getVector3().copy(this.originalObject.position);
         this.objectTargetDiff.subVectors(hipsWP, originalObjectWp);
@@ -378,6 +378,10 @@ class Ragdoll extends IkObject
 
     updateReact()
     {       
+        if (!this.originalObject) {
+            return false
+        }
+        
         let changedSkeleton = [];
         let position = new THREE.Vector3();
         let skinnedMesh = this.originalObject.getObjectByProperty("type", "SkinnedMesh");
@@ -388,7 +392,6 @@ class Ragdoll extends IkObject
             {
                 continue;
             }
-            changedSkeleton.push(bone)
             bone.updateMatrixWorld(true)
             let rotation = bone.rotation
             position.copy(bone.position)

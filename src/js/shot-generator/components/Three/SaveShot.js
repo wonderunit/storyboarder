@@ -11,7 +11,6 @@ import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import { OutlineEffect } from '../../../vendor/OutlineEffect'
 import { remote } from 'electron'
-import { image } from 'qr-image'
 
 const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())

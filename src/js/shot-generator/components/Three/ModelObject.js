@@ -17,7 +17,6 @@ const materialFactory = (isIcon) => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
-  reflectivity: 0x0,
   skinning: false,
   shininess: 0,
   flatShading: false,
