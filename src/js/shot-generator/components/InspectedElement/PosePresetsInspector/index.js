@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef, useCallback } from 'react'
+import React, { useState, useMemo, useRef, useCallback, useEffect } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 
@@ -29,6 +29,7 @@ import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
+import {formatters, NumberSlider, transforms} from '../../NumberSlider'
 
 const getBoneParentName = (name) => {
   switch(name) {
@@ -128,6 +129,17 @@ React.memo(({
     showModal(true)
   }
 
+  useEffect(() => {
+    let sceneObject 
+    withState((dispatch, state) => {
+      sceneObject = getSceneObjects(state)[id]
+    })
+    let posturePercentage = sceneObject.posturePercentage || 0.5
+    posturePercentage = posturePercentage * (100  * 2) - 100
+
+    setPostureValue(posturePercentage)
+  }, [id])
+
   const addNewPosePreset = (name) => {
     if (name != null && name != '' && name != ' ') {
       withState((dispatch, state) => {
@@ -196,15 +208,13 @@ React.memo(({
   }
 
   const setUpPosture = (value) => {
-    let postureBend = Math.max(0, Math.min(1, value))
     let sceneObject 
     withState((dispatch, state) => {
       sceneObject = getSceneObjects(state)[id]
     })
-
-    let posture = Math.round((postureBend + Number.EPSILON) * 10) / 10
-    updateObject(sceneObject.id, {posturePercentage: posture})
-    setPostureValue(posture)
+    let croppedValue = ( value  + 100 ) / (100 * 2)
+    updateObject(sceneObject.id, {posturePercentage: croppedValue})
+    setPostureValue(value)
   } 
 
   return (
@@ -241,14 +251,13 @@ React.memo(({
           >+</a>
         </div>
       </div> 
-      <div className="row">
-          <div>Posture Value</div>
-          <div>
-            <a onPointerDown= { () => setUpPosture( postureValue - 0.1 ) }>-</a></div>
-          <div>{postureValue}</div>
-          <div>
-            <a onPointerDown= { () => setUpPosture( postureValue + 0.1 ) }>+</a></div>
-        </div>
+      <NumberSlider
+          label="Posture"
+          value={postureValue}
+          min={-100} max={100} step={10}
+          formatter={formatters.percent}
+          onSetValue={setUpPosture}
+        />
       <Scrollable>
        <Grid
           itemData={{

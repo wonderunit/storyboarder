@@ -246,7 +246,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [sceneObject.posePresetId])
 
     useEffect(() => {
-      if(!sceneObject.posturePercentage) return
+      if(!sceneObject.posturePercentage ) return
       let postures = Object.values(posturesJson)
       let badPostureSkeleton = postures.find(o => o.name === "BadPosture").state.skeleton
       let goodPostureSkeleton = postures.find(o => o.name === "GoodPosture").state.skeleton
@@ -298,7 +298,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       rightArm.quaternion.multiplyQuaternions(rightArm.parent.worldQuaternion().inverse(), postureStatics.current.rightArmQuat)
       leftArm.quaternion.multiplyQuaternions(leftArm.parent.worldQuaternion().inverse(), postureStatics.current.leftArmQuat)
 
-      fullyUpdateIkSkeleton()
     }, [sceneObject.posturePercentage])
 
     useEffect(() => {
