@@ -12,10 +12,12 @@ import {
   getSelections,
   undoGroupStart,
   undoGroupEnd,
+  updateCharacterIkSkeleton
 } from '../../../../shared/reducers/shot-generator'
 
 import defaultPosePresets from '../../../../shared/reducers/shot-generator-presets/poses.json'
 import presetsStorage from '../../../../shared/store/presetsStorage'
+import posturesJson from '../../../../shared/reducers/shot-generator-presets/postures.json'
 
 import { comparePresetNames, comparePresetPriority } from '../../../utils/searchPresetsForTerms' 
 import { NUM_COLS, ITEM_HEIGHT, CHARACTER_MODEL } from '../../../utils/InspectorElementsSettings'
@@ -27,6 +29,23 @@ import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
+
+const getBoneParentName = (name) => {
+  switch(name) {
+    case "Spine":
+      return "Hips"
+    case "Spine1":
+      return "Spine"
+    case "Spine2":
+      return "Spine1"
+    case "Neck":
+    case "LeftShoulder":
+    case "RightShoulder":
+      return "Spine2"
+  }
+}
+
+const defaultPostureValue = 0.5
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -45,6 +64,7 @@ const PosePresetsEditor = connect(
     createPosePreset,
     undoGroupStart,
     undoGroupEnd,
+    updateCharacterIkSkeleton,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -57,6 +77,7 @@ React.memo(({
   createPosePreset,
   undoGroupStart,
   undoGroupEnd,
+  updateCharacterIkSkeleton,
   withState
 }) => {
   const thumbnailRenderer = useRef()
@@ -65,9 +86,11 @@ React.memo(({
   const {asset: attachment} = useAsset(characterPath)
 
   const [results, setResult] = useState([])
+  const [postureValue, setPostureValue] = useState(defaultPostureValue)
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
   const newGeneratedId = useRef()
+  const postureDeltas = useRef({})
 
   const presets = useMemo(() => {
     if(!posePresets) return
@@ -113,13 +136,23 @@ React.memo(({
         let skeleton = sceneObject.skeleton
         let model = sceneObject.model
 
+        let newSkeleton = {}
+        let keys = Object.keys(skeleton)
+        for(let i = 0; i < keys.length; i++) {
+          let key = keys[i]
+          let currentBone = skeleton[key]
+          newSkeleton[key] = {}
+          newSkeleton[key].rotation = { ...currentBone.rotation }
+          newSkeleton[key].name = currentBone.name
+          newSkeleton[key].id = currentBone.id
+        }
         // create a preset out of it
         let newPreset = {
           id: THREE.Math.generateUUID(),
           name,
           keywords: name, // TODO keyword editing
           state: {
-            skeleton: skeleton || {}
+            skeleton: newSkeleton || {}
           },
           priority: 0
         }
@@ -132,7 +165,7 @@ React.memo(({
         request.post('https://storyboarders.com/api/create_pose', {
           form: {
             name: name,
-            json: JSON.stringify(skeleton),
+            json: JSON.stringify(newSkeleton),
             model_type: model,
             storyboarder_version: pkg.version,
             machine_id: machineIdSync()
@@ -161,6 +194,18 @@ React.memo(({
       })
     }
   }
+
+  const setUpPosture = (value) => {
+    let postureBend = Math.max(0, Math.min(1, value))
+    let sceneObject 
+    withState((dispatch, state) => {
+      sceneObject = getSceneObjects(state)[id]
+    })
+
+    let posture = Math.round((postureBend + Number.EPSILON) * 10) / 10
+    updateObject(sceneObject.id, {posturePercentage: posture})
+    setPostureValue(posture)
+  } 
 
   return (
     <React.Fragment>
@@ -196,7 +241,14 @@ React.memo(({
           >+</a>
         </div>
       </div> 
-      
+      <div className="row">
+          <div>Posture Value</div>
+          <div>
+            <a onPointerDown= { () => setUpPosture( postureValue - 0.1 ) }>-</a></div>
+          <div>{postureValue}</div>
+          <div>
+            <a onPointerDown= { () => setUpPosture( postureValue + 0.1 ) }>+</a></div>
+        </div>
       <Scrollable>
        <Grid
           itemData={{
@@ -207,7 +259,7 @@ React.memo(({
 
             attachment,
             updateObject,
-
+            resetPosture:() => { postureDeltas.current = {}; setPostureValue( defaultPostureValue )},
             thumbnailRenderer,
             undoGroupStart,
             undoGroupEnd,

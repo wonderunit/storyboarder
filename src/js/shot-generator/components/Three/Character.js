@@ -9,7 +9,7 @@ import {useAsset} from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
-
+import posturesJson from '../../../shared/reducers/shot-generator-presets/postures.json'
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState}) => {
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
@@ -23,6 +23,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const objectRotationControl = useRef(null)
+    const postureDeltas = useRef({})
+    const postureStatics = useRef(null)
     useEffect(() => {
       return () => {
         ref.current.remove(SGIkHelper.getInstance())
@@ -237,6 +239,67 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       isFullyUpdate.current = true
       updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }
+
+    useEffect(() => {
+      postureDeltas.current = {}
+      postureStatics.current = null
+    }, [sceneObject.posePresetId])
+
+    useEffect(() => {
+      if(!sceneObject.posturePercentage) return
+      let postures = Object.values(posturesJson)
+      let badPostureSkeleton = postures.find(o => o.name === "BadPosture").state.skeleton
+      let goodPostureSkeleton = postures.find(o => o.name === "GoodPosture").state.skeleton
+      let badQuat = new THREE.Quaternion()
+      let currentQuat = new THREE.Quaternion()
+      let goodQuat = new THREE.Quaternion()
+      let postureBones = ["Spine", "Spine1", "Spine2", "Neck", "LeftShoulder", "RightShoulder"]
+      let headBone = skeleton.bones.find(o => o.name === "Head")
+      let rightArm = skeleton.bones.find(o => o.name === "LeftArm")
+      let leftArm = skeleton.bones.find(o => o.name === "RightArm")
+      if(!postureStatics.current) {
+        postureStatics.current = {}
+        headBone.updateMatrixWorld(true)
+        rightArm.updateMatrixWorld(true)
+        leftArm.updateMatrixWorld(true)
+        postureStatics.current.headBoneQuat = headBone.worldQuaternion()
+        postureStatics.current.rightArmQuat = rightArm.worldQuaternion()
+        postureStatics.current.leftArmQuat = leftArm.worldQuaternion()
+      }
+      for( let i = 0; i < postureBones.length; i++ ) {
+        let key = postureBones[i]
+        let currentBone = skeleton.bones.find(o => o.name === key)
+        let badBone = badPostureSkeleton[key]
+        badQuat.setFromEuler(new THREE.Euler(badBone.rotation.x, badBone.rotation.y, badBone.rotation.z))    
+        
+        let goodBone = goodPostureSkeleton[key]
+        goodQuat.setFromEuler(new THREE.Euler(goodBone.rotation.x, goodBone.rotation.y, goodBone.rotation.z))
+
+        if(!postureDeltas.current[key]) {
+          postureDeltas.current[key] = {}
+          THREE.Quaternion.slerp(badQuat, goodQuat, currentQuat, 0.5)
+          
+          let delta = new THREE.Quaternion()
+          delta.multiply(currentQuat.conjugate())
+          delta.multiply(currentBone.worldQuaternion())
+          postureDeltas.current[key].delta = delta
+        }
+        THREE.Quaternion.slerp(badQuat, goodQuat, currentQuat, sceneObject.posturePercentage)
+        
+        currentQuat.multiply(postureDeltas.current[key].delta)
+        let transformationMatrix = new THREE.Matrix4()
+        transformationMatrix.multiply(currentBone.matrix)
+        transformationMatrix.multiply(currentBone.getInverseMatrixWorld())
+        currentQuat.applyMatrix(transformationMatrix)
+        currentBone.quaternion.copy(currentQuat)
+      }
+
+      headBone.quaternion.multiplyQuaternions(headBone.parent.worldQuaternion().inverse(), postureStatics.current.headBoneQuat)
+      rightArm.quaternion.multiplyQuaternions(rightArm.parent.worldQuaternion().inverse(), postureStatics.current.rightArmQuat)
+      leftArm.quaternion.multiplyQuaternions(leftArm.parent.worldQuaternion().inverse(), postureStatics.current.leftArmQuat)
+
+      fullyUpdateIkSkeleton()
+    }, [sceneObject.posturePercentage])
 
     useEffect(() => {
       if(!camera) return
