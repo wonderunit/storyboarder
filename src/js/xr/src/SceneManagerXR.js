@@ -384,12 +384,13 @@ const SceneContent = connect(
     const isXrPresenting = useIsXrPresenting()
     useEffect(() => {
       if (isXrPresenting) {
-        welcomeAudio.play()
+        if (!welcomeAudio.isPlaying) welcomeAudio.play()
         if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
         SGConnection.setActive(true)
       } else {
         SGConnection.setActive(false)
         welcomeAudio.isPlaying && welcomeAudio.stop()
+        atmosphereAudio.isPlaying && atmosphereAudio.stop()
       }
     }, [isXrPresenting])
 

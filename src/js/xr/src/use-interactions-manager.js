@@ -198,14 +198,22 @@ const [useStore, useStoreApi] = create((set, get) => ({
   setDidMoveCamera: value => set(produce(state => { state.didMoveCamera = value })),
   setDidRotateCamera: value => set(produce(state => { state.didRotateCamera = value })),
 
-  moveCameraByDistance: (camera, distance) => set(produce(state => {
+  moveCameraByDistance: (xrCamera, sceneCamera, distance) => set(produce(state => {
     let center = new THREE.Vector3()
-    camera.getWorldPosition(center)
-    let gr = camera.rotation.y + state.teleportRot.y
+    sceneCamera.getWorldPosition(center)
 
-    let target = new THREE.Vector3(center.x, 0, center.z + distance)
-    let d = rotatePoint(target, center, -gr)
-    teleportState(state, camera, d.x, null, d.z, null)
+    const absoluteMatrix = new THREE.Matrix4().multiplyMatrices(sceneCamera.parent.matrixWorld, xrCamera.matrixWorld)
+
+    const position = new THREE.Vector3()
+    const rotation = new THREE.Quaternion()
+    const scale = new THREE.Vector3()
+
+    absoluteMatrix.decompose(position, rotation, scale)
+
+    const direction = new THREE.Vector3(0.0, 0.0, 1.0).applyQuaternion(rotation).setComponent(1, 0.0).setLength(distance)
+    center.add(direction)
+    
+    teleportState(state, sceneCamera, center.x, null, center.z, null)
   })),
 
   rotateCameraByRadians: (camera, radians) => set(produce(state => {
@@ -303,6 +311,7 @@ const useInteractionsManager = ({
 }) => {
   const { gl, camera, scene } = useThree()
 
+  const placeholderCamera = new THREE.PerspectiveCamera()
 
   const selections = useSelector(getSelections)
   const sceneObjects = useSelector(getSceneObjects)
@@ -791,7 +800,8 @@ const useInteractionsManager = ({
 
       if (distance != null) {
         setDidMoveCamera(distance)
-        moveCameraByDistance(camera, distance)
+        gl.xr.getCamera(placeholderCamera)
+        moveCameraByDistance(placeholderCamera, camera, distance)
         playSound('teleport-move')
       }
     }
