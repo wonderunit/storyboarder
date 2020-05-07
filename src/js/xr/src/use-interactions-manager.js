@@ -238,10 +238,13 @@ const [useStore, useStoreApi] = create((set, get) => ({
       let offsetVector = new THREE.Vector3(0, 0, 0.5)
       offsetVector.applyMatrix4(new THREE.Matrix4().extractRotation(camera.matrixWorld))
       offsetVector = offsetVector.multiply(new THREE.Vector3(1, 0, 1))
+      
+      let positionVector = new THREE.Vector3()
+      camera.getWorldPosition(positionVector)
 
       teleportState(state, camera,
         (state.teleportPos.x + camera.position.x) * state.worldScale + offsetVector.x,
-        -(camera.position.y - 0.75),
+        0,
         (state.teleportPos.z + camera.position.z) * state.worldScale + offsetVector.z
       )
     } else {
