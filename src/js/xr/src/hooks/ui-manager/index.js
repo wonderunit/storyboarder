@@ -16,7 +16,7 @@ const { produce } = require('immer')
 
 const RemoteData = require('../../client/RemoteData')
 
-const useIsVrPresenting = require('../../hooks/use-is-vr-presenting')
+const useIsXrPresenting = require('../../hooks/use-is-xr-presenting')
 const { setCookie, getCookie } = require('../../helpers/cookies')
 const isUserModel = require('../../helpers/is-user-model')
 const {
@@ -26,7 +26,6 @@ const {
   drawSlider,
   drawToggleButton,
   roundRect,
-  wrapText,
   drawPaneBGs,
   drawGrid,
   drawRow
@@ -139,7 +138,7 @@ const percent = value => `${value * 100}`
 const getFovAsFocalLength = (fov, aspect) => new THREE.PerspectiveCamera(fov, aspect).getFocalLength()
 
 class CanvasRenderer {
-  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio, client) {
+  constructor(size, dispatch, service, send, camera, getRoom, getImageByFilepath, cameraAspectRatio, shotGenerator) {
     this.canvas = document.createElement('canvas')
     this.canvas.width = this.canvas.height = size
     this.context = this.canvas.getContext('2d')
@@ -152,12 +151,12 @@ class CanvasRenderer {
     this.boardsCanvas.width = this.boardsCanvas.height = size
     this.boardsContext = this.boardsCanvas.getContext('2d')
 
+    this.shotGenerator = shotGenerator
     this.dispatch = dispatch
     this.service = service
     this.send = send
     this.cameraAspectRatio = cameraAspectRatio
     this.getImageByFilepath = getImageByFilepath
-    this.client = client
 
     this.state = {
       activeCamera: null,
@@ -167,6 +166,7 @@ class CanvasRenderer {
       poses: {},
       handPoses: {},
       models: {},
+      board: {},
       mode: 'home',
       context: {},
       helpIndex: 0,
@@ -250,24 +250,16 @@ class CanvasRenderer {
     // roundRect(ctx, 570+3, 30+3, 330-6, 89-6, {tl: 15, tr: 0, br: 0, bl: 15}, true, false)
 
     this.state.boardsData = RemoteData.init()
-    this.client.getBoards().then(result => {
-      this.state.boardsData = RemoteData.success(result)
-      this.boardsNeedsRender = true
-    }).catch(err => {
-      this.state.boardsData = RemoteData.failure(err)
-      this.boardsNeedsRender = true
-    })
-
     this.state.sgCurrentState = RemoteData.init()
-    this.client.getState().then(result => {
-      this.state.sgCurrentState = RemoteData.success(result)
-      this.boardsNeedsRender = true
-      this.send('SET_BOARDUID', { uid: result.board.uid })
-    }).catch(err => {
-      this.state.sgCurrentState = RemoteData.failure(err)
-      this.boardsNeedsRender = true
-      this.send('SET_BOARDUID', { uid: null })
-    })
+    // this.client.getState().then(result => {
+    //   this.state.sgCurrentState = RemoteData.success(result)
+    //   this.boardsNeedsRender = true
+    //   this.send('SET_BOARDUID', { uid: result.board.uid })
+    // }).catch(err => {
+    //   this.state.sgCurrentState = RemoteData.failure(err)
+    //   this.boardsNeedsRender = true
+    //   this.send('SET_BOARDUID', { uid: null })
+    // })
 
     this.needsRender = false
   }
@@ -608,7 +600,7 @@ class CanvasRenderer {
         let spaceForTitle = titleHeight
         if(grids.tab === "handPoses") spaceForTitle *= 2
         this.drawGrid(ctx, 30, 30 + spaceForTitle, 440 - 55, 670 - 55 - spaceForTitle, list, grids.tab, rowCount, sceneObject, this.state.selectedHand)
-        
+
         let buttonSize = 310
 
         this.paneComponents['grid']['poses-title'] = {
@@ -663,7 +655,7 @@ class CanvasRenderer {
           }
         }
 
-       
+
 
         this.paneComponents['grid']['hand-poses-title']['left-hand'] = {
           id: 'left-hand',
@@ -771,11 +763,11 @@ class CanvasRenderer {
 
     this.state.boardsData.cata({
       SUCCESS: data => {
-        if (this.state.sgCurrentState.board) {
+        if (this.state.board) {
           this.drawRow(ctx, 15, 15, 1024 - 30, 370 * 0.6 - 15, sceneCameras, 'cameras', activeCameraIndex)
 
           const sgBoards = data.filter(board => board.hasSg)
-          const activeBoardIndex = Object.values(sgBoards).findIndex(board => board.uid === this.state.sgCurrentState.board.uid)
+          const activeBoardIndex = Object.values(sgBoards).findIndex(board => board.uid === this.state.board.uid)
           this.drawRow(ctx, 15, 15 + 370 * 0.6, 1024 - 30, 370 * 0.4, sgBoards, 'boards', activeBoardIndex)
         }
       }
@@ -785,7 +777,7 @@ class CanvasRenderer {
       ctx.fillStyle = 'rgba(0,0,0)'
       roundRect(ctx, 0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30, 25, true, false)
 
-      const labels = this.state.boards.confirmDialogType === 'overwrite' ? 
+      const labels = this.state.boards.confirmDialogType === 'overwrite' ?
         [`Shot Generator has unsaved changes.`, `Are you sure you want to overwrite with VR changes?`] :
         [`Changes have not been saved.`, `Are you sure you want to change board without saving?`]
 
@@ -1230,7 +1222,7 @@ const getPoseImageFilepathById = id => `/data/presets/poses/${id}.jpg`
 const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
-const useUiManager = ({ playSound, stopSound, getXrClient }) => {
+const useUiManager = ({ playSound, stopSound, SG }) => {
   const { scene, camera } = useThree()
 
   const store = useReduxStore()
@@ -1241,8 +1233,6 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const setShowHUD = useUiStore(state => state.setShowHUD)
 
   const setBoardUid = useUiStore(state => state.setBoardUid)
-  const setServerHash = useUiStore(state => state.setServerHash)
-  const setServerLastSavedHash = useUiStore(state => state.setServerLastSavedHash)
 
   const setShowConfirm = useUiStore(state => state.setShowConfirm)
 
@@ -1251,6 +1241,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
 
   // for now, preload pose, character, and model images to THREE.Cache
   const presets = useSelector(state => state.presets)
+  const board = useSelector(state => state.board)
   const models = useSelector(state => state.models)
   const cameraAspectRatio = useSelector(state => state.aspectRatio)
   const poses = useMemo(() =>
@@ -1446,6 +1437,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           }
 
           playSound('create')
+          uiSend('GO_HOME')
         },
 
         onDuplicate (context, event) {
@@ -1454,6 +1446,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           if (selections.length) {
             store.dispatch(duplicateObjects([selections[0]], [id]))
             playSound('create')
+            uiSend('GO_HOME')
           }
         },
 
@@ -1466,6 +1459,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
             store.dispatch(deleteObjects([selections[0]]))
             store.dispatch(undoGroupEnd())
             playSound('delete')
+            uiSend('GO_HOME')
           }
         },
 
@@ -1532,45 +1526,22 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
         },
 
         async onChangeBoard (context, event) {
+          if (!event.uid) {
+            return false
+          }
+          
           let cr = getCanvasRenderer()
 
-          const data = {
-            world: cr.state.world,
-            sceneObjects: cr.state.sceneObjects,
-            activeCamera: cr.state.activeCamera
-          }
-
-          let { lastSavedHash } = await cr.client.getSg()
-          let localHash = getHashForBoardSgData(data)
-          if (localHash !== lastSavedHash) {
+          let hasUnsavedChanges = await checkForUnsavedChanges()
+          if (hasUnsavedChanges) {
             let confirmed = await checkConfirmStatus('unsaved')
             if (!confirmed) return
           }
-          
-          let board = await cr.client.selectBoardByUid(event.uid)
 
           try {
-            await cr.client.sendState(board.uid, board.sg.data)
-            let { hash, lastSavedHash } = await cr.client.getSg()
-            setServerHash(hash)
-            setServerLastSavedHash(lastSavedHash)
-            cr.state.sgCurrentState.board = { uid: board.uid, shot: board.shot }
+            await cr.shotGenerator.setBoard(event.uid)
+            
             cr.boardsNeedsRender = true
-
-            const {
-              state: { activeCamera, sceneObjects, world }
-            } = await cr.client.getState()
-
-            store.dispatch(selectObject(null))
-            store.dispatch(
-              loadScene({
-                sceneObjects,
-                world,
-                activeCamera
-              })
-            )
-
-            store.dispatch(setBoard(board))
             setBoardUid(board.uid)
           } catch (err) {
             // TODO if the uid does not match, notify user, reload
@@ -1578,23 +1549,17 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           }
         },
 
-        async onSaveBoard (context, event) {
+        async onSaveBoard () {
           let cr = getCanvasRenderer()
 
-          const data = {
-            world: cr.state.world,
-            sceneObjects: cr.state.sceneObjects,
-            activeCamera: cr.state.activeCamera
-          }
-
-          let hasUnsavedChanges = await checkForUnsavedChanges(data)
+          let hasUnsavedChanges = await checkForUnsavedChanges()
           if (hasUnsavedChanges) {
             let confirmed = await checkConfirmStatus('overwrite')
             if (!confirmed) return
           }
 
           try {
-            await cr.client.saveShot(cr.state.sgCurrentState.board.uid, data)
+            await cr.shotGenerator.saveShot()
 
             cr.state.boardsData.cata({
               SUCCESS: data => {
@@ -1604,23 +1569,16 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
               }
             })
 
-            updateBoardsData(cr)
             cr.boardsNeedsRender = true
           } catch (err) {
-            console.log('Could not save board\n' + err)
+            cr.shotGenerator.log('Could not save board\n' + err)
           }
         },
 
-        async onInsertBoard (context, event) {
+        async onInsertBoard () {
           let cr = getCanvasRenderer()
 
-          const data = {
-            world: cr.state.world,
-            sceneObjects: cr.state.sceneObjects,
-            activeCamera: cr.state.activeCamera
-          }
-
-          let hasUnsavedChanges = await checkForUnsavedChanges(data)
+          let hasUnsavedChanges = await checkForUnsavedChanges()
 
           if (hasUnsavedChanges) {
             let confirmed = await checkConfirmStatus('overwrite')
@@ -1628,10 +1586,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
           }
 
           try {
-            let board = await cr.client.insertShot(data)
-            updateBoardsData(cr)
-            updateSgCurrentState(cr)
-            store.dispatch(setBoard(board))
+            let board = await cr.shotGenerator.insertShot()
             setBoardUid(board.uid)
             cr.boardsNeedsRender = true;
           } catch (err) {
@@ -1642,20 +1597,8 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     }
   )
 
-  const checkForUnsavedChanges = async (data) => {
-    let localHash = getHashForBoardSgData(data)
-
-    // ask for SG hashes
-    let serverResponse = await getCanvasRenderer().client.getSg()
-    setServerHash(serverResponse.hash)
-    setServerLastSavedHash(serverResponse.lastSavedHash)
-
-    return serverResponse.hash != localHash
-  }
-
-  const getHashForBoardSgData = data => {
-    let state = reducer({}, { type: 'LOAD_SCENE', payload: data })
-    return getHash(state)
+  const checkForUnsavedChanges = async () => {
+    return await getCanvasRenderer().shotGenerator.isSceneDirty()
   }
 
   const checkConfirmStatus = async (type) => {
@@ -1683,38 +1626,11 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     })
   }
 
-  const updateBoardsData = cr => {
-    setTimeout(() => {
-      cr.state.boardsData = RemoteData.init()
-      cr.client.getBoards().then(result => {
-        cr.state.boardsData = RemoteData.success(result)
-        cr.boardsNeedsRender = true
-      }).catch(err => {
-        cr.state.boardsData = RemoteData.failure(err)
-        cr.boardsNeedsRender = true
-      })
-    }, 500)
-  }
-
-  const updateSgCurrentState = cr => {
-    setTimeout(() => {
-      cr.state.sgCurrentState = RemoteData.init()
-      cr.client.getState().then(result => {
-        cr.state.sgCurrentState = RemoteData.success(result)
-        cr.boardsNeedsRender = true
-      }).catch(err => {
-        cr.state.sgCurrentState = RemoteData.failure(err)
-        cr.boardsNeedsRender = true
-      })
-    }, 500)
-  }
-
   const canvasRendererRef = useRef(null)
   const getCanvasRenderer = useCallback(() => {
     if (canvasRendererRef.current === null) {
       const getRoom = () => scene.getObjectByName('room' )
       const getImageByFilepath = filepath => THREE.Cache.get(filepath)
-      const client = getXrClient()
 
       canvasRendererRef.current = new CanvasRenderer(
         1024,
@@ -1725,7 +1641,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
         getRoom,
         getImageByFilepath,
         cameraAspectRatio,
-        client
+        SG
       )
     }
     return canvasRendererRef.current
@@ -1736,6 +1652,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
   const world = useSelector(getWorld)
 
   useMemo(() => {
+    getCanvasRenderer().state.board = board
     getCanvasRenderer().state.selections = selections
     getCanvasRenderer().state.sceneObjects = sceneObjects
     getCanvasRenderer().state.poses = poses
@@ -1750,9 +1667,26 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     if (selections.length) {
       uiSend('GO_PROPERTIES')
     } else {
+      //uiSend('GO_HOME')
+    }
+  }, [selections, sceneObjects, poses, models, activeCamera, world, handPoses, board])
+  
+  useEffect(() => {
+    const renderer = getCanvasRenderer()
+    renderer.shotGenerator.getBoards().then(result => {
+      renderer.state.boardsData = RemoteData.success(result)
+      renderer.boardsNeedsRender = true
+    }).catch(err => {
+      renderer.state.boardsData = RemoteData.failure(err)
+      renderer.boardsNeedsRender = true
+    })
+  }, [board.uid])
+
+  useMemo(() => {
+    if (selections.length === 0 && getCanvasRenderer().state.mode === 'properties') {
       uiSend('GO_HOME')
     }
-  }, [selections, sceneObjects, poses, models, activeCamera, world, handPoses])
+  }, [selections.length])
 
   useMemo(() => {
     getCanvasRenderer().state.mode = uiCurrent.value.controls
@@ -1764,9 +1698,9 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
     getCanvasRenderer().needsRender = true
   }, [uiCurrent.context])
 
-  const isVrPresenting = useIsVrPresenting()
+  const isXrPresenting = useIsXrPresenting()
   useEffect(() => {
-    if (!isVrPresenting) return
+    if (!isXrPresenting) return
 
     // if the user hasn't seen help before
     if (getCookie('sawHelp') !== 'true') {
@@ -1779,7 +1713,7 @@ const useUiManager = ({ playSound, stopSound, getXrClient }) => {
         }
       }, 2000)
     }
-  }, [isVrPresenting])
+  }, [isXrPresenting])
 
   return { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef }
 }

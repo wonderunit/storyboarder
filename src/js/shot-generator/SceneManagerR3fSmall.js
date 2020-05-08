@@ -18,6 +18,9 @@ import ModelLoader from '../services/model-loader'
 import { useDraggingManager } from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
 import Room from './components/Three/Room'
+import RemoteClients from "./components/RemoteClients"
+import XRClient from "./components/Three/XRClient"
+import RemoteProvider from "./components/RemoteProvider"
 
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
@@ -98,7 +101,7 @@ const SceneManagerR3fSmall = connect(
       e.object.traverseAncestors((o) => {
         if(o.userData.id) match = o
       })
-      if(!match.userData || match.userData.locked ) return
+      if(!match || !match.userData || match.userData.locked ) return
       selectObject(match.userData.id)
       if(match.userData.type === "camera") {
         setActiveCamera(match.userData.id)
@@ -197,7 +200,6 @@ const SceneManagerR3fSmall = connect(
       camera.bottom = -(minMax[3]-minMax[2])/2
       camera.near = -1000
       camera.far = 1000
-      //camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
     }, [scene, camera, renderData])
 
@@ -303,6 +305,12 @@ const SceneManagerR3fSmall = connect(
         visible={ world.room.visible }
         isTopDown={ true } />
     }
+
+      <RemoteProvider>
+        <RemoteClients
+          Component={XRClient}
+        />
+      </RemoteProvider>
     </group>
     })
 )

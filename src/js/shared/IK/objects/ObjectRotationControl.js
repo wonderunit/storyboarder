@@ -51,13 +51,13 @@ class ObjectRotationControl
 
     deselectObject()
     {
+        this.control.removeEventListener("transformMouseDown", this.onMouseDown);
+        this.control.removeEventListener("transformMouseUp", this.onMouseUp);
         this.control.detach();
         this.scene.remove(this.control);
         
         this.control.dispose();
         this.object = null;
-        this.control.removeEventListener("transformMouseDown", this.onMouseDown);
-        this.control.removeEventListener("transformMouseUp", this.onMouseUp);
     }
 
     setCamera(camera)

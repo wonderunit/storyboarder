@@ -39,6 +39,9 @@ import Room from './components/Three/Room'
 import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
+import RemoteProvider from "./components/RemoteProvider"
+import RemoteClients from "./components/RemoteClients"
+import XRClient from "./components/Three/XRClient"
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -398,7 +401,13 @@ const SceneManagerR3fLarge = connect(
               height={world.room.height}
               visible={world.room.visible} />
     }
+      <RemoteProvider>
+        <RemoteClients
+          Component={XRClient}
+        />
+      </RemoteProvider>
     </group>
     })
 )
+
 export default SceneManagerR3fLarge

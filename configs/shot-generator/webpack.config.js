@@ -39,5 +39,8 @@ module.exports = {
     new webpack.ProvidePlugin({
       'THREE': 'three'
     })
-  ]
+  ],
+  externals: {
+    uws: "uws"
+  }
 }

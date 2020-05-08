@@ -237,8 +237,6 @@ const initializeAttachables = (sceneObject, preset) => {
     prevParent.rotation.set(0, preset.state.presetRotation, 0 )
     prevParent.updateMatrixWorld(true)
 
-    console.log(prevParent)
-    console.log(sceneObject.skeleton)
     // Init prev parent position
   
     let attachableObject = new THREE.Object3D()
@@ -275,8 +273,8 @@ const initializeAttachables = (sceneObject, preset) => {
       prevBoneGroup.add(attachableObject)
       attachableObject.updateMatrixWorld(true)
 
-      attachableObject.applyMatrix(prevBoneGroup.getInverseMatrixWorld())
-      attachableObject.applyMatrix(currentBoneGroup.matrixWorld)
+      attachableObject.applyMatrix4(prevBoneGroup.getInverseMatrixWorld())
+      attachableObject.applyMatrix4(currentBoneGroup.matrixWorld)
 
       let { x, y, z }  = attachableObject.position
       newAttachable.x = x 

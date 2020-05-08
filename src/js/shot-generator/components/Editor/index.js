@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
+import TWEEN from '@tweenjs/tween.js'
 
 import { ipcRenderer } from 'electron'
 import KeyHandler from './../KeyHandler'
@@ -43,8 +44,9 @@ const Effect = ({renderData, stats}) => {
   const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
   
   useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
-  useFrame(({ gl, scene, camera }) => {
+  useFrame(({ scene, camera }) => {
     if(stats) stats.begin()
+    TWEEN.update()
     if(renderData) {
       outlineEffect.render(renderData.scene, renderData.camera)
     } else {

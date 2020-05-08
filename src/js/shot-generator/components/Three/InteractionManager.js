@@ -1,4 +1,4 @@
-import { connect } from 'react-redux'
+import { connect, batch } from 'react-redux'
 import React, { useRef, useCallback, useLayoutEffect, useState, useMemo, useEffect } from 'react'
 import { useThree } from 'react-three-fiber'
 import * as THREE from 'three'
@@ -131,9 +131,13 @@ const InteractionManager = connect(
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
         intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
-            o.userData.type === 'controlTarget' ||
-            o.userData.type === 'controlPoint' || 
-            o.userData.type === 'objectControl'))
+          o.userData.type === 'controlTarget' ||
+          o.userData.type === 'controlPoint' ||
+          o.userData.type === 'object' ||
+          o.userData.type === 'image' ||
+          o.userData.type === 'character' ||
+          o.userData.type === 'light' ||
+          o.userData.type === 'objectControl' ))
     }
     
     const mouse = event => {
@@ -157,7 +161,7 @@ const InteractionManager = connect(
         y = mousePosition.current.y
         raycaster.current.setFromCamera({ x, y }, camera )
         let gpuPicker = getGPUPicker()
-        gpuPicker.setupScene(intersectables.current.filter(object => object.userData.type !== 'volume'))
+        gpuPicker.setupScene((intersectables.current || []).filter(object => object.userData.type !== 'volume'))
         gpuPicker.controller.setPickingPosition(mousePosition.current.x, mousePosition.current.y)
         intersects = gpuPicker.pickWithCamera(camera, activeGL)
         return intersects
@@ -209,24 +213,24 @@ const InteractionManager = connect(
             let selectedObjectControl
             
             for (let intersect of intersects) {
-                target = getIntersectionTarget(intersect)
-                if (target.userData.type === 'character' && target.userData.locked) {
+              target = getIntersectionTarget(intersect)
+              if (target.userData.type === 'character' && target.userData.locked) {
                 return
-                }
+              }
             }
 
             target = getIntersectionTarget(intersects[0])
             if(!target) return
             if(target.userData && target.userData.type === 'attachable') {
-                selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
-                setDragTarget({ target, x, y})
-                return 
+              selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
+              setDragTarget({ target, x, y})
+              return 
             } else if(target.userData && (target.userData.type === 'controlPoint' || target.userData.type === 'poleTarget')) {
-                let characterId = target.characterId
-                SGIkHelper.getInstance().selectControlPoint(target.uuid, event)
-                let characters = intersectables.current.filter(value => value.uuid === characterId)
-                target = characters[0]
-                isSelectedControlPoint = true
+              let characterId = target.characterId
+              SGIkHelper.getInstance().selectControlPoint(target.uuid, event)
+              let characters = intersectables.current.filter(value => value.uuid === characterId)
+              target = characters[0]
+              isSelectedControlPoint = true
             } else if(target.userData && target.userData.type === 'objectControl') {
                 let objectId = target.characterId
                 let targetElement = target.object
@@ -345,13 +349,29 @@ const InteractionManager = connect(
         const { x, y } = mouse(event)
         SGIkHelper.getInstance().deselectControlPoint(event)
         if (dragTarget) {
+          endDrag(updateObjects)
           if(dragTarget.target.userData.type === "character") {
             let attachables = scene.__interaction.filter(object => object.userData.bindedId === dragTarget.target.userData.id)
-            for(let i = 0; i < attachables.length; i ++) {
-              attachables[i].saveToStore()
-            }
+            withState((dispatch, state) => {
+              batch(() => {
+                for(let i = 0; i < attachables.length; i ++) {
+                  let attachable = attachables[i]
+                  attachable.parent.updateWorldMatrix(true, true)
+                  let position = attachable.worldPosition()// new THREE.Vector3()
+                  let quaternion = attachable.worldQuaternion()
+                  let matrix = attachable.matrix.clone()
+                  matrix.premultiply(attachable.parent.matrixWorld)
+                  matrix.decompose(position, quaternion, new THREE.Vector3())
+                  let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
+                  dispatch(updateObject(attachable.userData.id, 
+                  { 
+                      x: position.x, y: position.y, z: position.z,
+                      rotation: { x: rot.x, y: rot.y, z: rot.z },
+                  }))
+                }
+              })
+            })
           }
-          endDrag(updateObjects)
           setDragTarget(null)
           undoGroupEnd()
         }

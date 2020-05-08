@@ -15,7 +15,7 @@ const TeapotBufferGeometry = require('../../../node_modules/three/examples/js/ge
 // via https://github.com/jeromeetienne/threex.suzanne
 // converted to ObjectLoader-compatible BufferGeometry (see: https://github.com/mrdoob/three.js/pull/15310)
 const Suzanne = require('../fixtures/Suzanne.json')
-require('../../../node_modules/three/examples/js/loaders/GLTFLoader')
+const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader')
 
 const METERS_PER_FEET = 0.3048
 
@@ -35,7 +35,7 @@ const store = configureStore(initialState)
 window.$r = { store }
 
 let loadingManager = new THREE.LoadingManager()
-let gltfLoader = new THREE.GLTFLoader(loadingManager)
+let gltfLoader = new GLTFLoader(loadingManager)
 
 const createScene = ({ store, label, setup }) => {
   let clock = new THREE.Clock()

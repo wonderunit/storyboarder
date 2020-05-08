@@ -126,7 +126,7 @@ const buildSquareRoom = (w, l, h, { textures }) => {
   mS.elements[0] = -1
   mS.elements[5] = -1
   mS.elements[10] = -1
-  geometry.applyMatrix(mS)
+  geometry.applyMatrix4(mS)
 
   mesh.scale.set(scale, scale, scale)
   mesh.position.set(hw, 0, hl)

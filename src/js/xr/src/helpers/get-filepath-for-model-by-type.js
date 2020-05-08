@@ -1,4 +1,5 @@
 const isUserModel = require('./is-user-model')
+//const path = require('path')
 
 const getFilepathForModelByType = ({ type, model }) => {
   if (isUserModel(model)) {
