@@ -65,10 +65,10 @@ const useDraggingManager = (useIcons) => {
           let { x, y, z } = intersection.current.clone().sub( offsets.current[target.userData.id] )
           let parentMatrixWorld = target.parent.matrixWorld
           let parentInverseMatrixWorld = target.parent.getInverseMatrixWorld()
-          target.applyMatrix(parentMatrixWorld)
+          target.applyMatrix4(parentMatrixWorld)
           target.position.set( x, y, z )
           target.updateMatrixWorld(true)
-          target.applyMatrix(parentInverseMatrixWorld)
+          target.applyMatrix4(parentInverseMatrixWorld)
           target.updateMatrixWorld(true)
   
           objectChanges.current[target.userData.id] = { x, y, z }

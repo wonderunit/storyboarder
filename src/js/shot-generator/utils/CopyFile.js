@@ -23,13 +23,13 @@ const CopyFile = (storyboarderFilePath, absolutePath, type) => {
         fs.copySync(src, dst, { overwrite: true, errorOnExist: false })
       }
       // update it in the data
-      let updatedModel = path.join(
+      return path.join(
         ModelLoader.projectFolder(type),
         path.basename(dst)
-      )
-      return updatedModel
-    } 
-    return absolutePath 
+      ).split('\\').join('/')
+    }
+    
+    return absolutePath.split('\\').join('/')
 }
 
 export default CopyFile

@@ -87,12 +87,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       scale={ [height * aspect.current, height, 1] }
       rotation={ [rotation.x, rotation.y, rotation.z] }
     >
-      <mesh
-        userData={{
-            type: "image",
-            id: sceneObject.id
-        }}
-      >
+      <mesh>
         <roundedBoxGeometry attach="geometry" args={ [1, 1, 0.01, 0.01] } />
         <primitive attach="material" object={ material } />
       </mesh>

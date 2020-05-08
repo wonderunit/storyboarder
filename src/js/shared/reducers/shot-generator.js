@@ -1,5 +1,6 @@
 const THREE = require('three')
 const { produce } = require('immer')
+const merge = require('lodash.merge')
 const undoable = require('redux-undo').default
 const crypto = require('crypto')
 const reduceReducers = require('../../vendor/reduce-reducers')
@@ -789,6 +790,7 @@ const selectionsReducer = (state = [], action) => {
     switch (action.type) {
       case 'LOAD_SCENE':
       case 'UPDATE_SCENE_FROM_XR':
+      case 'MERGE_STATE':
         // clear selections
         return []
 
@@ -808,6 +810,9 @@ const selectionsReducer = (state = [], action) => {
           draft.splice(n, 1)
         }
         return
+      case 'DESELECT_OBJECT':
+        let objectsToDeselect = Array.isArray(action.payload) ? action.payload : [action.payload]
+        return draft.filter((target) => objectsToDeselect.indexOf(target) === -1)
       case 'SELECT_ATTACHABLE':
         return [action.payload.bindId]
         
@@ -1460,6 +1465,9 @@ const mainReducer = (state/* = initialState*/, action) => {
       case 'UNDO_GROUP_END':
         batchGroupBy.end(action.payload)
         return
+
+      case 'MERGE_STATE':
+        return merge(draft, action.payload)
     }
   })
 }
@@ -1602,8 +1610,10 @@ module.exports = {
 
   //
   //
-  // action creators
+  // action creators 
   //
+  deselectObject: id => ({ type: 'DESELECT_OBJECT', payload: id }),
+  
   selectObject: id => ({ type: 'SELECT_OBJECT', payload: id }),
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
@@ -1704,6 +1714,8 @@ module.exports = {
 
   undoGroupStart: payload => ({ type: 'UNDO_GROUP_START', payload }),
   undoGroupEnd: payload => ({ type: 'UNDO_GROUP_END', payload }),
+  
+  mergeState: payload => ({ type: 'MERGE_STATE', payload }),
 
   //
   //
