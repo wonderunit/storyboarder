@@ -13,35 +13,76 @@ class FlatShading extends ShadingEffect {
             && object.userData.type !== "attachable" 
             && object.userData.type !== 'image'
         }
+        this.lambertMaterials = {}
+        this.originalMaterials = {}
     }
 
-    setFlatShading( state ) {
+    cleanupCache() {
+        super.cleanupCache();
+        let lambertMaterials = Object.keys(this.lambertMaterials);
+        for ( var i = 0, il = lambertMaterials.length; i < il; i ++ ) {
+            let lambertMaterial = this.lambertMaterials[lambertMaterials[i]];
+            lambertMaterial.dispose();
+            this.lambertMaterials[lambertMaterials[i]] = undefined;
+        }
+        this.lambertMaterials = undefined;
+        this.originalMaterials = undefined;
+    }
+
+    getShaderMaterial( material ) {
+        if(!this.lambertMaterials[material.uuid]) {
+            let lambertMaterial = new THREE.MeshPhongMaterial(
+                { 
+                    shininess: 0,
+                    roughness: 1,
+                    metalness: 0,
+                    depthTest: true,
+                    depthWrite: true,
+                    flatShading: true,
+                    side: THREE.FrontSide,
+                });
+            this.lambertMaterials[material.uuid] = lambertMaterial;
+
+            this.originalMaterials[lambertMaterial.uuid] = material;
+        }
+
+        this.lambertMaterials[material.uuid].skinning = material.skinning;
+        this.lambertMaterials[material.uuid].morphTargets = material.morphTargets;
+        this.lambertMaterials[material.uuid].morphNormals = material.morphNormals;
+        this.lambertMaterials[material.uuid].fog = material.fog;
+        this.lambertMaterials[material.uuid].map = material.map;
+        this.lambertMaterials[material.uuid].needsUpdate = true;
+        return this.lambertMaterials[material.uuid];
+    }
+
+    getOriginalMaterial( material ) {
+        return this.originalMaterials[material.uuid];
+    }
+
+    setFlatShading( getMaterial ) {
         for(let i = 0; i < this.objects.length; i++) {
-
-            let object = this.objects[i]
+            let object = this.objects[i];
             if ( Array.isArray( object.material ) ) {
-
-                for ( let j = 0, il = object.material.length; j < il; j ++ ) {
+                for ( var j = 0, jl = object.material.length; j < jl; j ++ ) {
     
-                    let material = object.material[j];
-                   // material.flatShading = state;
-                    material.needsUpdate = true;
-
+                    object.material[ j ] = getMaterial( object.material[ j] );
+    
                 }
     
             } else {
-                let material = object.material;
-              //  material.flatShading = state;
-                material.needsUpdate = true;
-            }
+    
+                let outlineMaterial = getMaterial( object.material );
+                object.material = outlineMaterial;
+                
+            }   
         }
     }
 
     render( scene, camera ) {
         super.render(scene, camera)
-       // this.setFlatShading(true);
+        //this.setFlatShading((object) => this.getShaderMaterial(object));
         this.renderer.render(scene, camera);
-       // this.setFlatShading(false);
+        ///this.setFlatShading((object) => this.getOriginalMaterial(object));
     }
 }
 

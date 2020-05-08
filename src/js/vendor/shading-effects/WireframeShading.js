@@ -22,7 +22,7 @@ class WireframeShading extends ShadingEffect {
         this.edgesCache = undefined;
     }
 
-    setWireframe( state, scene ) {
+    setWireframe( state ) {
 
         for(let i = 0; i < this.objects.length; i++) {
             let object = this.objects[i];
@@ -61,9 +61,9 @@ class WireframeShading extends ShadingEffect {
 
     render( scene, camera ) {
         super.render(scene, camera);
-        this.setWireframe(true, scene);
+        this.setWireframe(true);
         this.renderer.render(scene, camera);
-        this.setWireframe(false, scene);
+        this.setWireframe(false);
     }
 }
 
