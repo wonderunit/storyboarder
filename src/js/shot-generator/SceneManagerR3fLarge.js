@@ -39,6 +39,11 @@ import Room from './components/Three/Room'
 import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
+import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
+import RemoteProvider from "./components/RemoteProvider"
+import RemoteClients from "./components/RemoteClients"
+import XRClient from "./components/Three/XRClient"
+
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -95,7 +100,7 @@ const SceneManagerR3fLarge = connect(
     renderData,
     selectedAttachable,
     deleteObjects,
-    withState
+    withState,
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -104,7 +109,9 @@ const SceneManagerR3fLarge = connect(
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
 
+    const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
+    const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
 
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -171,7 +178,35 @@ const SceneManagerR3fLarge = connect(
         updatePoleTarget,
         updateObjects
       )
+
+      //#region initialization of objectRotationControl 
+      objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement)
+      objectRotationControl.current.control.canSwitch = false
+      objectRotationControl.current.isEnabled = true
+      //#endregion
+      return () => {
+        if(objectRotationControl.current) {
+          objectRotationControl.current.cleanUp()
+          objectRotationControl.current = null
+        }
+      }
     }, [])
+
+    useEffect(() => {
+      if(objectRotationControl.current) {
+        let object = objectRotationControl.current.object
+        let meshId = objectRotationControl.current.meshId
+        objectRotationControl.current.deselectObject()
+        objectRotationControl.current.control.domElement = activeGL.domElement
+        // find the 3D Bone matching the selectedBone uuid
+        objectRotationControl.current.selectObject(object, meshId)
+      }
+    }, [activeGL])
+
+    useEffect(() => {
+      if(!objectRotationControl.current) return
+      objectRotationControl.current.setCamera(camera)
+    }, [camera])
 
     useEffect(() => {  
       selectedCharacters.current = selections.filter((id) => {
@@ -187,6 +222,9 @@ const SceneManagerR3fLarge = connect(
         let keys = Object.keys(cameraShots)
         for(let i = 0; i < keys.length; i++ ) {
           let key = keys[i]
+          if(cameraShots[key].character) {
+            selected = scene.__interaction.filter((object) => object.userData.id === cameraShots[key].character)[0]
+          }
           if((!cameraShots[key].size && !cameraShots[key].angle) || camera.userData.id !== cameraShots[key].cameraId ) continue
           setShot({
             camera,
@@ -265,7 +303,7 @@ const SceneManagerR3fLarge = connect(
     return <group ref={ rootRef }> 
     <CameraUpdate/>
     <SaveShot isPlot={ false }/>
-    <InteractionManager renderData={ renderData }/>
+    <InteractionManager renderData={ renderData }/> 
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
@@ -291,6 +329,7 @@ const SceneManagerR3fLarge = connect(
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
                 updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
                 />
             </SimpleErrorBoundary>
         })
@@ -309,6 +348,8 @@ const SceneManagerR3fLarge = connect(
                 updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
                 renderData={renderData}
                 withState={ withState }
+                updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
                 />
               </SimpleErrorBoundary>
         })
@@ -319,7 +360,10 @@ const SceneManagerR3fLarge = connect(
             return <SimpleErrorBoundary  key={ id }>
               <Light
                 sceneObject={ sceneObject }
-                isSelected={ selections.includes(id) } />
+                isSelected={ selections.includes(id) } 
+                updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
+                />
               </SimpleErrorBoundary>
         })
     }
@@ -358,7 +402,10 @@ const SceneManagerR3fLarge = connect(
               <Image
                 imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
                 sceneObject={ sceneObject }
-                isSelected={ selections.includes(id) }/>
+                isSelected={ selections.includes(id) }
+                updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
+                />
               </SimpleErrorBoundary>
         })
     }
@@ -367,10 +414,12 @@ const SceneManagerR3fLarge = connect(
           let sceneObject = sceneObjects[id]
           return <Group
             key={ sceneObject.id }
-            scene={ scene }
             isSelected={ selections.includes(sceneObject.id) }
             updateObject={ updateObject }
+            withState={ withState }
+            objectRotationControl={ objectRotationControl.current }
             { ...sceneObject }
+
           />
        })
         
@@ -398,7 +447,13 @@ const SceneManagerR3fLarge = connect(
               height={world.room.height}
               visible={world.room.visible} />
     }
+      <RemoteProvider>
+        <RemoteClients
+          Component={XRClient}
+        />
+      </RemoteProvider>
     </group>
     })
 )
+
 export default SceneManagerR3fLarge

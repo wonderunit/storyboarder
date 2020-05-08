@@ -1,7 +1,7 @@
 const THREE = require('three')
 
 class Voice {
-  constructor (index, listener, options = { positional: true }) {
+  constructor (index, listener, options = { positional: false }) {
     this.index = index
     if (options.positional) {
       this.audio = new THREE.PositionalAudio(listener)

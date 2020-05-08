@@ -41,8 +41,8 @@ class GPUPickerHelper
         {
             this.pickedObject = undefined;
         }
-        let vrEnabled = renderer.vr.enabled;
-        renderer.vr.enabled = false;
+        let vrEnabled = renderer.xr.enabled;
+        renderer.xr.enabled = false;
         const pixelRatio = renderer.getPixelRatio();
         let cameraAspectRatio = camera.aspect;
         let cameraOffsetSize = 300;
@@ -86,7 +86,7 @@ class GPUPickerHelper
         camera.clearViewOffset();
         camera.aspect = cameraAspectRatio
         camera.updateProjectionMatrix()
-        renderer.vr.enabled = vrEnabled ? true : false;
+        renderer.xr.enabled = vrEnabled ? true : false;
         
         if(!intersectedObject)
         {

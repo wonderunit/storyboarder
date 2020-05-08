@@ -897,6 +897,13 @@ const shotGeneratorMenu = [
           ipcRenderer.send('shot-generator:object:group')
         }
       },
+      {
+        accelerator: 'CommandOrControl+j',
+        label: 'Open Shot Explorer',
+        click () {
+          ipcRenderer.send('shot-generator:show:shot-explorer')
+        }
+      },
       
       // {role: 'pasteandmatchstyle'},
       {role: 'delete'},

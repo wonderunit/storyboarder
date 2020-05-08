@@ -94,6 +94,7 @@ const ModelInspector = connect(
           withState((dispatch, state) => 
           {
             undoGroupStart()
+            updateObject(sceneObject.id, { model: currentModel })
             if(isPrevModelUser && !isCurrentModelUser) {
               let defaultSkeleton = getDefaultPosePreset().state.skeleton
               let skeleton = Object.keys(defaultSkeleton).map((key) => {
@@ -102,21 +103,16 @@ const ModelInspector = connect(
                   rotation: defaultSkeleton[key].rotation
                 }
               })
-             // batch(() => {
-              updateObject(sceneObject.id, { model: currentModel })
+  
+              updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
               updateCharacterIkSkeleton({id:sceneObject.id, skeleton:skeleton})
-            //  })
             } else if(!isPrevModelUser && isCurrentModelUser) {
               // We need to override skeleton when model is changed because in store skeleton position is still has values for prevModel
-
-           //   batch(() => {
-              updateObject(sceneObject.id, { model: currentModel })
               updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
-            //  })
            
-            } else {
-              updateObject(sceneObject.id, { model: currentModel })
-            }
+            } else if(isPrevModelUser && isCurrentModelUser){
+              updateCharacterIkSkeleton({id:sceneObject.id, skeleton:[]})
+            } 
             setTimeout(() => {
               undoGroupEnd()
             }, 100)

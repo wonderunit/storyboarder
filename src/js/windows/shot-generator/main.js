@@ -54,7 +54,6 @@ const show = async (onComplete) => {
   }
 
   let { x, y, width, height } = memento
-
   win = new BrowserWindow({
     minWidth: isDev ? undefined : 1200,
     minHeight: isDev ? undefined : 800,
@@ -83,6 +82,7 @@ const show = async (onComplete) => {
     }
   })
 
+  
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
   //
@@ -146,6 +146,14 @@ ipcMain.on('shot-generator:edit:undo', () => {
 })
 ipcMain.on('shot-generator:edit:redo', () => {
   win.webContents.send('shot-generator:edit:redo')
+})
+
+ipcMain.on('shot-generator:open:shot-explorer', () => {
+  win.webContents.send('shot-generator:open:shot-explorer')
+})
+
+ipcMain.on('shot-generator:show:shot-explorer', () => {
+  win.webContents.send('shot-generator:show:shot-explorer')
 })
 
 ipcMain.on('shot-generator:export-gltf', () =>
