@@ -253,6 +253,7 @@ const SceneManagerR3fLarge = connect(
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children[0].children.find( child => child.userData.id === selections[i] )
         let droppingPlaces = getDropingPlaces()
+        if( selection.userData.locked ) continue
         if( selection.userData.type === "object" ) {
           dropObject( selection,  droppingPlaces)
           let pos = selection.position
