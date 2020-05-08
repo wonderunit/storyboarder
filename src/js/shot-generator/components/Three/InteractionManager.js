@@ -50,7 +50,7 @@ const getIntersectionTarget = intersect => {
   }
 
   if(intersect.object.parent.userData.type === 'object' || intersect.object.userData.type === 'attachable'
-    || intersect.object.userData.type === 'image' || intersect.object.userData.type === 'light') {
+    || intersect.object.parent.userData.type === 'image' || intersect.object.userData.type === 'light') {
     return intersect.object.parent
   }
 }
@@ -316,6 +316,7 @@ const InteractionManager = connect(
               selectBone(null)
               setLastDownId(target.userData.id)
             if (shouldDrag) {
+
               setDragTarget({ target, x, y, isObjectControl: target.isRotated })
             }
             else {
