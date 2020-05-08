@@ -115,8 +115,8 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   // check to see if pose has changed from preset
   // and invalidate if so
-
-  let posePresetId = getSceneObjects(draft)[actionPayloadId].posePresetId
+  let object = getSceneObjects(draft)[actionPayloadId]
+  let posePresetId = object && object.posePresetId
   if (posePresetId) {
     let statePreset = state.presets.poses[posePresetId]
 
@@ -748,6 +748,7 @@ const cameraShotsReducer = (state = {}, action) => {
         
         camera.size = action.payload.size || camera.size
         camera.angle = action.payload.angle || camera.angle
+        camera.character = action.payload.character 
         return
         
         // select a single object
@@ -1112,7 +1113,7 @@ const sceneObjectsReducer = (state = {}, action) => {
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
         if(!draft[action.payload.id]) return;
-       // draft[action.payload.id].skeleton = {}
+        draft[action.payload.id].skeleton = action.payload.skeleton.length ? draft[action.payload.id].skeleton : {}
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
           let position = bone.position

@@ -8,6 +8,7 @@
     "start:xr": "parcel watch --no-hmr src/js/xr/src/index.html -d src/js/xr/dist",
     "start:shot-generator": "webpack --mode=development --watch --progress --config configs/shot-generator/webpack.config.js",
     "start:electron": "cross-env NODE_ENV=development electron .",
+    "start:shot-explorer": "webpack --mode=development --watch --progress --config configs/shot-explorer/webpack.config.js",
     "start": "npm-run-all --parallel start:*",
     "dist:mac": "npm run build && electron-builder build -m",
     "dist:win": "npm run build && electron-builder build -w",
@@ -22,6 +23,7 @@
     "build-xr-demo": "cross-env XR_STANDALONE_DEMO=true npm run build:xr && node scripts/build-vr-demo.js",
     "build-thumbnails": "electron test/views/thumbnail-renderer/main.js",
     "build:shot-generator": "webpack --mode=production --progress --config configs/shot-generator/webpack.config.js",
+    "build:shot-explorer": "webpack --mode=production --progress --config configs/shot-explorer/webpack.config.js",
     "build:xr": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
     "build": "npm-run-all build:*"
   },
@@ -125,6 +127,7 @@
     "@babel/plugin-transform-runtime": "^7.7.6",
     "@babel/preset-env": "^7.7.6",
     "@babel/preset-react": "^7.7.4",
+    "@tweenjs/tween.js": "^18.5.0",
     "babel-loader": "^8.0.6",
     "babel-plugin-add-module-exports": "^1.0.2",
     "cross-env": "^5.2.0",
@@ -142,6 +145,7 @@
     "nock": "9.4.2",
     "npm-run-all": "^4.1.5",
     "parcel-bundler": "1.12.4",
+    "redux-electron-store": "^0.6.6",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   },

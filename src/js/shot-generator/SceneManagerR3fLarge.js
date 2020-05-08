@@ -43,6 +43,7 @@ import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
 
+
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
 
@@ -98,7 +99,7 @@ const SceneManagerR3fLarge = connect(
     renderData,
     selectedAttachable,
     deleteObjects,
-    withState
+    withState,
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -190,6 +191,9 @@ const SceneManagerR3fLarge = connect(
         let keys = Object.keys(cameraShots)
         for(let i = 0; i < keys.length; i++ ) {
           let key = keys[i]
+          if(cameraShots[key].character) {
+            selected = scene.__interaction.filter((object) => object.userData.id === cameraShots[key].character)[0]
+          }
           if((!cameraShots[key].size && !cameraShots[key].angle) || camera.userData.id !== cameraShots[key].cameraId ) continue
           setShot({
             camera,
@@ -268,7 +272,7 @@ const SceneManagerR3fLarge = connect(
     return <group ref={ rootRef }> 
     <CameraUpdate/>
     <SaveShot isPlot={ false }/>
-    <InteractionManager renderData={ renderData }/>
+    <InteractionManager renderData={ renderData }/> 
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }

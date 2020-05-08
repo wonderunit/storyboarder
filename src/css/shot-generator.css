@@ -389,6 +389,7 @@ kbd {
   pointer-events: none;
 }
 
+
 .inspectors {
   display: flex;
   flex-direction: row;
@@ -573,6 +574,31 @@ select {
   appearance: none;
   margin-bottom: 10px;
 }
+
+.select-shot-explorer {
+  background: rgb(41, 41, 44);
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  min-height: 0;
+  height: inherit;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  cursor: default;
+}
+
+.select-shot-explorer:hover {
+  background: rgb(56, 56, 60);
+}
+
+.select-shot-explorer-text {
+  padding: 0 0 0 6px;
+  line-height: initial;
+  color: #888888;
+}
+
+
 
 #inspector select {
   width: auto;

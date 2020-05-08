@@ -11,7 +11,7 @@ import {
 } from '../../../shared/reducers/shot-generator'
 import useLongPress from '../../../hooks/use-long-press'
 import Select from '../Select'
-
+import { ipcRenderer } from 'electron'
 import CameraControls from '../../CameraControls'
 import { ShotSizes, ShotAngles } from '../../utils/cameraUtils'
 import { useDrag } from 'react-use-gesture'
@@ -339,6 +339,13 @@ const CameraPanelInspector = connect(
                         value={ shotAngles.find(option => option.value === currentShotAngle) }
                         options={ shotAngles }
                         onSetValue={ (item) => onSetShot({ size: shotInfo.size, angle: item.value }) }/>
+                </div>
+                <div className="select">
+                  <div className="select-shot-explorer" onPointerDown={ () => ipcRenderer.send('shot-generator:show:shot-explorer')}>
+                      <a className="select-shot-explorer-text">
+                      Open Shot Explorer
+                      </a>
+                    </div>
                 </div>
             </div>
         </div>

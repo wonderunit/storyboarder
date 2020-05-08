@@ -15,6 +15,7 @@ import {
     
     undoGroupStart,
     undoGroupEnd,
+    updateObject,
   
     getSelections,
     getActiveCamera,
@@ -63,6 +64,7 @@ const InteractionManager = connect(
         selectObjectToggle,
         selectBone,
         updateObjects,
+        updateObject,
         selectAttachable,
         deselectAttachable,
         undoGroupStart,
@@ -74,6 +76,7 @@ const InteractionManager = connect(
     selectObject,
     selectObjectToggle,
     selectBone,
+    updateObject,
 
     updateObjects,
     selectAttachable,
