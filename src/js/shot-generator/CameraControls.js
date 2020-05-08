@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import ResourceManager from '../shared/IK/ResourceManager'
+import '../shared/IK/utils/Object3dExtension'
 class CameraControls {
   
   constructor ( object, domElement, options = {}, target = null ) {
@@ -125,6 +126,10 @@ class CameraControls {
       this.isRightButtonPressed = true
     }
 
+    if(event.button === 1) {
+      this.isMiddleButtonPressed = true
+    }
+
     this.onChange({active: this.mouseDragOn, object: this._object})
   }
   
@@ -138,6 +143,7 @@ class CameraControls {
     this.target = this.isLockedOnObject ? this.target : null
     this.mouseDragOn = false
     this.isRightButtonPressed = false
+    this.isMiddleButtonPressed = false
   }
   
   addKey (key) {
@@ -320,7 +326,7 @@ class CameraControls {
       camera.updateMatrix()
       camera.updateMatrixWorld(true)
       // dolly zoom in
-      if(this.shiftPressed && this.altPressed) {
+      if(this.shiftPressed && (this.altPressed || this.isMiddleButtonPressed )) {
         let verticalDelta = (this.mouseY - this.prevMouseY)*0.010
         camera.fov = this._object.fov;
 
@@ -396,8 +402,6 @@ class CameraControls {
           resourceManager.release(cameraDirection)
           resourceManager.release(origin)
         }
-        console.log("Use target")
-
         //#region Main orbiting logic
         let target = this.target
         let customUp = resourceManager.getVector3().set( 0, 1, 0 )
@@ -468,7 +472,7 @@ class CameraControls {
         this._object.z = position.y
         resourceManager.release(cameraVerticalDirection)
       }
-      else if(this.altPressed) {
+      else if(this.altPressed || this.isMiddleButtonPressed ) {
         let horizontalDelta = (this.mouseX - this.prevMouseX)*0.005
         let cameraHorizontalDirection = resourceManager.getVector3()
         let e = camera.matrixWorld.elements;
