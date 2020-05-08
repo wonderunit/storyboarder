@@ -7,7 +7,13 @@ require("../utils/axisUtils");
  */
 const isScaleDisabled = true;
 
-const TransformControls = function ( camera, domElement ) {
+const axis = {
+	X_axis: 0x0001,
+	Y_axis: 0x0002,
+	Z_axis: 0x0004
+}
+
+const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis | axis.Y_axis | axis.Z_axis ) {
 
 	THREE.Object3D.call( this );
 
@@ -19,7 +25,7 @@ const TransformControls = function ( camera, domElement ) {
 
 	this.domElement = domElement;
 
-	var _gizmo = new TransformControlsGizmo();
+	var _gizmo = new TransformControlsGizmo(shownAxis);
 	this.add( _gizmo );
 
 	var _plane = new TransformControlsPlane();
@@ -34,6 +40,7 @@ const TransformControls = function ( camera, domElement ) {
 	defineProperty( "camera", camera );
 	defineProperty( "object", undefined );
 	defineProperty( "enabled", true );
+	defineProperty( "hovered", false );
 	defineProperty( "axis", null );
 	defineProperty( "mode", "translate" );
 	defineProperty( "translationSnap", null );
@@ -113,6 +120,37 @@ const TransformControls = function ( camera, domElement ) {
 	defineProperty( "eye", eye );
 
 	this.canSwitch = true;
+
+	let gizmoArray = {
+		rotate : {}
+	}
+	let pickerArray = {
+		rotate : {}
+	}
+
+	this.setShownAxis = (shownAxis) => {
+		let axisArray = ["X", "Y", "Z"]
+		for(let i = _gizmo.gizmo["rotate"].children.length-1 ; i > -1; i--) {
+			let gizmo = _gizmo.gizmo["rotate"].children[i]
+			let picker = _gizmo.picker["rotate"].children[i]
+			if(! (axis[`${gizmo.name}_axis`] & shownAxis ? true : false)) {
+				gizmoArray.rotate[gizmo.name] = gizmo;
+				pickerArray.rotate[gizmo.name] = picker;
+				_gizmo.gizmo["rotate"].remove(gizmo);
+				_gizmo.picker["rotate"].remove(picker);
+			}
+		}
+
+		for(let j = 0; j < axisArray.length; j++) {
+			let checkingAxis = axisArray[j]
+			if( axis[`${checkingAxis}_axis`] & shownAxis) {
+				gizmoArray.rotate[checkingAxis] && _gizmo.gizmo["rotate"].add(gizmoArray.rotate[checkingAxis]);
+				pickerArray.rotate[checkingAxis] && _gizmo.picker["rotate"].add(pickerArray.rotate[checkingAxis]);
+				gizmoArray.rotate[checkingAxis] = null
+				pickerArray.rotate[checkingAxis] = null
+			}
+		}
+	}
 
 	this.addToScene = () =>
 	{
@@ -277,17 +315,16 @@ const TransformControls = function ( camera, domElement ) {
 	this.pointerHover = function( pointer ) {
 
 		if ( this.object === undefined || this.dragging === true || ( pointer.button !== undefined && pointer.button !== 0 ) ) return;
-
 		ray.setFromCamera( pointer, this.camera );
 
 		var intersect = ray.intersectObjects( _gizmo.picker[ this.mode ].children, true )[ 0 ] || false;
-
+		
 		if ( intersect ) {
-
+			scope.hovered = true;
 			this.axis = intersect.object.name;
-
+			
 		} else {
-
+			scope.hovered = false;
 			this.axis = null;
 
 		}
@@ -608,7 +645,6 @@ const TransformControls = function ( camera, domElement ) {
 	function onPointerHover( event ) {
 
 		if ( !scope.enabled ) return;
-
 		scope.pointerHover( getPointer( event ) );
 
 	}
@@ -621,6 +657,7 @@ const TransformControls = function ( camera, domElement ) {
 		scope.buttonPressed = event.button;
 		scope.pointerHover( getPointer( event ) );
 		scope.pointerDown( getPointer( event ) );
+		if( !scope.hovered ) return;
 		scope.dispatchEvent({ type: "transformMouseDown", value: event });
 
 	}
@@ -629,6 +666,7 @@ const TransformControls = function ( camera, domElement ) {
 
 		if ( !scope.enabled ) return;
 		scope.pointerMove( getPointer( event ) );
+		if( !scope.hovered ) return;
 		scope.dispatchEvent({ type: "transformMoved", value: event });
 
 	}
@@ -641,6 +679,7 @@ const TransformControls = function ( camera, domElement ) {
 
 		scope.pointerUp( getPointer( event ) );
 		scope.buttonPressed = -1;
+		if( !scope.hovered ) return;
 		scope.dispatchEvent({ type: "transformMouseUp", value: event });
 	}
 
@@ -701,7 +740,7 @@ TransformControls.prototype = Object.assign( Object.create( THREE.Object3D.proto
 } );
 
 
-const TransformControlsGizmo = function () {
+const TransformControlsGizmo = function (shownAxis) {
 
 	'use strict';
 
@@ -714,9 +753,10 @@ const TransformControlsGizmo = function () {
 	let maximumScale = new THREE.Vector3(0.2, 0.2, 0.2);
 	//#endregion
 	// shared materials
-	let rotationalGizmoRadius = 1;
+	let rotationalGizmoRadius = 1.3;
 	let rotationalGizmoTube = rotationalGizmoRadius / 12;
-
+	let pickerTolerance = 0.05
+	rotationalGizmoTube += pickerTolerance
 	var gizmoMaterial = new THREE.MeshBasicMaterial({
 		depthTest: false,
 		depthWrite: false,
@@ -725,6 +765,7 @@ const TransformControlsGizmo = function () {
 		fog: false
 	});
 
+	
 	var gizmoLineMaterial = new THREE.LineBasicMaterial({
 		depthTest: false,
 		depthWrite: false,
@@ -859,44 +900,41 @@ const TransformControlsGizmo = function () {
 	var helperScale = {};
 	let tubularSegments = 50;
 	let offset = -0.01;
-	gizmoRotate = {
-		X: [
+	gizmoRotate = {};
+	if(shownAxis & axis.X_axis) {
+		gizmoRotate.X = [
 			[ new THREE.Mesh(  new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matX ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ]],
-		],
-		Y: [
+		]
+	}
+	if(shownAxis & axis.Y_axis) {
+		gizmoRotate.Y = [
 			[  new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matY ), null, [ Math.PI / 2, 0, 0 ]],
-		],
-		Z: [
+		]
+	}
+	if(shownAxis & axis.Z_axis) {
+		gizmoRotate.Z = [
 			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube, 4, tubularSegments ), matZ ), null, [ 0, 0, -Math.PI / 2 ] ],
-		],
-		E: [
-		
-		],
-		XYZE: [
 		]
-		};
+	}
 
-	helperRotate = {
-	};
+	helperRotate = {};
 
-	pickerRotate = {
-		X: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
-		],
-		Y: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matGreen ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
-		],
-		Z: [
-			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments ), matBlue ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
-		],
-		E: [
-			
-		],
-		XYZE: [
-			
-		]
-	};
-
+	pickerRotate = {};
+	if(shownAxis & axis.X_axis) {
+		pickerRotate.X = [
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments + pickerTolerance ), matRed ), null, [ 0, -Math.PI / 2, -Math.PI / 2 ] ],
+		];
+	} 
+	if(shownAxis & axis.Y_axis)  {
+		pickerRotate.Y = [
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius, rotationalGizmoTube + offset, 4, tubularSegments + pickerTolerance ), matGreen ), [ 0, 0, 0 ], [ Math.PI / 2, 0, 0 ] ],
+		];
+	}
+	if(shownAxis & axis.Z_axis) {
+		pickerRotate.Z = [
+			[ new THREE.Mesh( new THREE.TorusBufferGeometry( rotationalGizmoRadius , rotationalGizmoTube + offset, 4, tubularSegments + pickerTolerance ), matBlue ), [ 0, 0, 0 ], [ 0, 0, -Math.PI / 2 ] ],
+		];
+	}
 
 	if(!isScaleDisabled)
 	{
@@ -1554,4 +1592,7 @@ TransformControlsPlane.prototype = Object.assign( Object.create( THREE.Mesh.prot
 	isMesh: false
 
 } );
-module.exports = TransformControls;
+module.exports = {
+	TransformControls,
+	axis
+} 

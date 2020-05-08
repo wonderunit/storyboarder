@@ -1,13 +1,14 @@
 import * as THREE from 'three'
-import React, { useMemo, useEffect, useState } from 'react'
+import React, { useMemo, useEffect, useState, useRef } from 'react'
 
 import { useUpdate } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 
 import path from 'path'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
+import { axis } from "../../../shared/IK/utils/TransformControls"
 
-const Light = React.memo(({sceneObject, isSelected, children, show = true }) => {
+const Light = React.memo(({sceneObject, isSelected, children, show = true,...props }) => {
   const {asset: gltf} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
   const mesh = useMemo(() => gltf ? gltf.scene.children[0].clone() : null, [gltf])
   const [lightColor, setLightColor] = useState(0x8c78f1)
@@ -30,8 +31,22 @@ const Light = React.memo(({sceneObject, isSelected, children, show = true }) => 
   useEffect(() => {
     if (isSelected) {
       setLightColor(0x7256ff)
+      props.objectRotationControl.setUpdateCharacter((name, rotation) => {
+        let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion(), "YXZ")
+        props.updateObject(ref.current.userData.id, {
+          rotation: euler.y,
+          tilt: euler.x,
+          roll: euler.z
+        } )})
+      props.objectRotationControl.setCharacterId(ref.current.uuid)
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+      props.objectRotationControl.IsEnabled = !sceneObject.locked
+      props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
     } else {
       setLightColor(0x8c78f1)
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      }
     }
   }, [isSelected]) 
 

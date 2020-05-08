@@ -1,9 +1,9 @@
-const TransformControls = require( "../utils/TransformControls");
+const { TransformControls } = require( "../utils/TransformControls");
 class ObjectRotationControl
 {
-    constructor(scene, camera, domElement, characterId)
+    constructor(scene, camera, domElement, characterId, axis = null)
     {
-        this.control = new TransformControls(camera, domElement);
+        this.control = axis ? new TransformControls(camera, domElement, axis) : new TransformControls(camera, domElement);
         this.control.rotationOnly = true;
         this.control.setMode('rotate');
         this.control.size = 0.2;
@@ -13,8 +13,9 @@ class ObjectRotationControl
         });
         this.object = null;
         this.scene = scene;
-        this.control.characterId = characterId;
         this.isEnabled = false;
+        this.customOnMouseDownAction = null;
+        this.customOnMouseUpAction = null;
     }
 
     set IsEnabled(value) 
@@ -22,17 +23,30 @@ class ObjectRotationControl
         this.control.enabled = value
     }
     //#region Events
-    onMouseDown = event => {this.object.isRotated = true;};
-    onMouseUp = event => {this.updateCharacter(this.object.name, this.object.rotation); this.object.isRotated = false; this.object.isRotationChanged = true;};
+    onMouseDown = event => {
+        this.object.isRotated = true;
+        this.customOnMouseDownAction && this.customOnMouseDownAction();
+    };
+
+    onMouseUp = event => {
+        this.customOnMouseUpAction && this.customOnMouseUpAction();
+        this.updateCharacter && this.updateCharacter(this.object.name, this.object.rotation);
+        this.object.isRotated = false;
+    };
     //#enderegion
+
+    setCharacterId(characterId) {
+        this.control.characterId = characterId;
+    }
 
     selectObject(object, hitmeshid)
     {
-        if(this.object !== null)
+        if(this.object !== null && !this.isSelected(object))
         {
             this.control.detach();
+            this.deselectObject();
         }
-        else if (object)
+        if (object)
         {
             this.scene.add(this.control);
             this.control.addToScene();
@@ -51,19 +65,25 @@ class ObjectRotationControl
 
     deselectObject()
     {
-        this.control.removeEventListener("transformMouseDown", this.onMouseDown);
-        this.control.removeEventListener("transformMouseUp", this.onMouseUp);
         this.control.detach();
         this.scene.remove(this.control);
-        
+        this.IsEnabled = true;
         this.control.dispose();
         this.object = null;
+        this.control.removeEventListener("transformMouseDown", this.onMouseDown);
+        this.control.removeEventListener("transformMouseUp", this.onMouseUp);
+        this.customOnMouseDownAction = null;
+        this.customOnMouseUpAction = null;
     }
 
     setCamera(camera)
     {
         this.control.changeCamera(camera);
         this.control.updateMatrixWorld();
+    }
+
+    isSelected(object) {
+        return this.object === object
     }
 
     cleanUp()

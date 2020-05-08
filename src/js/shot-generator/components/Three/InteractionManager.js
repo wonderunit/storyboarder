@@ -50,7 +50,7 @@ const getIntersectionTarget = intersect => {
   }
 
   if(intersect.object.parent.userData.type === 'object' || intersect.object.userData.type === 'attachable'
-    || intersect.object.userData.type === 'image' || intersect.object.userData.type === 'light') {
+    || intersect.object.parent.userData.type === 'image' || intersect.object.userData.type === 'light') {
     return intersect.object.parent
   }
 }
@@ -134,13 +134,10 @@ const InteractionManager = connect(
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
         intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
-          o.userData.type === 'controlTarget' ||
-          o.userData.type === 'controlPoint' ||
-          o.userData.type === 'object' ||
-          o.userData.type === 'image' ||
-          o.userData.type === 'character' ||
-          o.userData.type === 'light' ||
-          o.userData.type === 'objectControl' ))
+            o.userData.type === 'controlTarget' ||
+            o.userData.type === 'controlPoint' || 
+            o.userData.type === 'objectControl' ||
+            o.userData.type === 'group'))     
     }
     
     const mouse = event => {
@@ -170,8 +167,8 @@ const InteractionManager = connect(
         return intersects
     }  
 
-    useEffect(() => {
-        if(dragTarget){
+    useMemo(() => {
+        if(dragTarget && dragTarget.target){
           let selections = takeSelections()
           let { target, x, y } = dragTarget
           enableCameraControls(false)
@@ -216,8 +213,8 @@ const InteractionManager = connect(
             let selectedObjectControl
             
             for (let intersect of intersects) {
-              target = getIntersectionTarget(intersect)
-              if (target.userData.type === 'character' && target.userData.locked) {
+                target = getIntersectionTarget(intersect)
+                if (target && target.userData.type === 'character' && target.userData.locked) {
                 return
               }
             }
@@ -249,8 +246,11 @@ const InteractionManager = connect(
                     selectedObjectControl = targetElement
                     setDragTarget({ target, x, y, isObjectControl: true })
                     return
+                } else if(targetElement.userData.type === "group") {
+                    setDragTarget({ target:null, x, y, isObjectControl: true })
+                    return
                 }
-                else if(targetElement.userData.type === "object") {
+                else {
                   let objects = intersectables.current.filter(value => value.uuid === objectId)
                   target = objects[0]
                   selectedObjectControl = targetElement
@@ -315,9 +315,9 @@ const InteractionManager = connect(
             }
               selectBone(null)
               setLastDownId(target.userData.id)
-            
             if (shouldDrag) {
-               setDragTarget({ target, x, y })
+
+              setDragTarget({ target, x, y, isObjectControl: target.isRotated })
             }
             else {
               setOnPointDown(event)
@@ -351,7 +351,7 @@ const InteractionManager = connect(
         event.preventDefault()
         const { x, y } = mouse(event)
         SGIkHelper.getInstance().deselectControlPoint(event)
-        if (dragTarget) {
+        if (dragTarget && dragTarget.target) {
           endDrag(updateObjects)
           if(dragTarget.target.userData.type === "character") {
             let attachables = scene.__interaction.filter(object => object.userData.bindedId === dragTarget.target.userData.id)

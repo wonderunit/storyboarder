@@ -28,7 +28,10 @@ const useDraggingManager = (useIcons) => {
       }
     
       for (let selection of selections) {
-        selectedObjects.current[selection] = scene.children[0].children.find(child => child.userData.id === selection)
+        let object = scene.children[0].children.find(child => child.userData.id === selection)
+        if(object) {
+          selectedObjects.current[selection] = object
+        }
       }
       // remember the offsets of every selected object
       if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
@@ -39,6 +42,7 @@ const useDraggingManager = (useIcons) => {
           return;
         }
         for (let selection of selections) {
+          if(!selectedObjects.current[selection]) continue
           offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( selectedObjects.current[selection].position )
         }
       } else {
