@@ -62,7 +62,7 @@ const Light = React.memo(({sceneObject, isSelected, children, ...props }) => {
       }}
       position={ [x, z, y] }
     >
-      { mesh && <primitive
+      { props.show && mesh && <primitive
         object={ mesh } 
         rotation={[-Math.PI/2, Math.PI, 0]}
         userData={{ 

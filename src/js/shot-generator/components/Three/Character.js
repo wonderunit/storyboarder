@@ -101,7 +101,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         originalHeight = bbox.max.y - bbox.min.y
       }
       setReady(true)
-
       return [skeleton, lod, originalSkeleton, armature, originalHeight]
     }, [gltf])
 
@@ -188,6 +187,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         isFullyUpdate.current = false
       }
     }, [sceneObject.posePresetId, sceneObject.skeleton, skeleton, sceneObject.handPosePresetId])
+<<<<<<< HEAD
+=======
+    
+>>>>>>> master
 
     const fullyUpdateIkSkeleton = () => {
       if(!ref.current || !skeleton ) return
@@ -227,7 +230,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         })
       }
       isFullyUpdate.current = true
-      updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
+      updateCharacterIkSkeleton && updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }
 
     useEffect(() => {
@@ -389,7 +392,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           id: sceneObject.id,
           poleTargets: sceneObject.poleTargets || {},
           height: originalHeight,
-          locked: locked
+          locked: locked,
+          model: sceneObject.model,
+          name: sceneObject.displayName
         }}
 
         position={ [x, z, y] }

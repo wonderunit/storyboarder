@@ -34,8 +34,8 @@ import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
 import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
-import {OutlineEffect} from './../../../vendor/OutlineEffect'
 
+import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
 
 const Effect = ({renderData, stats}) => {

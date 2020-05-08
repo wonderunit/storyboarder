@@ -11,7 +11,7 @@ import {
 } from '../../../shared/reducers/shot-generator'
 import useLongPress from '../../../hooks/use-long-press'
 import Select from '../Select'
-
+import { ipcRenderer } from 'electron'
 import CameraControls from '../../CameraControls'
 import { ShotSizes, ShotAngles } from '../../utils/cameraUtils'
 import { useDrag } from 'react-use-gesture'
@@ -157,7 +157,7 @@ const CameraPanelInspector = connect(
     }, [activeCamera.fov])
 
 
-    const rollCamera = useCallback(() => {
+    const rollCamera = useCallback((event) => {
       let cameraState = activeCamera
       let roll = {
         'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
@@ -174,7 +174,8 @@ const CameraPanelInspector = connect(
                             !event.shiftKey &&
                             !event.metaKey &&
                             !event.ctrlKey &&
-                            !event.altKey,
+                            !event.altKey && 
+                            !event.mousePressed,
         value: (event) => { rollCamera(event) }
       })
       return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraRoll" })
@@ -338,6 +339,13 @@ const CameraPanelInspector = connect(
                         value={ shotAngles.find(option => option.value === currentShotAngle) }
                         options={ shotAngles }
                         onSetValue={ (item) => onSetShot({ size: shotInfo.size, angle: item.value }) }/>
+                </div>
+                <div className="select">
+                  <div className="select-shot-explorer" onPointerDown={ () => ipcRenderer.send('shot-generator:show:shot-explorer')}>
+                      <a className="select-shot-explorer-text">
+                      Open Shot Explorer
+                      </a>
+                    </div>
                 </div>
             </div>
         </div>
