@@ -42,7 +42,7 @@ const shotExplorerMiddleware = store => next => action => {
       win.webContents.send('shot-explorer:updateStore', json)
     }
   }
-  next(action)
+  return next(action)
   
 }
 
