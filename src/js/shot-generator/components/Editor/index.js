@@ -3,7 +3,7 @@ import { Provider, connect} from 'react-redux'
 import path from 'path'
 import TWEEN from '@tweenjs/tween.js'
 
-import { ipcRenderer} from 'electron'
+import { ipcRenderer } from 'electron'
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -33,6 +33,7 @@ import BoardInspector from '../BoardInspector'
 import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
 import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
+
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
@@ -155,7 +156,6 @@ const Editor = React.memo(({
   }
 
   useExportToGltf(largeCanvasData.current.scene, withState)
-  const [shotExplorerVisibility, setShotExplorerVisiblity] = useState(false)
   
   return (
     <FatalErrorBoundary key={board.uid}>
@@ -236,9 +236,9 @@ const Editor = React.memo(({
           </div>
         </div>
       </div>
-
       <KeyHandler/>
       <MenuManager/>
+
       <div
         className="notifications"
         ref={notificationsRef}

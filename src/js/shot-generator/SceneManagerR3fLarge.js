@@ -100,7 +100,6 @@ const SceneManagerR3fLarge = connect(
     selectedAttachable,
     deleteObjects,
     withState,
-    isPreview
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -273,7 +272,7 @@ const SceneManagerR3fLarge = connect(
     return <group ref={ rootRef }> 
     <CameraUpdate/>
     <SaveShot isPlot={ false }/>
-  { !isPreview && <InteractionManager renderData={ renderData }/> }
+    <InteractionManager renderData={ renderData }/> 
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
@@ -317,7 +316,6 @@ const SceneManagerR3fLarge = connect(
                 updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
                 renderData={renderData}
                 withState={ withState }
-                isPreview={ isPreview }
                 />
               </SimpleErrorBoundary>
         })

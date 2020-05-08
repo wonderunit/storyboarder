@@ -10,7 +10,7 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 
-const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, isPreview}) => {
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState}) => {
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
@@ -307,7 +307,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
     // Selects character when character's model has been changed it reselects new character
     useEffect(() => {
-      if(!ref.current || !ready || !lod || !ref.current.children.length || isPreview) return
+      if(!ref.current || !ready || !lod || !ref.current.children.length) return
 
       if (isSelected) {
         BonesHelper.getInstance().initialize(lod.children[0])
