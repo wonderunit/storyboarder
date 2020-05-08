@@ -36,6 +36,37 @@ export const formatters = {
   degrees: value => Math.round(value).toString() + '°',
   percent: value => Math.round(value).toString() + '%'
 }
+const feetAndInchesAsMeters = (value) => {
+  let text = value
+  let match = text.split("\'")
+  let feet = 0
+  let inches = 0
+  if(match.length > 1) {
+    feet = match[0]
+    text = match[1]
+  }
+  match = text.split("\"")
+  if(match.length > 1) {
+    inches = match[0]
+  }
+  if(!match) return
+  let cm = feet * 30.48 
+  cm += inches * 2.54
+  let meter = Math.floor(cm / 100)
+  cm = (cm % 100) / 100
+  return meter + cm
+}
+
+export const textFormatters = {
+  default: null,
+  imperialToMetric: value => feetAndInchesAsMeters(value)
+}
+
+export const textConstraints = {
+  default: value => value,
+  sizeConstraint: value => Math.max(value, 0.01)
+}
+
 
 const getFormattedInputValue = (value, formatter) => {
   if (formatters.hasOwnProperty(formatter)) {
@@ -64,6 +95,8 @@ const NumberSliderComponent = React.memo(({
   max = 10,
   step = 0.2, 
   formatter = formatters.toFixed2,
+  textFormatter = textFormatters.default,
+  textConstraint = textConstraints.default,
   onSetValue = defaultOnSetValue,
   transform = transforms.clamp,
   onDragStart,
@@ -132,11 +165,18 @@ const NumberSliderComponent = React.memo(({
       setTextInputValue(getFormattedInputValue(sliderValue, formatter))
     } else if (event.key === 'Enter') {
       if(isNumber(textInputValue)) {
-        let constrainedNumber = Math.min(Math.max(textInputValue, min), max)
+        let constrainedNumber = textConstraint(textInputValue)
         onSetValue(parseFloat(constrainedNumber))
       }
       else {
-        setTextInputValue(getFormattedInputValue(sliderValue, formatter))
+        let formattedValue = getFormattedInputValue(sliderValue, formatter)
+        let formattedText = textFormatter && textFormatter(textInputValue)
+        if(isNumber(formattedText)) {
+          let constrainedNumber = textConstraint(formattedText)
+          onSetValue(parseFloat(constrainedNumber))
+        } else {
+          setTextInputValue(formattedValue)
+        }
       }
       setTextInput(false)
     }

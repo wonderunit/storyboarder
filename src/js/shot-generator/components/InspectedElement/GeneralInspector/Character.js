@@ -1,6 +1,6 @@
 import React, {useCallback, useMemo} from 'react'
 import {Math as _Math} from 'three'
-import {formatters, NumberSlider, transforms} from '../../NumberSlider'
+import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 import ColorSelect from '../../ColorSelect'
 import {initialState} from '../../../../shared/reducers/shot-generator'
 import CharacterPresetEditor from '../CharacterPresetEditor'
@@ -78,9 +78,9 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
       <div>
         <CharacterPresetEditor/>
         
-        <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
-        <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
-        <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
+        <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX} textFormatter={ textFormatters.imperialToMetric }/>
+        <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY} textFormatter={ textFormatters.imperialToMetric }/>
+        <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ} textFormatter={ textFormatters.imperialToMetric }/>
   
         <NumberSlider
           label="Rotation"
@@ -100,7 +100,10 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
               max={ 3.05 }
               step={ 0.0254 }
               value={ sceneObject.height } 
-              onSetValue={ setHeight }/>
+              onSetValue={ setHeight }
+              textFormatter={ textFormatters.imperialToMetric }
+              textConstraint={ textConstraints.sizeConstraint }
+              />
           :
           <NumberSlider 
             label="Height" 
@@ -114,6 +117,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
                 sceneObject.height
               )
             ) }
+            textFormatter={ textFormatters.imperialToMetric }
           /> 
         }
         {ModelLoader.isCustomModel(sceneObject.model) || <NumberSlider
