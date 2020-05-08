@@ -187,10 +187,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         isFullyUpdate.current = false
       }
     }, [sceneObject.posePresetId, sceneObject.skeleton, skeleton, sceneObject.handPosePresetId])
-<<<<<<< HEAD
-=======
-    
->>>>>>> master
 
     const fullyUpdateIkSkeleton = () => {
       if(!ref.current || !skeleton ) return
