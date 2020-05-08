@@ -7,7 +7,7 @@ import { useAsset } from '../../hooks/use-assets-manager'
 import path from 'path'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
-const Light = React.memo(({sceneObject, isSelected, children }) => {
+const Light = React.memo(({sceneObject, isSelected, children, show = true }) => {
   const {asset: gltf} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
   const mesh = useMemo(() => gltf ? gltf.scene.children[0].clone() : null, [gltf])
   const [lightColor, setLightColor] = useState(0x8c78f1)
@@ -47,7 +47,7 @@ const Light = React.memo(({sceneObject, isSelected, children }) => {
       }}
       position={ [x, z, y] }
     >
-      { mesh && <primitive
+      { show && mesh && <primitive
         object={ mesh } 
         rotation={[-Math.PI/2, Math.PI, 0]}
         userData={{ 

@@ -309,7 +309,7 @@ const setShot = ({
   shotAngle,
   shotSize
 }) => {
-  let {clampedInfo, direction} = getShotInfo({
+  let {clampedInfo, direction, box} = getShotInfo({
     selected: selected || getClosestCharacter(characters, camera),
     characters,
     shotSize,
@@ -342,8 +342,7 @@ const setShot = ({
   camera.updateMatrixWorld(true)
   
   let rot = new THREE.Euler().setFromQuaternion(camera.quaternion, "YXZ")
-
-  updateObject(camera.userData.id, {
+  updateObject && updateObject(camera.userData.id, {
     x: camera.position.x,
     y: camera.position.z,
     z: camera.position.y,
@@ -351,7 +350,7 @@ const setShot = ({
     roll: rot.z,
     tilt: rot.x
   })
-  
+  return box
 }
 
 export {

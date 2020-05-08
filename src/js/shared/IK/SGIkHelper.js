@@ -119,7 +119,9 @@ class SGIKHelper extends THREE.Object3D
 
     cleanUpCharacter() 
     {
+        console.log("Clean up character")
         if(!this.ragDoll) return;
+        this.ragDoll.updateReact();
         this.intializedSkinnedMesh = null;
         this.characterObject = null;
         this.ragDoll.cleanUp();

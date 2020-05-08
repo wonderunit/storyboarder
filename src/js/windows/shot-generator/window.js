@@ -3,9 +3,8 @@ const { app } = electron.remote
 const electronUtil = require('electron-util')
 
 const path = require('path')
-
+const shotExplorer = require('../shot-explorer/main')
 const React = require('react')
-const { useState, useEffect } = React
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
@@ -25,8 +24,29 @@ const thunkMiddleware = require('redux-thunk').default
 const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const loadBoardFromData = require('../../shared/actions/load-board-from-data')
+let sendedAction = null
 
 const {SGMiddleware} = require('./../../xr/sockets')
+
+const shotExplorerMiddleware = store => next => action => {
+  if(!action) return
+  if(sendedAction !== action) {
+    let win = shotExplorer.getWindow()
+    if (win && !win.isDestroyed()) {
+      let json
+      if(action.payload && action.payload.skeleton) {
+        json = JSON.stringify(action)
+      } else {
+        json = action
+      }
+      win.webContents.send('shot-explorer:updateStore', json)
+    }
+  }
+  return next(action)
+  
+}
+
+const middlewares = [ thunkMiddleware, shotExplorerMiddleware, SGMiddleware]
 
 const actionSanitizer = action => (
   action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
@@ -47,11 +67,13 @@ const configureStore = function configureStore (preloadedState) {
     reducer,
     preloadedState,
     composeEnhancers(
-      applyMiddleware(thunkMiddleware, SGMiddleware)
+      applyMiddleware(...middlewares),
+    ),
+  
     )
-  )
-  return store
+    return store
 }
+
 
 const Editor = require('../../shot-generator/components/Editor').default
 
@@ -62,6 +84,7 @@ const XRServer = require('../../xr/server')
 const service = require('./service')
 
 let xrServer
+let showShotExplorerOnRead = false
 
 
 window.addEventListener('load', () => {
@@ -174,7 +197,13 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
-
+  shotExplorer.createWindow(() => {
+    shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')
+    if(showShotExplorerOnRead){
+      shotExplorer.reveal()
+      shotExplorer.getWindow().webContents.send('shot-explorer:show')
+    }
+  }, aspectRatio)
   await loadBoard(board)
 
   if (!xrServer) {
@@ -199,10 +228,60 @@ ipcRenderer.on('loadBoardByUid', async (event, uid) => {
 ipcRenderer.on('shot-generator:edit:undo', () => {
   store.dispatch( ActionCreators.undo() )
 })
+
 ipcRenderer.on('shot-generator:edit:redo', () => {
   store.dispatch( ActionCreators.redo() )
 })
 
+ipcRenderer.on('shot-generator:show:shot-explorer', () => {
+
+  if(!shotExplorer.isLoaded()) {
+    showShotExplorerOnRead = true
+    return
+  }
+  shotExplorer.reveal()
+  shotExplorer.getWindow().webContents.send('shot-explorer:show')
+})
+
+electron.remote.getCurrentWindow().on("close", () => {
+  let shotExplorerWindow = shotExplorer.getWindow()
+  if(shotExplorerWindow)
+    shotExplorerWindow.destroy()
+})
+
+ipcRenderer.on('shot-generator:get-storyboarder-file-data', (event, data) => {
+  let win = shotExplorer.getWindow()
+  if (win) {
+    win.send('shot-generator:get-storyboarder-file-data', data)
+  }
+})
+
+
+ipcRenderer.on('shot-generator:get-board', (event, board) => {
+  let win = shotExplorer.getWindow()
+  if (win) {
+    win.send('shot-generator:get-board', board)
+  }
+})
+
+ipcRenderer.on('shot-generator:get-state', (event, data) => {
+  let win = shotExplorer.getWindow()
+  if (win) {
+    win.send('shot-generator:get-state', data)
+  }
+})
+
+ipcRenderer.on('shot-generator:updateStore', (event, action) => {
+  sendedAction = action
+  store.dispatch(action)
+})
+
+ipcRenderer.on('shot-explorer:show', (event) => {
+  let win = shotExplorer.getWindow()
+  if (win) {
+    win.send('shot-explorer:show')
+  }
+})
 
 window.$r = { store }
 

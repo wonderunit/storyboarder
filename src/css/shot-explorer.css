@@ -1,0 +1,115 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: black;
+  font-family: 'wonderunitsans';
+  font-weight: 300;
+  background: #333639;
+  color: #777;
+  cursor:default;
+  min-height: 100vh;
+  overflow: hidden;
+  cursor: default;
+  border: 0;
+  height: 100vh;
+  width: 100vw;
+
+  display: flex;
+  flex-direction: column;
+  -webkit-app-region: drag;
+}
+
+
+img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* Firefox 2+ */ -ms-user-select: none; /* IE 10+ */ user-select: none; /* Standard syntax */ user-drag: none; -webkit-user-drag: none; }
+
+.three-canvas {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  outline: none;
+}
+
+.shots-container {
+  display: flex;
+  flex-wrap: wrap;
+  overflow-y: auto;
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  margin-top: 5px; 
+}
+
+.shot-explorer-shot-preview {
+  padding-top: 30px;
+  display: flex; 
+  justify-content: center;
+  padding-bottom: 20px;
+}
+
+
+.shot-explorer-shot {
+  display: flex;
+  flex-wrap: wrap;
+  margin-bottom: 2px;
+}
+
+.shot-explorer-element {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center; 
+  margin-bottom: 5px;  
+}
+
+.shot-explorer-image {
+  max-width: 100%;
+  max-height: 100%; 
+  align-content: center;
+}
+
+.insert-camera {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.insert-camera a {
+  color: #e0e0e0;
+  text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  background-color: rgba(255,255,255,0.10);
+  color: white;
+}
+
+.description {
+  overflow: hidden;
+  font-size: 12px; 
+  color:#9d9d9d;
+  display:flex;
+  justify-self:center;
+  margin-right:auto;
+  user-select: none;
+}
+
+.description-selected {
+  overflow: hidden;
+  font-size: 20px; 
+  color:#9d9d9d;
+  margin: 0 0 0 10px;
+  user-select: none;
+}
+
+.infinite-scroll-bottom {
+  display: flex;
+  justify-content: center;
+  width:100%;
+  min-height: 50px;
+  height: 70px;
+  font-size: 18px;
+  color: #9d9d9d;
+}
