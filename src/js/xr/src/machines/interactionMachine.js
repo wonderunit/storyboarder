@@ -98,6 +98,11 @@ const machine = Machine({
           cond: 'eventHasCharacterIntersection',
           target: 'character_posing'
         },
+
+        CLEAR_SELECTION: {
+          actions: 'onSelectionClear',
+          target: 'idle'
+        }
       }
     },
     drag_control_point :
@@ -150,6 +155,11 @@ const machine = Machine({
         PRESS_END_X: {
           actions: 'onDropLowest'
         },
+
+        CLEAR_SELECTION: {
+          actions: ['onSnapEnd', 'onSelectionClear'],
+          target: 'selected'
+        }
       }
     },
     drag_teleport: {
@@ -209,14 +219,14 @@ const machine = Machine({
     }),
 
     updateDraggingController: assign({
-      draggingController: (context, event) => event.controller.gamepad.index
+      draggingController: (context, event) => event.controller.userData.inputSourceIndex
     }),
     clearDraggingController: assign({
       draggingController: (context, event) => null
     }),
 
     updateTeleportDragController: assign({
-      teleportDragController: (context, event) => event.controller.gamepad.index
+      teleportDragController: (context, event) => event.controller.userData.inputSourceIndex
     }),
     clearTeleportDragController: assign({
       teleportDragController: (context, event) => null
@@ -232,16 +242,16 @@ const machine = Machine({
     eventHasCharacterIntersection : (context, event) => context.selectionType === 'character',
     eventHasControlPointIntersection: (context, event) => event.intersection != null && event.intersection.controlPoint,
 
-    eventControllerMatchesTeleportDragController: (context, event) => event.controller.gamepad.index === context.teleportDragController,
-    eventControllerNotTeleportDragController: (context, event) => event.controller.gamepad.index !== context.teleportDragController,
+    eventControllerMatchesTeleportDragController: (context, event) => event.controller.userData.inputSourceIndex === context.teleportDragController,
+    eventControllerNotTeleportDragController: (context, event) => event.controller.userData.inputSourceIndex !== context.teleportDragController,
 
-    bothGripsDown: (context, event) => event.controller.gamepad.index !== context.teleportDragController,
+    bothGripsDown: (context, event) => event.controller.userData.inputSourceIndex !== context.teleportDragController,
 
-    controllerSame: (context, event) => event.controller.gamepad.index === context.draggingController,
+    controllerSame: (context, event) => event.controller.userData.inputSourceIndex === context.draggingController,
 
     sameControllerOnSnappableObject: (context, event) =>
       // the controller matches the one we're dragging with
-      (event.controller.gamepad.index === context.draggingController) &&
+      (event.controller.userData.inputSourceIndex === context.draggingController) &&
       // and the selected object is anything but a character
       (context.selectionType && context.selectionType != 'character')
   }
