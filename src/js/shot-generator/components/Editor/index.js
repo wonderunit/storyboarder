@@ -61,9 +61,6 @@ const Effect = ({renderData, stats, shadingMode}) => {
       case ShadingType.Flat:
         newRenderer = new FlatShading(gl)
         break
-      case ShadingType.Depth:
-        newRenderer = new DepthShading(gl)
-        break
       case ShadingType.Outline:
       default:
         newRenderer = new OutlineEffect(gl, { defaultThickness: 0.015 })

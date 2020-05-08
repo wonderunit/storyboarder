@@ -24,14 +24,14 @@ class FlatShading extends ShadingEffect {
                 for ( let j = 0, il = object.material.length; j < il; j ++ ) {
     
                     let material = object.material[j];
-                    material.flatShading = state;
+                   // material.flatShading = state;
                     material.needsUpdate = true;
 
                 }
     
             } else {
                 let material = object.material;
-                material.flatShading = state;
+              //  material.flatShading = state;
                 material.needsUpdate = true;
             }
         }
@@ -39,9 +39,9 @@ class FlatShading extends ShadingEffect {
 
     render( scene, camera ) {
         super.render(scene, camera)
-        this.setFlatShading(true);
+       // this.setFlatShading(true);
         this.renderer.render(scene, camera);
-        this.setFlatShading(false);
+       // this.setFlatShading(false);
     }
 }
 

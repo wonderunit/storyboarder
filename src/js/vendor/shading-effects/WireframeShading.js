@@ -4,7 +4,7 @@ class WireframeShading extends ShadingEffect {
 
     constructor( renderer ){
         super(renderer);
-        this.wireframeColor = new THREE.Color(0xed7014);
+        this.wireframeColor = new THREE.Color(0xcccccc);
         this.defaultColor = new THREE.Color(0x000000);
         this.colors = {};
         this.edgesCache = {};
