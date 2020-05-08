@@ -1,4 +1,4 @@
-import React, {useState, useRef, useCallback, useEffect} from 'react'
+import React, {useState, useRef, useCallback, useEffect, useMemo} from 'react'
 import {connect} from 'react-redux'
 import { useDrag } from 'react-use-gesture'
 import {Math as _Math} from 'three'
@@ -93,7 +93,7 @@ const NumberSliderComponent = React.memo(({
   value = 0,
   min = -10,
   max = 10,
-  step = 0.1, 
+  step = 0.2, 
   formatter = formatters.toFixed2,
   textFormatter = textFormatters.default,
   textConstraint = textConstraints.default,
@@ -104,19 +104,35 @@ const NumberSliderComponent = React.memo(({
 }) => {
   const inputRef = useRef(null)
   const [isTextInput, setTextInput] = useState(false)
+  const [sliderValue, setSliderValue] = useState(0)
   const [textInputValue, setTextInputValue] = useState(value)
+  const prevValue = useRef(null)
+  const isDragging = useRef(false)
   
+  useMemo(() => {
+    if(!isDragging.current) {
+      setSliderValue(value)
+    }
+  }, [value]) 
+
+  useEffect(() => {
+    if(prevValue.current === value) {
+      setSliderValue(value)
+    }
+  }, [sliderValue])
+
   const onDrag = useCallback(({direction, altKey}) => {
     const valueToAdd = step * (altKey ? 0.01 : 1.0)
-    const nextValue = transform(value + Math.sign(direction) * (valueToAdd < 0.01 ? 0.01 : valueToAdd), min, max)
-    
+    const nextValue = transform(sliderValue + Math.sign(direction) * (valueToAdd < 0.01 ? 0.01 : valueToAdd), min, max)
+    prevValue.current = value
     onSetValue(nextValue)
-  }, [value, onSetValue])
+    setSliderValue(nextValue)
+  }, [sliderValue, onSetValue, value])
   
   const bind = useDrag(({event, first, last}) => {
     if (first) {
       onDragStart()
-      
+      isDragging.current = true
       inputRef.current.requestPointerLock()
     }
     
@@ -127,32 +143,33 @@ const NumberSliderComponent = React.memo(({
 
     if (last) {
       document.exitPointerLock()
+      isDragging.current = false
       onDragEnd()
     }
   }, {dragDelay: true})
 
   const bindDoubleClick = useDoubleClick(() => {
-    setTextInputValue(getFormattedInputValue(value, formatter))
+    setTextInputValue(getFormattedInputValue(sliderValue, formatter))
     setTextInput(true)
   })
 
   const onTextInputBlur = useCallback(() => {
     setTextInput(false)
-    setTextInputValue(getFormattedInputValue(value, formatter))
+    setTextInputValue(getFormattedInputValue(sliderValue, formatter))
   }, [])
 
   const onTextInputKey = (event) => {
     if (event.key === 'Escape') {
       // reset
       setTextInput(false)
-      setTextInputValue(getFormattedInputValue(value, formatter))
+      setTextInputValue(getFormattedInputValue(sliderValue, formatter))
     } else if (event.key === 'Enter') {
       if(isNumber(textInputValue)) {
         let constrainedNumber = textConstraint(textInputValue)
         onSetValue(parseFloat(constrainedNumber))
       }
       else {
-        let formattedValue = getFormattedInputValue(value, formatter)
+        let formattedValue = getFormattedInputValue(sliderValue, formatter)
         let formattedText = textFormatter && textFormatter(textInputValue)
         if(isNumber(formattedText)) {
           let constrainedNumber = textConstraint(formattedText)
@@ -174,7 +191,7 @@ const NumberSliderComponent = React.memo(({
       direction,
       altKey: event.altKey
     })
-  }, [value])
+  }, [sliderValue])
 
   useEffect(() => {
     KeyCommandSingleton.getInstance().isEnabledKeysEvents = !isTextInput
@@ -214,7 +231,7 @@ const NumberSliderComponent = React.memo(({
                   ref={inputRef}
                   type="text"
                   className="number-slider__input number-slider__input--move"
-                  value={formatter(value)}
+                  value={formatter(sliderValue)}
                   readOnly={true}
                   {...bind()}
                   {...bindDoubleClick}

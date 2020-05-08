@@ -67,7 +67,6 @@ const AttachableInspector = connect(
 
     const onSelectItem = useCallback((model) => {
       selectedModel.current = model
-      console.log(model)
       selectedId.current = model.id || id
       if(model.bindBone && !isUserModel(sceneObject.model)) {
         createAttachableElement(model, id)
