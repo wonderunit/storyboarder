@@ -365,6 +365,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           poleTargets: sceneObject.poleTargets || {},
           height: originalHeight,
           locked: locked,
+          model: sceneObject.model,
           name: sceneObject.displayName
         }}
 

@@ -294,7 +294,8 @@ const SceneManagerR3fSmall = connect(
                 sceneObject={ sceneObject }
                 mainCamera={ mainRenderData.camera }
                 isSelected={ selections.includes(sceneObject.id) }
-                fontMesh={ fontMesh } />
+                fontMesh={ fontMesh } 
+                autofitOrtho={ autofitOrtho } />
         })
     }
     {
