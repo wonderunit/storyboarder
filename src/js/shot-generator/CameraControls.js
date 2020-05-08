@@ -431,7 +431,7 @@ class CameraControls {
           let transformMatrix = resourceManager.getMatrix4()
           transformMatrix.multiply(cameraClone.matrix)
           transformMatrix.multiply(cameraClone.matrixWorld.inverse())
-          cloneGlobalQuat.applyMatrix(transformMatrix)
+          cloneGlobalQuat.applyMatrix4(transformMatrix)
           camera.quaternion.copy(cloneGlobalQuat)
           camera.updateMatrixWorld(true)
           resourceManager.release(transformMatrix)
