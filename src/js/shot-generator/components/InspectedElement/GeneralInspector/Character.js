@@ -137,7 +137,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
 
         <div className="drop_button__wrappper">
           <div className="drop_button" onClick={ () => ipcRenderer.send('shot-generator:object:drops')}>
-            Drop character
+            Drop Character to the floor
           </div>
         </div>
       </div>

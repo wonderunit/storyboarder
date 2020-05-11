@@ -73,7 +73,7 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       />
       <div className="drop_button__wrappper">
         <div className="drop_button" onClick={ () => ipcRenderer.send('shot-generator:object:drops')}>
-          Drop object
+          Drop Object to the floor
         </div>
       </div>
     </React.Fragment>
