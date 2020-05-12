@@ -132,7 +132,7 @@
     "babel-plugin-add-module-exports": "^1.0.2",
     "cross-env": "^5.2.0",
     "dotenv": "8.2.0",
-    "electron": "5.0.11",
+    "electron": "8.2.5",
     "electron-builder": "22.6.1",
     "electron-devtools-installer": "^2.2.4",
     "electron-mocha": "8.0.2",
