@@ -31,9 +31,8 @@ body {
 
 #main {
   display: flex;
-  flex-direction: row;
   flex: 1;
-  height: 100%;
+  max-height: 100%;
 }
 
 #aside {
@@ -104,10 +103,10 @@ kbd {
   flex: 5;
 }
 
-#main {
+#sg-main {
   display: flex;
   flex: 1;
-  width: 100%;
+  max-height: 100%;
 }
 
 #phoneCursor {
