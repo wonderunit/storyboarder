@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react'
 import {formatters, NumberSlider} from '../../NumberSlider'
-const PostureComponent = React.memo(({id, getSceneObjects, updateObject, withState }) => {
+const defaultPostureValue = 0.5
+const PostureComponent = React.memo(({id, getSceneObjects, updateObject, withState, posePresetId}) => {
 
     const [postureValue, setPostureValue] = useState(0)
     useEffect(() => {
@@ -13,6 +14,10 @@ const PostureComponent = React.memo(({id, getSceneObjects, updateObject, withSta
     
         setPostureValue(posturePercentage)
     }, [id])
+
+    useEffect(() => {
+      setPostureValue( defaultPostureValue )
+    }, [posePresetId])
 
     const setUpPosture = (value) => {
       let sceneObject 

@@ -95,7 +95,7 @@ const setupRenderer = ({ thumbnailRenderer, attachment, preset }) => {
   }
 }
 
-const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, data : preset, updateObject, attachment, thumbnailRenderer, undoGroupStart, undoGroupEnd, resetPosture }) => {
+const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, data : preset, updateObject, attachment, thumbnailRenderer, undoGroupStart, undoGroupEnd }) => {
   const src = path.join(remote.app.getPath('userData'), 'presets', 'poses', `${preset.id}.jpg`)
 
   const onPointerDown = event => {
@@ -105,7 +105,6 @@ const PosePresetsEditorItem = React.memo(({ style, id, posePresetId, data : pres
     let skeleton = preset.state.skeleton
     undoGroupStart()
     updateObject(id, { posePresetId, skeleton })
-    resetPosture()
     setTimeout(() => { 
       undoGroupEnd()
     }, 50)

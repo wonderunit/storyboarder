@@ -184,6 +184,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           if(!type.includes("UNDO") && !type.includes("REDO"))
             fullyUpdateIkSkeleton()
         })
+        postureDeltas.current = {}
+        postureStatics.current = null
       } else {
         isFullyUpdate.current = false
       }
@@ -231,10 +233,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       updateCharacterIkSkeleton && updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }
 
-    useEffect(() => {
+    useMemo(() => {
       postureDeltas.current = {}
       postureStatics.current = null
-    }, [sceneObject.posePresetId])
+    }, [sceneObject.posePresetId, sceneObject.rotation, isSelected])
 
     useEffect(() => {
       if(!sceneObject.posturePercentage ) return
@@ -245,9 +247,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       let currentQuat = new THREE.Quaternion()
       let goodQuat = new THREE.Quaternion()
       let postureBones = ["Spine", "Spine1", "Spine2", "Neck", "LeftShoulder", "RightShoulder"]
-      let headBone = skeleton.bones.find(o => o.name === "Head")
-      let rightArm = skeleton.bones.find(o => o.name === "LeftArm")
-      let leftArm = skeleton.bones.find(o => o.name === "RightArm")
+      let headBone = skeleton.getBoneByName("Head")
+      let rightArm = skeleton.getBoneByName("LeftArm")
+      let leftArm = skeleton.getBoneByName("RightArm")
       if(!postureStatics.current) {
         postureStatics.current = {}
         headBone.updateMatrixWorld(true)
@@ -260,11 +262,14 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       for( let i = 0; i < postureBones.length; i++ ) {
         let key = postureBones[i]
         let currentBone = skeleton.bones.find(o => o.name === key)
+        currentBone.updateMatrixWorld(true)
+        let parentQuat = currentBone.parent.worldQuaternion()
         let badBone = badPostureSkeleton[key]
         badQuat.setFromEuler(new THREE.Euler(badBone.rotation.x, badBone.rotation.y, badBone.rotation.z))    
-        
+        badQuat.premultiply(parentQuat)
         let goodBone = goodPostureSkeleton[key]
         goodQuat.setFromEuler(new THREE.Euler(goodBone.rotation.x, goodBone.rotation.y, goodBone.rotation.z))
+        goodQuat.premultiply(parentQuat)
 
         if(!postureDeltas.current[key]) {
           postureDeltas.current[key] = {}

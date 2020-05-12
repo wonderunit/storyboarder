@@ -29,7 +29,7 @@ import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
 import PostureComponent from './PostureComponent'
-const defaultPostureValue = 0.5
+
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -262,8 +262,9 @@ React.memo(({
         withState={ withState }
         updateObject={ updateObject }
         getSceneObjects={ getSceneObjects }
+        posePresetId={getPosePresetId()}
       />
-      
+
       <Scrollable>
        <Grid
           itemData={{
@@ -274,7 +275,6 @@ React.memo(({
 
             attachment,
             updateObject,
-            resetPosture:() => { postureDeltas.current = {}; setPostureValue( defaultPostureValue )},
             thumbnailRenderer,
             undoGroupStart,
             undoGroupEnd,
