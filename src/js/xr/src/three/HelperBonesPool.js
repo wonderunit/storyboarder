@@ -17,7 +17,7 @@ class HelperBonesPool
             flatShading: true});
         this.boneMesh = boneMesh;
         this.material = material;
-        this.instancedMesh = new THREE.InstancedMesh(boneMesh.geometry, material, poolSize, true, true, false)
+        this.instancedMesh = new THREE.CustomInstancedMesh(boneMesh.geometry, material, poolSize, true, true, false)
         this.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
         this.defaultColor = new THREE.Color(0x856dff);
         for ( var i = 0 ; i < poolSize; i ++ )

@@ -1,5 +1,6 @@
 const THREE = require('three')
 const { produce } = require('immer')
+const merge = require('lodash.merge')
 const undoable = require('redux-undo').default
 const crypto = require('crypto')
 const reduceReducers = require('../../vendor/reduce-reducers')
@@ -114,8 +115,8 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   // check to see if pose has changed from preset
   // and invalidate if so
-
-  let posePresetId = getSceneObjects(draft)[actionPayloadId].posePresetId
+  let object = getSceneObjects(draft)[actionPayloadId]
+  let posePresetId = object && object.posePresetId
   if (posePresetId) {
     let statePreset = state.presets.poses[posePresetId]
 
@@ -747,6 +748,7 @@ const cameraShotsReducer = (state = {}, action) => {
         
         camera.size = action.payload.size || camera.size
         camera.angle = action.payload.angle || camera.angle
+        camera.character = action.payload.character 
         return
         
         // select a single object
@@ -789,6 +791,7 @@ const selectionsReducer = (state = [], action) => {
     switch (action.type) {
       case 'LOAD_SCENE':
       case 'UPDATE_SCENE_FROM_XR':
+      case 'MERGE_STATE':
         // clear selections
         return []
 
@@ -808,6 +811,9 @@ const selectionsReducer = (state = [], action) => {
           draft.splice(n, 1)
         }
         return
+      case 'DESELECT_OBJECT':
+        let objectsToDeselect = Array.isArray(action.payload) ? action.payload : [action.payload]
+        return draft.filter((target) => objectsToDeselect.indexOf(target) === -1)
       case 'SELECT_ATTACHABLE':
         return [action.payload.bindId]
         
@@ -1107,7 +1113,7 @@ const sceneObjectsReducer = (state = {}, action) => {
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
         if(!draft[action.payload.id]) return;
-       // draft[action.payload.id].skeleton = {}
+        draft[action.payload.id].skeleton = action.payload.skeleton.length ? draft[action.payload.id].skeleton : {}
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
           let position = bone.position
@@ -1460,6 +1466,9 @@ const mainReducer = (state/* = initialState*/, action) => {
       case 'UNDO_GROUP_END':
         batchGroupBy.end(action.payload)
         return
+
+      case 'MERGE_STATE':
+        return merge(draft, action.payload)
     }
   })
 }
@@ -1602,8 +1611,10 @@ module.exports = {
 
   //
   //
-  // action creators
+  // action creators 
   //
+  deselectObject: id => ({ type: 'DESELECT_OBJECT', payload: id }),
+  
   selectObject: id => ({ type: 'SELECT_OBJECT', payload: id }),
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
@@ -1704,6 +1715,8 @@ module.exports = {
 
   undoGroupStart: payload => ({ type: 'UNDO_GROUP_START', payload }),
   undoGroupEnd: payload => ({ type: 'UNDO_GROUP_END', payload }),
+  
+  mergeState: payload => ({ type: 'MERGE_STATE', payload }),
 
   //
   //

@@ -1,0 +1,65 @@
+{
+    "profileId": "oculus-touch-v2",
+    "fallbackProfileIds": [ "oculus-touch", "generic-trigger-squeeze-thumbstick"],
+    "layouts": {
+        "left": {
+            "selectComponentId": "xr-standard-trigger",
+            "components": {
+                "xr-standard-trigger": { "type": "trigger" },
+                "xr-standard-squeeze": { "type": "squeeze" },
+                "xr-standard-thumbstick": { "type": "thumbstick" },
+                "x-button" : { "type": "button" },
+                "y-button" : { "type": "button" },
+                "thumbrest" : { "type": "button" },
+                "menu" : { "type": "button", "reserved": true }
+            },
+            "gamepad": {
+                "mapping": "xr-standard",
+                "buttons": [
+                    "xr-standard-trigger",
+                    "xr-standard-squeeze",
+                    null,
+                    "xr-standard-thumbstick",
+                    "x-button",
+                    "y-button",
+                    "thumbrest"
+                ],
+                "axes":[
+                    null,
+                    null,
+                    { "componentId": "xr-standard-thumbstick", "axis": "x-axis"},
+                    { "componentId": "xr-standard-thumbstick", "axis": "y-axis"}
+                ]
+            }
+        },
+        "right": {
+            "selectComponentId": "xr-standard-trigger",
+            "components": {
+                "xr-standard-trigger": { "type": "trigger" },
+                "xr-standard-squeeze": { "type": "squeeze" },
+                "xr-standard-thumbstick": { "type": "thumbstick" },
+                "a-button" : { "type": "button" },
+                "b-button" : { "type": "button" },
+                "thumbrest" : { "type": "button" }
+            },
+            "gamepad": {
+                "mapping": "xr-standard",
+                "buttons": [
+                    "xr-standard-trigger",
+                    "xr-standard-squeeze",
+                    null,
+                    "xr-standard-thumbstick",
+                    "a-button",
+                    "b-button",
+                    "thumbrest"
+                ],
+                "axes":[
+                    null,
+                    null,
+                    { "componentId": "xr-standard-thumbstick", "axis": "x-axis"},
+                    { "componentId": "xr-standard-thumbstick", "axis": "y-axis"}
+                ]
+            }
+        }
+    }
+}

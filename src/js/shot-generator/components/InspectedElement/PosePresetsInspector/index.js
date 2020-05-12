@@ -61,6 +61,7 @@ React.memo(({
   createPosePreset,
   undoGroupStart,
   undoGroupEnd,
+  updateCharacterIkSkeleton,
   withState
 }) => {
   const thumbnailRenderer = useRef()
@@ -175,6 +176,50 @@ React.memo(({
       })
     }
   }
+  const limbsSide = (limbName) => {
+    let currentSide, oppositeSide
+    if(limbName.includes("Left")) {
+      currentSide = "Left"
+      oppositeSide = "Right"
+    } else {
+      currentSide = "Right"
+      oppositeSide = "Left"
+    }
+    return {currentSide, oppositeSide}
+  }
+
+
+  const mirrorSkeleton = () => {
+    let sceneObject
+    withState((dispatch, state) => {
+      sceneObject = getSceneObjects(state)[id]
+    })
+    let oppositeSkeleton = []
+    let originalSkeleton = sceneObject.skeleton
+    let keys = Object.keys(originalSkeleton)
+    for (let i = 0; i < keys.length; i++) {
+      let key = keys[i]
+      let boneName = key
+      let boneRot = originalSkeleton[key].rotation
+      let position = originalSkeleton[key].position
+      let mirroredQuat = new THREE.Quaternion().setFromEuler(new THREE.Euler(boneRot.x, boneRot.y, boneRot.z))
+      mirroredQuat.x *= -1
+      mirroredQuat.w *= -1
+      if(key.includes("Left") || key.includes("Right")) {
+        let {currentSide, oppositeSide} = limbsSide(boneName)
+        boneName = boneName.replace(currentSide, oppositeSide)
+      }
+      let euler = new THREE.Euler().setFromQuaternion(mirroredQuat)
+      oppositeSkeleton.push({
+        id: originalSkeleton[boneName].id,
+        name: boneName, 
+        rotation : { x: euler.x, y: euler.y, z: euler.z },
+        position: { x: position.x, y: position.y, z: position.z }
+      })
+    }
+    updateCharacterIkSkeleton({id:sceneObject.id, skeleton: oppositeSkeleton})
+  }
+
   return (
     <React.Fragment>
     <Modal visible={ isModalShown } onClose={() => showModal(false)}>
@@ -209,13 +254,16 @@ React.memo(({
           >+</a>
         </div>
       </div> 
+      <div className="mirror_button__wrapper">
+        <div className="mirror_button" onPointerDown={ mirrorSkeleton }>Mirror pose</div>
+      </div>
       <PostureComponent
         id={ id }
         withState={ withState }
         updateObject={ updateObject }
         getSceneObjects={ getSceneObjects }
       />
-
+      
       <Scrollable>
        <Grid
           itemData={{

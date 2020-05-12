@@ -1,0 +1,107 @@
+{
+  "_args": [
+    [
+      "three-bmfont-text@2.3.0",
+      "/Users/mac/PhpstormProjects/Origin Wonderunit/storyboarder"
+    ]
+  ],
+  "_from": "three-bmfont-text@2.3.0",
+  "_id": "three-bmfont-text@2.3.0",
+  "_inBundle": false,
+  "_integrity": "sha512-HG6QHR129cNMGBhMgLsyKJiNW5r2XI+2P1JyjJl/9+D1e0iySzVZl3r8peTFpoJzPODl5Ckb8nu0U1zWjc6dNg==",
+  "_location": "/three-bmfont-text",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "version",
+    "registry": true,
+    "raw": "three-bmfont-text@2.3.0",
+    "name": "three-bmfont-text",
+    "escapedName": "three-bmfont-text",
+    "rawSpec": "2.3.0",
+    "saveSpec": null,
+    "fetchSpec": "2.3.0"
+  },
+  "_requiredBy": [
+    "/"
+  ],
+  "_resolved": "https://registry.npmjs.org/three-bmfont-text/-/three-bmfont-text-2.3.0.tgz",
+  "_spec": "2.3.0",
+  "_where": "/Users/mac/PhpstormProjects/Origin Wonderunit/storyboarder",
+  "author": {
+    "name": "Matt DesLauriers",
+    "email": "dave.des@gmail.com",
+    "url": "https://github.com/mattdesl"
+  },
+  "bugs": {
+    "url": "https://github.com/Jam3/three-bmfont-text/issues"
+  },
+  "dependencies": {
+    "array-shuffle": "^1.0.1",
+    "inherits": "^2.0.1",
+    "layout-bmfont-text": "^1.2.0",
+    "nice-color-palettes": "^1.0.1",
+    "object-assign": "^4.0.1",
+    "quad-indices": "^2.0.1",
+    "three-buffer-vertex-data": "^1.0.0"
+  },
+  "description": "renders BMFont files in ThreeJS with word-wrapping",
+  "devDependencies": {
+    "bluebird": "^2.9.14",
+    "browserify": "^12.0.1",
+    "budo": "^7.0.2",
+    "glsl-aastep": "^1.0.1",
+    "glsl-noise": "0.0.0",
+    "glslify": "^4.0.0",
+    "load-bmfont": "^1.0.0",
+    "standard": "^5.4.1",
+    "sun-tzu-quotes": "^1.0.0",
+    "three": "^0.70.0",
+    "three-orbit-viewer": "^69.2.9",
+    "three-vignette-background": "^1.0.2",
+    "uglify-js": "^2.4.17"
+  },
+  "homepage": "https://github.com/Jam3/three-bmfont-text",
+  "keywords": [
+    "bmfont",
+    "bitmap",
+    "font",
+    "text",
+    "three",
+    "threejs",
+    "quad",
+    "quads",
+    "batch",
+    "render",
+    "fonts",
+    "layout",
+    "word",
+    "wrap",
+    "word-wrap",
+    "word-wrapping",
+    "wrapping",
+    "glyph",
+    "glyphs"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "three-bmfont-text",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Jam3/three-bmfont-text.git"
+  },
+  "scripts": {
+    "build": "browserify test/test-shader.js -t glslify | uglifyjs -cm > test/bundle.js",
+    "start": "budo test/test-shader.js:bundle.js --dir test --live -- -t glslify",
+    "test": "standard",
+    "test-2d": "budo test/test-2d.js:bundle.js --dir test --live",
+    "test-3d": "budo test/test-3d.js:bundle.js --dir test --live",
+    "test-msdf": "budo test/test-msdf.js:bundle.js --dir test --live",
+    "test-multi": "budo test/test-multi.js:bundle.js --dir test --live"
+  },
+  "standard": {
+    "globals": [
+      "THREE"
+    ]
+  },
+  "version": "2.3.0"
+}

@@ -43,15 +43,21 @@ const CameraIcon = React.memo(({type, text, secondText, sceneObject, fontMesh, m
         frustumIcons.current.add(frustumIcons.current.right)
         iconsSprites.current.add(frustumIcons.current)
     }, [fontMesh])
-  
+
     useFrame(() => {
-      if (!mainCamera || sceneObject.id !== mainCamera.userData.id || !iconsSprites.current || !fontMesh) return false
-      const currentRotation = new THREE.Euler().setFromQuaternion(mainCamera.quaternion, 'YXZ').y
-      iconsSprites.current.icon.material.rotation = currentRotation
-      
-      let hFOV = 2 * Math.atan( Math.tan( mainCamera.fov * Math.PI / 180 / 2 ) * 1 )
-      frustumIcons.current.left.icon.material.rotation = hFOV/2 + currentRotation
-      frustumIcons.current.right.icon.material.rotation = -hFOV/2 + currentRotation
+        if (!mainCamera || sceneObject.id !== mainCamera.userData.id || !iconsSprites.current || !fontMesh || mainCamera.isSynchronized) return false
+        const currentRotation = new THREE.Euler().setFromQuaternion(mainCamera.quaternion, 'YXZ').y
+        iconsSprites.current.icon.material.rotation = currentRotation
+        
+        let hFOV = 2 * Math.atan( Math.tan( mainCamera.fov * Math.PI / 180 / 2 ) * 1 )
+        frustumIcons.current.left.icon.material.rotation = hFOV/2 + currentRotation
+        frustumIcons.current.right.icon.material.rotation = -hFOV/2 + currentRotation
+        let isPositionChanged = !ref.current.position.equals(mainCamera.position) 
+        if(isPositionChanged) {
+            ref.current.position.copy(mainCamera.position)
+            props.autofitOrtho()
+        }
+        mainCamera.isSynchronized = true
     })
 
     useEffect(() => {

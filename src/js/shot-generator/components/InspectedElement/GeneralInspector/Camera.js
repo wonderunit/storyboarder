@@ -1,6 +1,6 @@
 import React, {useCallback} from 'react'
 import {Math as _Math} from 'three'
-import {formatters, NumberSlider, transforms} from '../../NumberSlider'
+import {formatters, NumberSlider, transforms, textFormatters} from '../../NumberSlider'
 
 const CameraInspector = React.memo(({updateObject, sceneObject}) => {
   const {id, ...props} = sceneObject
@@ -19,9 +19,9 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
 
   return (
     <React.Fragment>
-      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
-      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
-      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
+      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX} textFormatter={ textFormatters.imperialToMetric }/>
+      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY} textFormatter={ textFormatters.imperialToMetric }/>
+      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ} textFormatter={ textFormatters.imperialToMetric }/>
 
       <NumberSlider
         label="Rotation"

@@ -3,13 +3,13 @@ import React, { useEffect, useMemo, useRef } from 'react'
 import { extend } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
+import { axis } from "../../../shared/IK/utils/TransformControls"
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
-const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
+const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
   const {asset: texture} = useAsset(imagesPaths[0] || null)
   
   const aspect = useRef(1)
@@ -44,7 +44,35 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
     else ref.current.traverse(child => child.layers.disable(SHOT_LAYERS))
   }, [ref.current, sceneObject.visibleToCam])
 
+  useEffect(() => {
+    if (isSelected) {
+      props.objectRotationControl.setUpdateCharacter((name, rotation) => {
+        let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
+        props.updateObject(ref.current.userData.id, {
+          rotation: {
+            x : euler.x,
+            y : euler.y,
+            z : euler.z,
+          }
+        } )})
+      props.objectRotationControl.setCharacterId(ref.current.uuid)
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+      props.objectRotationControl.IsEnabled = !sceneObject.locked
+      props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
+    } else {
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      } 
+    }
+  }, [isSelected]) 
+
   const { x, y, z, visible, height, rotation, locked } = sceneObject
+
+  useEffect(() => {
+    if(!props.objectRotationControl || !isSelected) return
+    props.objectRotationControl.IsEnabled = !locked
+  }, [locked])
+
   return (
     <group
       ref={ ref }
@@ -59,12 +87,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths }) => {
       scale={ [height * aspect.current, height, 1] }
       rotation={ [rotation.x, rotation.y, rotation.z] }
     >
-      <mesh
-        userData={{
-            type: "image",
-            id: sceneObject.id
-        }}
-      >
+      <mesh>
         <roundedBoxGeometry attach="geometry" args={ [1, 1, 0.01, 0.01] } />
         <primitive attach="material" object={ material } />
       </mesh>

@@ -46,7 +46,6 @@ const createCharacter = (gltf) => {
           color: 0xffffff,
           emissive: 0x0,
           specular: 0x0,
-          reflectivity: 0x0,
           skinning: true,
           shininess: 0,
           flatShading: false,

@@ -1,4 +1,4 @@
-const TransformControls = require( "../../../../../shot-generator/IK/utils/TransformControls");
+const { TransformControls } = require( "../../../../../shot-generator/IK/utils/TransformControls");
 const THREE = require( "three");
 
 // TargetControl is class which is resposible for TransformControl and Mesh
