@@ -34,7 +34,7 @@ const UITestContent = ({ resources }) => {
     getXrClient: () => xrClient
   })
 
-  const { controllers, interactionServiceCurrent } = useInteractionsManager({
+  const { interactionServiceCurrent } = useInteractionsManager({
     groundRef: null,
     uiService,
     playSound: () => {},

@@ -1,6 +1,7 @@
+import { ipcRenderer } from 'electron'
 import React, {useCallback} from 'react'
 import {Math as _Math} from 'three'
-import {formatters, NumberSlider, transforms} from '../../NumberSlider'
+import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 import ColorSelect from '../../ColorSelect'
 
 const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
@@ -23,14 +24,14 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
 
   return (
     <React.Fragment>
-      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX}/>
-      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY}/>
-      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ}/>
+      <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX} textFormatter={ textFormatters.imperialToMetric }/>
+      <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY} textFormatter={ textFormatters.imperialToMetric }/>
+      <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ} textFormatter={ textFormatters.imperialToMetric }/>
 
-      { sceneObject.model === "box" &&  <NumberSlider label="Width" value={props.width} min={0.025} max={5} onSetValue={setWidth}/> }
-      { sceneObject.model === "box" &&  <NumberSlider label="Height" value={props.height} min={0.025} max={5} onSetValue={setHeight}/>}
-      { sceneObject.model === "box" &&  <NumberSlider label="Depth" value={props.depth} min={0.025} max={5} onSetValue={setDepth}/> }
-      { sceneObject.model !== "box" &&  <NumberSlider label="Size" value={props.depth} min={0.025} max={5} onSetValue={setSize}/> }
+      { sceneObject.model === "box" &&  <NumberSlider label="Width" value={props.width} min={0.025} max={5} onSetValue={setWidth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
+      { sceneObject.model === "box" &&  <NumberSlider label="Height" value={props.height} min={0.025} max={5} onSetValue={setHeight} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>}
+      { sceneObject.model === "box" &&  <NumberSlider label="Depth" value={props.depth} min={0.025} max={5} onSetValue={setDepth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
+      { sceneObject.model !== "box" &&  <NumberSlider label="Size" value={props.depth} min={0.025} max={5} onSetValue={setSize} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
 
       <NumberSlider
         label="Rotate X"
@@ -70,6 +71,11 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
         value={props.tintColor}
         onSetValue={setTintColor}
       />
+      <div className="drop_button__wrappper">
+        <div className="drop_button" onClick={ () => ipcRenderer.send('shot-generator:object:drops')}>
+          Drop Object to the floor
+        </div>
+      </div>
     </React.Fragment>
   )
 })

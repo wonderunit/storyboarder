@@ -576,11 +576,11 @@ module.exports = function( THREE ){
 
     this.setIndex( new THREE.BufferAttribute( new Uint16Array( indices ) , 1 ) );
 
-    this.addAttribute( 'position', positions );
+    this.setAttribute( 'position', positions );
 
-    this.addAttribute( 'normal', normals );
+    this.setAttribute( 'normal', normals );
     
-    this.addAttribute( 'uv', uvs );
+    this.setAttribute( 'uv', uvs );
 
   };
 

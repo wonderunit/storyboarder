@@ -145,7 +145,7 @@ THREE.Euler.prototype.add = function(euler)
     return firstEuler;
 }
 
-THREE.Quaternion.prototype.applyMatrix = function(matrix)
+THREE.Quaternion.prototype.applyMatrix4 = function(matrix)
 {
     let rotationMatrix = new THREE.Matrix4().makeRotationFromQuaternion(this);
     rotationMatrix.premultiply(matrix);

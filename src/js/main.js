@@ -47,7 +47,7 @@ const store = configureStore({}, 'main')
 
 let welcomeWindow
 let newWindow
-
+ 
 let mainWindow
 let printWindow
 let sketchWindow
@@ -1519,6 +1519,13 @@ ipcMain.on('shot-generator:requestInsertShot', (event, uid) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('requestInsertShot', uid)
+  }
+})
+
+ipcMain.on('shot-generator:updateStore', (event, action) => {
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.webContents.send('shot-generator:updateStore', action)
   }
 })
 

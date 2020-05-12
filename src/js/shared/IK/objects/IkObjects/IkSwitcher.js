@@ -95,7 +95,7 @@ class IKSwitcher
         let transformMatrix = new THREE.Matrix4();
         transformMatrix.multiply(originBone.matrix);
         transformMatrix.multiply(originBone.matrixWorld.inverse());
-        cloneGlobalQuat.applyMatrix(transformMatrix);
+        cloneGlobalQuat.applyMatrix4(transformMatrix);
         originBone.quaternion.copy(cloneGlobalQuat);
         originBone.updateMatrix();
         originBone.updateWorldMatrix(false, true);
@@ -132,7 +132,7 @@ class IKSwitcher
         let transformMatrix = new THREE.Matrix4();
         transformMatrix.multiply(cloneBone.matrix);
         transformMatrix.multiply(cloneBone.matrixWorld.inverse());
-        originalGlobalQuat.applyMatrix(transformMatrix);
+        originalGlobalQuat.applyMatrix4(transformMatrix);
         cloneBone.quaternion.copy(originalGlobalQuat);
         cloneBone.updateMatrix();
         cloneBone.updateWorldMatrix(true, true);
