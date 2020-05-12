@@ -41,6 +41,7 @@ export const serve = (io, store, service) => {
 
   io.on('connection', (socket) => {
 
+    console.log('%c XR', 'color: #4CAF50', `User has been connected: ${socket.id}`)
     onUserConnect(io, socket, store)
     socket.on('action', (action) => {
       store.dispatch(action)
@@ -58,6 +59,8 @@ export const serve = (io, store, service) => {
     })
     
     socket.on('disconnect', () => {
+      console.log('%c XR', 'color: #4CAF50', `User has been disconnected: ${socket.id}`)
+      
       const disconnectAction = removeUser(socket.id)
       
       remoteStore.dispatch(disconnectAction)
