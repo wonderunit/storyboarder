@@ -538,7 +538,7 @@ let openDialogue = () => {
 }
 
 let importImagesDialogue = (shouldReplace = false) => {
-  dialog.showOpenDialog(
+  let filepaths = dialog.showOpenDialogSync(
     {
       title:"Import Boards",
       filters:[
@@ -555,41 +555,39 @@ let importImagesDialogue = (shouldReplace = false) => {
         ),
         "multiSelections"
       ]
-    },
+    }
+  )
 
-    (filepaths)=>{
-      if (filepaths) {
-        filepaths = filepaths.sort()
-        let filepathsRecursive = []
-        let handleDirectory = (dirPath) => {
-          let innerFilenames = fs.readdirSync(dirPath)
-          for(let innerFilename of innerFilenames) {
-            var innerFilePath = path.join(dirPath, innerFilename)
-            let stats = fs.statSync(innerFilePath)
-            if(stats.isFile()) {
-              filepathsRecursive.push(innerFilePath)
-            } else if(stats.isDirectory()) {
-              handleDirectory(innerFilePath)
-            }
-          }
-        }
-        for(let filepath of filepaths) {
-          let stats = fs.statSync(filepath)
-          if(stats.isFile()) {
-            filepathsRecursive.push(filepath)
-          } else if(stats.isDirectory()) {
-            handleDirectory(filepath)
-          }
-        }
-
-        if (shouldReplace) {
-          mainWindow.webContents.send('importImageAndReplace', filepathsRecursive)
-        } else {
-          mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
+  if (filepaths) {
+    filepaths = filepaths.sort()
+    let filepathsRecursive = []
+    let handleDirectory = (dirPath) => {
+      let innerFilenames = fs.readdirSync(dirPath)
+      for(let innerFilename of innerFilenames) {
+        var innerFilePath = path.join(dirPath, innerFilename)
+        let stats = fs.statSync(innerFilePath)
+        if(stats.isFile()) {
+          filepathsRecursive.push(innerFilePath)
+        } else if(stats.isDirectory()) {
+          handleDirectory(innerFilePath)
         }
       }
     }
-  )
+    for(let filepath of filepaths) {
+      let stats = fs.statSync(filepath)
+      if(stats.isFile()) {
+        filepathsRecursive.push(filepath)
+      } else if(stats.isDirectory()) {
+        handleDirectory(filepath)
+      }
+    }
+
+    if (shouldReplace) {
+      mainWindow.webContents.send('importImageAndReplace', filepathsRecursive)
+    } else {
+      mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
+    }
+  }
 }
 
 let importWorksheetDialogue = () => {
