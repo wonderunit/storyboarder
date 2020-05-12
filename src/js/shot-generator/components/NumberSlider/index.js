@@ -106,7 +106,6 @@ const NumberSliderComponent = React.memo(({
   const [isTextInput, setTextInput] = useState(false)
   const [sliderValue, setSliderValue] = useState(0)
   const [textInputValue, setTextInputValue] = useState(value)
-  const prevValue = useRef(null)
   const isDragging = useRef(false)
   
   useMemo(() => {
@@ -115,16 +114,14 @@ const NumberSliderComponent = React.memo(({
     }
   }, [value]) 
 
-  useEffect(() => {
-    if(prevValue.current === value) {
-      setSliderValue(value)
-    }
-  }, [sliderValue])
-
   const onDrag = useCallback(({direction, altKey}) => {
     const valueToAdd = step * (altKey ? 0.01 : 1.0)
+    if(sliderValue !== value)  {
+      setSliderValue(value)
+      return
+    }
     const nextValue = transform(sliderValue + Math.sign(direction) * (valueToAdd < 0.01 ? 0.01 : valueToAdd), min, max)
-    prevValue.current = value
+
     onSetValue(nextValue)
     setSliderValue(nextValue)
   }, [sliderValue, onSetValue, value])

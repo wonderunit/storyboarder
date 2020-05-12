@@ -196,6 +196,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       let inverseMatrixWorld = new THREE.Matrix4()
       inverseMatrixWorld.getInverse(ref.current.matrixWorld)
       let position = new THREE.Vector3()
+      let quaternion = new THREE.Quaternion()
       for(let i = 0; i < skeleton.bones.length; i++) {
         let bone = skeleton.bones[i]
         if(bone.name.includes("leaf")) continue
@@ -203,7 +204,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         let boneMatrix = bone.matrixWorld.clone()
         boneMatrix.premultiply(inverseMatrixWorld)
         position = position.setFromMatrixPosition(boneMatrix)
-        let quaternion = new THREE.Quaternion().setFromRotationMatrix(boneMatrix)
+        quaternion.setFromRotationMatrix(boneMatrix)
         boneMatrix.premultiply(ref.current.matrixWorld)
         changedSkeleton.push({ 
           id: bone.uuid,
@@ -287,7 +288,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       headBone.quaternion.multiplyQuaternions(headBone.parent.worldQuaternion().inverse(), postureStatics.current.headBoneQuat)
       rightArm.quaternion.multiplyQuaternions(rightArm.parent.worldQuaternion().inverse(), postureStatics.current.rightArmQuat)
       leftArm.quaternion.multiplyQuaternions(leftArm.parent.worldQuaternion().inverse(), postureStatics.current.leftArmQuat)
-
+      fullyUpdateIkSkeleton()
     }, [sceneObject.posturePercentage])
 
     useEffect(() => {
