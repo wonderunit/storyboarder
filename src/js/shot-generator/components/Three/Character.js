@@ -239,7 +239,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [sceneObject.posePresetId, sceneObject.rotation, isSelected])
 
     useEffect(() => {
-      if(!sceneObject.posturePercentage ) return
+      if(!sceneObject.posturePercentage || !ref.current || !skeleton) return
       let postures = Object.values(posturesJson)
       let badPostureSkeleton = postures.find(o => o.name === "BadPosture").state.skeleton
       let goodPostureSkeleton = postures.find(o => o.name === "GoodPosture").state.skeleton

@@ -29,7 +29,7 @@ import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
 import PostureComponent from './PostureComponent'
-
+const defaultPostureValue = 0.5
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -73,6 +73,7 @@ React.memo(({
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
   const newGeneratedId = useRef()
+  const postureData = useRef({})
 
   const presets = useMemo(() => {
     if(!posePresets) return
@@ -262,7 +263,8 @@ React.memo(({
         withState={ withState }
         updateObject={ updateObject }
         getSceneObjects={ getSceneObjects }
-        posePresetId={getPosePresetId()}
+        data={postureData.current}
+        defaultPostureValue={ defaultPostureValue }
       />
 
       <Scrollable>
@@ -272,7 +274,7 @@ React.memo(({
 
             id: id,
             posePresetId: getPosePresetId(),
-
+            resetPosture: () => { postureData.current.setPostureValue(defaultPostureValue) },
             attachment,
             updateObject,
             thumbnailRenderer,
