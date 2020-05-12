@@ -1,5 +1,5 @@
 const { useThree, useFrame } = require('react-three-fiber')
-const { useMemo, useRef, useEffect, useState } = React = require('react')
+const { useMemo, useRef, useEffect, useCallback, useState } = React = require('react')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 
@@ -317,6 +317,9 @@ const useInteractionsManager = ({
   const placeholderCamera = new THREE.PerspectiveCamera()
 
   const selections = useSelector(getSelections)
+  const lastAction = useSelector(state => state.lastAction.type)
+  const isDeselected = useCallback(() => lastAction === 'DESELECT_OBJECT', [lastAction])
+  
   const sceneObjects = useSelector(getSceneObjects)
 
   const canUndo = useSelector(state => state.undoable.past.length > 0)
@@ -1359,10 +1362,12 @@ const useInteractionsManager = ({
               attachableParent.current = object.parent
             }
             
-            targetObject.current = object
-            targetObject.current.userData.startData = {
-              pos: object.position.clone(),
-              rot: object.rotation.clone()
+            targetObject.current = {
+              object,
+              startData: {
+                pos: object.position.clone(),
+                rot: object.rotation.clone()
+              }
             }
             
             controller.attach(object)
@@ -1375,11 +1380,11 @@ const useInteractionsManager = ({
         },
         
         onSelectionClear: (context, event) => {
-          if (targetObject.current && targetObject.current.userData.type !== 'character' && targetObject.current.userData.startData) {
-            targetObject.current.position.copy(targetObject.current.userData.startData.pos)
-            targetObject.current.rotation.copy(targetObject.current.userData.startData.rot)
+          if (targetObject.current && targetObject.current.object.userData.type !== 'character' && targetObject.current.startData) {
+            targetObject.current.object.position.copy(targetObject.current.startData.pos)
+            targetObject.current.object.rotation.copy(targetObject.current.startData.rot)
 
-            targetObject.current.updateMatrixWorld(true)
+            targetObject.current.object.updateMatrixWorld(true)
           }
 
           targetObject.current = null
@@ -1401,6 +1406,10 @@ const useInteractionsManager = ({
           }
 
           stopSound('beam', object)
+          
+          if (isDeselected && selections.length === 0) {
+            return false
+          }
 
           commit(context.selection, object)
           if (object.userData.type === 'character') {
@@ -1551,10 +1560,10 @@ const useInteractionsManager = ({
   )
 
   useEffect(() => {
-    if (selections.length === 0) {
-      //interactionService.send({type: 'CLEAR_SELECTION'})
+    if (selections.length === 0 && lastAction === 'DESELECT_OBJECT') {
+      interactionService.send({type: 'CLEAR_SELECTION'})
     }
-  }, [selections.length])
+  }, [selections.length, lastAction])
 
   return { controllers, interactionServiceCurrent, interactionServiceSend }
 }
