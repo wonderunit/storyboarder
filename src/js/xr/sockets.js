@@ -58,8 +58,8 @@ export const serve = (io, store, service) => {
       socket.broadcast.emit('remoteAction', infoAction)
     })
     
-    socket.on('disconnect', () => {
-      console.log('%c XR', 'color: #4CAF50', `User has been disconnected: ${socket.id}`)
+    socket.on('disconnect', (reason) => {
+      console.log('%c XR', 'color: #4CAF50', `User has been disconnected: ${socket.id}, because of the: ${reason}`)
       
       const disconnectAction = removeUser(socket.id)
       
