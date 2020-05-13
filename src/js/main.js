@@ -557,7 +557,7 @@ let importImagesDialogue = (shouldReplace = false) => {
       ]
     }
   ).then(({ canceled, filePaths: filepaths }) => {
-    if (filepaths) {
+    if (filepaths.length) {
       filepaths = filepaths.sort()
       let filepathsRecursive = []
       let handleDirectory = (dirPath) => {
