@@ -588,7 +588,7 @@ let importImagesDialogue = (shouldReplace = false) => {
       }
     }
   }).catch(err => {
-    console.error(err)
+    log.error(err)
   })
 }
 
