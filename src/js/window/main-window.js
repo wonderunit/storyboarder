@@ -1718,14 +1718,13 @@ const loadBoardUI = async () => {
 
       let shouldOverwrite = true
       if (fs.existsSync(newpath)) {
-        const choice = remote.dialog.showMessageBox({
+        const { response } = await remote.dialog.showMessageBox({
           type: 'question',
           buttons: ['Yes', 'No'],
           title: 'Confirm',
           message: `A file named ${path.basename(newpath)} already exists in this project. Overwrite it?`
         })
-
-        shouldOverwrite = (choice === 0)
+        shouldOverwrite = (response === 0)
       }
       if (!shouldOverwrite) {
         notifications.notify({ message: 'Cancelled', timing: 5 })
@@ -1773,15 +1772,16 @@ const loadBoardUI = async () => {
               extensions: ALLOWED_AUDIO_FILE_EXTENSIONS
             }
           ]
-        },
-        filenames => {
-          if (filenames) {
-            this.onSelectFile(filenames[0])
-          } else {
-            this.onSelectFileCancel()
-          }
         }
       )
+      .then(({ filePaths }) => {
+        if (filePaths.length) {
+          this.onSelectFile(filePaths[0])
+        } else {
+          this.onSelectFileCancel()
+        }
+      })
+      .catch(err => log.error(err))
     },
     onClear: async function () {
       let board = boardData.boards[currentBoard]
