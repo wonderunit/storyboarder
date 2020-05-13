@@ -67,6 +67,7 @@ const onFilenameClick = event => {
 
 const onWatermarkFileClick = event => {
   event.target.style.pointerEvents = 'none'
+
   remote.dialog.showOpenDialog(
     {
       title: 'Import Watermark Image File',
@@ -79,24 +80,25 @@ const onWatermarkFileClick = event => {
           ]
         }
       ]
-    },
-    filenames => {
-      event.target.style.pointerEvents = 'auto'
-      if (filenames) {
-        try {
-          fs.copySync(filenames[0], path.join(remote.app.getPath('userData'), 'watermark.png'))
-          prefsModule.set('userWatermark', path.basename(filenames[0]), true)
-        } catch (err) {
-          console.error(err)
-          alert(err)
-        }
-        render()
-      } else {
-        prefsModule.set('userWatermark', undefined, true)
-        render()
-      }
     }
-  )
+  ).then(({ filePaths }) => {
+    event.target.style.pointerEvents = 'auto'
+
+    if (filePaths.length) {
+      try {
+        let filepath = filePaths[0]
+        fs.copySync(filepath, path.join(remote.app.getPath('userData'), 'watermark.png'))
+        prefsModule.set('userWatermark', path.basename(filepath), true)
+      } catch (err) {
+        console.error(err)
+        alert(err)
+      }
+      render()
+    } else {
+      prefsModule.set('userWatermark', undefined, true)
+      render()
+    }
+  }).catch(err => console.error(err))
 }
 
 const onRevealKeyMapFileClick = event => {
