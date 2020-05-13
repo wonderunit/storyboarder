@@ -2,7 +2,7 @@ const THREE = require('three')
 const React = require('react')
 const { useState, useReducer, useMemo, useCallback } = React
 
-require("../../../vendor/three/examples/js/loaders/GLTFLoader")////require('three/examples/jsm/loaders/GLTFLoader')
+const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -54,8 +54,34 @@ const reducer = (state, action) => {
   }
 }
 
+/**
+ * HACK
+ * @todo Fix unexpected 404 error from the server
+ * Sometimes, server returns 404 error, but file exist.
+ * Request file multiple times, if still getting 404 then call onerror callback.
+ * */
+const MaxTimes = 3
+const load = (loader, path, events, times = 1) => {
+  try {
+    loader.load(
+      path,
+      events.onload,
+      events.onprogress,
+      (error) => {
+        if (times >= MaxTimes || (error.code && error.code !== 404)) {
+          events.onerror(error)
+        } else {
+          load(loader, path, events, times + 1)
+        }
+      }
+    )
+  } catch (e) {
+    console.error(e)
+  }
+}
+
 const useAssetsManager = () => {
-  const [loader] = useState(() => new THREE.GLTFLoader())
+  const [loader] = useState(() => new GLTFLoader())
   const [textureLoader] = useState(() => new THREE.TextureLoader())
 
   const [assets, dispatch] = useReducer(reducer, {})
@@ -63,34 +89,39 @@ const useAssetsManager = () => {
   useMemo(() => {
     Object.entries(assets)
       .filter(([_, o]) => o.status === 'NotAsked')
+      .filter(([id]) => id !== false)
       .forEach(([id]) => {
         if (!id.includes('/images/')) {
-          loader.load(
-            id,
-            value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            error => dispatch({ type: 'ERROR', payload: { id, error } })
-          )
+          load(loader, id, {
+            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
+            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+          })
           dispatch({ type: 'LOAD', payload: { id } })
         } else {
-          textureLoader.load(
-            id,
-            value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            error => dispatch({ type: 'ERROR', payload: { id, error } })
-          )
+          load(textureLoader, id, {
+            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
+            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+          })
           dispatch({ type: 'LOAD', payload: { id } })
         }
       })
   }, [assets])
 
   const requestAsset = useCallback(
-    id => dispatch({ type: 'PENDING', payload: { id }}),
+    id => {
+      if (id && (!assets[id])) {
+        dispatch({ type: 'PENDING', payload: { id }})
+      }
+      
+      return null
+    },
     []
   )
 
   const getAsset = useCallback(
-    id => assets[id] && assets[id].value,
+    id => assets[id] ? assets[id].value : requestAsset(id),
     [assets]
   )
 

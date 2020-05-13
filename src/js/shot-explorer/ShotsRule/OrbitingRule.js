@@ -38,7 +38,7 @@ class OrbitingRule extends ShotRule {
         object.add(this.camera)
         rotateAroundPoint(this.camera.parent, this.focusedCenter, new THREE.Vector3(0, 1, 0), this.angle, false)
         this.camera.parent.updateMatrixWorld(true)
-        this.camera.applyMatrix(this.camera.parent.matrixWorld)
+        this.camera.applyMatrix4(this.camera.parent.matrixWorld)
         this.camera.parent.remove(this.camera)
         this.camera.updateMatrixWorld(true)
     }

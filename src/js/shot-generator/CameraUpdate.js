@@ -29,10 +29,13 @@ const CameraUpdate = connect(
         camera.userData.type = cameraObject.type
         camera.userData.locked = cameraObject.locked
         camera.userData.id = cameraObject.id
-        camera.fov = cameraObject.fov
+    }, [activeCamera])
+
+    useEffect(() => {
+        camera.fov = activeCamera.fov
         camera.updateProjectionMatrix()
-      }, [activeCamera])
-      return null
+    }, [activeCamera.fov])
+    return null
     })
 )
 

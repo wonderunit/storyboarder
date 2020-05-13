@@ -9,8 +9,9 @@ import {useAsset} from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
+import { axis } from "../../../shared/IK/utils/TransformControls"
 
-const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, isPreview}) => {
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
@@ -22,14 +23,14 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const isFullyUpdate = useRef(false)
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
-    const objectRotationControl = useRef(null)
+    const boneRotationControl = useRef(null)
+    const characterRotationControl = useRef(null)
     useEffect(() => {
       return () => {
         ref.current.remove(SGIkHelper.getInstance())
-
         ref.current.remove(BonesHelper.getInstance())
-        if(objectRotationControl.current)
-          objectRotationControl.current.deselectObject()
+        if(boneRotationControl.current)
+          boneRotationControl.current.deselectObject()
       }
     }, [sceneObject.model])
 
@@ -73,7 +74,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
               color: 0xffffff,
               emissive: 0x0,
               specular: 0x0,
-              reflectivity: 0x0,
               skinning: true,
               shininess: 0,
               flatShading: false,
@@ -140,8 +140,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         SGIkHelper.getInstance().cleanUpCharacter()
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
-        objectRotationControl.current.cleanUp()
-        objectRotationControl.current = null
+        boneRotationControl.current.cleanUp()
+        boneRotationControl.current = null
         if(!lod) return
         for(let i = 0; i < lod.children.length; i++) {
             lod.children[i].geometry.dispose()
@@ -187,7 +187,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         isFullyUpdate.current = false
       }
     }, [sceneObject.posePresetId, sceneObject.skeleton, skeleton, sceneObject.handPosePresetId])
-    
 
     const fullyUpdateIkSkeleton = () => {
       if(!ref.current || !skeleton ) return
@@ -233,19 +232,20 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     useEffect(() => {
       if(!camera) return
       SGIkHelper.getInstance().setCamera(camera)
-      if(objectRotationControl.current)
-          objectRotationControl.current.setCamera(camera)
+      if(boneRotationControl.current)
+        boneRotationControl.current.setCamera(camera)
     }, [camera])
 
     useEffect(() => {
-      if(!objectRotationControl.current) return
-      objectRotationControl.current.deselectObject()
-      objectRotationControl.current.control.domElement = activeGL.domElement
-      // find the 3D Bone matching the selectedBone uuid
-      let bone = skeleton.bones.find(object => object.uuid === selectedBone)      
-      if (bone) {
-        objectRotationControl.current.selectObject(bone, selectedBone)
-      }
+      if(boneRotationControl.current) {
+        boneRotationControl.current.deselectObject()
+        boneRotationControl.current.control.domElement = activeGL.domElement
+        // find the 3D Bone matching the selectedBone uuid
+        let bone = skeleton.bones.find(object => object.uuid === selectedBone)      
+        if (bone) {
+          boneRotationControl.current.selectObject(bone, selectedBone)
+        }
+      } 
     }, [activeGL])
 
     // headScale (0.8...1.2)
@@ -285,7 +285,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [modelSettings, sceneObject.morphTargets, ready])
 
     useEffect(() => {
-        if(!objectRotationControl.current) return
+        if(!boneRotationControl.current) return
         if(!skeleton) return
         // if there was a prior selected bone
         if (BonesHelper.getInstance().selectedBone) {
@@ -298,17 +298,17 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
               
             if (bone) {
               BonesHelper.getInstance().selectBone(bone)
-              objectRotationControl.current.selectObject(bone, selectedBone)
+              boneRotationControl.current.selectObject(bone, selectedBone)
             }
         }
         else {
-            objectRotationControl.current.deselectObject()
+            boneRotationControl.current.deselectObject()
         }
     }, [selectedBone])
 
     // Selects character when character's model has been changed it reselects new character
     useEffect(() => {
-      if(!ref.current || !ready || !lod || !ref.current.children.length || isPreview) return
+      if(!ref.current || !ready || !lod || !ref.current.children.length) return
 
       if (isSelected) {
         BonesHelper.getInstance().initialize(lod.children[0])
@@ -318,9 +318,25 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           ref.current.updateWorldMatrix(true, true)
         }
         ref.current.add(BonesHelper.getInstance())
+        //#region Character's object rotation control
+        props.objectRotationControl.setCharacterId(ref.current.uuid)
+        props.objectRotationControl.control.canSwitch = false
+        props.objectRotationControl.isEnabled = true
+        props.objectRotationControl.setUpdateCharacter((name, rotation) => { 
+          let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion(), "YXZ")
+          props.updateObject(sceneObject.id, {
+            rotation: euler.y,
+          } )})
+        props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+        props.objectRotationControl.control.setShownAxis(axis.Y_axis)
+        props.objectRotationControl.IsEnabled = !sceneObject.locked
+        //#endregion
       } else { 
         ref.current.remove(BonesHelper.getInstance())
         ref.current.remove(SGIkHelper.getInstance())
+        if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+          props.objectRotationControl.deselectObject()
+        }
       }
 
       lod.traverse((child) => {
@@ -338,24 +354,31 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [sceneObject.poleTargets])
 
     useEffect(() => {
-        if(!ref.current || objectRotationControl.current) return 
-        objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
-        objectRotationControl.current.setUpdateCharacter((name, rotation) => { 
-          
-          updateCharacterSkeleton({
-            id: sceneObject.id,
-            name : name,
-            rotation:
-            {
-              x : rotation.x,
-              y : rotation.y,
-              z : rotation.z,
-            }
-        } ) })
+      if(!ref.current || boneRotationControl.current) return 
+      boneRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement, ref.current.uuid)
+      boneRotationControl.current.setCharacterId(ref.current.uuid)
+      boneRotationControl.current.control.canSwitch = false
+      boneRotationControl.current.isEnabled = true
+      boneRotationControl.current.setUpdateCharacter((name, rotation) => { 
+        updateCharacterSkeleton({
+          id: sceneObject.id,
+          name : name,
+          rotation:
+          {
+            x : rotation.x,
+            y : rotation.y,
+            z : rotation.z,
+          }
+      } ) })
     }, [ref.current])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
 
+    useEffect(() => {
+      if(!props.objectRotationControl || !isSelected) return
+      props.objectRotationControl.IsEnabled = !locked
+    }, [locked])
+    
     return <group
         ref={ ref }
 
@@ -366,6 +389,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           poleTargets: sceneObject.poleTargets || {},
           height: originalHeight,
           locked: locked,
+          model: sceneObject.model,
           name: sceneObject.displayName
         }}
 

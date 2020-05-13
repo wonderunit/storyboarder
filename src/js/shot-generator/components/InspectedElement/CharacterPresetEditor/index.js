@@ -273,8 +273,8 @@ const initializeAttachables = (sceneObject, preset) => {
       prevBoneGroup.add(attachableObject)
       attachableObject.updateMatrixWorld(true)
 
-      attachableObject.applyMatrix(prevBoneGroup.getInverseMatrixWorld())
-      attachableObject.applyMatrix(currentBoneGroup.matrixWorld)
+      attachableObject.applyMatrix4(prevBoneGroup.getInverseMatrixWorld())
+      attachableObject.applyMatrix4(currentBoneGroup.matrixWorld)
 
       let { x, y, z }  = attachableObject.position
       newAttachable.x = x 

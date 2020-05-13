@@ -157,7 +157,7 @@ const CameraPanelInspector = connect(
     }, [activeCamera.fov])
 
 
-    const rollCamera = useCallback(() => {
+    const rollCamera = useCallback((event) => {
       let cameraState = activeCamera
       let roll = {
         'z': Math.max(cameraState.roll - THREE.Math.DEG2RAD, -45 * THREE.Math.DEG2RAD),
@@ -174,7 +174,8 @@ const CameraPanelInspector = connect(
                             !event.shiftKey &&
                             !event.metaKey &&
                             !event.ctrlKey &&
-                            !event.altKey,
+                            !event.altKey && 
+                            !event.mousePressed,
         value: (event) => { rollCamera(event) }
       })
       return () => KeyCommandsSingleton.getInstance().removeKeyCommand({ key: "cameraRoll" })

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react'
+import React, { useEffect, useRef, useState, useMemo } from 'react'
 
 const InfiniteScroll = React.memo(({
     elements, 
@@ -12,23 +12,27 @@ const InfiniteScroll = React.memo(({
     const bottomRef = useRef(null)
     const [isFetching, setIsFetching] = useState(false);
 
+    // Requests more objects when reaches the end of scroll 
     useMemo(() => {
         if(!isFetching) return
         fetchMoreElements()
     }, [isFetching])
 
+    // Sets fetching to false when elements amoung changed which signify that more objects were added
     useEffect(() => {
         setIsFetching(false)
     }, [elements])
 
+    // Observes if scroll intersects the bottom compoennt and sets fetching to true 
     const observer = useRef( new window.IntersectionObserver(entries => {
         entries.forEach(en => {
             if (en.intersectionRatio > 0) {
                 setIsFetching(true)
             }
         });
-      }, {threshold: 0.60}))
+    }, {threshold: 0.60}))
 
+    // adds bottom element to IntersectionObserver
     useEffect(() => {
         const { current : currentObserver } = observer
         currentObserver.disconnect()

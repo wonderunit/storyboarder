@@ -10,7 +10,7 @@ import FileInput from './../FileInput'
 
 import Scrollable from './../Scrollable'
 
-import {NumberSlider, formatters, transforms} from './../NumberSlider'
+import {NumberSlider, formatters, transforms, textFormatters, textConstraints} from './../NumberSlider'
 
 import {
   updateWorldRoom,
@@ -22,8 +22,9 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
+import CopyFile from "../../utils/CopyFile"
 
-const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world}) => {
+const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
   const setEnvVisible = useCallback(() => updateWorldEnvironment({visible: !world.environment.visible}), [world.environment.visible])
@@ -41,7 +42,11 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   
   const setEnvScale = useCallback((scale) => updateWorldEnvironment({scale}), [])
   const setEnvRotation = useCallback((rotation) => updateWorldEnvironment({rotation: _Math.radToDeg(rotation)}), [])
-  const setEnvFile = useCallback((event) => updateWorldEnvironment({file: event.file}), [])
+  const setEnvFile = useCallback((event) => {
+    if (event.file) {
+      updateWorldEnvironment({file: CopyFile(storyboarderFilePath, event.file, 'environment')})
+    }
+  }, [])
   
   const setAmbientIntensity = useCallback((intensity) => updateWorldEnvironment({intensity}), [])
   const setDirectionalIntensity = useCallback((intensityDirectional) => updateWorldEnvironment({intensityDirectional}), [])
@@ -109,9 +114,9 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
 
           <div className="inspector-column inspector-offset-row">
-            <NumberSlider label="Width" value={world.room.width} min={1.83} max={76.2} onSetValue={setRoomWidth}/>
-            <NumberSlider label="Length" value={world.room.length} min={1.83} max={76.2} onSetValue={setRoomLength}/>
-            <NumberSlider label="Height" value={world.room.height} min={1.83} max={12.19} onSetValue={setRoomHeight}/>
+            <NumberSlider label="Width" value={world.room.width} min={1.83} max={76.2} onSetValue={setRoomWidth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
+            <NumberSlider label="Length" value={world.room.length} min={1.83} max={76.2} onSetValue={setRoomLength} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
+            <NumberSlider label="Height" value={world.room.height} min={1.83} max={12.19} onSetValue={setRoomHeight} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
           </div>
         </div>
 
@@ -128,10 +133,10 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
               label={EnvironmentModelLabel}
               value={world.environment.file && path.basename(world.environment.file)}
             />
-            <NumberSlider label="X" value={world.environment.x} min={-30} max={30} onSetValue={setEnvX}/>
-            <NumberSlider label="Y" value={world.environment.y} min={-30} max={30} onSetValue={setEnvY}/>
-            <NumberSlider label="Z" value={world.environment.z} min={-30} max={30} onSetValue={setEnvZ}/>
-            <NumberSlider label="Scale" value={world.environment.scale} min={0.001} max={2} onSetValue={setEnvScale}/>
+            <NumberSlider label="X" value={world.environment.x} min={-30} max={30} onSetValue={setEnvX} textFormatter={ textFormatters.imperialToMetric }/>
+            <NumberSlider label="Y" value={world.environment.y} min={-30} max={30} onSetValue={setEnvY} textFormatter={ textFormatters.imperialToMetric }/>
+            <NumberSlider label="Z" value={world.environment.z} min={-30} max={30} onSetValue={setEnvZ} textFormatter={ textFormatters.imperialToMetric }/>
+            <NumberSlider label="Scale" value={world.environment.scale} min={0.001} max={2} onSetValue={setEnvScale} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
             <NumberSlider
                 label="Rotation"
                 value={_Math.degToRad(world.environment.rotation)}
@@ -200,7 +205,8 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
 const getWorldM = deepEqualSelector([getWorld], world => world)
 
 const mapStateToProps = (state) => ({
-  world: getWorldM(state)
+  world: getWorldM(state),
+  storyboarderFilePath: state.meta.storyboarderFilePath
 })
 
 const mapDispatchToProps = {

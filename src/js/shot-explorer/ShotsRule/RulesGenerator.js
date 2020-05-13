@@ -4,6 +4,7 @@ import * as THREE from 'three'
 import HorizontalOneThirdRule from './HorizontalOneThirdRule'
 import OrbitingRule from './OrbitingRule'
 import AreaShotRule from './AreaShotRule'
+// Clamps rotation so it's stay in -180 and 180 degrees range
 const clamRotationTo = (rotation, clampDegree = 180) => {
     if(rotation === clampDegree || rotation === -clampDegree) return rotation
     let clampLimit = Math.max(-clampDegree, Math.min(clampDegree, rotation))
@@ -35,16 +36,19 @@ const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, chara
     let headCenter = new THREE.Vector3()
     headBox.getCenter(headCenter)
     //#endregion
-
+    // Chance to apply orbiting rule is 100%. Orbiting should be always applied
     if(i < 100) {
         // Applies vertical oneThird rule; Should be always applied
         shot.orbitingRule = new OrbitingRule(headCenter, character, camera)          
         shot.cameraRotation = shot.orbitingRule.angle
         results.push(shot.orbitingRule)
     }
+    // Chance to apply roll rule is 10%. RollRule roll camera between 5 to 35 degress
     if(i < 10) {
         results.push(new RollRule(focusedCenter, camera))
     }
+    // Chance to apply vertical one third rule is 70%. VerticalOneThirdRule is left/right framing rule 
+    // rotates camera to left or right so that character stays in one third part of scene
     if(i < 70) {
         let headQuaternion = new THREE.Quaternion()
         headBone.getWorldQuaternion(headQuaternion)
@@ -55,6 +59,8 @@ const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, chara
         characterFacingRotation = clamRotationTo(characterFacingRotation)
         results.push(new VerticalOneThirdRule(focusedCenter, camera, headCenter, characterFacingRotation < 0 ? "left" : "right"));
     }
+    // Chance to apply horizontal one third rule is 100%. HorizontalOneThirdRule should be alway applied. 
+    // It makes sure that character head is always in top one third part of camera
     if(i < 100) {
         results.push( new HorizontalOneThirdRule(headCenter, camera, focusedCenter))
     }

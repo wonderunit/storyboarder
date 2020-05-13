@@ -25,6 +25,29 @@ const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 let sendedAction = null
+
+const {SGMiddleware} = require('./../../xr/sockets')
+
+const shotExplorerMiddleware = store => next => action => {
+  if(!action) return
+  if(sendedAction !== action) {
+    let win = shotExplorer.getWindow()
+    if (win && !win.isDestroyed()) {
+      let json
+      if(action.payload && action.payload.skeleton) {
+        json = JSON.stringify(action)
+      } else {
+        json = action
+      }
+      win.webContents.send('shot-explorer:updateStore', json)
+    }
+  }
+  return next(action)
+  
+}
+
+const middlewares = [ thunkMiddleware, shotExplorerMiddleware, SGMiddleware]
+
 const actionSanitizer = action => (
   action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
   { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
@@ -44,27 +67,11 @@ const configureStore = function configureStore (preloadedState) {
     reducer,
     preloadedState,
     composeEnhancers(
-      applyMiddleware(thunkMiddleware, store => next => action => {
-        if(!action) return
-        if(sendedAction !== action) {
-          let win = shotExplorer.getWindow()
-          if (win && !win.isDestroyed()) {
-            let json
-            if(action.payload && action.payload.skeleton) {
-              json = JSON.stringify(action)
-            } else {
-              json = action
-            }
-            win.webContents.send('shot-explorer:updateStore', json)
-          }
-        }
-        next(action)
-        
-      })
+      applyMiddleware(...middlewares),
     ),
   
-  )
-  return store
+    )
+    return store
 }
 
 
@@ -128,6 +135,7 @@ const preloadData = async () => {
   }, { storyboarderFilePath }))
   await loadAsset( path.join(window.__dirname, 'data', 'shot-generator', 'dummies', 'bone.glb'))
   await loadAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'light.glb'))
+  await loadAsset( path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'hmd.glb'))
 }
 
 const loadBoard = async (board) => {
@@ -204,7 +212,7 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
 
   await preloadData()
 })
-ipcRenderer.on('update', (event, { board }) => {
+ipcRenderer.on('update', (event, { board }) => {111
   store.dispatch(setBoard(board))
 })
 

@@ -1,5 +1,5 @@
 const THREE = require("three")
-var InstancedMesh = require('./../../vendor/three-instanced-mesh')( THREE )
+require('./../../vendor/three-instanced-mesh')(THREE)
 const RagDoll = require("./objects/IkObjects/Ragdoll")
 require('./utils/Object3dExtension')
 const TargetControl = require("./objects/TargetControl")
@@ -119,7 +119,9 @@ class SGIKHelper extends THREE.Object3D
 
     cleanUpCharacter() 
     {
+        console.log("Clean up character")
         if(!this.ragDoll) return;
+        this.ragDoll.updateReact();
         this.intializedSkinnedMesh = null;
         this.characterObject = null;
         this.ragDoll.cleanUp();
@@ -200,10 +202,10 @@ class SGIKHelper extends THREE.Object3D
                 this.poleTargets.updateMatrixWorld(true)
                 let characterMatrix = this.characterObject.matrixWorld
                 let characterInverseMatrix = this.characterObject.getInverseMatrixWorld()
-                this.selectedControlPoint.applyMatrix(characterInverseMatrix)
+                this.selectedControlPoint.applyMatrix4(characterInverseMatrix)
                 this.selectedControlPoint.updateMatrixWorld(true)
                 let worldPosition = this.selectedControlPoint.position;
-                this.selectedControlPoint.applyMatrix(characterMatrix)
+                this.selectedControlPoint.applyMatrix4(characterMatrix)
                 this.selectedControlPoint.updateMatrixWorld(true)
                 let poleTargets = {};
                 poleTargets[this.selectedControlPoint.name] = 
@@ -258,7 +260,7 @@ class SGIKHelper extends THREE.Object3D
 
     update()
     {
-        if(!this.isSelected()) return;
+        if(!this.isSelected() || !this.ragDoll || !this.ragDoll.originalObject) return;
         this.ragDoll.update();
         this.ragDoll.originalObject.updateMatrixWorld(true)
 
@@ -366,11 +368,11 @@ class SGIKHelper extends THREE.Object3D
         }
         else
         {
-            targetPoint.applyMatrix(this.instancedMesh.parent.parent.getInverseMatrixWorld());
+            targetPoint.applyMatrix4(this.instancedMesh.parent.parent.getInverseMatrixWorld());
             this.instancedMesh.setPositionAt( id , targetPoint.position );
             this.instancedMesh.setQuaternionAt( id , targetPoint.quaternion );
             this.instancedMesh.setScaleAt( id , targetPoint.scale);
-            targetPoint.applyMatrix(this.instancedMesh.parent.parent.matrixWorld);
+            targetPoint.applyMatrix4(this.instancedMesh.parent.parent.matrixWorld);
         }
         
         if(color)
@@ -409,6 +411,7 @@ class SGIKHelper extends THREE.Object3D
     }
 
     changeDomElement(domElement) {
+        if(!this.ragDoll) return
         this.ragDoll.controlTargetSelection.dispose();
         this.ragDoll.controlTargetSelection.domElement = domElement;
         for(let i = 0; i < this.targetControls.length; i++) {
@@ -439,7 +442,7 @@ const intializeInstancedMesh = (mesh, camera, domElement, scene) =>
         flatShading: false});
     let newMesh = mesh ? mesh : new THREE.Mesh(sphereGeometry, material);
     instance.material = material;
-    instance.instancedMesh = new InstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
+    instance.instancedMesh = new THREE.CustomInstancedMesh(newMesh.geometry, material, sizeOfTargets, true, true, false);
     instance.defaultPosition = new THREE.Vector3(5000, 5000, 5000);
     instance.defaultColor = new THREE.Color(0x6a4dff);
     instance.instancedMesh.userData.preventInteraction = true;

@@ -269,7 +269,6 @@ const getShotBox = (character, shotType = 0) => {
 }
 
 const getClosestCharacter = (characters, camera) => {
-  console.log("Getting closes character")
   let resultAngle = Math.PI
   let resultDistance = Infinity
   let resultObject = null

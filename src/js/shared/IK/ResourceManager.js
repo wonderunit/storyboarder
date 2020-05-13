@@ -1,3 +1,4 @@
+const THREE = require('three')
 let instance = null;
 class ResourceManager 
 {
@@ -5,23 +6,25 @@ class ResourceManager
     {
         if(!instance)
         {
+            instance = this;
             this.matrices = [];
             this.vectors = [];
             this.quaternions = [];
+            this.customObjects = {};
         }
         return instance;
     }
 
     static getInstance()
     {
-        return instance ? instace : new ResourceManager(); 
+        return instance ? instance : new ResourceManager(); 
     }
     
     getQuaternion()
     {
         if(this.quaternions.length !== 0)
         {
-            return this.quaternions.shift();
+            return this.quaternions.pop();
         }
         else
         {
@@ -33,7 +36,7 @@ class ResourceManager
     {
         if(this.vectors.length !== 0)
         {
-            return this.vectors.shift();
+            return this.vectors.pop();
         }
         else
         {
@@ -45,7 +48,7 @@ class ResourceManager
     {
         if(this.matrices.length !== 0)
         {
-            return this.matrices.shift();
+            return this.matrices.pop();
         }
         else
         {
@@ -53,11 +56,22 @@ class ResourceManager
         }
     }
 
+    getCustom(type) 
+    {   
+        let name = type.name;
+        if(!this.customObjects[name] || !this.customObjects[name].length) {
+            this.customObjects[name] = [];
+            return new type();
+        } else {
+            return this.customObjects[name].pop()
+        }
+    }
+
     release(resource)
     {
         if(resource instanceof THREE.Quaternion)
         {
-            resource.set(0, 0, 0, 0);
+            resource.set(0, 0, 0, 1);
             this.quaternions.push(resource);
         }
         else if (resource instanceof THREE.Vector3)
@@ -69,6 +83,12 @@ class ResourceManager
         {
             resource.identity();
             this.matrices.push(resource);
+        } 
+        else 
+        {
+            let type = resource.constructor.name;
+            if(!this.customObjects[type]) this.customObjects[type] = []
+            this.customObjects[type].push(resource);
         }
     }
 }

@@ -147,7 +147,7 @@ const createVolume = (id) => {
     rotation: 0,
 
     visible: true,
-    opacity: 0.7,
+    opacity: 0.3,
     color: 0x777777,
     numberOfLayers: 4,
     distanceBetweenLayers: 1.5,
