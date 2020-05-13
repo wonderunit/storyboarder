@@ -1375,7 +1375,7 @@ const loadBoardUI = async () => {
     let board = boardData.boards[currentBoard]
     if (board.link) {
       // ...prompt them, to see if they really want to remove the link
-      const choice = remote.dialog.showMessageBox({
+      remote.dialog.showMessageBox({
         type: 'question',
         message: 'This board was edited in Photoshop and linked to a PSD file. ' +
                  'What would you like to do?',
@@ -1386,34 +1386,38 @@ const loadBoardUI = async () => {
         ],
         defaultId: 2
       })
+      .then(({ response }) => {
+        if (response === 0) {
+          // Open in Photoshop
+          openInEditor()
+        } else if (response === 1) {
+          // Draw in Storyboarder
+          remote.dialog.showMessageBox({
+            type: 'question',
+            message: 'If you draw, Storyboarder will stop watching ' +
+                    'Photoshop for changes, and unlink the PSD from ' +
+                    'this board. Are you absolutely sure?',
+            buttons: [
+              'Unlink and Draw', // 0
+              'Cancel' // 1
+            ],
+            defaultId: 1
+          })
+          .then(({ response }) => {
+            if (response === 0) {
+              // Unlink and Draw
+              notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
+              linkedFileManager.removeBoard(board)
+              delete board.link
+              markBoardFileDirty()
 
-      if (choice === 0) {
-        // Open in Photoshop
-        openInEditor()
-      } else if (choice === 1) {
-        // Draw in Storyboarder
-        const confirmChoice = remote.dialog.showMessageBox({
-          type: 'question',
-          message: 'If you draw, Storyboarder will stop watching ' +
-                   'Photoshop for changes, and unlink the PSD from ' +
-                   'this board. Are you absolutely sure?',
-          buttons: [
-            'Unlink and Draw', // 0
-            'Cancel' // 1
-          ],
-          defaultId: 1
-        })
-
-        if (confirmChoice === 0) {
-          // Unlink and Draw
-          notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
-          linkedFileManager.removeBoard(board)
-          delete board.link
-          markBoardFileDirty()
-
-          storyboarderSketchPane.setIsLocked(false)
+              storyboarderSketchPane.setIsLocked(false)
+            }
+          })
+          .catch(err => log.error(err))
         }
-      }
+      })
+      .catch(err => log.error(err))
     }
   })
 
