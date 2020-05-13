@@ -49,19 +49,20 @@ const onInput = (name, event) => {
 
 const onFilenameClick = event => {
   event.target.style.pointerEvents = 'none'
+
   remote.dialog.showOpenDialog(
-    { title: 'Select Image Editor Application' },
-    filenames => {
-      event.target.style.pointerEvents = 'auto'
-      if (filenames) {
-        prefsModule.set('absolutePathToImageEditor', filenames[0], true)
-        render()
-      } else {
-        prefsModule.set('absolutePathToImageEditor', undefined, true)
-        render()
-      }
+    { title: 'Select Image Editor Application' }
+  ).then(({ filePaths }) => {
+    event.target.style.pointerEvents = 'auto'
+
+    if (filePaths.length) {
+      prefsModule.set('absolutePathToImageEditor', filePaths[0], true)
+      render()
+    } else {
+      prefsModule.set('absolutePathToImageEditor', undefined, true)
+      render()
     }
-  )
+  }).catch(err => console.error(err))
 }
 
 const onWatermarkFileClick = event => {
