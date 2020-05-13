@@ -556,9 +556,9 @@ let importImagesDialogue = (shouldReplace = false) => {
         "multiSelections"
       ]
     }
-  ).then(({ canceled, filePaths: filepaths }) => {
-    if (filepaths.length) {
-      filepaths = filepaths.sort()
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      filePaths = filePaths.sort()
       let filepathsRecursive = []
       let handleDirectory = (dirPath) => {
         let innerFilenames = fs.readdirSync(dirPath)
@@ -572,7 +572,7 @@ let importImagesDialogue = (shouldReplace = false) => {
           }
         }
       }
-      for(let filepath of filepaths) {
+      for(let filepath of filePaths) {
         let stats = fs.statSync(filepath)
         if(stats.isFile()) {
           filepathsRecursive.push(filepath)
