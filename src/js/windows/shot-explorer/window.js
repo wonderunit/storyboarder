@@ -59,7 +59,7 @@ const configureStore = function configureStore (preloadedState) {
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
               }
-              next(action)
+              return next(action)
             })
       )
     )
@@ -156,8 +156,10 @@ const pushUpdates = () => {
       let action = object
       if(!action.type) {
         action = JSON.parse(object)
+        sendedAction.push(action)
       }
       store.dispatch(action)
+      sendedAction.pop()
     }
   })
   sendedAction = []
