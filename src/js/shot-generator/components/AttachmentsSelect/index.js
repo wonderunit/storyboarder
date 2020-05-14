@@ -16,7 +16,7 @@ const AttachmentsSelect = ({ style = {}, ids, options, copyFiles, onChange, onBl
     let selected = event.target.selectedOptions[0]
     if (selected) {
       if (selected.dataset.selector) {
-        let filepaths = dialog.showOpenDialog(
+        dialog.showOpenDialog(
           null, {
             properties: [
               "openFile",
@@ -24,15 +24,22 @@ const AttachmentsSelect = ({ style = {}, ids, options, copyFiles, onChange, onBl
             ]
           }
         )
-        if (filepaths) {
-          let ids = copyFiles(filepaths)
-          if (ids.length) {
-            onChange( ids )
+        .then(({ filePaths }) => {
+          if (filePaths.length) {
+            let ids = copyFiles(filePaths)
+            if (ids.length) {
+              onChange( ids )
+            }
           }
-        }
-        // automatically blur to return keyboard control
-        document.activeElement.blur()
-        onBlur()
+        })
+        .catch(err => {
+          console.error(err)
+        })
+        .finally(() => {
+          // automatically blur to return keyboard control
+          document.activeElement.blur()
+          onBlur()
+        })
       } else {
         // convert value string to ids
         ids = event.target.value.split(',')
