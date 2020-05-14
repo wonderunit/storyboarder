@@ -9,7 +9,6 @@ const thunkMiddleware = require('redux-thunk').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState } = require('../../shared/reducers/shot-generator')
-
 const poses = require('../../shared/reducers/shot-generator-presets/poses.json')
 const ShotExplorer = require('../../shot-explorer').default
 const service = require('../shot-generator/service')
@@ -151,7 +150,7 @@ electron.remote.getCurrentWindow().on("hide", () => {
 const pushUpdates = () => {
   shotExplorerElement = renderShotExplorer()
   batch(() => {
-    for(let i = 0; i < sendedAction.length; i++) {
+    for(let i = 0, length = sendedAction.length; i < length; i++) {
       let object = sendedAction[i]
       let action = object
       if(!action.type) {
@@ -159,7 +158,6 @@ const pushUpdates = () => {
         sendedAction.push(action)
       }
       store.dispatch(action)
-      sendedAction.pop()
     }
   })
   sendedAction = []
