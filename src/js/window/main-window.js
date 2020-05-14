@@ -2645,13 +2645,13 @@ let openInEditor = async () => {
           // file exists but link does not exist
           // we need to know if user wants us to overwrite existing file before linking
           shouldOverwrite = false
-          const choice = remote.dialog.showMessageBox({
+          const { response } = await remote.dialog.showMessageBox({
             type: 'question',
             title: `Overwrite ${path.extname(psdPath)}?`,
             message: `A PSD file already exists for this board. Overwrite it?`,
             buttons: ['Yes, overwrite', `No, open existing PSD`]
           })
-          shouldOverwrite = (choice === 0)
+          shouldOverwrite = (response === 0)
         }
       } else {
         if (board.link) {
