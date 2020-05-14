@@ -174,7 +174,7 @@ app.on('ready', async () => {
 
   if (os.platform() === 'darwin') {
     if (!isDev && !app.isInApplicationsFolder()) {
-      const choice = dialog.showMessageBox({
+      const { response } = await dialog.showMessageBox({
         type: 'question',
         title: 'Move to Applications folder?',
         message: 'Would you like to move Storyboarder to the Applications folder?',
@@ -182,7 +182,7 @@ app.on('ready', async () => {
         defaultId: 1
       })
 
-      const yes = (choice === 0)
+      const yes = (response === 0)
 
       if (yes) {
         try {
