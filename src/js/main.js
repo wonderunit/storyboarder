@@ -603,14 +603,12 @@ let importWorksheetDialogue = () => {
       properties: [
         "openFile",
       ]
-    },
-
-    (filepath)=>{
-      if (filepath) {
-        mainWindow.webContents.send('importWorksheets', filepath)
-      }
     }
-  )
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      mainWindow.webContents.send('importWorksheets', filePaths)
+    }
+  })
 }
 
 const processFdxData = fdxObj => {
