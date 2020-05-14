@@ -1000,7 +1000,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   // if beforeunload is telling us to prevent unload ...
   mainWindow.webContents.on('will-prevent-unload', event => {
-    const choice = dialog.showMessageBox({
+    const choice = dialog.showMessageBoxSync({
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm',
