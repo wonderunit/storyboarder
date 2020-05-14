@@ -844,11 +844,11 @@ const createAndLoadScene = async aspectRatio => {
     buttonLabel: "Create",
     defaultPath: app.getPath('documents'),
     options: {
-      properties: {
+      properties: [
         // show overwrite confirmation on linux (UNTESTED)
         // is `true` the default? not sure …
-        showOverwriteConfirmation: true
-      }
+        "showOverwriteConfirmation"
+      ]
     }
   })
 
