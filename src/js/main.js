@@ -530,10 +530,11 @@ let openDialogue = () => {
           'fdx'
         ]
       },
-    ]}, filenames => {
-      if (filenames) {
-        openFile(filenames[0])
-      }
+    ]}
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      openFile(filePaths[0])
+    }
   })
 }
 
