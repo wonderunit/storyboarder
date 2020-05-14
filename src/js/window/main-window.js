@@ -6311,12 +6311,12 @@ const saveAsFolder = async () => {
   saveBoardFile()
 
   // display the file selection window
-  let dstFolderPath = remote.dialog.showSaveDialog(null, {
+  let { canceled, filePath: dstFolderPath } = await remote.dialog.showSaveDialog(null, {
     defaultPath: app.getPath('documents')
   })
 
   // user cancelled
-  if (!dstFolderPath) {
+  if (canceled) {
     return
   }
 
