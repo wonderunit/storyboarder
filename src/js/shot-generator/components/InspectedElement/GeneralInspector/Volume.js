@@ -17,9 +17,9 @@ const selectOptions = [
   {
     label: "Built-in",
     options: [
-      { label: "rain", value: "rain1,rain2" },
-      { label: "fog", value: "fog1,fog2" },
-      { label: "explosion", value: "debris,explosion" }
+      { label: "Rain", value: "rain1,rain2" },
+      { label: "Fog", value: "fog1,fog2" },
+      { label: "Explosion", value: "debris,explosion" }
     ]
   }
 ]
@@ -124,7 +124,13 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
         <div className="input-group__input">
           <Select
             label="Select Layer Images"
-            value={ selectedFile }
+            value={{
+              label:
+                typeof selectedFile.label == 'string'
+                  ? selectedFile.label
+                  : selectedFile.label.map(s => path.basename(s)).join(', '),
+              value: selectedFile.value
+            }}
             options={ selectOptions }
             onSetValue={(item) => { selectAttachment(item) }}
             />
