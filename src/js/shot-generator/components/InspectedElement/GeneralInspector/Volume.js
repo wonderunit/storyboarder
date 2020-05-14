@@ -63,17 +63,18 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
     let selected = item.value
     let ids = ""
     if (selected === "custom") {
-
-        let filepaths = dialog.showOpenDialog(null, { properties: ["openFile", "multiSelections"] })
-
-        if (filepaths) {
-          ids = copyFiles(filepaths)
+      dialog.showOpenDialog(null, { properties: ["openFile", "multiSelections"] })
+      .then(({ filePaths }) => {
+        if (filePaths) {
+          ids = copyFiles(filePaths)
 
           if (ids.length) {
             updateObject(sceneObject.id, { volumeImageAttachmentIds: ids })
             setSelectedFile({label: createLabel(ids), value: ids})
           }
-      }
+        }
+      })
+      .catch(err => console.error(err))
 
     } else {
       setSelectedFile(item)
