@@ -536,6 +536,7 @@ let openDialogue = () => {
       openFile(filePaths[0])
     }
   })
+  .catch(err => log.error(err))
 }
 
 let importImagesDialogue = (shouldReplace = false) => {
@@ -609,6 +610,7 @@ let importWorksheetDialogue = () => {
       mainWindow.webContents.send('importWorksheets', filePaths)
     }
   })
+  .catch(err => log.error(err))
 }
 
 const processFdxData = fdxObj => {
