@@ -835,56 +835,59 @@ const ensureFountainSceneIds = (filePath, data) => {
 // new functions
 ////////////////////////////////////////////////////////////
 
-const createAndLoadScene = aspectRatio =>
-  new Promise((resolve, reject) => {
-    dialog.showSaveDialog({
-      title: "New Storyboard",
-      buttonLabel: "Create",
-      defaultPath: app.getPath('documents'),
-    },
-    async filename => {
-      if (filename) {
-        log.info(filename)
-
-        if (fs.existsSync(filename)) {
-          if (fs.lstatSync(filename).isDirectory()) {
-            log.info('\ttrash existing folder', filename)
-            await trash(filename)
-          } else {
-            dialog.showMessageBox(null, {
-              message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten."
-            })
-            return reject(null)
-          }
-        }
-
-        fs.mkdirSync(filename)
-
-        let boardName = path.basename(filename)
-        let filePath = path.join(filename, boardName + '.storyboarder')
-
-        let newBoardObject = {
-          version: pkg.version,
-          aspectRatio: aspectRatio,
-          fps: prefModule.getPrefs().lastUsedFps || 24,
-          defaultBoardTiming: prefs.defaultBoardTiming,
-          boards: []
-        }
-
-        fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
-        fs.mkdirSync(path.join(filename, 'images'))
-
-        addToRecentDocs(filePath, newBoardObject)
-        loadStoryboarderWindow(filePath)
-
-        analytics.event('Application', 'new', newBoardObject.aspectRatio)
-
-        resolve()
-      } else {
-        reject()
+const createAndLoadScene = async aspectRatio => {
+  // if directory exists, showSaveDialog will prompt to confirm overwrite
+  let { canceled, filePath } = await dialog.showSaveDialog({
+    title: "New Storyboard",
+    buttonLabel: "Create",
+    defaultPath: app.getPath('documents'),
+    options: {
+      properties: {
+        // show overwrite confirmation on linux (UNTESTED)
+        // is `true` the default? not sure …
+        showOverwriteConfirmation: true
       }
-    })
+    }
   })
+
+  if (canceled) return
+
+  // if the filePath exists ...
+  if (fs.existsSync(filePath)) {
+    // ... and is a folder ...
+    if (fs.lstatSync(filePath).isDirectory()) {
+      // ... try to trash it ...
+      log.info('\ttrash existing folder', filePath)
+      await trash(filePath)
+    } else {
+      dialog.showMessageBox(null, {
+        message: "Could not overwrite file " + path.basename(filePath) + ". Only folders can be overwritten."
+      })
+      return
+    }
+  }
+
+  fs.mkdirSync(filePath)
+
+  let boardName = path.basename(filePath)
+  let storyboarderFilePath = path.join(filePath, boardName + '.storyboarder')
+
+  let newBoardObject = {
+    version: pkg.version,
+    aspectRatio: aspectRatio,
+    fps: prefModule.getPrefs().lastUsedFps || 24,
+    defaultBoardTiming: prefs.defaultBoardTiming,
+    boards: []
+  }
+
+  fs.writeFileSync(storyboarderFilePath, JSON.stringify(newBoardObject))
+  fs.mkdirSync(path.join(filePath, 'images'))
+
+  addToRecentDocs(storyboarderFilePath, newBoardObject)
+  loadStoryboarderWindow(storyboarderFilePath)
+
+  analytics.event('Application', 'new', newBoardObject.aspectRatio)
+}
 
 const createAndLoadProject = aspectRatio => {
   fs.ensureDirSync(currentPath)
