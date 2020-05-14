@@ -16,7 +16,14 @@ const AttachmentsSelect = ({ style = {}, ids, options, copyFiles, onChange, onBl
     let selected = event.target.selectedOptions[0]
     if (selected) {
       if (selected.dataset.selector) {
-        let filepaths = dialog.showOpenDialog(null, { properties: ["openFile", multiSelections ? "multiSelections" : ""] })
+        let filepaths = dialog.showOpenDialog(
+          null, {
+            properties: [
+              "openFile",
+              ...multiSelections ? ["multiSelections"] : []
+            ]
+          }
+        )
         if (filepaths) {
           let ids = copyFiles(filepaths)
           if (ids.length) {
