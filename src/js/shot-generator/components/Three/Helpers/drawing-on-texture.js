@@ -37,7 +37,7 @@ class DrawingTexture {
         
         this.drawingCtx.drawImage(texture.image, 0, 0, width, height);
         this.material.map.needsUpdate = true;
-    }
+    }    
 
     intersectImage (x, y, object, camera) {
       this.raycaster.setFromCamera({x,y}, camera);
@@ -45,20 +45,14 @@ class DrawingTexture {
       return intersects.length && intersects[0].uv;
     }
   
-    draw (event, gl, object, camera){
+    draw (mousePosition, object, camera){
         if(!this.isEnabled) return;
-        const rect = gl.domElement.getBoundingClientRect();
-        let worldX = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
-        let worldY = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
+ 
         const { width, height } = this.material.map.image;
-        let coordinates = this.intersectImage(worldX, worldY, object, camera);
+        let coordinates = this.intersectImage(mousePosition.x, mousePosition.y, object, camera);
         if(!coordinates) return;
         let screenX = coordinates.x * width;
         let screenY = ( 1 - coordinates.y) * height;
-        if(!this.prevX || !this.prevY) {
-            this.prevX = screenX
-            this.prevY = screenY
-        }
         this.drawingCtx.drawImage(this.material.map.image, 0, 0);
         this.drawingCtx.beginPath();
         this.drawingCtx.moveTo(this.prevX, this.prevY);

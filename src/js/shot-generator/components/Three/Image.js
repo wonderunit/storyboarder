@@ -10,7 +10,12 @@ import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
-
+const mouse = (event, gl) => {
+  const rect = gl.domElement.getBoundingClientRect();
+  let worldX = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
+  let worldY = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
+  return { x: worldX, y: worldY }
+}
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
   const {asset: texture} = useAsset(imagesPaths[0] || null)
   const { gl, camera } = useThree()
@@ -92,13 +97,16 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
   const draw = (event) => {
     if(!isDrawingMode.current) return
-    drawingTexture.current.draw(event, gl, ref.current, camera);
+    drawingTexture.current.draw(mouse(event, gl), ref.current, camera);
   } 
 
   const onKeyDown = (event) => {
     if ( event.keyCode === 16 ) {
       isDrawingMode.current = true
       props.objectRotationControl.deselectObject()
+      let { x, y } = mouse(event, gl)
+      drawingTexture.current.prevX = x
+      drawingTexture.current.prevY = y
     }
   }
 
