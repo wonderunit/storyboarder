@@ -67,7 +67,8 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
 
           if (ids.length) {
             updateObject(sceneObject.id, { volumeImageAttachmentIds: ids })
-            setSelectedFile({label:ids, value: ids})
+            let label = ids.map(s => path.basename(s)).join(', ');
+            setSelectedFile({label:label, value: ids})
           }
       }
 
@@ -125,10 +126,7 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
           <Select
             label="Select Layer Images"
             value={{
-              label:
-                typeof selectedFile.label == 'string'
-                  ? selectedFile.label
-                  : selectedFile.label.map(s => path.basename(s)).join(', '),
+              label:selectedFile.label,
               value: selectedFile.value
             }}
             options={ selectOptions }
