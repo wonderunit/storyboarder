@@ -24,6 +24,10 @@ const selectOptions = [
   }
 ]
 
+const createLabel = (ids) => {
+  return ids.map(s => path.basename(s)).join(', ');
+} 
+
 const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath}) => {
   const {id, ...props} = sceneObject
 
@@ -31,7 +35,7 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
     let builtInOptions = Object.values(Object.values(selectOptions)[1].options)
     let builtInOption = builtInOptions.find(object => object.value.includes(sceneObject.volumeImageAttachmentIds[0]))
     if(!builtInOption) {
-      return {label: sceneObject.volumeImageAttachmentIds, value: sceneObject.volumeImageAttachmentIds }
+      return {label: createLabel(sceneObject.volumeImageAttachmentIds), value: sceneObject.volumeImageAttachmentIds }
     } else {
       return builtInOption
     }
@@ -67,8 +71,7 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
 
           if (ids.length) {
             updateObject(sceneObject.id, { volumeImageAttachmentIds: ids })
-            let label = ids.map(s => path.basename(s)).join(', ');
-            setSelectedFile({label:label, value: ids})
+            setSelectedFile({label: createLabel(ids), value: ids})
           }
       }
 
