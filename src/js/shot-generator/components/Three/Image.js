@@ -1,27 +1,30 @@
 import * as THREE from 'three'
-import React, { useEffect, useMemo, useRef } from 'react'
-import { extend } from 'react-three-fiber'
+import React, { useEffect, useMemo, useRef, useLayoutEffect } from 'react'
+import { extend, useThree } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { axis } from "../../../shared/IK/utils/TransformControls"
+import DrawingTexture from "./Helpers/drawing-on-texture" 
+import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
   const {asset: texture} = useAsset(imagesPaths[0] || null)
-  
+  const { gl, camera } = useThree()
   const aspect = useRef(1)
   const ref = useRef()
-
+  const drawingTexture = useRef(new DrawingTexture())
+  const isDrawingMode = useRef(false)
   const material = useMemo(() => {
-    return new THREE.MeshToonMaterial({ transparent: true })
+    let material = drawingTexture.current.createMaterial()
+    return material
   }, [])
 
   useMemo(() => {
     if(!texture) return
-    
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
     texture.repeat.set(1, 1)
@@ -30,7 +33,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     aspect.current = width / height
 
     if (material) {
-        material.map = texture
+        drawingTexture.current.setTexture(texture)
         material.needsUpdate = true
     } 
   }, [texture, imagesPaths[0]])
@@ -46,6 +49,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
   useEffect(() => {
     if (isSelected) {
+      drawingTexture.current.Enabled = true
       props.objectRotationControl.setUpdateCharacter((name, rotation) => {
         let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
         props.updateObject(ref.current.userData.id, {
@@ -59,19 +63,52 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
       props.objectRotationControl.IsEnabled = !sceneObject.locked
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
+
+      KeyCommandsSingleton.getInstance().addKeyCommand({
+        key: "camera-controls", 
+        keyCustomCheck: onKeyDown,
+        value: () => {}})
+      gl.domElement.addEventListener('mousemove', draw)
+      window.addEventListener( 'keyup', onKeyUp, false )
+
     } else {
+      drawingTexture.current.Enabled = false
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
       } 
+
+      gl.domElement.removeEventListener('mousemove', draw)
+      window.removeEventListener( 'keyup', onKeyUp, false )
+      KeyCommandsSingleton.getInstance().removeKeyCommand({key: "camera-controls"})
     }
   }, [isSelected]) 
-
+  
   const { x, y, z, visible, height, rotation, locked } = sceneObject
 
   useEffect(() => {
     if(!props.objectRotationControl || !isSelected) return
     props.objectRotationControl.IsEnabled = !locked
   }, [locked])
+
+  const draw = (event) => {
+    if(!isDrawingMode.current) return
+    drawingTexture.current.draw(event, gl, ref.current, camera);
+  } 
+
+  const onKeyDown = (event) => {
+    if ( event.keyCode === 16 ) {
+      isDrawingMode.current = true
+      props.objectRotationControl.deselectObject()
+    }
+  }
+
+  const onKeyUp = (event) => {
+   if ( event.keyCode === 16 ) {
+      isDrawingMode.current = false
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+      props.objectRotationControl.IsEnabled = !sceneObject.locked
+    }
+  }
 
   return (
     <group
