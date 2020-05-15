@@ -24,7 +24,7 @@ const teleportParent = require('./helpers/teleport-parent')
 const profile = require('./helpers/vr-gamepads/oculus-touch-v2.json')
 const { addGamepad, removeGamepad } = require('./helpers/vr-gamepads')
 
-const applyDeviceQuaternion = require('../../shot-generator/utils/apply-device-quaternion')
+const applyDeviceQuaternion = require('../../shot-generator/utils/apply-device-quaternion').default
 
 const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
@@ -806,7 +806,6 @@ const useInteractionsManager = ({
 
       if (distance != null) {
         setDidMoveCamera(distance)
-        gl.xr.getCamera(placeholderCamera)
         moveCameraByDistance(placeholderCamera, camera, distance)
         playSound('teleport-move')
       }
@@ -974,6 +973,8 @@ const useInteractionsManager = ({
 
   // TODO could model these as ... activities? exec:'render' actions?
   useFrame(() => {
+    // Update placeholder camera
+    gl.xr.getSession() && gl.xr.getCamera(placeholderCamera)
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
@@ -1194,7 +1195,7 @@ const useInteractionsManager = ({
             let transformMatrix = new THREE.Matrix4()
             transformMatrix.multiply(boneInOriginalMesh.matrix)
             transformMatrix.multiply(boneInOriginalMesh.matrixWorld.inverse())
-            controllerWorldQuaternion.applyMatrix(transformMatrix)
+            controllerWorldQuaternion.applyMatrix4(transformMatrix)
             boneInOriginalMesh.quaternion.copy(controllerWorldQuaternion)
             boneInOriginalMesh.updateMatrix()
             boneInOriginalMesh.updateWorldMatrix(false, true)
@@ -1219,12 +1220,12 @@ const useInteractionsManager = ({
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
 
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
+          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
           let eulerRot = new THREE.Euler(0, 0, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
           staticLimbRotation.setFromEuler(eulerRot)
-
+          
           relativeAngle(camera, headBone, staticLimbRotation)
 
           eulerRot.x = THREE.Math.degToRad(90)
@@ -1245,7 +1246,8 @@ const useInteractionsManager = ({
           if(!rightArmPoleTarget.mesh.userData.isInitialized)
           rightArmPoleTarget.mesh.position.y = neckBone.y
 
-          attachControlPointToHmdElement(camera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
+          camera.parent.add(placeholderCamera)
+          attachControlPointToHmdElement(placeholderCamera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
 
@@ -1260,6 +1262,8 @@ const useInteractionsManager = ({
           uiService.send({ type: 'HIDE' })
         },
         onPosingCharacterExit: (context, event) => {
+          camera.parent.remove(placeholderCamera)
+          
           let ikHelper = getIkHelper()
           ikHelper.ragDoll.isEnabledIk = false
           if(!ikHelper.isSelected())
@@ -1536,7 +1540,7 @@ const useInteractionsManager = ({
           if (worldScale === WORLD_SCALE_LARGE) {
             saveStandingMemento(camera)
 
-            setMiniMode(true, camera)
+            setMiniMode(true, camera) 
             getIkHelper().isInMiniMode(true)
           } else {
             setMiniMode(false, camera)

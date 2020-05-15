@@ -38,7 +38,9 @@ const onUserConnect = (io, socket, store) => {
 
 export const serve = (io, store, service) => {
   IO.current = io
-
+  //localStorage.debug = '*'
+  localStorage.removeItem('debug')
+  
   io.on('connection', (socket) => {
 
     console.log('%c XR', 'color: #4CAF50', `User has been connected: ${socket.id}`)

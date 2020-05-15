@@ -16,8 +16,9 @@ const each = (fn, countRef) => {
 }
 
 export const connect = (URI = '') => {
-  const client = SocketClient.connect(URI, {rejectUnauthorized: false, transports: ['websocket'], upgrade: false})
-  console.log(client)
+  //localStorage.debug = '*'
+  localStorage.removeItem('debug')
+  const client = SocketClient.connect(URI, {rejectUnauthorized: false, reconnection: false})
 
   let FRAME_RATE = {current: 10}
 

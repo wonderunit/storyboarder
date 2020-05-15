@@ -345,7 +345,7 @@ class XRServer {
 
       // via https://expressjs.com/en/4x/api.html#app.listen
       const server = https.createServer({ ...generateCertificate() }, app)
-      serve(io(server, { wsEngine: 'ws', serveClient: false, transports: ['websocket'], allowUpgrades: false }), store, service)
+      serve(io(server, { wsEngine: 'ws', serveClient: false, pingInterval: 5000, pingTimeout: 60000 }), store, service)
 
       server.on('error', err => {
         console.error(err)
