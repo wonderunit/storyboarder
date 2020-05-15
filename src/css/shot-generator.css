@@ -304,6 +304,8 @@ kbd {
   background-color: #333639;
   color: #999;
   text-transform: capitalize;
+
+  min-height: 0;
 }
 
 #inspector > div {
@@ -1494,6 +1496,7 @@ div.fatal-error-screen__report::selection {
   display: flex;
   flex-direction: column;
   height: 100%;
+  min-height: 0;
 }
 
 .tabs-header {
@@ -1536,6 +1539,8 @@ div.fatal-error-screen__report::selection {
 
   display: flex;
   flex-direction: column;
+
+  min-height: 0;
 }
 
 .tabs-body::-webkit-scrollbar {
