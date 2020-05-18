@@ -216,12 +216,48 @@ const SceneManagerR3fSmall = connect(
       return () => window.removeEventListener("pointerup", onPointerUp)
     }, [onPointerUp])
 
+    const getIntersectable = () => {
+      let objects = scene.children[0].children
+      for(let i = 0; i < objects.length; i++) {
+        let object = objects[i]
+        object.renderOrder = i
+      }
+      return objects
+    }
+
     const raycaster = useRef(new THREE.Raycaster())
     const intersectLogic = useCallback((e) => {
       const { x, y } = mouse(e)
       raycaster.current.setFromCamera({x, y}, camera)
-      var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
-      let target = intersects[0]
+      var intersects = raycaster.current.intersectObjects( getIntersectable(), true )
+      let target
+
+      if (intersects.length) {
+        let closest 
+        let linkedPosition
+        for (let intersect of intersects) {
+          let parent
+          if (intersect.object.type === 'Sprite') {
+            parent = intersect.object.parent.parent
+          } else {
+            parent = intersect.object.parent
+          }
+          linkedPosition = parent.position.clone().setY(0)
+          let newDist = linkedPosition.distanceTo(intersect.point.setY(0))
+          if (newDist < 0.30){
+            if(!closest) {
+              closest = {}
+              closest.parent = parent
+              closest.target = intersect
+            } else if(closest.parent.renderOrder < parent.renderOrder) {
+              closest.parent = parent
+              closest.target = intersect
+            }
+          }
+        }
+
+        target = closest ? closest.target : intersects[0]
+      }
       if(!target || (target.object.userData && target.object.userData.type === "ground")) {
         deselect()
         return
