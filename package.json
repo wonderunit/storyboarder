@@ -13,7 +13,7 @@
     "dist:mac": "npm run build && electron-builder build -m",
     "dist:win": "npm run build && electron-builder build -w",
     "dist:linux": "npm run build && electron-builder build -l",
-    "dist": "npm run xr:build && build -mwl",
+    "dist": "npm run build && build -mwl",
     "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/*.renderer.test.js test/**/*.renderer.test.js && electron-mocha test/**/*.main.test.js",
     "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
     "clean:xr": "trash src/js/xr/dist",
