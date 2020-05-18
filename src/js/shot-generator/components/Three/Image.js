@@ -1,7 +1,9 @@
 import * as THREE from 'three'
-import React, { useEffect, useMemo, useRef, useLayoutEffect } from 'react'
+import React, { useEffect, useMemo, useRef } from 'react'
 import { extend, useThree } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
+import path from 'path'
+import fs from 'fs-extra'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { axis } from "../../../shared/IK/utils/TransformControls"
@@ -16,6 +18,25 @@ const mouse = (event, gl) => {
   let worldY = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
   return { x: worldX, y: worldY }
 }
+
+
+let saveDataURLtoFile = (dataURL, filename, boardPath, updateObject, sceneObject) => {
+  let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
+  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', filename)
+  
+  let isImageExist = fs.pathExistsSync(imageFilePath)
+  
+  let projectDir = path.dirname(boardPath)
+  let assetsDir = path.join(projectDir, 'models', 'images')
+  fs.ensureDirSync(assetsDir)
+  let dst = path.join(assetsDir, path.basename(imageFilePath))
+  let id = path.relative(projectDir, dst)
+  fs.writeFileSync(imageFilePath, imageData, 'base64')
+  if(!isImageExist || !sceneObject.imageAttachmentIds || !sceneObject.imageAttachmentIds.find(ids => ids === id)) {
+    updateObject(sceneObject.id, {imageAttachmentIds: [id]})
+  }
+}
+
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
   const {asset: texture} = useAsset(imagesPaths[0] || null)
   const { gl, camera } = useThree()
@@ -113,6 +134,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid);
       props.objectRotationControl.IsEnabled = !sceneObject.locked;
       drawingTexture.current.resetMeshPos();
+      saveDataURLtoFile(drawingTexture.current.getImage(), `${sceneObject.id}-texture.png`, props.storyboarderFilePath, props.updateObject, sceneObject)
     }
   }
 

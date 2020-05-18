@@ -28,6 +28,12 @@ class DrawingTexture {
         this.prevY = null
     }
 
+    getImage() {
+        let mime = "images/jpeg";
+        let imageData = this.drawingCanvas.toDataURL(mime)
+        return imageData
+    }
+
     createMaterial() {
         let texture = new THREE.CanvasTexture(this.drawingCanvas);
         let material = new THREE.MeshToonMaterial({ map: texture, transparent: true });
