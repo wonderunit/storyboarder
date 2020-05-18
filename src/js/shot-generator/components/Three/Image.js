@@ -70,7 +70,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
 
       KeyCommandsSingleton.getInstance().addKeyCommand({
-        key: "camera-controls", 
+        key: "image-drawing", 
         keyCustomCheck: onKeyDown,
         value: () => {}})
       gl.domElement.addEventListener('mousemove', draw)
@@ -84,7 +84,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
       gl.domElement.removeEventListener('mousemove', draw)
       window.removeEventListener( 'keyup', onKeyUp, false )
-      KeyCommandsSingleton.getInstance().removeKeyCommand({key: "camera-controls"})
+      KeyCommandsSingleton.getInstance().removeKeyCommand({key: "image-drawing"})
     }
   }, [isSelected]) 
   
@@ -102,19 +102,17 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
   const onKeyDown = (event) => {
     if ( event.keyCode === 16 ) {
-      isDrawingMode.current = true
-      props.objectRotationControl.deselectObject()
-      let { x, y } = mouse(event, gl)
-      drawingTexture.current.prevX = x
-      drawingTexture.current.prevY = y
+      isDrawingMode.current = true;
+      props.objectRotationControl.deselectObject();
     }
   }
 
   const onKeyUp = (event) => {
    if ( event.keyCode === 16 ) {
-      isDrawingMode.current = false
-      props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
-      props.objectRotationControl.IsEnabled = !sceneObject.locked
+      isDrawingMode.current = false;
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid);
+      props.objectRotationControl.IsEnabled = !sceneObject.locked;
+      drawingTexture.current.resetMeshPos();
     }
   }
 

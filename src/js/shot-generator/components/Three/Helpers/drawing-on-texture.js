@@ -8,10 +8,11 @@ class DrawingTexture {
         this.material = null;
         this.isEnabled = true;
         drawSetting.meshSize = 5;
-        drawSetting.color = '#ff0000';
+        drawSetting.color = '#000000';
 
-        this.prevX = null
-        this.prevY = null
+        this.prevX = null;
+        this.prevY = null;
+        this.uvBased = false;
     }
 
     set Enabled(value) {
@@ -20,6 +21,11 @@ class DrawingTexture {
 
     get Enabled() {
         return this.isEnabled;
+    }
+
+    resetMeshPos() {
+        this.prevX = null
+        this.prevY = null
     }
 
     createMaterial() {
@@ -40,19 +46,52 @@ class DrawingTexture {
     }    
 
     intersectImage (x, y, object, camera) {
-      this.raycaster.setFromCamera({x,y}, camera);
-      let intersects = this.raycaster.intersectObject(object, true);
-      return intersects.length && intersects[0].uv;
+        this.raycaster.setFromCamera({x,y}, camera);
+        let intersects = this.raycaster.intersectObject(object, true);
+        if(this.uvBased) return intersects.length && intersects[0].uv
+        let percentage = null
+        if(intersects.length && intersects[0]) {
+            let scale = object.scale.clone()//new THREE.Vector3();
+            scale.z = 0;
+            scale.y = -scale.y
+            let quaternion = object.worldQuaternion()
+            scale.applyQuaternion(quaternion)
+            scale.divideScalar(2)
+            let intersectPos = intersects[0].point
+            let position = object.worldPosition()//.applyEuler(euler)
+            let topPosition = position.clone().sub(scale)
+            let bottomPosition = position.clone().add(scale)
+            quaternion.inverse()
+            bottomPosition.applyQuaternion(quaternion)
+            topPosition.applyQuaternion(quaternion)
+            intersectPos.applyQuaternion(quaternion)
+            bottomPosition.sub(topPosition)
+            intersectPos.sub(topPosition)
+            intersectPos.divide(bottomPosition)
+            percentage = {}
+            percentage.x = intersectPos.x
+            percentage.y = intersectPos.y
+            percentage.z = intersectPos.z
+        }
+        return percentage;
     }
   
     draw (mousePosition, object, camera){
         if(!this.isEnabled) return;
  
         const { width, height } = this.material.map.image;
-        let coordinates = this.intersectImage(mousePosition.x, mousePosition.y, object, camera);
-        if(!coordinates) return;
-        let screenX = coordinates.x * width;
-        let screenY = ( 1 - coordinates.y) * height;
+        let percentage = this.intersectImage(mousePosition.x, mousePosition.y, object, camera);
+        if(percentage === null) {
+            this.resetMeshPos();
+            return;
+        }
+        let screenX = this.uvBased ?  percentage.x * width : width * percentage.x;
+        let screenY = this.uvBased ?  ( 1 - percentage.y) * height : height * percentage.y;
+        if(!this.prevX || !this.prevY) {
+            this.prevX = screenX;
+            this.prevY = screenY;
+        }
+   
         this.drawingCtx.drawImage(this.material.map.image, 0, 0);
         this.drawingCtx.beginPath();
         this.drawingCtx.moveTo(this.prevX, this.prevY);
@@ -62,8 +101,8 @@ class DrawingTexture {
         this.drawingCtx.stroke();
         this.drawingCtx.closePath();
         this.material.map.needsUpdate = true;
-        this.prevX = screenX
-        this.prevY = screenY
+        this.prevX = screenX;
+        this.prevY = screenY;
     }
 }
 export default DrawingTexture;
