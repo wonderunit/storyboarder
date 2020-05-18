@@ -1,3 +1,8 @@
+// When packaged, use React in production mode
+if (app.isPackaged) {
+  process.env.NODE_ENV = 'production'
+}
+
 const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
 const fs = require('fs-extra')

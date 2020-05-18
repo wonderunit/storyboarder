@@ -14,7 +14,6 @@ const isDev = require('electron-is-dev')
 const log = require('electron-log')
 log.catchErrors()
 
-const React = require('react')
 const ReactDOM = require('react-dom')
 const h = require('../utils/h')
 const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
