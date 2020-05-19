@@ -314,7 +314,8 @@ const useInteractionsManager = ({
 }) => {
   const { gl, camera, scene } = useThree()
 
-  const placeholderCamera = new THREE.PerspectiveCamera()
+  const placeholderCamera = useMemo(() => new THREE.PerspectiveCamera(), [])
+  camera.add(placeholderCamera)
 
   const selections = useSelector(getSelections)
   const lastAction = useSelector(state => state.lastAction.type)
@@ -804,9 +805,13 @@ const useInteractionsManager = ({
         distance = -0.5
       }
 
-      if (distance != null) {
+      if (distance != null && gl.xr.getSession()) {
         setDidMoveCamera(distance)
-        moveCameraByDistance(placeholderCamera, camera, distance)
+        
+        let tempCamera = new THREE.PerspectiveCamera()
+        gl.xr.getCamera(tempCamera)
+        
+        moveCameraByDistance(tempCamera, camera, distance)
         playSound('teleport-move')
       }
     }
@@ -972,9 +977,12 @@ const useInteractionsManager = ({
   }
 
   // TODO could model these as ... activities? exec:'render' actions?
-  useFrame(() => {
+  useFrame(({camera}) => {
     // Update placeholder camera
-    gl.xr.getSession() && gl.xr.getCamera(placeholderCamera)
+    if (gl.xr.getSession()) {
+      gl.xr.getCamera(placeholderCamera)
+      placeholderCamera.updateWorldMatrix(false, true)
+    }
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
@@ -1220,7 +1228,7 @@ const useInteractionsManager = ({
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
 
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
+          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5 - placeholderCamera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
           let eulerRot = new THREE.Euler(0, 0, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
@@ -1245,8 +1253,7 @@ const useInteractionsManager = ({
           leftArmPoleTarget.mesh.position.y = neckBone.y
           if(!rightArmPoleTarget.mesh.userData.isInitialized)
           rightArmPoleTarget.mesh.position.y = neckBone.y
-
-          camera.parent.add(placeholderCamera)
+          
           attachControlPointToHmdElement(placeholderCamera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
@@ -1262,8 +1269,6 @@ const useInteractionsManager = ({
           uiService.send({ type: 'HIDE' })
         },
         onPosingCharacterExit: (context, event) => {
-          camera.parent.remove(placeholderCamera)
-          
           let ikHelper = getIkHelper()
           ikHelper.ragDoll.isEnabledIk = false
           if(!ikHelper.isSelected())
