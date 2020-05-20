@@ -18,7 +18,7 @@ const each = (fn, countRef) => {
 export const connect = (URI = '') => {
   //localStorage.debug = '*'
   localStorage.removeItem('debug')
-  const client = SocketClient.connect(URI, {rejectUnauthorized: false, reconnection: false})
+  const client = SocketClient.connect(URI, {rejectUnauthorized: false})
 
   let FRAME_RATE = {current: 10}
 

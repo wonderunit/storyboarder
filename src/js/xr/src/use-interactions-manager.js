@@ -202,15 +202,7 @@ const [useStore, useStoreApi] = create((set, get) => ({
     let center = new THREE.Vector3()
     sceneCamera.getWorldPosition(center)
 
-    const absoluteMatrix = new THREE.Matrix4().multiplyMatrices(sceneCamera.parent.matrixWorld, xrCamera.matrixWorld)
-
-    const position = new THREE.Vector3()
-    const rotation = new THREE.Quaternion()
-    const scale = new THREE.Vector3()
-
-    absoluteMatrix.decompose(position, rotation, scale)
-
-    const direction = new THREE.Vector3(0.0, 0.0, 1.0).applyQuaternion(rotation).setComponent(1, 0.0).setLength(distance)
+    const direction = new THREE.Vector3(0.0, 0.0, 1.0).applyQuaternion(xrCamera.quaternion).setComponent(1, 0.0).setLength(distance)
     center.add(direction)
     
     teleportState(state, sceneCamera, center.x, null, center.z, null)
@@ -310,12 +302,10 @@ const useInteractionsManager = ({
   rootRef,
   uiService,
   playSound,
-  stopSound
+  stopSound,
+  realCamera
 }) => {
   const { gl, camera, scene } = useThree()
-
-  const placeholderCamera = useMemo(() => new THREE.PerspectiveCamera(), [])
-  camera.add(placeholderCamera)
 
   const selections = useSelector(getSelections)
   const lastAction = useSelector(state => state.lastAction.type)
@@ -808,10 +798,7 @@ const useInteractionsManager = ({
       if (distance != null && gl.xr.getSession()) {
         setDidMoveCamera(distance)
         
-        let tempCamera = new THREE.PerspectiveCamera()
-        gl.xr.getCamera(tempCamera)
-        
-        moveCameraByDistance(tempCamera, camera, distance)
+        moveCameraByDistance(realCamera, camera, distance)
         playSound('teleport-move')
       }
     }
@@ -978,11 +965,6 @@ const useInteractionsManager = ({
 
   // TODO could model these as ... activities? exec:'render' actions?
   useFrame(({camera}) => {
-    // Update placeholder camera
-    if (gl.xr.getSession()) {
-      gl.xr.getCamera(placeholderCamera)
-      placeholderCamera.updateWorldMatrix(false, true)
-    }
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
@@ -1188,13 +1170,17 @@ const useInteractionsManager = ({
 
             // Sets up default (looking forward) camera's parent rotation
             // Serves as a static rotation of camera's parent
-            hmdElement.parent.rotation.x = Math.PI
-            hmdElement.parent.rotation.y = 0
-            hmdElement.parent.rotation.z = Math.PI
+            if (hmdElement.parent) {
+              hmdElement.parent.rotation.x = Math.PI
+              hmdElement.parent.rotation.y = 0
+              hmdElement.parent.rotation.z = Math.PI
+            }
 
+            let parent = hmdElement.parent || hmdElement
+            
             // Calculates delta aka relative angle
             let delta = new THREE.Quaternion()
-            delta.multiply(hmdElement.parent.worldQuaternion().conjugate())
+            delta.multiply(parent.worldQuaternion().conjugate())
             delta.multiply(boneInOriginalMesh.worldQuaternion())
 
             // Applies delta to transform hmdElement rotation to bone space
@@ -1228,7 +1214,7 @@ const useInteractionsManager = ({
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
 
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5 - placeholderCamera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
+          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
           let eulerRot = new THREE.Euler(0, 0, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
@@ -1254,7 +1240,7 @@ const useInteractionsManager = ({
           if(!rightArmPoleTarget.mesh.userData.isInitialized)
           rightArmPoleTarget.mesh.position.y = neckBone.y
           
-          attachControlPointToHmdElement(placeholderCamera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
+          attachControlPointToHmdElement(realCamera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
 
