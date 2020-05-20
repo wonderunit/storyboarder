@@ -1120,21 +1120,46 @@ const sceneObjectsReducer = (state = {}, action) => {
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
         if(!draft[action.payload.id]) return;
-        draft[action.payload.id].skeleton = action.payload.skeleton.length ? draft[action.payload.id].skeleton : {}
+        if(!action.payload.skeleton.length) {
+          draft[action.payload.id].skeleton = {}
+        }
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
           let position = bone.position
           let quaternion = bone.quaternion
           if(draft[action.payload.id].skeleton[bone.name]) {
-            draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
-                                                                      draft[action.payload.id].skeleton[bone.name].rotation : 
-                                                                      { x: rotation.x, y: rotation.y, z: rotation.z }
-            draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
-                                                                      draft[action.payload.id].skeleton[bone.name].position : 
-                                                                      { x: position.x, y: position.y, z: position.z }
-            draft[action.payload.id].skeleton[bone.name].quaternion = !bone.quaternion ?
-                                                                      draft[action.payload.id].skeleton[bone.name].quaternion : 
-                                                                      { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
+            if(rotation) {
+              let storeRotation = draft[action.payload.id].skeleton[bone.name].rotation
+              if(storeRotation) {
+                storeRotation.x = rotation.x
+                storeRotation.y = rotation.y
+                storeRotation.z = rotation.z 
+              } else {
+                draft[action.payload.id].skeleton[bone.name].rotation = { x: rotation.x, y: rotation.y, z: rotation.z }
+              }
+            }
+            if(position) {
+              let storePosition = draft[action.payload.id].skeleton[bone.name].position
+              if(storePosition) {
+                storePosition.x = position.x
+                storePosition.y = position.y
+                storePosition.z = position.z 
+              } else {
+                draft[action.payload.id].skeleton[bone.name].position = { x: position.x, y: position.y, z: position.z }
+              }
+            }
+            if(quaternion) {
+              let storeQuaternion = draft[action.payload.id].skeleton[bone.name].quaternion
+              if(storeQuaternion) {
+                storeQuaternion.x = quaternion.x
+                storeQuaternion.y = quaternion.y
+                storeQuaternion.z = quaternion.z 
+                storeQuaternion.w = quaternion.w 
+              } else {
+                draft[action.payload.id].skeleton[bone.name].quaternion = { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
+              }
+            }                                                  
+
           } else {
             draft[action.payload.id].skeleton[bone.name] = {}
             draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
@@ -1148,7 +1173,6 @@ const sceneObjectsReducer = (state = {}, action) => {
             { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
           }
           draft[action.payload.id].skeleton[bone.name].name = bone.name
-          draft[action.payload.id].skeleton[bone.name].id = bone.id
         
         }
         return

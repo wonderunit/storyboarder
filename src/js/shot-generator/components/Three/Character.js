@@ -10,6 +10,10 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
+const digits = 100000
+const roundToDigits = (value) => {
+  return Math.round((value + Number.EPSILON) * digits) / digits
+} 
 
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
     const {asset: gltf} = useAsset(path)
@@ -39,7 +43,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         setReady(false)
         return [null, null, null, null, null]
       }
-  
+      console.log("Model is initialized")
       let lod = new THREE.LOD()
       let { scene } = cloneGltf(gltf)
       let map
@@ -206,14 +210,14 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         boneMatrix.premultiply(inverseMatrixWorld)
         position = position.setFromMatrixPosition(boneMatrix)
         let quaternion = new THREE.Quaternion().setFromRotationMatrix(boneMatrix)
-        boneMatrix.premultiply(ref.current.matrixWorld)
+        //boneMatrix.premultiply(ref.current.matrixWorld)
+        console.log(position.clone())
         changedSkeleton.push({ 
-          id: bone.uuid,
           name: bone.name,
           position: { 
-            x: position.x, 
-            y: position.y, 
-            z: position.z 
+            x: roundToDigits(position.x),
+            y: roundToDigits(position.y),
+            z: roundToDigits(position.z)
           }, 
           rotation: { 
             x: rotation.x, 
@@ -221,10 +225,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             z: rotation.z
           },
           quaternion: {
-            x: quaternion.x,
-            y: quaternion.y,
-            z: quaternion.z,
-            w: quaternion.w
+            x: roundToDigits(quaternion.x),
+            y: roundToDigits(quaternion.y),
+            z: roundToDigits(quaternion.z),
+            w: roundToDigits(quaternion.w)
           }
         })
       }
@@ -270,6 +274,13 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         skinnedMesh.material.emissive.set(sceneObject.tintColor)
       })
     }, [sceneObject.tintColor, ready])
+
+    useEffect(() => {
+      if(ready) {
+        props.forceUpdate({id:sceneObject.id})
+      }
+      console.log(ready)
+    }, [ready])
 
     useEffect(() => {
       if(!lod) return
