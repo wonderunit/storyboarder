@@ -28,7 +28,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const boneRotationControl = useRef(null)
-    const characterRotationControl = useRef(null)
     useEffect(() => {
       return () => {
         ref.current.remove(SGIkHelper.getInstance())
@@ -43,7 +42,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         setReady(false)
         return [null, null, null, null, null]
       }
-      console.log("Model is initialized")
       let lod = new THREE.LOD()
       let { scene } = cloneGltf(gltf)
       let map
@@ -210,8 +208,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         boneMatrix.premultiply(inverseMatrixWorld)
         position = position.setFromMatrixPosition(boneMatrix)
         let quaternion = new THREE.Quaternion().setFromRotationMatrix(boneMatrix)
-        //boneMatrix.premultiply(ref.current.matrixWorld)
-        console.log(position.clone())
         changedSkeleton.push({ 
           name: bone.name,
           position: { 
@@ -279,7 +275,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       if(ready) {
         props.forceUpdate({id:sceneObject.id})
       }
-      console.log(ready)
     }, [ready])
 
     useEffect(() => {
