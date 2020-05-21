@@ -6,15 +6,80 @@
 const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
+const R = require('ramda')
 
 const { createStore } = require('redux')
 
-const { initialState, reducer, getSceneObjects } = require('../../src/js/shared/reducers/shot-generator')
+const {
+  initialState,
+  reducer,
+  getSceneObjects
+} = require('../../src/js/shared/reducers/shot-generator')
+
+const serializeSceneObject = require('../../src/js/shared/reducers/shot-generator/serialize-scene-object')
 
 const store = createStore(reducer, initialState)
 
+describe('serializeSceneObject', () => {
+  it('serializes', () => {
+    let object = {
+      type: 'object',
+      loaded: true
+    }
+
+    let characterWithSkeleton = {
+      type: 'character',
+      skeleton: {
+        "Spine2": {
+          "name": "Spine2",
+          "position": {
+            "x": 0.00167,
+            "y": 1.22983,
+            "z": -0.03056
+          },
+          "quaternion": {
+            "w": 0.99882,
+            "x": -0.04856,
+            "y": 0,
+            "z": 0
+          },
+          "rotation": {
+            "x": -1.4830873294065141e-8,
+            "y": -3.9092456260017476e-10,
+            "z": -4.831679286872894e-10
+          }
+        },
+        "mixamorigLeftArm": {
+          "rotation": {
+            "x": 1.00840734641021,
+            "y": 0.008407346410207,
+            "z": 0.108407346410207
+          }
+        }
+      }
+    }
+
+    let characterWithoutSkeleton = {
+      type: 'character'
+    }
+
+    let sObject = serializeSceneObject(object)
+    assert(sObject.loaded === undefined)
+
+    let sCwS = serializeSceneObject(characterWithSkeleton)
+    assert(sCwS.loaded === undefined)
+    assert(sCwS.skeleton !== null)
+    assert(sCwS.skeleton.Spine2.quaternion === undefined)
+    assert(sCwS.skeleton.Spine2.position === undefined)
+
+    let sCwoS = serializeSceneObject(characterWithoutSkeleton)
+    assert(sCwoS.loaded === undefined)
+    assert(sCwoS.skeleton === undefined)
+  })
+})
+
 describe('reducer', () => {
-  describe('sceneObjects', () => {  
+  describe('sceneObjects', () => {
     it('has a displayName when name is undefined', () => {
       store.dispatch({ type: '@@redux-undo/INIT' })
   

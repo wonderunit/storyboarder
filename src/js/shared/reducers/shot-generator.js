@@ -5,12 +5,13 @@ const undoable = require('redux-undo').default
 const crypto = require('crypto')
 const reduceReducers = require('../../vendor/reduce-reducers')
 const { combineReducers } = require('redux')
+const R = require('ramda')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
+const serializeSceneObject = require('./shot-generator/serialize-scene-object')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
-const getComparableSerializedState = require('./tools/get-comparable-serialized-state')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -36,27 +37,15 @@ const getWorld = state => state.undoable.present.world
 
 
 const getHash = state =>
-  hashify(JSON.stringify(getComparableSerializedState(getSerializedState(state))))
+  hashify(JSON.stringify(getSerializedState(state)))
 
 const getIsSceneDirty = state => getHash(state) !== state.meta.lastSavedHash
 
 // return only the stuff we want to save to JSON
 const getSerializedState = state => {
-  let sceneObjects = Object.entries(getSceneObjects(state))
-    .reduce((o, [ k, v ]) => {
-      let {
-        // ignore 'loaded'
-        loaded: _,
-        // but allow serialization of the rest
-        ...serializable
-      } = v
-      o[k] = serializable
-      return o
-    }, {})
-
   return {
     world: getWorld(state),
-    sceneObjects,
+    sceneObjects: R.map(serializeSceneObject, getSceneObjects(state)),
     activeCamera: getActiveCamera(state)
   }
 }
@@ -1759,7 +1748,7 @@ module.exports = {
   getSelectedBone,
   getWorld,
 
-  getSerializedState : state => getComparableSerializedState(getSerializedState(state)),
+  getSerializedState,
   getSelectedAttachable,
 
   getIsSceneDirty,
