@@ -10,15 +10,13 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
-import path from 'path'
 import FaceMesh from "./Helpers/FaceMesh"
 
-const Character = React.memo(({ modelPath, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
-  const {asset: gltf} = useAsset(modelPath)
-  const defaultImagePath = path.join(path.dirname(props.storyboarderFilePath), "models", "images", "happy.png")
-  const {asset: texture} = useAsset(defaultImagePath)
-  console.log(defaultImagePath)
-  
+const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
+  const {asset: gltf} = useAsset(path)
+  console.log(props.imagePath)
+  const {asset: texture} = useAsset(props.imagePath)
+    console.log(texture)
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
@@ -393,35 +391,14 @@ const Character = React.memo(({ modelPath, sceneObject, modelSettings, isSelecte
       }
     }
     const faceMesh = useRef(new FaceMesh())
-    const raycaster = useRef(new THREE.Raycaster())
-    const testIntersection = (event) => {
-      console.log(lod)
-      faceMesh.current.scene = scene
-      faceMesh.current.camera = camera
-      raycaster.current.setFromCamera(mouse(event), camera)
-      let intersects = raycaster.current.intersectObjects([ref.current], true)
-      if(intersects.length ){
-        console.log(intersects[0])
-      }
+    useEffect(() =>{
+      if(!texture) return
+
       if(!faceMesh.current.skinnedMesh) {
         faceMesh.current.setSkinnedMesh(lod.children[0], gl)
       }
-      faceMesh.current.draw(event, texture)
-/* 
-      let rect = gl.domElement.getBoundingClientRect();
-      let x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-      let y = -( (event.clientY - rect.top) / rect.height) * 2 + 1;
-      raycaster.current.setFromCamera({x, y}, camera);
-      console.log(x, y)
-      let intersects = raycaster.current.intersectObjects(scene.__interaction, true)
-      console.log(intersects) */
-    }
-    useLayoutEffect(() => {
-      gl.domElement.addEventListener("mousedown", testIntersection)
-      return () => {
-        gl.domElement.removeEventListener("mousedown", testIntersection)
-      }
-    }, [testIntersection]) 
+      faceMesh.current.draw(texture)
+    }, [texture])
     
     return <group
         ref={ ref }

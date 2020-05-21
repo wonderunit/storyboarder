@@ -1,15 +1,5 @@
 
 import getMidpoint from './midpoint'
-const mousePositionInCanvas = ( {x, y}, canvasBox ) => {
-    return new THREE.Vector2(x - canvasBox.left, y - canvasBox.top)
-}
-
-const mousePositionInMesh = ({ x, y}, gl, width, height) => {
-    let canvaRect = gl.domElement.getBoundingClientRect();
-    let newX = (x - canvaRect.left) / canvaRect.width * width
-    let newY = (y - canvaRect.top) / canvaRect.height * height
-    return new THREE.Vector2(newX, newY)
-}
 var basePosition = new THREE.Vector3();
 
 var skinIndex = new THREE.Vector4();
@@ -30,16 +20,50 @@ let _vA = new THREE.Vector3();
 let _vB = new THREE.Vector3();
 let _vC = new THREE.Vector3();
 const applyMorph = (_vA, _vB, _vC, morphPosition, morphInfluences) => {
+    _morphA.set( 0, 0, 0 );
+    _morphB.set( 0, 0, 0 );
+    _morphC.set( 0, 0, 0 );
 
+    for ( let i = 0, il = morphPosition.length; i < il; i ++ ) {
+
+        var influence = morphInfluences[ i ];
+        var morphAttribute = morphPosition[ i ];
+
+        if ( influence === 0 ) continue;
+
+        _tempA.fromBufferAttribute( morphAttribute, a );
+        _tempB.fromBufferAttribute( morphAttribute, b );
+        _tempC.fromBufferAttribute( morphAttribute, c );
+
+        if ( morphTargetsRelative ) {
+
+            _morphA.addScaledVector( _tempA, influence );
+            _morphB.addScaledVector( _tempB, influence );
+            _morphC.addScaledVector( _tempC, influence );
+
+        } else {
+
+            _morphA.addScaledVector( _tempA.sub( _vA ), influence );
+            _morphB.addScaledVector( _tempB.sub( _vB ), influence );
+            _morphC.addScaledVector( _tempC.sub( _vC ), influence );
+
+        }
+
+    }
+
+    _vA.add( _morphA );
+    _vB.add( _morphB );
+    _vC.add( _morphC );
 }
-const boneTransform = (object, index, target ) => {
-        var skeleton = object.skeleton;
-        var geometry = object.geometry;
+
+THREE.SkinnedMesh.prototype.boneTransform = function(index, target ) {
+        var skeleton = this.skeleton;
+        var geometry = this.geometry;
 
         skinIndex.fromBufferAttribute( geometry.attributes.skinIndex, index );
         skinWeight.fromBufferAttribute( geometry.attributes.skinWeight, index );
 
-        basePosition.fromBufferAttribute( geometry.attributes.position, index ).applyMatrix4( object.bindMatrix );
+        basePosition.fromBufferAttribute( geometry.attributes.position, index ).applyMatrix4( this.bindMatrix );
 
         target.set( 0, 0, 0 );
 
@@ -59,7 +83,7 @@ const boneTransform = (object, index, target ) => {
 
         }
 
-        return target.applyMatrix4( object.bindMatrixInverse );
+        return target.applyMatrix4( this.bindMatrixInverse );
 }
 
 class FaceMesh {
@@ -81,7 +105,6 @@ class FaceMesh {
         this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
         this.skinnedMesh.material.map = texture
         this.skinnedMesh.material.map.needsUpdate = true;
-     //   let indices = this.skinnedMesh.geometry.attributes.skinIndex.
         this.gl = gl;
         this.updateCanvasBox()
 
@@ -97,7 +120,7 @@ class FaceMesh {
         this.canvasBox.height = canvaRect.height;
     }
 
-    facesSearch(headPos) {
+    facesSearch(interactionPoint, headBone) {
         let object = this.skinnedMesh
         let geometry = this.skinnedMesh.geometry
         let drawRange = geometry.drawRange;
@@ -110,12 +133,12 @@ class FaceMesh {
         let end = Math.min( index.count, ( drawRange.start + drawRange.count ) );
 
         let dir = new THREE.Vector3()
-        object.parent.parent.getWorldDirection(dir)
+        headBone.getWorldDirection(dir)
         let dist = dir.clone().normalize().setLength(2)
-        headPos.add(dist)
+        interactionPoint.add(dist)
         dir.negate()
         let target = new THREE.Vector3()
-        let ray = new THREE.Ray(headPos, dir)
+        let ray = new THREE.Ray(interactionPoint, dir)
         let _inverseMatrix = new THREE.Matrix4()
         _inverseMatrix.getInverse( object.matrixWorld );
 		ray.applyMatrix4( _inverseMatrix );
@@ -131,45 +154,12 @@ class FaceMesh {
             _vC.fromBufferAttribute(position, c)
             var morphInfluences = object.morphTargetInfluences;
             //#region Apply morph 
-            _morphA.set( 0, 0, 0 );
-            _morphB.set( 0, 0, 0 );
-            _morphC.set( 0, 0, 0 );
-        
-            for ( let i = 0, il = morphPosition.length; i < il; i ++ ) {
-        
-                var influence = morphInfluences[ i ];
-                var morphAttribute = morphPosition[ i ];
-        
-                if ( influence === 0 ) continue;
-        
-                _tempA.fromBufferAttribute( morphAttribute, a );
-                _tempB.fromBufferAttribute( morphAttribute, b );
-                _tempC.fromBufferAttribute( morphAttribute, c );
-        
-                if ( morphTargetsRelative ) {
-        
-                    _morphA.addScaledVector( _tempA, influence );
-                    _morphB.addScaledVector( _tempB, influence );
-                    _morphC.addScaledVector( _tempC, influence );
-        
-                } else {
-        
-                    _morphA.addScaledVector( _tempA.sub( _vA ), influence );
-                    _morphB.addScaledVector( _tempB.sub( _vB ), influence );
-                    _morphC.addScaledVector( _tempC.sub( _vC ), influence );
-        
-                }
-        
-            }
-        
-            _vA.add( _morphA );
-            _vB.add( _morphB );
-            _vC.add( _morphC );
+            applyMorph(_vA, _vB, _vC, morphPosition, morphInfluences)
             ////#endregion
 
-            boneTransform(object, a, _vA)
-            boneTransform(object, b, _vB)
-            boneTransform(object, c, _vC)
+            object.boneTransform(a, _vA)
+            object.boneTransform(b, _vB)
+            object.boneTransform(c, _vC)
 
             let intersect
             if ( material.side === THREE.BackSide ) {
@@ -218,7 +208,7 @@ class FaceMesh {
         return null
     }
 
-    draw(event, texture) {
+    draw(texture) {
         this.updateCanvasBox()
         let headBone = this.skinnedMesh.skeleton.getBoneByName("Head")
         let leftEye = this.skinnedMesh.skeleton.getBoneByName("LeftEye")
@@ -227,13 +217,12 @@ class FaceMesh {
         let leftEyePosition = leftEye.worldPosition()
         let headPosition = headBone.worldPosition()
         let position = getMidpoint(headPosition, leftEyePosition, rightEyePosition)
-        let uv = this.facesSearch(position).uv
+        let uv = this.facesSearch(position, headBone).uv
         let meshPos = {
             x: uv.x * this.image.width,
             y: uv.y * this.image.height
         }
         let emotionImage = texture.image
-        console.log(emotionImage.width, emotionImage.height)
         this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
         this.drawingCtx.drawImage(emotionImage, meshPos.x - emotionImage.width / 2, meshPos.y - emotionImage.height / 2, emotionImage.width, emotionImage.height);
         this.skinnedMesh.material.map.needsUpdate = true;

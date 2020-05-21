@@ -43,7 +43,7 @@ import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
 import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
-
+import path from "path"
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -340,7 +340,7 @@ const SceneManagerR3fLarge = connect(
             let sceneObject = sceneObjects[id]
             return <SimpleErrorBoundary  key={ id }>
               <Character
-                modelPath={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
+                path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
                 isSelected={ selections.includes(id) } 
@@ -351,7 +351,7 @@ const SceneManagerR3fLarge = connect(
                 withState={ withState }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
-                storyboarderFilePath={ storyboarderFilePath }
+                imagePath={ sceneObject.emotion ? path.join(path.dirname(storyboarderFilePath), sceneObject.emotion) : null }
                 />
               </SimpleErrorBoundary>
         })
