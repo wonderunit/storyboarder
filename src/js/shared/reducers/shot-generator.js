@@ -10,6 +10,7 @@ const batchGroupBy = require('./shot-generator/batchGroupBy')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
+const getComparableSerializedState = require('./tools/get-comparable-serialized-state')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -35,11 +36,10 @@ const getWorld = state => state.undoable.present.world
 
 
 const getHash = state =>
-  hashify(JSON.stringify(getSerializedState(state)))
-const getIsSceneDirty = state => {
-  let current = getHash(state)
-  return current !== state.meta.lastSavedHash
-}
+  hashify(JSON.stringify(getComparableSerializedState(getSerializedState(state))))
+
+const getIsSceneDirty = state => getHash(state) !== state.meta.lastSavedHash
+
 // return only the stuff we want to save to JSON
 const getSerializedState = state => {
   let sceneObjects = Object.entries(getSceneObjects(state))
@@ -1759,7 +1759,7 @@ module.exports = {
   getSelectedBone,
   getWorld,
 
-  getSerializedState,
+  getSerializedState : state => getComparableSerializedState(getSerializedState(state)),
   getSelectedAttachable,
 
   getIsSceneDirty,

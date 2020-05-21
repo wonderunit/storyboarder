@@ -10,10 +10,6 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
-const digits = 100000
-const roundToDigits = (value) => {
-  return Math.round((value + Number.EPSILON) * digits) / digits
-} 
 
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
     const {asset: gltf} = useAsset(path)
@@ -211,9 +207,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         changedSkeleton.push({ 
           name: bone.name,
           position: { 
-            x: roundToDigits(position.x),
-            y: roundToDigits(position.y),
-            z: roundToDigits(position.z)
+            x: position.x,
+            y: position.y,
+            z: position.z
           }, 
           rotation: { 
             x: rotation.x, 
@@ -221,10 +217,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             z: rotation.z
           },
           quaternion: {
-            x: roundToDigits(quaternion.x),
-            y: roundToDigits(quaternion.y),
-            z: roundToDigits(quaternion.z),
-            w: roundToDigits(quaternion.w)
+            x: quaternion.x,
+            y: quaternion.y,
+            z: quaternion.z,
+            w: quaternion.w
           }
         })
       }

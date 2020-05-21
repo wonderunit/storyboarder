@@ -9,12 +9,27 @@ const path = require('path')
 
 const { createStore } = require('redux')
 
-const { initialState, reducer, getSceneObjects } = require('../../src/js/shared/reducers/shot-generator')
+const { initialState, reducer, getSceneObjects, getIsSceneDirty } = require('../../src/js/shared/reducers/shot-generator')
 
 const store = createStore(reducer, initialState)
 
 describe('reducer', () => {
   describe('sceneObjects', () => {  
+
+    it.only('getIsSceneDirty', () => {
+      store.dispatch({ type: '@@redux-undo/INIT' })
+
+      let json = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'example', 'example.storyboarder'))
+      let data = JSON.parse(json)
+      let payload = data.boards[0].sg.data
+      store.dispatch({ type: 'LOAD_SCENE', payload })
+
+      assert.equal(
+        getIsSceneDirty(store.getState()),
+        false
+      )
+    })
+      
     it('has a displayName when name is undefined', () => {
       store.dispatch({ type: '@@redux-undo/INIT' })
   
