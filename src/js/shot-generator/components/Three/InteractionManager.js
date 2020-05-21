@@ -178,7 +178,7 @@ const InteractionManager = connect(
     }, [dragTarget])
 
     const onPointerDown = event => {
-        event.preventDefault()
+       // event.preventDefault()
         filterIntersectables()
         let selections = takeSelections()
         // get the mouse coords

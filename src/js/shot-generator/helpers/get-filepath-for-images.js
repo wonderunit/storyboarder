@@ -6,6 +6,7 @@ const getFilePathForImages = ({ type, volumeImageAttachmentIds, imageAttachmentI
     let ids = volumeImageAttachmentIds ? volumeImageAttachmentIds : imageAttachmentIds
     for(let i = 0; i < ids.length; i++ ){
         let model = ids[i]
+        console.log(model)
         if(!isUserModel(model)) {
             let folderName = type === "volume" ? "volumes" : "images"
             let extension = type === "volume" ? ".jpg" : ".png"

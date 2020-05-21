@@ -340,7 +340,7 @@ const SceneManagerR3fLarge = connect(
             let sceneObject = sceneObjects[id]
             return <SimpleErrorBoundary  key={ id }>
               <Character
-                path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
+                modelPath={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
                 isSelected={ selections.includes(id) } 
@@ -351,6 +351,7 @@ const SceneManagerR3fLarge = connect(
                 withState={ withState }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
+                storyboarderFilePath={ storyboarderFilePath }
                 />
               </SimpleErrorBoundary>
         })
