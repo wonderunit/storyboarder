@@ -202,7 +202,13 @@ const [useStore, useStoreApi] = create((set, get) => ({
     let center = new THREE.Vector3()
     sceneCamera.getWorldPosition(center)
 
-    const direction = new THREE.Vector3(0.0, 0.0, 1.0).applyQuaternion(xrCamera.quaternion).setComponent(1, 0.0).setLength(distance)
+    const position = new THREE.Vector3()
+    const rotation = new THREE.Quaternion()
+    const scale = new THREE.Vector3()
+
+    xrCamera.matrix.decompose(position, rotation, scale)
+    
+    const direction = new THREE.Vector3(0.0, 0.0, 1.0).applyQuaternion(rotation).setComponent(1, 0.0).setLength(distance)
     center.add(direction)
     
     teleportState(state, sceneCamera, center.x, null, center.z, null)
@@ -1157,7 +1163,7 @@ const useInteractionsManager = ({
 
           // Calculates relative angle between hmdElement(controllers and cameras) and originalBones
           // And Applies transforms hmdElement rotation to originalBones rotation
-          const relativeAngle = (hmdElement, originalBone, staticRotation) => {
+          const relativeAngle = (hmdElement, originalBone, staticRotation, applyParent = true) => {
             let orignalMesh = ikHelper.ragDoll.originalMesh
             let boneInOriginalMesh = orignalMesh.skeleton.bones.find(object => object.name === originalBone.name)
 
@@ -1175,12 +1181,14 @@ const useInteractionsManager = ({
               hmdElement.parent.rotation.y = 0
               hmdElement.parent.rotation.z = Math.PI
             }
-
-            let parent = hmdElement.parent || hmdElement
             
             // Calculates delta aka relative angle
             let delta = new THREE.Quaternion()
-            delta.multiply(parent.worldQuaternion().conjugate())
+            
+            if (hmdElement.parent) {
+              delta.multiply(hmdElement.parent.worldQuaternion().conjugate())
+            }
+            
             delta.multiply(boneInOriginalMesh.worldQuaternion())
 
             // Applies delta to transform hmdElement rotation to bone space
@@ -1203,6 +1211,12 @@ const useInteractionsManager = ({
             controlPoint.position.set(0, 0, 0)
           }
 
+          const attachControlPointToHmdElementNew = (hmdElement, controlPoint,) => {
+            hmdElement.attach(controlPoint)
+            controlPoint.updateMatrixWorld(true)
+            controlPoint.position.set(0, 0, 0)
+          }
+
           // world scale is always reset to large
           setMiniMode(false, camera)
 
@@ -1216,12 +1230,13 @@ const useInteractionsManager = ({
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
-          let eulerRot = new THREE.Euler(0, 0, 0)
+          let eulerRot = new THREE.Euler(0, Math.PI, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
           staticLimbRotation.setFromEuler(eulerRot)
           
-          relativeAngle(camera, headBone, staticLimbRotation)
+          relativeAngle(realCamera, headBone, staticLimbRotation)
 
+          eulerRot = new THREE.Euler(0, 0 ,0)
           eulerRot.x = THREE.Math.degToRad(90)
           eulerRot.y = THREE.Math.degToRad(90)
           staticLimbRotation.setFromEuler(eulerRot)
@@ -1240,7 +1255,7 @@ const useInteractionsManager = ({
           if(!rightArmPoleTarget.mesh.userData.isInitialized)
           rightArmPoleTarget.mesh.position.y = neckBone.y
           
-          attachControlPointToHmdElement(realCamera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
+          attachControlPointToHmdElementNew(realCamera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
           attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
 
