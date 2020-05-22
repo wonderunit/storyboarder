@@ -94,7 +94,7 @@ class FaceMesh {
         this.canvasBox = { left: 0, top: 0, width: 0, height: 0}
     }
 
-    setSkinnedMesh(skinnedMesh, gl) {
+    setSkinnedMesh(skinnedMesh) {
         this.skinnedMesh = skinnedMesh;
         this.image = skinnedMesh.material.map.image;
 
@@ -105,19 +105,6 @@ class FaceMesh {
         this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
         this.skinnedMesh.material.map = texture
         this.skinnedMesh.material.map.needsUpdate = true;
-        this.gl = gl;
-        this.updateCanvasBox()
-
-    }
-
-    updateCanvasBox() {
-        let gl = this.gl
-        let canvaRect = gl.domElement.getBoundingClientRect();
-        let docElement = gl.domElement.ownerDocument.documentElement;
-        this.canvasBox.left = canvaRect.left + window.pageXOffset - docElement.clientLeft;
-        this.canvasBox.top = canvaRect.top + window.pageYOffset - docElement.clientTop;
-        this.canvasBox.widht = canvaRect.widht;
-        this.canvasBox.height = canvaRect.height;
     }
 
     facesSearch(interactionPoint, headBone) {
@@ -147,8 +134,8 @@ class FaceMesh {
         for ( let i = start, il = end; i < il; i += 3 ) {
 
             let a = index.getX(i);
-            let b =  index.getX(i + 1);
-            let c =  index.getX(i + 2);
+            let b = index.getX(i + 1);
+            let c = index.getX(i + 2);
             _vA.fromBufferAttribute(position, a)
             _vB.fromBufferAttribute(position, b)
             _vC.fromBufferAttribute(position, c)
@@ -203,14 +190,11 @@ class FaceMesh {
             intersect.distance = distance;
             intersect.point = point;
             return intersect;
-
-
         }
         return null
     }
 
     draw(texture) {
-        this.updateCanvasBox()
         let headBone = this.skinnedMesh.skeleton.getBoneByName("Head")
         let leftEye = this.skinnedMesh.skeleton.getBoneByName("LeftEye")
         let rightEye = this.skinnedMesh.skeleton.getBoneByName("RightEye")

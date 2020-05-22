@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import classNames from 'classnames'
 import {connect} from 'react-redux'
 import {
@@ -17,6 +17,9 @@ import { NUM_COLS, ITEM_HEIGHT, CHARACTER_MODEL } from '../../../utils/Inspector
 import EmotionInspectorItem from './EmotionInspectorItem'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
+import FaceMesh  from '../../Three/Helpers/FaceMesh'
+import { filepathFor } from '../../../utils/filepathFor'
+import { useAsset } from '../../../hooks/use-assets-manager'
 
 const loadImages = (files, baseDir) => {
     return new Promise((resolve, reject) => {
@@ -45,10 +48,8 @@ const getModelData = deepEqualSelector([(state) => {
     const object = getSceneObjects(state)[selectedId]
   
     return {
-      allModels: state.models,
-      id: selectedId,
-      model: object.model,
-      sceneObject: object
+      sceneObject: object,
+      characterPath: filepathFor(CHARACTER_MODEL)
     }
   }], data => data)
 const EmotionsInspector = connect(
@@ -60,11 +61,14 @@ const EmotionsInspector = connect(
   )( React.memo(({
     sceneObject,
     updateObject,
+    characterPath,
     withState
   }) => {
-
+    const thumbnailRenderer = useRef()
+    const textureLoader = useRef(new THREE.TextureLoader())
+    const faceMesh = useRef(new FaceMesh())
     const defaultEmotions = useMemo(() => Object.values(emotions), []) 
-
+    const {asset: attachment} = useAsset(characterPath)
     const onSelectFile = filepath => {
         if (filepath.file) {
           let storyboarderFilePath
@@ -106,6 +110,10 @@ const EmotionsInspector = connect(
                 itemData={{
                   id: sceneObject.id,
                   onSelectItem,
+                  thumbnailRenderer,
+                  textureLoader,
+                  faceMesh,
+                  attachment
                 }}
                 Component={EmotionInspectorItem}
                 elements={defaultEmotions}
