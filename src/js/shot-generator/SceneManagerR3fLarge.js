@@ -336,6 +336,7 @@ const SceneManagerR3fLarge = connect(
             </SimpleErrorBoundary>
         })
     }
+    
     {    
         characterIds.map(id => {
           let sceneObject = sceneObjects[id]
