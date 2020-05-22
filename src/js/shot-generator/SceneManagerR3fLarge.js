@@ -19,6 +19,7 @@ import {
     deleteObjects,
 
  } from '../shared/reducers/shot-generator'
+
 import { useThree } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
@@ -337,7 +338,11 @@ const SceneManagerR3fLarge = connect(
     }
     {    
         characterIds.map(id => {
-            let sceneObject = sceneObjects[id]
+          let sceneObject = sceneObjects[id]
+            let emotionPath = !sceneObject.emotion ? null: ModelLoader.isUserFile( sceneObject.emotion ) 
+                              ? path.join(path.basename(storyboarderFilePath), sceneObject.emotion ) :
+                              path.join(window.__dirname, sceneObject.emotion )
+                              console.log(emotionPath)
             return <SimpleErrorBoundary  key={ id }>
               <Character
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -351,7 +356,7 @@ const SceneManagerR3fLarge = connect(
                 withState={ withState }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
-                imagePath={ sceneObject.emotion ? path.join(path.dirname(storyboarderFilePath), sceneObject.emotion) : null }
+                imagePath={  !sceneObject.emotion ? null : getFilePathForImages({type: sceneObject.type, imageAttachmentIds: [sceneObject.emotion]}, storyboarderFilePath)[0] }
                 />
               </SimpleErrorBoundary>
         })
