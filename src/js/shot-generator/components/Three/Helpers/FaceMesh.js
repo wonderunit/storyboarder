@@ -154,7 +154,8 @@ class FaceMesh {
             _vC.fromBufferAttribute(position, c)
             var morphInfluences = object.morphTargetInfluences;
             //#region Apply morph 
-            applyMorph(_vA, _vB, _vC, morphPosition, morphInfluences)
+            if( morphInfluences && morphPosition)
+                applyMorph(_vA, _vB, _vC, morphPosition, morphInfluences)
             ////#endregion
 
             object.boneTransform(a, _vA)

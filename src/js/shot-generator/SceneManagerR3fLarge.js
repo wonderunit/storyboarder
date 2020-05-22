@@ -336,14 +336,10 @@ const SceneManagerR3fLarge = connect(
             </SimpleErrorBoundary>
         })
     }
-    
+
     {    
         characterIds.map(id => {
           let sceneObject = sceneObjects[id]
-            let emotionPath = !sceneObject.emotion ? null: ModelLoader.isUserFile( sceneObject.emotion ) 
-                              ? path.join(path.basename(storyboarderFilePath), sceneObject.emotion ) :
-                              path.join(window.__dirname, sceneObject.emotion )
-                              console.log(emotionPath)
             return <SimpleErrorBoundary  key={ id }>
               <Character
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }

@@ -13,10 +13,9 @@ import { axis } from "../../../shared/IK/utils/TransformControls"
 import FaceMesh from "./Helpers/FaceMesh"
 
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
-  const {asset: gltf} = useAsset(path)
-  console.log(props.imagePath)
-  const {asset: texture} = useAsset(props.imagePath)
-    console.log(texture)
+    const {asset: gltf} = useAsset(path)
+    const {asset: texture} = useAsset(props.imagePath)
+    const faceMesh = useRef(new FaceMesh())
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
@@ -28,7 +27,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const boneRotationControl = useRef(null)
-    const characterRotationControl = useRef(null)
     useEffect(() => {
       return () => {
         ref.current.remove(SGIkHelper.getInstance())
@@ -84,6 +82,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
               morphNormals: true,
               morphTargets: true
             })
+            
 
             patchMaterial(mesh.material)
             
@@ -92,7 +91,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
-
+      faceMesh.current.setSkinnedMesh(lod.children[0], gl)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
@@ -383,22 +382,12 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       props.objectRotationControl.IsEnabled = !locked
     }, [locked])
 
-    const mouse = event => {
-      const rect = activeGL.domElement.getBoundingClientRect()
-      return {
-        x: ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1,
-        y: - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1
-      }
-    }
-    const faceMesh = useRef(new FaceMesh())
-    useEffect(() =>{
-      if(!texture) return
 
-      if(!faceMesh.current.skinnedMesh) {
-        faceMesh.current.setSkinnedMesh(lod.children[0], gl)
-      }
+    useEffect(() =>{
+      if(!texture || !skeleton) return
+
       faceMesh.current.draw(texture)
-    }, [texture])
+    }, [texture, lod])
     
     return <group
         ref={ ref }
