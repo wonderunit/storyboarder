@@ -409,6 +409,7 @@ const getCameraShot = (draft, cameraId) => {
 
 // load up the default poses
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
+const defaultEmotionsPresets = require('./shot-generator-presets/emotions.json')
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -731,7 +732,8 @@ const initialState = {
     poses: {
       ...defaultPosePreset
     },
-    handPoses: defaultHandPosePresets
+    handPoses: defaultHandPosePresets,
+    emotions: defaultEmotionsPresets
   },
   server: {
     uri: undefined,
@@ -1356,6 +1358,9 @@ const presetsReducer = (state = initialState.presets, action) => {
       case 'CREATE_HAND_POSE_PRESET':
         draft.handPoses[action.payload.id] = action.payload
         return
+      case 'CREATE_EMOTION_PRESET':
+        draft.emotions[action.payload.id] = action.payload
+        return
     }
   })
 }
@@ -1695,6 +1700,7 @@ module.exports = {
 
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
+  createEmotionPreset: payload => ({ type: 'CREATE_EMOTION_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
 

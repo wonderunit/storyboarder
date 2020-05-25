@@ -1,35 +1,35 @@
 {
-    "Joker": {
+    "EA5EE721-F78E-405A-BBA8-F466D38B60D1": {
         "id": "EA5EE721-F78E-405A-BBA8-F466D38B60D1",
         "name": "Joker",
         "filename": "kit_ledger",
         "keywords": "Joker"
     },
-    "Angry": {
+    "EA5EE721-F78E-405A-BBA8-F466D38B60D2": {
         "id": "EA5EE721-F78E-405A-BBA8-F466D38B60D2",
         "name": "Angry",
         "filename": "angry",
         "keywords": "Angry"
     },
-    "Cry": {
+    "EA5EE721-F78E-405A-BBA8-F466D38B60D3": {
         "id": "EA5EE721-F78E-405A-BBA8-F466D38B60D3",
         "name": "Cry",
         "filename": "Cry",
         "keywords": "Cry"
     },   
-    "Dead": {
+    "EA5EE721-F78E-405A-BBA8-F466D38B60D4": {
         "id": "EA5EE721-F78E-405A-BBA8-F466D38B60D4",
         "name": "Dead",
         "filename": "dead",
         "keywords": "Dead"
     }, 
-    "Garold": {
+    "EA5EE721-F78E-405A-BBA8-F466D38B60D5": {
         "id": "EA5EE721-F78E-405A-BBA8-F466D38B60D5",
         "name": "Garold",
         "filename": "Garold",
         "keywords": "Garold"
     }, 
-    "Neutral": {
+    "EA5EE721-F78E-405A-BBA8-F466D38B60D6": {
         "id": "EA5EE721-F78E-405A-BBA8-F466D38B60D6",
         "name": "Neutral",
         "filename": "neutral",

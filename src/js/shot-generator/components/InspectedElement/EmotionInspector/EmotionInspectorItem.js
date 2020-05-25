@@ -10,6 +10,7 @@ import cloneGltf from '../../../helpers/cloneGltf'
 import {patchMaterial} from '../../../helpers/outlineMaterial'
 import getMidpoint from '../../Three/Helpers/midpoint'
 import { useAsset } from '../../../hooks/use-assets-manager'
+const isUserModel = model => !!model.match(/(\/|\\)/)
 const s = new THREE.Vector3(0, 0, -1)
 const clampInstance = (instance, camera ) => {
     let box = new THREE.Box3().setFromObject(instance)
@@ -94,8 +95,16 @@ const setupRenderer = ({ thumbnailRenderer, attachment, data, texture, faceMesh 
     faceMesh.draw(texture)
 }
 
-const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attachment, thumbnailRenderer, textureLoader, faceMesh, selectedSrc}) => {
-    const imagePath = path.join(window.__dirname, 'data', 'shot-generator', 'emotions', `${data.filename}.png`)
+const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attachment, thumbnailRenderer, textureLoader, faceMesh, selectedSrc, storyboarderFilePath}) => {
+    const imagePath = useMemo(() => {
+      let imagePath 
+      if(!isUserModel(data.filename)) { 
+        imagePath = path.join(window.__dirname, 'data', 'shot-generator', 'emotions', `${data.filename}.png`)
+      } else {
+        imagePath = path.join(path.dirname(storyboarderFilePath), data.filename)
+      }
+      return imagePath
+    }, [])
     const src = path.join(remote.app.getPath('userData'), 'presets', 'emotions', `${data.id}.jpg`)
     const [isLoaded, setLoaded] = useState(fs.existsSync(src))
     const {asset:texture} = useAsset( isLoaded ? "" : imagePath)
