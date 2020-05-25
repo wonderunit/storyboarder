@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
 import {connect} from 'react-redux'
 import {
@@ -20,6 +20,8 @@ import Scrollable from '../../Scrollable';
 import FaceMesh  from '../../Three/Helpers/FaceMesh'
 import { filepathFor } from '../../../utils/filepathFor'
 import { useAsset } from '../../../hooks/use-assets-manager'
+import { comparePresetNames, comparePresetPriority } from '../../../utils/searchPresetsForTerms'
+import SearchList from '../../SearchList/index.js'
 
 const loadImages = (files, baseDir) => {
     return new Promise((resolve, reject) => {
@@ -67,9 +69,10 @@ const EmotionsInspector = connect(
     const thumbnailRenderer = useRef()
     const textureLoader = useRef(new THREE.TextureLoader())
     const faceMesh = useRef(new FaceMesh())
-    const defaultEmotions = useMemo(() => Object.values(emotions), []) 
+    const [results, setResult] = useState( Object.values(emotions)) 
     const {asset: attachment} = useAsset(characterPath)
     const onSelectFile = filepath => {
+
         if (filepath.file) {
           let storyboarderFilePath
           withState((dispatch, state) => {
@@ -81,9 +84,26 @@ const EmotionsInspector = connect(
           })
         }
     }
-    const refClassName = classNames( "button__file", "button__file--selected")
-    // allow a little text overlap
-    const wrapperClassName = "button__file__wrapper"
+
+    const presets = useMemo(() => {
+      let sortedPoses = Object.values(emotions).sort(comparePresetNames).sort(comparePresetPriority).map((preset, index) => {
+        return {
+          ...preset,
+          value: preset.name + "|" + preset.keywords,
+          index: index
+        }
+      })
+      setResult(sortedPoses)
+      return sortedPoses
+    }, [])
+
+    const saveFilteredPresets = useCallback(filteredPreset => {
+      let objects = []
+      for(let i = 0; i < filteredPreset.length; i++) {
+        objects.push(presets[filteredPreset[i].index])
+      }
+      setResult(objects)
+    }, [presets])
 
     const selectValue = useCallback(() => {
         const ext = path.extname(sceneObject.emotion)
@@ -96,9 +116,14 @@ const EmotionsInspector = connect(
       updateObject(sceneObject.id, { emotion: filepath }) 
     } 
 
+    const refClassName = classNames( "button__file", "button__file--selected")
+    // allow a little text overlap
+    const wrapperClassName = "button__file__wrapper"
+
     return <div className="thumbnail-search column">
         <div className="row" style={{ padding: "6px 0" }}>
-     {/*   //   <SearchList label="Search models …" list={ sortedModels.current } onSearch={ saveFilteredPresets }/> */}
+          <SearchList label="Search models …" list={ presets } onSearch={ saveFilteredPresets }/>
+          <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
           <FileInput value={ sceneObject.emotion ? selectValue() : "Select File …" }
                      title={ sceneObject.emotion ? path.basename(sceneObject.emotion) : undefined }
                      onChange={ onSelectFile }
@@ -117,7 +142,7 @@ const EmotionsInspector = connect(
                   selectedSrc: sceneObject.emotion
                 }}
                 Component={EmotionInspectorItem}
-                elements={defaultEmotions}
+                elements={results}
                 numCols={NUM_COLS}
                 itemHeight={ITEM_HEIGHT}
               />
