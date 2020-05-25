@@ -113,7 +113,8 @@ const EmotionsInspector = connect(
                   thumbnailRenderer,
                   textureLoader,
                   faceMesh,
-                  attachment
+                  attachment,
+                  selectedSrc: sceneObject.emotion
                 }}
                 Component={EmotionInspectorItem}
                 elements={defaultEmotions}

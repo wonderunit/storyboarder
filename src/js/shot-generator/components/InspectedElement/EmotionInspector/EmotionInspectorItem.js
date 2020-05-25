@@ -9,6 +9,7 @@ import { remote } from 'electron'
 import cloneGltf from '../../../helpers/cloneGltf'
 import {patchMaterial} from '../../../helpers/outlineMaterial'
 import getMidpoint from '../../Three/Helpers/midpoint'
+import { useAsset } from '../../../hooks/use-assets-manager'
 const s = new THREE.Vector3(0, 0, -1)
 const clampInstance = (instance, camera ) => {
     let box = new THREE.Box3().setFromObject(instance)
@@ -90,64 +91,57 @@ const setupRenderer = ({ thumbnailRenderer, attachment, data, texture, faceMesh 
       faceMesh.setSkinnedMesh(mesh)
     }
     // setup thumbnail renderer
-   
-    console.log(texture.image)
     faceMesh.draw(texture)
 }
 
-const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attachment, thumbnailRenderer, textureLoader, faceMesh}) => {
+const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attachment, thumbnailRenderer, textureLoader, faceMesh, selectedSrc}) => {
     const imagePath = path.join(window.__dirname, 'data', 'shot-generator', 'emotions', `${data.filename}.png`)
     const src = path.join(remote.app.getPath('userData'), 'presets', 'emotions', `${data.id}.jpg`)
-    const [update, updateElement] = useState()
+    const [isLoaded, setLoaded] = useState(fs.existsSync(src))
+    const {asset:texture} = useAsset( isLoaded ? "" : imagePath)
     useMemo(() => {
-        let hasRendered = false//fs.existsSync(src)
+        let hasRendered = isLoaded
     
-        if (!hasRendered) {
-            textureLoader.current.load(imagePath, (texture) => {
-
-                thumbnailRenderer.current = thumbnailRenderer.current || new ThumbnailRenderer()
-                setupRenderer({
-                  thumbnailRenderer: thumbnailRenderer.current,
-                  attachment,
-                  data,
-                  texture,
-                  faceMesh:faceMesh.current
-                })
-                let character = thumbnailRenderer.current.getGroup().getObjectByProperty("type", "SkinnedMesh")
-                let camera = thumbnailRenderer.current.camera
-                let boxGeometry = new THREE.BoxGeometry(2.5, 2)
-                let headBone = character.skeleton.getBoneByName("Head").worldPosition()
-                let leftEye = character.skeleton.getBoneByName("LeftEye").worldPosition()
-                let rightEye = character.skeleton.getBoneByName("RightEye").worldPosition()
-                let material = new THREE.MeshBasicMaterial()
-                let mesh = new THREE.Mesh(boxGeometry, material);
-                let midPoint = getMidpoint(headBone, leftEye, rightEye)
-                mesh.scale.multiplyScalar(0.15 / character.scale.x)
-                mesh.position.copy(midPoint)
-                mesh.updateWorldMatrix(true, true)
-                clampInstance(mesh, camera)
-                //camera.position.z += 1
-
-                //console.log(camera.position.clone())
-                mesh.visible = false;
-                thumbnailRenderer.current.render()
-                let dataURL = thumbnailRenderer.current.toDataURL('image/jpg')
-                thumbnailRenderer.current.clear()
-            
-                fs.ensureDirSync(path.dirname(src))
-            
-                fs.writeFileSync(
-                  src,
-                  dataURL.replace(/^data:image\/\w+;base64,/, ''),
-                  'base64'
-                )
-                updateElement({})
+        if (!hasRendered && texture) {
+            thumbnailRenderer.current = thumbnailRenderer.current || new ThumbnailRenderer()
+            setupRenderer({
+              thumbnailRenderer: thumbnailRenderer.current,
+              attachment,
+              data,
+              texture,
+              faceMesh:faceMesh.current
             })
+            let character = thumbnailRenderer.current.getGroup().getObjectByProperty("type", "SkinnedMesh")
+            let camera = thumbnailRenderer.current.camera
+            let boxGeometry = new THREE.BoxGeometry(2.5, 2)
+            let headBone = character.skeleton.getBoneByName("Head").worldPosition()
+            let leftEye = character.skeleton.getBoneByName("LeftEye").worldPosition()
+            let rightEye = character.skeleton.getBoneByName("RightEye").worldPosition()
+            let material = new THREE.MeshBasicMaterial()
+            let mesh = new THREE.Mesh(boxGeometry, material);
+            let midPoint = getMidpoint(headBone, leftEye, rightEye)
+            mesh.scale.multiplyScalar(0.15 / character.scale.x)
+            mesh.position.copy(midPoint)
+            mesh.updateWorldMatrix(true, true)
+            clampInstance(mesh, camera)
+            mesh.visible = false;
+            thumbnailRenderer.current.render()
+            let dataURL = thumbnailRenderer.current.toDataURL('image/jpg')
+            thumbnailRenderer.current.clear()
+        
+            fs.ensureDirSync(path.dirname(src))
+        
+            fs.writeFileSync(
+              src,
+              dataURL.replace(/^data:image\/\w+;base64,/, ''),
+              'base64'
+            )
+            setLoaded(true)
         }
-    }, [src])
+    }, [src, texture])
 
     let className = classNames("thumbnail-search__item", {
-       // "thumbnail-search__item--selected": posePresetId === preset.id
+        "thumbnail-search__item--selected": selectedSrc === data.filename
     })
     const onPointerDown = () => {
         onSelectItem(data.filename)
@@ -157,7 +151,7 @@ const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attach
         onPointerUp={ onPointerDown }
         title={ data.name }>
             <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
-                <Image src={ src } className="thumbnail"/>
+                { isLoaded && <Image src={ src } className="thumbnail"/>}
             </div>
             <div className="thumbnail-search__name"
               style={{
