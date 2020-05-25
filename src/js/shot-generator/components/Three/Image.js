@@ -90,12 +90,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.IsEnabled = !sceneObject.locked
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
 
-      KeyCommandsSingleton.getInstance().addKeyCommand({
-        key: "image-drawing", 
-        keyCustomCheck: onKeyDown,
-        value: () => {}})
+
       gl.domElement.addEventListener('mousemove', draw)
-      window.addEventListener( 'keyup', onKeyUp, false )
 
     } else {
       drawingTexture.current.Enabled = false
@@ -104,10 +100,23 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       } 
 
       gl.domElement.removeEventListener('mousemove', draw)
-      window.removeEventListener( 'keyup', onKeyUp, false )
-      KeyCommandsSingleton.getInstance().removeKeyCommand({key: "image-drawing"})
+
     }
   }, [isSelected]) 
+
+  useEffect(() => {
+    if(isSelected && ref.current) {
+      KeyCommandsSingleton.getInstance().addKeyCommand({
+        key: "image-drawing", 
+        keyCustomCheck: onKeyDown,
+        value: () => {}})
+        window.addEventListener( 'keyup', onKeyUp, false )
+    }
+    return () => {
+      window.removeEventListener( 'keyup', onKeyUp )
+      KeyCommandsSingleton.getInstance().removeKeyCommand({key: "image-drawing"})
+    }
+  }, [isSelected, ref.current])
   
   const { x, y, z, visible, height, rotation, locked } = sceneObject
 
@@ -131,10 +140,10 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   const onKeyUp = (event) => {
    if ( event.keyCode === 16 ) {
       isDrawingMode.current = false;
-      props.objectRotationControl.selectObject(ref.current, ref.current.uuid);
-      props.objectRotationControl.IsEnabled = !sceneObject.locked;
       drawingTexture.current.resetMeshPos();
       saveDataURLtoFile(drawingTexture.current.getImage(), `${sceneObject.id}-texture.png`, props.storyboarderFilePath, props.updateObject, sceneObject)
+      props.objectRotationControl.selectObject(ref.current, ref.current.uuid);
+      props.objectRotationControl.IsEnabled = !sceneObject.locked;
     }
   }
 
