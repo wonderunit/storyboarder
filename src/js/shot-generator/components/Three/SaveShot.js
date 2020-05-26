@@ -123,7 +123,10 @@ const SaveShot = connect(
         let imageRenderCamera = camera.clone()
         imageRenderCamera.layers.set(SHOT_LAYERS)
         // render the image
-
+        if(!isPlot) {
+            imageRenderCamera.aspect = state.aspectRatio
+            imageRenderCamera.updateProjectionMatrix()
+        }
         let savedBackground  
         if(isPlot) {
             savedBackground = scene.background && scene.background.clone()
