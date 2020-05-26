@@ -1,10 +1,5 @@
 const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
-// When packaged, use React in production mode
-if (app.isPackaged) {
-  process.env.NODE_ENV = 'production'
-}
-
 const fs = require('fs-extra')
 const path = require('path')
 const isDev = require('electron-is-dev')
@@ -52,7 +47,7 @@ const store = configureStore({}, 'main')
 
 let welcomeWindow
 let newWindow
- 
+
 let mainWindow
 let printWindow
 let sketchWindow
