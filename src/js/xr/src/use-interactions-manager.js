@@ -206,7 +206,7 @@ const [useStore, useStoreApi] = create((set, get) => ({
     const rotation = new THREE.Quaternion()
     const scale = new THREE.Vector3()
 
-    xrCamera.matrix.decompose(position, rotation, scale)
+    xrCamera.matrixWorld.decompose(position, rotation, scale)
     
     const direction = new THREE.Vector3(0.0, 0.0, 1.0).applyQuaternion(rotation).setComponent(1, 0.0).setLength(distance)
     center.add(direction)
@@ -1163,7 +1163,7 @@ const useInteractionsManager = ({
 
           // Calculates relative angle between hmdElement(controllers and cameras) and originalBones
           // And Applies transforms hmdElement rotation to originalBones rotation
-          const relativeAngle = (hmdElement, originalBone, staticRotation, applyParent = true) => {
+          const relativeAngle = (hmdElement, originalBone, staticRotation, parent) => {
             let orignalMesh = ikHelper.ragDoll.originalMesh
             let boneInOriginalMesh = orignalMesh.skeleton.bones.find(object => object.name === originalBone.name)
 
@@ -1176,17 +1176,17 @@ const useInteractionsManager = ({
 
             // Sets up default (looking forward) camera's parent rotation
             // Serves as a static rotation of camera's parent
-            if (hmdElement.parent) {
-              hmdElement.parent.rotation.x = Math.PI
-              hmdElement.parent.rotation.y = 0
-              hmdElement.parent.rotation.z = Math.PI
+            if (parent) {
+              parent.rotation.x = Math.PI
+              parent.rotation.y = 0
+              parent.rotation.z = Math.PI
             }
             
             // Calculates delta aka relative angle
             let delta = new THREE.Quaternion()
             
-            if (hmdElement.parent) {
-              delta.multiply(hmdElement.parent.worldQuaternion().conjugate())
+            if (parent) {
+              delta.multiply(parent.worldQuaternion().conjugate())
             }
             
             delta.multiply(boneInOriginalMesh.worldQuaternion())
@@ -1205,16 +1205,11 @@ const useInteractionsManager = ({
 
           // Atttaches control point to HMDElement(controllers and camera)
           // and sets it's position to (0, 0, 0) in order to put control point in the center of hmd element
-          const attachControlPointToHmdElement = (hmdElement, controlPoint,) => {
+          const attachControlPointToHmdElement = (hmdElement, controlPoint) => {
             hmdElement.attach(controlPoint)
             controlPoint.updateMatrixWorld(true)
             controlPoint.position.set(0, 0, 0)
-          }
-
-          const attachControlPointToHmdElementNew = (hmdElement, controlPoint,) => {
-            hmdElement.attach(controlPoint)
             controlPoint.updateMatrixWorld(true)
-            controlPoint.position.set(0, 0, 0)
           }
 
           // world scale is always reset to large
@@ -1230,21 +1225,23 @@ const useInteractionsManager = ({
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
           teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
-          let eulerRot = new THREE.Euler(0, Math.PI, 0)
+          let eulerRot = new THREE.Euler(0, 0, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
           staticLimbRotation.setFromEuler(eulerRot)
           
-          relativeAngle(realCamera, headBone, staticLimbRotation)
+          relativeAngle(realCamera, headBone, staticLimbRotation, realCamera.parent)
+          console.log("realCamera",realCamera)
+          console.log("camera",camera)
 
           eulerRot = new THREE.Euler(0, 0 ,0)
           eulerRot.x = THREE.Math.degToRad(90)
           eulerRot.y = THREE.Math.degToRad(90)
           staticLimbRotation.setFromEuler(eulerRot)
-          relativeAngle(rightController, rightHandBone, staticLimbRotation)
+          relativeAngle(rightController, rightHandBone, staticLimbRotation, rightController.parent)
 
           eulerRot.y = THREE.Math.degToRad(-90)
           staticLimbRotation.setFromEuler(eulerRot)
-          relativeAngle(leftController, leftHandBone, staticLimbRotation)
+          relativeAngle(leftController, leftHandBone, staticLimbRotation, leftController.parent)
 
           ikHelper.ragDoll.update()
           let leftArmPoleTarget = ikHelper.ragDoll.chainObjects["LeftHand"].poleConstraint.poleTarget
@@ -1254,11 +1251,12 @@ const useInteractionsManager = ({
           leftArmPoleTarget.mesh.position.y = neckBone.y
           if(!rightArmPoleTarget.mesh.userData.isInitialized)
           rightArmPoleTarget.mesh.position.y = neckBone.y
-          
-          attachControlPointToHmdElementNew(realCamera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
-          attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
-          attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
+          realCamera.updateMatrixWorld(true, true)
 
+          attachControlPointToHmdElement(realCamera, headControlPoint)
+          attachControlPointToHmdElement(rightController, rightArmControlPoint)
+          attachControlPointToHmdElement(leftController, leftArmControlPoint)   
+          headControlPoint.updateMatrixWorld()
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
           ikHelper.ragDoll.originalObject.add(mirror)
           mirror.position.z += 2

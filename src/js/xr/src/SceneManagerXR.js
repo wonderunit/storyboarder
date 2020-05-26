@@ -523,7 +523,9 @@ const SceneContent = connect(
     const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, SG: SGConnection })
 
     const realCamera = useMemo(() => new THREE.PerspectiveCamera(), [])
-
+    useEffect(() => {
+      camera.parent.attach(realCamera)
+    }, []) 
     const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
       rootRef,
@@ -537,10 +539,12 @@ const SceneContent = connect(
       TWEEN.update()
       if (gl.xr.getSession() && isXrPresenting) {
         gl.xr.getCamera(realCamera)
-        
-        realCamera.matrixWorld.multiplyMatrices(camera.parent.matrixWorld, realCamera.matrixWorld)
-        realCamera.matrixWorld.decompose(realCamera.position, realCamera.quaternion, realCamera.scale)
+
+        let matrixWorld = realCamera.matrixWorld.clone()
+        matrixWorld.premultiply(camera.parent.getInverseMatrixWorld())
+        matrixWorld.decompose(realCamera.position, realCamera.quaternion, realCamera.scale)
         realCamera.updateWorldMatrix(false, true)
+
         
         SGConnection.sendInfo({
           matrix: realCamera.matrixWorld.toArray(),
