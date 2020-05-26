@@ -50,6 +50,14 @@ const Light = React.memo(({sceneObject, isSelected, children, show = true,...pro
     }
   }, [isSelected]) 
 
+  useEffect(() => {
+    return () => {
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      }
+    }
+  }, [])
+
   const { x, y, z, visible, locked } = sceneObject
   return <group
       ref={ ref }

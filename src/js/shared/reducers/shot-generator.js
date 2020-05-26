@@ -930,6 +930,13 @@ const sceneObjectsReducer = (state = {}, action) => {
               delete draft[draft[id].group]
             }
           }
+
+          if (draft[id].type === 'character') {
+            let attachableIds = Object.values(draft).filter(obj => obj.attachToId === id).map(obj => obj.id)
+            for (let attachableId of attachableIds) {
+              delete draft[attachableId]
+            }
+          }
       
           delete draft[id]
         }
