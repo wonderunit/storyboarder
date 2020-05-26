@@ -210,6 +210,14 @@ class XRServer {
      * http://expressjs.com/en/4x/api.html#app.use
      * So it will match each route described before, that's why it should be placed after previous USEs
      */
+    app.use('/ar', express.static(
+      path.join(staticPath, 'js/ar/dist')
+    ))
+
+    app.get('/ar', function(req, res) {
+      res.sendFile(path.join(staticPath, 'js/ar/dist', 'index.html'))
+    })
+    
     app.use('/', express.static(
       path.join(staticPath, 'js/xr/dist')
     ))
