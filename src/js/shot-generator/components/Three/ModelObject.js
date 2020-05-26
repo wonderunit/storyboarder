@@ -125,6 +125,14 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     }
   }, [isSelected])
 
+  useEffect(() => {
+    return () => {
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      }
+    }
+  }, [])
+
   const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
 
   useEffect(() => {

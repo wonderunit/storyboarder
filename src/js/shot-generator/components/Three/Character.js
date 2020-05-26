@@ -142,6 +142,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         ref.current.remove(SGIkHelper.getInstance())
         boneRotationControl.current.cleanUp()
         boneRotationControl.current = null
+        if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+          props.objectRotationControl.deselectObject()
+        }
         if(!lod) return
         for(let i = 0; i < lod.children.length; i++) {
             lod.children[i].geometry.dispose()
