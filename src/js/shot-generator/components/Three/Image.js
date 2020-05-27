@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useLayoutEffect } from 'react'
 import { extend, useThree } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import path from 'path'
@@ -90,19 +90,13 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.IsEnabled = !sceneObject.locked
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
 
-      gl.domElement.addEventListener('mousemove', draw)
-
     } else {
-      gl.domElement.removeEventListener('mousemove', draw)
       drawingTexture.current.Enabled = false
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
       } 
 
 
-    }
-    return () => {
-      gl.domElement.removeEventListener('mousemove', draw)
     }
   }, [isSelected]) 
 
@@ -113,9 +107,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
         keyCustomCheck: onKeyDown,
         value: () => {}})
         window.addEventListener( 'keyup', onKeyUp, false )
-    } else {
-      window.removeEventListener( 'keyup', onKeyUp )
-      KeyCommandsSingleton.getInstance().removeKeyCommand({key: `image-drawing ${ref.current.uuid}`})
     }
     return () => {
       window.removeEventListener( 'keyup', onKeyUp )
@@ -130,11 +121,25 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     props.objectRotationControl.IsEnabled = !locked
   }, [locked])
 
+  useEffect(() => {
+    drawingTexture.current.setMesh(sceneObject.mesh.type)
+  }, [sceneObject.mesh.type])
+
+  useLayoutEffect(() => {
+    if(!isSelected) return
+    gl.domElement.addEventListener('mousemove', draw)
+    return () => {
+      gl.domElement.removeEventListener('mousemove', draw)
+    }
+  }, [isSelected, sceneObject.mesh])
+
   const draw = (event) => {
     if(!isDrawingMode.current) return
+    console.log(sceneObject.mesh)
     drawingTexture.current.draw(mouse(event, gl), ref.current, camera, sceneObject.mesh);
   } 
-
+  
+  
   const onKeyDown = (event) => {
     if ( event.keyCode === 16 ) {
       isDrawingMode.current = true;

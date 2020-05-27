@@ -1,5 +1,8 @@
 import * as THREE from 'three'
 import drawSetting from './drawSettings'
+import SimpleMesh from './Meshes/SimpleMesh';
+import EraserMesh from './Meshes/EraserMesh';
+
 class DrawingTexture {
     constructor(){
         this.drawingCanvas = document.createElement('canvas');
@@ -13,6 +16,7 @@ class DrawingTexture {
         this.prevX = null;
         this.prevY = null;
         this.uvBased = false;
+        this.drawingMesh = new EraserMesh(this.drawingCtx)
     }
 
     set Enabled(value) {
@@ -24,8 +28,20 @@ class DrawingTexture {
     }
 
     resetMeshPos() {
-        this.prevX = null
-        this.prevY = null
+        this.drawingMesh.resetMeshPos()
+    }
+
+    setMesh(type) {
+        switch(type) {
+            case "Simple":
+                this.drawingMesh = new SimpleMesh(this.drawingCtx)
+                break;
+            case "Eraser":
+                this.drawingMesh = new EraserMesh(this.drawingCtx)
+                break;
+            default: 
+                this.drawingMesh = new SimpleMesh(this.drawingCtx)
+        }
     }
 
     getImage() {
@@ -57,14 +73,14 @@ class DrawingTexture {
         if(this.uvBased) return intersects.length && intersects[0].uv
         let percentage = null
         if(intersects.length && intersects[0]) {
-            let scale = object.scale.clone()//new THREE.Vector3();
+            let scale = object.scale.clone()
             scale.z = 0;
             scale.y = -scale.y
             let quaternion = object.worldQuaternion()
             scale.applyQuaternion(quaternion)
             scale.divideScalar(2)
             let intersectPos = intersects[0].point
-            let position = object.worldPosition()//.applyEuler(euler)
+            let position = object.worldPosition()
             let topPosition = position.clone().sub(scale)
             let bottomPosition = position.clone().add(scale)
             quaternion.inverse()
@@ -93,24 +109,10 @@ class DrawingTexture {
         }
         let screenX = this.uvBased ?  percentage.x * width : width * percentage.x;
         let screenY = this.uvBased ?  ( 1 - percentage.y) * height : height * percentage.y;
-        if(!this.prevX || !this.prevY) {
-            this.prevX = screenX;
-            this.prevY = screenY;
-        }
-        console.log(mesh)
-        this.drawingCtx.drawImage(this.material.map.image, 0, 0);
-        this.drawingCtx.strokeStyle = mesh.color;
-        this.drawingCtx.lineWidth = mesh.size;
-        this.drawingCtx.lineJoin = true
-        this.drawingCtx.beginPath();
-        this.drawingCtx.moveTo(this.prevX, this.prevY);
-        this.drawingCtx.lineTo(screenX, screenY);
+    //    this.drawingCtx.drawImage(this.material.map.image, 0, 0);
+        this.drawingMesh.draw({ x: screenX, y: screenY }, mesh)
 
-        this.drawingCtx.stroke();
-        this.drawingCtx.closePath();
         this.material.map.needsUpdate = true;
-        this.prevX = screenX;
-        this.prevY = screenY;
     }
 }
 export default DrawingTexture;
