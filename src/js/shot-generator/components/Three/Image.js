@@ -90,31 +90,36 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.IsEnabled = !sceneObject.locked
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
 
-
       gl.domElement.addEventListener('mousemove', draw)
 
     } else {
+      gl.domElement.removeEventListener('mousemove', draw)
       drawingTexture.current.Enabled = false
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
       } 
 
-      gl.domElement.removeEventListener('mousemove', draw)
 
+    }
+    return () => {
+      gl.domElement.removeEventListener('mousemove', draw)
     }
   }, [isSelected]) 
 
   useEffect(() => {
     if(isSelected && ref.current) {
       KeyCommandsSingleton.getInstance().addKeyCommand({
-        key: "image-drawing", 
+        key: `image-drawing ${ref.current.uuid}`, 
         keyCustomCheck: onKeyDown,
         value: () => {}})
         window.addEventListener( 'keyup', onKeyUp, false )
+    } else {
+      window.removeEventListener( 'keyup', onKeyUp )
+      KeyCommandsSingleton.getInstance().removeKeyCommand({key: `image-drawing ${ref.current.uuid}`})
     }
     return () => {
       window.removeEventListener( 'keyup', onKeyUp )
-      KeyCommandsSingleton.getInstance().removeKeyCommand({key: "image-drawing"})
+      KeyCommandsSingleton.getInstance().removeKeyCommand({key: `image-drawing ${ref.current.uuid}`})
     }
   }, [isSelected, ref.current])
   
@@ -127,7 +132,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
   const draw = (event) => {
     if(!isDrawingMode.current) return
-    drawingTexture.current.draw(mouse(event, gl), ref.current, camera);
+    drawingTexture.current.draw(mouse(event, gl), ref.current, camera, sceneObject.mesh);
   } 
 
   const onKeyDown = (event) => {

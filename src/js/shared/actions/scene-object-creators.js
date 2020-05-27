@@ -168,7 +168,7 @@ const createImage = (id, camera, room) => {
     x, y, z: 1,
 
     rotation: { x: 0, y: rotation, z: 0 },
-
+    mesh: {size:2, color:"#000000"},
     visible: true,
     opacity: 1,
     visibleToCam: true,

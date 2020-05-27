@@ -82,7 +82,7 @@ class DrawingTexture {
         return percentage;
     }
   
-    draw (mousePosition, object, camera){
+    draw (mousePosition, object, camera, mesh){
         if(!this.isEnabled) return;
  
         const { width, height } = this.material.map.image;
@@ -97,13 +97,15 @@ class DrawingTexture {
             this.prevX = screenX;
             this.prevY = screenY;
         }
-   
+        console.log(mesh)
         this.drawingCtx.drawImage(this.material.map.image, 0, 0);
+        this.drawingCtx.strokeStyle = mesh.color;
+        this.drawingCtx.lineWidth = mesh.size;
+        this.drawingCtx.lineJoin = true
         this.drawingCtx.beginPath();
         this.drawingCtx.moveTo(this.prevX, this.prevY);
         this.drawingCtx.lineTo(screenX, screenY);
-        this.drawingCtx.strokeStyle = drawSetting.color;
-        this.drawingCtx.lineWidth = drawSetting.meshSize;
+
         this.drawingCtx.stroke();
         this.drawingCtx.closePath();
         this.material.map.needsUpdate = true;
