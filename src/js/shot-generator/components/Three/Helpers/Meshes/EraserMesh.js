@@ -24,8 +24,8 @@ class EraserMesh extends Mesh {
         for(let i = 0; i < length; i++) {
             let x = xOffset * i;
             let y = yOffset * i;
-            circle.moveTo(this.prevPos.x + x, this.prevPos.y + x);
-            circle.arc(this.prevPos.x + x - size , this.prevPos.y + y - size, size, 0, 2 * Math.PI)    
+            circle.moveTo(this.prevPos.x + x, this.prevPos.y + y);
+            circle.arc(this.prevPos.x + x, this.prevPos.y + y, size, 0, 2 * Math.PI)    
         }
         this.drawingCtx.stroke();
         this.drawingCtx.fill(circle)

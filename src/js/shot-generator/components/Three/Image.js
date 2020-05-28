@@ -135,10 +135,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
   const draw = (event) => {
     if(!isDrawingMode.current) return
-    console.log(sceneObject.mesh)
     drawingTexture.current.draw(mouse(event, gl), ref.current, camera, sceneObject.mesh);
   } 
-  
   
   const onKeyDown = (event) => {
     if ( event.keyCode === 16 ) {

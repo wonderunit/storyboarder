@@ -16,7 +16,7 @@ class SimpleMesh extends Mesh {
         this.drawingCtx.lineTo(currentPos.x, currentPos.y);
 
         this.drawingCtx.stroke();
-        this.drawingCtx.closePath();
+        //this.drawingCtx.closePath();
         this.prevPos.x = currentPos.x;
         this.prevPos.y = currentPos.y;
     }
