@@ -1361,6 +1361,9 @@ const presetsReducer = (state = initialState.presets, action) => {
       case 'CREATE_EMOTION_PRESET':
         draft.emotions[action.payload.id] = action.payload
         return
+      case 'DELETE_EMOTION_PRESET':
+        delete draft.emotions[action.payload.id]
+        return
     }
   })
 }
@@ -1701,6 +1704,7 @@ module.exports = {
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
   createEmotionPreset: payload => ({ type: 'CREATE_EMOTION_PRESET', payload }),
+  deleteEmotionPreset: id => ({ type: 'DELETE_EMOTION_PRESET', payload: { id } }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
 

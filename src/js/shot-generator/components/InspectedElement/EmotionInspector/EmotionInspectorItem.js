@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../../utils/InspectorElementsSettings'
 import Image from '../../Image'
 import classNames from 'classnames'
@@ -12,7 +12,12 @@ import getMidpoint from '../../Three/Helpers/midpoint'
 import { useAsset } from '../../../hooks/use-assets-manager'
 import isUserModel from '../../../helpers/isUserModel'
 import clampInstance from '../../../utils/clampInstance'
-
+import RemovableItem from '../RemovableItem/RemovableItem'
+import defaultEmotions from '../../../../shared/reducers/shot-generator-presets/emotions.json'
+let defaultArray = Object.values(defaultEmotions)
+const isDefaultPreset = (id) => {
+  return defaultArray.find(image => image.id === id)
+} 
 const createCharacter = (gltf) => {
     let lod = new THREE.LOD()
     let { scene } = cloneGltf(gltf)
@@ -87,7 +92,7 @@ const setupRenderer = ({ thumbnailRenderer, attachment, data, texture, faceMesh 
     faceMesh.draw(texture)
 }
 
-const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attachment, thumbnailRenderer, textureLoader, faceMesh, selectedSrc, storyboarderFilePath}) => {
+const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attachment, thumbnailRenderer, textureLoader, faceMesh, selectedSrc, storyboarderFilePath, showRemoval, onRemoval}) => {
     const imagePath = useMemo(() => {
       let imagePath 
       if(!isUserModel(data.filename)) { 
@@ -100,6 +105,14 @@ const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attach
     const src = path.join(remote.app.getPath('userData'), 'presets', 'emotions', `${data.id}.jpg`)
     const [isLoaded, setLoaded] = useState(fs.existsSync(src))
     const {asset:texture} = useAsset( isLoaded ? "" : imagePath)
+    const [show, setShow] = useState(false)
+
+    useEffect(()=> {
+      if(!isDefaultPreset(data.id)) {
+        setShow(showRemoval)
+      }
+    }, [showRemoval])
+    
     useMemo(() => {
         let hasRendered = isLoaded
     
@@ -147,21 +160,25 @@ const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attach
     const onPointerDown = () => {
         onSelectItem(data.filename)
     }
-    return <div className={ className }
-        style={ style }
-        onPointerUp={ onPointerDown }
-        title={ data.name }>
-            <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
-                { isLoaded && <Image src={ src } className="thumbnail"/>}
-            </div>
-            <div className="thumbnail-search__name"
-              style={{
-                width: ITEM_WIDTH ,
-                height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
-              }}>
-            { data.name }
-            </div>
-        </div>
+    return <RemovableItem 
+            className={ className } 
+            style={ style }
+            onPointerUp={ onPointerDown }
+            title={ data.name }
+            onRemoval= { onRemoval}
+            show={ show }
+            data={ data }> 
+                <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
+                    { isLoaded && <Image src={ src } className="thumbnail"/>}
+                </div>
+                <div className="thumbnail-search__name"
+                  style={{
+                    width: ITEM_WIDTH ,
+                    height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE
+                  }}>
+                { data.name }
+              </div>
+            </RemovableItem>
 })
 
 export default EmotionInspectorItem;

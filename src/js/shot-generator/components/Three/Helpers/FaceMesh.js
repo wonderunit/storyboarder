@@ -98,6 +98,19 @@ class FaceMesh {
         this.skinnedMesh = skinnedMesh;
         this.image = skinnedMesh.material.map.image;
 
+        this.defaultTexture = this.skinnedMesh.material.map.clone()
+        this.drawingCanvas.width = this.image.width;
+        this.drawingCanvas.height = this.image.height;
+        let texture = new THREE.Texture(this.drawingCanvas);
+        texture.flipY = false
+        this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
+        this.skinnedMesh.material.map = texture
+        this.skinnedMesh.material.map.needsUpdate = true;
+    }
+
+    resetTexture() {
+        this.image = this.defaultTexture.image;
+
         this.drawingCanvas.width = this.image.width;
         this.drawingCanvas.height = this.image.height;
         let texture = new THREE.Texture(this.drawingCanvas);

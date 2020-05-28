@@ -1,11 +1,12 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react'
+import React, { useMemo, useRef, useState, useEffect, useLayoutEffect } from 'react'
 import classNames from 'classnames'
 import {connect} from 'react-redux'
 import {
     updateObject,
     getSelections,
     getSceneObjects,
-    createEmotionPreset
+    createEmotionPreset,
+    deleteEmotionPreset
   } from '../../../../shared/reducers/shot-generator'
   import fs from 'fs-extra'
   import path from 'path'
@@ -65,6 +66,7 @@ const EmotionsInspector = connect(
     {
         updateObject,
         createEmotionPreset,
+        deleteEmotionPreset,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState()),
     }
   )( React.memo(({
@@ -74,7 +76,8 @@ const EmotionsInspector = connect(
     createEmotionPreset,
     withState,
     emotions,
-    storyboarderFilePath
+    storyboarderFilePath,
+    deleteEmotionPreset
   }) => {
     const thumbnailRenderer = useRef()
     const textureLoader = useRef(new THREE.TextureLoader())
@@ -85,6 +88,7 @@ const EmotionsInspector = connect(
     const newPresetName = useRef('')
     const newGeneratedId = useRef()
     const filePath = useRef()
+    const [showRemoval, setShowRemoval] = useState(false)
 
     useEffect(() => {
       setResult(Object.values(emotions))
@@ -176,6 +180,42 @@ const EmotionsInspector = connect(
       updateObject(sceneObject.id, { emotion: filepath }) 
     } 
 
+    const onRemoval = (data) => {
+      updateObject(sceneObject.id, { emotion: null }) 
+      withState((dispatch, state) => {
+        // ... and save it to the presets file
+        let denylist = Object.keys(defaultEmotions)
+        denylist.push(data.id)
+        let filteredPoses = Object.values(state.presets.emotions)
+          .filter(pose => denylist.includes(pose.id) === false)
+          .reduce(
+            (coll, pose) => {
+              coll[pose.id] = pose
+              return coll
+            },
+            {}
+          )
+        presetsStorage.saveEmotionsPresets({ emotions: filteredPoses })
+      })
+      deleteEmotionPreset(data.id)
+    }
+
+    const showRemovalButtons = (event) => {
+      if(event.keyCode === 91) setShowRemoval(true)
+    }
+    const hideRemovalButtons = (event) => {
+      if(event.keyCode === 91) setShowRemoval(false)
+    }
+    useLayoutEffect(() => {
+      window.addEventListener('keydown', showRemovalButtons)
+      window.addEventListener('keyup', hideRemovalButtons)
+      return () => {
+        window.removeEventListener('keydown', showRemovalButtons)
+        window.removeEventListener('keyup', hideRemovalButtons)
+
+      } 
+    }, [])
+
     const refClassName = classNames( "button__file", "button__file--selected")
     // allow a little text overlap
     const wrapperClassName = "button__file__wrapper"
@@ -223,7 +263,9 @@ const EmotionsInspector = connect(
                   faceMesh,
                   attachment,
                   selectedSrc: sceneObject.emotion,
-                  storyboarderFilePath
+                  storyboarderFilePath,
+                  onRemoval,
+                  showRemoval
                 }}
                 Component={EmotionInspectorItem}
                 elements={results}

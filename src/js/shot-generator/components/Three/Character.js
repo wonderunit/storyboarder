@@ -94,7 +94,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       faceMesh.current.setSkinnedMesh(lod.children[0], gl)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
-
       let armature = scene.getObjectByProperty("type", "Bone").parent
       let originalHeight
       if (isUserModel(sceneObject.model)) {
@@ -382,10 +381,12 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       props.objectRotationControl.IsEnabled = !locked
     }, [locked])
 
-
     useEffect(() =>{
-      if(!texture || !skeleton) return
-
+      if(!skeleton) return
+      if(!texture) {
+        faceMesh.current.resetTexture()
+        return
+      }
       faceMesh.current.draw(texture)
     }, [texture, lod])
     
