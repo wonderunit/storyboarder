@@ -10,17 +10,9 @@ import cloneGltf from '../../../helpers/cloneGltf'
 import {patchMaterial} from '../../../helpers/outlineMaterial'
 import getMidpoint from '../../Three/Helpers/midpoint'
 import { useAsset } from '../../../hooks/use-assets-manager'
-const isUserModel = model => !!model.match(/(\/|\\)/)
-const s = new THREE.Vector3(0, 0, -1)
-const clampInstance = (instance, camera ) => {
-    let box = new THREE.Box3().setFromObject(instance)
-    let sphere = new THREE.Sphere()
-    box.getBoundingSphere(sphere)
-    let h = sphere.radius / Math.tan( camera.fov / 2 * Math.PI / 180 )
-    camera.position.subVectors( sphere.center, s.setLength(h))
-    camera.lookAt(sphere.center)
-    camera.updateMatrixWorld(true)
-}
+import isUserModel from '../../../helpers/isUserModel'
+import clampInstance from '../../../utils/clampInstance'
+
 const createCharacter = (gltf) => {
     let lod = new THREE.LOD()
     let { scene } = cloneGltf(gltf)
@@ -132,7 +124,7 @@ const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attach
             mesh.scale.multiplyScalar(0.15 / character.scale.x)
             mesh.position.copy(midPoint)
             mesh.updateWorldMatrix(true, true)
-            clampInstance(mesh, camera)
+            clampInstance(mesh, camera, new THREE.Vector3(0, 0, 1))
             mesh.visible = false;
             thumbnailRenderer.current.render()
             let dataURL = thumbnailRenderer.current.toDataURL('image/jpg')
