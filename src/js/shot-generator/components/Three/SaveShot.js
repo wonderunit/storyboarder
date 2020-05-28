@@ -3,20 +3,25 @@ import { connect } from 'react-redux'
 import { 
     getSelections,
     getSerializedState,
+    updateObject,
     markSaved,
-    selectObject
+    selectObject,
+    getSceneObjects
  } from '../../../shared/reducers/shot-generator'
  import { ipcRenderer } from 'electron'
 import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import { OutlineEffect } from '../../../vendor/OutlineEffect'
 import { remote } from 'electron'
+import path from 'path'
+import fs from 'fs-extra'
 
 const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const SaveShot = connect(
     state => ({
+        storyboarderFilePath : state.meta.storyboarderFilePath
     }),
     {
         getSelections,
@@ -24,6 +29,7 @@ const SaveShot = connect(
         withState,
         markSaved,
         selectObject,
+        updateObject,
         saveScene: filepath => (dispatch, getState) => {
             let state = getState()
             let contents = getSerializedState(state)
@@ -33,14 +39,16 @@ const SaveShot = connect(
     })
 ( React.memo(({
     withState,
+    storyboarderFilePath,
     markSaved,
     isPlot = false,
-    selectObject
+    selectObject,
+    updateObject
 }) => {
     const { scene, camera } = useThree()
     const imageRenderer = useRef()
     const outlineEffect = useRef()
-    
+
     useEffect(() => {
         if (!imageRenderer.current) {
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
@@ -53,6 +61,7 @@ const SaveShot = connect(
     }, [])
 
     const saveShot = () => {
+        saveImages()
         selectObject(null)
         if(!isPlot) {
             withState((dispatch, state) => {
@@ -79,6 +88,7 @@ const SaveShot = connect(
     }
   
     const insertShot = useCallback(() => {
+        saveImages()
         selectObject(null)
         if(!isPlot) {
             withState((dispatch, state) => {
@@ -106,6 +116,30 @@ const SaveShot = connect(
      
         }
     }, [scene])
+
+    const saveImages = () => {
+        let imageObjects 
+        withState((dispatch, state) => {
+            imageObjects = Object.values(getSceneObjects(state)).filter(obj => obj.type === "image")
+        })
+        for( let i = 0; i < imageObjects.length; i++ ) {
+            let image = imageObjects[i]
+            let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', `temp_${image.id}-texture.png`)
+            let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', `${image.id}-texture.png`)
+  
+            let isImageExist = fs.pathExistsSync(tempImageFilePath)
+            if(!isImageExist) continue
+            fs.rename(tempImageFilePath, imageFilePath)
+            let projectDir = path.dirname(storyboarderFilePath)
+            let assetsDir = path.join(projectDir, 'models', 'images')
+            fs.ensureDirSync(assetsDir)
+            let dst = path.join(assetsDir, path.basename(imageFilePath))
+            let id = path.relative(projectDir, dst)
+            if(!image.imageAttachmentIds || !image.imageAttachmentIds.find(ids => ids === id)) {
+              updateObject(image.id, {imageAttachmentIds: [id]})
+            }
+        }
+    }
   
     // add handlers once, and use refs for callbacks
     useEffect(() => {

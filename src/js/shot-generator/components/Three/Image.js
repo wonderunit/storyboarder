@@ -19,22 +19,11 @@ const mouse = (event, gl) => {
   return { x: worldX, y: worldY }
 }
 
-
-let saveDataURLtoFile = (dataURL, filename, boardPath, updateObject, sceneObject) => {
+let saveDataURLtoFile = (dataURL, filename, boardPath) => {
   let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
-  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', filename)
-  
-  let isImageExist = fs.pathExistsSync(imageFilePath)
-  
-  let projectDir = path.dirname(boardPath)
-  let assetsDir = path.join(projectDir, 'models', 'images')
-  fs.ensureDirSync(assetsDir)
-  let dst = path.join(assetsDir, path.basename(imageFilePath))
-  let id = path.relative(projectDir, dst)
+  //let imageFilePath = path.join(path.dirname(boardPath), 'models/images', filename)
+  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', `temp_${filename}`)
   fs.writeFileSync(imageFilePath, imageData, 'base64')
-  if(!isImageExist || !sceneObject.imageAttachmentIds || !sceneObject.imageAttachmentIds.find(ids => ids === id)) {
-    updateObject(sceneObject.id, {imageAttachmentIds: [id]})
-  }
 }
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
@@ -95,8 +84,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
       } 
-
-
     }
   }, [isSelected]) 
 
@@ -149,7 +136,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
    if ( event.keyCode === 16 ) {
       isDrawingMode.current = false;
       drawingTexture.current.resetMeshPos();
-      saveDataURLtoFile(drawingTexture.current.getImage(), `${sceneObject.id}-texture.png`, props.storyboarderFilePath, props.updateObject, sceneObject)
+      saveDataURLtoFile(drawingTexture.current.getImage(), `${sceneObject.id}-texture.png`, props.storyboarderFilePath)
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid);
       props.objectRotationControl.IsEnabled = !sceneObject.locked;
     }
