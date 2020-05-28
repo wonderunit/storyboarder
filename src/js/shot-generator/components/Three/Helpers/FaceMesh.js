@@ -215,7 +215,9 @@ class FaceMesh {
         let leftEyePosition = leftEye.worldPosition()
         let headPosition = headBone.worldPosition()
         let position = getMidpoint(headPosition, leftEyePosition, rightEyePosition)
-        let uv = this.facesSearch(position, headBone).uv
+        let intersect = this.facesSearch(position, headBone)
+        if(!intersect) return
+        let uv = intersect.uv
         let meshPos = {
             x: uv.x * this.image.width,
             y: uv.y * this.image.height

@@ -14,15 +14,15 @@ import FaceMesh from "./Helpers/FaceMesh"
 
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
     const {asset: gltf} = useAsset(path)
-    const {asset: texture} = useAsset(props.imagePath)
     const faceMesh = useRef(new FaceMesh())
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
         lod && lod.traverse(child => child.layers.enable(SHOT_LAYERS))
       }
-    )
+      )
     const [ready, setReady] = useState(false)
+    const {asset: texture} = useAsset(ready ? props.imagePath : null)
     const isFullyUpdate = useRef(false)
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
@@ -381,7 +381,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       props.objectRotationControl.IsEnabled = !locked
     }, [locked])
 
-    useEffect(() =>{
+    useEffect(() => {
       if(!skeleton) return
       if(!texture) {
         faceMesh.current.resetTexture()
