@@ -2,7 +2,7 @@ const path = require('path')
 const fs = require('fs')
 
 const importerPsd = require('../importers/psd')
-
+const ImportPSDToBase64 = require('../importers/psdImporter')
 /**
  * Retrieve an object with base 64 representations of an image file ready for storyboard pane layers.
  *  
@@ -25,7 +25,7 @@ let getBase64ImageDataFromFilePath = (filepath, options={ importTargetLayer: 're
       break
     case '.psd':
       try {
-        result = getBase64TypeFromPhotoshopFilePath(filepath, options)
+        result[importTargetLayer]  = getBase64TypeFromPhotoshopFilePath(filepath, options)
       } catch (err) {
         console.error(err)
         return null
@@ -46,7 +46,7 @@ let getBase64TypeFromFilePath = (type, filepath) => {
 const getBase64TypeFromPhotoshopFilePath = filepath => {
   if (!fs.existsSync(filepath)) return null
 
-  let canvases = importerPsd.fromPsdBuffer(
+/*   let canvases = importerPsd.fromPsdBuffer(
     fs.readFileSync(
       filepath
     )
@@ -55,10 +55,10 @@ const getBase64TypeFromPhotoshopFilePath = filepath => {
   // convert in-place
   for (key in canvases) {
     canvases[key] = canvases[key].toDataURL()
-  }
-
+  } */
+ 
   // e.g.: { fill: 'data:image/png,...' }
-  return canvases
+  return ImportPSDToBase64(filepath)
 }
 
 module.exports = {

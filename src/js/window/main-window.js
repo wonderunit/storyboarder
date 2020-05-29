@@ -12,6 +12,7 @@ const R = require('ramda')
 const CAF = require('caf')
 const isDev = require('electron-is-dev')
 const log = require('electron-log')
+const ImportPSDToBase64 = require("../importers/psdImporter")
 log.catchErrors()
 
 const ReactDOM = require('react-dom')
@@ -2118,6 +2119,7 @@ let insertNewBoardsWithFiles = async filepaths => {
         importTargetLayer: targetLayer
       }
     )
+    console.log(imageData)
 
     if (!imageData || !imageData[targetLayer]) {
       log.error('Could not find imageData', { imageData, targetLayer })
@@ -6663,15 +6665,13 @@ ipcRenderer.on('importImage', (event, fileData) => {
 ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
   let filepath = filepathsRecursive[0]
   let type = path.extname(filepath).slice(1)
-
+  let fileData
   if (type === 'psd') {
-    notifications.notify({ message: 'Sorry, PSD is not supported for this command yet.' })
-    sfx.error()
-    return
+    fileData = ImportPSDToBase64(filepath)
+  } else {
+    let data = fs.readFileSync(filepath).toString('base64')
+    fileData = `data:image/${type};base64,${data}`
   }
-
-  let data = fs.readFileSync(filepath).toString('base64')
-  let fileData = `data:image/${type};base64,${data}`
 
   importImage(fileData).catch(err => {
     notifications.notify({ message: err.toString() })
