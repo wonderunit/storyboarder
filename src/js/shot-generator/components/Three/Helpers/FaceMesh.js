@@ -92,11 +92,13 @@ class FaceMesh {
         this.drawingCtx = this.drawingCanvas.getContext("2d");
         this.skinnedMesh = null;
         this.canvasBox = { left: 0, top: 0, width: 0, height: 0}
+        this.lod = null
     }
 
-    setSkinnedMesh(skinnedMesh) {
-        this.skinnedMesh = skinnedMesh;
-        this.image = skinnedMesh.material.map.image;
+    setSkinnedMesh(lod) {
+        this.lod = lod
+        this.skinnedMesh = lod.children[0];
+        this.image = this.skinnedMesh.material.map.image;
 
         this.defaultTexture = this.skinnedMesh.material.map.clone()
         this.drawingCanvas.width = this.image.width;
@@ -104,8 +106,10 @@ class FaceMesh {
         let texture = new THREE.Texture(this.drawingCanvas);
         texture.flipY = false
         this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
-        this.skinnedMesh.material.map = texture
-        this.skinnedMesh.material.map.needsUpdate = true;
+        for(let i = 0; i < this.lod.children.length; i++) {
+            this.lod.children[i].material.map = texture
+            this.lod.children[i].material.map.needsUpdate = true;
+        }
     }
 
     resetTexture() {
@@ -116,8 +120,10 @@ class FaceMesh {
         let texture = new THREE.Texture(this.drawingCanvas);
         texture.flipY = false
         this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
-        this.skinnedMesh.material.map = texture
-        this.skinnedMesh.material.map.needsUpdate = true;
+        for(let i = 0; i < this.lod.children.length; i++) {
+            this.lod.children[i].material.map = texture
+            this.lod.children[i].material.map.needsUpdate = true;
+        }
     }
 
     facesSearch(interactionPoint, headBone) {
@@ -225,7 +231,9 @@ class FaceMesh {
         let emotionImage = texture.image
         this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
         this.drawingCtx.drawImage(emotionImage, meshPos.x - emotionImage.width / 2, meshPos.y - emotionImage.height / 2, emotionImage.width, emotionImage.height);
-        this.skinnedMesh.material.map.needsUpdate = true;
+        for(let i = 0; i < this.lod.children.length; i++) {
+            this.lod.children[i].material.map.needsUpdate = true;
+        }
     }
 }
 export default FaceMesh;

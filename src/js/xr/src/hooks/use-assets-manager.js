@@ -91,7 +91,7 @@ const useAssetsManager = () => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-        if (!id.includes('/images/')) {
+        if (!id.includes('/images/') && !id.includes('/emotions/')) {
           load(loader, id, {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),

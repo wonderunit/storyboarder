@@ -31,7 +31,7 @@ const shortId = id => id.toString().substr(0, 7).toLowerCase()
 const loadImages = (files, baseDir) => {
     return new Promise((resolve, reject) => {
       let projectDir = path.dirname(baseDir)
-      let assetsDir = path.join(projectDir, 'models', 'images')
+      let assetsDir = path.join(projectDir, 'models', 'emotions')
       fs.ensureDirSync(assetsDir)
   
       let dsts = []

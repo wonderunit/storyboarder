@@ -86,7 +86,7 @@ const setupRenderer = ({ thumbnailRenderer, attachment, data, texture, faceMesh 
       thumbnailRenderer.getGroup().add(group)
       group.rotation.y = Math.PI/22
       let mesh = thumbnailRenderer.getGroup().getObjectByProperty("type", "SkinnedMesh")
-      faceMesh.setSkinnedMesh(mesh)
+      faceMesh.setSkinnedMesh({children:[mesh]})
     }
     // setup thumbnail renderer
     faceMesh.draw(texture)

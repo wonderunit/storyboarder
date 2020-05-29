@@ -43,6 +43,7 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-mana
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
 const getFilepathForImage = require('./helpers/get-filepath-for-image')
+const getFilepathForEmotion = require('./helpers/get-filepath-for-emotion')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -650,20 +651,25 @@ const SceneContent = connect(
           />
 
           {
-            characterIds.map(id =>
+            characterIds.map(id => {
              // getAsset(getFilepathForModelByType(sceneObjects[id]))
                // ?
-               <SimpleErrorBoundary key={id}>
+               let sceneObject = sceneObjects[id]
+               let emotionFilepath = sceneObject.emotion && getFilepathForEmotion(sceneObject.emotion)
+               console.log(emotionFilepath)
+               let texture = getAsset(emotionFilepath)
+               return <SimpleErrorBoundary key={id}>
                   <Character
                     key={id}
-                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
-                    sceneObject={sceneObjects[id]}
-                    modelSettings={models[sceneObjects[id].model] || undefined}
+                    gltf={getAsset(getFilepathForModelByType(sceneObject))}
+                    sceneObject={sceneObject}
+                    modelSettings={models[sceneObject.model] || undefined}
                     isSelected={selections.includes(id)}
-                    updateSkeleton= {updateCharacterIkSkeleton} />
+                    updateSkeleton= {updateCharacterIkSkeleton} 
+                    texture={ texture }/>
                 </SimpleErrorBoundary>
                // : null
-            )
+            })
           }
 
 

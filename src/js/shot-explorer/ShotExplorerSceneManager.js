@@ -152,6 +152,7 @@ const ShotExplorerSceneManager = connect(
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
+                imagePath={  !sceneObject.emotion ? null : getFilePathForImages({type: sceneObject.type, imageAttachmentIds: [sceneObject.emotion]}, storyboarderFilePath)[0] }
                 />
               </SimpleErrorBoundary>
         })

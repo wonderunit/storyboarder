@@ -91,7 +91,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
-      faceMesh.current.setSkinnedMesh(lod.children[0], gl)
+      faceMesh.current.setSkinnedMesh(lod, gl)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
       let armature = scene.getObjectByProperty("type", "Bone").parent

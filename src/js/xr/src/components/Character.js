@@ -9,14 +9,17 @@ const VirtualCamera = require('../components/VirtualCamera')
 
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
-
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton }) => {
+const FaceMesh = require('../../../shot-generator/components/Three/Helpers/FaceMesh').default
+const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton, texture }) => {
     const [ready, setReady] = useState(false)
+    const faceMesh = useRef(new FaceMesh())
+    const { gl } = useThree()
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
       }
     )
+
     useEffect(() => {
       return () => {
         ref.current.remove(BonesHelper.getInstance())
@@ -82,7 +85,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
-
+      faceMesh.current.setSkinnedMesh(lod, gl)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
@@ -213,6 +216,15 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         
       }
     }, [lod, isSelected, ready])
+
+    useEffect(() => {      
+      if(!skeleton) return
+      if(!texture) {
+        faceMesh.current.resetTexture()
+        return
+      }
+      faceMesh.current.draw(texture)
+    }, [texture, lod])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
 
