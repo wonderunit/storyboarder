@@ -1,11 +1,12 @@
 import {connect} from 'react-redux'
-import React, {useMemo} from 'react'
+import React, {useMemo, useEffect} from 'react'
 import ColorSelect from '../../ColorSelect'
 import {
     getSelections,
     getSceneObjects,
     updateObject,
-    updateDrawingMesh
+    updateDrawingMesh,
+    enableDrawMode
   } from '../../../../shared/reducers/shot-generator'
 import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
@@ -15,13 +16,24 @@ const BrushInspector = connect((state) => ({
     drawingMesh: state.drawingMesh
 }), 
 {
-    updateDrawingMesh
+    updateDrawingMesh,
+    enableDrawMode
 }
 )( 
 React.memo(({
     updateDrawingMesh,
+    enableDrawMode,
     drawingMesh
 }) => {
+
+    useEffect(() => {
+        console.log("Draw mode set to true")
+        enableDrawMode(true)
+        return () => {
+            console.log("Draw mode set to false")
+            enableDrawMode(false)
+        }
+    }, [])
 
     const setSize = (value) => {
         updateDrawingMesh({ size: value })

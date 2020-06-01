@@ -65,7 +65,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
   useEffect(() => {
     if (isSelected) {
-      drawingTexture.current.Enabled = true
       props.objectRotationControl.setUpdateCharacter((name, rotation) => {
         let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
         props.updateObject(ref.current.userData.id, {
@@ -81,7 +80,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
 
     } else {
-      drawingTexture.current.Enabled = false
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
       } 
@@ -89,18 +87,17 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   }, [isSelected]) 
 
   useEffect(() => {
-    if(isSelected && ref.current) {
-      KeyCommandsSingleton.getInstance().addKeyCommand({
-        key: `image-drawing ${ref.current.uuid}`, 
-        keyCustomCheck: onKeyDown,
-        value: () => {}})
-        window.addEventListener( 'keyup', onKeyUp, false )
+    if(props.isDrawingMode) {
+      props.objectRotationControl.deselectObject();
+      gl.domElement.addEventListener( 'mousedown', onKeyDown )
+      window.addEventListener( 'mouseup', onKeyUp )
     }
     return () => {
-      window.removeEventListener( 'keyup', onKeyUp )
-      KeyCommandsSingleton.getInstance().removeKeyCommand({key: `image-drawing ${ref.current.uuid}`})
+      gl.domElement.removeEventListener( 'mousedown', onKeyDown )
+      window.removeEventListener( 'mouseup', onKeyUp )
     }
-  }, [isSelected, ref.current])
+
+  }, [props.isDrawingMode, props.drawingMesh])
   
   const { x, y, z, visible, height, rotation, locked } = sceneObject
 
@@ -113,34 +110,19 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     drawingTexture.current.setMesh(props.drawingMesh.type)
   }, [props.drawingMesh.type])
 
-  useLayoutEffect(() => {
-    if(!isSelected) return
-    gl.domElement.addEventListener('mousemove', draw)
-    return () => {
-      gl.domElement.removeEventListener('mousemove', draw)
-    }
-  }, [isSelected, props.drawingMesh])
-
   const draw = (event) => {
-    if(!isDrawingMode.current) return
     drawingTexture.current.draw(mouse(event, gl), ref.current, camera, props.drawingMesh);
   } 
-  
   const onKeyDown = (event) => {
-    if ( event.keyCode === 16 ) {
-      isDrawingMode.current = true;
-      props.objectRotationControl.deselectObject();
-    }
+    isDrawingMode.current = true;
+    gl.domElement.addEventListener('mousemove', draw)
   }
 
   const onKeyUp = (event) => {
-   if ( event.keyCode === 16 ) {
-      isDrawingMode.current = false;
-      drawingTexture.current.resetMeshPos();
-      saveDataURLtoFile(drawingTexture.current.getImage(), `${sceneObject.id}-texture.png`, props.storyboarderFilePath)
-      props.objectRotationControl.selectObject(ref.current, ref.current.uuid);
-      props.objectRotationControl.IsEnabled = !sceneObject.locked;
-    }
+    gl.domElement.removeEventListener('mousemove', draw)
+    isDrawingMode.current = false;
+    drawingTexture.current.resetMeshPos();
+    saveDataURLtoFile(drawingTexture.current.getImage(), `${sceneObject.id}-texture.png`, props.storyboarderFilePath)
   }
 
   return (

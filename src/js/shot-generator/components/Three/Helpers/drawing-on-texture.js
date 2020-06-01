@@ -9,7 +9,6 @@ class DrawingTexture {
         this.drawingCtx = this.drawingCanvas.getContext('2d');
         this.raycaster = new THREE.Raycaster();
         this.material = null;
-        this.isEnabled = true;
         drawSetting.meshSize = 5;
         drawSetting.color = '#000000';
 
@@ -19,13 +18,6 @@ class DrawingTexture {
         this.drawingMesh = new EraserMesh(this.drawingCtx)
     }
 
-    set Enabled(value) {
-        this.isEnabled = value;
-    }
-
-    get Enabled() {
-        return this.isEnabled;
-    }
 
     resetMeshPos() {
         this.drawingMesh.resetMeshPos()
@@ -99,7 +91,6 @@ class DrawingTexture {
     }
   
     draw (mousePosition, object, camera, mesh){
-        if(!this.isEnabled) return;
  
         const { width, height } = this.material.map.image;
         let percentage = this.intersectImage(mousePosition.x, mousePosition.y, object, camera);

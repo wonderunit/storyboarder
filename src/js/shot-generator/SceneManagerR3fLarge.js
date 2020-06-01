@@ -70,7 +70,8 @@ const SceneManagerR3fLarge = connect(
         selectedBone: getSelectedBone(state),
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
-        drawingMesh: state.drawingMesh
+        drawingMesh: state.drawingMesh,
+        isDrawingMode: state.isDrawingMode
     }),
     {
         selectObject,
@@ -96,7 +97,7 @@ const SceneManagerR3fLarge = connect(
     updateObjects,
     selectedBone,
     drawingMesh,
-
+    isDrawingMode,
     cameraShots,
     setLargeCanvasData,
     renderData,
@@ -306,7 +307,7 @@ const SceneManagerR3fLarge = connect(
     return <group ref={ rootRef }> 
     <CameraUpdate/>
     <SaveShot isPlot={ false }/>
-    <InteractionManager renderData={ renderData }/> 
+    { !isDrawingMode && <InteractionManager renderData={ renderData }/> }
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
@@ -410,6 +411,7 @@ const SceneManagerR3fLarge = connect(
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
                 drawingMesh={ drawingMesh }
+                isDrawingMode={ isDrawingMode }
                 />
               </SimpleErrorBoundary>
         })
