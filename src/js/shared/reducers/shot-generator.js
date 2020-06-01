@@ -57,7 +57,8 @@ const getSerializedState = state => {
   return {
     world: getWorld(state),
     sceneObjects,
-    activeCamera: getActiveCamera(state)
+    activeCamera: getActiveCamera(state),
+    drawingMesh: state.drawingMesh
   }
 }
 
@@ -661,6 +662,8 @@ const initialState = {
   aspectRatio: 2.35,
 
   board: {},
+
+  drawingMesh: { color: '#000000', size: 2},
 
   undoable: {
     world: initialScene.world,
@@ -1458,6 +1461,12 @@ const mainReducer = (state/* = initialState*/, action) => {
       case 'ATTACHMENTS_DELETE':
         delete draft.attachments[action.payload.id]
         return
+      case 'UPDATE_DRAWING_MESH':
+        if(!action.payload) return
+        draft.drawingMesh.color = action.payload.color ? action.payload.color : draft.drawingMesh.color
+        draft.drawingMesh.size = action.payload.size ? action.payload.size : draft.drawingMesh.size
+        draft.drawingMesh.type = action.payload.type ? action.payload.type : draft.drawingMesh.type
+        return  
 
       case 'UNDO_GROUP_START':
         batchGroupBy.start(action.payload)
@@ -1692,7 +1701,7 @@ module.exports = {
   deleteScenePreset: id => ({ type: 'DELETE_SCENE_PRESET', payload: { id } }),
 
   createCharacterPreset: payload => ({ type: 'CREATE_CHARACTER_PRESET', payload }),
-
+  updateDrawingMesh: payload => ({ type: 'UPDATE_DRAWING_MESH', payload}),
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),

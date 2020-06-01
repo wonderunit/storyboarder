@@ -16,7 +16,7 @@ import HandInspector from './HandInspector/HandPresetsEditor/index'
 import PosePresetsInspector from './PosePresetsInspector/index'
 import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
-import MeshInspector from './MeshInspector/index'
+import BrushInspector from './BrushInspector'
 
 import Icon from '../Icon'
 import Modal from '../Modal'
@@ -69,7 +69,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     if (!isImage(selectedType)) return nullTab
     return {
       tab: <Tab><Icon src='icon-tab-attachable'/></Tab>,
-      panel: <Panel><MeshInspector /></Panel>
+      panel: <Panel><BrushInspector /></Panel>
     }
   }, [selectedType])
 

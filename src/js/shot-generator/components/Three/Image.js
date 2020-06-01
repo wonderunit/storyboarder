@@ -110,8 +110,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   }, [locked])
 
   useEffect(() => {
-    drawingTexture.current.setMesh(sceneObject.mesh.type)
-  }, [sceneObject.mesh.type])
+    drawingTexture.current.setMesh(props.drawingMesh.type)
+  }, [props.drawingMesh.type])
 
   useLayoutEffect(() => {
     if(!isSelected) return
@@ -119,11 +119,11 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     return () => {
       gl.domElement.removeEventListener('mousemove', draw)
     }
-  }, [isSelected, sceneObject.mesh])
+  }, [isSelected, props.drawingMesh])
 
   const draw = (event) => {
     if(!isDrawingMode.current) return
-    drawingTexture.current.draw(mouse(event, gl), ref.current, camera, sceneObject.mesh);
+    drawingTexture.current.draw(mouse(event, gl), ref.current, camera, props.drawingMesh);
   } 
   
   const onKeyDown = (event) => {

@@ -4,38 +4,35 @@ import ColorSelect from '../../ColorSelect'
 import {
     getSelections,
     getSceneObjects,
-    updateObject
-  } from './../../../../shared/reducers/shot-generator'
+    updateObject,
+    updateDrawingMesh
+  } from '../../../../shared/reducers/shot-generator'
 import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
-import deepEqualSelector from './../../../../utils/deepEqualSelector'
+import deepEqualSelector from '../../../../utils/deepEqualSelector'
 import MeshType from '../../Three/Helpers/Meshes/TextureMeshTypes'
-const getObjectData = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
-    return sceneObjects[selections[0]]
-})
 
-const MeshInspector = connect((state) => ({
-    sceneObject: getObjectData(state)
+const BrushInspector = connect((state) => ({
+    drawingMesh: state.drawingMesh
 }), 
 {
-    updateObject
+    updateDrawingMesh
 }
 )( 
 React.memo(({
-    updateObject,
-    sceneObject
+    updateDrawingMesh,
+    drawingMesh
 }) => {
-    console.log(sceneObject)
 
     const setSize = (value) => {
-        updateObject(sceneObject.id, {mesh: {...sceneObject.mesh, size: value}})
+        updateDrawingMesh({ size: value })
     }
 
     const setColor = (value) => {
-        updateObject(sceneObject.id, {mesh: {...sceneObject.mesh, color: value}})
+        updateDrawingMesh({ color: value })
     }
 
     const setType = (event) => {
-        updateObject(sceneObject.id, {mesh: {...sceneObject.mesh, type: event.target.value}})
+        updateDrawingMesh({ type: event.target.value })
     }
 
     return (
@@ -43,7 +40,7 @@ React.memo(({
             <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}> 
                 <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Type</div>
                 <select required={ true }
-                  value={ sceneObject.mesh.type || MeshType.SIMPLE }
+                  value={ drawingMesh.type || MeshType.SIMPLE }
                   onChange={ setType }
                   style={{ flex: 1,
                         marginBottom: 0,
@@ -55,19 +52,19 @@ React.memo(({
             </div>
             <NumberSlider 
                 label="Size"
-                value={sceneObject.mesh.size} 
+                value={drawingMesh.size} 
                 min={0.5} 
                 max={15} 
                 onSetValue={setSize}
                 textConstraint={ textConstraints.sizeConstraint }/>
           
-            {sceneObject.mesh.type !== MeshType.ERASER && <ColorSelect
+            {drawingMesh.type !== MeshType.ERASER && <ColorSelect
                 label="mesh color"
-                value={sceneObject.mesh.color}
+                value={drawingMesh.color}
                 onSetValue={setColor}/> }
 
         </React.Fragment>
       )
 }))
 
-export default MeshInspector
+export default BrushInspector

@@ -69,7 +69,8 @@ const SceneManagerR3fLarge = connect(
         models: state.models,
         selectedBone: getSelectedBone(state),
         cameraShots: state.cameraShots,
-        selectedAttachable: getSelectedAttachable(state)
+        selectedAttachable: getSelectedAttachable(state),
+        drawingMesh: state.drawingMesh
     }),
     {
         selectObject,
@@ -94,6 +95,7 @@ const SceneManagerR3fLarge = connect(
     models,
     updateObjects,
     selectedBone,
+    drawingMesh,
 
     cameraShots,
     setLargeCanvasData,
@@ -407,6 +409,7 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selections.includes(id) }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
+                drawingMesh={ drawingMesh }
                 />
               </SimpleErrorBoundary>
         })
