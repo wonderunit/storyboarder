@@ -1,42 +1,31 @@
 import * as THREE from 'three'
-import React, { useEffect, useMemo, useRef, useLayoutEffect } from 'react'
-import { extend, useThree } from 'react-three-fiber'
+import React, { useEffect, useMemo, useRef } from 'react'
+import { extend } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
-import path from 'path'
-import fs from 'fs-extra'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { axis } from "../../../shared/IK/utils/TransformControls"
 import DrawingTexture from "./Helpers/drawing-on-texture" 
-import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 import createRoundedPlane from './Helpers/create-rounded-plane'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
-const mouse = (event, gl) => {
-  const rect = gl.domElement.getBoundingClientRect();
-  let worldX = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
-  let worldY = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
-  return { x: worldX, y: worldY }
-}
-
-let saveDataURLtoFile = (dataURL, filename, boardPath) => {
-  let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
-  //let imageFilePath = path.join(path.dirname(boardPath), 'models/images', filename)
-  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', `temp_${filename}`)
-  fs.writeFileSync(imageFilePath, imageData, 'base64')
-}
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
   const {asset: texture} = useAsset(imagesPaths[0] || null)
-  const { gl, camera } = useThree()
   const aspect = useRef(1)
   const ref = useRef()
-  const drawingTexture = useRef(new DrawingTexture())
-  const isDrawingMode = useRef(false)
+
   const material = useMemo(() => {
-    let material = drawingTexture.current.createMaterial()
+    props.drawTextures[sceneObject.id] = new DrawingTexture()
+    let material = props.drawTextures[sceneObject.id].createMaterial()
     return material
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      delete props.drawTextures[sceneObject.id] 
+    }
   }, [])
 
   useMemo(() => {
@@ -49,8 +38,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     aspect.current = width / height
 
     if (material) {
-        drawingTexture.current.setTexture(texture)
-        material.needsUpdate = true
+      props.drawTextures[sceneObject.id].setTexture(texture)
+      material.needsUpdate = true
     } 
   }, [texture, imagesPaths[0]])
 
@@ -85,19 +74,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       } 
     }
   }, [isSelected]) 
-
-  useEffect(() => {
-    if(props.isDrawingMode) {
-      props.objectRotationControl.deselectObject();
-      gl.domElement.addEventListener( 'mousedown', onKeyDown )
-      window.addEventListener( 'mouseup', onKeyUp )
-    }
-    return () => {
-      gl.domElement.removeEventListener( 'mousedown', onKeyDown )
-      window.removeEventListener( 'mouseup', onKeyUp )
-    }
-
-  }, [props.isDrawingMode, props.drawingMesh])
   
   const { x, y, z, visible, height, rotation, locked } = sceneObject
 
@@ -105,25 +81,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     if(!props.objectRotationControl || !isSelected) return
     props.objectRotationControl.IsEnabled = !locked
   }, [locked])
-
-  useEffect(() => {
-    drawingTexture.current.setMesh(props.drawingMesh.type)
-  }, [props.drawingMesh.type])
-
-  const draw = (event) => {
-    drawingTexture.current.draw(mouse(event, gl), ref.current, camera, props.drawingMesh);
-  } 
-  const onKeyDown = (event) => {
-    isDrawingMode.current = true;
-    gl.domElement.addEventListener('mousemove', draw)
-  }
-
-  const onKeyUp = (event) => {
-    gl.domElement.removeEventListener('mousemove', draw)
-    isDrawingMode.current = false;
-    drawingTexture.current.resetMeshPos();
-    saveDataURLtoFile(drawingTexture.current.getImage(), `${sceneObject.id}-texture.png`, props.storyboarderFilePath)
-  }
 
   return (
     <group

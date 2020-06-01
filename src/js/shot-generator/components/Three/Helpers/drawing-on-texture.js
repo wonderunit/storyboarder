@@ -36,6 +36,14 @@ class DrawingTexture {
         }
     }
 
+    cleanImage() {
+        const { width, height } = this.material.map.image;
+        this.drawingCtx.clearRect(0, 0, width, height)
+        this.drawingCtx.fillStyle = "#ffffff"
+        this.drawingCtx.fillRect(0, 0, width, height)
+        this.material.map.needsUpdate = true;
+    }
+
     getImage() {
         let mime = "images/jpeg";
         let imageData = this.drawingCanvas.toDataURL(mime)

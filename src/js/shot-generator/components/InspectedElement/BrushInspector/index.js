@@ -6,31 +6,33 @@ import {
     getSceneObjects,
     updateObject,
     updateDrawingMesh,
+    setCleanImage,
     enableDrawMode
   } from '../../../../shared/reducers/shot-generator'
 import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
-import deepEqualSelector from '../../../../utils/deepEqualSelector'
 import MeshType from '../../Three/Helpers/Meshes/TextureMeshTypes'
 
 const BrushInspector = connect((state) => ({
-    drawingMesh: state.drawingMesh
+    drawingMesh: state.drawingMesh,
+    selections: getSelections(state)
 }), 
 {
     updateDrawingMesh,
-    enableDrawMode
+    enableDrawMode,
+    setCleanImage
 }
 )( 
 React.memo(({
     updateDrawingMesh,
     enableDrawMode,
-    drawingMesh
+    setCleanImage,
+    drawingMesh,
+    selections
 }) => {
 
     useEffect(() => {
-        console.log("Draw mode set to true")
         enableDrawMode(true)
         return () => {
-            console.log("Draw mode set to false")
             enableDrawMode(false)
         }
     }, [])
@@ -45,6 +47,10 @@ React.memo(({
 
     const setType = (event) => {
         updateDrawingMesh({ type: event.target.value })
+    }
+
+    const cleanImage = () => {
+        setCleanImage([...selections])
     }
 
     return (
@@ -74,6 +80,9 @@ React.memo(({
                 label="mesh color"
                 value={drawingMesh.color}
                 onSetValue={setColor}/> }
+            <div className="mirror_button__wrapper">
+                <div className="mirror_button" onPointerDown={ cleanImage }>Clean Selected Image</div>
+            </div>
 
         </React.Fragment>
       )

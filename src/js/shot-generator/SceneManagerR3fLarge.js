@@ -43,7 +43,21 @@ import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
 import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
+import path from 'path'
+import fs from 'fs-extra'
 
+const mouse = (event, gl) => {
+  const rect = gl.domElement.getBoundingClientRect();
+  let worldX = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
+  let worldY = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
+  return { x: worldX, y: worldY }
+}
+
+let saveDataURLtoFile = (dataURL, filename, boardPath) => {
+  let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
+  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', `temp_${filename}`)
+  fs.writeFileSync(imageFilePath, imageData, 'base64')
+}
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -71,7 +85,8 @@ const SceneManagerR3fLarge = connect(
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
         drawingMesh: state.drawingMesh,
-        isDrawingMode: state.isDrawingMode
+        isDrawingMode: state.isDrawingMode,
+        cleanImages: state.cleanImages
     }),
     {
         selectObject,
@@ -96,8 +111,11 @@ const SceneManagerR3fLarge = connect(
     models,
     updateObjects,
     selectedBone,
+
     drawingMesh,
     isDrawingMode,
+    cleanImages,
+
     cameraShots,
     setLargeCanvasData,
     renderData,
@@ -111,7 +129,8 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
-
+    const isDrawStarted = useRef(false)
+    const drawingTextures = useRef({})
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
@@ -143,6 +162,58 @@ const SceneManagerR3fLarge = connect(
     const groupIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
     }, [sceneObjectLength]) 
+
+    useEffect(() => {
+      if(isDrawingMode) {
+        objectRotationControl.current.deselectObject();
+        gl.domElement.addEventListener( 'mousedown', onKeyDown )
+        window.addEventListener( 'mouseup', onKeyUp )
+      }
+      return () => {
+        gl.domElement.removeEventListener( 'mousedown', onKeyDown )
+        window.removeEventListener( 'mouseup', onKeyUp )
+      }
+  
+    }, [isDrawingMode, drawingMesh])
+
+    useEffect(() => {
+      if(!cleanImages || !cleanImages.length) return
+      for(let i = 0; i < cleanImages.length; i++) {
+        drawingTextures.current[cleanImages[i]].cleanImage()
+      }
+    }, [cleanImages])
+
+    const draw = (event) => {
+      let keys = Object.keys(drawingTextures.current)
+      for(let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        let object = scene.__interaction.find((obj) => obj.userData.id === key)
+        drawingTextures.current[key].draw(mouse(event, gl), object, camera, drawingMesh);
+      }
+    } 
+
+    const onKeyDown = (event) => {
+      isDrawStarted.current = true;
+      gl.domElement.addEventListener('mousemove', draw)
+    }
+  
+    useEffect(() => {
+        let keys = Object.keys(drawingTextures.current)
+        for(let i = 0; i < keys.length; i++) {
+          drawingTextures.current[keys[i]].setMesh(drawingMesh.type)
+        }
+     }, [drawingMesh.type])
+
+    const onKeyUp = (event) => {
+      gl.domElement.removeEventListener('mousemove', draw)
+      isDrawStarted.current = false;
+      let keys = Object.keys(drawingTextures.current)
+      for(let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        drawingTextures.current[key].resetMeshPos();
+        saveDataURLtoFile(drawingTextures.current[key].getImage(), `${key}-texture.png`, storyboarderFilePath)
+      }
+    }
 
     useEffect(() => {
       let sgIkHelper = SGIkHelper.getInstance()
@@ -410,8 +481,7 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selections.includes(id) }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
-                drawingMesh={ drawingMesh }
-                isDrawingMode={ isDrawingMode }
+                drawTextures={ drawingTextures.current }
                 />
               </SimpleErrorBoundary>
         })

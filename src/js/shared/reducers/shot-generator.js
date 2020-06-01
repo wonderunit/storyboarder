@@ -1472,6 +1472,9 @@ const mainReducer = (state/* = initialState*/, action) => {
       case 'ENABLE_DRAWING_MODE':
         draft.isDrawingMode = action.payload
         return  
+      case 'SET_CLEAN_IMAGE':
+        draft.cleanImages = action.payload
+        return  
 
       case 'UNDO_GROUP_START':
         batchGroupBy.start(action.payload)
@@ -1708,6 +1711,7 @@ module.exports = {
   createCharacterPreset: payload => ({ type: 'CREATE_CHARACTER_PRESET', payload }),
   updateDrawingMesh: payload => ({ type: 'UPDATE_DRAWING_MESH', payload}),
   enableDrawMode: payload => ({ type: 'ENABLE_DRAWING_MODE', payload}),
+  setCleanImage: payload => ({ type: 'SET_CLEAN_IMAGE', payload}),
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
