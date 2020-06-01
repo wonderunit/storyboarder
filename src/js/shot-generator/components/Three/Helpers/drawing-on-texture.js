@@ -15,7 +15,7 @@ class DrawingTexture {
 
         this.prevX = null;
         this.prevY = null;
-        this.uvBased = false;
+        this.uvBased = true;
         this.drawingMesh = new EraserMesh(this.drawingCtx)
     }
 
@@ -52,7 +52,7 @@ class DrawingTexture {
 
     createMaterial() {
         let texture = new THREE.CanvasTexture(this.drawingCanvas);
-        let material = new THREE.MeshToonMaterial({ map: texture, transparent: true });
+        let material = new THREE.MeshToonMaterial({ map: texture, transparent: true, side: THREE.DoubleSide });
         material.needsUpdate = true;
         this.material = material;
         return material
@@ -109,7 +109,7 @@ class DrawingTexture {
         }
         let screenX = this.uvBased ?  percentage.x * width : width * percentage.x;
         let screenY = this.uvBased ?  ( 1 - percentage.y) * height : height * percentage.y;
-    //    this.drawingCtx.drawImage(this.material.map.image, 0, 0);
+
         this.drawingMesh.draw({ x: screenX, y: screenY }, mesh)
 
         this.material.map.needsUpdate = true;

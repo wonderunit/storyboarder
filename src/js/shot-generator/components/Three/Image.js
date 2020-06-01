@@ -9,6 +9,7 @@ import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { axis } from "../../../shared/IK/utils/TransformControls"
 import DrawingTexture from "./Helpers/drawing-on-texture" 
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
+import createRoundedPlane from './Helpers/create-rounded-plane'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
@@ -157,7 +158,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       rotation={ [rotation.x, rotation.y, rotation.z] }
     >
       <mesh>
-        <roundedBoxGeometry attach="geometry" args={ [1, 1, 0.01, 0.01] } />
+        <primitive attach="geometry" object={ createRoundedPlane(0.1, 1)} />
         <primitive attach="material" object={ material } />
       </mesh>
     </group>
