@@ -85,15 +85,15 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
-      faceMesh.current.setSkinnedMesh(lod, gl)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
-
+      
       let armature = scene.getObjectByProperty("type", "Bone").parent
       let originalHeight
       if (isUserModel(sceneObject.model)) {
-            originalHeight = 1
+        originalHeight = 1
       } else {
+        faceMesh.current.setSkinnedMesh(lod, gl)
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }

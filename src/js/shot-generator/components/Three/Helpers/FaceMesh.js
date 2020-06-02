@@ -222,6 +222,7 @@ class FaceMesh {
         let headPosition = headBone.worldPosition()
         let position = getMidpoint(headPosition, leftEyePosition, rightEyePosition)
         let intersect = this.facesSearch(position, headBone)
+       
         if(!intersect) return
         let uv = intersect.uv
         let meshPos = {
@@ -231,8 +232,9 @@ class FaceMesh {
         let emotionImage = texture.image
 
         const clampSize = 512
-        let height 
-        let width 
+        let height = emotionImage.height
+        let width = emotionImage.width
+        console.log(emotionImage.width, emotionImage.height)
         if(emotionImage.width > clampSize || emotionImage.height > clampSize) {
             let aspect
             if(emotionImage.width > emotionImage.height) {
@@ -244,7 +246,8 @@ class FaceMesh {
                 height = clampSize
                 width = height * aspect
             }
-        }
+        } 
+        this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
         this.drawingCtx.drawImage(emotionImage, meshPos.x - width / 2, meshPos.y - height / 2, width, height);
         for(let i = 0; i < this.lod.children.length; i++) {
             this.lod.children[i].material.map.needsUpdate = true;

@@ -23,6 +23,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       )
     const [ready, setReady] = useState(false)
     const {asset: texture} = useAsset(ready ? props.imagePath : null)
+    console.log(texture)
     const isFullyUpdate = useRef(false)
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
@@ -91,7 +92,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
-      faceMesh.current.setSkinnedMesh(lod, gl)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
       let armature = scene.getObjectByProperty("type", "Bone").parent
@@ -99,6 +99,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       if (isUserModel(sceneObject.model)) {
             originalHeight = 1
       } else {
+        faceMesh.current.setSkinnedMesh(lod, gl)
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }

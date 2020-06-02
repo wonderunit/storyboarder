@@ -26,6 +26,7 @@ import { useAsset } from '../../../hooks/use-assets-manager'
 import { comparePresetNames, comparePresetPriority } from '../../../utils/searchPresetsForTerms'
 import SearchList from '../../SearchList/index.js'
 import Modal from '../../Modal'
+import isUserModel from '../../../helpers/isUserModel'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const loadImages = (files, baseDir) => {
@@ -95,7 +96,6 @@ const EmotionsInspector = connect(
     }, [emotions])
     
     const onSelectFile = filepath => {
-
         if (filepath.file) {
           let storyboarderFilePath
           withState((dispatch, state) => {
@@ -110,6 +110,8 @@ const EmotionsInspector = connect(
     }
 
     const onCreatePosePreset = filepath => {
+      console.log()
+      if(!filepath.file) return 
       newGeneratedId.current = "Emotion "+shortId(THREE.Math.generateUUID())
       newPresetName.current = newGeneratedId.current
       filePath.current = filepath
@@ -145,11 +147,13 @@ const EmotionsInspector = connect(
             keywords: name, // TODO keyword editing
             filename: filepath,
         }
+
         // add it to state
         createEmotionPreset(newPreset)
-      
-        // select the preset in the list
-        updateObject(sceneObject.id, { emotion: filepath }) 
+        if(!isUserModel(sceneObject.model)) {
+          // select the preset in the list
+          updateObject(sceneObject.id, { emotion: filepath }) 
+        }
       
         // get updated state (with newly created pose preset)
         withState((dispatch, state) => {
@@ -177,7 +181,11 @@ const EmotionsInspector = connect(
     }, [sceneObject.emotion])
 
     const onSelectItem = (filepath) => {
-      updateObject(sceneObject.id, { emotion: filepath }) 
+      if(!isUserModel(sceneObject.model)) {
+        console.log(sceneObject.model, filepath)
+        // select the preset in the list
+        updateObject(sceneObject.id, { emotion: filepath }) 
+      }
     } 
 
     const onRemoval = (data) => {
