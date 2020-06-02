@@ -229,8 +229,23 @@ class FaceMesh {
             y: uv.y * this.image.height
         }
         let emotionImage = texture.image
-        this.drawingCtx.drawImage(this.image, 0, 0, this.image.width, this.image.height);
-        this.drawingCtx.drawImage(emotionImage, meshPos.x - emotionImage.width / 2, meshPos.y - emotionImage.height / 2, emotionImage.width, emotionImage.height);
+
+        const clampSize = 512
+        let height 
+        let width 
+        if(emotionImage.width > clampSize || emotionImage.height > clampSize) {
+            let aspect
+            if(emotionImage.width > emotionImage.height) {
+                aspect = emotionImage.height / emotionImage.width
+                width = clampSize
+                height = width * aspect
+            } else {
+                aspect = emotionImage.width / emotionImage.height
+                height = clampSize
+                width = height * aspect
+            }
+        }
+        this.drawingCtx.drawImage(emotionImage, meshPos.x - width / 2, meshPos.y - height / 2, width, height);
         for(let i = 0; i < this.lod.children.length; i++) {
             this.lod.children[i].material.map.needsUpdate = true;
         }
