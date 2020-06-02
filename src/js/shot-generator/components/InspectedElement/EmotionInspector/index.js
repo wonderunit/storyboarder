@@ -89,7 +89,6 @@ const EmotionsInspector = connect(
     const newPresetName = useRef('')
     const newGeneratedId = useRef()
     const filePath = useRef()
-    const [showRemoval, setShowRemoval] = useState(false)
 
     useEffect(() => {
       setResult(Object.values(emotions))
@@ -208,22 +207,6 @@ const EmotionsInspector = connect(
       deleteEmotionPreset(data.id)
     }
 
-    const showRemovalButtons = (event) => {
-      if(event.keyCode === 91) setShowRemoval(true)
-    }
-    const hideRemovalButtons = (event) => {
-      if(event.keyCode === 91) setShowRemoval(false)
-    }
-    useLayoutEffect(() => {
-      window.addEventListener('keydown', showRemovalButtons)
-      window.addEventListener('keyup', hideRemovalButtons)
-      return () => {
-        window.removeEventListener('keydown', showRemovalButtons)
-        window.removeEventListener('keyup', hideRemovalButtons)
-
-      } 
-    }, [])
-
     const refClassName = classNames( "button__file", "button__file--selected")
     // allow a little text overlap
     const wrapperClassName = "button__file__wrapper"
@@ -273,7 +256,6 @@ const EmotionsInspector = connect(
                   selectedSrc: sceneObject.emotion,
                   storyboarderFilePath,
                   onRemoval,
-                  showRemoval
                 }}
                 Component={EmotionInspectorItem}
                 elements={results}

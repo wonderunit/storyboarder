@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState } from 'react'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../../utils/InspectorElementsSettings'
 import Image from '../../Image'
 import classNames from 'classnames'
@@ -92,7 +92,7 @@ const setupRenderer = ({ thumbnailRenderer, attachment, data, texture, faceMesh 
     faceMesh.draw(texture)
 }
 
-const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attachment, thumbnailRenderer, textureLoader, faceMesh, selectedSrc, storyboarderFilePath, showRemoval, onRemoval}) => {
+const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attachment, thumbnailRenderer, textureLoader, faceMesh, selectedSrc, storyboarderFilePath, onRemoval}) => {
     const imagePath = useMemo(() => {
       let imagePath 
       if(!isUserModel(data.filename)) { 
@@ -105,13 +105,7 @@ const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attach
     const src = path.join(remote.app.getPath('userData'), 'presets', 'emotions', `${data.id}.jpg`)
     const [isLoaded, setLoaded] = useState(fs.existsSync(src))
     const {asset:texture} = useAsset( isLoaded ? "" : imagePath)
-    const [show, setShow] = useState(false)
 
-    useEffect(()=> {
-      if(!isDefaultPreset(data.id)) {
-        setShow(showRemoval)
-      }
-    }, [showRemoval])
     
     useMemo(() => {
         let hasRendered = isLoaded
@@ -166,9 +160,9 @@ const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attach
             onPointerUp={ onPointerDown }
             title={ data.name }
             onRemoval= { onRemoval}
-            show={ show }
-            data={ data }> 
-                <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
+            data={ data }
+            isRemovable={ !isDefaultPreset(data.id) }> 
+                <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }} >
                     { isLoaded && <Image src={ src } className="thumbnail"/>}
                 </div>
                 <div className="thumbnail-search__name"
