@@ -1,4 +1,5 @@
 const path = require('path')
+const fs = require('fs-extra')
 const isUserModel = model => !!model.match(/(\/|\\)/)
 
 const getFilePathForImages = ({ type, volumeImageAttachmentIds, imageAttachmentIds}, storyboarderFilePath ) => {
@@ -11,7 +12,10 @@ const getFilePathForImages = ({ type, volumeImageAttachmentIds, imageAttachmentI
             let extension = type === "volume" ? ".jpg" : ".png"
             paths.push( path.join(window.__dirname, "data", "shot-generator", folderName, model + extension))
         } else {
-            paths.push(path.join(path.dirname(storyboarderFilePath), model)) 
+            let imagePath = path.join(path.dirname(storyboarderFilePath), model)
+            if( fs.existsSync(imagePath)) {
+                paths.push(imagePath) 
+            }
         }
     }
     return paths

@@ -23,7 +23,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       )
     const [ready, setReady] = useState(false)
     const {asset: texture} = useAsset(ready ? props.imagePath : null)
-    console.log(texture)
     const isFullyUpdate = useRef(false)
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 

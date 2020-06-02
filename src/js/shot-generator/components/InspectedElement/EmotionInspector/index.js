@@ -8,8 +8,8 @@ import {
     createEmotionPreset,
     deleteEmotionPreset
   } from '../../../../shared/reducers/shot-generator'
-  import fs from 'fs-extra'
-  import path from 'path'
+import fs from 'fs-extra'
+import path from 'path'
 import { useCallback } from 'react'
 import FileInput from '../../FileInput'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
@@ -95,11 +95,7 @@ const EmotionsInspector = connect(
     }, [emotions])
     
     const onSelectFile = filepath => {
-        if (filepath.file) {
-          let storyboarderFilePath
-          withState((dispatch, state) => {
-            storyboarderFilePath = state.meta.storyboarderFilePath
-          })
+        if (filepath.file) { 
           loadImages(filepath.files, storyboarderFilePath)
           .then((ids) => {
 
@@ -109,7 +105,6 @@ const EmotionsInspector = connect(
     }
 
     const onCreatePosePreset = filepath => {
-      console.log()
       if(!filepath.file) return 
       newGeneratedId.current = "Emotion "+shortId(THREE.Math.generateUUID())
       newPresetName.current = newGeneratedId.current
@@ -181,15 +176,18 @@ const EmotionsInspector = connect(
 
     const onSelectItem = (filepath) => {
       if(!isUserModel(sceneObject.model)) {
-        console.log(sceneObject.model, filepath)
         // select the preset in the list
         updateObject(sceneObject.id, { emotion: filepath }) 
       }
     } 
 
     const onRemoval = (data) => {
-      updateObject(sceneObject.id, { emotion: null }) 
+      let sceneObjects 
       withState((dispatch, state) => {
+        sceneObjects = Object.values(getSceneObjects(state)).filter(object => object.emotion === data.filename)
+        for(let i = 0; i < sceneObjects.length; i++) {
+          updateObject(sceneObjects[i].id, { emotion: null }) 
+        }
         // ... and save it to the presets file
         let denylist = Object.keys(defaultEmotions)
         denylist.push(data.id)
@@ -205,6 +203,8 @@ const EmotionsInspector = connect(
         presetsStorage.saveEmotionsPresets({ emotions: filteredPoses })
       })
       deleteEmotionPreset(data.id)
+      let emotionPath = path.join(path.dirname(storyboarderFilePath), data.filename)
+      fs.remove(emotionPath)
     }
 
     const refClassName = classNames( "button__file", "button__file--selected")
