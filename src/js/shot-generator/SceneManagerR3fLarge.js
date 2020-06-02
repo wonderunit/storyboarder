@@ -195,12 +195,24 @@ const SceneManagerR3fLarge = connect(
       }
     }, [cleanImages])
 
+    let getImageObjects = () => scene.__interaction.filter(object => object.userData.type === "image")
+    let raycaster = useRef(new THREE.Raycaster())
     const draw = (event) => {
       let keys = Object.keys(drawingTextures.current)
+      let {x, y} = mouse(event, gl)
+      raycaster.current.setFromCamera({x, y}, camera)
+      let imageObjects = getImageObjects()
+      let intersections = raycaster.current.intersectObjects(imageObjects, true)
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
-        let object = scene.__interaction.find((obj) => obj.userData.id === key)
-        drawingTextures.current[key].draw(mouse(event, gl), object, camera, drawingMesh);
+        let drawingTexture = drawingTextures.current[key]
+        let object = imageObjects.find((obj) => obj.userData.id === key)
+        if(!object || !object.visible) continue
+        if(intersections.length && intersections[0].object.parent.uuid === object.uuid) {
+          drawingTexture.draw({x, y}, object, camera, drawingMesh);
+        } else if(drawingTexture.isChanged){
+          drawingTexture.resetMeshPos();
+        }
       }
     } 
 
