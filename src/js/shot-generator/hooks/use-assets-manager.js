@@ -9,7 +9,7 @@ import { gltfLoader } from '../utils/gltfLoader'
  */
 export const cache = observable({})
 
-const textureLoader = new THREE.TextureLoader()
+let textureLoader = new THREE.TextureLoader()
 
 const LOADING_MODE = {
   PENDING: 'PENDING',
@@ -96,6 +96,7 @@ export const loadAsset = (path) => {
 
 export const cleanUpCache = () => {
   cache.set({})
+  textureLoader = new THREE.TextureLoader()
 }
 /**
  * Hook that allows components to fetch resources
@@ -127,7 +128,7 @@ export const useAssets = (paths) => {
     if (shouldLoad.length > 0) {
       shouldLoad.map(loadAsset) // Fetch here
     }
-
+    
     // Update 'assetsToLoad' to know, how many objects we are waiting for fetch
     setAssetsToLoad(shouldLoad.concat(pendingAssets))
     for(let i = 0; i < paths.length; i++) {

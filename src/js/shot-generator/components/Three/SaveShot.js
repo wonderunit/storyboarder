@@ -15,13 +15,15 @@ import { OutlineEffect } from '../../../vendor/OutlineEffect'
 import { remote } from 'electron'
 import path from 'path'
 import fs from 'fs-extra'
+import { cleanUpCache } from '../../hooks/use-assets-manager'
 
 const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
 
 const SaveShot = connect(
     state => ({
-        storyboarderFilePath : state.meta.storyboarderFilePath
+        storyboarderFilePath : state.meta.storyboarderFilePath,
+        aspectRatio: state.aspectRatio
     }),
     {
         getSelections,
@@ -38,6 +40,7 @@ const SaveShot = connect(
           },
     })
 ( React.memo(({
+    aspectRatio,
     withState,
     storyboarderFilePath,
     markSaved,
@@ -48,6 +51,7 @@ const SaveShot = connect(
     const { scene, camera } = useThree()
     const imageRenderer = useRef()
     const outlineEffect = useRef()
+    const changeToTemp = useRef([])
 
     useEffect(() => {
         if (!imageRenderer.current) {
@@ -61,21 +65,28 @@ const SaveShot = connect(
     }, [])
 
     const saveShot = () => {
-        saveImages()
+
         selectObject(null)
         if(!isPlot) {
+            let cameraImage = renderImagesForBoard()
+            saveImages()
             withState((dispatch, state) => {
-                let cameraImage = renderImagesForBoard(dispatch, state)
+                let data = getSerializedState(state)
                 ipcRenderer.send('saveShot', {
                   uid: state.board.uid,
-                  data: getSerializedState(state),
+                  data: data,
                   images: {
                     'camera': cameraImage,
                   }
                 })
-            
-                dispatch(markSaved())
             })
+
+            for(let i = 0; i < changeToTemp.current.length; i++) {
+                changeToTemp.current[i]();
+            }
+            changeToTemp.current = []
+            
+            markSaved()
         } else {
             let plotImage = renderImagesForBoard()
             withState((dispatch, state) => {
@@ -87,23 +98,30 @@ const SaveShot = connect(
         }
     }
   
-    const insertShot = useCallback(() => {
-        saveImages()
+    const insertShot = () => {
+    
         selectObject(null)
         if(!isPlot) {
+            let cameraImage = renderImagesForBoard()
+            // NOTE we do this first, since we get new data on insertShot complete
+            markSaved()
+            saveImages()
             withState((dispatch, state) => {
-                let cameraImage = renderImagesForBoard(dispatch, state)
-                // NOTE we do this first, since we get new data on insertShot complete
-                markSaved()
-
+                let data = getSerializedState(state)
                 ipcRenderer.send('insertShot', {
-                  data: getSerializedState(state),
+                  data: data,
                   images: {
                     camera: cameraImage
                   },
                   currentBoard: state.board
                 })
-        }) } else {
+            })
+            for(let i = 0; i < changeToTemp.current.length; i++) {
+                changeToTemp.current[i]();
+            }
+            changeToTemp.current = []
+            markSaved()
+        } else {
             let plotImage = renderImagesForBoard()
             setTimeout(() => {
                 withState((dispatch, state) => {
@@ -115,29 +133,39 @@ const SaveShot = connect(
               }, 100)
      
         }
-    }, [scene])
+    }
 
     const saveImages = () => {
+        if(isPlot) return
         let imageObjects 
         withState((dispatch, state) => {
             imageObjects = Object.values(getSceneObjects(state)).filter(obj => obj.type === "image")
         })
         for( let i = 0; i < imageObjects.length; i++ ) {
             let image = imageObjects[i]
-            let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', `temp_${image.id}-texture.png`)
-            let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', `${image.id}-texture.png`)
-  
-            let isImageExist = fs.pathExistsSync(tempImageFilePath)
+            let imgComponent = scene.__interaction.find(obj => obj.userData.id === image.id)
+            let isImageExist = imgComponent.userData.tempImagePath
             if(!isImageExist) continue
-            fs.rename(tempImageFilePath, imageFilePath)
+            let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', imgComponent.userData.tempImagePath)
+            let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', `${image.id}-texture.png`)
             let projectDir = path.dirname(storyboarderFilePath)
             let assetsDir = path.join(projectDir, 'models', 'images')
             fs.ensureDirSync(assetsDir)
             let dst = path.join(assetsDir, path.basename(imageFilePath))
             let id = path.relative(projectDir, dst)
-            if(!image.imageAttachmentIds || !image.imageAttachmentIds.find(ids => ids === id)) {
-              updateObject(image.id, {imageAttachmentIds: [id]})
-            }
+            updateObject(image.id, {imageAttachmentIds: [id]})
+            fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
+            
+            changeToTemp.current.push(() => {
+                let ctempImageFilePath = tempImageFilePath
+                let cassetsDir = assetsDir
+                let savedId = image.id
+                let dst = path.join(cassetsDir, path.basename(ctempImageFilePath))
+                let id = path.relative(projectDir, dst)
+                updateObject(savedId, {imageAttachmentIds: [id]})
+                fs.remove(ctempImageFilePath)
+            })
+
         }
     }
   
@@ -152,8 +180,8 @@ const SaveShot = connect(
         return () => ipcRenderer.removeListener('requestInsertShot', insertShot)
     }, [insertShot])
   
-    const renderImagesForBoard = (dispatch, state) => {
-        let width = isPlot ? 900 : Math.ceil(900 * state.aspectRatio)
+    const renderImagesForBoard = () => {
+        let width = isPlot ? 900 : Math.ceil(900 * aspectRatio)
         let imageRenderCamera = camera.clone()
         imageRenderCamera.layers.set(SHOT_LAYERS)
         // render the image

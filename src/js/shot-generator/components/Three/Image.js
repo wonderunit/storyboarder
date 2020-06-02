@@ -12,10 +12,9 @@ const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 extend({RoundedBoxGeometry})
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
-  const {asset: texture} = useAsset(imagesPaths[0] || null)
+  const {asset: texture, loaded} = useAsset(imagesPaths[0] || null)
   const aspect = useRef(1)
   const ref = useRef()
-
   const material = useMemo(() => {
     props.drawTextures[sceneObject.id] = new DrawingTexture()
     let material = props.drawTextures[sceneObject.id].createMaterial()
@@ -41,7 +40,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.drawTextures[sceneObject.id].setTexture(texture)
       material.needsUpdate = true
     } 
-  }, [texture, imagesPaths[0]])
+  }, [texture])
 
   useEffect(() => {
     material.opacity = sceneObject.opacity
@@ -82,15 +81,20 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     props.objectRotationControl.IsEnabled = !locked
   }, [locked])
 
+  const userDataInfo = {  
+    type: "image",
+    id: sceneObject.id,
+    locked: locked
+  }
+
   return (
     <group
       ref={ ref }
       onController={ sceneObject.visible ? () => null : null }
-      userData={{
-        type: "image",
-        id: sceneObject.id,
-        locked: locked
-      }}
+      userData={ref.current ? { 
+        ...ref.current.userData,
+        ...userDataInfo
+      } : userDataInfo}
       visible={ visible }
       position={ [x, z, y] }
       scale={ [height * aspect.current, height, 1] }

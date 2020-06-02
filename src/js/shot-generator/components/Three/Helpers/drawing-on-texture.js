@@ -15,7 +15,8 @@ class DrawingTexture {
         this.prevX = null;
         this.prevY = null;
         this.uvBased = true;
-        this.drawingMesh = new EraserMesh(this.drawingCtx)
+        this.drawingMesh = new SimpleMesh(this.drawingCtx)
+        this.isChanged = false
     }
 
 
@@ -106,12 +107,14 @@ class DrawingTexture {
             this.resetMeshPos();
             return;
         }
+        this.isChanged = true;
         let screenX = this.uvBased ?  percentage.x * width : width * percentage.x;
         let screenY = this.uvBased ?  ( 1 - percentage.y) * height : height * percentage.y;
 
         this.drawingMesh.draw({ x: screenX, y: screenY }, mesh)
 
         this.material.map.needsUpdate = true;
+
     }
 }
 export default DrawingTexture;

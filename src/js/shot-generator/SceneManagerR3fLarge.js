@@ -53,10 +53,23 @@ const mouse = (event, gl) => {
   return { x: worldX, y: worldY }
 }
 
-let saveDataURLtoFile = (dataURL, filename, boardPath) => {
+let saveDataURLtoFile = (dataURL, boardPath, updateObject, object) => {
   let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
-  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', `temp_${filename}`)
+  if(object.userData.tempImagePath) {
+    let tempImageFilePath = path.join(path.dirname(boardPath), 'models/images', object.userData.tempImagePath)
+    fs.remove(tempImageFilePath)
+  }
+  let tempFilename = `temp_${object.userData.id}-${Date.now()}-texture.png`
+  object.userData.tempImagePath = tempFilename
+  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', tempFilename)
   fs.writeFileSync(imageFilePath, imageData, 'base64')
+  let projectDir = path.dirname(boardPath)
+  let assetsDir = path.join(projectDir, 'models', 'images')
+  fs.ensureDirSync(assetsDir)
+  let dst = path.join(assetsDir, path.basename(imageFilePath))
+  let id = path.relative(projectDir, dst)
+  updateObject(object.userData.id, {imageAttachmentIds: [id]})
+
 }
 
 const sceneObjectSelector = (state) => {
@@ -134,7 +147,6 @@ const SceneManagerR3fLarge = connect(
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
-
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
     }, [sceneObjectLength])
@@ -205,13 +217,18 @@ const SceneManagerR3fLarge = connect(
      }, [drawingMesh.type])
 
     const onKeyUp = (event) => {
+      if(!isDrawStarted.current) return
       gl.domElement.removeEventListener('mousemove', draw)
       isDrawStarted.current = false;
       let keys = Object.keys(drawingTextures.current)
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
         drawingTextures.current[key].resetMeshPos();
-        saveDataURLtoFile(drawingTextures.current[key].getImage(), `${key}-texture.png`, storyboarderFilePath)
+        let object = scene.__interaction.find((obj) => obj.userData.id === key)
+        if(drawingTextures.current[key].isChanged) {
+          drawingTextures.current[key].isChanged = false
+          saveDataURLtoFile(drawingTextures.current[key].getImage(), storyboarderFilePath, updateObject, object)
+        }
       }
     }
 
