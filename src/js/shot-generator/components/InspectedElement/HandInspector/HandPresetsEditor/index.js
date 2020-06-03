@@ -14,6 +14,7 @@ import {
   getSelections,
   undoGroupStart,
   undoGroupEnd,
+  deleteHandPosePreset
 } from '../../../../../shared/reducers/shot-generator'
 import defaultPosePresets from '../../../../../shared/reducers/shot-generator-presets/hand-poses.json'
 import presetsStorage from '../../../../../shared/store/presetsStorage'
@@ -61,6 +62,7 @@ const HandPresetsEditor = connect(
     createHandPosePreset,
     undoGroupStart,
     undoGroupEnd,
+    deleteHandPosePreset,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -72,6 +74,7 @@ React.memo(({
   updateObject,
   createHandPosePreset,
   characterPath,
+  deleteHandPosePreset,
   undoGroupStart,
   undoGroupEnd,
   withState
@@ -184,6 +187,25 @@ React.memo(({
     }
   }
 
+  const onRemoval = (data) => {
+    withState((dispatch, state) => {
+      // ... and save it to the presets file
+      let denylist = Object.keys(defaultPosePresets)
+      denylist.push(data.id)
+      let filteredPoses = Object.values(state.presets.handPoses)
+        .filter(pose => denylist.includes(pose.id) === false)
+        .reduce(
+          (coll, pose) => {
+            coll[pose.id] = pose
+            return coll
+          },
+          {}
+        )
+      presetsStorage.saveHandPosePresets({ handPoses: filteredPoses })
+    })
+    deleteHandPosePreset(data.id)
+  }
+
   return (
     <React.Fragment>
       <Modal visible={ isModalShown } onClose={() => showModal(false)}>
@@ -252,6 +274,7 @@ React.memo(({
               selectedHand,
               undoGroupStart,
               undoGroupEnd,
+              onRemoval
             }}
             elements={results}
             numCols={NUM_COLS}

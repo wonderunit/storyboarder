@@ -1,4 +1,16 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
+let mousePos = {x:0, y:0}
+let overId = 0
+const checkIfMouseOver = (id) => {
+    var element = document.getElementById(`${id}`);
+    if(!element) return
+    let coordPos = element.getBoundingClientRect();
+    if(mousePos.x >= coordPos.left && mousePos.x <= coordPos.right 
+        && mousePos.y >= coordPos.top && mousePos.y <= coordPos.bottom) {
+            return true
+    }
+    return false 
+}
 
 const RemovableItem = React.memo(({ 
     className, 
@@ -8,25 +20,48 @@ const RemovableItem = React.memo(({
     children,
     onRemoval,
     isRemovable = true,
-    data,
+    data
 }) => {
     const [show, setShow] = useState(false)
+    const [count, setCount] = useState(0)
+    useEffect(() => {
+        if(overId !== data.id && checkIfMouseOver(data.id)) {
+            if(isRemovable) {
+                overId = data.id
+                setShow(true)
+            }
+        }
+    })
 
     const onMouseOver = (event) => {
-        if(!isRemovable) return
+        mousePos.x = event.clientX
+        mousePos.y = event.clientY
+
+        overId = data.id
+        setCount(count + 1)
+        if(!isRemovable) { 
+            setShow(false)
+            return 
+        }
         setShow(true)
     }
 
     const onMouseOut = (event) => {
-        if(!isRemovable) return
         setShow(false)
     }
+
+    useMemo(() => {
+        if(show && !isRemovable) {
+            setShow(false)
+        }
+    }, [show])
 
     const onRemovePreset = (event) => {
         event.stopPropagation()
         onRemoval(data)
     }
     return <div className={ className }
+        id={data.id}
         style={{ ...style, position:"relative" }}
         onPointerUp={ onPointerUp }
         onMouseEnter={ onMouseOver }

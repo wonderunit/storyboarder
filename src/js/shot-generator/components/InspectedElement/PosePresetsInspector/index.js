@@ -12,6 +12,7 @@ import {
   getSelections,
   undoGroupStart,
   undoGroupEnd,
+  deletePosePreset,
   updateCharacterIkSkeleton
 } from '../../../../shared/reducers/shot-generator'
 
@@ -47,6 +48,7 @@ const PosePresetsEditor = connect(
     undoGroupStart,
     undoGroupEnd,
     updateCharacterIkSkeleton,
+    deletePosePreset,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -60,6 +62,7 @@ React.memo(({
   undoGroupStart,
   undoGroupEnd,
   updateCharacterIkSkeleton,
+  deletePosePreset,
   withState
 }) => {
   const thumbnailRenderer = useRef()
@@ -208,6 +211,30 @@ React.memo(({
     updateCharacterIkSkeleton({id:sceneObject.id, skeleton: oppositeSkeleton})
   }
 
+  const onRemoval = (data) => {
+    //let sceneObjects 
+    withState((dispatch, state) => {
+      //sceneObjects = Object.values(getSceneObjects(state)).filter(object => object.emotion === data.filename)
+/*       for(let i = 0; i < sceneObjects.length; i++) {
+        updateObject(sceneObjects[i].id, { posePresetId: null }) 
+      } */
+      // ... and save it to the presets file
+      let denylist = Object.keys(defaultPosePresets)
+      denylist.push(data.id)
+      let filteredPoses = Object.values(state.presets.poses)
+        .filter(pose => denylist.includes(pose.id) === false)
+        .reduce(
+          (coll, pose) => {
+            coll[pose.id] = pose
+            return coll
+          },
+          {}
+        )
+      presetsStorage.savePosePresets({ poses: filteredPoses })
+    })
+    deletePosePreset(data.id)
+  }
+
   return (
     <React.Fragment>
     <Modal visible={ isModalShown } onClose={() => showModal(false)}>
@@ -259,6 +286,7 @@ React.memo(({
             thumbnailRenderer,
             undoGroupStart,
             undoGroupEnd,
+            onRemoval
           }}
           Component={PosePresetInspectorItem}
           elements={results}

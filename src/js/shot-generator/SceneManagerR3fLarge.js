@@ -180,6 +180,7 @@ const SceneManagerR3fLarge = connect(
         updateObjects
       )
 
+      
       //#region initialization of objectRotationControl 
       objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement)
       objectRotationControl.current.control.canSwitch = false

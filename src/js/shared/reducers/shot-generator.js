@@ -1348,6 +1348,7 @@ const presetsReducer = (state = initialState.presets, action) => {
         delete draft.poses[action.payload.id]
         return
 
+
       case 'UPDATE_POSE_PRESET':
         // allow a null value for name
         if (action.payload.hasOwnProperty('name')) {
@@ -1358,6 +1359,9 @@ const presetsReducer = (state = initialState.presets, action) => {
       case 'CREATE_HAND_POSE_PRESET':
         draft.handPoses[action.payload.id] = action.payload
         return
+      case 'DELETE_HAND_POSE_PRESET':
+        delete draft.handPoses[action.payload.id]
+        return        
       case 'CREATE_EMOTION_PRESET':
         draft.emotions[action.payload.id] = action.payload
         return
@@ -1707,6 +1711,7 @@ module.exports = {
   deleteEmotionPreset: id => ({ type: 'DELETE_EMOTION_PRESET', payload: { id } }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
+  deleteHandPosePreset: id => ({ type: 'DELETE_HAND_POSE_PRESET', payload: { id } }),
 
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
