@@ -69,8 +69,7 @@ const init = () => {
       autoUpdater.on('error', err => {
         log.info('auto-updater: error', err)
         console.error(err)
-        dialog.showMessageBox(null, { message: 'Update failed. Quitting.\n' + err })
-        app.quit()
+        dialog.showMessageBox(null, { message: 'Update failed.\n' + err })
         win && win.close()
       })
 
