@@ -1251,6 +1251,9 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         if (action.payload.hasOwnProperty('backgroundColor')) {
           draft.backgroundColor = action.payload.backgroundColor
         }
+        if (action.payload.hasOwnProperty('scenetexture')) {
+          draft.scenetexture = action.payload.scenetexture
+        }
         return
 
       case 'UPDATE_WORLD_ROOM':

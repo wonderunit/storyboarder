@@ -47,6 +47,12 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
       updateWorldEnvironment({file: CopyFile(storyboarderFilePath, event.file, 'environment')})
     }
   }, [])
+
+  const setSceneTextureFile = useCallback((event) => {
+    if (event.file) {
+      updateWorld({scenetexture: CopyFile(storyboarderFilePath, event.file, 'scenetexture')})
+    }
+  }, [])
   
   const setAmbientIntensity = useCallback((intensity) => updateWorldEnvironment({intensity}), [])
   const setDirectionalIntensity = useCallback((intensityDirectional) => updateWorldEnvironment({intensityDirectional}), [])
@@ -95,7 +101,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
             />
           </div>
 
-          <div className="inspector-row">
+          { !world.scenetexture && <div className="inspector-row">
             <NumberSlider
                 label="Bg color"
                 value={world.backgroundColor / 0xFFFFFF}
@@ -103,7 +109,12 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                 max={1}
                 onSetValue={setBackground}
             />
-          </div>
+          </div> }
+          <FileInput
+              onChange={setSceneTextureFile}
+              label={"Scene texture"}
+              value={world.scenetexture && path.basename(world.scenetexture)}
+            />
         </div>
 
         <h5 className="inspector-label">Room</h5>

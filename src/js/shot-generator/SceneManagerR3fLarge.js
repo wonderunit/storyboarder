@@ -1,6 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
+import SceneBackground from './components/Three/SceneBackground'
 import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
@@ -43,7 +44,6 @@ import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
 import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
-
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -291,10 +291,6 @@ const SceneManagerR3fLarge = connect(
     }, [world])
 
     useEffect(() => {
-      scene.background = new THREE.Color(world.backgroundColor)
-    }, [world.backgroundColor])
-
-    useEffect(() => {
       if(!directionalLightRef.current) return
       directionalLightRef.current.rotation.x = 0
       directionalLightRef.current.rotation.z = 0
@@ -443,6 +439,11 @@ const SceneManagerR3fLarge = connect(
               }, { storyboarderFilePath } )}
               environment={world.environment}
               visible={world.environment.visible} />
+    }
+    {
+         <SceneBackground
+              path={ getFilePathForImages({imageAttachmentIds: world.scenetexture ? [world.scenetexture] : [] }, storyboarderFilePath) }
+              world={world} />
     }
     {
         roomTexture && <Room
