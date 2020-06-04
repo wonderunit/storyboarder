@@ -70,8 +70,8 @@ const init = () => {
         log.info('auto-updater: error', err)
         console.error(err)
         dialog.showMessageBox(null, { message: 'Update failed. Quitting.\n' + err })
-        win.close()
         app.quit()
+        win && win.close()
       })
 
       // Download and Install
