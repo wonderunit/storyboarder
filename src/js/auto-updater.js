@@ -53,7 +53,7 @@ const init = () => {
 
       autoUpdater.on('download-progress', (progressObj) => {
         log.info('auto-updater: progress', progressObj)
-        win.webContents.send('progress', progressObj)
+        win && win.webContents.send('progress', progressObj)
       })
 
       autoUpdater.on('update-downloaded', (ev, info) => {
