@@ -22,6 +22,7 @@ import { getFilePathForImages } from '../shot-generator/helpers/get-filepath-for
 import Room from '../shot-generator/components/Three/Room'
 import CameraUpdate from '../shot-generator/CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
+import SceneBackground from '../shot-generator/components/Three/SceneBackground'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -103,10 +104,6 @@ const ShotExplorerSceneManager = connect(
         directionalLightRef.current.rotation.y = world.directional.rotation
         directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world])
-
-    useEffect(() => {
-      scene.background = new THREE.Color(world.backgroundColor)
-    }, [world.backgroundColor])
 
     useEffect(() => {
       if(!directionalLightRef.current) return
@@ -215,6 +212,12 @@ const ShotExplorerSceneManager = connect(
               }, { storyboarderFilePath } )}
               environment={world.environment}
               visible={world.environment.visible} />
+    }
+    {
+         <SceneBackground
+              imagePath={ getFilePathForImages({imageAttachmentIds: world.scenetexture ? [world.scenetexture] : [] }, storyboarderFilePath) }
+              world={world}
+              storyboarderFilePath={ storyboarderFilePath } />
     }
     {
         roomTexture && <Room
