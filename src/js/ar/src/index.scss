@@ -4,11 +4,31 @@ body {
   margin: 0;
   
   background-color: #212128;
+  
+  font-family: Roboto, Arial, sans-serif;
+  color: #eee;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 #root {
   width: 100vw;
   height: 100vh;
+  
+  display: block;
 
   overflow: hidden;
+}
+
+#overlay {
+  width: 100vw;
+  height: 100vh;
+  
+  padding: 8px;
+
+  box-sizing: border-box;
+  position: relative;
+  user-select: none;
 }

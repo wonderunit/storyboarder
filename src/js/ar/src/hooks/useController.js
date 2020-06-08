@@ -15,8 +15,23 @@ const getReticle = () => {
 
 const RETICLE = getReticle()
 
+
+const useFrameCallbacks = []
+
+export const useFrame = (fn) => {
+  useEffect(() => {
+    useFrameCallbacks.push(fn)
+    
+    return () => {
+      useFrameCallbacks.splice(useFrameCallbacks.indexOf(fn), 1)
+    }
+  }, [fn])
+}
+
 export const useHitTestManager = (hitTestEnable = true) => {
-  const {gl, scene, camera} = useThree()
+  const state = useThree()
+  const {gl, scene, camera} = state
+  
   const isTestEnabled = useRef(hitTestEnable)
   const hitTestSourceRequested = useRef(false)
   const xrViewerSpaceRef = useRef(null)
@@ -64,9 +79,6 @@ export const useHitTestManager = (hitTestEnable = true) => {
 
       if ( hitTestResults.length ) {
         let hit = hitTestResults[ 0 ];
-        
-        // let hits = hitTestResults.map(ht => ht.getPose( referenceSpace ))
-        // console.log(hits)
 
         RETICLE.visible = true;
         RETICLE.matrix.fromArray( hit.getPose( referenceSpace ).transform.matrix )
@@ -77,6 +89,10 @@ export const useHitTestManager = (hitTestEnable = true) => {
 
       }
 
+    }
+
+    for (let callback of useFrameCallbacks) {
+      callback(state, dt)
     }
 
     gl.render( scene, camera )

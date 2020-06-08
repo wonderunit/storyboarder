@@ -14,7 +14,7 @@ const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
-const materialFactory = (isIcon) => patchMaterial(new THREE.MeshToonMaterial({
+const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
@@ -124,6 +124,14 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       }
     }
   }, [isSelected])
+
+  useEffect(() => {
+    return () => {
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      }
+    }
+  }, [])
 
   const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
 

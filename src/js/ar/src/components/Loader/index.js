@@ -33,6 +33,9 @@ const Loader = ({progress = 0.0}) => {
           style={{width: `${progress * 100}%`}}
         />
       </div>
+      <div className="loader info">
+        {(progress * 100).toFixed(0)}%
+      </div>
     </div>
   )
 }

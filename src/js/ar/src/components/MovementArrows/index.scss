@@ -1,0 +1,25 @@
+.movement-container {
+  width: 128px;
+  height: 128px;
+
+  position: absolute;
+  bottom: 0;
+  
+  display: flex;
+  flex-direction: column;
+
+  justify-content: space-evenly;
+  
+  &__row {
+    display: flex;
+
+    justify-content: space-evenly;
+  }
+  
+  &__button {
+    border: 1px solid #eee;
+    
+    margin: 2px;
+    padding: 4px;
+  }
+}

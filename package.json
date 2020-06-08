@@ -1,7 +1,7 @@
 {
   "name": "storyboarder",
   "productName": "Storyboarder",
-  "version": "1.18.0",
+  "version": "2.0.0",
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
@@ -135,7 +135,7 @@
     "css-loader": "^3.5.3",
     "dotenv": "8.2.0",
     "electron": "5.0.11",
-    "electron-builder": "21.2.0",
+    "electron-builder": "22.6.1",
     "electron-devtools-installer": "^2.2.4",
     "electron-mocha": "8.0.2",
     "electron-notarize": "^0.2.1",
@@ -216,6 +216,7 @@
     "react-dom": "16.8.6",
     "react-pose": "^4.0.10",
     "react-redux": "7.1.0",
+    "react-reveal": "^1.2.2",
     "react-select": "^3.0.8",
     "react-three-fiber": "4.0.12",
     "react-use-gesture": "^6.0.14",

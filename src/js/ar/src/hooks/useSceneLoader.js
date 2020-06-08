@@ -29,7 +29,7 @@ const useSceneLoader = (sceneObjects, world, additionalAssets = []) => {
     .map(getFilepathForImage)
 
     return resourcesToLoad.concat(models, images, additionalAssets)
-  }, [getSceneObjectsHash(sceneObjects), world.environment.file])
+  }, [sceneObjects, world.environment.file])
   
   const loadStatus = useAssets(resources)
   

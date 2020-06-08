@@ -38,6 +38,8 @@ window.addEventListener("error", function (e) {
   return false;
 })
 
+window.SG = SGConnection
+
 ReactDOM.render(
   <Provider store={store}>
     <SceneManagerXR SGConnection={SGConnection}/>

@@ -522,25 +522,32 @@ const SceneContent = connect(
     const thumbnailRenderer = useRef()
     const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, SG: SGConnection })
 
+    const realCamera = useMemo(() => new THREE.PerspectiveCamera(), [])
+    useEffect(() => {
+      camera.parent.attach(realCamera)
+    }, []) 
     const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
       rootRef,
       uiService,
       playSound,
-      stopSound
+      stopSound,
+      realCamera
     })
-    
-    const emptyCamera = useMemo(() => {
-      return new THREE.PerspectiveCamera()
-    }, [])
     
     useFrame(({camera, gl}) => {
       TWEEN.update()
       if (gl.xr.getSession() && isXrPresenting) {
-        gl.xr.getCamera(emptyCamera)
-        emptyCamera.matrixWorld.multiplyMatrices(camera.parent.matrixWorld, emptyCamera.matrixWorld)
+        gl.xr.getCamera(realCamera)
+
+        let matrixWorld = realCamera.matrixWorld.clone()
+        matrixWorld.premultiply(camera.parent.getInverseMatrixWorld())
+        matrixWorld.decompose(realCamera.position, realCamera.quaternion, realCamera.scale)
+        realCamera.updateWorldMatrix(false, true)
+
+        
         SGConnection.sendInfo({
-          matrix: emptyCamera.matrixWorld.toArray(),
+          matrix: realCamera.matrixWorld.toArray(),
           controllers: controllers.map((object) => object.matrixWorld.toArray())
         })
       }

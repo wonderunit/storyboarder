@@ -1,0 +1,31 @@
+.scale-buttons {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  
+  text-align: center;
+  font-size: 13px;
+  
+  &__button {
+    border: 2px solid #212128;/*#5c65c0*/
+    border-radius: 50%;
+    
+    color: #212128;
+    
+    background: #eee;
+    
+    width: 40px;
+    height: 40px;
+    
+    margin: 4px;
+    
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  &__main-button {
+    position: relative;
+    z-index: 1;
+  }
+}
