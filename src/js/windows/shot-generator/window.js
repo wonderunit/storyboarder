@@ -32,7 +32,7 @@ const shotExplorerMiddleware = store => next => action => {
   if(!action) return
   if(sendedAction !== action) {
     let win = shotExplorer.getWindow()
-    if (win && !win.isDestroyed()) {
+    if (win && !win.isDestroyed() && !action.type.includes("UNDO")) {
       let json
       if(action.payload && action.payload.skeleton) {
         json = JSON.stringify(action)

@@ -22,7 +22,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
   useEffect(() => {
     if (ref.current && gl.xr.getSession()) {
       const copyCamera = new THREE.PerspectiveCamera()
-      gl.xr.getCamera(copyCamera)
+      gl.xr.getSession() && gl.xr.getCamera(copyCamera)
       
       const absoluteMatrix = new THREE.Matrix4().multiplyMatrices(camera.parent.matrixWorld, copyCamera.matrixWorld)
       
@@ -35,7 +35,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
       const direction = new THREE.Vector3(0.0, 0.0, -1.0).applyQuaternion(rotation).setComponent(1, 0.0).normalize()
       position.setFromMatrixPosition(absoluteMatrix)
       
-      ref.current.parent.position.set(direction.x, position.y, direction.z)
+      ref.current.parent.position.set(direction.x, camera.position.y * 0.5, direction.z)
       ref.current.parent.lookAt(position.x, position.y, position.z)
     }
   }, [])

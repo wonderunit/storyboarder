@@ -8,7 +8,6 @@ const thunkMiddleware = require('redux-thunk').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState } = require('../../shared/reducers/shot-generator')
-
 const poses = require('../../shared/reducers/shot-generator-presets/poses.json')
 const ShotExplorer = require('../../shot-explorer').default
 const service = require('../shot-generator/service')
@@ -57,7 +56,7 @@ const configureStore = function configureStore (preloadedState) {
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
               }
-              next(action)
+              return next(action)
             })
       )
     )
@@ -144,11 +143,12 @@ electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event =
 const pushUpdates = () => {
   shotExplorerElement = renderShotExplorer()
   batch(() => {
-    for(let i = 0; i < sendedAction.length; i++) {
+    for(let i = 0, length = sendedAction.length; i < length; i++) {
       let object = sendedAction[i]
       let action = object
       if(!action.type) {
         action = JSON.parse(object)
+        sendedAction.push(action)
       }
       store.dispatch(action)
     }

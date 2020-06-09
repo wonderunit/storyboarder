@@ -24,7 +24,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const boneRotationControl = useRef(null)
-    const characterRotationControl = useRef(null)
     useEffect(() => {
       return () => {
         ref.current.remove(SGIkHelper.getInstance())
@@ -39,7 +38,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         setReady(false)
         return [null, null, null, null, null]
       }
-  
       let lod = new THREE.LOD()
       let { scene } = cloneGltf(gltf)
       let map
@@ -142,6 +140,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         ref.current.remove(SGIkHelper.getInstance())
         boneRotationControl.current.cleanUp()
         boneRotationControl.current = null
+        if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+          props.objectRotationControl.deselectObject()
+        }
         if(!lod) return
         for(let i = 0; i < lod.children.length; i++) {
             lod.children[i].geometry.dispose()
@@ -203,14 +204,12 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         boneMatrix.premultiply(inverseMatrixWorld)
         position = position.setFromMatrixPosition(boneMatrix)
         let quaternion = new THREE.Quaternion().setFromRotationMatrix(boneMatrix)
-        boneMatrix.premultiply(ref.current.matrixWorld)
         changedSkeleton.push({ 
-          id: bone.uuid,
           name: bone.name,
           position: { 
-            x: position.x, 
-            y: position.y, 
-            z: position.z 
+            x: position.x,
+            y: position.y,
+            z: position.z
           }, 
           rotation: { 
             x: rotation.x, 
@@ -267,6 +266,12 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         skinnedMesh.material.emissive.set(sceneObject.tintColor)
       })
     }, [sceneObject.tintColor, ready])
+
+    useEffect(() => {
+      if(ready) {
+        props.forceUpdate({id:sceneObject.id})
+      }
+    }, [ready])
 
     useEffect(() => {
       if(!lod) return
