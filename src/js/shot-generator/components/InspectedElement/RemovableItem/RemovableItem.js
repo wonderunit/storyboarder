@@ -5,8 +5,8 @@ const checkIfMouseOver = (id) => {
     var element = document.getElementById(`${id}`);
     if(!element) return
     let coordPos = element.getBoundingClientRect();
-    if(mousePos.x >= coordPos.left && mousePos.x <= coordPos.right 
-        && mousePos.y >= coordPos.top && mousePos.y <= coordPos.bottom) {
+    if(mousePos.x > coordPos.left && mousePos.x < coordPos.right 
+        && mousePos.y > coordPos.top && mousePos.y < coordPos.bottom) {
             return true
     }
     return false 
@@ -25,11 +25,9 @@ const RemovableItem = React.memo(({
     const [show, setShow] = useState(false)
     const [count, setCount] = useState(0)
     useEffect(() => {
-        if(overId !== data.id && checkIfMouseOver(data.id)) {
-            if(isRemovable) {
-                overId = data.id
-                setShow(true)
-            }
+        if(isRemovable && overId !== data.id && checkIfMouseOver(data.id)) {
+            overId = data.id
+            setShow(true)
         }
     })
 
@@ -47,6 +45,7 @@ const RemovableItem = React.memo(({
     }
 
     const onMouseOut = (event) => {
+        console.log("Hiding removal", data.id)
         setShow(false)
     }
 
