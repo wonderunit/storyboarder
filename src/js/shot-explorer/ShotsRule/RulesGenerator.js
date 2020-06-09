@@ -20,21 +20,27 @@ const getRandomNumber = (maxLength) => {
     return number;
 }
 
-const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, characters) => {
+const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, characters, isCustomModel = false) => {
     let i = getRandomNumber(100);
     let results = [];
 
     //#region Finds Headbone and it's children and calculates their center for vertical oneThird
-    let headBone = skinnedMesh.skeleton.bones.filter(bone => bone.name === "Head")[0]
-    let headPoints = []
-    headPoints.push(headBone.worldPosition())
-    for(let i = 0; i < headBone.children.length; i++) {
-        if(headBone.children[i].name.includes('leaf'))
-            headPoints.push(headBone.children[i].worldPosition())
-    }
-    let headBox = new THREE.Box3().setFromPoints(headPoints)
     let headCenter = new THREE.Vector3()
-    headBox.getCenter(headCenter)
+    let headBone = skinnedMesh.skeleton.bones.filter(bone => bone.name === "Head")[0]
+    if(!isCustomModel) {
+        let headPoints = []
+        headPoints.push(headBone.worldPosition())
+        for(let i = 0; i < headBone.children.length; i++) {
+            if(headBone.children[i].name.includes('leaf'))
+                headPoints.push(headBone.children[i].worldPosition())
+        }
+        let headBox = new THREE.Box3().setFromPoints(headPoints)
+        
+        headBox.getCenter(headCenter)
+    } else {
+        headCenter.copy(focusedCenter)
+    }
+
     //#endregion
     // Chance to apply orbiting rule is 100%. Orbiting should be always applied
     if(i < 100) {
@@ -51,7 +57,11 @@ const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, chara
     // rotates camera to left or right so that character stays in one third part of scene
     if(i < 70) {
         let headQuaternion = new THREE.Quaternion()
-        headBone.getWorldQuaternion(headQuaternion)
+        if(!isCustomModel) {
+            headBone.getWorldQuaternion(headQuaternion)
+        } else {
+            character.getWorldQuaternion(headQuaternion)
+        }
         let rotation = new THREE.Euler().setFromQuaternion(headQuaternion, "YXZ")
         let characterRotation = rotation.y * THREE.Math.RAD2DEG
         let cameraRotation = shot.cameraRotation ? shot.cameraRotation * THREE.Math.RAD2DEG : 0

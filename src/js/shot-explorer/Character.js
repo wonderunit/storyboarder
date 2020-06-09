@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useMemo, useState, useEffect, useRef } from 'react'
 import * as THREE from 'three'
 import { useUpdate } from 'react-three-fiber'
 import cloneGltf from '../shot-generator/helpers/cloneGltf'
@@ -7,9 +7,11 @@ import {useAsset} from '../shot-generator/hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../shot-generator/utils/ShotLayers'
 import {patchMaterial} from '../shot-generator/helpers/outlineMaterial'
 import isUserModel from '../shot-generator/helpers/isUserModel'
+import isSuitableForIk from './utils/isSuitableForIk'
 
 const Character = React.memo(({ path, sceneObject, modelSettings}) => {
     const {asset: gltf} = useAsset(path)
+    const isIkCharacter = useRef()
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
@@ -72,7 +74,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings}) => {
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
-
+      isIkCharacter.current = isSuitableForIk(skeleton)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
@@ -202,7 +204,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings}) => {
           height: originalHeight,
           locked: locked,
           name: sceneObject.displayName,
-          modelName: sceneObject.model
+          modelName: sceneObject.model,
+          isSameSkeleton: isIkCharacter.current
         }}
 
         position={ [x, z, y] }

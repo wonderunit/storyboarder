@@ -233,9 +233,10 @@ const getShotBox = (character, shotType = 0) => {
   /** If shot isn't provided, use eyes to calculate shot angle */
   if (!ShotSizesInfo[shotType]) {
     let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
-    let bone = skinnedMesh.skeleton.bones.find((bone) => bone.name === 'leaf')
-    
-    let boneInfo = getBoneStartEndPos(bone)
+    let bone = skinnedMesh.skeleton.bones.find((bone) => bone.name === 'Head')
+    let headChild = bone.children[0]
+    if(!headChild) return box
+    let boneInfo = getBoneStartEndPos(headChild)
     box.expandByPoint(boneInfo.start)
     box.expandByPoint(boneInfo.end)
     
@@ -283,7 +284,7 @@ const getClosestCharacter = (characters, camera) => {
     let dist = camera.position.distanceTo(target.position)
     let angle = charDir.clone().dot(cameraDir)
     
-    let frustum = new THREE.Frustum().setFromMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse))
+    let frustum = new THREE.Frustum().setFromProjectionMatrix(new THREE.Matrix4().multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse))
     let visible = frustum.containsPoint(target.position)
     
     if ((angle >= 1.0 || angle <= 0.0) && dist <= resultDistance && visible) {

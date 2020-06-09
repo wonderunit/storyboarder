@@ -26,7 +26,7 @@ class AreaShotRule extends ShotRule {
         this.camera.updateMatrixWorld(true);
         this.camera.updateProjectionMatrix();
 
-        frustum.setFromMatrix( new THREE.Matrix4().multiplyMatrices( this.camera.projectionMatrix, this.camera.matrixWorldInverse ) );
+        frustum.setFromProjectionMatrix( new THREE.Matrix4().multiplyMatrices( this.camera.projectionMatrix, this.camera.matrixWorldInverse ) );
         for( let i = 0; i < this.characters.length; i++) {
             let position = this.characters[i].worldPosition();
             if(Math.pow(position.x - characterPosition.x, 2) + Math.pow(position.y - characterPosition.y, 2) < Math.pow(this.radius, 2)) {

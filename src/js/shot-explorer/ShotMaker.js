@@ -21,6 +21,27 @@ import isUserModel from '../shot-generator/helpers/isUserModel'
 
 import getRandomNumber from './utils/getRandomNumber'
 
+const shotSizes = [
+    { value: ShotSizes.EXTREME_CLOSE_UP,  label: "Extreme Close Up" },
+    { value: ShotSizes.VERY_CLOSE_UP,     label: "Very Close Up" },
+    { value: ShotSizes.CLOSE_UP,          label: "Close Up" },
+    { value: ShotSizes.MEDIUM_CLOSE_UP,   label: "Medium Close Up" },
+    { value: ShotSizes.BUST,              label: "Bust" },
+    { value: ShotSizes.MEDIUM,            label: "Medium Shot" },
+    { value: ShotSizes.MEDIUM_LONG,       label: "Medium Long Shot" },
+    { value: ShotSizes.LONG,              label: "Long Shot / Wide" },
+    { value: ShotSizes.EXTREME_LONG,      label: "Extreme Long Shot" },
+    { value: ShotSizes.ESTABLISHING,      label: "Establishing Shot" }
+]
+
+const shotAngles = [
+  { value: ShotAngles.BIRDS_EYE,        label: "Bird\'s Eye" },
+  { value: ShotAngles.HIGH,             label: "High" },
+  { value: ShotAngles.EYE,              label: "Eye" },
+  { value: ShotAngles.LOW,              label: "Low" },
+  { value: ShotAngles.WORMS_EYE,        label: "Worm\'s Eye" }
+]
+
 const getRandomFov = (aspectRatio) => {
 
     const mms = [12, 16, 18, 22, 24, 35, 50]
@@ -118,7 +139,7 @@ const ShotMaker = React.memo(({
     }, [sceneInfo])
 
     const generateShot = (shotsArray, shotsCount) => {
-        let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character' && !isUserModel(object.userData.modelName))
+        let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character' && object.userData.isSameSkeleton) 
         if(!characters.length) {
             setNoCharacterWarn(true)
             return;
@@ -127,16 +148,17 @@ const ShotMaker = React.memo(({
         }
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
-            let shotAngleKeys = Object.keys(ShotAngles)
-            let randomAngle = ShotAngles[shotAngleKeys[getRandomNumber(shotAngleKeys.length)]]
+            let shotAngleKeys = Object.keys(shotAngles)
+            let randomAngle = shotAngles[shotAngleKeys[getRandomNumber(shotAngleKeys.length)]]
             
-            let shotSizeKeys = Object.keys(ShotSizes)
-            let randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
+            let shotSizeKeys = Object.keys(shotSizes)
+            let randomSize = shotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length)]]
 
             let character = characters[getRandomNumber(characters.length)]
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
             if(!skinnedMesh) continue
-            let shot = new ShotItem(randomAngle, randomSize, character)
+            console.log(randomAngle, randomSize)
+            let shot = new ShotItem(randomAngle.label, randomSize.label, character)
             cameraCopy.fov = getRandomFov(aspectRatio)
             cameraCopy.updateProjectionMatrix()
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
