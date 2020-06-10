@@ -928,6 +928,22 @@ const shotGeneratorMenu = [
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:fps-meter')
         }
+      },
+      {
+        label: 'Zoom In',
+        accelerator: keystrokeFor("menu:view:zoom-in"),
+        type: 'normal',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:menu:view:zoom', 0.1)
+        }
+      },
+      {
+        label: 'Zoom Out',
+        accelerator: keystrokeFor("menu:view:zoom-out"),
+        type: 'normal',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:menu:view:zoom', -0.1)
+        }
       }
     ]
   },

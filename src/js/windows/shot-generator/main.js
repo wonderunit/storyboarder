@@ -129,6 +129,10 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
 })
 
+ipcMain.on('shot-generator:menu:view:zoom', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:zoom', value)
+})
+
 ipcMain.on('shot-generator:object:duplicate', () => {
   win.webContents.send('shot-generator:object:duplicate')
 })
