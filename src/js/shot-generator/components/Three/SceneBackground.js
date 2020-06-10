@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useLayoutEffect, useRef } from 'react'
 import { useThree } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import saveDataURLtoFile from '../../helpers/saveDataURLtoFile'
 import path from 'path'
 import fs from 'fs-extra'
+import CubeMapDrawingTexture from './helpers/cubeMapDrawingTexture'
 let drawingCanvas = document.createElement('canvas');
 let cropedCanvas = document.createElement('canvas');
 let drawingCtx = drawingCanvas.getContext('2d');
@@ -16,6 +17,14 @@ const crop = (image, x, y, width, height, name, boardPath) => {
     croppedCtx.putImageData(imageData, 0, 0);   
     let dataUrl = croppedCtx.canvas.toDataURL()
     saveDataURLtoFile(dataUrl, `${name}.png`, 'models/sceneTextures/cubetexture', boardPath)
+}
+
+const mouse = (event, gl) => {
+    const rect = gl.domElement.getBoundingClientRect()
+    return {
+      x: ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1,
+      y: - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1
+    }
 }
 
 const getCubeMapTextures = (gltf, boardPath) => {
@@ -83,7 +92,19 @@ const getCubeMapTextures = (gltf, boardPath) => {
 
 const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath }) => {
     const {asset: gltf} = useAsset(imagePath[0])
-    const { scene } = useThree()
+    const { scene, camera, gl } = useThree()
+    const intersectionBox = useRef()
+    const intersectionCamera = useRef()
+    const raycaster = useRef()
+    const drawingTexture = useRef(new CubeMapDrawingTexture())
+    const intersectionCube = useRef()
+    useEffect(() => {
+        raycaster.current = new THREE.Raycaster()
+        let geometry = new THREE.BoxBufferGeometry(1, 1, 1)
+        let material = new THREE.MeshBasicMaterial({ side: THREE.BackSide})
+        intersectionBox.current = new THREE.Mesh(geometry, material)
+        intersectionCamera.current = camera.clone()
+    }, [])
 
     useEffect(() => {
         scene.background = new THREE.Color(world.backgroundColor)
@@ -91,8 +112,26 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath }) 
 
     useEffect(() => {
         if(!gltf) return
-        scene.background = getCubeMapTextures(gltf, storyboarderFilePath);
+        scene.background  = getCubeMapTextures(gltf, storyboarderFilePath);
+        console.log(scene.background)
     }, [gltf])
+
+    const draw = (event) => {
+        intersectionCamera.current.copy(camera)
+        intersectionCamera.current.position.set(0, 0, 0)
+        intersectionCamera.current.quaternion.copy(camera.worldQuaternion())
+        intersectionCamera.current.updateMatrixWorld(true)
+        drawingTexture.current.createMaterial(scene.background)
+        drawingTexture.current.draw(mouse(event, gl), intersectionBox.current, intersectionCamera.current )
+        raycaster.current.setFromCamera(mouse(event, gl), intersectionCamera.current )
+    }
+
+    useLayoutEffect(() => {
+        document.addEventListener('pointerdown', draw)
+        return () => {
+            document.removeEventListener('pointerdown', draw)
+        }
+    }, [])
      
     return null
 })
