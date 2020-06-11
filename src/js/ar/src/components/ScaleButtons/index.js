@@ -18,7 +18,7 @@ const ScaleButtons = () => {
     })
 
     setVisibility(false)
-  }, [])
+  }, [currentSceneState])
   
   return (
     <div className='scale-buttons' onClick={preventFn}>

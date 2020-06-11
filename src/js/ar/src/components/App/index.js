@@ -13,6 +13,8 @@ import useSceneLoader from "../../hooks/useSceneLoader"
 import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-generator"
 
 import ScaleButtons from "../ScaleButtons"
+import Welcome from "../Welcome"
+import MoveButtons from "../MoveButtons";
 
 
 const preloadAssetsList = [
@@ -29,7 +31,10 @@ const preloadAssetsList = [
 const App = ({sceneObjects, world, board}) => {
   const innerState = useState({
     position: [0, 0, 0],
-    scale: [0.02, 0.02, 0.02]
+    scale: [0.02, 0.02, 0.02],
+    currentMatrix: new THREE.Matrix4().toArray(),
+    positioningEnabled: true,
+    isWelcome: true
   })
   
   const {assets, count} = useSceneLoader(sceneObjects, world, preloadAssetsList)
@@ -49,41 +54,10 @@ const App = ({sceneObjects, world, board}) => {
       ARButton.createButton(gl, sessionParams)
     )
     
-    gl.xr.setReferenceSpaceType('unbounded')
+    //gl.xr.setReferenceSpaceType('unbounded')
     
     const controller = gl.xr.getController(0) // Add finger touch element to the scene
     scene.add(controller)
-  }, [])
-
-
-  useEffect(() => {
-    const onOrientationChange = (event) => {
-      let x     = event.beta
-      let y    = event.gamma
-
-      // Because we don't want to have the device upside down
-      // We constrain the x value to the range [-90,90]
-      if (x >  90) { x =  90}
-      if (x < -90) { x = -90}
-
-      // To make computation easier we shift the range of 
-      // x and y to [0,180]
-      // x += 90
-      // y += 90
-      
-      let angle = Math.atan2( - y / 180, - x / 180 ) + Math.PI
-      
-      let quater = Math.round( angle / (Math.PI * 0.5) )
-      
-      console.clear()
-      console.log(quater)
-    }
-
-    window.addEventListener("deviceorientation", onOrientationChange, true)
-    
-    return () => {
-      window.removeEventListener("deviceorientation", onOrientationChange, true)
-    }
   }, [])
   
   return (
@@ -93,9 +67,17 @@ const App = ({sceneObjects, world, board}) => {
         progress={progress}
       />
       <div id="overlay">
-        <SceneState.Provider value={innerState}>
-          <ScaleButtons/>
-        </SceneState.Provider>
+        <div>
+          <SceneState.Provider value={innerState}>
+            {innerState[0].isWelcome
+              ? <Welcome ready={appReady}/>
+              : [
+                <ScaleButtons/>,
+                <MoveButtons/>
+              ]
+            }
+          </SceneState.Provider>
+        </div>
       </div>
       <Canvas
         vr={true}
@@ -103,13 +85,14 @@ const App = ({sceneObjects, world, board}) => {
         noEvents={true}
         onCreated={onCreated}
       >
-        <Provider store={store}>
-          <Scene
-            ready={appReady}
-            placingEnabled={true}
-            sceneState={innerState}
-          />
-        </Provider>
+        <SceneState.Provider value={innerState}>
+          <Provider store={store}>
+            <Scene
+              ready={appReady}
+              placingEnabled={innerState[0].positioningEnabled}
+            />
+          </Provider>
+        </SceneState.Provider>
       </Canvas>
     </>
   )

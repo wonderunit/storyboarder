@@ -1,8 +1,11 @@
-import React, {useRef, useState} from 'react'
+import React, {useState, useContext} from 'react'
 import {connect} from "react-redux"
+import {useUpdate} from "react-three-fiber"
 
-import {useController, useHitTestManager} from "../../hooks/useController"
+import {useHitTestManager, useController} from "../../hooks/useHitTestManager"
 import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-generator"
+import {SceneState} from "../../helpers/sceneState"
+
 import Environment from "../Three/Environment"
 import Model from "../Three/Model"
 import Image from "../Three/Image"
@@ -27,45 +30,47 @@ const renderObject = (sceneObject) => {
   return null
 }
 
-const Scene = ({sceneObjects, world, placingEnabled = true, sceneState}) => {
+const Scene = ({sceneObjects, world, placingEnabled = true}) => {
+  const [currentSceneState, setSceneState] = useContext(SceneState)
+  
   const [sceneVisible, setSceneVisible] = useState(false)
-  const meshRef = useRef(null)
 
-  useController(({reticle}) => {
-    if (!placingEnabled) {
-      return false
-    }
+  const sceneRef = useUpdate(() => {
+    sceneRef.current.matrixWorld.fromArray(currentSceneState.currentMatrix)
+
+    sceneRef.current.position.setFromMatrixPosition(sceneRef.current.matrixWorld)
+    sceneRef.current.quaternion.setFromRotationMatrix(sceneRef.current.matrixWorld)
+    sceneRef.current.updateWorldMatrix(false, true)
     
-    meshRef.current.position.setFromMatrixPosition(reticle.matrix)
-    meshRef.current.quaternion.setFromRotationMatrix(reticle.matrix)
-    meshRef.current.updateWorldMatrix(false, true)
-    
-    if (!sceneVisible) {
+    if (!sceneVisible && !currentSceneState.positioningEnabled) {
       setSceneVisible(true)
     }
-  }, [placingEnabled])
+  }, [currentSceneState.currentMatrix, currentSceneState.positioningEnabled])
 
   useHitTestManager(placingEnabled)
   
   return (
     <group
-      ref={meshRef}
-      position={sceneState[0].position}
-      scale={sceneState[0].scale}
-      visible={sceneVisible}
+      ref={sceneRef}
     >
-      <ambientLight
-        color={ 0xffffff }
-        intensity={ world.ambient.intensity }
-      />
-      <directionalLight
-        color={ 0xffffff }
-        intensity={ world.directional.intensity }
-        position={ [0, 1.5, 0] }
-        target-position={ [0, 0, 0.4] }
-      />
-      <Environment/>
-      {Object.values(sceneObjects).map(renderObject)}
+      <group
+        position={currentSceneState.position}
+        scale={currentSceneState.scale}
+        visible={sceneVisible}
+      >
+        <ambientLight
+          color={ 0xffffff }
+          intensity={ world.ambient.intensity }
+        />
+        <directionalLight
+          color={ 0xffffff }
+          intensity={ world.directional.intensity }
+          position={ [0, 1.5, 0] }
+          target-position={ [0, 0, 0.4] }
+        />
+        <Environment/>
+        {Object.values(sceneObjects).map(renderObject)}
+      </group>
     </group>
   )
 }

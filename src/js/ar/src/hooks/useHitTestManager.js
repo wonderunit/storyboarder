@@ -18,14 +18,14 @@ const RETICLE = getReticle()
 
 const useFrameCallbacks = []
 
-export const useFrame = (fn) => {
+export const useFrame = (fn, options = []) => {
   useEffect(() => {
     useFrameCallbacks.push(fn)
     
     return () => {
       useFrameCallbacks.splice(useFrameCallbacks.indexOf(fn), 1)
     }
-  }, [fn])
+  }, [fn, ...options])
 }
 
 export const useHitTestManager = (hitTestEnable = true) => {
@@ -40,9 +40,7 @@ export const useHitTestManager = (hitTestEnable = true) => {
   useEffect(() => {
     if (hitTestEnable) {
       scene.add(RETICLE) 
-    }
-
-    return () => {
+    } else {
       scene.remove(RETICLE)
     }
   }, [scene, hitTestEnable])
@@ -92,7 +90,7 @@ export const useHitTestManager = (hitTestEnable = true) => {
     }
 
     for (let callback of useFrameCallbacks) {
-      callback(state, dt)
+      callback(state, dt, RETICLE)
     }
 
     gl.render( scene, camera )
