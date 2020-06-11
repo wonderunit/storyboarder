@@ -27,7 +27,7 @@ const removeExtensions = () => {
 }
 
 let win
-const maxZoom = {in: 0.5, out: -1}
+const maxZoom = {in: 0.4, out: -1.6}
 let memento = {
   x: undefined,
   y: undefined,

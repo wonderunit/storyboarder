@@ -934,7 +934,7 @@ const shotGeneratorMenu = [
         accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:zoom', 0.1)
+          ipcRenderer.send('shot-generator:menu:view:zoom', 0.2)
         }
       },
       {
@@ -942,7 +942,7 @@ const shotGeneratorMenu = [
         accelerator: keystrokeFor("menu:view:zoom-out"),
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:zoom', -0.1)
+          ipcRenderer.send('shot-generator:menu:view:zoom', -0.2)
         }
       },
       {
