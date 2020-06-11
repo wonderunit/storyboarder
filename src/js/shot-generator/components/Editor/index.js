@@ -3,7 +3,8 @@ import { Provider, connect} from 'react-redux'
 import path from 'path'
 import TWEEN from '@tweenjs/tween.js'
 
-import { ipcRenderer } from 'electron'
+import electron from 'electron'
+const { ipcRenderer, webFrame } = electron
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -37,6 +38,7 @@ import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
+const maxZoom = {in: 0.4, out: -1.6}
 
 const Effect = ({renderData, stats}) => {
   const {gl, size} = useThree()
@@ -82,12 +84,26 @@ const Editor = React.memo(({
       document.body.removeChild( stats.dom )
       setStats(undefined)
       }
-    }
+  }
+
+  const zoom = useCallback((event, value) => {
+    let zoomLevel = webFrame.getZoomLevel()
+    let zoom = zoomLevel + value 
+    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
+    webFrame.setZoomLevel(zoom)
+  })
 
   useEffect(() => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    let currentWindow = electron.remote.getCurrentWindow()
+    if(currentWindow.getBounds().height < 800) {
+      webFrame.setZoomLevel(maxZoom.out)
+    }
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
+    ipcRenderer.on('shot-generator:menu:view:zoom', zoom)
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
+      ipcRenderer.off('shot-generator:menu:view:zoom', zoom)
     }
   }, [])
 

@@ -27,12 +27,11 @@ const removeExtensions = () => {
 }
 
 let win
-const maxZoom = {in: 0.4, out: -1.6}
 let memento = {
   x: undefined,
   y: undefined,
   width: 1505,
-  height: 1080
+  height: 1080,
 }
 
 const reveal = onComplete => {
@@ -129,13 +128,7 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
 })
 
 ipcMain.on('shot-generator:menu:view:zoom', (event, value) => {
-  if(win) {
-    let zoomLevel = win.webContents.getZoomLevel()
-    let zoom = zoomLevel + value 
-    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
-    win.webContents.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-    win.webContents.setZoomLevel(zoom)
-  }
+  win && win.webContents.send('shot-generator:menu:view:zoom', value)
 })
 ipcMain.on('shot-generator:menu:view:resetZoom', (event, value) => {
   win && win.webContents.setZoomLevel(0)
