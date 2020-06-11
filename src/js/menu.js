@@ -930,19 +930,27 @@ const shotGeneratorMenu = [
         }
       },
       {
-        label: 'Zoom In',
-        accelerator: keystrokeFor("menu:view:zoom-in"),
+        label: 'Zoom Up',
+        accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:zoom', 0.1)
         }
       },
       {
-        label: 'Zoom Out',
+        label: 'Zoom Down',
         accelerator: keystrokeFor("menu:view:zoom-out"),
         type: 'normal',
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:zoom', -0.1)
+        }
+      },
+      {
+        label: 'Reset UI Scale to 100%',
+        accelerator: 'CommandOrControl+0',
+        type: 'normal',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:menu:view:resetZoom')
         }
       }
     ]

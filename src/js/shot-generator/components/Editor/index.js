@@ -3,8 +3,7 @@ import { Provider, connect} from 'react-redux'
 import path from 'path'
 import TWEEN from '@tweenjs/tween.js'
 
-import electron from 'electron'
-const { ipcRenderer, webFrame } = electron
+import { ipcRenderer } from 'electron'
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -58,7 +57,6 @@ const Effect = ({renderData, stats}) => {
   
   return null
 }
-const maxZoom = {in: 0.5, out: -1}
 const Editor = React.memo(({
   mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
 }) => {
@@ -86,20 +84,10 @@ const Editor = React.memo(({
       }
     }
 
-  const setZoom = (event, value) => {
-    let zoomLevel = webFrame.getZoomLevel()
-    let zoom = zoomLevel + value 
-    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out: zoom
-    webFrame.setZoomLevel(zoom)
-  }
-
   useEffect(() => {
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
-    ipcRenderer.on('shot-generator:menu:view:zoom', setZoom)
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
-      ipcRenderer.off('shot-generator:menu:view:zoom', setZoom)
     }
   }, [])
 

@@ -3,7 +3,7 @@ const isDev = require('electron-is-dev')
 
 const path = require('path')
 const url = require('url')
-
+const log = require('electron-log')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
 //const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
@@ -27,7 +27,7 @@ const removeExtensions = () => {
 }
 
 let win
-
+const maxZoom = {in: 0.5, out: -1}
 let memento = {
   x: undefined,
   y: undefined,
@@ -82,7 +82,7 @@ const show = async (onComplete) => {
     }
   })
 
-  
+
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
   //
@@ -124,13 +124,21 @@ const show = async (onComplete) => {
     reveal(onComplete)
   })
 }
-
 ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
 })
 
 ipcMain.on('shot-generator:menu:view:zoom', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:zoom', value)
+  if(win) {
+    let zoomLevel = win.webContents.getZoomLevel()
+    let zoom = zoomLevel + value 
+    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
+    win.webContents.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    win.webContents.setZoomLevel(zoom)
+  }
+})
+ipcMain.on('shot-generator:menu:view:resetZoom', (event, value) => {
+  win && win.webContents.setZoomLevel(0)
 })
 
 ipcMain.on('shot-generator:object:duplicate', () => {
