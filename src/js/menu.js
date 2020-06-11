@@ -950,7 +950,7 @@ const shotGeneratorMenu = [
         accelerator: 'CommandOrControl+0',
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:resetZoom')
+          ipcRenderer.send('shot-generator:menu:view:resetZoom', 0)
         }
       }
     ]

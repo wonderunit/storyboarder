@@ -34,6 +34,8 @@ let memento = {
   height: 1080,
 }
 
+let savedZoom = 2
+
 const reveal = onComplete => {
   win.show()
   win.focus()
@@ -121,6 +123,12 @@ const show = async (onComplete) => {
   // use this to show sooner
   win.once('ready-to-show', () => {
     reveal(onComplete)
+    //log.info(savedZoom)
+    if(savedZoom !== null) {
+      log.info(savedZoom)
+      let value = savedZoom
+      win.webContents.send('shot-generator:menu:view:setZoom', value)
+    }
   })
 }
 ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
@@ -131,7 +139,7 @@ ipcMain.on('shot-generator:menu:view:zoom', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:zoom', value)
 })
 ipcMain.on('shot-generator:menu:view:resetZoom', (event, value) => {
-  win && win.webContents.setZoomLevel(0)
+  win && win.webContents.send('shot-generator:menu:view:setZoom', value)
 })
 
 ipcMain.on('shot-generator:object:duplicate', () => {
