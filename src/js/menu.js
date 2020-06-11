@@ -928,6 +928,30 @@ const shotGeneratorMenu = [
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:fps-meter')
         }
+      },
+      {
+        label: 'Zoom Up',
+        accelerator: 'CommandOrControl+=',
+        type: 'normal',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:menu:view:zoom', 0.2)
+        }
+      },
+      {
+        label: 'Zoom Down',
+        accelerator: keystrokeFor("menu:view:zoom-out"),
+        type: 'normal',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:menu:view:zoom', -0.2)
+        }
+      },
+      {
+        label: 'Reset UI Scale to 100%',
+        accelerator: 'CommandOrControl+0',
+        type: 'normal',
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('shot-generator:menu:view:resetZoom', 0)
+        }
       }
     ]
   },
