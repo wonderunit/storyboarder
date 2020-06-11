@@ -5,12 +5,47 @@ import saveDataURLtoFile from '../../helpers/saveDataURLtoFile'
 import path from 'path'
 import fs from 'fs-extra'
 import CubeMapDrawingTexture from './helpers/cubeMapDrawingTexture'
+import { TIMEOUT } from 'dns'
 let drawingCanvas = document.createElement('canvas');
 let cropedCanvas = document.createElement('canvas');
 let drawingCtx = drawingCanvas.getContext('2d');
 let croppedCtx = cropedCanvas.getContext('2d');
 
 let faces = ['px', 'nx', 'py', 'ny', 'pz', 'nz']
+
+const saveFace = (image, x, y, width, height) => {                        
+    drawingCtx.drawImage(image, x, y, width, height)
+}
+
+const saveCubeMapTexture = (gltf, imagePath, texture, boardPath) => {
+    let image = gltf.image
+    drawingCanvas.width = image.width;
+    drawingCanvas.height = image.height;
+    drawingCtx.drawImage(image, 0, 0, image.width, image.height)
+    // 4 by 3 pattern when cubetexture has 4 columns and 3 rows 
+    // -  py -  -
+    // nx pz px nz
+    // -  ny -  -
+    if(image.width / 4 === image.height / 3) {
+        let elementSize = image.width / 4  
+        cropedCanvas.width = elementSize;
+        cropedCanvas.height = elementSize;
+
+        saveFace(texture.image[2], elementSize,        0,                  elementSize, elementSize)
+        saveFace(texture.image[0], 0,                  elementSize,        elementSize, elementSize)
+        saveFace(texture.image[4], elementSize,        elementSize,        elementSize, elementSize)
+        saveFace(texture.image[1], elementSize * 2,    elementSize,        elementSize, elementSize)
+        saveFace(texture.image[5], elementSize * 3,    elementSize,        elementSize, elementSize)
+        saveFace(texture.image[3], elementSize,        elementSize * 2,    elementSize, elementSize)
+    }
+    
+    let {dir, ext, name} = path.parse(imagePath)
+    let dataUrl = drawingCtx.canvas.toDataURL()
+    let properName = name + ext
+    saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures/', boardPath)
+}
+
+
 const crop = (image, x, y, width, height, name, boardPath) => {
     drawingCtx.drawImage(image, 0, 0, image.width, image.height)
     var imageData = drawingCtx.getImageData(x, y, width, height);                                   
@@ -97,7 +132,6 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath }) 
     const intersectionCamera = useRef()
     const raycaster = useRef()
     const drawingTexture = useRef(new CubeMapDrawingTexture())
-    const intersectionCube = useRef()
     useEffect(() => {
         raycaster.current = new THREE.Raycaster()
         let geometry = new THREE.BoxBufferGeometry(1, 1, 1)
@@ -112,11 +146,10 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath }) 
 
     useEffect(() => {
         if(!gltf) return
-        scene.background  = getCubeMapTextures(gltf, storyboarderFilePath);
-        console.log(scene.background)
+        scene.background = getCubeMapTextures(gltf, storyboarderFilePath);
     }, [gltf])
 
-    const draw = (event) => {
+    const draw = useCallback((event) => {
         intersectionCamera.current.copy(camera)
         intersectionCamera.current.position.set(0, 0, 0)
         intersectionCamera.current.quaternion.copy(camera.worldQuaternion())
@@ -124,14 +157,15 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath }) 
         drawingTexture.current.createMaterial(scene.background)
         drawingTexture.current.draw(mouse(event, gl), intersectionBox.current, intersectionCamera.current )
         raycaster.current.setFromCamera(mouse(event, gl), intersectionCamera.current )
-    }
+        saveCubeMapTexture(gltf, imagePath[0], scene.background, storyboarderFilePath)
+    }, [gltf])
 
     useLayoutEffect(() => {
-        document.addEventListener('pointerdown', draw)
+        gl.domElement.addEventListener('pointerdown', draw)
         return () => {
-            document.removeEventListener('pointerdown', draw)
+            gl.domElement.removeEventListener('pointerdown', draw)
         }
-    }, [])
+    }, [draw])
      
     return null
 })
