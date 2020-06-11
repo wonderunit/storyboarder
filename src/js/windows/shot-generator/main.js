@@ -3,7 +3,6 @@ const isDev = require('electron-is-dev')
 
 const path = require('path')
 const url = require('url')
-const log = require('electron-log')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
 //const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
@@ -33,8 +32,6 @@ let memento = {
   width: 1505,
   height: 1080,
 }
-
-let savedZoom = 2
 
 const reveal = onComplete => {
   win.show()
@@ -123,12 +120,6 @@ const show = async (onComplete) => {
   // use this to show sooner
   win.once('ready-to-show', () => {
     reveal(onComplete)
-    //log.info(savedZoom)
-    if(savedZoom !== null) {
-      log.info(savedZoom)
-      let value = savedZoom
-      win.webContents.send('shot-generator:menu:view:setZoom', value)
-    }
   })
 }
 ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
