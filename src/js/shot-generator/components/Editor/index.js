@@ -104,6 +104,7 @@ const Editor = React.memo(({
     let currentWindow = electron.remote.getCurrentWindow()
     let settingsZoom = getObject("zoom")
     if(!settingsZoom && currentWindow.getBounds().height < 800) {
+      webFrame.setZoomLevel(maxZoom.out)
     } else {
       webFrame.setZoomLevel(settingsZoom)
     }
