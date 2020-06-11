@@ -930,7 +930,7 @@ const shotGeneratorMenu = [
         }
       },
       {
-        label: 'Zoom Up',
+        label: 'Scale UI Up',
         accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
@@ -938,7 +938,7 @@ const shotGeneratorMenu = [
         }
       },
       {
-        label: 'Zoom Down',
+        label: 'Scale UI Down',
         accelerator: keystrokeFor("menu:view:zoom-out"),
         type: 'normal',
         click (item, focusedWindow, event) {
