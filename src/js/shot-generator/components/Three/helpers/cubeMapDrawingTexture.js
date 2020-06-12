@@ -34,7 +34,6 @@ class CubeMapDrawingTexture extends DrawingTExture {
             this.drawingCanvases[i].width = image.width;
             this.drawingCanvases[i].height = image.height;
             this.drawingCtxes.drawImage(image, 0, 0, image.width, image.height);
-
         }
         this.texture.needsUpdate = true;
     }    

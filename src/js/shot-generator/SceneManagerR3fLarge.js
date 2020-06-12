@@ -18,6 +18,7 @@ import {
     updateObjects,
     updateCharacterPoleTargets,
     deleteObjects,
+    updateWorld
 
  } from '../shared/reducers/shot-generator'
 import { useThree } from 'react-three-fiber'
@@ -79,6 +80,7 @@ const SceneManagerR3fLarge = connect(
         updateCharacterPoleTargets,
         updateObjects,
         deleteObjects,
+        updateWorld,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
@@ -101,6 +103,7 @@ const SceneManagerR3fLarge = connect(
     selectedAttachable,
     deleteObjects,
     withState,
+    updateWorld
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -444,7 +447,8 @@ const SceneManagerR3fLarge = connect(
          <SceneBackground
               imagePath={ getFilePathForImages({imageAttachmentIds: world.scenetexture ? [world.scenetexture] : [] }, storyboarderFilePath) }
               world={world}
-              storyboarderFilePath={ storyboarderFilePath } />
+              storyboarderFilePath={ storyboarderFilePath }
+              updateWorld={ updateWorld } />
     }
     {
         roomTexture && <Room
