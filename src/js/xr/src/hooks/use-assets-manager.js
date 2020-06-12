@@ -105,7 +105,7 @@ const useAssetsManager = () => {
           })
           dispatch({ type: 'LOAD', payload: { id } })
         } else {
-          load(textureLoader, `${id}#` + Date.now(), {
+          load(textureLoader, `${id}?ts=` + Date.now(), {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
             onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
