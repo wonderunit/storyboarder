@@ -5,8 +5,10 @@ const undoable = require('redux-undo').default
 const crypto = require('crypto')
 const reduceReducers = require('../../vendor/reduce-reducers')
 const { combineReducers } = require('redux')
+const R = require('ramda')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
+const serializeSceneObject = require('./shot-generator/serialize-scene-object')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
@@ -36,27 +38,14 @@ const getWorld = state => state.undoable.present.world
 
 const getHash = state =>
   hashify(JSON.stringify(getSerializedState(state)))
-const getIsSceneDirty = state => {
-  let current = getHash(state)
-  return current !== state.meta.lastSavedHash
-}
+
+const getIsSceneDirty = state => getHash(state) !== state.meta.lastSavedHash
+
 // return only the stuff we want to save to JSON
 const getSerializedState = state => {
-  let sceneObjects = Object.entries(getSceneObjects(state))
-    .reduce((o, [ k, v ]) => {
-      let {
-        // ignore 'loaded'
-        loaded: _,
-        // but allow serialization of the rest
-        ...serializable
-      } = v
-      o[k] = serializable
-      return o
-    }, {})
-
   return {
     world: getWorld(state),
-    sceneObjects,
+    sceneObjects: R.map(serializeSceneObject, getSceneObjects(state)),
     activeCamera: getActiveCamera(state)
   }
 }
@@ -930,6 +919,13 @@ const sceneObjectsReducer = (state = {}, action) => {
               delete draft[draft[id].group]
             }
           }
+
+          if (draft[id].type === 'character') {
+            let attachableIds = Object.values(draft).filter(obj => obj.attachToId === id).map(obj => obj.id)
+            for (let attachableId of attachableIds) {
+              delete draft[attachableId]
+            }
+          }
       
           delete draft[id]
         }
@@ -1122,26 +1118,25 @@ const sceneObjectsReducer = (state = {}, action) => {
             draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
                                                                       draft[action.payload.id].skeleton[bone.name].rotation : 
                                                                       { x: rotation.x, y: rotation.y, z: rotation.z }
-            draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
+            draft[action.payload.id].skeleton[bone.name].position = !position ?
                                                                       draft[action.payload.id].skeleton[bone.name].position : 
                                                                       { x: position.x, y: position.y, z: position.z }
-            draft[action.payload.id].skeleton[bone.name].quaternion = !bone.quaternion ?
+            draft[action.payload.id].skeleton[bone.name].quaternion = !quaternion ?
                                                                       draft[action.payload.id].skeleton[bone.name].quaternion : 
-                                                                      { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
+                                                                      { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }                                                
           } else {
             draft[action.payload.id].skeleton[bone.name] = {}
             draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
             {} : 
             { x: rotation.x, y: rotation.y, z: rotation.z }
-            draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
+            draft[action.payload.id].skeleton[bone.name].position = !position ?
             {} : 
             { x: position.x, y: position.y, z: position.z }
-            draft[action.payload.id].skeleton[bone.name].quaternion = !bone.quaternion ?
+            draft[action.payload.id].skeleton[bone.name].quaternion = !quaternion ?
             {} : 
             { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
           }
           draft[action.payload.id].skeleton[bone.name].name = bone.name
-          draft[action.payload.id].skeleton[bone.name].id = bone.id
         
         }
         return

@@ -93,7 +93,7 @@ const NumberSliderComponent = React.memo(({
   value = 0,
   min = -10,
   max = 10,
-  step = 0.2, 
+  step = 0.1, 
   formatter = formatters.toFixed2,
   textFormatter = textFormatters.default,
   textConstraint = textConstraints.default,
@@ -125,14 +125,14 @@ const NumberSliderComponent = React.memo(({
     onSetValue(nextValue)
     setSliderValue(nextValue)
   }, [sliderValue, onSetValue, value])
-  
+
   const bind = useDrag(({event, first, last}) => {
     if (first) {
       onDragStart()
       isDragging.current = true
       inputRef.current.requestPointerLock()
     }
-    
+
     onDrag({
       direction: event.movementX,
       altKey: event.altKey
@@ -188,7 +188,7 @@ const NumberSliderComponent = React.memo(({
       direction,
       altKey: event.altKey
     })
-  }, [sliderValue])
+  }, [sliderValue, onDrag])
 
   useEffect(() => {
     KeyCommandSingleton.getInstance().isEnabledKeysEvents = !isTextInput

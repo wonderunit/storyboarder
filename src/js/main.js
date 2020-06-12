@@ -47,7 +47,7 @@ const store = configureStore({}, 'main')
 
 let welcomeWindow
 let newWindow
- 
+
 let mainWindow
 let printWindow
 let sketchWindow

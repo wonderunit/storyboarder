@@ -1,21 +1,21 @@
 // REFERENCE
 // https://github.com/iffy/electron-updater-example/blob/master/main.js
-// https://github.com/wulkano/kap/blob/b326a5a398affb3652650ddc70d3a95724e755db/app/src/main/auto-updater.js
+// https://github.com/wulkano/kap/blob/b326a5a/app/src/main/auto-updater.js
 
 const { BrowserWindow, dialog, app } = electron = require('electron')
+const log = require('electron-log')
+const { autoUpdater } = require('electron-updater')
 
-const autoUpdater = require('electron-updater').autoUpdater
-
-
-autoUpdater.logger = require("electron-log")
-autoUpdater.logger.transports.file.level = "info"
-
+log.transports.file.level = 'info'
+autoUpdater.logger = log
 
 const init = () => {
-  // autoUpdater.on('checking-for-update', () => {
-  //   dialog.showMessageBox(null, { message: 'Checking for update...' })
-  // })
+  autoUpdater.on('checking-for-update', () => {
+    log.info('auto-updater: checking-for-update')
+  })
+
   autoUpdater.on('update-available', (ev, info) => {
+    log.info('auto-updater: update-available')
     dialog.showMessageBox(
       null,
       {
@@ -51,21 +51,22 @@ const init = () => {
           })
 
           autoUpdater.on('download-progress', (progressObj) => {
+            log.info('auto-updater: progress', progressObj)
             win.webContents.send('progress', progressObj)
           })
 
           autoUpdater.on('update-downloaded', (ev, info) => {
+            log.info('auto-updater: update-downloaded')
             dialog.showMessageBox(null, { message: 'Update downloaded; will install in 5 seconds' })
             // Wait 5 seconds, then quit and install
             // In your application, you don't need to wait 5 seconds.
             // You could call autoUpdater.quitAndInstall(); immediately
-            setTimeout(function() {
-              autoUpdater.quitAndInstall()
-            }, 5000)
+            setTimeout(() => autoUpdater.quitAndInstall(), 5000)
           })
 
           // fail gracelessly if we can't update properly
-          autoUpdater.on('error', (err) => {
+          autoUpdater.on('error', err => {
+            log.info('auto-updater: error', err)
             console.error(err)
             dialog.showMessageBox(null, { message: 'Update failed. Quitting.\n' + err })
             win.close()
@@ -73,17 +74,20 @@ const init = () => {
           })
 
           // Download and Install
+          log.info('auto-updater: autoUpdater.downloadUpdate()')
           autoUpdater.downloadUpdate()
         }
       }
     )
   })
-  // autoUpdater.on('update-not-available', (ev, info) => {
-  //   dialog.showMessageBox(null, { message: 'Update not available.' })
-  // })
+
+  autoUpdater.on('update-not-available', (ev, info) => {
+    log.info('auto-updater: update-not-available')
+  })
+
   autoUpdater.on('error', (err) => {
+    log.info('auto-updater: error', err)
     console.error(err)
-    // dialog.showMessageBox(null, { message: 'Error in auto-updater.\n' + err })
   })
 
   autoUpdater.autoDownload = false

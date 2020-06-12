@@ -17,12 +17,16 @@ const selectOptions = [
   {
     label: "Built-in",
     options: [
-      { label: "rain", value: "rain1,rain2" },
-      { label: "fog", value: "fog1,fog2" },
-      { label: "explosion", value: "debris,explosion" }
+      { label: "Rain", value: "rain1,rain2" },
+      { label: "Fog", value: "fog1,fog2" },
+      { label: "Explosion", value: "debris,explosion" }
     ]
   }
 ]
+
+const createLabel = (ids) => {
+  return ids.map(s => path.basename(s)).join(', ');
+} 
 
 const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath}) => {
   const {id, ...props} = sceneObject
@@ -31,7 +35,7 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
     let builtInOptions = Object.values(Object.values(selectOptions)[1].options)
     let builtInOption = builtInOptions.find(object => object.value.includes(sceneObject.volumeImageAttachmentIds[0]))
     if(!builtInOption) {
-      return {label: sceneObject.volumeImageAttachmentIds, value: sceneObject.volumeImageAttachmentIds }
+      return {label: createLabel(sceneObject.volumeImageAttachmentIds), value: sceneObject.volumeImageAttachmentIds }
     } else {
       return builtInOption
     }
@@ -67,7 +71,7 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
 
           if (ids.length) {
             updateObject(sceneObject.id, { volumeImageAttachmentIds: ids })
-            setSelectedFile({label:ids, value: ids})
+            setSelectedFile({label: createLabel(ids), value: ids})
           }
       }
 
@@ -124,7 +128,10 @@ const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFile
         <div className="input-group__input">
           <Select
             label="Select Layer Images"
-            value={ selectedFile }
+            value={{
+              label:selectedFile.label,
+              value: selectedFile.value
+            }}
             options={ selectOptions }
             onSetValue={(item) => { selectAttachment(item) }}
             />

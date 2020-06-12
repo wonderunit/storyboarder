@@ -1223,7 +1223,7 @@ const getModelImageFilepathById = id => `/data/system/objects/${id}.jpg`
 const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg`
 
 const useUiManager = ({ playSound, stopSound, SG }) => {
-  const { scene, camera } = useThree()
+  const { scene, camera, gl } = useThree()
 
   const store = useReduxStore()
 
@@ -1366,7 +1366,7 @@ const useUiManager = ({ playSound, stopSound, SG }) => {
                   fov: 22.25,
                   x: newPos.x,
                   y: newPos.z,
-                  z: newPos.y,
+                  z: newPos.y - camera.position.y * 0.5,
                   rotation: rotation,
                   tilt: 0,
                   roll: 0
