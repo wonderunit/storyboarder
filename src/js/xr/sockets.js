@@ -38,9 +38,12 @@ const onUserConnect = (io, socket, store) => {
 
 export const serve = (io, store, service) => {
   IO.current = io
-
+  //localStorage.debug = '*'
+  localStorage.removeItem('debug')
+  
   io.on('connection', (socket) => {
 
+    console.log('%c XR', 'color: #4CAF50', `User has been connected: ${socket.id}`)
     onUserConnect(io, socket, store)
     socket.on('action', (action) => {
       store.dispatch(action)
@@ -57,7 +60,9 @@ export const serve = (io, store, service) => {
       socket.broadcast.emit('remoteAction', infoAction)
     })
     
-    socket.on('disconnect', () => {
+    socket.on('disconnect', (reason) => {
+      console.log('%c XR', 'color: #4CAF50', `User has been disconnected: ${socket.id}, because of the: ${reason}`)
+      
       const disconnectAction = removeUser(socket.id)
       
       remoteStore.dispatch(disconnectAction)

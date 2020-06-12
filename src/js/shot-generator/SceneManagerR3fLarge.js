@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
@@ -112,6 +112,7 @@ const SceneManagerR3fLarge = connect(
 
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
+    const [update, forceUpdate] = useState(null)
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
 
     const modelObjectIds = useMemo(() => {
@@ -355,6 +356,7 @@ const SceneManagerR3fLarge = connect(
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
                 imagePath={  !sceneObject.emotion ? null : getFilePathForImages({type: sceneObject.type, imageAttachmentIds: [sceneObject.emotion]}, storyboarderFilePath)[0] }
+                forceUpdate={ forceUpdate }
                 />
               </SimpleErrorBoundary>
         })
@@ -375,6 +377,7 @@ const SceneManagerR3fLarge = connect(
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
+            let needsUpdate = !update || update.id !== sceneObject.attachToId ? null : update.id
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -385,6 +388,7 @@ const SceneManagerR3fLarge = connect(
                 deleteObjects={ deleteObjects }
                 character={ sceneObjects[sceneObject.attachToId] }
                 withState={ withState }
+                needsUpdate={ needsUpdate }
               />
               </SimpleErrorBoundary>
         })
