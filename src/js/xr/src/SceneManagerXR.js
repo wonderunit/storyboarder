@@ -760,10 +760,6 @@ const SceneContent = connect(
                   }
               }
               prevImagePaths.current[id] = sceneObject.imageAttachmentIds[0]
-/*               console.log(sceneObject.imageAttachmentIds)
-              if(sceneObject.imageAttachmentIds.length && sceneObject.imageAttachmentIds[0] === `models/images/${sceneObject.id}-texture.png`) {
-       
-              } */
               let texture = getAsset(imagePath)
               return <Image
                 key={id}

@@ -12,7 +12,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture, imagePath, visible
     return new THREE.MeshToonMaterial({ transparent: true })
   }, [])
 
-  useEffect(() => {
+  useMemo(() => {
     if(!texture) return
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
@@ -25,10 +25,6 @@ const Image = React.memo(({ sceneObject, isSelected, texture, imagePath, visible
       material.map = texture
       material.needsUpdate = true
     } 
-    return () => {
-      caches.delete(imagePath)
-      texture.dispose()
-    }
   }, [texture])
 
   useEffect(() => {

@@ -68,7 +68,6 @@ const reducer = (state, action) => {
 const MaxTimes = 3
 const load = (loader, path, events, times = 1) => {
   try {
-    console.log("trying to load path", path)
     loader.load(
       path,
       events.onload,
