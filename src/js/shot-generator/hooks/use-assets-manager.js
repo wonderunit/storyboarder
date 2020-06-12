@@ -61,16 +61,18 @@ export const loadAsset = (path) => {
       if (!current[path].data) {
 
         let loader
+        let filePath = path
         if (!path.match(/(\.(png|jpg|jpeg|gif)$)|((\\|\/)(images|volumes)(\\|\/))/mi)) {
           /** Current resource is model */
           loader = gltfLoader
         } else {
           /** Current resource is texture */
           loader = textureLoader
+          filePath += "#" + Date.now()
         }
 
         loader.load(
-          path,
+          filePath,
           value => {
             cache.set({
               ...cache.get(),
@@ -97,6 +99,14 @@ export const loadAsset = (path) => {
 export const cleanUpCache = () => {
   cache.set({})
   textureLoader = new THREE.TextureLoader()
+}
+
+export const removeAsset = (imagePath) => {
+  let tempCache = cache.get()
+  if(tempCache[imagePath]) {
+    delete tempCache[imagePath]
+    cache.set({...tempCache})
+  }
 }
 /**
  * Hook that allows components to fetch resources

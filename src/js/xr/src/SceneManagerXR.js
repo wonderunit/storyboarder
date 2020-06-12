@@ -130,7 +130,7 @@ const SceneContent = connect(
 
     characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
-    resources, getAsset,
+    resources, getAsset, removeAsset,
 
     SGConnection
   }) => {
@@ -169,6 +169,7 @@ const SceneContent = connect(
     const showHelp = useUiStore(state => state.showHelp)
     const showHUD = useUiStore(state => state.showHUD)
     const showConfirm = useUiStore(state => state.showConfirm)
+    const prevImagePaths = useRef({})
 
     const fog = useRef()
     const getFog = () => {
@@ -750,11 +751,24 @@ const SceneContent = connect(
           {
             imageIds.map(id => {
               let sceneObject = sceneObjects[id]
-              let texture = getAsset(getFilepathForImage(sceneObject))
-
+              let imagePath = getFilepathForImage(sceneObject)
+              if(prevImagePaths.current[id] && prevImagePaths.current[id] !== sceneObject.imageAttachmentIds[0]) {
+                  let tempPath = getFilepathForImage({ imageAttachmentIds: [prevImagePaths.current[id]] })
+                  removeAsset(tempPath)
+                  if(sceneObject.imageAttachmentIds[0] === `models/images/${id}-texture.png`) {
+                    removeAsset(imagePath)
+                  }
+              }
+              prevImagePaths.current[id] = sceneObject.imageAttachmentIds[0]
+/*               console.log(sceneObject.imageAttachmentIds)
+              if(sceneObject.imageAttachmentIds.length && sceneObject.imageAttachmentIds[0] === `models/images/${sceneObject.id}-texture.png`) {
+       
+              } */
+              let texture = getAsset(imagePath)
               return <Image
                 key={id}
                 texture={texture}
+                imagePath={ imagePath }
                 sceneObject={sceneObject}
                 visibleToCam={sceneObject.visibleToCam}
                 isSelected={selections.includes(id)}/>
@@ -836,7 +850,7 @@ const SceneManagerXR = ({SGConnection}) => {
 
   const [appAssetsLoaded, setAppAssetsLoaded] = useState(false)
 
-  const { assets, requestAsset, getAsset } = useAssetsManager()
+  const { assets, requestAsset, getAsset, removeAsset } = useAssetsManager()
 
   // preload textures
   const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
@@ -1026,6 +1040,7 @@ const SceneManagerXR = ({SGConnection}) => {
                   xrPosing, xrEndPosing,
                 }}
                 getAsset={getAsset}
+                removeAsset={removeAsset}
                 SGConnection={SGConnection} />
               : null
           }

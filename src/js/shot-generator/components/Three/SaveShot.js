@@ -15,7 +15,7 @@ import { OutlineEffect } from '../../../vendor/OutlineEffect'
 import { remote } from 'electron'
 import path from 'path'
 import fs from 'fs-extra'
-import { cleanUpCache } from '../../hooks/use-assets-manager'
+import { cleanUpCache, removeAsset } from '../../hooks/use-assets-manager'
 
 const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
@@ -51,7 +51,6 @@ const SaveShot = connect(
     const { scene, camera } = useThree()
     const imageRenderer = useRef()
     const outlineEffect = useRef()
-    const changeToTemp = useRef([])
 
     useEffect(() => {
         if (!imageRenderer.current) {
@@ -71,22 +70,14 @@ const SaveShot = connect(
             let cameraImage = renderImagesForBoard()
             saveImages()
             withState((dispatch, state) => {
-                let data = getSerializedState(state)
                 ipcRenderer.send('saveShot', {
                   uid: state.board.uid,
-                  data: data,
+                  data: getSerializedState(state),
                   images: {
                     'camera': cameraImage,
                   }
                 })
             })
-
-            for(let i = 0; i < changeToTemp.current.length; i++) {
-                changeToTemp.current[i]();
-            }
-            changeToTemp.current = []
-            
-            markSaved()
         } else {
             let plotImage = renderImagesForBoard()
             withState((dispatch, state) => {
@@ -107,20 +98,14 @@ const SaveShot = connect(
             markSaved()
             saveImages()
             withState((dispatch, state) => {
-                let data = getSerializedState(state)
                 ipcRenderer.send('insertShot', {
-                  data: data,
+                  data: getSerializedState(state),
                   images: {
                     camera: cameraImage
                   },
                   currentBoard: state.board
                 })
             })
-            for(let i = 0; i < changeToTemp.current.length; i++) {
-                changeToTemp.current[i]();
-            }
-            changeToTemp.current = []
-            markSaved()
         } else {
             let plotImage = renderImagesForBoard()
             setTimeout(() => {
@@ -153,19 +138,11 @@ const SaveShot = connect(
             fs.ensureDirSync(assetsDir)
             let dst = path.join(assetsDir, path.basename(imageFilePath))
             let id = path.relative(projectDir, dst)
-            updateObject(image.id, {imageAttachmentIds: [id]})
             fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
-            
-            changeToTemp.current.push(() => {
-                let ctempImageFilePath = tempImageFilePath
-                let cassetsDir = assetsDir
-                let savedId = image.id
-                let dst = path.join(cassetsDir, path.basename(ctempImageFilePath))
-                let id = path.relative(projectDir, dst)
-                updateObject(savedId, {imageAttachmentIds: [id]})
-                fs.remove(ctempImageFilePath)
-            })
-
+            fs.remove(tempImageFilePath)
+            removeAsset(imageFilePath)
+            imgComponent.userData.tempImagePath = null
+            updateObject(image.id, {imageAttachmentIds: [id]})
         }
     }
   

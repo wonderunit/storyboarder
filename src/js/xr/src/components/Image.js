@@ -2,7 +2,7 @@ const { useEffect, useMemo, useRef } = require('react')
 
 const VirtualCamera = require('../components/VirtualCamera')
 
-const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) => {
+const Image = React.memo(({ sceneObject, isSelected, texture, imagePath, visibleToCam }) => {
   const aspect = useRef(1)
   const ref = useRef()
 
@@ -12,7 +12,7 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
     return new THREE.MeshToonMaterial({ transparent: true })
   }, [])
 
-  useMemo(() => {
+  useEffect(() => {
     if(!texture) return
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
@@ -21,7 +21,14 @@ const Image = React.memo(({ sceneObject, isSelected, texture, visibleToCam }) =>
     const { width, height } = texture.image
     aspect.current = width / height
 
-    if (material) material.map = texture
+    if (material){
+      material.map = texture
+      material.needsUpdate = true
+    } 
+    return () => {
+      caches.delete(imagePath)
+      texture.dispose()
+    }
   }, [texture])
 
   useEffect(() => {
