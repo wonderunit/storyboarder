@@ -8,6 +8,7 @@ import {
     getSceneObjects,
     getWorld,
     getSelectedBone,
+    updateWorld,
 
  } from '../shared/reducers/shot-generator'
 import { useThree } from 'react-three-fiber'
@@ -48,6 +49,7 @@ const ShotExplorerSceneManager = connect(
         selectedBone: getSelectedBone(state),
     }),
     {
+        updateWorld,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
@@ -59,6 +61,7 @@ const ShotExplorerSceneManager = connect(
     setLargeCanvasData,
     withState,
     shouldRender,
+    updateWorld,
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -217,7 +220,8 @@ const ShotExplorerSceneManager = connect(
          <SceneBackground
               imagePath={ getFilePathForImages({imageAttachmentIds: world.scenetexture ? [world.scenetexture] : [] }, storyboarderFilePath) }
               world={world}
-              storyboarderFilePath={ storyboarderFilePath } />
+              storyboarderFilePath={ storyboarderFilePath }
+              updateWorld={ updateWorld } />
     }
     {
         roomTexture && <Room

@@ -12,14 +12,15 @@ class CubeTextureCreator {
         this.faces = ['px', 'nx', 'py', 'ny', 'pz', 'nz'];
         this.imageElements = [];
         this.gltf;
+        this.boardPath;
     }
 
     // Saves cube map changes back to texture
     // It takes same elements positions which were initialized in getCubeMapTexture
     // Require getCubeMapTexture to be launch first
-    saveCubeMapTexture( gltf, imagePath, texture, boardPath ) {
-        if( !this.imageElements.length ) return;
-        let image = gltf.image;
+    saveCubeMapTexture( imagePath, texture ) {
+        if( !this.imageElements.length || !this.gltf ) return;
+        let image = this.gltf.image;
         this.drawingCanvas.width = image.width;
         this.drawingCanvas.height = image.height;
         this.drawingCtx.drawImage(image, 0, 0, image.width, image.height);
@@ -32,7 +33,7 @@ class CubeTextureCreator {
         let {dir, ext, name} = path.parse(imagePath);
         let dataUrl = this.drawingCtx.canvas.toDataURL();
         let properName = name + ext;
-        saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures/', boardPath);
+        saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures/', this.boardPath);
     }
 
     // Draw the specific mesh on drawingContext which contains original texture image
@@ -43,6 +44,8 @@ class CubeTextureCreator {
     // Parses/crops passed cube texture and loading cube texture from them
     // Require Cube map to be one of the recognizable patterns see "recognizeTexturePattern"
     getCubeMapTexture( gltf, boardPath ) {
+        this.gltf = gltf;
+        this.boardPath = boardPath;
         let image = gltf.image;
         this.drawingCanvas.width = image.width;
         this.drawingCanvas.height = image.height;
