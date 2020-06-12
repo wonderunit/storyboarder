@@ -23,6 +23,7 @@ import {
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from "../../utils/CopyFile"
+const isImageExtension = ( ext ) => [".jpg", ".jpeg", ".png", ".gif", ".dds"].includes(ext) 
 
 const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
@@ -50,7 +51,10 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
 
   const setSceneTextureFile = useCallback((event) => {
     if (event.file) {
-      updateWorld({scenetexture: CopyFile(storyboarderFilePath, event.file, 'scenetexture')})
+      const { ext } = path.parse(event.file);
+      if(isImageExtension(ext)) {
+        updateWorld({scenetexture: CopyFile(storyboarderFilePath, event.file, 'scenetexture')})
+      }
     }
   }, [])
   
