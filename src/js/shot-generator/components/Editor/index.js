@@ -35,12 +35,8 @@ import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
 import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
-
-import WireframeShading from '../../../vendor/shading-effects/WireframeShading'
-import FlatShading from '../../../vendor/shading-effects/FlatShading'
-import DepthShading from '../../../vendor/shading-effects/DepthShading'
+import createShadingEffect from '../../../vendor/shading-effects/createShadingEffect'
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
-import { ShadingType } from '../../../vendor/shading-effects/ShadingType'
 import Stats from 'stats.js'
 const maxZoom = {in: 0.4, out: -1.6}
 const Effect = ({renderData, stats, shadingMode}) => {
@@ -55,23 +51,7 @@ const Effect = ({renderData, stats, shadingMode}) => {
 
   useEffect(() => {
     renderer.cleanupCache()
-    let newRenderer
-    switch(shadingMode) {
-      case ShadingType.Wireframe:
-        newRenderer = new WireframeShading(gl)
-        break
-      case ShadingType.Flat:
-        newRenderer = new FlatShading(gl)
-        break    
-      case ShadingType.Depth:
-        newRenderer = new DepthShading(gl)
-        break
-      case ShadingType.Outline:
-      default:
-        newRenderer = new OutlineEffect(gl, { defaultThickness: 0.015 })
-        break
-    }
-    setRenderer(newRenderer)
+    setRenderer(createShadingEffect(shadingMode, gl))
   }, [shadingMode])
   
   useEffect(() => void renderer.setSize(size.width, size.height), [renderer, size])

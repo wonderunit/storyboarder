@@ -9,11 +9,8 @@ import {
  import { ipcRenderer } from 'electron'
 import { useThree } from 'react-three-fiber'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import { OutlineEffect } from '../../../vendor/OutlineEffect'
 import { remote } from 'electron'
-import { ShadingType } from '../../../vendor/shading-effects/ShadingType'
-import WireframeShading from '../../../vendor/shading-effects/WireframeShading'
-import FlatShading from '../../../vendor/shading-effects/FlatShading'
+import createShadingEffect from '../../../vendor/shading-effects/createShadingEffect'
 
 const { dialog } = remote
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
@@ -56,18 +53,7 @@ const SaveShot = connect(
     }, [])
 
     useEffect(() => {
-        switch(shadingMode) {
-            case ShadingType.Wireframe:
-                outlineEffect.current = new WireframeShading(imageRenderer.current)
-                break
-            case ShadingType.Flat:
-                outlineEffect.current = new FlatShading(imageRenderer.current)
-                break
-            case ShadingType.Outline:
-            default:
-                outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
-                break
-        }
+        outlineEffect.current = createShadingEffect(shadingMode, imageRenderer.current)
         return () => {
             outlineEffect.current = null
         }
