@@ -56,7 +56,6 @@ const SaveShot = connect(
     }, [])
 
     useEffect(() => {
-        console.log(imageRenderer.current)
         switch(shadingMode) {
             case ShadingType.Wireframe:
                 outlineEffect.current = new WireframeShading(imageRenderer.current)
@@ -69,7 +68,6 @@ const SaveShot = connect(
                 outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
                 break
         }
-        console.log( outlineEffect.current)
         return () => {
             outlineEffect.current = null
         }
@@ -146,7 +144,10 @@ const SaveShot = connect(
         let imageRenderCamera = camera.clone()
         imageRenderCamera.layers.set(SHOT_LAYERS)
         // render the image
-
+        if(!isPlot) {
+            imageRenderCamera.aspect = state.aspectRatio
+            imageRenderCamera.updateProjectionMatrix()
+        }
         let savedBackground  
         if(isPlot) {
             savedBackground = scene.background && scene.background.clone()

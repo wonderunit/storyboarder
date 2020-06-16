@@ -1,9 +1,9 @@
 import * as THREE from 'three'
 
-import('../../vendor/three/examples/js/loaders/GLTFLoader')
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
 
 const loadingManager = new THREE.LoadingManager()
-const gltfLoader = new THREE.GLTFLoader(loadingManager)
+const gltfLoader = new GLTFLoader(loadingManager)
 //THREE.Cache.enabled = true
 
 export { gltfLoader }

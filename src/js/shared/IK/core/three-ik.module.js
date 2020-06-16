@@ -906,7 +906,7 @@ var BoneHelper = function (_Object3D) {
     var _this = possibleConstructorReturn(this, (BoneHelper.__proto__ || Object.getPrototypeOf(BoneHelper)).call(this));
     if (height !== 0) {
       var geo = new ConeBufferGeometry(boneSize, height, 4);
-      geo.applyMatrix(new Matrix4().makeRotationAxis(new Vector3(1, 0, 0), Math.PI / 2));
+      geo.applyMatrix4(new Matrix4().makeRotationAxis(new Vector3(1, 0, 0), Math.PI / 2));
       _this.boneMesh = new Mesh(geo, new MeshBasicMaterial({
         color: 0xff0000,
         wireframe: true,

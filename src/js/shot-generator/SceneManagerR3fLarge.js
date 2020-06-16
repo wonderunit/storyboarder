@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import { 
@@ -39,6 +39,11 @@ import Room from './components/Three/Room'
 import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
+import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
+import RemoteProvider from "./components/RemoteProvider"
+import RemoteClients from "./components/RemoteClients"
+import XRClient from "./components/Three/XRClient"
+
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -95,7 +100,7 @@ const SceneManagerR3fLarge = connect(
     renderData,
     selectedAttachable,
     deleteObjects,
-    withState
+    withState,
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -104,7 +109,10 @@ const SceneManagerR3fLarge = connect(
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
 
+    const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
+    const [update, forceUpdate] = useState(null)
+    const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
 
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -171,7 +179,35 @@ const SceneManagerR3fLarge = connect(
         updatePoleTarget,
         updateObjects
       )
+
+      //#region initialization of objectRotationControl 
+      objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement)
+      objectRotationControl.current.control.canSwitch = false
+      objectRotationControl.current.isEnabled = true
+      //#endregion
+      return () => {
+        if(objectRotationControl.current) {
+          objectRotationControl.current.cleanUp()
+          objectRotationControl.current = null
+        }
+      }
     }, [])
+
+    useEffect(() => {
+      if(objectRotationControl.current) {
+        let object = objectRotationControl.current.object
+        let meshId = objectRotationControl.current.meshId
+        objectRotationControl.current.deselectObject()
+        objectRotationControl.current.control.domElement = activeGL.domElement
+        // find the 3D Bone matching the selectedBone uuid
+        objectRotationControl.current.selectObject(object, meshId)
+      }
+    }, [activeGL])
+
+    useEffect(() => {
+      if(!objectRotationControl.current) return
+      objectRotationControl.current.setCamera(camera)
+    }, [camera])
 
     useEffect(() => {  
       selectedCharacters.current = selections.filter((id) => {
@@ -187,6 +223,9 @@ const SceneManagerR3fLarge = connect(
         let keys = Object.keys(cameraShots)
         for(let i = 0; i < keys.length; i++ ) {
           let key = keys[i]
+          if(cameraShots[key].character) {
+            selected = scene.__interaction.filter((object) => object.userData.id === cameraShots[key].character)[0]
+          }
           if((!cameraShots[key].size && !cameraShots[key].angle) || camera.userData.id !== cameraShots[key].cameraId ) continue
           setShot({
             camera,
@@ -215,6 +254,7 @@ const SceneManagerR3fLarge = connect(
       for( let i = 0; i < selections.length; i++ ) {
         let selection = scene.children[0].children.find( child => child.userData.id === selections[i] )
         let droppingPlaces = getDropingPlaces()
+        if( selection.userData.locked ) continue
         if( selection.userData.type === "object" ) {
           dropObject( selection,  droppingPlaces)
           let pos = selection.position
@@ -265,7 +305,7 @@ const SceneManagerR3fLarge = connect(
     return <group ref={ rootRef }> 
     <CameraUpdate/>
     <SaveShot isPlot={ false }/>
-    <InteractionManager renderData={ renderData }/>
+    <InteractionManager renderData={ renderData }/> 
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
@@ -291,6 +331,7 @@ const SceneManagerR3fLarge = connect(
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(sceneObject.id) }
                 updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
                 />
             </SimpleErrorBoundary>
         })
@@ -309,6 +350,9 @@ const SceneManagerR3fLarge = connect(
                 updateCharacterIkSkeleton={ updateCharacterIkSkeleton }
                 renderData={renderData}
                 withState={ withState }
+                updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
+                forceUpdate={ forceUpdate }
                 />
               </SimpleErrorBoundary>
         })
@@ -319,13 +363,17 @@ const SceneManagerR3fLarge = connect(
             return <SimpleErrorBoundary  key={ id }>
               <Light
                 sceneObject={ sceneObject }
-                isSelected={ selections.includes(id) } />
+                isSelected={ selections.includes(id) } 
+                updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
+                />
               </SimpleErrorBoundary>
         })
     }
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
+            let needsUpdate = !update || update.id !== sceneObject.attachToId ? null : update.id
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -336,6 +384,7 @@ const SceneManagerR3fLarge = connect(
                 deleteObjects={ deleteObjects }
                 character={ sceneObjects[sceneObject.attachToId] }
                 withState={ withState }
+                needsUpdate={ needsUpdate }
               />
               </SimpleErrorBoundary>
         })
@@ -358,7 +407,10 @@ const SceneManagerR3fLarge = connect(
               <Image
                 imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
                 sceneObject={ sceneObject }
-                isSelected={ selections.includes(id) }/>
+                isSelected={ selections.includes(id) }
+                updateObject={ updateObject }
+                objectRotationControl={ objectRotationControl.current }
+                />
               </SimpleErrorBoundary>
         })
     }
@@ -367,10 +419,12 @@ const SceneManagerR3fLarge = connect(
           let sceneObject = sceneObjects[id]
           return <Group
             key={ sceneObject.id }
-            scene={ scene }
             isSelected={ selections.includes(sceneObject.id) }
             updateObject={ updateObject }
+            withState={ withState }
+            objectRotationControl={ objectRotationControl.current }
             { ...sceneObject }
+
           />
        })
         
@@ -398,7 +452,13 @@ const SceneManagerR3fLarge = connect(
               height={world.room.height}
               visible={world.room.visible} />
     }
+      <RemoteProvider>
+        <RemoteClients
+          Component={XRClient}
+        />
+      </RemoteProvider>
     </group>
     })
 )
+
 export default SceneManagerR3fLarge

@@ -3,21 +3,19 @@ const SHOW_LOG = false
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate } = require('react-three-fiber')
+const { Canvas, useThree, useUpdate, useFrame } = require('react-three-fiber')
+const TWEEN = require('@tweenjs/tween.js').default
 
 const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 const { useMemo, useRef, useState, useEffect, useCallback } = React = require('react')
 require('./three/GPUPickers/utils/Object3dExtension')
 
-// to use three's version:
-// const { WEBVR } = require('three/examples/jsm/vr/WebVR')
-//
-// use vendor'd version
-require('../../vendor/three/examples/js/vr/WebVR')
-const WEBVR = THREE.WEBVR
+const RemoteProvider = require('../../shot-generator/components/RemoteProvider').default
+const RemoteClients = require('../../shot-generator/components/RemoteClients').default
 
-const XRClient = require('./client')
+const XRClient = require("./components/XRClient").default
+const { VRButton } = require('three/examples/jsm/webxr/VRButton')
 
 const {
   // selectors
@@ -34,7 +32,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
-const useIsVrPresenting = require('./hooks/use-is-vr-presenting')
+const useIsXrPresenting = require('./hooks/use-is-xr-presenting')
 const useTextureLoader = require('./hooks/use-texture-loader')
 const useImageBitmapLoader = require('./hooks/use-texture-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
@@ -112,6 +110,7 @@ const SceneContent = connect(
     selections: getSelections(state),
     models: state.models,
     selectedAttachable: getSelectedAttachable(state),
+    boardUid: state.board.uid,
 
     characterIds: getSceneObjectCharacterIds(state),
     modelObjectIds: getSceneObjectModelObjectIds(state),
@@ -129,9 +128,11 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, selectedAttachable, updateCharacterIkSkeleton, updateObject,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
-    resources, getAsset
+    resources, getAsset,
+
+    SGConnection
   }) => {
     const { gl, camera, scene } = useThree()
 
@@ -168,7 +169,6 @@ const SceneContent = connect(
     const showHelp = useUiStore(state => state.showHelp)
     const showHUD = useUiStore(state => state.showHUD)
     const showConfirm = useUiStore(state => state.showConfirm)
-    const boardUid = useUiStore(state => state.boardUid)
 
     const fog = useRef()
     const getFog = () => {
@@ -242,7 +242,7 @@ const SceneContent = connect(
       audio.setBuffer(resources.atmosphereAudioBuffer)
       audio.setFilter(atmosphereAudioFilter)
       audio.setLoop(true)
-      audio.setVolume(0.4)
+      audio.setVolume(0.35)
       audio.play()
       audio.stop()
 
@@ -381,16 +381,18 @@ const SceneContent = connect(
       return voicer
     }, [])
 
-    const isVrPresenting = useIsVrPresenting()
+    const isXrPresenting = useIsXrPresenting()
     useEffect(() => {
-      if (isVrPresenting) {
-        welcomeAudio.play()
+      if (isXrPresenting) {
+        if (!welcomeAudio.isPlaying) welcomeAudio.play()
         if (!atmosphereAudio.isPlaying) atmosphereAudio.play()
+        SGConnection.setActive(true)
       } else {
+        SGConnection.setActive(false)
         welcomeAudio.isPlaying && welcomeAudio.stop()
+        atmosphereAudio.isPlaying && atmosphereAudio.stop()
       }
-    }, [isVrPresenting])
-
+    }, [isXrPresenting])
 
     const playSound = useCallback((name, object3d = null) => {
       switch (name) {
@@ -518,22 +520,37 @@ const SceneContent = connect(
     const groundRef = useRef()
     const rootRef = useRef()
     const thumbnailRenderer = useRef()
+    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, SG: SGConnection })
 
-    const xrClient = useRef()
-    const getXrClient = () => {
-      if (!xrClient.current) {
-        xrClient.current = XRClient()
-      }
-      return xrClient.current
-    }
-    const { uiService, uiCurrent, getCanvasRenderer, canvasRendererRef } = useUiManager({ playSound, stopSound, getXrClient })
-
+    const realCamera = useMemo(() => new THREE.PerspectiveCamera(), [])
+    useEffect(() => {
+      camera.parent.attach(realCamera)
+    }, []) 
     const { controllers, interactionServiceCurrent, interactionServiceSend } = useInteractionsManager({
       groundRef,
       rootRef,
       uiService,
       playSound,
-      stopSound
+      stopSound,
+      realCamera
+    })
+    
+    useFrame(({camera, gl}) => {
+      TWEEN.update()
+      if (gl.xr.getSession() && isXrPresenting) {
+        gl.xr.getCamera(realCamera)
+
+        let matrixWorld = realCamera.matrixWorld.clone()
+        matrixWorld.premultiply(camera.parent.getInverseMatrixWorld())
+        matrixWorld.decompose(realCamera.position, realCamera.quaternion, realCamera.scale)
+        realCamera.updateWorldMatrix(false, true)
+
+        
+        SGConnection.sendInfo({
+          matrix: realCamera.matrixWorld.toArray(),
+          controllers: controllers.map((object) => object.matrixWorld.toArray())
+        })
+      }
     })
 
     canvasRendererRef.current.interactionServiceSend = interactionServiceSend
@@ -560,19 +577,16 @@ const SceneContent = connect(
       ref.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER)
     }, [world.directional.rotation, world.directional.tilt])
 
-    const gamepads = navigator.getGamepads()
-    const gamepadFor = controller => gamepads[controller.userData.gamepad.index]
-
     useEffect(() => {
       thumbnailRenderer.current = new THREE.WebGLRenderer()
       thumbnailRenderer.current.setSize(128 * aspectRatio, 128)
-      return destroyContext = () => {
+      return () => {
         thumbnailRenderer.current.forceContextLoss()
         thumbnailRenderer.current.context = null
         thumbnailRenderer.current.domElement = null
         thumbnailRenderer.current = null
       }
-    }, [])
+    }, [aspectRatio])
 
     return (
       <>
@@ -596,30 +610,36 @@ const SceneContent = connect(
               showSettings={canvasRendererRef.current.state.showSettings} />
           }
 
-          {controllers.filter(gamepadFor).map(controller =>
-            <primitive key={controller.uuid} object={controller} >
-              <Controller
-                gltf={resources.controllerGltf}
-                hand={gamepadFor(controller).hand}
-              />
-              {gamepadFor(controller).hand === (switchHand ? 'left' : 'right') &&
-                <group>
-                  <Controls
-                    gltf={resources.controlsGltf}
-                    mode={uiCurrent.value.controls}
-                    hand={switchHand ? 'left' : 'right'}
-                    locked={uiCurrent.context.locked}
-                    getCanvasRenderer={getCanvasRenderer} />
-                  { showHelp &&
-                    <Help
+          {controllers
+            .map(controller =>
+              controller.userData.inputSource && <primitive
+                key={controller.uuid}
+                // for grip, use gl.xr.getControllerGrip(controller.userData.inputSourceIndex)
+                object={controller}
+              >
+                <Controller
+                  gltf={resources.controllerGltf}
+                  hand={controller.userData.inputSource.handedness}
+                />
+                {controller.userData.inputSource.handedness === (switchHand ? 'left' : 'right') &&
+                  <group>
+                    <Controls
+                      gltf={resources.controlsGltf}
                       mode={uiCurrent.value.controls}
+                      hand={switchHand ? 'left' : 'right'}
                       locked={uiCurrent.context.locked}
                       getCanvasRenderer={getCanvasRenderer} />
-                  }
-                </group>
-              }
-            </primitive>
-          )}
+                    { showHelp &&
+                      <Help
+                        mode={uiCurrent.value.controls}
+                        locked={uiCurrent.context.locked}
+                        getCanvasRenderer={getCanvasRenderer} />
+                    }
+                  </group>
+                }
+              </primitive>
+            )
+          }
         </group>
 
         <group ref={rootRef} scale={[worldScale, worldScale, worldScale]}>
@@ -765,6 +785,16 @@ const SceneContent = connect(
               </SimpleErrorBoundary>
               : null
           }
+          
+          <RemoteProvider>
+            <RemoteClients
+              clientProps={{
+                helmet: resources.hmdGltf,
+                controller: resources.controllerGltf,
+              }}
+              Component={XRClient}
+            />
+          </RemoteProvider>
 
           <Ground
             objRef={groundRef}
@@ -790,7 +820,7 @@ const SceneContent = connect(
 
 const XRStartButton = ({ }) => {
   const { gl } = useThree()
-  useMemo(() => document.body.appendChild(WEBVR.createButton(gl)), [])
+  useMemo(() => document.body.appendChild(VRButton.createButton(gl)), [])
   return null
 }
 
@@ -800,10 +830,11 @@ const APP_GLTFS = [
   '/data/system/dummies/bone.glb',
   '/data/system/xr/virtual-camera.glb',
   '/data/system/xr/light.glb',
-  '/data/system/xr/teleport-target.glb'
+  '/data/system/xr/teleport-target.glb',
+  '/data/system/xr/hmd.glb'
 ]
 
-const SceneManagerXR = () => {
+const SceneManagerXR = ({SGConnection}) => {
   useMemo(() => {
     THREE.Cache.enabled = true
   }, [])
@@ -862,6 +893,7 @@ const SceneManagerXR = () => {
   const world = useSelector(getWorld)
 
   useEffect(() => {
+    console.log(sceneObjects)
     Object.values(sceneObjects)
       // has a value for model
       .filter(o => o.model != null)
@@ -889,6 +921,7 @@ const SceneManagerXR = () => {
 
   // world model files
   useEffect(() => {
+    console.log(world)
     if (world.environment.file) {
       // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
       const environmentPath = getFilepathForModelByType({
@@ -898,12 +931,7 @@ const SceneManagerXR = () => {
 
       delete assets[environmentPath]
 
-      requestAsset(
-        getFilepathForModelByType({
-          type: 'environment',
-          model: world.environment.file
-        })
-      )
+      requestAsset(environmentPath)
     }
   }, [world.environment])
 
@@ -920,8 +948,8 @@ const SceneManagerXR = () => {
       ]
 
       // fail if any app resources are missing
-      if ([...appResources, ...soundResources, ...uiResources].some(n => n == null)) return
-      if (APP_GLTFS.map(getAsset).some(n => n == null)) return
+      if ([...appResources, ...soundResources, ...uiResources].some(n => n === null)) return
+      if (APP_GLTFS.map(getAsset).some(n => n === null)) return
 
       setAppAssetsLoaded(true)
     }
@@ -938,7 +966,7 @@ const SceneManagerXR = () => {
       setIsLoading(false)
 
       let assetsWithErrors = Object.entries(assets).reduce((arr, [key, asset]) => {
-        if (asset.status == 'Error') {
+        if (asset.status === 'Error') {
           arr[key] = asset
         }
         return arr
@@ -961,7 +989,9 @@ const SceneManagerXR = () => {
       <Canvas
         // initialize camera for browser view at a standing height off the floor
         // (this will change once the HMD initializes)
-        camera={{ 'position-y': 1.6, 'position-z': 0 }}
+        camera={{
+          'position-y': 1.6, 'position-z': 0
+        }}
         // enable VR
         vr
       >
@@ -982,6 +1012,7 @@ const SceneManagerXR = () => {
                   virtualCameraGltf: getAsset('/data/system/xr/virtual-camera.glb'),
                   lightGltf: getAsset('/data/system/xr/light.glb'),
                   teleportTargetGltf: getAsset('/data/system/xr/teleport-target.glb'),
+                  hmdGltf: getAsset('/data/system/xr/hmd.glb'),
 
                   welcomeAudioBuffer,
                   atmosphereAudioBuffer,
@@ -999,9 +1030,10 @@ const SceneManagerXR = () => {
                   uiDeleteBuffer,
 
                   vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
-                  xrPosing, xrEndPosing
+                  xrPosing, xrEndPosing,
                 }}
-                getAsset={getAsset} />
+                getAsset={getAsset}
+                SGConnection={SGConnection} />
               : null
           }
         </Provider>

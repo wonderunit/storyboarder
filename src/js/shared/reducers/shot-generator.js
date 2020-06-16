@@ -1,11 +1,14 @@
 const THREE = require('three')
 const { produce } = require('immer')
+const merge = require('lodash.merge')
 const undoable = require('redux-undo').default
 const crypto = require('crypto')
 const reduceReducers = require('../../vendor/reduce-reducers')
 const { combineReducers } = require('redux')
+const R = require('ramda')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
+const serializeSceneObject = require('./shot-generator/serialize-scene-object')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
@@ -35,27 +38,14 @@ const getWorld = state => state.undoable.present.world
 
 const getHash = state =>
   hashify(JSON.stringify(getSerializedState(state)))
-const getIsSceneDirty = state => {
-  let current = getHash(state)
-  return current !== state.meta.lastSavedHash
-}
+
+const getIsSceneDirty = state => getHash(state) !== state.meta.lastSavedHash
+
 // return only the stuff we want to save to JSON
 const getSerializedState = state => {
-  let sceneObjects = Object.entries(getSceneObjects(state))
-    .reduce((o, [ k, v ]) => {
-      let {
-        // ignore 'loaded'
-        loaded: _,
-        // but allow serialization of the rest
-        ...serializable
-      } = v
-      o[k] = serializable
-      return o
-    }, {})
-
   return {
     world: getWorld(state),
-    sceneObjects,
+    sceneObjects: R.map(serializeSceneObject, getSceneObjects(state)),
     activeCamera: getActiveCamera(state),
     shaderMode: state.shaderMode,
   }
@@ -115,8 +105,8 @@ const checkForCharacterChanges = (state, draft, actionPayloadId) => {
 const checkForSkeletonChanges = (state, draft, actionPayloadId) => {
   // check to see if pose has changed from preset
   // and invalidate if so
-
-  let posePresetId = getSceneObjects(draft)[actionPayloadId].posePresetId
+  let object = getSceneObjects(draft)[actionPayloadId]
+  let posePresetId = object && object.posePresetId
   if (posePresetId) {
     let statePreset = state.presets.poses[posePresetId]
 
@@ -748,6 +738,7 @@ const cameraShotsReducer = (state = {}, action) => {
         
         camera.size = action.payload.size || camera.size
         camera.angle = action.payload.angle || camera.angle
+        camera.character = action.payload.character 
         return
         
         // select a single object
@@ -790,6 +781,7 @@ const selectionsReducer = (state = [], action) => {
     switch (action.type) {
       case 'LOAD_SCENE':
       case 'UPDATE_SCENE_FROM_XR':
+      case 'MERGE_STATE':
         // clear selections
         return []
 
@@ -809,6 +801,9 @@ const selectionsReducer = (state = [], action) => {
           draft.splice(n, 1)
         }
         return
+      case 'DESELECT_OBJECT':
+        let objectsToDeselect = Array.isArray(action.payload) ? action.payload : [action.payload]
+        return draft.filter((target) => objectsToDeselect.indexOf(target) === -1)
       case 'SELECT_ATTACHABLE':
         return [action.payload.bindId]
         
@@ -923,6 +918,13 @@ const sceneObjectsReducer = (state = {}, action) => {
             draft[draft[id].group].children = draft[draft[id].group].children.filter(childId => childId !== id)
             if (draft[draft[id].group].children.length === 0) {
               delete draft[draft[id].group]
+            }
+          }
+
+          if (draft[id].type === 'character') {
+            let attachableIds = Object.values(draft).filter(obj => obj.attachToId === id).map(obj => obj.id)
+            for (let attachableId of attachableIds) {
+              delete draft[attachableId]
             }
           }
       
@@ -1108,7 +1110,7 @@ const sceneObjectsReducer = (state = {}, action) => {
       // update many bones from a skeleton object
       case 'UPDATE_CHARACTER_IK_SKELETON':
         if(!draft[action.payload.id]) return;
-       // draft[action.payload.id].skeleton = {}
+        draft[action.payload.id].skeleton = action.payload.skeleton.length ? draft[action.payload.id].skeleton : {}
         for (let bone of action.payload.skeleton) {
           let rotation = bone.rotation
           let position = bone.position
@@ -1117,26 +1119,25 @@ const sceneObjectsReducer = (state = {}, action) => {
             draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
                                                                       draft[action.payload.id].skeleton[bone.name].rotation : 
                                                                       { x: rotation.x, y: rotation.y, z: rotation.z }
-            draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
+            draft[action.payload.id].skeleton[bone.name].position = !position ?
                                                                       draft[action.payload.id].skeleton[bone.name].position : 
                                                                       { x: position.x, y: position.y, z: position.z }
-            draft[action.payload.id].skeleton[bone.name].quaternion = !bone.quaternion ?
+            draft[action.payload.id].skeleton[bone.name].quaternion = !quaternion ?
                                                                       draft[action.payload.id].skeleton[bone.name].quaternion : 
-                                                                      { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
+                                                                      { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }                                                
           } else {
             draft[action.payload.id].skeleton[bone.name] = {}
             draft[action.payload.id].skeleton[bone.name].rotation = !rotation ? 
             {} : 
             { x: rotation.x, y: rotation.y, z: rotation.z }
-            draft[action.payload.id].skeleton[bone.name].position = !bone.position ?
+            draft[action.payload.id].skeleton[bone.name].position = !position ?
             {} : 
             { x: position.x, y: position.y, z: position.z }
-            draft[action.payload.id].skeleton[bone.name].quaternion = !bone.quaternion ?
+            draft[action.payload.id].skeleton[bone.name].quaternion = !quaternion ?
             {} : 
             { x: quaternion.x, y: quaternion.y, z: quaternion.z, w: quaternion.w }
           }
           draft[action.payload.id].skeleton[bone.name].name = bone.name
-          draft[action.payload.id].skeleton[bone.name].id = bone.id
         
         }
         return
@@ -1465,6 +1466,9 @@ const mainReducer = (state/* = initialState*/, action) => {
       case 'UNDO_GROUP_END':
         batchGroupBy.end(action.payload)
         return
+
+      case 'MERGE_STATE':
+        return merge(draft, action.payload)
     }
   })
 }
@@ -1607,8 +1611,10 @@ module.exports = {
 
   //
   //
-  // action creators
+  // action creators 
   //
+  deselectObject: id => ({ type: 'DESELECT_OBJECT', payload: id }),
+  
   selectObject: id => ({ type: 'SELECT_OBJECT', payload: id }),
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
@@ -1711,6 +1717,8 @@ module.exports = {
 
   undoGroupStart: payload => ({ type: 'UNDO_GROUP_START', payload }),
   undoGroupEnd: payload => ({ type: 'UNDO_GROUP_END', payload }),
+  
+  mergeState: payload => ({ type: 'MERGE_STATE', payload }),
 
   //
   //

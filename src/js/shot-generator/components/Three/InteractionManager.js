@@ -1,6 +1,6 @@
-import { connect } from 'react-redux'
+import { connect, batch } from 'react-redux'
 import React, { useRef, useCallback, useLayoutEffect, useState, useMemo, useEffect } from 'react'
-import { useThree, useFrame } from 'react-three-fiber'
+import { useThree } from 'react-three-fiber'
 import * as THREE from 'three'
 import { useDraggingManager } from '../../hooks/use-dragging-manager'
 import '../../../shared/IK/utils/Object3dExtension'
@@ -12,10 +12,10 @@ import {
     selectBone,
     selectAttachable,
     updateObjects,
-    updateObject,
     
     undoGroupStart,
     undoGroupEnd,
+    updateObject,
   
     getSelections,
     getActiveCamera,
@@ -23,8 +23,8 @@ import {
     getSceneObjects,
 } from '../../../shared/reducers/shot-generator'
 import BonesHelper from '../../../xr/src/three/BonesHelper'
-import CameraControls from '../../CameraControls'
 import throttle from 'lodash.throttle'
+import CameraControlsComponent from './CameraControlsComponet'
 
 const getIntersectionTarget = intersect => {
   // character
@@ -50,14 +50,14 @@ const getIntersectionTarget = intersect => {
   }
 
   if(intersect.object.parent.userData.type === 'object' || intersect.object.userData.type === 'attachable'
-    || intersect.object.userData.type === 'image' || intersect.object.userData.type === 'light') {
+    || intersect.object.parent.userData.type === 'image' || intersect.object.userData.type === 'light') {
     return intersect.object.parent
   }
 }
 
 const InteractionManager = connect(
     state => ({
-        activeCamera: getActiveCamera(state)
+        activeCamera: getActiveCamera(state),
     }),
     {
         selectObject,
@@ -76,16 +76,16 @@ const InteractionManager = connect(
     selectObject,
     selectObjectToggle,
     selectBone,
+    updateObject,
 
     updateObjects,
-    updateObject,
     selectAttachable,
     deselectAttachable,
 
     undoGroupStart,
     undoGroupEnd,
     withState,
-    renderData
+    renderData,
 }) => {
     const { scene, gl, camera } = useThree()
 
@@ -93,11 +93,13 @@ const InteractionManager = connect(
     const intersectables = useRef()
     const [lastDownId, setLastDownId] = useState()
     const [dragTarget, setDragTarget] = useState()
+    const [pointerDownEvent, setOnPointDown] = useState()
+    const [pointerUpEvent, setOnPointUp] = useState()
+    const [isCameraControlsEnabled, enableCameraControls] = useState(true)
     const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager(false)
     const gpuPickerInstance = useRef(null)
     const raycaster = useRef(new THREE.Raycaster())
     const mousePosition = useRef(new THREE.Vector2())
-    const cameraControlsView = useRef()
 
     const takeSceneObjects = useCallback(() => {
       let sceneObjects 
@@ -117,60 +119,10 @@ const InteractionManager = connect(
 
 
     useEffect(() => {
-
-      if(!cameraControlsView.current) return
-      cameraControlsView.current.dispose()
-      cameraControlsView.current.domElement = activeGL.domElement
-      cameraControlsView.current.intializeEvents()
       SGIkHelper.getInstance().changeDomElement(activeGL.domElement)
       if(!gpuPickerInstance.current) return
       gpuPickerInstance.current.renderer = activeGL
     }, [activeGL])
-    
-    const updatedCameraObject = useRef(null)
-
-    const onCameraUpdate = ({active, object}) => {
-      if (camera.userData.locked) {
-        return false
-      }
-
-      if (!active) {
-        updateObject(camera.userData.id, {
-          x: object.x,
-          y: object.y,
-          z: object.z,
-          rotation: object.rotation,
-          tilt: object.tilt,
-          fov: object.fov
-        })
-      } else {
-        camera.position.x = object.x
-        camera.position.y = object.z
-        camera.position.z = object.y
-        camera.rotation.x = 0
-        camera.rotation.z = 0
-        camera.rotation.y = object.rotation
-        camera.rotateX(object.tilt)
-        camera.rotateZ(object.roll)
-        camera.fov = object.fov
-        camera.updateProjectionMatrix()
-      }
-    }
-
-    useEffect(() => {
-      if(!activeCamera || cameraControlsView.current ) return
-      let sceneObjects = takeSceneObjects()
-
-      cameraControlsView.current = new CameraControls(
-        CameraControls.objectFromCameraState(sceneObjects[activeCamera]),
-        activeGL.domElement,
-        {
-          undoGroupStart,
-          undoGroupEnd,
-          onChange: onCameraUpdate
-        }
-      )
-    }, [activeCamera, takeSceneObjects])
 
     const getGPUPicker = useCallback(() => {
         if(gpuPickerInstance.current === null) {
@@ -178,19 +130,14 @@ const InteractionManager = connect(
         }
         return gpuPickerInstance.current
     }, [])
-
-    const enableCameraControls = (state) => {
-      if(!cameraControlsView.current) return
-      cameraControlsView.current.reset()
-      cameraControlsView.current.enabled = state
-    }
     
     const filterIntersectables = () => {
         intersectables.current = scene.__interaction
         intersectables.current = intersectables.current.concat(scene.children[0].children.filter(o => 
             o.userData.type === 'controlTarget' ||
             o.userData.type === 'controlPoint' || 
-            o.userData.type === 'objectControl'))
+            o.userData.type === 'objectControl' ||
+            o.userData.type === 'group'))     
     }
     
     const mouse = event => {
@@ -214,28 +161,26 @@ const InteractionManager = connect(
         y = mousePosition.current.y
         raycaster.current.setFromCamera({ x, y }, camera )
         let gpuPicker = getGPUPicker()
-        gpuPicker.setupScene(intersectables.current.filter(object => object.userData.type !== 'volume'))
+        gpuPicker.setupScene((intersectables.current || []).filter(object => object.userData.type !== 'volume'))
         gpuPicker.controller.setPickingPosition(mousePosition.current.x, mousePosition.current.y)
         intersects = gpuPicker.pickWithCamera(camera, activeGL)
         return intersects
     }  
 
     useMemo(() => {
-        if(dragTarget){
+        if(dragTarget && dragTarget.target){
           let selections = takeSelections()
           let { target, x, y } = dragTarget
-          prepareDrag( target, { x, y, useIcons:true, camera, scene, selections })
           enableCameraControls(false)
+          prepareDrag( target, { x, y, useIcons:true, camera, scene, selections })
           undoGroupStart()
         }
     }, [dragTarget])
 
     const onPointerDown = event => {
-      event.preventDefault()
-      filterIntersectables()
-        let sceneObjects = takeSceneObjects()
+        event.preventDefault()
+        filterIntersectables()
         let selections = takeSelections()
-        cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
         // get the mouse coords
         const { x, y } = mouse(event)
         const rect = activeGL.domElement.getBoundingClientRect()
@@ -258,7 +203,8 @@ const InteractionManager = connect(
                 // don't select any bone
                 selectBone(null)
             }
-            cameraControlsView.current.onPointerDown(event)
+            setOnPointDown(event)
+           // cameraControlsView.current.onPointerDown(event)
         } else {
     
             let shouldDrag = false
@@ -268,23 +214,23 @@ const InteractionManager = connect(
             
             for (let intersect of intersects) {
                 target = getIntersectionTarget(intersect)
-                if (target.userData.type === 'character' && target.userData.locked) {
+                if (target && target.userData.type === 'character' && target.userData.locked) {
                 return
-                }
+              }
             }
 
             target = getIntersectionTarget(intersects[0])
             if(!target) return
             if(target.userData && target.userData.type === 'attachable') {
-                selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
-                setDragTarget({ target, x, y})
-                return 
+              selectAttachable({ id: target.userData.id, bindId: target.userData.bindedId })
+              setDragTarget({ target, x, y})
+              return 
             } else if(target.userData && (target.userData.type === 'controlPoint' || target.userData.type === 'poleTarget')) {
-                let characterId = target.characterId
-                SGIkHelper.getInstance().selectControlPoint(target.uuid, event)
-                let characters = intersectables.current.filter(value => value.uuid === characterId)
-                target = characters[0]
-                isSelectedControlPoint = true
+              let characterId = target.characterId
+              SGIkHelper.getInstance().selectControlPoint(target.uuid, event)
+              let characters = intersectables.current.filter(value => value.uuid === characterId)
+              target = characters[0]
+              isSelectedControlPoint = true
             } else if(target.userData && target.userData.type === 'objectControl') {
                 let objectId = target.characterId
                 let targetElement = target.object
@@ -300,8 +246,11 @@ const InteractionManager = connect(
                     selectedObjectControl = targetElement
                     setDragTarget({ target, x, y, isObjectControl: true })
                     return
+                } else if(targetElement.userData.type === "group") {
+                    setDragTarget({ target:null, x, y, isObjectControl: true })
+                    return
                 }
-                else if(targetElement.userData.type === "object") {
+                else {
                   let objects = intersectables.current.filter(value => value.uuid === objectId)
                   target = objects[0]
                   selectedObjectControl = targetElement
@@ -366,13 +315,13 @@ const InteractionManager = connect(
             }
               selectBone(null)
               setLastDownId(target.userData.id)
-            
-             if (shouldDrag) {
-                setDragTarget({ target, x, y })
-             }
-             else {
-              cameraControlsView.current.onPointerDown(event)
-             }
+            if (shouldDrag) {
+
+              setDragTarget({ target, x, y, isObjectControl: target.isRotated })
+            }
+            else {
+              setOnPointDown(event)
+            }
         }
     }
 
@@ -402,18 +351,35 @@ const InteractionManager = connect(
         event.preventDefault()
         const { x, y } = mouse(event)
         SGIkHelper.getInstance().deselectControlPoint(event)
-        if (dragTarget) {
+        if (dragTarget && dragTarget.target) {
+          endDrag(updateObjects)
           if(dragTarget.target.userData.type === "character") {
             let attachables = scene.__interaction.filter(object => object.userData.bindedId === dragTarget.target.userData.id)
-            for(let i = 0; i < attachables.length; i ++) {
-              attachables[i].saveToStore()
-            }
+            withState((dispatch, state) => {
+              batch(() => {
+                for(let i = 0; i < attachables.length; i ++) {
+                  let attachable = attachables[i]
+                  attachable.parent.updateWorldMatrix(true, true)
+                  let position = attachable.worldPosition()// new THREE.Vector3()
+                  let quaternion = attachable.worldQuaternion()
+                  let matrix = attachable.matrix.clone()
+                  matrix.premultiply(attachable.parent.matrixWorld)
+                  matrix.decompose(position, quaternion, new THREE.Vector3())
+                  let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
+                  dispatch(updateObject(attachable.userData.id, 
+                  { 
+                      x: position.x, y: position.y, z: position.z,
+                      rotation: { x: rot.x, y: rot.y, z: rot.z },
+                  }))
+                }
+              })
+            })
           }
-          endDrag(updateObjects)
           setDragTarget(null)
           undoGroupEnd()
         }
         enableCameraControls(true)
+        setOnPointUp(event)
         const selections = takeSelections()
         const sceneObjects = takeSceneObjects()
       
@@ -461,17 +427,6 @@ const InteractionManager = connect(
     
         setLastDownId(null)
     }
-
-    useFrame((state, delta) => {
-      if(cameraControlsView.current) {
-       
-        withState((dispatch, state) => {
-          let sceneObjects = takeSceneObjects()
-          cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
-          cameraControlsView.current.update(delta, state)
-        })
-      }
-    }, 0)
     
     useLayoutEffect(() => {
       activeGL.domElement.addEventListener('pointerdown', onPointerDown)
@@ -485,7 +440,15 @@ const InteractionManager = connect(
         window.removeEventListener('pointerup', onPointerUp)
       }
     }, [onPointerDown, onPointerUp, onPointerMove, activeGL])
-    return null 
+
+    return <CameraControlsComponent 
+              pointerDownEvent={ pointerDownEvent }
+              pointerUpEvent={ pointerUpEvent }
+              activeGL={ activeGL }
+              isCameraControlsEnabled={ isCameraControlsEnabled }
+              takeSceneObjects={ takeSceneObjects }
+              activeCamera={ activeCamera }
+              /> 
 }))
 
 export default InteractionManager

@@ -3,7 +3,6 @@ const isDev = require('electron-is-dev')
 
 const path = require('path')
 const url = require('url')
-
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
 //const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
@@ -27,12 +26,11 @@ const removeExtensions = () => {
 }
 
 let win
-
 let memento = {
   x: undefined,
   y: undefined,
   width: 1505,
-  height: 1080
+  height: 1080,
 }
 
 const reveal = onComplete => {
@@ -54,7 +52,6 @@ const show = async (onComplete) => {
   }
 
   let { x, y, width, height } = memento
-
   win = new BrowserWindow({
     minWidth: isDev ? undefined : 1200,
     minHeight: isDev ? undefined : 800,
@@ -82,6 +79,7 @@ const show = async (onComplete) => {
       backgroundThrottling: true,
     }
   })
+
 
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
@@ -124,9 +122,15 @@ const show = async (onComplete) => {
     reveal(onComplete)
   })
 }
-
 ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
+})
+
+ipcMain.on('shot-generator:menu:view:zoom', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:zoom', value)
+})
+ipcMain.on('shot-generator:menu:view:resetZoom', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:setZoom', value)
 })
 
 ipcMain.on('shot-generator:object:duplicate', () => {
@@ -150,6 +154,14 @@ ipcMain.on('shot-generator:edit:undo', () => {
 })
 ipcMain.on('shot-generator:edit:redo', () => {
   win.webContents.send('shot-generator:edit:redo')
+})
+
+ipcMain.on('shot-generator:open:shot-explorer', () => {
+  win.webContents.send('shot-generator:open:shot-explorer')
+})
+
+ipcMain.on('shot-generator:show:shot-explorer', () => {
+  win.webContents.send('shot-generator:show:shot-explorer')
 })
 
 ipcMain.on('shot-generator:export-gltf', () =>

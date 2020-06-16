@@ -152,16 +152,15 @@ export const OutlineEffect = function ( renderer, parameters ) {
 
 		"#include <common>",
 		"#include <fog_pars_fragment>",
-
+		"varying vec3 vViewPosition;",
 		"uniform vec3 outlineColor;",
 		"uniform float outlineAlpha;",
-
 		"void main() {",
-
+		" 	vViewPosition;",
 		"	gl_FragColor = vec4( outlineColor, outlineAlpha );",
-	
+		
 		"	#include <fog_fragment>",
-
+		
 		"}"
 
 	].join( "\n" );
@@ -223,10 +222,9 @@ export const OutlineEffect = function ( renderer, parameters ) {
 			.replace( /#include\s+<[\w_]*light[\w_]*>/g, '' );
 
 		var defines = {};
-
+		defines.FLAT_SHADED = true;
 		if ( ! /vec3\s+transformed\s*=/.test( originalVertexShader ) &&
 		     ! /#include\s+<begin_vertex>/.test( originalVertexShader ) ) defines.DECLARE_TRANSFORMED = true;
-
 		return new THREE.ShaderMaterial( {
 			defines: defines,
 			uniforms: uniforms,
@@ -237,7 +235,8 @@ export const OutlineEffect = function ( renderer, parameters ) {
 			skinning: false,
 			morphTargets: false,
 			morphNormals: false,
-			fog: false
+			fog: false,
+			flatShading: false,
 		} );
 
 	}

@@ -18,6 +18,9 @@ import ModelLoader from '../services/model-loader'
 import { useDraggingManager } from './hooks/use-dragging-manager'
 import SaveShot from './components/Three/SaveShot'
 import Room from './components/Three/Room'
+import RemoteClients from "./components/RemoteClients"
+import XRClient from "./components/Three/XRClient"
+import RemoteProvider from "./components/RemoteProvider"
 
 const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
 const SceneManagerR3fSmall = connect(
@@ -98,7 +101,7 @@ const SceneManagerR3fSmall = connect(
       e.object.traverseAncestors((o) => {
         if(o.userData.id) match = o
       })
-      if(!match.userData || match.userData.locked ) return
+      if(!match || !match.userData || match.userData.locked ) return
       selectObject(match.userData.id)
       if(match.userData.type === "camera") {
         setActiveCamera(match.userData.id)
@@ -197,7 +200,6 @@ const SceneManagerR3fSmall = connect(
       camera.bottom = -(minMax[3]-minMax[2])/2
       camera.near = -1000
       camera.far = 1000
-      //camera.updateMatrixWorld(true)
       camera.updateProjectionMatrix()
     }, [scene, camera, renderData])
 
@@ -214,12 +216,48 @@ const SceneManagerR3fSmall = connect(
       return () => window.removeEventListener("pointerup", onPointerUp)
     }, [onPointerUp])
 
+    const getIntersectable = () => {
+      let objects = scene.children[0].children
+      for(let i = 0; i < objects.length; i++) {
+        let object = objects[i]
+        object.renderOrder = i
+      }
+      return objects
+    }
+
     const raycaster = useRef(new THREE.Raycaster())
     const intersectLogic = useCallback((e) => {
       const { x, y } = mouse(e)
       raycaster.current.setFromCamera({x, y}, camera)
-      var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
-      let target = intersects[0]
+      var intersects = raycaster.current.intersectObjects( getIntersectable(), true )
+      let target
+
+      if (intersects.length) {
+        let closest 
+        let linkedPosition
+        for (let intersect of intersects) {
+          let parent
+          if (intersect.object.type === 'Sprite') {
+            parent = intersect.object.parent.parent
+          } else {
+            parent = intersect.object.parent
+          }
+          linkedPosition = parent.position.clone().setY(0)
+          let newDist = linkedPosition.distanceTo(intersect.point.setY(0))
+          if (newDist < 0.30){
+            if(!closest) {
+              closest = {}
+              closest.parent = parent
+              closest.target = intersect
+            } else if(closest.parent.renderOrder < parent.renderOrder) {
+              closest.parent = parent
+              closest.target = intersect
+            }
+          }
+        }
+
+        target = closest ? closest.target : intersects[0]
+      }
       if(!target || (target.object.userData && target.object.userData.type === "ground")) {
         deselect()
         return
@@ -292,7 +330,8 @@ const SceneManagerR3fSmall = connect(
                 sceneObject={ sceneObject }
                 mainCamera={ mainRenderData.camera }
                 isSelected={ selections.includes(sceneObject.id) }
-                fontMesh={ fontMesh } />
+                fontMesh={ fontMesh } 
+                autofitOrtho={ autofitOrtho } />
         })
     }
     {
@@ -302,6 +341,12 @@ const SceneManagerR3fSmall = connect(
         visible={ world.room.visible }
         isTopDown={ true } />
     }
+
+      <RemoteProvider>
+        <RemoteClients
+          Component={XRClient}
+        />
+      </RemoteProvider>
     </group>
     })
 )

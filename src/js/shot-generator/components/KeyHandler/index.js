@@ -27,6 +27,7 @@ import  {
     groupObjects,
     ungroupObjects,
     mergeGroups,
+    selectObject,
   
     duplicateObjects,
 
@@ -54,13 +55,15 @@ const KeyHandler = connect(
     groupObjects,
     ungroupObjects,
     mergeGroups,
-    withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
+    withState: (fn) => (dispatch, getState) => fn(dispatch, getState()),
+    selectObject,
   }
 )(
   React.memo(({
     activeCamera,
     selections,
     sceneObjects,
+    selectObject,
     _selectedSceneObject,
     duplicateObjects,
     deleteObjects,
@@ -121,11 +124,15 @@ const KeyHandler = connect(
       if (selections) {
         const groupAction = getGroupAction(sceneObjects, selections)
         if (groupAction.shouldGroup) {
-          groupObjects(groupAction.objectsIds)
+          let group = groupObjects(groupAction.objectsIds)
+          selectObject([group.payload.groupId, ...group.payload.ids])
         } else if (groupAction.shouldUngroup) {
+          selectObject(groupAction.objectsIds)
           ungroupObjects(groupAction.groupsIds[0], groupAction.objectsIds)
         } else {
-          mergeGroups(groupAction.groupsIds, groupAction.objectsIds)
+          selectObject(null)
+          let group =  mergeGroups(groupAction.groupsIds, groupAction.objectsIds)
+          selectObject([group.payload.groupIds[0], ...group.payload.ids])
         }
       }
     }, [selections, sceneObjects])
