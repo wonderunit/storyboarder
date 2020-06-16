@@ -45,7 +45,6 @@ const RemovableItem = React.memo(({
     }
 
     const onMouseOut = (event) => {
-        console.log("Hiding removal", data.id)
         setShow(false)
     }
 

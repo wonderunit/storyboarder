@@ -663,7 +663,6 @@ const SceneContent = connect(
                // ?
                let sceneObject = sceneObjects[id]
                let emotionFilepath = sceneObject.emotion && getFilepathForEmotion(sceneObject.emotion)
-               console.log(emotionFilepath)
                let texture = getAsset(emotionFilepath)
                return <SimpleErrorBoundary key={id}>
                   <Character

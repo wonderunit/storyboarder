@@ -234,7 +234,6 @@ class FaceMesh {
         const clampSize = 512
         let height = emotionImage.height
         let width = emotionImage.width
-        console.log(emotionImage.width, emotionImage.height)
         if(emotionImage.width > clampSize || emotionImage.height > clampSize) {
             let aspect
             if(emotionImage.width > emotionImage.height) {
