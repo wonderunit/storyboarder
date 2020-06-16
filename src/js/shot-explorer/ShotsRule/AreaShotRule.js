@@ -32,6 +32,7 @@ class AreaShotRule extends ShotRule {
             if(Math.pow(position.x - characterPosition.x, 2) + Math.pow(position.y - characterPosition.y, 2) < Math.pow(this.radius, 2)) {
                 let shotCharacter = this.characters[i];
                 let skinnedMesh = shotCharacter.getObjectByProperty("type", "SkinnedMesh");
+                if(!skinnedMesh || !skinnedMesh.skeleton) continue
                 let box = new THREE.Box3();
                 for(let i = 0; i < skinnedMesh.skeleton.bones.length; i++) {
                     let bone = skinnedMesh.skeleton.bones[i];

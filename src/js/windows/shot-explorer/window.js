@@ -19,7 +19,7 @@ const {
   loadScene,
   resetScene,
 } = require('../../shared/reducers/shot-generator')
-
+const {batchActions, batchDispatchMiddleware} = require('redux-batched-actions')
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false
@@ -51,7 +51,7 @@ const configureStore = function configureStore (preloadedState) {
       preloadedState,
       composeEnhancers(
         applyMiddleware(
-            thunkMiddleware, store => next => action => {
+          thunkMiddleware, batchDispatchMiddleware, store => next => action => {
               let indexOf = sendedAction.indexOf(action)
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
@@ -142,17 +142,15 @@ electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event =
 
 const pushUpdates = () => {
   shotExplorerElement = renderShotExplorer()
-  batch(() => {
-    for(let i = 0, length = sendedAction.length; i < length; i++) {
-      let object = sendedAction[i]
-      let action = object
-      if(!action.type) {
-        action = JSON.parse(object)
-        sendedAction.push(action)
-      }
-      store.dispatch(action)
+  for(let i = 0, length = sendedAction.length; i < length; i++) {
+    let object = sendedAction[i]
+    let action = object
+    if(!action.type) {
+      action = JSON.parse(object)
+      sendedAction[i] = action
     }
-  })
+  }
+  store.dispatch(batchActions(sendedAction))
   sendedAction = []
   renderDom()
 }

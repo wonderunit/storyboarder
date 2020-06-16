@@ -117,17 +117,16 @@ const ShotMaker = React.memo(({
 
     const convertCanvasToImage = async (outlineEffect, scene, camera) => {
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                outlineEffect.render(scene, camera)
-                let image = outlineEffect.domElement.toDataURL('image/jpeg', 0.5)
-                resolve(image);
-            }, 10)
+            outlineEffect.render(scene, camera)
+            let image = outlineEffect.domElement.toDataURL('image/jpeg', 0.5)
+            resolve(image);
         })
     }
 
     const renderSceneWithCamera = useCallback((shotsArray) => {
         let width = Math.ceil(900 * aspectRatio)
         outlineEffect.current.setSize(width, 900)
+
         for(let i = 0; i < shotsArray.length; i++) {
             let shot = shotsArray[i]
             convertCanvasToImage(outlineEffect.current, sceneInfo.scene, shot.camera).then((cameraImage) => {
@@ -135,7 +134,6 @@ const ShotMaker = React.memo(({
                 shot.setRenderImage( cameraImage )
             })
         }
-
     }, [sceneInfo])
 
     const generateShot = (shotsArray, shotsCount) => {
@@ -156,7 +154,7 @@ const ShotMaker = React.memo(({
 
             let character = characters[getRandomNumber(characters.length)]
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
-            if(!skinnedMesh) continue
+            if(!skinnedMesh || !skinnedMesh.skeleton) continue
             let shot = new ShotItem(randomAngle.label, randomSize.label, character)
             cameraCopy.fov = getRandomFov(aspectRatio)
             cameraCopy.updateProjectionMatrix()
@@ -207,7 +205,6 @@ const ShotMaker = React.memo(({
             let shotsArray = []
             let shotsCount =  Math.ceil(containerHeight.current / (height + 20)) * 3
             generateShot(shotsArray, shotsCount)
-
             renderSceneWithCamera(shotsArray)
             shotsArray[0] && setSelectedShot(shotsArray[0])
             cleanUpShots()

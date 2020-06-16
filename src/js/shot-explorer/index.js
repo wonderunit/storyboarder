@@ -40,7 +40,10 @@ const ShotExplorer = React.memo(({
         event.returnValue = false
     }
     const setLargeCanvasData = (camera, scene, gl) => {
-        setSceneInfo({camera, scene, gl})
+        if(!sceneInfo || (scene.children[0] && !sceneInfo.scene.children[0]) || scene.children[0].children.length !== sceneInfo.scene.children[0].children.length) {
+            if(!isAnyAssetsPending())
+                setSceneInfo({camera, scene, gl})
+        }
     }
 
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
@@ -58,7 +61,18 @@ const ShotExplorer = React.memo(({
       }
     }, [])
 
-    const updateAssets = () => {setLoadedAssets({})}
+    const isAnyAssetsPending = () => {
+        let assets = Object.values(cache.get())
+        for(let i = 0; i < assets.length; i++) {
+            if(assets[i].status === "PENDING") return true
+        }
+        return false
+    }
+
+    const updateAssets = (event) => { 
+        if(!isAnyAssetsPending())
+            setLoadedAssets({})
+    }
 
     useEffect(() => {
         cache.subscribe(updateAssets)

@@ -215,6 +215,7 @@
     "react-use-gesture": "^6.0.14",
     "react-window": "1.5.0",
     "redux": "4.0.1",
+    "redux-batched-actions": "^0.5.0",
     "redux-promise": "0.5.3",
     "redux-thunk": "2.3.0",
     "redux-undo": "1.0.0-beta9-9-7",
