@@ -4,17 +4,16 @@ class DepthShading extends ShadingEffect {
 
     constructor( renderer ){
         super(renderer)
-        this.objectsFilter = (object) => {
-            return object.type === "Sprite"
-            || object.parent instanceof IconSprites 
-            || object.parent.parent.userData.type !== "character" 
+     /*    this.objectsFilter = (object) => {
+            return object.parent.parent.userData.type !== "character" 
             && object.parent.userData.type !== "object"
             && object.parent.userData.type !== "environment" 
             && object.userData.type !== "attachable" 
             && object.userData.type !== 'image'
-        }
+        } */
         this.depthMaterials = {}
         this.originalMaterials = {}
+        this.fog = new THREE.FogExp2(new THREE.Color("#000000"), 0.10)
     }
 
     cleanupCache() {
@@ -75,9 +74,16 @@ class DepthShading extends ShadingEffect {
 
     render( scene, camera ) {
         super.render(scene, camera)
-        this.setDepthShading((object) => this.getShaderMaterial(object));
+        let isPlot = camera instanceof THREE.OrthographicCamera
+        if(!isPlot) {
+            scene.fog = this.fog
+        } 
         this.renderer.render(scene, camera);
-        this.setDepthShading((object) => this.getOriginalMaterial(object));
+        if(!isPlot) {
+            scene.fog = null
+        }
+        //this.setDepthShading((object) => this.getShaderMaterial(object));
+        //this.setDepthShading((object) => this.getOriginalMaterial(object));
     }
 }
 

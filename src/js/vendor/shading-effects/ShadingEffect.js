@@ -57,6 +57,7 @@ class ShadingEffects {
             if ( object.userData.type === "instancedMesh" ) return;
             if ( this.objectsFilter(object) ) return;
             this.objects.push(object);
+
         })
     }
 
