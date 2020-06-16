@@ -75,52 +75,6 @@ class AreaShotRule extends ShotRule {
             this.camera.updateMatrixWorld(true);
             //#endregion
 
-            //#region Establishing method
-/* 
-            let sphere = new THREE.Sphere()
-            box.getBoundingSphere(sphere)
-            let direction = new THREE.Vector3()
-            this.camera.getWorldDirection(direction)
-            direction.negate()
-            for (let i = 0; i < charactersInRange.length - 1; i += 2) {
-                direction.add(charactersInRange[i + 1].position.clone().sub(charactersInRange[i].position.clone()))
-            }
-            direction.divideScalar(charactersInRange.length)
-      
-            direction = this.camera.position.clone().sub(direction)
-            direction.y = this.camera.y 
-            let h = sphere.radius / Math.tan(this.camera.fov / 2 * Math.PI / 180.0)
-            console.log(h)
-            let newPos = new THREE.Vector3().addVectors(sphere.center, direction.clone().setLength(h))
-
-            direction = sphere.center.clone().sub(newPos).normalize()
-
-            //end action
-            let currentDistance = newPos.distanceTo(sphere.center)
-  
-            direction.y = 0
-            direction.normalize()
-          //  let mainAxis = new THREE.Vector3().crossVectors(this.camera.up, direction)
-          
-          //  let quaternion = new THREE.Quaternion()
-          //  quaternion.setFromAxisAngle(mainAxis, angle)
-            
-           // direction.applyQuaternion(quaternion)
-            direction.setLength(currentDistance)
-            newPos.copy(sphere.center).sub(direction)
-            console.log("Current camera position", this.camera.position.clone())
-            let y = this.camera.position.y
-            this.camera.position.copy(newPos)
-            this.camera.position.y = y
-            this.camera.lookAt(sphere.center)
-            this.camera.updateMatrixWorld(true)
-
-            console.log("New camera position", newPos)
-            console.log("sphere", sphere.center)
-            console.log("direction", direction)
-            console.log("Current camera position", this.camera.position.clone())
- */
-            //#endregion Establishing method
         }
         return null
     }

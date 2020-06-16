@@ -157,7 +157,6 @@ const ShotMaker = React.memo(({
             let character = characters[getRandomNumber(characters.length)]
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
             if(!skinnedMesh) continue
-            console.log(randomAngle, randomSize)
             let shot = new ShotItem(randomAngle.label, randomSize.label, character)
             cameraCopy.fov = getRandomFov(aspectRatio)
             cameraCopy.updateProjectionMatrix()
