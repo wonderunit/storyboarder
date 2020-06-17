@@ -8,7 +8,6 @@ const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
 const reducer = (state, action) => {
   const { type, payload } = action
   const { id, progress, value, error } = payload
-  console.log(id, payload)
   switch (type) {
     case 'PENDING':
       // ignore if already exists
@@ -99,8 +98,6 @@ const useAssetsManager = () => {
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
         if (id.includes('/images/')) {
-          console.log("Loading images", id)
-  
           load(textureLoader, `${id}?ts=` + Date.now(), {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
@@ -108,9 +105,7 @@ const useAssetsManager = () => {
           })
           dispatch({ type: 'LOAD', payload: { id } })
         } else if(id.includes('/sceneTextures')) {
-          console.log(path)
           let info = path.dirname(id)
-          console.log("loading sceneTExtures ",info, id)
           cubeLoader.setPath(info + "/cubetexture/")
           load(cubeLoader, [
             'px.png?ts=' + new Date().getTime(),
@@ -126,7 +121,6 @@ const useAssetsManager = () => {
           })
           dispatch({ type: 'LOAD', payload: { id } })
         } else {
-          console.log("Loading objects", id)
           load(loader, id, {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),

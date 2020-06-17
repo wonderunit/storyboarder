@@ -4,8 +4,8 @@ import { extend } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
-import { axis } from "../../../shared/IK/utils/TransformControls"
-import DrawingTexture from "./Helpers/drawing-on-texture" 
+import { axis } from '../../../shared/IK/utils/TransformControls'
+import SimpleTexture from './Helpers/SimpleTexture' 
 import createRoundedPlane from './Helpers/create-rounded-plane'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
@@ -16,8 +16,9 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   const aspect = useRef(1)
   const ref = useRef()
   const material = useMemo(() => {
-    props.drawTextures[sceneObject.id] = new DrawingTexture()
-    let material = props.drawTextures[sceneObject.id].createMaterial()
+    props.drawTextures[sceneObject.id] = new SimpleTexture()
+    let material = new THREE.MeshToonMaterial({ transparent: true, side: THREE.DoubleSide });
+    props.drawTextures[sceneObject.id].createMaterial(material)
     return material
   }, [])
 
@@ -35,7 +36,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
     const { width, height } = texture.image
     aspect.current = width / height
-
     if (material) {
       props.drawTextures[sceneObject.id].setTexture(texture)
       material.needsUpdate = true

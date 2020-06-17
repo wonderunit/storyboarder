@@ -3,7 +3,7 @@ class SimpleMesh extends Mesh {
 
     constructor(drawingCtx) {
         super(drawingCtx);
-        this.drawingCtx.lineJoin = true;
+       // this.drawingCtx.lineJoin = true;
     }
 
     draw(currentPos, mesh) {

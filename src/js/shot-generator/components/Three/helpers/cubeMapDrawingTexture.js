@@ -1,15 +1,15 @@
 
 import * as THREE from 'three'
-import DrawingTExture from './DrawingTexture'
-class CubeMapDrawingTexture extends DrawingTExture {
+import DrawingTexture from './DrawingTexture'
+class CubeMapDrawingTexture extends DrawingTexture {
     constructor(){
         super();
     }
 
     createMaterial(texture) {
         super.createMaterial(texture);
-        this.drawingCanvases = []
-        this.drawingCtxes = []
+        this.drawingCanvases = [];
+        this.drawingCtxes = [];
         for( let i = 0; i < texture.image.length; i++ ) {
             let canvas =  document.createElement('canvas');
             let context = canvas.getContext('2d');
@@ -19,8 +19,8 @@ class CubeMapDrawingTexture extends DrawingTExture {
             context.drawImage(image, 0, 0);
             let drawingTexture = new THREE.CanvasTexture(canvas);
             texture.image[i] = drawingTexture.image;
-            this.drawingCanvases.push(canvas)
-            this.drawingCtxes.push(context)
+            this.drawingCanvases.push(canvas);
+            this.drawingCtxes.push(context);
         }
         texture.needsUpdate = true;
     }
@@ -55,10 +55,10 @@ class CubeMapDrawingTexture extends DrawingTExture {
         }
         let screenX = (1 - intersection.uv.x) * this.texture.image[index].width;
         let screenY = (1 - intersection.uv.y) * this.texture.image[index].height;
-        let drawingContext = this.drawingCtxes[index]
-        drawingContext.fillStyle = "orange"
-        drawingContext.fillRect(screenX - 5, screenY - 5 , 10, 10);
-        this.texture.needsUpdate = true
+        let drawingContext = this.drawingCtxes[index];
+        this.drawingMesh.drawingCtx = drawingContext;
+        this.drawingMesh.draw({ x: screenX, y: screenY }, mesh)
+        this.texture.needsUpdate = true;
 
     }
 }

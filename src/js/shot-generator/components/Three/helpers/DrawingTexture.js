@@ -1,14 +1,16 @@
 
 import * as THREE from 'three'
-
+import SimpleMesh from './Meshes/SimpleMesh'
+import EraserMesh from './Meshes/EraserMesh'
 class DrawingTexture {
-    constructor(){
+    constructor() {
         this.drawingCanvases = [];
         this.drawingCtxes = [];
         this.raycaster = new THREE.Raycaster();
         this.texture = null;
         this.drawingMesh = null;
         this.isChanged = false;
+        this.setMesh();
     }
 
     resetMeshPos() {
