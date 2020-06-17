@@ -16,12 +16,14 @@ import HandInspector from './HandInspector/HandPresetsEditor/index'
 import PosePresetsInspector from './PosePresetsInspector/index'
 import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
+import BrushInspector from './BrushInspector'
 
 import Icon from '../Icon'
 import Modal from '../Modal'
 
 const isChar = (type) => type === 'character'
 const isObj = (type) => type === 'object'
+const isImage = (type) => type === 'image'
 const nullTab = {tab: null, panel: null}
 
 const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) => {
@@ -63,6 +65,13 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     }
   }, [selectedType])
 
+  const meshTab = useMemo(() => {
+    if (!isImage(selectedType)) return nullTab
+    return {
+      tab: <Tab><Icon src='icon-tab-attachable'/></Tab>,
+      panel: <Panel><BrushInspector /></Panel>
+    }
+  }, [selectedType])
 
   return (
     <React.Fragment>
@@ -98,6 +107,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           {charPoseTab.tab}
           {modelTab.tab}
           {attachmentTab.tab}
+          {meshTab.tab}
         </div>
 
         <div className="tabs-body">
@@ -106,6 +116,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           {charPoseTab.panel}
           {modelTab.panel}
           {attachmentTab.panel}
+          {meshTab.panel}
         </div>
       </Tabs>
     </React.Fragment>

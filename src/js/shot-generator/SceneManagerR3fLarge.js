@@ -45,6 +45,34 @@ import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
 import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
+import path from 'path'
+import fs from 'fs-extra'
+
+const mouse = (event, gl) => {
+  const rect = gl.domElement.getBoundingClientRect();
+  let worldX = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
+  let worldY = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
+  return { x: worldX, y: worldY }
+}
+
+let saveDataURLtoFile = (dataURL, boardPath, updateObject, object) => {
+  let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
+  if(object.userData.tempImagePath) {
+    let tempImageFilePath = path.join(path.dirname(boardPath), 'models/images', object.userData.tempImagePath)
+    fs.remove(tempImageFilePath)
+  }
+  let tempFilename = `temp_${object.userData.id}-${Date.now()}-texture.png`
+  object.userData.tempImagePath = tempFilename
+  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', tempFilename)
+  fs.writeFileSync(imageFilePath, imageData, 'base64')
+  let projectDir = path.dirname(boardPath)
+  let assetsDir = path.join(projectDir, 'models', 'images')
+  fs.ensureDirSync(assetsDir)
+  let dst = path.join(assetsDir, path.basename(imageFilePath))
+  let id = path.relative(projectDir, dst)
+  updateObject(object.userData.id, {imageAttachmentIds: [id]})
+
+}
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -70,7 +98,10 @@ const SceneManagerR3fLarge = connect(
         models: state.models,
         selectedBone: getSelectedBone(state),
         cameraShots: state.cameraShots,
-        selectedAttachable: getSelectedAttachable(state)
+        selectedAttachable: getSelectedAttachable(state),
+        drawingMesh: state.drawingMesh,
+        isDrawingMode: state.isDrawingMode,
+        cleanImages: state.cleanImages
     }),
     {
         selectObject,
@@ -97,6 +128,10 @@ const SceneManagerR3fLarge = connect(
     updateObjects,
     selectedBone,
 
+    drawingMesh,
+    isDrawingMode,
+    cleanImages,
+
     cameraShots,
     setLargeCanvasData,
     renderData,
@@ -111,12 +146,12 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
-
+    const isDrawStarted = useRef(false)
+    const drawingTextures = useRef({})
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
     const [update, forceUpdate] = useState(null)
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
-
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
     }, [sceneObjectLength])
@@ -144,6 +179,75 @@ const SceneManagerR3fLarge = connect(
     const groupIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
     }, [sceneObjectLength]) 
+
+    useEffect(() => {
+      if(isDrawingMode) {
+        objectRotationControl.current.deselectObject();
+        gl.domElement.addEventListener( 'mousedown', onKeyDown )
+        window.addEventListener( 'mouseup', onKeyUp )
+      }
+      return () => {
+        gl.domElement.removeEventListener( 'mousedown', onKeyDown )
+        window.removeEventListener( 'mouseup', onKeyUp )
+      }
+  
+    }, [isDrawingMode, drawingMesh])
+
+    useEffect(() => {
+      if(!cleanImages || !cleanImages.length) return
+      for(let i = 0; i < cleanImages.length; i++) {
+        drawingTextures.current[cleanImages[i]].cleanImage()
+      }
+    }, [cleanImages])
+
+    let getImageObjects = () => scene.__interaction.filter(object => object.userData.type === "image")
+    let raycaster = useRef(new THREE.Raycaster())
+    const draw = (event) => {
+      let keys = Object.keys(drawingTextures.current)
+      let {x, y} = mouse(event, gl)
+      raycaster.current.setFromCamera({x, y}, camera)
+      let imageObjects = getImageObjects()
+      let intersections = raycaster.current.intersectObjects(imageObjects, true)
+      for(let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        let drawingTexture = drawingTextures.current[key]
+        let object = imageObjects.find((obj) => obj.userData.id === key)
+        if(!object || !object.visible) continue
+        if(intersections.length && intersections[0].object.parent.uuid === object.uuid) {
+          drawingTexture.draw({x, y}, object, camera, drawingMesh);
+        } else if(drawingTexture.isChanged){
+          drawingTexture.resetMeshPos();
+        }
+      }
+    } 
+
+    const onKeyDown = (event) => {
+      isDrawStarted.current = true;
+      gl.domElement.addEventListener('mousemove', draw)
+    }
+  
+    useEffect(() => {
+        let keys = Object.keys(drawingTextures.current)
+        for(let i = 0; i < keys.length; i++) {
+          drawingTextures.current[keys[i]].setMesh(drawingMesh.type)
+        }
+     }, [drawingMesh.type])
+
+    const onKeyUp = (event) => {
+      if(!isDrawStarted.current) return
+      gl.domElement.removeEventListener('mousemove', draw)
+      isDrawStarted.current = false;
+      let keys = Object.keys(drawingTextures.current)
+      for(let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        drawingTextures.current[key].resetMeshPos();
+        let object = scene.__interaction.find((obj) => obj.userData.id === key)
+        if(drawingTextures.current[key].isChanged) {
+          drawingTextures.current[key].isChanged = false
+          saveDataURLtoFile(drawingTextures.current[key].getImage(), storyboarderFilePath, updateObject, object)
+        }
+      }
+    }
 
     useEffect(() => {
       let sgIkHelper = SGIkHelper.getInstance()
@@ -304,7 +408,7 @@ const SceneManagerR3fLarge = connect(
     return <group ref={ rootRef }> 
     <CameraUpdate/>
     <SaveShot isPlot={ false }/>
-    <InteractionManager renderData={ renderData }/> 
+    { !isDrawingMode && <InteractionManager renderData={ renderData }/> }
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
@@ -405,10 +509,12 @@ const SceneManagerR3fLarge = connect(
             return <SimpleErrorBoundary key={ id }>
               <Image
                 imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
+                storyboarderFilePath={ storyboarderFilePath }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
+                drawTextures={ drawingTextures.current }
                 />
               </SimpleErrorBoundary>
         })

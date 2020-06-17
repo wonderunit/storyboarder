@@ -68,7 +68,7 @@ const ShotExplorerSceneManager = connect(
     const groundRef = useRef()
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
-
+    const drawingTextures = useRef({})
     const sceneObjectLength = Object.values(sceneObjects).length
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -197,7 +197,8 @@ const ShotExplorerSceneManager = connect(
             return <SimpleErrorBoundary key={ id }>
               <Image
                 imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
-                sceneObject={ sceneObject }/>
+                sceneObject={ sceneObject }
+                drawTextures={ drawingTextures.current }/>
               </SimpleErrorBoundary>
         })
     }

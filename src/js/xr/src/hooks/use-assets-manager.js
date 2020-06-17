@@ -49,6 +49,11 @@ const reducer = (state, action) => {
         ...state,
         [id]: { status: 'Error', error }
       }
+    case 'REMOVE': 
+      delete state[id]
+      return {
+        ...state
+      }
     default:
       return state
   }
@@ -99,7 +104,7 @@ const useAssetsManager = () => {
           })
           dispatch({ type: 'LOAD', payload: { id } })
         } else {
-          load(textureLoader, id, {
+          load(textureLoader, `${id}?ts=` + Date.now(), {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
             onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
@@ -125,7 +130,13 @@ const useAssetsManager = () => {
     [assets]
   )
 
-  return { assets, requestAsset, getAsset }
+  const removeAsset = useCallback((id) => {
+    if(assets[id]) {
+      dispatch({type: "REMOVE", payload: {id}})
+    }
+  }, [assets])
+
+  return { assets, requestAsset, getAsset, removeAsset }
 }
 
 module.exports = {

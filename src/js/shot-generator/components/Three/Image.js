@@ -5,23 +5,30 @@ import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { axis } from "../../../shared/IK/utils/TransformControls"
+import DrawingTexture from "./Helpers/drawing-on-texture" 
+import createRoundedPlane from './Helpers/create-rounded-plane'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
-  const {asset: texture} = useAsset(imagesPaths[0] || null)
-  
+  const {asset: texture, loaded} = useAsset(imagesPaths[0] || null)
   const aspect = useRef(1)
   const ref = useRef()
-
   const material = useMemo(() => {
-    return new THREE.MeshToonMaterial({ transparent: true })
+    props.drawTextures[sceneObject.id] = new DrawingTexture()
+    let material = props.drawTextures[sceneObject.id].createMaterial()
+    return material
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      delete props.drawTextures[sceneObject.id] 
+    }
   }, [])
 
   useMemo(() => {
     if(!texture) return
-    
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
     texture.repeat.set(1, 1)
@@ -30,10 +37,10 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     aspect.current = width / height
 
     if (material) {
-        material.map = texture
-        material.needsUpdate = true
+      props.drawTextures[sceneObject.id].setTexture(texture)
+      material.needsUpdate = true
     } 
-  }, [texture, imagesPaths[0]])
+  }, [texture])
 
   useEffect(() => {
     material.opacity = sceneObject.opacity
@@ -67,13 +74,14 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
       props.objectRotationControl.IsEnabled = !sceneObject.locked
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
+
     } else {
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
       } 
     }
   }, [isSelected]) 
-
+  
   const { x, y, z, visible, height, rotation, locked } = sceneObject
 
   useEffect(() => {
@@ -81,22 +89,27 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     props.objectRotationControl.IsEnabled = !locked
   }, [locked])
 
+  const userDataInfo = {  
+    type: "image",
+    id: sceneObject.id,
+    locked: locked
+  }
+
   return (
     <group
       ref={ ref }
       onController={ sceneObject.visible ? () => null : null }
-      userData={{
-        type: "image",
-        id: sceneObject.id,
-        locked: locked
-      }}
+      userData={ref.current ? { 
+        ...ref.current.userData,
+        ...userDataInfo
+      } : userDataInfo}
       visible={ visible }
       position={ [x, z, y] }
       scale={ [height * aspect.current, height, 1] }
       rotation={ [rotation.x, rotation.y, rotation.z] }
     >
       <mesh>
-        <roundedBoxGeometry attach="geometry" args={ [1, 1, 0.01, 0.01] } />
+        <primitive attach="geometry" object={ createRoundedPlane(0.1, 1)} />
         <primitive attach="material" object={ material } />
       </mesh>
     </group>
