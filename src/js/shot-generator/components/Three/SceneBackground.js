@@ -12,14 +12,14 @@ const mouse = (event, gl) => {
     }
 }
 
-const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld }) => {
+const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawTextures }) => {
     const { asset: gltf } = useAsset(imagePath[0])
     const { scene, camera, gl } = useThree()
     const intersectionBox = useRef()
     const intersectionCamera = useRef()
-    const drawingTexture = useRef(new CubeMapDrawingTexture())
     
     useEffect(() => {
+        drawTextures["scenetexture"] = { texture: new CubeMapDrawingTexture(), draw: draw }
         let geometry = new THREE.BoxBufferGeometry(1, 1, 1)
         let material = new THREE.MeshBasicMaterial({ side: THREE.BackSide})
         intersectionBox.current = new THREE.Mesh(geometry, material)
@@ -37,42 +37,37 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         scene.background = new THREE.Color(world.backgroundColor)
     }, [world.backgroundColor])
 
+
+    const draw = (mousePos, drawingMesh) => {
+        drawTextures["scenetexture"].texture.createMaterial(scene.background);
+        intersectionCamera.current.copy(camera)
+        intersectionCamera.current.position.set(0, 0, 0)
+        intersectionCamera.current.quaternion.copy(camera.worldQuaternion())
+        intersectionCamera.current.updateMatrixWorld(true)
+        drawTextures["scenetexture"].texture.draw(mousePos, intersectionBox.current, intersectionCamera.current, drawingMesh)
+        cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background)
+    }
+
     useMemo(() => {
         if(!gltf) return
-        let cubeTexture
+        let cubeTexture;
         if(gltf instanceof THREE.Texture) {
             cubeTexture = cubeTextureCreator.getCubeMapTexture(gltf, storyboarderFilePath);
         }
 
         if(cubeTexture) {
-            scene.background = cubeTexture
+            scene.background = cubeTexture;
+            drawTextures["scenetexture"].draw = draw
         } else {
             if(scene.background instanceof THREE.CubeTexture) {
-                scene.background.dispose()
-                gltf.dispose()
-                scene.background = null
+                scene.background.dispose();
+                gltf.dispose();
+                scene.background = null;
             }
-            updateWorld({scenetexture:null})
+            updateWorld({scenetexture:null});
         }
     }, [gltf])
 
-    const draw = useCallback((event) => {
-        intersectionCamera.current.copy(camera)
-        intersectionCamera.current.position.set(0, 0, 0)
-        intersectionCamera.current.quaternion.copy(camera.worldQuaternion())
-        intersectionCamera.current.updateMatrixWorld(true)
-        drawingTexture.current.createMaterial(scene.background)
-        drawingTexture.current.draw(mouse(event, gl), intersectionBox.current, intersectionCamera.current )
-        cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background)
-    }, [gltf])
-
-    useLayoutEffect(() => {
-        if(!scene.background || !(scene.background instanceof THREE.CubeTexture)) return
-        gl.domElement.addEventListener('pointerdown', draw)
-        return () => {
-            gl.domElement.removeEventListener('pointerdown', draw)
-        }
-    }, [draw])
      
     return null
 })

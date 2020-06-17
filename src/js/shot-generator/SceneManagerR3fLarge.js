@@ -210,14 +210,19 @@ const SceneManagerR3fLarge = connect(
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
+        if(key === "scenetexture") continue;
         let drawingTexture = drawingTextures.current[key]
         let object = imageObjects.find((obj) => obj.userData.id === key)
         if(!object || !object.visible) continue
         if(intersections.length && intersections[0].object.parent.uuid === object.uuid) {
-          drawingTexture.draw({x, y}, object, camera, drawingMesh);
+          drawingTexture.draw({x, y}, object, camera, drawingMesh)
         } else if(drawingTexture.isChanged){
-          drawingTexture.resetMeshPos();
+          drawingTexture.resetMeshPos()
         }
+      }
+      if(!intersections.length) {
+        let texture = drawingTextures.current['scenetexture']
+        texture.draw({x, y}, drawingMesh)
       }
     } 
 
@@ -229,7 +234,13 @@ const SceneManagerR3fLarge = connect(
     useEffect(() => {
         let keys = Object.keys(drawingTextures.current)
         for(let i = 0; i < keys.length; i++) {
-          drawingTextures.current[keys[i]].setMesh(drawingMesh.type)
+          let key = keys[i]
+          //TODO(): Use scenetexture as an separate object
+          if(key === 'scenetexture') {
+            drawingTextures.current[key].texture.setMesh(drawingMesh.type)
+          } else {
+            drawingTextures.current[key].setMesh(drawingMesh.type)
+          }
         }
      }, [drawingMesh.type])
 
@@ -240,6 +251,7 @@ const SceneManagerR3fLarge = connect(
       let keys = Object.keys(drawingTextures.current)
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
+        if(key === "scenetexture") continue
         drawingTextures.current[key].resetMeshPos();
         let object = scene.__interaction.find((obj) => obj.userData.id === key)
         if(drawingTextures.current[key].isChanged) {
@@ -554,7 +566,8 @@ const SceneManagerR3fLarge = connect(
               imagePath={ getFilePathForImages({imageAttachmentIds: world.scenetexture ? [world.scenetexture] : [] }, storyboarderFilePath) }
               world={world}
               storyboarderFilePath={ storyboarderFilePath }
-              updateWorld={ updateWorld } />
+              updateWorld={ updateWorld }
+              drawTextures={ drawingTextures.current }/>
     }
     {
         roomTexture && <Room
