@@ -14,6 +14,8 @@ const getFilepathForModelByType = ({ type, model }) => {
         return `/data/user/environments/${filename}`
       case 'attachable':
         return `/data/user/attachables/${filename}`
+      case 'scenetexture':
+        return `/data/user/sceneTextures/${filename}`
       default:
         return null
     }

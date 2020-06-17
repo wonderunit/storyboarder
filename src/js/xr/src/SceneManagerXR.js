@@ -28,7 +28,7 @@ const {
   selectObject,
   updateObject,
   updateCharacterIkSkeleton,
-  getSelectedAttachable
+  getSelectedAttachable,
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
@@ -58,6 +58,7 @@ const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
 const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
+const SceneBackground = require('./components/SceneBackground')
 
 const Controls = require('./components/ui/Controls')
 const Help = require('./components/ui/Help')
@@ -66,9 +67,22 @@ const Boards = require('./components/ui/Boards')
 const BonesHelper = require('./three/BonesHelper')
 const Voicer = require('./three/Voicer')
 
+
+
 const musicSystem = require('./music-system')
 
 const { createSelector } = require('reselect')
+
+const getSceneTextureFilePath = (world, prevTexture, removeAsset) => {
+  if(!world.scenetexture) return false
+  let currentPath = getFilepathForModelByType({type: 'scenetexture', model: world.scenetexture })
+  if(prevTexture && world.scenetexture !== prevTexture) {
+    let tempPath = getFilepathForModelByType({type: 'scenetexture', model: prevTexture })
+    removeAsset(tempPath)
+  }
+  prevTexture = world.scenetexture
+  return currentPath
+}
 
 // TODO move to selectors if useful
 // TODO optimize to only change if top-level keys change
@@ -135,7 +149,8 @@ const SceneContent = connect(
     SGConnection
   }) => {
     const { gl, camera, scene } = useThree()
-
+    const prevSceneTexture = useRef()
+    const sceneTexture = getAsset(getSceneTextureFilePath(world, prevSceneTexture.current, removeAsset))
     const teleportRef = useRef()
     // actions
     const set = useStore(state => state.set)
@@ -229,6 +244,12 @@ const SceneContent = connect(
         0.04
       )
     }, [worldScale])
+
+    useEffect(() => {
+      if(!sceneTexture) return
+      scene.background = sceneTexture
+    }, [sceneTexture])
+
     const welcomeAudio = useMemo(() => {
       const audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.welcomeAudioBuffer)
@@ -817,6 +838,10 @@ const SceneContent = connect(
             length={world.room.length}
             height={world.room.height}
             visible={world.room.visible} />
+
+    {/*       <SceneBackground
+            texture={world.scenetexture && getAsset(getFilepathForModelByType({type: 'scenetexture', model: world.scenetexture }))}
+            world={world}/> */}
 
           <TeleportTarget
             api={useStoreApi}
