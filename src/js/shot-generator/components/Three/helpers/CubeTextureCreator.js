@@ -18,7 +18,7 @@ class CubeTextureCreator {
     // Saves cube map changes back to texture
     // It takes same elements positions which were initialized in getCubeMapTexture
     // Require getCubeMapTexture to be launch first
-    saveCubeMapTexture( imagePath, texture ) {
+    saveCubeMapTexture( imagePath, texture, filename = null ) {
         if( !this.imageElements.length || !this.gltf ) return;
         let image = this.gltf.image;
         this.drawingCanvas.width = image.width;
@@ -28,17 +28,19 @@ class CubeTextureCreator {
         for( let i = 0; i < this.imageElements.length; i++ ) {
             let element = this.imageElements[i];
             let croppedImage = texture.image[i];
-            this.saveFace(croppedImage, element.x, element.y, element.width, element.height);
+            
+            this.saveFace(croppedImage, element.x, element.y, element.width, element.height, element.name, this.boardPath );
         }
         let {dir, ext, name} = path.parse(imagePath);
         let dataUrl = this.drawingCtx.canvas.toDataURL();
-        let properName = name + ext;
+        let properName = filename ? filename : name + ext; 
         saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures/', this.boardPath);
     }
 
     // Draw the specific mesh on drawingContext which contains original texture image
-    saveFace( image, x, y, width, height ) {                        
+    saveFace( image, x, y, width, height, name, boardPath) {                        
         this.drawingCtx.drawImage(image, x, y, width, height);
+        saveDataURLtoFile(image.toDataURL(), `${name}.png`, 'models/sceneTextures/cubetexture', boardPath, false);
     }
 
     // Parses/crops passed cube texture and loading cube texture from them

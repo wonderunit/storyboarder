@@ -69,6 +69,7 @@ const ShotExplorerSceneManager = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const drawingTextures = useRef({})
+    const drawingSceneTexture = useRef({})
     const sceneObjectLength = Object.values(sceneObjects).length
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -217,12 +218,13 @@ const ShotExplorerSceneManager = connect(
               environment={world.environment}
               visible={world.environment.visible} />
     }
-    {
+     {
          <SceneBackground
               imagePath={ getFilePathForImages({imageAttachmentIds: world.scenetexture ? [world.scenetexture] : [] }, storyboarderFilePath) }
               world={world}
               storyboarderFilePath={ storyboarderFilePath }
-              updateWorld={ updateWorld } />
+              updateWorld={ updateWorld }
+              drawingSceneTexture={ drawingSceneTexture.current }/>
     }
     {
         roomTexture && <Room

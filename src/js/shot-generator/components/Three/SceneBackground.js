@@ -3,11 +3,13 @@ import { useThree } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import CubeMapDrawingTexture from './helpers/cubeMapDrawingTexture'
 import CubeTextureCreator from './helpers/CubeTextureCreator'
+import fs from 'fs-extra'
+import path from 'path'
 const cubeTextureCreator = new CubeTextureCreator()
 
 const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawingSceneTexture }) => {
-    const { asset: gltf } = useAsset(imagePath[0])
     const { scene, camera, gl } = useThree()
+    const { asset: gltf } = useAsset(!scene.userData.tempPath ? imagePath[0] : imagePath[0].includes(scene.userData.tempPath ) ? null : imagePath[0])
     const intersectionBox = useRef()
     const intersectionCamera = useRef()
     
@@ -49,8 +51,18 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
 
         if(cubeTexture) {
             scene.background = cubeTexture;
+            scene.userData.texturePath = imagePath[0]
             drawingSceneTexture.draw = draw
-            drawingSceneTexture.save = () => { cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background) }
+            drawingSceneTexture.save = () => { 
+                if(scene.userData.tempPath) {
+                    let tempFile = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures/', scene.userData.tempPath)
+                    fs.remove(tempFile)
+                }
+                let tempFileName = `temp_scenetexture-${Date.now()}.png`
+                cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
+                updateWorld({scenetexture: 'models/sceneTextures/' + tempFileName})
+                scene.userData.tempPath = tempFileName
+            }
         } else {
             if(scene.background instanceof THREE.CubeTexture) {
                 scene.background.dispose();
