@@ -12,7 +12,15 @@ class SimpleTexture extends DrawingTexture {
     }
 
     getImage() { 
-        return super.getImage()[0]
+        return super.getImage()[0];
+
+    }
+
+    setMesh(type) {
+        super.setMesh(type);
+        if(this.drawingCtxes[0]) {
+            this.drawingMesh.drawingCtx = this.drawingCtxes[0];
+        }
     }
 
     createMaterial(material) {

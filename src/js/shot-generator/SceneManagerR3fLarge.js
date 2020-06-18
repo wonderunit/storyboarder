@@ -148,6 +148,8 @@ const SceneManagerR3fLarge = connect(
     const selectedCharacters = useRef()
     const isDrawStarted = useRef(false)
     const drawingTextures = useRef({})
+    const drawingSceneTexture = useRef({})
+
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
     const [update, forceUpdate] = useState(null)
@@ -208,22 +210,27 @@ const SceneManagerR3fLarge = connect(
       raycaster.current.setFromCamera({x, y}, camera)
       let imageObjects = getImageObjects()
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
+      if(!intersections.length) {
+        let texture = drawingSceneTexture.current
+        texture.draw({x, y}, camera, drawingMesh)
+      } else if( drawingSceneTexture.current.texture.isChanged ) {
+        drawingSceneTexture.current.texture.resetMeshPos()
+      }
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
-        if(key === "scenetexture") continue;
         let drawingTexture = drawingTextures.current[key]
+        if(!intersections.length) {
+          if(drawingTexture.isChanged)
+            drawingTexture.resetMeshPos()
+          continue;
+        }
         let object = imageObjects.find((obj) => obj.userData.id === key)
         if(!object || !object.visible) continue
-        if(intersections.length && intersections[0].object.parent.uuid === object.uuid) {
+        if(intersections[0].object.parent.uuid === object.uuid) {
           drawingTexture.draw({x, y}, object, camera, drawingMesh)
-        } else if(drawingTexture.isChanged){
-          drawingTexture.resetMeshPos()
         }
       }
-      if(!intersections.length) {
-        let texture = drawingTextures.current['scenetexture']
-        texture.draw({x, y}, drawingMesh)
-      }
+
     } 
 
     const onKeyDown = (event) => {
@@ -232,16 +239,13 @@ const SceneManagerR3fLarge = connect(
     }
   
     useEffect(() => {
-        let keys = Object.keys(drawingTextures.current)
-        for(let i = 0; i < keys.length; i++) {
-          let key = keys[i]
-          //TODO(): Use scenetexture as an separate object
-          if(key === 'scenetexture') {
-            drawingTextures.current[key].texture.setMesh(drawingMesh.type)
-          } else {
-            drawingTextures.current[key].setMesh(drawingMesh.type)
-          }
-        }
+      let keys = Object.keys(drawingTextures.current)
+      for(let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        drawingTextures.current[key].setMesh(drawingMesh.type)
+      }
+      if(drawingSceneTexture.current)
+        drawingSceneTexture.current.texture.setMesh(drawingMesh.type)
      }, [drawingMesh.type])
 
     const onKeyUp = (event) => {
@@ -251,13 +255,17 @@ const SceneManagerR3fLarge = connect(
       let keys = Object.keys(drawingTextures.current)
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
-        if(key === "scenetexture") continue
         drawingTextures.current[key].resetMeshPos();
         let object = scene.__interaction.find((obj) => obj.userData.id === key)
         if(drawingTextures.current[key].isChanged) {
           drawingTextures.current[key].isChanged = false
           saveDataURLtoFile(drawingTextures.current[key].getImage(), storyboarderFilePath, updateObject, object)
         }
+      }
+      if( drawingSceneTexture.current.texture.isChanged) {
+        drawingSceneTexture.current.texture.isChanged = false
+        drawingSceneTexture.current.texture.resetMeshPos()
+        drawingSceneTexture.current.save()
       }
     }
 
@@ -567,7 +575,7 @@ const SceneManagerR3fLarge = connect(
               world={world}
               storyboarderFilePath={ storyboarderFilePath }
               updateWorld={ updateWorld }
-              drawTextures={ drawingTextures.current }/>
+              drawingSceneTexture={ drawingSceneTexture.current }/>
     }
     {
         roomTexture && <Room

@@ -4,22 +4,16 @@ import { useAsset } from '../../hooks/use-assets-manager'
 import CubeMapDrawingTexture from './helpers/cubeMapDrawingTexture'
 import CubeTextureCreator from './helpers/CubeTextureCreator'
 const cubeTextureCreator = new CubeTextureCreator()
-const mouse = (event, gl) => {
-    const rect = gl.domElement.getBoundingClientRect()
-    return {
-      x: ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1,
-      y: - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1
-    }
-}
 
-const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawTextures }) => {
+const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawingSceneTexture }) => {
     const { asset: gltf } = useAsset(imagePath[0])
     const { scene, camera, gl } = useThree()
     const intersectionBox = useRef()
     const intersectionCamera = useRef()
     
     useEffect(() => {
-        drawTextures["scenetexture"] = { texture: new CubeMapDrawingTexture(), draw: draw }
+        drawingSceneTexture.texture = new CubeMapDrawingTexture()
+        drawingSceneTexture.draw = draw 
         let geometry = new THREE.BoxBufferGeometry(1, 1, 1)
         let material = new THREE.MeshBasicMaterial({ side: THREE.BackSide})
         intersectionBox.current = new THREE.Mesh(geometry, material)
@@ -37,15 +31,13 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         scene.background = new THREE.Color(world.backgroundColor)
     }, [world.backgroundColor])
 
-
-    const draw = (mousePos, drawingMesh) => {
-        drawTextures["scenetexture"].texture.createMaterial(scene.background);
+    const draw = (mousePos, camera, drawingMesh) => {
+        drawingSceneTexture.texture.createMaterial(scene.background);
         intersectionCamera.current.copy(camera)
         intersectionCamera.current.position.set(0, 0, 0)
         intersectionCamera.current.quaternion.copy(camera.worldQuaternion())
         intersectionCamera.current.updateMatrixWorld(true)
-        drawTextures["scenetexture"].texture.draw(mousePos, intersectionBox.current, intersectionCamera.current, drawingMesh)
-        cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background)
+        drawingSceneTexture.texture.draw(mousePos, intersectionBox.current, intersectionCamera.current, drawingMesh)
     }
 
     useMemo(() => {
@@ -57,7 +49,8 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
 
         if(cubeTexture) {
             scene.background = cubeTexture;
-            drawTextures["scenetexture"].draw = draw
+            drawingSceneTexture.draw = draw
+            drawingSceneTexture.save = () => { cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background) }
         } else {
             if(scene.background instanceof THREE.CubeTexture) {
                 scene.background.dispose();

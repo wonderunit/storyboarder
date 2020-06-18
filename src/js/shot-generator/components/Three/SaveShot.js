@@ -163,7 +163,7 @@ const SaveShot = connect(
         imageRenderCamera.layers.set(SHOT_LAYERS)
         // render the image
         if(!isPlot) {
-            imageRenderCamera.aspect = state.aspectRatio
+            imageRenderCamera.aspect = aspectRatio
             imageRenderCamera.updateProjectionMatrix()
         }
         let savedBackground  
