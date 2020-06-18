@@ -152,7 +152,7 @@ const SaveShot = connect(
             let imageFilePath = path.join(path.dirname(storyboarderFilePath), scene.userData.texturePath)
             fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
             fs.remove(tempImageFilePath)
-            updateWorld({scenetexture: scene.userData.texturePath})
+            updateWorld({sceneTexture: scene.userData.texturePath})
         }
     }
   

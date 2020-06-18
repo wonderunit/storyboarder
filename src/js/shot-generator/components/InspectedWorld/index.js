@@ -53,7 +53,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
     if (event.file) {
       const { ext } = path.parse(event.file);
       if(isImageExtension(ext)) {
-        updateWorld({scenetexture: CopyFile(storyboarderFilePath, event.file, 'scenetexture')})
+        updateWorld({sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
       }
     }
   }, [])
@@ -105,7 +105,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
             />
           </div>
 
-          { !world.scenetexture && <div className="inspector-row">
+          { !world.sceneTexture && <div className="inspector-row">
             <NumberSlider
                 label="Bg color"
                 value={world.backgroundColor / 0xFFFFFF}
@@ -117,7 +117,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           <FileInput
               onChange={setSceneTextureFile}
               label={"Scene texture"}
-              value={world.scenetexture && path.basename(world.scenetexture)}
+              value={world.sceneTexture && path.basename(world.sceneTexture)}
             />
         </div>
 

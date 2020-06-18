@@ -60,7 +60,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
                 }
                 let tempFileName = `temp_scenetexture-${Date.now()}.png`
                 cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
-                updateWorld({scenetexture: 'models/sceneTextures/' + tempFileName})
+                updateWorld({sceneTexture: 'models/sceneTextures/' + tempFileName})
                 scene.userData.tempPath = tempFileName
             }
         } else {
@@ -69,7 +69,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
                 gltf.dispose();
                 scene.background = null;
             }
-            updateWorld({scenetexture:null});
+            updateWorld({sceneTexture:null});
         }
     }, [gltf])
 

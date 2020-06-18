@@ -74,13 +74,13 @@ const musicSystem = require('./music-system')
 const { createSelector } = require('reselect')
 
 const getSceneTextureFilePath = (world, prevTexture, removeAsset) => {
-  if(!world.scenetexture) return false
-  let currentPath = getFilepathForModelByType({type: 'scenetexture', model: world.scenetexture })
-  if(prevTexture && world.scenetexture !== prevTexture) {
-    let tempPath = getFilepathForModelByType({type: 'scenetexture', model: prevTexture })
+  if(!world.sceneTexture) return false
+  let currentPath = getFilepathForModelByType({type: 'sceneTexture', model: world.sceneTexture })
+  if(prevTexture && world.sceneTexture !== prevTexture) {
+    let tempPath = getFilepathForModelByType({type: 'sceneTexture', model: prevTexture })
     removeAsset(tempPath)
   }
-  prevTexture = world.scenetexture
+  prevTexture = world.sceneTexture
   return currentPath
 }
 
@@ -838,10 +838,6 @@ const SceneContent = connect(
             length={world.room.length}
             height={world.room.height}
             visible={world.room.visible} />
-
-    {/*       <SceneBackground
-            texture={world.scenetexture && getAsset(getFilepathForModelByType({type: 'scenetexture', model: world.scenetexture }))}
-            world={world}/> */}
 
           <TeleportTarget
             api={useStoreApi}

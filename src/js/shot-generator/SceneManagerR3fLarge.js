@@ -571,7 +571,7 @@ const SceneManagerR3fLarge = connect(
     }
     {
          <SceneBackground
-              imagePath={ getFilePathForImages({imageAttachmentIds: world.scenetexture ? [world.scenetexture] : [] }, storyboarderFilePath) }
+              imagePath={ getFilePathForImages({imageAttachmentIds: world.sceneTexture ? [world.sceneTexture] : [] }, storyboarderFilePath) }
               world={world}
               storyboarderFilePath={ storyboarderFilePath }
               updateWorld={ updateWorld }
