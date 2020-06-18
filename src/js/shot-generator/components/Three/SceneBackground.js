@@ -45,6 +45,11 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     useMemo(() => {
         if(!gltf) return
         let cubeTexture;
+        if(scene.userData.tempPath) {
+            let tempFile = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures/', scene.userData.tempPath)
+            fs.remove(tempFile)
+            scene.userData.tempPath = null
+        }
         if(gltf instanceof THREE.Texture) {
             cubeTexture = cubeTextureCreator.getCubeMapTexture(gltf, storyboarderFilePath);
         }
@@ -57,6 +62,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
                 if(scene.userData.tempPath) {
                     let tempFile = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures/', scene.userData.tempPath)
                     fs.remove(tempFile)
+                    scene.userData.tempPath = null
                 }
                 let tempFileName = `temp_scenetexture-${Date.now()}.png`
                 cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
