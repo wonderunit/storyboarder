@@ -4,6 +4,7 @@ import DrawingTexture from './DrawingTexture'
 class CubeMapDrawingTexture extends DrawingTexture {
     constructor(){
         super();
+        this.prevFaceIndex;
     }
 
     createMaterial(texture) {
@@ -41,23 +42,27 @@ class CubeMapDrawingTexture extends DrawingTexture {
     draw (mousePosition, object, camera, mesh){
  
         let intersection = super.draw(mousePosition, object, camera, mesh)
-        if(!intersection) return
-        let index 
+        if(!intersection) return;
+        let index ;
         if(intersection.face.normal.x) {
-            let x = intersection.face.normal.x
-            index = x === -1 ? 0 : 1
+            let x = intersection.face.normal.x;
+            index = x === -1 ? 0 : 1;
         } else if( intersection.face.normal.y )  {
-            let x = intersection.face.normal.y
-            index = x === -1 ? 3 : 2
+            let x = intersection.face.normal.y;
+            index = x === -1 ? 3 : 2;
         } else if( intersection.face.normal.z )  {
-            let x = intersection.face.normal.z
-            index = x === -1 ? 5 : 4
+            let x = intersection.face.normal.z;
+            index = x === -1 ? 5 : 4;
         }
+        if( this.prevFaceIndex && this.prevFaceIndex !== index ) {
+            this.resetMeshPos();
+        }
+        this.prevFaceIndex = index;
         let screenX = (1 - intersection.uv.x) * this.texture.image[index].width;
         let screenY = (1 - intersection.uv.y) * this.texture.image[index].height;
         let drawingContext = this.drawingCtxes[index];
         this.drawingMesh.drawingCtx = drawingContext;
-        this.drawingMesh.draw({ x: screenX, y: screenY }, mesh)
+        this.drawingMesh.draw({ x: screenX, y: screenY }, mesh);
         this.texture.needsUpdate = true;
 
     }
