@@ -8,6 +8,7 @@ import path from 'path'
 const cubeTextureCreator = new CubeTextureCreator()
 
 const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawingSceneTexture }) => {
+    const texturePath = useRef()
     const { scene, camera, gl } = useThree()
     const { asset: gltf } = useAsset(!scene.userData.tempPath ? imagePath[0] : imagePath[0].includes(scene.userData.tempPath ) ? null : imagePath[0])
     const intersectionBox = useRef()
@@ -15,7 +16,6 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     
     useEffect(() => {
         drawingSceneTexture.texture = new CubeMapDrawingTexture()
-        drawingSceneTexture.draw = draw 
         let geometry = new THREE.BoxBufferGeometry(1, 1, 1)
         let material = new THREE.MeshBasicMaterial({ side: THREE.BackSide})
         intersectionBox.current = new THREE.Mesh(geometry, material)
@@ -62,6 +62,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
                 cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
                 updateWorld({sceneTexture: 'models/sceneTextures/' + tempFileName})
                 scene.userData.tempPath = tempFileName
+                texturePath.current = tempFileName
             }
         } else {
             if(scene.background instanceof THREE.CubeTexture) {

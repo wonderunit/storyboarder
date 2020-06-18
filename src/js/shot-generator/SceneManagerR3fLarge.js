@@ -210,7 +210,7 @@ const SceneManagerR3fLarge = connect(
       raycaster.current.setFromCamera({x, y}, camera)
       let imageObjects = getImageObjects()
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
-      if(!intersections.length) {
+      if(!intersections.length && drawingSceneTexture.current.draw) {
         let texture = drawingSceneTexture.current
         texture.draw({x, y}, camera, drawingMesh)
       } else if( drawingSceneTexture.current.texture.isChanged ) {
@@ -262,7 +262,7 @@ const SceneManagerR3fLarge = connect(
           saveDataURLtoFile(drawingTextures.current[key].getImage(), storyboarderFilePath, updateObject, object)
         }
       }
-      if( drawingSceneTexture.current.texture.isChanged) {
+      if( drawingSceneTexture.current.save &&  drawingSceneTexture.current.texture.isChanged) {
         drawingSceneTexture.current.texture.isChanged = false
         drawingSceneTexture.current.texture.resetMeshPos()
         drawingSceneTexture.current.save()

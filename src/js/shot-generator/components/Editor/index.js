@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
+import fs from 'fs-extra'
 import TWEEN from '@tweenjs/tween.js'
 
 import { ipcRenderer } from 'electron'
@@ -59,7 +60,7 @@ const Effect = ({renderData, stats}) => {
 }
 
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
+  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload, storyboarderFilePath
 }) => {
   if (!board.uid) {
     return null
@@ -70,6 +71,7 @@ const Editor = React.memo(({
   const [stats, setStats] = useState()
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
   const [largeCanvasInfo, setLargeCanvasInfo] = useState({width: 0, height: 0})
+  const largeCanvasData = useRef({})
   const toggleStats = (event, value) => {
     if (!stats) {
       let newStats
@@ -99,12 +101,31 @@ const Editor = React.memo(({
     }
   }, [notificationsRef.current])
 
+  const cleanUpContent = () => {
+    let scene = largeCanvasData.current.scene
+    let images = scene.children[0].children.filter(obj => obj.userData.type === "image")
+    for(let i = 0; i < images.length; i++) {
+      let image = images[i]
+      if(image.userData.tempImagePath) {
+        let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images/', image.userData.tempImagePath)
+        fs.removeSync(tempImageFilePath)
+      }
+    }
+
+    if(scene.userData.tempPath) {
+      let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures/', scene.userData.tempPath)
+      fs.removeSync(tempImageFilePath)
+    }
+  }
+
   useEffect(() => {
     window.addEventListener('beforeunload', onBeforeUnload)
+    window.addEventListener('unload', cleanUpContent)
     return function cleanup () {
       window.removeEventListener('beforeunload', onBeforeUnload)
+      window.removeEventListener('unload', cleanUpContent)
     }
-  }, [onBeforeUnload])
+  }, [onBeforeUnload, cleanUpContent])
 
   const guidesDimensions = useMemo(() => {
     return {
@@ -141,7 +162,7 @@ const Editor = React.memo(({
     setLargeCanvasInfo({width, height})
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
-  const largeCanvasData = useRef({})
+
   const setLargeCanvasData = (camera, scene, gl) => {
     largeCanvasData.current.camera = camera
     largeCanvasData.current.scene = scene
@@ -252,7 +273,8 @@ export default connect(
   (state) => ({
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
-    board: state.board
+    board: state.board,
+    storyboarderFilePath: state.meta.storyboarderFilePath
   }),
   {
     withState,

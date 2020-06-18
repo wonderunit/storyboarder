@@ -153,6 +153,7 @@ const SaveShot = connect(
             fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
             fs.remove(tempImageFilePath)
             updateWorld({sceneTexture: scene.userData.texturePath})
+            scene.userData.tempPath = null
         }
     }
   

@@ -8,7 +8,8 @@ import { axis } from '../../../shared/IK/utils/TransformControls'
 import SimpleTexture from './Helpers/SimpleTexture' 
 import createRoundedPlane from './Helpers/create-rounded-plane'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
-
+import fs from 'fs-extra'
+import path from 'path'
 extend({RoundedBoxGeometry})
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
@@ -55,6 +56,10 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     return () => {
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
+      }
+      if(ref.current.userData.tempImagePath) {
+        let tempImageFilePath = path.join(path.dirname(props.storyboarderFilePath), 'models/images/', ref.current.userData.tempImagePath)
+        fs.removeSync(tempImageFilePath)
       }
     }
   }, [])
