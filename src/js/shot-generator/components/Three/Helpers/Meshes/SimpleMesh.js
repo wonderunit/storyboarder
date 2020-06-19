@@ -7,26 +7,32 @@ class SimpleMesh extends Mesh {
     }
 
     draw(currentPos, mesh) {
-        super.draw(currentPos);
+        super.draw(currentPos, mesh);
         this.drawingCtx.strokeStyle = mesh.color;
-        this.drawingCtx.lineWidth = mesh.size;
-      
+        this.drawingCtx.fillStyle = mesh.color;
+        this.drawingCtx.lineWidth = this.brushSize;
 
-        var circle = new Path2D();
-        circle.moveTo(this.prevPos.x, this.prevPos.y );
-        circle.arc(this.prevPos.x, this.prevPos.y, mesh.size / 2.1, 0, 2 * Math.PI);
-        this.drawingCtx.fill(circle);
-        this.drawingCtx.beginPath();
-        this.drawingCtx.moveTo(this.prevPos.x, this.prevPos.y);
-        this.drawingCtx.lineTo(currentPos.x, currentPos.y);
-
+        let circle = new Path2D();
+        let xOffset = currentPos.x - this.prevPos.x;
+        let yOffset = currentPos.y - this.prevPos.y;
+        let length
+        if(Math.abs(xOffset) < Math.abs(yOffset)) {
+            length = Math.abs(yOffset)
+          
+        } else  {
+            length = Math.abs(xOffset)
+        }
+        xOffset /= length;
+        yOffset /= length;
+        let size = this.brushSize
+        for(let i = 0; i < length; i++) {
+            let x = xOffset * i;
+            let y = yOffset * i;
+            circle.moveTo(this.prevPos.x + x, this.prevPos.y + y);
+            circle.arc(this.prevPos.x + x, this.prevPos.y + y, size, 0, 2 * Math.PI)    
+        }
         this.drawingCtx.stroke();
-        this.drawingCtx.closePath();
-
-        circle.moveTo(currentPos.x, currentPos.y );
-        circle.arc(currentPos.x, currentPos.y, mesh.size / 2.1, 0, 2 * Math.PI);
-        this.drawingCtx.fill(circle);
-
+        this.drawingCtx.fill(circle)
         this.prevPos.x = currentPos.x;
         this.prevPos.y = currentPos.y;
     }

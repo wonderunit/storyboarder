@@ -5,7 +5,7 @@ class EraserMesh extends Mesh {
     }
 
     draw(currentPos, mesh) {
-        super.draw(currentPos);
+        super.draw(currentPos, mesh);
         this.drawingCtx.fillStyle = 'white';
 
         let circle = new Path2D();
@@ -20,7 +20,7 @@ class EraserMesh extends Mesh {
         }
         xOffset /= length;
         yOffset /= length;
-        let size = mesh.size
+        let size = this.brushSize
         for(let i = 0; i < length; i++) {
             let x = xOffset * i;
             let y = yOffset * i;
