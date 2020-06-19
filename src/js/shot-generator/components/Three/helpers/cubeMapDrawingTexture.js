@@ -43,7 +43,7 @@ class CubeMapDrawingTexture extends DrawingTexture {
  
         let intersection = super.draw(mousePosition, object, camera, brush)
         if(!intersection) return;
-        let index ;
+        let index;
         if(intersection.face.normal.x) {
             let x = intersection.face.normal.x;
             index = x === -1 ? 0 : 1;
@@ -54,7 +54,7 @@ class CubeMapDrawingTexture extends DrawingTexture {
             let x = intersection.face.normal.z;
             index = x === -1 ? 5 : 4;
         }
-        if( this.prevFaceIndex && this.prevFaceIndex !== index ) {
+        if( this.prevFaceIndex !== null && this.prevFaceIndex !== index ) {
             this.resetMeshPos();
         }
         this.prevFaceIndex = index;

@@ -213,15 +213,14 @@ const SceneManagerR3fLarge = connect(
       if(!intersections.length && drawingSceneTexture.current.draw) {
         let texture = drawingSceneTexture.current
         texture.draw({x, y}, camera, drawingBrush)
-      } else if( drawingSceneTexture.current.texture.isChanged ) {
+      } else {
         drawingSceneTexture.current.texture.resetMeshPos()
       }
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
         let drawingTexture = drawingTextures.current[key]
         if(!intersections.length) {
-          if(drawingTexture.isChanged)
-            drawingTexture.resetMeshPos()
+          drawingTexture.resetMeshPos()
           continue;
         }
         let object = imageObjects.find((obj) => obj.userData.id === key)
