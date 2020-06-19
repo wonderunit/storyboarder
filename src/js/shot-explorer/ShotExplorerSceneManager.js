@@ -218,7 +218,7 @@ const ShotExplorerSceneManager = connect(
               environment={world.environment}
               visible={world.environment.visible} />
     }
-     {
+    {
          <SceneBackground
               imagePath={ getFilePathForImages({imageAttachmentIds: world.sceneTexture ? [world.sceneTexture] : [] }, storyboarderFilePath) }
               world={world}

@@ -928,7 +928,14 @@ const shotGeneratorMenu = [
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:fps-meter')
         }
-      }
+      },
+      {
+        accelerator: 'CommandOrControl+u',
+        label: 'Switch mode drawing/selecting',
+        click () {
+          ipcRenderer.send('shot-generator:menu:switchMode')
+        }
+      },
     ]
   },
   {

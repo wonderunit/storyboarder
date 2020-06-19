@@ -23,7 +23,8 @@ import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
   selectObject,
   setMainViewCamera,
-  getIsSceneDirty
+  getIsSceneDirty,
+  enableDrawMode
 } from './../../../shared/reducers/shot-generator'
 
 import notifications from './../../../window/notifications'
@@ -85,12 +86,20 @@ const Editor = React.memo(({
       document.body.removeChild( stats.dom )
       setStats(undefined)
       }
-    }
+  }
+
+  const switchMode = () => {
+    withState((dispatch, state) => {
+        dispatch(enableDrawMode(!state.isDrawingMode))
+    })
+  }
 
   useEffect(() => {
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
+    ipcRenderer.on('shot-generator:menu:switchMode', switchMode)
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
+      ipcRenderer.off('shot-generator:menu:switchMode', switchMode)
     }
   }, [])
 

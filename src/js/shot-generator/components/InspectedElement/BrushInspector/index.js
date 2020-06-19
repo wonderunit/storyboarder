@@ -11,6 +11,7 @@ import {
   } from '../../../../shared/reducers/shot-generator'
 import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 import BrushType from '../../Three/Helpers/Brushes/TextureBrushTypes'
+import { ipcRenderer } from 'electron'
 
 const BrushInspector = connect((state) => ({
     drawingBrush: state.drawingBrush,
@@ -30,10 +31,16 @@ React.memo(({
     selections
 }) => {
 
+    const switchMode = () => {
+        enableDrawMode(true)
+    }
+
     useEffect(() => {
         enableDrawMode(true)
+        ipcRenderer.on('shot-generator:menu:switchMode', switchMode)
         return () => {
             enableDrawMode(false)
+            ipcRenderer.off('shot-generator:menu:switchMode', switchMode)
         }
     }, [])
 
