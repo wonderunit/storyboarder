@@ -39,9 +39,9 @@ class CubeMapDrawingTexture extends DrawingTexture {
         this.texture.needsUpdate = true;
     }    
   
-    draw (mousePosition, object, camera, mesh){
+    draw (mousePosition, object, camera, brush){
  
-        let intersection = super.draw(mousePosition, object, camera, mesh)
+        let intersection = super.draw(mousePosition, object, camera, brush)
         if(!intersection) return;
         let index ;
         if(intersection.face.normal.x) {
@@ -61,8 +61,8 @@ class CubeMapDrawingTexture extends DrawingTexture {
         let screenX = (1 - intersection.uv.x) * this.texture.image[index].width;
         let screenY = (1 - intersection.uv.y) * this.texture.image[index].height;
         let drawingContext = this.drawingCtxes[index];
-        this.drawingMesh.drawingCtx = drawingContext;
-        this.drawingMesh.draw({ x: screenX, y: screenY }, mesh);
+        this.drawingBrush.drawingCtx = drawingContext;
+        this.drawingBrush.draw({ x: screenX, y: screenY }, brush);
         this.texture.needsUpdate = true;
 
     }

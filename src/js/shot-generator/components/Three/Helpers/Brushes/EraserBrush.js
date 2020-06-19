@@ -1,11 +1,11 @@
-import Mesh from './Mesh'
-class EraserMesh extends Mesh {
+import Brush from './Brush'
+class EraserBrush extends Brush {
     constructor(drawingCtx) {
         super(drawingCtx);
     }
 
-    draw(currentPos, mesh) {
-        super.draw(currentPos, mesh);
+    draw(currentPos, brush) {
+        super.draw(currentPos, brush);
         this.drawingCtx.fillStyle = 'white';
 
         let circle = new Path2D();
@@ -34,4 +34,4 @@ class EraserMesh extends Mesh {
     }
 }
 
-export default EraserMesh;
+export default EraserBrush;

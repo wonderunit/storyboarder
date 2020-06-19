@@ -99,7 +99,7 @@ const SceneManagerR3fLarge = connect(
         selectedBone: getSelectedBone(state),
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
-        drawingMesh: state.drawingMesh,
+        drawingBrush: state.drawingBrush,
         isDrawingMode: state.isDrawingMode,
         cleanImages: state.cleanImages
     }),
@@ -128,7 +128,7 @@ const SceneManagerR3fLarge = connect(
     updateObjects,
     selectedBone,
 
-    drawingMesh,
+    drawingBrush,
     isDrawingMode,
     cleanImages,
 
@@ -193,7 +193,7 @@ const SceneManagerR3fLarge = connect(
         window.removeEventListener( 'mouseup', onKeyUp )
       }
   
-    }, [isDrawingMode, drawingMesh])
+    }, [isDrawingMode, drawingBrush])
 
     useEffect(() => {
       if(!cleanImages || !cleanImages.length) return
@@ -212,7 +212,7 @@ const SceneManagerR3fLarge = connect(
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
       if(!intersections.length && drawingSceneTexture.current.draw) {
         let texture = drawingSceneTexture.current
-        texture.draw({x, y}, camera, drawingMesh)
+        texture.draw({x, y}, camera, drawingBrush)
       } else if( drawingSceneTexture.current.texture.isChanged ) {
         drawingSceneTexture.current.texture.resetMeshPos()
       }
@@ -227,7 +227,7 @@ const SceneManagerR3fLarge = connect(
         let object = imageObjects.find((obj) => obj.userData.id === key)
         if(!object || !object.visible) continue
         if(intersections[0].object.parent.uuid === object.uuid) {
-          drawingTexture.draw({x, y}, object, camera, drawingMesh)
+          drawingTexture.draw({x, y}, object, camera, drawingBrush)
         }
       }
 
@@ -242,11 +242,11 @@ const SceneManagerR3fLarge = connect(
       let keys = Object.keys(drawingTextures.current)
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
-        drawingTextures.current[key].setMesh(drawingMesh.type)
+        drawingTextures.current[key].setMesh(drawingBrush.type)
       }
       if(drawingSceneTexture.current)
-        drawingSceneTexture.current.texture.setMesh(drawingMesh.type)
-     }, [drawingMesh.type])
+        drawingSceneTexture.current.texture.setMesh(drawingBrush.type)
+     }, [drawingBrush.type])
 
     const onKeyUp = (event) => {
       if(!isDrawStarted.current) return

@@ -47,7 +47,7 @@ const getSerializedState = state => {
     world: getWorld(state),
     sceneObjects: R.map(serializeSceneObject, getSceneObjects(state)),
     activeCamera: getActiveCamera(state),
-    drawingMesh: state.drawingMesh
+    drawingBrush: state.drawingBrush
   }
 }
 
@@ -652,7 +652,7 @@ const initialState = {
 
   board: {},
 
-  drawingMesh: { color: '#000000', size: 2},
+  drawingBrush: { color: '#000000', size: 2},
   isDrawingMode: false,
 
   undoable: {
@@ -1463,9 +1463,9 @@ const mainReducer = (state/* = initialState*/, action) => {
 
       case 'UPDATE_DRAWING_MESH':
         if(!action.payload) return
-        draft.drawingMesh.color = action.payload.color ? action.payload.color : draft.drawingMesh.color
-        draft.drawingMesh.size = action.payload.size ? action.payload.size : draft.drawingMesh.size
-        draft.drawingMesh.type = action.payload.type ? action.payload.type : draft.drawingMesh.type
+        draft.drawingBrush.color = action.payload.color ? action.payload.color : draft.drawingBrush.color
+        draft.drawingBrush.size = action.payload.size ? action.payload.size : draft.drawingBrush.size
+        draft.drawingBrush.type = action.payload.type ? action.payload.type : draft.drawingBrush.type
         return  
       case 'ENABLE_DRAWING_MODE':
         draft.isDrawingMode = action.payload
@@ -1707,7 +1707,7 @@ module.exports = {
   deleteScenePreset: id => ({ type: 'DELETE_SCENE_PRESET', payload: { id } }),
 
   createCharacterPreset: payload => ({ type: 'CREATE_CHARACTER_PRESET', payload }),
-  updateDrawingMesh: payload => ({ type: 'UPDATE_DRAWING_MESH', payload}),
+  updateDrawingBrush: payload => ({ type: 'UPDATE_DRAWING_MESH', payload}),
   enableDrawMode: payload => ({ type: 'ENABLE_DRAWING_MODE', payload}),
   setCleanImage: payload => ({ type: 'SET_CLEAN_IMAGE', payload}),
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),

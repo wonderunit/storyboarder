@@ -5,28 +5,28 @@ import {
     getSelections,
     getSceneObjects,
     updateObject,
-    updateDrawingMesh,
+    updateDrawingBrush,
     setCleanImage,
     enableDrawMode
   } from '../../../../shared/reducers/shot-generator'
 import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
-import MeshType from '../../Three/Helpers/Meshes/TextureMeshTypes'
+import BrushType from '../../Three/Helpers/Brushes/TextureBrushTypes'
 
 const BrushInspector = connect((state) => ({
-    drawingMesh: state.drawingMesh,
+    drawingBrush: state.drawingBrush,
     selections: getSelections(state)
 }), 
 {
-    updateDrawingMesh,
+    updateDrawingBrush,
     enableDrawMode,
     setCleanImage
 }
 )( 
 React.memo(({
-    updateDrawingMesh,
+    updateDrawingBrush,
     enableDrawMode,
     setCleanImage,
-    drawingMesh,
+    drawingBrush,
     selections
 }) => {
 
@@ -38,15 +38,15 @@ React.memo(({
     }, [])
 
     const setSize = (value) => {
-        updateDrawingMesh({ size: value })
+        updateDrawingBrush({ size: value })
     }
 
     const setColor = (value) => {
-        updateDrawingMesh({ color: value })
+        updateDrawingBrush({ color: value })
     }
 
     const setType = (event) => {
-        updateDrawingMesh({ type: event.target.value })
+        updateDrawingBrush({ type: event.target.value })
     }
 
     const cleanImage = () => {
@@ -58,27 +58,27 @@ React.memo(({
             <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}> 
                 <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Type</div>
                 <select required={ true }
-                  value={ drawingMesh.type || MeshType.SIMPLE }
+                  value={ drawingBrush.type || BrushType.SIMPLE }
                   onChange={ setType }
                   style={{ flex: 1,
                         marginBottom: 0,
                         maxWidth: 192 }}>
-                    { Object.values(MeshType).map((preset, index) =>
+                    { Object.values(BrushType).map((preset, index) =>
                       <option key={ index } value={ preset }>{ preset }</option>
                     )}
                 </select>
             </div>
             <NumberSlider 
                 label="Size"
-                value={drawingMesh.size} 
+                value={drawingBrush.size} 
                 min={0.5} 
                 max={15} 
                 onSetValue={setSize}
                 textConstraint={ textConstraints.sizeConstraint }/>
           
-            {drawingMesh.type !== MeshType.ERASER && <ColorSelect
+            {drawingBrush.type !== BrushType.ERASER && <ColorSelect
                 label="mesh color"
-                value={drawingMesh.color}
+                value={drawingBrush.color}
                 onSetValue={setColor}/> }
             <div className="mirror_button__wrapper">
                 <div className="mirror_button" onPointerDown={ cleanImage }>Clean Selected Image</div>

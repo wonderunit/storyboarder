@@ -19,7 +19,7 @@ class SimpleTexture extends DrawingTexture {
     setMesh(type) {
         super.setMesh(type);
         if(this.drawingCtxes[0]) {
-            this.drawingMesh.drawingCtx = this.drawingCtxes[0];
+            this.drawingBrush.drawingCtx = this.drawingCtxes[0];
         }
     }
 
@@ -32,7 +32,7 @@ class SimpleTexture extends DrawingTexture {
         this.material = material;
         material.map.needsUpdate = true;
         material.needsUpdate = true;
-        this.drawingMesh.drawingCtx = this.drawingCtxes[0];
+        this.drawingBrush.drawingCtx = this.drawingCtxes[0];
         return material;
     }
 
@@ -47,12 +47,12 @@ class SimpleTexture extends DrawingTexture {
         this.material.needsUpdate = true;
     }    
   
-    draw (mousePosition, object, camera, mesh){
-        let intersection = super.draw(mousePosition, object, camera, mesh)
+    draw (mousePosition, object, camera, brush){
+        let intersection = super.draw(mousePosition, object, camera, brush)
         if(!intersection) return
         let screenX = (intersection.uv.x) * this.texture.image.width;
         let screenY = (1 - intersection.uv.y) * this.texture.image.height;
-        this.drawingMesh.draw({ x: screenX, y: screenY }, mesh)
+        this.drawingBrush.draw({ x: screenX, y: screenY }, brush)
 
         this.texture.needsUpdate = true;
 

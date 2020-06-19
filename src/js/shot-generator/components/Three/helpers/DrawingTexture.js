@@ -1,32 +1,32 @@
 
 import * as THREE from 'three'
-import SimpleMesh from './Meshes/SimpleMesh'
-import EraserMesh from './Meshes/EraserMesh'
+import SimpleBrush from './Brushes/SimpleBrush'
+import EraserBrush from './Brushes/EraserBrush'
 class DrawingTexture {
     constructor() {
         this.drawingCanvases = [];
         this.drawingCtxes = [];
         this.raycaster = new THREE.Raycaster();
         this.texture = null;
-        this.drawingMesh = null;
+        this.drawingBrush = null;
         this.isChanged = false;
         this.setMesh();
     }
 
     resetMeshPos() {
-        this.drawingMesh.resetMeshPos();
+        this.drawingBrush.resetMeshPos();
     }
 
     setMesh(type) {
         switch(type) {
             case "Simple":
-                this.drawingMesh = new SimpleMesh();
+                this.drawingBrush = new SimpleBrush();
                 break;
             case "Eraser":
-                this.drawingMesh = new EraserMesh();
+                this.drawingBrush = new EraserBrush();
                 break;
             default: 
-                this.drawingMesh = new SimpleMesh();
+                this.drawingBrush = new SimpleBrush();
         }
     }
 
@@ -66,7 +66,7 @@ class DrawingTexture {
         return intersects.length && intersects[0];
     }
   
-    draw (mousePosition, object, camera, mesh) {
+    draw (mousePosition, object, camera, brush) {
 
         let intersection = this.intersectImage(mousePosition.x, mousePosition.y, object, camera);
         if(intersection.uv === null) {

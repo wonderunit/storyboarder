@@ -5,7 +5,6 @@ import CubeMapDrawingTexture from './helpers/cubeMapDrawingTexture'
 import CubeTextureCreator from './helpers/CubeTextureCreator'
 import fs from 'fs-extra'
 import path from 'path'
-const cubeTextureCreator = new CubeTextureCreator()
 
 const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawingSceneTexture }) => {
     const texturePath = useRef()
@@ -13,6 +12,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     const { asset: gltf } = useAsset(!scene.userData.tempPath ? imagePath[0] : imagePath[0].includes(scene.userData.tempPath ) ? null : imagePath[0])
     const intersectionBox = useRef()
     const intersectionCamera = useRef()
+    const cubeTextureCreator = useRef( new CubeTextureCreator())
     
     useEffect(() => {
         drawingSceneTexture.texture = new CubeMapDrawingTexture()
@@ -33,13 +33,13 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         scene.background = new THREE.Color(world.backgroundColor)
     }, [world.backgroundColor])
 
-    const draw = (mousePos, camera, drawingMesh) => {
+    const draw = (mousePos, camera, drawingBrush) => {
         drawingSceneTexture.texture.createMaterial(scene.background);
         intersectionCamera.current.copy(camera)
         intersectionCamera.current.position.set(0, 0, 0)
         intersectionCamera.current.quaternion.copy(camera.worldQuaternion())
         intersectionCamera.current.updateMatrixWorld(true)
-        drawingSceneTexture.texture.draw(mousePos, intersectionBox.current, intersectionCamera.current, drawingMesh)
+        drawingSceneTexture.texture.draw(mousePos, intersectionBox.current, intersectionCamera.current, drawingBrush)
     }
 
     useMemo(() => {
@@ -51,7 +51,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
             scene.userData.tempPath = null
         }
         if(gltf instanceof THREE.Texture) {
-            cubeTexture = cubeTextureCreator.getCubeMapTexture(gltf, storyboarderFilePath);
+            cubeTexture = cubeTextureCreator.current.getCubeMapTexture(gltf, storyboarderFilePath);
         }
 
         if(cubeTexture) {
@@ -65,7 +65,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
                     scene.userData.tempPath = null
                 }
                 let tempFileName = `temp_scenetexture-${Date.now()}.png`
-                cubeTextureCreator.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
+                cubeTextureCreator.current.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
                 updateWorld({sceneTexture: 'models/sceneTextures/' + tempFileName})
                 scene.userData.tempPath = tempFileName
                 texturePath.current = tempFileName

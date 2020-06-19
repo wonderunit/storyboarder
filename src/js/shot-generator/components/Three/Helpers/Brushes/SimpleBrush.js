@@ -1,15 +1,15 @@
-import Mesh from './Mesh'
-class SimpleMesh extends Mesh {
+import Brush from './Brush'
+class SimpleBrush extends Brush {
 
     constructor(drawingCtx) {
         super(drawingCtx);
        // this.drawingCtx.lineJoin = true;
     }
 
-    draw(currentPos, mesh) {
-        super.draw(currentPos, mesh);
-        this.drawingCtx.strokeStyle = mesh.color;
-        this.drawingCtx.fillStyle = mesh.color;
+    draw(currentPos, brush) {
+        super.draw(currentPos, brush);
+        this.drawingCtx.strokeStyle = brush.color;
+        this.drawingCtx.fillStyle = brush.color;
         this.drawingCtx.lineWidth = this.brushSize;
 
         let circle = new Path2D();
@@ -38,4 +38,4 @@ class SimpleMesh extends Mesh {
     }
 }
 
-export default SimpleMesh
+export default SimpleBrush;
