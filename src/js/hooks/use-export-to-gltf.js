@@ -94,16 +94,23 @@ const useExportToGltf = (sceneRef, withState) => {
     let attachables = sceneRef.__interaction.filter(object => object.userData.type === "attachable")
     let children = sceneRef.children[0].children.concat(attachables)
     for (let child of children) {
-          // HACK test to avoid IconSprites, which fail to .clone
-          if (!child.icon) {
+          if (child) {
             if (child.userData.id && sceneObjects[child.userData.id]) {
               let sceneObject = sceneObjects[child.userData.id]
               if (sceneObject.type === 'volume') {
 
               } else if (sceneObject.type === 'character') {
 
-                let skinnedMesh = SkeletonUtils.clone(child)
-                scene.add( skinnedMesh)
+                let clonedCharacter = SkeletonUtils.clone(child, true);
+                let lod = clonedCharacter.getObjectByProperty("type", "LOD");
+                lod.children.forEach(skinnedMesh => {
+               //   skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = false
+                  skinnedMesh.material.needsUpdate = true;
+                  skinnedMesh.morphTargetInfluences = [0, 0, 0];
+                })
+
+                scene.add( clonedCharacter)
+                console.log(scene)
                 
               } else if (sceneObject.type === "camera") { 
                 let camera = virtualCameraObject.clone()
@@ -159,6 +166,17 @@ const useExportToGltf = (sceneRef, withState) => {
           }
     }, options)
   }, [sceneRef])
+
+  const disposeScene = (scene) => {
+    scene.traverse((object) => {
+      if(object.material) {
+        object.material.dispose()
+      }
+      if(object.geometry) {
+        object.geometry.dispose()
+      }
+    })
+  } 
 
   useEffect(() => {
     ipcRenderer.on('shot-generator:export-gltf', exportGLTF)
