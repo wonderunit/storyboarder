@@ -153,7 +153,6 @@ const useExportToGltf = (sceneRef, withState) => {
           scene.add(camera)
       }
     }
-    console.log(scene)
     let exporter = new THREE.GLTFExporter()
     let options = {
           binary: true,
