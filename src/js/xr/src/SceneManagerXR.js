@@ -58,7 +58,6 @@ const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
 const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
-const SceneBackground = require('./components/SceneBackground')
 
 const Controls = require('./components/ui/Controls')
 const Help = require('./components/ui/Help')

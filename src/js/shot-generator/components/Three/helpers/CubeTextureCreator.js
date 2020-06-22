@@ -32,15 +32,15 @@ class CubeTextureCreator {
             this.saveFace(croppedImage, element.x, element.y, element.width, element.height, element.name, this.boardPath );
         }
         let {dir, ext, name} = path.parse(imagePath);
-        let dataUrl = this.drawingCtx.canvas.toDataURL();
+        let dataUrl = this.drawingCtx.canvas.toDataURL("image/jpeg");
         let properName = filename ? filename : name + ext; 
-        saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures/', this.boardPath);
+        saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures', this.boardPath, true);
     }
 
     // Draw the specific mesh on drawingContext which contains original texture image
     saveFace( image, x, y, width, height, name, boardPath) {                        
-        this.drawingCtx.drawImage(image, x, y, width, height);
-        saveDataURLtoFile(image.toDataURL(), `${name}.png`, 'models/sceneTextures/cubetexture', boardPath, false);
+        this.drawingCtx.drawImage(image, x, y, width, height); 
+       saveDataURLtoFile(image.toDataURL("image/jpeg"), `${name}.jpg`, 'models/sceneTextures/cubetexture', boardPath, true);
     }
 
     // Parses/crops passed cube texture and loading cube texture from them
@@ -63,12 +63,12 @@ class CubeTextureCreator {
         return new THREE.CubeTextureLoader()
         .setPath( path.join(path.dirname(boardPath), 'models/sceneTextures/cubetexture/') )
         .load( [
-            'px.png#' + new Date().getTime(),
-            'nx.png#' + new Date().getTime(),
-            'py.png#' + new Date().getTime(),
-            'ny.png#' + new Date().getTime(),
-            'pz.png#' + new Date().getTime(),
-            'nz.png#' + new Date().getTime()
+            'px.jpg#' + new Date().getTime(),
+            'nx.jpg#' + new Date().getTime(),
+            'py.jpg#' + new Date().getTime(),
+            'ny.jpg#' + new Date().getTime(),
+            'pz.jpg#' + new Date().getTime(),
+            'nz.jpg#' + new Date().getTime()
         ])
     }
 
@@ -130,8 +130,8 @@ class CubeTextureCreator {
         this.drawingCtx.drawImage(image, 0, 0, image.width, image.height);
         var imageData = this.drawingCtx.getImageData(x, y, width, height);                                   
         this.croppedCtx.putImageData(imageData, 0, 0);   
-        let dataUrl = this.croppedCtx.canvas.toDataURL();
-        saveDataURLtoFile(dataUrl, `${name}.png`, 'models/sceneTextures/cubetexture', boardPath);
+        let dataUrl = this.croppedCtx.canvas.toDataURL("image/jpeg");
+        saveDataURLtoFile(dataUrl, `${name}.jpg`, 'models/sceneTextures/cubetexture', boardPath);
     }
 }
 

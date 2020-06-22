@@ -258,7 +258,7 @@ const SceneManagerR3fLarge = connect(
         let object = scene.__interaction.find((obj) => obj.userData.id === key)
         if(drawingTextures.current[key].isChanged) {
           drawingTextures.current[key].isChanged = false
-          saveDataURLtoFile(drawingTextures.current[key].getImage(), storyboarderFilePath, updateObject, object)
+          saveDataURLtoFile(drawingTextures.current[key].getImage("image/png"), storyboarderFilePath, updateObject, object)
         }
       }
       if( drawingSceneTexture.current.save &&  drawingSceneTexture.current.texture.isChanged) {

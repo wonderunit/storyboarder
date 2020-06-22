@@ -43,8 +43,7 @@ class DrawingTexture {
         this.texture.needsUpdate = true;
     }
 
-    getImage() {
-        let mime = "images/jpeg";
+    getImage(mime) {
         let images = [];
         for( let i = 0; i < this.drawingCanvases.length; i++){
             images.push(this.drawingCanvases[i].toDataURL(mime));

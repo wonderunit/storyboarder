@@ -108,12 +108,12 @@ const useAssetsManager = () => {
           let info = path.dirname(id)
           cubeLoader.setPath(info + "/cubetexture/")
           load(cubeLoader, [
-            'px.png?ts=' + new Date().getTime(),
-            'nx.png?ts=' + new Date().getTime(),
-            'py.png?ts=' + new Date().getTime(),
-            'ny.png?ts=' + new Date().getTime(),
-            'pz.png?ts=' + new Date().getTime(),
-            'nz.png?ts=' + new Date().getTime()
+            'px.jpg?ts=' + new Date().getTime(),
+            'nx.jpg?ts=' + new Date().getTime(),
+            'py.jpg?ts=' + new Date().getTime(),
+            'ny.jpg?ts=' + new Date().getTime(),
+            'pz.jpg?ts=' + new Date().getTime(),
+            'nz.jpg?ts=' + new Date().getTime()
         ], {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),

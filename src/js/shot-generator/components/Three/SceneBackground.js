@@ -64,7 +64,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
                     fs.remove(tempFile)
                     scene.userData.tempPath = null
                 }
-                let tempFileName = `temp_scenetexture-${Date.now()}.png`
+                let tempFileName = `temp_scenetexture-${Date.now()}.jpg`
                 cubeTextureCreator.current.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
                 updateWorld({sceneTexture: 'models/sceneTextures/' + tempFileName})
                 scene.userData.tempPath = tempFileName

@@ -9,5 +9,6 @@ const saveDataURLtoFile = (dataURL, filename, type, boardPath, async = false) =>
     } else {
       fs.writeFile(imageFilePath, imageData, 'base64')
     }
+
   }
 export default saveDataURLtoFile;

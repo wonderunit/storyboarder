@@ -11,8 +11,8 @@ class SimpleTexture extends DrawingTexture {
         this.drawingCtxes.push(ctx);
     }
 
-    getImage() { 
-        return super.getImage()[0];
+    getImage(mime) { 
+        return super.getImage(mime)[0];
 
     }
 
