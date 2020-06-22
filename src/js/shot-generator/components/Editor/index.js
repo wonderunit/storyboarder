@@ -12,7 +12,7 @@ import SceneManagerR3fSmall from '../../SceneManagerR3fSmall'
 import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
-import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
+import { useExportToGltf, loadCameraModel } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
 
@@ -87,6 +87,7 @@ const Editor = React.memo(({
 
   useEffect(() => {
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
+    loadCameraModel()
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
     }

@@ -17,28 +17,43 @@ import ModelLoader from '../services/model-loader'
 import SkeletonUtils from "../shared/IK/utils/SkeletonUtils";
 
 const materialFactory = () => new THREE.MeshBasicMaterial({
-  color: 0x8c78f1,
   flatShading: false
 })
 
-const meshFactory = originalMesh => {
-  let mesh = originalMesh.clone()
-  mesh.geometry.computeBoundingBox()
-  
-  // create a skeleton if one is not provided
-  if (mesh instanceof THREE.SkinnedMesh && !mesh.skeleton) {
-    mesh.skeleton = new THREE.Skeleton()
+const meshFactory = originalObject => {
+  let object = originalObject.clone()
+  const setMesh = (mesh) => {
+    if(!mesh.material) return
+    // create a skeleton if one is not provided
+    if (mesh instanceof THREE.SkinnedMesh && !mesh.skeleton) {
+      mesh.skeleton = new THREE.Skeleton()
+    }
+
+    const initMaterial = (material) => {
+      let newMaterial = materialFactory()
+      if (material && material.map) {
+        newMaterial.map = material.map
+        newMaterial.map.needsUpdate = true
+      }
+      return newMaterial
+    }
+
+    if(Array.isArray(mesh.material)) {
+      for(let i = 0, length = mesh.material.length; i < length; i++) {
+        mesh.material.unshift(initMaterial(mesh.material.pop()))
+      }
+    }
+    mesh.material = initMaterial(mesh.material)
   }
-  
-  let material = materialFactory()
-  
-  if (mesh.material.map) {
-    material.map = mesh.material.map
-    material.map.needsUpdate = true
+  if(object.children.length) {
+    object.traverse((child) => {
+      setMesh(child);
+    })
   }
-  mesh.material = material
-  
-  return mesh
+
+  setMesh(object);
+
+  return object
 }
 
 
@@ -94,50 +109,51 @@ const useExportToGltf = (sceneRef, withState) => {
     let attachables = sceneRef.__interaction.filter(object => object.userData.type === "attachable")
     let children = sceneRef.children[0].children.concat(attachables)
     for (let child of children) {
-          if (child) {
-            if (child.userData.id && sceneObjects[child.userData.id]) {
-              let sceneObject = sceneObjects[child.userData.id]
-              if (sceneObject.type === 'volume') {
-
-              } else if (sceneObject.type === 'character') {
-
-                let clonedCharacter = SkeletonUtils.clone(child, true);
-                let lod = clonedCharacter.getObjectByProperty("type", "LOD");
-                lod.children.forEach(skinnedMesh => {
-               //   skinnedMesh.material.morphTargets = skinnedMesh.material.morphNormals = false
-                  skinnedMesh.material.needsUpdate = true;
-                  skinnedMesh.morphTargetInfluences = [0, 0, 0];
-                })
-
-                scene.add( clonedCharacter)
-                console.log(scene)
-                
-              } else if (sceneObject.type === "camera") { 
-                let camera = virtualCameraObject.clone()
-                camera.position.copy(child.worldPosition())
-                camera.quaternion.copy(child.worldQuaternion())
-                camera.scale.copy(child.worldScale())
-                scene.add(camera)
-              } else if (sceneObject) {
-                let clone = child.clone()
-                clone.applyMatrix(child.parent.matrixWorld)
-
-                clone.userData = {}
-                
-                clone.material = new THREE.MeshStandardMaterial()
-                clone.name = sceneObject.name || sceneObject.displayName
-                
-                scene.add(clone)
-              }
-            } else if (child.userData.type === 'ground' || (child.geometry && child.geometry instanceof THREE.ExtrudeGeometry)) {
-              let clone = child.clone()
-              
-              clone.userData = {}
-              scene.add(clone)
-            } 
+      if (child) {
+        if (child.userData.id && sceneObjects[child.userData.id]) {
+          let sceneObject = sceneObjects[child.userData.id]
+          if (child.userData.type === "character") {
+            let clonedCharacter = SkeletonUtils.clone(child, true);
+            let lod = clonedCharacter.getObjectByProperty("type", "LOD");
+            lod.children.forEach(skinnedMesh => {
+              skinnedMesh.material = new THREE.MeshBasicMaterial().copy( skinnedMesh.material )
+              skinnedMesh.material.needsUpdate = true;
+              skinnedMesh.morphTargetInfluences = [0, 0, 0];
+            })
+            clonedCharacter.name = sceneObject.name || sceneObject.displayName
+            scene.add( clonedCharacter)
+            
+          } else if (child.userData.type !== "volume") {
+            let clone = meshFactory(child)
+            clone.applyMatrix4(child.parent.matrixWorld)
+            clone.updateMatrixWorld(true)
+            clone.userData = {}
+            
+            clone.name = sceneObject.name || sceneObject.displayName
+            
+            scene.add(clone)
           }
+        } else if (child.userData.type === "ground" || (child.geometry && child.geometry instanceof THREE.ExtrudeGeometry)) {
+          let clone = meshFactory(child)
+          
+          clone.userData = {}
+          clone.name = "Ground"
+          scene.add(clone)
+        } 
+      }
     }
-    
+    let objectsArray = Object.keys(sceneObjects);
+    for( let i = 0; i < objectsArray.length; i++ ) {
+      let sceneObject = sceneObjects[objectsArray[i]]
+      if(sceneObject.type === "camera") {
+          let camera = virtualCameraObject.clone()
+          camera.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
+          camera.rotation.set(sceneObject.tilt, sceneObject.rotation, sceneObject.roll)
+          camera.name = sceneObject.name || sceneObject.displayName
+          scene.add(camera)
+      }
+    }
+    console.log(scene)
     let exporter = new THREE.GLTFExporter()
     let options = {
           binary: true,
@@ -145,38 +161,53 @@ const useExportToGltf = (sceneRef, withState) => {
     }
     exporter.parse(scene, function (glb) {
 
-          if (meta.storyboarderFilePath) {
-            let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
-            let filename = `${board.shot}-${timestamp}.glb`
-            let filepath = path.join(
-              path.dirname(meta.storyboarderFilePath),
-              'exports',
-              filename
-              )
-
-            fs.ensureDirSync(path.dirname(filepath))
-            fs.writeFileSync(filepath, Buffer.from(glb))
-
-            notifications.notify({
-              message: `Exported to:\n${filename}`,
-              timing: 5
-            })
-
-            shell.showItemInFolder(filepath)
-          }
+      if (meta.storyboarderFilePath) {
+        let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
+        let filename = `${board.shot}-${timestamp}.glb`
+        let filepath = path.join(
+          path.dirname(meta.storyboarderFilePath),
+          'exports',
+          filename
+          )
+          
+        fs.ensureDirSync(path.dirname(filepath))
+        fs.writeFileSync(filepath, Buffer.from(glb))
+        notifications.notify({
+          message: `Exported to:\n${filename}`,
+          timing: 5
+        })
+        shell.showItemInFolder(filepath)
+      }
+      disposeScene(scene);
     }, options)
+
   }, [sceneRef])
 
   const disposeScene = (scene) => {
     scene.traverse((object) => {
-      if(object.material) {
-        object.material.dispose()
+      if(object.material ) {
+        if(Array.isArray(object.material)) {
+          for(let material of object.material) {
+            disposeMaterial(material)
+          }
+        } else {
+          disposeMaterial(object.material)
+        }
+
       }
       if(object.geometry) {
         object.geometry.dispose()
       }
     })
+    scene.dispose()
   } 
+
+  const disposeMaterial = (material) => {
+    material.dispose()
+    if(material.map && material.map.dispose) {
+      material.map.dispose()
+    }
+  }
 
   useEffect(() => {
     ipcRenderer.on('shot-generator:export-gltf', exportGLTF)
