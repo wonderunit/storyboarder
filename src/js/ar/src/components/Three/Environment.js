@@ -25,12 +25,6 @@ const Environment = (props) => {
   )
 }
 
-/*const mapStateToProps = (state, ownProps) => {
-  return {
-    user: state.users[ownProps.userId]
-  }
-}*/
-
 const mapStateToProps = (state) => {
   const env = getWorld(state).environment
 

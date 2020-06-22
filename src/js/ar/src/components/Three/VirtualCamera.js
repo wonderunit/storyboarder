@@ -23,7 +23,7 @@ const VirtualCamera = ({sceneObject}) => {
     self.rotateZ(sceneObject.roll || 0)
   }, [sceneObject.rotation, sceneObject.tilt, sceneObject.roll])
 
-  const { x, y, z, visible } = sceneObject
+  const { x, y, z, visible, locked } = sceneObject
 
   return (
     <primitive
@@ -33,6 +33,12 @@ const VirtualCamera = ({sceneObject}) => {
       visible={visible}
 
       position={[x, z, y]}
+
+      userData={{
+        isSelectable: true,
+        id: sceneObject.id,
+        locked
+      }}
     />
   )
 }

@@ -85,7 +85,7 @@ const Character = ({sceneObject, path}) => {
 
   const bodyScale = sceneObject.height / originalHeight
 
-  const { x, y, z, rotation, visible } = sceneObject
+  const { x, y, z, rotation, visible, locked } = sceneObject
   
   return (
     <group
@@ -94,6 +94,12 @@ const Character = ({sceneObject, path}) => {
       position={ [x, z, y] }
       rotation={ [0, rotation, 0] }
       scale={ [bodyScale, bodyScale, bodyScale] }
+
+      userData={{
+        isSelectable: true,
+        id: sceneObject.id,
+        locked
+      }}
     >
       <primitive object={lod}/>
       <primitive object={armature}/>

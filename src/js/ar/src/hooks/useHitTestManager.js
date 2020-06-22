@@ -1,113 +1,71 @@
 import React, {useEffect, useRef} from 'react'
-import {useThree} from "react-three-fiber"
+import {useFrame, useThree} from "react-three-fiber"
 
+import store from './../helpers/store'
+import {selectObject, updateObject} from "../../../shared/reducers/shot-generator"
 
-const getReticle = () => {
-  let reticle = new THREE.Mesh(
-    new THREE.RingBufferGeometry( 0.15, 0.2, 32 ).rotateX( - Math.PI / 2 ),
-    new THREE.MeshBasicMaterial({color: 0x5c65c0, depthTest: false})
-  )
-  reticle.matrixAutoUpdate = false
-  reticle.visible = false
-  
-  return reticle
+const SCREEN_CENTER = new THREE.Vector2(0.0, 0.0)
+const Raycaster = new THREE.Raycaster()
+
+const getObject = (child) => {
+  if (child.userData.id) {
+    return child
+  }
+
+  if (!child.parent) {
+    return null
+  }
+
+  return getObject(child.parent)
 }
 
-const RETICLE = getReticle()
-
-
-const useFrameCallbacks = []
-
-export const useFrame = (fn, options = []) => {
-  useEffect(() => {
-    useFrameCallbacks.push(fn)
-    
-    return () => {
-      useFrameCallbacks.splice(useFrameCallbacks.indexOf(fn), 1)
-    }
-  }, [fn, ...options])
+const getMainObject = (scene) => {
+  return scene.children[0].children[0]
 }
 
-export const useHitTestManager = (hitTestEnable = true) => {
-  const state = useThree()
-  const {gl, scene, camera} = state
-  
-  const isTestEnabled = useRef(hitTestEnable)
-  const hitTestSourceRequested = useRef(false)
-  const xrViewerSpaceRef = useRef(null)
-  const xrHitTestSourceRef = useRef(null)
+const useHitTestManager = (selectEnabled) => {
+  const {scene, camera, gl} = useThree()
+
+  const targetRef = useRef(null)
+  const initialMatrix = useRef(new THREE.Matrix4())
 
   useEffect(() => {
-    if (hitTestEnable) {
-      scene.add(RETICLE) 
-    } else {
-      scene.remove(RETICLE)
-    }
-  }, [scene, hitTestEnable])
+    if (selectEnabled) {
+      Raycaster.setFromCamera( SCREEN_CENTER, camera )
 
-  useEffect(() => {
-    isTestEnabled.current = hitTestEnable
-  }, [hitTestEnable])
-  
-  gl.xr.setAnimationLoop((dt, frame) => {
-    const session = gl.xr.getSession()
-    const referenceSpace = gl.xr.getReferenceSpace()
+      let objects = getMainObject(scene).children.filter((obj) => obj.userData.isSelectable)
+      let intersects = Raycaster.intersectObjects( objects, true )
 
-    if (!hitTestSourceRequested.current) {
-      session.requestReferenceSpace('viewer').then((refSpace) => {
-        xrViewerSpaceRef.current = refSpace
-        session.requestHitTestSource({space: xrViewerSpaceRef.current}).then((hitTestSource) => {
-          xrHitTestSourceRef.current = hitTestSource
-        })
-      })
+      if (intersects.length) {
+        const target = getObject(intersects[0].object)
+        if (targetRef.current !== target) {
+          targetRef.current = target
 
-      session.addEventListener('end', function () {
+          gl.xr.getCamera(camera)
+          camera.attach(target)
 
-        hitTestSourceRequested.current = false
-        xrHitTestSourceRef.current = null
-
-      });
-
-      hitTestSourceRequested.current = true
-    }
-
-    if ( xrHitTestSourceRef.current && isTestEnabled.current ) {
-
-      let hitTestResults = frame.getHitTestResults( xrHitTestSourceRef.current )
-
-      if ( hitTestResults.length ) {
-        let hit = hitTestResults[ 0 ];
-
-        RETICLE.visible = true;
-        RETICLE.matrix.fromArray( hit.getPose( referenceSpace ).transform.matrix )
-
+          store.dispatch(selectObject(target.userData.id))
+        }
       } else {
-
-        RETICLE.visible = false
-
+        if (targetRef.current !== null) {
+          targetRef.current = null
+          store.dispatch(selectObject(null))
+        }
       }
-
+    } else {
+      if (targetRef.current) {
+        getMainObject(scene).attach(targetRef.current)
+        //store.dispatch(updateObject(targetRef.current.userData.id, {}))
+      }
     }
+  }, [selectEnabled])
 
-    for (let callback of useFrameCallbacks) {
-      callback(state, dt, RETICLE)
+
+  useFrame(() => {
+    if (selectEnabled && targetRef.current) {
+      targetRef.current.updateMatrixWorld(true)
     }
-
-    gl.render( scene, camera )
   })
 }
 
-export const useController = (fn, inputs = []) => {
-  const {gl} = useThree()
-  
-  useEffect(() => {
-    const controller = gl.xr.getController(0)
-    const resultFn = (e) => fn({...e, reticle: RETICLE})
-    
-    controller.addEventListener('select', resultFn)
-    
-    return () => {
-      controller.removeEventListener('select', resultFn)
-    }
-  }, [fn, ...inputs])
-}
+export default useHitTestManager

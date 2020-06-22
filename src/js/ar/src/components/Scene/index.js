@@ -1,10 +1,11 @@
 import React, {useState, useContext} from 'react'
 import {connect} from "react-redux"
-import {useUpdate} from "react-three-fiber"
+import {useThree} from "react-three-fiber"
 
-import {useHitTestManager, useController} from "../../hooks/useHitTestManager"
 import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-generator"
 import {SceneState} from "../../helpers/sceneState"
+
+import {useThreeFrameProvider, useThreeStateProvider} from "../../hooks/useThreeHooks"
 
 import Environment from "../Three/Environment"
 import Model from "../Three/Model"
@@ -12,13 +13,17 @@ import Image from "../Three/Image"
 import Light from "../Three/Light"
 import VirtualCamera from "../Three/VirtualCamera"
 import Character from "../Three/Character"
+import Background from "../Three/Background"
+import Ground from "../Three/Ground"
+import useHitTestManager from "../../hooks/useHitTestManager";
+
 
 const componentMap = {
   object: Model,
   image: Image,
   light: Light,
   camera: VirtualCamera,
-  //character: Character
+  character: Character
 }
 
 const renderObject = (sceneObject) => {
@@ -30,34 +35,26 @@ const renderObject = (sceneObject) => {
   return null
 }
 
-const Scene = ({sceneObjects, world, placingEnabled = true}) => {
+const Scene = ({sceneObjects, world}) => {
   const [currentSceneState, setSceneState] = useContext(SceneState)
-  
-  const [sceneVisible, setSceneVisible] = useState(false)
+  const [sceneVisible, setSceneVisible] = useState(true)
 
-  const sceneRef = useUpdate(() => {
-    sceneRef.current.matrixWorld.fromArray(currentSceneState.currentMatrix)
+  useThreeFrameProvider()
+  useThreeStateProvider()
 
-    sceneRef.current.position.setFromMatrixPosition(sceneRef.current.matrixWorld)
-    sceneRef.current.quaternion.setFromRotationMatrix(sceneRef.current.matrixWorld)
-    sceneRef.current.updateWorldMatrix(false, true)
-    
-    if (!sceneVisible && !currentSceneState.positioningEnabled) {
-      setSceneVisible(true)
-    }
-  }, [currentSceneState.currentMatrix, currentSceneState.positioningEnabled])
-
-  useHitTestManager(placingEnabled)
+  useHitTestManager(currentSceneState.selectEnabled)
   
   return (
     <group
-      ref={sceneRef}
+      position={[0, -1.0, 0]}
     >
       <group
         position={currentSceneState.position}
         scale={currentSceneState.scale}
         visible={sceneVisible}
       >
+        <Background/>
+        <Ground/>
         <ambientLight
           color={ 0xffffff }
           intensity={ world.ambient.intensity }

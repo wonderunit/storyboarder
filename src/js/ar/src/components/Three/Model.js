@@ -1,7 +1,7 @@
-import React, {useMemo} from 'react'
+import React, {useMemo, useRef, useEffect} from 'react'
 import {connect} from 'react-redux'
 
-import {getSceneObjects} from "../../../../shared/reducers/shot-generator"
+import {getSceneObjects, getSelections} from "../../../../shared/reducers/shot-generator"
 
 import {useAsset} from "../../../../shot-generator/hooks/use-assets-manager"
 import useGLTFAsset from "../../hooks/useGLTFAsset"
@@ -10,6 +10,7 @@ import {patchMaterial} from "../../../../shot-generator/helpers/outlineMaterial"
 
 import RoundedBoxGeometryCreator from "../../../../vendor/three-rounded-box"
 import getFilepathForModelByType from "../../../../xr/src/helpers/get-filepath-for-model-by-type"
+import selectObject from "../../helpers/selectObject";
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
@@ -23,7 +24,9 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   morphTargets: false
 }))
 
-const Model = ({sceneObject, path}) => {
+const Model = ({sceneObject, path, isSelected}) => {
+  const ref = useRef(null)
+
   const {asset} = useAsset((sceneObject.model === 'box') ? null : path)
   let object = useGLTFAsset(asset ? asset.scene : null)
   
@@ -40,17 +43,30 @@ const Model = ({sceneObject, path}) => {
     return new THREE.Mesh(geometry, material)
   }, [object, sceneObject.model])
 
+  useEffect(() => {
+    console.log(isSelected)
+    selectObject(ref, isSelected)
+  }, [isSelected])
+
   const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
   
   return (
     <primitive
+      ref={ref}
+
       object={object}
       
       visible={visible}
 
-      position={[x, y, z]}
+      position={[x, z, y]}
       scale={[width, height, depth]}
       rotation={[rotation.x, rotation.y, rotation.z]}
+
+      userData={{
+        isSelectable: true,
+        id: sceneObject.id,
+        locked
+      }}
     />
   )
 }
@@ -63,10 +79,13 @@ const mapStateToProps = (state, ownProps) => {
       type: 'object',
       model: sceneObject.model
     })
+
+  const isSelected = getSelections(state).indexOf(ownProps.id) !== -1
   
   return {
     sceneObject,
-    path
+    path,
+    isSelected
   }
 }
   

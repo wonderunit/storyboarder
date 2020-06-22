@@ -49,9 +49,15 @@ const Image = ({sceneObject, path}) => {
       
       visible={visible}
 
-      position={[x, y, z]}
+      position={[x, z, y]}
       scale={[height * aspect, height, 1]}
       rotation={[rotation.x, rotation.y, rotation.z]}
+
+      userData={{
+        isSelectable: true,
+        id: sceneObject.id,
+        locked
+      }}
     />
   )
 }

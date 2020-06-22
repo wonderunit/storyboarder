@@ -13,8 +13,8 @@ import useSceneLoader from "../../hooks/useSceneLoader"
 import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-generator"
 
 import ScaleButtons from "../ScaleButtons"
-import Welcome from "../Welcome"
-import MoveButtons from "../MoveButtons";
+import MoveButtons from "../MoveButtons"
+import SelectButton from "../SelectButton"
 
 
 const preloadAssetsList = [
@@ -32,9 +32,7 @@ const App = ({sceneObjects, world, board}) => {
   const innerState = useState({
     position: [0, 0, 0],
     scale: [0.02, 0.02, 0.02],
-    currentMatrix: new THREE.Matrix4().toArray(),
-    positioningEnabled: true,
-    isWelcome: true
+    selectEnabled: false
   })
   
   const {assets, count} = useSceneLoader(sceneObjects, world, preloadAssetsList)
@@ -54,7 +52,7 @@ const App = ({sceneObjects, world, board}) => {
       ARButton.createButton(gl, sessionParams)
     )
     
-    //gl.xr.setReferenceSpaceType('unbounded')
+    gl.xr.setReferenceSpaceType('unbounded')
     
     const controller = gl.xr.getController(0) // Add finger touch element to the scene
     scene.add(controller)
@@ -69,13 +67,9 @@ const App = ({sceneObjects, world, board}) => {
       <div id="overlay">
         <div>
           <SceneState.Provider value={innerState}>
-            {innerState[0].isWelcome
-              ? <Welcome ready={appReady}/>
-              : [
-                <ScaleButtons/>,
-                <MoveButtons/>
-              ]
-            }
+            <ScaleButtons/>
+            <MoveButtons/>
+            <SelectButton/>
           </SceneState.Provider>
         </div>
       </div>
@@ -89,7 +83,6 @@ const App = ({sceneObjects, world, board}) => {
           <Provider store={store}>
             <Scene
               ready={appReady}
-              placingEnabled={innerState[0].positioningEnabled}
             />
           </Provider>
         </SceneState.Provider>

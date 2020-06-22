@@ -1,0 +1,42 @@
+$pointer_size: 14px;
+$half: $pointer_size * 0.5;
+
+.select-button {
+  &__pointer {
+    position: fixed;
+
+    top: 50%;
+    left: 50%;
+
+    width: $pointer_size;
+    height: $pointer_size;
+
+    margin-left: -$pointer_size;
+    margin-top: -$pointer_size;
+
+    box-sizing: border-box;
+    border: 2px solid #212128;
+    border-radius: 50%;
+
+    background: #eee;
+
+    &.active {
+      background: #5c65c0;
+    }
+  }
+
+  &__button {
+    position: fixed;
+
+    bottom: 8px;
+    right: 8px;
+
+    width: 64px;
+    height: 64px;
+
+    border: 2px solid #212128;
+    border-radius: 50%;
+
+    background: #eee;
+  }
+}

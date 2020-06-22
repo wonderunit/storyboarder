@@ -49,7 +49,7 @@ const Light = ({sceneObject, isSelected}) => {
     [sceneObject.distance]
   )
 
-  const { x, y, z, visible, intensity, angle, distance, penumbra, decay } = sceneObject
+  const { x, y, z, visible, intensity, angle, distance, penumbra, decay, locked } = sceneObject
   
   return (
     <group
@@ -58,6 +58,12 @@ const Light = ({sceneObject, isSelected}) => {
       visible={visible}
 
       position={[x, z, y]}
+
+      userData={{
+        isSelectable: true,
+        id: sceneObject.id,
+        locked
+      }}
     >
       <primitive
         object={object}
