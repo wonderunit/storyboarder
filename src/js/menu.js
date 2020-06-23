@@ -897,14 +897,6 @@ const shotGeneratorMenu = [
           ipcRenderer.send('shot-generator:object:group')
         }
       },
-
-      {
-        accelerator: 'CommandOrControl+k',
-        label: 'Switch shader mode',
-        click () {
-          ipcRenderer.send('shot-generator:object:switchshader')
-        }
-      },
       
       {
         accelerator: 'CommandOrControl+j',
@@ -938,6 +930,7 @@ const shotGeneratorMenu = [
           ipcRenderer.send('shot-generator:menu:view:fps-meter')
         }
       },
+      {type: 'separator'},
       {
         label: 'Scale UI Up',
         accelerator: 'CommandOrControl+=',
@@ -961,7 +954,15 @@ const shotGeneratorMenu = [
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:resetZoom', 0)
         }
-      }
+      },
+      {type: 'separator'},
+      {
+        accelerator: 'CommandOrControl+k',
+        label: 'Switch shader mode',
+        click () {
+          ipcRenderer.send('shot-generator:object:switchshader')
+        }
+      },
     ]
   },
   {
