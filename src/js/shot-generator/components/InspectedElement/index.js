@@ -17,16 +17,16 @@ import PosePresetsInspector from './PosePresetsInspector/index'
 import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
 import BrushInspector from './BrushInspector'
-
+import InspectedWorld from '../InspectedWorld'
 import Icon from '../Icon'
 import Modal from '../Modal'
 
 const isChar = (type) => type === 'character'
 const isObj = (type) => type === 'object'
-const isImage = (type) => type === 'image'
+const isImage = (type) => type === 'image' || !type
 const nullTab = {tab: null, panel: null}
 
-const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) => {
+const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isInspectedWorld}) => {
   const [isModalShown, showModal] = useState(false)
   const [changedName, changeNameTo] = useState(false)
   const handPoseTab = useMemo(() => {
@@ -75,31 +75,31 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
 
   return (
     <React.Fragment>
-      { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
-        <div style={{ margin:"5px 5px 5px 5px" }}>
-          Select a Preset Name:
-        </div>
-        <div className="column" style={{ flex: 1}}>
-          <input
-            className="modalInput"
-            type="text"
-            placeholder={ selectedName }
-            onChange={ (value) => changeNameTo(value.currentTarget.value) }/>
-        </div>
-        <div className="skeleton-selector__div">
-          <button
-            className="skeleton-selector__button"
-            onClick={() => {
-              showModal(false)
-              updateObject(id, { displayName: changedName, name: changedName })
-            }}>
-              Proceed
-          </button>
-      </div>
+       { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
+          <div style={{ margin:"5px 5px 5px 5px" }}>
+            Select a Preset Name:
+          </div>
+          <div className="column" style={{ flex: 1}}>
+            <input
+              className="modalInput"
+              type="text"
+              placeholder={ selectedName }
+              onChange={ (value) => changeNameTo(value.currentTarget.value) }/>
+          </div>
+          <div className="skeleton-selector__div">
+            <button
+              className="skeleton-selector__button"
+              onClick={() => {
+                showModal(false)
+                updateObject(id, { displayName: changedName, name: changedName })
+              }}>
+                Proceed
+            </button>
+          </div>
       </Modal> }
-      <a href="#" className="object-property-heading" style={{ overflow: "hidden", textOverflow: "ellipsis", flexShrink:0, width: 288 }} onClick={ () => showModal(true) }>
+      { !isInspectedWorld && <a href="#" className="object-property-heading" style={{ overflow: "hidden", textOverflow: "ellipsis", flexShrink:0, width: 288 }} onClick={ () => showModal(true) }>
         {selectedName} Properties
-      </a>
+        </a> }
       <Tabs key={id}>
         <div className="tabs-header">
           <Tab><Icon src="icon-tab-parameters"/></Tab>
@@ -111,7 +111,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
         </div>
 
         <div className="tabs-body">
-          <Panel><GeneralInspector/></Panel>
+          <Panel>{isInspectedWorld ? <InspectedWorld/> : <GeneralInspector/>}</Panel>
           {handPoseTab.panel}
           {charPoseTab.panel}
           {modelTab.panel}

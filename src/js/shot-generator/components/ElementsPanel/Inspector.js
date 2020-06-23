@@ -1,4 +1,4 @@
-import InspectedWorld from '../InspectedWorld'
+
 import InspectedElement from '../InspectedElement'
 import React, { useContext } from 'react'
 import MultiSelectionInspector from '../MultiSelectionInspector'
@@ -14,9 +14,8 @@ const Inspector = ({
   return <div id="inspector">
     {(selectedCount > 1)
       ? <MultiSelectionInspector/>
-      : (kind && data)
-        ? <InspectedElement/>
-        : <InspectedWorld/>}
+      :  <InspectedElement isInspectedWorld={!(kind && data)}/>
+    }
     </div>
 }
 export default Inspector
