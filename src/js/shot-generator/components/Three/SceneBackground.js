@@ -27,6 +27,16 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     }, [])
 
     useEffect(() => {
+        if(!imagePath[0]) {
+            if(scene.background instanceof THREE.Texture) {
+                scene.background.dispose()
+                scene.background = new THREE.Color(world.backgroundColor)
+                cleanUpTempFile()
+            }
+        }
+    }, [imagePath[0]])
+
+    useEffect(() => {
         if(world.textureType === SceneTextureType.CubeMap) {
             drawingSceneTexture.texture = new CubeMapDrawingTexture()
             let geometry = new THREE.BoxBufferGeometry(1, 1, 1)
@@ -84,7 +94,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         if(world.textureType === SceneTextureType.CubeMap)  {
             cubeTextureCreator.current.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
         } else if(world.textureType === SceneTextureType.Image) {
-            let imageData = drawingSceneTexture.texture.getImage("image/png")
+            let imageData = drawingSceneTexture.texture.getImage("image/jpg")
             let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures', tempFileName)
             fs.writeFileSync(imageFilePath, imageData, 'base64')
         }
@@ -94,14 +104,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     }
 
     useEffect(() => {
-        if(!texture) {
-            if(scene.background instanceof THREE.Texture) {
-                scene.background.dispose()
-                scene.background = new THREE.Color(world.backgroundColor)
-                cleanUpTempFile()
-            }
-            return
-        }
+        if(!texture ) return
         cleanUpTempFile()
         let backgroundTexture 
         if(world.textureType === SceneTextureType.CubeMap)  {

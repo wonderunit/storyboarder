@@ -34,13 +34,13 @@ class CubeTextureCreator {
         let {dir, ext, name} = path.parse(imagePath);
         let dataUrl = this.drawingCtx.canvas.toDataURL("image/jpeg");
         let properName = filename ? filename : name + ext; 
-        saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures', this.boardPath, true);
+        saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures', this.boardPath);
     }
 
     // Draw the specific mesh on drawingContext which contains original texture image
     saveFace( image, x, y, width, height, name, boardPath) {                        
         this.drawingCtx.drawImage(image, x, y, width, height); 
-       saveDataURLtoFile(image.toDataURL("image/jpeg"), `${name}.jpg`, 'models/sceneTextures/cubetexture', boardPath, true);
+       saveDataURLtoFile(image.toDataURL("image/jpeg"), `${name}.jpg`, 'models/sceneTextures/cubetexture', boardPath);
     }
 
     // Parses/crops passed cube texture and loading cube texture from them
