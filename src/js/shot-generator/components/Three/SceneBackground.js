@@ -21,6 +21,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         return () => {
             if(scene.background instanceof THREE.Texture) {
                 scene.background.dispose()
+                scene.background = null
             }
         }
     }, [])
@@ -78,7 +79,13 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     }
 
     useEffect(() => {
-        if(!texture) return
+        if(!texture) {
+            if(scene.background instanceof THREE.Texture) {
+                scene.background.dispose()
+                scene.background = new THREE.Color(world.backgroundColor)
+            }
+            return
+        }
         cleanUpTempFile()
         let backgroundTexture 
         if(world.textureType === SceneTextureType.CubeMap)  {

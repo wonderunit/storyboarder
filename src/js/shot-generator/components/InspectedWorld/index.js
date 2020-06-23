@@ -53,12 +53,16 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   const setSceneTextureFile = useCallback((event) => {
     if (event.file) {
       updateWorld({textureType: SceneTextureType.Image, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
+    } else {
+      updateWorld({textureType:null, sceneTexture: null})
     }
   }, [])
 
   const setSceneCubeMap = useCallback((event) => {
     if (event.file) {
       updateWorld({textureType: SceneTextureType.CubeMap, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
+    } else {
+      updateWorld({textureType:null, sceneTexture: null})
     }
   }, [])
   
@@ -123,6 +127,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
               label={"Scene Cube map"}
               value={world.sceneTexture && path.basename(world.sceneTexture)}
               filters={ [ { name:"Images", extensions: imageFilters } ] }
+              canRemove={ true }
             />
           }
           {(!world.textureType || world.textureType === SceneTextureType.Image) && <FileInput
@@ -130,6 +135,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
               label={"Scene texture"}
               value={world.sceneTexture && path.basename(world.sceneTexture)}
               filters={ [ { name:"Images", extensions: imageFilters } ] }
+              canRemove={ true }
             />
             }
         </div>

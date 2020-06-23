@@ -2,13 +2,14 @@ import React, {useCallback} from 'react'
 
 import {remote} from 'electron'
 const {dialog} = remote
-
+const defaultValue = "(none)"
 const FileInput = React.memo(({
-  value = "(none)", 
+  value = defaultValue, 
   label, onChange, 
   wrapperClassName="input-group",
   refClassName="file-input",
   filters = [],
+  canRemove = false,
   ...props
 }) => {
   const onFileSelect = useCallback((e) => {
@@ -38,6 +39,7 @@ const FileInput = React.memo(({
   return (
       <div className={ wrapperClassName }>
         {label ? <div className="input-group__label">{label}</div> : null}
+        {canRemove && (value && value !== defaultValue) && <a style={{position:"absolute", left:"96%", color:"#000000"}} onClick={ () => onChange({file: undefined, files: []}) }>X</a>}
         <div
             className={ refClassName }
             onClick={ onFileSelect }
