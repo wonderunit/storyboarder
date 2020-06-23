@@ -8,6 +8,7 @@ const FileInput = React.memo(({
   label, onChange, 
   wrapperClassName="input-group",
   refClassName="file-input",
+  filters = [],
   ...props
 }) => {
   const onFileSelect = useCallback((e) => {
@@ -16,7 +17,7 @@ const FileInput = React.memo(({
       return false
     }
     
-    let filepaths = dialog.showOpenDialog(null, {})
+    let filepaths = dialog.showOpenDialog(null, {filters})
     
     if (filepaths) {
       onChange({

@@ -213,7 +213,7 @@ const SceneManagerR3fLarge = connect(
       if(!intersections.length && drawingSceneTexture.current.draw) {
         let texture = drawingSceneTexture.current
         texture.draw({x, y}, camera, drawingBrush)
-      } else {
+      } else if(drawingSceneTexture.current.texture) {
         drawingSceneTexture.current.texture.resetMeshPos()
       }
       for(let i = 0; i < keys.length; i++) {
@@ -243,7 +243,7 @@ const SceneManagerR3fLarge = connect(
         let key = keys[i]
         drawingTextures.current[key].setMesh(drawingBrush.type)
       }
-      if(drawingSceneTexture.current)
+      if(drawingSceneTexture.current && drawingSceneTexture.current.texture)
         drawingSceneTexture.current.texture.setMesh(drawingBrush.type)
      }, [drawingBrush.type])
 
@@ -261,7 +261,7 @@ const SceneManagerR3fLarge = connect(
           saveDataURLtoFile(drawingTextures.current[key].getImage("image/png"), storyboarderFilePath, updateObject, object)
         }
       }
-      if( drawingSceneTexture.current.save &&  drawingSceneTexture.current.texture.isChanged) {
+      if( drawingSceneTexture.current.save && drawingSceneTexture.current.texture.isChanged) {
         drawingSceneTexture.current.texture.isChanged = false
         drawingSceneTexture.current.texture.resetMeshPos()
         drawingSceneTexture.current.save()

@@ -22,8 +22,9 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
-import CopyFile from "../../utils/CopyFile"
-const isImageExtension = ( ext ) => [".jpg", ".jpeg", ".png", ".gif", ".dds"].includes(ext) 
+import CopyFile from '../../utils/CopyFile'
+import SceneTextureType from './SceneTextureType'
+const imageFilters = ["jpg", "jpeg", "png", "gif", "dds"]
 
 const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
@@ -51,10 +52,13 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
 
   const setSceneTextureFile = useCallback((event) => {
     if (event.file) {
-      const { ext } = path.parse(event.file);
-      if(isImageExtension(ext)) {
-        updateWorld({sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
-      }
+      updateWorld({textureType: SceneTextureType.Image, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
+    }
+  }, [])
+
+  const setSceneCubeMap = useCallback((event) => {
+    if (event.file) {
+      updateWorld({textureType: SceneTextureType.CubeMap, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
     }
   }, [])
   
@@ -114,11 +118,20 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                 onSetValue={setBackground}
             />
           </div> }
-          <FileInput
+          {(!world.textureType || world.textureType === SceneTextureType.CubeMap) && <FileInput
+              onChange={setSceneCubeMap}
+              label={"Scene Cube map"}
+              value={world.sceneTexture && path.basename(world.sceneTexture)}
+              filters={ [ { name:"Images", extensions: imageFilters } ] }
+            />
+          }
+          {(!world.textureType || world.textureType === SceneTextureType.Image) && <FileInput
               onChange={setSceneTextureFile}
               label={"Scene texture"}
               value={world.sceneTexture && path.basename(world.sceneTexture)}
+              filters={ [ { name:"Images", extensions: imageFilters } ] }
             />
+            }
         </div>
 
         <h5 className="inspector-label">Room</h5>
