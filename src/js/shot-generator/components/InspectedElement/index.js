@@ -128,7 +128,7 @@ const getObjectInfo = (state) => {
   const object = getSceneObjects(state)[selected]
 
   if (!object) {
-    return null
+    return {}
   }
 
   return {
