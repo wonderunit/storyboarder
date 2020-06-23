@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import React, { useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useThree } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import CubeMapDrawingTexture from './helpers/cubeMapDrawingTexture'
@@ -77,12 +77,28 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
             scene.userData.tempPath = null
         }
     }
+    
+    const save = () => {
+        cleanUpTempFile()
+        let tempFileName = `temp_scenetexture-${Date.now()}.jpg`
+        if(world.textureType === SceneTextureType.CubeMap)  {
+            cubeTextureCreator.current.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
+        } else if(world.textureType === SceneTextureType.Image) {
+            let imageData = drawingSceneTexture.texture.getImage("image/png")
+            let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures', tempFileName)
+            fs.writeFileSync(imageFilePath, imageData, 'base64')
+        }
+        updateWorld({sceneTexture: 'models/sceneTextures/' + tempFileName})
+        scene.userData.tempPath = tempFileName
+        texturePath.current = tempFileName
+    }
 
     useEffect(() => {
         if(!texture) {
             if(scene.background instanceof THREE.Texture) {
                 scene.background.dispose()
                 scene.background = new THREE.Color(world.backgroundColor)
+                cleanUpTempFile()
             }
             return
         }
@@ -91,14 +107,10 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         if(world.textureType === SceneTextureType.CubeMap)  {
             backgroundTexture = cubeTextureCreator.current.getCubeMapTexture(texture, storyboarderFilePath);
             if(backgroundTexture) {
-                drawingSceneTexture.save = () => { 
-                    cleanUpTempFile()
-                    let tempFileName = `temp_scenetexture-${Date.now()}.jpg`
-                    cubeTextureCreator.current.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
-                    updateWorld({sceneTexture: 'models/sceneTextures/' + tempFileName})
-                    scene.userData.tempPath = tempFileName
-                    texturePath.current = tempFileName
-                }
+                drawingSceneTexture.save = save
+            } else {
+                updateWorld({ sceneTexture: null, textureType: null })
+                return
             }
         } else if(world.textureType === SceneTextureType.Image) {
             texture.wrapS = texture.wrapT = THREE.RepeatWrapping
@@ -115,18 +127,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
             intersectionBox.current.updateMatrixWorld(true)
             backgroundTexture = drawingSceneTexture.texture.createMaterial({map: texture}).map
             drawingSceneTexture.texture.setTexture(texture)
-            drawingSceneTexture.save = () => { 
-                cleanUpTempFile()
-                let tempFileName = `temp_scenetexture-${Date.now()}.jpg`
-                let imageData = drawingSceneTexture.texture.getImage("image/png")
-
-                let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures', tempFileName)
-                fs.writeFileSync(imageFilePath, imageData, 'base64')
-
-                updateWorld({sceneTexture: 'models/sceneTextures/' + tempFileName})
-                scene.userData.tempPath = tempFileName
-                texturePath.current = tempFileName
-            }
+            drawingSceneTexture.save = save
         }
         scene.userData.texturePath = imagePath[0]
         scene.background = backgroundTexture;

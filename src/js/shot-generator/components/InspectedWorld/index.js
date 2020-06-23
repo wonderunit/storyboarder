@@ -50,20 +50,20 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
     }
   }, [])
 
-  const setSceneTextureFile = useCallback((event) => {
+  const setWorldTexture = useCallback((type, event) => {
     if (event.file) {
-      updateWorld({textureType: SceneTextureType.Image, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
+      updateWorld({textureType: type, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
     } else {
       updateWorld({textureType:null, sceneTexture: null})
     }
   }, [])
 
+  const setSceneTextureFile = useCallback((event) => {
+    setWorldTexture(SceneTextureType.Image, event)
+  }, [])
+
   const setSceneCubeMap = useCallback((event) => {
-    if (event.file) {
-      updateWorld({textureType: SceneTextureType.CubeMap, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
-    } else {
-      updateWorld({textureType:null, sceneTexture: null})
-    }
+    setWorldTexture(SceneTextureType.CubeMap, event)
   }, [])
   
   const setAmbientIntensity = useCallback((intensity) => updateWorldEnvironment({intensity}), [])
