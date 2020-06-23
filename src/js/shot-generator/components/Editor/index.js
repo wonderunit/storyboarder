@@ -38,10 +38,26 @@ import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 import createShadingEffect from '../../../vendor/shading-effects/createShadingEffect'
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
+import { ShadingType } from '../../../vendor/shading-effects/ShadingType'
+import observeStore from '../../../shared/helpers/observeStore'
 const maxZoom = {in: 0.4, out: -1.6}
-const Effect = ({renderData, stats, shadingMode}) => {
+const Effect = ({renderData, stats, shadingMode, store}) => {
   const {gl, size} = useThree()
   const [renderer, setRenderer] = useState(new OutlineEffect(gl, { defaultThickness: 0.015 }))
+
+
+  const setFogColor = useCallback((currentState) => {
+    if(shadingMode === ShadingType.Depth) {
+      renderer.fog.color = new THREE.Color(currentState)
+    }
+  }, [renderer]) 
+
+  useEffect(() => {
+     let unsubscribe = observeStore(store, state => state.undoable.present.world.backgroundColor, setFogColor, true)
+     return () => {
+      unsubscribe && unsubscribe()
+     }
+  }, [setFogColor])
 
   useEffect(() => {
     return () => {
@@ -51,7 +67,9 @@ const Effect = ({renderData, stats, shadingMode}) => {
 
   useEffect(() => {
     renderer.cleanupCache()
-    setRenderer(createShadingEffect(shadingMode, gl))
+    let render = createShadingEffect(shadingMode, gl)
+    setFogColor(store.getState().undoable.present.world.backgroundColor)
+    setRenderer(render)
   }, [shadingMode])
   
   useEffect(() => void renderer.setSize(size.width, size.height), [renderer, size])
@@ -191,6 +209,7 @@ const Editor = React.memo(({
     smallCanvasData.current.scene = scene
     smallCanvasData.current.gl = gl
   }
+  
 
   useExportToGltf(largeCanvasData.current.scene, withState)
   
@@ -222,7 +241,8 @@ const Editor = React.memo(({
                     />
                 </Provider>
                 <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
-                      shadingMode={ shadingMode }/>
+                      shadingMode={ shadingMode }
+                      store={ store }/>
               </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
@@ -256,7 +276,8 @@ const Editor = React.memo(({
                     </Provider>
                     <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                           stats={ stats } 
-                          shadingMode={ shadingMode }/>
+                          shadingMode={ shadingMode }
+                          store={ store }/>
                     
                   </Canvas>
                   <GuidesView

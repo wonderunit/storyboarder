@@ -1,16 +1,8 @@
 import ShadingEffect from "./ShadingEffect"
-import IconSprites from '../../shot-generator/components/IconsComponent/IconSprites';
 class DepthShading extends ShadingEffect {
 
     constructor( renderer ){
         super(renderer)
-     /*    this.objectsFilter = (object) => {
-            return object.parent.parent.userData.type !== "character" 
-            && object.parent.userData.type !== "object"
-            && object.parent.userData.type !== "environment" 
-            && object.userData.type !== "attachable" 
-            && object.userData.type !== 'image'
-        } */
         this.depthMaterials = {}
         this.originalMaterials = {}
         this.fog = new THREE.FogExp2(new THREE.Color("#000000"), 0.10)
