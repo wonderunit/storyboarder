@@ -42,9 +42,9 @@ const MoveButtons = () => {
       setSceneState({
         ...currentSceneState,
         position: [
-          currentSceneState.position[0] + moveDirection.x * currentSceneState.scale[0] * 0.5,
+          currentSceneState.position[0] + moveDirection.x * currentSceneState.scale * 0.5,
           currentSceneState.position[1],
-          currentSceneState.position[2] + moveDirection.y * currentSceneState.scale[0] * 0.5
+          currentSceneState.position[2] + moveDirection.y * currentSceneState.scale * 0.5
         ]
       })
     }
