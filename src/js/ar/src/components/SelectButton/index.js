@@ -24,12 +24,10 @@ const SelectButton = () => {
       })
     }
 
-    window.addEventListener('touchcancel', fn, false)
-    window.addEventListener('touchend', fn, false)
+    window.addEventListener('pointerup', fn, false)
 
     return () => {
-      window.removeEventListener('touchcancel', fn, false)
-      window.removeEventListener('touchend', fn, false)
+      window.removeEventListener('pointerup', fn, false)
     }
   }, [currentSceneState])
 

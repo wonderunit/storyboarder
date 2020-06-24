@@ -44,7 +44,6 @@ const Model = ({sceneObject, path, isSelected}) => {
   }, [object, sceneObject.model])
 
   useEffect(() => {
-    console.log(isSelected)
     selectObject(ref, isSelected)
   }, [isSelected])
 

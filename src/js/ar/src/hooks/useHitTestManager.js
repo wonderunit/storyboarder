@@ -42,7 +42,10 @@ const useHitTestManager = (selectEnabled) => {
           targetRef.current = target
 
           gl.xr.getCamera(camera)
-          camera.attach(target)
+          let inverse = new THREE.Matrix4().getInverse(camera.matrixWorld)
+
+          target.updateMatrixWorld()
+          initialMatrix.current.multiplyMatrices(inverse, target.matrixWorld)
 
           store.dispatch(selectObject(target.userData.id))
         }
@@ -63,7 +66,9 @@ const useHitTestManager = (selectEnabled) => {
 
   useFrame(() => {
     if (selectEnabled && targetRef.current) {
-      targetRef.current.updateMatrixWorld(true)
+      gl.xr.getCamera(camera)
+      targetRef.current.matrix.multiplyMatrices(camera.matrixWorld, initialMatrix.current)
+      targetRef.current.matrix.decompose(targetRef.current.position, targetRef.current.quaternion, targetRef.current.scale)
     }
   })
 }

@@ -12,5 +12,7 @@ void main() {
     viewWithoutTranslate[3][1] = 0.0;
     viewWithoutTranslate[3][2] = 0.0;
 
-    gl_Position = projectionMatrix * viewMatrix * vec4( position, 1.0 );//gl_Position.w;
+    vec4 pos = projectionMatrix * viewMatrix * vec4( position, 1.0 );//gl_Position.w;
+
+    gl_Position = pos.xyww;
 }
