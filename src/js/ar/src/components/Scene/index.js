@@ -50,7 +50,7 @@ const Scene = ({sceneObjects, world}) => {
     >
       <group
         position={currentSceneState.position}
-        scale={currentSceneState.scale}
+        scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
         visible={sceneVisible}
       >
         <Background/>

@@ -28,6 +28,7 @@ const useHitTestManager = (selectEnabled) => {
 
   const targetRef = useRef(null)
   const initialMatrix = useRef(new THREE.Matrix4())
+  const invertParentMatrix = useRef(new THREE.Matrix4())
 
   useEffect(() => {
     if (selectEnabled) {
@@ -46,6 +47,7 @@ const useHitTestManager = (selectEnabled) => {
 
           target.updateMatrixWorld()
           initialMatrix.current.multiplyMatrices(inverse, target.matrixWorld)
+          invertParentMatrix.current.getInverse(target.parent.matrixWorld)
 
           store.dispatch(selectObject(target.userData.id))
         }
@@ -68,6 +70,7 @@ const useHitTestManager = (selectEnabled) => {
     if (selectEnabled && targetRef.current) {
       gl.xr.getCamera(camera)
       targetRef.current.matrix.multiplyMatrices(camera.matrixWorld, initialMatrix.current)
+      targetRef.current.matrix.multiply(invertParentMatrix.current)
       targetRef.current.matrix.decompose(targetRef.current.position, targetRef.current.quaternion, targetRef.current.scale)
     }
   })
