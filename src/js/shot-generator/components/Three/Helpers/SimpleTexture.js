@@ -1,5 +1,15 @@
 import * as THREE from 'three'
 import DrawingTexture from './DrawingTexture'
+
+const fromClipSpaceToWorldSpace = (mousePos, camera, targetZ) => {
+    let vector = new THREE.Vector3();
+    vector.set(mousePos.x, mousePos.y, 0.5);
+    vector.unproject(camera);
+    vector.sub(camera.position).normalize();
+    let distance = (targetZ - camera.position.z) / vector.z;
+    let position = new THREE.Vector3().copy(camera.position).add(vector.multiplyScalar(distance));
+    return position;
+}
 class SimpleTexture extends DrawingTexture {
     constructor(){
         super();
@@ -49,7 +59,18 @@ class SimpleTexture extends DrawingTexture {
   
     draw (mousePosition, object, camera, brush){
         let intersection = super.draw(mousePosition, object, camera, brush)
-        if(!intersection) return
+        // If we don't have a uv coordinates and as a last resort we trying to translate mouse into object coordinate 
+        // From object coordinate we can sort of simulate uv coordinate logic for plain object 
+        // NOTE() : This won't work for any object except plain object( image object )
+        if(!intersection)  {
+            let worldPos = fromClipSpaceToWorldSpace(mousePosition, camera, object.position.z)
+            worldPos.applyMatrix4(new THREE.Matrix4().getInverse(object.matrixWorld))
+            intersection = {}
+            let geometry = object.getObjectByProperty("type", "Mesh").geometry;
+            let xOffset = geometry.boundingBox.max.x;
+            let yOffset = geometry.boundingBox.max.y;
+            intersection.uv = { x: (worldPos.x + xOffset), y: (worldPos.y + yOffset) }
+        }
         let screenX = (intersection.uv.x) * this.texture.image.width;
         let screenY = (1 - intersection.uv.y) * this.texture.image.height;
         this.drawingBrush.draw({ x: screenX, y: screenY }, brush)

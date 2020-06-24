@@ -13,8 +13,12 @@ class DrawingTexture {
         this.setMesh();
     }
 
-    resetMeshPos() {
-        this.drawingBrush.resetMeshPos();
+    prepareToDraw() {
+        this.drawingBrush.startDrawing();
+    }
+
+    endDraw() {
+        this.drawingBrush.stopDrawing();
     }
 
     setMesh(type) {
@@ -69,7 +73,6 @@ class DrawingTexture {
 
         let intersection = this.intersectImage(mousePosition.x, mousePosition.y, object, camera);
         if(intersection.uv === null) {
-            this.resetMeshPos();
             return;
         }
         this.isChanged = true;

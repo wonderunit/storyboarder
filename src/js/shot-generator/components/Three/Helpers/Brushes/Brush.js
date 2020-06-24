@@ -1,3 +1,4 @@
+import PointBuffer from './PointBuffer'
 class Brush {
     constructor(drawingCtx) {
         this.drawingCtx = drawingCtx;
@@ -6,18 +7,28 @@ class Brush {
         this.defaultHeight = 500;
         this.percentageBasedSize = true;
         this.brushSize;
+        this.positionBuffer = new PointBuffer(2);
+        this.isDrawing = false;
+    }
+
+    startDrawing() {
+        this.isDrawing = true;
+    }
+
+    stopDrawing() {
+        this.isDrawing = false;
+        this.positionBuffer.flushArray();
     }
     
+    set DrawingContext(value) {
+        this.drawingCtx = value
+    }
+
     resetMeshPos() {
         this.prevPos = null
     }
 
     draw(currentPos, brush) {
-        if(!this.prevPos) {
-            this.prevPos = {}
-            this.prevPos.x = currentPos.x;
-            this.prevPos.y = currentPos.y;
-        }
         this.brushSize = brush.size;
         let { width, height } =  this.drawingCtx.canvas;
         if(this.percentageBasedSize) {

@@ -213,27 +213,27 @@ const SceneManagerR3fLarge = connect(
       if(!intersections.length && drawingSceneTexture.current.draw) {
         let texture = drawingSceneTexture.current
         texture.draw({x, y}, camera, drawingBrush)
-      } else if(drawingSceneTexture.current.texture) {
-        drawingSceneTexture.current.texture.resetMeshPos()
       }
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
-        let drawingTexture = drawingTextures.current[key]
-        if(!intersections.length) {
-          drawingTexture.resetMeshPos()
-          continue;
-        }
-        let object = imageObjects.find((obj) => obj.userData.id === key)
+        let drawingTexture = drawingTextures.current[key];
+        let object = drawingTexture.material.parent.parent;
         if(!object || !object.visible) continue
-        if(intersections[0].object.parent.uuid === object.uuid) {
-          drawingTexture.draw({x, y}, object, camera, drawingBrush)
-        }
+        drawingTexture.draw({x, y}, object, camera, drawingBrush)
       }
 
     } 
 
     const onKeyDown = (event) => {
       isDrawStarted.current = true;
+      let keys = Object.keys(drawingTextures.current)
+      for(let i = 0; i < keys.length; i++) {
+        let key = keys[i]
+        drawingTextures.current[key].prepareToDraw();
+      }
+      if(drawingSceneTexture.current && drawingSceneTexture.current.texture) {
+        drawingSceneTexture.current.save()
+      }
       gl.domElement.addEventListener('mousemove', draw)
     }
   
@@ -254,7 +254,7 @@ const SceneManagerR3fLarge = connect(
       let keys = Object.keys(drawingTextures.current)
       for(let i = 0; i < keys.length; i++) {
         let key = keys[i]
-        drawingTextures.current[key].resetMeshPos();
+        drawingTextures.current[key].endDraw();
         let object = scene.__interaction.find((obj) => obj.userData.id === key)
         if(drawingTextures.current[key].isChanged) {
           drawingTextures.current[key].isChanged = false
@@ -263,7 +263,7 @@ const SceneManagerR3fLarge = connect(
       }
       if( drawingSceneTexture.current.save && drawingSceneTexture.current.texture.isChanged) {
         drawingSceneTexture.current.texture.isChanged = false
-        drawingSceneTexture.current.texture.resetMeshPos()
+        drawingSceneTexture.current.texture.endDraw()
         drawingSceneTexture.current.save()
       }
     }
