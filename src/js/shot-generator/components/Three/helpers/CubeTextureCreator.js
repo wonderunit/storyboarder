@@ -28,7 +28,6 @@ class CubeTextureCreator {
         for( let i = 0; i < this.imageElements.length; i++ ) {
             let element = this.imageElements[i];
             let croppedImage = texture.image[i];
-            
             this.saveFace(croppedImage, element.x, element.y, element.width, element.height, element.name, this.boardPath );
         }
         let {dir, ext, name} = path.parse(imagePath);
@@ -38,9 +37,11 @@ class CubeTextureCreator {
     }
 
     // Draw the specific mesh on drawingContext which contains original texture image
-    saveFace( image, x, y, width, height, name, boardPath) {                        
-        this.drawingCtx.drawImage(image, x, y, width, height); 
-       saveDataURLtoFile(image.toDataURL("image/jpeg"), `${name}.jpg`, 'models/sceneTextures/cubetexture', boardPath);
+    saveFace( image, x, y, width, height, name, boardPath) {         
+        this.croppedCtx.canvas.width = width;
+        this.croppedCtx.canvas.height = height;
+        this.croppedCtx.drawImage(image, x, y, width, height); 
+        saveDataURLtoFile(this.croppedCtx.canvas.toDataURL("image/jpeg"), `${name}.jpg`, 'models/sceneTextures/cubetexture', boardPath);
     }
 
     // Parses/crops passed cube texture and loading cube texture from them

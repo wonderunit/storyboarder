@@ -55,7 +55,8 @@ class CubeMapDrawingTexture extends DrawingTexture {
             index = x === -1 ? 5 : 4;
         }
         if( this.prevFaceIndex !== null && this.prevFaceIndex !== index ) {
-            this.resetMeshPos();
+            this.drawingBrush.stopDrawing();
+            this.drawingBrush.startDrawing();
         }
         this.prevFaceIndex = index;
         let screenX = (1 - intersection.uv.x) * this.texture.image[index].width;

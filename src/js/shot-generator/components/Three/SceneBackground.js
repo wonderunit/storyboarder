@@ -12,7 +12,7 @@ import SceneTextureType from '../InspectedWorld/SceneTextureType'
 const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawingSceneTexture }) => {
     const texturePath = useRef()
     const { scene, camera, gl } = useThree()
-    const { asset: texture } = useAsset(!scene.userData.tempPath ? imagePath[0] : imagePath[0].includes(scene.userData.tempPath ) ? null : imagePath[0])
+    const { asset: texture } = useAsset( !imagePath[0] || !scene.userData.tempPath ? imagePath[0] : imagePath[0].includes(scene.userData.tempPath ) ? null : imagePath[0])
     const intersectionBox = useRef()
     const intersectionCamera = useRef()
     const cubeTextureCreator = useRef( new CubeTextureCreator())
