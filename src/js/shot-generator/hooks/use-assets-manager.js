@@ -68,7 +68,7 @@ export const loadAsset = (path) => {
         } else {
           /** Current resource is texture */
           loader = textureLoader
-          filePath += "#" + Date.now()
+          filePath += "?ts=" + Date.now()
         }
 
         loader.load(

@@ -97,31 +97,15 @@ const useAssetsManager = () => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-        if (id.includes('/images/')) {
-          load(textureLoader, `${id}?ts=` + Date.now(), {
-            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
-          })
-          dispatch({ type: 'LOAD', payload: { id } })
-        } else if(id.includes('/sceneTextures')) {
-          let info = path.dirname(id)
-          cubeLoader.setPath(info + "/cubetexture/")
-          load(cubeLoader, [
-            'px.jpg?ts=' + new Date().getTime(),
-            'nx.jpg?ts=' + new Date().getTime(),
-            'py.jpg?ts=' + new Date().getTime(),
-            'ny.jpg?ts=' + new Date().getTime(),
-            'pz.jpg?ts=' + new Date().getTime(),
-            'nz.jpg?ts=' + new Date().getTime()
-        ], {
-            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
-          })
-          dispatch({ type: 'LOAD', payload: { id } })
-        } else {
+        if (!id.includes('/images/') && !id.includes('/sceneTextures/')) {
           load(loader, id, {
+            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
+            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
+            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+          })
+          dispatch({ type: 'LOAD', payload: { id } })
+        }  else {
+          load(textureLoader, `${id}?ts=` + Date.now(), {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
             onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })

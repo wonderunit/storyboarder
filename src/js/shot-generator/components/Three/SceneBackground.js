@@ -132,7 +132,7 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
             drawingSceneTexture.texture.setTexture(texture)
             drawingSceneTexture.save = save
         }
-        scene.userData.texturePath = imagePath[0]
+        scene.userData.texturePath = world.sceneTexture
         scene.background = backgroundTexture;
         drawingSceneTexture.draw = draw
     }, [texture])

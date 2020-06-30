@@ -1,6 +1,4 @@
-import saveDataURLtoFile from '../../../helpers/saveDataURLtoFile'
-import path from 'path'
-import * as THREE from 'three'
+const THREE = require('three')
 
 class CubeTextureCreator {
     constructor() {
@@ -12,34 +10,6 @@ class CubeTextureCreator {
         this.imageElements = [];
         this.gltf;
         this.boardPath;
-    }
-
-    // Saves cube map changes back to texture
-    // It takes same elements positions which were initialized in getCubeMapTexture
-    // Require getCubeMapTexture to be launch first
-    saveCubeMapTexture( imagePath, texture, filename = null ) {
-        if( !this.imageElements.length || !this.gltf ) return;
-        let image = this.gltf.image;
-        this.drawingCanvas.width = image.width;
-        this.drawingCanvas.height = image.height;
-        this.drawingCtx.drawImage(image, 0, 0, image.width, image.height);
-
-        for( let i = 0; i < this.imageElements.length; i++ ) {
-            let element = this.imageElements[i];
-            let croppedImage = texture.image[i];
-            this.saveFace(croppedImage, element.x, element.y, element.width, element.height, element.name, this.boardPath );
-        }
-        let {dir, ext, name} = path.parse(imagePath);
-        let dataUrl = this.drawingCtx.canvas.toDataURL("image/jpeg");
-        let properName = filename ? filename : name + ext; 
-        saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures', this.boardPath);
-    }
-
-    // Draw the specific mesh on drawingContext which contains original texture image
-    saveFace( image, x, y, width, height, name, boardPath) {         
-        this.croppedCtx.canvas.width = width;
-        this.croppedCtx.canvas.height = height;
-        this.drawingCtx.drawImage(image, x, y, width, height); 
     }
 
     // Parses/crops passed cube texture and loading cube texture from them
@@ -121,13 +91,10 @@ class CubeTextureCreator {
     crop( image, x, y, width, height, name, boardPath ) {
         this.drawingCtx.drawImage(image, 0, 0, image.width, image.height);
         let imageData = this.drawingCtx.getImageData(x, y, width, height);                                   
-        let croppedCanvas = document.createElement('canvas');
-        let croppedCtx = croppedCanvas.getContext('2d');
-        croppedCanvas.width = width;
-        croppedCanvas.height = height;
-        croppedCtx.putImageData(imageData, 0, 0);   
-        let texture = new THREE.Texture(croppedCtx.canvas)
-        return texture.image
+        this.croppedCtx.putImageData(imageData, 0, 0);   
+        let htmlImage = new Image();
+        htmlImage.src = this.croppedCtx.canvas.toDataURL();
+        return htmlImage
     }
 }
 

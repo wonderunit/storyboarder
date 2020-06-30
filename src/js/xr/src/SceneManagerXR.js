@@ -66,7 +66,7 @@ const Boards = require('./components/ui/Boards')
 const BonesHelper = require('./three/BonesHelper')
 const Voicer = require('./three/Voicer')
 
-
+const CubeTextureCreator = require('./helpers/CubeTextureCreator').default
 
 const musicSystem = require('./music-system')
 
@@ -149,6 +149,7 @@ const SceneContent = connect(
   }) => {
     const { gl, camera, scene } = useThree()
     const prevSceneTexture = useRef()
+    const cubeMapCreator = useRef(new CubeTextureCreator())
     const sceneTexture = getAsset(getSceneTextureFilePath(world, prevSceneTexture.current, removeAsset))
     const teleportRef = useRef()
     // actions
@@ -246,7 +247,8 @@ const SceneContent = connect(
 
     useEffect(() => {
       if(!sceneTexture) return
-      scene.background = sceneTexture
+      let cubeTexture = cubeMapCreator.current.getCubeMapTexture(sceneTexture)
+      scene.background = cubeTexture
     }, [sceneTexture])
 
     const welcomeAudio = useMemo(() => {
