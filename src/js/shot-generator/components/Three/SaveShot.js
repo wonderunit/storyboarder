@@ -96,14 +96,13 @@ const SaveShot = connect(
         }) } else {
             let plotImage = renderImagesForBoard()
             setTimeout(() => {
-                withState((dispatch, state) => {
+            withState((dispatch, state) => {
                     ipcRenderer.send('saveShotPlot', {
                         plotImage: plotImage,
                         currentBoard: state.board.uid
                     })
                 })
-              }, 100)
-     
+            }, 0)
         }
     }, [scene])
   
@@ -121,9 +120,9 @@ const SaveShot = connect(
     const renderImagesForBoard = (dispatch, state) => {
         let width = isPlot ? 900 : Math.ceil(900 * state.aspectRatio)
         let imageRenderCamera = camera.clone()
-        imageRenderCamera.layers.set(SHOT_LAYERS)
         // render the image
         if(!isPlot) {
+            imageRenderCamera.layers.set(SHOT_LAYERS)
             imageRenderCamera.aspect = state.aspectRatio
             imageRenderCamera.updateProjectionMatrix()
         }

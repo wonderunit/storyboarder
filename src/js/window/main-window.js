@@ -6922,6 +6922,13 @@ const ZOOM_LEVELS = [
 ]
 const ZOOM_CENTER = 4
 let zoomIndex = ZOOM_CENTER
+const ShotStates = {
+  SavingShots: "SavingShots",
+  InsertingNewShot: "InsertingNewShot",
+  InsertedNewShot: "InsertedNewShot"
+}
+let shotStatus 
+let afterInsertShot
 // via https://stackoverflow.com/a/25087661
 const closest = (arr, target) => {
    for (let i = 1; i < arr.length; i++) {
@@ -7044,6 +7051,7 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   renderShotGeneratorPanel()
 }
 ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
+  currentShotStatus = ShotStates.SavingShots
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
@@ -7053,21 +7061,26 @@ ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
   })
 })
 ipcRenderer.on('insertShot', async (event, { data, images, currentBoard }) => {
+  shotStatus = ShotStates.InsertingNewShot
   let position = boardData.boards.map(board => board.uid).indexOf(currentBoard.uid);
   let index = await newBoard(position + 1)
   await gotoBoard(index)
-
+  
   let uid = boardData.boards[index].uid
-
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
-
+  if(afterInsertShot) {
+    await afterInsertShot(uid) 
+    afterInsertShot = null
+  }
   ipcRenderer.send('shot-generator:update', {
     board: boardData.boards[index]
   })
+  shotStatus = ShotStates.InsertedNewShot
 })
-ipcRenderer.on('saveShotPlot', async (event, { plotImage, currentBoard }) => {
+
+const saveShotPlot = async (plotImage, currentBoard) => {
   // save camera-plot (re-use context)
   let { width, height } = storyboarderSketchPane.sketchPane
   let context = createSizedContext([width, height])
@@ -7081,6 +7094,14 @@ ipcRenderer.on('saveShotPlot', async (event, { plotImage, currentBoard }) => {
     context.canvas.toDataURL(),
     boardModel.boardFilenameForCameraPlot(board)
     )
+}
+ipcRenderer.on('saveShotPlot', async (event, { plotImage, currentBoard }) => {
+  if(shotStatus === ShotStates.InsertingNewShot) {
+    afterInsertShot = async (boardId) => { await saveShotPlot(plotImage, boardId) }  
+  } else {
+    await saveShotPlot(plotImage, currentBoard)
+  }
+
 })
 ipcRenderer.on('storyboarder:get-boards', event => {
   ipcRenderer.send('shot-generator:get-boards', {
