@@ -31,6 +31,7 @@ const preloadAssetsList = [
 const App = ({sceneObjects, world, board}) => {
   const innerState = useState({
     position: [0, 0, 0],
+    rotation: 0,
     scale: 1.0,
     selectEnabled: false
   })

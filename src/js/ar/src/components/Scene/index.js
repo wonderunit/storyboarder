@@ -47,6 +47,7 @@ const Scene = ({sceneObjects, world}) => {
   return (
     <group
       position={[0, -1.0, 0]}
+      rotation={[0, currentSceneState.rotation, 0]}
     >
       <group
         position={currentSceneState.position}

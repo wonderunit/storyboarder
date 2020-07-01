@@ -71,6 +71,7 @@ const useHitTestManager = (selectEnabled) => {
             rotation = targetRef.current.rotation.y
             break
           case 'object':
+          case 'image':
             rotation = {
               x: targetRef.current.rotation.x,
               y: targetRef.current.rotation.y,

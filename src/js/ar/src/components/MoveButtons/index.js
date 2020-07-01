@@ -9,24 +9,31 @@ const MoveButtons = () => {
   const [currentSceneState, setSceneState] = useContext(SceneState)
   
   const [movementEnabled, setMovementEnabled] = useState(false)
+  const [rotationEnabled, setRotationEnabled] = useState(false)
   const [direction, setDirection] = useState(0)
   
-  /** Enable movement on group pointer down */
-  const onGroupDown = useCallback(() => {
+  /** Enable movement on pointer down */
+  const onMovementEnabled = useCallback((angle) => {
     setMovementEnabled(true)
+    setDirection(angle)
+  }, [])
+
+  /** Enable rotation on pointer down */
+  const onRotationEnabled = useCallback((angle) => {
+    setRotationEnabled(true)
+    setDirection(angle)
   }, [])
   
-  /** Disable movement on window pointer up*/
+  /** Disable movement/rotation on window pointer up*/
   useEffect(() => {
     const listener = () => {
       setMovementEnabled(false)
+      setRotationEnabled(false)
     }
     
-    window.addEventListener('touchend', listener)
-    window.addEventListener('touchcancel', listener)
+    window.addEventListener('pointerup', listener)
     return () => {
-      window.removeEventListener('touchend', listener)
-      window.removeEventListener('touchcancel', listener)
+      window.removeEventListener('pointerup', listener)
     }
   }, [])
   
@@ -37,41 +44,46 @@ const MoveButtons = () => {
   useThreeFrame(({camera}) => {
     if (movementEnabled) {
       cameraDirection.set( - camera.matrixWorld.elements[ 8 ], - camera.matrixWorld.elements[ 9 ], - camera.matrixWorld.elements[ 10 ] ).normalize();
-      moveDirection.set(cameraDirection.x, cameraDirection.z).rotateAround(moveCenter, direction)
+      moveDirection.set(cameraDirection.x, cameraDirection.z).rotateAround(moveCenter, direction + currentSceneState.rotation)
 
       setSceneState({
         ...currentSceneState,
         position: [
-          currentSceneState.position[0] + moveDirection.x * currentSceneState.scale * 0.5,
+          currentSceneState.position[0] + moveDirection.x * currentSceneState.scale * 0.2,
           currentSceneState.position[1],
-          currentSceneState.position[2] + moveDirection.y * currentSceneState.scale * 0.5
+          currentSceneState.position[2] + moveDirection.y * currentSceneState.scale * 0.2
         ]
+      })
+    } else if (rotationEnabled) {
+      setSceneState({
+        ...currentSceneState,
+        rotation: currentSceneState.rotation - Math.sign(direction) * 0.1
       })
     }
   }, [currentSceneState, movementEnabled, direction])
   
   return (
-    <div className='move-buttons' onPointerDown={onGroupDown}>
+    <div className='move-buttons'>
       <div className='move-buttons__row'>
         <div
           className='move-buttons__button'
-          onTouchStart={() => setDirection(Math.PI)}
+          onTouchStart={() => onMovementEnabled(Math.PI)}
         />
       </div>
       <div className='move-buttons__row move-buttons__h'>
         <div
           className='move-buttons__button'
-          onTouchStart={() => setDirection(Math.PI * 0.5)}
+          onTouchStart={() => onRotationEnabled(Math.PI * 0.5)}
         />
         <div
           className='move-buttons__button'
-          onTouchStart={() => setDirection(-Math.PI * 0.5)}
+          onTouchStart={() => onRotationEnabled(-Math.PI * 0.5)}
         />
       </div>
       <div className='move-buttons__row'>
         <div
           className='move-buttons__button'
-          onTouchStart={() => setDirection(0)}
+          onTouchStart={() => onMovementEnabled(0)}
         />
       </div>
     </div>
