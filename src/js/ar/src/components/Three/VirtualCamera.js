@@ -36,6 +36,7 @@ const VirtualCamera = ({sceneObject}) => {
 
       userData={{
         isSelectable: true,
+        type: 'camera',
         id: sceneObject.id,
         locked
       }}

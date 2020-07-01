@@ -61,6 +61,7 @@ const Light = ({sceneObject, isSelected}) => {
 
       userData={{
         isSelectable: true,
+        type: 'light',
         id: sceneObject.id,
         locked
       }}

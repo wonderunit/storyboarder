@@ -55,6 +55,7 @@ const Image = ({sceneObject, path}) => {
 
       userData={{
         isSelectable: true,
+        type: 'image',
         id: sceneObject.id,
         locked
       }}

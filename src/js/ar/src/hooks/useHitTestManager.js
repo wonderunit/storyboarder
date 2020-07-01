@@ -28,7 +28,7 @@ const useHitTestManager = (selectEnabled) => {
 
   const targetRef = useRef(null)
   const initialMatrix = useRef(new THREE.Matrix4())
-  const invertParentMatrix = useRef(new THREE.Matrix4())
+  const quaternion = useRef(new THREE.Quaternion())
 
   useEffect(() => {
     if (selectEnabled) {
@@ -39,16 +39,16 @@ const useHitTestManager = (selectEnabled) => {
 
       if (intersects.length) {
         const target = getObject(intersects[0].object)
+
+        let inverse = new THREE.Matrix4().getInverse(camera.matrixWorld)
+
+        target.updateWorldMatrix( false, false )
+        target.matrixAutoUpdate = false
+
+        initialMatrix.current.multiplyMatrices(inverse, target.matrixWorld)
+
         if (targetRef.current !== target) {
           targetRef.current = target
-
-          gl.xr.getCamera(camera)
-          let inverse = new THREE.Matrix4().getInverse(camera.matrixWorld)
-
-          target.updateMatrixWorld()
-          initialMatrix.current.multiplyMatrices(inverse, target.matrixWorld)
-          invertParentMatrix.current.getInverse(target.parent.matrixWorld)
-
           store.dispatch(selectObject(target.userData.id))
         }
       } else {
@@ -59,8 +59,26 @@ const useHitTestManager = (selectEnabled) => {
       }
     } else {
       if (targetRef.current) {
-        getMainObject(scene).attach(targetRef.current)
-        //store.dispatch(updateObject(targetRef.current.userData.id, {}))
+        let position = {
+          x: targetRef.current.position.x,
+          y: targetRef.current.position.z,
+          z: targetRef.current.position.y
+        }
+
+        let rotation
+        switch (targetRef.current.userData.type) {
+          case 'character':
+            rotation = targetRef.current.rotation.y
+            break
+          case 'object':
+            rotation = {
+              x: targetRef.current.rotation.x,
+              y: targetRef.current.rotation.y,
+              z: targetRef.current.rotation.z
+            }
+        }
+
+        store.dispatch(updateObject(targetRef.current.userData.id, {...position, rotation}))
       }
     }
   }, [selectEnabled])
@@ -69,9 +87,16 @@ const useHitTestManager = (selectEnabled) => {
   useFrame(() => {
     if (selectEnabled && targetRef.current) {
       gl.xr.getCamera(camera)
-      targetRef.current.matrix.multiplyMatrices(camera.matrixWorld, initialMatrix.current)
-      targetRef.current.matrix.multiply(invertParentMatrix.current)
-      targetRef.current.matrix.decompose(targetRef.current.position, targetRef.current.quaternion, targetRef.current.scale)
+      targetRef.current.matrixWorld.multiplyMatrices(camera.matrixWorld, initialMatrix.current)
+      targetRef.current.matrix.getInverse(targetRef.current.parent.matrixWorld).multiply(targetRef.current.matrixWorld)
+
+      if (targetRef.current.userData.type === 'character') {
+        targetRef.current.matrix.decompose(targetRef.current.position, quaternion.current, targetRef.current.scale)
+      } else {
+        targetRef.current.matrix.decompose(targetRef.current.position, targetRef.current.quaternion, targetRef.current.scale)
+      }
+
+      targetRef.current.updateMatrixWorld(true)
     }
   })
 }

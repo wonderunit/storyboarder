@@ -97,6 +97,7 @@ const Character = ({sceneObject, path}) => {
 
       userData={{
         isSelectable: true,
+        type: 'character',
         id: sceneObject.id,
         locked
       }}
