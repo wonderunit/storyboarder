@@ -46,28 +46,31 @@ const Scene = ({sceneObjects, world}) => {
   
   return (
     <group
-      position={[0, -1.0, 0]}
       rotation={[0, currentSceneState.rotation, 0]}
     >
       <group
-        position={currentSceneState.position}
-        scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
-        visible={sceneVisible}
+          position={[0, -1.0, 0]}
       >
-        <Background/>
-        <Ground/>
-        <ambientLight
-          color={ 0xffffff }
-          intensity={ world.ambient.intensity }
-        />
-        <directionalLight
-          color={ 0xffffff }
-          intensity={ world.directional.intensity }
-          position={ [0, 1.5, 0] }
-          target-position={ [0, 0, 0.4] }
-        />
-        <Environment/>
-        {Object.values(sceneObjects).map(renderObject)}
+        <group
+          position={currentSceneState.position}
+          scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
+          visible={sceneVisible}
+        >
+          <Background/>
+          <Ground/>
+          <ambientLight
+            color={ 0xffffff }
+            intensity={ world.ambient.intensity }
+          />
+          <directionalLight
+            color={ 0xffffff }
+            intensity={ world.directional.intensity }
+            position={ [0, 1.5, 0] }
+            target-position={ [0, 0, 0.4] }
+          />
+          <Environment/>
+          {Object.values(sceneObjects).map(renderObject)}
+        </group>
       </group>
     </group>
   )

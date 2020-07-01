@@ -20,7 +20,7 @@ const getObject = (child) => {
 }
 
 const getMainObject = (scene) => {
-  return scene.children[0].children[0]
+  return scene.children[0].children[0].children[0]
 }
 
 const useHitTestManager = (selectEnabled) => {
@@ -97,6 +97,7 @@ const useHitTestManager = (selectEnabled) => {
         targetRef.current.matrix.decompose(targetRef.current.position, targetRef.current.quaternion, targetRef.current.scale)
       }
 
+      targetRef.current.updateMatrix()
       targetRef.current.updateMatrixWorld(true)
     }
   })
