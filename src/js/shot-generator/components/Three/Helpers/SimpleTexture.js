@@ -63,13 +63,8 @@ class SimpleTexture extends DrawingTexture {
         // From object coordinate we can sort of simulate uv coordinate logic for plain object 
         // NOTE() : This won't work for any object except plain object( image object )
         if(!intersection)  {
-            let worldPos = fromClipSpaceToWorldSpace(mousePosition, camera, object.position.z)
-            worldPos.applyMatrix4(new THREE.Matrix4().getInverse(object.matrixWorld))
-            intersection = {}
-            let geometry = object.getObjectByProperty("type", "Mesh").geometry;
-            let xOffset = geometry.boundingBox.max.x;
-            let yOffset = geometry.boundingBox.max.y;
-            intersection.uv = { x: (worldPos.x + xOffset), y: (worldPos.y + yOffset) }
+            this.endDraw();
+            return
         }
         let screenX = (intersection.uv.x) * this.texture.image.width;
         let screenY = (1 - intersection.uv.y) * this.texture.image.height;

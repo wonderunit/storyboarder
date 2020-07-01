@@ -1,5 +1,34 @@
 import Brush from './Brush'
+const midPointsBtw = (p1, p2) => {
+    return {
+        x: p1.x + (p2.x - p1.x) / 2,
+        y: p1.y + (p2.y - p1.y) / 2 
+    }
+}
 
+const getDifferenceTo = (from, to) => {
+    return {x:from.x - to.x, y: from.y - to.y}
+}
+const getDistanceTo = (from, to) => {
+    const diff = getDifferenceTo(from, to)
+    return Math.sqrt(Math.pow(diff.x, 2) + Math.pow(diff.y, 2))
+}
+
+const getAngleTo = (from, to) => {
+    const diff = getDifferenceTo(from, to)
+    return Math.atan2(diff.y, diff.x)
+}
+
+const moveByAngle = (angle, distance, point) => {
+    const angleRotated = angle + (Math.PI / 2)
+    let x = point.x + (Math.sin(angleRotated) * distance)
+    let y = point.y - (Math.cos(angleRotated) * distance)
+    return {x, y}
+}
+const getVector2FromBuffer = (buffer, index) => {
+    let elements = buffer.getElements(index);
+    return { x:elements[0], y:elements[1] }
+}
 class SimpleBrush extends Brush {
 
     constructor(drawingCtx) {
@@ -11,39 +40,35 @@ class SimpleBrush extends Brush {
         super.draw(currentPos, brush);
         this.drawingCtx.strokeStyle = brush.color;
         this.drawingCtx.fillStyle = brush.color;
-        this.drawingCtx.lineWidth = this.brushSize;
-        let prevX 
-        let prevY 
+        this.drawingCtx.lineWidth = this.brushSize * 2;
+        this.drawingCtx.lineJoin = 'round'
+        this.drawingCtx.lineCap = 'round'
+        let prevPos
         if(this.positionBuffer.currentLength === 0) {
-            prevX = currentPos.x;
-            prevY = currentPos.y;
+            prevPos = currentPos
         } else {
-            let prevElements = this.positionBuffer.getElements(this.positionBuffer.currentLength - 1);
-            prevX = prevElements[0];
-            prevY = prevElements[1];
+            prevPos = getVector2FromBuffer(this.positionBuffer, this.positionBuffer.currentLength - 1);
         }
-        let circle = new Path2D();
-        let xOffset = currentPos.x - prevX;
-        let yOffset = currentPos.y - prevY;
-        let length;
-        if(Math.abs(xOffset) < Math.abs(yOffset)) {
-            length = Math.abs(yOffset);
-          
-        } else  {
-            length = Math.abs(xOffset);
+        if(this.positionBuffer.currentLength === 0) {
+            this.positionBuffer.addElements(currentPos.x, currentPos.y);
+            return
         }
-        xOffset /= length;
-        yOffset /= length;
-        let size = this.brushSize;
-        for(let i = 0; i < length; i++) {
-            let x = xOffset * i;
-            let y = yOffset * i;
-            circle.moveTo(prevX + x, prevY + y);
-            circle.arc(prevX + x, prevY + y, size, 0, 2 * Math.PI)    
+        this.drawingCtx.moveTo(currentPos.x, currentPos.y)
+        this.drawingCtx.beginPath()
+        let distance = getDistanceTo(currentPos, prevPos)
+        let angle = getAngleTo(currentPos, prevPos)
+        let newPos = moveByAngle(angle, distance, prevPos)
+        this.positionBuffer.addElements(newPos.x, newPos.y);
+        let p1 = getVector2FromBuffer(this.positionBuffer, 0)
+        let p2 = getVector2FromBuffer(this.positionBuffer, 1)
+        for(let i = 1, length = this.positionBuffer.currentLength; i < length; i++) {
+            let midpoint = midPointsBtw(p1, p2)
+            this.drawingCtx.quadraticCurveTo(p1.x, p1.y, midpoint.x, midpoint.y)
+            p1 = getVector2FromBuffer(this.positionBuffer, i)
+            p2 = getVector2FromBuffer(this.positionBuffer, i+1)
         }
+        this.drawingCtx.lineTo(p1.x, p1.y)
         this.drawingCtx.stroke();
-        this.drawingCtx.fill(circle);
-        this.positionBuffer.addElements(currentPos.x, currentPos.y);
     }
 }
 
