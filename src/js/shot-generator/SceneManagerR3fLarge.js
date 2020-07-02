@@ -206,7 +206,7 @@ const SceneManagerR3fLarge = connect(
     let raycaster = useRef(new THREE.Raycaster())
     const draw = (event) => {
       let keys = Object.keys(drawingTextures.current)
-      let {x, y} = mouse(event, gl)
+      let {x, y} = mouse(event, activeGL)
       raycaster.current.setFromCamera({x, y}, camera)
       let imageObjects = getImageObjects()
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
@@ -219,7 +219,7 @@ const SceneManagerR3fLarge = connect(
         let drawingTexture = drawingTextures.current[key];
         let object = drawingTexture.material.parent.parent;
         if(!object || !object.visible) continue
-        drawingTexture.draw({x, y}, object, camera, drawingBrush)
+        drawingTexture.draw({x, y}, object, camera, drawingBrush, activeGL)
       }
 
     } 
