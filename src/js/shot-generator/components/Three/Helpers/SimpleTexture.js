@@ -68,9 +68,9 @@ class SimpleTexture extends DrawingTexture {
         // NOTE() : This won't work for any object except plain object( image object )
 
         if(!intersection)  {
+            if(!this.isChanged) return
             let worldPos = fromClipSpaceToWorldSpace(mousePosition, camera, object.position.z)
             intersection = {uv: {}}
-            this.pointerBox.updateMatrixWorld(true)
             //#region Clip space to world space method
             let scale = object.scale.clone()
             scale.z = 0;
