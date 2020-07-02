@@ -1,8 +1,10 @@
-import React, {useState, useMemo} from 'react'
+import React, {useEffect, useMemo} from 'react'
 
 import getFilepathForModelByType from './../../../xr/src/helpers/get-filepath-for-model-by-type'
 import getFilepathForImage from './../../../xr/src/helpers/get-filepath-for-image'
-import {useAssets} from "../../../shot-generator/hooks/use-assets-manager";
+import {useAsset, useAssets} from "../../../shot-generator/hooks/use-assets-manager"
+
+import * as BonesHelper from "../../../xr/src/three/BonesHelper"
 
 const getSceneObjectsHash = (sceneObjects) => {
   return Object.values(sceneObjects).reduce((acc, value) => acc + value.id, '')
@@ -32,6 +34,16 @@ const useSceneLoader = (sceneObjects, world, additionalAssets = []) => {
   }, [sceneObjects, world.environment.file])
   
   const loadStatus = useAssets(resources)
+  const isLoaded = loadStatus.assets.length / resources.length
+
+  const {asset: boneGLTF} = useAsset('/data/system/dummies/bone.glb')
+
+  useEffect(() => {
+    if (isLoaded && boneGLTF) {
+      const mesh = boneGLTF.scene.children.find(child => child.isMesh)
+      BonesHelper.getInstance(mesh)
+    }
+  }, [isLoaded, boneGLTF])
   
   return {
     ...loadStatus,

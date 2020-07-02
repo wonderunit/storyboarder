@@ -1,16 +1,19 @@
-import React, {useMemo, useState} from 'react'
+import React, {useMemo, useState, useRef, useEffect} from 'react'
 import {connect} from 'react-redux'
 
-import {getSceneObjects} from "../../../../shared/reducers/shot-generator"
+import {getSceneObjects, getSelections} from "../../../../shared/reducers/shot-generator"
 
 import {useAsset} from "../../../../shot-generator/hooks/use-assets-manager"
 
 
 import RoundedBoxGeometryCreator from "../../../../vendor/three-rounded-box"
 import getFilePathForImage from "../../../../xr/src/helpers/get-filepath-for-image"
+import selectObject from "../../helpers/selectObject"
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
-const Image = ({sceneObject, path}) => {
+const Image = ({sceneObject, path, isSelected}) => {
+  const ref = useRef(null)
+
   const {asset: texture} = useAsset(path || null)
   const [aspect, setAspect] = useState(1.0)
 
@@ -41,10 +44,15 @@ const Image = ({sceneObject, path}) => {
     return new THREE.Mesh(geometry, material)
   }, [material])
 
+  useEffect(() => {
+    selectObject(ref, isSelected)
+  }, [isSelected])
+
   const { x, y, z, visible, height, rotation, locked } = sceneObject
   
   return (
     <primitive
+      ref={ref}
       object={imageObject}
       
       visible={visible}
@@ -66,10 +74,13 @@ const Image = ({sceneObject, path}) => {
 const mapStateToProps = (state, ownProps) => {
   const sceneObject = getSceneObjects(state)[ownProps.id]
   const path = getFilePathForImage(sceneObject)
+
+  const isSelected = getSelections(state).indexOf(ownProps.id) !== -1
   
   return {
     sceneObject,
-    path
+    path,
+    isSelected
   }
 }
   

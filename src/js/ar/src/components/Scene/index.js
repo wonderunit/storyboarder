@@ -15,7 +15,7 @@ import VirtualCamera from "../Three/VirtualCamera"
 import Character from "../Three/Character"
 import Background from "../Three/Background"
 import Ground from "../Three/Ground"
-import useHitTestManager from "../../hooks/useHitTestManager";
+import useHitTestManager from "../../hooks/useHitTestManager"
 
 
 const componentMap = {
