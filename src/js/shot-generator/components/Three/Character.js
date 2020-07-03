@@ -212,9 +212,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         changedSkeleton.push({ 
           name: bone.name,
           position: { 
-            x: position.x,
-            y: position.y,
-            z: position.z
+            x: position.x, 
+            y: position.y, 
+            z: position.z 
           }, 
           rotation: { 
             x: rotation.x, 
@@ -259,21 +259,22 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         postureStatics.current.rightArmQuat = rightArm.worldQuaternion()
         postureStatics.current.leftArmQuat = leftArm.worldQuaternion()
       }
+      let euler = new THREE.Euler()
       for( let i = 0; i < postureBones.length; i++ ) {
         let key = postureBones[i]
         let currentBone = skeleton.bones.find(o => o.name === key)
         currentBone.updateMatrixWorld(true)
         let parentQuat = currentBone.parent.worldQuaternion()
         let badBone = badPostureSkeleton[key]
-        badQuat.setFromEuler(new THREE.Euler(badBone.rotation.x, badBone.rotation.y, badBone.rotation.z))    
+        badQuat.setFromEuler(euler.set(badBone.rotation.x, badBone.rotation.y, badBone.rotation.z))    
         badQuat.premultiply(parentQuat)
         let goodBone = goodPostureSkeleton[key]
-        goodQuat.setFromEuler(new THREE.Euler(goodBone.rotation.x, goodBone.rotation.y, goodBone.rotation.z))
+        goodQuat.setFromEuler(euler.set(goodBone.rotation.x, goodBone.rotation.y, goodBone.rotation.z))
         goodQuat.premultiply(parentQuat)
 
         if(!postureDeltas.current[key]) {
           postureDeltas.current[key] = {}
-          THREE.Quaternion.slerp(badQuat, goodQuat, currentQuat, 0.5)
+          THREE.Quaternion.slerp(badQuat, goodQuat, currentQuat, sceneObject.posturePercentage)
           
           let delta = new THREE.Quaternion()
           delta.multiply(currentQuat.conjugate())
@@ -283,10 +284,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         THREE.Quaternion.slerp(badQuat, goodQuat, currentQuat, sceneObject.posturePercentage)
         
         currentQuat.multiply(postureDeltas.current[key].delta)
-        let transformationMatrix = new THREE.Matrix4()
-        transformationMatrix.multiply(currentBone.matrix)
-        transformationMatrix.multiply(currentBone.getInverseMatrixWorld())
-        currentQuat.applyMatrix4(transformationMatrix)
+        currentQuat.applyMatrix4(currentBone.parent.getInverseMatrixWorld())
         currentBone.quaternion.copy(currentQuat)
       }
 
@@ -339,7 +337,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       if(ready) {
         props.forceUpdate({id:sceneObject.id})
       }
-    }, [ready])
+    }, [ready])    
 
     useEffect(() => {
       if(!lod) return
