@@ -654,14 +654,14 @@ AppMenu.View = () => ({
       }
     },
     {
-      label: 'Zoom In',
+      label: 'Scale UI Up',
       accelerator: keystrokeFor("menu:view:zoom-in"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('zoomIn')
       }
     },
     {
-      label: 'Zoom Out',
+      label: 'Scale UI Down',
       accelerator: keystrokeFor("menu:view:zoom-out"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('zoomOut')
