@@ -1317,6 +1317,7 @@ div.fatal-error-screen__report::selection {
 
 .select .select__single-value {
   color: #eee;
+  text-transform: none;
 }
 
 .select .select__placeholder {

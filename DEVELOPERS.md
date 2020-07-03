@@ -25,12 +25,17 @@ You can run a quick view test using [`budo`](https://github.com/mattdesl/budo) i
 
 ## Building a Release
 
-Manually pre-compile the Shot Generator VR client app in production mode:
+First, trash any existing build files:
 
-    $ npm run clean:xr    # trash any existing files in src/js/xr/dist
-    $ npm run build       # build both a client app to src/js/xr/dist and a shot generator app to the src/build
+    rm -rf .cache
+    rm src/js/xr/dist/*
+    rm src/build/*
 
-Then, build the app:
+To compile only (Shot Generator, Shot Explorer, and Shot Generator XR)
+
+    $ npm run build
+
+To compile and build Storyboarder.app:
 
     $ npm run dist:mac    # Mac only
     $ npm run dist:win    # Windows only
