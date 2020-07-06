@@ -73,6 +73,7 @@ const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
 
+const SettingsService = require("../windows/shot-generator/SettingsService")
 
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
@@ -6939,19 +6940,22 @@ ipcRenderer.on('zoomReset', value => {
   zoomIndex = ZOOM_CENTER
   storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
 })
-let zoom = 1
+const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"));
+let zoom = settingsService.getSettingByKey("zoom")
+zoom = zoom ? zoom : 0
 const maxZoom = {in: 0.2, out: -1.0}
 webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+webFrame.setZoomLevel(zoom)
 ipcRenderer.on('zoomIn', value => {
-  log.info("Zooming in", webFrame.getZoomLevel())
   zoom = zoom >= maxZoom.in ? maxZoom.in : zoom + 0.1
   webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({zoom})
 })
 
 ipcRenderer.on('zoomOut', value => {
-  log.info("Zooming out", webFrame.getZoomLevel())
   zoom = zoom <= maxZoom.out ? maxZoom.out : zoom - 0.1
   webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({zoom})
 })
 
 const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {

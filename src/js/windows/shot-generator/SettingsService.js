@@ -1,5 +1,5 @@
 
-import fs from 'fs-extra'
+const fs = require('fs-extra')
 class SettingsService {
 
     //NOTE() : Filepath should be absolute path to file
@@ -18,7 +18,7 @@ class SettingsService {
 
     _saveFile() {
         let settings = JSON.stringify(this.objects, null, 2)
-        fs.writeFileSync(this.settingsFilePath, settings)
+        fs.writeFile(this.settingsFilePath, settings)
     }
 
     setSettings(values) {
@@ -44,4 +44,4 @@ class SettingsService {
     }
 }
 
-export default SettingsService
+module.exports = SettingsService
