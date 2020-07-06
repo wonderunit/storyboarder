@@ -16,19 +16,11 @@ const SelectButton = () => {
     })
   }, [currentSceneState])
 
-  useEffect(() => {
-    const fn = () => {
-      setSceneState({
-        ...currentSceneState,
-        selectEnabled: false
-      })
-    }
-
-    window.addEventListener('pointerup', fn, false)
-
-    return () => {
-      window.removeEventListener('pointerup', fn, false)
-    }
+  const onDeselect = useCallback(() => {
+    setSceneState({
+      ...currentSceneState,
+      selectEnabled: false
+    })
   }, [currentSceneState])
 
   const className = classnames({
@@ -39,7 +31,7 @@ const SelectButton = () => {
   return (
       <>
         <div className={className} />
-        <div className='select-button__button' onTouchStart={onSelect} />
+        <div className='select-button__button' onTouchStart={onSelect} onTouchEnd={onDeselect} onTouchCancel={onDeselect} />
       </>
   )
 }

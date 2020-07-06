@@ -6,10 +6,6 @@ import {useAsset, useAssets} from "../../../shot-generator/hooks/use-assets-mana
 
 import * as BonesHelper from "../../../xr/src/three/BonesHelper"
 
-const getSceneObjectsHash = (sceneObjects) => {
-  return Object.values(sceneObjects).reduce((acc, value) => acc + value.id, '')
-}
-
 const useSceneLoader = (sceneObjects, world, additionalAssets = []) => {
   const resources = useMemo(() => {
     let resourcesToLoad = []

@@ -1,6 +1,8 @@
 import React, {useState, useContext} from 'react'
 import {connect} from "react-redux"
-import {useThree} from "react-three-fiber"
+import {useFrame} from "react-three-fiber"
+
+import {SGConnection} from "../../helpers/store"
 
 import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-generator"
 import {SceneState} from "../../helpers/sceneState"
@@ -38,6 +40,13 @@ const renderObject = (sceneObject) => {
 const Scene = ({sceneObjects, world}) => {
   const [currentSceneState, setSceneState] = useContext(SceneState)
   const [sceneVisible, setSceneVisible] = useState(true)
+
+  useFrame(({camera}) => {
+    SGConnection.sendInfo({
+      matrix: camera.matrixWorld.toArray(),
+      controllers: []
+    })
+  })
 
   useThreeFrameProvider()
   useThreeStateProvider()

@@ -24,17 +24,10 @@ const MoveButtons = () => {
     setDirection(angle)
   }, [])
   
-  /** Disable movement/rotation on window pointer up*/
-  useEffect(() => {
-    const listener = () => {
-      setMovementEnabled(false)
-      setRotationEnabled(false)
-    }
-    
-    window.addEventListener('pointerup', listener)
-    return () => {
-      window.removeEventListener('pointerup', listener)
-    }
+  /** Disable movement/rotation on touch end*/
+  const onTouchEnd = useCallback((angle) => {
+    setRotationEnabled(false)
+    setMovementEnabled(false)
   }, [])
   
   let cameraDirection = useMemo(() => new THREE.Vector3(), [])
@@ -68,22 +61,30 @@ const MoveButtons = () => {
         <div
           className='move-buttons__button'
           onTouchStart={() => onMovementEnabled(Math.PI)}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
         />
       </div>
       <div className='move-buttons__row move-buttons__h'>
         <div
           className='move-buttons__button'
           onTouchStart={() => onRotationEnabled(Math.PI * 0.5)}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
         />
         <div
           className='move-buttons__button'
           onTouchStart={() => onRotationEnabled(-Math.PI * 0.5)}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
         />
       </div>
       <div className='move-buttons__row'>
         <div
           className='move-buttons__button'
           onTouchStart={() => onMovementEnabled(0)}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
         />
       </div>
     </div>
