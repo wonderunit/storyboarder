@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
 import TWEEN from '@tweenjs/tween.js'
-import {updateObjects, getObject } from '../../../windows/shot-generator/settings'
+import SettingsService from '../../../windows/shot-generator/SettingsService'
 import electron from 'electron'
 const { ipcRenderer, webFrame } = electron
+const { app } = electron.remote
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -66,6 +67,7 @@ const Editor = React.memo(({
   }
   
   const notificationsRef = useRef(null)
+  const settingsService = useRef()
   const mainViewContainerRef = useRef(null)
   const [stats, setStats] = useState()
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
@@ -85,24 +87,12 @@ const Editor = React.memo(({
       }
   }
 
-  const zoom = useCallback((event, value) => {
-    let zoomLevel = webFrame.getZoomLevel()
-    let zoom = zoomLevel + value 
-    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
-    webFrame.setZoomLevel(zoom)
-    updateObjects({zoom})
-  }, [])
-
-  const setZoom = useCallback((event, value) => {
-    let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
-    webFrame.setZoomLevel(zoom)
-    updateObjects({zoom})
-  }, [])
-
   useEffect(() => {
     webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    settingsService.current = new SettingsService(path.join(app.getPath('userData'), 'shot-generator-settings.json'))
     let currentWindow = electron.remote.getCurrentWindow()
-    let settingsZoom = getObject("zoom")
+    let settingsZoom = settingsService.current.setSettingsByKey("zoom")
+    settingsZoom = settingsZoom ? settingsZoom : 0
     if(!settingsZoom && currentWindow.getBounds().height < 800) {
       webFrame.setZoomLevel(maxZoom.out)
     } else {
@@ -116,6 +106,22 @@ const Editor = React.memo(({
       ipcRenderer.off('shot-generator:menu:view:zoom', zoom)
       ipcRenderer.off('shot-generator:menu:view:setZoom', setZoom)
     }
+  }, [])
+
+  const zoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    let zoomLevel = webFrame.getZoomLevel()
+    let zoom = zoomLevel + value 
+    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
+    webFrame.setZoomLevel(zoom)
+    settingsService.current.setSettings({zoom})
+  }, [])
+
+  const setZoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
+    webFrame.setZoomLevel(zoom)
+    settingsService.current.setSettings({zoom})
   }, [])
 
   /** Resources loading end */
