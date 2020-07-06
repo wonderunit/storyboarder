@@ -86,6 +86,7 @@ const Editor = React.memo(({
   }
 
   const zoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
     let zoomLevel = webFrame.getZoomLevel()
     let zoom = zoomLevel + value 
     zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
@@ -94,6 +95,7 @@ const Editor = React.memo(({
   }, [])
 
   const setZoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
     let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
     webFrame.setZoomLevel(zoom)
     updateObjects({zoom})
@@ -102,10 +104,11 @@ const Editor = React.memo(({
   useEffect(() => {
     webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
     let currentWindow = electron.remote.getCurrentWindow()
-    let settingsZoom = getObject("zoom")
+    let settingsZoom = getObject("zoom") 
     if(!settingsZoom && currentWindow.getBounds().height < 800) {
       webFrame.setZoomLevel(maxZoom.out)
     } else {
+      settingsZoom = settingsZoom ? settingsZoom : 0
       webFrame.setZoomLevel(settingsZoom)
     }
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
