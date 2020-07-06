@@ -99,12 +99,12 @@ const Editor = React.memo(({
       webFrame.setZoomLevel(settingsZoom)
     }
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
-    ipcRenderer.on('shot-generator:menu:view:zoom', zoom)
-    ipcRenderer.on('shot-generator:menu:view:setZoom', setZoom)
+    ipcRenderer.on('shot-generator:menu:view:scale-ui', zoom)
+    ipcRenderer.on('shot-generator:menu:view:set-ui-scale', setZoom)
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
-      ipcRenderer.off('shot-generator:menu:view:zoom', zoom)
-      ipcRenderer.off('shot-generator:menu:view:setZoom', setZoom)
+      ipcRenderer.off('shot-generator:menu:view:scale-ui', zoom)
+      ipcRenderer.off('shot-generator:menu:view:set-ui-scale', setZoom)
     }
   }, [])
 

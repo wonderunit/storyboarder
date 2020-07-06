@@ -6946,13 +6946,13 @@ zoom = zoom ? zoom : 0
 const maxZoom = {in: 0.2, out: -1.0}
 webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
 webFrame.setZoomLevel(zoom)
-ipcRenderer.on('zoomIn', value => {
+ipcRenderer.on('scale-ui-up', value => {
   zoom = zoom >= maxZoom.in ? maxZoom.in : zoom + 0.1
   webFrame.setZoomLevel(zoom)
   settingsService.setSettings({zoom})
 })
 
-ipcRenderer.on('zoomOut', value => {
+ipcRenderer.on('scale-ui-down', value => {
   zoom = zoom <= maxZoom.out ? maxZoom.out : zoom - 0.1
   webFrame.setZoomLevel(zoom)
   settingsService.setSettings({zoom})
