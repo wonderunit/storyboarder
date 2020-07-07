@@ -18,7 +18,7 @@ class SettingsService {
 
     _saveFile() {
         let settings = JSON.stringify(this.objects, null, 2)
-        fs.writeFile(this.settingsFilePath, settings)
+        fs.writeFileSync(this.settingsFilePath, settings)
     }
 
     setSettings(values) {
@@ -30,7 +30,7 @@ class SettingsService {
         this._saveFile()
     }
 
-    setSettingsByKey(key, value) {
+    setSettingByKey(key, value) {
         this.objects[key] = value
         this._saveFile()
     }

@@ -87,17 +87,20 @@ const Editor = React.memo(({
       }
   }
 
-  useEffect(() => {
+  useMemo(() =>{
     webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
     settingsService.current = new SettingsService(path.join(app.getPath('userData'), 'shot-generator-settings.json'))
     let currentWindow = electron.remote.getCurrentWindow()
-    let settingsZoom = settingsService.current.setSettingsByKey("zoom")
+    let settingsZoom = settingsService.current.getSettingByKey("zoom")
     settingsZoom = settingsZoom ? settingsZoom : 0
     if(!settingsZoom && currentWindow.getBounds().height < 800) {
       webFrame.setZoomLevel(maxZoom.out)
     } else {
       webFrame.setZoomLevel(settingsZoom)
     }
+  }, [])
+
+  useEffect(() => {
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
     ipcRenderer.on('shot-generator:menu:view:scale-ui', zoom)
     ipcRenderer.on('shot-generator:menu:view:set-ui-scale', setZoom)
