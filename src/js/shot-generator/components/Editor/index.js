@@ -35,7 +35,7 @@ import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
 import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
-
+import { withTranslation } from 'react-i18next';
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
 const maxZoom = {in: 0.4, out: -1.6}
@@ -59,12 +59,13 @@ const Effect = ({renderData, stats}) => {
   return null
 }
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
+  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload, t
 }) => {
   if (!board.uid) {
     return null
   }
-  
+  console.log(store)
+  //const { t } = useTranslation()
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
   const [stats, setStats] = useState()
@@ -185,7 +186,7 @@ const Editor = React.memo(({
   }
 
   useExportToGltf(largeCanvasData.current.scene, withState)
-  
+  console.log(t)
   return (
     <FatalErrorBoundary key={board.uid}>
       <div id="root">
@@ -194,6 +195,7 @@ const Editor = React.memo(({
           ipcRenderer={ipcRenderer}
           notifications={notifications}
         />
+        <div>{t('Language')}</div>
         <div id="main">
           <div id="aside">
 
@@ -277,7 +279,7 @@ const Editor = React.memo(({
 })
 
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
-export default connect(
+export default withTranslation()(connect(
   (state) => ({
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
@@ -295,4 +297,4 @@ export default connect(
       }
     },
   }
-)(Editor)
+)(Editor))

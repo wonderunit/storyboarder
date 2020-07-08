@@ -4,7 +4,7 @@ const electronUtil = require('electron-util')
 
 const path = require('path')
 const shotExplorer = require('../shot-explorer/main')
-const React = require('react')
+const { Suspense } = React = require('react')
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
@@ -25,6 +25,11 @@ const undoable = require('redux-undo').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 let sendedAction = null
+
+const { I18nextProvider } = require('react-i18next')
+//const i18n = require('i18next')
+//let initialI18nStore = ipcRenderer.sendSync('get-initial-translations');
+const i18n = require('../../services/i18next.config')
 
 const {SGMiddleware} = require('./../../xr/sockets')
 
@@ -283,6 +288,7 @@ ipcRenderer.on('shot-explorer:show', (event) => {
   }
 })
 
+
 window.$r = { store }
 
 // disabled for now so we can reload the window easily during development
@@ -290,10 +296,13 @@ window.$r = { store }
 
 log.info('ready!')
 electronUtil.disableZoom()
-
 ReactDOM.render(
-  <Provider store={store}>
-    <Editor store={store}/>
-  </Provider>,
+    <Provider store={ store }>
+      <I18nextProvider i18n={ i18n }>
+        <Suspense fallback="loading">
+          <Editor store={store}/>
+        </Suspense>
+      </I18nextProvider>
+    </Provider>,
   document.getElementById('main')
 )

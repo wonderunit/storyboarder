@@ -1,9 +1,9 @@
 import { remote } from 'electron'
 import React, { useEffect } from 'react'
 import menu from '../../../menu'
-
+import i18n from '../../../services/i18next.config'
 const onMenuFocus = () => {
-  menu.setShotGeneratorMenu()
+  menu.setShotGeneratorMenu(i18n)
 }
 const MenuManager = ({ }) => {
   useEffect(() => {

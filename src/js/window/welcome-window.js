@@ -5,12 +5,20 @@ const menu = require('../menu')
 const util = require('../utils/index')
 const sfx = require('../wonderunit-sound')
 const prefsModule = require('electron').remote.require('./prefs')
-
+const log = require('electron-log')
 const pkg = require('../../../package.json')
 
+const i18n = require('../services/i18next.config')
+
 remote.getCurrentWindow().on('focus', () => {
-  menu.setWelcomeMenu()
+  menu.setWelcomeMenu(i18n)
 })
+i18n.on('loaded', (loaded) => {
+  log.info("Language loaded", loaded)
+  i18n.changeLanguage('en')
+  i18n.off('loaded')
+})
+
 
 const onFileDrop = e => {
   e.preventDefault()

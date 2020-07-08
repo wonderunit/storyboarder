@@ -74,7 +74,15 @@ const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
 
+const i18n = require('../services/i18next.config')
+i18n.on('loaded', (loaded) => {
+  i18n.changeLanguage('en')
+  i18n.off('loaded')
+})
 
+i18n.on('lanugageChanged', (lng) => {
+  menu.setMenu(i18n)
+})
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
@@ -212,7 +220,7 @@ let shouldRenderThumbnailDrawer = true
 let hasWarnedOnceAboutFps = false
 
 remote.getCurrentWindow().on('focus', () => {
-  menu.setMenu()
+  menu.setMenu(i18n)
   // HACK update to reflect current value
   audioPlayback && audioPlayback.setEnableAudition(audioPlayback.enableAudition)
 })
@@ -1632,6 +1640,7 @@ const loadBoardUI = async () => {
 
     // otherwise, allow direct text input again
     textInputMode = false
+    
   })
   // changedPrefs is an object with only the top-level primitive prefs that have actually changed (it does not track objects or arrays nested in prefs)
   ipcRenderer.on('prefs:change', (event, changedPrefs) => {
@@ -1924,7 +1933,7 @@ const loadBoardUI = async () => {
     }
   })
 
-  menu.setMenu()
+  menu.setMenu(i18n)
   // HACK initialize the menu to match the value in preferences
   audioPlayback.setEnableAudition(prefsModule.getPrefs().enableBoardAudition)
 
@@ -6701,6 +6710,17 @@ ipcRenderer.on('toggleNewShot', (event, args) => {
     toggleNewShot()
   }
 })
+
+ipcRenderer.on('get-initial-translations', (event, arg) => {
+  i18n.loadLanguages('en', (err, t) => {
+    const initial = {
+      'en': {
+        'translation': i18n.getResourceBundle('en', config.namespace)
+      }
+    };
+    event.returnValue = initial;
+  });
+});
 
 ipcRenderer.on('toggleSpeaking', (event, args) => {
   speakingMode = !speakingMode

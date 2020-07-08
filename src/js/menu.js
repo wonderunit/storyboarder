@@ -778,8 +778,34 @@ AppMenu.about = (options = { includePreferences: false }) => {
     }
   ]
 }
+const languages = ['en', 'ru']
+const languageOptions = (i18n) => languages.map((languageCode) => {
+  return {
+    label: languageCode,
+    type: 'radio',
+    checked: i18n.language === languageCode,
+    click: () => {
+      i18n.changeLanguage(languageCode, () => {
+        let observers = i18n.observers.lanugageChanged
+        console.log(i18n)
+        if(!observers) return
+        for(let i = 0; i < observers.length; i++) {
+          observers[i](languageCode)
+        }
+      })
 
-const template = [
+    }
+  }
+})
+
+const languageMenu = (i18n) => {
+  return {
+    label: i18n.t("Language"),
+    submenu: languageOptions(i18n)
+  }
+}
+
+const template = (i18n) => [
   ...AppMenu.about({ includePreferences: true }),
   AppMenu.File(),
   AppMenu.Edit(),
@@ -788,13 +814,14 @@ const template = [
   AppMenu.Tools(),
   AppMenu.View(),
   AppMenu.window(),
-  AppMenu.help()
+  AppMenu.help(),
+  languageMenu(i18n)
 ]
 
-const welcomeTemplate = [
+const welcomeTemplate = (i18n) => [
   ...AppMenu.about({ includePreferences: false }),
   {
-    label: 'File',
+    label: i18n.t('File'),
     submenu: [
       {
         label: 'Open…',
@@ -836,10 +863,11 @@ const welcomeTemplate = [
     submenu: [
       ...SubMenuFragments.help
     ]
-  }
+  },
+  languageMenu(i18n)
 ]
 
-const shotGeneratorMenu = [
+const shotGeneratorMenu = (i18n) => [
   ...AppMenu.about({ includePreferences: false }),
   {
     label: 'File',
@@ -966,21 +994,22 @@ const shotGeneratorMenu = [
     submenu: [
       ...SubMenuFragments.help
     ]
-  }
+  },
+  languageMenu(i18n)
 ]
 
-const setWelcomeMenu = () => {
-  let welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate)
+const setWelcomeMenu = (i18n) => {
+  let welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate(i18n))
   Menu.setApplicationMenu(welcomeMenuInstance)
 }
 
-const setMenu = () => {
-  let menuInstance = Menu.buildFromTemplate(template)
+const setMenu = (i18n) => {
+  let menuInstance = Menu.buildFromTemplate(template(i18n))
   Menu.setApplicationMenu(menuInstance)
 }
 
-const setShotGeneratorMenu = () => {
-  Menu.setApplicationMenu(Menu.buildFromTemplate(shotGeneratorMenu))
+const setShotGeneratorMenu = (i18n) => {
+  Menu.setApplicationMenu(Menu.buildFromTemplate(shotGeneratorMenu(i18n)))
 }
 
 const setEnableAudition = value =>
