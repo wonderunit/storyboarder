@@ -1,5 +1,17 @@
 {
 	"vr.enter": "VR Enter",
-	"File": "File",
-	"Language": "Languagen"
+	"Language": "Language",
+	"en": "English",
+	"ru": "Russian",
+	"menu": {
+		"file": "File",
+		"edit": "Edit",
+		"view": "View",
+		"window": "Window",
+		"help": "Help",
+		"navigation": "Navigation",
+		"boards": "Boards",
+		"tools": "Tools"
+	}
+
 }

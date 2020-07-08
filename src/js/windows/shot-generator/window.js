@@ -296,7 +296,6 @@ i18n.on('loaded', (loaded) => {
 
 
 ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
-  console.log("Language loaded", lng)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
   })
@@ -314,7 +313,6 @@ const changeLanguage = (lng) => {
 
 
 ipcRenderer.on("languageChanged", (event, lng) => {
-  console.log("Language changed", lng)
   i18n.off("languageChanged", changeLanguage)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)

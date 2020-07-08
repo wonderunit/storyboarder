@@ -81,7 +81,6 @@ i18n.on('loaded', (loaded) => {
 })
 
 ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
-  console.log("Language loaded", lng)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
   })
@@ -93,8 +92,9 @@ const currentLanguage = (event) => {
 ipcRenderer.on('getCurrentLanguage', currentLanguage)
 
 const changeLanguage = (lng) => {
-  console.log("Update changed language")
-  menu.setMenu(i18n)
+  if(remote.getCurrentWindow().isFocused()) {
+    menu.setMenu(i18n)
+  }
   ipcRenderer.send("languageChanged", lng)
 }
 
@@ -103,7 +103,6 @@ ipcRenderer.on('getCurrentLanguage', (event) => {
 })
 
 ipcRenderer.on("languageChanged", (event, lng) => {
-  console.log("Language changed", lng)
   i18n.off("languageChanged", changeLanguage)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)

@@ -10,7 +10,7 @@ let keystrokeFor = command => store.getState().entities.keymap[command]
 
 // TODO remove unused
 // const observeStore = require('./shared/helpers/observeStore')
-
+const i18n = require('./services/i18next.config')
 
 let SubMenuFragments = {}
 SubMenuFragments.View = [
@@ -65,8 +65,8 @@ SubMenuFragments.windowing = [
 ]
 
 let AppMenu = {}
-AppMenu.File = () => ({
-  label: 'File',
+AppMenu.File = (i18n) => ({
+  label: i18n.t('menu.file'),
   submenu: [
     {
       label: 'Open…',
@@ -187,8 +187,8 @@ AppMenu.File = () => ({
     }
   ]
 })
-AppMenu.Edit = () => ({
-  label: 'Edit',
+AppMenu.Edit = (i18n) => ({
+  label: i18n.t('menu.edit'),
   submenu: [
     {
       label: 'Undo',
@@ -269,8 +269,8 @@ AppMenu.Edit = () => ({
     // }
   ]
 })
-AppMenu.Navigation = () => ({
-  label: 'Navigation',
+AppMenu.Navigation = (i18n) => ({
+  label: i18n.t('menu.navigation'),
   submenu: [
     {
       label: 'Play',
@@ -341,8 +341,8 @@ AppMenu.Navigation = () => ({
     }
   ]
 })
-AppMenu.Boards = () => ({
-  label: 'Boards',
+AppMenu.Boards = (i18n) => ({
+  label: i18n.t('menu.boards'),
   submenu: [
     {
       accelerator: keystrokeFor('menu:boards:new-board'),
@@ -421,8 +421,8 @@ AppMenu.Boards = () => ({
     }
   ]
 })
-AppMenu.Tools = () => ({
-  label: 'Tools',
+AppMenu.Tools = (i18n) => ({
+  label: i18n.t('menu.tools'),
   submenu: [
     {
       accelerator: keystrokeFor('menu:tools:light-pencil'),
@@ -565,8 +565,8 @@ AppMenu.Tools = () => ({
     }
   ]
 })
-AppMenu.View = () => ({
-  label: 'View',
+AppMenu.View = (i18n) => ({
+  label: i18n.t('menu.view'),
   submenu: [
     {
       label: 'Cycle View Mode',
@@ -669,7 +669,7 @@ AppMenu.View = () => ({
     }
   ]
 })
-AppMenu.window = () => {
+AppMenu.window = (i18n) => {
   let extension = process.platform == 'darwin'
     ? [
         {
@@ -688,14 +688,16 @@ AppMenu.window = () => {
 
   return {
     role: 'window',
+    label: i18n.t('menu.window'),
     submenu: [
       ...SubMenuFragments.windowing,
       ...extension
     ]
   }
 }
-AppMenu.help = () => ({
+AppMenu.help = (i18n) => ({
   role: 'help',
+  label: i18n.t("menu.help"),
   submenu: [
     ...SubMenuFragments.help,
     {
@@ -781,13 +783,13 @@ AppMenu.about = (options = { includePreferences: false }) => {
 const languages = ['en', 'ru']
 const languageOptions = (i18n) => languages.map((languageCode) => {
   return {
-    label: languageCode,
+    label: i18n.t(languageCode),
     type: 'radio',
     checked: i18n.language === languageCode,
     click: () => {
       i18n.changeLanguage(languageCode, () => {
         let observers = i18n.observers.lanugageChanged
-        console.log(i18n)
+        //console.log(i18n)
         if(!observers) return
         for(let i = 0; i < observers.length; i++) {
           observers[i](languageCode)
@@ -807,21 +809,21 @@ const languageMenu = (i18n) => {
 
 const template = (i18n) => [
   ...AppMenu.about({ includePreferences: true }),
-  AppMenu.File(),
-  AppMenu.Edit(),
-  AppMenu.Navigation(),
-  AppMenu.Boards(),
-  AppMenu.Tools(),
-  AppMenu.View(),
-  AppMenu.window(),
-  AppMenu.help(),
+  AppMenu.File(i18n),
+  AppMenu.Edit(i18n),
+  AppMenu.Navigation(i18n),
+  AppMenu.Boards(i18n),
+  AppMenu.Tools(i18n),
+  AppMenu.View(i18n),
+  AppMenu.window(i18n),
+  AppMenu.help(i18n),
   languageMenu(i18n)
 ]
 
-const welcomeTemplate = (i18n) => [
+const welcomeTemplate = (i18n) =>[
   ...AppMenu.about({ includePreferences: false }),
   {
-    label: i18n.t('File'),
+    label: i18n.t('menu.file'),
     submenu: [
       {
         label: 'Open…',
@@ -833,7 +835,7 @@ const welcomeTemplate = (i18n) => [
     ]
   },
   {
-    label: 'Edit',
+    label: i18n.t('menu.edit'),
     submenu: [
       // {role: 'undo'},
       // {role: 'redo'},
@@ -847,19 +849,21 @@ const welcomeTemplate = (i18n) => [
     ]
   },
   {
-    label: 'View',
+    label: i18n.t('menu.view'),
     submenu: [
       ...SubMenuFragments.View
     ]
   },
   {
     role: 'window',
+    label: i18n.t('menu.window'),
     submenu: [
       ...SubMenuFragments.windowing
     ]
   },
   {
     role: 'help',
+    label: i18n.t('menu.help'),
     submenu: [
       ...SubMenuFragments.help
     ]
@@ -870,7 +874,7 @@ const welcomeTemplate = (i18n) => [
 const shotGeneratorMenu = (i18n) => [
   ...AppMenu.about({ includePreferences: false }),
   {
-    label: 'File',
+    label: i18n.t('menu.file'),
     submenu: [
       {
         label: 'Open…',
@@ -888,7 +892,7 @@ const shotGeneratorMenu = (i18n) => [
     ]
   },
   {
-    label: 'Edit',
+    label: i18n.t('menu.edit'),
     submenu: [
       {
         label: 'Undo',
@@ -947,7 +951,7 @@ const shotGeneratorMenu = (i18n) => [
     ]
   },
   {
-    label: 'View',
+    label: i18n.t('menu.view'),
     submenu: [
       ...SubMenuFragments.View,
       {
@@ -985,12 +989,14 @@ const shotGeneratorMenu = (i18n) => [
   },
   {
     role: 'window',
+    label: i18n.t('menu.window'),
     submenu: [
       ...SubMenuFragments.windowing
     ]
   },
   {
     role: 'help',
+    label: i18n.t("menu.help"),
     submenu: [
       ...SubMenuFragments.help
     ]
@@ -1014,7 +1020,7 @@ const setShotGeneratorMenu = (i18n) => {
 
 const setEnableAudition = value =>
   Menu
-    .getApplicationMenu().items.find(n => n.label === 'Navigation')
+    .getApplicationMenu().items.find(n => n.label === i18n.t('menu.navigation'))
     .submenu.items.find(n => n.label === 'Audition Board Audio')
     .checked = value
 

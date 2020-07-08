@@ -11,17 +11,14 @@ const pkg = require('../../../package.json')
 const i18n = require('../services/i18next.config')
 
 remote.getCurrentWindow().on('focus', () => {
-  console.log("Focus window", i18n.language)
   menu.setWelcomeMenu(i18n)
 })
 i18n.on('loaded', (loaded) => {
-  console.log("Language loaded", loaded)
   ipcRenderer.send("getCurrentLanguage")
   i18n.off('loaded')
 })
 
 ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
-  console.log("Language loaded", lng)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
   })
@@ -33,14 +30,13 @@ const currentLanguage = (event) => {
 ipcRenderer.on('getCurrentLanguage', currentLanguage)
 
 const changeLanguage = (lng) => {
-  menu.setWelcomeMenu(i18n)
-  console.log("changeLanguage", i18n)
-
+  if(remote.getCurrentWindow().isFocused()) {
+    menu.setWelcomeMenu(i18n)
+  }
   ipcRenderer.send("languageChanged", lng)
 }
 
 ipcRenderer.on("languageChanged", (event, lng) => {
-  console.log("Language changed", lng)
   i18n.off("languageChanged", changeLanguage)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)

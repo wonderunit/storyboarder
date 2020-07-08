@@ -64,8 +64,6 @@ const Editor = React.memo(({
   if (!board.uid) {
     return null
   }
-  console.log(store)
-  //const { t } = useTranslation()
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
   const [stats, setStats] = useState()
@@ -186,7 +184,6 @@ const Editor = React.memo(({
   }
 
   useExportToGltf(largeCanvasData.current.scene, withState)
-  console.log(t)
   return (
     <FatalErrorBoundary key={board.uid}>
       <div id="root">
@@ -195,7 +192,6 @@ const Editor = React.memo(({
           ipcRenderer={ipcRenderer}
           notifications={notifications}
         />
-        <div>{t('Language')}</div>
         <div id="main">
           <div id="aside">
 
@@ -268,7 +264,7 @@ const Editor = React.memo(({
         </div>
       </div>
       <KeyHandler/>
-      <MenuManager/>
+      <MenuManager t={ t }/>
 
       <div
         className="notifications"

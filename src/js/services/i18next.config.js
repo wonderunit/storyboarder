@@ -5,9 +5,9 @@ const { initReactI18next } = require("react-i18next")
 let loadPath 
 if(window) {
     console.log(window)
-    loadPath = path.join(window.__dirname,  "js/locales/{{lng}}.json")
+    loadPath = path.join(window.__dirname,  "js/locales/{{lng}}")
 } else {
-    loadPath = path.join(__dirname, "..", "js/locales/{{lng}}.json")
+    loadPath = path.join(__dirname, "..", "js/locales/{{lng}}")
 }
 const i18nextOptions = {
  
@@ -15,19 +15,18 @@ const i18nextOptions = {
         escapeValue: false
     },
     saveMissing: true,
-    debug:true,
-    fallbackLng: "en",
-   // languages: ["en", "ru"],
     whitelist: ["en", "ru"],
     lng:"en",
     react: {
         useSuspense: true,
         wait: false
     },
+    saveMissingTo: "current",
+    fallbackLng: false ,
     backend: {
-        loadPath: loadPath,
+        loadPath: loadPath + ".json",
 
-        //addPath: "../locales/{{lng}}-{{ns}}.missing.json",
+        addPath: loadPath + ".missing.json",
 
         jsonIdent: 2
     },
