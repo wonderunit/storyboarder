@@ -288,6 +288,40 @@ ipcRenderer.on('shot-explorer:show', (event) => {
   }
 })
 
+//#region Localization 
+i18n.on('loaded', (loaded) => {
+  ipcRenderer.send("getCurrentLanguage")
+  i18n.off('loaded')
+})
+
+
+ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
+  console.log("Language loaded", lng)
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+  })
+})
+
+const currentLanguage = (event) => {
+   ipcRenderer.send("returnCurrentLanguage", i18n.language )
+}
+ipcRenderer.on('getCurrentLanguage', currentLanguage)
+
+
+const changeLanguage = (lng) => {
+  ipcRenderer.send("languageChanged", lng)
+}
+
+
+ipcRenderer.on("languageChanged", (event, lng) => {
+  console.log("Language changed", lng)
+  i18n.off("languageChanged", changeLanguage)
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+  })
+})
+//#endregion
+
 
 window.$r = { store }
 

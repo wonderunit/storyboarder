@@ -1192,6 +1192,7 @@ ipcMain.on('undo', (e, arg)=> {
   mainWindow.webContents.send('undo')
 })
 
+
 ipcMain.on('redo', (e, arg)=> {
   mainWindow.webContents.send('redo')
 })
@@ -1428,6 +1429,40 @@ ipcMain.on('workspaceReady', event => {
     }
   })
 })
+
+ipcMain.on('languageChanged', (event, lng) => {
+  mainWindow && mainWindow.webContents.send('languageChanged', lng)
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('languageChanged', lng)
+  }
+  welcomeWindow && welcomeWindow.webContents.send('languageChanged', lng)
+})
+
+ipcMain.on('getCurrentLanguage', (event) => {
+  if(welcomeWindow) {
+    welcomeWindow.webContents.send('getCurrentLanguage')
+  } else if(!language && mainWindow) {
+    mainWindow.webContents.send('getCurrentLanguage')
+  } else if(!language) {
+    let win = shotGeneratorWindow.getWindow()
+    if (win) {
+      language = win.send('getCurrentLanguage')
+    } 
+  } else if(!language) {
+    language = "en"
+  }
+})
+
+ipcMain.on('returnCurrentLanguage', (event, lng) => {
+  mainWindow && mainWindow.webContents.send('returnCurrentLanguage', lng)
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win.send('returnCurrentLanguage', lng)
+  }
+  welcomeWindow && welcomeWindow.webContents.send('returnCurrentLanguage', lng)
+})
+
 
 ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
   mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)

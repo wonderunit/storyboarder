@@ -73,16 +73,43 @@ const getIpAddress = require('../utils/getIpAddress')
 const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
-
+//#region Localization 
 const i18n = require('../services/i18next.config')
 i18n.on('loaded', (loaded) => {
-  i18n.changeLanguage('en')
+  ipcRenderer.send("getCurrentLanguage")
   i18n.off('loaded')
 })
 
-i18n.on('lanugageChanged', (lng) => {
-  menu.setMenu(i18n)
+ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
+  console.log("Language loaded", lng)
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+  })
 })
+
+const currentLanguage = (event) => {
+   ipcRenderer.send("returnCurrentLanguage", i18n.language )
+}
+ipcRenderer.on('getCurrentLanguage', currentLanguage)
+
+const changeLanguage = (lng) => {
+  console.log("Update changed language")
+  menu.setMenu(i18n)
+  ipcRenderer.send("languageChanged", lng)
+}
+
+ipcRenderer.on('getCurrentLanguage', (event) => {
+  event.returnValue = i18n.language
+})
+
+ipcRenderer.on("languageChanged", (event, lng) => {
+  console.log("Language changed", lng)
+  i18n.off("languageChanged", changeLanguage)
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+  })
+})
+//#endregion
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
