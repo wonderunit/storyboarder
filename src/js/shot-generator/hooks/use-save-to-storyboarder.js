@@ -7,12 +7,11 @@ import {
     getSerializedState,
 
     selectObject,
-    setMainViewCamera,
     markSaved
  } from '../../shared/reducers/shot-generator'
 
 const renderAll = ({ renderer, renderLargeView, renderSmallView }, { state }) => {
-  let { aspectRatio, mainViewCamera } = state
+  let { aspectRatio } = state
 
   let shotImageDataUrl = renderLargeView({ renderer, isCameraPlot: false, aspectRatio })
   let cameraPlotImageDataUrl = renderSmallView({ renderer, isCameraPlot: true, aspectRatio })
