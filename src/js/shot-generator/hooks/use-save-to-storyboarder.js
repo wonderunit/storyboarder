@@ -1,8 +1,6 @@
+// TODO bindActionCreators?
 import { useRef, useEffect, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
-import fs from 'fs-extra'
-import os from 'os'
-import path from 'path'
 import { ipcRenderer } from 'electron'
 
 import { OutlineEffect } from '../../vendor/OutlineEffect'
@@ -14,13 +12,12 @@ import {
     markSaved
  } from '../../shared/reducers/shot-generator'
 
-const stripPrefix = dataURL => dataURL.replace(/^data:image\/\w+;base64,/, '')
-
-const saveDataURLtoFile = (imageData, filepath) =>
-  fs.writeFileSync(filepath, imageData, 'base64')
-
 const renderAll = ({ renderer, renderLargeView, renderSmallView }, { state }) => {
   let { aspectRatio, mainViewCamera } = state
+
+  console.log('board aspectRatio is', aspectRatio)
+  console.log('mainViewCamera is', mainViewCamera)
+
   let shotImageDataUrl = renderLargeView({ renderer, isPlot: false, aspectRatio })
   let cameraPlotImageDataUrl = renderSmallView({ renderer, isPlot: true, aspectRatio })
 
@@ -30,18 +27,10 @@ const renderAll = ({ renderer, renderLargeView, renderSmallView }, { state }) =>
   }
 }
 
-// const createTemporaryDirectory = () => fs.mkdtempSync(path.join(os.tmpdir(), 'storyboarder-'))
-
-// const getFilePaths = dirpath => ({
-//   shotGenerator: path.join(dirpath, 'shot-generator.png'),
-//   cameraPlot: path.join(dirpath, 'camera-plot.png')
-// })
-
 const saveCurrentShot = ({ renderLargeView, renderSmallView, renderer }) => (dispatch, getState) => {
-  console.log('saveCurrentShot')
-
   let state = getState()
 
+  // HACK de-select objects so they don't show in the saved image
   dispatch(selectObject(null))
 
   // HACK force update the view sizes, to guarantee camera plot aspect ratio will be 1:1
@@ -53,7 +42,6 @@ const saveCurrentShot = ({ renderLargeView, renderSmallView, renderer }) => (dis
       { renderLargeView, renderSmallView, renderer },
       { state }
     )
-
 
     let data = getSerializedState(state)
     let currentBoard = state.board
@@ -69,12 +57,40 @@ const saveCurrentShot = ({ renderLargeView, renderSmallView, renderer }) => (dis
     })
 
     dispatch(markSaved())
-    }, 0)
+  }, 0)
 }
 
 const insertNewShot = ({ renderLargeView, renderSmallView, renderer }) => (dispatch, getState) => {
-  console.log('insertNewShot') 
-    // TODO !!!!!!!
+  let state = getState()
+
+  // HACK de-select objects so they don't show in the saved image
+  dispatch(selectObject(null))
+
+  // HACK force update the view sizes, to guarantee camera plot aspect ratio will be 1:1
+  dispatch(setMainViewCamera('live'))
+
+  // HACK slight delay to allow for re-render after the above changes
+  setTimeout(() => {
+    // mark as saved, to avoid a prompt that the scene is dirty when the scene reloads
+    dispatch(markSaved())
+
+    const { shotImageDataUrl, cameraPlotImageDataUrl } = renderAll(
+      { renderLargeView, renderSmallView, renderer },
+      { state }
+    )
+
+    let data = getSerializedState(state)
+    let currentBoard = state.board
+
+    ipcRenderer.send('insertShot', {
+      data,
+      currentBoard,
+      images: {
+        camera: shotImageDataUrl,
+        plot: cameraPlotImageDataUrl
+      }
+    })
+  }, 0)
 }
 
 const useSaveToStoryboarder = (largeRenderFnRef, smallRenderFnRef) => {
@@ -93,6 +109,7 @@ const useSaveToStoryboarder = (largeRenderFnRef, smallRenderFnRef) => {
       outlineEffect.current = null
     }
   }, [])
+
   const saveCurrentShotCb = useCallback(
     () => dispatch(
       saveCurrentShot({
