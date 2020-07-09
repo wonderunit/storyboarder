@@ -105,80 +105,91 @@ const useExportToGltf = (sceneRef, withState) => {
       message: 'Preparing to export GLTF…',
       timing: 5
     })
-    let scene = new THREE.Scene()
-    let attachables = sceneRef.__interaction.filter(object => object.userData.type === "attachable")
-    let children = sceneRef.children[0].children.concat(attachables)
-    for (let child of children) {
-      if (child) {
-        if (child.userData.id && sceneObjects[child.userData.id]) {
-          let sceneObject = sceneObjects[child.userData.id]
-          if (child.userData.type === "character") {
-            let clonedCharacter = SkeletonUtils.clone(child, true);
-            let lod = clonedCharacter.getObjectByProperty("type", "LOD");
-            lod.children.forEach(skinnedMesh => {
-              skinnedMesh.material = new THREE.MeshBasicMaterial().copy( skinnedMesh.material )
-              skinnedMesh.material.needsUpdate = true;
-              skinnedMesh.morphTargetInfluences = [0, 0, 0];
-            })
-            clonedCharacter.name = sceneObject.name || sceneObject.displayName
-            scene.add( clonedCharacter)
-            
-          } else if (child.userData.type !== "volume") {
+    try {
+      let scene = new THREE.Scene()
+      let attachables = sceneRef.__interaction.filter(object => object.userData.type === "attachable")
+      let children = sceneRef.children[0].children.concat(attachables)
+      for (let child of children) {
+        if (child) {
+          if (child.userData.id && sceneObjects[child.userData.id]) {
+            let sceneObject = sceneObjects[child.userData.id]
+            if (child.userData.type === "character") {
+              let clonedCharacter = SkeletonUtils.clone(child, true);
+              let lod = clonedCharacter.getObjectByProperty("type", "LOD");
+              lod.children.forEach(skinnedMesh => {
+                skinnedMesh.material = new THREE.MeshBasicMaterial().copy( skinnedMesh.material )
+                skinnedMesh.material.needsUpdate = true;
+                skinnedMesh.morphTargetInfluences = [0, 0, 0];
+              })
+              clonedCharacter.name = sceneObject.name || sceneObject.displayName
+              scene.add( clonedCharacter)
+              
+            } else if (child.userData.type !== "volume") {
+              let clone = meshFactory(child)
+              clone.applyMatrix4(child.parent.matrixWorld)
+              clone.updateMatrixWorld(true)
+              clone.userData = {}
+              
+              clone.name = sceneObject.name || sceneObject.displayName
+              
+              scene.add(clone)
+            }
+          } else if (child.userData.type === "ground" || (child.geometry && child.geometry instanceof THREE.ExtrudeGeometry)) {
             let clone = meshFactory(child)
-            clone.applyMatrix4(child.parent.matrixWorld)
-            clone.updateMatrixWorld(true)
+            
             clone.userData = {}
-            
-            clone.name = sceneObject.name || sceneObject.displayName
-            
+            clone.name = "Ground"
             scene.add(clone)
-          }
-        } else if (child.userData.type === "ground" || (child.geometry && child.geometry instanceof THREE.ExtrudeGeometry)) {
-          let clone = meshFactory(child)
-          
-          clone.userData = {}
-          clone.name = "Ground"
-          scene.add(clone)
-        } 
+          } 
+        }
       }
-    }
-    let objectsArray = Object.keys(sceneObjects);
-    for( let i = 0; i < objectsArray.length; i++ ) {
-      let sceneObject = sceneObjects[objectsArray[i]]
-      if(sceneObject.type === "camera") {
-          let camera = virtualCameraObject.clone()
-          camera.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
-          camera.rotation.set(sceneObject.tilt, sceneObject.rotation, sceneObject.roll)
-          camera.name = sceneObject.name || sceneObject.displayName
-          scene.add(camera)
+      let objectsArray = Object.keys(sceneObjects);
+      for( let i = 0; i < objectsArray.length; i++ ) {
+        let sceneObject = sceneObjects[objectsArray[i]]
+        if(sceneObject.type === "camera") {
+            let camera = virtualCameraObject.clone()
+            camera.position.set(sceneObject.x, sceneObject.z, sceneObject.y)
+            camera.rotation.set(sceneObject.tilt, sceneObject.rotation, sceneObject.roll)
+            camera.name = sceneObject.name || sceneObject.displayName
+            scene.add(camera)
+        }
       }
-    }
-    let exporter = new THREE.GLTFExporter()
-    let options = {
-          binary: true,
-          embedImages: true,
-    }
-    exporter.parse(scene, function (glb) {
+      let exporter = new THREE.GLTFExporter()
+      let options = {
+            binary: true,
+            embedImages: true,
+      }
+      exporter.parse(scene, function (glb) {
 
-      if (meta.storyboarderFilePath) {
-        let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
-        let filename = `${board.shot}-${timestamp}.glb`
-        let filepath = path.join(
-          path.dirname(meta.storyboarderFilePath),
-          'exports',
-          filename
-          )
-          
-        fs.ensureDirSync(path.dirname(filepath))
-        fs.writeFileSync(filepath, Buffer.from(glb))
-        notifications.notify({
-          message: `Exported to:\n${filename}`,
-          timing: 5
-        })
-        shell.showItemInFolder(filepath)
-      }
-      disposeScene(scene);
-    }, options)
+        if (meta.storyboarderFilePath) {
+          let timestamp = moment().format('YYYY-MM-DD hh.mm.ss')
+          let filename = `${board.shot}-${timestamp}.glb`
+          let filepath = path.join(
+            path.dirname(meta.storyboarderFilePath),
+            'exports',
+            filename
+            )
+            
+          fs.ensureDirSync(path.dirname(filepath))
+          fs.writeFileSync(filepath, Buffer.from(glb))
+          notifications.notify({
+            message: `Exported to:\n${filename}`,
+            timing: 5
+          })
+          shell.showItemInFolder(filepath)
+        }
+        disposeScene(scene);
+      }, options)
+    } catch (err) {
+      console.error(err)
+      notifications.notify({
+        message:
+          'GLTF export failed:' + '\n\n' +
+          err +
+          '\n\n' +
+          `Error details have been written to the log file.`
+      })
+    }
 
   }, [sceneRef])
 
