@@ -11,6 +11,7 @@ const useImageRenderer = () => {
       imageRenderCamera.left = imageRenderCamera.bottom
       imageRenderCamera.right = imageRenderCamera.top
     } else {
+      imageRenderCamera.layers.set(SHOT_LAYERS)
       imageRenderCamera.aspect = aspectRatio
     }
     imageRenderCamera.updateProjectionMatrix()
