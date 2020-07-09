@@ -8,11 +8,12 @@ const useImageRenderer = () => {
 
     if (isPlot) {
       aspectRatio = 1
+      imageRenderCamera.left = imageRenderCamera.bottom
+      imageRenderCamera.right = imageRenderCamera.top
+    } else {
+      imageRenderCamera.aspect = aspectRatio
     }
-
-    imageRenderCamera.aspect = aspectRatio
     imageRenderCamera.updateProjectionMatrix()
-
     renderer.setSize(Math.ceil(aspectRatio * 900), 900)
     renderer.render(scene, imageRenderCamera)
 

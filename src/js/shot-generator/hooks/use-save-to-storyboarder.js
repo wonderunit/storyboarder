@@ -29,8 +29,6 @@ const saveCurrentShot = ({ renderLargeView, renderSmallView, renderer }) => (dis
   // HACK de-select objects so they don't show in the saved image
   dispatch(selectObject(null))
 
-  // HACK force update the view sizes, to guarantee camera plot aspect ratio will be 1:1
-  dispatch(setMainViewCamera('live'))
 
   // HACK slight delay to allow for re-render after the above changes
   setTimeout(() => {
@@ -62,8 +60,6 @@ const insertNewShot = ({ renderLargeView, renderSmallView, renderer }) => (dispa
   // HACK de-select objects so they don't show in the saved image
   dispatch(selectObject(null))
 
-  // HACK force update the view sizes, to guarantee camera plot aspect ratio will be 1:1
-  dispatch(setMainViewCamera('live'))
 
   // HACK slight delay to allow for re-render after the above changes
   setTimeout(() => {
