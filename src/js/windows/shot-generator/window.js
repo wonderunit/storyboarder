@@ -308,6 +308,10 @@ ipcRenderer.on('getCurrentLanguage', currentLanguage)
 
 
 const changeLanguage = (lng) => {
+  store.dispatch({
+    type: "SET_CURRENT_LANGUAGE",
+    payload: lng
+  })
   ipcRenderer.send("languageChanged", lng)
 }
 

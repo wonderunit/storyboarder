@@ -181,6 +181,7 @@
     "gl-vec2": "^1.0.0",
     "i18next": "^19.5.4",
     "i18next-fs-backend": "^1.0.7",
+    "i18next-http-backend": "^1.0.16",
     "immer": "1.7.4",
     "infix-to-postfix": "0.0.3",
     "inherits": "^2.0.4",
