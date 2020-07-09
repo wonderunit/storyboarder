@@ -14,9 +14,6 @@ import {
 const renderAll = ({ renderer, renderLargeView, renderSmallView }, { state }) => {
   let { aspectRatio, mainViewCamera } = state
 
-  console.log('board aspectRatio is', aspectRatio)
-  console.log('mainViewCamera is', mainViewCamera)
-
   let shotImageDataUrl = renderLargeView({ renderer, isPlot: false, aspectRatio })
   let cameraPlotImageDataUrl = renderSmallView({ renderer, isPlot: true, aspectRatio })
 
