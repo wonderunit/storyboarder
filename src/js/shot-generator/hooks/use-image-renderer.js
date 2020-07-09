@@ -5,8 +5,17 @@ const useImageRenderer = () => {
 
   const imageRenderer = ({ renderer, isPlot, aspectRatio }) => {
     let imageRenderCamera = camera.clone()
+
+    if (isPlot) {
+      aspectRatio = 1
+    }
+
+    imageRenderCamera.aspect = aspectRatio
+    imageRenderCamera.updateProjectionMatrix()
+
     renderer.setSize(Math.ceil(aspectRatio * 900), 900)
     renderer.render(scene, imageRenderCamera)
+
     return renderer.domElement.toDataURL()
   }
 
