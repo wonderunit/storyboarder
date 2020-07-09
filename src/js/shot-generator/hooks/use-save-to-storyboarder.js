@@ -26,9 +26,8 @@ const renderAll = ({ renderer, renderLargeView, renderSmallView }, { state }) =>
 const saveCurrentShot = ({ renderLargeView, renderSmallView, renderer }) => (dispatch, getState) => {
   let state = getState()
 
-  // HACK de-select objects so they don't show in the saved image
+  // de-select objects so they don't show in the saved image
   dispatch(selectObject(null))
-
 
   // HACK slight delay to allow for re-render after the above changes
   setTimeout(() => {
@@ -57,9 +56,8 @@ const saveCurrentShot = ({ renderLargeView, renderSmallView, renderer }) => (dis
 const insertNewShot = ({ renderLargeView, renderSmallView, renderer }) => (dispatch, getState) => {
   let state = getState()
 
-  // HACK de-select objects so they don't show in the saved image
+  // de-select objects so they don't show in the saved image
   dispatch(selectObject(null))
-
 
   // HACK slight delay to allow for re-render after the above changes
   setTimeout(() => {
