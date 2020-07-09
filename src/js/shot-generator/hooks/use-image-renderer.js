@@ -5,10 +5,10 @@ import { SHOT_LAYERS } from '../utils/ShotLayers'
 const useImageRenderer = () => {
   const { scene, camera, gl } = useThree()
 
-  const imageRenderer = ({ renderer, isPlot, aspectRatio }) => {
+  const imageRenderer = ({ renderer, isCameraPlot, aspectRatio }) => {
     let imageRenderCamera = camera.clone()
 
-    if (isPlot) {
+    if (isCameraPlot) {
       aspectRatio = 1
       imageRenderCamera.left = imageRenderCamera.bottom
       imageRenderCamera.right = imageRenderCamera.top

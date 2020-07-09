@@ -14,8 +14,8 @@ import {
 const renderAll = ({ renderer, renderLargeView, renderSmallView }, { state }) => {
   let { aspectRatio, mainViewCamera } = state
 
-  let shotImageDataUrl = renderLargeView({ renderer, isPlot: false, aspectRatio })
-  let cameraPlotImageDataUrl = renderSmallView({ renderer, isPlot: true, aspectRatio })
+  let shotImageDataUrl = renderLargeView({ renderer, isCameraPlot: false, aspectRatio })
+  let cameraPlotImageDataUrl = renderSmallView({ renderer, isCameraPlot: true, aspectRatio })
 
   return {
     shotImageDataUrl,
