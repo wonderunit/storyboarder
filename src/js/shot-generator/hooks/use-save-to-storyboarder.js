@@ -1,4 +1,3 @@
-// TODO bindActionCreators?
 import { useRef, useEffect, useCallback } from 'react'
 import { useDispatch } from 'react-redux'
 import { ipcRenderer } from 'electron'
