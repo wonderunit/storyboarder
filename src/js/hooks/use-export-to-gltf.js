@@ -102,7 +102,7 @@ const useExportToGltf = (sceneRef, withState) => {
       sceneObjects = getSceneObjects(state)
     })
     notifications.notify({
-      message: 'Preparing to export GLTF…',
+      message: 'Preparing to export glTF…',
       timing: 5
     })
     try {
@@ -184,7 +184,7 @@ const useExportToGltf = (sceneRef, withState) => {
       console.error(err)
       notifications.notify({
         message:
-          'GLTF export failed:' + '\n\n' +
+          'glTF export failed:' + '\n\n' +
           err +
           '\n\n' +
           `Error details have been written to the log file.`
