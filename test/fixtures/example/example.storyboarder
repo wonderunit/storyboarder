@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "2.0.1",
   "aspectRatio": 1.7777777777777777,
   "fps": 24,
   "defaultBoardTiming": 2000,
@@ -31,7 +31,7 @@
       "time": 0,
       "lineMileage": 821.5682133251058,
       "sg": {
-        "version": "2.0.0",
+        "version": "2.0.1",
         "data": {
           "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
           "sceneObjects": {
