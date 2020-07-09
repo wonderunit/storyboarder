@@ -16,7 +16,7 @@ import path from 'path'
 import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
 import { useDraggingManager } from './hooks/use-dragging-manager'
-import SaveShot from './components/Three/SaveShot'
+import useImageRenderer from './hooks/use-image-renderer'
 import Room from './components/Three/Room'
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
@@ -47,7 +47,9 @@ const SceneManagerR3fSmall = connect(
     setSmallCanvasData,
     renderData,
     mainRenderData,
-    setActiveCamera
+    setActiveCamera,
+
+    renderFnRef
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -280,10 +282,11 @@ const SceneManagerR3fSmall = connect(
       }
     }, [actualGL, intersectLogic, onPointerMove])
 
+    renderFnRef.current = useImageRenderer()
+
     /////Render components
     return <group ref={rootRef}>
    
-      <SaveShot isPlot={ true }/>
       <ambientLight
         ref={ambientLightRef}
         color={0xffffff}
