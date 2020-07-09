@@ -22,6 +22,13 @@ const materialFactory = () => new THREE.MeshBasicMaterial({
 
 const meshFactory = originalObject => {
   let object = originalObject.clone()
+  // A hack to copy array of material manually, cause clone keeps same material array
+  if(Array.isArray(object.material)) {
+    object.material = []
+    for(let i = 0; i < originalObject.material.length; i++) {
+      object.material.push(originalObject.material[i].clone())
+    }
+  }
   const setMesh = (mesh) => {
     if(!mesh.material) return
     // create a skeleton if one is not provided
@@ -37,7 +44,7 @@ const meshFactory = originalObject => {
       }
       return newMaterial
     }
-
+    
     if(Array.isArray(mesh.material)) {
       for(let i = 0, length = mesh.material.length; i < length; i++) {
         mesh.material.unshift(initMaterial(mesh.material.pop()))
@@ -112,7 +119,7 @@ const useExportToGltf = (sceneRef, withState) => {
       let attachables = sceneRef.__interaction.filter(object => object.userData.type === "attachable")
       let children = sceneRef.children[0].children.concat(attachables)
       for (let child of children) {
-        if (child) {
+        if (child && child.visible) {
           if (child.userData.id && sceneObjects[child.userData.id]) {
             let sceneObject = sceneObjects[child.userData.id]
             if (child.userData.type === "character") {
@@ -126,6 +133,15 @@ const useExportToGltf = (sceneRef, withState) => {
               clonedCharacter.name = sceneObject.name || sceneObject.displayName
               scene.add( clonedCharacter)
               
+            } else if(child.userData.type === "light") {
+              let spotlight = child.getObjectByProperty('type', "SpotLight")
+              let clone = child.clone()
+              let spotlightClone = clone.getObjectByProperty('type', "SpotLight")
+              spotlightClone.decay = 2
+              spotlightClone.target = spotlightClone.children[0]
+              spotlightClone.shadow = spotlight.shadow
+              scene.add(clone)
+
             } else if (child.userData.type !== "volume") {
               let clone = meshFactory(child)
               clone.applyMatrix4(child.parent.matrixWorld)
@@ -138,9 +154,8 @@ const useExportToGltf = (sceneRef, withState) => {
             }
           } else if (child.userData.type === "ground" || (child.geometry && child.geometry instanceof THREE.ExtrudeGeometry)) {
             let clone = meshFactory(child)
-            
             clone.userData = {}
-            clone.name = "Ground"
+            clone.name = child.userData.type
             scene.add(clone)
           } 
         }
