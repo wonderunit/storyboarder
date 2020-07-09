@@ -42,8 +42,10 @@ const meshFactory = originalObject => {
       for(let i = 0, length = mesh.material.length; i < length; i++) {
         mesh.material.unshift(initMaterial(mesh.material.pop()))
       }
+    } else {
+      mesh.material = initMaterial(mesh.material)
     }
-    mesh.material = initMaterial(mesh.material)
+
   }
   if(object.children.length) {
     object.traverse((child) => {
