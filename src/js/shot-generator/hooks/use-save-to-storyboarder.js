@@ -14,7 +14,7 @@ const renderAll = ({ renderer, renderLargeView, renderSmallView }, { state }) =>
   let { aspectRatio } = state
 
   let shotImageDataUrl = renderLargeView({ renderer, isCameraPlot: false, aspectRatio })
-  let cameraPlotImageDataUrl = renderSmallView({ renderer, isCameraPlot: true, aspectRatio })
+  let cameraPlotImageDataUrl = renderSmallView({ renderer, isCameraPlot: true, aspectRatio: 1 })
 
   return {
     shotImageDataUrl,

@@ -9,7 +9,6 @@ const useImageRenderer = () => {
     let imageRenderCamera = camera.clone()
 
     if (isCameraPlot) {
-      aspectRatio = 1
       imageRenderCamera.left = imageRenderCamera.bottom
       imageRenderCamera.right = imageRenderCamera.top
     } else {
