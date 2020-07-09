@@ -140,6 +140,9 @@ const useExportToGltf = (sceneRef, withState) => {
               spotlightClone.decay = 2
               spotlightClone.target = spotlightClone.children[0]
               spotlightClone.shadow = spotlight.shadow
+
+              clone.name = sceneObject.name || sceneObject.displayName
+
               scene.add(clone)
 
             } else if (child.userData.type !== "volume") {
