@@ -1,4 +1,4 @@
-const { Menu, app } = require('electron').remote
+   const { Menu, app } = require('electron').remote
 const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
@@ -17,7 +17,7 @@ SubMenuFragments.View = [
   ...isDev
     ? [
         {
-          label: 'Reload',
+          label: i18n.t('Reload'),
           accelerator: 'CmdOrCtrl+R',
           click (item, focusedWindow) {
             if (focusedWindow) focusedWindow.reload()
@@ -26,7 +26,7 @@ SubMenuFragments.View = [
       ]
     : [],
   {
-    label: 'Toggle Developer Tools',
+    label: i18n.t('Toggle Developer Tools'),
     accelerator: keystrokeFor('menu:view:toggle-developer-tools'),
     click (item, focusedWindow) {
       if (focusedWindow) focusedWindow.webContents.toggleDevTools()
@@ -35,30 +35,30 @@ SubMenuFragments.View = [
 ]
 SubMenuFragments.help = [
   {
-    label: 'Learn More',
+    label: i18n.t('Learn More'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder') }
   },
   {
-    label: 'Getting Started…',
+    label: i18n.t('Getting Started…'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq/#How-do-I-get-started') }
   },
   {
-    label: 'Frequently Asked Questions…',
+    label: i18n.t('Frequently Asked Questions…'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq') }
   },
   {
-    label: 'Found a bug? Submit an issue!!!',
+    label: i18n.t('Found a bug? Submit an issue!!!'),
     click () { shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
   }
 ]
 SubMenuFragments.windowing = [
   {
-    label: 'Minimize',
+    label: i18n.t('Minimize'),
     accelerator: keystrokeFor("menu:window:minimize"),
     role: 'minimize'
   },
   {
-    label: 'Close Window',
+    label: i18n.t('Close Window'),
     accelerator: keystrokeFor("menu:window:close"),
     role: 'close'
   }
@@ -69,7 +69,7 @@ AppMenu.File = (i18n) => ({
   label: i18n.t('menu.file'),
   submenu: [
     {
-      label: 'Open…',
+      label: i18n.t('menu.open'),
       accelerator: keystrokeFor('menu:file:open'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('openDialogue')
@@ -79,14 +79,14 @@ AppMenu.File = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Save',
+      label: i18n.t('menu.save'),
       accelerator: keystrokeFor('menu:file:save'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('save')
       }
     },
     {
-      label: 'Save As …',
+      label: i18n.t('menu.saveAs'),
       accelerator: keystrokeFor('menu:file:save-as'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('saveAs')
@@ -96,38 +96,38 @@ AppMenu.File = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Export Animated GIF',
+      label: i18n.t('menu.exportAnimatedGif'),
       accelerator: keystrokeFor('menu:file:export-animated-gif'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportAnimatedGif')
       }
     },
     {
-      label: 'Export Scene for Final Cut Pro X and Premiere',
+      label: i18n.t('menu.exportSceneFinalCutProXandPremiere'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportFcp')
       }
     },
     {
-      label: 'Export Scene as Images',
+      label: i18n.t('menu.exportSceneAsImages'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportImages')
       }
     },
     {
-      label: 'Export Video',
+      label: i18n.t('menu.exportVideo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportVideo')
       }
     },
     {
-      label: 'Export to Web …',
+      label: i18n.t('menu.exportToWeb'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportWeb')
       }
     },
     {
-      label: 'Export Project as ZIP',
+      label: i18n.t('menu.exportProjectAsZIP'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportZIP')
       }
@@ -136,7 +136,7 @@ AppMenu.File = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Clean Up Scene…',
+      label: i18n.t('menu.cleanUpScene…'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportCleanup')
       }
@@ -146,7 +146,7 @@ AppMenu.File = (i18n) => ({
     },
     {
       accelerator: keystrokeFor('menu:file:print'),
-      label: 'Print or export to PDF…',
+      label: i18n.t('menu.printPDF'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('exportPDF')
       }
@@ -156,14 +156,14 @@ AppMenu.File = (i18n) => ({
     },
     {
       accelerator: keystrokeFor("menu:file:print-worksheet"),
-      label: 'Print a Storyboarder worksheet…',
+      label: i18n.t('menu.printStoryboarderWorksheet'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('printWorksheet')
       }
     },
     {
       accelerator: keystrokeFor("menu:file:import-worksheets"),
-      label: 'Import worksheets…',
+      label: i18n.t('menu.importWorksheets'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importWorksheets')
       }
@@ -172,14 +172,14 @@ AppMenu.File = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Import Images to New Boards…',
+      label: i18n.t('menu.importImagesToNewBoards'),
       accelerator: keystrokeFor("menu:file:import-images"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue', false)
       }
     },
     {
-      label: 'Import Image and Replace…',
+      label: i18n.t('menu.importImageAndReplace'),
       accelerator: keystrokeFor("menu:file:import-image-replace"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue', true)
@@ -191,14 +191,14 @@ AppMenu.Edit = (i18n) => ({
   label: i18n.t('menu.edit'),
   submenu: [
     {
-      label: 'Undo',
+      label: i18n.t('menu.undo'),
       accelerator: keystrokeFor('menu:edit:undo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('undo')
       }
     },
     {
-      label: 'Redo',
+      label: i18n.t('menu.redo'),
       accelerator: keystrokeFor('menu:edit:redo'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('redo')
@@ -208,33 +208,33 @@ AppMenu.Edit = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Cut',
+      label: i18n.t('menu.cut'),
       accelerator: keystrokeFor('menu:edit:cut'),
       role: 'cut'
     },
     {
-      label: 'Copy',
+      label: i18n.t('menu.copy'),
       accelerator: keystrokeFor('menu:edit:copy'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('copy')
       }
     },
     {
-      label: 'Paste',
+      label: i18n.t('menu.paste'),
       accelerator: keystrokeFor('menu:edit:paste'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('paste')
       }
     },
     {
-      label: 'Paste and Replace',
+      label: i18n.t('menu.pasteAndReplace'),
       accelerator: keystrokeFor('menu:edit:paste-replace'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('paste-replace')
       }
     },
     {
-      label: 'Select All',
+      label: i18n.t('menu.selectAll'),
       accelerator: keystrokeFor('menu:edit:select-all'),
       role: 'selectall'
     },
@@ -246,7 +246,7 @@ AppMenu.Edit = (i18n) => ({
           type: 'separator'
         },
         {
-          label: 'Preferences',
+          label: i18n.t('Preferences'),
           accelerator: keystrokeFor('menu:edit:preferences'),
           click: () => ipcRenderer.send('preferences')
         }
@@ -273,7 +273,7 @@ AppMenu.Navigation = (i18n) => ({
   label: i18n.t('menu.navigation'),
   submenu: [
     {
-      label: 'Play',
+      label: i18n.t('menu.play'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('togglePlayback')
       }
@@ -284,7 +284,7 @@ AppMenu.Navigation = (i18n) => ({
     {
       // commented out. we don't route this through the menu.
       // accelerator: keystrokeFor('menu:navigation:previous-board'),
-      label: 'Previous Board',
+      label: i18n.t('menu.previousBoard'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('goPreviousBoard')
       }
@@ -292,7 +292,7 @@ AppMenu.Navigation = (i18n) => ({
     {
       // commented out. we don't route this through the menu.
       // accelerator: keystrokeFor('menu:navigation:next-board'),
-      label: 'Next Board',
+      label: i18n.t('menu.nextBoard'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('goNextBoard')
       }
@@ -300,7 +300,7 @@ AppMenu.Navigation = (i18n) => ({
     {
       // NOTE for some reason, this accelerator does not trigger a click (CmdOrCtrl+Left)
       accelerator: keystrokeFor('menu:navigation:previous-scene'),
-      label: 'Previous Scene',
+      label: i18n.t('menu.previousScene'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('previousScene')
       }
@@ -308,7 +308,7 @@ AppMenu.Navigation = (i18n) => ({
     {
       // NOTE for some reason, this accelerator does not trigger a click (CmdOrCtrl+Right)
       accelerator: keystrokeFor('menu:navigation:next-scene'),
-      label: 'Next Scene',
+      label: i18n.t('menu.nextScene'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('nextScene')
       }
@@ -317,7 +317,7 @@ AppMenu.Navigation = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Stop All Board Audio',
+      label: i18n.t('menu.stopAllBoardAudio'),
       // NOTE: menu won't send this, we have to listen for it explicitly in the key handler
       accelerator: keystrokeFor('menu:navigation:stop-all-sounds'),
       click (item, focusedWindow, event) {
@@ -325,14 +325,14 @@ AppMenu.Navigation = (i18n) => ({
       }
     },
     {
-      label: 'Toggle speaking',
+      label: i18n.t('menu.toggleSpeaking'),
       type: 'checkbox',
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleSpeaking')
       }
     },
     {
-      label: 'Audition Board Audio',
+      label: i18n.t('menu.auditionBoardAudio'),
       type: 'checkbox',
       accelerator: keystrokeFor('menu:navigation:toggle-audition'),
       click (item, focusedWindow, event) {
@@ -346,14 +346,14 @@ AppMenu.Boards = (i18n) => ({
   submenu: [
     {
       accelerator: keystrokeFor('menu:boards:new-board'),
-      label: 'New Board',
+      label: i18n.t('menu.newBoard'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('newBoard', 1)
       }
     },
     {
       accelerator: keystrokeFor('menu:boards:new-board-before'),
-      label: 'New Board Before',
+      label: i18n.t('menu.newBoardBefore'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('newBoard', -1)
       }
@@ -363,14 +363,14 @@ AppMenu.Boards = (i18n) => ({
     },
     {
       accelerator: keystrokeFor('menu:boards:delete-boards'),
-      label: 'Delete Board(s)',
+      label: i18n.t('menu.deleteBoards'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('deleteBoards')
       }
     },
     {
       accelerator: keystrokeFor('menu:boards:delete-boards-go-forward'),
-      label: 'Delete Board(s) - Go Forward',
+      label: i18n.t('menu.deleteBoardsGoForward'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('deleteBoards', 1)
       }
@@ -380,7 +380,7 @@ AppMenu.Boards = (i18n) => ({
     },
     {
       accelerator: keystrokeFor('menu:boards:duplicate'),
-      label: 'Duplicate Board',
+      label: i18n.t('menu.duplicateBoard'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('duplicateBoard')
       }
@@ -390,14 +390,14 @@ AppMenu.Boards = (i18n) => ({
     },
     {
       accelerator: keystrokeFor('menu:boards:reorder-left'),
-      label: 'Reorder Left',
+      label: i18n.t('menu.reorderLeft'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('reorderBoardsLeft')
       }
     },
     {
       accelerator: keystrokeFor('menu:boards:reorder-right'),
-      label: 'Reorder Right',
+      label: i18n.t('menu.reorderRight'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('reorderBoardsRight')
       }
@@ -407,14 +407,14 @@ AppMenu.Boards = (i18n) => ({
     },
     {
       accelerator: keystrokeFor("menu:boards:add-audio-file"),
-      label: 'Add Audio File…',
+      label: i18n.t('menu.addAudioFile'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('addAudioFile')
       }
     },
     {
       accelerator: keystrokeFor("menu:boards:toggle-new-shot"),
-      label: 'Toggle Board as New Shot',
+      label: i18n.t('menu.toggleBoardAsNewShot'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleNewShot')
       }
@@ -426,49 +426,49 @@ AppMenu.Tools = (i18n) => ({
   submenu: [
     {
       accelerator: keystrokeFor('menu:tools:light-pencil'),
-      label: 'Light Pencil',
+      label: i18n.t('menu.lightPencil'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'light-pencil')
       }
     },
     {
       accelerator: keystrokeFor('menu:tools:brush'),
-      label: 'Brush',
+      label: i18n.t('menu.brush'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'brush')
       }
     },
     {
       accelerator: keystrokeFor('menu:tools:tone'),
-      label: 'Tone',
+      label: i18n.t('menu.tone'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'tone')
       }
     },
     {
       accelerator: keystrokeFor('menu:tools:pencil'),
-      label: 'Pencil',
+      label: i18n.t('menu.pencil'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'pencil')
       }
     },
     {
       accelerator: keystrokeFor('menu:tools:pen'),
-      label: 'Pen',
+      label: i18n.t('menu.pen'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'pen')
       }
     },
     {
       accelerator: keystrokeFor('menu:tools:note-pen'),
-      label: 'Note Pen',
+      label: i18n.t('menu.notePen'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'note-pen')
       }
     },
     {
       accelerator: keystrokeFor('menu:tools:eraser'),
-      label: 'Eraser',
+      label: i18n.t('menu.eraser'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('setTool', 'eraser')
       }
@@ -478,14 +478,14 @@ AppMenu.Tools = (i18n) => ({
     },
     {
       accelerator: keystrokeFor("menu:tools:clear-all-layers"),
-      label: 'Clear All Layers',
+      label: i18n.t('menu.clearAllLayers'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('clear')
       }
     },
     {
       accelerator: keystrokeFor("menu:tools:clear-layer"),
-      label: 'Clear Layer',
+      label: i18n.t('menu.clearLayer'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('clear', true)
       }
@@ -495,14 +495,14 @@ AppMenu.Tools = (i18n) => ({
     },
     {
       accelerator: keystrokeFor('drawing:brush-size:dec'),
-      label: 'Smaller Brush',
+      label: i18n.t('menu.smallerBrush'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', -1)
       }
     },
     {
       accelerator: keystrokeFor('drawing:brush-size:inc'),
-      label: 'Larger Brush',
+      label: i18n.t('largerBrush'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', 1)
       }
@@ -512,21 +512,21 @@ AppMenu.Tools = (i18n) => ({
     },
     {
       accelerator: keystrokeFor("menu:tools:palette-color-1"),
-      label: 'Use Palette Color 1',
+      label: i18n.t('menu.usePaletteColor1'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 1)
       }
     },
     {
       accelerator: keystrokeFor("menu:tools:palette-color-2"),
-      label: 'Use Palette Color 2',
+      label: i18n.t('menu.usePaletteColor2'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 2)
       }
     },
     {
       accelerator: keystrokeFor("menu:tools:palette-color-3"),
-      label: 'Use Palette Color 3',
+      label: i18n.t('menu.usePaletteColor3'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('useColor', 3)
       }
@@ -536,13 +536,13 @@ AppMenu.Tools = (i18n) => ({
     },
     {
       accelerator: keystrokeFor("menu:tools:flip-horizontal"),
-      label: 'Flip Horizontal',
+      label: i18n.t('menu.flipHorizontal'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('flipBoard')
       }
     },
     {
-      label: 'Flip Vertical',
+      label: i18n.t('menu.flipVertical'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('flipBoard', true)
       }
@@ -551,13 +551,13 @@ AppMenu.Tools = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Shot Generator',
+      label: i18n.t('menu.shotGenerator'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('revealShotGenerator')
       }
     },
     {
-      label: 'Edit in Photoshop',
+      label: i18n.t('menu.editInPhotoshop'),
       accelerator: keystrokeFor('menu:tools:edit-in-photoshop'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('openInEditor')
@@ -569,7 +569,7 @@ AppMenu.View = (i18n) => ({
   label: i18n.t('menu.view'),
   submenu: [
     {
-      label: 'Cycle View Mode',
+      label: i18n.t('menu.cycleViewMode'),
       accelerator: keystrokeFor('menu:view:cycle-view-mode'),
       click (item, focusedWindow, event) {
         // NOTE this is only triggered by menu directly, not by key
@@ -577,7 +577,7 @@ AppMenu.View = (i18n) => ({
       }
     },
     {
-      label: 'Reverse Cycle View Mode',
+      label: i18n.t('menu.reverseCycleViewMode'),
       accelerator: keystrokeFor('menu:view:cycle-view-mode-reverse'),
       click (item, focusedWindow, event) {
         // NOTE this is only triggered by menu directly, not by key
@@ -588,38 +588,38 @@ AppMenu.View = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Toggle Grid Guide',
+      label: i18n.t('menu.toggleGridGuide'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleGuide', 'grid')
       }
     },
     {
-      label: 'Toggle Center Guide',
+      label: i18n.t('menu.toggleCenterGuide'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleGuide', 'center')
       }
     },
     {
-      label: 'Toggle Thirds Guide',
+      label: i18n.t('menu.toggleThirdsGuide'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleGuide', 'thirds')
       }
     },
     {
-      label: 'Toggle 3D Guide',
+      label: i18n.t('menu.toggle3DGuide'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleGuide', 'perspective')
       }
     },
     {
-      label: 'Toggle Onion Skin',
+      label: i18n.t('menu.toggleOnionSkin'),
       accelerator: keystrokeFor('menu:view:onion-skin'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleOnionSkin')
       }
     },
     {
-      label: 'Toggle Captions',
+      label: i18n.t('menu.toggleCaptions'),
       accelerator: keystrokeFor('menu:view:toggle-captions'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleCaptions')
@@ -629,7 +629,7 @@ AppMenu.View = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Toggle Boards/Timeline Mode',
+      label: i18n.t('menu.toggleBoardsTimelineMode'),
       accelerator: keystrokeFor('menu:view:toggle-timeline'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('toggleTimeline')
@@ -644,24 +644,25 @@ AppMenu.View = (i18n) => ({
     },
     {
       accelerator: keystrokeFor("menu:view:toggle-full-screen"),
-      role: 'togglefullscreen'
+      role: 'togglefullscreen',
+      label: i18n.t('menu.togglefullscreen')
     },
     {
-      label: 'Actual Size',
+      label: i18n.t('menu.actualSize'),
       accelerator: keystrokeFor("menu:view:zoom-reset"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('zoomReset')
       }
     },
     {
-      label: 'Zoom In',
+      label: i18n.t('menu.zoomIn'),
       accelerator: keystrokeFor("menu:view:zoom-in"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('zoomIn')
       }
     },
     {
-      label: 'Zoom Out',
+      label: i18n.t('menu.zoomOut'),
       accelerator: keystrokeFor("menu:view:zoom-out"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('zoomOut')
@@ -673,14 +674,14 @@ AppMenu.window = (i18n) => {
   let extension = process.platform == 'darwin'
     ? [
         {
-          label: 'Zoom',
+          label: i18n.t('menu.zoom'),
           role: 'zoom'
         },
         {
           type: 'separator'
         },
         {
-          label: 'Bring All to Front',
+          label: i18n.t('menu.bringAllToFront'),
           role: 'front'
         }
       ]
@@ -704,14 +705,14 @@ AppMenu.help = (i18n) => ({
       type: 'separator'
     },
     {
-      label: 'Key Commands…',
+      label: i18n.t('menu.keyCommands'),
       accelerator: keystrokeFor('menu:help:show-key-commands'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('showKeyCommands')
       }
     },
     {
-      label: 'Show me a story tip!',
+      label: i18n.t('menu.showMeAStoryTip'),
       accelerator: keystrokeFor('menu:help:show-story-tip'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('showTip')
@@ -721,7 +722,7 @@ AppMenu.help = (i18n) => ({
 })
 
 // macOS only
-AppMenu.about = (options = { includePreferences: false }) => {
+AppMenu.about = (options = { includePreferences: false }, i18n) => {
   if (process.platform !== 'darwin')
     return []
 
@@ -731,7 +732,7 @@ AppMenu.about = (options = { includePreferences: false }) => {
           type: 'separator'
         },
         {
-          label: 'Preferences',
+          label: i18n.t('Preferences'),
           accelerator: keystrokeFor('menu:about:preferences'),
           click: () => ipcRenderer.send('preferences')
         }
@@ -744,6 +745,7 @@ AppMenu.about = (options = { includePreferences: false }) => {
       submenu: [
         {
           role: 'about',
+          label: i18n.t("menu.about")
         },
         ...optionalPreferences,
         // {
@@ -754,7 +756,7 @@ AppMenu.about = (options = { includePreferences: false }) => {
           type: 'separator'
         },
         {
-          label: 'Services',
+          label: i18n.t("menu.services"),
           role: 'services',
           submenu: []
         },
@@ -762,19 +764,23 @@ AppMenu.about = (options = { includePreferences: false }) => {
           type: 'separator'
         },
         {
-          role: 'hide'
+          role: 'hide',
+          label: i18n.t('menu.hide')
         },
         {
-          role: 'hideothers'
+          role: 'hideothers',
+          label: i18n.t('menu.hideothers')
         },
         {
-          role: 'unhide'
+          role: 'unhide',
+          label: i18n.t('menu.unhide')
         },
         {
           type: 'separator'
         },
         {
-          role: 'quit'
+          role: 'quit',
+          label: i18n.t('menu.quit')
         }
       ]
     }
@@ -808,7 +814,7 @@ const languageMenu = (i18n) => {
 }
 
 const template = (i18n) => [
-  ...AppMenu.about({ includePreferences: true }),
+  ...AppMenu.about({ includePreferences: true }, i18n),
   AppMenu.File(i18n),
   AppMenu.Edit(i18n),
   AppMenu.Navigation(i18n),
@@ -821,12 +827,12 @@ const template = (i18n) => [
 ]
 
 const welcomeTemplate = (i18n) =>[
-  ...AppMenu.about({ includePreferences: false }),
+  ...AppMenu.about({ includePreferences: false }, i18n),
   {
     label: i18n.t('menu.file'),
     submenu: [
       {
-        label: 'Open…',
+        label: i18n.t('menu.open'),
         accelerator: keystrokeFor('menu:file:open'),
         click (item, focusedWindow, event) {
           ipcRenderer.send('openDialogue')
@@ -840,12 +846,27 @@ const welcomeTemplate = (i18n) =>[
       // {role: 'undo'},
       // {role: 'redo'},
       // {type: 'separator'},
-      {role: 'cut'},
-      {role: 'copy'},
-      {role: 'paste'},
+      {
+        role: 'cut',
+        label: i18n.t("menu.cut")
+      },
+      {
+        role: 'copy',
+        label: i18n.t("menu.copy")
+      },
+      {
+        role: 'paste',
+        label: i18n.t("menu.paste")
+      },
       // {role: 'pasteandmatchstyle'},
-      {role: 'delete'},
-      {role: 'selectall'}
+      {
+        role: 'delete',
+        label: i18n.t("menu.delete")
+      },
+      {
+        role: 'selectall',
+        label: i18n.t("menu.selectall")
+      }
     ]
   },
   {
@@ -872,19 +893,19 @@ const welcomeTemplate = (i18n) =>[
 ]
 
 const shotGeneratorMenu = (i18n) => [
-  ...AppMenu.about({ includePreferences: false }),
+  ...AppMenu.about({ includePreferences: false }, i18n),
   {
     label: i18n.t('menu.file'),
     submenu: [
       {
-        label: 'Open…',
+        label: i18n.t('menu.open'),
         accelerator: keystrokeFor('menu:file:open'),
         click (item, focusedWindow, event) {
           ipcRenderer.send('openDialogue')
         }
       },
       {
-        label: 'Export GLTF…',
+        label: i18n.t('menu.exportGlTF'),
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:export-gltf')
         }
@@ -895,14 +916,14 @@ const shotGeneratorMenu = (i18n) => [
     label: i18n.t('menu.edit'),
     submenu: [
       {
-        label: 'Undo',
+        label: i18n.t('menu.undo'),
         accelerator: keystrokeFor('menu:edit:undo'),
         click () {
           ipcRenderer.send('shot-generator:edit:undo')
         }
       },
       {
-        label: 'Redo',
+        label: i18n.t('menu.redo'),
         accelerator: keystrokeFor('menu:edit:redo'),
         click () {
           ipcRenderer.send('shot-generator:edit:redo')
@@ -910,13 +931,22 @@ const shotGeneratorMenu = (i18n) => [
       },
       {type: 'separator'},
 
-      {role: 'cut'},
-      {role: 'copy'},
-      {role: 'paste'},
+      {
+        role: 'cut',
+        label: i18n.t("menu.cut")
+      },
+      {
+        role: 'copy',
+        label: i18n.t("menu.copy")
+      },
+      {
+        role: 'paste',
+        label: i18n.t("menu.paste")
+      },
   
       {
         accelerator: 'CommandOrControl+d',
-        label: 'Duplicate',
+        label: i18n.t('menu.duplicate'),
         click () {
           ipcRenderer.send('shot-generator:object:duplicate')
         }
@@ -924,26 +954,32 @@ const shotGeneratorMenu = (i18n) => [
   
       {
         accelerator: 'CommandOrControl+g',
-        label: 'Group / Ungroup',
+        label: i18n.t('menu.groupUngroup'),
         click () {
           ipcRenderer.send('shot-generator:object:group')
         }
       },
       {
         accelerator: 'CommandOrControl+j',
-        label: 'Open Shot Explorer',
+        label: i18n.t('menu.openShotExplorer'),
         click () {
           ipcRenderer.send('shot-generator:show:shot-explorer')
         }
       },
       
       // {role: 'pasteandmatchstyle'},
-      {role: 'delete'},
+      {
+        role: 'delete',
+        label: i18n.t("menu.delete")
+      },
 
-      {role: 'selectall'},
+      {
+        role: 'selectall',
+        label: i18n.t("menu.selectall")
+      },
       {
         accelerator: 'CommandOrControl+b',
-        label: 'Drop',
+        label: i18n.t('menu.drop'),
         click () {
           ipcRenderer.send('shot-generator:object:drops')
         }
@@ -955,14 +991,14 @@ const shotGeneratorMenu = (i18n) => [
     submenu: [
       ...SubMenuFragments.View,
       {
-        label: 'Enable FPS Meter',
+        label: i18n.t('menu.enableFPSMeter'),
         type: 'checkbox',
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:fps-meter')
         }
       },
       {
-        label: 'Scale UI Up',
+        label: i18n.t('menu.scaleUIUp'),
         accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
@@ -970,7 +1006,7 @@ const shotGeneratorMenu = (i18n) => [
         }
       },
       {
-        label: 'Scale UI Down',
+        label: i18n.t('menu.scaleUIDown'),
         accelerator: keystrokeFor("menu:view:zoom-out"),
         type: 'normal',
         click (item, focusedWindow, event) {
@@ -978,7 +1014,7 @@ const shotGeneratorMenu = (i18n) => [
         }
       },
       {
-        label: 'Reset UI Scale to 100%',
+        label: i18n.t('menu.resetUIScale'),
         accelerator: 'CommandOrControl+0',
         type: 'normal',
         click (item, focusedWindow, event) {
@@ -1021,7 +1057,7 @@ const setShotGeneratorMenu = (i18n) => {
 const setEnableAudition = value =>
   Menu
     .getApplicationMenu().items.find(n => n.label === i18n.t('menu.navigation'))
-    .submenu.items.find(n => n.label === 'Audition Board Audio')
+    .submenu.items.find(n => n.label === i18n.t('menu.auditionBoardAudio'))
     .checked = value
 
 module.exports = {
