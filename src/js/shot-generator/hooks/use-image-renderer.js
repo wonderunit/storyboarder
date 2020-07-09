@@ -1,5 +1,7 @@
 import { useThree } from 'react-three-fiber'
 
+import { SHOT_LAYERS } from '../utils/ShotLayers'
+
 const useImageRenderer = () => {
   const { scene, camera, gl } = useThree()
 
