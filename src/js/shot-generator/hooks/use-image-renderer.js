@@ -14,14 +14,3 @@ const useImageRenderer = () => {
 }
 
 export default useImageRenderer
-
-      let imageRenderCamera = camera.clone()
-      renderer.setSize(Math.ceil(aspectRatio * 900), 900)
-      renderer.render(scene, imageRenderCamera)
-      return renderer.domElement.toDataURL()
-  }
-
-  return imageRenderer
-}
-
-export default useImageRenderer
