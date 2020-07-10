@@ -158,7 +158,9 @@ const useExportToGltf = (sceneRef, withState) => {
           } else if (child.userData.type === "ground" || child.userData.type === 'environment' || (child.geometry && child.geometry instanceof THREE.ExtrudeGeometry)) {
             let clone = meshFactory(child)
             clone.userData = {}
-            clone.name = child.userData.type
+            clone.name = child.userData.type.charAt(0).toUpperCase() + child.userData.type.slice(1)
+            console.log(clone.name)
+            console.log(child.userData.type)
             scene.add(clone)
           } 
         }
