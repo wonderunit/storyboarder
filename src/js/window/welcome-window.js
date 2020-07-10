@@ -18,14 +18,28 @@ i18n.on('loaded', (loaded) => {
   i18n.off('loaded')
 })
 
+const updateText = () => {
+  document.querySelector('.recent').innerHTML = i18n.t("welcome-window.recentStoryboards")
+  document.querySelector('#getting-started').innerHTML = i18n.t("menu.gettingStarted")
+  document.querySelector('#new-storyboard').innerHTML = i18n.t("welcome-window.new-storyboard")
+  document.querySelector('#open-storyboard').innerHTML = i18n.t("menu.open")
+  let welcomeLine1 = document.querySelector('#welcome-line-1')
+  if(welcomeLine1) welcomeLine1.innerHTML = i18n.t("welcome-window.welcome-line-1")
+  let welcomeLine2 = document.querySelector('#welcome-line-2')
+  if(welcomeLine2) welcomeLine2.innerHTML = i18n.t("welcome-window.welcome-line-2")
+  let welcomeLine3 = document.querySelector('#welcome-line-3')
+  if(welcomeLine3) welcomeLine3.innerHTML = i18n.t("welcome-window.welcome-line-3")
+}
+
 ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
+    updateText()
   })
 })
 
 const currentLanguage = (event) => {
-   ipcRenderer.send("returnCurrentLanguage", i18n.language )
+  ipcRenderer.send("returnCurrentLanguage", i18n.language )
 }
 ipcRenderer.on('getCurrentLanguage', currentLanguage)
 
@@ -33,6 +47,7 @@ const changeLanguage = (lng) => {
   if(remote.getCurrentWindow().isFocused()) {
     menu.setWelcomeMenu(i18n)
   }
+  updateText()
   ipcRenderer.send("languageChanged", lng)
 }
 
@@ -76,7 +91,7 @@ let updateRecentDocuments = () => {
       count++
     }
     document.querySelector('#recent').innerHTML = html.join('')
-    document.querySelector('.recent').innerHTML = "RECENT STORYBOARDS"
+    document.querySelector('.recent').innerHTML = i18n.t("welcome-window.recentStoryboards")// RECENT STORYBOARDS
     let recentDivs = document.querySelector("#recent").children
     for (var i = 0; i < recentDivs.length; i++) {
       recentDivs[i].onclick = (e)=>{
