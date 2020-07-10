@@ -13,7 +13,7 @@
 		"navigation": "Навигация",
 		"boards": "Доска",
 		"tools": "Инструменты",
-		"about": "Об",
+		"about": "О приложении",
 		"services": "Сервисы",
 		"hide": "Спрятать",
 		"open": "Открыть…",
@@ -103,7 +103,14 @@
 		"enableFPSMeter": "Включить счетчик FPS ",
 		"scaleUIUp": "Увеличить размер UI",
 		"scaleUIDown": "Уменьшить размер UI",
-		"resetUIScale": "Сбросить размер UI на 100%"
+		"resetUIScale": "Сбросить размер UI на 100%",
+		"reload": "Перегрузить",
+		"toggleDevTools": "Открыть инструменты разработчика",
+		"minimize": "Минимизировать",
+		"closeWindow": "Закрыть окно",
+		"learnMore": "Узнать больше",
+		"gettingStarted": "Как начать",
+		"faq": "Часто задаваемые вопросы…",
+		"bugSubmit": "Нашли баг? Оставь issue!!!"
 	  }
-
 }

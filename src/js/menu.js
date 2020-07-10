@@ -13,11 +13,11 @@ let keystrokeFor = command => store.getState().entities.keymap[command]
 const i18n = require('./services/i18next.config')
 
 let SubMenuFragments = {}
-SubMenuFragments.View = [
+SubMenuFragments.View = (i18n) => [
   ...isDev
     ? [
         {
-          label: i18n.t('Reload'),
+          label: i18n.t('menu.reload'),
           accelerator: 'CmdOrCtrl+R',
           click (item, focusedWindow) {
             if (focusedWindow) focusedWindow.reload()
@@ -26,39 +26,39 @@ SubMenuFragments.View = [
       ]
     : [],
   {
-    label: i18n.t('Toggle Developer Tools'),
+    label: i18n.t('menu.toggleDevTools'),
     accelerator: keystrokeFor('menu:view:toggle-developer-tools'),
     click (item, focusedWindow) {
       if (focusedWindow) focusedWindow.webContents.toggleDevTools()
     }
   }
 ]
-SubMenuFragments.help = [
+SubMenuFragments.help = (i18n) => [
   {
-    label: i18n.t('Learn More'),
+    label: i18n.t('menu.learnMore'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder') }
   },
   {
-    label: i18n.t('Getting Started…'),
+    label: i18n.t('menu.gettingStarted'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq/#How-do-I-get-started') }
   },
   {
-    label: i18n.t('Frequently Asked Questions…'),
+    label: i18n.t('menu.faq'),
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq') }
   },
   {
-    label: i18n.t('Found a bug? Submit an issue!!!'),
+    label: i18n.t('menu.bugSubmit'),
     click () { shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
   }
 ]
-SubMenuFragments.windowing = [
+SubMenuFragments.windowing = (i18n) => [
   {
-    label: i18n.t('Minimize'),
+    label: i18n.t('menu.minimize'),
     accelerator: keystrokeFor("menu:window:minimize"),
     role: 'minimize'
   },
   {
-    label: i18n.t('Close Window'),
+    label: i18n.t('menu.closeWindow'),
     accelerator: keystrokeFor("menu:window:close"),
     role: 'close'
   }
@@ -502,7 +502,7 @@ AppMenu.Tools = (i18n) => ({
     },
     {
       accelerator: keystrokeFor('drawing:brush-size:inc'),
-      label: i18n.t('largerBrush'),
+      label: i18n.t('menu.largerBrush'),
       click (item, focusedWindow, event) {
         ipcRenderer.send('brushSize', 1)
       }
@@ -638,7 +638,7 @@ AppMenu.View = (i18n) => ({
     {
       type: 'separator'
     },
-    ...SubMenuFragments.View,
+    ...SubMenuFragments.View(i18n),
     {
       type: 'separator'
     },
@@ -691,7 +691,7 @@ AppMenu.window = (i18n) => {
     role: 'window',
     label: i18n.t('menu.window'),
     submenu: [
-      ...SubMenuFragments.windowing,
+      ...SubMenuFragments.windowing(i18n),
       ...extension
     ]
   }
@@ -700,7 +700,7 @@ AppMenu.help = (i18n) => ({
   role: 'help',
   label: i18n.t("menu.help"),
   submenu: [
-    ...SubMenuFragments.help,
+    ...SubMenuFragments.help(i18n),
     {
       type: 'separator'
     },
@@ -872,21 +872,21 @@ const welcomeTemplate = (i18n) =>[
   {
     label: i18n.t('menu.view'),
     submenu: [
-      ...SubMenuFragments.View
+      ...SubMenuFragments.View(i18n)
     ]
   },
   {
     role: 'window',
     label: i18n.t('menu.window'),
     submenu: [
-      ...SubMenuFragments.windowing
+      ...SubMenuFragments.windowing(i18n)
     ]
   },
   {
     role: 'help',
     label: i18n.t('menu.help'),
     submenu: [
-      ...SubMenuFragments.help
+      ...SubMenuFragments.help(i18n)
     ]
   },
   languageMenu(i18n)
@@ -989,7 +989,7 @@ const shotGeneratorMenu = (i18n) => [
   {
     label: i18n.t('menu.view'),
     submenu: [
-      ...SubMenuFragments.View,
+      ...SubMenuFragments.View(i18n),
       {
         label: i18n.t('menu.enableFPSMeter'),
         type: 'checkbox',
@@ -1027,14 +1027,14 @@ const shotGeneratorMenu = (i18n) => [
     role: 'window',
     label: i18n.t('menu.window'),
     submenu: [
-      ...SubMenuFragments.windowing
+      ...SubMenuFragments.windowing(i18n)
     ]
   },
   {
     role: 'help',
     label: i18n.t("menu.help"),
     submenu: [
-      ...SubMenuFragments.help
+      ...SubMenuFragments.help(i18n)
     ]
   },
   languageMenu(i18n)

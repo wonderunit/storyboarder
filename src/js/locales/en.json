@@ -103,6 +103,14 @@
 		"enableFPSMeter": "Enable FPS Meter",
 		"scaleUIUp": "Scale UI Up",
 		"scaleUIDown": "Scale UI Down",
-		"resetUIScale": "Reset UI Scale to 100%"
+		"resetUIScale": "Reset UI Scale to 100%",
+		"reload": "Reload",
+		"toggleDevTools": "Toggle Developer Tools",
+		"minimize": "Minimize",
+		"closeWindow": "Close Window",
+		"learnMore": "Learn More",
+		"gettingStarted": "Getting Started…",
+		"faq": "Frequently Asked Questions…",
+		"bugSubmit": "Found a bug? Submit an issue!!!"
 	}
 }
