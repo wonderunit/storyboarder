@@ -1,8 +1,10 @@
 {
 	"vr.enter": "VR Enter",
 	"Language": "Language",
-	"en": "English",
-	"ru": "Russian",
+	"supportedLanguages": {
+		"en-US": "English",
+		"ru-RU": "Russian"
+	},
 	"Preferences": "Preferences",
 	"menu": {
 		"file": "File",

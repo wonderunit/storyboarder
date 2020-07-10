@@ -3,6 +3,7 @@ let i18nextBackend = require('i18next-fs-backend')
 let Backend  = require('i18next-http-backend').default
 const path = require('path')
 const { initReactI18next } = require("react-i18next")
+const config = require('./language.config')
 let loadPath = 'data/locales/{{lng}}'
 
 const i18nextOptions = {
@@ -10,14 +11,14 @@ const i18nextOptions = {
     interpolation: {
         escapeValue: false
     },
-    whitelist: ["en", "ru"],
-    lng:[ "en", "ru" ],
+    whitelist: config.supportedLanguages,
+    lng: config.supportedLanguages,
     react: {
         useSuspense: true,
         wait: false
     },
     keySeparator: false,
-    fallbackLng: false ,
+    fallbackLng: config.defaultLanguage,
     backend: {
         loadPath: loadPath + ".json",
 

@@ -2,9 +2,9 @@ let i18n = require('i18next')
 let i18nextBackend = require('i18next-fs-backend')
 const path = require('path')
 const { initReactI18next } = require("react-i18next")
+const config = require('./language.config')
 let loadPath 
 if(window) {
-    console.log(window)
     loadPath = path.join(window.__dirname,  "js/locales/{{lng}}")
 } else {
     loadPath = path.join(__dirname, "..", "js/locales/{{lng}}")
@@ -15,8 +15,8 @@ const i18nextOptions = {
         escapeValue: false
     },
     saveMissing: true,
-    whitelist: ["en", "ru"],
-    lng:"en",
+    whitelist: config.supportedLanguages,
+    lng: config.defaultLanguage,
     react: {
         useSuspense: true,
         wait: false
@@ -43,7 +43,6 @@ i18n.use(i18nextBackend).use(initReactI18next)
 
 if(!i18n.isInitialized) {
     i18n.init(i18nextOptions)
-    console.log(i18n)
 }
 
 module.exports = i18n
