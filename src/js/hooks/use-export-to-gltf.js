@@ -159,8 +159,6 @@ const useExportToGltf = (sceneRef, withState) => {
             let clone = meshFactory(child)
             clone.userData = {}
             clone.name = child.userData.type.charAt(0).toUpperCase() + child.userData.type.slice(1)
-            console.log(clone.name)
-            console.log(child.userData.type)
             scene.add(clone)
           } 
         }
