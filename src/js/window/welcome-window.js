@@ -18,7 +18,7 @@ i18n.on('loaded', (loaded) => {
   i18n.off('loaded')
 })
 
-const updateText = () => {
+const updateHTMLText = () => {
   document.querySelector('.recent').innerHTML = i18n.t("welcome-window.recentStoryboards")
   document.querySelector('#getting-started').innerHTML = i18n.t("menu.gettingStarted")
   document.querySelector('#new-storyboard').innerHTML = i18n.t("welcome-window.new-storyboard")
@@ -34,7 +34,7 @@ const updateText = () => {
 ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
-    updateText()
+    updateHTMLText()
   })
 })
 
@@ -47,7 +47,7 @@ const changeLanguage = (lng) => {
   if(remote.getCurrentWindow().isFocused()) {
     menu.setWelcomeMenu(i18n)
   }
-  updateText()
+  updateHTMLText()
   ipcRenderer.send("languageChanged", lng)
 }
 

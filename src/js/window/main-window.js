@@ -83,6 +83,7 @@ i18n.on('loaded', (loaded) => {
 ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
+    updateHTMLText()
   })
 })
 
@@ -95,6 +96,7 @@ const changeLanguage = (lng) => {
   if(remote.getCurrentWindow().isFocused()) {
     menu.setMenu(i18n)
   }
+  updateHTMLText()
   ipcRenderer.send("languageChanged", lng)
 }
 
@@ -108,6 +110,41 @@ ipcRenderer.on("languageChanged", (event, lng) => {
     i18n.on("languageChanged", changeLanguage)
   })
 })
+
+const getHTMLElementText = (elementName, value) => {
+  let element = document.querySelector(elementName)
+  return element
+}
+
+const translateTooltip = (elementName, traslationKey) => {
+  let element = document.querySelector(elementName)
+  if(!element) return
+  element.setAttribute("data-tooltip-title", i18n.t(`${traslationKey}.title`))
+  element.setAttribute("data-tooltip-description", i18n.t(`${traslationKey}.description`))
+}
+
+const updateHTMLText = () => { 
+  //#region Toolbar elements
+    //#region Tools
+    translateTooltip("#toolbar-light-pencil", "main-window.toolbar.tools.light-pencil")
+    translateTooltip("#toolbar-brush", "main-window.toolbar.tools.brush")
+    translateTooltip("#toolbar-tone", "main-window.toolbar.tools.tone")
+    translateTooltip("#toolbar-pencil", "main-window.toolbar.tools.pencil")
+    translateTooltip("#toolbar-pen", "main-window.toolbar.tools.pen")
+    translateTooltip("#toolbar-light-pencil", "main-window.toolbar.tools.light-pencil")
+    translateTooltip("#toolbar-note-pen", "main-window.toolbar.tools.note-pen")
+    translateTooltip("#toolbar-eraser", "main-window.toolbar.tools.eraser")
+    //#endregion
+    //#region Colors
+    translateTooltip("#toolbar-current-color", "main-window.toolbar.colors.current-color")
+    translateTooltip(".toolbar-brush-modifier-controls_size", "main-window.toolbar.colors.controls-size")
+    translateTooltip(".toolbar-brush-modifier-controls_stroke-opacity", "main-window.toolbar.colors.controls-stroke-opacity")
+    translateTooltip("#toolbar-palette-colorA", "main-window.toolbar.colors.palette-colorA")
+    translateTooltip("#toolbar-palette-colorB", "main-window.toolbar.colors.palette-colorB")
+    translateTooltip("#toolbar-palette-colorC", "main-window.toolbar.colors.palette-colorC")
+    //#endregion
+  //#endregion
+}
 //#endregion
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
