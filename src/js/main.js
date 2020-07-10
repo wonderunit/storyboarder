@@ -1431,12 +1431,12 @@ ipcMain.on('workspaceReady', event => {
 })
 
 ipcMain.on('languageChanged', (event, lng) => {
-  mainWindow && mainWindow.webContents.send('languageChanged', lng)
+  mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('languageChanged', lng)
   let win = shotGeneratorWindow.getWindow()
   if (win) {
-    win.send('languageChanged', lng)
+    win && !win.isDestroyed() && win.send('languageChanged', lng)
   }
-  welcomeWindow && welcomeWindow.webContents.send('languageChanged', lng)
+  welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send('languageChanged', lng)
 })
 
 ipcMain.on('getCurrentLanguage', (event) => {
