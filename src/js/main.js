@@ -47,7 +47,7 @@ const store = configureStore({}, 'main')
 
 let welcomeWindow
 let newWindow
- 
+
 let mainWindow
 let printWindow
 let sketchWindow
@@ -1456,8 +1456,6 @@ ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
 ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
-ipcMain.on('saveShotPlot',
-  (event, data) => mainWindow.webContents.send('saveShotPlot', data))
 ipcMain.on('storyboarder:get-boards',
   event => mainWindow.webContents.send('storyboarder:get-boards'))
 ipcMain.on('shot-generator:get-boards', (event, data) => {

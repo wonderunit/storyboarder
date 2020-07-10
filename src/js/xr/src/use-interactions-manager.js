@@ -1,5 +1,5 @@
 const { useThree, useFrame } = require('react-three-fiber')
-const { useMemo, useRef, useEffect, useState } = React = require('react')
+const { useMemo, useRef, useEffect, useCallback, useState } = React = require('react')
 const { useSelector, useDispatch } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
 
@@ -24,7 +24,7 @@ const teleportParent = require('./helpers/teleport-parent')
 const profile = require('./helpers/vr-gamepads/oculus-touch-v2.json')
 const { addGamepad, removeGamepad } = require('./helpers/vr-gamepads')
 
-const applyDeviceQuaternion = require('../../shot-generator/utils/apply-device-quaternion')
+const applyDeviceQuaternion = require('../../shot-generator/utils/apply-device-quaternion').default
 
 const BonesHelper = require('./three/BonesHelper')
 const GPUPicker = require('./three/GPUPickers/GPUPicker')
@@ -202,14 +202,12 @@ const [useStore, useStoreApi] = create((set, get) => ({
     let center = new THREE.Vector3()
     sceneCamera.getWorldPosition(center)
 
-    const absoluteMatrix = new THREE.Matrix4().multiplyMatrices(sceneCamera.parent.matrixWorld, xrCamera.matrixWorld)
-
     const position = new THREE.Vector3()
     const rotation = new THREE.Quaternion()
     const scale = new THREE.Vector3()
 
-    absoluteMatrix.decompose(position, rotation, scale)
-
+    xrCamera.matrixWorld.decompose(position, rotation, scale)
+    
     const direction = new THREE.Vector3(0.0, 0.0, 1.0).applyQuaternion(rotation).setComponent(1, 0.0).setLength(distance)
     center.add(direction)
     
@@ -310,13 +308,15 @@ const useInteractionsManager = ({
   rootRef,
   uiService,
   playSound,
-  stopSound
+  stopSound,
+  realCamera
 }) => {
   const { gl, camera, scene } = useThree()
 
-  const placeholderCamera = new THREE.PerspectiveCamera()
-
   const selections = useSelector(getSelections)
+  const lastAction = useSelector(state => state.lastAction.type)
+  const isDeselected = useCallback(() => lastAction === 'DESELECT_OBJECT', [lastAction])
+  
   const sceneObjects = useSelector(getSceneObjects)
 
   const canUndo = useSelector(state => state.undoable.past.length > 0)
@@ -801,10 +801,10 @@ const useInteractionsManager = ({
         distance = -0.5
       }
 
-      if (distance != null) {
+      if (distance != null && gl.xr.getSession()) {
         setDidMoveCamera(distance)
-        gl.xr.getCamera(placeholderCamera)
-        moveCameraByDistance(placeholderCamera, camera, distance)
+        
+        moveCameraByDistance(realCamera, camera, distance)
         playSound('teleport-move')
       }
     }
@@ -970,7 +970,7 @@ const useInteractionsManager = ({
   }
 
   // TODO could model these as ... activities? exec:'render' actions?
-  useFrame(() => {
+  useFrame(({camera}) => {
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
@@ -1163,7 +1163,7 @@ const useInteractionsManager = ({
 
           // Calculates relative angle between hmdElement(controllers and cameras) and originalBones
           // And Applies transforms hmdElement rotation to originalBones rotation
-          const relativeAngle = (hmdElement, originalBone, staticRotation) => {
+          const relativeAngle = (hmdElement, originalBone, staticRotation, parent) => {
             let orignalMesh = ikHelper.ragDoll.originalMesh
             let boneInOriginalMesh = orignalMesh.skeleton.bones.find(object => object.name === originalBone.name)
 
@@ -1176,13 +1176,19 @@ const useInteractionsManager = ({
 
             // Sets up default (looking forward) camera's parent rotation
             // Serves as a static rotation of camera's parent
-            hmdElement.parent.rotation.x = Math.PI
-            hmdElement.parent.rotation.y = 0
-            hmdElement.parent.rotation.z = Math.PI
-
+            if (parent) {
+              parent.rotation.x = Math.PI
+              parent.rotation.y = 0
+              parent.rotation.z = Math.PI
+            }
+            
             // Calculates delta aka relative angle
             let delta = new THREE.Quaternion()
-            delta.multiply(hmdElement.parent.worldQuaternion().conjugate())
+            
+            if (parent) {
+              delta.multiply(parent.worldQuaternion().conjugate())
+            }
+            
             delta.multiply(boneInOriginalMesh.worldQuaternion())
 
             // Applies delta to transform hmdElement rotation to bone space
@@ -1191,7 +1197,7 @@ const useInteractionsManager = ({
             let transformMatrix = new THREE.Matrix4()
             transformMatrix.multiply(boneInOriginalMesh.matrix)
             transformMatrix.multiply(boneInOriginalMesh.matrixWorld.inverse())
-            controllerWorldQuaternion.applyMatrix(transformMatrix)
+            controllerWorldQuaternion.applyMatrix4(transformMatrix)
             boneInOriginalMesh.quaternion.copy(controllerWorldQuaternion)
             boneInOriginalMesh.updateMatrix()
             boneInOriginalMesh.updateWorldMatrix(false, true)
@@ -1199,10 +1205,11 @@ const useInteractionsManager = ({
 
           // Atttaches control point to HMDElement(controllers and camera)
           // and sets it's position to (0, 0, 0) in order to put control point in the center of hmd element
-          const attachControlPointToHmdElement = (hmdElement, controlPoint,) => {
+          const attachControlPointToHmdElement = (hmdElement, controlPoint) => {
             hmdElement.attach(controlPoint)
             controlPoint.updateMatrixWorld(true)
             controlPoint.position.set(0, 0, 0)
+            controlPoint.updateMatrixWorld(true)
           }
 
           // world scale is always reset to large
@@ -1216,22 +1223,25 @@ const useInteractionsManager = ({
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
 
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
+          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
           let eulerRot = new THREE.Euler(0, 0, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
           staticLimbRotation.setFromEuler(eulerRot)
+          
+          relativeAngle(realCamera, headBone, staticLimbRotation, realCamera.parent)
+          console.log("realCamera",realCamera)
+          console.log("camera",camera)
 
-          relativeAngle(camera, headBone, staticLimbRotation)
-
+          eulerRot = new THREE.Euler(0, 0 ,0)
           eulerRot.x = THREE.Math.degToRad(90)
           eulerRot.y = THREE.Math.degToRad(90)
           staticLimbRotation.setFromEuler(eulerRot)
-          relativeAngle(rightController, rightHandBone, staticLimbRotation)
+          relativeAngle(rightController, rightHandBone, staticLimbRotation, rightController.parent)
 
           eulerRot.y = THREE.Math.degToRad(-90)
           staticLimbRotation.setFromEuler(eulerRot)
-          relativeAngle(leftController, leftHandBone, staticLimbRotation)
+          relativeAngle(leftController, leftHandBone, staticLimbRotation, leftController.parent)
 
           ikHelper.ragDoll.update()
           let leftArmPoleTarget = ikHelper.ragDoll.chainObjects["LeftHand"].poleConstraint.poleTarget
@@ -1241,11 +1251,12 @@ const useInteractionsManager = ({
           leftArmPoleTarget.mesh.position.y = neckBone.y
           if(!rightArmPoleTarget.mesh.userData.isInitialized)
           rightArmPoleTarget.mesh.position.y = neckBone.y
+          realCamera.updateMatrixWorld(true, true)
 
-          attachControlPointToHmdElement(camera, headControlPoint, headBone, staticLimbRotation, ikHelper.ragDoll)
-          attachControlPointToHmdElement(rightController, rightArmControlPoint, rightHandBone, staticLimbRotation, ikHelper.ragDoll)
-          attachControlPointToHmdElement(leftController, leftArmControlPoint, leftHandBone, staticLimbRotation, ikHelper.ragDoll)
-
+          attachControlPointToHmdElement(realCamera, headControlPoint)
+          attachControlPointToHmdElement(rightController, rightArmControlPoint)
+          attachControlPointToHmdElement(leftController, leftArmControlPoint)   
+          headControlPoint.updateMatrixWorld()
           const mirror = new Mirror(gl, scene, 40, camera.aspect, {width: 1.0, height: 2.0} )
           ikHelper.ragDoll.originalObject.add(mirror)
           mirror.position.z += 2
@@ -1359,10 +1370,12 @@ const useInteractionsManager = ({
               attachableParent.current = object.parent
             }
             
-            targetObject.current = object
-            targetObject.current.userData.startData = {
-              pos: object.position.clone(),
-              rot: object.rotation.clone()
+            targetObject.current = {
+              object,
+              startData: {
+                pos: object.position.clone(),
+                rot: object.rotation.clone()
+              }
             }
             
             controller.attach(object)
@@ -1375,11 +1388,11 @@ const useInteractionsManager = ({
         },
         
         onSelectionClear: (context, event) => {
-          if (targetObject.current && targetObject.current.userData.type !== 'character' && targetObject.current.userData.startData) {
-            targetObject.current.position.copy(targetObject.current.userData.startData.pos)
-            targetObject.current.rotation.copy(targetObject.current.userData.startData.rot)
+          if (targetObject.current && targetObject.current.object.userData.type !== 'character' && targetObject.current.startData) {
+            targetObject.current.object.position.copy(targetObject.current.startData.pos)
+            targetObject.current.object.rotation.copy(targetObject.current.startData.rot)
 
-            targetObject.current.updateMatrixWorld(true)
+            targetObject.current.object.updateMatrixWorld(true)
           }
 
           targetObject.current = null
@@ -1401,6 +1414,10 @@ const useInteractionsManager = ({
           }
 
           stopSound('beam', object)
+          
+          if (isDeselected && selections.length === 0) {
+            return false
+          }
 
           commit(context.selection, object)
           if (object.userData.type === 'character') {
@@ -1527,7 +1544,7 @@ const useInteractionsManager = ({
           if (worldScale === WORLD_SCALE_LARGE) {
             saveStandingMemento(camera)
 
-            setMiniMode(true, camera)
+            setMiniMode(true, camera) 
             getIkHelper().isInMiniMode(true)
           } else {
             setMiniMode(false, camera)
@@ -1551,10 +1568,10 @@ const useInteractionsManager = ({
   )
 
   useEffect(() => {
-    if (selections.length === 0) {
-      //interactionService.send({type: 'CLEAR_SELECTION'})
+    if (selections.length === 0 && lastAction === 'DESELECT_OBJECT') {
+      interactionService.send({type: 'CLEAR_SELECTION'})
     }
-  }, [selections.length])
+  }, [selections.length, lastAction])
 
   return { controllers, interactionServiceCurrent, interactionServiceSend }
 }

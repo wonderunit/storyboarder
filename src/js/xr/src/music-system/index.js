@@ -38,6 +38,10 @@ function nextIndex () {
   return bag.shift()
 }
 
+function choose (array) {
+  return array[Math.floor(Math.random() * array.length)]
+}
+
 function playSequence (index) {
   index = index == null ? nextIndex() : index
   // console.log(`--- sequence index:${index}`)
@@ -61,9 +65,19 @@ function trigger () {
   // console.log('\tduration', duration * 1000)
 
   if (isPlaying) {
+    // schedule the next trigger
+    // console.log('scheduling next trigger')
 
+    // wait at least 3 x the duration of the previous sequence ...
     let next = (duration * 1000) * 3
+    // console.log('base duration', next)
 
+    // ... and add a variable number of measures of silence before playing ...
+    let added = Tone.Time(choose(['4m', '8m', '16m'])).toMilliseconds() 
+    // console.log('adding', added)
+    next = next + added
+
+    // 30% chance of resting 16 measures
     if (Math.random() < 0.3) {
       // console.log('\tresting …')
       next = Tone.Time('16m').toMilliseconds()

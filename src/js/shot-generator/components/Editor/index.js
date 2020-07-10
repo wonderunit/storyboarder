@@ -2,8 +2,9 @@ import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
 import TWEEN from '@tweenjs/tween.js'
-
-import { ipcRenderer } from 'electron'
+import {updateObjects, getObject } from '../../../windows/shot-generator/settings'
+import electron from 'electron'
+const { ipcRenderer, webFrame } = electron
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -12,6 +13,7 @@ import SceneManagerR3fSmall from '../../SceneManagerR3fSmall'
 import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
+import useSaveToStoryboarder from '../../hooks/use-save-to-storyboarder'
 import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
@@ -22,7 +24,9 @@ import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
   selectObject,
   setMainViewCamera,
-  getIsSceneDirty
+  getIsSceneDirty,
+  getSceneObjects,
+  updateObject
 } from './../../../shared/reducers/shot-generator'
 
 import notifications from './../../../window/notifications'
@@ -32,12 +36,11 @@ import ElementsPanel from '../ElementsPanel'
 import BoardInspector from '../BoardInspector'
 import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
-import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
-
-
+import {useAsset, cleanUpCache, removeAsset} from '../../hooks/use-assets-manager'
+import fs from 'fs-extra'
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
-
+const maxZoom = {in: 0.4, out: -1.6}
 const Effect = ({renderData, stats}) => {
   const {gl, size} = useThree()
 
@@ -57,7 +60,6 @@ const Effect = ({renderData, stats}) => {
   
   return null
 }
-
 const Editor = React.memo(({
   mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
 }) => {
@@ -83,12 +85,41 @@ const Editor = React.memo(({
       document.body.removeChild( stats.dom )
       setStats(undefined)
       }
-    }
+  }
+
+  const zoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    let zoomLevel = webFrame.getZoomLevel()
+    let zoom = zoomLevel + value 
+    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
+    webFrame.setZoomLevel(zoom)
+    updateObjects({zoom})
+  }, [])
+
+  const setZoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
+    webFrame.setZoomLevel(zoom)
+    updateObjects({zoom})
+  }, [])
 
   useEffect(() => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    let currentWindow = electron.remote.getCurrentWindow()
+    let settingsZoom = getObject("zoom") 
+    if(!settingsZoom && currentWindow.getBounds().height < 800) {
+      webFrame.setZoomLevel(maxZoom.out)
+    } else {
+      settingsZoom = settingsZoom ? settingsZoom : 0
+      webFrame.setZoomLevel(settingsZoom)
+    }
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
+    ipcRenderer.on('shot-generator:menu:view:zoom', zoom)
+    ipcRenderer.on('shot-generator:menu:view:setZoom', setZoom)
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
+      ipcRenderer.off('shot-generator:menu:view:zoom', zoom)
+      ipcRenderer.off('shot-generator:menu:view:setZoom', setZoom)
     }
   }, [])
 
@@ -155,6 +186,47 @@ const Editor = React.memo(({
     smallCanvasData.current.gl = gl
   }
 
+  const largeRenderFnRef = useRef()
+  const smallRenderFnRef = useRef()
+
+  const saveImages = () => {
+    let imageObjects 
+    withState((dispatch, state) => {
+        imageObjects = Object.values(getSceneObjects(state)).filter(obj => obj.type === "image")
+      for( let i = 0; i < imageObjects.length; i++ ) {
+          let image = imageObjects[i]
+          let imgComponent = largeCanvasData.current.scene.__interaction.find(obj => obj.userData.id === image.id)
+          let isImageExist = imgComponent.userData.tempImagePath
+          if(!isImageExist) continue
+          let tempImageFilePath = path.join(path.dirname(state.meta.storyboarderFilePath), 'models/images', imgComponent.userData.tempImagePath)
+          let imageFilePath = path.join(path.dirname(state.meta.storyboarderFilePath), 'models/images', `${image.id}-texture.png`)
+          let projectDir = path.dirname(state.meta.storyboarderFilePath)
+          let assetsDir = path.join(projectDir, 'models', 'images')
+          fs.ensureDirSync(assetsDir)
+          let dst = path.join(assetsDir, path.basename(imageFilePath))
+          let id = path.relative(projectDir, dst)
+          fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
+          fs.remove(tempImageFilePath)
+          removeAsset(imageFilePath)
+          imgComponent.userData.tempImagePath = null
+          dispatch(updateObject(image.id, {imageAttachmentIds: [id]}))
+      }
+    })
+  }
+  const { insertNewShot, saveCurrentShot } = useSaveToStoryboarder(
+    largeRenderFnRef,
+    smallRenderFnRef,
+    saveImages
+  )
+  useEffect(() => {
+    ipcRenderer.on('requestSaveShot', saveCurrentShot)
+    return () => ipcRenderer.removeListener('requestSaveShot', saveCurrentShot)
+  }, [saveCurrentShot])
+  useEffect(() => {
+    ipcRenderer.on('requestInsertShot', insertNewShot)
+    return () => ipcRenderer.removeListener('requestInsertShot', insertNewShot)
+  }, [insertNewShot])
+
   useExportToGltf(largeCanvasData.current.scene, withState)
   
   return (
@@ -182,6 +254,7 @@ const Editor = React.memo(({
                     renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
                     mainRenderData={ mainViewCamera === "live" ? largeCanvasData.current : smallCanvasData.current }
                     setSmallCanvasData={ setSmallCanvasData }
+                    renderFnRef={smallRenderFnRef}
                     />
                 </Provider>
                 <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }/>
@@ -214,7 +287,9 @@ const Editor = React.memo(({
                     <Provider store={ store }>
                       <SceneManagerR3fLarge
                         renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                        setLargeCanvasData= { setLargeCanvasData }/>
+                        setLargeCanvasData= { setLargeCanvasData }
+                        renderFnRef={largeRenderFnRef}
+                        />
                     </Provider>
                     <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                           stats={ stats } />

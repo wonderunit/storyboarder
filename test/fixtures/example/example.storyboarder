@@ -1,5 +1,5 @@
 {
-  "version": "1.9.2",
+  "version": "2.0.1",
   "aspectRatio": 1.7777777777777777,
   "fps": 24,
   "defaultBoardTiming": 2000,
@@ -12,13 +12,18 @@
       "layers": {
         "reference": {
           "url": "board-1-UDRF3-reference.png",
-          "opacity": 0.75
+          "opacity": 1
         },
         "notes": {
           "url": "board-1-UDRF3-notes.png"
         },
         "fill": {
           "url": "board-1-UDRF3-fill.png"
+        },
+        "shot-generator": {
+          "url": "board-1-UDRF3-shot-generator.png",
+          "opacity": 1,
+          "thumbnail": "board-1-UDRF3-shot-generator-thumbnail.jpg"
         }
       },
       "number": 1,
@@ -26,11 +31,28 @@
       "time": 0,
       "lineMileage": 821.5682133251058,
       "sg": {
-        "version": "1.9.4",
+        "version": "2.0.1",
         "data": {
           "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
           "sceneObjects": {
+            "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F": {
+              "angle": 0.47,
+              "decay": 1,
+              "displayName": "Light 1",
+              "distance": 30,
+              "id": "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F",
+              "intensity": 0.7,
+              "penumbra": 0,
+              "rotation": -2.35,
+              "tilt": -1.53,
+              "type": "light",
+              "visible": true,
+              "x": 3.4,
+              "y": 0.9,
+              "z": 1.3
+            },
             "6BC46A44-7965-43B5-B290-E3D2B9D15EEE": {
+              "displayName": "Camera 1",
               "fov": 22.25,
               "id": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
               "roll": 0,
@@ -41,27 +63,17 @@
               "y": 6,
               "z": 1
             },
-            "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F": {
-              "id": "4F0FF9B8-BBB4-4D83-9E87-6EFE16A01D6F",
-              "type": "light",
-              "x": 3.4,
-              "y": 0.9,
-              "z": 1.3,
-              "rotation": -2.35,
-              "tilt": -1.53,
-              "intensity": 0.7,
-              "visible": true,
-              "angle": 0.47,
-              "distance": 30,
-              "penumbra": 0,
-              "decay": 1
-            },
             "94FA0F9D-E1E8-436B-8041-D831BD06CB33": {
               "depth": 0.5,
+              "displayName": "Box 1",
               "height": 0.5,
               "id": "94FA0F9D-E1E8-436B-8041-D831BD06CB33",
               "model": "box",
-              "rotation": { "x": 0, "y": 2, "z": 0 },
+              "rotation": {
+                "x": 0,
+                "y": 2,
+                "z": 0
+              },
               "type": "object",
               "visible": true,
               "width": 0.5,
@@ -71,6 +83,7 @@
             },
             "A1A35319-82D1-4A24-98FE-136836750A61": {
               "characterPresetId": "7C694D0F-9D45-4B74-BA70-38479E520091",
+              "displayName": "Adult-female 1",
               "headScale": 1,
               "height": 1.6256,
               "id": "A1A35319-82D1-4A24-98FE-136836750A61",
@@ -82,6 +95,438 @@
               },
               "rotation": -1.12159265358979,
               "skeleton": {
+                "Head": {
+                  "name": "Head",
+                  "rotation": {
+                    "x": -1.0373167754658644e-8,
+                    "y": -3.638181046662854e-11,
+                    "z": -3.6384150030481973e-11
+                  }
+                },
+                "Hips": {
+                  "name": "Hips",
+                  "rotation": {
+                    "x": 9.55338130969338e-16,
+                    "y": 9.594103289607048e-11,
+                    "z": 4.3807329319633917e-8
+                  }
+                },
+                "LeftArm": {
+                  "name": "LeftArm",
+                  "rotation": {
+                    "x": 0.505693628285383,
+                    "y": 0.06686607785746003,
+                    "z": -0.03698029106526619
+                  }
+                },
+                "LeftEye": {
+                  "name": "LeftEye",
+                  "rotation": {
+                    "x": 1.5562282916441337,
+                    "y": 0.00004992562908819839,
+                    "z": 3.155411557452013e-12
+                  }
+                },
+                "LeftFoot": {
+                  "name": "LeftFoot",
+                  "rotation": {
+                    "x": 1.0323797431405186,
+                    "y": -0.06243465877112035,
+                    "z": 0.10408851671002703
+                  }
+                },
+                "LeftForeArm": {
+                  "name": "LeftForeArm",
+                  "rotation": {
+                    "x": -0.11227120739151908,
+                    "y": -0.027556308860487013,
+                    "z": 0.23967459754315618
+                  }
+                },
+                "LeftHand": {
+                  "name": "LeftHand",
+                  "rotation": {
+                    "x": 0.11250602080141255,
+                    "y": 0.006940141317504958,
+                    "z": -0.006255723726690364
+                  }
+                },
+                "LeftHandIndex1": {
+                  "name": "LeftHandIndex1",
+                  "rotation": {
+                    "x": 0.02239810734775344,
+                    "y": 0.004660801586723922,
+                    "z": 0.2051404662274577
+                  }
+                },
+                "LeftHandIndex2": {
+                  "name": "LeftHandIndex2",
+                  "rotation": {
+                    "x": 0.14844444784076466,
+                    "y": 6.49113630187773e-7,
+                    "z": -1.7546044434430082e-7
+                  }
+                },
+                "LeftHandIndex3": {
+                  "name": "LeftHandIndex3",
+                  "rotation": {
+                    "x": -0.14456155245863597,
+                    "y": -0.0000020370981156637303,
+                    "z": -5.52873296017975e-7
+                  }
+                },
+                "LeftHandMiddle1": {
+                  "name": "LeftHandMiddle1",
+                  "rotation": {
+                    "x": -0.003981626708440039,
+                    "y": -0.00028559704546426165,
+                    "z": 0.07143823652323437
+                  }
+                },
+                "LeftHandMiddle2": {
+                  "name": "LeftHandMiddle2",
+                  "rotation": {
+                    "x": 0.12312565597970247,
+                    "y": -0.000001229449184401498,
+                    "z": 3.494780307667446e-7
+                  }
+                },
+                "LeftHandMiddle3": {
+                  "name": "LeftHandMiddle3",
+                  "rotation": {
+                    "x": -0.33011753407661887,
+                    "y": 7.500895149942908e-7,
+                    "z": 4.620593425346793e-7
+                  }
+                },
+                "LeftHandPinky1": {
+                  "name": "LeftHandPinky1",
+                  "rotation": {
+                    "x": -0.06435149872585844,
+                    "y": 0.02792563929400103,
+                    "z": -0.408905091245275
+                  }
+                },
+                "LeftHandPinky2": {
+                  "name": "LeftHandPinky2",
+                  "rotation": {
+                    "x": 0.06406718795898254,
+                    "y": 6.855664439259763e-7,
+                    "z": 2.907871058431734e-7
+                  }
+                },
+                "LeftHandPinky3": {
+                  "name": "LeftHandPinky3",
+                  "rotation": {
+                    "x": -0.02147697794838815,
+                    "y": -1.2704579246206804e-7,
+                    "z": 4.099031195846824e-7
+                  }
+                },
+                "LeftHandRing1": {
+                  "name": "LeftHandRing1",
+                  "rotation": {
+                    "x": -0.09216506135134338,
+                    "y": 0.01714328502898296,
+                    "z": -0.1833964237225819
+                  }
+                },
+                "LeftHandRing2": {
+                  "name": "LeftHandRing2",
+                  "rotation": {
+                    "x": 0.07839336940970104,
+                    "y": 2.810678092217013e-7,
+                    "z": -5.2117844031856116e-8
+                  }
+                },
+                "LeftHandRing3": {
+                  "name": "LeftHandRing3",
+                  "rotation": {
+                    "x": -0.0935680289678374,
+                    "y": -6.460000901976054e-9,
+                    "z": -8.674451262320555e-8
+                  }
+                },
+                "LeftHandThumb1": {
+                  "name": "LeftHandThumb1",
+                  "rotation": {
+                    "x": 0.19222420995317882,
+                    "y": 0.13392333488429922,
+                    "z": 0.6013011137789006
+                  }
+                },
+                "LeftHandThumb2": {
+                  "name": "LeftHandThumb2",
+                  "rotation": {
+                    "x": 0.20487781268519803,
+                    "y": -9.307991721135402e-7,
+                    "z": -6.709511740343864e-7
+                  }
+                },
+                "LeftHandThumb3": {
+                  "name": "LeftHandThumb3",
+                  "rotation": {
+                    "x": -0.09670943088267031,
+                    "y": -5.065953427783877e-7,
+                    "z": -6.365288133071865e-8
+                  }
+                },
+                "LeftLeg": {
+                  "name": "LeftLeg",
+                  "rotation": {
+                    "x": 0.029491282102395433,
+                    "y": 0.0016878509500865965,
+                    "z": 0.05868914201610077
+                  }
+                },
+                "LeftShoulder": {
+                  "name": "LeftShoulder",
+                  "rotation": {
+                    "x": 1.5584799189308387,
+                    "y": -0.32356698033769277,
+                    "z": -1.609285765220827
+                  }
+                },
+                "LeftToeBase": {
+                  "name": "LeftToeBase",
+                  "rotation": {
+                    "x": 0.5126523834509992,
+                    "y": -0.05032910429914538,
+                    "z": 0.028305836403359142
+                  }
+                },
+                "LeftUpLeg": {
+                  "name": "LeftUpLeg",
+                  "rotation": {
+                    "x": 0.06262413234282689,
+                    "y": 0.000025366157756640634,
+                    "z": 3.1322587658304717
+                  }
+                },
+                "Neck": {
+                  "name": "Neck",
+                  "rotation": {
+                    "x": 0.09716590304525265,
+                    "y": -2.838602962427459e-10,
+                    "z": 3.773959133271558e-9
+                  }
+                },
+                "RightArm": {
+                  "name": "RightArm",
+                  "rotation": {
+                    "x": 0.5063640230832119,
+                    "y": -0.08683048283685461,
+                    "z": 0.04805796208203702
+                  }
+                },
+                "RightEye": {
+                  "name": "RightEye",
+                  "rotation": {
+                    "x": 1.556228291644137,
+                    "y": 0.00005753995011317927,
+                    "z": 3.936679459802996e-12
+                  }
+                },
+                "RightFoot": {
+                  "name": "RightFoot",
+                  "rotation": {
+                    "x": 1.033101581313084,
+                    "y": 0.06214680435570896,
+                    "z": -0.10377889900310482
+                  }
+                },
+                "RightForeArm": {
+                  "name": "RightForeArm",
+                  "rotation": {
+                    "x": -0.1180298736336024,
+                    "y": 0.029394336624758308,
+                    "z": -0.24294987758289824
+                  }
+                },
+                "RightHand": {
+                  "name": "RightHand",
+                  "rotation": {
+                    "x": 0.08828028668391429,
+                    "y": 0.010797016174338224,
+                    "z": 0.003141481311761516
+                  }
+                },
+                "RightHandIndex1": {
+                  "name": "RightHandIndex1",
+                  "rotation": {
+                    "x": 0.05857539623488121,
+                    "y": -0.013144309369363321,
+                    "z": -0.22049233121105133
+                  }
+                },
+                "RightHandIndex2": {
+                  "name": "RightHandIndex2",
+                  "rotation": {
+                    "x": 0.1388284881759185,
+                    "y": 0.0000021319219295304892,
+                    "z": 3.431601160351658e-7
+                  }
+                },
+                "RightHandIndex3": {
+                  "name": "RightHandIndex3",
+                  "rotation": {
+                    "x": -0.19770004253038329,
+                    "y": -2.5854657948132936e-7,
+                    "z": -5.482285020622853e-8
+                  }
+                },
+                "RightHandMiddle1": {
+                  "name": "RightHandMiddle1",
+                  "rotation": {
+                    "x": 0.0506207378069674,
+                    "y": -0.001603425656641976,
+                    "z": -0.031635497147573674
+                  }
+                },
+                "RightHandMiddle2": {
+                  "name": "RightHandMiddle2",
+                  "rotation": {
+                    "x": 0.07082733055490033,
+                    "y": 0.0000022712129950142892,
+                    "z": 2.1407275464392093e-7
+                  }
+                },
+                "RightHandMiddle3": {
+                  "name": "RightHandMiddle3",
+                  "rotation": {
+                    "x": -0.19806661225503783,
+                    "y": -0.0000013176735468129177,
+                    "z": -2.065765469008772e-7
+                  }
+                },
+                "RightHandPinky1": {
+                  "name": "RightHandPinky1",
+                  "rotation": {
+                    "x": -0.015354972195810127,
+                    "y": -0.006793113535634754,
+                    "z": 0.41654184045602816
+                  }
+                },
+                "RightHandPinky2": {
+                  "name": "RightHandPinky2",
+                  "rotation": {
+                    "x": 0.01995586421208525,
+                    "y": -3.622323316474095e-7,
+                    "z": -3.4065590211860033e-7
+                  }
+                },
+                "RightHandPinky3": {
+                  "name": "RightHandPinky3",
+                  "rotation": {
+                    "x": -0.1348989423623923,
+                    "y": 7.222913436992955e-7,
+                    "z": 4.2158494702928335e-7
+                  }
+                },
+                "RightHandRing1": {
+                  "name": "RightHandRing1",
+                  "rotation": {
+                    "x": -0.07242947709085447,
+                    "y": -0.011169543573904777,
+                    "z": 0.1527435393852438
+                  }
+                },
+                "RightHandRing2": {
+                  "name": "RightHandRing2",
+                  "rotation": {
+                    "x": 0.1089757479434869,
+                    "y": 3.9996566416004703e-7,
+                    "z": -6.59413661925916e-8
+                  }
+                },
+                "RightHandRing3": {
+                  "name": "RightHandRing3",
+                  "rotation": {
+                    "x": -0.16391426607485815,
+                    "y": -1.3794544363965157e-7,
+                    "z": -1.1529877853126377e-7
+                  }
+                },
+                "RightHandThumb1": {
+                  "name": "RightHandThumb1",
+                  "rotation": {
+                    "x": 0.19076236670592275,
+                    "y": -0.12853574877942459,
+                    "z": -0.5859958995466957
+                  }
+                },
+                "RightHandThumb2": {
+                  "name": "RightHandThumb2",
+                  "rotation": {
+                    "x": 0.18972683166270307,
+                    "y": 5.993170693628577e-7,
+                    "z": -3.2444218698059286e-8
+                  }
+                },
+                "RightHandThumb3": {
+                  "name": "RightHandThumb3",
+                  "rotation": {
+                    "x": 0.0905059131339919,
+                    "y": 0.000001506505814851173,
+                    "z": 1.5755861971057867e-7
+                  }
+                },
+                "RightLeg": {
+                  "name": "RightLeg",
+                  "rotation": {
+                    "x": 0.029464961166721964,
+                    "y": -0.0015795972900085635,
+                    "z": -0.05869198255136494
+                  }
+                },
+                "RightShoulder": {
+                  "name": "RightShoulder",
+                  "rotation": {
+                    "x": 1.5609292005415785,
+                    "y": 0.3243714600597085,
+                    "z": 1.6014735723578588
+                  }
+                },
+                "RightToeBase": {
+                  "name": "RightToeBase",
+                  "rotation": {
+                    "x": 0.5109763012579023,
+                    "y": 0.05265878474920374,
+                    "z": -0.029498413702576564
+                  }
+                },
+                "RightUpLeg": {
+                  "name": "RightUpLeg",
+                  "rotation": {
+                    "x": 0.06191127189499303,
+                    "y": 0.000029291792725518025,
+                    "z": -3.1322576693196353
+                  }
+                },
+                "Spine": {
+                  "name": "Spine",
+                  "rotation": {
+                    "x": -0.09716584659540119,
+                    "y": -9.751060639398978e-11,
+                    "z": -4.585110816466193e-9
+                  }
+                },
+                "Spine1": {
+                  "name": "Spine1",
+                  "rotation": {
+                    "x": -3.789368841087054e-8,
+                    "y": 8.376924258524014e-10,
+                    "z": 9.755916303226837e-10
+                  }
+                },
+                "Spine2": {
+                  "name": "Spine2",
+                  "rotation": {
+                    "x": -1.4830873294065141e-8,
+                    "y": -3.9092456260017476e-10,
+                    "z": -4.831679286872894e-10
+                  }
+                },
                 "mixamorigLeftArm": {
                   "rotation": {
                     "x": 1.00840734641021,
@@ -98,10 +543,15 @@
             },
             "C2062AFC-D710-4C7D-942D-A3BAF8A76D5C": {
               "depth": 1,
+              "displayName": "Box 2",
               "height": 1,
               "id": "C2062AFC-D710-4C7D-942D-A3BAF8A76D5C",
               "model": "box",
-              "rotation": { "x": 0, "y": 0, "z": 0 },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
               "type": "object",
               "visible": true,
               "width": 1,
@@ -111,10 +561,15 @@
             },
             "D8B95127-6C04-40A9-B592-8870EEAF43A8": {
               "depth": 1,
+              "displayName": "Chair 1",
               "height": 1,
               "id": "D8B95127-6C04-40A9-B592-8870EEAF43A8",
               "model": "chair",
-              "rotation": { "x": 0, "y": 0, "z": 0 },
+              "rotation": {
+                "x": 0,
+                "y": 0,
+                "z": 0
+              },
               "type": "object",
               "visible": true,
               "width": 1,
@@ -124,6 +579,15 @@
             }
           },
           "world": {
+            "ambient": {
+              "intensity": 0.1
+            },
+            "backgroundColor": 8355711,
+            "directional": {
+              "intensity": 0.3,
+              "rotation": 2.26,
+              "tilt": -0.43
+            },
             "environment": {
               "rotation": 0,
               "scale": 1,
@@ -132,21 +596,16 @@
               "y": 0,
               "z": 0
             },
+            "fog": {
+              "far": 40,
+              "visible": true
+            },
             "ground": false,
-            "backgroundColor": 8355711,
             "room": {
               "height": 30,
               "length": 40,
               "visible": true,
               "width": 30
-            },
-            "ambient": {
-              "intensity": 0.1
-            },
-            "directional": {
-              "intensity": 0.3,
-              "rotation": 2.26,
-              "tilt": -0.43
             }
           }
         }

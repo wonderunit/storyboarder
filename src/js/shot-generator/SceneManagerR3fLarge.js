@@ -1,9 +1,10 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
+import useImageRenderer from './hooks/use-image-renderer'
 import { 
     getSceneObjects,
     getWorld,
@@ -33,7 +34,6 @@ import { getFilePathForImages } from './helpers/get-filepath-for-images'
 import { setShot } from './utils/cameraUtils'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
-import SaveShot from './components/Three/SaveShot'
 import { SHOT_LAYERS } from './utils/ShotLayers'
 import Room from './components/Three/Room'
 import Group from './components/Three/Group'
@@ -61,7 +61,9 @@ let saveDataURLtoFile = (dataURL, boardPath, updateObject, object) => {
   }
   let tempFilename = `temp_${object.userData.id}-${Date.now()}-texture.png`
   object.userData.tempImagePath = tempFilename
-  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', tempFilename)
+  let imagesFolder = path.join(path.dirname(boardPath), 'models/images')
+  fs.ensureDirSync(imagesFolder)
+  let imageFilePath = path.join(imagesFolder, tempFilename)
   fs.writeFileSync(imageFilePath, imageData, 'base64')
   let projectDir = path.dirname(boardPath)
   let assetsDir = path.join(projectDir, 'models', 'images')
@@ -135,6 +137,8 @@ const SceneManagerR3fLarge = connect(
     selectedAttachable,
     deleteObjects,
     withState,
+
+    renderFnRef
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -146,6 +150,7 @@ const SceneManagerR3fLarge = connect(
     const drawingTextures = useRef({})
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
+    const [update, forceUpdate] = useState(null)
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -404,10 +409,11 @@ const SceneManagerR3fLarge = connect(
       directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world.directional.rotation, world.directional.tilt])
 
+    renderFnRef.current = useImageRenderer()
+
     return <group ref={ rootRef }> 
     <CameraUpdate/>
-    <SaveShot isPlot={ false }/>
-    { !isDrawingMode && <InteractionManager renderData={ renderData }/> }
+   {!isDrawingMode && <InteractionManager renderData={ renderData }/> }
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
@@ -454,6 +460,7 @@ const SceneManagerR3fLarge = connect(
                 withState={ withState }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
+                forceUpdate={ forceUpdate }
                 />
               </SimpleErrorBoundary>
         })
@@ -474,6 +481,7 @@ const SceneManagerR3fLarge = connect(
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
+            let needsUpdate = !update || update.id !== sceneObject.attachToId ? null : update.id
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -484,6 +492,7 @@ const SceneManagerR3fLarge = connect(
                 deleteObjects={ deleteObjects }
                 character={ sceneObjects[sceneObject.attachToId] }
                 withState={ withState }
+                needsUpdate={ needsUpdate }
               />
               </SimpleErrorBoundary>
         })
