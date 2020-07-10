@@ -13,6 +13,7 @@ import SceneManagerR3fSmall from '../../SceneManagerR3fSmall'
 import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
+import useSaveToStoryboarder from '../../hooks/use-save-to-storyboarder'
 import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
@@ -115,6 +116,7 @@ const Editor = React.memo(({
   }
 
   const zoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
     let zoomLevel = webFrame.getZoomLevel()
     let zoom = zoomLevel + value 
     zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
@@ -123,6 +125,7 @@ const Editor = React.memo(({
   }, [])
 
   const setZoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
     let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
     webFrame.setZoomLevel(zoom)
     updateObjects({zoom})
@@ -131,10 +134,11 @@ const Editor = React.memo(({
   useEffect(() => {
     webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
     let currentWindow = electron.remote.getCurrentWindow()
-    let settingsZoom = getObject("zoom")
+    let settingsZoom = getObject("zoom") 
     if(!settingsZoom && currentWindow.getBounds().height < 800) {
       webFrame.setZoomLevel(maxZoom.out)
     } else {
+      settingsZoom = settingsZoom ? settingsZoom : 0
       webFrame.setZoomLevel(settingsZoom)
     }
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
@@ -209,7 +213,22 @@ const Editor = React.memo(({
     smallCanvasData.current.scene = scene
     smallCanvasData.current.gl = gl
   }
-  
+
+  const largeRenderFnRef = useRef()
+  const smallRenderFnRef = useRef()
+  const { insertNewShot, saveCurrentShot } = useSaveToStoryboarder(
+    largeRenderFnRef,
+    smallRenderFnRef,
+    shadingMode
+  )
+  useEffect(() => {
+    ipcRenderer.on('requestSaveShot', saveCurrentShot)
+    return () => ipcRenderer.removeListener('requestSaveShot', saveCurrentShot)
+  }, [saveCurrentShot])
+  useEffect(() => {
+    ipcRenderer.on('requestInsertShot', insertNewShot)
+    return () => ipcRenderer.removeListener('requestInsertShot', insertNewShot)
+  }, [insertNewShot])
 
   useExportToGltf(largeCanvasData.current.scene, withState)
   
@@ -238,6 +257,7 @@ const Editor = React.memo(({
                     renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
                     mainRenderData={ mainViewCamera === "live" ? largeCanvasData.current : smallCanvasData.current }
                     setSmallCanvasData={ setSmallCanvasData }
+                    renderFnRef={smallRenderFnRef}
                     />
                 </Provider>
                 <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
@@ -272,7 +292,9 @@ const Editor = React.memo(({
                     <Provider store={ store }>
                       <SceneManagerR3fLarge
                         renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                        setLargeCanvasData= { setLargeCanvasData }/>
+                        setLargeCanvasData= { setLargeCanvasData }
+                        renderFnRef={largeRenderFnRef}
+                        />
                     </Provider>
                     <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                           stats={ stats } 
