@@ -143,6 +143,31 @@ const updateHTMLText = () => {
     translateTooltip("#toolbar-palette-colorB", "main-window.toolbar.colors.palette-colorB")
     translateTooltip("#toolbar-palette-colorC", "main-window.toolbar.colors.palette-colorC")
     //#endregion
+    //#region Editing
+    translateTooltip("#toolbar-trash", "main-window.toolbar.editing.toolbar-trash")
+    translateTooltip("#toolbar-move", "main-window.toolbar.editing.toolbar-move")
+    translateTooltip("#toolbar-scale", "main-window.toolbar.editing.toolbar-scale")
+    translateTooltip("#toolbar-marquee", "main-window.toolbar.editing.toolbar-marquee")
+    //#endregion
+    //#region Undo / Redo
+    translateTooltip("#toolbar-undo", "main-window.toolbar.actions.toolbar-undo")
+    translateTooltip("#toolbar-redo", "main-window.toolbar.actions.toolbar-redo")
+    //#endregion
+    //#region Views
+    translateTooltip("#toolbar-grid", "main-window.toolbar.view.toolbar-grid")
+    translateTooltip("#toolbar-center", "main-window.toolbar.view.toolbar-center")
+    translateTooltip("#toolbar-thirds", "main-window.toolbar.view.toolbar-thirds")
+    translateTooltip("#toolbar-perspective", "main-window.toolbar.view.toolbar-perspective")
+    translateTooltip("#toolbar-onion", "main-window.toolbar.view.toolbar-onion")
+    translateTooltip("#toolbar-captions", "main-window.toolbar.view.toolbar-captions")
+    ////#endregion
+    //#region Externals
+    translateTooltip("#toolbar-open-in-editor", "main-window.toolbar.externals.toolbar-open-in-editor")
+    //#endregion
+    //#region prpomodoroomodoro
+    translateTooltip("#toolbar-pomodoro-rest", "main-window.toolbar.pomodoro.toolbar-pomodoro-rest")
+    translateTooltip("#toolbar-pomodoro-running", "main-window.toolbar.pomodoro.toolbar-pomodoro-running")
+    //#endregion
   //#endregion
 }
 //#endregion

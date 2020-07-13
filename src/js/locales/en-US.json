@@ -197,6 +197,76 @@
 			  "title": "Palette Color 3",
 			  "description": "Click to set the current color to this. Hold down to set this color to another."
 			}
+		  },
+		  "editing": {
+			"toolbar-trash": {
+			  "title": "Clear Canvas",
+			  "description": "Press this to clear the whole drawing! Don't worry! You can always undo."
+			},
+			"toolbar-move": {
+			  "title": "Move Mode",
+			  "description": "Drag the image to move."
+			},
+			"toolbar-scale": {
+			  "title": "Scale Mode",
+			  "description": "Drag the image to scale."
+			},
+			"toolbar-marquee": {
+			  "title": "Lasso Tool",
+			  "description": "Lasso an area of art to manipulate.\n<p>\nDraw to lasso an area. Add to area with SHIFT + draw. Subtract with ALT/OPTION + draw. \n Press 'f' to fill area with current brush color and opacity. Press DELETE/BACKSPACE to erase area.\n</p>\n<p>\nPress and hold inside lasso’d area to begin moving, then drag. Fill and erase work after move also.\n</p>\n<p>\nENTER to commit. ESCAPE to cancel.\n</p>"
+			}
+		  },
+		  "actions": {
+			"toolbar-undo": {
+			  "title": "Undo",
+			  "description": "Made a mistake? No problem. You can undo!"
+			},
+			"toolbar-redo": {
+			  "title": "Redo",
+			  "description": "Undo too much? You can redo what you've undone."
+			}
+		  },
+		  "view": {
+			"toolbar-grid": {
+			  "title": "Grid Guide",
+			  "description": "Toggle a grid used for measured drawings or straight lines."
+			},
+			"toolbar-center": {
+				"title": "Center Guide",
+				"description": "Toggle centerline guide used to make sure your drawing is centered."
+			},
+			"toolbar-thirds": {
+				"title": "Rule of Thirds Guide",
+				"description": "oggle thirds guide to center focus on the thirds. Any mediocre cinematographer uses this all the time!"
+			},
+			"toolbar-perspective": {
+				"title": "3D Guide",
+				"description": "Match the 3d grid for your generated shot. If you don't have a generated shot, you get an eye level 3d view. Noiiice."
+			},
+			"toolbar-onion": {
+				"title": "Onion Skin",
+				"description": "Toggle display of last and next frame so you can tween shots for transitions and animations."
+			},
+			"toolbar-captions": {
+			  "title": "Captions",
+			  "description": "Toggle dialogue caption overlays on and off."
+			}
+		  },
+		  "externals": {
+			"toolbar-open-in-editor": {
+			  "title": "Edit in Photoshop",
+			  "description": "Click here to edit the board in Photoshop. When you're done editing, just save the file in Photoshop. It will update in Storyboarder automatically."
+			}
+		  },
+		  "pomodoro": {
+			"toolbar-pomodoro-rest": {
+			  "title": "Sketch Sprint",
+			  "description": "Set a timer and record a timelapse of your work."
+			},
+			"toolbar-pomodoro-running": {
+			  "title": "Sketch Sprint",
+			  "description": "Set a timer and record a timelapse of your work."
+			}
 		  }
 		}
 	  }
