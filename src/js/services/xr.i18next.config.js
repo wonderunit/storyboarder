@@ -13,6 +13,7 @@ const i18nextOptions = {
     },
     whitelist: config.supportedLanguages,
     lng: config.supportedLanguages,
+    supportedLngs: config.supportedLanguages, 
     react: {
         useSuspense: true,
         wait: false

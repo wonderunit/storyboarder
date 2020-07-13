@@ -17,6 +17,7 @@ const i18nextOptions = {
     saveMissing: true,
     whitelist: config.supportedLanguages,
     lng: config.defaultLanguage,
+    supportedLngs: config.supportedLanguages, 
     react: {
         useSuspense: true,
         wait: false

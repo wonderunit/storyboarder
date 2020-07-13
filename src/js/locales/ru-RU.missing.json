@@ -1,0 +1,10 @@
+{
+  "menu": {
+    "about": {
+      "title": "menu.about.title"
+    },
+    "edit": {
+      "preferences": "menu.edit.preferences"
+    }
+  }
+}

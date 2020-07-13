@@ -20,9 +20,9 @@ i18n.on('loaded', (loaded) => {
 
 const updateHTMLText = () => {
   document.querySelector('.recent').innerHTML = i18n.t("welcome-window.recentStoryboards")
-  document.querySelector('#getting-started').innerHTML = i18n.t("menu.gettingStarted")
+  document.querySelector('#getting-started').innerHTML = i18n.t("menu.help.getting-started")
   document.querySelector('#new-storyboard').innerHTML = i18n.t("welcome-window.new-storyboard")
-  document.querySelector('#open-storyboard').innerHTML = i18n.t("menu.open")
+  document.querySelector('#open-storyboard').innerHTML = i18n.t("menu.file.open")
   let welcomeLine1 = document.querySelector('#welcome-line-1')
   if(welcomeLine1) welcomeLine1.innerHTML = i18n.t("welcome-window.welcome-line-1")
   let welcomeLine2 = document.querySelector('#welcome-line-2')
@@ -91,7 +91,7 @@ let updateRecentDocuments = () => {
       count++
     }
     document.querySelector('#recent').innerHTML = html.join('')
-    document.querySelector('.recent').innerHTML = i18n.t("welcome-window.recentStoryboards")// RECENT STORYBOARDS
+    document.querySelector('.recent').innerHTML = "RECENT STORYBOARDS"// RECENT STORYBOARDS
     let recentDivs = document.querySelector("#recent").children
     for (var i = 0; i < recentDivs.length; i++) {
       recentDivs[i].onclick = (e)=>{
