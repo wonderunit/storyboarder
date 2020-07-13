@@ -1,16 +1,15 @@
 import * as THREE from 'three'
-import React, { useEffect, useRef, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import {useAsset} from "../../hooks/use-assets-manager"
 import {useUpdate} from 'react-three-fiber'
 import onlyOfTypes from './../../utils/only-of-types'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import {patchMaterial} from "../../helpers/outlineMaterial"
 
-const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
+const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
   emissive: 0x0,
   flatShading: false
-}))
+})
 
 const Environment = React.memo(({ path, environment }) => {
   const {asset: gltf} = useAsset(path)
