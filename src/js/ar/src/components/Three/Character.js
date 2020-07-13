@@ -215,20 +215,24 @@ const Character = ({sceneObject, path, modelSettings, isSelected}) => {
       visible={visible}
 
       position={ [x, z, y] }
-      rotation={ [0, rotation, 0] }
       scale={ [bodyScale, bodyScale, bodyScale] }
 
       userData={{
         isSelectable: true,
         type: 'character',
         id: sceneObject.id,
-        locked
+        locked,
+        rotation
       }}
 
       ref={ref}
     >
-      <primitive object={lod}/>
-      <primitive object={armature}/>
+      <group
+        rotation={ [0, rotation, 0] }
+      >
+        <primitive object={lod}/>
+        <primitive object={armature}/>
+      </group>
     </group>
   )
 }

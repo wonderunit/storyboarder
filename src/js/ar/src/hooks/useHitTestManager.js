@@ -10,8 +10,6 @@ import * as IKHelper from "../../../shared/IK/IkHelper"
 const SCREEN_CENTER = new THREE.Vector2(0.0, 0.0)
 const Raycaster = new THREE.Raycaster()
 
-const defaultQuaternion = new THREE.Quaternion()
-
 const getObject = (child) => {
   if (child.userData.id) {
     return child
@@ -50,14 +48,14 @@ const onDrag = (camera, target, dragRef) => {
   target.matrixWorld.multiplyMatrices(camera.matrixWorld, dragRef.initialMatrix.current)
   target.matrix.getInverse(target.parent.matrixWorld).multiply(target.matrixWorld)
 
+  target.matrix.decompose(target.position, target.quaternion, target.scale)
   if (target.userData.type === 'character') {
-    target.matrix.decompose(target.position, defaultQuaternion, target.scale)
-  } else {
-    target.matrix.decompose(target.position, target.quaternion, target.scale)
+    target.rotation.set(0, 0, 0)
+    target.quaternion.setFromEuler(target.rotation)
   }
 
   target.updateMatrix()
-  target.updateMatrixWorld(true)
+  target.updateWorldMatrix(false, true)
 }
 
 const useHitTestManager = (selectEnabled) => {
@@ -71,6 +69,18 @@ const useHitTestManager = (selectEnabled) => {
       dragTarget.objectRef.current = null
       store.dispatch(selectObject(null))
     }
+  }, [])
+
+  useEffect(() => {
+    const currentIKHelper = IKHelper.getInstance()
+
+    currentIKHelper.setUpdate(
+      () => {},
+      () => {},
+      () => {},
+      () => {},
+      () => {}
+    )
   }, [])
 
   useEffect(() => {
@@ -93,7 +103,9 @@ const useHitTestManager = (selectEnabled) => {
           onDragStart(camera, intersection.object, ikDragTarget)
           if (ikDragTarget.objectRef.current !== intersection.object) {
             ikDragTarget.objectRef.current = intersection.object
+            //camera.attach(intersection.object)
             IKHelper.getInstance().selectControlPoint(intersection.object.name)
+            //scene.children[0].attach(intersection.object)
           }
 
           return
@@ -160,8 +172,6 @@ const useHitTestManager = (selectEnabled) => {
 
         gl.xr.getCamera(camera)
         onDrag(camera, ikDragTarget.objectRef.current, ikDragTarget)
-
-        //IKHelper.getInstance().ragDoll.update()
       }
     }
   })

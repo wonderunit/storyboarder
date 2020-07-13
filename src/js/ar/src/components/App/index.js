@@ -56,7 +56,7 @@ const App = ({sceneObjects, world, board}) => {
     gl.xr.setReferenceSpaceType('unbounded')
     
     const controller = gl.xr.getController(0) // Add finger touch element to the scene
-    scene.add(controller)
+    scene.add(controller)// scene.children[0]
   }, [])
   
   return (

@@ -11,6 +11,6 @@ window.addEventListener("error", function (e) {
 const store = createStore(reducer, {...initialState}, applyMiddleware(SGConnection.ClientMiddleware))
 SGConnection.connectStore(store)
 
-SGConnection.setActive(true)
+//SGConnection.setActive(true)
 
 export default store
