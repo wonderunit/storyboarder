@@ -47,6 +47,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
       updateWorldEnvironment({file: CopyFile(storyboarderFilePath, event.file, 'environment')})
     }
   }, [])
+  const setGrayscale = useCallback(() => updateWorldEnvironment({grayscale: !world.environment.grayscale}), [world.environment.grayscale])
   
   const setAmbientIntensity = useCallback((intensity) => updateWorldEnvironment({intensity}), [])
   const setDirectionalIntensity = useCallback((intensityDirectional) => updateWorldEnvironment({intensityDirectional}), [])
@@ -126,7 +127,9 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           <div className="inspector-row">
             <Checkbox label="Visible" checked={world.environment.visible} onClick={setEnvVisible}/>
           </div>
-
+          <div className="inspector-row">
+            <Checkbox label="Grayscale" checked={world.environment.grayscale || false} onClick={setGrayscale}/>
+          </div>
           <div className="inspector-column inspector-offset-row">
             <FileInput
               onChange={setEnvFile}

@@ -1271,6 +1271,9 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         if (action.payload.visible != null) {
           draft.environment.visible = action.payload.visible
         }
+        if (action.payload.grayscale != null) {
+          draft.environment.grayscale = action.payload.grayscale
+        }
         if (action.payload.rotation != null) {
           draft.environment.rotation = action.payload.rotation
         }
