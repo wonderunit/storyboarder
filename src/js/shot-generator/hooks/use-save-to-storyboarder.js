@@ -20,23 +20,27 @@ const renderAll = (
   shotSize, cameraPlotSize,
   aspectRatio
 ) => {
+  shotRenderer.current.setSize(shotSize.width, shotSize.height)
   renderShot(
     shotRenderer.current,
     largeCanvasData.current.scene,
     largeCanvasData.current.camera,
     { size: shotSize, aspectRatio }
   )
+  let shotImageDataUrl = shotRenderer.current.domElement.toDataURL()
 
+  cameraPlotRenderer.current.setSize(cameraPlotSize.width, cameraPlotSize.height)
   renderCameraPlot(
     cameraPlotRenderer.current,
     smallCanvasData.current.scene,
     smallCanvasData.current.camera,
     { size: cameraPlotSize }
   )
+  let cameraPlotImageDataUrl = cameraPlotRenderer.current.domElement.toDataURL()
 
   return {
-    shotImageDataUrl: shotRenderer.current.domElement.toDataURL(),
-    cameraPlotImageDataUrl: cameraPlotRenderer.current.domElement.toDataURL()
+    shotImageDataUrl,
+    cameraPlotImageDataUrl
   }
 }
 
@@ -133,28 +137,21 @@ const insertNewShot = (shotRenderer, cameraPlotRenderer, largeCanvasData, smallC
 }
 
 const useSaveToStoryboarder = (largeCanvasData, smallCanvasData, aspectRatio, shadingMode, backgroundColor) => {
-
   const dispatch = useDispatch()
 
-  const imageRenderer1 = useRef()
-  const imageRenderer2 = useRef()
-  if (!imageRenderer1.current) imageRenderer1.current = new THREE.WebGLRenderer({ antialias: true })
-  if (!imageRenderer2.current) imageRenderer2.current = new THREE.WebGLRenderer({ antialias: true })
+  const imageRenderer = useRef()
+  if (!imageRenderer.current) imageRenderer.current = new THREE.WebGLRenderer({ antialias: true })
   useEffect(() => {
     return () => {
-      if (imageRenderer1.current) imageRenderer1.current = null
-      if (imageRenderer2.current) imageRenderer2.current = null
+      if (imageRenderer.current) imageRenderer.current = null
     }
   }, [])
 
   const shotSize = useMemo(() => new THREE.Vector2(Math.ceil(aspectRatio * 900), 900), [aspectRatio])
   const cameraPlotSize = useMemo(() => new THREE.Vector2(900, 900), [])
 
-  const shotRenderer = useShadingEffect(imageRenderer1.current, shadingMode, backgroundColor)
-  const cameraPlotRenderer = useShadingEffect(imageRenderer2.current, ShadingType.Outline, backgroundColor)
-
-  shotRenderer.current.setSize(shotSize.width, shotSize.height)
-  cameraPlotRenderer.current.setSize(cameraPlotSize.width, cameraPlotSize.height)
+  const shotRenderer = useShadingEffect(imageRenderer.current, shadingMode, backgroundColor)
+  const cameraPlotRenderer = useShadingEffect(imageRenderer.current, ShadingType.Outline, backgroundColor)
 
   const saveCurrentShotCb = useCallback(
     () => dispatch(
