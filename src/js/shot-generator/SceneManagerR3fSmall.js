@@ -292,11 +292,7 @@ const SceneManagerR3fSmall = connect(
     )
     useFrame(({ scene, camera }) => {
       if (renderData) {
-        let renderCamera = renderData.camera.clone()
-        renderCamera.aspect = aspectRatio
-        renderCamera.updateProjectionMatrix()
-
-        renderer.current.render(renderData.scene, renderCamera)
+        renderer.current.render(renderData.scene, renderData.camera)
       } else {
         renderer.current.render(scene, camera)
       }
