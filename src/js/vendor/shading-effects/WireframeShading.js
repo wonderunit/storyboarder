@@ -1,5 +1,6 @@
 
 import ShadingEffect from "./ShadingEffect"
+import { SHOT_LAYERS } from "../../shot-generator/utils/ShotLayers";
 class WireframeShading extends ShadingEffect {
 
     constructor( renderer ){
@@ -40,6 +41,7 @@ class WireframeShading extends ShadingEffect {
                         line.quaternion.copy(object.quaternion);
                         line.scale.copy(object.scale);
                         line.updateMatrixWorld(true);
+                        line.layers.enable(SHOT_LAYERS)
                         this.edgesCache[object.uuid] = line;
                     }
                     object.material.visible = !state;
