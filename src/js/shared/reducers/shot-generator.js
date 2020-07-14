@@ -437,7 +437,8 @@ const defaultScenePreset = {
       z: 0,
       rotation: 0,
       scale: 1,
-      visible: true
+      visible: true,
+      grayscale: false
     },
     ambient: {
       intensity: 0.1
@@ -565,7 +566,8 @@ const initialScene = {
       z: 0,
       rotation: 0,
       scale: 1,
-      visible: true
+      visible: true,
+      grayscale: false
     },
     ambient: {
       intensity: 0.5
