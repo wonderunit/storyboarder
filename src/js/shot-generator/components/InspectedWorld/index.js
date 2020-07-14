@@ -105,6 +105,25 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                 onSetValue={setBackground}
             />
           </div>
+
+          <div className="inspector-row">
+            <div className="input-group">
+              <div className="input-group__label">
+                Shading Mode
+              </div>
+              <div style={{
+                flex: 1,
+                textAlign: 'center',
+                width: '125px',
+                height: '26px',
+                fontSize: '13px'
+              }}>
+                <div style={{ padding: 6 }}>
+                  {world.shadingMode}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <h5 className="inspector-label">Room</h5>
