@@ -198,10 +198,6 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
-  store.dispatch({
-    type: 'SET_SHADER_MODE',
-    payload: board.sg ? board.sg.data.shaderMode : "default"
-  })
 
   shotExplorer.createWindow(() => {
     shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')

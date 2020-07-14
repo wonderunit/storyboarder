@@ -958,9 +958,9 @@ const shotGeneratorMenu = [
       {type: 'separator'},
       {
         accelerator: 'CommandOrControl+k',
-        label: 'Switch shader mode',
+        label: 'Cycle Shading Mode',
         click () {
-          ipcRenderer.send('shot-generator:object:switchshader')
+          ipcRenderer.send('shot-generator:view:cycleShadingMode')
         }
       },
     ]

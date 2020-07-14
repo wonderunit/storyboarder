@@ -8,7 +8,7 @@ import {
   updateObjects,
   setActiveCamera
 } from '../shared/reducers/shot-generator'
-import { useThree } from 'react-three-fiber'
+import { useThree, useFrame } from 'react-three-fiber'
 import IconsComponent from './components/IconsComponent'
 import CameraIcon from './components/Three/Icons/CameraIcon'
 import useFontLoader from './hooks/use-font-loader'
@@ -16,7 +16,8 @@ import path from 'path'
 import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
 import { useDraggingManager } from './hooks/use-dragging-manager'
-import useImageRenderer from './hooks/use-image-renderer'
+import useShadingEffect from './hooks/use-shading-effect'
+import { ShadingType } from '../vendor/shading-effects/ShadingType'
 import Room from './components/Three/Room'
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
@@ -49,9 +50,9 @@ const SceneManagerR3fSmall = connect(
     mainRenderData,
     setActiveCamera,
 
-    renderFnRef
+    mainViewCamera
 }) => {
-    const { scene, camera, gl } = useThree()
+    const { scene, camera, gl, size } = useThree()
     const rootRef = useRef()
     const draggedObject = useRef(null)
 
@@ -80,14 +81,6 @@ const SceneManagerR3fSmall = connect(
         y: - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1
       }
     }, [actualGL])
-
-    useEffect(() => {
-      if(renderData) {
-        gl.setSize(Math.floor(300), Math.floor(300 / renderData.camera.aspect))
-      } else {
-        gl.setSize(300, 300)
-      }
-    }, [renderData])
 
     useEffect(() => {
       if(!scene) return
@@ -282,7 +275,32 @@ const SceneManagerR3fSmall = connect(
       }
     }, [actualGL, intersectLogic, onPointerMove])
 
-    renderFnRef.current = useImageRenderer()
+    const renderer = useShadingEffect(
+      gl,
+      mainViewCamera === 'live' ? ShadingType.Outline : world.shadingMode,
+      world.backgroundColor
+    )
+    useEffect(
+      () => {
+        if (renderData) {
+          renderer.current.setSize(300, Math.floor(300 / aspectRatio))
+        } else {
+          renderer.current.setSize(300, 300)
+        }
+      },
+      [renderer.current, renderData, aspectRatio, size]
+    )
+    useFrame(({ scene, camera }) => {
+      if (renderData) {
+        let renderCamera = renderData.camera.clone()
+        renderCamera.aspect = aspectRatio
+        renderCamera.updateProjectionMatrix()
+
+        renderer.current.render(renderData.scene, renderCamera)
+      } else {
+        renderer.current.render(scene, camera)
+      }
+    }, 1)
 
     /////Render components
     return <group ref={rootRef}>

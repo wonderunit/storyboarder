@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
-import TWEEN from '@tweenjs/tween.js'
 import {updateObjects, getObject } from '../../../windows/shot-generator/settings'
 import electron from 'electron'
 const { ipcRenderer, webFrame } = electron
@@ -18,10 +17,11 @@ import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
 
-import { Canvas, useFrame, useThree } from 'react-three-fiber'
+import { Canvas } from 'react-three-fiber'
 
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
+  getWorld,
   selectObject,
   setMainViewCamera,
   getIsSceneDirty
@@ -34,62 +34,15 @@ import ElementsPanel from '../ElementsPanel'
 import BoardInspector from '../BoardInspector'
 import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
-import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
+import { useAsset } from '../../hooks/use-assets-manager'
 
-import createShadingEffect from '../../../vendor/shading-effects/createShadingEffect'
-import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
-import { ShadingType } from '../../../vendor/shading-effects/ShadingType'
-import observeStore from '../../../shared/helpers/observeStore'
+
 const maxZoom = {in: 0.4, out: -1.6}
-const Effect = ({renderData, stats, shadingMode, store}) => {
-  const {gl, size} = useThree()
-  const [renderer, setRenderer] = useState(new OutlineEffect(gl, { defaultThickness: 0.015 }))
 
-
-  const setFogColor = useCallback((currentState) => {
-    if(shadingMode === ShadingType.Depth) {
-      renderer.fog.color = new THREE.Color(currentState)
-    }
-  }, [renderer]) 
-
-  useEffect(() => {
-     let unsubscribe = observeStore(store, state => state.undoable.present.world.backgroundColor, setFogColor, true)
-     return () => {
-      unsubscribe && unsubscribe()
-     }
-  }, [setFogColor])
-
-  useEffect(() => {
-    return () => {
-      renderer && renderer.cleanupCache()
-    }
-  }, [])
-
-  useEffect(() => {
-    renderer.cleanupCache()
-    let render = createShadingEffect(shadingMode, gl)
-    setFogColor(store.getState().undoable.present.world.backgroundColor)
-    setRenderer(render)
-  }, [shadingMode])
-  
-  useEffect(() => void renderer.setSize(size.width, size.height), [renderer, size])
-
-  useFrame(({ gl, scene, camera }) => {
-    if(stats) stats.begin()
-    TWEEN.update()
-    if(renderData) {
-      renderer.render(renderData.scene, renderData.camera)
-    } else {
-      renderer.render(scene, camera)
-    }
-    if(stats) stats.end()
-  }, 1)
-  
-  return null
-}
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload, shadingMode
+  mainViewCamera, aspectRatio, board, world,
+  setMainViewCamera, withState, store, onBeforeUnload
 }) => {
   if (!board.uid) {
     return null
@@ -214,12 +167,8 @@ const Editor = React.memo(({
     smallCanvasData.current.gl = gl
   }
 
-  const largeRenderFnRef = useRef()
-  const smallRenderFnRef = useRef()
   const { insertNewShot, saveCurrentShot } = useSaveToStoryboarder(
-    largeRenderFnRef,
-    smallRenderFnRef,
-    shadingMode
+    largeCanvasData, smallCanvasData, aspectRatio, world.shadingMode, world.backgroundColor
   )
   useEffect(() => {
     ipcRenderer.on('requestSaveShot', saveCurrentShot)
@@ -257,12 +206,9 @@ const Editor = React.memo(({
                     renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
                     mainRenderData={ mainViewCamera === "live" ? largeCanvasData.current : smallCanvasData.current }
                     setSmallCanvasData={ setSmallCanvasData }
-                    renderFnRef={smallRenderFnRef}
+                    mainViewCamera={mainViewCamera}
                     />
                 </Provider>
-                <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
-                      shadingMode={ shadingMode }
-                      store={ store }/>
               </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
@@ -293,14 +239,10 @@ const Editor = React.memo(({
                       <SceneManagerR3fLarge
                         renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                         setLargeCanvasData= { setLargeCanvasData }
-                        renderFnRef={largeRenderFnRef}
+                        mainViewCamera={mainViewCamera}
+                        stats={stats}
                         />
-                    </Provider>
-                    <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                          stats={ stats } 
-                          shadingMode={ shadingMode }
-                          store={ store }/>
-                    
+                    </Provider>                    
                   </Canvas>
                   <GuidesView
                     dimensions={guidesDimensions}
@@ -335,7 +277,7 @@ export default connect(
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
     board: state.board,
-    shadingMode: state.shaderMode
+    world: getWorld(state)
   }),
   {
     withState,
@@ -347,6 +289,6 @@ export default connect(
         // to trigger `will-prevent-unload` on BrowserWindow
         event.returnValue = false
       }
-    },
+    }
   }
 )(Editor)

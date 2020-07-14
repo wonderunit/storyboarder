@@ -1,6 +1,6 @@
 export const ShadingType = {
-    Outline: "OutlineShader",
-    Wireframe: "WireframeShader",
-    Flat: "FlatShader",
-    Depth: "DepthShader",
+  Outline: 'Outline',
+  Wireframe: 'Wireframe',
+  Flat: 'Flat',
+  Depth: 'Depth'
 }

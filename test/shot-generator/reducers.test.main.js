@@ -1,22 +1,24 @@
 /* global describe it  */
 
 // npx floss -p test/shot-generator/reducers.test.main.js
-// npx mocha -w -R min test/shot-generator/reducers.test.main.js
+// npx mocha --require esm -w -R min test/shot-generator/reducers.test.main.js
 
 const assert = require('assert')
 const fs = require('fs')
 const path = require('path')
-const R = require('ramda')
 
 const { createStore } = require('redux')
 
 const {
   initialState,
   reducer,
-  getSceneObjects
+  getSceneObjects,
+  getWorld
 } = require('../../src/js/shared/reducers/shot-generator')
 
 const serializeSceneObject = require('../../src/js/shared/reducers/shot-generator/serialize-scene-object')
+
+const FILE_JSON = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'))
 
 const store = createStore(reducer, initialState)
 
@@ -90,8 +92,7 @@ describe('reducer', () => {
     it('updates displayName of scene objects when a file is loaded', () => {
       store.dispatch({ type: '@@redux-undo/INIT' })
   
-      let json = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'))
-      let data = JSON.parse(json)
+      let data = JSON.parse(FILE_JSON)
       let payload = data.boards[0].sg.data
   
       store.dispatch({ type: 'LOAD_SCENE', payload })
@@ -273,8 +274,7 @@ describe('reducer', () => {
       store.dispatch({ type: '@@redux-undo/INIT' })
       store.dispatch({ type: '@@redux-undo/CLEAR_HISTORY' })
 
-      let json = fs.readFileSync(path.join(__dirname, '..', 'fixtures', 'shot-generator', 'shot-generator.storyboarder'))
-      let data = JSON.parse(json)
+      let data = JSON.parse(FILE_JSON)
       let payload = data.boards[0].sg.data
   
       store.dispatch({ type: 'LOAD_SCENE', payload })
@@ -362,6 +362,63 @@ describe('reducer', () => {
       store.dispatch({ type: 'UPDATE_OBJECT', payload: { id: '0', posePresetId: 4 } })
 
       assert.equal(store.getState().undoable.past.length, 7)
+    })
+  })
+
+  describe('migrations', () => {
+    beforeEach(() => {
+      store.dispatch({ type: '@@redux-undo/INIT' })
+      store.dispatch({ type: '@@redux-undo/CLEAR_HISTORY' })
+    })
+
+    it('migrates old data to add required values', () => {
+      let payload = JSON.parse(FILE_JSON).boards[0].sg.data
+  
+      delete payload.world.ambient
+      delete payload.world.directional
+      delete payload.world.fog
+
+      store.dispatch({ type: 'LOAD_SCENE', payload })
+
+      assert.notEqual(getWorld(store.getState()).ambient, null)
+      assert.notEqual(getWorld(store.getState()).directional, null)
+      assert.notEqual(getWorld(store.getState()).fog, null)
+      assert.notEqual(getWorld(store.getState()).shadingMode, null)
+    })
+  })
+
+  describe('shadingMode', () => {
+    beforeEach(() => {
+      store.dispatch({ type: '@@redux-undo/INIT' })
+      store.dispatch({ type: '@@redux-undo/CLEAR_HISTORY' })
+    })
+
+    it('has default shadingMode', () => {
+      assert.equal(getWorld(store.getState()).shadingMode, 'Outline')
+    })
+
+    it('can cycle through shadingMode values', () => {
+      store.dispatch({ type: 'CYCLE_SHADING_MODE' })
+      assert.equal(getWorld(store.getState()).shadingMode, 'Wireframe')
+
+      store.dispatch({ type: 'CYCLE_SHADING_MODE' })
+      assert.equal(getWorld(store.getState()).shadingMode, 'Flat')
+
+      store.dispatch({ type: 'CYCLE_SHADING_MODE' })
+      assert.equal(getWorld(store.getState()).shadingMode, 'Depth')
+
+      store.dispatch({ type: 'CYCLE_SHADING_MODE' })
+      assert.equal(getWorld(store.getState()).shadingMode, 'Outline')
+    })    
+
+    it('defaults to Outline if set shadingMode is null or invalid', () => {
+      let payload = JSON.parse(FILE_JSON).boards[0].sg.data
+  
+      delete payload.world.shadingMode
+      store.dispatch({ type: 'LOAD_SCENE', payload })
+
+      assert(getWorld(store.getState()).shadingMode != null, 'shadingMode should have a default value')
+      assert.equal(getWorld(store.getState()).shadingMode, 'Outline')
     })
   })
 })
