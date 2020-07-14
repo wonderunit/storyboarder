@@ -111,9 +111,8 @@ ipcRenderer.on("languageChanged", (event, lng) => {
   })
 })
 
-const getHTMLElementText = (elementName, value) => {
-  let element = document.querySelector(elementName)
-  return element
+const translateHtml = (elementName, traslationKey) => {
+  document.querySelector(elementName).innerHTML = i18n.t(`${traslationKey}`)
 }
 
 const translateTooltip = (elementName, traslationKey) => {
@@ -160,7 +159,7 @@ const updateHTMLText = () => {
     translateTooltip("#toolbar-perspective", "main-window.toolbar.view.toolbar-perspective")
     translateTooltip("#toolbar-onion", "main-window.toolbar.view.toolbar-onion")
     translateTooltip("#toolbar-captions", "main-window.toolbar.view.toolbar-captions")
-    ////#endregion
+    //#endregion
     //#region Externals
     translateTooltip("#toolbar-open-in-editor", "main-window.toolbar.externals.toolbar-open-in-editor")
     //#endregion
@@ -168,6 +167,49 @@ const updateHTMLText = () => {
     translateTooltip("#toolbar-pomodoro-rest", "main-window.toolbar.pomodoro.toolbar-pomodoro-rest")
     translateTooltip("#toolbar-pomodoro-running", "main-window.toolbar.pomodoro.toolbar-pomodoro-running")
     //#endregion
+  //#endregion
+  //#region board-information
+  translateTooltip("#line-mileage", "main-window.board-information.line-mileage")
+  translateTooltip("#shot-generator-container", "main-window.board-information.shot-generator-container")
+  translateTooltip("#new-shot", "main-window.board-information.new-shot")
+  translateTooltip("#duration-ms", "main-window.board-information.duration-ms")
+  translateTooltip("#duration-fps", "main-window.board-information.duration-fps")
+  translateHtml("#dialog-title", "main-window.board-information.dialog-title")
+  translateTooltip("#suggested-dialogue-duration", "main-window.board-information.suggested-dialogue-duration")
+  translateTooltip("#dialogue-tooltip", "main-window.board-information.dialogue-tooltip")
+  translateHtml("#action-title", "main-window.board-information.action-title")
+  translateTooltip("#action-tooltip", "main-window.board-information.action-tooltip")
+  translateHtml("#note-title", "main-window.board-information.note-title")
+  translateTooltip("#note-tooltip", "main-window.board-information.note-tooltip")
+  translateHtml("#clear-note-title", "main-window.board-information.clear-note-title")
+  translateTooltip("#clear-note-tooltip", "main-window.board-information.clear-note-tooltip")
+  translateTooltip("#remove-audio", "main-window.board-information.remove-audio")
+  translateHtml("#reference-layer-title", "main-window.board-information.reference-layer-title")
+  translateTooltip("#reference-layer-tooltip", "main-window.board-information.reference-layer-tooltip")
+  translateHtml("#clear-title", "main-window.board-information.clear-title")
+  translateTooltip("#reference-layer-tooltip", "main-window.board-information.reference-layer-tooltip")
+  
+  translateTooltip("#merge-down-tooltip", "main-window.board-information.merge-down-tooltip")
+  translateHtml("#merge-down-title", "main-window.board-information.merge-down-title")
+  translateTooltip("#merge-up-tooltip", "main-window.board-information.merge-up-tooltip")
+  translateHtml("#merge-up-title", "main-window.board-information.merge-up-title")
+  translateTooltip("#layer-opacity-tooltip", "main-window.board-information.layer-opacity-tooltip")
+  translateTooltip("#sts-random", "main-window.board-information.sts-random")
+  translateTooltip("#sts-input1", "main-window.board-information.sts-input1")
+  translateTooltip("#sts-select", "main-window.board-information.sts-select")
+  translateTooltip("#sts-shots", "main-window.board-information.sts-shots")
+  
+  translateHtml("#scene", "main-window.board-information.scene")
+  translateHtml("#frame-rate", "main-window.board-information.frame-rate")
+  translateTooltip("#show-in-finder-button", "main-window.board-information.show-in-finder-button")
+  translateHtml("#show-in-finder-title", "main-window.board-information.show-in-finder-title")
+  
+  translateTooltip("#prev-scene-tooltip", "main-window.playback.prev-scene-tooltip")
+  translateTooltip("#prev-board-tooltip", "main-window.playback.prev-board-tooltip")
+  translateTooltip("#play-tooltip", "main-window.playback.play-tooltip")
+  translateTooltip("#next-board-tooltip", "main-window.playback.next-board-tooltip")
+  translateTooltip("#next-scene-tooltip", "main-window.playback.next-scene-tooltip")
+
   //#endregion
 }
 //#endregion
