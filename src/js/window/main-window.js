@@ -6662,11 +6662,11 @@ ipcRenderer.on('importImage', (event, fileData) => {
 })
 ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
   let filepath = filepathsRecursive[0]
-  let type = path.extname(filepath)
+  let type = path.extname(filepath).slice(1).toLowerCase()
 
   let fileData
 
-  if (type === '.psd') {
+  if (type === 'psd') {
     let buffer = fs.readFileSync(filepath)
     let canvas = importerPsd.fromPsdBufferComposite(buffer)
     fileData = canvas.toDataURL()
