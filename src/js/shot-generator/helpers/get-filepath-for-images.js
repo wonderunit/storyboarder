@@ -4,6 +4,7 @@ const isUserModel = model => !!model.match(/(\/|\\)/)
 const getFilePathForImages = ({ type, volumeImageAttachmentIds, imageAttachmentIds}, storyboarderFilePath ) => {
     let paths = []
     let ids = volumeImageAttachmentIds ? volumeImageAttachmentIds : imageAttachmentIds
+    if(!ids.length) return []
     for(let i = 0; i < ids.length; i++ ){
         let model = ids[i]
         if(!isUserModel(model)) {

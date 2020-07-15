@@ -1,6 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
+import SceneBackground from './components/Three/SceneBackground'
 import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
@@ -18,6 +19,7 @@ import {
     updateObjects,
     updateCharacterPoleTargets,
     deleteObjects,
+    updateWorld
 
  } from '../shared/reducers/shot-generator'
 import { useThree } from 'react-three-fiber'
@@ -40,39 +42,10 @@ import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
 import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
-import RemoteProvider from "./components/RemoteProvider"
-import RemoteClients from "./components/RemoteClients"
-import XRClient from "./components/Three/XRClient"
-import path from 'path'
-import fs from 'fs-extra'
-
-const mouse = (event, gl) => {
-  const rect = gl.domElement.getBoundingClientRect();
-  let worldX = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
-  let worldY = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
-  return { x: worldX, y: worldY }
-}
-
-let saveDataURLtoFile = (dataURL, boardPath, updateObject, object) => {
-  let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
-  if(object.userData.tempImagePath) {
-    let tempImageFilePath = path.join(path.dirname(boardPath), 'models/images', object.userData.tempImagePath)
-    fs.remove(tempImageFilePath)
-  }
-  let tempFilename = `temp_${object.userData.id}-${Date.now()}-texture.png`
-  object.userData.tempImagePath = tempFilename
-  let imagesFolder = path.join(path.dirname(boardPath), 'models/images')
-  fs.ensureDirSync(imagesFolder)
-  let imageFilePath = path.join(imagesFolder, tempFilename)
-  fs.writeFileSync(imageFilePath, imageData, 'base64')
-  let projectDir = path.dirname(boardPath)
-  let assetsDir = path.join(projectDir, 'models', 'images')
-  fs.ensureDirSync(assetsDir)
-  let dst = path.join(assetsDir, path.basename(imageFilePath))
-  let id = path.relative(projectDir, dst)
-  updateObject(object.userData.id, {imageAttachmentIds: [id]})
-
-}
+import RemoteProvider from './components/RemoteProvider'
+import RemoteClients from './components/RemoteClients'
+import XRClient from './components/Three/XRClient'
+import useDrawOnImage from './hooks/use-draw-on-image'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -99,7 +72,7 @@ const SceneManagerR3fLarge = connect(
         selectedBone: getSelectedBone(state),
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
-        drawingMesh: state.drawingMesh,
+        drawingBrush: state.drawingBrush,
         isDrawingMode: state.isDrawingMode,
         cleanImages: state.cleanImages
     }),
@@ -111,6 +84,7 @@ const SceneManagerR3fLarge = connect(
         updateCharacterPoleTargets,
         updateObjects,
         deleteObjects,
+        updateWorld,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
@@ -127,7 +101,7 @@ const SceneManagerR3fLarge = connect(
     updateObjects,
     selectedBone,
 
-    drawingMesh,
+    drawingBrush,
     isDrawingMode,
     cleanImages,
 
@@ -137,6 +111,7 @@ const SceneManagerR3fLarge = connect(
     selectedAttachable,
     deleteObjects,
     withState,
+    updateWorld,
 
     renderFnRef
 }) => {
@@ -146,8 +121,7 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
-    const isDrawStarted = useRef(false)
-    const drawingTextures = useRef({})
+
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
     const [update, forceUpdate] = useState(null)
@@ -183,71 +157,10 @@ const SceneManagerR3fLarge = connect(
     useEffect(() => {
       if(isDrawingMode) {
         objectRotationControl.current.deselectObject();
-        gl.domElement.addEventListener( 'mousedown', onKeyDown )
-        window.addEventListener( 'mouseup', onKeyUp )
       }
-      return () => {
-        gl.domElement.removeEventListener( 'mousedown', onKeyDown )
-        window.removeEventListener( 'mouseup', onKeyUp )
-      }
-  
-    }, [isDrawingMode, drawingMesh])
+    }, [isDrawingMode, drawingBrush])
 
-    useEffect(() => {
-      if(!cleanImages || !cleanImages.length) return
-      for(let i = 0; i < cleanImages.length; i++) {
-        drawingTextures.current[cleanImages[i]].cleanImage()
-      }
-    }, [cleanImages])
-
-    let getImageObjects = () => scene.__interaction.filter(object => object.userData.type === "image")
-    let raycaster = useRef(new THREE.Raycaster())
-    const draw = (event) => {
-      let keys = Object.keys(drawingTextures.current)
-      let {x, y} = mouse(event, gl)
-      raycaster.current.setFromCamera({x, y}, camera)
-      let imageObjects = getImageObjects()
-      let intersections = raycaster.current.intersectObjects(imageObjects, true)
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        let drawingTexture = drawingTextures.current[key]
-        let object = imageObjects.find((obj) => obj.userData.id === key)
-        if(!object || !object.visible) continue
-        if(intersections.length && intersections[0].object.parent.uuid === object.uuid) {
-          drawingTexture.draw({x, y}, object, camera, drawingMesh);
-        } else if(drawingTexture.isChanged){
-          drawingTexture.resetMeshPos();
-        }
-      }
-    } 
-
-    const onKeyDown = (event) => {
-      isDrawStarted.current = true;
-      gl.domElement.addEventListener('mousemove', draw)
-    }
-  
-    useEffect(() => {
-        let keys = Object.keys(drawingTextures.current)
-        for(let i = 0; i < keys.length; i++) {
-          drawingTextures.current[keys[i]].setMesh(drawingMesh.type)
-        }
-     }, [drawingMesh.type])
-
-    const onKeyUp = (event) => {
-      if(!isDrawStarted.current) return
-      gl.domElement.removeEventListener('mousemove', draw)
-      isDrawStarted.current = false;
-      let keys = Object.keys(drawingTextures.current)
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        drawingTextures.current[key].resetMeshPos();
-        let object = scene.__interaction.find((obj) => obj.userData.id === key)
-        if(drawingTextures.current[key].isChanged) {
-          drawingTextures.current[key].isChanged = false
-          saveDataURLtoFile(drawingTextures.current[key].getImage(), storyboarderFilePath, updateObject, object)
-        }
-      }
-    }
+    const {drawingTextures, drawingSceneTexture} = useDrawOnImage(isDrawingMode, drawingBrush, cleanImages, storyboarderFilePath, updateObject)
 
     useEffect(() => {
       let sgIkHelper = SGIkHelper.getInstance()
@@ -398,10 +311,6 @@ const SceneManagerR3fLarge = connect(
     }, [world])
 
     useEffect(() => {
-      scene.background = new THREE.Color(world.backgroundColor)
-    }, [world.backgroundColor])
-
-    useEffect(() => {
       if(!directionalLightRef.current) return
       directionalLightRef.current.rotation.x = 0
       directionalLightRef.current.rotation.z = 0
@@ -519,7 +428,7 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selections.includes(id) }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
-                drawTextures={ drawingTextures.current }
+                drawTextures={ drawingTextures }
                 />
               </SimpleErrorBoundary>
         })
@@ -553,6 +462,14 @@ const SceneManagerR3fLarge = connect(
               }, { storyboarderFilePath } )}
               environment={world.environment}
               visible={world.environment.visible} />
+    }
+    {
+         <SceneBackground
+              imagePath={ getFilePathForImages({imageAttachmentIds: world.sceneTexture ? [world.sceneTexture] : [] }, storyboarderFilePath) }
+              world={world}
+              storyboarderFilePath={ storyboarderFilePath }
+              updateWorld={ updateWorld }
+              drawingSceneTexture={ drawingSceneTexture }/>
     }
     {
         roomTexture && <Room

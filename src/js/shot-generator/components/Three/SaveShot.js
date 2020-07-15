@@ -6,7 +6,8 @@ import {
     updateObject,
     markSaved,
     selectObject,
-    getSceneObjects
+    getSceneObjects,
+    updateWorld
  } from '../../../shared/reducers/shot-generator'
  import { ipcRenderer } from 'electron'
 import { useThree } from 'react-three-fiber'
@@ -32,6 +33,7 @@ const SaveShot = connect(
         markSaved,
         selectObject,
         updateObject,
+        updateWorld,
         saveScene: filepath => (dispatch, getState) => {
             let state = getState()
             let contents = getSerializedState(state)
@@ -46,7 +48,8 @@ const SaveShot = connect(
     markSaved,
     isPlot = false,
     selectObject,
-    updateObject
+    updateObject,
+    updateWorld
 }) => {
     const { scene, camera } = useThree()
     const imageRenderer = useRef()
@@ -144,6 +147,15 @@ const SaveShot = connect(
             imgComponent.userData.tempImagePath = null
             updateObject(image.id, {imageAttachmentIds: [id]})
         }
+        if(scene.userData.tempPath) {
+            let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures/', scene.userData.tempPath)
+            let imageFilePath = path.join(path.dirname(storyboarderFilePath), scene.userData.texturePath)
+            removeAsset(imageFilePath)
+            fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
+            fs.remove(tempImageFilePath)
+            updateWorld({sceneTexture: scene.userData.texturePath})
+            scene.userData.tempPath = null
+        }
     }
   
     // add handlers once, and use refs for callbacks
@@ -162,7 +174,6 @@ const SaveShot = connect(
         let imageRenderCamera = camera.clone()
         imageRenderCamera.layers.set(SHOT_LAYERS)
         // render the image
-
         let savedBackground  
         if(isPlot) {
             savedBackground = scene.background && scene.background.clone()

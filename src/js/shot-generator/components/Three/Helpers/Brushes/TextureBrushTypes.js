@@ -1,5 +1,5 @@
-const MeshType = {
+const BrushType = {
     SIMPLE: "Simple",
     ERASER: "Eraser"
 }
-export default MeshType
+export default BrushType

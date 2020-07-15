@@ -8,6 +8,7 @@ import {
     getSceneObjects,
     getWorld,
     getSelectedBone,
+    updateWorld,
 
  } from '../shared/reducers/shot-generator'
 import { useThree } from 'react-three-fiber'
@@ -22,6 +23,7 @@ import { getFilePathForImages } from '../shot-generator/helpers/get-filepath-for
 import Room from '../shot-generator/components/Three/Room'
 import CameraUpdate from '../shot-generator/CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
+import SceneBackground from '../shot-generator/components/Three/SceneBackground'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -47,6 +49,7 @@ const ShotExplorerSceneManager = connect(
         selectedBone: getSelectedBone(state),
     }),
     {
+        updateWorld,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
@@ -58,6 +61,7 @@ const ShotExplorerSceneManager = connect(
     setLargeCanvasData,
     withState,
     shouldRender,
+    updateWorld,
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -65,6 +69,7 @@ const ShotExplorerSceneManager = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const drawingTextures = useRef({})
+    const drawingSceneTexture = useRef({})
     const sceneObjectLength = Object.values(sceneObjects).length
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -103,10 +108,6 @@ const ShotExplorerSceneManager = connect(
         directionalLightRef.current.rotation.y = world.directional.rotation
         directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world])
-
-    useEffect(() => {
-      scene.background = new THREE.Color(world.backgroundColor)
-    }, [world.backgroundColor])
 
     useEffect(() => {
       if(!directionalLightRef.current) return
@@ -216,6 +217,14 @@ const ShotExplorerSceneManager = connect(
               }, { storyboarderFilePath } )}
               environment={world.environment}
               visible={world.environment.visible} />
+    }
+    {
+         <SceneBackground
+              imagePath={ getFilePathForImages({imageAttachmentIds: world.sceneTexture ? [world.sceneTexture] : [] }, storyboarderFilePath) }
+              world={world}
+              storyboarderFilePath={ storyboarderFilePath }
+              updateWorld={ updateWorld }
+              drawingSceneTexture={ drawingSceneTexture.current }/>
     }
     {
         roomTexture && <Room

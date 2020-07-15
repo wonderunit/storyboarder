@@ -1,5 +1,6 @@
 const THREE = require('three')
 const React = require('react')
+const path = require('path')
 const { useState, useReducer, useMemo, useCallback } = React
 
 const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
@@ -7,7 +8,6 @@ const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
 const reducer = (state, action) => {
   const { type, payload } = action
   const { id, progress, value, error } = payload
-
   switch (type) {
     case 'PENDING':
       // ignore if already exists
@@ -88,6 +88,7 @@ const load = (loader, path, events, times = 1) => {
 const useAssetsManager = () => {
   const [loader] = useState(() => new GLTFLoader())
   const [textureLoader] = useState(() => new THREE.TextureLoader())
+  const [cubeLoader] = useState(() => new THREE.CubeTextureLoader())
 
   const [assets, dispatch] = useReducer(reducer, {})
 
@@ -96,14 +97,14 @@ const useAssetsManager = () => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-        if (!id.includes('/images/')) {
+        if (!id.includes('/images/') && !id.includes('/sceneTextures/')) {
           load(loader, id, {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
             onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
           })
           dispatch({ type: 'LOAD', payload: { id } })
-        } else {
+        }  else {
           load(textureLoader, `${id}?ts=` + Date.now(), {
             onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
             onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),

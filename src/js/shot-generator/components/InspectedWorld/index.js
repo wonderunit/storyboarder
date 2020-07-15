@@ -22,7 +22,9 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
-import CopyFile from "../../utils/CopyFile"
+import CopyFile from '../../utils/CopyFile'
+import SceneTextureType from './SceneTextureType'
+const imageFilters = ["jpg", "jpeg", "png", "gif", "dds"]
 
 const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
@@ -46,6 +48,22 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
     if (event.file) {
       updateWorldEnvironment({file: CopyFile(storyboarderFilePath, event.file, 'environment')})
     }
+  }, [])
+
+  const setWorldTexture = useCallback((type, event) => {
+    if (event.file) {
+      updateWorld({textureType: type, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
+    } else {
+      updateWorld({textureType:null, sceneTexture: null})
+    }
+  }, [])
+
+  const setSceneTextureFile = useCallback((event) => {
+    setWorldTexture(SceneTextureType.Image, event)
+  }, [])
+
+  const setSceneCubeMap = useCallback((event) => {
+    setWorldTexture(SceneTextureType.CubeMap, event)
   }, [])
   
   const setAmbientIntensity = useCallback((intensity) => updateWorldEnvironment({intensity}), [])
@@ -95,7 +113,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
             />
           </div>
 
-          <div className="inspector-row">
+          { !world.sceneTexture && <div className="inspector-row">
             <NumberSlider
                 label="Bg color"
                 value={world.backgroundColor / 0xFFFFFF}
@@ -103,7 +121,23 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                 max={1}
                 onSetValue={setBackground}
             />
-          </div>
+          </div> }
+          {(!world.textureType || world.textureType === SceneTextureType.CubeMap) && <FileInput
+              onChange={setSceneCubeMap}
+              label={"Scene Cube map"}
+              value={world.sceneTexture && path.basename(world.sceneTexture)}
+              filters={ [ { name:"Images", extensions: imageFilters } ] }
+              canRemove={ true }
+            />
+          }
+          {(!world.textureType || world.textureType === SceneTextureType.Image) && <FileInput
+              onChange={setSceneTextureFile}
+              label={"Scene texture"}
+              value={world.sceneTexture && path.basename(world.sceneTexture)}
+              filters={ [ { name:"Images", extensions: imageFilters } ] }
+              canRemove={ true }
+            />
+            }
         </div>
 
         <h5 className="inspector-label">Room</h5>

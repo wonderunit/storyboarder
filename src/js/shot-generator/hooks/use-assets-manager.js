@@ -9,7 +9,7 @@ import { gltfLoader } from '../utils/gltfLoader'
  */
 export const cache = observable({})
 
-let textureLoader = new THREE.TextureLoader()
+const textureLoader = new THREE.TextureLoader()
 
 const LOADING_MODE = {
   PENDING: 'PENDING',
@@ -68,7 +68,7 @@ export const loadAsset = (path) => {
         } else {
           /** Current resource is texture */
           loader = textureLoader
-          filePath += "#" + Date.now()
+          filePath += "?ts=" + Date.now()
         }
 
         loader.load(
@@ -98,7 +98,6 @@ export const loadAsset = (path) => {
 
 export const cleanUpCache = () => {
   cache.set({})
-  textureLoader = new THREE.TextureLoader()
 }
 
 export const removeAsset = (imagePath) => {

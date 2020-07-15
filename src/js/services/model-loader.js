@@ -62,7 +62,8 @@ const projectFolder = type => ({
   'object': path.join('models', 'objects'),
   'character': path.join('models', 'characters'),
   'environment': path.join('models', 'environments'),
-  'attachable': path.join('models', 'attachables')
+  'attachable': path.join('models', 'attachables'),
+  'sceneTexture': path.join('models', 'sceneTextures')
 }[type])
 
 const modelIsInProjectFolder = ({ model, type }) =>

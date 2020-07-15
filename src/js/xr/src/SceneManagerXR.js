@@ -28,7 +28,7 @@ const {
   selectObject,
   updateObject,
   updateCharacterIkSkeleton,
-  getSelectedAttachable
+  getSelectedAttachable,
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
@@ -66,9 +66,22 @@ const Boards = require('./components/ui/Boards')
 const BonesHelper = require('./three/BonesHelper')
 const Voicer = require('./three/Voicer')
 
+const CubeTextureCreator = require('./helpers/CubeTextureCreator').default
+
 const musicSystem = require('./music-system')
 
 const { createSelector } = require('reselect')
+
+const getSceneTextureFilePath = (world, prevTexture, removeAsset) => {
+  if(!world.sceneTexture) return false
+  let currentPath = getFilepathForModelByType({type: 'sceneTexture', model: world.sceneTexture })
+  if(prevTexture && world.sceneTexture !== prevTexture) {
+    let tempPath = getFilepathForModelByType({type: 'sceneTexture', model: prevTexture })
+    removeAsset(tempPath)
+  }
+  prevTexture = world.sceneTexture
+  return currentPath
+}
 
 // TODO move to selectors if useful
 // TODO optimize to only change if top-level keys change
@@ -135,7 +148,9 @@ const SceneContent = connect(
     SGConnection
   }) => {
     const { gl, camera, scene } = useThree()
-
+    const prevSceneTexture = useRef()
+    const cubeMapCreator = useRef(new CubeTextureCreator())
+    const sceneTexture = getAsset(getSceneTextureFilePath(world, prevSceneTexture.current, removeAsset))
     const teleportRef = useRef()
     // actions
     const set = useStore(state => state.set)
@@ -229,6 +244,13 @@ const SceneContent = connect(
         0.04
       )
     }, [worldScale])
+
+    useEffect(() => {
+      if(!sceneTexture) return
+      let cubeTexture = cubeMapCreator.current.getCubeMapTexture(sceneTexture)
+      scene.background = cubeTexture
+    }, [sceneTexture])
+
     const welcomeAudio = useMemo(() => {
       const audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.welcomeAudioBuffer)
