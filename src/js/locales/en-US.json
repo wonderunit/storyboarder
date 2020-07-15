@@ -421,7 +421,10 @@
 			"rotate-y": "Rotate Y",
 			"rotate-z": "Rotate Z",
 			"scale": "Scale",
-			"opacity": "Opacity"
+			"opacity": "Opacity",
+			"yes": "yes",
+			"no": "no",
+			"are-you-sure": "Are you sure?"
 		  },
 		  "inspected-element": {
 			"properties": "Properties:"
