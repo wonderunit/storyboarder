@@ -1,18 +1,17 @@
 import * as THREE from 'three'
-import React, { useEffect, useRef, useMemo } from 'react'
+import React, { useMemo, useEffect } from 'react'
 import {useAsset} from "../../hooks/use-assets-manager"
 import {useUpdate} from 'react-three-fiber'
 import onlyOfTypes from './../../utils/only-of-types'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
-import {patchMaterial} from "../../helpers/outlineMaterial"
 
-const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
+const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
   emissive: 0x0,
   flatShading: false
-}))
+})
 
-const Environment = React.memo(({ path, environment }) => {
+const Environment = React.memo(({ path, environment, grayscale }) => {
   const {asset: gltf} = useAsset(path)
   
   const ref = useUpdate(
@@ -27,8 +26,7 @@ const Environment = React.memo(({ path, environment }) => {
     sceneData.traverse(child => {
       if (child.isMesh) {
         let mesh = child.clone()
-        let material = materialFactory()
-
+        let material = materialFactory() 
         if (mesh.material.map) {
           material.map = mesh.material.map
           material.map.needsUpdate = true
@@ -44,6 +42,16 @@ const Environment = React.memo(({ path, environment }) => {
     return children
 
   }, [gltf])
+  
+  useEffect(() => {
+    if(grayscale === null) return
+    for(let i = 0; i < meshes.length; i++) {
+      let material = meshes[i].props.object.material
+      material.defines.GRAYSCALE = grayscale
+      material.needsUpdate = true
+    }
+  }, [grayscale])
+
   const { x, y, z, visible, rotation, scale } = environment
 
   return <group

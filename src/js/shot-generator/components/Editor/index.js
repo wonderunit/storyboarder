@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
-import TWEEN from '@tweenjs/tween.js'
 import {updateObjects, getObject } from '../../../windows/shot-generator/settings'
 import electron from 'electron'
 const { ipcRenderer, webFrame } = electron
@@ -18,10 +17,11 @@ import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
 
-import { Canvas, useFrame, useThree } from 'react-three-fiber'
+import { Canvas } from 'react-three-fiber'
 
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
+  getWorld,
   selectObject,
   setMainViewCamera,
   getIsSceneDirty
@@ -34,33 +34,15 @@ import ElementsPanel from '../ElementsPanel'
 import BoardInspector from '../BoardInspector'
 import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
-import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
+import { useAsset } from '../../hooks/use-assets-manager'
 
-
-import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
-const maxZoom = {in: 0.4, out: -1.6}
-const Effect = ({renderData, stats}) => {
-  const {gl, size} = useThree()
 
-  const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
-  
-  useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
-  useFrame(({ scene, camera }) => {
-    if(stats) stats.begin()
-    TWEEN.update()
-    if(renderData) {
-      outlineEffect.render(renderData.scene, renderData.camera)
-    } else {
-      outlineEffect.render(scene, camera)
-    }
-    if(stats) stats.end()
-  }, 1)
-  
-  return null
-}
+const maxZoom = {in: 0.4, out: -1.6}
+
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
+  mainViewCamera, aspectRatio, board, world,
+  setMainViewCamera, withState, store, onBeforeUnload
 }) => {
   if (!board.uid) {
     return null
@@ -185,11 +167,8 @@ const Editor = React.memo(({
     smallCanvasData.current.gl = gl
   }
 
-  const largeRenderFnRef = useRef()
-  const smallRenderFnRef = useRef()
   const { insertNewShot, saveCurrentShot } = useSaveToStoryboarder(
-    largeRenderFnRef,
-    smallRenderFnRef
+    largeCanvasData, smallCanvasData, aspectRatio, world.shadingMode, world.backgroundColor
   )
   useEffect(() => {
     ipcRenderer.on('requestSaveShot', saveCurrentShot)
@@ -227,10 +206,9 @@ const Editor = React.memo(({
                     renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
                     mainRenderData={ mainViewCamera === "live" ? largeCanvasData.current : smallCanvasData.current }
                     setSmallCanvasData={ setSmallCanvasData }
-                    renderFnRef={smallRenderFnRef}
+                    mainViewCamera={mainViewCamera}
                     />
                 </Provider>
-                <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }/>
               </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
@@ -261,12 +239,10 @@ const Editor = React.memo(({
                       <SceneManagerR3fLarge
                         renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                         setLargeCanvasData= { setLargeCanvasData }
-                        renderFnRef={largeRenderFnRef}
+                        mainViewCamera={mainViewCamera}
+                        stats={stats}
                         />
-                    </Provider>
-                    <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                          stats={ stats } />
-                    
+                    </Provider>                    
                   </Canvas>
                   <GuidesView
                     dimensions={guidesDimensions}
@@ -300,7 +276,8 @@ export default connect(
   (state) => ({
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
-    board: state.board
+    board: state.board,
+    world: getWorld(state)
   }),
   {
     withState,
@@ -312,6 +289,6 @@ export default connect(
         // to trigger `will-prevent-unload` on BrowserWindow
         event.returnValue = false
       }
-    },
+    }
   }
 )(Editor)

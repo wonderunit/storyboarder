@@ -534,6 +534,7 @@ export const OutlineEffect = function ( renderer, parameters ) {
 	this.autoClear = renderer.autoClear;
 	this.domElement = renderer.domElement;
 	this.shadowMap = renderer.shadowMap;
+	this.cleanupCache = cleanupCache;
 
 	this.clear = function ( color, depth, stencil ) {
 

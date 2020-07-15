@@ -141,6 +141,10 @@ ipcMain.on('shot-generator:object:group', () => {
   win.webContents.send('shot-generator:object:group')
 })
 
+ipcMain.on('shot-generator:view:cycleShadingMode', () => {
+  win.webContents.send('shot-generator:view:cycleShadingMode')
+})
+
 ipcMain.on('shot-generator:object:drops', () => {
   win.webContents.send('shot-generator:object:drop')
 })

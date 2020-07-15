@@ -606,7 +606,8 @@
               "length": 40,
               "visible": true,
               "width": 30
-            }
+            },
+            "shadingMode": "Outline"
           }
         }
       }
