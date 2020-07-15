@@ -6662,16 +6662,18 @@ ipcRenderer.on('importImage', (event, fileData) => {
 })
 ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
   let filepath = filepathsRecursive[0]
-  let type = path.extname(filepath).slice(1)
+  let type = path.extname(filepath)
 
-  if (type === 'psd') {
-    notifications.notify({ message: 'Sorry, PSD is not supported for this command yet.' })
-    sfx.error()
-    return
+  let fileData
+
+  if (type === '.psd') {
+    let buffer = fs.readFileSync(filepath)
+    let canvas = importerPsd.fromPsdBufferComposite(buffer)
+    fileData = canvas.toDataURL()
+  } else {
+    let data = fs.readFileSync(filepath).toString('base64')
+    fileData = `data:image/${type};base64,${data}`
   }
-
-  let data = fs.readFileSync(filepath).toString('base64')
-  let fileData = `data:image/${type};base64,${data}`
 
   importImage(fileData).catch(err => {
     notifications.notify({ message: err.toString() })
