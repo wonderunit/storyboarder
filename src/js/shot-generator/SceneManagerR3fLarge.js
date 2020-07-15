@@ -5,6 +5,7 @@ import SceneBackground from './components/Three/SceneBackground'
 import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
+import useImageRenderer from './hooks/use-image-renderer'
 import { 
     getSceneObjects,
     getWorld,
@@ -35,7 +36,6 @@ import { getFilePathForImages } from './helpers/get-filepath-for-images'
 import { setShot } from './utils/cameraUtils'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
-import SaveShot from './components/Three/SaveShot'
 import { SHOT_LAYERS } from './utils/ShotLayers'
 import Room from './components/Three/Room'
 import Group from './components/Three/Group'
@@ -111,7 +111,9 @@ const SceneManagerR3fLarge = connect(
     selectedAttachable,
     deleteObjects,
     withState,
-    updateWorld
+    updateWorld,
+
+    renderFnRef
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -316,10 +318,11 @@ const SceneManagerR3fLarge = connect(
       directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world.directional.rotation, world.directional.tilt])
 
+    renderFnRef.current = useImageRenderer()
+
     return <group ref={ rootRef }> 
     <CameraUpdate/>
-    <SaveShot isPlot={ false }/>
-    { !isDrawingMode && <InteractionManager renderData={ renderData }/> }
+   {!isDrawingMode && <InteractionManager renderData={ renderData }/> }
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
