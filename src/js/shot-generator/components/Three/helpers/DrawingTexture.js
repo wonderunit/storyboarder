@@ -52,15 +52,15 @@ class DrawingTexture {
         for( let i = 0; i < this.drawingCanvases.length; i++){
             images.push(this.drawingCanvases[i].toDataURL(mime));
         }
-        return images
+        return images;
     }
 
     createMaterial(texture) {
-        this.texture = texture
+        this.texture = texture;
     }
 
     setTexture(texture) {
-        this.texture = texture
+        this.texture = texture;
     }    
 
     intersectImage (x, y, object, camera) {
@@ -76,7 +76,7 @@ class DrawingTexture {
             return;
         }
         this.isChanged = true;
-        return intersection
+        return intersection;
 
     }
 }

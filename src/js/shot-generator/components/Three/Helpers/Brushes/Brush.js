@@ -21,11 +21,11 @@ class Brush {
     }
     
     set DrawingContext(value) {
-        this.drawingCtx = value
+        this.drawingCtx = value;
     }
 
     resetMeshPos() {
-        this.prevPos = null
+        this.prevPos = null;
     }
 
     draw(currentPos, brush) {
@@ -38,4 +38,4 @@ class Brush {
         }
     }
 }
-export default Brush
+export default Brush;

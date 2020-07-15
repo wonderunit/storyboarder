@@ -2,7 +2,7 @@
 import * as THREE from 'three'
 import DrawingTexture from './DrawingTexture'
 class CubeMapDrawingTexture extends DrawingTexture {
-    constructor(){
+    constructor() {
         super();
         this.prevFaceIndex;
     }
@@ -39,7 +39,7 @@ class CubeMapDrawingTexture extends DrawingTexture {
         this.texture.needsUpdate = true;
     }    
   
-    draw (mousePosition, object, camera, brush){
+    draw (mousePosition, object, camera, brush) {
  
         let intersection = super.draw(mousePosition, object, camera, brush)
         if(!intersection) return;

@@ -6,12 +6,12 @@ class PointBuffer {
     }
     
     addElements(...elements) {
-        let predictedLength = this.currentLength * this.pointsAmount + elements.length
+        let predictedLength = this.currentLength * this.pointsAmount + elements.length;
         if(this.buffer.length < predictedLength) {
 
             let newLength = this.buffer.length * 2;
             while(newLength < predictedLength) {
-                newLength *= 2  
+                newLength *= 2;
             }
             let resizedBuffer = new Int16Array(newLength);
             resizedBuffer.set(this.buffer);
@@ -22,8 +22,8 @@ class PointBuffer {
     }
 
     getElements(index) {
-        let offsetIndex = index * this.pointsAmount
-        return this.buffer.subarray(offsetIndex, offsetIndex + this.pointsAmount)
+        let offsetIndex = index * this.pointsAmount;
+        return this.buffer.subarray(offsetIndex, offsetIndex + this.pointsAmount);
     }
 
     flushArray() {

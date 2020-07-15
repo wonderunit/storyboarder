@@ -11,7 +11,7 @@ const mouse = (position, gl) => {
   }
 
 class SimpleTexture extends DrawingTexture {
-    constructor(){
+    constructor() {
         super();
         this.material = null;
         let canvas = document.createElement('canvas');
@@ -34,7 +34,7 @@ class SimpleTexture extends DrawingTexture {
     }
 
     endDraw() {
-        super.endDraw()
+        super.endDraw();
     } 
 
     createMaterial(material) {
@@ -61,51 +61,51 @@ class SimpleTexture extends DrawingTexture {
         this.material.needsUpdate = true;
     }    
   
-    draw (mousePosition, object, camera, brush, gl){
-        let intersection = super.draw(mousePosition, object, camera, brush)
+    draw (mousePosition, object, camera, brush, gl) { 
+        let intersection = super.draw(mousePosition, object, camera, brush);
         // If we don't have a uv coordinates and as a last resort we trying to translate mouse into object coordinate 
         // From object coordinate we can sort of simulate uv coordinate logic for plain object 
         // NOTE() : This won't work for any object except plain object( image object )
 
         if(!intersection)  {
-            if(!this.isChanged) return
-            let worldPos = fromClipSpaceToWorldSpace(mousePosition, camera, object.position.z)
-            intersection = {uv: {}}
+            if(!this.isChanged) return;
+            let worldPos = fromClipSpaceToWorldSpace(mousePosition, camera, object.position.z);
+            intersection = {uv: {}};
             //#region Clip space to world space method
-            let scale = object.scale.clone()
+            let scale = object.scale.clone();
             scale.z = 0;
-            scale.y = -scale.y
-            let quaternion = object.worldQuaternion()
-            scale.applyQuaternion(quaternion)
-            scale.divideScalar(2)
-            let position = object.worldPosition()
-            let topPosition = position.clone().sub(scale)
-            let bottomPosition = position.clone().add(scale)
-            let top = fromWorldSpaceToClipSpace(topPosition, camera, gl)
-            let bottom = fromWorldSpaceToClipSpace(bottomPosition, camera, gl)
-            let topMouse = mouse(top, gl)
-            let bottomMouse = mouse(bottom, gl)
-            let worldTop = fromClipSpaceToWorldSpace(topMouse, camera, object.position.z) 
-            let worldBottom = fromClipSpaceToWorldSpace(bottomMouse, camera, object.position.z)
+            scale.y = -scale.y;
+            let quaternion = object.worldQuaternion();
+            scale.applyQuaternion(quaternion);
+            scale.divideScalar(2);
+            let position = object.worldPosition();
+            let topPosition = position.clone().sub(scale);
+            let bottomPosition = position.clone().add(scale);
+            let top = fromWorldSpaceToClipSpace(topPosition, camera, gl);
+            let bottom = fromWorldSpaceToClipSpace(bottomPosition, camera, gl);
+            let topMouse = mouse(top, gl);
+            let bottomMouse = mouse(bottom, gl);
+            let worldTop = fromClipSpaceToWorldSpace(topMouse, camera, object.position.z);
+            let worldBottom = fromClipSpaceToWorldSpace(bottomMouse, camera, object.position.z);
             if(worldBottom.x > worldTop.x && worldBottom.y < worldTop.y) {
-                worldBottom.sub(worldTop)
-                worldPos.sub(worldTop)
-                worldPos.divide(worldBottom)
-                intersection.uv.x = worldPos.x
-                intersection.uv.y = 1 - worldPos.y
+                worldBottom.sub(worldTop);
+                worldPos.sub(worldTop);
+                worldPos.divide(worldBottom);
+                intersection.uv.x = worldPos.x;
+                intersection.uv.y = 1 - worldPos.y;
             } else {
-                worldTop.sub(worldBottom)
-                worldPos.sub(worldBottom)
-                worldPos.divide(worldTop)
-                intersection.uv.x = 1 - worldPos.x
-                intersection.uv.y = worldPos.y
+                worldTop.sub(worldBottom);
+                worldPos.sub(worldBottom);
+                worldPos.divide(worldTop);
+                intersection.uv.x = 1 - worldPos.x;
+                intersection.uv.y = worldPos.y;
             }
             //#endregion
         } 
-        if(Number.isNaN(intersection.uv.x) || Number.isNaN(intersection.uv.y)) return
+        if(Number.isNaN(intersection.uv.x) || Number.isNaN(intersection.uv.y)) return;
         let screenX = (intersection.uv.x) * this.texture.image.width;
         let screenY = (1 - intersection.uv.y) * this.texture.image.height;
-        this.drawingBrush.draw({ x: screenX, y: screenY }, brush)
+        this.drawingBrush.draw({ x: screenX, y: screenY }, brush);
         
         this.texture.needsUpdate = true;
     }

@@ -7,8 +7,7 @@ class EraserBrush extends Brush {
     draw(currentPos, brush) {
         super.draw(currentPos, brush);
         this.drawingCtx.fillStyle = 'white';
-        let prevX 
-        let prevY 
+        let prevX, prevY; 
         if(this.positionBuffer.currentLength === 0) {
             prevX = currentPos.x;
             prevY = currentPos.y;
@@ -20,24 +19,24 @@ class EraserBrush extends Brush {
         let circle = new Path2D();
         let xOffset = currentPos.x - prevX;
         let yOffset = currentPos.y - prevY;
-        let length
+        let length;
         if(Math.abs(xOffset) < Math.abs(yOffset)) {
-            length = Math.abs(yOffset)
+            length = Math.abs(yOffset);
           
         } else  {
-            length = Math.abs(xOffset)
+            length = Math.abs(xOffset);
         }
         xOffset /= length;
         yOffset /= length;
-        let size = this.brushSize
+        let size = this.brushSize;
         for(let i = 0; i < length; i++) {
             let x = xOffset * i;
             let y = yOffset * i;
             circle.moveTo(prevX + x, prevY + y);
-            circle.arc(prevX + x, prevY + y, size, 0, 2 * Math.PI)    
+            circle.arc(prevX + x, prevY + y, size, 0, 2 * Math.PI);
         }
         this.drawingCtx.stroke();
-        this.drawingCtx.fill(circle)
+        this.drawingCtx.fill(circle);
         this.positionBuffer.addElements(currentPos.x, currentPos.y);
     }
 }

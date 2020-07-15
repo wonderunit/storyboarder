@@ -57,9 +57,9 @@ class CubeTextureCreator {
         for( let i = 0; i < this.imageElements.length; i++ ) {
             let element = this.imageElements[i];
             let texture = this.crop(image, element.x, element.y, element.width, element.height, element.name, boardPath);
-            cubeTexture.images[i] = texture
+            cubeTexture.images[i] = texture;
         }
-        cubeTexture.needsUpdate = true
+        cubeTexture.needsUpdate = true;
         
         return cubeTexture
     }
@@ -126,9 +126,9 @@ class CubeTextureCreator {
         croppedCanvas.width = width;
         croppedCanvas.height = height;
         croppedCtx.putImageData(imageData, 0, 0);   
-        let texture = new THREE.Texture(croppedCtx.canvas)
-        return texture.image
+        let texture = new THREE.Texture(croppedCtx.canvas);
+        return texture.image;
     }
 }
 
-export default CubeTextureCreator
+export default CubeTextureCreator;
