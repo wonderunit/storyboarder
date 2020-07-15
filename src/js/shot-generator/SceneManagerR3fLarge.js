@@ -42,11 +42,10 @@ import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
 import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
-import RemoteProvider from "./components/RemoteProvider"
-import RemoteClients from "./components/RemoteClients"
-import XRClient from "./components/Three/XRClient"
-import mouse from './utils/mouseToClipSpace'
-import { saveDataURLtoTempFile } from './helpers/saveDataURLtoFile'
+import RemoteProvider from './components/RemoteProvider'
+import RemoteClients from './components/RemoteClients'
+import XRClient from './components/Three/XRClient'
+import useDrawOnImage from './hooks/use-draw-on-image'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -120,9 +119,6 @@ const SceneManagerR3fLarge = connect(
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
     const selectedCharacters = useRef()
-    const isDrawStarted = useRef(false)
-    const drawingTextures = useRef({})
-    const drawingSceneTexture = useRef({})
 
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
@@ -155,93 +151,14 @@ const SceneManagerR3fLarge = connect(
     const groupIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
     }, [sceneObjectLength]) 
-
+    
     useEffect(() => {
       if(isDrawingMode) {
-        objectRotationControl.current.deselectObject();
-        gl.domElement.addEventListener( 'mousedown', onKeyDown )
-        window.addEventListener( 'mouseup', onKeyUp )
+        objectRotationControl.deselectObject();
       }
-      return () => {
-        gl.domElement.removeEventListener( 'mousedown', onKeyDown )
-        window.removeEventListener( 'mouseup', onKeyUp )
-      }
-  
     }, [isDrawingMode, drawingBrush])
 
-    useEffect(() => {
-      if(!cleanImages || !cleanImages.length) return
-      for(let i = 0; i < cleanImages.length; i++) {
-        drawingTextures.current[cleanImages[i]].cleanImage()
-      }
-    }, [cleanImages])
-
-    let getImageObjects = () => scene.__interaction.filter(object => object.userData.type === "image")
-    let raycaster = useRef(new THREE.Raycaster())
-    const draw = (event) => {
-      let keys = Object.keys(drawingTextures.current)
-      let {x, y} = mouse({x: event.clientX, y: event.clientY}, activeGL)
-      raycaster.current.setFromCamera({x, y}, camera)
-      let imageObjects = getImageObjects()
-      let intersections = raycaster.current.intersectObjects(imageObjects, true)
-      if(!intersections.length && drawingSceneTexture.current.draw) {
-        let texture = drawingSceneTexture.current
-        texture.draw({x, y}, camera, drawingBrush)
-      }
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        let drawingTexture = drawingTextures.current[key];
-        let object = drawingTexture.material.parent.parent;
-        if(!object || !object.visible) continue
-        drawingTexture.draw({x, y}, object, camera, drawingBrush, activeGL)
-      }
-
-    } 
-
-    const onKeyDown = (event) => {
-      isDrawStarted.current = true;
-      let keys = Object.keys(drawingTextures.current)
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        drawingTextures.current[key].prepareToDraw();
-      }
-      if(drawingSceneTexture.current && drawingSceneTexture.current.texture) {
-        drawingSceneTexture.current.texture.prepareToDraw()
-      }
-      draw(event)
-      gl.domElement.addEventListener('mousemove', draw)
-    }
-  
-    useEffect(() => {
-      let keys = Object.keys(drawingTextures.current)
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        drawingTextures.current[key].setMesh(drawingBrush.type)
-      }
-      if(drawingSceneTexture.current && drawingSceneTexture.current.texture)
-        drawingSceneTexture.current.texture.setMesh(drawingBrush.type)
-     }, [drawingBrush.type])
-
-    const onKeyUp = (event) => {
-      if(!isDrawStarted.current) return
-      gl.domElement.removeEventListener('mousemove', draw)
-      isDrawStarted.current = false;
-      let keys = Object.keys(drawingTextures.current)
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        drawingTextures.current[key].endDraw();
-        let object = scene.__interaction.find((obj) => obj.userData.id === key)
-        if(drawingTextures.current[key].isChanged) {
-          drawingTextures.current[key].isChanged = false
-          saveDataURLtoTempFile(drawingTextures.current[key].getImage("image/png"), storyboarderFilePath, updateObject, object)
-        }
-      }
-      if( drawingSceneTexture.current.save && drawingSceneTexture.current.texture.isChanged) {
-        drawingSceneTexture.current.texture.isChanged = false
-        drawingSceneTexture.current.texture.endDraw()
-        drawingSceneTexture.current.save()
-      }
-    }
+    const {drawingTextures, drawingSceneTexture} = useDrawOnImage(isDrawingMode, drawingBrush, cleanImages, storyboarderFilePath, updateObject)
 
     useEffect(() => {
       let sgIkHelper = SGIkHelper.getInstance()
@@ -508,7 +425,7 @@ const SceneManagerR3fLarge = connect(
                 isSelected={ selections.includes(id) }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
-                drawTextures={ drawingTextures.current }
+                drawTextures={ drawingTextures }
                 />
               </SimpleErrorBoundary>
         })
@@ -549,7 +466,7 @@ const SceneManagerR3fLarge = connect(
               world={world}
               storyboarderFilePath={ storyboarderFilePath }
               updateWorld={ updateWorld }
-              drawingSceneTexture={ drawingSceneTexture.current }/>
+              drawingSceneTexture={ drawingSceneTexture }/>
     }
     {
         roomTexture && <Room
