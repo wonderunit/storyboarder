@@ -234,6 +234,7 @@ const SceneManagerR3fLarge = connect(
       if(drawingSceneTexture.current && drawingSceneTexture.current.texture) {
         drawingSceneTexture.current.texture.prepareToDraw()
       }
+      draw(event)
       gl.domElement.addEventListener('mousemove', draw)
     }
   

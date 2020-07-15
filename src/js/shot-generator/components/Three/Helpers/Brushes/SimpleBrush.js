@@ -33,7 +33,6 @@ class SimpleBrush extends Brush {
 
     constructor(drawingCtx) {
         super(drawingCtx);
-       // this.drawingCtx.lineJoin = true;
     }
 
     draw(currentPos, brush) {
@@ -67,7 +66,6 @@ class SimpleBrush extends Brush {
             p1 = getVector2FromBuffer(this.positionBuffer, i)
             p2 = getVector2FromBuffer(this.positionBuffer, i+1)
         }
-        this.drawingCtx.lineTo(p1.x, p1.y)
         this.drawingCtx.stroke();
     }
 }
