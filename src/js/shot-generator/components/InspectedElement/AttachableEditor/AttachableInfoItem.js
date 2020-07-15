@@ -4,7 +4,8 @@ const AttachableInfoItem = React.memo(({
     sceneObject,
     onSelectItem,
     onDelete,
-    getNumberSlider
+    getNumberSlider,
+    t
   
 }) => {
     const bindBoneName = !sceneObject ? '' : sceneObject.bindBone ? sceneObject.bindBone : ''
@@ -24,7 +25,7 @@ const AttachableInfoItem = React.memo(({
                 onClick={ () => { onDelete(sceneObject)} }>X</a>
         </div> 
         <div className="number-slider">
-            <div className="number-slider__label">Attached to bone</div> 
+            <div className="number-slider__label">{t("shot-generator.inspector.attachables-inspector.attached-to-bone")}</div> 
             <div className="column" style={{ marginLeft: 5 }}>
               <a className="button_add" 
                 href="#" 

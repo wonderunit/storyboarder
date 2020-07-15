@@ -133,7 +133,8 @@ const CharacterPresetsEditor = connect(
     characterPresets,
     selectCharacterPreset, 
     createCharacterPreset, 
-    withState
+    withState,
+    t
    }) => {
     const [isModalShown, showModal] = useState(false)
     const newPresetName = useRef('')
@@ -182,7 +183,7 @@ const CharacterPresetsEditor = connect(
     return <div>
       <Modal visible={ isModalShown } onClose={ () => showModal(false) }>
         <div style={{ margin: "5px 5px 5px 5px" }}>
-          Select a Preset Name:
+        {t("shot-generator.inspector.common.select-preset-name")}
         </div>
         <div className="column" style={{ flex: 1 }}> 
           <input 
@@ -198,12 +199,12 @@ const CharacterPresetsEditor = connect(
               showModal(false)
               addNewCharacterPreset(newPresetName.current)
             }}>
-              Proceed
+              {t("shot-generator.inspector.common.proceed-button")}
           </button>
           </div>
       </Modal>
       <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}>
-          <div style={{ width: 50, display: "flex", alignSelf: "center" }}>preset</div>
+          <div style={{ width: 50, display: "flex", alignSelf: "center" }}>{t("shot-generator.inspector.character-preset.preset")}</div>
           <select required={ true }
             value={ characterPresetId || "" }
             onChange={ preventDefault(onSelectCharacterPreset) }

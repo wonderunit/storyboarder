@@ -384,5 +384,96 @@
 				"description": "If current board is at the start or end of the scene, this will jump forward one scene. Otherwise this will jump to the end of the current scene."
 			}
 		}
-	}
+	},
+	"shot-generator": {
+		"inspector": {
+		  "inspected-world": {
+			"file": "File",
+			"scene": "Scene",
+			"ground": "Ground",
+			"bg-color": "Background color",
+			"room": "Room",
+			"environment": "Environment",
+			"ambient-light": "Ambient light",
+			"directional-light": "Directional light",
+			"fog": "Fog"
+		  },
+		  "common": {
+			"object-creation-help": "How to Create 3D Models for Custom Objects",
+			"visible": "Visible",
+			"rotation": "Rotation",
+			"intensity": "Intensity",
+			"tilt": "Tilt",
+			"distance": "Distance",
+			"roll": "Roll",
+			"select-preset-name": "Select a Preset Name:",
+			"proceed-button": "Proceed",
+			"height": "Height",
+			"tint-color": "Tint Color",
+			"search-models": "Search models …",
+			"or": "or",
+			"select-file": "Select File …",
+			"size": "Size",
+			"width": "Width",
+			"length": "Length",
+			"depth": "Depth",
+			"rotate-x": "Rotate X",
+			"rotate-y": "Rotate Y",
+			"rotate-z": "Rotate Z",
+			"scale": "Scale",
+			"opacity": "Opacity"
+		  },
+		  "inspected-element": {
+			"properties": "Properties:"
+		  },
+		  "camera": {
+			"fov": "F.O.V."
+		  },
+		  "character": {
+			"skinny": "Skinny",
+			"obese": "Obese",
+			"muscular": "Muscular",
+			"head": "Head",
+			"drop-character": "Drop Character to the floor",
+			"morphs": "Morphs"
+		  },
+		  "character-preset": {
+			"preset": "preset"
+		  },
+		  "hand-preset": {
+			"select-saving-hand": "Select a Hand to save:",
+			"hand": "Hand",
+			"search-hand-pose": "Search for a hand pose …",
+			"select-hand": "Select hand",
+			"left-hand": "Left hand",
+			"right-hand": "Right hand",
+			"both-hands": "Both hands"
+		  },
+		  "pose-preset": {
+			"search-pose": "Search for a pose …",
+			"mirror-pose": "Mirror pose"
+		  },
+		  "attachables-inspector": {
+			"attached-to-bone": "Attached to bone"
+		  },
+		  "object": {
+			"drop-object": "Drop Object to the floor"
+		  },
+		  "image": {
+			"image-file": "Image file",
+			"visible-to-camera": "Visible to camera"
+		  },
+		  "light": {
+			"angle": "Angle",
+			"penumbra": "Penumbra",
+			"decay": "Decay"
+		  },
+		  "volume": {
+			"layer-image-files": "Layer Image Files",
+			"select-layer-images": "Select Layer Images",
+			"layers": "Layers",
+			"color": "Color"
+		  }
+		}
+	  }
 }

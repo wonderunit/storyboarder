@@ -60,7 +60,8 @@ React.memo(({
   undoGroupStart,
   undoGroupEnd,
   updateCharacterIkSkeleton,
-  withState
+  withState,
+  t
 }) => {
   const thumbnailRenderer = useRef()
 
@@ -212,7 +213,7 @@ React.memo(({
     <React.Fragment>
     <Modal visible={ isModalShown } onClose={() => showModal(false)}>
       <div style={{ margin:"5px 5px 5px 5px" }}>
-        Select a Preset Name:
+      {t("shot-generator.inspector.common.select-preset-name")} 
       </div>
       <div className="column" style={{ flex: 1 }}> 
         <input 
@@ -228,13 +229,13 @@ React.memo(({
             showModal(false)
             addNewPosePreset(newPresetName.current)
           }}>
-            Proceed
+             {t("shot-generator.inspector.common.proceed-button")}
         </button>
       </div>
    </Modal>
    <div className="thumbnail-search column">
       <div className="row" style={{ padding: "6px 0" } }> 
-        <SearchList label="Search for a pose …" list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>
+        <SearchList label={t("shot-generator.inspector.pose-preset.search-pose")} list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>
         <div className="column" style={{ marginLeft: 5 }}> 
           <a className="button_add" href="#"
             style={{ width: 30, height: 34 }}
@@ -243,7 +244,7 @@ React.memo(({
         </div>
       </div> 
       <div className="mirror_button__wrapper">
-        <div className="mirror_button" onPointerDown={ mirrorSkeleton }>Mirror pose</div>
+        <div className="mirror_button" onPointerDown={ mirrorSkeleton }>{t('shot-generator.inspector.pose-preset.mirror-pose')}</div>
       </div>
       <Scrollable>
        <Grid

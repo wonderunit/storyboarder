@@ -1,0 +1,103 @@
+{
+  "shot-generator": {
+    "inspector": {
+      "inspected-world": {
+        "file": "shot-generator.inspector.inspected-world.file",
+        "scene": "shot-generator.inspector.inspected-world.scene",
+        "ground": "shot-generator.inspector.inspected-world.ground",
+        "bg-color": "shot-generator.inspector.inspected-world.bg-color",
+        "room": "shot-generator.inspector.inspected-world.room",
+        "width": "shot-generator.inspector.inspected-world.width",
+        "length": "shot-generator.inspector.inspected-world.length",
+        "height": "shot-generator.inspector.inspected-world.height",
+        "environment": "shot-generator.inspector.inspected-world.environment",
+        "visible": "shot-generator.inspector.inspected-world.visible",
+        "object-scale": "shot-generator.inspector.inspected-world.object-scale",
+        "ambient-light": "shot-generator.inspector.inspected-world.ambient-light",
+        "light-intensity": "shot-generator.inspector.inspected-world.light-intensity",
+        "fog": "shot-generator.inspector.inspected-world.fog",
+        "directional-light": "shot-generator.inspector.inspected-world.directional-light"
+      },
+      "common": {
+        "object-creation-help": "shot-generator.inspector.common.object-creation-help",
+        "visible": "shot-generator.inspector.common.visible",
+        "rotation": "shot-generator.inspector.common.rotation",
+        "intensity": "shot-generator.inspector.common.intensity",
+        "light": "shot-generator.inspector.common.light",
+        "tilt": "shot-generator.inspector.common.tilt",
+        "distance": "shot-generator.inspector.common.distance",
+        "roll": "shot-generator.inspector.common.roll",
+        "select-preset-name": "shot-generator.inspector.common.select-preset-name",
+        "proceed-button": "shot-generator.inspector.common.proceed-button",
+        "height": "shot-generator.inspector.common.height",
+        "tint-color": "shot-generator.inspector.common.tint-color",
+        "search-models": "shot-generator.inspector.common.search-models",
+        "or": "shot-generator.inspector.common.or",
+        "select-file": "shot-generator.inspector.common.select-file",
+        "size": "shot-generator.inspector.common.size",
+        "width": "shot-generator.inspector.common.width",
+        "depth": "shot-generator.inspector.common.depth",
+        "rotate-x": "shot-generator.inspector.common.rotate-x",
+        "rotate-y": "shot-generator.inspector.common.rotate-y",
+        "rotate-z": "shot-generator.inspector.common.rotate-z",
+        "scale": "shot-generator.inspector.common.scale",
+        "opacity": "shot-generator.inspector.common.opacity"
+      },
+      "inspected-element": {
+        "properties": "shot-generator.inspector.inspected-element.properties"
+      },
+      "camera": {
+        "fov": "shot-generator.inspector.camera.fov"
+      },
+      "character": {
+        "skinny": "shot-generator.inspector.character.skinny",
+        "obese": "shot-generator.inspector.character.obese",
+        "muscular": "shot-generator.inspector.character.muscular",
+        "head": "shot-generator.inspector.character.head",
+        "drop-character": "shot-generator.inspector.character.drop-character",
+        "morphs": "shot-generator.inspector.character.morphs"
+      },
+      "character-preset": {
+        "preset": "shot-generator.inspector.character-preset.preset"
+      },
+      "hand-preset": {
+        "select-saving-hand": "shot-generator.inspector.hand-preset.select-saving-hand",
+        "hand": "shot-generator.inspector.hand-preset.hand",
+        "search-hand-pose": "shot-generator.inspector.hand-preset.search-hand-pose",
+        "select-hand": "shot-generator.inspector.hand-preset.select-hand",
+        "left-hand": "shot-generator.inspector.hand-preset.left-hand",
+        "right-hand": "shot-generator.inspector.hand-preset.right-hand",
+        "both-hands": "shot-generator.inspector.hand-preset.both-hands"
+      },
+      "pose-preset": {
+        "search-pose": "shot-generator.inspector.pose-preset.search-pose",
+        "mirror-pose": "shot-generator.inspector.pose-preset.mirror-pose"
+      },
+      "attachables-inspector": {
+        "attached-to-bone": "shot-generator.inspector.attachables-inspector.attached-to-bone"
+      },
+      "object": {
+        "drop-object": "shot-generator.inspector.object.drop-object"
+      },
+      "image": {
+        "rotate-x": "shot-generator.inspector.image.rotate-x",
+        "rotate-y": "shot-generator.inspector.image.rotate-y",
+        "rotate-z": "shot-generator.inspector.image.rotate-z",
+        "image-file": "shot-generator.inspector.image.image-file",
+        "visible-to-camera": "shot-generator.inspector.image.visible-to-camera"
+      },
+      "light": {
+        "angle": "shot-generator.inspector.light.angle",
+        "distance": "shot-generator.inspector.light.distance",
+        "penumbra": "shot-generator.inspector.light.penumbra",
+        "decay": "shot-generator.inspector.light.decay"
+      },
+      "volume": {
+        "layer-image-files": "shot-generator.inspector.volume.layer-image-files",
+        "select-layer-images": "shot-generator.inspector.volume.select-layer-images",
+        "layers": "shot-generator.inspector.volume.layers",
+        "color": "shot-generator.inspector.volume.color"
+      }
+    }
+  }
+}

@@ -4,7 +4,7 @@ import {Math as _Math} from 'three'
 import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 import ColorSelect from '../../ColorSelect'
 
-const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
+const ObjectInspector = React.memo(({updateObject, sceneObject, t}) => {
   const {id, ...props} = sceneObject
 
   const setX = useCallback((x) => updateObject(id, {x}), [])
@@ -28,13 +28,13 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY} textFormatter={ textFormatters.imperialToMetric }/>
       <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ} textFormatter={ textFormatters.imperialToMetric }/>
 
-      { sceneObject.model === "box" &&  <NumberSlider label="Width" value={props.width} min={0.025} max={5} onSetValue={setWidth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
-      { sceneObject.model === "box" &&  <NumberSlider label="Height" value={props.height} min={0.025} max={5} onSetValue={setHeight} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>}
-      { sceneObject.model === "box" &&  <NumberSlider label="Depth" value={props.depth} min={0.025} max={5} onSetValue={setDepth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
-      { sceneObject.model !== "box" &&  <NumberSlider label="Size" value={props.depth} min={0.025} max={5} onSetValue={setSize} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
+      { sceneObject.model === "box" &&  <NumberSlider label={t("shot-generator.inspector.common.width")} value={props.width} min={0.025} max={5} onSetValue={setWidth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
+      { sceneObject.model === "box" &&  <NumberSlider label={t("shot-generator.inspector.common.height")} value={props.height} min={0.025} max={5} onSetValue={setHeight} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>}
+      { sceneObject.model === "box" &&  <NumberSlider label={t("shot-generator.inspector.common.depth")} value={props.depth} min={0.025} max={5} onSetValue={setDepth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
+      { sceneObject.model !== "box" &&  <NumberSlider label={t("shot-generator.inspector.common.size")} value={props.depth} min={0.025} max={5} onSetValue={setSize} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/> }
 
       <NumberSlider
-        label="Rotate X"
+        label={t("shot-generator.inspector.common.rotate-x")}
         value={_Math.radToDeg(props.rotation.x)}
         min={-180}
         max={180}
@@ -45,7 +45,7 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label="Rotate Y"
+        label={t("shot-generator.inspector.common.rotate-y")}
         value={_Math.radToDeg(props.rotation.z)}
         min={-180}
         max={180}
@@ -56,7 +56,7 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label="Rotate Z"
+        label={t("shot-generator.inspector.common.rotate-z")}
         value={_Math.radToDeg(props.rotation.y)}
         min={-180}
         max={180}
@@ -67,13 +67,13 @@ const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <ColorSelect
-        label="Tint color"
+        label={t("shot-generator.inspector.common.tint-color")}
         value={props.tintColor}
         onSetValue={setTintColor}
       />
       <div className="drop_button__wrappper">
         <div className="drop_button" onClick={ () => ipcRenderer.send('shot-generator:object:drops')}>
-          Drop Object to the floor
+        {t("shot-generator.inspector.object.drop-object")}
         </div>
       </div>
     </React.Fragment>

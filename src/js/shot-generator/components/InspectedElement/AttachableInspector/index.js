@@ -37,7 +37,8 @@ const AttachableInspector = connect(
     id,
     withState,
     createObject,
-    selectAttachable
+    selectAttachable,
+    t
   }) => {
 
     const [isModalVisible, showModal] = useState(false)
@@ -151,14 +152,15 @@ const AttachableInspector = connect(
           setVisible={ showModal }
           id={ id }
           skeleton={ sceneObject.skeleton }
-          onSuccess={ createAttachableElement }/>
+          onSuccess={ createAttachableElement }
+          t={t}/>
         <div className="thumbnail-search column">
           <div className="row" style={{ padding: "6px 0" }}>
-            <SearchList label="Search models …" list={ sortedAttachables.current } onSearch={ saveFilteredPresets }/>
+            <SearchList label={t("shot-generator.inspector.common.search-models")} list={ sortedAttachables.current } onSearch={ saveFilteredPresets }/>
             { isCustom ? <div className="column" style={{ padding: 2 }} />
-              : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>or</div>
+              : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 } }>{t("shot-generator.inspector.common.or")}</div>
             }
-            <FileInput value={ isCustom ? selectValue() : "Select File …" }
+            <FileInput value={ isCustom ? selectValue() : t("shot-generator.inspector.common.select-file") }
                        title={ isCustom ? path.basename(sceneObject.model) : undefined }
                        onChange={ onSelectFile }
                        refClassName={ refClassName }
@@ -166,7 +168,7 @@ const AttachableInspector = connect(
             <div className="column" style={{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" }}>
               <HelpButton
                 url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
-                title="How to Create 3D Models for Custom Objects"/>
+                title={t("shot-generator.inspector.common.object-creation-help")}/>
             </div>
           </div>
           <Scrollable>
@@ -185,7 +187,7 @@ const AttachableInspector = connect(
               itemHeight={itemSettings.ITEM_HEIGHT}
             />
 
-            <AttachableEditor/>
+            <AttachableEditor t={t}/>
           </Scrollable>
         </div>
       </React.Fragment>

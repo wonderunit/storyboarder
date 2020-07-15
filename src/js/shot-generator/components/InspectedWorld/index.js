@@ -22,9 +22,9 @@ import {
 } from './../../../shared/reducers/shot-generator'
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
-import CopyFile from "../../utils/CopyFile"
-
-const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
+import CopyFile from '../../utils/CopyFile'
+import { withTranslation } from 'react-i18next'
+const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath, t}) => {
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
   const setEnvVisible = useCallback(() => updateWorldEnvironment({visible: !world.environment.visible}), [world.environment.visible])
@@ -64,11 +64,11 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   
   const EnvironmentModelLabel = useMemo(() => (
       <React.Fragment>
-        <span>File</span>
+        <span>{t("shot-generator.inspector.inspected-world.file")}</span>
         {
           <HelpButton
             url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
-            title="How to Create 3D Models for Custom Objects"
+            title={t("shot-generator.inspector.common.object-creation-help")}
             style={{
               marginLeft: 6,
               color: "#eee",
@@ -84,11 +84,11 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   
   return (
       <Scrollable>
-        <h4 className="inspector-label">Scene</h4>
+        <h4 className="inspector-label">{t("shot-generator.inspector.inspected-world.scene")}</h4>
         <div className="inspector-group">
           <div className="inspector-row">
             <Checkbox 
-                label="Ground"
+                label={t("shot-generator.inspector.inspected-world.ground")}
                 checked={world.ground}
                 onClick={setGround}
                 style={{opacity: world.room.visible ? 0.5 : 1}}
@@ -97,7 +97,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
 
           <div className="inspector-row">
             <NumberSlider
-                label="Bg color"
+                label={t("shot-generator.inspector.inspected-world.bg-color")}
                 value={world.backgroundColor / 0xFFFFFF}
                 min={0}
                 max={1}
@@ -106,25 +106,25 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
         </div>
 
-        <h5 className="inspector-label">Room</h5>
+        <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.room")}</h5>
 
         <div className="inspector-group">
           <div className="inspector-row">
-            <Checkbox label="Visible" checked={world.room.visible} onClick={setRoomVisible}/>
+            <Checkbox label={t("shot-generator.inspector.common.visible")} checked={world.room.visible} onClick={setRoomVisible}/>
           </div>
 
           <div className="inspector-column inspector-offset-row">
-            <NumberSlider label="Width" value={world.room.width} min={1.83} max={76.2} onSetValue={setRoomWidth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
-            <NumberSlider label="Length" value={world.room.length} min={1.83} max={76.2} onSetValue={setRoomLength} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
-            <NumberSlider label="Height" value={world.room.height} min={1.83} max={12.19} onSetValue={setRoomHeight} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
+            <NumberSlider label={t("shot-generator.inspector.common.width")} value={world.room.width} min={1.83} max={76.2} onSetValue={setRoomWidth} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
+            <NumberSlider label={t("shot-generator.inspector.common.length")} value={world.room.length} min={1.83} max={76.2} onSetValue={setRoomLength} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
+            <NumberSlider label={t("shot-generator.inspector.common.height")} value={world.room.height} min={1.83} max={12.19} onSetValue={setRoomHeight} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
           </div>
         </div>
 
-        <h5 className="inspector-label">Environment</h5>
+        <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.environment")}</h5>
 
         <div className="inspector-group">
           <div className="inspector-row">
-            <Checkbox label="Visible" checked={world.environment.visible} onClick={setEnvVisible}/>
+            <Checkbox label={t("shot-generator.inspector.common.visible")} checked={world.environment.visible} onClick={setEnvVisible}/>
           </div>
 
           <div className="inspector-column inspector-offset-row">
@@ -136,9 +136,9 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
             <NumberSlider label="X" value={world.environment.x} min={-30} max={30} onSetValue={setEnvX} textFormatter={ textFormatters.imperialToMetric }/>
             <NumberSlider label="Y" value={world.environment.y} min={-30} max={30} onSetValue={setEnvY} textFormatter={ textFormatters.imperialToMetric }/>
             <NumberSlider label="Z" value={world.environment.z} min={-30} max={30} onSetValue={setEnvZ} textFormatter={ textFormatters.imperialToMetric }/>
-            <NumberSlider label="Scale" value={world.environment.scale} min={0.001} max={2} onSetValue={setEnvScale} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
+            <NumberSlider label={t("shot-generator.inspector.common.scale")} value={world.environment.scale} min={0.001} max={2} onSetValue={setEnvScale} textFormatter={ textFormatters.imperialToMetric } textConstraint={ textConstraints.sizeConstraint }/>
             <NumberSlider
-                label="Rotation"
+                label={t("shot-generator.inspector.common.rotation")}
                 value={_Math.degToRad(world.environment.rotation)}
                 min={-180}
                 max={180}
@@ -150,21 +150,21 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
         </div>
 
-        <h5 className="inspector-label">Ambient light</h5>
+        <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.ambient-light")}</h5>
 
         <div className="inspector-group">
           <div className="inspector-column inspector-offset-row">
-            <NumberSlider label="Intensity" value={world.ambient.intensity} min={0} max={1} onSetValue={setAmbientIntensity}/>
+            <NumberSlider label={t("shot-generator.inspector.common.intensity")} value={world.ambient.intensity} min={0} max={1} onSetValue={setAmbientIntensity}/>
           </div>
         </div>
 
-        <h5 className="inspector-label">Directional light</h5>
+        <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.directional-light")}</h5>
 
         <div className="inspector-group">
           <div className="inspector-column inspector-offset-row">
-            <NumberSlider label="Intensity" value={world.directional.intensity} min={0} max={1} onSetValue={setDirectionalIntensity}/>
+            <NumberSlider label={t("shot-generator.inspector.common.intensity")} value={world.directional.intensity} min={0} max={1} onSetValue={setDirectionalIntensity}/>
             <NumberSlider
-                label="Rotation"
+                label={t("shot-generator.inspector.common.rotation")}
                 value={_Math.radToDeg(world.directional.rotation)}
                 min={-180}
                 max={180}
@@ -174,7 +174,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                 transform={transforms.degrees}
             />
             <NumberSlider
-                label="Tilt"
+                label={t("shot-generator.inspector.common.tilt")}
                 value={_Math.radToDeg(world.directional.tilt)}
                 min={-180}
                 max={180}
@@ -186,15 +186,15 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
         </div>
 
-        <h5 className="inspector-label">Fog</h5>
+        <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.fog")}</h5>
 
         <div className="inspector-group">
           <div className="inspector-row">
-            <Checkbox label="Visible" checked={world.fog.visible} onClick={setFogVisible}/>
+            <Checkbox label={t("shot-generator.inspector.common.visible")} checked={world.fog.visible} onClick={setFogVisible}/>
           </div>
           
           <div className="inspector-column inspector-offset-row">
-            <NumberSlider label="Distance" value={world.fog.far} min={10} max={500} step={1} onSetValue={setFogDistance}/>
+            <NumberSlider label={t("shot-generator.inspector.common.distance")} value={world.fog.far} min={10} max={500} step={1} onSetValue={setFogDistance}/>
           </div>
         </div>
         
@@ -213,4 +213,4 @@ const mapDispatchToProps = {
   selectObject, deleteObjects, updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(InspectedWorld)
+export default withTranslation()(connect(mapStateToProps, mapDispatchToProps)(InspectedWorld))

@@ -9,9 +9,9 @@ import BoneInspector from '../BoneInspector'
 import ModelLoader from '../../../../services/model-loader'
 
 const MORPH_TARGET_LABELS = {
-  'mesomorphic': 'Muscular',
-  'ectomorphic': 'Skinny',
-  'endomorphic': 'Obese',
+  'mesomorphic': 'muscular',
+  'ectomorphic': 'skinny',
+  'endomorphic': 'obese',
 }
 
 const CHARACTER_HEIGHT_RANGE = {
@@ -28,7 +28,7 @@ const metersAsFeetAndInches = meters => {
   return [heightFeet, heightInches]
 }
 
-const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone, updateCharacterSkeleton}) => {
+const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone, updateCharacterSkeleton, t}) => {
   const {id, ...props} = sceneObject
 
   const setX = useCallback((x) => updateObject(id, {x}), [])
@@ -62,7 +62,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
     return objectTargets.map(([key, value]) => {
       return (
         <NumberSlider
-          label={MORPH_TARGET_LABELS[key]}
+          label={t(`shot-generator.inspector.character.${MORPH_TARGET_LABELS[key]}`)}
           value={value * 100}
           min={0} max={100} step={1}
           onSetValue={(value) => updateObject(id, { morphTargets: { [key]: value / 100 } })}
@@ -72,19 +72,19 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
       )
     })
     
-  }, [props.morphTargets, props.model])
+  }, [props.morphTargets, props.model, t])
 
   return (
     <React.Fragment>
       <div>
-        <CharacterPresetEditor/>
+        <CharacterPresetEditor t={t}/>
         
         <NumberSlider label="X" value={props.x} min={-30} max={30} onSetValue={setX} textFormatter={ textFormatters.imperialToMetric }/>
         <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY} textFormatter={ textFormatters.imperialToMetric }/>
         <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ} textFormatter={ textFormatters.imperialToMetric }/>
   
         <NumberSlider
-          label="Rotation"
+          label={t("shot-generator.inspector.common.rotation")}
           value={_Math.radToDeg(props.rotation)}
           min={-180}
           max={180}
@@ -96,7 +96,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
         {ModelLoader.isCustomModel(sceneObject.model)
           ? 
             <NumberSlider 
-              label="scale"
+              label={t("shot-generator.inspector.common.scale")}
               min={ 0.3 }
               max={ 3.05 }
               step={ 0.0254 }
@@ -107,7 +107,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
               />
           :
           <NumberSlider 
-            label="Height" 
+            label={t("shot-generator.inspector.common.height")}
             value={props.height} 
             min={ heightRange.min } 
             max={ heightRange.max } 
@@ -122,7 +122,7 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
           /> 
         }
         {ModelLoader.isCustomModel(sceneObject.model) || <NumberSlider
-          label="Head"
+          label={t("shot-generator.inspector.character.head")}
           value={props.headScale * 100}
           min={80} max={120} step={1}
           formatter={formatters.percent}
@@ -130,20 +130,20 @@ const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone,
         />}
   
          {ModelLoader.isCustomModel(sceneObject.model) || <ColorSelect
-          label="Tint color"
+          label={t("shot-generator.inspector.common.tint-color")}
           value={props.tintColor}
           onSetValue={setTintColor}
         />}
 
         <div className="drop_button__wrappper">
           <div className="drop_button" onClick={ () => ipcRenderer.send('shot-generator:object:drops')}>
-            Drop Character to the floor
+          {t("shot-generator.inspector.character.drop-character")}
           </div>
         </div>
       </div>
 
       <div className="inspector-offset-row">
-        {validTargetsExist && <div className="inspector-offset-row italic">Morphs</div>}
+        {validTargetsExist && <div className="inspector-offset-row italic">{t("shot-generator.inspector.character.morphs")}</div>}
         {morphTargets}
       </div>
       { selectedBone && <BoneInspector 

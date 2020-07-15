@@ -383,5 +383,23 @@
 				"description": "If current board is at the start or end of the scene, this will jump forward one scene. Otherwise this will jump to the end of the current scene."
 			}
 		}
+	},
+	"shot-generator": {
+		"inspected-element": {
+		  "properties": "shot-generator.inspected-element.properties"
+		},
+		"common": {
+		  "select-preset-name": "shot-generator.common.select-preset-name",
+		  "proceed-button": "shot-generator.common.proceed-button",
+		  "search-hand-pose": "shot-generator.common.search-hand-pose"
+		},
+		"hand-preset": {
+		  "select-saving-hand": "shot-generator.hand-preset.select-saving-hand",
+		  "hand": "shot-generator.hand-preset.hand",
+		  "select-hand": "shot-generator.hand-preset.select-hand",
+		  "left-hand": "shot-generator.hand-preset.left-hand",
+		  "right-hand": "shot-generator.hand-preset.right-hand",
+		  "both-hands": "Обе руки"
+		}
 	}
 }

@@ -9,7 +9,8 @@ const HandSelectionModal = React.memo(({
     skeleton,
     id,
     onSuccess,
-    defaultSelectedHand = null
+    defaultSelectedHand = null,
+    t
 }) => {
     const [selectedHand, setSelectedHand] = useState(null)
     const selectOptions = useMemo(() => {
@@ -37,7 +38,7 @@ const HandSelectionModal = React.memo(({
 
     return <Modal visible={visible} onClose={() => setVisible(false)}>
                 <div style={{margin:"5px 5px 5px 5px"}}>
-                  Select Hand:
+                  {t("shot-generator.inspector.hand-preset.select-hand")}:
                 </div>
                 <div className="select">
                   <Select 
@@ -53,7 +54,7 @@ const HandSelectionModal = React.memo(({
                       setVisible(false)
                       onSuccess(model, id, selectedHand.value)
                     }}>
-                      Proceed
+                      {t("shot-generator.inspector.common.proceed-button")}
                   </button>
                   </div>
             </Modal>
