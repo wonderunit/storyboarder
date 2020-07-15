@@ -45,34 +45,8 @@ import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
 import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
-import path from 'path'
-import fs from 'fs-extra'
-
-const mouse = (event, gl) => {
-  const rect = gl.domElement.getBoundingClientRect();
-  let worldX = ( ( event.clientX - rect.left ) / rect.width ) * 2 - 1;
-  let worldY = - ( ( event.clientY - rect.top ) / rect.height ) * 2 + 1;
-  return { x: worldX, y: worldY }
-}
-
-let saveDataURLtoFile = (dataURL, boardPath, updateObject, object) => {
-  let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
-  if(object.userData.tempImagePath) {
-    let tempImageFilePath = path.join(path.dirname(boardPath), 'models/images', object.userData.tempImagePath)
-    fs.remove(tempImageFilePath)
-  }
-  let tempFilename = `temp_${object.userData.id}-${Date.now()}-texture.png`
-  object.userData.tempImagePath = tempFilename
-  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', tempFilename)
-  fs.writeFileSync(imageFilePath, imageData, 'base64')
-  let projectDir = path.dirname(boardPath)
-  let assetsDir = path.join(projectDir, 'models', 'images')
-  fs.ensureDirSync(assetsDir)
-  let dst = path.join(assetsDir, path.basename(imageFilePath))
-  let id = path.relative(projectDir, dst)
-  updateObject(object.userData.id, {imageAttachmentIds: [id]})
-
-}
+import mouse from './utils/mouseToClipSpace'
+import { saveDataURLtoTempFile } from './helpers/saveDataURLtoFile'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -206,7 +180,7 @@ const SceneManagerR3fLarge = connect(
     let raycaster = useRef(new THREE.Raycaster())
     const draw = (event) => {
       let keys = Object.keys(drawingTextures.current)
-      let {x, y} = mouse(event, activeGL)
+      let {x, y} = mouse({x: event.clientX, y: event.clientY}, activeGL)
       raycaster.current.setFromCamera({x, y}, camera)
       let imageObjects = getImageObjects()
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
@@ -259,7 +233,7 @@ const SceneManagerR3fLarge = connect(
         let object = scene.__interaction.find((obj) => obj.userData.id === key)
         if(drawingTextures.current[key].isChanged) {
           drawingTextures.current[key].isChanged = false
-          saveDataURLtoFile(drawingTextures.current[key].getImage("image/png"), storyboarderFilePath, updateObject, object)
+          saveDataURLtoTempFile(drawingTextures.current[key].getImage("image/png"), storyboarderFilePath, updateObject, object)
         }
       }
       if( drawingSceneTexture.current.save && drawingSceneTexture.current.texture.isChanged) {

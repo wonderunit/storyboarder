@@ -2,13 +2,7 @@ import * as THREE from 'three'
 import DrawingTexture from './DrawingTexture'
 import fromWorldSpaceToClipSpace from "../../../utils/WorldSpaceToClipSpace"
 import fromClipSpaceToWorldSpace from "../../../utils/ClipSpaceToWorldSpace"
-
-const mouse = (position, gl) => {
-    const rect = gl.domElement.getBoundingClientRect();
-    let worldX = ( ( position.x ) / rect.width ) * 2 - 1;
-    let worldY = - ( ( position.y ) / rect.height ) * 2 + 1;
-    return { x: worldX, y: worldY }
-  }
+import mouse from '../../../utils/mouseToClipSpace'
 
 class SimpleTexture extends DrawingTexture {
     constructor() {
@@ -83,8 +77,8 @@ class SimpleTexture extends DrawingTexture {
             let bottomPosition = position.clone().add(scale);
             let top = fromWorldSpaceToClipSpace(topPosition, camera, gl);
             let bottom = fromWorldSpaceToClipSpace(bottomPosition, camera, gl);
-            let topMouse = mouse(top, gl);
-            let bottomMouse = mouse(bottom, gl);
+            let topMouse = mouse(top, gl, false);
+            let bottomMouse = mouse(bottom, gl, false);
             let worldTop = fromClipSpaceToWorldSpace(topMouse, camera, object.position.z);
             let worldBottom = fromClipSpaceToWorldSpace(bottomMouse, camera, object.position.z);
             if(worldBottom.x > worldTop.x && worldBottom.y < worldTop.y) {

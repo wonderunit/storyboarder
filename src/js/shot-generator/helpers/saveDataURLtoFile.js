@@ -10,5 +10,23 @@ const saveDataURLtoFile = (dataURL, filename, type, boardPath, async = false) =>
       fs.writeFile(imageFilePath, imageData, 'base64')
     }
 
+}
+const saveDataURLtoTempFile = (dataURL, boardPath, updateObject, object) => {
+  let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
+  if(object.userData.tempImagePath) {
+    let tempImageFilePath = path.join(path.dirname(boardPath), 'models/images', object.userData.tempImagePath)
+    fs.remove(tempImageFilePath)
   }
-export default saveDataURLtoFile;
+  let tempFilename = `temp_${object.userData.id}-${Date.now()}-texture.png`
+  object.userData.tempImagePath = tempFilename
+  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', tempFilename)
+  fs.writeFileSync(imageFilePath, imageData, 'base64')
+  let projectDir = path.dirname(boardPath)
+  let assetsDir = path.join(projectDir, 'models', 'images')
+  fs.ensureDirSync(assetsDir)
+  let dst = path.join(assetsDir, path.basename(imageFilePath))
+  let id = path.relative(projectDir, dst)
+  updateObject(object.userData.id, {imageAttachmentIds: [id]})
+
+}
+export { saveDataURLtoFile, saveDataURLtoTempFile }

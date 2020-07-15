@@ -1,4 +1,4 @@
-import saveDataURLtoFile from '../../../helpers/saveDataURLtoFile'
+import { saveDataURLtoFile } from '../../../helpers/saveDataURLtoFile'
 import path from 'path'
 import * as THREE from 'three'
 
