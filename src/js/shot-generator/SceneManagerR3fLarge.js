@@ -151,10 +151,10 @@ const SceneManagerR3fLarge = connect(
     const groupIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
     }, [sceneObjectLength]) 
-    
+
     useEffect(() => {
       if(isDrawingMode) {
-        objectRotationControl.deselectObject();
+        objectRotationControl.current.deselectObject();
       }
     }, [isDrawingMode, drawingBrush])
 
