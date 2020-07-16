@@ -2159,11 +2159,22 @@ const importImageAndReplace = async filepath => {
   let dataURL = loadImageFileAsDataURL(filepath)
 
   try {
-    await importImage(dataURL)
+    await replaceReferenceLayerImage(dataURL)
   } catch (err) {
     notifications.notify({ message: err.toString() })
     sfx.error()
   }
+}
+
+const importImageFromMobile = async dataURL => {
+  log.info('main-window#importImageFromMobile')
+
+  try {
+    await replaceReferenceLayerImage(dataURL)
+  } catch (err) {
+    notifications.notify({ message: err.toString() })
+    sfx.error()
+  } 
 }
 
 const loadImageFileAsDataURL = filepath => {
@@ -5229,8 +5240,10 @@ ipcRenderer.on('paste-replace', () => {
     })
 })
 
-// import image from mobile server
-const importImage = async imageDataURL => {
+// Replace Reference Layer of Current Board with Image
+// - Used when importing from mobile server
+// - Used for File > Replace Reference Layer Image
+const replaceReferenceLayerImage = async imageDataURL => {
   let board = boardData.boards[currentBoard]
 
   // resize image if too big
@@ -6652,9 +6665,9 @@ ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
 ipcRenderer.on('importImageAndReplace', (sender, filepaths) => {
   importImageAndReplace(filepaths[0])
 })
+// Import from Mobile Server
 ipcRenderer.on('importImage', (event, fileData) => {
-  // log.info('mobile image import fileData:', fileData)
-  importImage(fileData)
+  importImageFromMobile(fileData)
 })
 
 ipcRenderer.on('toggleGuide', (event, arg) => {
