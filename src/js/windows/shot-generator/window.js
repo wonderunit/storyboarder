@@ -199,7 +199,7 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     payload: aspectRatio
   })
   store.dispatch({
-    type: 'UPDATE_DRAW_MOE',
+    type: 'UPDATE_DRAW_MODE',
     payload: { brush: drawingBrush }
   })
   shotExplorer.createWindow(() => {
