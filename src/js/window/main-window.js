@@ -2195,6 +2195,26 @@ let insertNewBoardsWithFiles = async filepaths => {
   sfx.positive()
 }
 
+const importImageAndReplace = filepath => {
+  let type = path.extname(filepath).slice(1).toLowerCase()
+
+  let fileData
+
+  if (type === 'psd') {
+    let buffer = fs.readFileSync(filepath)
+    let canvas = importerPsd.fromPsdBufferComposite(buffer)
+    fileData = canvas.toDataURL()
+  } else {
+    let data = fs.readFileSync(filepath).toString('base64')
+    fileData = `data:image/${type};base64,${data}`
+  }
+
+  importImage(fileData).catch(err => {
+    notifications.notify({ message: err.toString() })
+    sfx.error()
+  })
+}
+
 const updateAudioDurations = () => {
   let shouldSave = false
   for (let board of boardData.boards) {
@@ -6656,29 +6676,12 @@ ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
   insertNewBoardsWithFiles(sortFilePaths(filepaths))
 })
 
+ipcRenderer.on('importImageAndReplace', (sender, filepaths) => {
+  importImageAndReplace(filepaths[0])
+})
 ipcRenderer.on('importImage', (event, fileData) => {
   // log.info('mobile image import fileData:', fileData)
   importImage(fileData)
-})
-ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
-  let filepath = filepathsRecursive[0]
-  let type = path.extname(filepath).slice(1).toLowerCase()
-
-  let fileData
-
-  if (type === 'psd') {
-    let buffer = fs.readFileSync(filepath)
-    let canvas = importerPsd.fromPsdBufferComposite(buffer)
-    fileData = canvas.toDataURL()
-  } else {
-    let data = fs.readFileSync(filepath).toString('base64')
-    fileData = `data:image/${type};base64,${data}`
-  }
-
-  importImage(fileData).catch(err => {
-    notifications.notify({ message: err.toString() })
-    sfx.error()
-  })
 })
 
 ipcRenderer.on('toggleGuide', (event, arg) => {
