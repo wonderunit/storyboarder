@@ -13,7 +13,7 @@ import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
 import useSaveToStoryboarder from '../../hooks/use-save-to-storyboarder'
-import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
+import { useExportToGltf, loadCameraModel } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
 
@@ -95,8 +95,10 @@ const Editor = React.memo(({
       webFrame.setZoomLevel(settingsZoom)
     }
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
+    loadCameraModel()
     ipcRenderer.on('shot-generator:menu:view:zoom', zoom)
     ipcRenderer.on('shot-generator:menu:view:setZoom', setZoom)
+
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
       ipcRenderer.off('shot-generator:menu:view:zoom', zoom)
@@ -153,11 +155,13 @@ const Editor = React.memo(({
     setLargeCanvasInfo({width, height})
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
+  const [mainCanvasData, setMainCanvasData] = useState({})
   const largeCanvasData = useRef({})
   const setLargeCanvasData = (camera, scene, gl) => {
     largeCanvasData.current.camera = camera
     largeCanvasData.current.scene = scene
     largeCanvasData.current.gl = gl
+    setMainCanvasData(largeCanvasData.current)
   }
 
   const smallCanvasData = useRef({})
@@ -179,7 +183,7 @@ const Editor = React.memo(({
     return () => ipcRenderer.removeListener('requestInsertShot', insertNewShot)
   }, [insertNewShot])
 
-  useExportToGltf(largeCanvasData.current.scene, withState)
+  useExportToGltf( mainCanvasData.scene, withState)
   
   return (
     <FatalErrorBoundary key={board.uid}>
