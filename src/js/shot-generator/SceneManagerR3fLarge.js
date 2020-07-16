@@ -5,7 +5,9 @@ import SceneBackground from './components/Three/SceneBackground'
 import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
-import useImageRenderer from './hooks/use-image-renderer'
+import TWEEN from '@tweenjs/tween.js'
+import useShadingEffect from './hooks/use-shading-effect'
+import { ShadingType } from '../vendor/shading-effects/ShadingType'
 import { 
     getSceneObjects,
     getWorld,
@@ -22,7 +24,7 @@ import {
     updateWorld
 
  } from '../shared/reducers/shot-generator'
-import { useThree } from 'react-three-fiber'
+import { useThree, useFrame } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
@@ -74,7 +76,8 @@ const SceneManagerR3fLarge = connect(
         selectedAttachable: getSelectedAttachable(state),
         drawingBrush: state.drawingBrush,
         isDrawingMode: state.isDrawingMode,
-        cleanImages: state.cleanImages
+        cleanImages: state.cleanImages,
+        aspectRatio: state.aspectRatio,
     }),
     {
         selectObject,
@@ -109,13 +112,15 @@ const SceneManagerR3fLarge = connect(
     setLargeCanvasData,
     renderData,
     selectedAttachable,
+    aspectRatio,
     deleteObjects,
     withState,
     updateWorld,
 
-    renderFnRef
+    stats,
+    mainViewCamera
 }) => {
-    const { scene, camera, gl } = useThree()
+    const { scene, camera, gl, size } = useThree()
     const rootRef = useRef()
     const groundRef = useRef()
     const ambientLightRef = useRef()
@@ -318,7 +323,25 @@ const SceneManagerR3fLarge = connect(
       directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world.directional.rotation, world.directional.tilt])
 
-    renderFnRef.current = useImageRenderer()
+    const renderer = useShadingEffect(
+      gl,
+      mainViewCamera === 'live' ? world.shadingMode : ShadingType.Outline,
+      world.backgroundColor
+    )
+    useFrame(({ scene, camera }) => {
+      // SceneManagerR3FLarge view is responsible for stats
+      if (stats) stats.begin()
+
+      TWEEN.update()
+
+      if (renderData) {
+        renderer.current.render(renderData.scene, renderData.camera)
+      } else {
+        renderer.current.render(scene, camera)
+      }
+
+      if (stats) stats.end()
+    }, 1)
 
     return <group ref={ rootRef }> 
     <CameraUpdate/>
@@ -461,7 +484,8 @@ const SceneManagerR3fLarge = connect(
                 model: world.environment.file
               }, { storyboarderFilePath } )}
               environment={world.environment}
-              visible={world.environment.visible} />
+              visible={world.environment.visible}
+              grayscale={ world.environment.grayscale } />
     }
     {
          <SceneBackground

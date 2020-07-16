@@ -2,7 +2,6 @@ import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
 import fs from 'fs-extra'
-import TWEEN from '@tweenjs/tween.js'
 import {updateObjects, getObject } from '../../../windows/shot-generator/settings'
 import electron from 'electron'
 const { ipcRenderer, webFrame } = electron
@@ -15,14 +14,15 @@ import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
 import useSaveToStoryboarder from '../../hooks/use-save-to-storyboarder'
-import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
+import { useExportToGltf, loadCameraModel } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
 
-import { Canvas, useFrame, useThree } from 'react-three-fiber'
+import { Canvas } from 'react-three-fiber'
 
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
+  getWorld,
   selectObject,
   setMainViewCamera,
   getIsSceneDirty,
@@ -37,31 +37,14 @@ import ElementsPanel from '../ElementsPanel'
 import BoardInspector from '../BoardInspector'
 import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
-import {useAsset, cleanUpCache, removeAsset} from '../../hooks/use-assets-manager'
-import {OutlineEffect} from './../../../vendor/OutlineEffect'
+import {useAsset, removeAsset} from '../../hooks/use-assets-manager'
 import Stats from 'stats.js'
-const maxZoom = {in: 0.4, out: -1.6}
-const Effect = ({renderData, stats}) => {
-  const {gl, size} = useThree()
 
-  const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
-  
-  useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
-  useFrame(({ scene, camera }) => {
-    if(stats) stats.begin()
-    TWEEN.update()
-    if(renderData) {
-      outlineEffect.render(renderData.scene, renderData.camera)
-    } else {
-      outlineEffect.render(scene, camera)
-    }
-    if(stats) stats.end()
-  }, 1)
-  
-  return null
-}
+const maxZoom = {in: 0.4, out: -1.6}
+
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload, storyboarderFilePath
+  mainViewCamera, aspectRatio, board, world,
+  setMainViewCamera, withState, store, onBeforeUnload, storyboarderFilePath
 }) => {
   if (!board.uid) {
     return null
@@ -72,7 +55,6 @@ const Editor = React.memo(({
   const [stats, setStats] = useState()
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
   const [largeCanvasInfo, setLargeCanvasInfo] = useState({width: 0, height: 0})
-  const largeCanvasData = useRef({})
   const toggleStats = (event, value) => {
     if (!stats) {
       let newStats
@@ -115,8 +97,10 @@ const Editor = React.memo(({
       webFrame.setZoomLevel(settingsZoom)
     }
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
+    loadCameraModel()
     ipcRenderer.on('shot-generator:menu:view:zoom', zoom)
     ipcRenderer.on('shot-generator:menu:view:setZoom', setZoom)
+
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
       ipcRenderer.off('shot-generator:menu:view:zoom', zoom)
@@ -192,11 +176,13 @@ const Editor = React.memo(({
     setLargeCanvasInfo({width, height})
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
-
+  const [mainCanvasData, setMainCanvasData] = useState({})
+  const largeCanvasData = useRef({})
   const setLargeCanvasData = (camera, scene, gl) => {
     largeCanvasData.current.camera = camera
     largeCanvasData.current.scene = scene
     largeCanvasData.current.gl = gl
+    setMainCanvasData(largeCanvasData.current)
   }
 
   const smallCanvasData = useRef({})
@@ -205,9 +191,6 @@ const Editor = React.memo(({
     smallCanvasData.current.scene = scene
     smallCanvasData.current.gl = gl
   }
-
-  const largeRenderFnRef = useRef()
-  const smallRenderFnRef = useRef()
 
   const saveImages = () => {
     let imageObjects 
@@ -234,9 +217,7 @@ const Editor = React.memo(({
     })
   }
   const { insertNewShot, saveCurrentShot } = useSaveToStoryboarder(
-    largeRenderFnRef,
-    smallRenderFnRef,
-    saveImages
+    largeCanvasData, smallCanvasData, aspectRatio, world.shadingMode, world.backgroundColor, saveImages
   )
   useEffect(() => {
     ipcRenderer.on('requestSaveShot', saveCurrentShot)
@@ -247,7 +228,7 @@ const Editor = React.memo(({
     return () => ipcRenderer.removeListener('requestInsertShot', insertNewShot)
   }, [insertNewShot])
 
-  useExportToGltf(largeCanvasData.current.scene, withState)
+  useExportToGltf( mainCanvasData.scene, withState)
   
   return (
     <FatalErrorBoundary key={board.uid}>
@@ -274,10 +255,9 @@ const Editor = React.memo(({
                     renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
                     mainRenderData={ mainViewCamera === "live" ? largeCanvasData.current : smallCanvasData.current }
                     setSmallCanvasData={ setSmallCanvasData }
-                    renderFnRef={smallRenderFnRef}
+                    mainViewCamera={mainViewCamera}
                     />
                 </Provider>
-                <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }/>
               </Canvas>
               <div className="topdown__controls">
                 <div className="row"/>
@@ -308,12 +288,10 @@ const Editor = React.memo(({
                       <SceneManagerR3fLarge
                         renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
                         setLargeCanvasData= { setLargeCanvasData }
-                        renderFnRef={largeRenderFnRef}
+                        mainViewCamera={mainViewCamera}
+                        stats={stats}
                         />
-                    </Provider>
-                    <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                          stats={ stats } />
-                    
+                    </Provider>                    
                   </Canvas>
                   <GuidesView
                     dimensions={guidesDimensions}
@@ -348,7 +326,8 @@ export default connect(
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
     board: state.board,
-    storyboarderFilePath: state.meta.storyboarderFilePath
+    storyboarderFilePath: state.meta.storyboarderFilePath,
+    world: getWorld(state)
   }),
   {
     withState,
@@ -360,6 +339,6 @@ export default connect(
         // to trigger `will-prevent-unload` on BrowserWindow
         event.returnValue = false
       }
-    },
+    }
   }
 )(Editor)
