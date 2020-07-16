@@ -6648,7 +6648,7 @@ ipcRenderer.on('textInputMode', (event, args)=>{
 ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
   insertNewBoardsWithFiles(sortFilePaths(filepaths))
 })
-// Import Image and Replace…
+// Replace Reference Layer Image…
 ipcRenderer.on('importImageAndReplace', (sender, filepaths) => {
   importImageAndReplace(filepaths[0])
 })
