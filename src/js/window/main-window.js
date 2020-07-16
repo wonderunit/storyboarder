@@ -5276,7 +5276,7 @@ const importImage = async imageDataURL => {
   // renderThumbnailDrawer()
 
   notifications.notify({
-    message: `Image added as reference layer.`,
+    message: `Replaced reference layer image.`,
     timing: 10
   })
   sfx.positive()
