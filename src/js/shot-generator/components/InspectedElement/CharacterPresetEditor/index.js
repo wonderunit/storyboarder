@@ -16,7 +16,7 @@ import {
 import presetsStorage from '../../../../shared/store/presetsStorage'
 import Modal from '../../Modal'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
-
+import { useTranslation } from 'react-i18next'
 const preventDefault = (fn, ...args) => e => {
     e.preventDefault()
     fn(e, ...args)
@@ -133,13 +133,12 @@ const CharacterPresetsEditor = connect(
     characterPresets,
     selectCharacterPreset, 
     createCharacterPreset, 
-    withState,
-    t
+    withState
    }) => {
+     const { t } = useTranslation()
     const [isModalShown, showModal] = useState(false)
     const newPresetName = useRef('')
     const newGeneratedId = useRef()
-
     const getSceneObject = useCallback(() => {
       let sceneObject = null
       withState((dispatch, state) => {

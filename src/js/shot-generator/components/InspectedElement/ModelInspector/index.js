@@ -26,7 +26,7 @@ import SearchList from '../../SearchList'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
 import isUserModel from '../../../helpers/isUserModel'
 import CopyFile from '../../../utils/CopyFile'
-
+import { useTranslation } from 'react-i18next'
 const getModelData = deepEqualSelector([(state) => {
   const selectedId = getSelections(state)[0]
   const object = getSceneObjects(state)[selectedId]
@@ -60,9 +60,9 @@ const ModelInspector = connect(
     undoGroupStart,
     undoGroupEnd,
     
-    withState,
-    t
+    withState
   }) => {
+      const { t } = useTranslation()
       const sortedModels = useRef([])
       const [results, setResults] = useState([])
       const models = useMemo(() => {

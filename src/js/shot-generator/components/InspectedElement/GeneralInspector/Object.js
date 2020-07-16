@@ -3,10 +3,10 @@ import React, {useCallback} from 'react'
 import {Math as _Math} from 'three'
 import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 import ColorSelect from '../../ColorSelect'
-
-const ObjectInspector = React.memo(({updateObject, sceneObject, t}) => {
+import { useTranslation } from 'react-i18next'
+const ObjectInspector = React.memo(({updateObject, sceneObject}) => {
   const {id, ...props} = sceneObject
-
+  const { t } = useTranslation()
   const setX = useCallback((x) => updateObject(id, {x}), [])
   const setY = useCallback((y) => updateObject(id, {y}), [])
   const setZ = useCallback((z) => updateObject(id, {z}), [])

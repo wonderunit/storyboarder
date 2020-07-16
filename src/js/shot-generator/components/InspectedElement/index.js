@@ -16,7 +16,7 @@ import HandInspector from './HandInspector/HandPresetsEditor/index'
 import PosePresetsInspector from './PosePresetsInspector/index'
 import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import Icon from '../Icon'
 import Modal from '../Modal'
 
@@ -24,7 +24,8 @@ const isChar = (type) => type === 'character'
 const isObj = (type) => type === 'object'
 const nullTab = {tab: null, panel: null}
 
-const Inspector = React.memo(({id, selectedName, selectedType, updateObjec, t}) => {
+const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) => {
+  const { t } = useTranslation()
   const [isModalShown, showModal] = useState(false)
   const [changedName, changeNameTo] = useState(false)
   const handPoseTab = useMemo(() => {
@@ -32,7 +33,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObjec, t}) 
 
     return {
       tab: <Tab><Icon src='icon-tab-hand'/></Tab>,
-      panel: <Panel><HandInspector t={t}/></Panel>
+      panel: <Panel><HandInspector/></Panel>
     }
   }, [selectedType])
 
@@ -41,7 +42,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObjec, t}) 
 
     return {
       tab: <Tab><Icon src='icon-tab-pose'/></Tab>,
-      panel: <Panel><PosePresetsInspector t={t}/></Panel>
+      panel: <Panel><PosePresetsInspector/></Panel>
     }
   }, [selectedType])
 
@@ -50,7 +51,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObjec, t}) 
 
     return {
       tab: <Tab><Icon src='icon-tab-model'/></Tab>,
-      panel: <Panel><ModelInspector t={t}/></Panel>
+      panel: <Panel><ModelInspector/></Panel>
     }
   }, [selectedType])
 
@@ -59,7 +60,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObjec, t}) 
 
     return {
       tab: <Tab><Icon src='icon-tab-attachable'/></Tab>,
-      panel: <Panel><AttachableInspector t={t}/></Panel>
+      panel: <Panel><AttachableInspector/></Panel>
     }
   }, [selectedType])
 
@@ -101,7 +102,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObjec, t}) 
         </div>
 
         <div className="tabs-body">
-          <Panel><GeneralInspector t={t}/></Panel>
+          <Panel><GeneralInspector/></Panel>
           {handPoseTab.panel}
           {charPoseTab.panel}
           {modelTab.panel}
@@ -135,4 +136,4 @@ const mapDispatchToProps = {
   updateObject,
 }
 
-export default withTranslation()(connect(mapStateToProps, mapDispatchToProps)(Inspector))
+export default connect(mapStateToProps, mapDispatchToProps)(Inspector)

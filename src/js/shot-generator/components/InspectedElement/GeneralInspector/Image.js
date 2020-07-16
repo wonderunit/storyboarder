@@ -8,7 +8,7 @@ import {formatters, NumberSlider, transforms, textFormatters, textConstraints} f
 
 import FileInput from '../../FileInput'
 import Checkbox from '../../Checkbox'
-
+import { useTranslation } from 'react-i18next'
 const loadImages = (files, baseDir) => {
   return new Promise((resolve, reject) => {
     let projectDir = path.dirname(baseDir)
@@ -32,9 +32,9 @@ const loadImages = (files, baseDir) => {
   })
 }
 
-const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath, t}) => {
+const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath}) => {
   const {id, ...props} = sceneObject
-
+  const { t } = useTranslation()
   const setX = useCallback((x) => updateObject(id, {x}), [])
   const setY = useCallback((y) => updateObject(id, {y}), [])
   const setZ = useCallback((z) => updateObject(id, {z}), [])

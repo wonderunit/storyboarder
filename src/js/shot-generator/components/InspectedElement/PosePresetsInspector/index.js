@@ -28,6 +28,7 @@ import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
+import { useTranslation } from 'react-i18next'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -60,14 +61,14 @@ React.memo(({
   undoGroupStart,
   undoGroupEnd,
   updateCharacterIkSkeleton,
-  withState,
-  t
+  withState
 }) => {
+  const { t } = useTranslation()
   const thumbnailRenderer = useRef()
 
   const sortedAttachament = useRef([])
   const {asset: attachment} = useAsset(characterPath)
-
+  
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')

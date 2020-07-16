@@ -32,7 +32,7 @@ import Scrollable from '../../../Scrollable'
 import Grid from '../../../Grid'
 import HandPresetsEditorItem from './HandPresetsEditorItem'
 import {useAsset} from '../../../../hooks/use-assets-manager'
-
+import { useTranslation } from 'react-i18next'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
   return sceneObjects[selections[0]].handPosePresetId
@@ -74,9 +74,9 @@ React.memo(({
   characterPath,
   undoGroupStart,
   undoGroupEnd,
-  withState,
-  t
+  withState
 }) => {
+  const { t } = useTranslation()
   const thumbnailRenderer = useRef()
   const sortedPresets = useRef([])
   const [results, setResult] = useState([])
@@ -86,7 +86,6 @@ React.memo(({
   const [selectedHand, setSelectedHand] = useState(selectedHandOptions[2].value)
   const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
   const {asset: attachment} = useAsset(characterPath)
-  
   const presets = useMemo(() => {
     if(!handPosePresets) return
     let sortedPoses = Object.values(handPosePresets).sort(comparePresetNames).sort(comparePresetPriority)

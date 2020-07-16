@@ -6,7 +6,7 @@ import fs from 'fs-extra'
 const { dialog } = remote
 import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
 import Select from '../../Select'
-
+import { useTranslation } from 'react-i18next'
 const selectOptions = [
   {
     label: "Custom",
@@ -28,9 +28,9 @@ const createLabel = (ids) => {
   return ids.map(s => path.basename(s)).join(', ');
 } 
 
-const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath, t}) => {
+const VolumeInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath}) => {
   const {id, ...props} = sceneObject
-
+  const { t } = useTranslation()
   const currentSelectedOption = () => {
     let builtInOptions = Object.values(Object.values(selectOptions)[1].options)
     let builtInOption = builtInOptions.find(object => object.value.includes(sceneObject.volumeImageAttachmentIds[0]))

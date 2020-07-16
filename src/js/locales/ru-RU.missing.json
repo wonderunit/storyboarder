@@ -76,7 +76,12 @@
         "search-models": "shot-generator.inspector.common.search-models",
         "or": "shot-generator.inspector.common.or",
         "select-file": "shot-generator.inspector.common.select-file",
-        "size": "shot-generator.inspector.common.size"
+        "size": "shot-generator.inspector.common.size",
+        "depth": "shot-generator.inspector.common.depth",
+        "rotate-x": "shot-generator.inspector.common.rotate-x",
+        "rotate-y": "shot-generator.inspector.common.rotate-y",
+        "rotate-z": "shot-generator.inspector.common.rotate-z",
+        "opacity": "shot-generator.inspector.common.opacity"
       },
       "character-preset": {
         "preset": "shot-generator.inspector.character-preset.preset"
@@ -110,6 +115,20 @@
       },
       "attachables-inspector": {
         "attached-to-bone": "shot-generator.inspector.attachables-inspector.attached-to-bone"
+      },
+      "object": {
+        "drop-object": "shot-generator.inspector.object.drop-object"
+      },
+      "light": {
+        "angle": "shot-generator.inspector.light.angle",
+        "penumbra": "shot-generator.inspector.light.penumbra",
+        "decay": "shot-generator.inspector.light.decay"
+      },
+      "volume": {
+        "layer-image-files": "shot-generator.inspector.volume.layer-image-files",
+        "select-layer-images": "shot-generator.inspector.volume.select-layer-images",
+        "layers": "shot-generator.inspector.volume.layers",
+        "color": "shot-generator.inspector.volume.color"
       }
     }
   }

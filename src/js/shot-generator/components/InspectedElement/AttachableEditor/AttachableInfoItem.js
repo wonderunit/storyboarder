@@ -1,13 +1,13 @@
 import React, {useMemo} from 'react'
-
+import { useTranslation } from 'react-i18next'
 const AttachableInfoItem = React.memo(({
     sceneObject,
     onSelectItem,
     onDelete,
-    getNumberSlider,
-    t
+    getNumberSlider
   
 }) => {
+    const { t } = useTranslation()
     const bindBoneName = !sceneObject ? '' : sceneObject.bindBone ? sceneObject.bindBone : ''
     const onHandSelect = () => {
         onSelectItem(sceneObject.id, sceneObject.bindBone )

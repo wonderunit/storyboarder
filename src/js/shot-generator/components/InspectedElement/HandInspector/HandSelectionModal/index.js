@@ -1,7 +1,7 @@
 import React, {useRef, useMemo, useState, useEffect} from 'react'
 import Modal from '../../../Modal'
 import Select from '../../../Select'
-
+import { useTranslation } from 'react-i18next'
 const HandSelectionModal = React.memo(({
     visible,
     setVisible,
@@ -9,9 +9,9 @@ const HandSelectionModal = React.memo(({
     skeleton,
     id,
     onSuccess,
-    defaultSelectedHand = null,
-    t
+    defaultSelectedHand = null
 }) => {
+    const { t } = useTranslation()
     const [selectedHand, setSelectedHand] = useState(null)
     const selectOptions = useMemo(() => {
         if(!skeleton) return []

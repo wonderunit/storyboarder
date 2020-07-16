@@ -7,7 +7,7 @@ import {initialState} from '../../../../shared/reducers/shot-generator'
 import CharacterPresetEditor from '../CharacterPresetEditor'
 import BoneInspector from '../BoneInspector'
 import ModelLoader from '../../../../services/model-loader'
-
+import { useTranslation } from 'react-i18next'
 const MORPH_TARGET_LABELS = {
   'mesomorphic': 'muscular',
   'ectomorphic': 'skinny',
@@ -28,9 +28,9 @@ const metersAsFeetAndInches = meters => {
   return [heightFeet, heightInches]
 }
 
-const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone, updateCharacterSkeleton, t}) => {
+const CharacterInspector = React.memo(({updateObject, sceneObject, selectedBone, updateCharacterSkeleton}) => {
   const {id, ...props} = sceneObject
-
+  const { t } = useTranslation()
   const setX = useCallback((x) => updateObject(id, {x}), [])
   const setY = useCallback((y) => updateObject(id, {y}), [])
   const setZ = useCallback((z) => updateObject(id, {z}), [])

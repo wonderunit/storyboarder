@@ -35,7 +35,7 @@ import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
 import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
 
-import { withTranslation } from 'react-i18next';
+import { useTranslation } from 'react-i18next';
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
 const maxZoom = {in: 0.4, out: -1.6}
@@ -59,11 +59,12 @@ const Effect = ({renderData, stats}) => {
   return null
 }
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload, t
+  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
 }) => {
   if (!board.uid) {
     return null
   }
+  const { t } = useTranslation()
   const notificationsRef = useRef(null)
   const mainViewContainerRef = useRef(null)
   const [stats, setStats] = useState()
@@ -275,7 +276,7 @@ const Editor = React.memo(({
 })
 
 const withState = (fn) => (dispatch, getState) => fn(dispatch, getState())
-export default withTranslation()(connect(
+export default connect(
   (state) => ({
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
@@ -293,4 +294,4 @@ export default withTranslation()(connect(
       }
     },
   }
-)(Editor))
+)(Editor)

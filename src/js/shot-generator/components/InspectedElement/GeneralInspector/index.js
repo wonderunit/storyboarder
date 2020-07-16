@@ -28,7 +28,7 @@ const InspectorComponents = {
   volume: VolumeInspector
 }
 
-const GeneralInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath, selectedBone, updateCharacterSkeleton, t}) => {
+const GeneralInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath, selectedBone, updateCharacterSkeleton}) => {
   const Component = InspectorComponents[sceneObject.type] ? InspectorComponents[sceneObject.type] : null  
 
   if (!Component) {
@@ -44,8 +44,7 @@ const GeneralInspector = React.memo(({updateObject, sceneObject, storyboarderFil
         { ...sceneObject.type === "character" && { 
           updateCharacterSkeleton: updateCharacterSkeleton,
           selectedBone: selectedBone
-        }}
-        t={t}/>
+        }}/>
     </Scrollable>
   )
 })

@@ -22,7 +22,7 @@ import Scrollable from '../../Scrollable'
 import AttachableEditor from './../AttachableEditor/index'
 import isUserModel from '../../../helpers/isUserModel'
 import CopyFile from '../../../utils/CopyFile'
-
+import { useTranslation } from 'react-i18next'
 const AttachableInspector = connect(
   state => ({
     id: getSelections(state)[0]
@@ -37,10 +37,9 @@ const AttachableInspector = connect(
     id,
     withState,
     createObject,
-    selectAttachable,
-    t
+    selectAttachable
   }) => {
-
+    const { t } = useTranslation()
     const [isModalVisible, showModal] = useState(false)
     const [results, setResults] = useState([])
     const [sceneObject, setSceneObject] = useState({})
@@ -152,8 +151,7 @@ const AttachableInspector = connect(
           setVisible={ showModal }
           id={ id }
           skeleton={ sceneObject.skeleton }
-          onSuccess={ createAttachableElement }
-          t={t}/>
+          onSuccess={ createAttachableElement }/>
         <div className="thumbnail-search column">
           <div className="row" style={{ padding: "6px 0" }}>
             <SearchList label={t("shot-generator.inspector.common.search-models")} list={ sortedAttachables.current } onSearch={ saveFilteredPresets }/>

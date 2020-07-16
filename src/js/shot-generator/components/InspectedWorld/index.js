@@ -23,8 +23,9 @@ import {
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from '../../utils/CopyFile'
-import { withTranslation } from 'react-i18next'
-const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath, t}) => {
+import { useTranslation } from 'react-i18next'
+const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
+  const { t } = useTranslation()
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
   const setEnvVisible = useCallback(() => updateWorldEnvironment({visible: !world.environment.visible}), [world.environment.visible])
@@ -213,4 +214,4 @@ const mapDispatchToProps = {
   selectObject, deleteObjects, updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog
 }
 
-export default withTranslation()(connect(mapStateToProps, mapDispatchToProps)(InspectedWorld))
+export default connect(mapStateToProps, mapDispatchToProps)(InspectedWorld)
