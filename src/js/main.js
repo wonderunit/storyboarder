@@ -553,7 +553,13 @@ let importImagesDialogue = (shouldReplace = false) => {
             // ... Windows and Linux can’t
             : []
         ),
-        "multiSelections"
+        ...(
+          shouldReplace
+            // "replace" only allows a single image
+            ? []
+            // "import new" allows multiple images
+            : ["multiSelections"]
+        )
       ]
     },
 
