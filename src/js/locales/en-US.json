@@ -477,6 +477,75 @@
 			"layers": "Layers",
 			"color": "Color"
 		  }
+		},
+		"toolbar": {
+		  "camera": {
+			"tooltip": {
+			  "title": "Add Camera",
+			  "description": "Add a new camera in the scene."
+			},
+			"title": "Camera"
+		  },
+		  "object": {
+			"tooltip": {
+			  "title": "Add Object",
+			  "description": "Add a new object. You can change the properties to the left."
+			},
+			"title": "Object"
+		  },
+		  "character": {
+			"tooltip": {
+			  "title": "Add Character",
+			  "description": "Add a new character in the scene. You can change the pose by dragging the control point spheres around."
+			},
+			"title": "Character"
+		  },
+		  "light": {
+			"tooltip": {
+			  "title": "Add Light",
+			  "description": "Add a spot light into the scene."
+			},
+			"title": "Light"
+		  },
+		  "volume": {
+			"tooltip": {
+			  "title": "Add Object",
+			  "description": "Add a volume like rain, fog, explosion."
+			},
+			"title": "Object"
+		  },
+		  "image": {
+			"tooltip": {
+			  "title": "Add Image",
+			  "description": "Add an image. You can specify a custom image properties on the left. This is useful for reference images or posters or matte paintings in your scene."
+			},
+			"title": "Image"
+		  },
+		  "open-in-vr": {
+			"tooltip": {
+			  "title": "Open in VR",
+			  "description": "Click this to see the address you should type into your VR browser like the Oculus Quest."
+			},
+			"title": "Open in VR"
+		  },
+		  "save-to-board": {
+			"tooltip": {
+			  "title": "Save to Board",
+			  "description": "Save the current shot to the current Storyboard. After you save it, you can close this window."
+			},
+			"title": "Save to Board"
+		  },
+		  "insert-as-new-board": {
+			"tooltip": {
+			  "title": "Insert As New Board",
+			  "description": "Insert the current shot after the current Storyboard. After you insert a new board, you can close this window, or continue to insert more shots."
+			},
+			"title": "Insert As New Board"
+		  },
+		  "popup": {
+			  "open-vr": "To view, open a VR web browser to",
+			  "scary-warning": "You may see a scary browser warning message\nbecause VR runs from this computer, not a trusted server.\nIn Oculus Browser, click “Advanced” and then “Proceed” to accept the self-signed certificate.\nLearn more in the {{link}}"
+		  }
 		}
 	  }
 }
