@@ -36,6 +36,7 @@ const getSelectedAttachable = state => state.undoable.present.selectedAttachable
 
 const getWorld = state => state.undoable.present.world
 
+const getDrawMode = state => state.undoable.present.drawMode 
 
 const getHash = state =>
   hashify(JSON.stringify(getSerializedState(state)))
@@ -48,7 +49,7 @@ const getSerializedState = state => {
     world: getWorld(state),
     sceneObjects: R.map(serializeSceneObject, getSceneObjects(state)),
     activeCamera: getActiveCamera(state),
-    drawingBrush: state.drawingBrush
+    drawingBrush: getDrawMode(state).brush
   }
 }
 
@@ -663,11 +664,12 @@ const initialState = {
 
   board: {},
 
-  drawingBrush: { color: '#000000', size: 2},
-  isDrawingMode: false,
-
   undoable: {
     world: initialScene.world,
+    drawMode: { 
+      brush: { color: '#000000', size: 2 },
+      isEnabled: false,
+    },
     activeCamera: initialScene.activeCamera,
     sceneObjects: withDisplayNames(initialScene.sceneObjects),
     selections: [],
@@ -1497,19 +1499,6 @@ const mainReducer = (state/* = initialState*/, action) => {
         delete draft.attachments[action.payload.id]
         return
 
-      case 'UPDATE_DRAWING_MESH':
-        if(!action.payload) return
-        draft.drawingBrush.color = action.payload.color ? action.payload.color : draft.drawingBrush.color
-        draft.drawingBrush.size = action.payload.size ? action.payload.size : draft.drawingBrush.size
-        draft.drawingBrush.type = action.payload.type ? action.payload.type : draft.drawingBrush.type
-        return  
-      case 'ENABLE_DRAWING_MODE':
-        draft.isDrawingMode = action.payload
-        return  
-      case 'SET_CLEAN_IMAGE':
-        draft.cleanImages = action.payload
-        return  
-
       case 'UNDO_GROUP_START':
         batchGroupBy.start(action.payload)
         return
@@ -1520,6 +1509,29 @@ const mainReducer = (state/* = initialState*/, action) => {
 
       case 'MERGE_STATE':
         return merge(draft, action.payload)
+    }
+  })
+}
+
+const drawModeReducer = (state = initialState.undoable.drawMode, action) => {
+  return produce(state, draft => {
+    switch(action.type) {
+      case 'UPDATE_DRAW_MODE':
+        if(action.payload.hasOwnProperty('isEnabled')) {
+          draft.isEnabled = action.payload.isEnabled
+        } 
+        if(action.payload.hasOwnProperty('cleanImages')) {
+          draft.cleanImages = action.payload.cleanImages
+        }
+        if(action.payload.hasOwnProperty('brush')) {
+          draft.brush.color = action.payload.color ? action.payload.color : draft.brush.color
+          draft.brush.size = action.payload.size ? action.payload.size : draft.brush.size
+          draft.brush.type = action.payload.type ? action.payload.type : draft.brush.type
+        }
+        return
+
+      default:
+        return 
     }
   })
 }
@@ -1604,6 +1616,7 @@ const undoableReducers = combineReducers({
   sceneObjects: sceneObjectsReducer,
   activeCamera: activeCameraReducer,
   world: worldReducer,
+  drawMode: drawModeReducer,
   selections: selectionsReducer,
   selectedBone: selectedBoneReducer,
   selectedAttachable: attachableSelectionsReducer
@@ -1745,9 +1758,7 @@ module.exports = {
   deleteScenePreset: id => ({ type: 'DELETE_SCENE_PRESET', payload: { id } }),
 
   createCharacterPreset: payload => ({ type: 'CREATE_CHARACTER_PRESET', payload }),
-  updateDrawingBrush: payload => ({ type: 'UPDATE_DRAWING_MESH', payload}),
-  enableDrawMode: payload => ({ type: 'ENABLE_DRAWING_MODE', payload}),
-  setCleanImage: payload => ({ type: 'SET_CLEAN_IMAGE', payload}),
+  updateDrawMode: payload => ({ type: 'UPDATE_DRAW_MODE', payload: payload}),
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
@@ -1778,6 +1789,7 @@ module.exports = {
   // selectors
   //
   getSceneObjects,
+  getDrawMode,
   getSelections,
   getActiveCamera,
   getSelectedBone,

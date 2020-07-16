@@ -1,58 +1,50 @@
 import {connect} from 'react-redux'
-import React, {useMemo, useEffect} from 'react'
+import React, {useEffect} from 'react'
 import ColorSelect from '../../ColorSelect'
 import {
     getSelections,
-    getSceneObjects,
-    updateObject,
-    updateDrawingBrush,
-    setCleanImage,
-    enableDrawMode
+    updateDrawMode,
+    getDrawMode
   } from '../../../../shared/reducers/shot-generator'
-import {formatters, NumberSlider, transforms, textFormatters, textConstraints} from '../../NumberSlider'
+import {NumberSlider, textConstraints} from '../../NumberSlider'
 import BrushType from '../../Three/Helpers/Brushes/TextureBrushTypes'
-import { ipcRenderer } from 'electron'
 
 const BrushInspector = connect((state) => ({
-    drawingBrush: state.drawingBrush,
+    drawMode: getDrawMode(state),
     selections: getSelections(state)
 }), 
 {
-    updateDrawingBrush,
-    enableDrawMode,
-    setCleanImage
+    updateDrawMode
 }
 )( 
 React.memo(({
-    updateDrawingBrush,
-    enableDrawMode,
-    setCleanImage,
-    drawingBrush,
+    updateDrawMode,
+    drawMode,
     selections
 }) => {
 
 
     useEffect(() => {
-        enableDrawMode(true)
+        updateDrawMode({isEnabled: true})
         return () => {
-            enableDrawMode(false)
+            updateDrawMode({isEnabled: false})
         }
     }, [])
 
     const setSize = (value) => {
-        updateDrawingBrush({ size: value })
+        updateDrawMode({ brush: { size: value }})
     }
 
     const setColor = (value) => {
-        updateDrawingBrush({ color: value })
+        updateDrawMode({ brush: { color: value }})
     }
 
     const setType = (event) => {
-        updateDrawingBrush({ type: event.target.value })
+        updateDrawMode({ brush: { type: event.target.value }})
     }
 
     const cleanImage = () => {
-        setCleanImage([...selections])
+        updateDrawMode({ cleanImages: [...selections]})
     }
 
     return (
@@ -60,7 +52,7 @@ React.memo(({
             <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}> 
                 <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Type</div>
                 <select required={ true }
-                  value={ drawingBrush.type || BrushType.SIMPLE }
+                  value={ drawMode.brush.type || BrushType.SIMPLE }
                   onChange={ setType }
                   style={{ flex: 1,
                         marginBottom: 0,
@@ -72,15 +64,15 @@ React.memo(({
             </div>
             <NumberSlider 
                 label="Size"
-                value={drawingBrush.size} 
+                value={ drawMode.brush.size} 
                 min={0.5} 
                 max={15} 
                 onSetValue={setSize}
                 textConstraint={ textConstraints.sizeConstraint }/>
           
-            {drawingBrush.type !== BrushType.ERASER && <ColorSelect
+            {drawMode.brush.type !== BrushType.ERASER && <ColorSelect
                 label="mesh color"
-                value={drawingBrush.color}
+                value={ drawMode.brush.color}
                 onSetValue={setColor}/> }
             <div className="mirror_button__wrapper">
                 <div className="mirror_button" onPointerDown={ cleanImage }>Clean Selected Image</div>

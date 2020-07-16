@@ -199,8 +199,8 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     payload: aspectRatio
   })
   store.dispatch({
-    type: 'UPDATE_DRAWING_MESH',
-    payload: drawingBrush
+    type: 'UPDATE_DRAW_MOE',
+    payload: { brush: drawingBrush }
   })
   shotExplorer.createWindow(() => {
     shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')
@@ -211,7 +211,6 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
   }, aspectRatio)
 
   await loadBoard(board)
-Í
   if (!xrServer) {
     xrServer = new XRServer({ store, service })
   }

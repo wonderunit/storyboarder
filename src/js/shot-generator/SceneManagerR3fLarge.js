@@ -21,7 +21,8 @@ import {
     updateObjects,
     updateCharacterPoleTargets,
     deleteObjects,
-    updateWorld
+    updateWorld,
+    getDrawMode
 
  } from '../shared/reducers/shot-generator'
 import { useThree, useFrame } from 'react-three-fiber'
@@ -78,6 +79,7 @@ const SceneManagerR3fLarge = connect(
         isDrawingMode: state.isDrawingMode,
         cleanImages: state.cleanImages,
         aspectRatio: state.aspectRatio,
+        drawMode: getDrawMode(state)
     }),
     {
         selectObject,
@@ -104,9 +106,7 @@ const SceneManagerR3fLarge = connect(
     updateObjects,
     selectedBone,
 
-    drawingBrush,
-    isDrawingMode,
-    cleanImages,
+    drawMode,
 
     cameraShots,
     setLargeCanvasData,
@@ -160,12 +160,12 @@ const SceneManagerR3fLarge = connect(
     }, [sceneObjectLength]) 
 
     useEffect(() => {
-      if(isDrawingMode) {
+      if(drawMode.isEnabled) {
         objectRotationControl.current.deselectObject();
       }
-    }, [isDrawingMode, drawingBrush])
+    }, [drawMode.isEnabled, drawMode.brush])
 
-    const {drawingTextures, drawingSceneTexture} = useDrawOnImage(isDrawingMode, drawingBrush, cleanImages, storyboarderFilePath, updateObject)
+    const {drawingTextures, drawingSceneTexture} = useDrawOnImage(drawMode, storyboarderFilePath, updateObject)
 
     useEffect(() => {
       let sgIkHelper = SGIkHelper.getInstance()
@@ -345,7 +345,7 @@ const SceneManagerR3fLarge = connect(
 
     return <group ref={ rootRef }> 
     <CameraUpdate/>
-   {!isDrawingMode && <InteractionManager renderData={ renderData }/> }
+   {!drawMode.isEnabled && <InteractionManager renderData={ renderData }/> }
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
