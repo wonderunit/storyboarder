@@ -57,7 +57,7 @@ const ShotExplorerSceneManager = connect(
     models,
     setLargeCanvasData,
     withState,
-    shouldRender,
+    shouldRender
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
@@ -92,7 +92,7 @@ const ShotExplorerSceneManager = connect(
 
     useEffect(() => { 
       setLargeCanvasData(camera, scene, gl)
-    }, [scene.__interaction.length, camera, gl])
+    }, [scene, camera, gl])
 
     const groundTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_floor_1.png')
     const roomTexture = useTextureLoader(window.__dirname + '/data/shot-generator/grid_wall2.png')

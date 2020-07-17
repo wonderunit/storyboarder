@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import ShotMaker from './ShotMaker'
 import { Provider, connect} from 'react-redux'
 import { Canvas } from 'react-three-fiber'
@@ -6,9 +6,10 @@ import { useThree, useFrame } from 'react-three-fiber'
 import ShotExplorerSceneManager from './ShotExplorerSceneManager'
 import FatalErrorBoundary from '../shot-generator/components/FatalErrorBoundary'
 import {OutlineEffect} from '../vendor/OutlineEffect'
-import {cache} from '../shot-generator/hooks/use-assets-manager'
+import { getSceneObjects } from '../shared/reducers/shot-generator'
 import TWEEN from '@tweenjs/tween.js'
 import electron from 'electron'
+import deepEqualSelector from '../utils/deepEqualSelector'
 const Effect = ({ shouldRender }) => {
     const {gl, size} = useThree()
   
@@ -24,26 +25,40 @@ const Effect = ({ shouldRender }) => {
     return null
 }
 
+const sceneObjectSelector = (state) => {
+    const sceneObjects = getSceneObjects(state)
+  
+    let newSceneObjects = {}
+    let keys = Object.keys(sceneObjects)
+    for(let i = 0; i < keys.length; i++) {
+      let key = keys[i]
+      if(sceneObjects[key].type !== "camera")
+        newSceneObjects[key] = sceneObjects[key]
+    }
+    return newSceneObjects
+}
+  
+const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects) => sceneObjects)
+
 const ShotExplorer = React.memo(({
     withState,
     aspectRatio,
     store,
     elementKey,
     canvasHeight,
-    board
+    board,
+    sceneObjects
 }) => {
-    const [sceneInfo, setSceneInfo] = useState(null)
-    const [newAssetsLoaded, setLoadedAssets] = useState()
+    const sceneInfo = useRef()
     const [shouldRender, setShouldRender] = useState(false)
-
     const stopUnload = (event) => {
         event.returnValue = false
     }
     const setLargeCanvasData = (camera, scene, gl) => {
-        if(!sceneInfo || (scene.children[0] && !sceneInfo.scene.children[0]) || scene.children[0].children.length !== sceneInfo.scene.children[0].children.length) {
-            if(!isAnyAssetsPending())
-                setSceneInfo({camera, scene, gl})
-        }
+        sceneInfo.current = {}
+        sceneInfo.current.camera = camera
+        sceneInfo.current.scene = scene
+        sceneInfo.current.gl = gl
     }
 
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
@@ -61,26 +76,11 @@ const ShotExplorer = React.memo(({
       }
     }, [])
 
-    const isAnyAssetsPending = () => {
-        let assets = Object.values(cache.get())
-        for(let i = 0; i < assets.length; i++) {
-            if(assets[i].status === "PENDING") return true
-        }
-        return false
-    }
-
-    const updateAssets = (event) => { 
-        if(!isAnyAssetsPending())
-            setLoadedAssets({})
-    }
-
     useEffect(() => {
-        cache.subscribe(updateAssets)
         window.addEventListener("beforeunload", stopUnload)
         electron.remote.getCurrentWindow().on("blur", hide)
         electron.remote.getCurrentWindow().on("focus", show)
         return () => {
-            cache.unsubscribe(updateAssets)
             window.removeEventListener("beforeunload", stopUnload)
             electron.remote.getCurrentWindow().removeListener("blur", hide)
             electron.remote.getCurrentWindow().removeListener("focus", show)
@@ -110,16 +110,16 @@ const ShotExplorer = React.memo(({
                                 />
                 </Provider>
                 <Effect shouldRender={ shouldRender }/> 
+
             </Canvas>
         </div>
-        { <ShotMaker key={ elementKey }
-                    sceneInfo={ sceneInfo } 
+        <ShotMaker key={ elementKey }
+                    sceneInfo={ sceneInfo.current } 
                     withState={ withState }
                     aspectRatio={ aspectRatio }
-                    newAssetsLoaded={ newAssetsLoaded }
                     canvasHeight={ canvasHeight }
-                    elementKey={ elementKey }/> 
-    }
+                    elementKey={ elementKey }
+                    sceneObjects={sceneObjects}/> 
     </FatalErrorBoundary>
     )
 })
@@ -130,6 +130,7 @@ export default connect(
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
     board: state.board,
+    sceneObjects: getSceneObjectsM(state)
 }), 
 {
     withState,

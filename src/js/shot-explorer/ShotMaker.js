@@ -17,10 +17,9 @@ import ObjectTween from './objectTween'
 import ShotElement from './ShotElement'
 import InfiniteScroll from './InfiniteScroll'
 import generateRule from './ShotsRule/RulesGenerator'
-import isUserModel from '../shot-generator/helpers/isUserModel'
 
 import getRandomNumber from './utils/getRandomNumber'
-
+import {cache} from '../shot-generator/hooks/use-assets-manager'
 const shotSizes = [
     { value: ShotSizes.EXTREME_CLOSE_UP,  label: "Extreme Close Up" },
     { value: ShotSizes.VERY_CLOSE_UP,     label: "Very Close Up" },
@@ -59,8 +58,8 @@ const ShotMaker = React.memo(({
     
     withState,
     aspectRatio,
-    newAssetsLoaded,
-    canvasHeight
+    canvasHeight,
+    sceneObjects
 }) => {
     const camera = useRef()
     const [selectedShot, selectShot] = useState(null)
@@ -72,7 +71,7 @@ const ShotMaker = React.memo(({
     const [windowHeight, setWindowHeight] = useState(window.innerWidth)
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const containerHeight = useRef()
-
+    const [assetsLoaded, setAssetsLoaded] = useState()
     const handleResize = () => {
         let container = document.getElementsByClassName("shots-container")
         setWindowWidth(window.innerWidth)
@@ -96,13 +95,31 @@ const ShotMaker = React.memo(({
         })
         selectShot(newSelectedShot)
     }
+
+    const isAnyAssetsPending = () => {
+        let assets = Object.values(cache.get())
+        for(let i = 0; i < assets.length; i++) {
+            if(assets[i].status === "PENDING") return true
+        }
+        return false
+    }
+
+    const updateAssets = (event) => { 
+       // console.log("Trying to update assets")
+        if(!isAnyAssetsPending()) {
+            setAssetsLoaded({})
+        }
+    }
+
     useEffect(() => {
         if (!imageRenderer.current) {
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
+        cache.subscribe(updateAssets)
         handleResize()
         return () => {
+            cache.unsubscribe(updateAssets)
             imageRenderer.current = null
             outlineEffect.current = null
             cleanUpShots()
@@ -131,7 +148,7 @@ const ShotMaker = React.memo(({
             let shot = shotsArray[i]
             convertCanvasToImage(outlineEffect.current, sceneInfo.scene, shot.camera).then((cameraImage) => {
                 // NOTE() : a bad practice to update component but it's okay for now
-                shot.setRenderImage( cameraImage )
+                shot.setRenderImage( cameraImage ) 
             })
         }
     }, [sceneInfo])
@@ -178,8 +195,7 @@ const ShotMaker = React.memo(({
             shotsArray.push(shot)
         }
     }
-
-    useEffect(() => {
+    const generateShots = () => {
         if(sceneInfo) {
             camera.current = sceneInfo.camera.clone()
             withState((dispatch, state) => {
@@ -210,7 +226,13 @@ const ShotMaker = React.memo(({
             cleanUpShots()
             setShots(shotsArray)
         }
-    }, [sceneInfo, newAssetsLoaded])
+    }
+
+    useEffect(() => {
+        if(!isAnyAssetsPending()) {
+            generateShots()
+        }
+    }, [sceneInfo, sceneObjects, assetsLoaded])
 
     const generateMoreShots = useCallback(() => {
         let shotsArray = []

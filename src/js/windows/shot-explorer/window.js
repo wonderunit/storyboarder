@@ -19,7 +19,7 @@ const {
   loadScene,
   resetScene,
 } = require('../../shared/reducers/shot-generator')
-const {batchActions, batchDispatchMiddleware} = require('redux-batched-actions')
+const {batchActions, enableBatching} = require('redux-batched-actions')
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false
@@ -47,11 +47,11 @@ const composeEnhancers = (
 
 const configureStore = function configureStore (preloadedState) {
     const store = createStore(
-      reducer,
+      enableBatching(reducer),
       preloadedState,
       composeEnhancers(
         applyMiddleware(
-          thunkMiddleware, batchDispatchMiddleware, store => next => action => {
+          thunkMiddleware, store => next => action => {
               let indexOf = sendedAction.indexOf(action)
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
@@ -152,7 +152,6 @@ const pushUpdates = () => {
   }
   store.dispatch(batchActions(sendedAction))
   sendedAction = []
-  renderDom()
 }
 
 electron.remote.getCurrentWindow().on("focus", () => {
