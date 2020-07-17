@@ -84,24 +84,27 @@ const KeyHandler = connect(
 
     const deleteSelectedObject = useCallback(() => {
         if (selections.length && canDelete(_selectedSceneObject, activeCamera)) {
-            let choice = dialog.showMessageBox(null, {
+            dialog.showMessageBox(null, {
               type: 'question',
               buttons: ['Yes', 'No'],
               message: `Deleting ${selections.length} item${selections.length > 1 ? 's' : ''}. Are you sure?`
             })
-            if (choice === 0) {
-              let objectsToDelete = selections.concat()
-              for(let i = 0; i < selections.length; i++) {
-                let sceneObject = sceneObjects[selections[i]]
-                if(sceneObject.type === "character") {
-                    let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === selections[i]).map(obj => obj.id)
-                    objectsToDelete = attachableIds.concat(objectsToDelete)
+            .then(({ response }) => {
+              if (response === 0) {
+                let objectsToDelete = selections.concat()
+                for(let i = 0; i < selections.length; i++) {
+                  let sceneObject = sceneObjects[selections[i]]
+                  if(sceneObject.type === "character") {
+                      let attachableIds = Object.values(sceneObjects).filter(obj => obj.attachToId === selections[i]).map(obj => obj.id)
+                      objectsToDelete = attachableIds.concat(objectsToDelete)
+                  }
                 }
+          
+                deleteObjects(objectsToDelete)
+                keyCommandsInstance.current.removeKeyCommand({ key: "removeElement" })
               }
-         
-              deleteObjects(objectsToDelete)
-              keyCommandsInstance.current.removeKeyCommand({ key: "removeElement" })
-            }
+            })
+            .catch(err => console.error(err))
           }
     }, [_selectedSceneObject, activeCamera, selections])
 

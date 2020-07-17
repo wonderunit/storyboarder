@@ -202,7 +202,7 @@ const Editor = React.memo(({
           ipcRenderer={ipcRenderer}
           notifications={notifications}
         />
-        <div id="main">
+        <div id="sg-main">
           <div id="aside">
 
             <div id="topdown">

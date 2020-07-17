@@ -1375,7 +1375,7 @@ const loadBoardUI = async () => {
     let board = boardData.boards[currentBoard]
     if (board.link) {
       // ...prompt them, to see if they really want to remove the link
-      const choice = remote.dialog.showMessageBox({
+      remote.dialog.showMessageBox({
         type: 'question',
         message: 'This board was edited in Photoshop and linked to a PSD file. ' +
                  'What would you like to do?',
@@ -1386,34 +1386,38 @@ const loadBoardUI = async () => {
         ],
         defaultId: 2
       })
+      .then(({ response }) => {
+        if (response === 0) {
+          // Open in Photoshop
+          openInEditor()
+        } else if (response === 1) {
+          // Draw in Storyboarder
+          remote.dialog.showMessageBox({
+            type: 'question',
+            message: 'If you draw, Storyboarder will stop watching ' +
+                    'Photoshop for changes, and unlink the PSD from ' +
+                    'this board. Are you absolutely sure?',
+            buttons: [
+              'Unlink and Draw', // 0
+              'Cancel' // 1
+            ],
+            defaultId: 1
+          })
+          .then(({ response }) => {
+            if (response === 0) {
+              // Unlink and Draw
+              notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
+              linkedFileManager.removeBoard(board)
+              delete board.link
+              markBoardFileDirty()
 
-      if (choice === 0) {
-        // Open in Photoshop
-        openInEditor()
-      } else if (choice === 1) {
-        // Draw in Storyboarder
-        const confirmChoice = remote.dialog.showMessageBox({
-          type: 'question',
-          message: 'If you draw, Storyboarder will stop watching ' +
-                   'Photoshop for changes, and unlink the PSD from ' +
-                   'this board. Are you absolutely sure?',
-          buttons: [
-            'Unlink and Draw', // 0
-            'Cancel' // 1
-          ],
-          defaultId: 1
-        })
-
-        if (confirmChoice === 0) {
-          // Unlink and Draw
-          notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
-          linkedFileManager.removeBoard(board)
-          delete board.link
-          markBoardFileDirty()
-
-          storyboarderSketchPane.setIsLocked(false)
+              storyboarderSketchPane.setIsLocked(false)
+            }
+          })
+          .catch(err => log.error(err))
         }
-      }
+      })
+      .catch(err => log.error(err))
     }
   })
 
@@ -1714,14 +1718,13 @@ const loadBoardUI = async () => {
 
       let shouldOverwrite = true
       if (fs.existsSync(newpath)) {
-        const choice = remote.dialog.showMessageBox({
+        const { response } = await remote.dialog.showMessageBox({
           type: 'question',
           buttons: ['Yes', 'No'],
           title: 'Confirm',
           message: `A file named ${path.basename(newpath)} already exists in this project. Overwrite it?`
         })
-
-        shouldOverwrite = (choice === 0)
+        shouldOverwrite = (response === 0)
       }
       if (!shouldOverwrite) {
         notifications.notify({ message: 'Cancelled', timing: 5 })
@@ -1769,22 +1772,23 @@ const loadBoardUI = async () => {
               extensions: ALLOWED_AUDIO_FILE_EXTENSIONS
             }
           ]
-        },
-        filenames => {
-          if (filenames) {
-            this.onSelectFile(filenames[0])
-          } else {
-            this.onSelectFileCancel()
-          }
         }
       )
+      .then(({ filePaths }) => {
+        if (filePaths.length) {
+          this.onSelectFile(filePaths[0])
+        } else {
+          this.onSelectFileCancel()
+        }
+      })
+      .catch(err => log.error(err))
     },
     onClear: async function () {
       let board = boardData.boards[currentBoard]
 
       if (!board.audio) return
 
-      const choice = remote.dialog.showMessageBox({
+      const { response } = await remote.dialog.showMessageBox({
         type: 'question',
         buttons: ['Yes', 'No'],
         title: 'Confirm',
@@ -1793,7 +1797,7 @@ const loadBoardUI = async () => {
                  'NOTE: File will not be deleted from disk.'
       })
 
-      const shouldClear = (choice === 0)
+      const shouldClear = (response === 0)
 
       if (shouldClear) {
         // remove board’s audio object
@@ -2641,13 +2645,13 @@ let openInEditor = async () => {
           // file exists but link does not exist
           // we need to know if user wants us to overwrite existing file before linking
           shouldOverwrite = false
-          const choice = remote.dialog.showMessageBox({
+          const { response } = await remote.dialog.showMessageBox({
             type: 'question',
             title: `Overwrite ${path.extname(psdPath)}?`,
             message: `A PSD file already exists for this board. Overwrite it?`,
             buttons: ['Yes, overwrite', `No, open existing PSD`]
           })
-          shouldOverwrite = (choice === 0)
+          shouldOverwrite = (response === 0)
         }
       } else {
         if (board.link) {
@@ -6307,12 +6311,12 @@ const saveAsFolder = async () => {
   saveBoardFile()
 
   // display the file selection window
-  let dstFolderPath = remote.dialog.showSaveDialog(null, {
+  let { canceled, filePath: dstFolderPath } = await remote.dialog.showSaveDialog(null, {
     defaultPath: app.getPath('documents')
   })
 
   // user cancelled
-  if (!dstFolderPath) {
+  if (canceled) {
     return
   }
 
