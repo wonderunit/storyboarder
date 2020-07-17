@@ -85,6 +85,10 @@ const Editor = React.memo(({
   }, [])
 
   useEffect(() => {
+    loadCameraModel()
+  }, [])
+
+  useEffect(() => {
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
     ipcRenderer.on('shot-generator:menu:view:scale-ui', zoom)
     ipcRenderer.on('shot-generator:menu:view:set-ui-scale', setZoom)
