@@ -43,7 +43,6 @@ const Environment = React.memo(({ path, environment, grayscale }) => {
   }, [gltf])
   
   useEffect(() => {
-    if(grayscale === undefined) return
     for(let i = 0; i < meshes.length; i++) {
       let material = meshes[i].props.object.material
       material.defines.GRAYSCALE = grayscale

@@ -215,6 +215,15 @@ const migrateWorldShadingMode = world => ({
   shadingMode: world.shadingMode == null ? initialScene.world.shadingMode : world.shadingMode
 })
 
+// migrate older scenes which were missing grayscale
+const migrateWorldEnvironmentGrayscale = world => ({
+  ...world,
+  environment: {
+    ...world.environment,
+    grayscale: world.environment.grayscale == null ? false : world.environment.grayscale
+  }  
+})
+
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
   if (props.hasOwnProperty('locked')) {
@@ -1252,7 +1261,8 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         return R.pipe(
           migrateWorldLights,
           migrateWorldFog,
-          migrateWorldShadingMode
+          migrateWorldShadingMode,
+          migrateWorldEnvironmentGrayscale,
         )(action.payload.world)
 
       case 'UPDATE_WORLD':

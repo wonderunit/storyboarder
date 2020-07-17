@@ -147,7 +147,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
             <Checkbox label="Visible" checked={world.environment.visible} onClick={setEnvVisible}/>
           </div>
           <div className="inspector-row">
-            <Checkbox label="Grayscale" checked={world.environment.grayscale || false} onClick={setGrayscale}/>
+            <Checkbox label="Grayscale" checked={world.environment.grayscale} onClick={setGrayscale}/>
           </div>
           <div className="inspector-column inspector-offset-row">
             <FileInput

@@ -421,4 +421,24 @@ describe('reducer', () => {
       assert.equal(getWorld(store.getState()).shadingMode, 'Outline')
     })
   })
+
+  describe('grayscale', () => {
+    beforeEach(() => {
+      store.dispatch({ type: '@@redux-undo/INIT' })
+      store.dispatch({ type: '@@redux-undo/CLEAR_HISTORY' })
+    })
+
+    it('is present for new boards', () => {
+      assert.equal(getWorld(store.getState()).environment.grayscale, true)
+    })
+
+    it('is added if missing', () => {
+      let payload = JSON.parse(FILE_JSON).boards[0].sg.data
+  
+      delete payload.world.environment.grayscale
+      store.dispatch({ type: 'LOAD_SCENE', payload })
+
+      assert.equal(getWorld(store.getState()).environment.grayscale, false)
+    })
+  })
 })
