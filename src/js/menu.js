@@ -2,6 +2,7 @@ const { Menu, app } = require('electron').remote
 const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
+const log = require('electron-log')
 
 // TODO subscribe to store, update menu when keymap changes
 const configureStore = require('./shared/store/configureStore')
@@ -47,8 +48,15 @@ SubMenuFragments.help = [
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq') }
   },
   {
+    type: 'separator'
+  },
+  {
     label: 'Found a bug? Submit an issue!!!',
     click () { shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
+  },
+  {
+    label: 'Show Log File…',
+    click () { shell.showItemInFolder(log.transports.file.findLogPath()) }
   }
 ]
 SubMenuFragments.windowing = [
@@ -859,7 +867,7 @@ const shotGeneratorMenu = [
         }
       },
       {
-        label: 'Export GLTF…',
+        label: 'Export glTF…',
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:export-gltf')
         }
@@ -904,6 +912,7 @@ const shotGeneratorMenu = [
           ipcRenderer.send('shot-generator:object:group')
         }
       },
+      
       {
         accelerator: 'CommandOrControl+j',
         label: 'Open Shot Explorer',
@@ -936,6 +945,7 @@ const shotGeneratorMenu = [
           ipcRenderer.send('shot-generator:menu:view:fps-meter')
         }
       },
+      {type: 'separator'},
       {
         label: 'UI: Scale Up',
         accelerator: 'CommandOrControl+=',
@@ -959,7 +969,15 @@ const shotGeneratorMenu = [
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:reset-ui', 0)
         }
-      }
+      },
+      {type: 'separator'},
+      {
+        accelerator: 'CommandOrControl+k',
+        label: 'Cycle Shading Mode',
+        click () {
+          ipcRenderer.send('shot-generator:view:cycleShadingMode')
+        }
+      },
     ]
   },
   {
