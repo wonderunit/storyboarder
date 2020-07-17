@@ -1,5 +1,3 @@
-import { saveDataURLtoFile } from '../../../helpers/saveDataURLtoFile'
-import path from 'path'
 import * as THREE from 'three'
 
 class CubeTextureCreator {
@@ -17,7 +15,7 @@ class CubeTextureCreator {
     // Saves cube map changes back to texture
     // It takes same elements positions which were initialized in getCubeMapTexture
     // Require getCubeMapTexture to be launch first
-    saveCubeMapTexture( imagePath, texture, filename = null ) {
+    combineImages( texture) {
         if( !this.imageElements.length || !this.gltf ) return;
         let image = this.gltf.image;
         this.drawingCanvas.width = image.width;
@@ -29,10 +27,8 @@ class CubeTextureCreator {
             let croppedImage = texture.image[i];
             this.saveFace(croppedImage, element.x, element.y, element.width, element.height, element.name, this.boardPath );
         }
-        let {dir, ext, name} = path.parse(imagePath);
         let dataUrl = this.drawingCtx.canvas.toDataURL("image/jpeg");
-        let properName = filename ? filename : name + ext; 
-        saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures', this.boardPath);
+        return dataUrl
     }
 
     // Draw the specific mesh on drawingContext which contains original texture image

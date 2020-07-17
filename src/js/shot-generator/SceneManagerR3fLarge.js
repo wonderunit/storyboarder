@@ -75,9 +75,6 @@ const SceneManagerR3fLarge = connect(
         selectedBone: getSelectedBone(state),
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
-        drawingBrush: state.drawingBrush,
-        isDrawingMode: state.isDrawingMode,
-        cleanImages: state.cleanImages,
         aspectRatio: state.aspectRatio,
         drawMode: getDrawMode(state)
     }),

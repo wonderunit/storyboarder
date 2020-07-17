@@ -92,7 +92,10 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         cleanUpTempFile()
         let tempFileName = `temp_scenetexture-${Date.now()}.jpg`
         if(world.textureType === SceneTextureType.CubeMap)  {
-            cubeTextureCreator.current.saveCubeMapTexture(imagePath[0], scene.background, tempFileName) 
+            let dataUrl = cubeTextureCreator.current.combineImages(scene.background) 
+            let {dir, ext, name} = path.parse(imagePath[0]);
+            let properName = tempFileName ? tempFileName : name + ext; 
+            saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures', storyboarderFilePath);
         } else if(world.textureType === SceneTextureType.Image) {
             let imageData = drawingSceneTexture.texture.getImage("image/jpg")
             let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures', tempFileName)
