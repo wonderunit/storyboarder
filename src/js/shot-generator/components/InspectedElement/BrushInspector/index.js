@@ -52,7 +52,7 @@ React.memo(({
             <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}> 
                 <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Type</div>
                 <select required={ true }
-                  value={ drawMode.brush.type || BrushType.SIMPLE }
+                  value={ drawMode.brush.type }
                   onChange={ setType }
                   style={{ flex: 1,
                         marginBottom: 0,

@@ -13,7 +13,7 @@ const serializeSceneObject = require('./shot-generator/serialize-scene-object')
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
 const { ShadingType } = require('../../vendor/shading-effects/ShadingType')
-
+const BrushType = require('../../shot-generator/components/Three/Helpers/Brushes/TextureBrushTypes')
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
 const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
@@ -669,6 +669,7 @@ const initialState = {
     drawMode: { 
       brush: { color: '#000000', size: 2 },
       isEnabled: false,
+      type: BrushType.SIMPLE
     },
     activeCamera: initialScene.activeCamera,
     sceneObjects: withDisplayNames(initialScene.sceneObjects),
