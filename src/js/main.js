@@ -80,6 +80,8 @@ let appServer
 
 // attempt to support older GPUs
 app.commandLine.appendSwitch('ignore-gpu-blacklist')
+// fix issue where iframe content could not be modified in welcome window
+app.commandLine.appendSwitch('disable-site-isolation-trials')
 
 // this only works on mac.
 app.on('open-file', (event, path) => {
@@ -348,6 +350,7 @@ let openWelcomeWindow = () => {
     resizable: false,
     frame: false,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: true
     }
   })
