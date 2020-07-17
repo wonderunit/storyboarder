@@ -654,21 +654,21 @@ AppMenu.View = () => ({
       }
     },
     {
-      label: 'Scale UI Up',
+      label: 'UI: Scale Up',
       accelerator: 'CommandOrControl+=',
       click (item, focusedWindow, event) {
         ipcRenderer.send('scale-ui-up')
       }
     },
     {
-      label: 'Scale UI Down',
+      label: 'UI: Scale Down',
       accelerator: keystrokeFor("menu:view:zoom-out"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('scale-ui-down')
       }
     },
     {
-      label: 'Reset UI Scale to 100%',
+      label: 'UI: Reset Scale to 100%',
       type: 'normal',
       click (item, focusedWindow, event) {
         ipcRenderer.send('scale-ui-reset')
@@ -937,7 +937,7 @@ const shotGeneratorMenu = [
         }
       },
       {
-        label: 'Scale UI Up',
+        label: 'UI: Scale Up',
         accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
@@ -945,7 +945,7 @@ const shotGeneratorMenu = [
         }
       },
       {
-        label: 'Scale UI Down',
+        label: 'UI: Scale Down',
         accelerator: keystrokeFor("menu:view:zoom-out"),
         type: 'normal',
         click (item, focusedWindow, event) {
@@ -953,7 +953,7 @@ const shotGeneratorMenu = [
         }
       },
       {
-        label: 'Reset UI Scale to 100%',
+        label: 'UI: Reset Scale to 100%',
         accelerator: 'CommandOrControl+0',
         type: 'normal',
         click (item, focusedWindow, event) {
