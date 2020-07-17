@@ -647,7 +647,7 @@ AppMenu.View = () => ({
       role: 'togglefullscreen'
     },
     {
-      label: 'Actual Size',
+      label: 'Canvas: Actual Size',
       accelerator: keystrokeFor("menu:view:zoom-reset"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('zoomReset')
