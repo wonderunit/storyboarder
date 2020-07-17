@@ -1523,10 +1523,10 @@ const drawModeReducer = (state = initialState.undoable.drawMode, action) => {
         if(action.payload.hasOwnProperty('cleanImages')) {
           draft.cleanImages = action.payload.cleanImages
         }
-        if(action.payload.hasOwnProperty('brush')) {
-          draft.brush.color = action.payload.color ? action.payload.color : draft.brush.color
-          draft.brush.size = action.payload.size ? action.payload.size : draft.brush.size
-          draft.brush.type = action.payload.type ? action.payload.type : draft.brush.type
+        if(action.payload.brush) {
+          draft.brush.color = action.payload.brush.color ? action.payload.brush.color : draft.brush.color
+          draft.brush.size = action.payload.brush.size ? action.payload.brush.size : draft.brush.size
+          draft.brush.type = action.payload.brush.type ? action.payload.brush.type : draft.brush.type
         }
         return
 
