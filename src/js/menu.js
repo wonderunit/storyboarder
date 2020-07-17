@@ -655,24 +655,31 @@ AppMenu.View = () => ({
       role: 'togglefullscreen'
     },
     {
-      label: 'Actual Size',
+      label: 'Canvas: Actual Size',
       accelerator: keystrokeFor("menu:view:zoom-reset"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('zoomReset')
       }
     },
     {
-      label: 'Zoom In',
-      accelerator: keystrokeFor("menu:view:zoom-in"),
+      label: 'UI: Scale Up',
+      accelerator: 'CommandOrControl+=',
       click (item, focusedWindow, event) {
-        ipcRenderer.send('zoomIn')
+        ipcRenderer.send('scale-ui-up')
       }
     },
     {
-      label: 'Zoom Out',
+      label: 'UI: Scale Down',
       accelerator: keystrokeFor("menu:view:zoom-out"),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('zoomOut')
+        ipcRenderer.send('scale-ui-down')
+      }
+    },
+    {
+      label: 'UI: Reset Scale to 100%',
+      type: 'normal',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('scale-ui-reset')
       }
     }
   ]
@@ -940,27 +947,27 @@ const shotGeneratorMenu = [
       },
       {type: 'separator'},
       {
-        label: 'Scale UI Up',
+        label: 'UI: Scale Up',
         accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:zoom', 0.2)
+          ipcRenderer.send('shot-generator:menu:view:scale-ui', 0.2)
         }
       },
       {
-        label: 'Scale UI Down',
+        label: 'UI: Scale Down',
         accelerator: keystrokeFor("menu:view:zoom-out"),
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:zoom', -0.2)
+          ipcRenderer.send('shot-generator:menu:view:scale-ui', -0.2)
         }
       },
       {
-        label: 'Reset UI Scale to 100%',
+        label: 'UI: Reset Scale to 100%',
         accelerator: 'CommandOrControl+0',
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:resetZoom', 0)
+          ipcRenderer.send('shot-generator:menu:view:reset-ui', 0)
         }
       },
       {type: 'separator'},
