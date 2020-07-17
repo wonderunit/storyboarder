@@ -6472,8 +6472,13 @@ const exportZIP = async () => {
   try {
     const { missing } = await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
 
-    notifications.notify({ message: `WARNING: The following files were missing and could not be added to the ZIP:\n` + missing.join('\n') })
-    log.warn('Missing', missing.join('\n'))
+    if (missing.length) {
+      let listing = missing.join('\n')
+      log.warn('Missing Files', listing)
+      notifications.notify({
+        message: `[WARNING] Some expected files are missing from the project and could not be added to the ZIP:\n\n${listing}`
+      })
+    }
 
     notifications.notify({ message: `Done.` })
     shell.showItemInFolder(exportFilePath)
