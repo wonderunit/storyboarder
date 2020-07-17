@@ -60,8 +60,6 @@ const sceneSettingsView = require('./scene-settings-view')
 const boardModel = require('../models/board')
 const watermarkModel = require('../models/watermark')
 
-const FileHelper = require('../files/file-helper')
-
 const AudioPlayback = require('./audio-playback')
 const AudioFileControlView = require('./audio-file-control-view')
 
@@ -2091,84 +2089,42 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   return position
 }
 
-// on "Import Images" or mouse drop
-//
-// - JPG/JPEG,
-// - PNG
-// - PSD, must have a layer named 'reference' (unless importTargetLayer preference is set to load a different one)
-//
-// TODO support EXIF orientation see: https://github.com/wonderunit/storyboarder/issues/1123
+// Called from "Import Images to New Boards…" or from window.ondrop
 let insertNewBoardsWithFiles = async filepaths => {
   log.info('main-window#insertNewBoardsWithFiles')
 
-  // TODO when would importTargetLayer not be 'reference'?
-  // TODO insertNewBoardsWithFiles only supports reference and main anyway
-  const targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
-
-  const count = filepaths.length
+  let count = filepaths.length
   notifications.notify({
     message: `Importing ${count} image${count !== 1 ? 's' : ''}.\nPlease wait …`,
     timing: 2
   })
 
   let insertionIndex = currentBoard + 1
-
   let numAdded = 0
-
   for (let filepath of filepaths) {
-    let imageData = FileHelper.getBase64ImageDataFromFilePath(
-      filepath,
-      {
-        importTargetLayer: targetLayer
-      }
-    )
-
-    if (!imageData || !imageData[targetLayer]) {
-      log.error('Could not find imageData', { imageData, targetLayer })
-      notifications.notify({
-        message: `Oops! There was a problem importing ${filepath}. Try adding a layer named 'reference' for Storyboarder to import.`,
-        timing: 10
-      })
-      return
-    }
-
     try {
+      let imageDataURL = loadImageFileAsDataURL(filepath)
+
+      if (imageDataURL == null) {
+        throw new Error(`Could not read image file ${filepath}`)
+      }
+
       // resize image if too big
-      const datauri = await fitImageData(
-        [
-          storyboarderSketchPane.sketchPane.width,
-          storyboarderSketchPane.sketchPane.height
-        ],
-        imageData[targetLayer]
-      )
+      let dim = [
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height
+      ]
+      const scaledImageData = await fitImageData(dim, imageDataURL)
 
       storeUndoStateForScene(true)
       let board = insertNewBoardDataAtPosition(insertionIndex)
+      board.layers.reference = {
+        ...board.layers.reference, // TODO what if this is undefined?
+        url: boardModel.boardFilenameForLayer(board, 'reference'),
+        opacity: 1.0 // alternatively: exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
+      }
       storeUndoStateForScene()
-
-      let layerName
-      if (
-        targetLayer === 'main' || // for old preferences files
-        targetLayer === 'fill'
-      ) {
-        log.info('adding as fill')
-        layerName = 'fill'
-      } else {
-        log.info('adding as reference')
-        layerName = 'reference'
-      }
-
-      // update the board data
-      board.layers[layerName] = {
-        url: boardModel.boardFilenameForLayer(board, layerName),
-        ...(
-          layerName === 'reference'
-            ? { opacity: 1.0 } // alternatively: exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
-            : {}
-        )
-      }
-      log.info('saving inserted board as', board.layers[layerName].url)
-      saveDataURLtoFile(datauri, board.layers[layerName].url)
+      saveDataURLtoFile(scaledImageData, board.layers.reference.url)
 
       await savePosterFrame(board, true)
       await saveThumbnailFile(insertionIndex, { forceReadFromFiles: true })
@@ -2178,7 +2134,7 @@ let insertNewBoardsWithFiles = async filepaths => {
       insertionIndex++
       numAdded++
     } catch (error) {
-      log.error('Got error', error)
+      log.error('Error loading image', error)
       notifications.notify({
         message: `Could not load image ${path.basename(filepath)}\n` + error.message,
         timing: 10
@@ -2188,15 +2144,62 @@ let insertNewBoardsWithFiles = async filepaths => {
 
   renderThumbnailDrawer()
 
-  notifications.notify({
-    message: `Imported ${numAdded} image${numAdded !== 1 ? 's' : ''}.\n\n` +
-             `The image${numAdded !== 1 ? 's are' : ' is'} on the reference layer, ` +
-             `so you can draw over ${numAdded !== 1 ? 'them' : 'it'}. ` +
-             `If you'd like ${numAdded !== 1 ? 'them' : 'it'} to be the main layer, ` +
-             `you can merge ${numAdded !== 1 ? 'them' : 'it'} up on the sidebar`,
-    timing: 10
-  })
-  sfx.positive()
+  if (numAdded > 0) {
+    notifications.notify({
+      message: `Imported ${numAdded} image${numAdded !== 1 ? 's' : ''}.\n\n` +
+              `The image${numAdded !== 1 ? 's are' : ' is'} on the reference layer, ` +
+              `so you can draw over ${numAdded !== 1 ? 'them' : 'it'}. ` +
+              `If you'd like ${numAdded !== 1 ? 'them' : 'it'} to be the main layer, ` +
+              `you can merge ${numAdded !== 1 ? 'them' : 'it'} up on the sidebar`,
+      timing: 10
+    })
+    sfx.positive()
+  }
+}
+
+const importImageAndReplace = async filepath => {
+  log.info('main-window#importImageAndReplace')
+
+  let dataURL = loadImageFileAsDataURL(filepath)
+
+  try {
+    await replaceReferenceLayerImage(dataURL)
+  } catch (err) {
+    notifications.notify({ message: err.toString() })
+    sfx.error()
+  }
+}
+
+const importImageFromMobile = async dataURL => {
+  log.info('main-window#importImageFromMobile')
+
+  try {
+    await replaceReferenceLayerImage(dataURL)
+  } catch (err) {
+    notifications.notify({ message: err.toString() })
+    sfx.error()
+  } 
+}
+
+const loadImageFileAsDataURL = filepath => {
+  let ext = path.extname(filepath).toLowerCase()
+
+  if (ext === '.psd') {
+    let buffer = fs.readFileSync(filepath)
+    let canvas = importerPsd.fromPsdBufferComposite(buffer)
+    return canvas.toDataURL()
+
+  } else if (ext === '.jpg' || ext === '.jpeg') {
+    let data = fs.readFileSync(filepath, { encoding: 'base64' })
+    let mediatype = 'image/jpeg'
+    return `data:${mediatype};base64,${data}`
+
+  } else if (ext === '.png') {
+    let data = fs.readFileSync(filepath, { encoding: 'base64' })
+    let mediatype = 'image/png'
+    return `data:${mediatype};base64,${data}`
+
+  }
 }
 
 const updateAudioDurations = () => {
@@ -5241,8 +5244,10 @@ ipcRenderer.on('paste-replace', () => {
     })
 })
 
-// import image from mobile server
-const importImage = async imageDataURL => {
+// Replace Reference Layer of Current Board with Image
+// - Used when importing from mobile server
+// - Used for File > Replace Reference Layer Image
+const replaceReferenceLayerImage = async imageDataURL => {
   let board = boardData.boards[currentBoard]
 
   // resize image if too big
@@ -5288,7 +5293,7 @@ const importImage = async imageDataURL => {
   // renderThumbnailDrawer()
 
   notifications.notify({
-    message: `Image added as reference layer.`,
+    message: `Replaced reference layer image.`,
     timing: 10
   })
   sfx.positive()
@@ -6656,31 +6661,17 @@ ipcRenderer.on('textInputMode', (event, args)=>{
   textInputAllowAdvance = false
 })
 
+// Import Images to New Boards…
 ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
   insertNewBoardsWithFiles(sortFilePaths(filepaths))
 })
-
-ipcRenderer.on('importImage', (event, fileData) => {
-  // log.info('mobile image import fileData:', fileData)
-  importImage(fileData)
+// Replace Reference Layer Image…
+ipcRenderer.on('importImageAndReplace', (sender, filepaths) => {
+  importImageAndReplace(filepaths[0])
 })
-ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
-  let filepath = filepathsRecursive[0]
-  let type = path.extname(filepath).slice(1)
-
-  if (type === 'psd') {
-    notifications.notify({ message: 'Sorry, PSD is not supported for this command yet.' })
-    sfx.error()
-    return
-  }
-
-  let data = fs.readFileSync(filepath).toString('base64')
-  let fileData = `data:image/${type};base64,${data}`
-
-  importImage(fileData).catch(err => {
-    notifications.notify({ message: err.toString() })
-    sfx.error()
-  })
+// Import from Mobile Server
+ipcRenderer.on('importImage', (event, fileData) => {
+  importImageFromMobile(fileData)
 })
 
 ipcRenderer.on('toggleGuide', (event, arg) => {

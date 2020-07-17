@@ -187,7 +187,7 @@ AppMenu.File = () => ({
       }
     },
     {
-      label: 'Import Image and Replace…',
+      label: 'Replace Reference Layer Image…',
       accelerator: keystrokeFor("menu:file:import-image-replace"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('importImagesDialogue', true)
