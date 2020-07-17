@@ -53,8 +53,8 @@ const show = async (onComplete) => {
 
   let { x, y, width, height } = memento
   win = new BrowserWindow({
-    minWidth: isDev ? undefined : 1200,
-    minHeight: isDev ? undefined : 800,
+    minWidth:  isDev ? undefined : 1024 - 30,
+    minHeight: isDev ? undefined :  768 - 30,
 
     x,
     y,
