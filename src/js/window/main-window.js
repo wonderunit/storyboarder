@@ -1,4 +1,4 @@
-const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
+const {ipcRenderer, shell, remote, nativeImage, clipboard, webFrame} = require('electron')
 const { app } = require('electron').remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
@@ -13,7 +13,6 @@ const CAF = require('caf')
 const isDev = require('electron-is-dev')
 const log = require('electron-log')
 log.catchErrors()
-
 const ReactDOM = require('react-dom')
 const h = require('../utils/h')
 const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
@@ -74,6 +73,7 @@ const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
 
+const SettingsService = require("../windows/shot-generator/SettingsService")
 
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
@@ -6944,15 +6944,26 @@ ipcRenderer.on('zoomReset', value => {
   zoomIndex = ZOOM_CENTER
   storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
 })
-ipcRenderer.on('zoomIn', value => {
-  let zoomIndex = ZOOM_LEVELS.indexOf(closest(ZOOM_LEVELS, storyboarderSketchPane.sketchPane.zoom))
-  zoomIndex = Math.min(ZOOM_LEVELS.length - 1, zoomIndex + 1)
-  storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
+const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"));
+let zoom = settingsService.getSettingByKey("zoom")
+zoom = zoom ? zoom : 0
+const maxZoom = {in: 0.2, out: -1.0}
+webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+webFrame.setZoomLevel(zoom)
+ipcRenderer.on('scale-ui-up', value => {
+  zoom = zoom >= maxZoom.in ? maxZoom.in : zoom + 0.1
+  webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({zoom})
 })
-ipcRenderer.on('zoomOut', value => {
-  let zoomIndex = ZOOM_LEVELS.indexOf(closest(ZOOM_LEVELS, storyboarderSketchPane.sketchPane.zoom))
-  zoomIndex = Math.max(0, zoomIndex - 1)
-  storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
+ipcRenderer.on('scale-ui-down', value => {
+  zoom = zoom <= maxZoom.out ? maxZoom.out : zoom - 0.1
+  webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({zoom})
+})
+ipcRenderer.on('scale-ui-reset', () => {
+  let zoom = 0
+  webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({ zoom })
 })
 
 const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
@@ -7014,7 +7025,15 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   // save shot-generator.png
   saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
 
-
+  // save camera-plot (re-use context)
+  let plotImage = await exporterCommon.getImage(images.plot)
+  context.canvas.width = 900
+  context.canvas.height = 900
+  context.drawImage(plotImage, 0, 0)
+  saveDataURLtoFile(
+    context.canvas.toDataURL(),
+    boardModel.boardFilenameForCameraPlot(board)
+  )
 
   // save shot-generator-thumbnail.jpg
   // thumbnail size
@@ -7070,21 +7089,6 @@ ipcRenderer.on('insertShot', async (event, { data, images, currentBoard }) => {
   ipcRenderer.send('shot-generator:update', {
     board: boardData.boards[index]
   })
-})
-ipcRenderer.on('saveShotPlot', async (event, { plotImage, currentBoard }) => {
-  // save camera-plot (re-use context)
-  let { width, height } = storyboarderSketchPane.sketchPane
-  let context = createSizedContext([width, height])
-  let exportedPlotImage = await exporterCommon.getImage(plotImage)
-  context.canvas.width = 900
-  context.canvas.height = 900
-  context.drawImage(exportedPlotImage, 0, 0)
-  let index = boardData.boards.findIndex(b => b.uid === currentBoard)
-  let board = boardData.boards[index]
-  saveDataURLtoFile(
-    context.canvas.toDataURL(),
-    boardModel.boardFilenameForCameraPlot(board)
-    )
 })
 ipcRenderer.on('storyboarder:get-boards', event => {
   ipcRenderer.send('shot-generator:get-boards', {

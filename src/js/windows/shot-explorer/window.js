@@ -21,6 +21,7 @@ const {
   resetScene,
 } = require('../../shared/reducers/shot-generator')
 
+require("../../shared/helpers/monkeyPatchGrayscale")
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false

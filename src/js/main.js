@@ -1451,17 +1451,17 @@ ipcMain.on('revealShotGenerator',
 
 ipcMain.on('zoomReset',
   event => mainWindow.webContents.send('zoomReset'))
-ipcMain.on('zoomIn',
-  event => mainWindow.webContents.send('zoomIn'))
-ipcMain.on('zoomOut',
-  event => mainWindow.webContents.send('zoomOut'))
+ipcMain.on('scale-ui-up',
+  event => mainWindow.webContents.send('scale-ui-up'))
+ipcMain.on('scale-ui-down',
+  event => mainWindow.webContents.send('scale-ui-down'))
+ipcMain.on('scale-ui-reset',
+  event => mainWindow.webContents.send('scale-ui-reset'))
 
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
 ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
-ipcMain.on('saveShotPlot',
-  (event, data) => mainWindow.webContents.send('saveShotPlot', data))
 ipcMain.on('storyboarder:get-boards',
   event => mainWindow.webContents.send('storyboarder:get-boards'))
 ipcMain.on('shot-generator:get-boards', (event, data) => {

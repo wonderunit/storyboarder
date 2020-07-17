@@ -33,6 +33,7 @@ import  {
     getSceneObjects,
     getSelections,
     getActiveCamera,
+    cycleShadingMode
   } from '../../../shared/reducers/shot-generator'
 
 const getSelectedSceneObject = createSelector(
@@ -54,6 +55,7 @@ const KeyHandler = connect(
     ungroupObjects,
     mergeGroups,
     selectObject,
+    cycleShadingMode
   }
 )(
   React.memo(({
@@ -67,6 +69,7 @@ const KeyHandler = connect(
     groupObjects,
     ungroupObjects,
     mergeGroups,
+    cycleShadingMode
   }) => {
     const [, updateComponent] = useState()
     const keyCommandsInstance = useRef(KeyCommandsSingleton.getInstance())
@@ -147,6 +150,13 @@ const KeyHandler = connect(
         keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:object:group" })
       } 
     }, [onCommandGroup])
+
+    useEffect(() => {
+      keyCommandsInstance.current.addIPCKeyCommand({ key: "shot-generator:view:cycleShadingMode", value: cycleShadingMode })
+      return () => {
+        keyCommandsInstance.current.removeIPCKeyCommand({ key: "shot-generator:view:cycleShadingMode" })
+      } 
+    }, [cycleShadingMode])
 
     useEffect(() => {
         keyCommandsInstance.current.addKeyCommand({
