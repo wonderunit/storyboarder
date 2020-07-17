@@ -6355,7 +6355,16 @@ const saveAsFolder = async () => {
     fs.emptyDirSync(dstFolderPath)
 
     // copy the project files to the new location
-    exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+    let { missing } = exporterCopyProject.copyProject(srcFilePath, dstFolderPath, { ignoreMissing: true })
+
+    if (missing.length) {
+      let listing = missing.join('\n')
+      log.warn('Missing Files', listing)
+      remote.dialog.showMessageBox({
+        type: 'warning',
+        message: `[WARNING] Some expected files are missing from the project:\n\n${listing}`
+      })
+    }
 
     ipcRenderer.send('analyticsEvent', 'Board', 'save-as')
 
