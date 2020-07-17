@@ -6951,11 +6951,15 @@ ipcRenderer.on('scale-ui-up', value => {
   webFrame.setZoomLevel(zoom)
   settingsService.setSettings({zoom})
 })
-
 ipcRenderer.on('scale-ui-down', value => {
   zoom = zoom <= maxZoom.out ? maxZoom.out : zoom - 0.1
   webFrame.setZoomLevel(zoom)
   settingsService.setSettings({zoom})
+})
+ipcRenderer.on('scale-ui-reset', () => {
+  let zoom = 0
+  webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({ zoom })
 })
 
 const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {

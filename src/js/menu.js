@@ -666,6 +666,13 @@ AppMenu.View = () => ({
       click (item, focusedWindow, event) {
         ipcRenderer.send('scale-ui-down')
       }
+    },
+    {
+      label: 'Reset UI Scale to 100%',
+      type: 'normal',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('scale-ui-reset')
+      }
     }
   ]
 })
