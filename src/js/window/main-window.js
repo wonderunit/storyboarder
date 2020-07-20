@@ -6355,7 +6355,16 @@ const saveAsFolder = async () => {
     fs.emptyDirSync(dstFolderPath)
 
     // copy the project files to the new location
-    exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+    let { missing } = exporterCopyProject.copyProject(srcFilePath, dstFolderPath, { ignoreMissing: true })
+
+    if (missing.length) {
+      let listing = missing.join('\n')
+      log.warn('Missing Files', listing)
+      remote.dialog.showMessageBox({
+        type: 'warning',
+        message: `[WARNING] Some expected files are missing from the project:\n\n${listing}`
+      })
+    }
 
     ipcRenderer.send('analyticsEvent', 'Board', 'save-as')
 
@@ -6472,8 +6481,13 @@ const exportZIP = async () => {
   try {
     const { missing } = await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
 
-    notifications.notify({ message: `WARNING: The following files were missing and could not be added to the ZIP:\n` + missing.join('\n') })
-    log.warn('Missing', missing.join('\n'))
+    if (missing.length) {
+      let listing = missing.join('\n')
+      log.warn('Missing Files', listing)
+      notifications.notify({
+        message: `[WARNING] Some expected files are missing from the project and could not be added to the ZIP:\n\n${listing}`
+      })
+    }
 
     notifications.notify({ message: `Done.` })
     shell.showItemInFolder(exportFilePath)
