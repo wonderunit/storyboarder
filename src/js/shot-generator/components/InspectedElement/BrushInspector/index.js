@@ -74,9 +74,9 @@ React.memo(({
                 label="mesh color"
                 value={ drawMode.brush.color}
                 onSetValue={setColor}/> }
-            <div className="mirror_button__wrapper">
-                <div className="mirror_button" onPointerDown={ cleanImage }>Clean Selected Image</div>
-            </div>
+           { selections.length > 0 && <div className="mirror_button__wrapper">
+                <div className="mirror_button" onPointerDown={ cleanImage }>Clear Selected Image</div>
+            </div>}
 
         </React.Fragment>
       )
