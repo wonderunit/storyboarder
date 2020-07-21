@@ -47,7 +47,6 @@ const Environment = React.memo(({ gltf, environment, grayscale }) => {
   }, [gltf])
 
   useEffect(() => {
-    if(grayscale === null) return
     group.traverse(child => {
         if (child.isMesh) {
           child.material.defines.GRAYSCALE = grayscale

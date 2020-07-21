@@ -31,7 +31,6 @@ const Environment = React.memo(({ path, environment, grayscale }) => {
           material.map = mesh.material.map
           material.map.needsUpdate = true
         }
-
         mesh.material = material
         children.push( <primitive
           key={`${mesh.uuid}`}
@@ -44,13 +43,12 @@ const Environment = React.memo(({ path, environment, grayscale }) => {
   }, [gltf])
   
   useEffect(() => {
-    if(grayscale === null) return
     for(let i = 0; i < meshes.length; i++) {
       let material = meshes[i].props.object.material
       material.defines.GRAYSCALE = grayscale
       material.needsUpdate = true
     }
-  }, [grayscale])
+  }, [grayscale, gltf])
 
   const { x, y, z, visible, rotation, scale } = environment
 

@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
 import fs from 'fs-extra'
-import {updateObjects, getObject } from '../../../windows/shot-generator/settings'
+import SettingsService from '../../../windows/shot-generator/SettingsService'
 import electron from 'electron'
 const { ipcRenderer, webFrame } = electron
+const { app } = electron.remote
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -52,6 +53,7 @@ const Editor = React.memo(({
   }
   
   const notificationsRef = useRef(null)
+  const settingsService = useRef()
   const mainViewContainerRef = useRef(null)
   const [stats, setStats] = useState()
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
@@ -71,42 +73,49 @@ const Editor = React.memo(({
       }
   }
 
-  const zoom = useCallback((event, value) => {
+  useMemo(() =>{
     webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-    let zoomLevel = webFrame.getZoomLevel()
-    let zoom = zoomLevel + value 
-    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
-    webFrame.setZoomLevel(zoom)
-    updateObjects({zoom})
-  }, [])
-
-  const setZoom = useCallback((event, value) => {
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-    let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
-    webFrame.setZoomLevel(zoom)
-    updateObjects({zoom})
-  }, [])
-
-  useEffect(() => {
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    settingsService.current = new SettingsService(path.join(app.getPath('userData'), 'shot-generator-settings.json'))
     let currentWindow = electron.remote.getCurrentWindow()
-    let settingsZoom = getObject("zoom") 
+    let settingsZoom = settingsService.current.getSettingByKey("zoom")
+    settingsZoom = settingsZoom ? settingsZoom : 0
     if(!settingsZoom && currentWindow.getBounds().height < 800) {
       webFrame.setZoomLevel(maxZoom.out)
     } else {
       settingsZoom = settingsZoom ? settingsZoom : 0
       webFrame.setZoomLevel(settingsZoom)
     }
-    ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
-    loadCameraModel()
-    ipcRenderer.on('shot-generator:menu:view:zoom', zoom)
-    ipcRenderer.on('shot-generator:menu:view:setZoom', setZoom)
+  }, [])
 
+  useEffect(() => {
+    loadCameraModel()
+  }, [])
+
+  useEffect(() => {
+    ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
+    ipcRenderer.on('shot-generator:menu:view:scale-ui', zoom)
+    ipcRenderer.on('shot-generator:menu:view:set-ui-scale', setZoom)
     return () => {
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
-      ipcRenderer.off('shot-generator:menu:view:zoom', zoom)
-      ipcRenderer.off('shot-generator:menu:view:setZoom', setZoom)
+      ipcRenderer.off('shot-generator:menu:view:scale-ui', zoom)
+      ipcRenderer.off('shot-generator:menu:view:set-ui-scale', setZoom)
     }
+  }, [])
+
+  const zoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    let zoomLevel = webFrame.getZoomLevel()
+    let zoom = zoomLevel + value 
+    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
+    webFrame.setZoomLevel(zoom)
+    settingsService.current.setSettings({zoom})
+  }, [])
+
+  const setZoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
+    webFrame.setZoomLevel(zoom)
+    settingsService.current.setSettings({zoom})
   }, [])
 
   /** Resources loading end */
@@ -249,7 +258,7 @@ const Editor = React.memo(({
           ipcRenderer={ipcRenderer}
           notifications={notifications}
         />
-        <div id="main">
+        <div id="sg-main">
           <div id="aside">
 
             <div id="topdown">

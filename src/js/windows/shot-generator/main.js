@@ -53,8 +53,8 @@ const show = async (onComplete) => {
 
   let { x, y, width, height } = memento
   win = new BrowserWindow({
-    minWidth: isDev ? undefined : 1200,
-    minHeight: isDev ? undefined : 800,
+    minWidth:  isDev ? undefined : 1024 - 30,
+    minHeight: isDev ? undefined :  768 - 30,
 
     x,
     y,
@@ -86,7 +86,7 @@ const show = async (onComplete) => {
   //
   // if beforeunload is telling us to prevent unload ...
   win.webContents.on('will-prevent-unload', event => {
-    const choice = dialog.showMessageBox({
+    const choice = dialog.showMessageBoxSync({
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm',
@@ -126,11 +126,11 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
 })
 
-ipcMain.on('shot-generator:menu:view:zoom', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:zoom', value)
+ipcMain.on('shot-generator:menu:view:scale-ui', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:scale-ui', value)
 })
-ipcMain.on('shot-generator:menu:view:resetZoom', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:setZoom', value)
+ipcMain.on('shot-generator:menu:view:reset-ui', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:set-ui-scale', value)
 })
 
 ipcMain.on('shot-generator:object:duplicate', () => {

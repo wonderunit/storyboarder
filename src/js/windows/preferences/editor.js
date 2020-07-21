@@ -49,23 +49,25 @@ const onInput = (name, event) => {
 
 const onFilenameClick = event => {
   event.target.style.pointerEvents = 'none'
+
   remote.dialog.showOpenDialog(
-    { title: 'Select Image Editor Application' },
-    filenames => {
-      event.target.style.pointerEvents = 'auto'
-      if (filenames) {
-        prefsModule.set('absolutePathToImageEditor', filenames[0], true)
-        render()
-      } else {
-        prefsModule.set('absolutePathToImageEditor', undefined, true)
-        render()
-      }
+    { title: 'Select Image Editor Application' }
+  ).then(({ filePaths }) => {
+    event.target.style.pointerEvents = 'auto'
+
+    if (filePaths.length) {
+      prefsModule.set('absolutePathToImageEditor', filePaths[0], true)
+      render()
+    } else {
+      prefsModule.set('absolutePathToImageEditor', undefined, true)
+      render()
     }
-  )
+  }).catch(err => console.error(err))
 }
 
 const onWatermarkFileClick = event => {
   event.target.style.pointerEvents = 'none'
+
   remote.dialog.showOpenDialog(
     {
       title: 'Import Watermark Image File',
@@ -78,24 +80,25 @@ const onWatermarkFileClick = event => {
           ]
         }
       ]
-    },
-    filenames => {
-      event.target.style.pointerEvents = 'auto'
-      if (filenames) {
-        try {
-          fs.copySync(filenames[0], path.join(remote.app.getPath('userData'), 'watermark.png'))
-          prefsModule.set('userWatermark', path.basename(filenames[0]), true)
-        } catch (err) {
-          console.error(err)
-          alert(err)
-        }
-        render()
-      } else {
-        prefsModule.set('userWatermark', undefined, true)
-        render()
-      }
     }
-  )
+  ).then(({ filePaths }) => {
+    event.target.style.pointerEvents = 'auto'
+
+    if (filePaths.length) {
+      try {
+        let filepath = filePaths[0]
+        fs.copySync(filepath, path.join(remote.app.getPath('userData'), 'watermark.png'))
+        prefsModule.set('userWatermark', path.basename(filepath), true)
+      } catch (err) {
+        console.error(err)
+        alert(err)
+      }
+      render()
+    } else {
+      prefsModule.set('userWatermark', undefined, true)
+      render()
+    }
+  }).catch(err => console.error(err))
 }
 
 const onRevealKeyMapFileClick = event => {
