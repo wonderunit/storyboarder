@@ -19,7 +19,9 @@ const saveDataURLtoTempFile = (dataURL, boardPath, updateObject, object) => {
   }
   let tempFilename = `temp_${object.userData.id}-${Date.now()}-texture.png`
   object.userData.tempImagePath = tempFilename
-  let imageFilePath = path.join(path.dirname(boardPath), 'models/images', tempFilename)
+  let filePath = path.join(path.dirname(boardPath), 'models/images')
+  let imageFilePath = path.join(filePath, tempFilename)
+  fs.ensureDirSync(filePath)
   fs.writeFileSync(imageFilePath, imageData, 'base64')
   let projectDir = path.dirname(boardPath)
   let assetsDir = path.join(projectDir, 'models', 'images')
