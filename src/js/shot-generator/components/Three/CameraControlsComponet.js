@@ -9,26 +9,28 @@ import {
     undoGroupEnd,
   
     getSelections,
+    getActiveCamera,
+    getSceneObjects
 } from '../../../shared/reducers/shot-generator'
 import isUserModel from '../../helpers/isUserModel'
 import CameraControls from '../../CameraControls'
 
 const CameraControlComponent = connect(
     state => ({
-        selections: getSelections(state)
+        selections: getSelections(state),
+        activeCamera: getSceneObjects(state)[getActiveCamera(state)],
     }),
     {
         updateObject,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )(React.memo(({
-    activeCamera,
     pointerDownEvent,
     pointerUpEvent,
     activeGL,
     isCameraControlsEnabled,
     takeSceneObjects,
-
+    activeCamera,
     updateObject,
     selections,
     withState
@@ -38,7 +40,7 @@ const CameraControlComponent = connect(
     const cameraControlsView = useRef()
 
     const setCameraControlTarget = (selections) => {
-        if(selections.length === 1 && selections[0] === activeCamera) return
+        if(selections.length === 1 && selections[0] === activeCamera.id) return
         let selectedObjects = scene.__interaction.filter(object => object.userData.type !== 'camera' && object.userData.type !== 'volume' 
                                                           && selections.includes(object.userData.id) )
         if(!selectedObjects.length) {
@@ -97,16 +99,16 @@ const CameraControlComponent = connect(
     }
 
     useEffect(() => {
-        if(!activeCamera) return
+        if(!activeCamera.id) return
         if(cameraControlsView.current) {
           let sceneObjects = takeSceneObjects()
-          cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
+          cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera.id])
           return 
         }
         let sceneObjects = takeSceneObjects()
   
         cameraControlsView.current = new CameraControls(
-          CameraControls.objectFromCameraState(sceneObjects[activeCamera]),
+          CameraControls.objectFromCameraState(sceneObjects[activeCamera.id]),
           activeGL.domElement,
           {
             undoGroupStart,
@@ -120,7 +122,7 @@ const CameraControlComponent = connect(
     useEffect(() => {
         if(!pointerDownEvent) return
         let sceneObjects = takeSceneObjects()
-        cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera])
+        cameraControlsView.current.object = CameraControls.objectFromCameraState(sceneObjects[activeCamera.id])
         cameraControlsView.current.onPointerDown(pointerDownEvent)
     }, [pointerDownEvent])
 
