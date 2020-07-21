@@ -8,7 +8,7 @@ import CubeTextureCreator from './helpers/CubeTextureCreator'
 import fs from 'fs-extra'
 import path from 'path'
 import SceneTextureType from '../InspectedWorld/SceneTextureType'
-
+import { saveDataURLtoFile } from '../../helpers/saveDataURLtoFile'
 const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawingSceneTexture }) => {
     const texturePath = useRef()
     const { scene, camera, gl } = useThree()

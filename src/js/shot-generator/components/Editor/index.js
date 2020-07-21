@@ -27,7 +27,8 @@ import {
   setMainViewCamera,
   getIsSceneDirty,
   getSceneObjects,
-  updateObject
+  updateObject,
+  updateWorld
 } from './../../../shared/reducers/shot-generator'
 
 import notifications from './../../../window/notifications'
@@ -195,15 +196,16 @@ const Editor = React.memo(({
   const saveImages = () => {
     let imageObjects 
     withState((dispatch, state) => {
-        imageObjects = Object.values(getSceneObjects(state)).filter(obj => obj.type === "image")
+      let storyboarderFilePath = state.meta.storyboarderFilePath
+      imageObjects = Object.values(getSceneObjects(state)).filter(obj => obj.type === "image")
       for( let i = 0; i < imageObjects.length; i++ ) {
           let image = imageObjects[i]
           let imgComponent = largeCanvasData.current.scene.__interaction.find(obj => obj.userData.id === image.id)
           let isImageExist = imgComponent.userData.tempImagePath
           if(!isImageExist) continue
-          let tempImageFilePath = path.join(path.dirname(state.meta.storyboarderFilePath), 'models/images', imgComponent.userData.tempImagePath)
-          let imageFilePath = path.join(path.dirname(state.meta.storyboarderFilePath), 'models/images', `${image.id}-texture.png`)
-          let projectDir = path.dirname(state.meta.storyboarderFilePath)
+          let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', imgComponent.userData.tempImagePath)
+          let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', `${image.id}-texture.png`)
+          let projectDir = path.dirname(storyboarderFilePath)
           let assetsDir = path.join(projectDir, 'models', 'images')
           fs.ensureDirSync(assetsDir)
           let dst = path.join(assetsDir, path.basename(imageFilePath))
@@ -213,6 +215,15 @@ const Editor = React.memo(({
           removeAsset(imageFilePath)
           imgComponent.userData.tempImagePath = null
           dispatch(updateObject(image.id, {imageAttachmentIds: [id]}))
+      }
+      if(largeCanvasData.current.scene.userData.tempPath) {
+        let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures/', largeCanvasData.current.scene.userData.tempPath)
+        let imageFilePath = path.join(path.dirname(storyboarderFilePath), largeCanvasData.current.scene.userData.texturePath)
+        removeAsset(imageFilePath)
+        fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
+        fs.remove(tempImageFilePath)
+        dispatch(updateWorld({sceneTexture: largeCanvasData.current.scene.userData.texturePath}))
+        largeCanvasData.current.scene.userData.tempPath = null
       }
     })
   }
