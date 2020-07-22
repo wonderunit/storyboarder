@@ -125,9 +125,10 @@ const CameraPanelInspector = connect(
       setCameraTilt(cameraInfo.current.tilt)
     }, [activeCamera.tilt])
 
-    const getValueShifter = (draft) => () => {
+    const getValueShifter = (draft, limit = null) => () => {
       for (let [k, v] of Object.entries(draft)) {
-        cameraState[k] += v
+        let newValue = cameraState[k] + v
+        cameraState[k] = limit === null ? newValue : Math.abs(limit) < Math.abs(newValue) ? limit : newValue
       }
       updateObject(activeCamera.id, cameraState)
     }
@@ -277,8 +278,8 @@ const CameraPanelInspector = connect(
             <div className="camera-item roll" {...rollTooltipEvents}>
                 <div className="camera-item-control">
                     <div className="row">
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: -THREE.Math.DEG2RAD }))}><div className="arrow left"/></div>
-                        <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: THREE.Math.DEG2RAD }))}><div className="arrow right"/></div>
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: -THREE.Math.DEG2RAD }, -45 * THREE.Math.DEG2RAD))}><div className="arrow left"/></div>
+                        <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: THREE.Math.DEG2RAD}, 45 * THREE.Math.DEG2RAD ))}><div className="arrow right"/></div>
                     </div>
                 </div>
                 <div className="camera-item-label">Roll: { cameraRoll }°</div>
