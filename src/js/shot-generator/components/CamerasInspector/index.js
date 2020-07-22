@@ -23,6 +23,7 @@ import Scrollable from '../Scrollable'
 import deepEqualSelector from '../../../utils/deepEqualSelector'
 
 import useTooltip from '../../../hooks/use-tooltip'
+import { useTranslation } from 'react-i18next'
 
 const cameraSceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -72,6 +73,7 @@ const CamerasInspector = connect(
   undoGroupStart,
   undoGroupEnd,
 }) => {
+  const { t } = useTranslation()
 
   const onCameraSelectByIndex = useCallback(index => {
     if (_cameras[index]) {
@@ -132,12 +134,12 @@ const CamerasInspector = connect(
       behavior: 'smooth'
     })
   }, [_cameras, activeCamera])
-
-  const cameraTooltipEvents = useTooltip("Change Active Camera", "If there are multiple cameras in the scene, you can change the active camera for the shot.", "1|2|3", "top right")
+  
+  const cameraTooltipEvents = useTooltip(t('shot-generator.camera-inspector.change-active-camera.title'), t('shot-generator.camera-inspector.change-active-camera.description'), "1|2|3", "top right")
 
   return <div className="cameras-inspector">
         <div className="row" {...cameraTooltipEvents}>
-            <div className="cameras-inspector__label">Camera</div>
+            <div className="cameras-inspector__label">{t('shot-generator.camera-inspector.camera')}</div>
             <Scrollable >
               <div className="round-buttons-panel" style={{ justifyContent: "flex-start"}} >
                { _cameras.map(
@@ -146,8 +148,6 @@ const CamerasInspector = connect(
                ) }
                </div>
              </Scrollable>
-
-
         </div>
     </div>
 })

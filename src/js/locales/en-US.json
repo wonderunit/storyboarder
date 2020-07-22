@@ -546,6 +546,55 @@
 			  "open-vr": "To view, open a VR web browser to",
 			  "scary-warning": "You may see a scary browser warning message\nbecause VR runs from this computer, not a trusted server.\nIn Oculus Browser, click “Advanced” and then “Proceed” to accept the self-signed certificate.\nLearn more in the {{link}}"
 		  }
+		},
+		"camera-panel": {
+			"roll-camera": {
+			  "title": "Roll Camera Angle",
+			  "description": "Rotate the camera around the roll axis to create a dutch angle."
+			},
+			"pan-tilt-camera": {
+			  "title": "Pan / Tilt Camera Angle",
+			  "description": "Pan or tilt the camera by clicking and dragging on this control, or clicking and dragging on the 3D viewport. You can also move while clicking and dragging."
+			},
+			"move-camera": {
+			  "title": "Move Camera",
+			  "description": "Move the camera forward, backward, left and right. You can also pan while moving the camera. You can hold shift to move faster."
+			},
+			"elevate-camera": {
+			  "title": "Elevate Camera",
+			  "description": "Elevate the camera up and down. You can hold shift to elevate faster."
+			},
+			"change-camera-lens": {
+			  "title": "Change Camera Lens (Zoom)",
+			  "description": "Change the field of view of the camera's lens. If you press the bracket keys, it will snap to standard prime lens angles."
+			},
+			"auto-shot-framing": {
+			  "title": "Auto Shot Framing",
+			  "description": "Select a character and then select the Shot Size and or Camera Angle to automatically position the camera to frame the shot."
+			},
+			"roll": "Roll",
+			"pan": "Pan",
+			"tilt": "Tilt",
+			"move": "Move",
+			"elevate": "Elevate",
+			"lens": "Lens",
+			"open-shot-explorer": "Open Shot Explorer"
+
+		},
+		"board-inspector": {
+			"dialogue": "DIALOGUE",
+			"action": "ACTION",
+			"notes": "NOTES"
+		},
+		"camera-inspector": {
+			"camera": "Camera",
+			"change-active-camera": {
+				"title": "Change Active Camera",
+				"description": "If there are multiple cameras in the scene, you can change the active camera for the shot."
+			}
+		},
+		"guides-inspector": {
+			"guides": "Guides"
 		}
 	  }
 }

@@ -4,7 +4,7 @@ import classNames from 'classnames'
 import { toggleWorkspaceGuide } from '../../../shared/reducers/shot-generator'
 import { connect } from 'react-redux'
 import Icon from '../Icon'
-
+import { useTranslation } from 'react-i18next'
 const preventDefault = (fn, ...args) => e => {
     e.preventDefault()
     fn(e, ...args)
@@ -24,10 +24,11 @@ const GuidesInspector = connect(
 (({
   center, thirds, eyeline,
   toggleWorkspaceGuide
-}) =>
-  <div className="guides-inspector"> 
+}) => {
+  const { t } = useTranslation()
+  return<div className="guides-inspector"> 
         <div className="row">
-            <div className="guides-inspector__label">Guides</div>
+          <div className="guides-inspector__label">{t('shot-generator.guides-inspector.guides')}Guides</div>
             <div className="round-buttons-panel">
                 <a href="#"
                   className={ classNames({ active: center }) }
@@ -47,6 +48,6 @@ const GuidesInspector = connect(
               </div>
         </div>
     </div>
-))
+}))
 
 export default GuidesInspector
