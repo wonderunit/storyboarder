@@ -104,9 +104,9 @@
 		},
 		"tools": { 
 			"title": "Инструменты",
-			"light-pencil": "Слабый карандаш",
+			"light-pencil": "Мягкий карандаш",
 			"brush": "Кисть",
-			"tone": "Tone",
+			"tone": "Тон",
 			"pencil": "Карандаш",
 			"pen": "Ручка",
 			"note-pen": "Ручка для записи",
@@ -143,100 +143,100 @@
 		"toolbar": {
 			"tools": {
 			  	"light-pencil": {
-					"title": "Light Pencil",
-					"description": "Draw rough ideas with this tool. Feel free to make mistakes. This tool draws on the reference layer, so you can easily erase these lines."
+					"title": "Мягкий Карандаш",
+					"description": "Рисуйте любую свою идею этим инструментом. Не бойтесь делать ошибки. Этот инструменты рисует на слою Reference, поэтому вы может легко очистить эти линии."
 			  	},
 			  	"brush": {
-					"title": "Fill Brush Pen",
-					"description": "Paint and fill with this tool. The brush pen is a steady stream of ink. This tool draws on the fill layer."
+					"title": "Ручка-кисть",
+					"description": "Рисуйте и заполняйте этим инструментом. Ручка-кисть это бесперерывный поток чернил. Этот инструмент рисует на слою Fill."
 			  	},
 			  	"tone": {
-					"title": "Tone Pastel",
-					"description": "Tone and shade with this tool. This tool draws on the tone layer."
+					"title": "Пастель тона",
+					"description": "Тон и оттенок этим инструментом. Этот интрумент рисует на слою Tone."
 			  	},
 			  	"pencil": {
-					"title": "Pencil",
-					"description": "Draw and shade details with this tool. It's lighter and softer than the pen. This tool draws on the pencil layer."
+					"title": "Карандаш",
+					"description": "Рисуйте и подчеркивайте деталь с помощь этого иструмента. Карандаш тоньше и мягче чем ручка. Этот инструмент рисует на слою Pencil."
 			  	},
 			  	"pen": {
-					"title": "Ink Marker",
-					"description": "This tool is for hard thicker lines. Use this tool for final inking and outlining. This tool draws on the ink layer."
+					"title": "Чернильный Маркер",
+					"description": "Этот инструмент используется для твердых толстых линий. Используйте этот инструмент для финальной обработки и обводки. Этот инструмент рисует на слою Ink."
 			  	},
 			  	"note-pen": {
-					"title": "Note Pen",
-					"description": "Revise boards with this tool. Have a note? Draw right on top of the board. This tool draws on the notes layer, so it is easy to erase. This tool draws on the notes layer."
+					"title": "Ручка для записи",
+					"description": "Персмотрите доски с этим иснтрументом. Есть что записать? Рисуйте прям на доске. Этот инструмент рисует на слою Notes, sпоэтому вы может легко это очистить."
 			  	},
 			  	"eraser": {
-					"title": "Eraser",
-					"description": "Made a mistake? Use the eraser. When holding option (or alt), it will only erase the tool’s layer you’re on. Otherwise, will erase all layers."
+					"title": "Страчка",
+					"description": "Надо что-то стиреть? Используйте стирачку. Если зажата кнопка option (или alt), тогда стирачка будет чистить всё на выбраном слою. В противном случае будет очищать все слои."
 			  	}
 			},
 			"colors": {
 			  	"current-color": {
-					"title": "Current Color",
-					"description": "Click to change the current color."
+					"title": "Текущий цвет",
+					"description": "Нажмите чтобы изменить текущий цвет."
 			  	},
 			  	"controls-size": {
-					"title": "Brush Size",
-					"description": "Drag value to increase or decrease the brush size … or just use the key commands like real pros!"
+					"title": "Размер кисти",
+					"description": "Двигайте значение что бы увелчиить или уменьшить размер кисти  … или же вы просто можете использовать комбинацию клавиш как настоящий профи!"
 			  	},
 			  	"controls-stroke-opacity": {
-					"title": "Stroke Opacity",
-					"description": "Drag value to adjust the overall opacity of new strokes."
+					"title": "Прозрачность Кисти",
+					"description": "Передвигайте значение чтобы подстроить прозрачность новый кисти."
 			  	},
 			  	"palette-colorA": {
-					"title": "Palette Color 1",
-					"description": "Click to set the current color to this. Hold down to set this color to another."
+					"title": "Цветовая палитра 1",
+					"description": "Нажмите чтобы заменить текущий цвет на этот. Зажмите чтобы поменять цвет палитры."
 			  	},
 			  	"palette-colorB": {
-					"title": "Palette Color 2",
-					"description": "Click to set the current color to this. Hold down to set this color to another."
+					"title": "Цветовая палитра 2",
+					"description": "Нажмите чтобы заменить текущий цвет на этот. Зажмите чтобы поменять цвет палитры."
 			  	},
 			  	"palette-colorC": {
-					"title": "Palette Color 3",
-					"description": "Click to set the current color to this. Hold down to set this color to another."
+					"title": "Цветовая палитра 3",
+					"description": "Нажмите чтобы заменить текущий цвет на этот. Зажмите чтобы поменять цвет палитры."
 			  	}
 			},
 			"editing": {
 			  	"toolbar-trash": {
-					"title": "Clear Canvas",
-					"description": "Press this to clear the whole drawing! Don't worry! You can always undo."
+					"title": "Очистить Канвас",
+					"description": "Нажмите что очисить весь рисунок! Не стоит переживать! Вы всегда можете вернут назад изменения(undo)."
 			  	},
 			  	"toolbar-move": {
-					"title": "Move Mode",
-					"description": "Drag the image to move."
+					"title": "Режим Смещения",
+					"description": "Потяните изображение чтобы его сдвинуть."
 			  	},
 			  	"toolbar-scale": {
-					"title": "Scale Mode",
-					"description": "Drag the image to scale."
+					"title": "Режим Скалмрования",
+					"description": "Потяните изображение чтобы изменить скалирования."
 			  	},
 			  	"toolbar-marquee": {
-					"title": "Lasso Tool",
-					"description": "Lasso an area of art to manipulate.\n<p>\nDraw to lasso an area. Add to area with SHIFT + draw. Subtract with ALT/OPTION + draw. \n Press 'f' to fill area with current brush color and opacity. Press DELETE/BACKSPACE to erase area.\n</p>\n<p>\nPress and hold inside lasso’d area to begin moving, then drag. Fill and erase work after move also.\n</p>\n<p>\nENTER to commit. ESCAPE to cancel.\n</p>"
+					"title": "Инструмент Ласо",
+					"description": "Выделить с помощь Ласо область которую вы хотите изменить.\n<p>\nРисуйте чтобы выбрать область с помощью Ласо. Добавить область с помощью SHIFT + рисовать. Убрать область ALT/OPTION + рисовать. \n Нажмите 'f' чтобы заполнить область текущим цветом с прозрачностю. Нажимте DELETE/BACKSPACE чтобы удалить область.\n</p>\n<p>\nЗажмите в области ласо чтобы начать передвигать, и пердвигайте. Заполняйте ил удаляйте область после передвижения.\n</p>\n<p>\nENTER чтобы принять изменения. ESCAPE чтобы отменить.\n</p>"
 			  	}
 			},
 			"actions": {
 			  	"toolbar-undo": {
-					"title": "Undo",
-					"description": "Made a mistake? No problem. You can undo!"
+					"title": "Отменить изменения",
+					"description": "Сделали ошибку? Не беда. Вы можете всегда отменить изменеия!"
 			  	},
 			  	"toolbar-redo": {
-					"title": "Redo",
-					"description": "Undo too much? You can redo what you've undone."
+					"title": "Вернуть изменения",
+					"description": "Отменили слишком много изменений? Вы можете вернуть то что вы отменили."
 			  	}
 			},
 			"view": {
 			  	"toolbar-grid": {
 					"title": "Grid Guide",
-					"description": "Toggle a grid used for measured drawings or straight lines."
+					"description": "Отображает сетку которая используется для измерения рисункв либо прямых линий."
 			  	},
 			  	"toolbar-center": {
 					  "title": "Center Guide",
-					  "description": "Toggle centerline guide used to make sure your drawing is centered."
+					  "description": "Отображает сетку осевых линий используется чтобы убедится что ваш рисунок находится по центру."
 			  	},
 			  	"toolbar-thirds": {
-					  "title": "Rule of Thirds Guide",
-					  "description": "oggle thirds guide to center focus on the thirds. Any mediocre cinematographer uses this all the time!"
+					  "title": "Правило Третей",
+					  "description": "Отображает правило третей фокусирования на третьях. Любой уважающий себя киноматографист использует это постоянно"
 			  	},
 			  	"toolbar-perspective": {
 					  "title": "3D Guide",
@@ -244,142 +244,142 @@
 			  	},
 			  	"toolbar-onion": {
 					  "title": "Onion Skin",
-					  "description": "Toggle display of last and next frame so you can tween shots for transitions and animations."
+					  "description": "Добавляет отображение предыдущего кадра и последующего кадра чтобы вы моглм твинить шоты для перезода и анимации."
 			  	},
 			  	"toolbar-captions": {
-					"title": "Captions",
-					"description": "Toggle dialogue caption overlays on and off."
+					"title": "Заголовки",
+					"description": "Включить/выключить отображение диалоговых заготовок."
 			  	}
 			},
 			"externals": {
 			  	"toolbar-open-in-editor": {
-					"title": "Edit in Photoshop",
-					"description": "Click here to edit the board in Photoshop. When you're done editing, just save the file in Photoshop. It will update in Storyboarder automatically."
+					"title": "Редактировать в Photoshop",
+					"description": "Нажмите что начать редактировать теукущую доску в Photoshop. Когда вы закончили с редактированием просто сохраните файл в Photoshop. Файл обновится в Storyboarder автоматически."
 			  	}
 			},
 			"pomodoro": {
 			  	"toolbar-pomodoro-rest": {
 					"title": "Sketch Sprint",
-					"description": "Set a timer and record a timelapse of your work."
+					"description": "Задайте таймер и записывайте время вашей работы."
 			  	},
 			  	"toolbar-pomodoro-running": {
 					"title": "Sketch Sprint",
-					"description": "Set a timer and record a timelapse of your work."
+					"description": "Задайте таймер и записывайте время вашей работы."
 			  	}
 			}
 		},
 		"board-information": {
 			"line-mileage": {
-				"title": "Line Mileage",
-				"description": "As you draw, the line miles for the shot add up. This is useful to know how much you are drawing per shot. Remember, you aren't trying to make the next Moner Lisa. You're just trying to get the idea across."
+				"title": "Длина линий в милях",
+				"description": "В процессе рисования длина линий в милях добавляется. Очень полезный инструмент чтоб понимать как много нарисован на шоте. Помните, вы не рисуете новую Мона Лизу. Вы всего-лишь пытаетесь донести идею."
 			},
 			"shot-generator-container": {
-				"title": "Open",
-				"description": "Open Shot Generator"
+				"title": "Открыть",
+				"description": "Открыть Shot Generator"
 			},
 			"new-shot": {
-				"title": "Is this board a new shot?",
-				"description": "Check this box if the board is a new shot. You can have multiple boards per shot. This way you can animate or make a transition in a shot."
+				"title": "Новый кадр?",
+				"description": "Нажмите на ckeckbox если это доска новый кдар. У вас может быть множество доск в одном кадре. Таким образом вы можете анимировать или сделать переход в кадре."
 			},
 			"duration-ms": {
-				"title": "Set the board duration",
-				"description": "Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. 2000 milliseconds is the default."
+				"title": "Задать продолжительность доски",
+				"description": "Введите значение в миллисекундах для доски. В одной секунде 1000 миллисекунд. 2000 миллисекунд значение по умолчанию."
 			},
 			"duration-fps": {
-				"title": "Set the board duration",
-				"description": "Enter the number of frames for a board."
+				"title": "Задать продолжительность доски",
+				"description": "Введите количество кадров на доске."
 			},
-			"dialog-title": "Dialogue",
+			"dialog-title": "Диалоги",
 			"suggested-dialogue-duration": {
-				"title": "Suggested board duration",
-				"description": "Click to set the duration based on the dialogue text."
+				"title": "Предлагаемая продолжительность доски",
+				"description": "Нажмите чтобы установить продолжительность основываясь на текст диалогов."
 			},
 			"dialogue-tooltip": {
-				"title": "Dialogue for board",
-				"description": "Write some really sweet dialogue, like, ''As you know, I am your father.'' It will show up as a caption if you have it toggled on."
+				"title": "Диалоги для доски",
+				"description": "Напишите какие-то милые диалоги, например, ''Люк, я твой отец!'' Если включит будет отображать как заголовки."
 			},
-			"action-title": "Action",
+			"action-title": "События",
 			"action-tooltip": {
-				"title": "Action for board",
-				"description": "Write some action for the board."
+				"title": "События для доски",
+				"description": "Напишите какие-то события для доски."
 			},
-			"note-title": "Notes",
+			"note-title": "Записки",
 			"note-tooltip": {
-			  	"title": "Clear notes drawing layer",
-			  	"description": "Clear the notes layer for this board. You can also clear it when you are on the notes drawing tool and you press:"
+				"title": "Записи для доски",
+				"description": "Напишить записки. Это может быть как записи о изменении доски, так и записи для кадра."
 			},
-			"clear-note-title": "Clear Notes Layer",
+			"clear-note-title": "Очисить слой с записями",
 			"clear-note-tooltip": {
-			  	"title": "Notes for the board",
-			  	"description": "Write some notes. Could be board notes for changes, or just some notes for the shot."
+				"title": "Очисить слой с записками",
+				"description": "Очистить слой с записками для этой доски. Вы так же можете очистит это когда вы используете инструмент для записей и нажмете:"
 			},
 			"remove-audio": {
-			  	"title": "Remove audio",
-			  	"description": "Remove audio reference from this board. The file will remain on disk unless Clean Up Scene is used."
+			  	"title": "Убрать аудио",
+			  	"description": "Убрать ссылки на ауди с этой доски. Файл останется на диска до тех пока не будет вызвана Очистка Сцены."
 			},
-			"reference-layer-title": "Reference Layer",
+			"reference-layer-title": "Reference слой",
 			"reference-layer-tooltip": {
-			  	"title": "Clear reference drawing layer",
-			  	"description": "Clear the reference layer for this board. You can also clear it when you are on the light pencil drawing tool and you press:"
+			  	"title": "Очистить reference слой",
+			  	"description": "Очистить reference слой на этой доске. Вы также можете это очистить когда вы используете инструмент Мягкий карандаш по нажатию на:"
 			},
-			"clear-title": "Clear",
+			"clear-title": "Очистить",
 			"merge-down-tooltip": {
-			  	"title": "Merge the fill layer down to the reference layer",
-			  	"description": "This is useful if you want to take your existing fill layer and redraw for cleanup. This will combine both layers to the reference layer. The fill layer will be blank."
+			  	"title": "Смержить fill слой вниз в reference слой",
+			  	"description": "Очень полезно когда вы хотите взять существующий fill слой и перерисовать для очитски. Это скомбинурует об слоя на reference слое. Fill слой будет пустой."
 			},
-			"merge-down-title": "Merge Down",
+			"merge-down-title": "Смержишть вниз",
 			"merge-up-tooltip": {
-			  	"title": "Merge the reference layer up to the fill layer",
-			  	"description": "This is useful if you draw on the reference layer and you want to keep it in your drawing. This will combine both layers to the fill layer. The reference layer will be blank."
+			  	"title": "Смержит reference слой вверх в fill слой",
+			  	"description": "Очень полезно если вырисуете на reference слок и вы хотите оставить это в своем рисунке. Это скомбинурует об слоя на fill слое. Reference слой будет пустой."
 			},
-			"merge-up-title": "Merge Up",
+			"merge-up-title": "Смержить вверх",
 			"layer-opacity-tooltip": {
-			  	"title": "Merge the reference layer up to the fill layer",
+			  	"title": "Изменить прозранчность Reference и Shot Generator слоев",
 			  	"description": "Change the opacity of the reference layer and Shot Generator layer. You will only be able to see the change if there is a saved Shot Generator shot, or something on the reference layer."
 			},
 			"sts-random": {
-			  	"title": "Generate Random Shot Image",
-			  	"description": "Randomize shot image generator settings"
+			  	"title": "Сгенирировать случайное изображение кадра",
+			  	"description": "Рандомизировать найстроки генератора изображения для кадра"
 			},
 			"sts-input1": {
-			 	 "title": "Shot Description",
-			  	"description": "Describe the shot: for example, medium shot. Press enter to generate a shot image."
+			 	 "title": "Описание шота",
+			  	"description": "Опишите кадр: напривмер, средный шот. Нажмите enter для генерации нового кадра."
 			},
 			"sts-select": {
-			  	"title": "Shot Description Data",
+			  	"title": "Информация о описании кадра",
 			  	"description": "Refine data used to generate shot images."
 			},
 			"sts-shots": {
-			  	"title": "Generated Shot Images",
+			  	"title": "Сгенерировать Изображения кадра",
 			  	"description": "Click to refine data for generated shot image. Double-click to use generated shot image as reference layer."
 			},
-			"scene": "Scene",
-			"frame-rate": "Frame Rate",
+			"scene": "Сцену",
+			"frame-rate": "Частота кадров",
 			"show-in-finder-button": {
-			  	"title": "Show board in file system",
-			  	"description": "Click here to show the board image file in the file system. This is useful for external editors."
+			  	"title": "Показать доску в папке",
+			  	"description": "Нажмите чтобы открыть изображени доски в папке. Полезно если вам нужно внешние редакторы."
 			},
-			"show-in-finder-title": "Show in Folder"
+			"show-in-finder-title": "Открыть в папке"
 		},
 		"playback": {
 			"prev-scene-tooltip": {
-				"title": "Previous Scene",
+				"title": "Предыдущая сцена",
 				"description": "If current board is at the start or end of the scene, this will jump backward one scene. Otherwise this will jump to the start of the current scene."
 			},
 			"prev-board-tooltip": {
-				"title": "Previous Board",
-				"description": "Use the arrow keys to flip between boards quickly to see how the story is flowing."
+				"title": "Предыдущая доска",
+				"description": "Используйте стрелочки для быстрого переключения между досками для просмотра потока истории."
 			},
 			"play-tooltip": {
-				"title": "Play/Pause",
+				"title": "Запустить/Остановить",
 				"description": "This will toggle between playing automatically and not. The playback timing is default 2 seconds per board, or whatever is set as the board duration."
 			},
 			"next-board-tooltip": {
-				"title": "Next Board",
-				"description": "Use the arrow keys to flip between boards quickly to see how the story is flowing."
+				"title": "Следующая Доска",
+				"description": "Используйте стрелочки для быстрого переключения между досками для просмотра потока истории."
 			},
 			"next-scene-tooltip": {
-				"title": "Next Scene",
+				"title": "Следующая сцена",
 				"description": "If current board is at the start or end of the scene, this will jump forward one scene. Otherwise this will jump to the end of the current scene."
 			}
 		}

@@ -237,7 +237,7 @@
 			  	},
 			  	"toolbar-thirds": {
 					  "title": "Rule of Thirds Guide",
-					  "description": "oggle thirds guide to center focus on the thirds. Any mediocre cinematographer uses this all the time!"
+					  "description": "Toggle thirds guide to center focus on the thirds. Any mediocre cinematographer uses this all the time!"
 			  	},
 			  	"toolbar-perspective": {
 					  "title": "3D Guide",
@@ -306,13 +306,13 @@
 			},
 			"note-title": "Notes",
 			"note-tooltip": {
-			  	"title": "Clear notes drawing layer",
-			  	"description": "Clear the notes layer for this board. You can also clear it when you are on the notes drawing tool and you press:"
+				"title": "Notes for the board",
+				"description": "Write some notes. Could be board notes for changes, or just some notes for the shot."
 			},
 			"clear-note-title": "Clear Notes Layer",
 			"clear-note-tooltip": {
-			  	"title": "Notes for the board",
-			  	"description": "Write some notes. Could be board notes for changes, or just some notes for the shot."
+				"title": "Clear notes drawing layer",
+				"description": "Clear the notes layer for this board. You can also clear it when you are on the notes drawing tool and you press:"
 			},
 			"remove-audio": {
 			  	"title": "Remove audio",
