@@ -447,7 +447,7 @@
 			"select-saving-hand": "Select a Hand to save:",
 			"hand": "Hand",
 			"search-hand-pose": "Search for a hand pose …",
-			"select-hand": "Select hand",
+			"select-hand": "Attach to",
 			"left-hand": "Left hand",
 			"right-hand": "Right hand",
 			"both-hands": "Both hands"
@@ -509,10 +509,10 @@
 		  },
 		  "volume": {
 			"tooltip": {
-			  "title": "Add Object",
+			  "title": "Add Volume",
 			  "description": "Add a volume like rain, fog, explosion."
 			},
-			"title": "Object"
+			"title": "Volume"
 		  },
 		  "image": {
 			"tooltip": {
@@ -570,7 +570,7 @@
 			},
 			"auto-shot-framing": {
 			  "title": "Auto Shot Framing",
-			  "description": "Select a character and then select the Shot Size and or Camera Angle to automatically position the camera to frame the shot."
+			  "description": "Select a character and then select the Shot Size and/or Camera Angle to automatically position the camera to frame the shot."
 			},
 			"roll": "Roll",
 			"pan": "Pan",

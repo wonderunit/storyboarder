@@ -385,21 +385,215 @@
 		}
 	},
 	"shot-generator": {
-		"inspected-element": {
-		  "properties": "shot-generator.inspected-element.properties"
-		},
-		"common": {
-		  "select-preset-name": "shot-generator.common.select-preset-name",
-		  "proceed-button": "shot-generator.common.proceed-button",
-		  "search-hand-pose": "shot-generator.common.search-hand-pose"
-		},
-		"hand-preset": {
-		  "select-saving-hand": "shot-generator.hand-preset.select-saving-hand",
-		  "hand": "shot-generator.hand-preset.hand",
-		  "select-hand": "shot-generator.hand-preset.select-hand",
-		  "left-hand": "shot-generator.hand-preset.left-hand",
-		  "right-hand": "shot-generator.hand-preset.right-hand",
-		  "both-hands": "Обе руки"
-		}
+		"inspector": {
+			"inspected-world": {
+			  "file": "Файл",
+			  "scene": "Сцена",
+			  "ground": "Земля",
+			  "bg-color": "Цвет фона",
+			  "room": "Комната",
+			  "environment": "Окружение",
+			  "ambient-light": " Ambient свет",
+			  "directional-light": "Directional свет",
+			  "fog": "Туман"
+			},
+			"common": {
+			  "object-creation-help": "Как создавать 3D модели для Кастомных Объектов",
+			  "visible": "Видимый",
+			  "rotation": "Поворот",
+			  "intensity": "Интенсивность",
+			  "tilt": "Наклон",
+			  "distance": "Расстояние",
+			  "roll": "Ролл",
+			  "select-preset-name": "Укажите имя пресету:",
+			  "proceed-button": "Продолжить",
+			  "height": "Высота",
+			  "tint-color": "Цвет оттенка",
+			  "search-models": "Найти модели  …",
+			  "or": "или",
+			  "select-file": "Выбрать файл …",
+			  "size": "Размер",
+			  "width": "Ширина",
+			  "length": "Длина",
+			  "depth": "Глубина",
+			  "rotate-x": "Повернуть по X",
+			  "rotate-y": "Повернуть по Y",
+			  "rotate-z": "Повернуть по Z",
+			  "scale": "Размер",
+			  "opacity": "Непрозрачность",
+			  "yes": "да",
+			  "no": "не",
+			  "are-you-sure": "Вы уверены?"
+			},
+			"inspected-element": {
+			  "properties": "Свойства:"
+			},
+			"camera": {
+			  "fov": "F.O.V."
+			},
+			"character": {
+			  "skinny": "Тощий",
+			  "obese": "Тучный",
+			  "muscular": "Мускулистый",
+			  "head": "Голова",
+			  "drop-character": "Опустит персонажа на пол",
+			  "morphs": "Morphs"
+			},
+			"character-preset": {
+			  "preset": "Пресет"
+			},
+			"hand-preset": {
+			  "select-saving-hand": "Выберите руку которую сохранить:",
+			  "hand": "Рука",
+			  "search-hand-pose": "Найти позы для рук …",
+			  "select-hand": "Присоединить к",
+			  "left-hand": "Левая рука",
+			  "right-hand": "Правая рука",
+			  "both-hands": "Обе руки"
+			},
+			"pose-preset": {
+			  "search-pose": "Найти позы …",
+			  "mirror-pose": "Зеркально отобразить позу"
+			},
+			"attachables-inspector": {
+			  "attached-to-bone": "Присоединить к кости"
+			},
+			"object": {
+			  "drop-object": "Опустить объект на пол"
+			},
+			"image": {
+			  "image-file": "Файл изображения",
+			  "visible-to-camera": "Видна для камеры"
+			},
+			"light": {
+			  "angle": "Угол",
+			  "penumbra": "Полутень",
+			  "decay": "Дисперсия"
+			},
+			"volume": {
+			  "layer-image-files": "Файлы изображений слоя",
+			  "select-layer-images": "Выберите слой изображений",
+			  "layers": "Слои",
+			  "color": "Цвет"
+			}
+		  },
+		  "toolbar": {
+			"camera": {
+			  "tooltip": {
+				"title": "Добавить Камеру",
+				"description": "Добавить новую камерв в сцену."
+			  },
+			  "title": "Камера"
+			},
+			"object": {
+			  "tooltip": {
+				"title": "Добавить Объект",
+				"description": "Добавить новый объект. Вы можете изменять свойства слева."
+			  },
+			  "title": "Объект"
+			},
+			"character": {
+			  "tooltip": {
+				"title": "Добавить персонажа",
+				"description": "Добавить нового персонажа в сцену. Вы можете изменит позу перемещая контрольные сферы."
+			  },
+			  "title": "Персонажа"
+			},
+			"light": {
+			  "tooltip": {
+				"title": "Добавит Свет",
+				"description": "Добавить прожектор в сцену."
+			  },
+			  "title": "Свет"
+			},
+			"volume": {
+			  "tooltip": {
+				"title": "Добавить Volume",
+				"description": "Добавить volume как дождь, туман, взрыв."
+			  },
+			  "title": "Volume"
+			},
+			"image": {
+			  "tooltip": {
+				"title": "Добавить Изображение",
+				"description": "Добавить изображение. Вы можете установить касомное изображение в меню свойства слева. Это очень полезно для ссылок на изображения или плакаты или матовые картины в вашей сцене."
+			  },
+			  "title": "Изображение"
+			},
+			"open-in-vr": {
+			  "tooltip": {
+				"title": "Открыть в VR",
+				"description": "Нажмите здесь чтобы увидить адресс который надо вести в Vr браузере как Oculus Quest."
+			  },
+			  "title": "Открыть in VR"
+			},
+			"save-to-board": {
+			  "tooltip": {
+				"title": "Сохранить на доску",
+				"description": "Сохранить текущий кадр в текущий Storyboard. После того как вы сохранали вы можете закрыть окно."
+			  },
+			  "title": "Сохранить на доску"
+			},
+			"insert-as-new-board": {
+			  "tooltip": {
+				"title": "Добавить как новая доска",
+				"description": "Добавить текущий кадр после текущего Storyboard. После того как вы вставили новую доску вы можете закрыть это окно, или продолжать добавлять новый кадры."
+			  },
+			  "title": "Добавить как новая доска"
+			},
+			"popup": {
+				"open-vr": "Чтобы посмотреть окройте VR браузер на",
+				"scary-warning": "Не стоит боятся если вы увидить страшное предупреждение\nИз-за того что VR запускает с этого компьютера не доверенный сервер.\nВ Oculus Browser, нижмите “Дополнительные” и затем “Перейти на сайт(небезопасно)” чтобы принять самоподписанный сертификат .\nУзнать подробности по {{link}}"
+			}
+		  },
+		  "camera-panel": {
+			  "roll-camera": {
+				"title": "Угол поворота камеры",
+				"description": "Поверните камеру вокруг оси вращения, чтобы создать Голландский угол."
+			  },
+			  "pan-tilt-camera": {
+				"title": "Pan / Tilt Угол камеры",
+				"description": "Перемещайте или наклоняйте камеру, щелкая и перетаскивая этот элемент управления, или перетаскивая и перетаскивая в окне 3D-просмотра Вы также можете двигаться при нажатии и перетаскивании"
+			  },
+			  "move-camera": {
+				"title": "Сдвинуть Камеру",
+				"description": "Сдвигайте камеру вперед, назад, влево и вправо. Вы также может использовать pan когда передвигайт камеру. Вы можете зажать shift что сдвигать камеру быстрее."
+			  },
+			  "elevate-camera": {
+				"title": "Приподнять Камеру",
+				"description": "Приподнять камеру вверх и вниз. Вы можете зажать shift что поднимать камеру быстрее."
+			  },
+			  "change-camera-lens": {
+				"title": "Изменить линзы камеры (Zoom)",
+				"description": "Изменить поле зрения линзы камеры. Если вы на нажмете скобки, то это переключится между стандаптными фикс-объективами."
+			  },
+			  "auto-shot-framing": {
+				"title": "Auto Shot Framing",
+				"description": "Выберите персонажа и затем выберите Shot Size и/или Camera Angle чтобы автоматически разместить камеру."
+			  },
+			  "roll": "Roll",
+			  "pan": "Pan",
+			  "tilt": "Наклон",
+			  "move": "Сдвиг",
+			  "elevate": "Приподнять",
+			  "lens": "Линзы",
+			  "open-shot-explorer": "Открыть Shot Explorer"
+  
+		  },
+		  "board-inspector": {
+			  "dialogue": "Диалоги",
+			  "action": "Действия",
+			  "notes": "Записки"
+		  },
+		  "camera-inspector": {
+			  "camera": "Камера",
+			  "change-active-camera": {
+				  "title": "Сменить aктивную камеру",
+				  "description": "Если на сцене несколько камер, вы можете сменить активную камера для кадра."
+			  }
+		  },
+		  "guides-inspector": {
+			  "guides": "Guides"
+		  }
 	}
 }
