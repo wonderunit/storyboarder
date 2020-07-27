@@ -436,7 +436,7 @@
 			  "obese": "Тучный",
 			  "muscular": "Мускулистый",
 			  "head": "Голова",
-			  "drop-character": "Опустит персонажа на пол",
+			  "drop-character": "Отпустит персонажа на пол",
 			  "morphs": "Morphs"
 			},
 			"character-preset": {
@@ -497,7 +497,7 @@
 				"title": "Добавить персонажа",
 				"description": "Добавить нового персонажа в сцену. Вы можете изменит позу перемещая контрольные сферы."
 			  },
-			  "title": "Персонажа"
+			  "title": "Персонаж"
 			},
 			"light": {
 			  "tooltip": {
@@ -595,5 +595,10 @@
 		  "guides-inspector": {
 			  "guides": "Guides"
 		  }
+	},
+	"shot-explorer": {
+		"insert-camera": "Добавить камеру",
+		"characters-warning": "На сцене должен быть хотябы один встроенный персонаж",
+		"on": "на"
 	}
 }

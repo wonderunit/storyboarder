@@ -596,5 +596,10 @@
 		"guides-inspector": {
 			"guides": "Guides"
 		}
-	  }
+	},
+	"shot-explorer": {
+		"insert-camera": "Insert Camera",
+		"characters-warning": "You need to add at least one built-in character to scene",
+		"on": "on"
+	}
 }
