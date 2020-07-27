@@ -335,7 +335,7 @@
 			"merge-up-title": "Смержить вверх",
 			"layer-opacity-tooltip": {
 			  	"title": "Изменить прозранчность Reference и Shot Generator слоев",
-			  	"description": "Change the opacity of the reference layer and Shot Generator layer. You will only be able to see the change if there is a saved Shot Generator shot, or something on the reference layer."
+			  	"description": "Изменить прозрачность слоев reference и Shot Generator. Вы заметите сможете заметить разницу если вы сохранили кадр в Shot Generator, или изменили что на reference слою."
 			},
 			"sts-random": {
 			  	"title": "Сгенирировать случайное изображение кадра",
@@ -351,7 +351,7 @@
 			},
 			"sts-shots": {
 			  	"title": "Сгенерировать Изображения кадра",
-			  	"description": "Click to refine data for generated shot image. Double-click to use generated shot image as reference layer."
+			  	"description": "Click to refine data for generated shot image. Двойно чтобы использовать сгенирированый кадр изображение как reference слой."
 			},
 			"scene": "Сцену",
 			"frame-rate": "Частота кадров",
@@ -364,7 +364,7 @@
 		"playback": {
 			"prev-scene-tooltip": {
 				"title": "Предыдущая сцена",
-				"description": "If current board is at the start or end of the scene, this will jump backward one scene. Otherwise this will jump to the start of the current scene."
+				"description": "Если текущая доска в начале или в конце сцены, то перейдет на одну сцену назад. В другом случае перейдет в начало текущей сцены."
 			},
 			"prev-board-tooltip": {
 				"title": "Предыдущая доска",
@@ -372,7 +372,7 @@
 			},
 			"play-tooltip": {
 				"title": "Запустить/Остановить",
-				"description": "This will toggle between playing automatically and not. The playback timing is default 2 seconds per board, or whatever is set as the board duration."
+				"description": "Это переключиться между проиграванием автоматическ или нет. Дефолтное время проигрывание 2 секунды на доску, или установленое время."
 			},
 			"next-board-tooltip": {
 				"title": "Следующая Доска",
@@ -380,7 +380,7 @@
 			},
 			"next-scene-tooltip": {
 				"title": "Следующая сцена",
-				"description": "If current board is at the start or end of the scene, this will jump forward one scene. Otherwise this will jump to the end of the current scene."
+				"description": "Если текущая доска в начале или в конце сцены, то это препрыгнет на одну сцену вперед. В другом случае перейдет в конец текущей сцены."
 			}
 		}
 	},
