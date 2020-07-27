@@ -56,10 +56,6 @@ class ShotItem {
         indexOf !== -1 && this.subscribers.splice(indexOf, 1)
     }
     
-    getFOV() {
-        
-    }
-
     toString(t) {
         if(!this.camera) return
         let focalLength = this.camera.getFocalLength()
