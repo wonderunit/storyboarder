@@ -41,7 +41,6 @@ body {
     flex-direction: column;
     background-color: rgba(0, 0, 0, 0.7);
     display: flex;
-    align-items: center;
     justify-content:space-between;
     background-size: cover;
     position: relative;
@@ -82,7 +81,54 @@ body {
     border-radius: 5px;
 
 }
+.input-sizer {
+    display: inline-grid;
+    vertical-align: top;
+    align-items: center;
+    position: relative;
+    border: solid 1px;
+    padding: .25em .5em;
+    margin: 5px;
+}
+
 .button {
     color:  #999;
     margin: 2px 12px 2px 12px;
+}
+
+.json-label {
+    color: #999;
+    margin-top: 4px;
+}
+.json-value {
+    margin-left: 10px;
+    margin-top: 4px;
+    background: transparent;
+}
+.json-row {
+    display: flex;
+}
+.json-root {
+    font-size: 14px;
+    overflow: auto;
+}
+
+.json-input-preview {
+      border: 1px solid #272822;
+      font-size: 12px;
+      margin-top: 2px;
+      color: #E4E4E4;
+      width: 200%;
+      border:none;
+}
+.json-input {
+      border-radius: 3px;
+      border: 1px solid #272822;
+      font-size: 12px;
+      color: #E4E4E4;
+      width: 200%;
+      background: transparent;
+}
+.json-text {
+    color: #999;
 }

@@ -1,16 +1,22 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect, useState } from 'react'
 import {updateHello} from './store'
 import { connect } from 'react-redux'
 import ItemList from './ItemList'
-const LanguagePreferences = React.memo(({hello, updateHello}) => {
-    useMemo(() => {
-        console.log(hello)
-    }, [hello])
+import fs from 'fs-extra'
+import path from 'path'
+import JSONEditor from './JsonEditor/JsonEditor';
+const LanguagePreferences = React.memo(({}) => {
+    const [selectedJson, selectJson] = useState({})
 
-    const updateValue = (event) => {
-        console.log(event.target.value)
-        updateHello(event.target.value)
+    useEffect(() => {
+        let json = JSON.parse(fs.readFileSync(path.join(window.__dirname,  "js/locales/en-US.json")))
+        selectJson(json)
+    }, [])
+
+    const onJsonChange = (value) => {
+        console.log("Json changed", value)
     }
+
     return (
         <div className="languages-container">
             <div className="languages-config">
@@ -25,7 +31,10 @@ const LanguagePreferences = React.memo(({hello, updateHello}) => {
                 </div>
             </div>
             <div className="language-editor">
-                <input type="text" value={hello} onChange={updateValue}></input>          
+               <JSONEditor
+                json={selectedJson}
+                onChange={onJsonChange}
+                />         
             </div>
         </div>
     )
