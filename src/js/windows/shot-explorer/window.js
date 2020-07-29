@@ -144,6 +144,10 @@ ipcRenderer.on("shot-explorer:change-language", (event, lng) => {
   i18n.changeLanguage(lng)
 })
 
+ipcRenderer.on("shot-explorer:language-modified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
+})
+
 electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
   isBoardShown = false
 })

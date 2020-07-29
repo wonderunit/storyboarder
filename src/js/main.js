@@ -1444,6 +1444,19 @@ ipcMain.on('languageChanged', (event, lng) => {
   }
 })
 
+ipcMain.on('languageModified', (event, lng) => {
+  mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('languageModified', lng)
+  let win = shotGeneratorWindow.getWindow()
+  if (win) {
+    win && !win.isDestroyed() && win.send('languageModified', lng)
+  }
+  welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send('languageModified', lng)
+  win = LanguagePreferencesWindow.getWindow() 
+  if(win) {
+    win && !win.isDestroyed() && win.send('languageModified', lng)
+  }
+})
+
 ipcMain.on('getCurrentLanguage', (event) => {
   if(welcomeWindow) {
     welcomeWindow.webContents.send('getCurrentLanguage')

@@ -1,20 +1,24 @@
 import React, { useMemo, useEffect, useState } from 'react'
+import { ipcRenderer } from 'electron'
 import {updateHello} from './store'
 import { connect } from 'react-redux'
 import ItemList from './ItemList'
 import fs from 'fs-extra'
 import path from 'path'
 import JSONEditor from './JsonEditor/JsonEditor';
+
 const LanguagePreferences = React.memo(({}) => {
     const [selectedJson, selectJson] = useState({})
-
+    const [currentLanguage, setCurrentLanguage] = useState("test")
     useEffect(() => {
-        let json = JSON.parse(fs.readFileSync(path.join(window.__dirname,  "js/locales/en-US.json")))
+        let json = JSON.parse(fs.readFileSync(path.join(window.__dirname,  `js/locales/${currentLanguage}.json`)))
         selectJson(json)
     }, [])
 
     const onJsonChange = (value) => {
-        console.log("Json changed", value)
+        let json = JSON.stringify(value)
+        fs.writeFileSync(path.join(window.__dirname,  `js/locales/${currentLanguage}.json`), json)
+        ipcRenderer.send("languageModified", currentLanguage)
     }
 
     return (

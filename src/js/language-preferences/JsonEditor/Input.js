@@ -1,10 +1,10 @@
 import { useRef, useEffect, useState } from 'react'
-const Input = ({label, value, type, marginLeft, onChange = () => {console.log("Saved")}}) => {
+const Input = ({label, value, type, marginLeft, parent, onChange = () => {console.log("Saved")}}) => {
     const [currentValue, setCurrentValue] = useState(value)
     const [isEditing, setEditing] = useState(false)
     const saveChanges = () => {
         if(currentValue !== value) {
-            onChange(currentValue)
+            onChange({key:label, value:currentValue, parent})
         }
         setEditing(false)
     }

@@ -55,7 +55,12 @@ ipcRenderer.on("languageChanged", (event, lng) => {
   i18n.off("languageChanged", changeLanguage)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
+    updateHTMLText()
   })
+})
+
+ipcRenderer.on("languageModified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => updateHTMLText())
 })
 //#endregion
 

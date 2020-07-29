@@ -111,6 +111,7 @@ body {
 .json-root {
     font-size: 14px;
     overflow: auto;
+    -webkit-app-region: none;
 }
 
 .json-input-preview {

@@ -8,6 +8,11 @@ const JsonEditor = ({json, onChange, marginLeftStep = 10}) => {
         return `${prefix}_${parentKeyPath}_${currentKey}_${marginLeft}`
     }
 
+    const applyChangesToJson = ({key, value, parent}) => {
+        parent[key] = value
+        onChange(json)
+    }
+
     const parseJSON = (currentKey, parentKeyPath, parent, elems, marginLeft) => {
         parentKeyPath = parentKeyPath + "_" + currentKey
         let data = parent[currentKey]; 
@@ -55,7 +60,7 @@ const JsonEditor = ({json, onChange, marginLeftStep = 10}) => {
                   marginLeft={marginLeft}
                   parent={parent}
                   value={data}
-                  onChange={onChange}/>
+                  onChange={applyChangesToJson}/>
               );
         }
     }

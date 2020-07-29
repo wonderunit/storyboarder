@@ -323,6 +323,12 @@ ipcRenderer.on("languageChanged", (event, lng) => {
   })
   shotExplorer.getWindow().webContents.send('shot-explorer:change-language', lng)
 })
+
+ipcRenderer.on("languageModified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
+  shotExplorer.getWindow().webContents.send('shot-explorer:language-modified', lng)
+
+})
 //#endregion
 
 

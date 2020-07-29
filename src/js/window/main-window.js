@@ -122,6 +122,10 @@ const translateTooltip = (elementName, traslationKey) => {
   element.setAttribute("data-tooltip-description", i18n.t(`${traslationKey}.description`))
 }
 
+ipcRenderer.on("languageModified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => updateHTMLText())
+})
+
 const updateHTMLText = () => { 
   //#region Toolbar elements
     //#region Tools

@@ -3,5 +3,8 @@
     "language": {
       "edit": "menu.language.edit"
     }
+  },
+  "supportedLanguages": {
+    "test-language": "supportedLanguages.test-language"
   }
 }
