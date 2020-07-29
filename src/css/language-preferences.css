@@ -1,0 +1,88 @@
+body {
+    display: flex;
+    flex-direction: row;
+    margin: 0;
+    padding: 0;
+    color: white;
+    background-size: cover;
+    font-family: 'wonderunitsans';
+    font-weight: 300;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    -webkit-app-region: drag;
+}
+  
+body {
+    user-select: none;
+    -webkit-user-select: none;
+    cursor:default;
+    line-height: 1.4;
+}  
+
+.languages-container {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    width: 100vw;
+}
+
+.languages-config {
+    width: 300px;
+    padding: 20px;
+    box-sizing: border-box;
+    color: #999;
+    position: relative;
+    overflow: scroll;
+}
+
+.language-editor {
+    flex: 1;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content:space-between;
+    background-size: cover;
+    position: relative;
+}
+
+.listing {
+    height: 200px;
+    box-sizing: border-box;
+    max-width: 300px;
+    color: #999;
+    background-color: rgba(0,0,0,0.6);
+}
+
+.listing > div {
+    overflow: auto;
+    height: 100%;
+}
+
+.element {
+    box-sizing: border-box;
+    /* padding: 6px 16px 6px 8px; */
+    display: flex;
+    flex-direction: row;
+    background-color: rgba(255,255,255,0.01);
+    font-size: 14px;
+    letter-spacing: 0.05rem;
+    max-width: 300px;
+    height: 40px;
+    overflow: hidden;
+}
+
+.modify-buttons-container  {
+    display: flex;
+    background-color: rgba(0,0,0,0.6);
+    width: -webkit-fit-content;
+    width: fit-content;
+    margin-top: 6px;
+    border-radius: 5px;
+
+}
+.button {
+    color:  #999;
+    margin: 2px 12px 2px 12px;
+}

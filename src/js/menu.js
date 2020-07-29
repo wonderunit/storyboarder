@@ -794,7 +794,6 @@ const languageOptions = (i18n) => config.supportedLanguages.map((languageCode) =
     click: () => {
       i18n.changeLanguage(languageCode, () => {
         let observers = i18n.observers.lanugageChanged
-        //console.log(i18n)
         if(!observers) return
         for(let i = 0; i < observers.length; i++) {
           observers[i](languageCode)
@@ -808,8 +807,19 @@ const languageOptions = (i18n) => config.supportedLanguages.map((languageCode) =
 const languageMenu = (i18n) => {
   return {
     label: i18n.t("Language"),
-    submenu: languageOptions(i18n)
-  }
+    submenu: [
+      ...languageOptions(i18n),
+      {
+        type: 'separator'
+      },
+      {
+        label: i18n.t('menu.language.edit'),
+        click (item, focusedWindow, event) {
+          ipcRenderer.send('openLanguagePreferences')
+        }
+      }
+    ]
+  } 
 }
 
 const template = (i18n) => [

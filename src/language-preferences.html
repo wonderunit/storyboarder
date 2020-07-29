@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link rel="stylesheet" href="./css/fonts.css">
+    <link rel="stylesheet" href="./css/language-preferences.css">
+    <link rel="stylesheet" href="./css/notifications.css">
+    <link rel="stylesheet" href="./css/keyboard.css">
+    <title>Language settings</title>
+  </head>
+  <body>
+    <div id="main">
+      <div id="config-pane">
+        <div id="close-button">&#10005;</div>
+        <h1 id="config-title">Languages</h1>
+        <div id="config-intro">Some description...</div>
+
+        <div id="button-content">
+          <div class="button grey" id="print-button">Print!</div><a id="pdf-button" class="link-button" href="#">Export PDF</a>
+
+        </div>
+      </div>
+      <div id="preview-pane">
+
+      </div>
+    </div>
+    <script>
+      require('./build/language-preferences.js')
+    </script>
+  </body>
+</html>

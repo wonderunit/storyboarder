@@ -9,6 +9,7 @@
     "start:shot-generator": "webpack --mode=development --watch --progress --config configs/shot-generator/webpack.config.js",
     "start:electron": "cross-env NODE_ENV=development electron .",
     "start:shot-explorer": "webpack --mode=development --watch --progress --config configs/shot-explorer/webpack.config.js",
+    "start:language-preferences": "webpack --mode=development --watch --progress --config configs/language-preferences/webpack.config.js",
     "start": "npm-run-all --parallel start:*",
     "dist:mac": "npm run build && electron-builder build -m",
     "dist:win": "npm run build && electron-builder build -w",

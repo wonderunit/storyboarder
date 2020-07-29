@@ -38,7 +38,7 @@ const pkg = require('../../package.json')
 const util = require('./utils/index')
 
 const autoUpdater = require('./auto-updater')
-
+const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 
@@ -1355,6 +1355,7 @@ ipcMain.on('exportImages', (event, arg) => {
 ipcMain.on('exportPDF', (event, arg) => {
   mainWindow.webContents.send('exportPDF', arg)
 })
+
 ipcMain.on('exportWeb', (event, arg) => {
   mainWindow.webContents.send('exportWeb', arg)
 })
@@ -1437,6 +1438,10 @@ ipcMain.on('languageChanged', (event, lng) => {
     win && !win.isDestroyed() && win.send('languageChanged', lng)
   }
   welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send('languageChanged', lng)
+  win = LanguagePreferencesWindow.getWindow() 
+  if(win) {
+    win && !win.isDestroyed() && win.send('languageChanged', lng)
+  }
 })
 
 ipcMain.on('getCurrentLanguage', (event) => {
@@ -1452,6 +1457,21 @@ ipcMain.on('getCurrentLanguage', (event) => {
   } else if(!language) {
     language = "en"
   }
+})
+
+ipcMain.on('openLanguagePreferences', (event) => {
+  let win = LanguagePreferencesWindow.getWindow()
+  log.info(win)
+  log.info(__dirname)
+  if (win) {
+    log.info("reveling language preferencers")
+    LanguagePreferencesWindow.reveal()
+  } else {
+    log.info("reveling language preferencers")
+    LanguagePreferencesWindow.createWindow(() => {LanguagePreferencesWindow.reveal()})
+  }
+  //openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
+  //ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
 })
 
 ipcMain.on('returnCurrentLanguage', (event, lng) => {
