@@ -2,20 +2,23 @@ const {ipcRenderer, shell, remote} = Electron = require('electron')
 const path = require('path')
 const moment = require('moment')
 const menu = require('../menu')
-const util = require('../utils/index')
 const sfx = require('../wonderunit-sound')
 const prefsModule = require('electron').remote.require('./prefs')
 const log = require('electron-log')
 const pkg = require('../../../package.json')
+
 //#region Localization 
+const {settings:languageSettings} = require('../services/language.config')
 const i18n = require('../services/i18next.config')
-const electronApp = Electron.app ? Electron.app : Electron.remote.app
-const userDataPath = electronApp.getPath('userData')
 remote.getCurrentWindow().on('focus', () => {
   menu.setWelcomeMenu(i18n)
 })
 i18n.on('loaded', (loaded) => {
-  ipcRenderer.send("getCurrentLanguage")
+  let lng = languageSettings.getSettingByKey('selectedLanguage')
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+    updateHTMLText()
+  })
   i18n.off('loaded')
 })
 
@@ -32,23 +35,10 @@ const updateHTMLText = () => {
   if(welcomeLine3) welcomeLine3.innerHTML = i18n.t("welcome-window.welcome-line-3")
 }
 
-ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
-  i18n.changeLanguage(lng, () => {
-    i18n.on("languageChanged", changeLanguage)
-    updateHTMLText()
-  })
-})
-
-const currentLanguage = (event) => {
-  ipcRenderer.send("returnCurrentLanguage", i18n.language )
-}
-ipcRenderer.on('getCurrentLanguage', currentLanguage)
-
 const changeLanguage = (lng) => {
   if(remote.getCurrentWindow().isFocused()) {
     menu.setWelcomeMenu(i18n)
   }
-  updateHTMLText()
   ipcRenderer.send("languageChanged", lng)
 }
 
@@ -57,17 +47,23 @@ ipcRenderer.on("languageChanged", (event, lng) => {
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
     updateHTMLText()
+    menu.setWelcomeMenu(i18n)
   })
 })
 
 ipcRenderer.on("languageModified", (event, lng) => {
-  i18n.reloadResources(lng).then(() => updateHTMLText())
+  i18n.reloadResources(lng).then(() => {updateHTMLText(); menu.setWelcomeMenu(i18n) } )
 })
 
 ipcRenderer.on("languageAdded", (event, lng) => {
-  console.log("languageAdded",lng)
-  i18n.loadLanguages(lng)
-  i18n.changeLanguage(lng)//.then(() => updateHTMLText())
+  languageSettings._loadFile()
+  i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); })
+})
+
+ipcRenderer.on("languageRemoved", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.changeLanguage(lng)
+  menu.setWelcomeMenu(i18n)
 })
 //#endregion
 

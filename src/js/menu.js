@@ -808,6 +808,7 @@ const languageOptions = (i18n) => config.getSettingByKey('languages').map((langu
     checked: i18n.language === languageCode,
     click: () => {
       i18n.changeLanguage(languageCode, () => {
+        config.setSettingByKey('selectedLanguage', languageCode)
         let observers = i18n.observers.lanugageChanged
         if(!observers) return
         for(let i = 0; i < observers.length; i++) {

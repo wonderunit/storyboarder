@@ -1449,15 +1449,15 @@ ipcMain.on('workspaceReady', event => {
 })
 
 const notifyAllsWindows = (event, ...args) => {
-  mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send(event, args)
+  mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send(event, ...args)
   let win = shotGeneratorWindow.getWindow()
   if (win) {
-    win && !win.isDestroyed() && win.send(event, args)
+    win && !win.isDestroyed() && win.send(event, ...args)
   }
-  welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send(event, args)
+  welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send(event, ...args)
   win = LanguagePreferencesWindow.getWindow() 
   if(win) {
-    win && !win.isDestroyed() && win.send(event, args)
+    win && !win.isDestroyed() && win.send(event, ...args)
   }
 }
 
@@ -1473,43 +1473,19 @@ ipcMain.on('languageAdded', (event, lng) => {
   notifyAllsWindows("languageAdded", lng)
 })
 
-ipcMain.on('getCurrentLanguage', (event) => {
-  if(welcomeWindow) {
-    welcomeWindow.webContents.send('getCurrentLanguage')
-  } else if(!language && mainWindow) {
-    mainWindow.webContents.send('getCurrentLanguage')
-  } else if(!language) {
-    let win = shotGeneratorWindow.getWindow()
-    if (win) {
-      language = win.send('getCurrentLanguage')
-    } 
-  } else if(!language) {
-    language = "en"
-  }
+ipcMain.on('languageRemoved', (event, lng) => {
+  notifyAllsWindows("languageRemoved", lng)
 })
 
 ipcMain.on('openLanguagePreferences', (event) => {
   let win = LanguagePreferencesWindow.getWindow()
-  log.info(win)
-  log.info(__dirname)
   if (win) {
-    log.info("reveling language preferencers")
     LanguagePreferencesWindow.reveal()
   } else {
-    log.info("reveling language preferencers")
     LanguagePreferencesWindow.createWindow(() => {LanguagePreferencesWindow.reveal()})
   }
   //openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
   //ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
-})
-
-ipcMain.on('returnCurrentLanguage', (event, lng) => {
-  mainWindow && mainWindow.webContents.send('returnCurrentLanguage', lng)
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win.send('returnCurrentLanguage', lng)
-  }
-  welcomeWindow && welcomeWindow.webContents.send('returnCurrentLanguage', lng)
 })
 
 

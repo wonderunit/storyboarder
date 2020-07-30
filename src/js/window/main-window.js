@@ -72,39 +72,28 @@ const pkg = require('../../../package.json')
 const sharedObj = remote.getGlobal('sharedObj')
 //#region Localization 
 const i18n = require('../services/i18next.config')
+const {settings:languageSettings} = require('../services/language.config')
 i18n.on('loaded', (loaded) => {
-  ipcRenderer.send("getCurrentLanguage")
-  i18n.off('loaded')
-})
-
-ipcRenderer.on("returnCurrentLanguage", (event, lng) => {
+  let lng = languageSettings.getSettingByKey('selectedLanguage')
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
     updateHTMLText()
   })
+  i18n.off('loaded')
 })
-
-const currentLanguage = (event) => {
-   ipcRenderer.send("returnCurrentLanguage", i18n.language )
-}
-ipcRenderer.on('getCurrentLanguage', currentLanguage)
 
 const changeLanguage = (lng) => {
   if(remote.getCurrentWindow().isFocused()) {
     menu.setMenu(i18n)
   }
-  updateHTMLText()
   ipcRenderer.send("languageChanged", lng)
 }
-
-ipcRenderer.on('getCurrentLanguage', (event) => {
-  event.returnValue = i18n.language
-})
 
 ipcRenderer.on("languageChanged", (event, lng) => {
   i18n.off("languageChanged", changeLanguage)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
+    updateHTMLText()
   })
 })
 
@@ -122,6 +111,17 @@ const SettingsService = require("../windows/shot-generator/SettingsService")
 
 ipcRenderer.on("languageModified", (event, lng) => {
   i18n.reloadResources(lng).then(() => updateHTMLText())
+})
+
+ipcRenderer.on("languageAdded", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); menu.setWelcomeMenu(i18n)})
+})
+
+ipcRenderer.on("languageRemoved", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.changeLanguage(lng)
+  menu.setWelcomeMenu(i18n)
 })
 
 const updateHTMLText = () => { 

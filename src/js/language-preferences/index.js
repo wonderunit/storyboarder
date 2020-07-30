@@ -19,8 +19,6 @@ const LanguagePreferences = React.memo(({}) => {
     const newLanguageName = useRef()
 
     const getFilepath = () => {
-        console.log(settings.getSettingByKey('languages'))
-        console.log(currentLanguage)
         let projectPath = path.join(window.__dirname, `js/locales/${currentLanguage}.json`)
         if(fs.existsSync(projectPath)) {
             return projectPath
