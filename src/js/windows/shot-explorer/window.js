@@ -22,6 +22,7 @@ const {
 } = require('../../shared/reducers/shot-generator')
 const i18n = require('../../services/i18next.config')
 
+require("../../shared/helpers/monkeyPatchGrayscale")
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false

@@ -2,6 +2,7 @@
 const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
+const log = require('electron-log')
 
 // TODO subscribe to store, update menu when keymap changes
 const configureStore = require('./shared/store/configureStore')
@@ -47,8 +48,15 @@ SubMenuFragments.help = (i18n) => [
     click () { shell.openExternal('https://wonderunit.com/storyboarder/faq') }
   },
   {
+    type: 'separator'
+  },
+  {
     label: i18n.t('menu.help.bug-submit'),
     click () { shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
+  },
+  {
+    label: 'Show Log File…',
+    click () { shell.showItemInFolder(log.transports.file.findLogPath()) }
   }
 ]
 SubMenuFragments.windowing = (i18n) => [
@@ -658,14 +666,21 @@ AppMenu.View = (i18n) => ({
       label: i18n.t('menu.view.zoom-in'),
       accelerator: keystrokeFor("menu:view:zoom-in"),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('zoomIn')
+        ipcRenderer.send('scale-ui-up')
       }
     },
     {
       label: i18n.t('menu.view.zoom-out'),
       accelerator: keystrokeFor("menu:view:zoom-out"),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('zoomOut')
+        ipcRenderer.send('scale-ui-down')
+      }
+    },
+    {
+      label: 'UI: Reset Scale to 100%',
+      type: 'normal',
+      click (item, focusedWindow, event) {
+        ipcRenderer.send('scale-ui-reset')
       }
     }
   ]
@@ -968,6 +983,7 @@ const shotGeneratorMenu = (i18n) => [
           ipcRenderer.send('shot-generator:object:group')
         }
       },
+      
       {
         label: i18n.t('menu.edit.open-shot-explorer'),
         accelerator: 'CommandOrControl+j',
@@ -1006,12 +1022,13 @@ const shotGeneratorMenu = (i18n) => [
           ipcRenderer.send('shot-generator:menu:view:fps-meter')
         }
       },
+      {type: 'separator'},
       {
         label: i18n.t('menu.view.scale-ui-up'),
         accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:zoom', 0.2)
+          ipcRenderer.send('shot-generator:menu:view:scale-ui', 0.2)
         }
       },
       {
@@ -1019,7 +1036,7 @@ const shotGeneratorMenu = (i18n) => [
         accelerator: keystrokeFor("menu:view:zoom-out"),
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:zoom', -0.2)
+          ipcRenderer.send('shot-generator:menu:view:scale-ui', -0.2)
         }
       },
       {
@@ -1027,9 +1044,17 @@ const shotGeneratorMenu = (i18n) => [
         accelerator: 'CommandOrControl+0',
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:resetZoom', 0)
+          ipcRenderer.send('shot-generator:menu:view:reset-ui', 0)
         }
-      }
+      },
+      {type: 'separator'},
+      {
+        accelerator: 'CommandOrControl+k',
+        label: 'Cycle Shading Mode',
+        click () {
+          ipcRenderer.send('shot-generator:view:cycleShadingMode')
+        }
+      },
     ]
   },
   {

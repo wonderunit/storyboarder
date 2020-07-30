@@ -85,15 +85,18 @@ const AttachableEditor = connect(
     }
 
     const onDelete = (attachable) => {
-      let choice = dialog.showMessageBox(null, {
+      dialog.showMessageBox(null, {
         type: "question",
         buttons: [t("shot-generator.inspector.common.yes"), t("shot-generator.inspector.common.no")],
         message: t("shot-generator.inspector.common.are-you-sure"),
         defaultId: 1 // default to No
       })
-      if (choice === 0) {
-        deleteObjects([attachable.id])
-      }
+      .then(({ response }) => {
+        if (response === 0) {
+          deleteObjects([attachable.id])
+        }
+      })
+      .catch(err => console.error(err))
     }
 
     const getNumberSlider = (sceneObject) => {

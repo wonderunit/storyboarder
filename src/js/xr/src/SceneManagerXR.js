@@ -793,7 +793,8 @@ const SceneContent = connect(
                     model: world.environment.file
                   }))}
                   environment={world.environment}
-                  visible={world.environment.visible} />
+                  visible={world.environment.visible}
+                  grayscale={ world.environment.grayscale } />
               </SimpleErrorBoundary>
               : null
           }

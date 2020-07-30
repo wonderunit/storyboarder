@@ -21,13 +21,13 @@
 			"toggle-captions": "Toggle Captions",
 			"toggle-boards-timeline-mode": "Toggle Boards/Timeline Mode",
 			"toggle-fullscreen": "Toggle Fullscreen",
-			"actual-size": "Actual Size",
+			"actual-size": "Canvas: Actual Size",
 			"zoom-in": "Zoom In",
 			"zoom-out": "Zoom Out",
 			"enable-fps-meter": "Enable FPS Meter",
-			"scale-ui-up": "Scale UI Up",
-			"scale-ui-down": "Scale UI Down",
-			"reset-ui-scale": "Reset UI Scale to 100%"
+			"scale-ui-up": "UI: Scale Up",
+			"scale-ui-down": "UI: Scale Down",
+			"reset-ui-scale": "UI: Reset Scale to 100%"
 		},
 		"file": {
 			"title": "File",
@@ -45,8 +45,8 @@
 			"print-storyboarder-worksheet": "Print a Storyboarder worksheet…",
 			"import-worksheets": "Import worksheets…",
 			"import-images-to-new-boards": "Import Images to New Boards…",
-			"import-image-and-replace": "Import Image and Replace…",
-			"export-glTF": "Export to GlTF"
+			"import-image-and-replace": "Replace Reference Layer Image…",
+			"export-glTF": "Export glTF…"
 		},
 		"edit": {
 			"title": "Edit",

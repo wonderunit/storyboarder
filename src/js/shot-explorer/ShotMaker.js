@@ -77,7 +77,7 @@ const ShotMaker = React.memo(({
     }
     useEffect(() => {
         if (!imageRenderer.current) {
-            imageRenderer.current = new THREE.WebGLRenderer({ antialias: true }), { defaultThickness:0.008 }
+            imageRenderer.current = new THREE.WebGLRenderer({ antialias: true })
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
         handleResize()
