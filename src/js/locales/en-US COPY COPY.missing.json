@@ -1,0 +1,10 @@
+{
+  "supportedLanguages": {
+    "test": "supportedLanguages.test"
+  },
+  "menu": {
+    "language": {
+      "edit": "menu.language.edit"
+    }
+  }
+}

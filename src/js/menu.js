@@ -12,7 +12,7 @@ let keystrokeFor = command => store.getState().entities.keymap[command]
 // TODO remove unused
 // const observeStore = require('./shared/helpers/observeStore')
 const i18n = require('./services/i18next.config')
-const config = require('./services/language.config')
+const {settings:config} = require('./services/language.config')
 let SubMenuFragments = {}
 SubMenuFragments.View = (i18n) => [
   ...isDev
@@ -801,7 +801,7 @@ AppMenu.about = (options = { includePreferences: false }, i18n) => {
     }
   ]
 }
-const languageOptions = (i18n) => config.supportedLanguages.map((languageCode) => {
+const languageOptions = (i18n) => config.getSettingByKey('languages').map((languageCode) => {
   return {
     label: i18n.t("supportedLanguages." + languageCode),
     type: 'radio',

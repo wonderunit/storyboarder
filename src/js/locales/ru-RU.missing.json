@@ -5,6 +5,7 @@
     }
   },
   "supportedLanguages": {
-    "test-language": "supportedLanguages.test-language"
+    "test-language": "supportedLanguages.test-language",
+    "test": "supportedLanguages.test"
   }
 }

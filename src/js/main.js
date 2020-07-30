@@ -36,7 +36,7 @@ const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index')
-
+const {settings:languageSettings} = require('./services/language.config')
 const autoUpdater = require('./auto-updater')
 const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
@@ -100,8 +100,11 @@ app.on('ready', async () => {
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
   log.info('ffmpeg version', ffmpegVersion)
 
-
-
+  // Initial set up of language-settings file
+  if(Object.keys(languageSettings.getSettings()).length === 0) {
+    log.info("Initializing language")
+    languageSettings.setSettings({supportedLanguages: ['en-US', 'ru-RU', 'test'], selectedLanguage: 'en-US'})
+  }
   // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
   let payload = {}
@@ -149,6 +152,7 @@ app.on('ready', async () => {
     // create new keymap.json
     shouldOverwrite = true
   }
+
 
   // merge with defaults
   store.dispatch({
@@ -303,7 +307,6 @@ let openKeyCommandWindow = () => {
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
-
 })
 
 let openNewWindow = () => {
@@ -394,6 +397,7 @@ let openWelcomeWindow = () => {
       if (!isDev) autoUpdater.init()
       analytics.screenView('welcome')
     }, 300)
+
   })
 
   welcomeWindow.once('close', () => {
@@ -1444,30 +1448,29 @@ ipcMain.on('workspaceReady', event => {
   })
 })
 
-ipcMain.on('languageChanged', (event, lng) => {
-  mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('languageChanged', lng)
+const notifyAllsWindows = (event, ...args) => {
+  mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send(event, args)
   let win = shotGeneratorWindow.getWindow()
   if (win) {
-    win && !win.isDestroyed() && win.send('languageChanged', lng)
+    win && !win.isDestroyed() && win.send(event, args)
   }
-  welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send('languageChanged', lng)
+  welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send(event, args)
   win = LanguagePreferencesWindow.getWindow() 
   if(win) {
-    win && !win.isDestroyed() && win.send('languageChanged', lng)
+    win && !win.isDestroyed() && win.send(event, args)
   }
+}
+
+ipcMain.on('languageChanged', (event, lng) => {
+  notifyAllsWindows("languageChanged", lng)
 })
 
 ipcMain.on('languageModified', (event, lng) => {
-  mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send('languageModified', lng)
-  let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win && !win.isDestroyed() && win.send('languageModified', lng)
-  }
-  welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send('languageModified', lng)
-  win = LanguagePreferencesWindow.getWindow() 
-  if(win) {
-    win && !win.isDestroyed() && win.send('languageModified', lng)
-  }
+  notifyAllsWindows("languageModified", lng)
+})
+
+ipcMain.on('languageAdded', (event, lng) => {
+  notifyAllsWindows("languageAdded", lng)
 })
 
 ipcMain.on('getCurrentLanguage', (event) => {

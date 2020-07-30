@@ -1,4 +1,4 @@
-const {ipcRenderer, shell, remote} = require('electron')
+const {ipcRenderer, shell, remote} = Electron = require('electron')
 const path = require('path')
 const moment = require('moment')
 const menu = require('../menu')
@@ -9,7 +9,8 @@ const log = require('electron-log')
 const pkg = require('../../../package.json')
 //#region Localization 
 const i18n = require('../services/i18next.config')
-
+const electronApp = Electron.app ? Electron.app : Electron.remote.app
+const userDataPath = electronApp.getPath('userData')
 remote.getCurrentWindow().on('focus', () => {
   menu.setWelcomeMenu(i18n)
 })
@@ -61,6 +62,12 @@ ipcRenderer.on("languageChanged", (event, lng) => {
 
 ipcRenderer.on("languageModified", (event, lng) => {
   i18n.reloadResources(lng).then(() => updateHTMLText())
+})
+
+ipcRenderer.on("languageAdded", (event, lng) => {
+  console.log("languageAdded",lng)
+  i18n.loadLanguages(lng)
+  i18n.changeLanguage(lng)//.then(() => updateHTMLText())
 })
 //#endregion
 

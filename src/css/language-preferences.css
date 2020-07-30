@@ -133,3 +133,65 @@ body {
 .json-text {
     color: #999;
 }
+
+
+/* Modal block */
+
+.modal__overlay {
+    position: fixed!important;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+  
+    display: flex;
+  
+    z-index: 999;
+}
+
+.modal__overlay > .modal__window {
+    display: block;
+
+    min-width: 256px;
+    min-height: 128px;
+    padding: 6px;
+
+    background-color: #30323d;
+    border-radius: 6px;
+}
+
+.modalInput  {
+    background: rgb(41, 41, 44);
+    border: none;
+    position: relative;
+    display: flex;
+    border: none;
+    color: #999;
+    border-radius: 6px;
+    font-size: 14px;
+    border: 1px solid transparent;
+    padding: 0 0 0 6px;
+    line-height: initial;
+}
+  
+.column {
+    display: flex;
+    flex-direction: column;
+}
+
+.skeleton-selector__div {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 40px 0 4px 0;
+  font-size: 13px;
+}
+.skeleton-selector__div .skeleton-selector__button {
+  font-size: 13px;
+  padding: 5px 5px 5px 5px;
+  background-color: #5c65c0;
+}
+
+  
+  /* End of modal */

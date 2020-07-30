@@ -1,15 +1,14 @@
 import React, { useMemo } from 'react'
-import { supportedLanguages } from '../../services/language.config'
 import Item from './item'
-const List = () => {
+const List = ({languages}) => {
 
     const elements = useMemo(() => {
         let items = []
-        for(let i = 0; i < supportedLanguages.length; i++) {
-            items.push(<Item language={supportedLanguages[i]}></Item>)
+        for(let i = 0; i < languages.length; i++) {
+            items.push(<Item language={languages[i]}></Item>)
         }  
         return items   
-    }, [])
+    }, [languages])
 
     return (
         <div className="listing">

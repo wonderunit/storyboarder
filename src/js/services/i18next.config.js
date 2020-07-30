@@ -1,23 +1,34 @@
 let i18n = require('i18next')
 let i18nextBackend = require('i18next-fs-backend')
+const Electron = require('electron')
+const electronApp = Electron.app ? Electron.app : Electron.remote.app
+const userDataPath = electronApp.getPath('userData')
 const path = require('path')
 const { initReactI18next } = require("react-i18next")
-const config = require('./language.config')
+const {settings:config} = require('./language.config')
 let loadPath 
 if(window) {
     loadPath = path.join(window.__dirname,  "js/locales/{{lng}}")
 } else {
     loadPath = path.join(__dirname, "..", "js/locales/{{lng}}")
 }
+const getLoadPath = (lng, namespace) => {
+    if(config.getSettingByKey('languages').includes(lng)) {
+        return loadPath + ".json"
+    } else {
+        return path.join(userDataPath, "locales/{{lng}}.json")
+    }
+}
+
 const i18nextOptions = {
  
     interpolation: {
         escapeValue: false
     },
     saveMissing: true,
-    whitelist: config.supportedLanguages,
-    lng: config.defaultLanguage,
-    supportedLngs: config.supportedLanguages, 
+  //  whitelist: config.supportedLanguages,
+    lng: config.getSettingByKey('selectedLanguage'),
+    //supportedLngs: config.supportedLanguages, 
     react: {
         useSuspense: true,
         wait: false
@@ -25,7 +36,7 @@ const i18nextOptions = {
     saveMissingTo: "current",
     fallbackLng: false ,
     backend: {
-        loadPath: loadPath + ".json",
+        loadPath: getLoadPath, // loadPath + ".json",
 
         addPath: loadPath + ".missing.json",
 
