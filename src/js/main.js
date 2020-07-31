@@ -388,6 +388,7 @@ let openWelcomeWindow = () => {
       count++
     }
     prefs.recentDocuments = recentDocumentsCopy
+
     prefModule.set('recentDocuments', recentDocumentsCopy)
   }
 

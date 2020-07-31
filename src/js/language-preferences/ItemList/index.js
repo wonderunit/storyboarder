@@ -1,24 +1,34 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useEffect } from 'react'
 import Item from './item'
-const List = ({languages}) => {
-
+import Grid from '../../shot-generator/components/Grid'
+import Scrollable from '../../shot-generator/components/Scrollable'
+const NUM_COLS = 4
+const ITEM_HEIGHT = 70
+const List = ({languages, onSelect, selectedLanguage}) => {
+/* 
     const elements = useMemo(() => {
         let items = []
         for(let i = 0; i < languages.length; i++) {
-            items.push(<Item language={languages[i]}></Item>)
+            items.push(<Item key={i} language={languages[i]} selectedLanguage={selectedLanguage} onClick={() => onSelect(languages[i])}></Item>)
         }  
         return items   
-    }, [languages])
+    }, [languages]) */
 
     return (
         <div className="listing">
-            <div>
-            {
-                elements
-            }
-            </div>
+            <Scrollable>
+                <Grid
+                   itemData={{
+                        selectedLanguage: selectedLanguage,
+                        onClick: onSelect
+                   }}
+                   Component={Item}
+                   elements={languages}
+                   numCols={NUM_COLS}
+                   itemHeight={ITEM_HEIGHT}
+                />
+            </Scrollable>
         </div>
-
     )
 }
 

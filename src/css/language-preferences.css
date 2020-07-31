@@ -54,10 +54,6 @@ body {
     background-color: rgba(0,0,0,0.6);
 }
 
-.listing > div {
-    overflow: auto;
-    height: 100%;
-}
 
 .element {
     box-sizing: border-box;
@@ -70,6 +66,9 @@ body {
     max-width: 300px;
     height: 40px;
     overflow: hidden;
+}
+.element-selected {
+    background-color: rgba(255, 255, 255, 0.064);
 }
 
 .modify-buttons-container  {
@@ -195,3 +194,14 @@ body {
 
   
   /* End of modal */
+
+/* start of Grid styles*/
+.scrollable {
+    overflow: auto;
+    height: 100%;
+}
+
+.scrollable::-webkit-scrollbar {
+    display: none;
+}
+/* end of Grid styles*/

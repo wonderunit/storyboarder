@@ -82,6 +82,11 @@ const LanguagePreferences = React.memo(({}) => {
         setCurrentLanguage(newLanguage)
     } 
 
+    const selectLanguage = (lng) => {
+        settings.setSettings({selectedLanguage: lng})
+        setCurrentLanguage(lng)
+        ipcRenderer.send("languageChanged", lng)
+    } 
     return (
         <div className="languages-container">
             {
@@ -110,7 +115,10 @@ const LanguagePreferences = React.memo(({}) => {
                 </Modal>
             }
             <div className="languages-config">
-                <ItemList languages={languages}/>
+                <ItemList 
+                    languages={languages} 
+                    onSelect={selectLanguage}
+                    selectedLanguage={currentLanguage} />
                 <div className="modify-buttons-container">
                     <div className="button" onClick={()=> { generateNewLanguageName(); showAddModal(true) }}>
                         +

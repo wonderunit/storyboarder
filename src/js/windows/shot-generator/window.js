@@ -293,6 +293,7 @@ ipcRenderer.on('shot-explorer:show', (event) => {
 
 //#region Localization 
 i18n.on('loaded', (loaded) => {
+  languageSettings._loadFile()
   let lng = languageSettings.getSettingByKey('selectedLanguage')
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)

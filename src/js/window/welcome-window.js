@@ -1,4 +1,4 @@
-const {ipcRenderer, shell, remote} = Electron = require('electron')
+const {ipcRenderer, shell, remote} = require('electron')
 const path = require('path')
 const moment = require('moment')
 const menu = require('../menu')
@@ -14,10 +14,12 @@ remote.getCurrentWindow().on('focus', () => {
   menu.setWelcomeMenu(i18n)
 })
 i18n.on('loaded', (loaded) => {
+  languageSettings._loadFile()
   let lng = languageSettings.getSettingByKey('selectedLanguage')
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
     updateHTMLText()
+    updateRecentDocuments()
   })
   i18n.off('loaded')
 })
@@ -39,6 +41,8 @@ const changeLanguage = (lng) => {
   if(remote.getCurrentWindow().isFocused()) {
     menu.setWelcomeMenu(i18n)
   }
+  updateHTMLText()
+  updateRecentDocuments()
   ipcRenderer.send("languageChanged", lng)
 }
 
@@ -47,7 +51,6 @@ ipcRenderer.on("languageChanged", (event, lng) => {
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
     updateHTMLText()
-    menu.setWelcomeMenu(i18n)
   })
 })
 
@@ -85,6 +88,7 @@ let updateRecentDocuments = () => {
   let html = []
 
   let recentDocuments = prefsModule.getPrefs('welcome')['recentDocuments']
+  console.log(recentDocuments)
   if (recentDocuments && recentDocuments.length>0) {
     for (var recentDocument of recentDocuments) {
       html.push(`<div class="recent-item" data-filename="${recentDocument.filename}"><img src="./img/fileicon.png" draggable="false"><div class="text">`)

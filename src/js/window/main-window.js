@@ -74,6 +74,7 @@ const sharedObj = remote.getGlobal('sharedObj')
 const i18n = require('../services/i18next.config')
 const {settings:languageSettings} = require('../services/language.config')
 i18n.on('loaded', (loaded) => {
+  languageSettings._loadFile()
   let lng = languageSettings.getSettingByKey('selectedLanguage')
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
