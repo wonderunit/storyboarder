@@ -321,6 +321,7 @@ ipcRenderer.on("languageChanged", (event, lng) => {
 })
 
 ipcRenderer.on("languageModified", (event, lng) => {
+  languageSettings._loadFile()
   i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
   shotExplorer.getWindow().webContents.send('shot-explorer:language-modified', lng)
 

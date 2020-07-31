@@ -111,6 +111,7 @@ const translateTooltip = (elementName, traslationKey) => {
 const SettingsService = require("../windows/shot-generator/SettingsService")
 
 ipcRenderer.on("languageModified", (event, lng) => {
+  languageSettings._loadFile()
   i18n.reloadResources(lng).then(() => updateHTMLText())
 })
 

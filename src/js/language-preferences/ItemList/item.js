@@ -1,5 +1,5 @@
 import classNames from 'classnames'
-const Item = ({language, selectedLanguage, onClick}) => {
+const Item = ({language, displayName, selectedLanguage, onClick}) => {
 
 
     let className = classNames("element", {
@@ -8,7 +8,7 @@ const Item = ({language, selectedLanguage, onClick}) => {
     })
     return (
         <div className={className} onClick={() => onClick(language)}>
-            {language}
+            {displayName}
         </div>
     )
 }

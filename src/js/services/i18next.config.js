@@ -28,9 +28,7 @@ const i18nextOptions = {
         escapeValue: false
     },
     saveMissing: true,
-  //  whitelist: config.supportedLanguages,
     lng: config.getSettingByKey('selectedLanguage'),
-    //supportedLngs: config.supportedLanguages, 
     react: {
         useSuspense: true,
         wait: false

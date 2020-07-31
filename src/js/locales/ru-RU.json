@@ -1,10 +1,7 @@
 {
 	"vr.enter": "VR Вход",
 	"Language": "Язык",
-	"supportedLanguages": {
-		"en-US": "Английский",
-		"ru-RU": "Русский"
-	},
+	"Name": "Русский",
 	"menu": {
 		"view": {
 			"title": "Вид",
@@ -130,6 +127,9 @@
 			"hide-others": "Спрятать остальные",
 			"unhide": "Показать",
 			"quit": "Выйти"
+		},
+		"language": {
+			"edit": "Редактировать"
 		}
 	},
 	"welcome-window": {

@@ -55,6 +55,7 @@ ipcRenderer.on("languageChanged", (event, lng) => {
 })
 
 ipcRenderer.on("languageModified", (event, lng) => {
+  languageSettings._loadFile()
   i18n.reloadResources(lng).then(() => {updateHTMLText(); menu.setWelcomeMenu(i18n) } )
 })
 

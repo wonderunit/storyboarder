@@ -103,7 +103,12 @@ app.on('ready', async () => {
   // Initial set up of language-settings file
   if(Object.keys(languageSettings.getSettings()).length === 0) {
     log.info("Initializing language")
-    languageSettings.setSettings({supportedLanguages: ['en-US', 'ru-RU', 'test'], selectedLanguage: 'en-US'})
+    languageSettings.setSettings({
+      languages: [
+        { fileName: 'en-US', displayName: 'English' },
+        { fileName: 'ru-RU', displayName: 'Русский' },
+        { fileName: 'test', displayName: 'Test' }],
+      selectedLanguage: 'en-US'})
   }
   // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')

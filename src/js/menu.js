@@ -801,13 +801,13 @@ AppMenu.about = (options = { includePreferences: false }, i18n) => {
     }
   ]
 }
-const languageOptions = (i18n) => config.getSettingByKey('languages').map((languageCode) => {
+const languageOptions = (i18n) => config.getSettingByKey('languages').map((language) => {
   return {
-    label: i18n.t("supportedLanguages." + languageCode),
+    label: language.displayName,
     type: 'radio',
-    checked: i18n.language === languageCode,
+    checked: i18n.language === language.fileName,
     click: () => {
-      config.setSettingByKey('selectedLanguage', languageCode)
+      config.setSettingByKey('selectedLanguage', language.fileName)
       i18n.changeLanguage(languageCode, () => {
         let observers = i18n.observers.lanugageChanged
         if(!observers) return

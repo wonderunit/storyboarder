@@ -29,14 +29,29 @@ const LanguagePreferences = React.memo(({}) => {
         }
     }
 
+    const getLanguageIndex = (language) => {
+        let element = languages.filter((lng) => lng.fileName === language)[0]
+        return languages.indexOf(element)
+    }
+
     useEffect(() => {
         let data = readFileSync(getFilepath())
         let json = JSON.parse(data)
-        console.log(json)
+
+        json["Name"] = languages[getLanguageIndex(currentLanguage)].displayName
+
         selectJson(json)
     }, [currentLanguage])
 
     const onJsonChange = (value) => {
+        let lng = languages[getLanguageIndex(currentLanguage)]
+
+        if(lng.displayName !== value.Name) {
+            languages[getLanguageIndex(currentLanguage)] = { fileName: currentLanguage, displayName: value.Name}
+            settings.setSettingByKey('languages', languages)
+            setLanguages(languages.slice())
+        }
+     
         let json = JSON.stringify(value)
         fs.writeFileSync(getFilepath(), json)
         ipcRenderer.send("languageModified", currentLanguage)
@@ -44,13 +59,14 @@ const LanguagePreferences = React.memo(({}) => {
 
     const generateNewLanguageName = () => {
         let isUniqueName = false
-        let newLng = currentLanguage + " copy"
+        let language = languages.find((lng) => lng.fileName === currentLanguage).displayName
+        let newLng = language + " copy"
         let iteration = 1
         while(!isUniqueName) {
-            if(!languages.includes(newLng)) {
+            if(!languages.some((lng) => lng.displayName === newLng)) {
                 isUniqueName = true
             } else {
-                newLng = currentLanguage + ` copy${iteration}`
+                newLng = language + ` copy${iteration}`
                 iteration++
             }
         }
@@ -66,7 +82,7 @@ const LanguagePreferences = React.memo(({}) => {
         ipcRenderer.send("languageAdded", lng)
         setCurrentLanguage(lng)
         let languages = settings.getSettingByKey('languages')
-        languages.push(lng)
+        languages.push({ fileName:lng, displayName: lng })
         settings.setSettings({selectedLanguage: lng, languages})
         setLanguages([...languages])
     }
@@ -84,12 +100,12 @@ const LanguagePreferences = React.memo(({}) => {
         let languages = settings.getSettingByKey('languages')
         let newLanguage = languages[0]
         fs.removeSync(path.join(builtInPath, `${currentLanguage}.json`))
-        ipcRenderer.send("languageRemoved", newLanguage)
-        let indexOf = languages.indexOf(currentLanguage)
-        languages.splice(indexOf, 1)
-        settings.setSettings({selectedLanguage: newLanguage, languages})
+        ipcRenderer.send("languageRemoved", newLanguage.fileName)
+
+        languages.splice(getLanguageIndex(currentLanguage), 1)
+        settings.setSettings({selectedLanguage: newLanguage.fileName, languages})
         setLanguages([...languages])
-        setCurrentLanguage(newLanguage)
+        setCurrentLanguage(newLanguage.fileName)
     }
 
     const selectLanguage = (lng) => {
