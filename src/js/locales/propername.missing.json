@@ -1,17 +1,17 @@
 {
-  "menu": {
-    "language": {
-      "edit": "menu.language.edit"
-    }
-  },
   "supportedLanguages": {
-    "test-language": "supportedLanguages.test-language",
     "test": "supportedLanguages.test",
     "en-US copy": "supportedLanguages.en-US copy",
     "en-US copy1 copy": "supportedLanguages.en-US copy1 copy",
     "en-US copy2": "supportedLanguages.en-US copy2",
-    "en-US copy2 copy": "supportedLanguages.en-US copy2 copy",
     "ru-RU copy": "supportedLanguages.ru-RU copy",
-    "ru-RU copy copy": "supportedLanguages.ru-RU copy copy"
+    "ru-RU copy copy": "supportedLanguages.ru-RU copy copy",
+    "en-US copy1 copy copy": "supportedLanguages.en-US copy1 copy copy",
+    "propername": "supportedLanguages.propername"
+  },
+  "menu": {
+    "language": {
+      "edit": "menu.language.edit"
+    }
   }
 }

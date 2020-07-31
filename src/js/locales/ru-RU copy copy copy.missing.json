@@ -3,7 +3,10 @@
     "test": "supportedLanguages.test",
     "en-US copy": "supportedLanguages.en-US copy",
     "en-US copy1 copy": "supportedLanguages.en-US copy1 copy",
-    "en-US copy2": "supportedLanguages.en-US copy2"
+    "en-US copy2": "supportedLanguages.en-US copy2",
+    "ru-RU copy": "supportedLanguages.ru-RU copy",
+    "ru-RU copy copy": "supportedLanguages.ru-RU copy copy",
+    "ru-RU copy copy copy": "supportedLanguages.ru-RU copy copy copy"
   },
   "menu": {
     "language": {

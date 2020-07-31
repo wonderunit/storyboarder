@@ -1,5 +1,5 @@
-import { useRef, useEffect, useState } from 'react'
-const Input = ({label, value, type, marginLeft, parent, onChange = () => {console.log("Saved")}}) => {
+import { useRef, useEffect, useState, useMemo } from 'react'
+const Input = ({label, value, type, marginLeft, parent, onChange = () => {}}) => {
     const [currentValue, setCurrentValue] = useState(value)
     const [isEditing, setEditing] = useState(false)
     const saveChanges = () => {
@@ -24,6 +24,9 @@ const Input = ({label, value, type, marginLeft, parent, onChange = () => {consol
     const onValueChange = (event) => {
         setCurrentValue(event.target.value)
     }
+    useMemo(() => {
+        setCurrentValue(value)
+    }, [value])
 
     return (
         <div 

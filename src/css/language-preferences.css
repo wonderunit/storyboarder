@@ -92,7 +92,7 @@ body {
 
 .button {
     color:  #999;
-    margin: 2px 12px 2px 12px;
+    padding: 2px 12px 2px 12px;
 }
 
 .json-label {
@@ -179,21 +179,58 @@ body {
     flex-direction: column;
 }
 
-.skeleton-selector__div {
+.modal-selector__div {
   display: flex;
   justify-content: center;
   align-items: center;
   margin: 40px 0 4px 0;
   font-size: 13px;
 }
-.skeleton-selector__div .skeleton-selector__button {
+.modal-selector__div .modal-selector__button {
   font-size: 13px;
   padding: 5px 5px 5px 5px;
   background-color: #5c65c0;
 }
 
+.modal-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+}
+
+button {
+    -webkit-app-region: no-drag;
+    outline: 0;
+    border: 0;
+    border-radius: 8px;
+    background: #1E88E5;
+    color: white;
+    font-size: 20px;
+    font-weight: 300;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-decoration: none;
+    padding: 20px 20px;
+    margin-right: 10px;
+  }
   
-  /* End of modal */
+  button:last-child {
+    margin-right: 0;
+  }
+  
+  button:hover {
+    background: #249aea;
+  }
+  
+  button:active {
+    background: #1E88E5;
+  }
+  
+  button:disabled {
+    background: gray;
+  }
+  
+/* End of modal */
 
 /* start of Grid styles*/
 .scrollable {
@@ -204,4 +241,8 @@ body {
 .scrollable::-webkit-scrollbar {
     display: none;
 }
+
+.element.zebra {
+    background-color: rgba(255,255,255,0.05);
+  }
 /* end of Grid styles*/

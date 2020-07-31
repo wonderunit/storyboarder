@@ -8,6 +8,7 @@ import path from 'path'
 import JSONEditor from './JsonEditor/JsonEditor';
 import Modal from '../shot-generator/components/Modal'
 import {settings} from '../services/language.config'
+import { isBuiltInLanguage, builtInPath} from './helpers/isBuiltInLanguage'
 const electronApp = Electron.app ? Electron.app : Electron.remote.app
 const userDataPath = electronApp.getPath('userData')
 const LanguagePreferences = React.memo(({}) => {
@@ -15,13 +16,14 @@ const LanguagePreferences = React.memo(({}) => {
     const [languages, setLanguages] = useState(settings.getSettingByKey('languages'))
     const [currentLanguage, setCurrentLanguage] = useState(settings.getSettingByKey('selectedLanguage'))
     const [isShowAddModal, showAddModal] = useState(false)
+    const [isShowWarningModal, showWarningModal] = useState(false)
     const generateLanguageName = useRef()
     const newLanguageName = useRef()
+    const warningText = useRef()
 
     const getFilepath = () => {
-        let projectPath = path.join(window.__dirname, `js/locales/${currentLanguage}.json`)
-        if(fs.existsSync(projectPath)) {
-            return projectPath
+        if(isBuiltInLanguage(currentLanguage)) {
+            return path.join(builtInPath, `${currentLanguage}.json`)
         } else {
             return path.join(userDataPath, `locales/${currentLanguage}.json`)
         }
@@ -30,6 +32,7 @@ const LanguagePreferences = React.memo(({}) => {
     useEffect(() => {
         let data = readFileSync(getFilepath())
         let json = JSON.parse(data)
+        console.log(json)
         selectJson(json)
     }, [currentLanguage])
 
@@ -69,18 +72,25 @@ const LanguagePreferences = React.memo(({}) => {
     }
 
     const removeSelectedLanguage = () => {
-        let projectPath = path.join(userDataPath, `locales/${currentLanguage}.json`)
-        if(!fs.existsSync(projectPath)) return
+        if(isBuiltInLanguage(currentLanguage)) {
+            warningText.current = "You cannot remove built-in language"
+        } else {
+            warningText.current = `Are you sure you want to remove ${currentLanguage}`
+        }
+        showWarningModal(true)
+    } 
+
+    const proceedWithRemoval = () => {
         let languages = settings.getSettingByKey('languages')
         let newLanguage = languages[0]
-        fs.removeSync(projectPath)
+        fs.removeSync(path.join(builtInPath, `${currentLanguage}.json`))
         ipcRenderer.send("languageRemoved", newLanguage)
         let indexOf = languages.indexOf(currentLanguage)
         languages.splice(indexOf, 1)
         settings.setSettings({selectedLanguage: newLanguage, languages})
         setLanguages([...languages])
         setCurrentLanguage(newLanguage)
-    } 
+    }
 
     const selectLanguage = (lng) => {
         settings.setSettings({selectedLanguage: lng})
@@ -89,6 +99,50 @@ const LanguagePreferences = React.memo(({}) => {
     } 
     return (
         <div className="languages-container">
+            {
+                isShowWarningModal && 
+                <Modal visible={ isShowWarningModal } onClose={() => showWarningModal(false)}>
+                    <div style={{ margin: "5px 5px 5px 5px" }}>
+                        {warningText.current}
+                    </div>
+                    {
+                        isBuiltInLanguage(currentLanguage) ? 
+                        <div className="modal-selector__div">
+                            <button
+                                className="modal-selector__button"
+                                onClick={() => {
+                                    showWarningModal(false)
+                                }}>
+                                    Proceed
+                            </button>
+                        </div>
+                        :
+                        <div className="modal-row">
+
+                        <div className="modal-selector__div">
+                            <button
+                                className="modal-selector__button"
+                                onClick={() => {
+                                    showWarningModal(false)
+                                }}>
+                                    Cancel
+                            </button>
+                        </div>
+                          <div className="modal-selector__div">
+                          <button
+                              className="modal-selector__button"
+                              onClick={() => {
+                                  showWarningModal(false)
+                                  proceedWithRemoval()
+                              }}>
+                                  Continue
+                          </button>
+                            </div>
+                        </div>
+                    }
+       
+                </Modal>
+            }
             {
                 isShowAddModal && 
                 <Modal visible={ isShowAddModal } onClose={() => showAddModal(false)}>
@@ -102,9 +156,9 @@ const LanguagePreferences = React.memo(({}) => {
                             placeholder={ generateLanguageName.current }
                             onChange={ (value) => newLanguageName.current = value.currentTarget.value }/>
                     </div>
-                    <div className="skeleton-selector__div">
+                    <div className="modal-selector__div">
                         <button
-                            className="skeleton-selector__button"
+                            className="modal-selector__button"
                             onClick={() => {
                                 showAddModal(false)
                                 addNewLanguage(newLanguageName.current)

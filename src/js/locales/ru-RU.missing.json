@@ -6,6 +6,9 @@
   },
   "supportedLanguages": {
     "test-language": "supportedLanguages.test-language",
-    "test": "supportedLanguages.test"
+    "test": "supportedLanguages.test",
+    "en-US copy": "supportedLanguages.en-US copy",
+    "en-US copy1 copy": "supportedLanguages.en-US copy1 copy",
+    "en-US copy2": "supportedLanguages.en-US copy2"
   }
 }

@@ -1,13 +1,14 @@
 import classNames from 'classnames'
-const Item = ({data, selectedLanguage, onClick}) => {
+const Item = ({language, selectedLanguage, onClick}) => {
 
 
     let className = classNames("element", {
-        "element-selected": data === selectedLanguage
+        "element-selected": language === selectedLanguage,
+
     })
     return (
-        <div className={className} onClick={() => onClick(data)}>
-            {data}
+        <div className={className} onClick={() => onClick(language)}>
+            {language}
         </div>
     )
 }
