@@ -297,7 +297,6 @@ i18n.on('loaded', (loaded) => {
   let lng = languageSettings.getSettingByKey('selectedLanguage')
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
-    updateHTMLText()
   })
   i18n.off('loaded')
 })

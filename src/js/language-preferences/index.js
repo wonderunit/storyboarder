@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react'
-import Electron, { ipcRenderer } from 'electron'
-import {updateHello} from './store'
+import Electron, { ipcRenderer, remote } from 'electron'
+const {dialog} = remote
 import { connect } from 'react-redux'
 import ItemList from './ItemList'
 import fs, { readFileSync } from 'fs-extra'
@@ -11,7 +11,7 @@ import {settings} from '../services/language.config'
 import { isBuiltInLanguage, builtInPath} from './helpers/isBuiltInLanguage'
 const electronApp = Electron.app ? Electron.app : Electron.remote.app
 const userDataPath = electronApp.getPath('userData')
-const LanguagePreferences = React.memo(({}) => {
+const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
     const [selectedJson, selectJson] = useState({})
     const [languages, setLanguages] = useState(settings.getSettingByKey('languages'))
     const [currentLanguage, setCurrentLanguage] = useState(settings.getSettingByKey('selectedLanguage'))
@@ -20,7 +20,6 @@ const LanguagePreferences = React.memo(({}) => {
     const generateLanguageName = useRef()
     const newLanguageName = useRef()
     const warningText = useRef()
-
     const getFilepath = () => {
         if(isBuiltInLanguage(currentLanguage)) {
             return path.join(builtInPath, `${currentLanguage}.json`)
@@ -113,6 +112,52 @@ const LanguagePreferences = React.memo(({}) => {
         setCurrentLanguage(lng)
         ipcRenderer.send("languageChanged", lng)
     } 
+
+    const exportLanguage = async () => {
+        let filePath = await dialog.showOpenDialog({
+            properties: ['openDirectory'],
+            buttonLabel: 'Export'
+        })
+        if(filePath.canceled) return
+        let json = JSON.stringify(selectedJson)
+        let savePath = path.join(filePath.filePaths[0], selectedJson.Name + '.json')
+        if(fs.existsSync(savePath)) {
+            savePath = path.join(filePath.filePaths[0], selectedJson.Name + ' new.json')
+        }
+        fs.writeFileSync(savePath, json)
+    }
+
+    const importLanguage = async () => {
+        let filePath = await dialog.showOpenDialog({
+            properties: ['openFile'],
+            filters: [
+                { name: 'Json', extensions: ['json'] },
+            ]
+        })
+        if(filePath.canceled) return
+        let file = filePath.filePaths[0]
+        let data = await fs.readFile(path.join(file))
+        let json = JSON.parse(data)
+        let displayName = json.Name
+        if(!json.Name) {
+            displayName = 'NewLanguage'
+            json.Name = displayName
+        }
+        const localesPath = path.join(userDataPath, 'locales')
+        fs.ensureDirSync(localesPath)
+        let { name } = path.parse(file)
+        const userDataFilePath = path.join(localesPath, `${name}.json`)
+        let newJson = JSON.stringify(json)
+        fs.writeFileSync(userDataFilePath, newJson)
+
+        let languages = settings.getSettingByKey('languages')
+        languages.push({ fileName:name, displayName: displayName })
+        settings.setSettings({selectedLanguage: name, languages})
+        setLanguages([...languages])
+        ipcRenderer.send("languageAdded", name)
+        setCurrentLanguage(name)
+    }
+
     return (
         <div className="languages-container">
             {
@@ -197,6 +242,14 @@ const LanguagePreferences = React.memo(({}) => {
                         -
                     </div>
                 </div>
+                <div className="modify-buttons-container">
+                    <div className="button" onClick={exportLanguage}>
+                        ExportLanguage
+                    </div>
+                    <div className="button" onClick={importLanguage}>
+                        Import
+                    </div>
+                </div>
             </div>
             <div className="language-editor">
                <JSONEditor
@@ -210,9 +263,8 @@ const LanguagePreferences = React.memo(({}) => {
 
 export default connect(
     (state)=> ({
-    hello: state.hello
+    storyboarderFilePath: state.storyboarderFilePath
     }), 
     {
-        updateHello
     }
 )(LanguagePreferences)
