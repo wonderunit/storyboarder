@@ -17,6 +17,7 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
     const [currentLanguage, setCurrentLanguage] = useState(settings.getSettingByKey('selectedLanguage'))
     const [isShowAddModal, showAddModal] = useState(false)
     const [isShowWarningModal, showWarningModal] = useState(false)
+    const [isEditable, setEditable] = useState(!isBuiltInLanguage(currentLanguage))
     const generateLanguageName = useRef()
     const newLanguageName = useRef()
     const warningText = useRef()
@@ -108,6 +109,11 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
     }
 
     const selectLanguage = (lng) => {
+        if(isBuiltInLanguage(lng)) {
+            setEditable(false)
+        } else {
+            setEditable(true)
+        }
         settings.setSettings({selectedLanguage: lng})
         setCurrentLanguage(lng)
         ipcRenderer.send("languageChanged", lng)
@@ -157,7 +163,6 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
         ipcRenderer.send("languageAdded", name)
         setCurrentLanguage(name)
     }
-
     return (
         <div className="languages-container">
             {
@@ -255,6 +260,12 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
                 </div>
             </div>
             <div className="language-editor">
+                { !isEditable && 
+                <div className="editor-warning">
+                    <div className="editor-warning-text">
+                        The default languages cannot be changed. You can copy default language and change it
+                    </div>
+                </div>  }
                <JSONEditor
                 json={selectedJson}
                 onChange={onJsonChange}

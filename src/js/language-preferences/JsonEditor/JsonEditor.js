@@ -14,7 +14,6 @@ const JsonEditor = ({json, onChange, marginLeftStep = 10}) => {
     }
 
     const parseJSON = (currentKey, parentKeyPath, parent, elems, marginLeft) => {
-        let originalParentKey = parentKeyPath
         parentKeyPath = parentKeyPath + "_" + currentKey
         let data = parent[currentKey]; 
         let label = currentKey;

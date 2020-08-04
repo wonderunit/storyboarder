@@ -162,6 +162,25 @@ body {
     color: #999;
 }
 
+.editor-warning {
+    position: fixed!important;
+    top: 0;
+    bottom: 0;
+    left: 300px;
+    right: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+  
+    z-index: 999;
+    justify-content:center;
+    align-items:center;
+}
+
+.editor-warning-text {
+    font-size: 20px;
+    color:#999;
+}
+
 
 /* Modal block */
 
