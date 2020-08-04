@@ -44,6 +44,8 @@ body {
     justify-content:space-between;
     background-size: cover;
     position: relative;
+    padding:10px;
+    width: 500px;
 }
 
 .listing {
@@ -95,6 +97,31 @@ body {
     padding: 2px 12px 2px 12px;
 }
 
+.button-io {
+    color:  #999;
+    width: 25%;
+    padding: 24px 15px;
+    background-color: rgba(0,0,0,0.6);
+    border-radius: 5px;
+    font-weight: 300;
+    font-size: 18px;
+    text-align: center;
+}
+
+  
+#button-content {
+    width:inherit;
+    position: absolute;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-around;
+    box-sizing: border-box;
+    left: 0;
+    bottom: 10px;
+    display: flex;
+}  
+  
+
 .json-label {
     color: #999;
     margin-top: 4px;
@@ -128,6 +155,8 @@ body {
       color: #E4E4E4;
       width: 200%;
       background: transparent;
+      outline: none;
+      left:auto;
 }
 .json-text {
     color: #999;
@@ -197,6 +226,10 @@ body {
     flex-direction: row;
     justify-content: space-evenly;
 }
+
+.config-title {
+    margin-top: 50px;
+  }
 
 button {
     -webkit-app-region: no-drag;

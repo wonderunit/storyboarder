@@ -14,6 +14,7 @@ const JsonEditor = ({json, onChange, marginLeftStep = 10}) => {
     }
 
     const parseJSON = (currentKey, parentKeyPath, parent, elems, marginLeft) => {
+        let originalParentKey = parentKeyPath
         parentKeyPath = parentKeyPath + "_" + currentKey
         let data = parent[currentKey]; 
         let label = currentKey;
@@ -34,7 +35,7 @@ const JsonEditor = ({json, onChange, marginLeftStep = 10}) => {
             for(let key = 0; key < data.length; key++){
                 parseJSON(key, parentKeyPath, data, elems, marginLeft + marginLeftStep);
             }
-      
+            elems.push(<div className="json-label" style={{marginLeft: marginLeft, display: "flex"}}>{'}'}</div>)
         } else if(data instanceof Object) {
             if(marginLeft > 0){//special case to avoid showing root
                 elems.push(
@@ -51,6 +52,7 @@ const JsonEditor = ({json, onChange, marginLeftStep = 10}) => {
             Object.keys(data).forEach(key => {
                 parseJSON(key, parentKeyPath, data, elems, marginLeft + marginLeftStep);
             });
+            elems.push(<div className="json-label" style={{marginLeft: marginLeft, display: "flex"}}>{'}'}</div>)
         } else {
             elems.push(
                 <Input 

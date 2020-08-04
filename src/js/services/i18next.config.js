@@ -38,7 +38,7 @@ const i18nextOptions = {
     backend: {
         loadPath: getLoadPath, // loadPath + ".json",
 
-        addPath: path.join(loadPath, "{{lng}}.missing.json"),
+        // addPath: path.join(loadPath, "{{lng}}.missing.json"),
 
         jsonIdent: 2
     },

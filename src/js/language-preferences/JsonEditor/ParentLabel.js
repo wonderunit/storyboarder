@@ -1,4 +1,3 @@
-import { useState } from "react" 
 const ParentLabel = ({value, marginLeft}) => {
 
     return (
@@ -8,11 +7,7 @@ const ParentLabel = ({value, marginLeft}) => {
             marginLeft: marginLeft, 
             display: "flex"
         }}>
-        <div>{value}</div>
-        <div 
-          title="collapse node"
-          style={{marginLeft: 5}}>
-        </div>
+        <div>{value + ' {'}</div>
         <div 
           style={{marginLeft: 10}}>
         </div>

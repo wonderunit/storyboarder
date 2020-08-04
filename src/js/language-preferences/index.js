@@ -230,6 +230,8 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
                 </Modal>
             }
             <div className="languages-config">
+                <h1 className="config-title">Language Editor</h1>
+                <div id="config-intro" style={{paddingBottom: "20px"}}>Your friendly language editor. Add, Remove, Import or Export and share with others.</div>
                 <ItemList 
                     languages={languages} 
                     onSelect={selectLanguage}
@@ -242,12 +244,13 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
                         -
                     </div>
                 </div>
-                <div className="modify-buttons-container">
-                    <div className="button" onClick={exportLanguage}>
-                        ExportLanguage
-                    </div>
-                    <div className="button" onClick={importLanguage}>
+
+                <div id="button-content">
+                    <div className="button-io " onClick={exportLanguage}>
                         Import
+                    </div>
+                    <div className="button-io " onClick={importLanguage}>
+                        Export 
                     </div>
                 </div>
             </div>
