@@ -1,27 +1,33 @@
 let i18n = require('i18next')
-let i18nextBackend = require('i18next-fs-backend')
 let Backend  = require('i18next-http-backend').default
-const path = require('path')
 const { initReactI18next } = require("react-i18next")
-const config = require('./language.config')
-let loadPath = 'data/locales/{{lng}}'
+
+// TODO(): Make Search folder locales for languages; dynamic instead of static
+let supportedLanguages = ['en-US', 'ru-RU', 'test']
+let defaultLanguage = 'en-US'
+
+const getLoadPath = (lng, namespace) => {
+    let language = lng[0]
+    if(supportedLanguages.includes(language)) {
+        return `data/locales/${lng}.json`
+    } else {
+        return `data/customLocales/${lng}.json`
+    }
+}
 
 const i18nextOptions = {
  
     interpolation: {
         escapeValue: false
     },
-    whitelist: config.supportedLanguages,
-    lng: config.supportedLanguages,
-    supportedLngs: config.supportedLanguages, 
+    lng: defaultLanguage,
     react: {
         useSuspense: true,
         wait: false
     },
-    keySeparator: false,
-    fallbackLng: config.defaultLanguage,
+    fallbackLng: defaultLanguage,
     backend: {
-        loadPath: loadPath + ".json",
+        loadPath: getLoadPath,
 
         jsonIdent: 2
     },

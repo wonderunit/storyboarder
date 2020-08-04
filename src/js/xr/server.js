@@ -182,6 +182,10 @@ class XRServer {
       path.join(staticPath, 'js', 'locales')
     ))
 
+    app.use('/data/customLocales', express.static(
+      path.join(userDataPath, 'locales')
+    ))
+
     app.use('/data/system', express.static(
       path.join(staticPath, 'data', 'shot-generator'),
       {etag: false}

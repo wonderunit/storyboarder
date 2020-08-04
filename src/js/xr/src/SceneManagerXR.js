@@ -70,9 +70,8 @@ const musicSystem = require('./music-system')
 
 const { createSelector } = require('reselect')
 const i18n = require('../../services/xr.i18next.config')
-const { withTranslation, I18nextProvider } = require('react-i18next')
+const { useTranslation, I18nextProvider } = require('react-i18next')
 i18n.on('loaded', (loaded) => {
-  i18n.changeLanguage("ru")
   i18n.off('loaded')
 })
 // TODO move to selectors if useful
@@ -141,7 +140,6 @@ const SceneContent = connect(
     SGConnection
   }) => {
     const { gl, camera, scene } = useThree()
-
     const teleportRef = useRef()
     // actions
     const set = useStore(state => state.set)
@@ -149,7 +147,12 @@ const SceneContent = connect(
 
     useEffect(() => {
       if(!language) return
-      i18n.changeLanguage(language)
+      let lng = language.lng
+      if( i18n.language === lng) {
+        i18n.reloadResources(lng)
+      } else {
+        i18n.changeLanguage(lng)
+      }
     }, [language])
 
     useMemo(() => {
@@ -831,9 +834,10 @@ const SceneContent = connect(
     )
   })
 
-const XRStartButton = withTranslation()(({ t }) => {
+const XRStartButton = (({  }) => {
   const { gl } = useThree()
   const elementP = useRef()
+  const { t } = useTranslation()
   useMemo(() => { 
     document.body.appendChild(VRButton.createButton(gl))
     let p = document.createElement("p");

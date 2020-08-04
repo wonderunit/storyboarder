@@ -808,11 +808,11 @@ const languageOptions = (i18n) => config.getSettingByKey('languages').map((langu
     checked: i18n.language === language.fileName,
     click: () => {
       config.setSettingByKey('selectedLanguage', language.fileName)
-      i18n.changeLanguage(languageCode, () => {
+      i18n.changeLanguage(language.fileName, () => {
         let observers = i18n.observers.lanugageChanged
         if(!observers) return
         for(let i = 0; i < observers.length; i++) {
-          observers[i](languageCode)
+          observers[i](language.fileName)
         }
       })
 

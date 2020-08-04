@@ -6856,17 +6856,6 @@ ipcRenderer.on('toggleNewShot', (event, args) => {
   }
 })
 
-ipcRenderer.on('get-initial-translations', (event, arg) => {
-  i18n.loadLanguages('en', (err, t) => {
-    const initial = {
-      'en': {
-        'translation': i18n.getResourceBundle('en', config.namespace)
-      }
-    };
-    event.returnValue = initial;
-  });
-});
-
 ipcRenderer.on('toggleSpeaking', (event, args) => {
   speakingMode = !speakingMode
 })

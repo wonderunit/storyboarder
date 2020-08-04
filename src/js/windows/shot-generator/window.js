@@ -27,8 +27,6 @@ const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 let sendedAction = null
 
 const { I18nextProvider } = require('react-i18next')
-//const i18n = require('i18next')
-//let initialI18nStore = ipcRenderer.sendSync('get-initial-translations');
 const i18n = require('../../services/i18next.config')
 const {settings: languageSettings} = require('../../services/language.config')
 const {SGMiddleware} = require('./../../xr/sockets')
@@ -305,7 +303,7 @@ i18n.on('loaded', (loaded) => {
 const changeLanguage = (lng) => {
   store.dispatch({
     type: "SET_CURRENT_LANGUAGE",
-    payload: lng
+    payload: {lng}
   })
   ipcRenderer.send("languageChanged", lng)
 }
