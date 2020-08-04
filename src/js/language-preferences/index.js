@@ -99,7 +99,7 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
     const proceedWithRemoval = () => {
         let languages = settings.getSettingByKey('languages')
         let newLanguage = languages[0]
-        fs.removeSync(path.join(builtInPath, `${currentLanguage}.json`))
+        fs.removeSync(path.join(userDataPath, `locales/${currentLanguage}.json`))
         ipcRenderer.send("languageRemoved", newLanguage.fileName)
 
         languages.splice(getLanguageIndex(currentLanguage), 1)
