@@ -5,6 +5,7 @@ const Input = ({label, value, type, marginLeft, parent, onChange = () => {}}) =>
     const [isEditing, setEditing] = useState(false)
     const [inputWidth, setInputWidth] = useState(0)
     const inputRef = useRef()
+    const getTextWidth = useRef({canvas: null})
 
     const saveChanges = () => {
         if(currentValue !== value) {
@@ -41,7 +42,11 @@ const Input = ({label, value, type, marginLeft, parent, onChange = () => {}}) =>
     }, [value])
 
     const resizeInput = () => {
-        let newInputWidth = inputRef.current.scrollWidth + 2;
+        let canvas = getTextWidth.current.canvas || (getTextWidth.current.canvas = document.createElement("canvas"));
+        let context = canvas.getContext("2d");
+        context.font = `bold ${inputRef.current.style.fontSize} arial`
+        let metrics = context.measureText(inputRef.current.value);
+        let newInputWidth = metrics.width + 2
 		if (newInputWidth < minWidth) {
 			newInputWidth = minWidth;
 		}
@@ -68,7 +73,10 @@ const Input = ({label, value, type, marginLeft, parent, onChange = () => {}}) =>
             { isEditing ? 
                 <input className="json-input" 
                         type="text"
-                        style={{width:inputWidth}} 
+                        style={{
+                            width:inputWidth,
+                            fontSize: "12px"
+                        }} 
                         ref={inputRef} 
                         value={currentValue} 
                         onChange={onValueChange} 
