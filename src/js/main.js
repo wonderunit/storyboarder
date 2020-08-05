@@ -102,7 +102,6 @@ app.on('ready', async () => {
 
   // Initial set up of language-settings file
   if(Object.keys(languageSettings.getSettings()).length === 0) {
-    log.info("Initializing language")
     languageSettings.setSettings({
       languages: [
         { fileName: 'en-US', displayName: 'English' },

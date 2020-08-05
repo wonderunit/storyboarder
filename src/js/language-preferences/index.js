@@ -1,5 +1,6 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react'
 import Electron, { ipcRenderer, remote } from 'electron'
+import { Math } from 'three'
 const {dialog} = remote
 import { connect } from 'react-redux'
 import ItemList from './ItemList'
@@ -73,27 +74,51 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
         newLanguageName.current = generateLanguageName.current = newLng
     }
 
+    const checkIfEditable = (lng) => {
+        if(isBuiltInLanguage(lng)) {
+            setEditable(false)
+        } else {
+            setEditable(true)
+        }
+    }
+
     const addNewLanguage = (lng) => {
         const localesPath = path.join(userDataPath, 'locales')
         fs.ensureDirSync(localesPath)
-        const filePath = path.join(localesPath, `${lng}.json`)
+        let language = Math.generateUUID() + `_${lng}`
+        const filePath = path.join(localesPath, `${language}.json`)
         let json = JSON.stringify(selectedJson)
         fs.writeFileSync(filePath, json)
-        ipcRenderer.send("languageAdded", lng)
-        setCurrentLanguage(lng)
+        ipcRenderer.send("languageAdded", language)
+        setCurrentLanguage(language)
         let languages = settings.getSettingByKey('languages')
-        languages.push({ fileName:lng, displayName: lng })
-        settings.setSettings({selectedLanguage: lng, languages})
+        languages.push({ fileName:language, displayName: lng })
+        settings.setSettings({selectedLanguage: language, languages})
         setLanguages([...languages])
+        checkIfEditable(lng)
     }
 
     const removeSelectedLanguage = () => {
         if(isBuiltInLanguage(currentLanguage)) {
             warningText.current = "You cannot remove built-in language"
         } else {
-            warningText.current = `Are you sure you want to remove ${currentLanguage}`
+            warningText.current = `Are you sure you want to remove ${removeUUIDFromName(currentLanguage)}`
         }
         showWarningModal(true)
+    } 
+
+    const removeUUIDFromName = (name) => {
+        let splits = selectedJson.Name.split('_')
+        let fileName 
+        if(splits.length === 1) {
+            fileName = splits[0]
+        } else {
+            fileName = splits[1]
+            for(let i = 2; i < splits.length; i++) {
+                fileName = "_" + splits[i]
+            }
+        }
+        return fileName
     } 
 
     const proceedWithRemoval = () => {
@@ -106,14 +131,11 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
         settings.setSettings({selectedLanguage: newLanguage.fileName, languages})
         setLanguages([...languages])
         setCurrentLanguage(newLanguage.fileName)
+        checkIfEditable(newLanguage.fileName)
     }
 
     const selectLanguage = (lng) => {
-        if(isBuiltInLanguage(lng)) {
-            setEditable(false)
-        } else {
-            setEditable(true)
-        }
+        checkIfEditable(lng)
         settings.setSettings({selectedLanguage: lng})
         setCurrentLanguage(lng)
         ipcRenderer.send("languageChanged", lng)
@@ -126,9 +148,12 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
         })
         if(filePath.canceled) return
         let json = JSON.stringify(selectedJson)
-        let savePath = path.join(filePath.filePaths[0], selectedJson.Name + '.json')
+
+        let fileName = removeUUIDFromName(selectJson.Name)
+
+        let savePath = path.join(filePath.filePaths[0], fileName + '.json')
         if(fs.existsSync(savePath)) {
-            savePath = path.join(filePath.filePaths[0], selectedJson.Name + ' new.json')
+            savePath = path.join(filePath.filePaths[0], fileName + ' new.json')
         }
         fs.writeFileSync(savePath, json)
     }
@@ -152,6 +177,7 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
         const localesPath = path.join(userDataPath, 'locales')
         fs.ensureDirSync(localesPath)
         let { name } = path.parse(file)
+        name = Math.generateUUID() + `_${name}` 
         const userDataFilePath = path.join(localesPath, `${name}.json`)
         let newJson = JSON.stringify(json)
         fs.writeFileSync(userDataFilePath, newJson)
@@ -251,10 +277,10 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
                 </div>
 
                 <div id="button-content">
-                    <div className="button-io " onClick={exportLanguage}>
+                    <div className="button-io " onClick={ importLanguage }>
                         Import
                     </div>
-                    <div className="button-io " onClick={importLanguage}>
+                    <div className="button-io " onClick={ exportLanguage }>
                         Export 
                     </div>
                 </div>
