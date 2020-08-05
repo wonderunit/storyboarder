@@ -171,7 +171,7 @@ body {
     background-color: rgba(0, 0, 0, 0.8);
     display: flex;
   
-    z-index: 999;
+    z-index: 998;
     justify-content:center;
     align-items:center;
 }
