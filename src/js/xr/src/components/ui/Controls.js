@@ -2,14 +2,14 @@ const { useMemo, useRef, useCallback } = React = require('react')
 const { useFrame } = require('react-three-fiber')
 
 const { log } = require('../../components/Log')
-
+const { useTranslation } = require('react-i18next')
 const SCALE = 1
 const POSITION = [0, 0.02, 0.01]
 const ROTATION = [-0.8, 0, 0]
 
 const Controls = React.memo(({ gltf, mode, hand = 'right', locked, getCanvasRenderer }) => {
   const ref = useRef()
-
+  const { t } = useTranslation()
   const textureRef = useRef(null)
   const getTexture = useCallback(() => {
     if (textureRef.current === null) {
@@ -65,9 +65,13 @@ const Controls = React.memo(({ gltf, mode, hand = 'right', locked, getCanvasRend
     if (material) material.opacity = locked ? 0.15 : 0.8
   }, [locked])
 
+  useEffect(() => {
+    getCanvasRenderer().needsRender = true
+  }, [t])
+
   useFrame((state, delta) => {
     if (getCanvasRenderer().needsRender) {
-      getCanvasRenderer().render()
+      getCanvasRenderer().render(t)
       getTexture().needsUpdate = true
     }
     getCanvasRenderer().needsRender = false
