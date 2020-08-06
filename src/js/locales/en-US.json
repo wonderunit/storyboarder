@@ -626,7 +626,16 @@
             "both": "Both",
             "right": "Right",
             "objects": "Objects"
-
+        },
+        "boards": {
+            "sg-has-unsaved-changed": "Shot Generator has unsaved changes.",
+            "boards.overwrite-with-vr-changes": "Are you sure you want to overwrite with VR changes?",
+            "changes-not-saved": "Changes have not been saved.",
+            "change-without-saving": "Are you sure you want to change board without saving?",
+            "ok": "OK",
+            "cancel": "Cancel",
+            "settings": "Settings",
+            "show-cameras": "Show Cameras"
         }
     }
  }

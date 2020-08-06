@@ -920,7 +920,6 @@ const SceneManagerXR = ({SGConnection}) => {
   const world = useSelector(getWorld)
 
   useEffect(() => {
-    console.log(sceneObjects)
     Object.values(sceneObjects)
       // has a value for model
       .filter(o => o.model != null)

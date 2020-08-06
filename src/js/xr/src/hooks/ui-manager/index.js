@@ -747,7 +747,7 @@ class CanvasRenderer {
     this.renderObjects(ctx, this.paneComponents['help'])
   }
 
-  renderBoards () {
+  renderBoards (t) {
 
     let canvas = this.boardsCanvas
     let ctx = this.boardsContext
@@ -780,8 +780,8 @@ class CanvasRenderer {
       roundRect(ctx, 0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30, 25, true, false)
 
       const labels = this.state.boards.confirmDialogType === 'overwrite' ?
-        [`Shot Generator has unsaved changes.`, `Are you sure you want to overwrite with VR changes?`] :
-        [`Changes have not been saved.`, `Are you sure you want to change board without saving?`]
+        [t(`xr.boards.sg-has-unsaved-changed`), t(`xr.boards.overwrite-with-vr-changes`)] :
+        [t(`xr.boards.changes-not-saved`), t(`xr.boards.change-without-saving`)]
 
       this.paneComponents['boards']['confirm-1'] = {
         id: 'confirm-1',
@@ -809,7 +809,7 @@ class CanvasRenderer {
         width: 118 + 18 * 2 - 15,
         height: 18 * 3,
         fill: '#737373',
-        label: 'OK',
+        label: t('xr.boards.ok'),
         fontSize: 18,
         fontWeight: 'bold',
 
@@ -826,7 +826,7 @@ class CanvasRenderer {
         width: 168 + 18 * 2 - 15,
         height: 18 * 3,
         fill: '#4D4E51',
-        label: 'Cancel',
+        label: t('xr.boards.cancel'),
         fontSize: 18,
         fontWeight: 'bold',
 
@@ -845,7 +845,7 @@ class CanvasRenderer {
         type: 'text',
         x: 1024 - 439 + 30,
         y: 483 + 30,
-        label: 'Settings',
+        label: t('xr.boards.settings'),
         size: 36
       }
 
@@ -854,7 +854,7 @@ class CanvasRenderer {
         type: 'text',
         x: 1024 - 439 + 30,
         y: 483 + 20 + 48 + 40 + 40 - 12,
-        label: 'Show Cameras',
+        label: t('xr.boards.show-cameras'),
         size: 24
       }
 

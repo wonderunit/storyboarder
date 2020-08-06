@@ -1,4 +1,4 @@
-const { useMemo, useRef, useCallback } = React = require('react')
+const { useMemo, useRef, useEffect, useCallback } = React = require('react')
 const { useFrame } = require('react-three-fiber')
 
 const { log } = require('../../components/Log')
