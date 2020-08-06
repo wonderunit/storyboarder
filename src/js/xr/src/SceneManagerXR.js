@@ -845,8 +845,8 @@ const XRStartButton = (({  }) => {
     document.body.appendChild(p);
   }, [])
 
-  useMemo(() => {
-    elementP.current.innerHTML = t('vr.enter')
+  useEffect(() => {
+    elementP.current.innerHTML = t('vr-enter')
   }, [t])
 
   return null
