@@ -35,6 +35,7 @@ const initializeI18n = (settings) => {
             useSuspense: true,
             wait: false
         },
+        load: 'currentOnly',
         fallbackLng: data.defaultLanguage,
         backend: {
             loadPath: getLoadPath,

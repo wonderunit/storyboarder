@@ -299,12 +299,14 @@ i18n.on('loaded', (loaded) => {
   i18n.off('loaded')
 })
 
-
-const changeLanguage = (lng) => {
+const updateLanguageInStore = (lng) => {
   store.dispatch({
     type: "SET_CURRENT_LANGUAGE",
-    payload: {lng}
+    payload: lng
   })
+}
+const changeLanguage = (lng) => {
+  updateLanguageInStore(lng)
   ipcRenderer.send("languageChanged", lng)
 }
 
@@ -321,7 +323,6 @@ ipcRenderer.on("languageModified", (event, lng) => {
   languageSettings._loadFile()
   i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
   shotExplorer.getWindow().webContents.send('shot-explorer:language-modified', lng)
-
 })
 //#endregion
 

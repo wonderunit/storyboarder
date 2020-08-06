@@ -147,12 +147,7 @@ const SceneContent = connect(
 
     useEffect(() => {
       if(!language) return
-      let lng = language.lng
-      if( i18n.language === lng) {
-        i18n.reloadResources(lng)
-      } else {
-        i18n.changeLanguage(lng)
-      }
+      i18n.changeLanguage(language)
     }, [language])
 
     useMemo(() => {
