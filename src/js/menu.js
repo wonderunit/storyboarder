@@ -801,7 +801,7 @@ AppMenu.about = (options = { includePreferences: false }, i18n) => {
     }
   ]
 }
-const languageOptions = (i18n) => config.getSettingByKey('languages').map((language) => {
+const languageOptions = (i18n) => config.getSettingByKey('builtInLanguages').concat(config.getSettingByKey('customLanguages')).map((language) => {
   return {
     label: language.displayName,
     type: 'radio',

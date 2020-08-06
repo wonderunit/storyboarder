@@ -2,14 +2,14 @@ let i18n = require('i18next')
 let Backend  = require('i18next-http-backend').default
 const { initReactI18next } = require("react-i18next")
 // TODO(): Make Search folder locales for languages; dynamic instead of static
-let supportedLanguages = ['en-US', 'ru-RU', 'test']
+let builtInLanguages = ['en-US', 'ru-RU', 'test']
 let request = new XMLHttpRequest()
 request.open("GET", "data/customLocales/language-settings.json")
 request.addEventListener( 'load', function ( event ) { initializeI18n(this.response) })
-request.send( null );
+request.send( null )
 const getLoadPath = (lng, namespace) => {
     let language = lng[0]
-    if(supportedLanguages.some((item) => item.fileName === language)) {
+    if(builtInLanguages.some((item) => item.fileName === language)) {
         return `data/locales/${lng}.json`
     } else {
         return `data/customLocales/${lng}.json`
@@ -24,7 +24,7 @@ i18n.use(Backend).use(initReactI18next)
 
 const initializeI18n = (settings) => {
     let data = JSON.parse(settings)
-    supportedLanguages = data.languages
+    builtInLanguages = data.builtInLanguages
     const i18nextOptions = {
  
         interpolation: {
@@ -35,7 +35,7 @@ const initializeI18n = (settings) => {
             useSuspense: true,
             wait: false
         },
-        fallbackLng: data.selectedLanguage,
+        fallbackLng: data.defaultLanguage,
         backend: {
             loadPath: getLoadPath,
     

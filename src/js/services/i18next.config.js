@@ -4,7 +4,6 @@ const Electron = require('electron')
 const electronApp = Electron.app ? Electron.app : Electron.remote.app
 const userDataPath = electronApp.getPath('userData')
 const path = require('path')
-const fs =  require('fs-extra')
 const { initReactI18next } = require("react-i18next")
 const {settings:config} = require('./language.config')
 let loadPath 
@@ -15,7 +14,7 @@ if(window) {
 }
 const getLoadPath = (lng, namespace) => {
     let builtInPath = path.join(loadPath, `${lng}.json`)
-    if(fs.existsSync(builtInPath)) {
+    if(config.getSettingByKey("builtInLanguages").some((item) => item.fileName === lng)) {
         return builtInPath
     } else {
         return path.join(userDataPath, `locales/${lng}.json`)
