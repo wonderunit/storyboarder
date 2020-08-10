@@ -7,6 +7,7 @@ const trash = require('trash')
 const chokidar = require('chokidar')
 const os = require('os')
 const log = require('electron-log')
+const fileSystem = require('fs')
 
 const prefModule = require('./prefs')
 prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -99,18 +100,34 @@ app.on('ready', async () => {
   const exporterFfmpeg = require('./exporters/ffmpeg')
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
   log.info('ffmpeg version', ffmpegVersion)
-
+  
   // Initial set up of language-settings file
-  if(Object.keys(languageSettings.getSettings()).length === 0) {
-    languageSettings.setSettings({
-      selectedLanguage: 'en-US',
-      defaultLanguage: 'en-US',
-      customLanguages: []})
+  let settings = {builtInLanguages:[]}
+  const dir = path.join(__dirname, "locales")
+  const files = fileSystem.readdirSync(dir)
+  for(let i = 0; i < files.length; i++) {
+    let fileName = files[i]
+    let { name, ext } = path.parse(fileName)
+    if(ext === ".json") { 
+      let data = fs.readFileSync(path.join(dir, fileName))
+      let json = JSON.parse(data)
+      if(!json.byteLength || !json) continue
+      let language = {}
+      language.fileName = name
+      language.displayName = json.Name
+      settings.builtInLanguages.push(language)
+    }
   }
-  languageSettings.setSettingByKey("builtInLanguages", [
-    { fileName: 'en-US', displayName: 'English' },
-    { fileName: 'ru-RU', displayName: 'Русский' },
-    { fileName: 'test', displayName: 'Test' }])
+  if(Object.keys(languageSettings.getSettings()).length === 0) {
+    let appLocale = app.getLocale()
+    settings.customLanguages = []
+    if(!settings.builtInLanguages.some((item) => item.fileName === app.getLocale())) {
+      appLocale = 'en-US'
+    }
+    settings.selectedLanguage = appLocale
+    settings.defaultLanguage = appLocale
+  }
+  languageSettings.setSettings(settings)
   //TODO(): Check if files of custom languages exist
   // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
