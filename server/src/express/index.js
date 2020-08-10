@@ -1,10 +1,13 @@
 import express from 'express'
 import {ExpressPeerServer} from "peer"
 import shortId from 'shortid'
+import path from 'path'
 
 import Cleanup from '../utils/cleanup'
 import {appLogger, peerLogger} from '../logger'
 import {appRouter} from "../routes"
+
+import apps from './../../apps.json'
 
 
 const PORT = process.env.PORT
@@ -28,6 +31,15 @@ export const App = async () => {
 
   app.use('/peerjs', peerServer)
   app.use('/', appRouter)
+
+
+  const XRPath = process.env.NODE_ENV === 'development' ? apps.development.XR : apps.production.XR
+  app.use('/xr', express.static(
+    path.join(XRPath)
+  ))
+  app.get('/xr', function(req, res) {
+    res.sendFile(path.join(XRPath, 'index.html'))
+  })
 
   appLogger.info(`Server was started on the ${PORT} port.`)
   

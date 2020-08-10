@@ -3,6 +3,6 @@
         "XR": "../src/js/xr/dist"
     },
     "production": {
-        "XR": "/xr"
+        "XR": "xr"
     }
 }

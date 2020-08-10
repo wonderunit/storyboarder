@@ -5,7 +5,7 @@
   "description": "The fastest way to storyboard.",
   "main": "src/js/main.js",
   "scripts": {
-    "start:xr": "parcel watch --no-hmr src/js/xr/src/index.html -d src/js/xr/dist",
+    "start:xr": "webpack --mode=development --watch --progress --config configs/xr/webpack.config.js",
     "start:shot-generator": "webpack --mode=development --watch --progress --config configs/shot-generator/webpack.config.js",
     "start:ar": "webpack --mode=development --watch --progress --config configs/ar/webpack.config.js",
     "start:shot-explorer": "webpack --mode=development --watch --progress --config configs/shot-explorer/webpack.config.js",
@@ -25,7 +25,7 @@
     "build-thumbnails": "electron test/views/thumbnail-renderer/main.js",
     "build:shot-generator": "webpack --mode=production --progress --config configs/shot-generator/webpack.config.js",
     "build:shot-explorer": "webpack --mode=production --progress --config configs/shot-explorer/webpack.config.js",
-    "build:xr": "parcel build src/js/xr/src/index.html -d src/js/xr/dist --no-source-maps",
+    "build:xr": "webpack --mode=production --progress --config configs/xr/webpack.config.js",
     "build": "npm-run-all build:*"
   },
   "repository": {
@@ -131,6 +131,7 @@
     "@tweenjs/tween.js": "^18.5.0",
     "babel-loader": "^8.0.6",
     "babel-plugin-add-module-exports": "^1.0.2",
+    "clean-webpack-plugin": "^3.0.0",
     "cross-env": "^5.2.0",
     "css-loader": "^3.5.3",
     "dotenv": "8.2.0",

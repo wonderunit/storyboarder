@@ -21,6 +21,9 @@ const {
 const RemoteDevice = require('./../../shared/network/client')
 const SceneManagerXR = require('./SceneManagerXR')
 
+import './style.css'
+import './../vendor/rStats.css'
+
 const SGConnection = RemoteDevice.connect()
 
 const configureStore = preloadedState => {
