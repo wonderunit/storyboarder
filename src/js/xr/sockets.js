@@ -8,6 +8,7 @@ import {
   setId,
   SelectActions
 } from './../shared/reducers/remoteDevice'
+import P2P from './../shared/network/p2p'
 
 const IO = {current: null}
 
@@ -24,81 +25,94 @@ const dispatchRemote = (action, meta = {}) => {
     }
   }
 
-  IO.current.emit('action', SGAction)
+  IO.current.broadcast('action', SGAction)
 }
 
-const onUserConnect = (io, socket, store) => {
-  const connectAction = addUser(socket.id)
+const onUserConnect = (emit, broadcast, id, store) => {
+  const connectAction = addUser(id)
   remoteStore.dispatch(connectAction)
-  socket.broadcast.emit('remoteAction', connectAction)
+  broadcast('remoteAction', connectAction)
 
   dispatchRemote(mergeState(store.getState()))
-  socket.emit('remoteAction', setId(socket.id))
+  emit('remoteAction', setId(id))
 }
 
-export const serve = (io, store, service) => {
-  IO.current = io
-  //localStorage.debug = '*'
-  localStorage.removeItem('debug')
+export const serve = (store, service) => {
+  const peer = P2P()
+  const {io, broadcast} = peer
   
-  io.on('connection', (socket) => {
+  IO.current = peer
 
-    console.log('%c XR', 'color: #4CAF50', `User has been connected: ${socket.id}`)
-    onUserConnect(io, socket, store)
-    socket.on('action', (action) => {
+  io.on('open', (id) => {
+    console.log('currentID: ', id)
+  })
+
+  io.on('error', (err) => {
+    console.error(err)
+  })
+
+  io.on('disconnected', () => {
+    console.log('Discconected from the lobby server')
+  })
+  
+  io.on('connection', ({emitter, emit, id}) => {
+
+    console.log('%c XR', 'color: #4CAF50', `User has been connected: ${id}`)
+    onUserConnect(emit, broadcast, id, store)
+    emitter.on('action', (action) => {
       store.dispatch(action)
     })
 
-    socket.on('debug', (data) => {
+    emitter.on('debug', (data) => {
       console.log('%c Log', 'color: #0088ff', data)
     })
 
-    socket.on('remote', (info) => {
-      const infoAction = updateUser(socket.id, info)
+    emitter.on('remote', (info) => {
+      const infoAction = updateUser(id, info)
       
       remoteStore.dispatch(infoAction)
-      socket.broadcast.emit('remoteAction', infoAction)
+      broadcast('remoteAction', infoAction)
     })
     
-    socket.on('disconnect', (reason) => {
-      console.log('%c XR', 'color: #4CAF50', `User has been disconnected: ${socket.id}, because of the: ${reason}`)
+    emitter.on('close', (reason) => {
+      console.log('%c XR', 'color: #4CAF50', `User has been disconnected: ${id}, because of the: ${reason}`)
       
-      const disconnectAction = removeUser(socket.id)
+      const disconnectAction = removeUser(id)
       
       remoteStore.dispatch(disconnectAction)
-      socket.broadcast.emit('remoteAction', disconnectAction)
+      broadcast('remoteAction', disconnectAction)
     })
 
-    socket.on('getBoards', async () => {
-      socket.emit('getBoards', await service.getBoards())
+    emitter.on('getBoards', async () => {
+      emit('getBoards', await service.getBoards())
     })
 
-    socket.on('setBoard', async (uid) => {
+    emitter.on('setBoard', async (uid) => {
       let boards = await service.getBoards()
       if (boards.find(board => board.uid === uid)) {
         console.log('New board ID: ', uid)
         await service.loadBoardByUid(uid)
       }
       
-      socket.emit('setBoard')
+      emit('setBoard')
     })
 
-    socket.on('saveShot', async () => {
+    emitter.on('saveShot', async () => {
       await service.saveShot()
-      socket.emit('saveShot')
+      emit('saveShot')
     })
 
-    socket.on('insertShot', async () => {
-      socket.emit('insertShot', await service.insertShot())
+    emitter.on('insertShot', async () => {
+      emit('insertShot', await service.insertShot())
     })
 
-    socket.on('getSg', async () => {
+    emitter.on('getSg', async () => {
       let board = await service.getBoard(store.getState().board.uid)
-      socket.emit('getSg', board)
+      emit('getSg', board)
     })
 
-    socket.on('isSceneDirty', () => {
-      socket.emit('isSceneDirty', getIsSceneDirty(store.getState()))
+    emitter.on('isSceneDirty', () => {
+      emit('isSceneDirty', getIsSceneDirty(store.getState()))
     })
     
   })

@@ -16,6 +16,9 @@ const {serve} = require('./sockets')
 
 const fs = require('fs-extra')
 const forge = require('node-forge')
+
+const Peer = require('peerjs').default
+
 // via https://github.com/parcel-bundler/parcel/blob/8e80016d8b61c5d68759bfd1caa9fb827e46643c/packages/core/utils/src/generateCertificate.js
 function generateCertificate (host) {
   let certDirectory = electronApp.getPath('userData')
@@ -354,7 +357,9 @@ class XRServer {
       // via https://expressjs.com/en/4x/api.html#app.listen
       const server = https.createServer({ ...generateCertificate() }, app)
       server.keepAliveTimeout = 0
-      serve(io(server, { wsEngine: 'ws', serveClient: false, pingInterval: 5000, pingTimeout: 60000 }), store, service)
+      //serve(io(server, { wsEngine: 'ws', serveClient: false, pingInterval: 5000, pingTimeout: 60000 }), store, service)
+      
+      serve(store, service)
 
       server.on('error', err => {
         console.error(err)
@@ -380,6 +385,8 @@ class XRServer {
       log.error(err)
       throw err
     }
+
+    
   }
 }
 

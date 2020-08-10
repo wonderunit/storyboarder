@@ -1,7 +1,6 @@
-import SocketClient from 'socket.io-client'
-
 import {RestrictedActions, remoteStore, setId, SelectActions} from "../reducers/remoteDevice"
 import {deselectObject} from "../reducers/shot-generator"
+import P2P from './p2p'
 
 const each = (fn, countRef) => {
   let times = 0
@@ -16,13 +15,43 @@ const each = (fn, countRef) => {
 }
 
 export const connect = (URI = '') => {
-  //localStorage.debug = '*'
-  localStorage.removeItem('debug')
-  const client = SocketClient.connect(URI, {rejectUnauthorized: false})
+  const urlParams = new URLSearchParams(window.location.search)
+  const roomId = urlParams.get('id')
 
+  if (!roomId) {
+    alert('Room is not entered')
+    return false
+  }
+
+  const p2p = P2P()
+  const {io, peer, P2PClientConnection} = p2p
+
+  let client, emit
+  let store = {current: null}
+  
+  P2PClientConnection(roomId).then((conn) => {
+    client = conn.emitter
+    emit = conn.emit
+
+    console.log('Connected !!!', store)
+
+    client.on('remoteAction', (data) => {
+      remoteStore.dispatch(data)
+    })
+
+    client.on('action', (data) => {
+      console.log('Action', data)
+      store.current.dispatch(data)
+    })
+  })
+  
   let FRAME_RATE = {current: 10}
 
   const dispatchRemote = (action, meta = {}) => {
+    if (!client) {
+      return false
+    }
+
     const XRAction = {
       ...action,
       meta: {
@@ -30,59 +59,82 @@ export const connect = (URI = '') => {
         isXR: true
       }
     }
-
-    client.emit('action', XRAction)
+    emit('action', XRAction)
   }
   
-  const connectStore = (store) => {
-    client.on('remoteAction', (data) => {
-      remoteStore.dispatch(data)
-    })
-
-    client.on('action', (data) => {
-      store.dispatch(data)
-    })
+  const connectStore = (appStore) => {
+    store.current = appStore
   }
 
   const getBoards = async () => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (!client) {
+        reject()
+        return false
+      }
+
       client.once('getBoards', resolve)
-      client.emit('getBoards')
+      emit('getBoards')
     })
   };
 
   const saveShot = async () => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (!client) {
+        reject()
+        return false
+      }
+
       client.once('saveShot', resolve)
-      client.emit('saveShot')
+      emit('saveShot')
     })
   };
 
   const insertShot = () => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (!client) {
+        reject()
+        return false
+      }
+
       client.once('insertShot', resolve)
-      client.emit('insertShot')
+      emit('insertShot')
     })
   };
 
   const getSg = () => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (!client) {
+        reject()
+        return false
+      }
+
       client.once('getSg', resolve)
-      client.emit('getSg')
+      emit('getSg')
     })
   };
 
   const setBoard = (board) => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (!client) {
+        reject()
+        return false
+      }
+
       client.once('setBoard', resolve)
-      client.emit('setBoard', board)
+      emit('setBoard', board)
     })
   };
 
   const isSceneDirty = () => {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      if (!client) {
+        reject()
+        return false
+      }
+
       client.once('isSceneDirty', resolve)
-      client.emit('isSceneDirty')
+      emit('isSceneDirty')
     })
   };
 
@@ -116,11 +168,19 @@ export const connect = (URI = '') => {
   }
 
   const sendRemoteInfo = each((info) => {
-    client.emit('remote', info)
+    if (!client) {
+      return false
+    }
+
+    emit('remote', info)
   }, FRAME_RATE)
 
   const setActive = (active = true) => {
-    client.emit('remote', {active})
+    if (!client) {
+      return false
+    }
+
+    emit('remote', {active})
   }
 
   return {
@@ -128,7 +188,7 @@ export const connect = (URI = '') => {
     
     sendInfo: (info, immediate) => sendRemoteInfo([info], immediate),
     setActive,
-    log: (info) => client.emit('debug', info),
+    log: (info) => emit('debug', info),
     
     ClientMiddleware,
     

@@ -40,6 +40,8 @@ dist/
 !src/js/vendor/**/dist
 
 src/build
+server/dist
+server/node_modules
 
 .vscode
 

@@ -6,6 +6,7 @@ const {
   createStore,
   applyMiddleware
 } = require('redux')
+
 const ReactDOM = require('react-dom')
 
 const {Provider} = require('react-redux')
@@ -18,6 +19,8 @@ const {
 } = require('../../shared/reducers/shot-generator')
 
 const RemoteDevice = require('./../../shared/network/client')
+const SceneManagerXR = require('./SceneManagerXR')
+
 const SGConnection = RemoteDevice.connect()
 
 const configureStore = preloadedState => {
@@ -27,8 +30,6 @@ const configureStore = preloadedState => {
   }
   return store
 }
-
-const SceneManagerXR = require('./SceneManagerXR')
 
 const store = configureStore({...initialState})
 SGConnection.connectStore(store)
