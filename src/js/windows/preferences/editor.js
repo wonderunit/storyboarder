@@ -257,13 +257,15 @@ const openLanguageEditor = () => {
 let selectedOption
 
 const selectLanguage = (language) => {
+  languageSettings.setSettingByKey('selectedLanguage', language.fileName)
   i18n.changeLanguage(language.fileName)
 }
 
 const initializeLanguageList = () => {
   let languages = languageSettings.getSettingByKey('builtInLanguages').concat(languageSettings.getSettingByKey('customLanguages'))
   let button = document.getElementsByClassName("dropbtn")[0]
-  button.textContent = languages.find((item) => item.fileName === languageSettings.getSettingByKey('selectedLanguage')).displayName
+  let selectedLanguage = languageSettings.getSettingByKey('selectedLanguage')
+  button.textContent = languages.find((item) => item.fileName === selectedLanguage).displayName
   button.onclick = showDropContent
   let optionContainer = document.getElementById("myDropdown")
   optionContainer.innerHTML = ''
@@ -271,7 +273,7 @@ const initializeLanguageList = () => {
     let option = document.createElement("div")
     let language = languages[i]
     option.textContent = language.displayName
-    if(button.textContent === language.displayName) {
+    if(selectedLanguage === language.fileName) {
       option.classList.toggle("selected")
       selectedOption = option
     }
