@@ -26,18 +26,15 @@ const i18nextOptions = {
     interpolation: {
         escapeValue: false
     },
-    saveMissing: true,
+
     lng: config.getSettingByKey('selectedLanguage'),
     react: {
         useSuspense: true,
         wait: false
     },
-    saveMissingTo: "current",
-    fallbackLng: false ,
+    fallbackLng:  config.getSettingByKey('defaultLanguage'),
     backend: {
-        loadPath: getLoadPath, // loadPath + ".json",
-
-        // addPath: path.join(loadPath, "{{lng}}.missing.json"),
+        loadPath: getLoadPath,
 
         jsonIdent: 2
     },

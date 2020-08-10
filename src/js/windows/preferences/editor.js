@@ -19,6 +19,48 @@ let prefs,
 let hasChanged
 let originalPrefs
 
+//#region i18n setup 
+const { settings:languageSettings } = require('./js/services/language.config')
+const i18n = require('./js/services/i18next.config')
+i18n.on('loaded', (loaded) => {
+  languageSettings._loadFile()
+  let lng = languageSettings.getSettingByKey('selectedLanguage')
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+  })
+  i18n.off('loaded')
+})
+
+const changeLanguage = (lng) => {
+  ipcRenderer.send("languageChanged", lng)
+}
+
+ipcRenderer.on("languageChanged", (event, lng) => {
+  i18n.off("languageChanged", changeLanguage)
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+  })
+})
+
+ipcRenderer.on("languageModified", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.reloadResources(lng)
+  initializeLanguageList()
+})
+
+ipcRenderer.on("languageAdded", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); })
+  initializeLanguageList()
+})
+
+ipcRenderer.on("languageRemoved", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.changeLanguage(lng)
+  initializeLanguageList()
+})
+//#endregion
+
 const onChange = (name, event) => {
   let el = event.target
 
@@ -190,6 +232,61 @@ const render = () => {
   }
 }
 
+const showDropContent = () => {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
+const openLanguageEditor = () => {
+  ipcRenderer.send('openLanguagePreferences')
+}
+
+let selectedOption
+
+const selectLanguage = (language) => {
+  i18n.changeLanguage(language.fileName)
+}
+
+const initializeLanguageList = () => {
+  let languages = languageSettings.getSettingByKey('builtInLanguages').concat(languageSettings.getSettingByKey('customLanguages'))
+  let button = document.getElementsByClassName("dropbtn")[0]
+  button.textContent = languages.find((item) => item.fileName === languageSettings.getSettingByKey('selectedLanguage')).displayName
+  button.onclick = showDropContent
+  let optionContainer = document.getElementById("myDropdown")
+  optionContainer.innerHTML = ''
+  for(let i = 0; i < languages.length; i++ ) {
+    let option = document.createElement("div")
+    let language = languages[i]
+    option.textContent = language.displayName
+    if(button.textContent === language.displayName) {
+      option.classList.toggle("selected")
+      selectedOption = option
+    }
+    option.onclick = (event) => { 
+      button.textContent = event.target.textContent 
+      selectedOption.classList.remove("selected")
+      option.classList.toggle("selected")
+      selectedOption = option
+      selectLanguage(language)
+    }
+    optionContainer.appendChild(option)
+  }
+}
+
+
 const init = () => {
   hasChanged = false
   originalPrefs = util.stringifyClone(prefsModule.getPrefs())
@@ -211,6 +308,11 @@ const init = () => {
   revealKeyMapFileEl = document.querySelector('#revealKeyMapFile')
   signOutEl = document.querySelector('#signOut')
 
+  initializeLanguageList()
+  let languageEditor = document.getElementsByClassName('open-language-editor')[0].children[0]
+  languageEditor.textContent = "Open language editor"
+  languageEditor.onclick = openLanguageEditor
+
   // bind
   for (let el of inputs) {
     el.addEventListener('change', onChange.bind(this, el.name))
@@ -230,6 +332,7 @@ const init = () => {
   window.ondragleave = () => { return false }
   window.ondragend = () => { return false }
   window.ondrop = () => { return false }
+
 
   window.onbeforeunload = (e) => {
     if (hasChanged) {

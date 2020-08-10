@@ -12,7 +12,6 @@ let keystrokeFor = command => store.getState().entities.keymap[command]
 // TODO remove unused
 // const observeStore = require('./shared/helpers/observeStore')
 const i18n = require('./services/i18next.config')
-const {settings:config} = require('./services/language.config')
 let SubMenuFragments = {}
 SubMenuFragments.View = (i18n) => [
   ...isDev
@@ -801,42 +800,6 @@ AppMenu.about = (options = { includePreferences: false }, i18n) => {
     }
   ]
 }
-const languageOptions = (i18n) => config.getSettingByKey('builtInLanguages').concat(config.getSettingByKey('customLanguages')).map((language) => {
-  return {
-    label: language.displayName,
-    type: 'radio',
-    checked: i18n.language === language.fileName,
-    click: () => {
-      config.setSettingByKey('selectedLanguage', language.fileName)
-      i18n.changeLanguage(language.fileName, () => {
-        let observers = i18n.observers.lanugageChanged
-        if(!observers) return
-        for(let i = 0; i < observers.length; i++) {
-          observers[i](language.fileName)
-        }
-      })
-
-    }
-  }
-})
-
-const languageMenu = (i18n) => {
-  return {
-    label: i18n.t("Language"),
-    submenu: [
-      ...languageOptions(i18n),
-      {
-        type: 'separator'
-      },
-      {
-        label: i18n.t('menu.language.edit'),
-        click (item, focusedWindow, event) {
-          ipcRenderer.send('openLanguagePreferences')
-        }
-      }
-    ]
-  } 
-}
 
 const template = (i18n) => [
   ...AppMenu.about({ includePreferences: true }, i18n),
@@ -848,7 +811,6 @@ const template = (i18n) => [
   AppMenu.View(i18n),
   AppMenu.window(i18n),
   AppMenu.help(i18n),
-  languageMenu(i18n)
 ]
 
 const welcomeTemplate = (i18n) =>[
@@ -913,8 +875,7 @@ const welcomeTemplate = (i18n) =>[
     submenu: [
       ...SubMenuFragments.help(i18n)
     ]
-  },
-  languageMenu(i18n)
+  }
 ]
 
 const shotGeneratorMenu = (i18n) => [
@@ -1071,8 +1032,7 @@ const shotGeneratorMenu = (i18n) => [
     submenu: [
       ...SubMenuFragments.help(i18n)
     ]
-  },
-  languageMenu(i18n)
+  }
 ]
 
 const setWelcomeMenu = (i18n) => {

@@ -111,7 +111,6 @@ app.on('ready', async () => {
     if(ext === ".json") { 
       let data = fs.readFileSync(path.join(dir, fileName))
       let json = JSON.parse(data)
-      if(!json.byteLength || !json) continue
       let language = {}
       language.fileName = name
       language.displayName = json.Name
@@ -1476,14 +1475,14 @@ ipcMain.on('workspaceReady', event => {
 const notifyAllsWindows = (event, ...args) => {
   mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send(event, ...args)
   let win = shotGeneratorWindow.getWindow()
-  if (win) {
-    win && !win.isDestroyed() && win.send(event, ...args)
-  }
+  win && !win.isDestroyed() && win.send(event, ...args)
+
   welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send(event, ...args)
   win = LanguagePreferencesWindow.getWindow() 
-  if(win) {
-    win && !win.isDestroyed() && win.send(event, ...args)
-  }
+  win && !win.isDestroyed() && win.send(event, ...args)
+
+  win = preferencesUI.getWindow()
+  win && !win.isDestroyed() && win.send(event, ...args)
 }
 
 ipcMain.on('languageChanged', (event, lng) => {
