@@ -94,6 +94,23 @@ app.on('open-file', (event, path) => {
   }
 })
 
+const syncLanguages = (dir, isLanguageFile, array) => {
+  let files = fileSystem.readdirSync(dir)
+  for(let i = 0; i < files.length; i++) {
+    let fileName = files[i]
+    let { name, ext } = path.parse(fileName)
+    
+    if(isLanguageFile(name, ext)) { 
+      let data = fs.readFileSync(path.join(dir, fileName))
+      let json = JSON.parse(data)
+      let language = {}
+      language.fileName = name
+      language.displayName = json.Name
+      array.push(language)
+    }
+  }
+}
+
 app.on('ready', async () => {
   analytics.init(prefs.enableAnalytics)
 
@@ -102,30 +119,29 @@ app.on('ready', async () => {
   log.info('ffmpeg version', ffmpegVersion)
   
   // Initial set up of language-settings file
-  let settings = {builtInLanguages:[]}
-  const dir = path.join(__dirname, "locales")
-  const files = fileSystem.readdirSync(dir)
-  for(let i = 0; i < files.length; i++) {
-    let fileName = files[i]
-    let { name, ext } = path.parse(fileName)
-    if(ext === ".json") { 
-      let data = fs.readFileSync(path.join(dir, fileName))
-      let json = JSON.parse(data)
-      let language = {}
-      language.fileName = name
-      language.displayName = json.Name
-      settings.builtInLanguages.push(language)
-    }
-  }
+  let settings = {builtInLanguages:[], customLanguages:[]}
+  let dir = path.join(__dirname, "locales")
+  syncLanguages(dir, (name, ext) => ext === ".json", settings.builtInLanguages)
+  dir = path.join(app.getPath('userData'), "locales")
+  syncLanguages(dir, (name, ext) => ext === ".json" && name !== "language-settings", settings.customLanguages)
   if(Object.keys(languageSettings.getSettings()).length === 0) {
     let appLocale = app.getLocale()
-    settings.customLanguages = []
     if(!settings.builtInLanguages.some((item) => item.fileName === app.getLocale())) {
       appLocale = 'en-US'
     }
     settings.selectedLanguage = appLocale
     settings.defaultLanguage = appLocale
+  } else {
+    let selectedLanguage = languageSettings.getSettingByKey("selectedLanguage")
+    if(!settings.builtInLanguages.some((item) => item.fileName === selectedLanguage) &&
+    !settings.customLanguages.some((item) => item.fileName === selectedLanguage)) {
+    settings.selectedLanguage = languageSettings.getSettingByKey("defaultLanguage")
+}
   }
+
+
+
+
   languageSettings.setSettings(settings)
   //TODO(): Check if files of custom languages exist
   // load key map
