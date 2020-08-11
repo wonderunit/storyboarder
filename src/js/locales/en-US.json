@@ -269,6 +269,9 @@
           }
        },
        "board-information":{
+          "shot": "Shot",
+          "of": "of",
+          "board": "Board",
           "line-mileage":{
              "title":"Line Mileage",
              "description":"As you draw, the line miles for the shot add up. This is useful to know how much you are drawing per shot. Remember, you aren't trying to make the next Moner Lisa. You're just trying to get the idea across."
@@ -277,10 +280,12 @@
              "title":"Open",
              "description":"Open Shot Generator"
           },
-          "new-shot":{
+          "new-shot": "New Shot?",
+          "new-shot-tooltip":{
              "title":"Is this board a new shot?",
              "description":"Check this box if the board is a new shot. You can have multiple boards per shot. This way you can animate or make a transition in a shot."
           },
+          "duration": "Duration",
           "duration-ms":{
              "title":"Set the board duration",
              "description":"Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. 2000 milliseconds is the default."

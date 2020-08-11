@@ -102,6 +102,12 @@ const translateHtml = (elementName, traslationKey) => {
   document.querySelector(elementName).innerHTML = i18n.t(`${traslationKey}`)
 }
 
+const translateCheckbox = (elementName, traslationKey) => {
+  let childNodes = document.querySelector(elementName).childNodes
+  if(childNodes.length === 0) return
+  childNodes[childNodes.length - 1].textContent = i18n.t(traslationKey)
+}
+
 const translateTooltip = (elementName, traslationKey) => {
   let element = document.querySelector(elementName)
   if(!element) return
@@ -173,9 +179,13 @@ const updateHTMLText = () => {
     //#endregion
   //#endregion
   //#region board-information
+  renderShotMetadata()
+
+  translateCheckbox("#new-shot-label", "main-window.board-information.new-shot")
+  translateCheckbox("#duration", "main-window.board-information.duration")
   translateTooltip("#line-mileage", "main-window.board-information.line-mileage")
   translateTooltip("#shot-generator-container", "main-window.board-information.shot-generator-container")
-  translateTooltip("#new-shot", "main-window.board-information.new-shot")
+  translateTooltip("#new-shot", "main-window.board-information.new-shot-tooltip")
   translateTooltip("#duration-ms", "main-window.board-information.duration-ms")
   translateTooltip("#duration-fps", "main-window.board-information.duration-fps")
   translateHtml("#dialog-title", "main-window.board-information.dialog-title")
@@ -3617,9 +3627,13 @@ let renderMarkerPosition = () => {
   })
 }
 
+const renderShotMetadata = () => {
+  document.querySelector('#board-metadata #shot').innerHTML = `${i18n.t('main-window.board-information.shot')}: ` + boardData.boards[currentBoard].shot
+  document.querySelector('#board-metadata #board-numbers').innerHTML = `${i18n.t('main-window.board-information.board')}: ` + boardData.boards[currentBoard].number + ` ${i18n.t("main-window.board-information.of")} ` + boardData.boards.length
+}
+
 let renderMetaData = () => {
-  document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + boardData.boards[currentBoard].shot
-  document.querySelector('#board-metadata #board-numbers').innerHTML = 'Board: ' + boardData.boards[currentBoard].number + ' of ' + boardData.boards.length
+  renderShotMetadata()
 
   // reset values
   let editableInputs = document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')
