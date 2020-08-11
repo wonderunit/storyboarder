@@ -8,8 +8,8 @@
   </head>
   <body class="preferences-window">
     <div class="preferences-form">
-      <h1 class="preferences-title">Preferences</h1>
-      <div class="preferences-hint" style="margin: 0 0 48px">
+      <h1 class="preferences-title" id="preferences-title">Preferences</h1>
+      <div class="preferences-hint" id="restart-hint" style="margin: 0 0 48px">
         Please restart Storyboarder to apply changes.
       </div>
 
@@ -20,7 +20,7 @@
             name="enableTooltips"
             id="enableTooltips" />
 
-          <label for="enableTooltips">
+          <label for="enableTooltips" id="show-tooltips">
             <span></span>Show Tooltips
           </label>
         </div>
@@ -31,10 +31,10 @@
             name="enableAutoSave"
             id="enableAutoSave" />
 
-          <label for="enableAutoSave">
+          <label for="enableAutoSave" id="save-automatically">
             <span></span>Save Project Data Automatically
           </label>
-          <div class="preferences-hint">
+          <div class="preferences-hint" id="saving-hint">
             When disabled, use "File > Save" to save project data. Note that changes to image data are always saved automatically.
           </div>
         </div>
@@ -56,10 +56,10 @@
             name="enableForcePsdReloadOnFocus"
             id="enableForcePsdReloadOnFocus" />
 
-          <label for="enableForcePsdReloadOnFocus">
+          <label for="enableForcePsdReloadOnFocus" id="force-psd-reload">
             <span></span>Force reload of watched PSD when Storyboarder regains focus
           </label>
-          <div class="preferences-hint">
+          <div class="preferences-hint" id="psd-reload-hint">
             Enable if working from a network drive.
             Disable to improve performance when switching between
             Storyboarder and other apps. When disabled, Storyboarder only 
@@ -74,7 +74,7 @@
             id="defaultBoardTiming" />
 
           <label for="defaultBoardTiming">
-            <span style="font-size: 87.5%; margin-left: 0.5em;">
+            <span style="font-size: 87.5%; margin-left: 0.5em;" id="default-timing">
               Default Board Timing (in msecs)
             </span>
           </label>
@@ -91,12 +91,12 @@
                 id="absolutePathToImageEditor" />
             </div>
             <div>
-              <label for="absolutePathToImageEditor" class="label-filename">
+              <label for="absolutePathToImageEditor" class="label-filename" id="external-psd-editor">
                 External PSD Editor
               </label>
             </div>
           </div>
-          <div class="preferences-hint">
+          <div class="preferences-hint" id="psd-editor-hint">
             Select an application (e.g.: .exe or .app). By default this will be the application associated in your operating system for opening PSD files.
             To reset to default, cancel the file prompt.
           </div>
@@ -105,11 +105,11 @@
         <div class="preferences-input">
           <a id="revealKeyMapFile" class="button" href="#">
             <svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-showfile"></use></svg>
-            <span>
+            <span id="reveal-keymap-file">
               Reveal Keymap File
             </span>
           </a>
-          <div class="preferences-hint">
+          <div class="preferences-hint" id="reveal-keymap-file-hint">
             You can choose which keys are bound to which Storyboarder commands by editing
             the Keymap JSON file in a source code editor like Atom or VS Code.
           </div>
@@ -121,16 +121,16 @@
             name="enableDiagnostics"
             id="enableDiagnostics" />
 
-          <label for="enableDiagnostics">
+          <label for="enableDiagnostics" id="show-diagnostics">
             <span></span>Show Diagnostics
           </label>
-          <div class="preferences-hint">
+          <div class="preferences-hint" id="show-diagnostics-hint">
             Displays how fast Storyboarder is able to run in frames-per-second over time. Useful for troubleshooting.
           </div>
         </div>
 
         <div class="preferences-input">
-          <label for="straightLineDelayInMsecs">
+          <label for="straightLineDelayInMsecs" id="line-delay">
             Straight Line Delay
           </label>
 
@@ -146,7 +146,7 @@
             ---
           </span>
 
-          <div class="preferences-hint">
+          <div class="preferences-hint" id="line-delay-hint">
             Pause for this long while drawing to switch to straight line mode.<br/>
             Hold <kbd>Shift</kbd> to draw a straight line.<br/>
             Hold <kbd>Alt/Option</kbd> while drawing a straight line to snap angles.
@@ -155,7 +155,7 @@
       </div>
 
       <div class="preferences-fieldset">
-        <h2 class="preferences-subhead">Notifications</h2>
+        <h2 class="preferences-subhead" id="notifications">Notifications</h2>
 
         <div class="preferences-input">
           <input
@@ -163,7 +163,7 @@
             name="enableNotifications"
             id="enableNotifications" />
 
-          <label for="enableNotifications">
+          <label for="enableNotifications" id="show-notifications">
             <span></span>Enable Notifications
           </label>
         </div>
@@ -174,7 +174,7 @@
             name="enableAspirationalMessages"
             id="enableAspirationalMessages" />
 
-          <label for="enableAspirationalMessages">
+          <label for="enableAspirationalMessages" id="aspirational-message">
             <span></span>Show Hourly Affirmations
           </label>
         </div>
@@ -185,15 +185,15 @@
             name="allowNotificationsForLineMileage"
             id="allowNotificationsForLineMileage" />
 
-          <label for="allowNotificationsForLineMileage">
+          <label for="allowNotificationsForLineMileage" id="notifications-line-mileage">
             <span></span>Allow Comments on Line Mileage
           </label>
         </div>
       </div>
 
       <div class="preferences-fieldset">
-        <h2 class="preferences-subhead">Sounds</h2>
-        <div class="preferences-hint" style="margin: 0 0 24px">
+        <h2 class="preferences-subhead" id="sounds">Sounds</h2>
+        <div class="preferences-hint" style="margin: 0 0 24px" id="sounds-hint">
           Sounds might slow down Storyboarder on some computers.<br />
           You can turn them off for better performance.
         </div>
@@ -203,7 +203,7 @@
             name="enableDrawingSoundEffects"
             id="enableDrawingSoundEffects" />
 
-          <label for="enableDrawingSoundEffects">
+          <label for="enableDrawingSoundEffects" id="drawing-sound-effect">
             <span></span>Drawing Sound Effects
           </label>
         </div>
@@ -214,7 +214,7 @@
             name="enableDrawingMelodySoundEffects"
             id="enableDrawingMelodySoundEffects" />
 
-          <label for="enableDrawingMelodySoundEffects">
+          <label for="enableDrawingMelodySoundEffects" id="drawing-melodies">
             <span></span>Drawing Melodies
           </label>
         </div>
@@ -225,7 +225,7 @@
             name="enableUISoundEffects"
             id="enableUISoundEffects" />
 
-          <label for="enableUISoundEffects">
+          <label for="enableUISoundEffects" id="ui-sound-effect">
             <span></span>User Interface Sound Effects
           </label>
         </div>
@@ -236,15 +236,15 @@
             name="enableHighQualityAudio"
             id="enableHighQualityAudio" />
 
-          <label for="enableHighQualityAudio">
+          <label for="enableHighQualityAudio" id="enable-high-quality-audio">
             <span></span>Enable High Quality Audio
           </label>
         </div>
       </div>
 
       <div class="preferences-fieldset">
-        <h2 class="preferences-subhead">Performance Enhancements</h2>
-        <div class="preferences-hint" style="margin: 0 0 24px">
+        <h2 class="preferences-subhead" id="performance-enhancements">Performance Enhancements</h2>
+        <div class="preferences-hint" style="margin: 0 0 24px" id="performance-enhancements-hint">
             Disable these if drawing feels slow.
           </div>
 
@@ -254,11 +254,11 @@
               name="enableHighQualityDrawingEngine"
               id="enableHighQualityDrawingEngine" />
 
-            <label for="enableHighQualityDrawingEngine">
+            <label for="enableHighQualityDrawingEngine" id="high-quality-drawing-engine">
               <span></span>High Quality Drawing Engine
             </label>
 
-            <div class="preferences-hint">
+            <div class="preferences-hint" id="high-quality-drawing-engine-hint">
               When enabled, a higher-quality drawing engine with more advanced brushes is used. When disabled, the (faster) Efficiency Mode drawing engine is used.
             </div>
           </div>
@@ -309,8 +309,8 @@
       </div>
 
       <div class="preferences-fieldset">
-        <h2 class="preferences-subhead">Languages</h2>
-        <div class="preferences-hint" style="margin: 0 0 24px">
+        <h2 class="preferences-subhead" id="languages">Languages</h2>
+        <div class="preferences-hint" style="margin: 0 0 24px" id="languages-hint">
             Select Storyboard language or create you own 
           </div>
 
@@ -321,8 +321,8 @@
             </div>
           </div>
           <div class="open-language-editor">
-            <button>
-
+            <button id="open-language-editor">
+              Open language editor
             </button>
           </div>
       </div>
@@ -332,11 +332,11 @@
       <div id="storyboardersAccount" class="preferences-fieldset">
         <div class="preferences-input">
           <a id="signOut" class="button" href="#">
-            <span>
+            <span id="sign-out">
               Sign Out
             </span>
           </a>
-          <div class="preferences-hint">
+          <div class="preferences-hint" id="sign-out-hint">
             You are Signed In to your Storyboarders.com account
           </div>
         </div>
@@ -346,9 +346,9 @@
 
     <template id="licensed-template">
       <div id="licensed">
-        <h2 class="preferences-title" style="font-size: 32px">Thanks for supporting Storyboarder!</h2>
+        <h2 class="preferences-title" style="font-size: 32px" id="thanks-for-support">Thanks for supporting Storyboarder!</h2>
         <div class="preferences-hint" style="margin-bottom: 2rem">
-          <p>Here are some additional features for supporters.</p>
+          <p id="additional-features-for-support">Here are some additional features for supporters.</p>
         </div>
 
         <div class="preferences-fieldset">
@@ -358,7 +358,7 @@
               name="enableWatermark"
               id="enableWatermark" />
 
-            <label for="enableWatermark">
+            <label for="enableWatermark" id="add-watermark">
               <span></span>Add watermark to exported images and video.
             </label>
           </div>
@@ -374,7 +374,7 @@
                   id="watermarkFile" />
               </div>
               <div>
-                <label for="watermarkFile" class="label-filename">
+                <label for="watermarkFile" class="label-filename" id="custom-watermark">
                   Custom watermark image (leave blank for default)
                 </label>
               </div>

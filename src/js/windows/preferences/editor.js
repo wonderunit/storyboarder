@@ -26,25 +26,29 @@ i18n.on('loaded', (loaded) => {
   languageSettings._loadFile()
   let lng = languageSettings.getSettingByKey('selectedLanguage')
   i18n.changeLanguage(lng, () => {
+    updateHTML()
     i18n.on("languageChanged", changeLanguage)
   })
   i18n.off('loaded')
 })
 
 const changeLanguage = (lng) => {
+  console.log("Update html")
+  updateHTML()
   ipcRenderer.send("languageChanged", lng)
 }
 
 ipcRenderer.on("languageChanged", (event, lng) => {
   i18n.off("languageChanged", changeLanguage)
   i18n.changeLanguage(lng, () => {
+    updateHTML()
     i18n.on("languageChanged", changeLanguage)
   })
 })
 
 ipcRenderer.on("languageModified", (event, lng) => {
   languageSettings._loadFile()
-  i18n.reloadResources(lng)
+  i18n.reloadResources(lng).then(() => {updateHTML();})
   initializeLanguageList()
 })
 
@@ -59,6 +63,54 @@ ipcRenderer.on("languageRemoved", (event, lng) => {
   i18n.changeLanguage(lng)
   initializeLanguageList()
 })
+
+const translateHtml = (elementName, traslationKey) => {
+  let elem = document.querySelector(elementName)
+  if(!elem || !elem.childNodes.length) return
+  elem.childNodes[elem.childNodes.length - 1].textContent = i18n.t(traslationKey)
+}
+
+const updateHTML = () => {
+  translateHtml("#preferences-title", "preferences.title")
+  translateHtml("#preferences-hint",  "preferences.restart-hint")
+  translateHtml("#show-tooltips",      "preferences.show-tooltips")
+  translateHtml("#save-automatically", "preferences.save-automatically")
+  translateHtml("#saving-hint", "preferences.saving-hint")
+  translateHtml("#force-psd-reload", "preferences.force-psd-reload")
+  translateHtml("#psd-reload-hint", "preferences.psd-reload-hint")
+  translateHtml("#default-timing", "preferences.default-timing")
+  translateHtml("#external-psd-editor", "preferences.external-psd-editor")
+  translateHtml("#psd-editor-hint", "preferences.psd-editor-hint")
+  translateHtml("#reveal-keymap-file", "preferences.reveal-keymap-file")
+  translateHtml("#reveal-keymap-file-hint", "preferences.reveal-keymap-file-hint")
+  translateHtml("#show-diagnostics", "preferences.show-diagnostics")
+  translateHtml("#show-diagnostics-hint", "preferences.show-diagnostics-hint")
+  translateHtml("#line-delay", "preferences.line-delay")
+  translateHtml("#line-delay-hint", "preferences.line-delay-hint")
+  translateHtml("#notifications", "preferences.notifications")
+  translateHtml("#show-notifications", "preferences.show-notifications")
+  translateHtml("#aspirational-message", "preferences.aspirational-message")
+  translateHtml("#notifications-line-mileage", "preferences.notifications-line-mileage")
+  translateHtml("#sounds", "preferences.sounds")
+  translateHtml("#sounds-hint", "preferences.sounds-hint")
+  translateHtml("#drawing-sound-effect", "preferences.drawing-sound-effect")
+  translateHtml("#drawing-melodies", "preferences.drawing-melodies")
+  translateHtml("#ui-sound-effect", "preferences.ui-sound-effect")
+  translateHtml("#enable-high-quality-audio", "preferences.enable-high-quality-audio")
+  translateHtml("#performance-enhancements", "preferences.performance-enhancements")
+  translateHtml("#performance-enhancements-hint", "preferences.performance-enhancements-hint")
+  translateHtml("#high-quality-drawing-engine", "preferences.high-quality-drawing-engine")
+  translateHtml("#high-quality-drawing-engine-hint", "preferences.high-quality-drawing-engine-hint")
+  translateHtml("#languages", "preferences.languages")
+  translateHtml("#languages-hint", "preferences.languages-hint")
+  translateHtml("#open-language-editor", "preferences.open-language-editor")
+  translateHtml("#sign-out", "preferences.sign-out")
+  translateHtml("#sign-out-hint", "preferences.sign-out-hint")
+  translateHtml("#thanks-for-support", "preferences.thanks-for-support")
+  translateHtml("#additional-features-for-support", "preferences.additional-features-for-support")
+  translateHtml("#add-watermark", "preferences.add-watermark")
+  translateHtml("#custom-watermark", "preferences.custom-watermark")
+}
 //#endregion
 
 const onChange = (name, event) => {
@@ -312,7 +364,6 @@ const init = () => {
 
   initializeLanguageList()
   let languageEditor = document.getElementsByClassName('open-language-editor')[0].children[0]
-  languageEditor.textContent = "Open language editor"
   languageEditor.onclick = openLanguageEditor
 
   // bind
