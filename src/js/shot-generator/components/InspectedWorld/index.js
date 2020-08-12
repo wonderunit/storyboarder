@@ -110,7 +110,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           <div className="inspector-row">
             <div className="input-group">
               <div className="input-group__label">
-                Shading Mode
+                {t("shot-generator.inspector.inspected-world.shading-mode")}
               </div>
               <div style={{
                 flex: 1,
@@ -148,7 +148,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
             <Checkbox label={t("shot-generator.inspector.common.visible")} checked={world.environment.visible} onClick={setEnvVisible}/>
           </div>
           <div className="inspector-row">
-            <Checkbox label="Grayscale" checked={world.environment.grayscale} onClick={setGrayscale}/>
+            <Checkbox label={t("shot-generator.inspector.inspected-world.grayscale")}  checked={world.environment.grayscale} onClick={setGrayscale}/>
           </div>
           <div className="inspector-column inspector-offset-row">
             <FileInput

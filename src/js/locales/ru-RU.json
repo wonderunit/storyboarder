@@ -23,7 +23,8 @@
 			"enable-fps-meter": "Включить счетчик ФПС ",
 			"scale-ui-up": "Увеличить размер UI",
 			"scale-ui-down": "Уменьшить размер UI",
-			"reset-ui-scale": "Сбросить размер UI на 100%"
+			"reset-ui-scale": "Сбросить размер UI на 100%",
+			"cycle-shading-mode": "Переключиться между режимами затенения"
 		},
 		"file": {
 			"title": "Файл",
@@ -398,9 +399,11 @@
 			  "bg-color": "Цвет фона",
 			  "room": "Комната",
 			  "environment": "Окружение",
-			  "ambient-light": " Ambient свет",
-			  "directional-light": "Directional свет",
-			  "fog": "Туман"
+			  "ambient-light": "Окружающее освещение",
+			  "directional-light": "Направленое освещение",
+			  "fog": "Туман",
+			  "grayscale": "Оттенки серого",
+			  "shading-mode": "Режим затенения"
 			},
 			"common": {
 			  "object-creation-help": "Как создавать 3D модели для Кастомных Объектов",

@@ -23,7 +23,8 @@
           "enable-fps-meter":"Enable FPS Meter",
           "scale-ui-up":"UI: Scale Up",
           "scale-ui-down":"UI: Scale Down",
-          "reset-ui-scale":"UI: Reset Scale to 100%"
+          "reset-ui-scale":"UI: Reset Scale to 100%",
+          "cycle-shading-mode": "Cycle Shading Mode"
        },
        "file":{
           "title":"File",
@@ -400,7 +401,10 @@
              "environment":"Environment",
              "ambient-light":"Ambient light",
              "directional-light":"Directional light",
-             "fog":"Fog"
+             "fog":"Fog",
+             "grayscale": "Grayscale",
+             "shading-mode": "Shading Mode"
+
           },
           "common":{
              "object-creation-help":"How to Create 3D Models for Custom Objects",

@@ -1012,7 +1012,7 @@ const shotGeneratorMenu = (i18n) => [
       {type: 'separator'},
       {
         accelerator: 'CommandOrControl+k',
-        label: 'Cycle Shading Mode',
+        label: i18n.t('menu.view.cycle-shading-mode'),
         click () {
           ipcRenderer.send('shot-generator:view:cycleShadingMode')
         }
