@@ -33,7 +33,6 @@ i18n.on('loaded', (loaded) => {
 })
 
 const changeLanguage = (lng) => {
-  console.log("Update html")
   updateHTML()
   ipcRenderer.send("languageChanged", lng)
 }

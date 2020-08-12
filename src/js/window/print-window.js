@@ -10,6 +10,80 @@ const os = require('os')
 const path = require('path')
 
 const exporterCommon = require('../exporters/common')
+//#region i18n setup
+let isWorksheetExport = false
+const { settings:languageSettings } = require('../services/language.config')
+const i18n = require('../services/i18next.config')
+i18n.on('loaded', (loaded) => {
+  languageSettings._loadFile()
+  let lng = languageSettings.getSettingByKey('selectedLanguage')
+  i18n.changeLanguage(lng, () => {
+    updateHTML()
+    i18n.on("languageChanged", changeLanguage)
+  })
+  i18n.off('loaded')
+})
+
+const changeLanguage = (lng) => {
+  updateHTML()
+  ipcRenderer.send("languageChanged", lng)
+}
+
+ipcRenderer.on("languageChanged", (event, lng) => {
+  i18n.off("languageChanged", changeLanguage)
+  i18n.changeLanguage(lng, () => {
+    updateHTML()
+    i18n.on("languageChanged", changeLanguage)
+  })
+})
+
+ipcRenderer.on("languageModified", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.reloadResources(lng).then(() => {updateHTML();})
+})
+
+ipcRenderer.on("languageAdded", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); })
+})
+
+ipcRenderer.on("languageRemoved", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.changeLanguage(lng)
+})
+
+const translateHtml = (elementName, traslationKey) => {
+  let elem = document.querySelector(elementName)
+  if(!elem || !elem.childNodes.length) return
+  elem.childNodes[elem.childNodes.length - 1].textContent = i18n.t(traslationKey)
+}
+
+const updateHTML = () => {
+  if(!isWorksheetExport) {
+    translateHtml("#config-title", "print-window.pdf-title")
+    translateHtml("#config-intro", "print-window.pdf-intro") 
+  } else {
+    translateHtml("#config-title", "print-window.worksheet-title")
+    translateHtml("#config-intro", "print-window.worksheet-intro") 
+  }
+  translateHtml("#paper-size", "print-window.paper-size")
+  translateHtml("#letter", "print-window.letter")
+  translateHtml("#format", "print-window.format")
+  translateHtml("#paper-orientation-label", "print-window.paper-orientation-label")
+  translateHtml("#paper-orientation-landscape", "print-window.paper-orientation-landscape")
+  translateHtml("#paper-orientation-portrait", "print-window.paper-orientation-portrait")
+  translateHtml("#columns-label", "print-window.columns-label")
+  translateHtml("#rows-label", "print-window.rows-label")
+  translateHtml("#spacing-label", "print-window.spacing-label")
+  translateHtml("#copies-label", "print-window.copies-label")
+  translateHtml("#print-button", "print-window.print-button")
+  translateHtml("#pdf-button", "print-window.pdf-button")
+  translateHtml("#prev_button", "print-window.prev_button")
+  translateHtml("#page-info", "print-window.page-info")
+  translateHtml("#next_button", "print-window.next_button")
+}
+//#endregion
+
 
 let paperSize
 let paperOrientation
@@ -349,8 +423,8 @@ ipcRenderer.on('worksheetData', (event, _aspectRatio, _currentScene, _scriptData
   currentScene = _currentScene
   scriptData = _scriptData
   document.querySelector('#paper-orientation-row').style.display = 'none';
-  document.querySelector('#config-title').textContent = 'Print a worksheet';
-  document.querySelector('#config-intro').textContent = 'Draw thumbnail boards on this printed worksheet and magically import them back into your storyboarder file!';
+  updateHTML()
+  isWorksheetExport = true
   generateWorksheet()
 })
 

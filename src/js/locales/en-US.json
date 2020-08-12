@@ -683,5 +683,26 @@
        "additional-features-for-support": "Here are some additional features for supporters.",
        "add-watermark": "Add watermark to exported images and video.",
        "custom-watermark": "Custom watermark image (leave blank for default)"
+    },
+    "print-window": {
+       "pdf-title": "Print",
+       "pdf-intro": "Your storyboard printed the way you like. Choose the format and either directly print or export it to PDF.",
+       "worksheet-title": "Print a worksheet",
+       "worksheet-intro": "Draw thumbnail boards on this printed worksheet and magically import them back into your storyboarder file!",
+       "paper-size": "Paper Size",
+       "letter": "Letter",
+       "format": "A4",
+       "paper-orientation-label": "Paper Orientation",
+       "paper-orientation-landscape": "Landscape",
+       "paper-orientation-portrait": "Portrait",
+       "columns-label": "Columns",
+       "rows-label": "Rows",
+       "spacing-label": "Spacing",
+       "copies-label": "Copies",
+       "print-button": "Print!",
+       "pdf-button": "Export PDF",
+       "prev_button": "Previous",
+       "page-info": "Page",
+       "next_button": "Next"
     }
  }
