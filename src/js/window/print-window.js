@@ -12,11 +12,9 @@ const path = require('path')
 const exporterCommon = require('../exporters/common')
 //#region i18n setup
 let isWorksheetExport = false
-const { settings:languageSettings } = require('../services/language.config')
 const i18n = require('../services/i18next.config')
 i18n.on('loaded', (loaded) => {
-  languageSettings._loadFile()
-  let lng = languageSettings.getSettingByKey('selectedLanguage')
+  let lng = ipcRenderer.sendSync("getCurrentLanguage")
   i18n.changeLanguage(lng, () => {
     updateHTML()
     i18n.on("languageChanged", changeLanguage)
@@ -38,17 +36,14 @@ ipcRenderer.on("languageChanged", (event, lng) => {
 })
 
 ipcRenderer.on("languageModified", (event, lng) => {
-  languageSettings._loadFile()
   i18n.reloadResources(lng).then(() => {updateHTML();})
 })
 
 ipcRenderer.on("languageAdded", (event, lng) => {
-  languageSettings._loadFile()
   i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); })
 })
 
 ipcRenderer.on("languageRemoved", (event, lng) => {
-  languageSettings._loadFile()
   i18n.changeLanguage(lng)
 })
 

@@ -8,14 +8,12 @@ const log = require('electron-log')
 const pkg = require('../../../package.json')
 
 //#region Localization 
-const {settings:languageSettings} = require('../services/language.config')
 const i18n = require('../services/i18next.config')
 remote.getCurrentWindow().on('focus', () => {
   menu.setWelcomeMenu(i18n)
 })
 i18n.on('loaded', (loaded) => {
-  languageSettings._loadFile()
-  let lng = languageSettings.getSettingByKey('selectedLanguage')
+  let lng = ipcRenderer.sendSync("getCurrentLanguage")
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
     updateHTMLText()
@@ -55,17 +53,14 @@ ipcRenderer.on("languageChanged", (event, lng) => {
 })
 
 ipcRenderer.on("languageModified", (event, lng) => {
-  languageSettings._loadFile()
   i18n.reloadResources(lng).then(() => {updateHTMLText(); menu.setWelcomeMenu(i18n) } )
 })
 
 ipcRenderer.on("languageAdded", (event, lng) => {
-  languageSettings._loadFile()
   i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); })
 })
 
 ipcRenderer.on("languageRemoved", (event, lng) => {
-  languageSettings._loadFile()
   i18n.changeLanguage(lng)
   menu.setWelcomeMenu(i18n)
 })

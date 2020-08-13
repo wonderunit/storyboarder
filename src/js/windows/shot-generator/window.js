@@ -28,7 +28,6 @@ let sendedAction = null
 
 const { I18nextProvider } = require('react-i18next')
 const i18n = require('../../services/i18next.config')
-const {settings: languageSettings} = require('../../services/language.config')
 const {SGMiddleware} = require('./../../xr/sockets')
 
 require("../../shared/helpers/monkeyPatchGrayscale")
@@ -291,8 +290,7 @@ ipcRenderer.on('shot-explorer:show', (event) => {
 
 //#region Localization 
 i18n.on('loaded', (loaded) => {
-  languageSettings._loadFile()
-  let lng = languageSettings.getSettingByKey('selectedLanguage')
+  let lng = ipcRenderer.sendSync("getCurrentLanguage")
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
   })
@@ -320,7 +318,6 @@ ipcRenderer.on("languageChanged", (event, lng) => {
 })
 
 ipcRenderer.on("languageModified", (event, lng) => {
-  languageSettings._loadFile()
   i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
   shotExplorer.getWindow().webContents.send('shot-explorer:language-modified', lng)
 })

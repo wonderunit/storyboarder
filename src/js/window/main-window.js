@@ -72,10 +72,8 @@ const pkg = require('../../../package.json')
 const sharedObj = remote.getGlobal('sharedObj')
 //#region Localization 
 const i18n = require('../services/i18next.config')
-const {settings:languageSettings} = require('../services/language.config')
 i18n.on('loaded', (loaded) => {
-  languageSettings._loadFile()
-  let lng = languageSettings.getSettingByKey('selectedLanguage')
+  let lng = ipcRenderer.sendSync("getCurrentLanguage")
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
     updateHTMLText()
@@ -117,17 +115,14 @@ const translateTooltip = (elementName, traslationKey) => {
 const SettingsService = require("../windows/shot-generator/SettingsService")
 
 ipcRenderer.on("languageModified", (event, lng) => {
-  languageSettings._loadFile()
   i18n.reloadResources(lng).then(() => updateHTMLText())
 })
 
 ipcRenderer.on("languageAdded", (event, lng) => {
-  languageSettings._loadFile()
   i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); menu.setWelcomeMenu(i18n)})
 })
 
 ipcRenderer.on("languageRemoved", (event, lng) => {
-  languageSettings._loadFile()
   i18n.changeLanguage(lng)
   menu.setWelcomeMenu(i18n)
 })

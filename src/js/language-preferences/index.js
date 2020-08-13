@@ -94,13 +94,13 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
         const filePath = path.join(localesPath, `${language}.json`)
         let json = JSON.stringify(selectedJson)
         fs.writeFileSync(filePath, json)
-        ipcRenderer.send("languageAdded", language)
         setCurrentLanguage(language)
         let customLanguages = settings.getSettingByKey('customLanguages')
         customLanguages.push({ fileName:language, displayName: lng })
         settings.setSettings({selectedLanguage: language, customLanguages})
         setLanguages(builtInLanguages.current.concat(customLanguages))
         checkIfEditable(lng)
+        ipcRenderer.send("languageAdded", language)
     }
 
     const removeSelectedLanguage = () => {
@@ -130,7 +130,6 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
         let newLanguage = languages[0]
         let customLanguages = settings.getSettingByKey('customLanguages')
         fs.removeSync(path.join(userDataPath, `locales/${currentLanguage}.json`))
-        ipcRenderer.send("languageRemoved", newLanguage.fileName)
         let element = customLanguages.filter((lng) => lng.fileName === currentLanguage)[0]
         let indexOf = customLanguages.indexOf(element)
         customLanguages.splice(indexOf, 1)
@@ -138,6 +137,7 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
         setLanguages(builtInLanguages.current.concat(customLanguages))
         setCurrentLanguage(newLanguage.fileName)
         checkIfEditable(newLanguage.fileName)
+        ipcRenderer.send("languageRemoved", newLanguage.fileName)
     }
 
     const selectLanguage = (lng) => {

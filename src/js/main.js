@@ -1502,6 +1502,7 @@ const notifyAllsWindows = (event, ...args) => {
 }
 
 ipcMain.on('languageChanged', (event, lng) => {
+  languageSettings._loadFile()
   notifyAllsWindows("languageChanged", lng)
 })
 
@@ -1510,11 +1511,17 @@ ipcMain.on('languageModified', (event, lng) => {
 })
 
 ipcMain.on('languageAdded', (event, lng) => {
+  languageSettings._loadFile()
   notifyAllsWindows("languageAdded", lng)
 })
 
 ipcMain.on('languageRemoved', (event, lng) => {
+  languageSettings._loadFile()
   notifyAllsWindows("languageRemoved", lng)
+})
+
+ipcMain.on('getCurrentLanguage', (event) => {
+  event.returnValue = languageSettings.getSettingByKey("selectedLanguage")
 })
 
 ipcMain.on('openLanguagePreferences', (event) => {
