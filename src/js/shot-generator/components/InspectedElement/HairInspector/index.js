@@ -6,30 +6,31 @@ import {
   createObject,
   selectAttachable,
   getSceneObjects,
-  getSelections
+  getSelections,
+  deleteObjects
 } from '../../../../shared/reducers/shot-generator'
 import FileInput from '../../FileInput'
 import classNames from 'classnames'
 import HelpButton from '../../HelpButton'
 
 import * as itemSettings from '../../../utils/InspectorElementsSettings'
-import HandSelectionModal from '../HandInspector/HandSelectionModal'
 import SearchList from '../../SearchList'
 import ModelInspectorItem from '../ModelInspectorItem'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable'
+import HandSelectionModal from '../HandInspector/HandSelectionModal'
 
-import AttachableEditor from './../AttachableEditor/index'
 import isUserModel from '../../../helpers/isUserModel'
 import CopyFile from '../../../utils/CopyFile'
 
-const AttachableInspector = connect(
+const HairInspector = connect(
   state => ({
     id: getSelections(state)[0]
   }),
   {
     createObject,
     selectAttachable,
+    deleteObjects,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -37,25 +38,52 @@ const AttachableInspector = connect(
     id,
     withState,
     createObject,
-    selectAttachable
+    selectAttachable,
+    deleteObjects
   }) => {
 
     const [isModalVisible, showModal] = useState(false)
     const [results, setResults] = useState([])
     const [sceneObject, setSceneObject] = useState({})
-    const selectedId = useRef(null)
-    const selectedModel = useRef(null)
     const sortedAttachables = useRef([])
+    const deselectElement = useRef(null)
+    const getSelectedHair = () => {
+        let sceneObjects 
+        withState((dispatch, state) => {
+            sceneObjects = getSceneObjects(state)
+        })
+        let object = Object.values(sceneObjects).find((item) => item.type === "attachable" && item.attachableType === "hair" && item.attachToId === id)
+        return object
+    }
+
+    const createEmptyElement = () => {
+        return {id:"", name:"blank", type:"attachable"}
+    }
+
+    const findModelFromObject = (object) => {
+        if(!object) return createEmptyElement()
+        let model 
+        withState((dispatch, state) => {
+            let allModels = state.models
+            model = Object.values(allModels).find((item) => item.id === object.model)
+        })
+        return model
+    }
+
+    const selectedModel = useRef(findModelFromObject(getSelectedHair()))
+
     const models = useMemo(() => {
       let attachableModels = null
       withState((dispatch, state) => {
         let allModels = state.models
-        attachableModels = Object.values(allModels).filter(m => m.type === "attachable" && m.attachableType !== "hair")
+        attachableModels = Object.values(allModels).filter(m => m.type === "attachable" && m.attachableType === "hair")
       })
-      setResults(attachableModels)
+
       sortedAttachables.current = attachableModels.map((attachable, index) => {
         return { value: [attachable.name, attachable.keywords].filter(Boolean).join(' '), id: index
         }})
+        attachableModels.unshift(createEmptyElement())
+        setResults(attachableModels)
       return attachableModels
     }, [sceneObject.type])
 
@@ -65,16 +93,27 @@ const AttachableInspector = connect(
       })
     }, [id])
 
-    const onSelectItem = useCallback((model) => {
-      selectedModel.current = model
-      selectedId.current = model.id || id
-      if(model.bindBone && !isUserModel(sceneObject.model)) {
-        createAttachableElement(model, id)
-        return
-      }
+    const removeSelectedHairModel = () => {
+        let object = getSelectedHair()
+        if(object) {
+            deleteObjects([object.id])
+        }
+    }
 
-      showModal(true)
-    }, [id, sceneObject])
+    const onSelectItem = (model, deselect) => {
+        if(deselectElement.current) deselectElement.current()
+        deselectElement.current = deselect
+        if(selectedModel.current.id === model.id) return
+        selectedModel.current = model
+
+        removeSelectedHairModel()
+        if(model.name === "blank") return
+        if(!isUserModel(sceneObject.model)) { 
+            createAttachableElement(model, id)
+        } else {
+            showModal(true)
+        }
+    }
 
     const createAttachableElement = (model, id, name = null ) => {
       let modelData = model
@@ -106,7 +145,7 @@ const AttachableInspector = connect(
         x: modelData.x,
         y: modelData.y,
         z: modelData.z,
-
+        attachableType:"hair",
         model: modelData.id,
         name: modelData.name,
         bindBone: name || modelData.bindBone,
@@ -135,6 +174,7 @@ const AttachableInspector = connect(
       for(let i = 0; i < filteredPreset.length; i++) {
         presets.push(models[filteredPreset[i].id])
       }
+      presets.unshift(createEmptyElement())
       setResults(presets)
     }, [models])
 
@@ -176,8 +216,8 @@ const AttachableInspector = connect(
                 models: results,
                 itemSettings,
                 onSelectItem,
-
-                //selectedFunc: (item) => sceneObject.model === item.id
+                selectedFunc: (item) => { return selectedModel.current && selectedModel.current.id === item.id},
+                selectInitial: true
               }}
               Component={ModelInspectorItem}
               elements={results}
@@ -185,11 +225,10 @@ const AttachableInspector = connect(
               itemHeight={itemSettings.ITEM_HEIGHT}
             />
 
-            <AttachableEditor/>
           </Scrollable>
         </div>
       </React.Fragment>
     )
   }))
 
-export default AttachableInspector
+export default HairInspector
