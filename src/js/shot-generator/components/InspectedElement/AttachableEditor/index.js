@@ -84,15 +84,18 @@ const AttachableEditor = connect(
     }
 
     const onDelete = (attachable) => {
-      let choice = dialog.showMessageBox(null, {
+      dialog.showMessageBox(null, {
         type: "question",
         buttons: ["Yes", "No"],
         message: "Are you sure?",
         defaultId: 1 // default to No
       })
-      if (choice === 0) {
-        deleteObjects([attachable.id])
-      }
+      .then(({ response }) => {
+        if (response === 0) {
+          deleteObjects([attachable.id])
+        }
+      })
+      .catch(err => console.error(err))
     }
 
     const getNumberSlider = (sceneObject) => {

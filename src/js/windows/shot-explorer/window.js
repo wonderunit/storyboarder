@@ -20,6 +20,8 @@ const {
   resetScene,
 } = require('../../shared/reducers/shot-generator')
 const {batchActions, enableBatching} = require('redux-batched-actions')
+require("../../shared/helpers/monkeyPatchGrayscale")
+
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false

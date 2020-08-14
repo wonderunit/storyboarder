@@ -136,18 +136,18 @@ const Toolbar = connect(
 
     const onCreateLightClick = () => {
       let id = THREE.Math.generateUUID()
-
+      initCamera()
       undoGroupStart()
-      createLight(id)
+      createLight(id, camera.current, room.visible && roomObject3d)
       selectObject(id)
       undoGroupEnd()
     }
 
     const onCreateVolumeClick = () => {
       let id = THREE.Math.generateUUID()
-
+      initCamera()
       undoGroupStart()
-      createVolume(id)
+      createVolume(id, camera.current, room.visible && roomObject3d)
       selectObject(id)
       undoGroupEnd()
     }

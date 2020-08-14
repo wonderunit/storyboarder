@@ -80,6 +80,8 @@ let appServer
 
 // attempt to support older GPUs
 app.commandLine.appendSwitch('ignore-gpu-blacklist')
+// fix issue where iframe content could not be modified in welcome window
+app.commandLine.appendSwitch('disable-site-isolation-trials')
 
 // this only works on mac.
 app.on('open-file', (event, path) => {
@@ -174,7 +176,7 @@ app.on('ready', async () => {
 
   if (os.platform() === 'darwin') {
     if (!isDev && !app.isInApplicationsFolder()) {
-      const choice = dialog.showMessageBox({
+      const { response } = await dialog.showMessageBox({
         type: 'question',
         title: 'Move to Applications folder?',
         message: 'Would you like to move Storyboarder to the Applications folder?',
@@ -182,7 +184,7 @@ app.on('ready', async () => {
         defaultId: 1
       })
 
-      const yes = (choice === 0)
+      const yes = (response === 0)
 
       if (yes) {
         try {
@@ -348,6 +350,7 @@ let openWelcomeWindow = () => {
     resizable: false,
     frame: false,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: true
     }
   })
@@ -530,11 +533,13 @@ let openDialogue = () => {
           'fdx'
         ]
       },
-    ]}, filenames => {
-      if (filenames) {
-        openFile(filenames[0])
-      }
+    ]}
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      openFile(filePaths[0])
+    }
   })
+  .catch(err => log.error(err))
 }
 
 let importImagesDialogue = (shouldReplace = false) => {
@@ -553,43 +558,49 @@ let importImagesDialogue = (shouldReplace = false) => {
             // ... Windows and Linux can’t
             : []
         ),
-        "multiSelections"
+        ...(
+          shouldReplace
+            // "replace" only allows a single image
+            ? []
+            // "import new" allows multiple images
+            : ["multiSelections"]
+        )
       ]
-    },
-
-    (filepaths)=>{
-      if (filepaths) {
-        filepaths = filepaths.sort()
-        let filepathsRecursive = []
-        let handleDirectory = (dirPath) => {
-          let innerFilenames = fs.readdirSync(dirPath)
-          for(let innerFilename of innerFilenames) {
-            var innerFilePath = path.join(dirPath, innerFilename)
-            let stats = fs.statSync(innerFilePath)
-            if(stats.isFile()) {
-              filepathsRecursive.push(innerFilePath)
-            } else if(stats.isDirectory()) {
-              handleDirectory(innerFilePath)
-            }
-          }
-        }
-        for(let filepath of filepaths) {
-          let stats = fs.statSync(filepath)
+    }
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      filePaths = filePaths.sort()
+      let filepathsRecursive = []
+      let handleDirectory = (dirPath) => {
+        let innerFilenames = fs.readdirSync(dirPath)
+        for(let innerFilename of innerFilenames) {
+          var innerFilePath = path.join(dirPath, innerFilename)
+          let stats = fs.statSync(innerFilePath)
           if(stats.isFile()) {
-            filepathsRecursive.push(filepath)
+            filepathsRecursive.push(innerFilePath)
           } else if(stats.isDirectory()) {
-            handleDirectory(filepath)
+            handleDirectory(innerFilePath)
           }
-        }
-
-        if (shouldReplace) {
-          mainWindow.webContents.send('importImageAndReplace', filepathsRecursive)
-        } else {
-          mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
         }
       }
+      for(let filepath of filePaths) {
+        let stats = fs.statSync(filepath)
+        if(stats.isFile()) {
+          filepathsRecursive.push(filepath)
+        } else if(stats.isDirectory()) {
+          handleDirectory(filepath)
+        }
+      }
+
+      if (shouldReplace) {
+        mainWindow.webContents.send('importImageAndReplace', filepathsRecursive)
+      } else {
+        mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
+      }
     }
-  )
+  }).catch(err => {
+    log.error(err)
+  })
 }
 
 let importWorksheetDialogue = () => {
@@ -602,14 +613,13 @@ let importWorksheetDialogue = () => {
       properties: [
         "openFile",
       ]
-    },
-
-    (filepath)=>{
-      if (filepath) {
-        mainWindow.webContents.send('importWorksheets', filepath)
-      }
     }
-  )
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      mainWindow.webContents.send('importWorksheets', filePaths)
+    }
+  })
+  .catch(err => log.error(err))
 }
 
 const processFdxData = fdxObj => {
@@ -836,56 +846,59 @@ const ensureFountainSceneIds = (filePath, data) => {
 // new functions
 ////////////////////////////////////////////////////////////
 
-const createAndLoadScene = aspectRatio =>
-  new Promise((resolve, reject) => {
-    dialog.showSaveDialog({
-      title: "New Storyboard",
-      buttonLabel: "Create",
-      defaultPath: app.getPath('documents'),
-    },
-    async filename => {
-      if (filename) {
-        log.info(filename)
-
-        if (fs.existsSync(filename)) {
-          if (fs.lstatSync(filename).isDirectory()) {
-            log.info('\ttrash existing folder', filename)
-            await trash(filename)
-          } else {
-            dialog.showMessageBox(null, {
-              message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten."
-            })
-            return reject(null)
-          }
-        }
-
-        fs.mkdirSync(filename)
-
-        let boardName = path.basename(filename)
-        let filePath = path.join(filename, boardName + '.storyboarder')
-
-        let newBoardObject = {
-          version: pkg.version,
-          aspectRatio: aspectRatio,
-          fps: prefModule.getPrefs().lastUsedFps || 24,
-          defaultBoardTiming: prefs.defaultBoardTiming,
-          boards: []
-        }
-
-        fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
-        fs.mkdirSync(path.join(filename, 'images'))
-
-        addToRecentDocs(filePath, newBoardObject)
-        loadStoryboarderWindow(filePath)
-
-        analytics.event('Application', 'new', newBoardObject.aspectRatio)
-
-        resolve()
-      } else {
-        reject()
-      }
-    })
+const createAndLoadScene = async aspectRatio => {
+  // if directory exists, showSaveDialog will prompt to confirm overwrite
+  let { canceled, filePath } = await dialog.showSaveDialog({
+    title: "New Storyboard",
+    buttonLabel: "Create",
+    defaultPath: app.getPath('documents'),
+    options: {
+      properties: [
+        // show overwrite confirmation on linux (UNTESTED)
+        // is `true` the default? not sure …
+        "showOverwriteConfirmation"
+      ]
+    }
   })
+
+  if (canceled) return
+
+  // if the filePath exists ...
+  if (fs.existsSync(filePath)) {
+    // ... and is a folder ...
+    if (fs.lstatSync(filePath).isDirectory()) {
+      // ... try to trash it ...
+      log.info('\ttrash existing folder', filePath)
+      await trash(filePath)
+    } else {
+      dialog.showMessageBox(null, {
+        message: "Could not overwrite file " + path.basename(filePath) + ". Only folders can be overwritten."
+      })
+      return
+    }
+  }
+
+  fs.mkdirSync(filePath)
+
+  let boardName = path.basename(filePath)
+  let storyboarderFilePath = path.join(filePath, boardName + '.storyboarder')
+
+  let newBoardObject = {
+    version: pkg.version,
+    aspectRatio: aspectRatio,
+    fps: prefModule.getPrefs().lastUsedFps || 24,
+    defaultBoardTiming: prefs.defaultBoardTiming,
+    boards: []
+  }
+
+  fs.writeFileSync(storyboarderFilePath, JSON.stringify(newBoardObject))
+  fs.mkdirSync(path.join(filePath, 'images'))
+
+  addToRecentDocs(storyboarderFilePath, newBoardObject)
+  loadStoryboarderWindow(storyboarderFilePath)
+
+  analytics.event('Application', 'new', newBoardObject.aspectRatio)
+}
 
 const createAndLoadProject = aspectRatio => {
   fs.ensureDirSync(currentPath)
@@ -996,7 +1009,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   // if beforeunload is telling us to prevent unload ...
   mainWindow.webContents.on('will-prevent-unload', event => {
-    const choice = dialog.showMessageBox({
+    const choice = dialog.showMessageBoxSync({
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm',
@@ -1447,17 +1460,17 @@ ipcMain.on('revealShotGenerator',
 
 ipcMain.on('zoomReset',
   event => mainWindow.webContents.send('zoomReset'))
-ipcMain.on('zoomIn',
-  event => mainWindow.webContents.send('zoomIn'))
-ipcMain.on('zoomOut',
-  event => mainWindow.webContents.send('zoomOut'))
+ipcMain.on('scale-ui-up',
+  event => mainWindow.webContents.send('scale-ui-up'))
+ipcMain.on('scale-ui-down',
+  event => mainWindow.webContents.send('scale-ui-down'))
+ipcMain.on('scale-ui-reset',
+  event => mainWindow.webContents.send('scale-ui-reset'))
 
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
 ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
-ipcMain.on('saveShotPlot',
-  (event, data) => mainWindow.webContents.send('saveShotPlot', data))
 ipcMain.on('storyboarder:get-boards',
   event => mainWindow.webContents.send('storyboarder:get-boards'))
 ipcMain.on('shot-generator:get-boards', (event, data) => {

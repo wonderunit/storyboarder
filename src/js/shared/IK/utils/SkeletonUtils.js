@@ -533,7 +533,7 @@ const SkeletonUtils = {
 
     },
 
-    clone: function ( source ) {
+    clone: function ( source, copyLod = false) {
 
         var sourceLookup = new Map();
         var cloneLookup = new Map();
@@ -547,7 +547,7 @@ const SkeletonUtils = {
             {
                 return;
             }
-            if(clonedNode.isSkinnedMesh)
+            if(clonedNode.isSkinnedMesh && !copyLod)
             {
                 if(skinnedMeshAdded)
                 {
