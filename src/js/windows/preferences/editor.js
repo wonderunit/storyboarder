@@ -19,7 +19,7 @@ let prefs,
 let hasChanged
 let originalPrefs
 
-//#region i18n setup 
+//#region Localization
 const { settings:languageSettings } = require('./js/services/language.config')
 const i18n = require('./js/services/i18next.config')
 i18n.on('loaded', (loaded) => {

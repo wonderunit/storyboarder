@@ -30,13 +30,13 @@
       .examples > div:hover {
         background-color: #efefef;
       }
-      .examples > div > div:first-child {
-        padding-bottom: 10px;
+      .examples > div > div:not(:last-child) {
         text-align: center;
         font-size: 13px;
         /*flex: 1;*/
       }
       .examples > div > div:last-child {
+        padding-top: 10px;
         flex: 1;
       }
       .example-display {
@@ -50,26 +50,28 @@
       <div id="close-button">&#10005;</div>
 
       <div class="tab">
-        <h1 style="margin-top: 50px; line-height: 1.1">There are 2 ways to create a new storyboard. Which would you like?</h1>
+        <h1 style="margin-top: 50px; line-height: 1" id="creation-title">There are 2 ways to create a new storyboard. Which would you like?</h1>
 
         <div class="flex-column">
           <div class="column">
-            <h3>Based on a script</h3>
-            If you are working on a story with a script, you can specify the
-            script, and Storyboarder will help you board for each scene and 
-            show you the script while you are boarding. Feel free to change the 
-            script while boarding. Scripts can be in Fountain (.fountain) 
-            or Final Draft (.fdx) format.
-
+            <h3 id="script-based-title">Based on a script</h3>
+            <span id="script-based-description">
+              If you are working on a story with a script, you can specify the
+              script, and Storyboarder will help you board for each scene and 
+              show you the script while you are boarding. Feel free to change the 
+              script while boarding. Scripts can be in Fountain (.fountain) 
+              or Final Draft (.fdx) format.
+            </span>
           </div>
           <div style="padding: 20px; width: 20px; align-self: center;"></div>
           <div class="column">
-            <h3>Blank Storyboard</h3>
-            You can simply create a totally blank storyboard. Just make boards 
-            and draw. If you'd like to import your storyboard into a script 
-            based one later, it's easy.<br/><br/>
-            If you are just starting, why not create a new blank storyboard for fun?
-
+            <h3 id="blank-title">Blank Storyboard</h3>
+            <span id="blank-description">
+              You can simply create a totally blank storyboard. Just make boards 
+              and draw. If you'd like to import your storyboard into a script 
+              based one later, it's easy.<br/><br/>
+              If you are just starting, why not create a new blank storyboard for fun?
+            </span>
           </div>
         </div>
 
@@ -85,56 +87,63 @@
       </div>
 
       <div class="tab">
-        <h1 style="margin-top: 50px;">What Aspect Ratio?</h1>
+        <h1 style="margin-top: 50px;" id="aspect-title">What Aspect Ratio?</h1>
 
         <div class="examples">
           <div class="example" data-aspect-ratio="2.39">
-            <div>Ultrawide<br/>2.39:1</div>
+            <div id="aspect-ultrawide">Ultrawide</div>
+            <div>2.39:1</div>
             <div>
               <div class="example-display" style="padding-bottom: calc(100% / 2.39)"></div>
             </div>
           </div>
           <div class="example" data-aspect-ratio="2">
-            <div>Doublewide<br/>2.00:1</div>
+            <div id="aspect-doublewide">Doublewide</div>
+            <div>2.00:1</div>
             <div>
               <div class="example-display" style="padding-bottom: calc(100% / 2.00)"></div>
             </div>
           </div>
           <div class="example" data-aspect-ratio="1.85">
-            <div>Wide<br/>1.85:1</div>
+            <div id="aspect-wide">Wide</div>
+            <div>1.85:1</div>
             <div>
               <div class="example-display" style="padding-bottom: calc(100% / 1.85)"></div>
             </div>
           </div>
           <div class="example" data-aspect-ratio="1.7777777777777777">
-            <div>HD<br/>16:9</div>
+            <div id="aspect-hd">HD</div>
+            <div>16:9</div>
             <div>
               <div class="example-display" style="padding-bottom: calc(100% * (9 / 16))"></div>
             </div>
           </div>
           <div class="example" data-aspect-ratio="0.5625">
-            <div>Vertical HD<br/>9:16</div>
+            <div id="aspect-vertical-hd">Vertical HD</div>
+            <div>9:16</div>
             <div>
               <div class="example-display" style="padding-bottom: calc(100% * (16 / 9))"></div>
             </div>
           </div>
           <div class="example" data-aspect-ratio="1">
-            <div>Square<br/>1:1</div>
+            <div id="aspect-square">Square</div>
+            <div>1:1</div>
             <div>
               <div class="example-display" style="padding-bottom: calc(100% * 1)"></div>
             </div>
           </div>
           <div class="example" data-aspect-ratio="1.3333333333333333">
-            <div>Old<br/>4:3</div>
+            <div id="aspect-old">Old</div>
+            <div>4:3</div>
             <div>
               <div class="example-display" style="padding-bottom: calc(100% * (3 / 4))"></div>
             </div>
           </div>
         </div>
 
-        
+
         <div style="margin-top: 24px;">
-          <p>
+          <p id="aspect-description">
             The aspect ratio defines the size of your boards.<br/><br/>
             2.39:1 is the widest, like what you would watch in a movie.<br/>
             16:9 is what you would watch on a modern TV.<br/>

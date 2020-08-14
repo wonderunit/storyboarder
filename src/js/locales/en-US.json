@@ -709,5 +709,23 @@
        "prev_button": "Previous",
        "page-info": "Page",
        "next_button": "Next"
+    },
+    "new-window": {
+       "creation-title" : "There are 2 ways to create a new storyboard. Which would you like?",
+       "script-based-title" : "Based on a script",
+       "script-based-description" : "If you are working on a story\nwith a script, you can specify the\nscript, and Storyboarder will help you board for each scene and\nshow you the script while you are boarding. Feel free to change the\nscript while boarding. Scripts can be in Fountain (.fountain)\nor Final Draft (.fdx) format.",
+       "blank-title" : "Blank Storyboard",
+       "blank-description" : "You can simply create a totally blank storyboard. Just make boards\nand draw. If you'd like to import your storyboard into a script\nbased one later, it's easy.\n\nIf you are just starting, why not create a new blank storyboard for fun?",
+       "new-script" : "Select Script...",
+       "new-blank" : "Create a blank...",
+       "aspect-title" : "What Aspect Ratio?",
+       "aspect-ultrawide" : "Ultrawide",
+       "aspect-doublewide" : "Doublewide",
+       "aspect-wide" : "Wide",
+       "aspect-hd" : "HD",
+       "aspect-vertical-hd" : "Vertical HD",
+       "aspect-square" : "Square",
+       "aspect-old" : "Old",
+       "aspect-description" : "The aspect ratio defines the size of your boards.\n\n2.39:1 is the widest, like what you would watch in a movie.\n\n16:9 is what you would watch on a modern TV.\n4:3 is what your grandpops watched back when screens flickered and programming was wholesome.n\n\nPlease don't select vertical HD. We added it as a joke.<br/>"
     }
  }

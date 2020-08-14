@@ -10,7 +10,7 @@ const os = require('os')
 const path = require('path')
 
 const exporterCommon = require('../exporters/common')
-//#region i18n setup
+//#region Localization
 let isWorksheetExport = false
 const i18n = require('../services/i18next.config')
 i18n.on('loaded', (loaded) => {
