@@ -118,13 +118,14 @@ const createCharacter = (id, camera, room) => {
   })
 }
 
-const createLight = (id) => {
+const createLight = (id, camera, room) => {
+  let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
   return createObject({
     id,
     type: 'light',
 
-    x: 0, y: 0, z: 2,
-    rotation: 0, tilt: 0, roll: 0,
+    x: x, y: y, z: 2,
+    rotation: rotation, tilt: 0, roll: 0,
 
     intensity: 0.8,
     visible: true,
@@ -135,16 +136,17 @@ const createLight = (id) => {
   })
 }
 
-const createVolume = (id) => {
+const createVolume = (id, camera, room) => {
+  let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
   return createObject({
     id,
     type: 'volume',
 
-    x: 0, y: 2, z: 0,
+    x: x, y: y, z: z,
 
     width: 5, height: 5, depth: 5,
 
-    rotation: 0,
+    rotation: rotation,
 
     visible: true,
     opacity: 0.3,
@@ -157,7 +159,7 @@ const createVolume = (id) => {
 
 const createImage = (id, camera, room) => {
   let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
-
+  
   return createObject({
     id,
     type: 'image',
