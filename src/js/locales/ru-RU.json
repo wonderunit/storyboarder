@@ -7,8 +7,8 @@
 			"title": "Вид",
 			"reload": "Перегрузить",
 			"toggle-dev-tools": "Открыть инструменты разработчика",
-			"cycle-view-mode": "Cycle View Mode",
-			"reverse-cycle-view-mode": "Инверсный Cycle View Mode",
+			"cycle-view-mode": "Переключить View Mode",
+			"reverse-cycle-view-mode": "Инверсивно переключить View Mode",
 			"toggle-grid-guide": "Включить Grid подсказки",
 			"toggle-center-guide": "Включить Center подсказки",
 			"toggle-thirds-guide": "Включить Thirds подсказки",
@@ -75,7 +75,8 @@
 			"learn-more": "Узнать больше",
 			"getting-started": "Как начать",
 			"faq": "Часто задаваемые вопросы…",
-			"bug-submit": "Нашли баг? Оставьте issue!!!"
+			"bug-submit": "Нашли баг? Оставьте issue!!!",
+			"show-log-file":"Открыть лог-файл..."
 		},
 		"navigation": {
 			"title": "Навигация",
@@ -395,7 +396,7 @@
 			"inspected-world": {
 			  "file": "Файл",
 			  "scene": "Сцена",
-			  "ground": "Земля",
+			  "ground": "Поверхность",
 			  "bg-color": "Цвет фона",
 			  "room": "Комната",
 			  "environment": "Окружение",
@@ -407,7 +408,7 @@
 			},
 			"common": {
 			  "object-creation-help": "Как создавать 3D модели для Кастомных Объектов",
-			  "visible": "Видимый",
+			  "visible": "Видимость",
 			  "rotation": "Поворот",
 			  "intensity": "Интенсивность",
 			  "tilt": "Наклон",

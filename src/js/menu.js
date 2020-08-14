@@ -54,7 +54,7 @@ SubMenuFragments.help = (i18n) => [
     click () { shell.openExternal('https://github.com/wonderunit/storyboarder/issues/new') }
   },
   {
-    label: 'Show Log File…',
+    label: i18n.t('menu.help.show-log-file'),
     click () { shell.showItemInFolder(log.transports.file.findLogPath()) }
   }
 ]
@@ -676,7 +676,7 @@ AppMenu.View = (i18n) => ({
       }
     },
     {
-      label: 'UI: Reset Scale to 100%',
+      label: i18n.t('menu.view.reset-ui-scale'),
       type: 'normal',
       click (item, focusedWindow, event) {
         ipcRenderer.send('scale-ui-reset')

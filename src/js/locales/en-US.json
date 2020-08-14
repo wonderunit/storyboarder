@@ -75,7 +75,8 @@
           "learn-more":"Learn More",
           "getting-started":"Getting Started…",
           "faq":"Frequently Asked Questions…",
-          "bug-submit":"Found a bug? Submit an issue!!!"
+          "bug-submit":"Found a bug? Submit an issue!!!",
+          "show-log-file":"Show Log File..."
        },
        "navigation":{
           "title":"Navigation",
