@@ -2,6 +2,7 @@ import express from 'express'
 import {ExpressPeerServer} from "peer"
 import shortId from 'shortid'
 import path from 'path'
+import cors from 'cors'
 
 import Cleanup from '../utils/cleanup'
 import {appLogger, peerLogger} from '../logger'
@@ -9,6 +10,11 @@ import {appRouter} from "../routes"
 
 import apps from './../../apps.json'
 
+const corsOptions = {
+  origin: (origin, callback) => {
+    callback(null, true)
+  }
+}
 
 const PORT = process.env.PORT
 export const App = async () => {
@@ -25,6 +31,8 @@ export const App = async () => {
   peerServer.on('disconnect', ({id}) => peerLogger.info(`Client with id ${id} has been disconnected`))
   //peerServer.on('message', ({id}, msg) => peerLogger.info(`Client with id ${id} sent a message: ${JSON.stringify(msg)}`))
 
+  app.use(cors(corsOptions))
+
   app.use((req, res, next) => {
     next()
   })
@@ -38,7 +46,7 @@ export const App = async () => {
     path.join(XRPath)
   ))
   app.get('/xr', function(req, res) {
-    res.sendFile(path.join(XRPath, 'index.html'))
+    res.sendFile(path.join(__dirname, XRPath, 'index.html'))
   })
 
   appLogger.info(`Server was started on the ${PORT} port.`)

@@ -23,30 +23,48 @@ const SceneManagerXR = require('./SceneManagerXR')
 
 import './style.css'
 import './../vendor/rStats.css'
+import { useState, useEffect, useRef } from 'react'
 
-const SGConnection = RemoteDevice.connect()
 
-const configureStore = preloadedState => {
-  const store = createStore(reducer, preloadedState, applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware))
-  window.$r = {
-    store
+const App = () => {
+  const [connection, setConnection] = useState(null)
+  const storeRef = useRef(null)
+
+  useEffect(() => {
+    RemoteDevice.connect()
+    .then((SGConnection) => {
+      storeRef.current = createStore(reducer, {...initialState}, applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware))
+      window.$r = {
+        store: storeRef.current
+      }
+
+      SGConnection.connectStore(storeRef.current)
+
+      window.addEventListener("error", function (e) {
+        SGConnection.log([e.error.message, e.error.stack])
+        return false;
+      })
+
+      window.SG = SGConnection
+
+      SGConnection.connectRequest()
+      setConnection(SGConnection)
+    })
+    .catch(alert)
+  }, [])
+
+  if (!connection) {
+    return ('Connecting...')
   }
-  return store
+
+  return (
+    <Provider store={storeRef.current}>
+      <SceneManagerXR SGConnection={connection}/>
+    </Provider>
+  )
 }
 
-const store = configureStore({...initialState})
-SGConnection.connectStore(store)
-
-window.addEventListener("error", function (e) {
-  SGConnection.log([e.error.message, e.error.stack])
-  return false;
-})
-
-window.SG = SGConnection
-
 ReactDOM.render(
-  <Provider store={store}>
-    <SceneManagerXR SGConnection={SGConnection}/>
-  </Provider>,
+  <App/>,
   document.getElementById('main')
 )

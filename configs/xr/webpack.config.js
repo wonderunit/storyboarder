@@ -54,7 +54,7 @@ module.exports = {
     __filename: false
   },
   plugins: [
-    new CleanWebpackPlugin(),
+    new CleanWebpackPlugin({ cleanStaleWebpackAssets: false }),
     new webpack.ProvidePlugin({
       'THREE': 'three'
     }),

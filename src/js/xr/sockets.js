@@ -1,3 +1,4 @@
+import path from 'path'
 import {deselectObject, mergeState, getIsSceneDirty} from './../shared/reducers/shot-generator'
 import {
   remoteStore,
@@ -10,34 +11,49 @@ import {
 } from './../shared/reducers/remoteDevice'
 import P2P from './../shared/network/p2p'
 
+import {loadFileToBlob} from './../shared/network/peerUtils'
+
+
+const pathMap = {
+  '/data/system': (staticPath, projectPath, userDataPath) => path.join(staticPath, 'data', 'shot-generator'),
+  '/data/user': (staticPath, projectPath, userDataPath) => path.join(projectPath, 'models'),
+  '/data/snd': (staticPath, projectPath, userDataPath) => path.join(staticPath, 'public', 'snd'),
+  '/data/presets/poses': (staticPath, projectPath, userDataPath) => path.join(userDataPath, 'presets', 'poses'),
+  '/data/presets/handPoses': (staticPath, projectPath, userDataPath) => path.join(userDataPath, 'presets', 'handPoses'),
+  '/boards/images': (staticPath, projectPath, userDataPath) => path.join(projectPath, 'images')
+}
+
+const pathMapKeys = Object.keys(pathMap)
+
+
+
 const IO = {current: null}
 
-const dispatchRemote = (action, meta = {}) => {
-  if (!IO.current) {
-    return false
-  }
-  
-  const SGAction = {
+const getRemoteAction = (action, meta = {}) => {
+  return {
     ...action,
     meta: {
       ...meta,
       isSG: true
     }
   }
+}
 
-  IO.current.broadcast('action', SGAction)
+const dispatchRemote = (action, meta = {}) => {
+  if (!IO.current) {
+    return false
+  }
+  
+  IO.current.broadcast('action', getRemoteAction(action, meta))
 }
 
 const onUserConnect = (emit, broadcast, id, store) => {
   const connectAction = addUser(id)
   remoteStore.dispatch(connectAction)
   broadcast('remoteAction', connectAction)
-
-  dispatchRemote(mergeState(store.getState()))
-  emit('remoteAction', setId(id))
 }
 
-export const serve = (store, service) => {
+export const serve = (store, service, staticPath, projectPath, userDataPath) => {
   const peer = P2P()
   const {io, broadcast} = peer
   
@@ -59,12 +75,20 @@ export const serve = (store, service) => {
 
     console.log('%c XR', 'color: #4CAF50', `User has been connected: ${id}`)
     onUserConnect(emit, broadcast, id, store)
+    
     emitter.on('action', (action) => {
       store.dispatch(action)
     })
 
     emitter.on('debug', (data) => {
       console.log('%c Log', 'color: #0088ff', data)
+    })
+
+    emitter.on('connectRequest', () => {
+      console.log('Send STATE')
+      //dispatchRemote(mergeState(store.getState()))
+      emit('action', getRemoteAction(mergeState(store.getState())))
+      emit('remoteAction', setId(id))
     })
 
     emitter.on('remote', (info) => {
@@ -113,6 +137,17 @@ export const serve = (store, service) => {
 
     emitter.on('isSceneDirty', () => {
       emit('isSceneDirty', getIsSceneDirty(store.getState()))
+    })
+
+    emitter.on('getResource', async ({type, filePath}) => {
+      console.log(type, filePath)
+      const key = pathMapKeys.find((item) => filePath.indexOf(item) !== -1)
+      
+      console.log('Getting resource: ', filePath)
+      const image = await loadFileToBlob(path.join(pathMap[key](staticPath, projectPath, userDataPath), path.relative(key, filePath)))
+      console.log('Sending resource: ', image)
+
+      emit('getResource', {type, filePath, data: image})
     })
     
   })

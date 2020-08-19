@@ -359,7 +359,7 @@ class XRServer {
       server.keepAliveTimeout = 0
       //serve(io(server, { wsEngine: 'ws', serveClient: false, pingInterval: 5000, pingTimeout: 60000 }), store, service)
       
-      serve(store, service)
+      serve(store, service, staticPath, projectPath, userDataPath)
 
       server.on('error', err => {
         console.error(err)

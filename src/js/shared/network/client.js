@@ -15,194 +15,179 @@ const each = (fn, countRef) => {
 }
 
 export const connect = (URI = '') => {
-  const urlParams = new URLSearchParams(window.location.search)
-  const roomId = urlParams.get('id')
+  return new Promise((resolve, reject) => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const roomId = urlParams.get('id')
 
-  if (!roomId) {
-    alert('Room is not entered')
-    return false
-  }
+    if (!roomId) {
+      reject('Room is not entered')
+      return false
+    }
 
-  const p2p = P2P()
-  const {io, peer, P2PClientConnection} = p2p
+    const p2p = P2P(location.hostname)
+    const {io, peer, P2PClientConnection} = p2p
 
-  let client, emit
-  let store = {current: null}
+    let store = {current: null}
+    let FRAME_RATE = {current: 10}
+    
+    P2PClientConnection(roomId).then((conn) => {
+      const client = conn.emitter
+      const emit = conn.emit
+
+      console.log('Connected !!!', store)
+
+      const dispatchRemote = (action, meta = {}) => {
+        if (!client) {
+          return false
+        }
   
-  P2PClientConnection(roomId).then((conn) => {
-    client = conn.emitter
-    emit = conn.emit
+        const XRAction = {
+          ...action,
+          meta: {
+            ...meta,
+            isXR: true
+          }
+        }
+        emit('action', XRAction)
+      }
+      
+      const connectStore = (appStore) => {
+        client.on('remoteAction', (data) => {
+          console.log('remoteAction', data)
+          remoteStore.dispatch(data)
+        })
+  
+        client.on('action', (data) => {
+          console.log('Action', data)
+          appStore.dispatch(data)
+        })
+      }
+  
+      const getBoards = async () => {
+        return new Promise((resolve, reject) => {
+          client.once('getBoards', resolve)
+          emit('getBoards')
+        })
+      }
+  
+      const saveShot = async () => {
+        return new Promise((resolve, reject) => {
+          client.once('saveShot', resolve)
+          emit('saveShot')
+        })
+      }
+  
+      const insertShot = () => {
+        return new Promise((resolve, reject) => {
+          client.once('insertShot', resolve)
+          emit('insertShot')
+        })
+      }
+  
+      const getSg = () => {
+        return new Promise((resolve, reject) => {
+          client.once('getSg', resolve)
+          emit('getSg')
+        })
+      }
+  
+      const setBoard = (board) => {
+        return new Promise((resolve, reject) => {
+          client.once('setBoard', resolve)
+          emit('setBoard', board)
+        })
+      }
+  
+      const isSceneDirty = () => {
+        return new Promise((resolve, reject) => {
+          client.once('isSceneDirty', resolve)
+          emit('isSceneDirty')
+        })
+      }
 
-    console.log('Connected !!!', store)
+      const connectRequest = () => {
+        console.log('Send connect request')
+        emit('connectRequest')
+      }
 
-    client.on('remoteAction', (data) => {
-      remoteStore.dispatch(data)
-    })
+      const getResource = (type, filePath) => {
+        return new Promise((resolve, reject) => {
+          console.log('Getting - ', filePath)
+          const Fn = (res) => {
+            if (res.filePath === filePath) {
+              console.log('Resolved(*), ', filePath, res)
+              client.off('getResource', Fn)
+              resolve(res)
+            }
+          }
 
-    client.on('action', (data) => {
-      console.log('Action', data)
-      store.current.dispatch(data)
+          client.on('getResource', Fn)
+          emit('getResource', {type, filePath})
+        })
+      }
+  
+      const ClientMiddleware = store => next => action => {
+        /* Not send restricted actions */
+        if (RestrictedActions.indexOf(action.type) !== -1) {
+  
+          /* Send deselect if we select something */
+          if (SelectActions.indexOf(action.type) !== -1) {
+            let meta = {ignore: [remoteStore.getState().id]}
+            dispatchRemote(deselectObject(action.payload), meta)
+          }
+  
+          /* Dispatch */
+          return next(action)
+        }
+        
+        /* Dispatch if the message came from SG */
+        if (action.meta && action.meta.isSG) {
+          /* Are we listed on the ignore list? */
+          let isIgnored = action.meta.ignore && action.meta.ignore.indexOf(remoteStore.getState().id) !== 1
+          
+          if (!isIgnored) {
+            return next(action)
+          }
+        } else {
+          /* Send to the SG */
+          dispatchRemote(action)
+        }
+        // Not send actions to the reducer, instead wait for the server answer
+      }
+  
+      const sendRemoteInfo = each((info) => {
+        emit('remote', info)
+      }, FRAME_RATE)
+  
+      const setActive = (active = true) => {
+        emit('remote', {active})
+      }
+  
+      resolve({
+        connectStore,
+        
+        sendInfo: (info, immediate) => sendRemoteInfo([info], immediate),
+        setActive,
+        log: (info) => emit('debug', info),
+        
+        ClientMiddleware,
+        
+        setFrameRate: (value) => {
+          FRAME_RATE.current = value
+        },
+  
+        uriForThumbnail: filename => `${URI}/boards/images/${filename}`,
+        
+        getBoards,
+        saveShot,
+        insertShot,
+        getSg,
+        setBoard,
+        isSceneDirty,
+
+        getResource,
+        connectRequest
+      })
     })
   })
-  
-  let FRAME_RATE = {current: 10}
-
-  const dispatchRemote = (action, meta = {}) => {
-    if (!client) {
-      return false
-    }
-
-    const XRAction = {
-      ...action,
-      meta: {
-        ...meta,
-        isXR: true
-      }
-    }
-    emit('action', XRAction)
-  }
-  
-  const connectStore = (appStore) => {
-    store.current = appStore
-  }
-
-  const getBoards = async () => {
-    return new Promise((resolve, reject) => {
-      if (!client) {
-        reject()
-        return false
-      }
-
-      client.once('getBoards', resolve)
-      emit('getBoards')
-    })
-  };
-
-  const saveShot = async () => {
-    return new Promise((resolve, reject) => {
-      if (!client) {
-        reject()
-        return false
-      }
-
-      client.once('saveShot', resolve)
-      emit('saveShot')
-    })
-  };
-
-  const insertShot = () => {
-    return new Promise((resolve, reject) => {
-      if (!client) {
-        reject()
-        return false
-      }
-
-      client.once('insertShot', resolve)
-      emit('insertShot')
-    })
-  };
-
-  const getSg = () => {
-    return new Promise((resolve, reject) => {
-      if (!client) {
-        reject()
-        return false
-      }
-
-      client.once('getSg', resolve)
-      emit('getSg')
-    })
-  };
-
-  const setBoard = (board) => {
-    return new Promise((resolve, reject) => {
-      if (!client) {
-        reject()
-        return false
-      }
-
-      client.once('setBoard', resolve)
-      emit('setBoard', board)
-    })
-  };
-
-  const isSceneDirty = () => {
-    return new Promise((resolve, reject) => {
-      if (!client) {
-        reject()
-        return false
-      }
-
-      client.once('isSceneDirty', resolve)
-      emit('isSceneDirty')
-    })
-  };
-
-  const ClientMiddleware = store => next => action => {
-    /* Not send restricted actions */
-    if (RestrictedActions.indexOf(action.type) !== -1) {
-
-      /* Send deselect if we select something */
-      if (SelectActions.indexOf(action.type) !== -1) {
-        let meta = {ignore: [remoteStore.getState().id]}
-        dispatchRemote(deselectObject(action.payload), meta)
-      }
-
-      /* Dispatch */
-      return next(action)
-    }
-    
-    /* Dispatch if the message came from SG */
-    if (action.meta && action.meta.isSG) {
-      /* Are we listed on the ignore list? */
-      let isIgnored = action.meta.ignore && action.meta.ignore.indexOf(remoteStore.getState().id) !== 1
-      
-      if (!isIgnored) {
-        return next(action)
-      }
-    } else {
-      /* Send to the SG */
-      dispatchRemote(action)
-    }
-    // Not send actions to the reducer, instead wait for the server answer
-  }
-
-  const sendRemoteInfo = each((info) => {
-    if (!client) {
-      return false
-    }
-
-    emit('remote', info)
-  }, FRAME_RATE)
-
-  const setActive = (active = true) => {
-    if (!client) {
-      return false
-    }
-
-    emit('remote', {active})
-  }
-
-  return {
-    connectStore,
-    
-    sendInfo: (info, immediate) => sendRemoteInfo([info], immediate),
-    setActive,
-    log: (info) => emit('debug', info),
-    
-    ClientMiddleware,
-    
-    setFrameRate: (value) => {
-      FRAME_RATE.current = value
-    },
-
-    uriForThumbnail: filename => `${URI}/boards/images/${filename}`,
-    
-    getBoards,
-    saveShot,
-    insertShot,
-    getSg,
-    setBoard,
-    isSceneDirty
-  }
 }

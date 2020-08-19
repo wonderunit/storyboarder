@@ -34,7 +34,7 @@ const {
 const useRStats = require('./hooks/use-rstats')
 const useIsXrPresenting = require('./hooks/use-is-xr-presenting')
 const useTextureLoader = require('./hooks/use-texture-loader')
-const useImageBitmapLoader = require('./hooks/use-texture-loader')
+const useImageBitmapLoader = require('./hooks/use-imagebitmap-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
 
 const { WORLD_SCALE_LARGE, WORLD_SCALE_SMALL, useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
@@ -247,16 +247,16 @@ const SceneContent = connect(
       audio.stop()
 
       // attach the music system
-      musicSystem.init({
-        urlMap: {
-          'C4': '/data/system/xr/snd/vr-instrument-c4.ogg',
-          'C5': '/data/system/xr/snd/vr-instrument-c5.ogg',
-          'C6': '/data/system/xr/snd/vr-instrument-c6.ogg'
-        },
-        audioContext: audio.context,
-        audioNode: audio,
-        onComplete: musicSystem.start
-      })
+      // musicSystem.init({
+      //   urlMap: {
+      //     'C4': '/data/system/xr/snd/vr-instrument-c4.ogg',
+      //     'C5': '/data/system/xr/snd/vr-instrument-c5.ogg',
+      //     'C6': '/data/system/xr/snd/vr-instrument-c6.ogg'
+      //   },
+      //   audioContext: audio.context,
+      //   audioNode: audio,
+      //   onComplete: musicSystem.start
+      // })
 
       return audio
     }, [])
@@ -843,14 +843,14 @@ const SceneManagerXR = ({SGConnection}) => {
 
   const [appAssetsLoaded, setAppAssetsLoaded] = useState(false)
 
-  const { assets, requestAsset, getAsset } = useAssetsManager()
+  const { assets, requestAsset, getAsset } = useAssetsManager(SGConnection)
 
   // preload textures
-  const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
-  const roomTexture = useTextureLoader('/data/system/grid_wall2.png')
+  const groundTexture = useTextureLoader(SGConnection, '/data/system/grid_floor_1.png')
+  const roomTexture = useTextureLoader(SGConnection, '/data/system/grid_wall2.png')
 
   // preload icons
-  const uiResources = UI_ICON_FILEPATHS.map(useImageBitmapLoader)
+  const uiResources = UI_ICON_FILEPATHS.map((icon) => useImageBitmapLoader(SGConnection, icon))
 
   // preload app gltfs
   useEffect(
@@ -859,34 +859,34 @@ const SceneManagerXR = ({SGConnection}) => {
   )
 
   // preload audio
-  const welcomeAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-welcome.ogg')
-  const atmosphereAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-drone.ogg')
-  const selectAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-select.ogg')
-  const beamAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-drag-drone.ogg')
-  const teleportAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-teleport.ogg')
+  const welcomeAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-welcome.ogg')
+  const atmosphereAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-drone.ogg')
+  const selectAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-select.ogg')
+  const beamAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-drag-drone.ogg')
+  const teleportAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-teleport.ogg')
 
-  const undoBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-undo.ogg')
-  const redoBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-redo.ogg')
-  const boneHoverBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-hover.ogg')
-  const boneDroneBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-drone.ogg')
-  const fastSwooshBuffer = useAudioLoader('/data/system/xr/snd/vr-fast-swoosh.ogg')
-  const dropBuffer = useAudioLoader('/data/system/xr/snd/vr-drop.ogg')
-  const uiCreateBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-create.ogg')
-  const uiDeleteBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-delete.ogg')
+  const undoBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-ui-undo.ogg')
+  const redoBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-ui-redo.ogg')
+  const boneHoverBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-bone-hover.ogg')
+  const boneDroneBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-bone-drone.ogg')
+  const fastSwooshBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-fast-swoosh.ogg')
+  const dropBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-drop.ogg')
+  const uiCreateBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-ui-create.ogg')
+  const uiDeleteBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-ui-delete.ogg')
 
-  const vrHelp1 = useAudioLoader('/data/system/xr/snd/vr-help-1.ogg')
-  const vrHelp2 = useAudioLoader('/data/system/xr/snd/vr-help-2.ogg')
-  const vrHelp3 = useAudioLoader('/data/system/xr/snd/vr-help-3.ogg')
-  const vrHelp4 = useAudioLoader('/data/system/xr/snd/vr-help-4.ogg')
-  const vrHelp5 = useAudioLoader('/data/system/xr/snd/vr-help-5.ogg')
-  const vrHelp6 = useAudioLoader('/data/system/xr/snd/vr-help-6.ogg')
-  const vrHelp7 = useAudioLoader('/data/system/xr/snd/vr-help-7.ogg')
-  const vrHelp8 = useAudioLoader('/data/system/xr/snd/vr-help-8.ogg')
-  const vrHelp9 = useAudioLoader('/data/system/xr/snd/vr-help-9.ogg')
-  const vrHelp10 = useAudioLoader('/data/system/xr/snd/vr-help-10.ogg')
+  const vrHelp1 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-1.ogg')
+  const vrHelp2 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-2.ogg')
+  const vrHelp3 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-3.ogg')
+  const vrHelp4 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-4.ogg')
+  const vrHelp5 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-5.ogg')
+  const vrHelp6 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-6.ogg')
+  const vrHelp7 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-7.ogg')
+  const vrHelp8 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-8.ogg')
+  const vrHelp9 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-9.ogg')
+  const vrHelp10 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-10.ogg')
 
-  const xrPosing = useAudioLoader('/data/system/xr/snd/xr-posing.ogg')
-  const xrEndPosing = useAudioLoader('/data/system/xr/snd/xr-end-posing.ogg')
+  const xrPosing = useAudioLoader(SGConnection, '/data/system/xr/snd/xr-posing.ogg')
+  const xrEndPosing = useAudioLoader(SGConnection, '/data/system/xr/snd/xr-end-posing.ogg')
 
   // scene
   const sceneObjects = useSelector(getSceneObjects)
@@ -951,6 +951,8 @@ const SceneManagerXR = ({SGConnection}) => {
       if ([...appResources, ...soundResources, ...uiResources].some(n => n === null)) return
       if (APP_GLTFS.map(getAsset).some(n => n === null)) return
 
+      console.log('ALL ICONS: ', uiResources)
+      
       setAppAssetsLoaded(true)
     }
   }, [appAssetsLoaded, groundTexture, roomTexture, uiResources, APP_GLTFS, assets])

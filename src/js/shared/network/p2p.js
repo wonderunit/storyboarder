@@ -1,20 +1,37 @@
 import Peer from 'peerjs'
+import Packer from 'peerjs-js-binarypack'
 const EventEmitter = require('events')
 
+const repack = (data) => {
 
-const emitFn = function (event, payload) {
-    this.send({event, payload})
 }
 
+const encoder = new TextDecoder("utf-8")
 const Client = (connection) => {
     const emitter = new EventEmitter()
+    emitter.setMaxListeners(1000)
 
     // Receiving data from the client
-    connection.on('data', ({action, payload}) => {
-        emitter.emit(action, payload)
+    connection.on('data', (msg) => {
+        if (msg instanceof Blob) {
+            msg.arrayBuffer().then(buf => {
+                const {action, payload} = Packer.unpack(buf)
+                console.log({action, payload})
+                emitter.emit(action, payload)
+            })
+        } else {
+            console.log(msg)
+            const {action, payload} = msg//JSON.parse(data)
+            emitter.emit(action, payload)
+        }
     })
 
-    const emit = (action, payload) => {
+    const emit = (action, payload = null) => {
+        //const pack = JSON.stringify({action, payload})
+        //console.log(pack)
+        
+        //console.log(connection)
+        //const data = new Blob([JSON.stringify({action, payload})], {type : 'application/json'})
         connection.send({action, payload})
     }
 
@@ -26,9 +43,9 @@ const Client = (connection) => {
     }
 }
 
-const P2P = () => {
+const P2P = (host = '127.0.0.1') => {
     const peer = new Peer(null, {
-        host: '127.0.0.1',
+        host,
         port: 3000,
         key: 'shot-generator',
         path: '/peerjs',
@@ -37,6 +54,8 @@ const P2P = () => {
     })
 
     const emitter = new EventEmitter()
+    emitter.setMaxListeners(1000)
+
     const clients = []
     const clientsMap = new Map()
     
@@ -65,7 +84,7 @@ const P2P = () => {
         clients.push(client)
         clientsMap.set(connection.peer, client)
 
-        // emitter.emit('connection', client)
+        //emitter.emit('connection', client)
 
         // Client disconnected
         connection.on('close', (msg) => {
@@ -98,9 +117,10 @@ const P2P = () => {
     const P2PClientConnection = (roomId) => {
         return new Promise((resolve, reject) => {
             emitter.on('open', () => {
-                client = peer.connect(roomId, {reliable: true})
-
-                resolve(Client(client))
+                client = peer.connect(roomId, {reliable: true, serialization: 'binary-utf8'})
+                client.on('open', () => {
+                    resolve(Client(client))
+                })
             })
         })
     }

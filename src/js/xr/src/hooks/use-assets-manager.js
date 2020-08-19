@@ -2,7 +2,7 @@ const THREE = require('three')
 const React = require('react')
 const { useState, useReducer, useMemo, useCallback } = React
 
-const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
+const {onImageBufferLoad, onGLTFBufferLoad} = require('../helpers/resourceLoaders')
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -80,9 +80,7 @@ const load = (loader, path, events, times = 1) => {
   }
 }
 
-const useAssetsManager = () => {
-  const [loader] = useState(() => new GLTFLoader())
-  const [textureLoader] = useState(() => new THREE.TextureLoader())
+const useAssetsManager = (SGConnection) => {
 
   const [assets, dispatch] = useReducer(reducer, {})
 
@@ -92,18 +90,33 @@ const useAssetsManager = () => {
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
         if (!id.includes('/images/')) {
-          load(loader, id, {
-            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+          SGConnection.getResource('gltf', id)
+          .then(({data}) => {
+            onGLTFBufferLoad(data)
+            .then((gltf) => {
+              console.log('Loaded GLTF: ', gltf)
+              dispatch({ type: 'SUCCESS', payload: { id, value: gltf } })
+            })
+            .catch((error) => {
+              console.log('GLTF loading error', error)
+              dispatch({ type: 'ERROR', payload: { id, error } })
+            })
           })
+
           dispatch({ type: 'LOAD', payload: { id } })
         } else {
-          load(textureLoader, id, {
-            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+          SGConnection.getResource('image', id)
+          .then(({type, filePath, data}) => {
+            onImageBufferLoad(id, data)
+            .then((texture) => {
+              console.log('Loaded TEXTURE: ', texture)
+              dispatch({ type: 'SUCCESS', payload: { id, value: texture } })
+            })
+            .catch((error) => {
+              dispatch({ type: 'ERROR', payload: { id, error } })
+            })
           })
+
           dispatch({ type: 'LOAD', payload: { id } })
         }
       })
