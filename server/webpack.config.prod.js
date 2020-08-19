@@ -30,13 +30,13 @@ module.exports = {
   },
   plugins: [
     new CleanWebpackPlugin(),
-    new DotEnv(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('production')
     }),
     new CopyPlugin({
       patterns: [
         { from: apps.development.XR, to: apps.production.XR },
+        { from: 'dist-package.json', to: 'package.json' },
       ],
       options: {
         concurrency: 100

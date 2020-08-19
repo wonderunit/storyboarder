@@ -25,7 +25,6 @@ export const onImageBufferLoad = (url, buffer) => {
 
 export const onBitmapImageBufferLoad = (url, buffer) => {
   return new Promise((resolve, reject) => {
-    // JPEGs can't have an alpha channel, so memory can be saved by storing them as RGB.
     const isJPEG = url.search( /\.jpe?g($|\?)/i ) > 0 || url.search( /^data\:image\/jpeg/ ) === 0
 
     let arrayBufferView = new Uint8Array( buffer )
