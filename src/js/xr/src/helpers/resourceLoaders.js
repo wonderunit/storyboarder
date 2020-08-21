@@ -11,15 +11,16 @@ export const onImageBufferLoad = (url, buffer) => {
     let imageUrl = urlCreator.createObjectURL( blob )
 
     let image = new Image()
+    image.onload = () => {
+      const texture = new THREE.Texture()
+      texture.image = image
+  
+      texture.format = isJPEG ? THREE.RGBFormat : THREE.RGBAFormat
+      texture.needsUpdate = true
+  
+      resolve(texture)
+    }
     image.src = imageUrl
-
-    const texture = new THREE.Texture()
-    texture.image = image
-
-    texture.format = isJPEG ? THREE.RGBFormat : THREE.RGBAFormat
-    texture.needsUpdate = true
-
-    resolve(texture)
   })
 }
 

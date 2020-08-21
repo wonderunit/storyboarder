@@ -56,7 +56,7 @@ const onUserConnect = (emit, broadcast, id, store) => {
 }
 
 export const serve = (store, service, staticPath, projectPath, userDataPath) => {
-  const peer = P2P('ancient-garden-98057.herokuapp.com')
+  const peer = P2P()//'ancient-garden-98057.herokuapp.com'
   const {io, broadcast} = peer
   
   IO.current = peer

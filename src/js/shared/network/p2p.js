@@ -44,12 +44,13 @@ const Client = (connection) => {
 }
 
 const P2P = (host = '127.0.0.1') => {
+    const isLocal = '127.0.0.1'
     const peer = new Peer(null, {
         host,
-        //port: 3000,
+        port: isLocal ? 3000 : undefined,
         key: 'shot-generator',
         path: '/peerjs',
-        secure: true,
+        secure: !isLocal,
         debug: 3
     })
 
