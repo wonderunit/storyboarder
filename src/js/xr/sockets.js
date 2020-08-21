@@ -7,6 +7,8 @@ import {
   updateUser,
   removeUser,
   setId,
+  setUsers,
+  getRemoteDevices,
   SelectActions
 } from './../shared/reducers/remoteDevice'
 import P2P from './../shared/network/p2p'
@@ -89,6 +91,7 @@ export const serve = (store, service, staticPath, projectPath, userDataPath) => 
       //dispatchRemote(mergeState(store.getState()))
       emit('action', getRemoteAction(mergeState(store.getState())))
       emit('remoteAction', setId(id))
+      emit('remoteAction', setUsers(getRemoteDevices(remoteStore.getState())))
     })
 
     emitter.on('remote', (info) => {
