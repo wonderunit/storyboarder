@@ -1004,3 +1004,44 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   -webkit-user-drag: none;
   user-drag: none;
 }
+
+
+.grid-view {
+  /*transform: scale(0.0,0.0) translate(0,0);*/
+  /*transform-origin: 0 0;*/
+  position: relative;
+  /* background: white; */
+  /*border-radius: 13px;*/
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  width: 100%;
+  height: 100%;
+  padding: 10px;
+  overflow: auto;
+  grid-column-gap: 50px;
+  grid-row-gap: 50px;
+  display: grid;
+  grid-template-columns: auto auto auto;
+}
+
+.thumbnail {
+  flex: 1;
+  background: #444;
+  padding: 5px;
+  margin-right: 0px;
+  font-size: 10px;
+  color: #888;
+  font-weight: 100;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.2);
+  transition: all 0s ease-in-out;
+}
+
+.thumbnail.selected {
+  background: #8d89cf;
+  color: #000;
+  top: 0px;
+  position: relative;
+  transition: all 0s ease-out;
+  box-shadow: none;
+  z-index: 999;
+}

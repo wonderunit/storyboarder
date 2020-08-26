@@ -6522,16 +6522,186 @@ const updateSceneFromScript = async () => {
   renderScript()
 }
 
+const setSketchPaneVisibility = (isVisible) => {
+  let storyboarderSketchPane = document.querySelector("#storyboarder-sketch-pane")
+  let container = storyboarderSketchPane.getElementsByClassName("container")[0]
+  if(isVisible) {
+    container.style["visibility"] = "visible";
+    container.style["position"] = "relative";
+  } else {
+    container.style["position"] = "absolute";
+    container.style["visibility"] = "hidden";
+  }
+}
+
+
+const renderGridView = () => {
+  setSketchPaneVisibility(false)
+  let gridContainer = document.createElement("div")
+  let hasShots = boardData.boards.find(board => board.newShot) != null
+  let html = []
+  let i = 0
+  for (let board of boardData.boards) {
+    html.push('<div data-thumbnail="' + i + '" class="thumbnail')
+    if (hasShots) {
+      if (board.newShot || (i === 0)) {
+        html.push(' startShot')
+      }
+
+      if (i < boardData.boards.length - 1) {
+        if (boardData.boards[i + 1].newShot) {
+          html.push(' endShot')
+        }
+      } else {
+        html.push(' endShot')
+      }
+    } else {
+      html.push(' startShot')
+      html.push(' endShot')
+    }
+    let defaultHeight = 200
+    let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
+    html.push('" style="width: ' + thumbnailWidth + 'px;">')
+    let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
+    try {
+      if (fs.existsSync(imageFilename)) {
+        html.push('<div class="top">')
+        let src = imageFilename + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
+        html.push('<img src="' + src + `" height="${defaultHeight}" width="` + thumbnailWidth + '">')
+        html.push('</div>')
+      } else {
+        // blank image
+        html.push(`<img src="//:0" height="${defaultHeight}" width="` + thumbnailWidth + '">')
+      }
+    } catch (err) {
+      log.error(err)
+    }
+    html.push('<div class="info">')
+    html.push('<div class="number">' + board.shot + '</div>')
+    if (board.audio && board.audio.filename.length) {
+      html.push(`
+        <div class="audio">
+          <svg>
+            <use xlink:href="./img/symbol-defs.svg#icon-speaker-on"></use>
+          </svg>
+        </div>
+      `)
+    }
+    html.push('<div class="caption">')
+    if (board.dialogue) {
+      html.push(board.dialogue)
+    }
+    html.push('</div><div class="duration">')
+    if (board.duration) {
+      html.push(util.msToTime(board.duration))
+    } else {
+      html.push(util.msToTime(boardData.defaultBoardTiming))
+    }
+    html.push('</div>')
+    html.push('</div>')
+    html.push('</div>')
+    i++
+  }
+  gridContainer.innerHTML = html.join('')
+  gridContainer.className = "grid-view"
+  let storyboarderSketchPane = document.querySelector("#storyboarder-sketch-pane")
+  storyboarderSketchPane.appendChild(gridContainer)
+
+
+  let thumbnails = gridContainer.querySelectorAll('.thumbnail')
+  console.log(thumbnails)
+  for (let j = 0; j < thumbnails.length; j++) {
+    let thumb = thumbnails[j]
+    console.log(thumb)
+    thumb.addEventListener('pointerenter', (e) => {
+      if (!isEditMode && selections.size <= 1 && e.currentTarget.dataset.thumbnail === currentBoard) {
+        contextMenu.attachTo(e.currentTarget)
+      }
+    })
+    thumb.addEventListener('pointerleave', (e) => {
+      if (!contextMenu.hasChild(e.relatedTarget)) {
+        contextMenu.remove()
+      }
+    })
+    thumb.addEventListener('pointermove', (e) => {
+      if (!isEditMode && selections.size <= 1 && e.currentTarget.dataset.thumbnail === currentBoard) {
+        contextMenu.attachTo(e.currentTarget)
+      }
+    })
+    thumb.addEventListener('pointerdown', (e) => {
+      log.info('DOWN')
+      if (!isEditMode && selections.size <= 1) contextMenu.attachTo(e.currentTarget)
+
+      // always track cursor position
+      updateThumbnailCursor(e.clientX, e.clientY)
+
+      if (e.button === 0) {
+        editModeTimer = setTimeout(enableEditMode, enableEditModeDelay)
+      } else {
+        enableEditMode()
+      }
+
+      let index = Number(e.currentTarget.dataset.thumbnail)
+      if (selections.has(index)) {
+        // ignore
+      } else if (isCommandPressed('workspace:thumbnails:select-multiple-modifier')) {
+        if (selections.size === 0 && !util.isUndefined(currentBoard)) {
+          // use currentBoard as starting point
+          selections.add(currentBoard)
+        }
+
+        // add to selections
+        let min = Math.min(...selections, index)
+        let max = Math.max(...selections, index)
+        selections = new Set(util.range(min, max))
+
+        renderThumbnailDrawerSelections()
+      } else if (currentBoard !== index) {
+        // go to board by index
+
+        // reset selections
+        selections.clear()
+        console.log(e)
+        log.info(`Current board ${currentBoard} and index ${index}`)
+        saveImageFile().then(() => {
+          currentBoard = index
+          renderThumbnailDrawerSelections()
+          gotoBoard(currentBoard)
+        })
+      }
+    }, true, true)
+  }
+}
+const cleanUpGridView = () => {
+  let storyboarderSketchPane = document.querySelector("#storyboarder-sketch-pane")
+  let gridView = storyboarderSketchPane.querySelector(".grid-view")
+  if(!gridView) return
+  storyboarderSketchPane.removeChild(gridView)
+}
+// TODO(): Find a better way to switch modes
+let isGridViewMode = false
 const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
   let style = { display: show ? 'flex' : 'none' }
 
   const onBoardsSelect = () => {
+    isGridViewMode = false
     shouldRenderThumbnailDrawer = false
+    setSketchPaneVisibility(true)
     renderThumbnailDrawer()
+    cleanUpGridView()
   }
   const onTimelineSelect = () => {
+    isGridViewMode = false
     shouldRenderThumbnailDrawer = true
+    setSketchPaneVisibility(true)
     renderThumbnailDrawer()
+    cleanUpGridView()
+  }
+  const onGridViewSelect = () => {
+    shouldRenderThumbnailDrawer = true
+    isGridViewMode = true
+    renderThumbnailDrawer()
+    renderGridView()
   }
 
   return h(
@@ -6554,6 +6724,16 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
           ['use', { xlinkHref: './img/symbol-defs.svg#timeline-timeline' }]
         ],
         ['span', 'Timeline']
+      ],
+      ['div.spacer'],
+      ['div.btn', {
+        className: isGridViewMode ? 'selected' : null,
+        onPointerUp: onGridViewSelect
+      },
+        ['svg', { className: 'icon' },
+          ['use', { xlinkHref: './img/symbol-defs.svg#timeline-timeline' }]
+        ],
+        ['span', 'Grid View']
       ]
     ]
   )
