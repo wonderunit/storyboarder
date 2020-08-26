@@ -94,7 +94,6 @@ const InteractionManager = connect(
     const [lastDownId, setLastDownId] = useState()
     const [dragTarget, setDragTarget] = useState()
     const [pointerDownEvent, setOnPointDown] = useState()
-    const isCtrlPressed = useRef(false)
     const [pointerUpEvent, setOnPointUp] = useState()
     const [isCameraControlsEnabled, enableCameraControls] = useState(true)
     const { prepareDrag, drag, updateStore, endDrag } = useDraggingManager(false)
@@ -339,11 +338,11 @@ const InteractionManager = connect(
         if(dragTarget.target.userData.type === 'character') {
           let ikRig = SGIkHelper.getInstance().ragDoll;
           if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown) {
-            drag({ x, y }, dragTarget.target, camera, selections, isCtrlPressed.current)
+            drag({ x, y }, dragTarget.target, camera, selections, event.ctrlKey)
           }
         }
         else {
-          drag({ x, y }, dragTarget.target, camera, selections, isCtrlPressed.current)
+          drag({ x, y }, dragTarget.target, camera, selections, event.ctrlKey)
         }
       }
     }
@@ -429,31 +428,15 @@ const InteractionManager = connect(
         setLastDownId(null)
     }
 
-    const keyDown = (event) => {
-      if(event.ctrlKey) {
-        isCtrlPressed.current = true 
-      }
-    } 
-
-    const keyUp = (event) => {
-      if(event.ctrlKey) {
-        isCtrlPressed.current = false 
-      }
-    } 
-
     useLayoutEffect(() => {
       activeGL.domElement.addEventListener('pointerdown', onPointerDown)
       activeGL.domElement.addEventListener('pointermove', onPointerMove)
       activeGL.domElement.addEventListener('pointermove', throttleUpdateDraggableObject)
-      activeGL.domElement.addEventListener('keydown', keyDown)
-      activeGL.domElement.addEventListener('keyup', keyUp)
       window.addEventListener('pointerup', onPointerUp)
       return function cleanup () {
         activeGL.domElement.removeEventListener('pointerdown', onPointerDown)
         activeGL.domElement.removeEventListener('pointermove', onPointerMove)
         activeGL.domElement.removeEventListener('pointermove', throttleUpdateDraggableObject)
-        activeGL.domElement.removeEventListener('keydown', keyDown)
-        activeGL.domElement.removeEventListener('keyup', keyUp)
         window.removeEventListener('pointerup', onPointerUp)
       }
     }, [onPointerDown, onPointerUp, onPointerMove, activeGL])
