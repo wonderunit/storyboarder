@@ -203,6 +203,29 @@ body::-webkit-scrollbar {
   animation-name: bounce;
 }
 
+#grid-view-cursor {
+  position: relative;
+  top: 0;
+  left: 0;
+  margin-top: 7px;
+
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 10px solid #999;
+  transition: left .1s ease-in;
+  animation-delay: 0s;
+  animation-duration: 0.5s;
+  animation-timing-function: ease-in;
+  animation-iteration-count: infinite;
+  animation-name: bounce;
+}
+#grid-cursor-container {
+  position: absolute;
+  z-index: 9999;
+}
+
 @keyframes bounce {
   0% {
     top: 5px;
