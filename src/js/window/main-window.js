@@ -3937,6 +3937,7 @@ const renderSceneTimeline = () => {
 let renderThumbnailDrawer = () => {
   updateSceneTiming()
 
+  isGridViewMode && renderGridView()
   // reflect the current view
   cycleViewMode(0)
 
@@ -4009,7 +4010,8 @@ let renderThumbnailDrawer = () => {
     html.push('</div>')
     i++
   }
-  document.querySelector('#thumbnail-drawer').innerHTML = html.join('')
+  let thumbnailDrawer = document.querySelector('#thumbnail-drawer')
+  thumbnailDrawer.innerHTML = html.join('')
 
   renderThumbnailButtons()
 
@@ -4072,7 +4074,7 @@ let renderThumbnailDrawer = () => {
     })
   }
 
-  let thumbnails = document.querySelectorAll('.thumbnail')
+  let thumbnails = thumbnailDrawer.querySelectorAll('.thumbnail')
   for (var thumb of thumbnails) {
     thumb.addEventListener('pointerenter', (e) => {
       if (!isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
@@ -6536,29 +6538,13 @@ const setSketchPaneVisibility = (isVisible) => {
 
 
 const renderGridView = () => {
+  cleanUpGridView()
   setSketchPaneVisibility(false)
   let gridContainer = document.createElement("div")
-  let hasShots = boardData.boards.find(board => board.newShot) != null
   let html = []
   let i = 0
   for (let board of boardData.boards) {
     html.push('<div data-thumbnail="' + i + '" class="thumbnail')
-    if (hasShots) {
-      if (board.newShot || (i === 0)) {
-        html.push(' startShot')
-      }
-
-      if (i < boardData.boards.length - 1) {
-        if (boardData.boards[i + 1].newShot) {
-          html.push(' endShot')
-        }
-      } else {
-        html.push(' endShot')
-      }
-    } else {
-      html.push(' startShot')
-      html.push(' endShot')
-    }
     let defaultHeight = 200
     let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
     html.push('" style="width: ' + thumbnailWidth + 'px;">')
@@ -6609,10 +6595,8 @@ const renderGridView = () => {
 
 
   let thumbnails = gridContainer.querySelectorAll('.thumbnail')
-  console.log(thumbnails)
   for (let j = 0; j < thumbnails.length; j++) {
     let thumb = thumbnails[j]
-    console.log(thumb)
     thumb.addEventListener('pointerenter', (e) => {
       if (!isEditMode && selections.size <= 1 && e.currentTarget.dataset.thumbnail === currentBoard) {
         contextMenu.attachTo(e.currentTarget)
@@ -6671,6 +6655,8 @@ const renderGridView = () => {
       }
     }, true, true)
   }
+
+  renderThumbnailDrawerSelections()
 }
 const cleanUpGridView = () => {
   let storyboarderSketchPane = document.querySelector("#storyboarder-sketch-pane")
