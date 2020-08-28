@@ -1093,15 +1093,22 @@ const loadBoardUI = async () => {
 
     // log.info('pointerup', isEditMode)
     if (isEditMode) {
+
       let x = e.clientX, y = e.clientY
 
       // 1) try to find nearest thumbnail, otherwise,
       // HACK 2) try to find last known thumbnail position
       let el = thumbnailFromPoint(x, y) || thumbnailCursor.el
+
+      if(isGridViewMode) { 
+        el = gridViewFromPoint(x, y) || gridViewCursor.el
+      } else {
+        el =  thumbnailFromPoint(x, y) || thumbnailCursor.el
+      }
       let offset = 0
       if (el) {
         offset = el.getBoundingClientRect().width
-        el = thumbnailFromPoint(x, y, offset/2)
+        el = !isGridViewMode ? thumbnailFromPoint(x, y, offset/2) : gridViewFromPoint(x, y, offset/2) 
       }
 
       if (!el) {
@@ -1125,6 +1132,7 @@ const loadBoardUI = async () => {
           }
 
           renderThumbnailDrawer()
+          isGridViewMode && renderGridView()
           gotoBoard(currentBoard, true)
         })
       } else {
@@ -1132,6 +1140,7 @@ const loadBoardUI = async () => {
       }
 
       disableEditMode()
+
     }
   })
 
@@ -6547,8 +6556,7 @@ const setSketchPaneVisibility = (isVisible) => {
 let gridViewFromPoint = (x, y, offset) => {
   if (!offset) { offset = 0 }
   let el = document.elementFromPoint(x-offset, y)
-  if (!el) return null
-
+  if (!el || !el.classList.contains('thumbnail')) return null
   // if part of a multi-selection, base from right-most element
   if (selections.has(Number(el.dataset.thumbnail))) {
     // base from the right-most thumbnail in the selection
@@ -6591,6 +6599,7 @@ let updateGridViewCursor = (x, y) => {
   let elementOffsetX = el.getBoundingClientRect().right
 
   let elementOffsetY = el.getBoundingClientRect().top
+  let scrollTop = el.scrollTop
 
   // is this an end shot?
   if (el.classList.contains('endShot')) {
@@ -6599,10 +6608,9 @@ let updateGridViewCursor = (x, y) => {
 
   let arrowOffsetX = 8
   let arrowOffsetY = -8
-  console.log("gridViewCursor", gridViewCursor)
   gridViewCursor.x = elementOffsetX + arrowOffsetX
 
-  gridViewCursor.y = elementOffsetY + arrowOffsetY
+  gridViewCursor.y = elementOffsetY + arrowOffsetY - scrollTop
 }
 
 let renderGridViewCursor = () => {
@@ -6634,11 +6642,27 @@ const renderGridView = () => {
   cleanUpGridView()
   setSketchPaneVisibility(false)
   let gridContainer = document.createElement("div")
-
+  let hasShots = boardData.boards.find(board => board.newShot) != null
   let html = []
   let i = 0
   for (let board of boardData.boards) {
-    html.push('<div data-thumbnail="' + i + '" class="thumbnail')
+    html.push('<div data-thumbnail="' + i + '" draggable="false"  class="thumbnail')
+    if (hasShots) {
+      if (board.newShot || (i === 0)) {
+        html.push(' startShot')
+      }
+
+      if (i < boardData.boards.length - 1) {
+        if (boardData.boards[i + 1].newShot) {
+          html.push(' endShot')
+        }
+      } else {
+        html.push(' endShot')
+      }
+    } else {
+      html.push(' startShot')
+      html.push(' endShot')
+    }
     let defaultHeight = 200
     let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
     html.push('" style="width: ' + thumbnailWidth + 'px;">')
@@ -6647,11 +6671,11 @@ const renderGridView = () => {
       if (fs.existsSync(imageFilename)) {
         html.push('<div class="top">')
         let src = imageFilename + '?' + getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
-        html.push('<img src="' + src + `" height="${defaultHeight}" width="` + thumbnailWidth + '">')
+        html.push('<img src="' + src + `" draggable="false"  height="${defaultHeight}" width="` + thumbnailWidth + '">')
         html.push('</div>')
       } else {
         // blank image
-        html.push(`<img src="//:0" height="${defaultHeight}" width="` + thumbnailWidth + '">')
+        html.push(`<img src="//:0" height="${defaultHeight}" draggable="false" width="` + thumbnailWidth + '">')
       }
     } catch (err) {
       log.error(err)

@@ -1028,7 +1028,7 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   user-drag: none;
 }
 
-
+/* The grid view styles */
 .grid-view {
   /*transform: scale(0.0,0.0) translate(0,0);*/
   /*transform-origin: 0 0;*/
@@ -1047,7 +1047,7 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   grid-template-columns: auto auto auto;
 }
 
-.thumbnail {
+.grid-view .thumbnail {
   flex: 1;
   background: #444;
   padding: 5px;
@@ -1059,7 +1059,7 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   transition: all 0s ease-in-out;
 }
 
-.thumbnail.selected {
+.grid-view .thumbnail.selected {
   background: #8d89cf;
   color: #000;
   top: 0px;
@@ -1067,4 +1067,37 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   transition: all 0s ease-out;
   box-shadow: none;
   z-index: 999;
+}
+
+.grid-view img {
+  background: white;
+  border-radius: 3px;
+  position: relative;
+  box-shadow: none;
+}
+
+.grid-view img:after {
+  content: "";
+  position: absolute;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: white;
+  border-radius: 3px;
+}
+
+.grid-view .thumbnail * {
+  pointer-events: none;
+}
+
+.grid-view .thumbnail.selected.editing {
+  background: #999;
+  top: -10px;
+  position: relative;
+  color: #000;
+  transition: all .05s ease-in;
+  box-shadow: 0px 10px 0px rgba(0,0,0,0.1);
 }
