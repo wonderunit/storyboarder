@@ -14,6 +14,7 @@ const isDev = require('electron-is-dev')
 const log = require('electron-log')
 log.catchErrors()
 const ReactDOM = require('react-dom')
+const { useEffect } = require('react')
 const h = require('../utils/h')
 const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
 
@@ -3904,7 +3905,6 @@ let renderThumbnailDrawerSelections = () => {
   renderSceneTimeline()
 
   let thumbnails = document.querySelectorAll('.thumbnail')
-
   for (let thumb of thumbnails) {
     let i = Number(thumb.dataset.thumbnail)
     thumb.classList.toggle('active', currentBoard == i)
@@ -6549,13 +6549,18 @@ const updateSceneFromScript = async () => {
 
 const setSketchPaneVisibility = (isVisible) => {
   let storyboarderSketchPane = document.querySelector("#storyboarder-sketch-pane")
+  let gridView = document.querySelector('.grid-view')
   let container = storyboarderSketchPane.getElementsByClassName("container")[0]
   if(isVisible) {
     container.style["visibility"] = "visible";
     container.style["position"] = "relative";
+    gridView.style["position"] = "absolute";
+    gridView.style["visibility"] = "hidden";
   } else {
     container.style["position"] = "absolute";
     container.style["visibility"] = "hidden";
+    gridView.style["visibility"] = "visible"
+    gridView.style["position"] = "relative";
   }
 }
 
@@ -6578,6 +6583,10 @@ let isGridViewMode = false
 //#endregion
 const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
   let style = { display: show ? 'flex' : 'none' }
+
+  useEffect(() => {
+    setSketchPaneVisibility(true)
+  }, [])
 
   const onBoardsSelect = () => {
     isGridViewMode = false

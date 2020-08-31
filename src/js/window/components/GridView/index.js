@@ -1,7 +1,7 @@
-const path = require('path')
-const log = require('electron-log')
-const fs = require('fs-extra')
-const util = require('../../../utils/index')
+const ReactDOM = require('react-dom')
+const h = require('../../../utils/h')
+const Grid = require('./Grid')
+const GridViewElement = require('./GridViewElement')
 let enableEditModeDelay = 750 // msecs
 class GridView {
     constructor(boardData, boardPath, saveImageFile, getSelections, 
@@ -74,12 +74,10 @@ class GridView {
     }
 
     cleanUpGridView(){
-        let storyboarderSketchPane = document.querySelector("#storyboarder-sketch-pane")
-        let gridView = storyboarderSketchPane.querySelector(".grid-view")
+        let gridView = document.querySelector(".grid-view")
         if(!gridView) return
-        gridView.removeEventListener("pointerdown", this.gridDrag)
-        
-        storyboarderSketchPane.removeChild(gridView)
+        //gridView.removeEventListener("pointerdown", this.gridDrag)
+        ReactDOM.unmountComponentAtNode(gridView)
     }
 
     updateGridViewCursor(x, y) {
@@ -106,151 +104,80 @@ class GridView {
         this.gridViewCursor.y = elementOffsetY + arrowOffsetY - scrollTop
     }
 
+    pointerEnter (e) {
+      let selections = this.getSelections()
+      let currentBoard = this.getCurrentBoard()
+      if (!this.isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
+          this.getContextMenu().attachTo(e.target)
+        }
+    }
+
+    pointerLeave (e) { 
+        if (e.relatedTarget instanceof Element && !this.getContextMenu().hasChild(e.relatedTarget)) {
+            this.getContextMenu().remove()
+        }
+    }
+
+    pointerMove (e) {
+        let selections = this.getSelections()
+        let currentBoard = this.getCurrentBoard()
+        if (!this.isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
+            this.getContextMenu().attachTo(e.target)
+        }
+    }
+
+    pointerDown (e) { 
+        let selections = this.getSelections()
+        let currentBoard = this.getCurrentBoard()
+        if (!this.isEditMode && selections.size <= 1) this.getContextMenu().attachTo(e.target)
+        // always track cursor position
+        this.updateGridViewCursor(e.clientX, e.clientY)
+    
+        if (e.button === 0) {
+            this.setEditorModeTimer(setTimeout(() => this.enableEditMode(), enableEditModeDelay))
+        } else {
+
+          this.enableEditMode()
+        }
+      
+        let index = Number(e.target.dataset.thumbnail)
+        if (selections.has(index)) {
+          // ignore
+        } else if (currentBoard !== index) {
+          // go to board by index
+          // reset selections
+          selections.clear()
+          this.saveImageFile().then(() => {
+            this.setCurrentBoard(index)
+            this.renderThumbnailDrawerSelections()
+            this.gotoBoard(index)
+          })
+        }
+    }
+
     renderGridView () {
         this.cleanUpGridView()
         this.setSketchPaneVisibility(false)
-        let gridContainer = document.createElement("div")
         let boardData = this.boardData;
-        let boardPath = this.boardPath;
-        let hasShots = boardData.boards.find(board => board.newShot) != null
-        let boardModel = this.boardModel;
-        let html = []
-        let i = 0
-        for (let board of boardData.boards) {
-          html.push('<div data-thumbnail="' + i + '" draggable="false"  class="thumbnail')
-          if (hasShots) {
-            if (board.newShot || (i === 0)) {
-              html.push(' startShot')
-            }
-        
-            if (i < boardData.boards.length - 1) {
-              if (boardData.boards[i + 1].newShot) {
-                html.push(' endShot')
-              }
-            } else {
-              html.push(' endShot')
-            }
-          } else {
-            html.push(' startShot')
-            html.push(' endShot')
-          }
-          let defaultHeight = 200
-          let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
-          html.push('" style="width: ' + thumbnailWidth + 'px;">')
-          let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
-          try {
-            if (fs.existsSync(imageFilename)) {
-              html.push('<div class="top">')
-              let src = imageFilename + '?' + this.getEtag(path.join(boardPath, 'images', boardModel.boardFilenameForThumbnail(board)))
-              html.push('<img src="' + src + `" draggable="false"  height="${defaultHeight}" width="` + thumbnailWidth + '">')
-              html.push('</div>')
-            } else {
-              // blank image
-              html.push(`<img src="//:0" height="${defaultHeight}" draggable="false" width="` + thumbnailWidth + '">')
-            }
-          } catch (err) {
-            log.error(err)
-          }
-          html.push('<div class="info">')
-          html.push('<div class="number">' + board.shot + '</div>')
-          if (board.audio && board.audio.filename.length) {
-            html.push(`
-              <div class="audio">
-                <svg>
-                  <use xlink:href="./img/symbol-defs.svg#icon-speaker-on"></use>
-                </svg>
-              </div>
-            `)
-          }
-          html.push('<div class="caption">')
-          if (board.dialogue) {
-            html.push(board.dialogue)
-          }
-          html.push('</div><div class="duration">')
-          if (board.duration) {
-            html.push(util.msToTime(board.duration))
-          } else {
-            html.push(util.msToTime(boardData.defaultBoardTiming))
-          }
-          html.push('</div>')
-          html.push('</div>')
-          html.push('</div>')
-          i++
-        }
-        gridContainer.innerHTML = html.join('')
-        gridContainer.className = "grid-view"
-        gridContainer.addEventListener('pointerdown', this.gridDrag)
-        let storyboarderSketchPane = document.querySelector("#storyboarder-sketch-pane")
-        storyboarderSketchPane.appendChild(gridContainer)
-    
-        let selections = this.getSelections()
-        let currentBoard = this.getCurrentBoard()
-        let thumbnails = gridContainer.querySelectorAll('.thumbnail')
-        for (let j = 0; j < thumbnails.length; j++) {
-          let thumb = thumbnails[j]
-          thumb.addEventListener('pointerenter', (e) => {
-            selections = this.getSelections()
-            currentBoard = this.getCurrentBoard()
-            if (!this.isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
-              this.getContextMenu().attachTo(e.target)
-            }
-          })
-          thumb.addEventListener('pointerleave', (e) => {
-            if (!this.getContextMenu().hasChild(e.relatedTarget)) {
-                this.getContextMenu().remove()
-            }
-          })
-          thumb.addEventListener('pointermove', (e) => {
-            selections = this.getSelections()
-            currentBoard = this.getCurrentBoard()
-            if (!this.isEditMode && selections.size <= 1 && e.target.dataset.thumbnail === currentBoard) {
-                this.getContextMenu().attachTo(e.target)
-            }
-          })
-          thumb.addEventListener('pointerdown', (e) => {
-            selections = this.getSelections()
-            currentBoard = this.getCurrentBoard()
-            if (!this.isEditMode && selections.size <= 1) this.getContextMenu().attachTo(e.target)
-            // always track cursor position
-            this.updateGridViewCursor(e.clientX, e.clientY)
-        
-            if (e.button === 0) {
-                this.setEditorModeTimer(setTimeout(() => this.enableEditMode(), enableEditModeDelay))
-            } else {
 
-              this.enableEditMode()
-            }
-        
-            let index = Number(e.target.dataset.thumbnail)
-            if (selections.has(index)) {
-              // ignore
-            } /* else if (isCommandPressed('workspace:thumbnails:select-multiple-modifier')) {
-              if (selections.size === 0 && !util.isUndefined(currentBoard)) {
-                // use currentBoard as starting point
-                selections.add(currentBoard)
-              }
-          
-              // add to selections
-              let min = Math.min(...selections, index)
-              let max = Math.max(...selections, index)
-              selections = new Set(util.range(min, max))
-          
-              this.renderThumbnailDrawerSelections()
-            } */ else if (currentBoard !== index) {
-              // go to board by index
-              // reset selections
-              selections.clear()
-              this.saveImageFile().then(() => {
-                this.setCurrentBoard(index)
-                this.renderThumbnailDrawerSelections()
-                this.gotoBoard(index)
-              })
-            }
-          }, true, true)
-        }
-        this.renderThumbnailDrawerSelections()
+        ReactDOM.render(h([Grid, {
+          itemData:{
+            boardData,
+            boardPath: this.boardPath,
+            boardModel: this.boardModel,
+            getEtag: this.getEtag,
+            pointerDown: (e) => this.pointerDown(e),
+            pointerMove: (e) => this.pointerMove(e),
+            pointerLeave: (e) => this.pointerLeave(e),
+            pointerEnter: (e) => this.pointerEnter(e),
+          },
+          Component:GridViewElement,
+          elements:boardData.boards,
+          numCols:3,
+          itemHeight: 200
+          }
+        ]),  document.querySelector('.grid-view'), () => this.renderThumbnailDrawerSelections())
     }
-
 }
 
 module.exports = GridView
