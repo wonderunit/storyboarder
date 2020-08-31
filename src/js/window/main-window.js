@@ -3349,8 +3349,7 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
       let thumbDiv = document.querySelector(`[data-thumbnail='${currentBoard}']`)
       if (thumbDiv) {
         thumbDiv.classList.add('active')
-        thumbDiv.scrollIntoView()
-
+        thumbDiv.scrollIntoView(false)
         let thumbL = thumbDiv.offsetLeft
         let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
 

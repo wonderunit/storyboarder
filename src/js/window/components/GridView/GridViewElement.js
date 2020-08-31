@@ -68,7 +68,7 @@ const GridViewElement =  React.memo(({
         onPointerLeave: pointerLeave,
         onPointerEnter: pointerEnter,
         },
-        ['div', { style:{ display:'flex', 'flex-direction':'column', 'align-self':"center"} },
+        ['div', { style:{ display:'flex', flexDirection:'column', alignSelf:"center"} },
             getImage(),
             ['div', { className:"info" },
                 ['div', { className:"number"}, board.shot],
