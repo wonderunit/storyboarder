@@ -18,7 +18,7 @@ const GridViewElement =  React.memo(({
 }) => {
     let defaultHeight = 200
     let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
-    let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-thumbnail.png'))
+    let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-posterframe.jpg'))
     const getImage = () => {
         let imageElement = ''
         try {
