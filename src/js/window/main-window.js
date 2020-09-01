@@ -2164,6 +2164,7 @@ const importImageAndReplace = async filepath => {
     let dataURL = loadImageFileAsDataURL(filepath)
     await replaceReferenceLayerImage(dataURL)
   } catch (err) {
+    log.error(err)
     notifications.notify({ message: err.toString() })
     sfx.error()
   }
@@ -2175,6 +2176,7 @@ const importImageFromMobile = async dataURL => {
   try {
     await replaceReferenceLayerImage(dataURL)
   } catch (err) {
+    log.error(err)
     notifications.notify({ message: err.toString() })
     sfx.error()
   } 
