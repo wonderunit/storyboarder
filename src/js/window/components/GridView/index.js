@@ -76,6 +76,7 @@ class GridView {
     cleanUpGridView(){
         let gridView = document.querySelector(".grid-view")
         if(!gridView) return
+        gridView.removeEventListener('pointerdown', this.gridDrag)
         ReactDOM.unmountComponentAtNode(gridView)
     }
 
@@ -161,7 +162,8 @@ class GridView {
     renderGridView () {
         this.cleanUpGridView()
         let boardData = this.boardData;
-
+        let gridView = document.querySelector('.grid-view')
+        gridView.addEventListener('pointerdown', this.gridDrag)
         ReactDOM.render(h([Grid, {
           itemData:{
             boardData,
@@ -179,7 +181,7 @@ class GridView {
           numCols:3,
           itemHeight: 200
           }
-        ]),  document.querySelector('.grid-view'), () => this.renderThumbnailDrawerSelections())
+        ]), gridView, () => this.renderThumbnailDrawerSelections())
     }
 }
 
