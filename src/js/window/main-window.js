@@ -6548,18 +6548,23 @@ const updateSceneFromScript = async () => {
 
 const setSketchPaneVisibility = (isVisible) => {
   let storyboarderSketchPane = document.querySelector("#storyboarder-sketch-pane")
-  let gridView = document.querySelector('.grid-view')
+  let gridViewElement = document.querySelector('.grid-view')
   let container = storyboarderSketchPane.getElementsByClassName("container")[0]
   if(isVisible) {
-    container.style["visibility"] = "visible";
-    container.style["position"] = "relative";
-    gridView.style["position"] = "absolute";
-    gridView.style["visibility"] = "hidden";
+    isGridViewMode = false
+    container.style["position"] = "relative"
+    container.style["left"] = "0px"
+    gridViewElement.style["position"] = "absolute"
+    gridViewElement.style["left"] = "-99999px"
+    gridView.cleanUpGridView()
+    // NOTE(): A hackish way to update sketchpane
+    gotoBoard(getCurrentBoard())
   } else {
-    container.style["position"] = "absolute";
-    container.style["visibility"] = "hidden";
-    gridView.style["visibility"] = "visible"
-    gridView.style["position"] = "relative";
+    isGridViewMode = true
+    container.style["position"] = "absolute"
+    container.style["left"] = "-99999px"
+    gridViewElement.style["position"] = "relative"
+    gridViewElement.style["left"] = "0px"
   }
 }
 
@@ -6588,22 +6593,18 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
   }, [])
 
   const onBoardsSelect = () => {
-    isGridViewMode = false
     shouldRenderThumbnailDrawer = false
     setSketchPaneVisibility(true)
     renderThumbnailDrawer()
-    gridView.cleanUpGridView()
   }
   const onTimelineSelect = () => {
-    isGridViewMode = false
     shouldRenderThumbnailDrawer = true
     setSketchPaneVisibility(true)
     renderThumbnailDrawer()
-    gridView.cleanUpGridView()
   }
   const onGridViewSelect = () => {
     shouldRenderThumbnailDrawer = true
-    isGridViewMode = true
+    setSketchPaneVisibility(false)
     renderThumbnailDrawer()
     gridView.renderGridView()
   }

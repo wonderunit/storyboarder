@@ -14,6 +14,7 @@ const GridViewElement =  React.memo(({
     pointerMove,
     pointerLeave,
     pointerEnter,
+    dblclick
 }) => {
     let defaultHeight = 200
     let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
@@ -71,6 +72,7 @@ const GridViewElement =  React.memo(({
             onPointerMove: pointerMove,
             onPointerLeave: pointerLeave,
             onPointerEnter: pointerEnter,
+            onDoubleClick: dblclick
         },
             getImage(),
             ['div', { className:"info" },

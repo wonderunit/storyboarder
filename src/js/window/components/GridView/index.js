@@ -76,7 +76,6 @@ class GridView {
     cleanUpGridView(){
         let gridView = document.querySelector(".grid-view")
         if(!gridView) return
-        //gridView.removeEventListener("pointerdown", this.gridDrag)
         ReactDOM.unmountComponentAtNode(gridView)
     }
 
@@ -155,9 +154,12 @@ class GridView {
         }
     }
 
+    doubleClick (e) {
+      this.setSketchPaneVisibility(true)
+    }
+
     renderGridView () {
         this.cleanUpGridView()
-        this.setSketchPaneVisibility(false)
         let boardData = this.boardData;
 
         ReactDOM.render(h([Grid, {
@@ -170,6 +172,7 @@ class GridView {
             pointerMove: (e) => this.pointerMove(e),
             pointerLeave: (e) => this.pointerLeave(e),
             pointerEnter: (e) => this.pointerEnter(e),
+            dblclick: (e) => this.doubleClick(e)
           },
           Component:GridViewElement,
           elements:boardData.boards,
