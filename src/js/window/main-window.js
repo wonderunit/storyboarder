@@ -2160,9 +2160,8 @@ let insertNewBoardsWithFiles = async filepaths => {
 const importImageAndReplace = async filepath => {
   log.info('main-window#importImageAndReplace')
 
-  let dataURL = loadImageFileAsDataURL(filepath)
-
   try {
+    let dataURL = loadImageFileAsDataURL(filepath)
     await replaceReferenceLayerImage(dataURL)
   } catch (err) {
     notifications.notify({ message: err.toString() })
