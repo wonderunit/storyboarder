@@ -60,15 +60,18 @@ const GridViewElement =  React.memo(({
 
     return h(
     ['div', { 
-        'data-thumbnail':index, 
-        className:"thumbnail", 
+        className: "thumbnail-container",
         style:{ width:thumbnailWidth },
-        onPointerDown: pointerDown,
-        onPointerMove: pointerMove,
-        onPointerLeave: pointerLeave,
-        onPointerEnter: pointerEnter,
         },
-        ['div', { style:{ display:'flex', flexDirection:'column', alignSelf:"center"} },
+        ['div', { 
+            style:{ display:'flex', flexDirection:'column', alignSelf:"center"},
+            'data-thumbnail':index, 
+            className:"thumbnail", 
+            onPointerDown: pointerDown,
+            onPointerMove: pointerMove,
+            onPointerLeave: pointerLeave,
+            onPointerEnter: pointerEnter,
+        },
             getImage(),
             ['div', { className:"info" },
                 ['div', { className:"number"}, board.shot],

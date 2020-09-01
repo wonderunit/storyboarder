@@ -1046,12 +1046,22 @@ input[type=range]:focus::-webkit-slider-runnable-track {
   flex-direction: column;
   background: #444;
   padding: 5px;
-  margin-right: 0px;
   font-size: 10px;
   color: #888;
   font-weight: 100;
   box-shadow: 0 1px 1px rgba(0,0,0,0.2);
   transition: all 0s ease-in-out;
+  align-content: center;
+  border-radius: 3px;
+}
+
+.grid-view .thumbnail-container { 
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  margin-right: 0px;
+  font-size: 10px;
   align-content: center;
 }
 
