@@ -6054,6 +6054,7 @@ let disableEditMode = () => {
     editModeState = false
     thumbnailCursor.visible = false
     gridView.gridViewCursor.visible = false
+    gridView.IsEditMode = false
     renderThumbnailCursor()
     isGridViewMode && gridView.renderGridViewCursor()
     renderThumbnailDrawerSelections()

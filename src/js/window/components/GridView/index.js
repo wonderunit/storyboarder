@@ -33,6 +33,10 @@ class GridView {
         return this.isEditMode;
     }
 
+    set IsEditMode(value) {
+        this.isEditMode = value;
+    }
+
     enableEditMode () {
         this.isEditMode = true;
         this.gridViewCursor.visible = true
