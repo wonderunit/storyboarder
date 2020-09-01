@@ -21,7 +21,7 @@ const getPlaceholder = (elementStyle, i, k, isLoading = false) => (
     {
     key:`grid-element-placeholder-${i + k}`,
     style:elementStyle,
-    className:(isLoading ? "center-child" : ""),
+    className:'thumbnail-container',
     },
     {/*{isLoading && <div className="spinner"/>}*/}
   ]   
