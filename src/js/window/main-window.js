@@ -6645,6 +6645,7 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
     setSketchPaneVisibility(false)
     renderThumbnailDrawer()
     gridView.renderGridView()
+    gotoBoard(getCurrentBoard())
   }
 
   return h(
