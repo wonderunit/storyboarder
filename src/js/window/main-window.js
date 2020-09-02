@@ -3305,6 +3305,32 @@ let goNextBoard = async (direction, shouldPreserveSelections = false) => {
   }
 }
 
+const ScrollTypes = {
+  VERTICAL: "vertical",
+  HORIZONTAL: "horizontal"
+}
+
+const smoothScroll = (currentPosition, desiredPosition, element, block, scrollType = ScrollTypes.HORIZONTAL) => {
+  let i = currentPosition || 0;
+  let visibleSize = scrollType === ScrollTypes.HORIZONTAL ? element.offsetWidth : element.offsetHeight
+  let position = block === "center" ? visibleSize / 3 : 0
+  let steps = 20
+  let iterationStep = (desiredPosition - currentPosition - position) / steps
+  let iteration = 0
+  let interval = setInterval(() => {
+    if (i !== desiredPosition && iteration !== steps) {
+      if(scrollType === ScrollTypes.HORIZONTAL) {
+        element.scrollTo(i += iterationStep, 0);
+      } else {
+        element.scrollTo(0, i += iterationStep);
+      }
+      iteration ++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 10);
+}
+
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
   if(isRecording && isRecordingStarted) {
     // make sure we capture the last frame
@@ -3346,43 +3372,54 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
         item.classList.remove('active')
       }
 
-      let thumbDiv = document.querySelector(`[data-thumbnail='${currentBoard}']`)
-      if (thumbDiv) {
-        thumbDiv.classList.add('active')
-        thumbDiv.scrollIntoView(false)
-        let thumbL = thumbDiv.offsetLeft
-        let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
-
-        let containerDiv = document.querySelector('#thumbnail-container')
-        let containerL = containerDiv.scrollLeft
-        let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
-
-        if (thumbR >= containerR) {
-          // if right side of thumbnail is beyond the right edge of the visible container
-          // scroll the visible container
-          // to reveal up to the right edge of the thumbnail
-          containerDiv.scrollLeft = (thumbL - containerDiv.offsetWidth) + thumbDiv.offsetWidth + 100
-        } else if (containerL >= thumbL) {
-          // if left side of thumbnail is beyond the left edge of the visible container
-          // scroll the visible container
-          // to reveal up to the left edge of the thumbnail
-          containerDiv.scrollLeft = thumbL - 50
+      let thumbDivs = document.querySelectorAll(`[data-thumbnail='${currentBoard}']`)
+      for(let i = 0; i < thumbDivs.length; i++) {
+        let thumbDiv = thumbDivs[i]
+        if(thumbDiv.dataset.type === 'thumbnail-grid') {
+          thumbDiv.classList.add('active')
+          let containerDiv = document.querySelector('.grid-view')
+          smoothScroll(containerDiv.scrollTop, thumbDiv.parentNode.offsetTop, containerDiv, "center", ScrollTypes.VERTICAL)
+        } else {
+          if (thumbDiv) {
+            thumbDiv.classList.add('active')
+            let containerDiv = document.querySelector('#thumbnail-container')
+            thumbDiv.scrollIntoView()
+            let thumbL = thumbDiv.offsetLeft
+            let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
+            
+            console.log(containerDiv)
+            let containerL = containerDiv.scrollLeft
+            let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
+            
+            if (thumbR >= containerR) {
+              // if right side of thumbnail is beyond the right edge of the visible container
+              // scroll the visible container
+              // to reveal up to the right edge of the thumbnail
+              containerDiv.scrollLeft = (thumbL - containerDiv.offsetWidth) + thumbDiv.offsetWidth + 100
+            } else if (containerL >= thumbL) {
+              // if left side of thumbnail is beyond the left edge of the visible container
+              // scroll the visible container
+              // to reveal up to the left edge of the thumbnail
+              containerDiv.scrollLeft = thumbL - 50
+            }
+          } else {
+            //
+            // TODO when would this happen?
+            //
+            // wait for render, then update
+            setTimeout(
+              n => {
+                let newThumb = document.querySelector(`[data-thumbnail='${n}']`)
+                newThumb.classList.add('active')
+                newThumb.scrollIntoView()
+              },
+              10,
+              currentBoard
+            )
+          }
         }
-      } else {
-        //
-        // TODO when would this happen?
-        //
-        // wait for render, then update
-        setTimeout(
-          n => {
-            let newThumb = document.querySelector(`[data-thumbnail='${n}']`)
-            newThumb.classList.add('active')
-            newThumb.scrollIntoView()
-          },
-          10,
-          currentBoard
-        )
       }
+
     }
 
     renderMetaData()

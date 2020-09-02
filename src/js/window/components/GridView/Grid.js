@@ -87,11 +87,7 @@ const Grid = React.memo(({
       for (let k = 0; k < numCols; k++) {
         const index = i + k
         if (elements[index]) {
-          if (index < currentIndex) {
-            row.push(getComponent(Component, itemData, elements, elementStyle, i, k))
-          } else {
-            row.push(getPlaceholder(elementStyle, i, k, true))
-          }
+          row.push(getComponent(Component, itemData, elements, elementStyle, i, k))
 
         } else {
           row.push(getPlaceholder(elementStyle, i, k))

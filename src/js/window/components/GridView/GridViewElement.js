@@ -65,8 +65,9 @@ const GridViewElement =  React.memo(({
         style:{ width:thumbnailWidth },
         },
         ['div', { 
-            style:{ display:'flex', flexDirection:'column', alignSelf:"center"},
+            style:{ display:"flex", flexDirection:"column", alignSelf:"center"},
             'data-thumbnail':index, 
+            'data-type':"thumbnail-grid",
             className:"thumbnail", 
             onPointerDown: pointerDown,
             onPointerMove: pointerMove,
