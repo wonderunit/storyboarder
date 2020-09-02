@@ -1415,7 +1415,7 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
           
-          if (isDeselected && selections.length === 0) {
+          if (isDeselected || selections.length === 0) {
             return false
           }
 

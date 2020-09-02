@@ -1,12 +1,8 @@
 import Peer from 'peerjs'
 import Packer from 'peerjs-js-binarypack'
+
 const EventEmitter = require('events')
 
-const repack = (data) => {
-
-}
-
-const encoder = new TextDecoder("utf-8")
 const Client = (connection) => {
     const emitter = new EventEmitter()
     emitter.setMaxListeners(1000)
@@ -43,14 +39,14 @@ const Client = (connection) => {
     }
 }
 
-const P2P = (host = '127.0.0.1') => {
+const P2P = (host = '192.168.1.5') => {
     const isLocal = '127.0.0.1'
     const peer = new Peer(null, {
         host,
-        port: isLocal ? 3000 : undefined,
+        port: 3000,//isLocal ? 80 : undefined,
         key: 'shot-generator',
         path: '/peerjs',
-        secure: !isLocal,
+        secure: true,
         debug: 3
     })
 
