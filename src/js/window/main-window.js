@@ -75,7 +75,7 @@ const sharedObj = remote.getGlobal('sharedObj')
 const SettingsService = require("../windows/shot-generator/SettingsService")
 
 const GridView = require("./components/GridView")
-
+const { setEtag, getEtag } = require('../utils/etags')
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
@@ -187,14 +187,6 @@ const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
 const serial = funcs =>
     funcs.reduce((promise, func) =>
         promise.then(result => func().then(Array.prototype.concat.bind(result))), Promise.resolve([]))
-
-// TODO better name than etags?
-// TODO store in boardData instead, but exclude from JSON?
-// TODO use mtime trick like we do for layers and posterframes?
-// cache buster for thumbnails
-let etags = {}
-const setEtag = absoluteFilePath => { etags[absoluteFilePath] = Date.now() }
-const getEtag = absoluteFilePath => etags[absoluteFilePath] || '0'
 
 const cacheKey = filepath => {
   try {
@@ -1951,7 +1943,7 @@ const loadBoardUI = async () => {
 
   gridView = new GridView(boardData, boardPath, saveImageFile, getSelections,
                           getCurrentBoard, setCurrentBoard, getContextMenu, renderThumbnailDrawerSelections, 
-                          gotoBoard, gridDrag, setSketchPaneVisibility, getEtag, boardModel, setEditorModeTimer)
+                          gotoBoard, gridDrag, setSketchPaneVisibility, boardModel, setEditorModeTimer)
 }
 const getSelections = () => selections
 const getCurrentBoard = () => currentBoard

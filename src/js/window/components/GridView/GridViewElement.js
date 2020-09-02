@@ -87,4 +87,4 @@ const GridViewElement =  React.memo(({
     )
 })
 
-module.exports = GridViewElement;
+module.exports = GridViewElement

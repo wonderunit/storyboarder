@@ -2,26 +2,26 @@ const ReactDOM = require('react-dom')
 const h = require('../../../utils/h')
 const Grid = require('./Grid')
 const GridViewElement = require('./GridViewElement')
+const { getEtag } = require('../../../utils/etags')
 let enableEditModeDelay = 750 // msecs
 class GridView {
     constructor(boardData, boardPath, saveImageFile, getSelections, 
                 getCurrentBoard, setCurrentBoard, getContextMenu, renderThumbnailDrawerSelections, 
-                gotoBoard,  gridDrag, setSketchPaneVisibility, getEtag, boardModel, setEditorModeTimer) {
-        this.isEditMode = false;
-        this.boardData = boardData;
-        this.saveImageFile = saveImageFile;
-        this.getSelections = getSelections;
-        this.getCurrentBoard = getCurrentBoard;
-        this.setCurrentBoard = setCurrentBoard;
-        this.gridDrag = gridDrag;
-        this.getContextMenu = getContextMenu;
-        this.setSketchPaneVisibility = setSketchPaneVisibility;
-        this.renderThumbnailDrawerSelections = renderThumbnailDrawerSelections;
-        this.gotoBoard = gotoBoard;
-        this.getEtag = getEtag;
-        this.boardModel = boardModel;
-        this.boardPath = boardPath;
-        this.setEditorModeTimer = setEditorModeTimer;
+                gotoBoard,  gridDrag, setSketchPaneVisibility, boardModel, setEditorModeTimer) {
+        this.isEditMode = false
+        this.boardData = boardData
+        this.saveImageFile = saveImageFile
+        this.getSelections = getSelections
+        this.getCurrentBoard = getCurrentBoard
+        this.setCurrentBoard = setCurrentBoard
+        this.gridDrag = gridDrag
+        this.getContextMenu = getContextMenu
+        this.setSketchPaneVisibility = setSketchPaneVisibility
+        this.renderThumbnailDrawerSelections = renderThumbnailDrawerSelections
+        this.gotoBoard = gotoBoard
+        this.boardModel = boardModel
+        this.boardPath = boardPath
+        this.setEditorModeTimer = setEditorModeTimer
         this.gridViewCursor = {
             visible: false,
             x: 0,
@@ -30,15 +30,15 @@ class GridView {
     }
 
     get IsEditMode() {
-        return this.isEditMode;
+        return this.isEditMode
     }
 
     set IsEditMode(value) {
-        this.isEditMode = value;
+        this.isEditMode = value
     }
 
     enableEditMode () {
-        this.isEditMode = true;
+        this.isEditMode = true
         this.gridViewCursor.visible = true
         this.renderGridViewCursor()
         this.renderThumbnailDrawerSelections()
@@ -165,7 +165,7 @@ class GridView {
 
     renderGridView () {
         this.cleanUpGridView()
-        let boardData = this.boardData;
+        let boardData = this.boardData
         let gridView = document.querySelector('.grid-view')
         gridView.addEventListener('pointerdown', this.gridDrag)
         ReactDOM.render(h([Grid, {
@@ -173,7 +173,7 @@ class GridView {
             boardData,
             boardPath: this.boardPath,
             boardModel: this.boardModel,
-            getEtag: this.getEtag,
+            getEtag,
             pointerDown: (e) => this.pointerDown(e),
             pointerMove: (e) => this.pointerMove(e),
             pointerLeave: (e) => this.pointerLeave(e),
