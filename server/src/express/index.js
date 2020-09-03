@@ -4,6 +4,7 @@ import shortId from 'shortid'
 import path from 'path'
 import cors from 'cors'
 import https from 'https'
+import http from 'http'
 import fs from 'fs'
 import forge from 'node-forge'
 
@@ -144,40 +145,34 @@ const generateCertificate = (host) => {
   }
 }
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    callback(null, true)
-  }
-}
-
 const PORT = process.env.PORT
 export const App = async () => {
   const app = express()
 
-  app.use((req, res, next) => {
-    appLogger.info('Request')
-    appLogger.info(req)
-    next()
-  })
+  // app.use((req, res, next) => {
+  //   appLogger.info('Request')
+  //   appLogger.info(req)
+  //   next()
+  // })
 
   app.options('*', cors())
   app.use(cors())
 
-  const sert = { ...generateCertificate() }
-  const server = https.createServer({
-    ...sert,
-    rejectUnauthorized: false,
-    requestCert: false,
+  // const sert = { ...generateCertificate() }
+  // const server = https.createServer({
+  //   ...sert,
+  //   rejectUnauthorized: false,
+  //   requestCert: false,
     
-  }, app)
-  
+  // }, app)
+  const server = http.createServer(app)
   const peerServer = ExpressPeerServer(server, {
     //port: 80,
     path: '/',
     key: 'shot-generator',
     generateClientId: shortId.generate,
     allow_discovery: true,
-    ssl: sert
+    //ssl: sert
   })
 
   peerServer.on('connection', ({id, ...props}) => peerLogger.info(`Client with id ${id} has been connected`))
@@ -187,16 +182,13 @@ export const App = async () => {
   
 
   app.use('/peerjs', peerServer)
-  app.use('/', appRouter)
+  //app.use('/', appRouter)
 
 
   const XRPath = process.env.NODE_ENV === 'development' ? apps.development.XR : apps.production.XR
-  app.use('/xr', express.static(
+  app.use('/:id', express.static(
     path.join(XRPath)
   ))
-  app.get('/xr', function(req, res) {
-    res.sendFile(path.join(__dirname, XRPath, 'index.html'))
-  })
 
   //const server = app.listen(PORT)
 

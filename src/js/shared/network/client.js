@@ -16,8 +16,19 @@ const each = (fn, countRef) => {
 
 export const connect = (URI = '') => {
   return new Promise((resolve, reject) => {
-    const urlParams = new URLSearchParams(window.location.search)
-    const roomId = urlParams.get('id')
+    let roomId = window.location.pathname
+    if (!roomId) {
+      reject('Room is not entered')
+      return false
+    }
+    
+    if (roomId[0] === '/') {
+      roomId = roomId.slice(1)
+    }
+
+    if (roomId[roomId.length - 1] === '/') {
+      roomId = roomId.slice(0, -1)
+    }
 
     if (!roomId) {
       reject('Room is not entered')

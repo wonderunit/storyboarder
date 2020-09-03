@@ -39,11 +39,11 @@ const Client = (connection) => {
     }
 }
 
-const P2P = (host = '192.168.1.5') => {
+const P2P = (host = 'stbr-link.herokuapp.com') => {
     const isLocal = '127.0.0.1'
     const peer = new Peer(null, {
         host,
-        port: 3000,//isLocal ? 80 : undefined,
+        port: 443,//isLocal ? 80 : undefined,
         key: 'shot-generator',
         path: '/peerjs',
         secure: true,

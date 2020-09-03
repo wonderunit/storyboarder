@@ -56,105 +56,107 @@ const onUserConnect = (emit, broadcast, id, store) => {
 }
 
 export const serve = (store, service, staticPath, projectPath, userDataPath) => {
-  const peer = P2P()//'ancient-garden-98057.herokuapp.com'
-  const {io, broadcast} = peer
-  
-  IO.current = peer
-
-  io.on('open', (id) => {
-    console.log('currentID: ', id)
-  })
-
-  io.on('error', (err) => {
-    console.error(err)
-  })
-
-  io.on('disconnected', () => {
-    console.log('Discconected from the lobby server')
-  })
-  
-  io.on('connection', ({emitter, emit, id}) => {
-
-    console.log('%c XR', 'color: #4CAF50', `User has been connected: ${id}`)
-    onUserConnect(emit, broadcast, id, store)
+  return new Promise((resolve, reject) => {
+    const peer = P2P()
+    const {io, broadcast} = peer
     
-    emitter.on('action', (action) => {
-      store.dispatch(action)
+    IO.current = peer
+
+    io.on('open', (id) => {
+      console.log('currentID: ', id, peer)
+      resolve({host: peer.peer.options.host, port: peer.peer.options.port, id})
     })
 
-    emitter.on('debug', (data) => {
-      console.log('%c Log', 'color: #0088ff', data)
+    io.on('error', (err) => {
+      console.error(err)
     })
 
-    emitter.on('connectRequest', () => {
-      console.log('Send STATE')
-      //dispatchRemote(mergeState(store.getState()))
-      emit('action', getRemoteAction(mergeState(store.getState())))
-      emit('remoteAction', setId(id))
-      emit('remoteAction', setUsers(getRemoteDevices(remoteStore.getState())))
-    })
-
-    emitter.on('remote', (info) => {
-      const infoAction = updateUser(id, info)
-      
-      remoteStore.dispatch(infoAction)
-      broadcast('remoteAction', infoAction)
+    io.on('disconnected', () => {
+      console.log('Discconected from the lobby server')
     })
     
-    emitter.on('close', (reason) => {
-      console.log('%c XR', 'color: #4CAF50', `User has been disconnected: ${id}, because of the: ${reason}`)
+    io.on('connection', ({emitter, emit, id}) => {
+
+      console.log('%c XR', 'color: #4CAF50', `User has been connected: ${id}`)
+      onUserConnect(emit, broadcast, id, store)
       
-      const disconnectAction = removeUser(id)
+      emitter.on('action', (action) => {
+        store.dispatch(action)
+      })
+
+      emitter.on('debug', (data) => {
+        console.log('%c Log', 'color: #0088ff', data)
+      })
+
+      emitter.on('connectRequest', () => {
+        console.log('Send STATE')
+        //dispatchRemote(mergeState(store.getState()))
+        emit('action', getRemoteAction(mergeState(store.getState())))
+        emit('remoteAction', setId(id))
+        emit('remoteAction', setUsers(getRemoteDevices(remoteStore.getState())))
+      })
+
+      emitter.on('remote', (info) => {
+        const infoAction = updateUser(id, info)
+        
+        remoteStore.dispatch(infoAction)
+        broadcast('remoteAction', infoAction)
+      })
       
-      remoteStore.dispatch(disconnectAction)
-      broadcast('remoteAction', disconnectAction)
-    })
+      emitter.on('close', (reason) => {
+        console.log('%c XR', 'color: #4CAF50', `User has been disconnected: ${id}, because of the: ${reason}`)
+        
+        const disconnectAction = removeUser(id)
+        
+        remoteStore.dispatch(disconnectAction)
+        broadcast('remoteAction', disconnectAction)
+      })
 
-    emitter.on('getBoards', async () => {
-      emit('getBoards', await service.getBoards())
-    })
+      emitter.on('getBoards', async () => {
+        emit('getBoards', await service.getBoards())
+      })
 
-    emitter.on('setBoard', async (uid) => {
-      let boards = await service.getBoards()
-      if (boards.find(board => board.uid === uid)) {
-        console.log('New board ID: ', uid)
-        await service.loadBoardByUid(uid)
-      }
+      emitter.on('setBoard', async (uid) => {
+        let boards = await service.getBoards()
+        if (boards.find(board => board.uid === uid)) {
+          console.log('New board ID: ', uid)
+          await service.loadBoardByUid(uid)
+        }
+        
+        emit('setBoard')
+      })
+
+      emitter.on('saveShot', async () => {
+        await service.saveShot()
+        emit('saveShot')
+      })
+
+      emitter.on('insertShot', async () => {
+        emit('insertShot', await service.insertShot())
+      })
+
+      emitter.on('getSg', async () => {
+        let board = await service.getBoard(store.getState().board.uid)
+        emit('getSg', board)
+      })
+
+      emitter.on('isSceneDirty', () => {
+        emit('isSceneDirty', getIsSceneDirty(store.getState()))
+      })
+
+      emitter.on('getResource', async ({type, filePath}) => {
+        console.log(type, filePath)
+        const key = pathMapKeys.find((item) => filePath.indexOf(item) !== -1)
+        
+        console.log('Getting resource: ', filePath)
+        const image = await loadFileToBlob(path.join(pathMap[key](staticPath, projectPath, userDataPath), path.relative(key, filePath)))
+        console.log('Sending resource: ', image)
+
+        emit('getResource', {type, filePath, data: image})
+      })
       
-      emit('setBoard')
     })
-
-    emitter.on('saveShot', async () => {
-      await service.saveShot()
-      emit('saveShot')
-    })
-
-    emitter.on('insertShot', async () => {
-      emit('insertShot', await service.insertShot())
-    })
-
-    emitter.on('getSg', async () => {
-      let board = await service.getBoard(store.getState().board.uid)
-      emit('getSg', board)
-    })
-
-    emitter.on('isSceneDirty', () => {
-      emit('isSceneDirty', getIsSceneDirty(store.getState()))
-    })
-
-    emitter.on('getResource', async ({type, filePath}) => {
-      console.log(type, filePath)
-      const key = pathMapKeys.find((item) => filePath.indexOf(item) !== -1)
-      
-      console.log('Getting resource: ', filePath)
-      const image = await loadFileToBlob(path.join(pathMap[key](staticPath, projectPath, userDataPath), path.relative(key, filePath)))
-      console.log('Sending resource: ', image)
-
-      emit('getResource', {type, filePath, data: image})
-    })
-    
   })
-
 }
 
 export const SGMiddleware = store => next => action => {

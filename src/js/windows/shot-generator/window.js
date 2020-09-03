@@ -23,6 +23,7 @@ const ModelLoader = require("./../../services/model-loader")
 const {getFilePathForImages} = require("./../../shot-generator/helpers/get-filepath-for-images")
 
 // Configure Super antiCORS fetch and WebSocket
+/*
 const agent = new https.Agent({
   rejectUnauthorized: false
 })
@@ -35,6 +36,7 @@ window.WebSocket = class extends WS {
     super(link, {rejectUnauthorized: false})
   }
 }
+*/
 
 //
 // configureStore:
