@@ -19,6 +19,7 @@ class ObjectRotationControl
         this.customOnMouseUpAction = null;
         this.offsetObject = new THREE.Object3D()
         this.scene.add(this.offsetObject)
+        this.offsetObject.userData.type = 'controlTarget'
     }
     
     set IsEnabled(value) 
@@ -58,6 +59,7 @@ class ObjectRotationControl
         if(offset) {
             this.offsetObject.position.copy(offset)
             this.offsetObject.position.y -= object.position.y
+            this.offsetObject.updateMatrixWorld(true)
         } else {
             this.offsetObject.position.set(0, 0, 0)
         }
