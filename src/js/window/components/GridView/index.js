@@ -164,28 +164,31 @@ class GridView {
     }
 
     renderGridView () {
-        this.cleanUpGridView()
-        let boardData = this.boardData
-        let gridView = document.querySelector('.grid-view')
-        gridView.addEventListener('pointerdown', this.gridDrag)
-        ReactDOM.render(h([Grid, {
-          itemData:{
-            boardData,
-            boardPath: this.boardPath,
-            boardModel: this.boardModel,
-            getEtag,
-            pointerDown: (e) => this.pointerDown(e),
-            pointerMove: (e) => this.pointerMove(e),
-            pointerLeave: (e) => this.pointerLeave(e),
-            pointerEnter: (e) => this.pointerEnter(e),
-            dblclick: (e) => this.doubleClick(e)
-          },
-          Component:GridViewElement,
-          elements:boardData.boards,
-          numCols:3,
-          itemHeight: 200
-          }
-        ]), gridView, () => this.renderThumbnailDrawerSelections())
+      this.cleanUpGridView()
+      let boardData = this.boardData
+      let gridView = document.querySelector('.grid-view')
+      let defaultHeight = 200
+      let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
+      gridView.addEventListener('pointerdown', this.gridDrag)
+      ReactDOM.render(h([Grid, {
+        itemData:{
+          boardData,
+          boardPath: this.boardPath,
+          boardModel: this.boardModel,
+          getEtag,
+          pointerDown: (e) => this.pointerDown(e),
+          pointerMove: (e) => this.pointerMove(e),
+          pointerLeave: (e) => this.pointerLeave(e),
+          pointerEnter: (e) => this.pointerEnter(e),
+          dblclick: (e) => this.doubleClick(e)
+        },
+        Component:GridViewElement,
+        elements:boardData.boards,
+        numCols:3,
+        itemHeight: defaultHeight,
+        defaultElementWidth: thumbnailWidth
+        }
+      ]), gridView, () => this.renderThumbnailDrawerSelections())
     }
 }
 

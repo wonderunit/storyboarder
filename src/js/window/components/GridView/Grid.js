@@ -44,20 +44,34 @@ const Grid = React.memo(({
 
    itemData,
 
-   numCols,
    itemHeight = '100%',
-   itemWidth = '100%'
+   itemWidth = '100%',
+   defaultElementWidth 
 }) => {
   const elementStyle = {
     height: itemHeight,
     width: itemWidth
   }
-
+  const [numCols, setNumCols] = useState(2)
   const containerRef = useRef(null)
   const [currentIndex, setCurrentIndex] = useState(getIndices())
+  const resizeGrid = (e) => {
+    // NOTE(): Grid takes 70% of the space? 
+    let gridSpace =  window.innerWidth * 0.70
+    let columnsNumber = Math.round(gridSpace / defaultElementWidth)
+    columnsNumber = columnsNumber < 2 ? 2 : columnsNumber
+    setNumCols(columnsNumber)
+  }
+
+  useEffect(() => {
+    resizeGrid()
+    window.addEventListener('resize', resizeGrid);
+    return () => {
+      window.removeEventListener('resize', resizeGrid);
+    }
+  }, [])
 
   const onParentScroll = useCallback(throttle((e) => {
-    console.log("Scrolling")
     const index = getIndices(e.target, itemHeight, numCols)
     if (index > currentIndex) {
       setCurrentIndex(index)
@@ -66,7 +80,6 @@ const Grid = React.memo(({
 
   useEffect(() => {
     if(!containerRef.current) return
-    console.log(containerRef.current)
     containerRef.current.parentNode.addEventListener('scroll', onParentScroll)
     const index = getIndices(containerRef.current, itemHeight, numCols)
     if (index > currentIndex) {
@@ -100,7 +113,7 @@ const Grid = React.memo(({
     }
 
     return result
-  }, [elements.length, itemData, currentIndex])
+  }, [elements.length, itemData, currentIndex, numCols])
 
   return h(
     ['div', { ref:containerRef },
