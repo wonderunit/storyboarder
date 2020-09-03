@@ -3302,25 +3302,54 @@ const ScrollTypes = {
   HORIZONTAL: "horizontal"
 }
 
-const smoothScroll = (currentPosition, desiredPosition, element, block, scrollType = ScrollTypes.HORIZONTAL) => {
-  let i = currentPosition || 0;
-  let visibleSize = scrollType === ScrollTypes.HORIZONTAL ? element.offsetWidth : element.offsetHeight
-  let position = block === "center" ? visibleSize / 3 : 0
-  let steps = 20
-  let iterationStep = (desiredPosition - currentPosition - position) / steps
+const isElementInViewport = (el, container) => {
+ 
+  let rectElement = el.getBoundingClientRect()
+  let rectContainer = container.getBoundingClientRect()
+  return (
+      rectElement.top >= rectContainer.top &&
+      rectElement.left >= rectContainer.left &&
+      rectElement.bottom <= rectContainer.bottom &&
+      rectElement.right <= rectContainer.right
+  );
+}
+let scrollInterval = {}
+const smoothScroll = (currentPosition, desiredPosition, element, selectedElement, scrollType = ScrollTypes.HORIZONTAL) => {
+  let steps = 10
   let iteration = 0
+  let offset = 10
+  // Is in scroll area
+  if(isElementInViewport(selectedElement, element)) {
+    return
+  }
+  let padding = Number.parseInt(window.getComputedStyle(element, null).getPropertyValue('padding'))
+  let rectElement = selectedElement.getBoundingClientRect()
+  let rectContainer = element.getBoundingClientRect()
+  let difference
+  // Is Object higher 
+  if( rectElement.top >= rectContainer.top &&
+    rectElement.left >= rectContainer.left) {
+    difference = scrollType === ScrollTypes.HORIZONTAL ? rectElement.right - rectContainer.right : rectElement.bottom - rectContainer.bottom
+    difference += padding + offset
+  }
+  else {
+    difference = scrollType === ScrollTypes.HORIZONTAL ? rectElement.left - rectContainer.left : rectElement.top - rectContainer.top
+    difference -= padding - offset
+  }
+  let iterationStep = difference / steps
   let interval = setInterval(() => {
-    if (i !== desiredPosition && iteration !== steps) {
+    if (currentPosition !== desiredPosition && iteration !== steps) {
       if(scrollType === ScrollTypes.HORIZONTAL) {
-        element.scrollTo(i += iterationStep, 0);
+        element.scrollTo(currentPosition += iterationStep, 0);
       } else {
-        element.scrollTo(0, i += iterationStep);
+        element.scrollTo(0, currentPosition += iterationStep);
       }
       iteration ++;
     } else {
       clearInterval(interval);
     }
   }, 10);
+  return interval
 }
 
 let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
@@ -3370,7 +3399,13 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
         if(thumbDiv.dataset.type === 'thumbnail-grid') {
           thumbDiv.classList.add('active')
           let containerDiv = document.querySelector('.grid-view')
-          smoothScroll(containerDiv.scrollTop, thumbDiv.parentNode.offsetTop, containerDiv, "center", ScrollTypes.VERTICAL)
+          let rowContainer = thumbDiv.parentNode.parentNode
+          if(scrollInterval.interval && !scrollInterval.parentNode.isSameNode(rowContainer)) clearInterval(scrollInterval)
+
+          if(!scrollInterval.parentNode || !scrollInterval.parentNode.isSameNode(rowContainer)) {
+            scrollInterval.interval = smoothScroll(containerDiv.scrollTop, thumbDiv.parentNode.offsetTop, containerDiv, thumbDiv, ScrollTypes.VERTICAL)
+            scrollInterval.parentNode = rowContainer
+          }
         } else {
           if (thumbDiv) {
             thumbDiv.classList.add('active')
@@ -3379,7 +3414,6 @@ let gotoBoard = (boardNumber, shouldPreserveSelections = false) => {
             let thumbL = thumbDiv.offsetLeft
             let thumbR = thumbDiv.offsetLeft + thumbDiv.offsetWidth
             
-            console.log(containerDiv)
             let containerL = containerDiv.scrollLeft
             let containerR = containerDiv.scrollLeft + containerDiv.offsetWidth
             
