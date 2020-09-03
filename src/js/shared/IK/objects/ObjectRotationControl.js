@@ -57,6 +57,7 @@ class ObjectRotationControl
         this.control.objectId = hitmeshid;
         if(offset) {
             this.offsetObject.position.copy(offset)
+            this.offsetObject.position.y -= object.position.y
         } else {
             this.offsetObject.position.set(0, 0, 0)
         }
