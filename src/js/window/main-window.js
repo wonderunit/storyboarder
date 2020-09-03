@@ -6687,7 +6687,7 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
       ],
       ['div.spacer'],
       ['div.btn', {
-        className: mode !== 'sequence' ? 'selected' : null,
+        className: mode === 'time' ? 'selected' : null,
         onPointerUp: onBoardsSelect
       },
         ['svg', { className: 'icon' },
@@ -6697,7 +6697,7 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
       ],
       ['div.spacer'],
       ['div.btn', {
-        className: isGridViewMode ? 'selected' : null,
+        className: mode === 'grid-view' ? 'selected' : null,
         onPointerUp: onGridViewSelect
       },
         ['svg', { className: 'icon' },
@@ -6709,7 +6709,7 @@ const TimelineModeControlView = ({ mode = 'sequence', show = false }) => {
   )
 }
 const renderTimelineModeControlView = ({ show = false }) => {
-  let mode = shouldRenderThumbnailDrawer ? 'sequence' : 'time'
+  let mode = !shouldRenderThumbnailDrawer ? 'time' : isGridViewMode ? 'grid-view' : 'sequence' 
   ReactDOM.render(
     h([TimelineModeControlView, { mode, show }]),
     document.getElementById('timeline-mode-control-view')
