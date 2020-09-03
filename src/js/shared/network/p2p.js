@@ -39,7 +39,7 @@ const Client = (connection) => {
     }
 }
 
-const P2P = (host = 'stbr-link.herokuapp.com') => {
+const P2P = (host = 'stbr.link') => {
     const isLocal = '127.0.0.1'
     const peer = new Peer(null, {
         host,
