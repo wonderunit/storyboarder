@@ -1957,7 +1957,7 @@ const loadBoardUI = async () => {
 
   gridView = new GridView(boardData, boardPath, saveImageFile, getSelections,
                           getCurrentBoard, setCurrentBoard, getContextMenu, renderThumbnailDrawerSelections, 
-                          gotoBoard, gridDrag, setSketchPaneVisibility, boardModel, setEditorModeTimer)
+                          gotoBoard, gridDrag, setSketchPaneVisibility, boardModel, setEditorModeTimer, renderTimelineModeControlView)
 }
 const getSelections = () => selections
 const getCurrentBoard = () => currentBoard

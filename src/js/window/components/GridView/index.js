@@ -7,7 +7,7 @@ let enableEditModeDelay = 750 // msecs
 class GridView {
     constructor(boardData, boardPath, saveImageFile, getSelections, 
                 getCurrentBoard, setCurrentBoard, getContextMenu, renderThumbnailDrawerSelections, 
-                gotoBoard,  gridDrag, setSketchPaneVisibility, boardModel, setEditorModeTimer) {
+                gotoBoard,  gridDrag, setSketchPaneVisibility, boardModel, setEditorModeTimer, renderTimelineModeControlView) {
         this.isEditMode = false
         this.boardData = boardData
         this.saveImageFile = saveImageFile
@@ -28,6 +28,7 @@ class GridView {
             el: null
         }
         this.gridElementOffset = 24
+        this.renderTimelineModeControlView = renderTimelineModeControlView
     }
 
     get IsEditMode() {
@@ -178,6 +179,7 @@ class GridView {
 
     doubleClick (e) {
       this.setSketchPaneVisibility(true)
+      this.renderTimelineModeControlView({ show: true })
     }
 
     selectThumbnail(thumb) {
