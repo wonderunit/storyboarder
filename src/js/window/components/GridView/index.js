@@ -46,6 +46,10 @@ class GridView {
         this.getContextMenu().remove()
     }
 
+    getDefaultHeight() {
+        return 200 + this.gridElementOffset
+    }
+
     gridViewFromPoint(x, y, offset) {
         if (!offset) { offset = 0 }
 
@@ -119,7 +123,7 @@ class GridView {
         
         this.gridViewCursor.x = elementOffsetX + arrowOffsetX
         this.gridViewCursor.y = elementOffsetY + arrowOffsetY - scrollTop
-    }
+     }
 
     pointerEnter (e) {
       let selections = this.getSelections()
@@ -189,7 +193,7 @@ class GridView {
       this.cleanUpGridView()
       let boardData = this.boardData
       let gridView = document.querySelector('.grid-view')
-      let defaultHeight = 200 + this.gridElementOffset
+      let defaultHeight = this.getDefaultHeight()
       let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
       gridView.addEventListener('pointerdown', this.gridDrag)
       ReactDOM.render(h([Grid, {

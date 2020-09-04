@@ -4502,15 +4502,7 @@ let getSceneColor = function (sceneString) {
   return ('black')
 }
 
-let setDragTarget = (x) => {
-  let containerRect = dragTarget.getBoundingClientRect()
-
-  let mouseX = x - containerRect.left
-  let midpointX = containerRect.width / 2
-
-  // distance ratio -1...0...1
-  let distance = (mouseX - midpointX) / midpointX
-
+const getScrollingStrength = (distance) => {
   // default is the dead zone at 0
   let strength = 0
   // -1..-0.5
@@ -4525,15 +4517,38 @@ let setDragTarget = (x) => {
   }
 
   strength = util.clamp(strength, -1, 1)
+  return strength
+}
+
+let setScroll = (point, target, elementSize, sideName, sizeName, scrollDirection) => {
+  let containerRect = target.getBoundingClientRect()
+  let mousePos = point - containerRect[sideName]
+  let midpointPos = containerRect[sizeName] / 2
+
+  // distance ratio -1...0...1
+  let distance = (mousePos - midpointPos) / midpointPos
+
+  let strength = getScrollingStrength(distance)
 
   // max speed is half of the average board width per pointermove
-  let speedlimit = Math.floor(60 * boardData.aspectRatio * 0.5)
+  let speedlimit = Math.floor(elementSize * boardData.aspectRatio * 0.5)
 
   // NOTE I don't bother clamping min/max because scrollLeft handles that for us
-  let newScrollLeft = dragTarget.scrollLeft + (strength * speedlimit)
+  let newScroll = target[scrollDirection] + (strength * speedlimit)
 
-  dragTarget.scrollLeft = newScrollLeft
+  target[scrollDirection] = newScroll
 }
+
+let scrollTarget = ({x = null, y = null}, target, elementSize) => {
+  if(x) {
+    setScroll(x, target, elementSize, 'left', 'width', 'scrollLeft')
+  } 
+  if(y) {
+    setScroll(y, target, elementSize, 'top', 'height', 'scrollTop')
+  }
+
+}
+
 
 let updateDrag = () => {
   if (util.isUndefined(lastPointer.x) || util.isUndefined(lastPointer.y)) {
@@ -4542,11 +4557,13 @@ let updateDrag = () => {
 
 
   if (isEditMode() && dragMode) {
-    setDragTarget(lastPointer.x)
+
+    !gridView.IsEditMode ? scrollTarget({x:lastPointer.x}, dragTarget, 60) :
+                          scrollTarget({y:lastPointer.y}, document.querySelector('.grid-view'), gridView.getDefaultHeight())
     updateThumbnailCursor(lastPointer.x, lastPointer.y)
     renderThumbnailCursor()
-    isGridViewMode && gridView.updateGridViewCursor(lastPointer.x, lastPointer.y)
-    isGridViewMode && gridView.renderGridViewCursor()
+    gridView.IsEditMode && gridView.updateGridViewCursor(lastPointer.x, lastPointer.y)
+    gridView.IsEditMode && gridView.renderGridViewCursor()
   }
 }
 
