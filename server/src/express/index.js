@@ -1,6 +1,6 @@
 import express from 'express'
 import {ExpressPeerServer, PeerServer} from "peer"
-import shortId from 'shortid'
+import { customAlphabet } from 'nanoid'
 import path from 'path'
 import cors from 'cors'
 import https from 'https'
@@ -13,6 +13,9 @@ import {appLogger, peerLogger} from '../logger'
 import {appRouter} from "../routes"
 
 import apps from './../../apps.json'
+
+// no 1, i, 0, or 0 to avoid confusion
+const nanoid = customAlphabet('234567890abcdefghjklmnpqrstuvwxyz', 5)
 
 // via https://github.com/parcel-bundler/parcel/blob/8e80016d8b61c5d68759bfd1caa9fb827e46643c/packages/core/utils/src/generateCertificate.js
 const generateCertificate = (host) => {
@@ -170,7 +173,7 @@ export const App = async () => {
     //port: 80,
     path: '/',
     key: 'shot-generator',
-    generateClientId: shortId.generate,
+    generateClientId: nanoid(),
     allow_discovery: true,
     //ssl: sert
   })
