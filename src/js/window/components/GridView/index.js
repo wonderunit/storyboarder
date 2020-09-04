@@ -27,6 +27,7 @@ class GridView {
             x: 0,
             el: null
         }
+        this.gridElementOffset = 24
     }
 
     get IsEditMode() {
@@ -49,7 +50,11 @@ class GridView {
         if (!offset) { offset = 0 }
 
         let el = document.elementFromPoint(x-offset, y)
-        if (!el || !el.classList.contains('thumbnail')) return null
+        if(!el) return null
+        if(el.classList.contains('thumbnail-container')) {
+          el = el.childNodes[0]
+        }
+        if (!el.classList.contains('thumbnail')) return null
         let selections = this.getSelections()
         // if part of a multi-selection, base from right-most element
         if (selections.has(Number(el.dataset.thumbnail))) {
@@ -87,24 +92,32 @@ class GridView {
     updateGridViewCursor(x, y) {
             
         let el = this.gridViewFromPoint(x, y)
-        let offset = 0
-        if (el) {
-            offset = el.getBoundingClientRect().width
-            el = this.gridViewFromPoint(x, y, offset/2)
-        }
         if (!el) return
         
+        let rect = el.getBoundingClientRect()
+
         this.gridViewCursor.el = el 
+        let elementOffsetX
         
-        let elementOffsetX = el.getBoundingClientRect().right
-        
-        let elementOffsetY = el.getBoundingClientRect().top
+        let elementOffsetY = rect.top
+        let arrowOffsetX
+        // Figures out if mouse is to the left side of container or to the right
+        let reactMiddlePointX = rect.left + rect.width / 2 
+        if(x < reactMiddlePointX) {
+          let cursor = document.querySelector('#grid-cursor-container')
+          elementOffsetX = rect.left
+          arrowOffsetX = -8 - cursor.clientWidth
+          this.gridViewCursor.side = "Left"
+        } else if(x >= reactMiddlePointX) {
+          elementOffsetX = rect.right
+          arrowOffsetX = 8
+          this.gridViewCursor.side = "Right"
+        }
+                
         let scrollTop = el.scrollTop
-        
-        let arrowOffsetX = 8
         let arrowOffsetY = -8
-        this.gridViewCursor.x = elementOffsetX + arrowOffsetX
         
+        this.gridViewCursor.x = elementOffsetX + arrowOffsetX
         this.gridViewCursor.y = elementOffsetY + arrowOffsetY - scrollTop
     }
 
@@ -163,11 +176,20 @@ class GridView {
       this.setSketchPaneVisibility(true)
     }
 
-    renderGridView () {
+    selectThumbnail(thumb) {
+      let i = Number(thumb.dataset.thumbnail)
+      if(i === this.getCurrentBoard()) {
+          thumb.classList.toggle('active', true)
+          thumb.classList.toggle('selected', this.getSelections().has(i))
+          thumb.classList.toggle('editing', this.isEditMode)
+      }
+    }
+
+    renderGridView (callback) {
       this.cleanUpGridView()
       let boardData = this.boardData
       let gridView = document.querySelector('.grid-view')
-      let defaultHeight = 200
+      let defaultHeight = 200 + this.gridElementOffset
       let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
       gridView.addEventListener('pointerdown', this.gridDrag)
       ReactDOM.render(h([Grid, {
@@ -180,15 +202,17 @@ class GridView {
           pointerMove: (e) => this.pointerMove(e),
           pointerLeave: (e) => this.pointerLeave(e),
           pointerEnter: (e) => this.pointerEnter(e),
-          dblclick: (e) => this.doubleClick(e)
+          dblclick: (e) => this.doubleClick(e),
+          selectThumbnail: (thumb) => this.selectThumbnail(thumb)
         },
         Component:GridViewElement,
         elements:boardData.boards,
         numCols:3,
         itemHeight: defaultHeight,
-        defaultElementWidth: thumbnailWidth
+        defaultElementWidth: thumbnailWidth,
+        gridElementOffset: this.gridElementOffset
         }
-      ]), gridView, () => this.renderThumbnailDrawerSelections())
+      ]), gridView, () => { this.renderThumbnailDrawerSelections(), callback && callback() })
     }
 }
 

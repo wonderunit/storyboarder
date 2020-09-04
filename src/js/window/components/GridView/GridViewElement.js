@@ -3,6 +3,7 @@ const React = require('react')
 const path = require('path')
 const util = require('../../../utils/index')
 const fs = require('fs-extra')
+const { useEffect, useRef } = require('react')
 const GridViewElement =  React.memo(({
     data: board,
     index,
@@ -14,12 +15,15 @@ const GridViewElement =  React.memo(({
     pointerMove,
     pointerLeave,
     pointerEnter,
-    dblclick
+    dblclick,
+    gridElementOffset,
+    selectThumbnail
 }) => {
+    const thumbnailRef = useRef()
     let defaultHeight = 200
     let thumbnailWidth = Math.floor(defaultHeight * boardData.aspectRatio)
-    let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-posterframe.jpg'))
     const getImage = () => {
+        let imageFilename = path.join(boardPath, 'images', board.url.replace('.png', '-posterframe.jpg'))
         let imageElement = ''
         try {
             if (fs.existsSync(imageFilename)) {
@@ -59,10 +63,15 @@ const GridViewElement =  React.memo(({
         }
     }
 
+
+    useEffect(() => {
+        selectThumbnail(thumbnailRef.current)
+    })
+
     return h(
     ['div', { 
         className: "thumbnail-container",
-        style:{ width:thumbnailWidth },
+        style:{ width:thumbnailWidth + gridElementOffset },
         },
         ['div', { 
             style:{ display:"flex", flexDirection:"column", alignSelf:"center"},
@@ -73,7 +82,8 @@ const GridViewElement =  React.memo(({
             onPointerMove: pointerMove,
             onPointerLeave: pointerLeave,
             onPointerEnter: pointerEnter,
-            onDoubleClick: dblclick
+            onDoubleClick: dblclick,
+            ref:thumbnailRef 
         },
             getImage(),
             ['div', { className:"info" },

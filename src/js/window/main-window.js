@@ -1089,33 +1089,48 @@ const loadBoardUI = async () => {
 
     // log.info('pointerup', isEditMode)
     if (isEditMode()) {
-
-      let x = e.clientX, y = e.clientY
-
-      // 1) try to find nearest thumbnail, otherwise,
-      // HACK 2) try to find last known thumbnail position
-      let el = thumbnailFromPoint(x, y) || thumbnailCursor.el
-
-      if(isGridViewMode) { 
-        el = gridView.gridViewFromPoint(x, y) || gridView.gridViewCursor.el
-      } else {
-        el =  thumbnailFromPoint(x, y) || thumbnailCursor.el
-      }
-      let offset = 0
-      if (el) {
-        offset = el.getBoundingClientRect().width
-        el = !isGridViewMode ? thumbnailFromPoint(x, y, offset/2) : gridView.gridViewFromPoint(x, y, offset/2) 
-      }
-
-      if (!el) {
-        log.warn("couldn't find nearest thumbnail")
-      }
-
+      let checkoutBoard 
       let index
-      if (isBeforeFirstThumbnail(x, y)) {
-        index = 0
-      } else if (el) {
-        index = Number(el.dataset.thumbnail) + 1
+      if(gridView.IsEditMode) {
+        let el = gridView.gridViewFromPoint(gridView.gridViewCursor.x, gridView.gridViewCursor.y) || gridView.gridViewCursor.el
+        if (!el) {
+          log.warn("couldn't find nearest thumbnail")
+          return
+        }
+        if (el) {
+          if(gridView.gridViewCursor.side === "Left") {
+            index = Number(el.dataset.thumbnail)
+          } else {
+            index = Number(el.dataset.thumbnail) + 1
+          }
+        }
+        checkoutBoard = () => gridView.renderGridView(() => gotoBoard(currentBoard, true))
+
+      } else {
+        let x = e.clientX, y = e.clientY
+
+        // 1) try to find nearest thumbnail, otherwise,
+        // HACK 2) try to find last known thumbnail position
+        let el = thumbnailFromPoint(x, y) || thumbnailCursor.el
+  
+        el =  thumbnailFromPoint(x, y) || thumbnailCursor.el
+        let offset = 0
+        if (el) {
+          offset = el.getBoundingClientRect().width
+          el =  gridView.gridViewFromPoint(x, y, offset/2) 
+        }
+  
+        if (!el) {
+          log.warn("couldn't find nearest thumbnail")
+        }
+  
+        if (isBeforeFirstThumbnail(x, y)) {
+          index = 0
+        } else if (el) {
+          index = Number(el.dataset.thumbnail) + 1
+        }
+
+        checkoutBoard = () => gotoBoard(currentBoard, true)
       }
 
       if (!util.isUndefined(index)) {
@@ -1128,13 +1143,12 @@ const loadBoardUI = async () => {
           }
 
           renderThumbnailDrawer()
-          isGridViewMode && gridView.renderGridView()
-          gotoBoard(currentBoard, true)
+
+          checkoutBoard()
         })
       } else {
         log.info('could not find point for move operation')
       }
-
       disableEditMode()
 
     }
