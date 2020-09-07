@@ -42,8 +42,10 @@ dist/
 src/build
 server/dist
 server/node_modules
+server/.idea
 
 .vscode
+.idea
 
 .DS_Store
 
