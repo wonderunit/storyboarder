@@ -47,7 +47,7 @@ const P2P = (host = 'stbr.link') => {
         key: 'shot-generator',
         path: '/peerjs',
         secure: true,
-        debug: 3
+        debug: 0
     })
 
     const emitter = new EventEmitter()

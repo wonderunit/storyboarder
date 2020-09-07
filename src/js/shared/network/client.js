@@ -1,5 +1,5 @@
 import {RestrictedActions, remoteStore, setId, SelectActions} from "../reducers/remoteDevice"
-import {deselectObject} from "../reducers/shot-generator"
+import {_blockObject, _unblockObject, getSelections} from "../reducers/shot-generator"
 import P2P from './p2p'
 
 const each = (fn, countRef) => {
@@ -144,7 +144,21 @@ export const connect = (URI = '') => {
           /* Send deselect if we select something */
           if (SelectActions.indexOf(action.type) !== -1) {
             let meta = {ignore: [remoteStore.getState().id]}
-            dispatchRemote(deselectObject(action.payload), meta)
+
+            let selectionsBefore = getSelections(store.getState())
+
+            const result = next(action)
+            let selectionsAfter = getSelections(store.getState())
+            
+            const selectionsToBlock = selectionsAfter.filter(item => selectionsBefore.indexOf(item) === -1)
+            const selectionsToUnblock = selectionsBefore.filter(item => selectionsAfter.indexOf(item) === -1)
+
+            if (selectionsToUnblock.length) dispatchRemote(_unblockObject(selectionsToUnblock), meta) // Unblock deselected
+            if (selectionsToBlock.length) dispatchRemote(_blockObject(selectionsToBlock), meta) // Block selected
+
+            return result
+
+            //dispatchRemote(deselectObject(action.payload), meta)
           }
   
           /* Dispatch */
@@ -157,6 +171,7 @@ export const connect = (URI = '') => {
           let isIgnored = action.meta.ignore && action.meta.ignore.indexOf(remoteStore.getState().id) !== 1
           
           if (!isIgnored) {
+            console.log('ACTION', action)
             return next(action)
           }
         } else {

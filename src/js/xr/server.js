@@ -14,9 +14,13 @@ class XRServer {
     const userDataPath = electronApp.getPath('userData')
 
     serve(store, service, staticPath, projectPath, userDataPath)
-    .then(({host, port, id}) => [
-      store.dispatch(updateServer({ xrUri: `https://${host}:${port}/${id}` }))
-    ])
+    .then(({host, port, id}) => {
+      if ([80, 443].indexOf(port) !== -1) {
+        store.dispatch(updateServer({ xrUri: `https://${host}/${id}` }))
+      } else {
+        store.dispatch(updateServer({ xrUri: `https://${host}:${port}/${id}` }))
+      }
+    })
   }
 }
 

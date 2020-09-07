@@ -589,7 +589,7 @@ const useInteractionsManager = ({
       }
     }
 
-    if (match && !sceneObjects[match.userData.id].locked) {
+    if (match && !sceneObjects[match.userData.id].locked && !sceneObjects[match.userData.id].blocked) {
       // console.log('found sceneObject:', sceneObjects[match.userData.id])
       // console.log('intersection', intersection)
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
@@ -1414,10 +1414,6 @@ const useInteractionsManager = ({
           }
 
           stopSound('beam', object)
-          
-          if (isDeselected || selections.length === 0) {
-            return false
-          }
 
           commit(context.selection, object)
           if (object.userData.type === 'character') {
@@ -1566,12 +1562,6 @@ const useInteractionsManager = ({
       logger: log
     }
   )
-
-  useEffect(() => {
-    if (selections.length === 0 && lastAction === 'DESELECT_OBJECT') {
-      interactionService.send({type: 'CLEAR_SELECTION'})
-    }
-  }, [selections.length, lastAction])
 
   return { controllers, interactionServiceCurrent, interactionServiceSend }
 }

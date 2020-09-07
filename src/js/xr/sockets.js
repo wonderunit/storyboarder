@@ -1,5 +1,5 @@
 import path from 'path'
-import {deselectObject, mergeState, getIsSceneDirty} from './../shared/reducers/shot-generator'
+import {deselectObject, mergeState, getIsSceneDirty, getSelections, _unblockObject, _blockObject} from './../shared/reducers/shot-generator'
 import {
   remoteStore,
   RestrictedActions,
@@ -162,8 +162,20 @@ export const serve = (store, service, staticPath, projectPath, userDataPath) => 
 export const SGMiddleware = store => next => action => {
   if (!IO.current || (RestrictedActions.indexOf(action.type) !== -1)) {
     if (SelectActions.indexOf(action.type) !== -1) {
-      let copy = {...action}
-      dispatchRemote(deselectObject(copy.payload), {ignoreSG: true})
+      let selectionsBefore = getSelections(store.getState())
+
+      const result = next(action)
+      let selectionsAfter = getSelections(store.getState())
+
+      console.log('Before/After', selectionsBefore, selectionsAfter)
+      const selectionsToBlock = selectionsAfter.filter(item => selectionsBefore.indexOf(item) === -1)
+      const selectionsToUnblock = selectionsBefore.filter(item => selectionsAfter.indexOf(item) === -1)
+      console.log('Block/Unblock', selectionsToBlock, selectionsToUnblock)
+
+      if (selectionsToUnblock.length) dispatchRemote(_unblockObject(selectionsToUnblock), {ignoreSG: true}) // Unblock deselected
+      if (selectionsToBlock.length) dispatchRemote(_blockObject(selectionsToBlock), {ignoreSG: true}) // Block selected
+
+      return result
     }
     
     return next(action)
