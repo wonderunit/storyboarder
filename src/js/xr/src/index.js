@@ -1,7 +1,9 @@
-const THREE = require('three')
-window.THREE = THREE
+import './style.css'
+import './../vendor/rStats.css'
+import React, { useState, useEffect, useRef } from 'react'
 
-const React = require('react')
+require("../../shared/helpers/monkeyPatchGrayscale")
+
 const {
   createStore,
   applyMiddleware
@@ -20,10 +22,6 @@ const {
 
 const RemoteDevice = require('./../../shared/network/client')
 const SceneManagerXR = require('./SceneManagerXR')
-
-import './style.css'
-import './../vendor/rStats.css'
-import { useState, useEffect, useRef } from 'react'
 
 
 const App = () => {

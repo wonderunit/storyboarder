@@ -16,22 +16,25 @@ const FileInput = React.memo(({
       return false
     }
     
-    let filepaths = dialog.showOpenDialog(null, {})
-    
-    if (filepaths) {
-      onChange({
-        file: filepaths[0],
-        files: filepaths
-      })
-    } else {
-      onChange({
-        file: undefined,
-        files: []
-      })
-    }
-    
-    // automatically blur to return keyboard control
-    document.activeElement.blur()
+    dialog.showOpenDialog(null, {})
+    .then(({ filePaths }) => {
+      if (filePaths.length) {
+        onChange({
+          file: filePaths[0],
+          files: filePaths
+        })
+      } else {
+        onChange({
+          file: undefined,
+          files: []
+        })
+      }
+    })
+    .catch(err => console.error(err))
+    .finally(() => {
+      // automatically blur to return keyboard control
+      document.activeElement.blur()
+    })    
   }, [onChange])
   
   return (

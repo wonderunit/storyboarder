@@ -377,6 +377,7 @@ body::-webkit-scrollbar {
   display: flex;
   position: relative;
   width: 350px;
+  max-height: 100%;
   /* transition: 0.3s width; */
 }
 

@@ -3,7 +3,6 @@ const isDev = require('electron-is-dev')
 
 const path = require('path')
 const url = require('url')
-
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
 //const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
@@ -27,12 +26,11 @@ const removeExtensions = () => {
 }
 
 let win
-
 let memento = {
   x: undefined,
   y: undefined,
   width: 1505,
-  height: 1080
+  height: 1080,
 }
 
 const reveal = onComplete => {
@@ -55,8 +53,8 @@ const show = async (onComplete) => {
 
   let { x, y, width, height } = memento
   win = new BrowserWindow({
-    minWidth: isDev ? undefined : 1200,
-    minHeight: isDev ? undefined : 800,
+    minWidth:  isDev ? undefined : 1024 - 30,
+    minHeight: isDev ? undefined :  768 - 30,
 
     x,
     y,
@@ -82,19 +80,12 @@ const show = async (onComplete) => {
     }
   })
 
-  //const session = win.webContents.session
-  win.webContents.session.webRequest.onBeforeSendHeaders((details, callback) => {
-    details.requestHeaders['Origin'] = null
-    callback({cancel: false, requestHeaders: details.requestHeaders})
-  })
-
-  
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
   //
   // if beforeunload is telling us to prevent unload ...
   win.webContents.on('will-prevent-unload', event => {
-    const choice = dialog.showMessageBox({
+    const choice = dialog.showMessageBoxSync({
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm',
@@ -130,9 +121,15 @@ const show = async (onComplete) => {
     reveal(onComplete)
   })
 }
-
 ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
+})
+
+ipcMain.on('shot-generator:menu:view:scale-ui', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:scale-ui', value)
+})
+ipcMain.on('shot-generator:menu:view:reset-ui', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:set-ui-scale', value)
 })
 
 ipcMain.on('shot-generator:object:duplicate', () => {
@@ -141,6 +138,10 @@ ipcMain.on('shot-generator:object:duplicate', () => {
 
 ipcMain.on('shot-generator:object:group', () => {
   win.webContents.send('shot-generator:object:group')
+})
+
+ipcMain.on('shot-generator:view:cycleShadingMode', () => {
+  win.webContents.send('shot-generator:view:cycleShadingMode')
 })
 
 ipcMain.on('shot-generator:object:drops', () => {

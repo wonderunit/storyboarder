@@ -1,4 +1,4 @@
-const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
+const {ipcRenderer, shell, remote, nativeImage, clipboard, webFrame} = require('electron')
 const { app } = require('electron').remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
@@ -13,7 +13,6 @@ const CAF = require('caf')
 const isDev = require('electron-is-dev')
 const log = require('electron-log')
 log.catchErrors()
-
 const ReactDOM = require('react-dom')
 const h = require('../utils/h')
 const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
@@ -61,8 +60,6 @@ const sceneSettingsView = require('./scene-settings-view')
 const boardModel = require('../models/board')
 const watermarkModel = require('../models/watermark')
 
-const FileHelper = require('../files/file-helper')
-
 const AudioPlayback = require('./audio-playback')
 const AudioFileControlView = require('./audio-file-control-view')
 
@@ -74,6 +71,7 @@ const pkg = require('../../../package.json')
 
 const sharedObj = remote.getGlobal('sharedObj')
 
+const SettingsService = require("../windows/shot-generator/SettingsService")
 
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
@@ -1375,7 +1373,7 @@ const loadBoardUI = async () => {
     let board = boardData.boards[currentBoard]
     if (board.link) {
       // ...prompt them, to see if they really want to remove the link
-      const choice = remote.dialog.showMessageBox({
+      remote.dialog.showMessageBox({
         type: 'question',
         message: 'This board was edited in Photoshop and linked to a PSD file. ' +
                  'What would you like to do?',
@@ -1386,34 +1384,38 @@ const loadBoardUI = async () => {
         ],
         defaultId: 2
       })
+      .then(({ response }) => {
+        if (response === 0) {
+          // Open in Photoshop
+          openInEditor()
+        } else if (response === 1) {
+          // Draw in Storyboarder
+          remote.dialog.showMessageBox({
+            type: 'question',
+            message: 'If you draw, Storyboarder will stop watching ' +
+                    'Photoshop for changes, and unlink the PSD from ' +
+                    'this board. Are you absolutely sure?',
+            buttons: [
+              'Unlink and Draw', // 0
+              'Cancel' // 1
+            ],
+            defaultId: 1
+          })
+          .then(({ response }) => {
+            if (response === 0) {
+              // Unlink and Draw
+              notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
+              linkedFileManager.removeBoard(board)
+              delete board.link
+              markBoardFileDirty()
 
-      if (choice === 0) {
-        // Open in Photoshop
-        openInEditor()
-      } else if (choice === 1) {
-        // Draw in Storyboarder
-        const confirmChoice = remote.dialog.showMessageBox({
-          type: 'question',
-          message: 'If you draw, Storyboarder will stop watching ' +
-                   'Photoshop for changes, and unlink the PSD from ' +
-                   'this board. Are you absolutely sure?',
-          buttons: [
-            'Unlink and Draw', // 0
-            'Cancel' // 1
-          ],
-          defaultId: 1
-        })
-
-        if (confirmChoice === 0) {
-          // Unlink and Draw
-          notifications.notify({ message: `Stopped watching\n${board.link}\nfor changes.` })
-          linkedFileManager.removeBoard(board)
-          delete board.link
-          markBoardFileDirty()
-
-          storyboarderSketchPane.setIsLocked(false)
+              storyboarderSketchPane.setIsLocked(false)
+            }
+          })
+          .catch(err => log.error(err))
         }
-      }
+      })
+      .catch(err => log.error(err))
     }
   })
 
@@ -1714,14 +1716,13 @@ const loadBoardUI = async () => {
 
       let shouldOverwrite = true
       if (fs.existsSync(newpath)) {
-        const choice = remote.dialog.showMessageBox({
+        const { response } = await remote.dialog.showMessageBox({
           type: 'question',
           buttons: ['Yes', 'No'],
           title: 'Confirm',
           message: `A file named ${path.basename(newpath)} already exists in this project. Overwrite it?`
         })
-
-        shouldOverwrite = (choice === 0)
+        shouldOverwrite = (response === 0)
       }
       if (!shouldOverwrite) {
         notifications.notify({ message: 'Cancelled', timing: 5 })
@@ -1769,22 +1770,23 @@ const loadBoardUI = async () => {
               extensions: ALLOWED_AUDIO_FILE_EXTENSIONS
             }
           ]
-        },
-        filenames => {
-          if (filenames) {
-            this.onSelectFile(filenames[0])
-          } else {
-            this.onSelectFileCancel()
-          }
         }
       )
+      .then(({ filePaths }) => {
+        if (filePaths.length) {
+          this.onSelectFile(filePaths[0])
+        } else {
+          this.onSelectFileCancel()
+        }
+      })
+      .catch(err => log.error(err))
     },
     onClear: async function () {
       let board = boardData.boards[currentBoard]
 
       if (!board.audio) return
 
-      const choice = remote.dialog.showMessageBox({
+      const { response } = await remote.dialog.showMessageBox({
         type: 'question',
         buttons: ['Yes', 'No'],
         title: 'Confirm',
@@ -1793,7 +1795,7 @@ const loadBoardUI = async () => {
                  'NOTE: File will not be deleted from disk.'
       })
 
-      const shouldClear = (choice === 0)
+      const shouldClear = (response === 0)
 
       if (shouldClear) {
         // remove board’s audio object
@@ -2087,84 +2089,42 @@ let newBoard = async (position, shouldAddToUndoStack = true) => {
   return position
 }
 
-// on "Import Images" or mouse drop
-//
-// - JPG/JPEG,
-// - PNG
-// - PSD, must have a layer named 'reference' (unless importTargetLayer preference is set to load a different one)
-//
-// TODO support EXIF orientation see: https://github.com/wonderunit/storyboarder/issues/1123
+// Called from "Import Images to New Boards…" or from window.ondrop
 let insertNewBoardsWithFiles = async filepaths => {
   log.info('main-window#insertNewBoardsWithFiles')
 
-  // TODO when would importTargetLayer not be 'reference'?
-  // TODO insertNewBoardsWithFiles only supports reference and main anyway
-  const targetLayer = prefsModule.getPrefs('main')['importTargetLayer'] || 'reference'
-
-  const count = filepaths.length
+  let count = filepaths.length
   notifications.notify({
     message: `Importing ${count} image${count !== 1 ? 's' : ''}.\nPlease wait …`,
     timing: 2
   })
 
   let insertionIndex = currentBoard + 1
-
   let numAdded = 0
-
   for (let filepath of filepaths) {
-    let imageData = FileHelper.getBase64ImageDataFromFilePath(
-      filepath,
-      {
-        importTargetLayer: targetLayer
-      }
-    )
-
-    if (!imageData || !imageData[targetLayer]) {
-      log.error('Could not find imageData', { imageData, targetLayer })
-      notifications.notify({
-        message: `Oops! There was a problem importing ${filepath}. Try adding a layer named 'reference' for Storyboarder to import.`,
-        timing: 10
-      })
-      return
-    }
-
     try {
+      let imageDataURL = loadImageFileAsDataURL(filepath)
+
+      if (imageDataURL == null) {
+        throw new Error(`Could not read image file ${filepath}`)
+      }
+
       // resize image if too big
-      const datauri = await fitImageData(
-        [
-          storyboarderSketchPane.sketchPane.width,
-          storyboarderSketchPane.sketchPane.height
-        ],
-        imageData[targetLayer]
-      )
+      let dim = [
+        storyboarderSketchPane.sketchPane.width,
+        storyboarderSketchPane.sketchPane.height
+      ]
+      const scaledImageData = await fitImageData(dim, imageDataURL)
 
       storeUndoStateForScene(true)
       let board = insertNewBoardDataAtPosition(insertionIndex)
+      board.layers.reference = {
+        ...board.layers.reference, // TODO what if this is undefined?
+        url: boardModel.boardFilenameForLayer(board, 'reference'),
+        opacity: 1.0 // alternatively: exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
+      }
       storeUndoStateForScene()
-
-      let layerName
-      if (
-        targetLayer === 'main' || // for old preferences files
-        targetLayer === 'fill'
-      ) {
-        log.info('adding as fill')
-        layerName = 'fill'
-      } else {
-        log.info('adding as reference')
-        layerName = 'reference'
-      }
-
-      // update the board data
-      board.layers[layerName] = {
-        url: boardModel.boardFilenameForLayer(board, layerName),
-        ...(
-          layerName === 'reference'
-            ? { opacity: 1.0 } // alternatively: exporterCommon.DEFAULT_REFERENCE_LAYER_OPACITY
-            : {}
-        )
-      }
-      log.info('saving inserted board as', board.layers[layerName].url)
-      saveDataURLtoFile(datauri, board.layers[layerName].url)
+      saveDataURLtoFile(scaledImageData, board.layers.reference.url)
 
       await savePosterFrame(board, true)
       await saveThumbnailFile(insertionIndex, { forceReadFromFiles: true })
@@ -2174,7 +2134,7 @@ let insertNewBoardsWithFiles = async filepaths => {
       insertionIndex++
       numAdded++
     } catch (error) {
-      log.error('Got error', error)
+      log.error('Error loading image', error)
       notifications.notify({
         message: `Could not load image ${path.basename(filepath)}\n` + error.message,
         timing: 10
@@ -2184,15 +2144,63 @@ let insertNewBoardsWithFiles = async filepaths => {
 
   renderThumbnailDrawer()
 
-  notifications.notify({
-    message: `Imported ${numAdded} image${numAdded !== 1 ? 's' : ''}.\n\n` +
-             `The image${numAdded !== 1 ? 's are' : ' is'} on the reference layer, ` +
-             `so you can draw over ${numAdded !== 1 ? 'them' : 'it'}. ` +
-             `If you'd like ${numAdded !== 1 ? 'them' : 'it'} to be the main layer, ` +
-             `you can merge ${numAdded !== 1 ? 'them' : 'it'} up on the sidebar`,
-    timing: 10
-  })
-  sfx.positive()
+  if (numAdded > 0) {
+    notifications.notify({
+      message: `Imported ${numAdded} image${numAdded !== 1 ? 's' : ''}.\n\n` +
+              `The image${numAdded !== 1 ? 's are' : ' is'} on the reference layer, ` +
+              `so you can draw over ${numAdded !== 1 ? 'them' : 'it'}. ` +
+              `If you'd like ${numAdded !== 1 ? 'them' : 'it'} to be the main layer, ` +
+              `you can merge ${numAdded !== 1 ? 'them' : 'it'} up on the sidebar`,
+      timing: 10
+    })
+    sfx.positive()
+  }
+}
+
+const importImageAndReplace = async filepath => {
+  log.info('main-window#importImageAndReplace')
+
+  try {
+    let dataURL = loadImageFileAsDataURL(filepath)
+    await replaceReferenceLayerImage(dataURL)
+  } catch (err) {
+    log.error(err)
+    notifications.notify({ message: err.toString() })
+    sfx.error()
+  }
+}
+
+const importImageFromMobile = async dataURL => {
+  log.info('main-window#importImageFromMobile')
+
+  try {
+    await replaceReferenceLayerImage(dataURL)
+  } catch (err) {
+    log.error(err)
+    notifications.notify({ message: err.toString() })
+    sfx.error()
+  } 
+}
+
+const loadImageFileAsDataURL = filepath => {
+  let ext = path.extname(filepath).toLowerCase()
+
+  if (ext === '.psd') {
+    let buffer = fs.readFileSync(filepath)
+    let canvas = importerPsd.fromPsdBufferComposite(buffer)
+    return canvas.toDataURL()
+
+  } else if (ext === '.jpg' || ext === '.jpeg') {
+    let data = fs.readFileSync(filepath, { encoding: 'base64' })
+    let mediatype = 'image/jpeg'
+    return `data:${mediatype};base64,${data}`
+
+  } else if (ext === '.png') {
+    let data = fs.readFileSync(filepath, { encoding: 'base64' })
+    let mediatype = 'image/png'
+    return `data:${mediatype};base64,${data}`
+
+  }
 }
 
 const updateAudioDurations = () => {
@@ -2641,13 +2649,13 @@ let openInEditor = async () => {
           // file exists but link does not exist
           // we need to know if user wants us to overwrite existing file before linking
           shouldOverwrite = false
-          const choice = remote.dialog.showMessageBox({
+          const { response } = await remote.dialog.showMessageBox({
             type: 'question',
             title: `Overwrite ${path.extname(psdPath)}?`,
             message: `A PSD file already exists for this board. Overwrite it?`,
             buttons: ['Yes, overwrite', `No, open existing PSD`]
           })
-          shouldOverwrite = (choice === 0)
+          shouldOverwrite = (response === 0)
         }
       } else {
         if (board.link) {
@@ -5237,8 +5245,10 @@ ipcRenderer.on('paste-replace', () => {
     })
 })
 
-// import image from mobile server
-const importImage = async imageDataURL => {
+// Replace Reference Layer of Current Board with Image
+// - Used when importing from mobile server
+// - Used for File > Replace Reference Layer Image
+const replaceReferenceLayerImage = async imageDataURL => {
   let board = boardData.boards[currentBoard]
 
   // resize image if too big
@@ -5284,7 +5294,7 @@ const importImage = async imageDataURL => {
   // renderThumbnailDrawer()
 
   notifications.notify({
-    message: `Image added as reference layer.`,
+    message: `Replaced reference layer image.`,
     timing: 10
   })
   sfx.positive()
@@ -6307,12 +6317,12 @@ const saveAsFolder = async () => {
   saveBoardFile()
 
   // display the file selection window
-  let dstFolderPath = remote.dialog.showSaveDialog(null, {
+  let { canceled, filePath: dstFolderPath } = await remote.dialog.showSaveDialog(null, {
     defaultPath: app.getPath('documents')
   })
 
   // user cancelled
-  if (!dstFolderPath) {
+  if (canceled) {
     return
   }
 
@@ -6346,7 +6356,16 @@ const saveAsFolder = async () => {
     fs.emptyDirSync(dstFolderPath)
 
     // copy the project files to the new location
-    exporterCopyProject.copyProject(srcFilePath, dstFolderPath)
+    let { missing } = exporterCopyProject.copyProject(srcFilePath, dstFolderPath, { ignoreMissing: true })
+
+    if (missing.length) {
+      let listing = missing.join('\n')
+      log.warn('Missing Files', listing)
+      remote.dialog.showMessageBox({
+        type: 'warning',
+        message: `[WARNING] Some expected files are missing from the project:\n\n${listing}`
+      })
+    }
 
     ipcRenderer.send('analyticsEvent', 'Board', 'save-as')
 
@@ -6463,8 +6482,13 @@ const exportZIP = async () => {
   try {
     const { missing } = await exporterArchive.exportAsZIP(srcFilePath, exportFilePath)
 
-    notifications.notify({ message: `WARNING: The following files were missing and could not be added to the ZIP:\n` + missing.join('\n') })
-    log.warn('Missing', missing.join('\n'))
+    if (missing.length) {
+      let listing = missing.join('\n')
+      log.warn('Missing Files', listing)
+      notifications.notify({
+        message: `[WARNING] Some expected files are missing from the project and could not be added to the ZIP:\n\n${listing}`
+      })
+    }
 
     notifications.notify({ message: `Done.` })
     shell.showItemInFolder(exportFilePath)
@@ -6652,31 +6676,17 @@ ipcRenderer.on('textInputMode', (event, args)=>{
   textInputAllowAdvance = false
 })
 
+// Import Images to New Boards…
 ipcRenderer.on('insertNewBoardsWithFiles', (event, filepaths)=> {
   insertNewBoardsWithFiles(sortFilePaths(filepaths))
 })
-
-ipcRenderer.on('importImage', (event, fileData) => {
-  // log.info('mobile image import fileData:', fileData)
-  importImage(fileData)
+// Replace Reference Layer Image…
+ipcRenderer.on('importImageAndReplace', (sender, filepaths) => {
+  importImageAndReplace(filepaths[0])
 })
-ipcRenderer.on('importImageAndReplace', (sender, filepathsRecursive) => {
-  let filepath = filepathsRecursive[0]
-  let type = path.extname(filepath).slice(1)
-
-  if (type === 'psd') {
-    notifications.notify({ message: 'Sorry, PSD is not supported for this command yet.' })
-    sfx.error()
-    return
-  }
-
-  let data = fs.readFileSync(filepath).toString('base64')
-  let fileData = `data:image/${type};base64,${data}`
-
-  importImage(fileData).catch(err => {
-    notifications.notify({ message: err.toString() })
-    sfx.error()
-  })
+// Import from Mobile Server
+ipcRenderer.on('importImage', (event, fileData) => {
+  importImageFromMobile(fileData)
 })
 
 ipcRenderer.on('toggleGuide', (event, arg) => {
@@ -6940,15 +6950,26 @@ ipcRenderer.on('zoomReset', value => {
   zoomIndex = ZOOM_CENTER
   storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
 })
-ipcRenderer.on('zoomIn', value => {
-  let zoomIndex = ZOOM_LEVELS.indexOf(closest(ZOOM_LEVELS, storyboarderSketchPane.sketchPane.zoom))
-  zoomIndex = Math.min(ZOOM_LEVELS.length - 1, zoomIndex + 1)
-  storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
+const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"));
+let zoom = settingsService.getSettingByKey("zoom")
+zoom = zoom ? zoom : 0
+const maxZoom = {in: 0.2, out: -1.0}
+webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+webFrame.setZoomLevel(zoom)
+ipcRenderer.on('scale-ui-up', value => {
+  zoom = zoom >= maxZoom.in ? maxZoom.in : zoom + 0.1
+  webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({zoom})
 })
-ipcRenderer.on('zoomOut', value => {
-  let zoomIndex = ZOOM_LEVELS.indexOf(closest(ZOOM_LEVELS, storyboarderSketchPane.sketchPane.zoom))
-  zoomIndex = Math.max(0, zoomIndex - 1)
-  storyboarderSketchPane.zoomAtCursor(ZOOM_LEVELS[zoomIndex])
+ipcRenderer.on('scale-ui-down', value => {
+  zoom = zoom <= maxZoom.out ? maxZoom.out : zoom - 0.1
+  webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({zoom})
+})
+ipcRenderer.on('scale-ui-reset', () => {
+  let zoom = 0
+  webFrame.setZoomLevel(zoom)
+  settingsService.setSettings({ zoom })
 })
 
 const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
@@ -7010,7 +7031,15 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   // save shot-generator.png
   saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
 
-
+  // save camera-plot (re-use context)
+  let plotImage = await exporterCommon.getImage(images.plot)
+  context.canvas.width = 900
+  context.canvas.height = 900
+  context.drawImage(plotImage, 0, 0)
+  saveDataURLtoFile(
+    context.canvas.toDataURL(),
+    boardModel.boardFilenameForCameraPlot(board)
+  )
 
   // save shot-generator-thumbnail.jpg
   // thumbnail size
@@ -7066,21 +7095,6 @@ ipcRenderer.on('insertShot', async (event, { data, images, currentBoard }) => {
   ipcRenderer.send('shot-generator:update', {
     board: boardData.boards[index]
   })
-})
-ipcRenderer.on('saveShotPlot', async (event, { plotImage, currentBoard }) => {
-  // save camera-plot (re-use context)
-  let { width, height } = storyboarderSketchPane.sketchPane
-  let context = createSizedContext([width, height])
-  let exportedPlotImage = await exporterCommon.getImage(plotImage)
-  context.canvas.width = 900
-  context.canvas.height = 900
-  context.drawImage(exportedPlotImage, 0, 0)
-  let index = boardData.boards.findIndex(b => b.uid === currentBoard)
-  let board = boardData.boards[index]
-  saveDataURLtoFile(
-    context.canvas.toDataURL(),
-    boardModel.boardFilenameForCameraPlot(board)
-    )
 })
 ipcRenderer.on('storyboarder:get-boards', event => {
   ipcRenderer.send('shot-generator:get-boards', {

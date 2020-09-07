@@ -49,6 +49,8 @@ let sendedAction = null
 
 const {SGMiddleware} = require('./../../xr/sockets')
 
+require("../../shared/helpers/monkeyPatchGrayscale")
+
 const shotExplorerMiddleware = store => next => action => {
   if(!action) return
   if(sendedAction !== action) {
@@ -207,7 +209,6 @@ const loadBoard = async (board) => {
 ipcRenderer.on('shot-generator:reload', async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
-
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
   store.dispatch({
@@ -218,6 +219,7 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
+
   shotExplorer.createWindow(() => {
     shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')
     if(showShotExplorerOnRead){
@@ -225,6 +227,7 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
       shotExplorer.getWindow().webContents.send('shot-explorer:show')
     }
   }, aspectRatio)
+
   await loadBoard(board)
 
   if (!xrServer) {

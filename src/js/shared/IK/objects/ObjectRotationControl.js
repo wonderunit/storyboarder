@@ -5,6 +5,7 @@ class ObjectRotationControl
     {
         this.control = axis ? new TransformControls(camera, domElement, axis) : new TransformControls(camera, domElement);
         this.control.rotationOnly = true;
+        this.control.setSpace("local")
         this.control.setMode('rotate');
         this.control.size = 0.2;
         this.control.userData.type = "objectControl";
