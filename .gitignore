@@ -40,6 +40,8 @@ dist/
 !src/js/vendor/**/dist
 
 src/build
+
+server/.git
 server/dist
 server/node_modules
 server/.idea
