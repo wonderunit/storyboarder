@@ -1,8 +1,0 @@
-{
-    "development": {
-        "XR": "../src/js/xr/dist"
-    },
-    "production": {
-        "XR": "xr"
-    }
-}
