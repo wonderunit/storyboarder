@@ -906,6 +906,8 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'BLOCK_OBJECT': 
         let objectsToBlock = Array.isArray(action.payload) ? action.payload : [action.payload]
         for(let id of objectsToBlock) {
+          if (draft[id] == null) continue
+          
           draft[id].blocked === true
         }
 
@@ -914,6 +916,8 @@ const sceneObjectsReducer = (state = {}, action) => {
       case 'UNBLOCK_OBJECT': 
         let objectsToUnblock = Array.isArray(action.payload) ? action.payload : [action.payload]
         for(let id of objectsToUnblock) {
+          if (draft[id] == null) continue
+
           draft[id].blocked === false
         }
 

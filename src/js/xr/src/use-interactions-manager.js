@@ -589,7 +589,8 @@ const useInteractionsManager = ({
       }
     }
 
-    if (match && !sceneObjects[match.userData.id].locked && !sceneObjects[match.userData.id].blocked) {
+    let targetObj = match ? sceneObjects[match.userData.id] : null
+    if (match && !targetObj.locked && !targetObj.blocked) {
       // console.log('found sceneObject:', sceneObjects[match.userData.id])
       // console.log('intersection', intersection)
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
