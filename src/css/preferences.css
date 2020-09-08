@@ -167,7 +167,7 @@ a.button:hover {
   border: none;
   cursor: pointer;
   outline: none;
-  border-radius: 2px;
+  border-radius: 6px;
 }
 
 /* Dropdown Button */
