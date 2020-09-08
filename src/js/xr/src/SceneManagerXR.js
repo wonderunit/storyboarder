@@ -13,6 +13,7 @@ require('./three/GPUPickers/utils/Object3dExtension')
 
 const RemoteProvider = require('../../shot-generator/components/RemoteProvider').default
 const RemoteClients = require('../../shot-generator/components/RemoteClients').default
+const {ResourceInfo} = require('../../shared/network/client')
 
 const XRClient = require("./components/XRClient").default
 const { VRButton } = require('three/examples/jsm/webxr/VRButton')
@@ -43,6 +44,8 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-mana
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
 const getFilepathForImage = require('./helpers/get-filepath-for-image')
+
+const ProgressIntro = require('./components/ProgressIntro').default
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -922,7 +925,6 @@ const SceneManagerXR = ({SGConnection}) => {
 
   // world model files
   useEffect(() => {
-    console.log(world)
     if (world.environment.file) {
       // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
       const environmentPath = getFilepathForModelByType({
@@ -935,6 +937,20 @@ const SceneManagerXR = ({SGConnection}) => {
       requestAsset(environmentPath)
     }
   }, [world.environment])
+
+  let appResources = [groundTexture, roomTexture]
+  let soundResources = [
+    welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
+    teleportAudioBuffer,
+    undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
+    uiCreateBuffer, uiDeleteBuffer,
+    vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
+    xrPosing, xrEndPosing
+  ]
+  let gltfResources = APP_GLTFS.map(getAsset)
+
+  const assetIncomplete = useCallback(a => a => a === null || (a.status !== 'Success' && a.status !== 'Error'), [])
+  const assetLoaded = useCallback(a => a => a !== null && a.status === 'Success', [])
 
   useEffect(() => {
     if (!appAssetsLoaded) {
@@ -952,11 +968,25 @@ const SceneManagerXR = ({SGConnection}) => {
       if ([...appResources, ...soundResources, ...uiResources].some(n => n === null)) return
       if (APP_GLTFS.map(getAsset).some(n => n === null)) return
 
-      console.log('ALL ICONS: ', uiResources)
-      
       setAppAssetsLoaded(true)
     }
   }, [appAssetsLoaded, groundTexture, roomTexture, uiResources, APP_GLTFS, assets])
+
+  const [currentMsg, setCurrentMsg] = useState('')
+  const progress = useMemo(() => {
+    let assetsValues = Object.values(assets)
+
+    let count = appResources.length + soundResources.length + uiResources.length + assetsValues.length
+
+    let globalResourcesLoaded = [...appResources, ...soundResources, ...uiResources].filter(res => res !== null).length + assetsValues.filter(assetLoaded).length
+    let progress = (globalResourcesLoaded / count) * 100
+    
+    return progress
+  }, [...appResources, ...soundResources, ...uiResources, assets])
+
+  useEffect(() => {
+    ResourceInfo.on('willLoad', path => setCurrentMsg('Loading: ' + path))
+  }, [setCurrentMsg])
 
   const [isLoading, setIsLoading] = useState(false)
   const [sceneObjectsPreloaded, setSceneObjectsPreloaded] = useState(false)
@@ -987,7 +1017,7 @@ const SceneManagerXR = ({SGConnection}) => {
   return (
     <>
       {
-        !ready && <div className='loading-button'>LOADING …</div>
+        !ready && <ProgressIntro value={progress} msg={currentMsg} />
       }
       <Canvas
         // initialize camera for browser view at a standing height off the floor

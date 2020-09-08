@@ -1,6 +1,7 @@
 import {RestrictedActions, remoteStore, setId, SelectActions} from "../reducers/remoteDevice"
 import {_blockObject, _unblockObject, getSelections} from "../reducers/shot-generator"
 import P2P from './p2p'
+import EventEmmiter from 'events'
 
 const each = (fn, countRef) => {
   let times = 0
@@ -13,6 +14,8 @@ const each = (fn, countRef) => {
     }
   }
 }
+
+export const ResourceInfo = new EventEmmiter()
 
 export const connect = (URI = '') => {
   return new Promise((resolve, reject) => {
@@ -121,6 +124,9 @@ export const connect = (URI = '') => {
         emit('connectRequest')
       }
 
+      client.on('willLoad', ({path}) => {
+        ResourceInfo.emit('willLoad', path)
+      })
       const getResource = (type, filePath) => {
         return new Promise((resolve, reject) => {
           console.log('Getting - ', filePath)

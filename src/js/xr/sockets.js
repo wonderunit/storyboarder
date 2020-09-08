@@ -152,6 +152,7 @@ export const serve = (store, service, staticPath, projectPath, userDataPath) => 
         const image = await loadFileToBlob(path.join(pathMap[key](staticPath, projectPath, userDataPath), path.relative(key, filePath)))
         console.log('Sending resource: ', image)
 
+        emit('willLoad', {path: filePath})
         emit('getResource', {type, filePath, data: image})
       })
       

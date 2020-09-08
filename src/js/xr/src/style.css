@@ -50,3 +50,50 @@ div#main {
 
   cursor: default;
 }
+
+
+.progress-container {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+
+  top: 0;
+  left: 0;
+
+  z-index: 999;
+
+  background: #212128;
+
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.progress-bar {
+  box-sizing: border-box;
+  width: 60%;
+  height: 20px;
+
+  padding: 1px;
+
+  border: 1px solid #5c65c0;
+}
+
+.progress-bar > div {
+  height: 100%;
+  width: 0;
+
+  transition: width 0.3s;
+
+  background: #5c65c0;
+}
+
+.progress-msg {
+  color: #999;
+  padding: 4px;
+
+  font: normal 15px sans-serif;
+}

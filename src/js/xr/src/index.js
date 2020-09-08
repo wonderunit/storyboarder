@@ -1,6 +1,7 @@
 import './style.css'
 import './../vendor/rStats.css'
 import React, { useState, useEffect, useRef } from 'react'
+import ProgressIntro from './components/ProgressIntro'
 
 require("../../shared/helpers/monkeyPatchGrayscale")
 
@@ -52,7 +53,7 @@ const App = () => {
   }, [])
 
   if (!connection) {
-    return ('Connecting...')
+    return <ProgressIntro value={0} delay={300} msg={'Connecting...'} />
   }
 
   return (
