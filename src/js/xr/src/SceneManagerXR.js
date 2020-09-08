@@ -947,7 +947,7 @@ const SceneManagerXR = ({SGConnection}) => {
     vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
     xrPosing, xrEndPosing
   ]
-  let gltfResources = APP_GLTFS.map(getAsset)
+  //let gltfResources = APP_GLTFS.map(getAsset)
 
   const assetIncomplete = useCallback(a => a => a === null || (a.status !== 'Success' && a.status !== 'Error'), [])
   const assetLoaded = useCallback(a => a => a !== null && a.status === 'Success', [])
@@ -970,7 +970,7 @@ const SceneManagerXR = ({SGConnection}) => {
 
       setAppAssetsLoaded(true)
     }
-  }, [appAssetsLoaded, groundTexture, roomTexture, uiResources, APP_GLTFS, assets])
+  }, [appAssetsLoaded, groundTexture, roomTexture, uiResources, assets])
 
   const [currentMsg, setCurrentMsg] = useState('')
   const progress = useMemo(() => {
@@ -990,7 +990,7 @@ const SceneManagerXR = ({SGConnection}) => {
 
   const [isLoading, setIsLoading] = useState(false)
   const [sceneObjectsPreloaded, setSceneObjectsPreloaded] = useState(false)
-  useMemo(() => {
+  useEffect(() => {
     let incomplete = a => a.status !== 'Success' && a.status !== 'Error'
     let remaining = Object.values(assets).filter(incomplete)
 
@@ -1013,6 +1013,7 @@ const SceneManagerXR = ({SGConnection}) => {
   }, [assets, sceneObjects, sceneObjectsPreloaded, isLoading])
 
   const ready = appAssetsLoaded && sceneObjectsPreloaded
+  console.log('ALL THE STUFF', appAssetsLoaded, sceneObjectsPreloaded, assets, appResources, soundResources, uiResources)
 
   return (
     <>

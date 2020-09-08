@@ -16,6 +16,7 @@ const each = (fn, countRef) => {
 }
 
 export const ResourceInfo = new EventEmmiter()
+const resourcesMap = {}
 
 export const connect = (URI = '') => {
   return new Promise((resolve, reject) => {
@@ -125,11 +126,13 @@ export const connect = (URI = '') => {
       }
 
       client.on('willLoad', ({path}) => {
+        Reflect.deleteProperty(resourcesMap, path)
         ResourceInfo.emit('willLoad', path)
       })
       const getResource = (type, filePath) => {
         return new Promise((resolve, reject) => {
           console.log('Getting - ', filePath)
+
           const Fn = (res) => {
             if (res.filePath === filePath) {
               console.log('Resolved(*), ', filePath, res)
@@ -140,6 +143,15 @@ export const connect = (URI = '') => {
 
           client.on('getResource', Fn)
           emit('getResource', {type, filePath})
+
+          resourcesMap[filePath] = 'Not approved!!!'
+          const interval = setInterval(() => {
+            if (resourcesMap[filePath]) {
+              emit('getResource', {type, filePath})
+            } else {
+              clearInterval(interval)
+            }
+          }, 10 * 1000)
         })
       }
   

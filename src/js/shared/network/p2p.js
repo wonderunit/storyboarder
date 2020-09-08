@@ -99,8 +99,7 @@ const P2P = (host = 'stbr.link') => {
             // const client = new Client(connection)
             // clients.push(client)
             // clientsMap.set(connection.peer, client)
-
-            emitter.emit('connection', client)
+            setTimeout(() => emitter.emit('connection', client), 1000)
         })
     })
 
@@ -114,7 +113,7 @@ const P2P = (host = 'stbr.link') => {
     const P2PClientConnection = (roomId) => {
         return new Promise((resolve, reject) => {
             emitter.on('open', () => {
-                client = peer.connect(roomId, {reliable: true, serialization: 'binary-utf8'})
+                client = peer.connect(roomId, {reliable: true, serialization: 'binary'})
                 client.on('open', () => {
                     resolve(Client(client))
                 })
