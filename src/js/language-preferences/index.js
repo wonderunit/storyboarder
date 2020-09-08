@@ -268,9 +268,9 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
             }
             <div className="languages-config">
                 <h1 className="config-title">Language Editor</h1>
-                <div id="config-intro" style={{paddingBottom: "20px"}}>Your friendly language editor. Add, Remove, Import or Export and share with others.</div>
+                <div id="config-intro" style={{paddingBottom: "20px"}}>Your friendly language editor. Copy, Remove, Import or Export and share with others.</div>
                 <ItemList 
-                    languages={languages} 
+                    languages={languages.map(l => ({ ...l, editable: !isBuiltInLanguage(l.fileName) }))} 
                     onSelect={selectLanguage}
                     selectedLanguage={currentLanguage} />
                 <div className="modify-buttons-container">
@@ -295,7 +295,8 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
                 { !isEditable && 
                 <div className="editor-warning">
                     <div className="editor-warning-text">
-                        The default languages cannot be changed. You can copy default language and change it
+                        This is an installed language. It cannot be edited directly. <br/>
+                        Make a copy of it to start a new language.
                     </div>
                 </div>  }
                <JSONEditor

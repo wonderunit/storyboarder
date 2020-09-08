@@ -1,6 +1,5 @@
 import classNames from 'classnames'
-const Item = ({language, displayName, selectedLanguage, onClick}) => {
-
+const Item = ({language, displayName, selectedLanguage, onClick, editable}) => {
 
     let className = classNames("element", {
         "element-selected": language === selectedLanguage,
@@ -8,7 +7,7 @@ const Item = ({language, displayName, selectedLanguage, onClick}) => {
     })
     return (
         <div className={className} onClick={() => onClick(language)}>
-            {displayName}
+            {displayName} {editable ? '' : '(installed)'}
         </div>
     )
 }

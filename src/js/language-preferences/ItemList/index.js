@@ -6,7 +6,16 @@ const List = ({languages, onSelect, selectedLanguage}) => {
     const createElements = () => {
         let elements = []
         for(let i = 0; i < languages.length; i++) {
-            elements.push(<Item key={i} language={languages[i].fileName} displayName={languages[i].displayName} onClick={onSelect} selectedLanguage={selectedLanguage} />)
+            elements.push(
+                <Item
+                    key={i}
+                    language={languages[i].fileName}
+                    displayName={languages[i].displayName}
+                    onClick={onSelect}
+                    selectedLanguage={selectedLanguage}
+                    editable={languages[i].editable}
+                />
+            )
         }
         return elements
     }
