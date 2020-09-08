@@ -8,6 +8,7 @@ const useDraggingManager = (useIcons) => {
     const selectedObjects = useRef()
     const objectChanges = useRef()
     const offsets = useRef()
+    const prevMouse = useRef()
 
     const prepareDrag = useCallback((target, { x, y, camera, scene, selections }) => {
       if (!raycaster.current) raycaster.current = new THREE.Raycaster()
@@ -44,6 +45,7 @@ const useDraggingManager = (useIcons) => {
         for (let selection of selections) {
           if(!selectedObjects.current[selection]) continue
           offsets.current[selection] = new THREE.Vector3().copy( intersection.current ).sub( selectedObjects.current[selection].position )
+          prevMouse.current = { x, y }
         }
       } else {
         for (let selection of selections) {
@@ -52,7 +54,7 @@ const useDraggingManager = (useIcons) => {
       }
     }, [plane.current, raycaster.current, intersection.current])
     
-    const drag = useCallback((mouse, target, camera, selections) => {
+    const drag = useCallback((mouse, target, camera, selections, isRotation = false) => {
       if(!raycaster.current) return
       raycaster.current.setFromCamera( mouse, camera )
       if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
@@ -79,9 +81,18 @@ const useDraggingManager = (useIcons) => {
               if (!target || target.userData.locked) continue
 
               let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
-              target.position.set( x, target.position.y, z )
-
-              objectChanges.current[selection] = { x, y: z }
+              if(isRotation && target.userData.type === "character" && selections.length === 1) {
+                let delta = prevMouse.current.x - mouse.x 
+                let direction = -1
+                let rotationSpeed = Math.sign(delta) * ( THREE.Math.DEG2RAD * (Math.abs(delta) * 180))
+                let newRotation = target.rotation.y + ((rotationSpeed) * direction)
+                objectChanges.current[selection] = { rotation: newRotation }
+                target.rotation.y = newRotation
+                prevMouse.current = mouse
+              } else {
+                target.position.set( x, target.position.y, z )
+                objectChanges.current[selection] = { x, y: z }
+              }
             }
           }
         }
