@@ -99,7 +99,7 @@ let updateRecentDocuments = () => {
       count++
     }
     document.querySelector('#recent').innerHTML = html.join('')
-    document.querySelector('.recent').innerHTML = "RECENT STORYBOARDS"// RECENT STORYBOARDS
+    document.querySelector('.recent').innerHTML = i18n.t("welcome-window.recentStoryboards")
     let recentDivs = document.querySelector("#recent").children
     for (var i = 0; i < recentDivs.length; i++) {
       recentDivs[i].onclick = (e)=>{
