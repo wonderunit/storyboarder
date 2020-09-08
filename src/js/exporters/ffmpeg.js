@@ -1,6 +1,5 @@
-const electronUtil = require('electron-util')
 const execa = require('execa')
-const ffmpeg = require('@ffmpeg-installer/ffmpeg')
+const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked');
 const fs = require('fs-extra')
 const path = require('path')
 const moment = require('moment')
@@ -9,7 +8,6 @@ const tmp = require('tmp')
 const boardModel = require('../models/board')
 const exporterCommon = require('../exporters/common')
 
-const ffmpegPath = electronUtil.fixPathForAsarUnpack(ffmpeg.path)
 
 // const durationRegex = /Duration: (\d\d:\d\d:\d\d.\d\d)/gm
 // const frameRegex = /frame=\s+(\d+)/gm
