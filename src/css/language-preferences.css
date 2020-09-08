@@ -59,15 +59,13 @@ body {
 
 .element {
     box-sizing: border-box;
-    /* padding: 6px 16px 6px 8px; */
+    padding: 0.5em;
     display: flex;
     flex-direction: row;
     background-color: rgba(255,255,255,0.01);
     font-size: 14px;
     letter-spacing: 0.05rem;
     max-width: 300px;
-    height: 40px;
-    overflow: hidden;
 }
 .element-selected {
     background-color: rgba(255, 255, 255, 0.064);
