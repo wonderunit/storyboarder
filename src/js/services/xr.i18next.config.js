@@ -2,7 +2,7 @@ let i18n = require('i18next')
 let Backend  = require('i18next-http-backend').default
 const { initReactI18next } = require("react-i18next")
 // TODO(): Make Search folder locales for languages; dynamic instead of static
-let builtInLanguages = ['en-US', 'ru-RU', 'test']
+let builtInLanguages
 let request = new XMLHttpRequest()
 request.open("GET", "data/customLocales/language-settings.json")
 request.addEventListener( 'load', function ( event ) { initializeI18n(this.response) })
