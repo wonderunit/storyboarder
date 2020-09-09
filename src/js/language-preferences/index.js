@@ -2,7 +2,6 @@ import React, { useRef, useMemo, useEffect, useState } from 'react'
 import Electron, { ipcRenderer, remote } from 'electron'
 import { Math } from 'three'
 const {dialog} = remote
-import { connect } from 'react-redux'
 import ItemList from './ItemList'
 import fs, { readFileSync } from 'fs-extra'
 import path from 'path'
@@ -11,7 +10,7 @@ import Modal from '../shot-generator/components/Modal'
 import {settings} from '../services/language.config'
 const electronApp = Electron.app ? Electron.app : Electron.remote.app
 const userDataPath = electronApp.getPath('userData')
-const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
+const LanguagePreferences = React.memo(() => {
     const [selectedJson, selectJson] = useState({})
     const builtInLanguages = useRef(settings.getSettingByKey('builtInLanguages'))
     const [languages, setLanguages] = useState(builtInLanguages.current.concat(settings.getSettingByKey('customLanguages')))
@@ -308,10 +307,4 @@ const LanguagePreferences = React.memo(({storyboarderFilePath}) => {
     )
 })
 
-export default connect(
-    (state)=> ({
-    storyboarderFilePath: state.storyboarderFilePath
-    }), 
-    {
-    }
-)(LanguagePreferences)
+export default LanguagePreferences
