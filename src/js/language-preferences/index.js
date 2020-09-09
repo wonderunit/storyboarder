@@ -27,7 +27,7 @@ const LanguagePreferences = React.memo(() => {
         if(isBuiltInLanguage(currentLanguage)) {
             return path.join(window.__dirname, 'js', 'locales', `${currentLanguage}.json`)
         } else {
-            return path.join(userDataPath, `locales/${currentLanguage}.json`)
+            return path.join(userDataPath, 'locales', `${currentLanguage}.json`)
         }
     }
 
@@ -128,7 +128,7 @@ const LanguagePreferences = React.memo(() => {
     const proceedWithRemoval = () => {
         let newLanguage = languages[0]
         let customLanguages = settings.getSettingByKey('customLanguages')
-        fs.removeSync(path.join(userDataPath, `locales/${currentLanguage}.json`))
+        fs.removeSync(path.join(userDataPath, 'locales', `${currentLanguage}.json`))
         let element = customLanguages.filter((lng) => lng.fileName === currentLanguage)[0]
         let indexOf = customLanguages.indexOf(element)
         customLanguages.splice(indexOf, 1)

@@ -8,16 +8,16 @@ const { initReactI18next } = require("react-i18next")
 const {settings:config} = require('./language.config')
 let loadPath 
 if(window) {
-    loadPath = path.join(window.__dirname,  "js/locales")
+    loadPath = path.join(window.__dirname, "js", "locales")
 } else {
-    loadPath = path.join(__dirname, "..", "js/locales")
+    loadPath = path.join(__dirname, "..", "js", "locales")
 }
 const getLoadPath = (lng, namespace) => {
     let builtInPath = path.join(loadPath, `${lng}.json`)
     if(config.getSettingByKey("builtInLanguages").some((item) => item.fileName === lng)) {
         return builtInPath
     } else {
-        return path.join(userDataPath, `locales/${lng}.json`)
+        return path.join(userDataPath, "locales", `${lng}.json`)
     }
 }
 
