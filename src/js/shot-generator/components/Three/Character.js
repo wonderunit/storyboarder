@@ -377,7 +377,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       } ) })
     }, [ref.current])
   
-    const { x, y, z, visible, rotation, locked } = sceneObject
+    const { x, y, z, visible, rotation, locked, blocked } = sceneObject
 
     useEffect(() => {
       if(!props.objectRotationControl || !isSelected) return
@@ -394,6 +394,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           poleTargets: sceneObject.poleTargets || {},
           height: originalHeight,
           locked: locked,
+          blocked: blocked,
           model: sceneObject.model,
           name: sceneObject.displayName
         }}

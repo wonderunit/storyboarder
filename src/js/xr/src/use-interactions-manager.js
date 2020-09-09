@@ -1321,6 +1321,10 @@ const useInteractionsManager = ({
         onSelected: (context, event) => {
           let controller = event.controller
           let { object, distance, point } = event.intersection
+          if (object.userData.blocked || object.userData.locked) {
+            return
+          }
+
           log('-- onSelected')
           // selectOffset is used for Character
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
@@ -1364,6 +1368,9 @@ const useInteractionsManager = ({
           let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
 
+          if (object.userData.locked || object.userData.blocked) {
+            return
+          }
 
           if (object.userData.type !== 'character') {
             if(object.userData.type === "attachable")

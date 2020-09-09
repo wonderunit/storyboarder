@@ -17,6 +17,7 @@ const each = (fn, countRef) => {
 
 export const ResourceInfo = new EventEmmiter()
 const resourcesMap = {}
+const ResourcesMapStatuses = {PENDING: 'PENDING', LOADING: 'LOADING', SUCCESS: 'SUCCESS'}
 
 export const connect = (URI = '') => {
   return new Promise((resolve, reject) => {
@@ -126,16 +127,21 @@ export const connect = (URI = '') => {
       }
 
       client.on('willLoad', ({path}) => {
-        Reflect.deleteProperty(resourcesMap, path)
+        resourcesMap[path] = {status: ResourcesMapStatuses.LOADING}
         ResourceInfo.emit('willLoad', path)
       })
       const getResource = (type, filePath) => {
         return new Promise((resolve, reject) => {
           console.log('Getting - ', filePath)
 
+          if (resourcesMap[filePath] && resourcesMap[filePath].status === ResourcesMapStatuses.SUCCESS) {
+            resolve(resourcesMap[filePath].data)
+          }
+
           const Fn = (res) => {
             if (res.filePath === filePath) {
               console.log('Resolved(*), ', filePath, res)
+              resourcesMap[filePath] = {status: ResourcesMapStatuses.SUCCESS, data: res}
               client.off('getResource', Fn)
               resolve(res)
             }
@@ -144,9 +150,9 @@ export const connect = (URI = '') => {
           client.on('getResource', Fn)
           emit('getResource', {type, filePath})
 
-          resourcesMap[filePath] = 'Not approved!!!'
+          resourcesMap[filePath] = {status: ResourcesMapStatuses.PENDING}
           const interval = setInterval(() => {
-            if (resourcesMap[filePath]) {
+            if (resourcesMap[filePath] && resourcesMap[filePath].status === ResourcesMapStatuses.PENDING) {
               emit('getResource', {type, filePath})
             } else {
               clearInterval(interval)

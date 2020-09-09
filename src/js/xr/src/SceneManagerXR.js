@@ -947,7 +947,7 @@ const SceneManagerXR = ({SGConnection}) => {
     vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
     xrPosing, xrEndPosing
   ]
-  //let gltfResources = APP_GLTFS.map(getAsset)
+  let gltfResources = APP_GLTFS.map(getAsset)
 
   const assetIncomplete = useCallback(a => a => a === null || (a.status !== 'Success' && a.status !== 'Error'), [])
   const assetLoaded = useCallback(a => a => a !== null && a.status === 'Success', [])
@@ -965,8 +965,8 @@ const SceneManagerXR = ({SGConnection}) => {
       ]
 
       // fail if any app resources are missing
-      if ([...appResources, ...soundResources, ...uiResources].some(n => n === null)) return
-      if (APP_GLTFS.map(getAsset).some(n => n === null)) return
+      if ([...appResources, ...soundResources, ...uiResources, ...gltfResources].some(n => n === null)) return
+      //if (gltfResources.some(n => n === null)) return
 
       setAppAssetsLoaded(true)
     }
@@ -976,13 +976,13 @@ const SceneManagerXR = ({SGConnection}) => {
   const progress = useMemo(() => {
     let assetsValues = Object.values(assets)
 
-    let count = appResources.length + soundResources.length + uiResources.length + assetsValues.length
+    let count = appResources.length + soundResources.length + uiResources.length + assetsValues.length + gltfResources.length
 
-    let globalResourcesLoaded = [...appResources, ...soundResources, ...uiResources].filter(res => res !== null).length + assetsValues.filter(assetLoaded).length
+    let globalResourcesLoaded = [...appResources, ...soundResources, ...uiResources, ...gltfResources].filter(res => res !== null).length + assetsValues.filter(assetLoaded).length
     let progress = (globalResourcesLoaded / count) * 100
     
     return progress
-  }, [...appResources, ...soundResources, ...uiResources, assets])
+  }, [...appResources, ...soundResources, ...uiResources, ...gltfResources, assets])
 
   useEffect(() => {
     ResourceInfo.on('willLoad', path => setCurrentMsg('Loading: ' + path))
@@ -1013,7 +1013,6 @@ const SceneManagerXR = ({SGConnection}) => {
   }, [assets, sceneObjects, sceneObjectsPreloaded, isLoading])
 
   const ready = appAssetsLoaded && sceneObjectsPreloaded
-  console.log('ALL THE STUFF', appAssetsLoaded, sceneObjectsPreloaded, assets, appResources, soundResources, uiResources)
 
   return (
     <>

@@ -76,7 +76,7 @@ const useDraggingManager = (useIcons) => {
           if ( raycaster.current.ray.intersectPlane( plane.current, intersection.current ) ) {
             for (let selection of selections) {
               let target = selectedObjects.current[selection]
-              if (!target || target.userData.locked) continue
+              if (!target || target.userData.locked || target.userData.blocked) continue
 
               let { x, z } = intersection.current.clone().sub( offsets.current[selection] ).setY(0)
               target.position.set( x, target.position.y, z )

@@ -133,7 +133,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     }
   }, [])
 
-  const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
+  const { x, y, z, visible, width, height, depth, rotation, locked, blocked } = sceneObject
 
   useEffect(() => {
     if(!props.objectRotationControl || !isSelected) return
@@ -147,7 +147,8 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     userData={{
       type: 'object',
       id: sceneObject.id,
-      locked: locked
+      locked: locked,
+      blocked: blocked
     }}
 
     visible={ visible }
