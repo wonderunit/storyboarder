@@ -171,19 +171,42 @@ a.button:hover {
 }
 
 /* Dropdown Button */
-.dropbtn {
-  background-color: #333333;
-  color: white;
-  padding: 12px;
-  font-size: 12px;
-  border: none;
+.dropbtn-container { 
+  display: flex;
+  background-color:  #333333;
+  width: -webkit-fit-content;
+  width: fit-content;
+  margin-top: 6px;
+  border-radius: 5px;
   cursor: pointer;
   outline: none;
-  border-radius: 2px;
+  border: none;
+  width:120px;
+  padding: 12px;
+  font-size: 12px;
+}
+
+.dropbtn {
+  background-color: inherit;
+  color: white;
+  outline: none;
+  border: none;
+  width: 80px;
+  cursor: pointer;
+  pointer-events: inherit;
+  pointer-events: none;
+}
+
+.dropbtn-container .arrow {
+  width: 16px;
+  height: 16px;
+  background-image: url(../img/arrow-down.png);
+  pointer-events: inherit;
+  pointer-events: none;
 }
 
 /* Dropdown button on hover & focus */
-.dropbtn:hover, .dropbtn:focus {
+.dropbtn-container:hover, .dropbtn-container:focus {
   background-color: #3e3d3d;
 }
 
@@ -198,20 +221,24 @@ a.button:hover {
   display: none;
   position: absolute;
   background-color: #333333;
-  min-width: 160px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
   height:80px;
   overflow: auto;
+  border-radius: 5px;
+  width:120px;
 }
 
 /* Links inside the dropdown */
 .dropdown-content div {
   color: white;
-  padding: 12px 12px;
-  text-decoration: none;
-  display: block;
+  padding: 12px;
   font-size: 12px;
+  
+  border: none;
+  cursor: pointer;
+  outline: none;
+  border-radius: 2px;
 }
 
 

@@ -289,7 +289,7 @@ const showDropContent = () => {
 
 // Close the dropdown menu if the user clicks outside of it
 window.onclick = function(event) {
-  if (!event.target.matches('.dropbtn')) {
+  if (!event.target.matches('.dropbtn-container')) {
     var dropdowns = document.getElementsByClassName("dropdown-content");
     var i;
     for (i = 0; i < dropdowns.length; i++) {
@@ -315,9 +315,10 @@ const selectLanguage = (language) => {
 const initializeLanguageList = () => {
   let languages = languageSettings.getSettingByKey('builtInLanguages').concat(languageSettings.getSettingByKey('customLanguages'))
   let button = document.getElementsByClassName("dropbtn")[0]
+  let buttonContainer = document.getElementsByClassName("dropbtn-container")[0]
   let selectedLanguage = languageSettings.getSettingByKey('selectedLanguage')
   button.textContent = languages.find((item) => item.fileName === selectedLanguage).displayName
-  button.onclick = showDropContent
+  buttonContainer.onclick = showDropContent
   let optionContainer = document.getElementById("myDropdown")
   optionContainer.innerHTML = ''
   for(let i = 0; i < languages.length; i++ ) {
