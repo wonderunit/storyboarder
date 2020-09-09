@@ -67,7 +67,7 @@ const createWindow = async ( onComplete) => {
   
       backgroundColor: '#333333',
       titleBarStyle: 'hiddenInset',
-      title: "Shot Explorer",
+      title: "Language Preferences",
       acceptFirstMouse: true,
       simpleFullscreen: true,
       webPreferences: {
