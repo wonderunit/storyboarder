@@ -261,7 +261,8 @@
           <div class="board-metadata-container">
             <div class="number"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-board"></use></svg><span id="shot"></span></div>
             <div class="row" id="board-numbers">12 of 76</div>
-            <div class="row" data-tooltip
+            <div class="row" id="line-mileage" 
+              data-tooltip
               data-tooltip-title="Line Mileage"
               data-tooltip-description="As you draw, the line miles for the shot add up. This is useful to know how much you are drawing per shot. Remember, you aren't trying to make the next Moner Lisa. You're just trying to get the idea across."
               data-tooltip-keys=""
@@ -284,18 +285,20 @@
 
             <div class="hardrule"></div>
 
-            <div class="row" data-tooltip
+            <div class="row" id="new-shot"
+              data-tooltip
               data-tooltip-title="Is this board a new shot?"
               data-tooltip-description="Check this box if the board is a new shot. You can have multiple boards per shot. This way you can animate or make a transition in a shot."
               data-tooltip-keys="/"
               data-tooltip-position="left middle">
-              <input type="checkbox" name="newShot" id="newShot" /><label for="newShot"><span></span>New Shot?</label>
+              <input type="checkbox" name="newShot" id="newShot" /><label for="newShot" id="new-shot-label"><span></span>New Shot?</label>
             </div>
             <div class="row">
-              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-duration"></use></svg>Duration</div>
+              <div id="duration"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-duration"></use></svg>Duration</div>
               <div class="row">
                 <div class="col">
                   <input type="text" name="duration" placeholder="ms" data-tooltip
+                  id="duration-ms"
                   data-tooltip-title="Set the board duration"
                   data-tooltip-description="Enter the number of milliseconds for a board. There are 1000 milliseconds in a second. 2000 milliseconds is the default."
                   data-tooltip-keys=""
@@ -303,6 +306,7 @@
                 </div>
                 <div class="col">
                   <input type="text" name="frames" placeholder="frames" data-tooltip
+                  id="duration-fps"
                   data-tooltip-title="Set the board duration"
                   data-tooltip-description="Enter the number of frames for a board."
                   data-tooltip-keys=""
@@ -311,33 +315,37 @@
               </div>
             </div>
             <div class="row">
-              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-dialogue"></use></svg>Dialogue <span id="suggested-dialogue-duration" data-tooltip
+              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-dialogue"></use></svg><span id="dialog-title">Dialogue</span> <span id="suggested-dialogue-duration" data-tooltip
               data-tooltip-title="Suggested board duration"
               data-tooltip-description="Click to set the duration based on the dialogue text."
               data-tooltip-keys=""
               data-tooltip-position="left middle"></span></div>
               <textarea name="dialogue" data-tooltip
+              id="dialogue-tooltip"
               data-tooltip-title="Dialogue for board"
               data-tooltip-description="Write some really sweet dialogue, like, ''As you know, I am your father.'' It will show up as a caption if you have it toggled on."
               data-tooltip-keys=""
               data-tooltip-position="left middle"></textarea>
             </div>
             <div class="row">
-              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-action"></use></svg>Action</div>
+              <div><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-action"></use></svg><span id="action-title">Action</span></div>
               <textarea name="action" data-tooltip
+              id="action-tooltip"
               data-tooltip-title="Action for board"
               data-tooltip-description="Write some action for the board."
               data-tooltip-keys=""
               data-tooltip-position="left middle"></textarea>
             </div>
             <div class="row">
-              <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-notes"></use></svg>Notes</div>
+              <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-notes"></use></svg><span id="note-title">Notes</span></div>
               <div class="layers-ui-notes-clear flatbutton small" data-tooltip
+              id="clear-note-tooltip"
               data-tooltip-title="Clear notes drawing layer"
               data-tooltip-description="Clear the notes layer for this board. You can also clear it when you are on the notes drawing tool and you press:"
               data-tooltip-keys="Alt+Backspace"
-              data-tooltip-position="left middle"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg>Clear Notes Layer</div>
+              data-tooltip-position="left middle"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg><span id="clear-note-title">Clear Notes Layer</span></div>
               <textarea name="notes" data-tooltip
+              id="note-tooltip"
               data-tooltip-title="Notes for the board"
               data-tooltip-description="Write some notes. Could be board notes for changes, or just some notes for the shot."
               data-tooltip-keys=""
@@ -378,6 +386,7 @@
                 <div class="audiofile_clear">
                   <div class="flatbutton"
                        data-tooltip
+                       id="remove-audio"
                        data-tooltip-title="Remove audio"
                        data-tooltip-description="Remove audio reference from this board. The file will remain on disk unless Clean Up Scene is used."
                        data-tooltip-keys=""
@@ -399,30 +408,34 @@
             <div class="hardrule"></div>
 
             <div class="row">
-              <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-lightbox"></use></svg>Reference Layer</div>
+              <div class="inline"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-lightbox"></use></svg><span id="reference-layer-title">Reference Layer</span></div>
               <div class="layers-ui-reference-clear flatbutton small" data-tooltip
+              id="reference-layer-tooltip"
               data-tooltip-title="Clear reference drawing layer"
               data-tooltip-description="Clear the reference layer for this board. You can also clear it when you are on the light pencil drawing tool and you press:"
               data-tooltip-keys="Alt+Backspace"
-              data-tooltip-position="left middle"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg>Clear</div>
+              data-tooltip-position="left middle"> <svg class="smallericon"><use xlink:href="./img/symbol-defs.svg#icon-trash"></use></svg><span id="clear-title">Clear</span></div>
               <div>
                 <div class="col">
                   <div class="layers-ui-fill-merge flatbutton" data-tooltip
+                  id="merge-down-tooltip"
                   data-tooltip-title="Merge the fill layer down to the reference layer"
                   data-tooltip-description="This is useful if you want to take your existing fill layer and redraw for cleanup. This will combine both layers to the reference layer. The fill layer will be blank."
                   data-tooltip-keys=""
-                  data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-mergedown"></use></svg>Merge Down</div>
+                  data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-mergedown"></use></svg><span id="merge-down-title">Merge Down</span></div>
                 </div>
                 <div class="col">
                   <div class="layers-ui-reference-merge flatbutton" data-tooltip
+                  id="merge-up-tooltip"
                   data-tooltip-title="Merge the reference layer up to the fill layer"
                   data-tooltip-description="This is useful if you draw on the reference layer and you want to keep it in your drawing. This will combine both layers to the fill layer. The reference layer will be blank."
                   data-tooltip-keys=""
-                  data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-mergeup"></use></svg>Merge Up</div>
+                  data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-mergeup"></use></svg><span id="merge-up-title">Merge Up</span></div>
                 </div>
               </div>
               <div>
                 <input class="layers-ui-reference-opacity" data-tooltip
+                  id="layer-opacity-tooltip"
                   data-tooltip-title="Change Reference and Shot Generator Layer Opacity"
                   data-tooltip-description="Change the opacity of the reference layer and Shot Generator layer. You will only be able to see the change if there is a saved Shot Generator shot, or something on the reference layer."
                   data-tooltip-keys=""
@@ -460,11 +473,11 @@
 
             <div class="row sidebar-scene-settings">
 
-              <div style="margin-bottom:0.5rem">Scene</div>
+              <div style="margin-bottom:0.5rem" id="scene">Scene</div>
 
               <div class="row">
                 <div class="col">
-                  <label style="color: #777">Frame Rate </label>
+                  <label style="color: #777" id="frame-rate">Frame Rate </label>
                 </div>
                 <div class="col">
                   <select class="sidebar-scene-settings_fps">
@@ -491,7 +504,7 @@
               data-tooltip-title="Show board in file system"
               data-tooltip-description="Click here to show the board image file in the file system. This is useful for external editors."
               data-tooltip-keys=""
-              data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-showfile"></use></svg>Show in Folder</div>
+              data-tooltip-position="left middle"><svg class="smallicon"><use xlink:href="./img/symbol-defs.svg#icon-showfile"></use></svg><span id="show-in-finder-title">Show in Folder</span></div>
             </div>
           </div>
           <svg class="scroll-indicator">
@@ -530,6 +543,7 @@
           </div>
           -->
           <div class="transport-control transport-control-prev-scene" data-action="previousScene" data-tooltip
+            id="prev-scene-tooltip"
             data-tooltip-title="Previous Scene"
             data-tooltip-description="If current board is at the start or end of the scene, this will jump backward one scene. Otherwise this will jump to the start of the current scene."
             data-tooltip-keys="CmdOrCtrl+Left"
@@ -539,6 +553,7 @@
             </svg>
           </div>
           <div class="transport-control transport-control-prev-board" data-action="prevBoard" data-tooltip
+            id="prev-board-tooltip"
             data-tooltip-title="Previous Board"
             data-tooltip-description="Use the arrow keys to flip between boards quickly to see how the story is flowing."
             data-tooltip-keys="Left"
@@ -548,6 +563,7 @@
             </svg>
           </div>
           <div class="transport-control transport-control-play" data-action="togglePlayback" data-tooltip
+            id="play-tooltip"
             data-tooltip-title="Play/Pause"
             data-tooltip-description="This will toggle between playing automatically and not. The playback timing is default 2 seconds per board, or whatever is set as the board duration."
             data-tooltip-keys=""
@@ -557,6 +573,7 @@
             </svg>
           </div>
           <div class="transport-control transport-control-next-board" data-action="nextBoard" data-tooltip
+            id="next-board-tooltip"
             data-tooltip-title="Next Board"
             data-tooltip-description="Use the arrow keys to flip between boards quickly to see how the story is flowing."
             data-tooltip-keys="Right"
@@ -566,6 +583,7 @@
             </svg>
           </div>
           <div class="transport-control transport-control-next-scene" data-action="nextScene" data-tooltip
+            id="next-scene-tooltip"
             data-tooltip-title="Next Scene"
             data-tooltip-description="If current board is at the start or end of the scene, this will jump forward one scene. Otherwise this will jump to the end of the current scene."
             data-tooltip-keys="CmdOrCtrl+Right"
@@ -603,6 +621,7 @@
     <div id="notifications" class="notifications"></div>
   <script>
     if (typeof require !== 'undefined') {
+   
       window.onerror = (message, source, lineno, colno, error) => require('electron').ipcRenderer.send('errorInWindow', message, source, lineno, colno, error)
       require('./js/window/main-window')
     }

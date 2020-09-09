@@ -26,7 +26,7 @@ import SearchList from '../../SearchList'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
 import isUserModel from '../../../helpers/isUserModel'
 import CopyFile from '../../../utils/CopyFile'
-
+import { useTranslation } from 'react-i18next'
 const getModelData = deepEqualSelector([(state) => {
   const selectedId = getSelections(state)[0]
   const object = getSceneObjects(state)[selectedId]
@@ -60,8 +60,9 @@ const ModelInspector = connect(
     undoGroupStart,
     undoGroupEnd,
     
-    withState,
+    withState
   }) => {
+      const { t } = useTranslation()
       const sortedModels = useRef([])
       const [results, setResults] = useState([])
       const models = useMemo(() => {
@@ -161,11 +162,11 @@ const ModelInspector = connect(
       return sceneObject.model &&
         <div className="thumbnail-search column">
           <div className="row" style={{ padding: "6px 0" }}>
-            <SearchList label="Search models …" list={ sortedModels.current } onSearch={ saveFilteredPresets }/>
+            <SearchList label={t("shot-generator.inspector.common.search-models")} list={ sortedModels.current } onSearch={ saveFilteredPresets }/>
             {isCustom ? <div className="column" style={{ padding: 2 }} />
-              : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 }}>or</div>
+              : <div className="column" style={{ alignSelf: "center", padding: 6, lineHeight: 1 }}>{t("shot-generator.inspector.common.or")}</div>
             }
-            <FileInput value={ isCustom ? selectValue() : "Select File …" }
+            <FileInput value={ isCustom ? selectValue() : t("shot-generator.inspector.common.select-file") }
                        title={ isCustom ? path.basename(sceneObject.model) : undefined }
                        onChange={ onSelectFile }
                        refClassName={ refClassName }
@@ -173,7 +174,7 @@ const ModelInspector = connect(
             <div className="column" style= {{ width: 20, margin: "0 0 0 6px", alignSelf: "center", alignItems: "flex-end" } }>
               <HelpButton
                 url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
-                title="How to Create 3D Models for Custom Objects"/>
+                title={t("shot-generator.inspector.common.object-creation-help")}/>
             </div>
           </div>
           <div className="thumbnail-search__list">

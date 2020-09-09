@@ -20,6 +20,7 @@ const {
   loadScene,
   resetScene,
 } = require('../../shared/reducers/shot-generator')
+const i18n = require('../../services/i18next.config')
 
 require("../../shared/helpers/monkeyPatchGrayscale")
 let sendedAction = []
@@ -138,6 +139,14 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
   sendedAction.push(action)
+})
+
+ipcRenderer.on("shot-explorer:change-language", (event, lng) => {
+  i18n.changeLanguage(lng)
+})
+
+ipcRenderer.on("shot-explorer:language-modified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
 })
 
 electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {

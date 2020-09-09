@@ -5,7 +5,7 @@ body {
   padding: 0;
   color: white;
   background-size: cover;
-  font-family: 'wonderunitsans';
+  font-family: 'wonderunitsans', Arial Narrow;
   font-weight: 300;
   overflow: hidden;
 }
@@ -351,7 +351,7 @@ input {
   bottom: 0;
   border-radius: 10px;
   font-weight: 300;
-  font-size: 18px;
+  font-size: 16px;
   transition: 300ms background;
   box-sizing: border-box;
   -webkit-app-region: initial;

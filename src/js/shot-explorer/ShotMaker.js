@@ -20,7 +20,7 @@ import generateRule from './ShotsRule/RulesGenerator'
 import isUserModel from '../shot-generator/helpers/isUserModel'
 
 import getRandomNumber from './utils/getRandomNumber'
-
+import { useTranslation } from 'react-i18next'
 const getRandomFov = (aspectRatio) => {
 
     const mms = [12, 16, 18, 22, 24, 35, 50]
@@ -51,7 +51,7 @@ const ShotMaker = React.memo(({
     const [windowHeight, setWindowHeight] = useState(window.innerWidth)
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const containerHeight = useRef()
-
+    const { t } = useTranslation()
     const handleResize = () => {
         let container = document.getElementsByClassName("shots-container")
         setWindowWidth(window.innerWidth)
@@ -238,14 +238,14 @@ const ShotMaker = React.memo(({
     return ( 
         <div style={{ maxHeight: "100%", height: "100%" }}>
             <div style={{display:"flex"}} >
-                <div className="description-selected"><div>{ selectedShot && selectedShot.toString()}</div></div>
+                <div className="description-selected"><div>{ selectedShot && selectedShot.toString(t)}</div></div>
                 <div className="insert-camera" style={{marginLeft:"auto", paddingRight:"5px"}} onPointerDown={() => updateCamera()}>
                     <a>
-                        Insert Camera
+                        {t("shot-explorer.insert-camera")}
                     </a>
                 </div>
             </div>
-            {noCharacterWarn && <div style={{ textAlign:"center" }}>You need to add at least one built-in character to scene </div>}
+            {noCharacterWarn && <div style={{ textAlign:"center" }}>{t("shot-explorer.characters-warning")}</div>}
             <div>
                { <InfiniteScroll 
                     key={ elementKey }

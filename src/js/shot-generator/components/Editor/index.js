@@ -37,6 +37,8 @@ import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
 import { useAsset } from '../../hooks/use-assets-manager'
 
+import { useTranslation } from 'react-i18next';
+import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
 
 const maxZoom = {in: 0.4, out: -1.6}
@@ -48,7 +50,7 @@ const Editor = React.memo(({
   if (!board.uid) {
     return null
   }
-  
+  const { t } = useTranslation()
   const notificationsRef = useRef(null)
   const settingsService = useRef()
   const mainViewContainerRef = useRef(null)
@@ -274,7 +276,7 @@ const Editor = React.memo(({
         </div>
       </div>
       <KeyHandler/>
-      <MenuManager/>
+      <MenuManager t={ t }/>
 
       <div
         className="notifications"
