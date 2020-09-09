@@ -51,7 +51,7 @@ const JsonEditor = ({json, onChange, marginLeftStep = 10}) => {
             Object.keys(data).forEach(key => {
                 parseJSON(key, parentKeyPath, data, elems, marginLeft + marginLeftStep);
             });
-            elems.push(<div className="json-label" style={{marginLeft: marginLeft, display: "flex"}}>{'}'}</div>)
+            elems.push(<div key={getKey('bracket', currentKey, parentKeyPath, marginLeft)} className="json-label" style={{marginLeft: marginLeft, display: "flex"}}>{'}'}</div>)
         } else {
             elems.push(
                 <Input 
@@ -65,7 +65,7 @@ const JsonEditor = ({json, onChange, marginLeftStep = 10}) => {
               );
         }
     }
-
+    
     const elements = useMemo(() => {
         let elems = []
         parseJSON('root', '', { 'root': json }, elems, 0)
