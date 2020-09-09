@@ -1489,16 +1489,11 @@ ipcMain.on('workspaceReady', event => {
 })
 
 const notifyAllsWindows = (event, ...args) => {
-  mainWindow && !mainWindow.isDestroyed() && mainWindow.webContents.send(event, ...args)
-  let win = shotGeneratorWindow.getWindow()
-  win && !win.isDestroyed() && win.send(event, ...args)
-
-  welcomeWindow && !welcomeWindow.isDestroyed() && welcomeWindow.webContents.send(event, ...args)
-  win = LanguagePreferencesWindow.getWindow() 
-  win && !win.isDestroyed() && win.send(event, ...args)
-
-  win = preferencesUI.getWindow()
-  win && !win.isDestroyed() && win.send(event, ...args)
+  let allWindows = BrowserWindow.getAllWindows()
+  for(let i = 0; i < allWindows.length; i ++) {
+    if(! allWindows[i]) continue
+    allWindows[i].send(event, ...args)
+  }
 }
 
 ipcMain.on('languageChanged', (event, lng) => {
