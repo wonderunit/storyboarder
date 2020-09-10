@@ -124,7 +124,7 @@ const Editor = React.memo(({
     setZoom({}, zoomLevel)
   }
 
-  const alterZoom = event => {
+  const alterZoom = (event, shouldUpdateZoom = true) => {
     updateZoomBoundaries()
     updateCurrentZoom()
   }
@@ -151,12 +151,12 @@ const Editor = React.memo(({
   }, [])
 
   useEffect(() => {
-    window.addEventListener('resize', alterZoom)
+    electron.remote.getCurrentWindow().on('resize', alterZoom)
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
     ipcRenderer.on('shot-generator:menu:view:scale-ui', zoom)
     ipcRenderer.on('shot-generator:menu:view:set-ui-scale', setZoom)
     return () => {
-      window.removeEventListener('resize', alterZoom)
+      electron.remote.getCurrentWindow().off('resize', alterZoom)
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
       ipcRenderer.off('shot-generator:menu:view:scale-ui', zoom)
       ipcRenderer.off('shot-generator:menu:view:set-ui-scale', setZoom)
