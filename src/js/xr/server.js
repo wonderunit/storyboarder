@@ -13,7 +13,6 @@ const app = express()
 const https = require('https')
 const io = require('socket.io')
 const {serve} = require('./sockets')
-
 const fs = require('fs-extra')
 const forge = require('node-forge')
 // via https://github.com/parcel-bundler/parcel/blob/8e80016d8b61c5d68759bfd1caa9fb827e46643c/packages/core/utils/src/generateCertificate.js
@@ -178,6 +177,14 @@ class XRServer {
         }
       })
     }
+
+    app.use('/data/locales', express.static(
+      path.join(staticPath, 'js', 'locales')
+    ))
+
+    app.use('/data/customLocales', express.static(
+      path.join(userDataPath, 'locales')
+    ))
 
     app.use('/data/system', express.static(
       path.join(staticPath, 'data', 'shot-generator'),

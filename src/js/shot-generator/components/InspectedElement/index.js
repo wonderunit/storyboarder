@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react'
 import {connect} from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 import {
   getSelections,
@@ -26,6 +27,7 @@ const isObj = (type) => type === 'object'
 const nullTab = {tab: null, panel: null}
 
 const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) => {
+  const { t } = useTranslation()
   const [isModalShown, showModal] = useState(false)
   const [changedName, changeNameTo] = useState(false)
   const handPoseTab = useMemo(() => {
@@ -60,7 +62,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
 
     return {
       tab: <Tab><Icon src='icon-tab-attachable'/></Tab>,
-      panel: <Panel><AttachableInspector /></Panel>
+      panel: <Panel><AttachableInspector/></Panel>
     }
   }, [selectedType])
 
@@ -78,7 +80,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     <React.Fragment>
       { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
         <div style={{ margin:"5px 5px 5px 5px" }}>
-          Select a Preset Name:
+        {t("shot-generator.inspector.common.select-preset-name")}
         </div>
         <div className="column" style={{ flex: 1}}>
           <input
@@ -94,12 +96,12 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
               showModal(false)
               updateObject(id, { displayName: changedName, name: changedName })
             }}>
-              Proceed
+                {t("shot-generator.inspector.common.proceed-button")}
           </button>
       </div>
       </Modal> }
       <a href="#" className="object-property-heading" style={{ overflow: "hidden", textOverflow: "ellipsis", flexShrink:0, width: 288 }} onClick={ () => showModal(true) }>
-        {selectedName} Properties
+        {selectedName} {t("shot-generator.inspector.inspected-element.properties")}
       </a>
       <Tabs key={id}>
         <div className="tabs-header">

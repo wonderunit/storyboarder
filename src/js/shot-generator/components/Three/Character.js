@@ -10,6 +10,31 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
+let boneWorldPosition = new THREE.Vector3()
+let worldPositionHighestBone = new THREE.Vector3()
+
+const findHighestBone = (object) =>
+{   
+    let highestBone = null
+    let bones = object.skeleton.bones
+    for(let i = 0; i < bones.length; i ++)
+    {
+        let bone = bones[i]
+        if(!highestBone)
+        {
+            highestBone = bone
+            continue
+        }
+        bone.getWorldPosition(boneWorldPosition)
+        highestBone.getWorldPosition(worldPositionHighestBone)
+
+        if(boneWorldPosition.y > worldPositionHighestBone.y)
+        {
+            highestBone = bone
+        }
+    }
+    return highestBone
+}
 
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
     const {asset: gltf} = useAsset(path)
@@ -324,6 +349,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         }
         ref.current.add(BonesHelper.getInstance())
         //#region Character's object rotation control
+        let highestBone = findHighestBone(lod.children[0])
         props.objectRotationControl.setCharacterId(ref.current.uuid)
         props.objectRotationControl.control.canSwitch = false
         props.objectRotationControl.isEnabled = true
@@ -332,7 +358,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           props.updateObject(sceneObject.id, {
             rotation: euler.y,
           } )})
-        props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+        let highestPoint = highestBone.worldPosition()
+        highestPoint.x = 0
+        highestPoint.z = 0
+        props.objectRotationControl.selectObject(ref.current, ref.current.uuid, highestPoint)
         props.objectRotationControl.control.setShownAxis(axis.Y_axis)
         props.objectRotationControl.IsEnabled = !sceneObject.locked
         //#endregion

@@ -12,8 +12,8 @@ class SettingsService {
     _loadFile() {
         fs.ensureFileSync(this.settingsFilePath)
         let json = fs.readFileSync(this.settingsFilePath)
-        if(!json.byteLength) return
-        this.objects = JSON.parse(json)
+        if(!json.byteLength || !json) return
+       this.objects = JSON.parse(json)
     }
 
     _saveFile() {

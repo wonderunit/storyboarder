@@ -1,5 +1,5 @@
 import React, {useMemo} from 'react'
-
+import { useTranslation } from 'react-i18next'
 const AttachableInfoItem = React.memo(({
     sceneObject,
     onSelectItem,
@@ -7,6 +7,7 @@ const AttachableInfoItem = React.memo(({
     getNumberSlider
   
 }) => {
+    const { t } = useTranslation()
     const bindBoneName = !sceneObject ? '' : sceneObject.bindBone ? sceneObject.bindBone : ''
     const onHandSelect = () => {
         onSelectItem(sceneObject.id, sceneObject.bindBone )
@@ -24,7 +25,7 @@ const AttachableInfoItem = React.memo(({
                 onClick={ () => { onDelete(sceneObject)} }>X</a>
         </div> 
         <div className="number-slider">
-            <div className="number-slider__label">Attached to bone</div> 
+            <div className="number-slider__label">{t("shot-generator.inspector.attachables-inspector.attached-to-bone")}</div> 
             <div className="column" style={{ marginLeft: 5 }}>
               <a className="button_add" 
                 href="#" 
