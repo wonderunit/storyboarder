@@ -92,7 +92,7 @@ const Editor = React.memo(({
   }, [])
 
 
-  const updateZoomBoundries = () => {
+  const updateZoomBoundaries = () => {
     let windowMinimumSize = electron.remote.getCurrentWindow().getMinimumSize()
     let currentBound =electron.remote.getCurrentWindow().getBounds()
     if(!windowMinimumSize[0] && !windowMinimumSize[1]){
@@ -125,7 +125,7 @@ const Editor = React.memo(({
   }
 
   const alterZoom = (event, shouldUpdateZoom = true) => {
-    updateZoomBoundries()
+    updateZoomBoundaries()
     updateCurrentZoom()
   }
 
@@ -140,7 +140,7 @@ const Editor = React.memo(({
       settingsZoom = settingsZoom !== undefined ? settingsZoom : 0
       webFrame.setZoomLevel(settingsZoom)
     }
-    updateZoomBoundries()
+    updateZoomBoundaries()
     scaleInfo.currentScale = webFrame.getZoomLevel() - scaleInfo.scaleDown + scaleDefault.scaleDown
     updateCurrentZoom()
   }, [])
