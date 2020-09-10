@@ -41,8 +41,9 @@ import { useTranslation } from 'react-i18next';
 import {OutlineEffect} from './../../../vendor/OutlineEffect'
 import Stats from 'stats.js'
 
-const maxZoom = {in: 0.4, out: -1.6}
-
+let scaleDefault = { scaleUp: 0.4, scaleDown:-1.6}
+let scaleInfo = {scaleUp: scaleDefault.scaleUp, scaleDown: scaleDefault.scaleDown, currentScale: 0 }
+let zoomScaleChanges = null
 const Editor = React.memo(({
   mainViewCamera, aspectRatio, board, world,
   setMainViewCamera, withState, store, onBeforeUnload
@@ -72,50 +73,96 @@ const Editor = React.memo(({
       }
   }
 
+  const zoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(scaleInfo.scaleDown, scaleInfo.scaleUp)
+    let zoomLevel = webFrame.getZoomLevel()
+    let zoom = zoomLevel + value 
+    zoom = zoom >= scaleInfo.scaleUp ? scaleInfo.scaleUp : zoom <= scaleInfo.scaleDown ? scaleInfo.scaleDown : zoom
+    webFrame.setZoomLevel(zoom)
+    settingsService.current.setSettings({zoom})
+    zoom = scaleInfo.currentScale + value 
+    scaleInfo.currentScale = zoom >= scaleDefault.scaleUp ? scaleDefault.scaleUp : zoom <= scaleDefault.scaleDown ? scaleDefault.scaleDown : zoom
+  }, [])
+
+  const setZoom = useCallback((event, value) => {
+    webFrame.setLayoutZoomLevelLimits(scaleInfo.scaleDown, scaleInfo.scaleUp)
+    let zoom = value >= scaleInfo.scaleUp ? scaleInfo.scaleUp : value <= scaleInfo.scaleDown ? scaleInfo.scaleDown : value
+    webFrame.setZoomLevel(zoom)
+    settingsService.current.setSettings({zoom})
+  }, [])
+
+
+  const updateZoomBoundries = () => {
+    let windowMinimumSize = electron.remote.getCurrentWindow().getMinimumSize()
+    let currentBound =electron.remote.getCurrentWindow().getBounds()
+    if(!windowMinimumSize[0] && !windowMinimumSize[1]){
+      windowMinimumSize[0] = 1024
+      windowMinimumSize[1] = 768
+    }
+
+    let addToZoom = 0
+    let pixelsDifference
+
+    if(windowMinimumSize[0] > currentBound.width) {
+      pixelsDifference = (windowMinimumSize[0] - currentBound.width) / 50
+      pixelsDifference = Math.round(pixelsDifference)
+      addToZoom += -0.2 * pixelsDifference
+    }
+    if(windowMinimumSize[1] > currentBound.height) {
+      pixelsDifference = (windowMinimumSize[1] - currentBound.height) / 50
+      pixelsDifference = Math.round(pixelsDifference)
+      addToZoom += -0.2 * pixelsDifference
+    }
+
+    scaleInfo.scaleDown = scaleDefault.scaleDown + addToZoom
+    scaleInfo.scaleUp = scaleDefault.scaleUp + addToZoom
+    zoomScaleChanges = addToZoom
+  }
+
+  const updateCurrentZoom = () => {
+    let zoomLevel = scaleInfo.currentScale + zoomScaleChanges
+    setZoom({}, zoomLevel)
+  }
+
+  const alterZoom = (event, shouldUpdateZoom = true) => {
+    updateZoomBoundries()
+    updateCurrentZoom()
+  }
+
   useMemo(() =>{
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
+    webFrame.setLayoutZoomLevelLimits(scaleInfo.scaleDown, scaleInfo.scaleUp)
     settingsService.current = new SettingsService(path.join(app.getPath('userData'), 'shot-generator-settings.json'))
     let currentWindow = electron.remote.getCurrentWindow()
     let settingsZoom = settingsService.current.getSettingByKey("zoom")
-    settingsZoom = settingsZoom ? settingsZoom : 0
-    if(!settingsZoom && currentWindow.getBounds().height < 800) {
+    if(!settingsZoom && currentWindow.getBounds().height < 768) {
       webFrame.setZoomLevel(maxZoom.out)
     } else {
-      settingsZoom = settingsZoom ? settingsZoom : 0
+      settingsZoom = settingsZoom !== undefined ? settingsZoom : 0
       webFrame.setZoomLevel(settingsZoom)
     }
+    updateZoomBoundries()
+    scaleInfo.currentScale = webFrame.getZoomLevel() - scaleInfo.scaleDown + scaleDefault.scaleDown
+    updateCurrentZoom()
   }, [])
+
 
   useEffect(() => {
     loadCameraModel()
   }, [])
 
   useEffect(() => {
+    electron.remote.getCurrentWindow().on('resize', alterZoom)
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
     ipcRenderer.on('shot-generator:menu:view:scale-ui', zoom)
     ipcRenderer.on('shot-generator:menu:view:set-ui-scale', setZoom)
     return () => {
+      electron.remote.getCurrentWindow().off('resize', alterZoom)
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
       ipcRenderer.off('shot-generator:menu:view:scale-ui', zoom)
       ipcRenderer.off('shot-generator:menu:view:set-ui-scale', setZoom)
     }
   }, [])
 
-  const zoom = useCallback((event, value) => {
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-    let zoomLevel = webFrame.getZoomLevel()
-    let zoom = zoomLevel + value 
-    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
-    webFrame.setZoomLevel(zoom)
-    settingsService.current.setSettings({zoom})
-  }, [])
-
-  const setZoom = useCallback((event, value) => {
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-    let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
-    webFrame.setZoomLevel(zoom)
-    settingsService.current.setSettings({zoom})
-  }, [])
 
   /** Resources loading end */
   useEffect(() => {
