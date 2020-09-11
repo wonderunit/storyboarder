@@ -70,7 +70,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     if (!isChar(selectedType)) return nullTab
 
     return {
-      tab: <Tab><Icon src='icon-tab-attachable'/></Tab>,
+      tab: <Tab><Icon src='icon-tab-hair'/></Tab>,
       panel: <Panel><HairInspector /></Panel>
     }
   }, [selectedType])

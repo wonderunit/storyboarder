@@ -39,17 +39,6 @@
         "rotation": { "x": 0, "y": 0, "z": 0 },
         "bindBone": "Head"
       },
-    "hair": {
-        "id": "hair",
-        "name": "Attachable: Hair",
-        "type": "attachable",
-        "x": -0.0013,
-        "y": 0.15,
-        "z": 0.014,
-        "rotation": { "x": 0, "y": 0, "z": 0 },
-        "bindBone": "Head",
-        "attachableType": "hair"
-      },
     "moustache": {
         "id": "moustache",
         "name": "Attachable: Moustache",
@@ -59,5 +48,28 @@
         "z": 0.13,
         "rotation": { "x": 0, "y": 0, "z": 0 },
         "bindBone": "Head"
-      }
+      },
+
+    "hair": {
+        "id": "hair",
+        "name": "Hair: Default",
+        "type": "attachable",
+        "x": -0.0013,
+        "y": 0.15,
+        "z": 0.014,
+        "rotation": { "x": 0, "y": 0, "z": 0 },
+        "bindBone": "Head",
+        "attachableType": "hair"
+      },
+    "hair-curly": {
+      "id": "hair-curly",
+      "name": "Hair: Curly",
+      "type": "attachable",
+      "x": -0.0013,
+      "y": 0.15,
+      "z": 0.014,
+      "rotation": { "x": 0, "y": 0, "z": 0 },
+      "bindBone": "Head",
+      "attachableType": "hair"
+    }
 }
