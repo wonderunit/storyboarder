@@ -8,7 +8,7 @@ const TWEEN = require('@tweenjs/tween.js').default
 
 const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
-const { useMemo, useRef, useState, useEffect, useCallback } = React = require('react')
+const { useMemo, useRef, useState, useEffect, useCallback, Suspense } = React = require('react')
 require('./three/GPUPickers/utils/Object3dExtension')
 
 const RemoteProvider = require('../../shot-generator/components/RemoteProvider').default
@@ -70,7 +70,11 @@ const Voicer = require('./three/Voicer')
 const musicSystem = require('./music-system')
 
 const { createSelector } = require('reselect')
-
+const i18n = require('../../services/xr.i18next.config')
+const { useTranslation, I18nextProvider } = require('react-i18next')
+i18n.on('loaded', (loaded) => {
+  i18n.off('loaded')
+})
 // TODO move to selectors if useful
 // TODO optimize to only change if top-level keys change
 const getSceneObjectCharacterIds = createSelector(
@@ -119,6 +123,7 @@ const SceneContent = connect(
     lightIds: getSceneObjectLightIds(state),
     virtualCameraIds: getSceneObjectVirtualCamerasIds(state),
     imageIds: getSceneObjectImageIds(state),
+    language: state.language
   }),
   {
     selectObject,
@@ -131,16 +136,21 @@ const SceneContent = connect(
 
     characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
-    resources, getAsset,
+    resources, getAsset, language,
 
     SGConnection
   }) => {
     const { gl, camera, scene } = useThree()
-
     const teleportRef = useRef()
     // actions
     const set = useStore(state => state.set)
     // initialize behind the camera, on the floor
+
+    useEffect(() => {
+      if(!language) return
+      i18n.changeLanguage(language)
+    }, [language])
+
     useMemo(() => {
       const { x, y, rotation } = sceneObjects[activeCamera]
 
@@ -786,7 +796,8 @@ const SceneContent = connect(
                     model: world.environment.file
                   }))}
                   environment={world.environment}
-                  visible={world.environment.visible} />
+                  visible={world.environment.visible}
+                  grayscale={ world.environment.grayscale } />
               </SimpleErrorBoundary>
               : null
           }
@@ -823,11 +834,23 @@ const SceneContent = connect(
     )
   })
 
-const XRStartButton = ({ }) => {
+const XRStartButton = (({  }) => {
   const { gl } = useThree()
-  useMemo(() => document.body.appendChild(VRButton.createButton(gl)), [])
+  const elementP = useRef()
+  const { t } = useTranslation()
+  useMemo(() => { 
+    document.body.appendChild(VRButton.createButton(gl))
+    let p = document.createElement("p");
+    elementP.current = p
+    document.body.appendChild(p);
+  }, [])
+
+  useEffect(() => {
+    elementP.current.innerHTML = t('vr-enter')
+  }, [t])
+
   return null
-}
+})
 
 const APP_GLTFS = [
   '/data/system/xr/controller.glb',
@@ -845,7 +868,6 @@ const SceneManagerXR = ({SGConnection}) => {
   }, [])
 
   const store = useReduxStore()
-
   const [appAssetsLoaded, setAppAssetsLoaded] = useState(false)
 
   const { assets, requestAsset, getAsset } = useAssetsManager()
@@ -898,7 +920,6 @@ const SceneManagerXR = ({SGConnection}) => {
   const world = useSelector(getWorld)
 
   useEffect(() => {
-    console.log(sceneObjects)
     Object.values(sceneObjects)
       // has a value for model
       .filter(o => o.model != null)
@@ -911,6 +932,7 @@ const SceneManagerXR = ({SGConnection}) => {
       // request the file
       .forEach(requestAsset)
   }, [sceneObjects])
+
 
   useEffect(() => {
     Object.values(sceneObjects)
@@ -1001,6 +1023,8 @@ const SceneManagerXR = ({SGConnection}) => {
         vr
       >
         <Provider store={store}>
+          <I18nextProvider i18n={ i18n }>
+          <Suspense fallback="loading">
           {
             ready && <XRStartButton />
           }
@@ -1041,6 +1065,8 @@ const SceneManagerXR = ({SGConnection}) => {
                 SGConnection={SGConnection} />
               : null
           }
+          </Suspense>
+          </I18nextProvider>
         </Provider>
       </Canvas>
       <div className='scene-overlay' />

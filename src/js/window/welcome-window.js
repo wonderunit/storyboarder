@@ -2,15 +2,69 @@ const {ipcRenderer, shell, remote} = require('electron')
 const path = require('path')
 const moment = require('moment')
 const menu = require('../menu')
-const util = require('../utils/index')
 const sfx = require('../wonderunit-sound')
 const prefsModule = require('electron').remote.require('./prefs')
-
+const log = require('electron-log')
 const pkg = require('../../../package.json')
 
+//#region Localization 
+const i18n = require('../services/i18next.config')
 remote.getCurrentWindow().on('focus', () => {
-  menu.setWelcomeMenu()
+  menu.setWelcomeMenu(i18n)
 })
+i18n.on('loaded', (loaded) => {
+  let lng = ipcRenderer.sendSync("getCurrentLanguage")
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+    updateHTMLText()
+    updateRecentDocuments()
+  })
+  i18n.off('loaded')
+})
+
+const updateHTMLText = () => {
+  document.querySelector('.recent').innerHTML = i18n.t("welcome-window.recentStoryboards")
+  document.querySelector('#getting-started').innerHTML = i18n.t("menu.help.getting-started")
+  document.querySelector('#new-storyboard').innerHTML = i18n.t("welcome-window.new-storyboard")
+  document.querySelector('#open-storyboard').innerHTML = i18n.t("menu.file.open")
+  let welcomeLine1 = document.querySelector('#welcome-line-1')
+  if(welcomeLine1) welcomeLine1.innerHTML = i18n.t("welcome-window.welcome-line-1")
+  let welcomeLine2 = document.querySelector('#welcome-line-2')
+  if(welcomeLine2) welcomeLine2.innerHTML = i18n.t("welcome-window.welcome-line-2")
+  let welcomeLine3 = document.querySelector('#welcome-line-3')
+  if(welcomeLine3) welcomeLine3.innerHTML = i18n.t("welcome-window.welcome-line-3")
+}
+
+const changeLanguage = (lng) => {
+  if(remote.getCurrentWindow().isFocused()) {
+    menu.setWelcomeMenu(i18n)
+  }
+  updateHTMLText()
+  updateRecentDocuments()
+  ipcRenderer.send("languageChanged", lng)
+}
+
+ipcRenderer.on("languageChanged", (event, lng) => {
+  i18n.off("languageChanged", changeLanguage)
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+    updateHTMLText()
+  })
+})
+
+ipcRenderer.on("languageModified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => {updateHTMLText(); menu.setWelcomeMenu(i18n) } )
+})
+
+ipcRenderer.on("languageAdded", (event, lng) => {
+  i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); })
+})
+
+ipcRenderer.on("languageRemoved", (event, lng) => {
+  i18n.changeLanguage(lng)
+  menu.setWelcomeMenu(i18n)
+})
+//#endregion
 
 const onFileDrop = e => {
   e.preventDefault()
@@ -30,6 +84,7 @@ let updateRecentDocuments = () => {
   let html = []
 
   let recentDocuments = prefsModule.getPrefs('welcome')['recentDocuments']
+  console.log(recentDocuments)
   if (recentDocuments && recentDocuments.length>0) {
     for (var recentDocument of recentDocuments) {
       html.push(`<div class="recent-item" data-filename="${recentDocument.filename}"><img src="./img/fileicon.png" draggable="false"><div class="text">`)
@@ -44,7 +99,7 @@ let updateRecentDocuments = () => {
       count++
     }
     document.querySelector('#recent').innerHTML = html.join('')
-    document.querySelector('.recent').innerHTML = "RECENT STORYBOARDS"
+    document.querySelector('.recent').innerHTML = i18n.t("welcome-window.recentStoryboards")
     let recentDivs = document.querySelector("#recent").children
     for (var i = 0; i < recentDivs.length; i++) {
       recentDivs[i].onclick = (e)=>{

@@ -338,11 +338,11 @@ const InteractionManager = connect(
         if(dragTarget.target.userData.type === 'character') {
           let ikRig = SGIkHelper.getInstance().ragDoll;
           if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown) {
-            drag({ x, y }, dragTarget.target, camera, selections)
+            drag({ x, y }, dragTarget.target, camera, selections, event.ctrlKey)
           }
         }
         else {
-          drag({ x, y }, dragTarget.target, camera, selections)
+          drag({ x, y }, dragTarget.target, camera, selections, event.ctrlKey)
         }
       }
     }
@@ -427,7 +427,7 @@ const InteractionManager = connect(
     
         setLastDownId(null)
     }
-    
+
     useLayoutEffect(() => {
       activeGL.domElement.addEventListener('pointerdown', onPointerDown)
       activeGL.domElement.addEventListener('pointermove', onPointerMove)

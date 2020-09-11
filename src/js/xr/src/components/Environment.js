@@ -1,5 +1,5 @@
 const THREE = require('three')
-const { useMemo } = React = require('react')
+const { useMemo, useEffect } = React = require('react')
 const { useUpdate } = require('react-three-fiber')
 
 const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-type')
@@ -14,7 +14,7 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   flatShading: false
 })
 
-const Environment = React.memo(({ gltf, environment }) => {
+const Environment = React.memo(({ gltf, environment, grayscale }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
@@ -45,6 +45,15 @@ const Environment = React.memo(({ gltf, environment }) => {
 
     return g
   }, [gltf])
+
+  useEffect(() => {
+    group.traverse(child => {
+        if (child.isMesh) {
+          child.material.defines.GRAYSCALE = grayscale
+          child.material.needsUpdate = true
+        }
+    })
+  }, [grayscale])
 
   const { x, y, z, visible, rotation, scale } = environment
 

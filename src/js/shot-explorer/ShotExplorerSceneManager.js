@@ -215,7 +215,8 @@ const ShotExplorerSceneManager = connect(
                 model: world.environment.file
               }, { storyboarderFilePath } )}
               environment={world.environment}
-              visible={world.environment.visible} />
+              visible={world.environment.visible}
+              grayscale={ world.environment.grayscale } />
     }
     {
         roomTexture && <Room

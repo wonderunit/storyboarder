@@ -19,6 +19,99 @@ let prefs,
 let hasChanged
 let originalPrefs
 
+//#region Localization
+const { settings:languageSettings } = require('./js/services/language.config')
+const i18n = require('./js/services/i18next.config')
+i18n.on('loaded', (loaded) => {
+  languageSettings._loadFile()
+  let lng = languageSettings.getSettingByKey('selectedLanguage')
+  i18n.changeLanguage(lng, () => {
+    updateHTML()
+    i18n.on("languageChanged", changeLanguage)
+  })
+  i18n.off('loaded')
+})
+
+const changeLanguage = (lng) => {
+  updateHTML()
+  ipcRenderer.send("languageChanged", lng)
+}
+
+ipcRenderer.on("languageChanged", (event, lng) => {
+  i18n.off("languageChanged", changeLanguage)
+  i18n.changeLanguage(lng, () => {
+    updateHTML()
+    i18n.on("languageChanged", changeLanguage)
+  })
+})
+
+ipcRenderer.on("languageModified", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.reloadResources(lng).then(() => {updateHTML();})
+  initializeLanguageList()
+})
+
+ipcRenderer.on("languageAdded", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); })
+  initializeLanguageList()
+})
+
+ipcRenderer.on("languageRemoved", (event, lng) => {
+  languageSettings._loadFile()
+  i18n.changeLanguage(lng)
+  initializeLanguageList()
+})
+
+const translateHtml = (elementName, traslationKey) => {
+  let elem = document.querySelector(elementName)
+  if(!elem || !elem.childNodes.length) return
+  elem.childNodes[elem.childNodes.length - 1].textContent = i18n.t(traslationKey)
+}
+
+const updateHTML = () => {
+  translateHtml("#preferences-title", "preferences.title")
+  translateHtml("#preferences-hint",  "preferences.restart-hint")
+  translateHtml("#show-tooltips",      "preferences.show-tooltips")
+  translateHtml("#save-automatically", "preferences.save-automatically")
+  translateHtml("#saving-hint", "preferences.saving-hint")
+  translateHtml("#force-psd-reload", "preferences.force-psd-reload")
+  translateHtml("#psd-reload-hint", "preferences.psd-reload-hint")
+  translateHtml("#default-timing", "preferences.default-timing")
+  translateHtml("#external-psd-editor", "preferences.external-psd-editor")
+  translateHtml("#psd-editor-hint", "preferences.psd-editor-hint")
+  translateHtml("#reveal-keymap-file", "preferences.reveal-keymap-file")
+  translateHtml("#reveal-keymap-file-hint", "preferences.reveal-keymap-file-hint")
+  translateHtml("#show-diagnostics", "preferences.show-diagnostics")
+  translateHtml("#show-diagnostics-hint", "preferences.show-diagnostics-hint")
+  translateHtml("#line-delay", "preferences.line-delay")
+  translateHtml("#line-delay-hint", "preferences.line-delay-hint")
+  translateHtml("#notifications", "preferences.notifications")
+  translateHtml("#show-notifications", "preferences.show-notifications")
+  translateHtml("#aspirational-message", "preferences.aspirational-message")
+  translateHtml("#notifications-line-mileage", "preferences.notifications-line-mileage")
+  translateHtml("#sounds", "preferences.sounds")
+  translateHtml("#sounds-hint", "preferences.sounds-hint")
+  translateHtml("#drawing-sound-effect", "preferences.drawing-sound-effect")
+  translateHtml("#drawing-melodies", "preferences.drawing-melodies")
+  translateHtml("#ui-sound-effect", "preferences.ui-sound-effect")
+  translateHtml("#enable-high-quality-audio", "preferences.enable-high-quality-audio")
+  translateHtml("#performance-enhancements", "preferences.performance-enhancements")
+  translateHtml("#performance-enhancements-hint", "preferences.performance-enhancements-hint")
+  translateHtml("#high-quality-drawing-engine", "preferences.high-quality-drawing-engine")
+  translateHtml("#high-quality-drawing-engine-hint", "preferences.high-quality-drawing-engine-hint")
+  translateHtml("#languages", "preferences.languages")
+  translateHtml("#languages-hint", "preferences.languages-hint")
+  translateHtml("#open-language-editor", "preferences.open-language-editor")
+  translateHtml("#sign-out", "preferences.sign-out")
+  translateHtml("#sign-out-hint", "preferences.sign-out-hint")
+  translateHtml("#thanks-for-support", "preferences.thanks-for-support")
+  translateHtml("#additional-features-for-support", "preferences.additional-features-for-support")
+  translateHtml("#add-watermark", "preferences.add-watermark")
+  translateHtml("#custom-watermark", "preferences.custom-watermark")
+}
+//#endregion
+
 const onChange = (name, event) => {
   let el = event.target
 
@@ -49,23 +142,25 @@ const onInput = (name, event) => {
 
 const onFilenameClick = event => {
   event.target.style.pointerEvents = 'none'
+
   remote.dialog.showOpenDialog(
-    { title: 'Select Image Editor Application' },
-    filenames => {
-      event.target.style.pointerEvents = 'auto'
-      if (filenames) {
-        prefsModule.set('absolutePathToImageEditor', filenames[0], true)
-        render()
-      } else {
-        prefsModule.set('absolutePathToImageEditor', undefined, true)
-        render()
-      }
+    { title: 'Select Image Editor Application' }
+  ).then(({ filePaths }) => {
+    event.target.style.pointerEvents = 'auto'
+
+    if (filePaths.length) {
+      prefsModule.set('absolutePathToImageEditor', filePaths[0], true)
+      render()
+    } else {
+      prefsModule.set('absolutePathToImageEditor', undefined, true)
+      render()
     }
-  )
+  }).catch(err => console.error(err))
 }
 
 const onWatermarkFileClick = event => {
   event.target.style.pointerEvents = 'none'
+
   remote.dialog.showOpenDialog(
     {
       title: 'Import Watermark Image File',
@@ -78,24 +173,25 @@ const onWatermarkFileClick = event => {
           ]
         }
       ]
-    },
-    filenames => {
-      event.target.style.pointerEvents = 'auto'
-      if (filenames) {
-        try {
-          fs.copySync(filenames[0], path.join(remote.app.getPath('userData'), 'watermark.png'))
-          prefsModule.set('userWatermark', path.basename(filenames[0]), true)
-        } catch (err) {
-          console.error(err)
-          alert(err)
-        }
-        render()
-      } else {
-        prefsModule.set('userWatermark', undefined, true)
-        render()
-      }
     }
-  )
+  ).then(({ filePaths }) => {
+    event.target.style.pointerEvents = 'auto'
+
+    if (filePaths.length) {
+      try {
+        let filepath = filePaths[0]
+        fs.copySync(filepath, path.join(remote.app.getPath('userData'), 'watermark.png'))
+        prefsModule.set('userWatermark', path.basename(filepath), true)
+      } catch (err) {
+        console.error(err)
+        alert(err)
+      }
+      render()
+    } else {
+      prefsModule.set('userWatermark', undefined, true)
+      render()
+    }
+  }).catch(err => console.error(err))
 }
 
 const onRevealKeyMapFileClick = event => {
@@ -187,6 +283,64 @@ const render = () => {
   }
 }
 
+const showDropContent = () => {
+  document.getElementById("myDropdown").classList.toggle("show");
+}
+
+// Close the dropdown menu if the user clicks outside of it
+window.onclick = function(event) {
+  if (!event.target.matches('.dropbtn-container')) {
+    var dropdowns = document.getElementsByClassName("dropdown-content");
+    var i;
+    for (i = 0; i < dropdowns.length; i++) {
+      var openDropdown = dropdowns[i];
+      if (openDropdown.classList.contains('show')) {
+        openDropdown.classList.remove('show');
+      }
+    }
+  }
+}
+
+const openLanguageEditor = () => {
+  ipcRenderer.send('openLanguagePreferences')
+}
+
+let selectedOption
+
+const selectLanguage = (language) => {
+  languageSettings.setSettingByKey('selectedLanguage', language.fileName)
+  i18n.changeLanguage(language.fileName)
+}
+
+const initializeLanguageList = () => {
+  let languages = languageSettings.getSettingByKey('builtInLanguages').concat(languageSettings.getSettingByKey('customLanguages'))
+  let button = document.getElementsByClassName("dropbtn")[0]
+  let buttonContainer = document.getElementsByClassName("dropbtn-container")[0]
+  let selectedLanguage = languageSettings.getSettingByKey('selectedLanguage')
+  button.textContent = languages.find((item) => item.fileName === selectedLanguage).displayName
+  buttonContainer.onclick = showDropContent
+  let optionContainer = document.getElementById("myDropdown")
+  optionContainer.innerHTML = ''
+  for(let i = 0; i < languages.length; i++ ) {
+    let option = document.createElement("div")
+    let language = languages[i]
+    option.textContent = language.displayName
+    if(selectedLanguage === language.fileName) {
+      option.classList.toggle("selected")
+      selectedOption = option
+    }
+    option.onclick = (event) => { 
+      button.textContent = event.target.textContent 
+      selectedOption.classList.remove("selected")
+      option.classList.toggle("selected")
+      selectedOption = option
+      selectLanguage(language)
+    }
+    optionContainer.appendChild(option)
+  }
+}
+
+
 const init = () => {
   hasChanged = false
   originalPrefs = util.stringifyClone(prefsModule.getPrefs())
@@ -208,6 +362,10 @@ const init = () => {
   revealKeyMapFileEl = document.querySelector('#revealKeyMapFile')
   signOutEl = document.querySelector('#signOut')
 
+  initializeLanguageList()
+  let languageEditor = document.getElementsByClassName('open-language-editor')[0].children[0]
+  languageEditor.onclick = openLanguageEditor
+
   // bind
   for (let el of inputs) {
     el.addEventListener('change', onChange.bind(this, el.name))
@@ -227,6 +385,7 @@ const init = () => {
   window.ondragleave = () => { return false }
   window.ondragend = () => { return false }
   window.ondrop = () => { return false }
+
 
   window.onbeforeunload = (e) => {
     if (hasChanged) {
