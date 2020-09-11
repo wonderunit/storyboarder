@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 
@@ -19,6 +19,8 @@ import { preventDefault } from '../../../utils/preventDefault'
 import Grid from '../../Grid'
 import GridItem from '../GridItem'
 import Scrollable from '../../Scrollable'
+
+import SearchList from '../../SearchList'
 
 import ModelLoader from '../../../../services/model-loader'
 
@@ -88,6 +90,8 @@ const HairInspector = connect(
       attachableHairModels,
       createObject, selectAttachable, deselectAttachable, deleteObjects
     }) => {
+      const [results, setResults] = useState()
+
       const onSelect = useCallback(
         data => {
           if (data) {
@@ -131,9 +135,20 @@ const HairInspector = connect(
         [selectedSceneObject, selectedHair]
       )
 
+      let searchList = attachableHairModels.map(
+        ({ id, name, keywords }) => ({
+            value: [name, keywords]
+              .filter(Boolean)
+              .join(' '),
+            id
+          })
+      )
 
+      let matches = results == null
+        ? attachableHairModels
+        : attachableHairModels.filter(model => results.find(result => result.id == model.id))
 
-      let elements = attachableHairModels
+      let elements = matches
         .map(model => ({
           model: {
             ...model,
@@ -148,26 +163,34 @@ const HairInspector = connect(
 
       return <>
         <div className="thumbnail-search column">
-          <a
-            href="#"
-            className="button__simple"
-            style={{
-              marginBottom: '6px'
-            }}
-            disabled={selectedHair == null}
-            onPointerDown={event => preventDefault(onSelect(null))}
-          >
-            Clear
-          </a>
-          <Scrollable>
-            <Grid
-              itemData={{ onSelect }}
-              Component={GridItem}
-              elements={elements}
-              numCols={itemSettings.NUM_COLS}
-              itemHeight={itemSettings.ITEM_HEIGHT}
+          <div className="row" style={{ marginBottom: 6 }}>
+            <SearchList
+              label="Search…"
+              list={searchList}
+              onSearch={setResults}
             />
-          </Scrollable>
+          </div>
+          <div className="column">
+            <div className="row" style={{ marginBottom: 6 }}>
+              <a
+                href="#"
+                className="button__simple"
+                disabled={selectedHair == null}
+                onPointerDown={event => preventDefault(onSelect(null))}
+              >
+                Clear
+              </a>
+            </div>
+            <Scrollable>
+              <Grid
+                itemData={{ onSelect }}
+                Component={GridItem}
+                elements={elements}
+                numCols={itemSettings.NUM_COLS}
+                itemHeight={itemSettings.ITEM_HEIGHT}
+              />
+            </Scrollable>
+          </div>
         </div>
       </>
     }
