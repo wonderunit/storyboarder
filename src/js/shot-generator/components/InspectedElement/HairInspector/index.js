@@ -165,7 +165,7 @@ const HairInspector = connect(
         <div className="thumbnail-search column">
           <div className="row" style={{ marginBottom: 6 }}>
             <SearchList
-              label="Search…"
+              label="Search Hair …"
               list={searchList}
               onSearch={setResults}
             />
