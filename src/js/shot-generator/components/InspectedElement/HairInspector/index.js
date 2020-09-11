@@ -178,7 +178,7 @@ const HairInspector = connect(
                 disabled={selectedHair == null}
                 onPointerDown={event => preventDefault(onSelect(null))}
               >
-                Clear
+                No Hair
               </a>
             </div>
             <Scrollable>
