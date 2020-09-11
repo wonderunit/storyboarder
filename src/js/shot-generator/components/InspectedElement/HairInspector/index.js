@@ -22,6 +22,27 @@ import Scrollable from '../../Scrollable'
 
 import ModelLoader from '../../../../services/model-loader'
 
+const createAttachableSceneObject = ({ model, attachToId }) => {
+  return {
+    id: THREE.Math.generateUUID(),
+
+    type: 'attachable',
+    attachableType: 'hair',
+    bindBone: 'Head',
+
+    x: 0,
+    y: 0,
+    z: 0,
+    rotation: { x: 0, y: 0, z: 0 },
+
+    size: 1,
+    status: 'PENDING',
+
+    model,
+    attachToId
+  }
+}
+
 const getAttachableModels = (state) =>
   Object.values(state.models)
     .filter(m => m.type === 'attachable')
@@ -110,26 +131,7 @@ const HairInspector = connect(
         [selectedSceneObject, selectedHair]
       )
 
-      const createAttachableSceneObject = ({ model, attachToId }) => {
-        return {
-          id: THREE.Math.generateUUID(),
 
-          type: 'attachable',
-          attachableType: 'hair',
-          bindBone: 'Head',
-
-          x: 0,
-          y: 0,
-          z: 0,
-          rotation: { x: 0, y: 0, z: 0 },
-
-          size: 1,
-          status: 'PENDING',
-
-          model,
-          attachToId
-        }
-      }
 
       let elements = attachableHairModels
         .map(model => ({
