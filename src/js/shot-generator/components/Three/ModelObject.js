@@ -94,10 +94,10 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
   useEffect(() => {
     ref.current.traverse((child) => {
       if (child.isMesh) {
-        setSelected(child, isSelected)
+        setSelected(child, isSelected, sceneObject.blocked)
       }
     })
-  }, [ref.current, isSelected, asset])
+  }, [ref.current, isSelected, sceneObject.blocked, asset])
 
   useEffect(() => {
     if(isIcon) return

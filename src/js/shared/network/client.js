@@ -77,6 +77,11 @@ export const connect = (URI = '') => {
           console.log('Action', data)
           appStore.dispatch(data)
         })
+
+        client.on('askForBlock', () => {
+          let meta = {ignore: [remoteStore.getState().id]}
+          dispatchRemote(_blockObject(getSelections(appStore.getState())), meta)
+        })
       }
   
       const getBoards = async () => {
@@ -192,7 +197,8 @@ export const connect = (URI = '') => {
         /* Dispatch if the message came from SG */
         if (action.meta && action.meta.isSG) {
           /* Are we listed on the ignore list? */
-          let isIgnored = action.meta.ignore && action.meta.ignore.indexOf(remoteStore.getState().id) !== 1
+          let id = remoteStore.getState().id
+          let isIgnored = action.meta.ignore && (action.meta.ignore.indexOf(id) !== 1) && (id !== null)
           
           if (!isIgnored) {
             console.log('ACTION', action)

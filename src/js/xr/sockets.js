@@ -1,5 +1,5 @@
 import path from 'path'
-import {deselectObject, mergeState, getIsSceneDirty, getSelections, _unblockObject, _blockObject} from './../shared/reducers/shot-generator'
+import {deselectObject, mergeState, getIsSceneDirty, getSelections, _unblockObject, _blockObject, _unblockAll} from './../shared/reducers/shot-generator'
 import {
   remoteStore,
   RestrictedActions,
@@ -110,6 +110,9 @@ export const serve = (store, service, staticPath, projectPath, userDataPath) => 
         
         remoteStore.dispatch(disconnectAction)
         broadcast('remoteAction', disconnectAction)
+
+        store.dispatch(_unblockAll())
+        broadcast('askForBlock')
       })
 
       emitter.on('getBoards', async () => {

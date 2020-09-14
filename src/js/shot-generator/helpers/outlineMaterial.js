@@ -12,7 +12,7 @@ export const patchMaterial = (material, customParameters = {}) => {
   return material
 }
 
-export const setSelected = (object, selected = false) => {
+export const setSelected = (object, selected = false, blocked = false) => {
   if (!object.material && !object.isMaterial) {
     return false
   }
@@ -22,6 +22,8 @@ export const setSelected = (object, selected = false) => {
   for (let material of materials) {
     if (material.userData.outlineParameters) {
       material.userData.outlineParameters.color = selected ? SELECTED_COLOR : DEFAULT_COLOR
+      material.color.set(blocked ? 0x222222 : 0xcccccc)
+      material.needsUpdate = true
     }
   }
 }

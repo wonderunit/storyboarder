@@ -923,6 +923,15 @@ const sceneObjectsReducer = (state = {}, action) => {
 
         return draft
 
+      case 'UNBLOCK_ALL':
+        for(let id of Object.keys(draft)) {
+          if (draft[id]) {
+            draft[id].blocked = false
+          }
+        }
+
+        return draft
+
       case 'CREATE_OBJECT':
         let id = action.payload.id != null
           ? action.payload.id
@@ -1670,6 +1679,7 @@ module.exports = {
   // internal actions
   _blockObject: id => ({ type: 'BLOCK_OBJECT', payload: id}),
   _unblockObject: id => ({ type: 'UNBLOCK_OBJECT', payload: id}),
+  _unblockAll: id => ({ type: 'UNBLOCK_ALL' }),
 
   //
   //
