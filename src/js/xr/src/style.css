@@ -96,4 +96,6 @@ div#main {
   padding: 4px;
 
   font: normal 15px sans-serif;
+
+  min-height: 25px;
 }

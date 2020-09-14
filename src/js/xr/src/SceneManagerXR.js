@@ -972,17 +972,17 @@ const SceneManagerXR = ({SGConnection}) => {
     }
   }, [appAssetsLoaded, groundTexture, roomTexture, uiResources, assets])
 
-  const [currentMsg, setCurrentMsg] = useState('')
+  const [currentMsg, setCurrentMsg] = useState('Waiting for the assets..')
   const progress = useMemo(() => {
     let assetsValues = Object.values(assets)
 
-    let count = appResources.length + soundResources.length + uiResources.length + assetsValues.length + gltfResources.length
+    let count = appResources.length + soundResources.length + uiResources.length + assetsValues.length
 
-    let globalResourcesLoaded = [...appResources, ...soundResources, ...uiResources, ...gltfResources].filter(res => res !== null).length + assetsValues.filter(assetLoaded).length
+    let globalResourcesLoaded = [...appResources, ...soundResources, ...uiResources].filter(res => res !== null).length + assetsValues.filter(assetLoaded).length
     let progress = (globalResourcesLoaded / count) * 100
     
     return progress
-  }, [...appResources, ...soundResources, ...uiResources, ...gltfResources, assets])
+  }, [...appResources, ...soundResources, ...uiResources, assets])
 
   useEffect(() => {
     ResourceInfo.on('willLoad', path => setCurrentMsg('Loading: ' + path))

@@ -198,7 +198,7 @@ export const connect = (URI = '') => {
         if (action.meta && action.meta.isSG) {
           /* Are we listed on the ignore list? */
           let id = remoteStore.getState().id
-          let isIgnored = action.meta.ignore && (action.meta.ignore.indexOf(id) !== 1) && (id !== null)
+          let isIgnored = action.meta.ignore && (action.meta.ignore.indexOf(id) !== -1) && (id !== null)
           
           if (!isIgnored) {
             console.log('ACTION', action)
