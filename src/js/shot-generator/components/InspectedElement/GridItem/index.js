@@ -15,7 +15,7 @@ const GridItem = React.memo(
     data,
     ...itemData
   }) => {
-    const { model, src, isSelected } = data
+    const { title, src, isSelected } = data
 
     const onPointerUp = event => itemData.onSelect(data)
 
@@ -30,7 +30,7 @@ const GridItem = React.memo(
       <div
         className={className}
         onPointerUp={onPointerUp}
-        title={model.name}
+        title={title}
       >
         <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
           <Image src={src} className="thumbnail" />
@@ -42,7 +42,7 @@ const GridItem = React.memo(
             height: ITEM_HEIGHT - IMAGE_HEIGHT - GUTTER_SIZE + slop
           }}
         >
-          {model.name}
+          {title}
         </div>
       </div>
     )

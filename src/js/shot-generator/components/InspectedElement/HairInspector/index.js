@@ -1,6 +1,9 @@
 import React, { useCallback, useState } from 'react'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
+import classNames from 'classnames'
+import path from 'path'
+import { useTranslation } from 'react-i18next'
 
 import {
   createObject,
@@ -21,10 +24,19 @@ import GridItem from '../GridItem'
 import Scrollable from '../../Scrollable'
 
 import SearchList from '../../SearchList'
+import FileInput from '../../FileInput'
+import HelpButton from '../../HelpButton'
 
+import { truncateMiddle } from '../../../../utils'
+
+import isUserModel from '../../../helpers/isUserModel'
+import CopyFile from '../../../utils/CopyFile'
 import ModelLoader from '../../../../services/model-loader'
 
-const createAttachableSceneObject = ({ model, attachToId }) => {
+const shortBaseName = (filepath) =>
+  truncateMiddle(path.basename(filepath, path.extname(filepath)), 13)
+
+const createSceneObjectForAttachable = () => {
   return {
     id: THREE.Math.generateUUID(),
 
@@ -38,20 +50,15 @@ const createAttachableSceneObject = ({ model, attachToId }) => {
     rotation: { x: 0, y: 0, z: 0 },
 
     size: 1,
-    status: 'PENDING',
-
-    model,
-    attachToId
+    status: 'PENDING'
   }
 }
 
 const getAttachableModels = (state) =>
-  Object.values(state.models)
-    .filter(m => m.type === 'attachable')
+  Object.values(state.models).filter((m) => m.type === 'attachable')
 
 const getAttachableHairModels = (state) =>
-  getAttachableModels(state)
-    .filter(m => m.attachableType === 'hair')
+  getAttachableModels(state).filter((m) => m.attachableType === 'hair')
 
 const getFirstSelectedSceneObject = createSelector(
   [getSceneObjects, getSelections],
@@ -60,21 +67,23 @@ const getFirstSelectedSceneObject = createSelector(
 
 const getSelectedHair = createSelector(
   [getSceneObjects, getSelections],
-  (sceneObjects, selections) => selections[0]
-    ? Object.values(sceneObjects).find(
-        (item) =>
-          item.type === 'attachable' &&
-          item.attachableType === 'hair' &&
-          item.attachToId === selections[0]
-      )
-    : undefined
+  (sceneObjects, selections) =>
+    selections[0]
+      ? Object.values(sceneObjects).find(
+          (item) =>
+            item.type === 'attachable' &&
+            item.attachableType === 'hair' &&
+            item.attachToId === selections[0]
+        )
+      : undefined
 )
 
 const HairInspector = connect(
   (state) => ({
     selectedSceneObject: getFirstSelectedSceneObject(state),
     selectedHair: getSelectedHair(state),
-    attachableHairModels: getAttachableHairModels(state)
+    attachableHairModels: getAttachableHairModels(state),
+    storyboarderFilePath: state.meta.storyboarderFilePath
   }),
   {
     createObject,
@@ -88,15 +97,18 @@ const HairInspector = connect(
       selectedSceneObject,
       selectedHair,
       attachableHairModels,
-      createObject, selectAttachable, deselectAttachable, deleteObjects
+      storyboarderFilePath,
+      createObject,
+      selectAttachable,
+      deselectAttachable,
+      deleteObjects
     }) => {
+      const { t } = useTranslation()
       const [results, setResults] = useState()
 
       const onSelect = useCallback(
-        data => {
+        (data) => {
           if (data) {
-            console.log('adding hair attachable', data)
-
             undoGroupStart()
 
             if (selectedHair) {
@@ -105,25 +117,22 @@ const HairInspector = connect(
             }
 
             let sceneObject = {
-              ...createAttachableSceneObject({
-                model: data.model.id,
-                attachToId: selectedSceneObject.id
-              }),
-              ...{
-                name: data.model.name,
-                x: data.model.x,
-                y: data.model.y,
-                z: data.model.z,
-                rotation: data.model.rotation
-              }
+              ...createSceneObjectForAttachable(),
+              model: data.model,
+              attachToId: selectedSceneObject.id,
+              ...data.sceneObjectOverrides
             }
+
+            console.log({ sceneObject })
+
             createObject(sceneObject)
-            selectAttachable({ id: sceneObject.id, bindId: sceneObject.attachToId })
+            selectAttachable({
+              id: sceneObject.id,
+              bindId: sceneObject.attachToId
+            })
 
             undoGroupEnd()
           } else {
-            console.log('removing hair attachable', selectedHair)
-
             if (selectedHair) {
               undoGroupStart()
               deleteObjects([selectedHair.id])
@@ -135,64 +144,139 @@ const HairInspector = connect(
         [selectedSceneObject, selectedHair]
       )
 
-      let searchList = attachableHairModels.map(
-        ({ id, name, keywords }) => ({
-            value: [name, keywords]
-              .filter(Boolean)
-              .join(' '),
-            id
-          })
+      const onSelectFile = useCallback(
+        (filepath) => {
+          if (filepath.file) {
+            let model = CopyFile(
+              storyboarderFilePath,
+              filepath.file,
+              'attachable'
+            )
+            onSelect({
+              model,
+              sceneObjectOverrides: {
+                name: path.basename(model, path.extname(model))
+              }
+            })
+          } else {
+            // uncomment if "cancel" should remove existing custom hair
+            // onSelect(null)
+          }
+        },
+        [storyboarderFilePath, onSelect]
       )
 
-      let matches = results == null
-        ? attachableHairModels
-        : attachableHairModels.filter(model => results.find(result => result.id == model.id))
+      let searchList = attachableHairModels.map(({ id, name, keywords }) => ({
+        value: [name, keywords].filter(Boolean).join(' '),
+        id
+      }))
 
-      let elements = matches
-        .map(model => ({
-          model: {
-            ...model,
-            name: model.name.replace(/^Hair:\s+/, '')
-          },
-          src: ModelLoader.getFilepathForModel(
-            { model: model.id, type: model.type },
-            { storyboarderFilePath: null }
-          ).replace(/.glb$/, '.jpg'),
-          isSelected: selectedHair && model.id === selectedHair.model
-        }))
+      let matches =
+        results == null
+          ? attachableHairModels
+          : attachableHairModels.filter((model) =>
+              results.find((result) => result.id == model.id)
+            )
 
-      return <>
-        <div className="thumbnail-search column">
-          <div className="row" style={{ marginBottom: 6 }}>
-            <SearchList
-              label="Search Hair …"
-              list={searchList}
-              onSearch={setResults}
-            />
-          </div>
-          <div className="column">
-            <div className="row" style={{ marginBottom: 6 }}>
-              <a
-                href="#"
-                className="button__simple"
-                disabled={selectedHair == null}
-                onPointerDown={event => preventDefault(onSelect(null))}
-              >
-                No Hair
-              </a>
-            </div>
-            <Scrollable>
-              <Grid
-                itemData={{ onSelect }}
-                Component={GridItem}
-                elements={elements}
-                numCols={itemSettings.NUM_COLS}
-                itemHeight={itemSettings.ITEM_HEIGHT}
+      let elements = matches.map((attachable) => ({
+        title: attachable.name.replace(/^Hair:\s+/, ''),
+
+        src: ModelLoader.getFilepathForModel(
+          { model: attachable.id, type: attachable.type },
+          { storyboarderFilePath: null }
+        ).replace(/.glb$/, '.jpg'),
+
+        isSelected: selectedHair && attachable.id === selectedHair.model,
+
+        model: attachable.id,
+
+        sceneObjectOverrides: {
+          name: attachable.name,
+          x: attachable.x,
+          y: attachable.y,
+          z: attachable.z,
+          rotation: attachable.rotation
+        }
+      }))
+
+      let isCustom = selectedHair && isUserModel(selectedHair.model)
+
+      const refClassName = classNames('button__file', {
+        'button__file--selected': isCustom
+      })
+
+      const wrapperClassName = 'button__file__wrapper'
+
+      return (
+        <>
+          <div className="thumbnail-search column">
+            <div className="row" style={{ padding: '6px 0' }}>
+              <SearchList
+                label="Search Hair …"
+                list={searchList}
+                onSearch={setResults}
               />
-            </Scrollable>
+
+              {isCustom ? (
+                <div className="column" style={{ padding: 2 }} />
+              ) : (
+                <div
+                  className="column"
+                  style={{ alignSelf: 'center', padding: 6, lineHeight: 1 }}
+                >
+                  or
+                </div>
+              )}
+
+              <FileInput
+                value={
+                  isCustom
+                    ? shortBaseName(selectedHair.model)
+                    : t('shot-generator.inspector.common.select-file')
+                }
+                onChange={onSelectFile}
+                refClassName={refClassName}
+                wrapperClassName={wrapperClassName}
+              />
+              <div
+                className="column"
+                style={{
+                  width: 20,
+                  margin: '0 0 0 6px',
+                  alignSelf: 'center',
+                  alignItems: 'flex-end'
+                }}
+              >
+                <HelpButton
+                  url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
+                  title="How to Create 3D Models for Custom Objects"
+                />
+              </div>
+            </div>
+            <div className="column">
+              <div className="row" style={{ marginBottom: 6 }}>
+                <a
+                  href="#"
+                  className="button__simple"
+                  disabled={selectedHair == null}
+                  onPointerDown={(event) => preventDefault(onSelect(null))}
+                >
+                  No Hair
+                </a>
+              </div>
+              <Scrollable>
+                <Grid
+                  itemData={{ onSelect }}
+                  Component={GridItem}
+                  elements={elements}
+                  numCols={itemSettings.NUM_COLS}
+                  itemHeight={itemSettings.ITEM_HEIGHT}
+                />
+              </Scrollable>
+            </div>
           </div>
-        </div>
-      </>
+        </>
+      )
     }
   )
 )
