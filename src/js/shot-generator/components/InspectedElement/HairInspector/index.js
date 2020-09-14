@@ -175,35 +175,40 @@ const HairInspector = connect(
         [storyboarderFilePath, onSelect]
       )
 
-      let searchList = attachableHairModels.map(({ id, name, keywords }) => ({
+      let modelsList = [
+        {
+          id: null,
+          mode: null,
+          keywords: '',
+          name: t('shot-generator.inspector.hair.no-value')
+        }
+      ].concat(attachableHairModels)
+
+      let searchList = modelsList.map(({ id, name, keywords }) => ({
         value: [name, keywords].filter(Boolean).join(' '),
         id
       }))
 
       let matches =
         results == null
-          ? attachableHairModels
-          : attachableHairModels.filter((model) =>
+          ? modelsList
+          : modelsList.filter((model) =>
               results.find((result) => result.id == model.id)
             )
 
-      let elements = [{
-          title: t('shot-generator.inspector.hair.no-value'),
-
-          src: GRID_ITEM_NONE_SRC,
-
-          isSelected: selectedHair == null,
-
-          model: null
-      }].concat(matches.map((attachable) => ({
+      let elements = matches.map((attachable) => ({
         title: attachable.name.replace(/^Hair:\s+/, ''),
 
-        src: ModelLoader.getFilepathForModel(
-          { model: attachable.id, type: attachable.type },
-          { storyboarderFilePath: null }
-        ).replace(/.glb$/, '.jpg'),
+        src: attachable.id == null
+          ? GRID_ITEM_NONE_SRC
+          : ModelLoader.getFilepathForModel(
+              { model: attachable.id, type: attachable.type },
+              { storyboarderFilePath: null }
+            ).replace(/.glb$/, '.jpg'),
 
-        isSelected: selectedHair && attachable.id === selectedHair.model,
+        isSelected: attachable.id == null
+          ? selectedHair == null
+          : selectedHair && attachable.id === selectedHair.model,
 
         model: attachable.id,
 
@@ -214,7 +219,7 @@ const HairInspector = connect(
           z: attachable.z,
           rotation: attachable.rotation
         }
-      })))
+      }))
 
       let isCustom = selectedHair && isUserModel(selectedHair.model)
 
