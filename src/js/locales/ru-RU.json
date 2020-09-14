@@ -467,6 +467,9 @@
 			"attachables-inspector": {
 			  "attached-to-bone": "Присоединить к кости"
 			},
+			"hair":{
+					"no-value":"No Hair"
+			},
 			"object": {
 			  "drop-object": "Опустить объект на пол"
 			},

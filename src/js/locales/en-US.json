@@ -468,6 +468,9 @@
           "attachables-inspector":{
              "attached-to-bone":"Attached to bone"
           },
+          "hair":{
+             "no-value":"No Hair"
+          },
           "object":{
              "drop-object":"Drop Object to the floor"
           },

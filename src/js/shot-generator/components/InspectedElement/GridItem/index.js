@@ -33,7 +33,7 @@ const GridItem = React.memo(
         title={title}
       >
         <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
-          <Image src={src} className="thumbnail" />
+          { src && <Image src={src} className="thumbnail" /> }
         </div>
         <div
           className="thumbnail-search__name"

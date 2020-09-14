@@ -17,7 +17,6 @@ import {
 } from '../../../../shared/reducers/shot-generator'
 
 import * as itemSettings from '../../../utils/InspectorElementsSettings'
-import { preventDefault } from '../../../utils/preventDefault'
 
 import Grid from '../../Grid'
 import GridItem from '../GridItem'
@@ -32,6 +31,11 @@ import { truncateMiddle } from '../../../../utils'
 import isUserModel from '../../../helpers/isUserModel'
 import CopyFile from '../../../utils/CopyFile'
 import ModelLoader from '../../../../services/model-loader'
+
+const GRID_ITEM_NONE_SRC = ModelLoader.getFilepathForModel(
+  { model: 'hair-none', type: 'attachable' },
+  { storyboarderFilePath: null }
+).replace(/.glb$/, '.jpg')
 
 const shortBaseName = (filepath) =>
   truncateMiddle(path.basename(filepath, path.extname(filepath)), 13)
@@ -108,7 +112,7 @@ const HairInspector = connect(
 
       const onSelect = useCallback(
         (data) => {
-          if (data) {
+          if (data && data.model) {
             undoGroupStart()
 
             if (selectedHair) {
@@ -176,7 +180,15 @@ const HairInspector = connect(
               results.find((result) => result.id == model.id)
             )
 
-      let elements = matches.map((attachable) => ({
+      let elements = [{
+          title: t('shot-generator.inspector.hair.no-value'),
+
+          src: GRID_ITEM_NONE_SRC,
+
+          isSelected: selectedHair == null,
+
+          model: null
+      }].concat(matches.map((attachable) => ({
         title: attachable.name.replace(/^Hair:\s+/, ''),
 
         src: ModelLoader.getFilepathForModel(
@@ -195,7 +207,7 @@ const HairInspector = connect(
           z: attachable.z,
           rotation: attachable.rotation
         }
-      }))
+      })))
 
       let isCustom = selectedHair && isUserModel(selectedHair.model)
 
@@ -251,17 +263,7 @@ const HairInspector = connect(
                 />
               </div>
             </div>
-            <div className="column">
-              <div className="row" style={{ marginBottom: 6 }}>
-                <a
-                  href="#"
-                  className="button__simple"
-                  disabled={selectedHair == null}
-                  onPointerDown={(event) => preventDefault(onSelect(null))}
-                >
-                  No Hair
-                </a>
-              </div>
+            <div className="thumbnail-search__list">
               <Scrollable>
                 <Grid
                   itemData={{ onSelect }}

@@ -1023,8 +1023,7 @@ input[type="color"]::-webkit-color-swatch {
   height: 13px;
   /* background: linear-gradient(to right, rgba(45, 46, 57, 0), rgba(45, 46, 57, 1) 50%); */
 }
-.thumbnail-search .button__file,
-.thumbnail-search .button__simple {
+.thumbnail-search .button__file {
   display: flex;
   color: rgb(152, 152, 152);
   background-color: rgba(255,255,255,0.05);
@@ -1047,20 +1046,11 @@ input[type="color"]::-webkit-color-swatch {
   width: 106px;
 }
 
-.thumbnail-search .button__file:hover,
-.thumbnail-search .button__simple:hover {
+.thumbnail-search .button__file:hover {
   background-color: rgba(255,255,255,0.1);
 }
 .thumbnail-search .button__file--selected {
   color: #fff;
-}
-
-.thumbnail-search .button__simple[disabled] {
-  pointer-events: none;
-  opacity: 0.5;
-}
-.thumbnail-search .button__simple[disabled]:hover {
-  background-color: rgba(255, 255, 255, 0.05);
 }
 
 .mirror_button__wrapper {
