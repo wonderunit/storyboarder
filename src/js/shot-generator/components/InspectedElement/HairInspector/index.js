@@ -123,8 +123,6 @@ const HairInspector = connect(
               ...data.sceneObjectOverrides
             }
 
-            console.log({ sceneObject })
-
             createObject(sceneObject)
             selectAttachable({
               id: sceneObject.id,
