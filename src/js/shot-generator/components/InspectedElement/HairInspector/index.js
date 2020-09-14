@@ -37,6 +37,12 @@ const GRID_ITEM_NONE_SRC = ModelLoader.getFilepathForModel(
   { storyboarderFilePath: null }
 ).replace(/.glb$/, '.jpg')
 
+const USER_MODEL_HAIR_POSITION = {
+  "x": -0.0013,
+  "y": 0.15,
+  "z": 0.014
+}
+
 const shortBaseName = (filepath) =>
   truncateMiddle(path.basename(filepath, path.extname(filepath)), 13)
 
@@ -157,7 +163,8 @@ const HairInspector = connect(
             onSelect({
               model,
               sceneObjectOverrides: {
-                name: path.basename(model, path.extname(model))
+                name: path.basename(model, path.extname(model)),
+                ...USER_MODEL_HAIR_POSITION
               }
             })
           } else {
