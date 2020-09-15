@@ -20,7 +20,6 @@ import AttachableInspector from './AttachableInspector/index'
 
 import EmotionInspector from './EmotionInspector/index'
 
-import { useTranslation } from 'react-i18next'
 import HairInspector from './HairInspector/index'
 
 import Icon from '../Icon'
