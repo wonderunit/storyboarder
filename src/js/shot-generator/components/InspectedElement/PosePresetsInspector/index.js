@@ -257,7 +257,7 @@ React.memo(({
             showModal(false)
             addNewPosePreset(newPresetName.current)
           }}>
-             {t("shot-generator.inspector.common.proceed-button")}
+             {t("shot-generator.inspector.common.add-preset")}
         </button>
       </div>
    </Modal>

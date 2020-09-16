@@ -108,7 +108,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
               showModal(false)
               updateObject(id, { displayName: changedName, name: changedName })
             }}>
-                {t("shot-generator.inspector.common.proceed-button")}
+                {t("shot-generator.inspector.common.add-preset")}
           </button>
       </div>
       </Modal> }
