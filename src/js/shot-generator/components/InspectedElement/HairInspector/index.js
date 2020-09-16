@@ -35,7 +35,7 @@ import ModelLoader from '../../../../services/model-loader'
 const GRID_ITEM_NONE_SRC = ModelLoader.getFilepathForModel(
   { model: 'hair-none', type: 'attachable' },
   { storyboarderFilePath: null }
-).replace(/.glb$/, '.jpg')
+).replace(/.glb$/, '.png')
 
 const USER_MODEL_HAIR_POSITION = {
   "x": -0.0013,
