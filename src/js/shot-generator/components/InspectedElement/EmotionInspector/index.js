@@ -250,7 +250,7 @@ const EmotionsInspector = connect(getModelData, {
         <React.Fragment>
           <Modal visible={isModalShown} onClose={() => showModal(false)}>
             <div style={{ margin: '5px 5px 5px 5px' }}>
-              Select a Preset Name:
+              {t("shot-generator.inspector.common.select-preset-name")}
             </div>
             <div className="column" style={{ flex: 1 }}>
               <input
@@ -270,7 +270,7 @@ const EmotionsInspector = connect(getModelData, {
                   onSelectFile(filePath.current)
                 }}
               >
-                Proceed
+                {t("shot-generator.inspector.common.add-preset")}
               </button>
             </div>
           </Modal>
