@@ -73,7 +73,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     if (!isChar(selectedType)) return nullTab
 
     return {
-      tab: <Tab><Icon src='icon-tab-hand'/></Tab>,
+      tab: <Tab><Icon src='icon-tab-emotions'/></Tab>,
       panel: <Panel><EmotionInspector/></Panel>
     }
   }, [selectedType])
