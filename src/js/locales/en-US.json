@@ -472,6 +472,10 @@
           "hair":{
              "no-value":"No Hair"
           },
+          "emotions": {
+             "no-value":"None",
+             "search-list-label": "Search emotions …"
+          },
           "object":{
              "drop-object":"Drop Object to the floor"
           },

@@ -267,7 +267,7 @@ const EmotionsInspector = connect(getModelData, {
           <div className="thumbnail-search column">
             <div className="row" style={{ padding: '6px 0' }}>
               <SearchList
-                label="Search models …"
+                label={t('shot-generator.inspector.emotions.search-list-label')}
                 list={presets}
                 onSearch={saveFilteredPresets}
               />
