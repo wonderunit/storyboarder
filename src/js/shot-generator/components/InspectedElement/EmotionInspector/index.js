@@ -10,6 +10,7 @@ import { connect } from 'react-redux'
 import fs from 'fs-extra'
 import path from 'path'
 import { useTranslation } from 'react-i18next'
+import { remote } from 'electron'
 
 import {
   updateObject,
@@ -205,6 +206,15 @@ const EmotionsInspector = connect(getModelData, {
       }
 
       const onRemoval = (data) => {
+        const choice = remote.dialog.showMessageBoxSync({
+          type: 'question',
+          buttons: [t('shot-generator.inspector.common.yes'), t('shot-generator.inspector.common.no')],
+          message: t('shot-generator.inspector.common.are-you-sure'),
+          defaultId: 1
+        })
+
+        if (choice !== 0) return
+
         let sceneObjects
         withState((dispatch, state) => {
           sceneObjects = Object.values(getSceneObjects(state)).filter(
