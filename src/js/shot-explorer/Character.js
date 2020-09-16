@@ -10,8 +10,15 @@ import isUserModel from '../shot-generator/helpers/isUserModel'
 import FaceMesh from "../shot-generator/components/three/Helpers/FaceMesh"
 
 const Character = React.memo(({ path, sceneObject, modelSettings, ...props}) => {
+    const faceMesh = useRef(null)
+    function getFaceMesh () {
+      if (faceMesh.current === null) {
+        faceMesh.current = new FaceMesh()
+      }
+      return faceMesh.current
+    }
+
     const {asset: gltf} = useAsset(path)
-    const faceMesh = useRef(new FaceMesh())
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
@@ -76,7 +83,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, ...props}) => 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
       console.log(lod)
-      faceMesh.current.setSkinnedMesh(lod, gl)
+      getFaceMesh().setSkinnedMesh(lod, gl)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
@@ -181,10 +188,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, ...props}) => 
     useEffect(() => {
       if(!skeleton) return
       if(!texture) {
-        faceMesh.current.resetTexture()
+        getFaceMesh().resetTexture()
         return
       }
-      faceMesh.current.draw(texture)
+      getFaceMesh().draw(texture)
     }, [texture, lod])
 
     useEffect(() => {

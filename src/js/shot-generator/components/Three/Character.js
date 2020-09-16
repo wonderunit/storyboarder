@@ -41,8 +41,15 @@ const findHighestBone = (object) =>
 
 
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
+    const faceMesh = useRef(null)
+    function getFaceMesh () {
+      if (faceMesh.current === null) {
+        faceMesh.current = new FaceMesh()
+      }
+      return faceMesh.current
+    }
+
     const {asset: gltf} = useAsset(path)
-    const faceMesh = useRef(new FaceMesh())
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
@@ -125,7 +132,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       if (isUserModel(sceneObject.model)) {
             originalHeight = 1
       } else {
-        faceMesh.current.setSkinnedMesh(lod, gl)
+        getFaceMesh().setSkinnedMesh(lod, gl)
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
@@ -422,10 +429,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     useEffect(() => {
       if(!skeleton) return
       if(!texture) {
-        faceMesh.current.resetTexture()
+        getFaceMesh().resetTexture()
         return
       }
-      faceMesh.current.draw(texture)
+      getFaceMesh().draw(texture)
     }, [texture, lod])
     
     return <group

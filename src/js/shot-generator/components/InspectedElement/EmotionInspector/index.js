@@ -80,9 +80,16 @@ const EmotionsInspector = connect(
     storyboarderFilePath,
     deleteEmotionPreset
   }) => {
+    const faceMesh = useRef(null)
+    function getFaceMesh () {
+      if (faceMesh.current === null) {
+        faceMesh.current = new FaceMesh()
+      }
+      return faceMesh.current
+    }
+
     const thumbnailRenderer = useRef()
     const textureLoader = useRef(new THREE.TextureLoader())
-    const faceMesh = useRef(new FaceMesh())
     const [results, setResult] = useState( ) 
     const {asset: attachment} = useAsset(characterPath)
     const [isModalShown, showModal] = useState(false)
@@ -251,7 +258,7 @@ const EmotionsInspector = connect(
                   onSelectItem,
                   thumbnailRenderer,
                   textureLoader,
-                  faceMesh,
+                  faceMesh: getFaceMesh(),
                   attachment,
                   selectedSrc: sceneObject.emotion,
                   storyboarderFilePath,

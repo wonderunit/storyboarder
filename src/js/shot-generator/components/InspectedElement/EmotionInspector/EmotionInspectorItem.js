@@ -117,7 +117,7 @@ const EmotionInspectorItem = React.memo(({ id, style, onSelectItem, data, attach
               attachment,
               data,
               texture,
-              faceMesh:faceMesh.current
+              faceMesh
             })
             let character = thumbnailRenderer.current.getGroup().getObjectByProperty("type", "SkinnedMesh")
             let camera = thumbnailRenderer.current.camera

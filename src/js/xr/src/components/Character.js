@@ -10,9 +10,17 @@ const VirtualCamera = require('../components/VirtualCamera')
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
 const FaceMesh = require('../../../shot-generator/components/Three/Helpers/FaceMesh').default
+
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton, texture }) => {
+    const faceMesh = useRef(null)
+    function getFaceMesh () {
+      if (faceMesh.current === null) {
+        faceMesh.current = new FaceMesh()
+      }
+      return faceMesh.current
+    }
+
     const [ready, setReady] = useState(false)
-    const faceMesh = useRef(new FaceMesh())
     const { gl } = useThree()
     const ref = useUpdate(
       self => {
@@ -93,7 +101,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       if (isUserModel(sceneObject.model)) {
         originalHeight = 1
       } else {
-        faceMesh.current.setSkinnedMesh(lod, gl)
+        getFaceMesh().setSkinnedMesh(lod, gl)
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
@@ -220,10 +228,10 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
     useEffect(() => {      
       if(!skeleton) return
       if(!texture) {
-        faceMesh.current.resetTexture()
+        getFaceMesh().resetTexture()
         return
       }
-      faceMesh.current.draw(texture)
+      getFaceMesh().draw(texture)
     }, [texture, lod])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
