@@ -99,7 +99,9 @@ const HairInspector = connect(
     createObject,
     selectAttachable,
     deselectAttachable,
-    deleteObjects
+    deleteObjects,
+    undoGroupStart,
+    undoGroupEnd
   }
 )(
   React.memo(
@@ -111,7 +113,9 @@ const HairInspector = connect(
       createObject,
       selectAttachable,
       deselectAttachable,
-      deleteObjects
+      deleteObjects,
+      undoGroupStart,
+      undoGroupEnd
     }) => {
       const { t } = useTranslation()
       const [results, setResults] = useState()
@@ -138,7 +142,7 @@ const HairInspector = connect(
               id: sceneObject.id,
               bindId: sceneObject.attachToId
             })
-
+            
             undoGroupEnd()
           } else {
             if (selectedHair) {

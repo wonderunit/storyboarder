@@ -6,7 +6,9 @@ import {
   createObject,
   selectAttachable,
   getSceneObjects,
-  getSelections
+  getSelections,
+  undoGroupStart,
+  undoGroupEnd
 } from '../../../../shared/reducers/shot-generator'
 import FileInput from '../../FileInput'
 import classNames from 'classnames'
@@ -30,14 +32,18 @@ const AttachableInspector = connect(
   {
     createObject,
     selectAttachable,
-    withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
+    withState: (fn) => (dispatch, getState) => fn(dispatch, getState()),
+    undoGroupStart,
+    undoGroupEnd
   }
 )(
   React.memo(({
     id,
     withState,
     createObject,
-    selectAttachable
+    selectAttachable,
+    undoGroupStart,
+    undoGroupEnd
   }) => {
     const { t } = useTranslation()
     const [isModalVisible, showModal] = useState(false)
@@ -115,8 +121,10 @@ const AttachableInspector = connect(
         status: "PENDING",
         rotation: modelData.rotation
       }
+      undoGroupStart()
       createObject(element)
       selectAttachable({id: element.id, bindId: element.attachToId })
+      undoGroupEnd()
     }
 
     const onSelectFile = useCallback((filepath) => {
