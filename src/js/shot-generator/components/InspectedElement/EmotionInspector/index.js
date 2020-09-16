@@ -46,7 +46,7 @@ import defaultEmotions from '../../../../shared/reducers/shot-generator-presets/
 
 const shortId = (id) => id.toString().substr(0, 7).toLowerCase()
 
-const loadImages = (files, baseDir) => {
+const copyImages = (files, baseDir) => {
   return new Promise((resolve, reject) => {
     let projectDir = path.dirname(baseDir)
     let assetsDir = path.join(projectDir, 'models', 'emotions')
@@ -126,7 +126,7 @@ const EmotionsInspector = connect(getModelData, {
 
       const onSelectFile = (filepath) => {
         if (filepath.file) {
-          loadImages(filepath.files, storyboarderFilePath).then((ids) => {
+          copyImages(filepath.files, storyboarderFilePath).then((ids) => {
             addEmotionPreset(ids[0], newPresetName.current)
           })
         }
