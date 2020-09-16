@@ -9,6 +9,7 @@ import classNames from 'classnames'
 import { connect } from 'react-redux'
 import fs from 'fs-extra'
 import path from 'path'
+import { useTranslation } from 'react-i18next'
 
 import {
   updateObject,
@@ -99,6 +100,8 @@ const EmotionsInspector = connect(getModelData, {
       storyboarderFilePath,
       deleteEmotionPreset
     }) => {
+      const { t } = useTranslation()
+
       const faceMesh = useRef(null)
       function getFaceMesh() {
         if (faceMesh.current === null) {
@@ -194,13 +197,6 @@ const EmotionsInspector = connect(getModelData, {
         }
       }
 
-      const selectValue = useCallback(() => {
-        const ext = path.extname(sceneObject.emotion)
-        const basenameWithoutExt = path.basename(sceneObject.emotion, ext)
-        const displayName = truncateMiddle(basenameWithoutExt, 13)
-        return displayName
-      }, [sceneObject.emotion])
-
       const onSelectItem = (filepath) => {
         if (!isUserModel(sceneObject.model)) {
           // select the preset in the list
@@ -282,12 +278,7 @@ const EmotionsInspector = connect(getModelData, {
                 or
               </div>
               <FileInput
-                value={sceneObject.emotion ? selectValue() : 'Select File …'}
-                title={
-                  sceneObject.emotion
-                    ? path.basename(sceneObject.emotion)
-                    : undefined
-                }
+                value={t('shot-generator.inspector.common.select-image')}
                 onChange={onCreatePosePreset}
                 refClassName={refClassName}
                 wrapperClassName={wrapperClassName}
