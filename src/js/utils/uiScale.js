@@ -6,10 +6,10 @@ const { webFrame } = electron
 const SettingsService = require("../windows/shot-generator/SettingsService")
 const AutoUIScaler = require('./AutoUIScaler')
 const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"));
-let scaleDefault = { scaleUp: 0.2, scaleDown: -1.0 }
+let scaleDefault = { max: 1.2, min: 0.7 }
 let uiScaler 
 let onChange = (scale) => {    
-    webFrame.setZoomLevel(scale)
+    webFrame.setZoomFactor(scale)
     settingsService.setSettings({scale})
 }
 const initialize = () => {
@@ -17,16 +17,16 @@ const initialize = () => {
     let settingsZoom = settingsService.getSettingByKey("scale")
     let scale 
     if(!settingsZoom && currentWindow.getBounds().height < 768) {
-        scale = scaleDefault.scaleDown
+        scale = scaleDefault.min
     } else {
-        settingsZoom = settingsZoom !== undefined ? settingsZoom : 0
+        settingsZoom = settingsZoom !== undefined && settingsZoom >= 1 ? settingsZoom : 1
         scale = settingsZoom
     }
-    webFrame.setZoomLevel(scale)
-    uiScaler = new AutoUIScaler({ max: scaleDefault.scaleUp, min: scaleDefault.scaleDown }, {height:768, width:1024}, scale, onChange)
-    webFrame.setLayoutZoomLevelLimits(scaleDefault.scaleDown, scaleDefault.scaleUp)
+    webFrame.setZoomFactor(scale)
+    uiScaler = new AutoUIScaler({ max: scaleDefault.max, min: scaleDefault.min }, {height:768, width:1024}, scale, onChange)
     updateScaleBoundaries()
-    uiScaler.scale = webFrame.getZoomLevel() - uiScaler.currentScaleLimits.min + uiScaler.defaultScaleLimits.min
+    uiScaler.scale = webFrame.getZoomFactor() - uiScaler.currentScaleLimits.max + uiScaler.defaultScaleLimits.max
+
     uiScaler.updateScale()
 }
 

@@ -3,18 +3,20 @@ class AutoUIScaler {
     constructor(initialScaleLimits, normalWinDimensions, currentScale, onChange) {
         this.defaultScaleLimits = initialScaleLimits;
         this.normalWinDimensions = normalWinDimensions;
-        this.currentScaleLimits = { min:initialScaleLimits.min, max:initialScaleLimits.max };
-        this.scale = 0;
+        this.currentScaleLimits = { max:initialScaleLimits.max, min:initialScaleLimits.min };
+        this.scale = 1;
         this.relativeScale = currentScale;
         this.onChange = onChange;
+        this.decrementValue = -0.025
     }
 
     getScale() {
-        return this.relativeScale = this.scale + this.currentScaleLimits.min - this.defaultScaleLimits.min;
+        return this.relativeScale
     }
 
     updateScale() {
-        this.relativeScale = this.scale + this.currentScaleLimits.min - this.defaultScaleLimits.min
+        let newScale = this.scale + this.currentScaleLimits.max - this.defaultScaleLimits.max
+        this.relativeScale = Math.min( this.currentScaleLimits.max, Math.max(this.currentScaleLimits.min, newScale))
         this.onChange(this.getScale())
     }
 
@@ -42,15 +44,15 @@ class AutoUIScaler {
         if(windowMinimalSize.width > currentWindowSize.width) {
             pixelsDifference = (windowMinimalSize.width - currentWindowSize.width) / 50
             pixelsDifference = Math.round(pixelsDifference)
-            addToZoom += -0.2 * pixelsDifference
+            addToZoom += this.decrementValue * pixelsDifference
         }
         if(windowMinimalSize.height > currentWindowSize.height) {
             pixelsDifference = (windowMinimalSize.height - currentWindowSize.height) / 50
             pixelsDifference = Math.round(pixelsDifference)
-            addToZoom += -0.2 * pixelsDifference
+            addToZoom += this.decrementValue * pixelsDifference
         }
     
-        this.currentScaleLimits.min = this.defaultScaleLimits.min + addToZoom
+        //this.currentScaleLimits.min = this.defaultScaleLimits.min + addToZoom
         this.currentScaleLimits.max = this.defaultScaleLimits.max + addToZoom
     }
 

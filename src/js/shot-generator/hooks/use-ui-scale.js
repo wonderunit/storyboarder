@@ -30,27 +30,27 @@ const useUIScale = () => {
     }
 
     const onChange = (scale) => {
-        webFrame.setZoomLevel(scale)
+        webFrame.setZoomFactor(scale)
         settingsService.current.setSettings({scale})
     } 
     
     useMemo(() =>{
-        let scaleDefault = { max: 0.4, min: -1.6 }
+        let scaleDefault = { max: 1.2, min: 0.6 }
         settingsService.current = new SettingsService(path.join(app.getPath('userData'), 'shot-generator-settings.json'))
         let currentWindow = electron.remote.getCurrentWindow()
         let settingsZoom = settingsService.current.getSettingByKey("scale")
         let scale 
         if(!settingsZoom && currentWindow.getBounds().height < 768) {
-            scale = maxZoom.out
+            scale = scaleDefault.min
         } else {
-            settingsZoom = settingsZoom !== undefined ? settingsZoom : 0
+            settingsZoom = settingsZoom !== undefined && settingsZoom >= 1 ? settingsZoom : 1
             scale = settingsZoom
         }
-        webFrame.setZoomLevel(scale)
+        webFrame.setZoomFactor(scale)
         autoUIScale.current = new AutoUIScale(scaleDefault, {width: 1024, height: 768}, scale, onChange)
-        webFrame.setLayoutZoomLevelLimits(scaleDefault.scaleDown, scaleDefault.scaleUp)
+       // webFrame.setLayoutZoomLevelLimits(scaleDefault.scaleDown, scaleDefault.scaleUp)
         updateScaleBoundaries()
-        autoUIScale.current.scale = webFrame.getZoomLevel() - autoUIScale.current.currentScaleLimits.min + autoUIScale.current.defaultScaleLimits.min
+        autoUIScale.current.scale = webFrame.getZoomFactor() - autoUIScale.current.currentScaleLimits.max + autoUIScale.current.defaultScaleLimits.max
         autoUIScale.current.updateScale()
     }, [])
 
