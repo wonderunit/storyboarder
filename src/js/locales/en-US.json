@@ -415,7 +415,7 @@
              "tilt":"Tilt",
              "distance":"Distance",
              "roll":"Roll",
-             "select-preset-name":"Select a Preset Name:",
+             "select-preset-name":"New Preset Name:",
              "add-preset":"Add",
              "height":"Height",
              "tint-color":"Tint Color",
