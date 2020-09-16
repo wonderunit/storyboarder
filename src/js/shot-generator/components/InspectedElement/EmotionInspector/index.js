@@ -21,7 +21,6 @@ import {
 } from '../../../../shared/reducers/shot-generator'
 import FileInput from '../../FileInput'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
-import { truncateMiddle } from '../../../../utils'
 import presetsStorage from '../../../../shared/store/presetsStorage'
 import {
   NUM_COLS,
