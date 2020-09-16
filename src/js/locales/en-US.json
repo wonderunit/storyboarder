@@ -431,8 +431,8 @@
              "rotate-z":"Rotate Z",
              "scale":"Scale",
              "opacity":"Opacity",
-             "yes":"yes",
-             "no":"no",
+             "yes":"Yes",
+             "no":"No",
              "are-you-sure":"Are you sure?"
           },
           "inspected-element":{

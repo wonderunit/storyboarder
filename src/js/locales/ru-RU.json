@@ -430,8 +430,8 @@
 			  "rotate-z": "Повернуть по Z",
 			  "scale": "Размер",
 			  "opacity": "Непрозрачность",
-			  "yes": "да",
-			  "no": "не",
+			  "yes": "Да",
+			  "no": "Не",
 			  "are-you-sure": "Вы уверены?"
 			},
 			"inspected-element": {
