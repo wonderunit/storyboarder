@@ -1,17 +1,4 @@
 import React, { useState, useMemo, useEffect } from 'react'
-let mousePos = {x:0, y:0}
-let overId = 0
-const checkIfMouseOver = (id) => {
-    var element = document.getElementById(`${id}`);
-    if(!element) return
-    let coordPos = element.getBoundingClientRect();
-    if(mousePos.x > coordPos.left && mousePos.x < coordPos.right 
-        && mousePos.y > coordPos.top && mousePos.y < coordPos.bottom) {
-            return true
-    }
-    return false 
-}
-
 const RemovableItem = React.memo(({ 
     className, 
     style,
@@ -24,18 +11,8 @@ const RemovableItem = React.memo(({
 }) => {
     const [show, setShow] = useState(false)
     const [count, setCount] = useState(0)
-    useEffect(() => {
-        if(isRemovable && overId !== data.id && checkIfMouseOver(data.id)) {
-            overId = data.id
-            setShow(true)
-        }
-    })
 
     const onMouseOver = (event) => {
-        mousePos.x = event.clientX
-        mousePos.y = event.clientY
-
-        overId = data.id
         setCount(count + 1)
         if(!isRemovable) { 
             setShow(false)
