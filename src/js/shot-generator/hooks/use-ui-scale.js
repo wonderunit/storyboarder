@@ -8,49 +8,45 @@ const { app } = electron.remote
 const useUIScale = () => {
     const settingsService = useRef()
     const autoUIScale = useRef()
-    const scaleBy = useCallback((event, value) => {
-        webFrame.setLayoutZoomLevelLimits(autoUIScale.current.currentScaleLimits.min, autoUIScale.current.currentScaleLimits.max)
+    const scaleBy = useCallback(( event, value ) => {
         autoUIScale.current.scaleBy(value)
     }, [])
     
-    const setScale = useCallback((event, value) => {
-        webFrame.setLayoutZoomLevelLimits(autoUIScale.current.currentScaleLimits.min, autoUIScale.current.currentScaleLimits.max)
+    const setScale = useCallback(( event, value ) => {
         autoUIScale.current.setScale(value)
     }, [])
     
     const updateScaleBoundaries = () => {
-        let windowMinimumSize = electron.remote.getCurrentWindow().getMinimumSize()
         let currentBound = electron.remote.getCurrentWindow().getBounds()
-        autoUIScale.current.updateScaleBoundaries({width: windowMinimumSize[0], height: windowMinimumSize[1]}, currentBound)
+        autoUIScale.current.updateScaleBoundaries(currentBound)
     }
     
-    const resizeScale = event => {
+    const resizeScale = () => {
         updateScaleBoundaries()
         autoUIScale.current.updateScale()
     }
 
-    const onChange = (scale) => {
+    const onChange = ( scale ) => {
         webFrame.setZoomFactor(scale)
         settingsService.current.setSettings({scale})
     } 
     
     useMemo(() =>{
-        let scaleDefault = { max: 1.2, min: 0.6 }
+        const scaleDefault = { max: 1.2, min: 0.6 }
+        const minimalWindowSize = { height: 768, width:1024 }
         settingsService.current = new SettingsService(path.join(app.getPath('userData'), 'shot-generator-settings.json'))
         let currentWindow = electron.remote.getCurrentWindow()
-        let settingsZoom = settingsService.current.getSettingByKey("scale")
+        let settingsZoom = settingsService.current.getSettingByKey('scale')
         let scale 
-        if(!settingsZoom && currentWindow.getBounds().height < 768) {
+        if(!settingsZoom && currentWindow.getBounds().height < minimalWindowSize.height) {
             scale = scaleDefault.min
         } else {
             settingsZoom = settingsZoom !== undefined && settingsZoom >= 1 ? settingsZoom : 1
             scale = settingsZoom
         }
         webFrame.setZoomFactor(scale)
-        autoUIScale.current = new AutoUIScale(scaleDefault, {width: 1024, height: 768}, scale, onChange)
-       // webFrame.setLayoutZoomLevelLimits(scaleDefault.scaleDown, scaleDefault.scaleUp)
+        autoUIScale.current = new AutoUIScale(scaleDefault, minimalWindowSize, scale, onChange)
         updateScaleBoundaries()
-        autoUIScale.current.scale = webFrame.getZoomFactor() - autoUIScale.current.currentScaleLimits.max + autoUIScale.current.defaultScaleLimits.max
         autoUIScale.current.updateScale()
     }, [])
 
