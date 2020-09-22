@@ -201,7 +201,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [characterLOD, isAllowedToInitialize])
 
     useEffect(() => {
-      if(!ref.current) return
+      if(!ref.current || !objectRotationControl.current) return
       if(isSelected) {
         KeyCommandsSingleton.getInstance().addKeyCommand({
           key: "Switch attachables to rotation", 

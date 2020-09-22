@@ -61,8 +61,12 @@ const sceneObjectSelector = (state) => {
   }
   return newSceneObjects
 }
-
+const attachableIdsSelector = (state) => {
+  const sceneObjects = getSceneObjects(state)
+  return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
+}
 const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects) => sceneObjects)
+const getAttachableIdsM = deepEqualSelector([attachableIdsSelector], (sceneObjects) => sceneObjects)
 
 const SceneManagerR3fLarge = connect(
     state => ({
@@ -75,6 +79,7 @@ const SceneManagerR3fLarge = connect(
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
         aspectRatio: state.aspectRatio,
+        attachableIds: getAttachableIdsM(state)
     }),
     {
         selectObject,
@@ -107,6 +112,7 @@ const SceneManagerR3fLarge = connect(
     aspectRatio,
     deleteObjects,
     withState,
+    attachableIds,
 
     stats,
     mainViewCamera
@@ -133,10 +139,6 @@ const SceneManagerR3fLarge = connect(
 
     const lightIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'light').map(o => o.id)
-    }, [sceneObjectLength])
-
-    const attachableIds = useMemo(() => {
-      return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
     }, [sceneObjectLength])
 
     const volumeIds = useMemo(() => {
