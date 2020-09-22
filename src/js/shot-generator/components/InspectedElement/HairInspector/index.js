@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useState, useContext } from 'react'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import classNames from 'classnames'
@@ -30,12 +30,8 @@ import { truncateMiddle } from '../../../../utils'
 
 import isUserModel from '../../../helpers/isUserModel'
 import CopyFile from '../../../utils/CopyFile'
-import ModelLoader from '../../../../services/model-loader'
 
-const GRID_ITEM_NONE_SRC = ModelLoader.getFilepathForModel(
-  { model: 'hair-none', type: 'attachable' },
-  { storyboarderFilePath: null }
-).replace(/.glb$/, '.png')
+import FilepathsContext from '../../../contexts/filepaths'
 
 const USER_MODEL_HAIR_POSITION = {
   "x": -0.0013,
@@ -116,6 +112,9 @@ const HairInspector = connect(
       const { t } = useTranslation()
       const [results, setResults] = useState()
 
+      const { getAssetPath } = useContext(FilepathsContext)
+      const GRID_ITEM_NONE_SRC = getAssetPath('attachable', `hair-none.png`)
+
       const onSelect = useCallback(
         (data) => {
           if (data && data.model) {
@@ -178,7 +177,7 @@ const HairInspector = connect(
       let modelsList = [
         {
           id: null,
-          mode: null,
+          model: null,
           keywords: '',
           name: t('shot-generator.inspector.hair.no-value')
         }
@@ -201,10 +200,7 @@ const HairInspector = connect(
 
         src: attachable.id == null
           ? GRID_ITEM_NONE_SRC
-          : ModelLoader.getFilepathForModel(
-              { model: attachable.id, type: attachable.type },
-              { storyboarderFilePath: null }
-            ).replace(/.glb$/, '.jpg'),
+          : getAssetPath(attachable.type, `${attachable.id}.jpg`),
 
         isSelected: attachable.id == null
           ? selectedHair == null
