@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
+import { useTranslation } from 'react-i18next'
+import { remote } from 'electron'
 
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../package.json'
@@ -29,7 +31,7 @@ import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
-import { useTranslation } from 'react-i18next'
+
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -214,6 +216,15 @@ React.memo(({
   }
 
   const onRemoval = (data) => {
+    const choice = remote.dialog.showMessageBoxSync({
+      type: 'question',
+      buttons: [t('shot-generator.inspector.common.yes'), t('shot-generator.inspector.common.no')],
+      message: t('shot-generator.inspector.common.are-you-sure'),
+      defaultId: 1
+    })
+
+    if (choice !== 0) return
+
     //let sceneObjects 
     withState((dispatch, state) => {
       //sceneObjects = Object.values(getSceneObjects(state)).filter(object => object.emotion === data.filename)
