@@ -6,7 +6,7 @@ function getSystemDirectoryFor (pathToShotGeneratorData) {
       'object': path.join(pathToShotGeneratorData, 'objects'),
       'character': path.join(pathToShotGeneratorData, 'dummies', 'gltf'),
       'attachable': path.join(pathToShotGeneratorData, 'attachables'),
-      'emotions': path.join(pathToShotGeneratorData, 'emotions'),
+      'emotion': path.join(pathToShotGeneratorData, 'emotions'),
       'xr': path.join(pathToShotGeneratorData, 'xr')
     }[type]
   }
@@ -19,22 +19,22 @@ function getProjectDirectory (base) {
       'character': path.join(base, 'models', 'characters'),
       'environment': path.join(base, 'models', 'environments'),
       'attachable': path.join(base, 'models', 'attachables'),
-      'emotions': path.join(base, 'models', 'emotions')
+      'emotion': path.join(base, 'models', 'emotions')
     }[type]
   }
 }
 
 /**
  * @example
- * const getPresetPath = createPresetPathResolver(remote.app.getPath('userData'))
- * getPresetPath('emotions', 'emotions-none.png')
+ * const getUserPresetPath = createUserPresetPathResolver(remote.app.getPath('userData'))
+ * getUserPresetPath('emotions', 'texture.png')
  */
-function createPresetPathResolver (userDataFilePath) {
+function createUserPresetPathResolver (userDataFilePath) {
   /**
    * @param {string} type
    * @param {string} basename
    */
-  return function getPresetPath (type, basename = '') {
+  return function getUserPresetPath (type, basename = '') {
     return path.join(userDataFilePath, 'presets', type, basename)
   }
 }
@@ -42,6 +42,7 @@ function createPresetPathResolver (userDataFilePath) {
 /**
  * @example
  * const getAssetPath = createAssetPathResolver(window.__dirname, storyboarderFilePath)
+ * getAssetPath('emotion', 'emotions-none.png')
  * getAssetPath('attachable', 'models/attachments/model.glb')
  */
 function createAssetPathResolver (appDirectory, storyboarderFilePath) {
@@ -50,20 +51,20 @@ function createAssetPathResolver (appDirectory, storyboarderFilePath) {
 
   /**
    * @param {string} type
-   * @param {string} basename
+   * @param {string} filepath
    */
-  return function getAssetPath (type, basename = '') {
-    if (basename.match(/\//)) {
+  return function getAssetPath (type, filepath = '') {
+    if (filepath.match(/\//)) {
       // user paths
-      return path.join(projectDirectoryFor(type), basename)
+      return path.join(projectDirectoryFor(type), path.basename(filepath))
     } else {
       // system paths
-      return path.join(systemDirectoryFor(type), basename)
+      return path.join(systemDirectoryFor(type), path.basename(filepath))
     }
   }
 }
 
 module.exports = {
-  createPresetPathResolver,
+  createUserPresetPathResolver,
   createAssetPathResolver
 }

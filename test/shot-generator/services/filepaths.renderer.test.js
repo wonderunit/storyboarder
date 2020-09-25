@@ -3,7 +3,7 @@
 const assert = require('assert')
 
 const {
-  createPresetPathResolver,
+  createUserPresetPathResolver,
   createAssetPathResolver
 } = require('../../../src/js/shot-generator/services/filepaths')
 
@@ -12,18 +12,18 @@ const APP_DIR = 'APP_DIR'
 const PROJECT_FILE_PATH = 'PROJECT_DIR/FILENAME.storyboarder'
 
 describe('filepaths', function () {
-  describe('getPresetPath', () => {
-    const getPresetPath = createPresetPathResolver(USER_DATA_DIR)
+  describe('getUserPresetPath', () => {
+    const getUserPresetPath = createUserPresetPathResolver(USER_DATA_DIR)
 
-    it('can get preset file paths', () => {
+    it('can get user preset file paths', () => {
       assert.strictEqual(
-        getPresetPath('emotions', 'emotions-none.png'),
-        'USER_DATA_DIR/presets/emotions/emotions-none.png'
+        getUserPresetPath('emotions', 'texture.png'),
+        'USER_DATA_DIR/presets/emotions/texture.png'
       )
     })
-    it('can get preset directory paths', () => {
+    it('can get user preset directory paths', () => {
       assert.strictEqual(
-        getPresetPath('emotions'),
+        getUserPresetPath('emotions'),
         'USER_DATA_DIR/presets/emotions'
       )
     })
@@ -35,12 +35,24 @@ describe('filepaths', function () {
       // TODO test hand poses
 
       assert.strictEqual(
+        getAssetPath('emotion', 'emotions-none.png'),
+        'APP_DIR/data/shot-generator/emotions/emotions-none.png'
+      )
+      assert.strictEqual(
         getAssetPath('attachable', 'model.glb'),
         'APP_DIR/data/shot-generator/attachables/model.glb'
       )
       assert.strictEqual(
-        getAssetPath('attachable', 'models/attachments/model.glb'),
-        'PROJECT_DIR/models/attachables/models/attachments/model.glb'
+        getAssetPath('attachable', 'models/attachables/model.glb'),
+        'PROJECT_DIR/models/attachables/model.glb'
+      )
+      assert.strictEqual(
+        getAssetPath('emotion', 'texture.png'),
+        'APP_DIR/data/shot-generator/emotions/texture.png'
+      )
+      assert.strictEqual(
+        getAssetPath('emotion', 'models/emotions/texture.png'),
+        'PROJECT_DIR/models/emotions/texture.png'
       )
     })
     it('can get system and user directory paths', () => {
@@ -49,8 +61,8 @@ describe('filepaths', function () {
         'APP_DIR/data/shot-generator/attachables'
       )
       assert.strictEqual(
-        getAssetPath('attachable', 'models/attachments'),
-        'PROJECT_DIR/models/attachables/models/attachments'
+        getAssetPath('attachable', '/'),
+        'PROJECT_DIR/models/attachables'
       )
     })
   })
