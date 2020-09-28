@@ -55,7 +55,7 @@ class SimpleTexture extends DrawingTexture {
     }    
   
     draw (mousePosition, object, camera, brush, gl) { 
-        let intersection = super.draw(mousePosition, object, camera, brush);
+        let intersection = super.draw(mousePosition, object, camera);
         // If we don't have a uv coordinates and as a last resort we trying to translate mouse into object coordinate 
         // From object coordinate we can sort of simulate uv coordinate logic for plain object 
         // NOTE() : This won't work for any object except plain object( image object )

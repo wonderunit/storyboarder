@@ -5,8 +5,9 @@ class EraserBrush extends Brush {
     }
 
     draw(currentPos, brush) {
-        super.draw(currentPos, brush);
+        super.draw(brush);
         this.drawingCtx.fillStyle = 'white';
+        this.drawingCtx.strokeStyle = 'white';
         let prevX, prevY; 
         if(this.positionBuffer.currentLength === 0) {
             prevX = currentPos.x;
@@ -29,6 +30,7 @@ class EraserBrush extends Brush {
         xOffset /= length;
         yOffset /= length;
         let size = this.brushSize;
+        this.drawingCtx.beginPath()
         for(let i = 0; i < length; i++) {
             let x = xOffset * i;
             let y = yOffset * i;

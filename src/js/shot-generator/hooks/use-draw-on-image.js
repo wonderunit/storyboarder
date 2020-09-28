@@ -17,12 +17,12 @@ const useDrawOnImage = (drawMode) => {
 
     useEffect(() => {
       if(drawMode.isEnabled) {
-        gl.domElement.addEventListener( 'mousedown', onKeyDown )
-        window.addEventListener( 'mouseup', onKeyUp )
+        gl.domElement.addEventListener( 'mousedown', onMouseDown )
+        window.addEventListener( 'mouseup', onMouseUp )
       }
       return () => {
-        gl.domElement.removeEventListener( 'mousedown', onKeyDown )
-        window.removeEventListener( 'mouseup', onKeyUp )
+        gl.domElement.removeEventListener( 'mousedown', onMouseDown )
+        window.removeEventListener( 'mouseup', onMouseUp )
       }
     }, [drawMode.isEnabled, drawMode.brush])
 
@@ -40,7 +40,7 @@ const useDrawOnImage = (drawMode) => {
       }
     }, [drawMode.brush.type])
 
-    const onKeyDown = (event) => {
+    const onMouseDown = (event) => {
       isDrawStarted.current = true
       let values = Object.values(getDrawingTextures().getTextures())
       for(let i = 0; i < values.length; i++) {
@@ -70,15 +70,15 @@ const useDrawOnImage = (drawMode) => {
       }
     } 
 
-    const onKeyUp = (event) => {
+    const onMouseUp = (event) => {
       if(!isDrawStarted.current) return
       gl.domElement.removeEventListener('mousemove', draw)
       isDrawStarted.current = false;
       let values = Object.values(getDrawingTextures().getTextures())
       for(let i = 0; i < values.length; i++) {
         let texture = values[i].texture
-        texture.endDraw()
         if(texture.isChanged) {
+          texture.endDraw()
           texture.isChanged = false
           values[i].save()
         }

@@ -41,7 +41,7 @@ class CubeMapDrawingTexture extends DrawingTexture {
   
     draw (mousePosition, object, camera, brush) {
  
-        let intersection = super.draw(mousePosition, object, camera, brush)
+        let intersection = super.draw(mousePosition, object, camera)
         if(!intersection) return;
         let index;
         if(intersection.face.normal.x) {

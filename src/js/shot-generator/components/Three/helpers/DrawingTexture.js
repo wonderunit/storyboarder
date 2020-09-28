@@ -22,6 +22,7 @@ class DrawingTexture {
     }
 
     setMesh(type) {
+        if(this.drawingBrush) this.drawingBrush.cleanUp()
         switch(type) {
             case "Simple":
                 this.drawingBrush = new SimpleBrush();
@@ -39,8 +40,8 @@ class DrawingTexture {
         for(let i = 0; i < this.drawingCtxes.length; i++) {
             canvas = this.drawingCanvases[i];
             context = this.drawingCtxes[i];
-            width = this.drawingCanvases[i].width;
-            height = this.drawingCanvases[i].height;
+            width = canvas.width;
+            height = canvas.height;
             context.fillStyle = "#ffffff";
             context.fillRect(0, 0, width, height);
         }
@@ -69,7 +70,7 @@ class DrawingTexture {
         return intersects.length && intersects[0];
     }
   
-    draw (mousePosition, object, camera, brush) {
+    draw (mousePosition, object, camera) {
 
         let intersection = this.intersectImage(mousePosition.x, mousePosition.y, object, camera);
         if(intersection.uv === null) {

@@ -16,6 +16,7 @@ class Brush {
     }
 
     stopDrawing() {
+        this.drawingCtx.save()
         this.isDrawing = false;
         this.positionBuffer.flushArray();
     }
@@ -28,9 +29,16 @@ class Brush {
         this.prevPos = null;
     }
 
-    draw(currentPos, brush) {
+    cleanUp() {
+        this.positionBuffer.flushArray();
+        this.positionBuffer = null;
+        this.drawingCtx = null;
+        this.resetMeshPos()
+    }
+
+    draw(brush) {
         this.brushSize = brush.size;
-        let { width, height } =  this.drawingCtx.canvas;
+        let { width, height } = this.drawingCtx.canvas;
         if(this.percentageBasedSize) {
             let smallerSide = width > height ? height : width;
             let sizePercent = brush.size  / this.defaultHeight;

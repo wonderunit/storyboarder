@@ -36,7 +36,7 @@ class SimpleBrush extends Brush {
     }
 
     draw(currentPos, brush) {
-        super.draw(currentPos, brush);
+        super.draw(brush);
         this.drawingCtx.strokeStyle = brush.color;
         this.drawingCtx.fillStyle = brush.color;
         this.drawingCtx.lineWidth = this.brushSize * 2;
