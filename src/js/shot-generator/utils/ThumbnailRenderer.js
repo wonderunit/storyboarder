@@ -79,6 +79,10 @@ class ThumbnailRenderer {
   getCamera () {
     return this.camera
   }
+
+  dispose () {
+    this.renderer.dispose()
+  }
 }
 
 export default ThumbnailRenderer
