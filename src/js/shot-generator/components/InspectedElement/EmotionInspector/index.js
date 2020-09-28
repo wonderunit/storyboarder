@@ -101,6 +101,10 @@ const emotionAttachableFactory = (changes) => ({
   model: null,
   attachableType: 'emotion',
   bindBone: 'Head',
+
+  // presetId
+  // attachToId
+  // name
   ...changes
 })
 
