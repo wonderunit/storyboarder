@@ -5,8 +5,10 @@ import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { axis } from '../../../shared/IK/utils/TransformControls'
-import SimpleTexture from './Helpers/SimpleTexture' 
+import DrawingTextureType from '../InspectedWorld/DrawingTextureType'
+import { TextureObjectType} from './Helpers/DrawingTextureContainer'
 import createRoundedPlane from './Helpers/create-rounded-plane'
+import { saveDataURLtoTempFile } from '../../helpers/saveDataURLtoFile'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 import fs from 'fs-extra'
 import path from 'path'
@@ -17,15 +19,19 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   const aspect = useRef(1)
   const ref = useRef()
   const material = useMemo(() => {
-    props.drawTextures[sceneObject.id] = new SimpleTexture()
+    let texture = props.drawTextures.createTexture(sceneObject.id, DrawingTextureType.Simple, TextureObjectType.Image)
     let material = new THREE.MeshToonMaterial({ transparent: true, side: THREE.DoubleSide });
-    props.drawTextures[sceneObject.id].createMaterial(material)
+    texture.createMaterial(material)
     return material
   }, [])
 
+  const save = () => {
+    saveDataURLtoTempFile( props.drawTextures.getTextureById(sceneObject.id).texture.getImage("image/png"), props.storyboarderFilePath, props.updateObject, ref.current)
+  }
+
   useEffect(() => {
     return () => {
-      delete props.drawTextures[sceneObject.id] 
+      delete props.drawTextures.removeTexture(sceneObject.id) 
     }
   }, [])
 
@@ -38,7 +44,9 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     const { width, height } = texture.image
     aspect.current = width / height
     if (material) {
-      props.drawTextures[sceneObject.id].setTexture(texture)
+      let textureObject = props.drawTextures.getTextureById(sceneObject.id)
+      textureObject.texture.setTexture(texture)
+      textureObject.save = () => save()
       material.needsUpdate = true
     } 
   }, [texture])
@@ -89,6 +97,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   
   const { x, y, z, visible, height, rotation, locked } = sceneObject
 
+  
   useEffect(() => {
     if(!props.objectRotationControl || !isSelected) return
     props.objectRotationControl.IsEnabled = !locked

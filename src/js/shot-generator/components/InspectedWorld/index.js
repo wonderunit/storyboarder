@@ -23,7 +23,7 @@ import {
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from '../../utils/CopyFile'
-import SceneTextureType from './SceneTextureType'
+import DrawingTextureType from './DrawingTextureType'
 const imageFilters = ["jpg", "jpeg", "png", "gif", "dds"]
 
 const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
@@ -59,11 +59,11 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   }, [])
 
   const setSceneTextureFile = useCallback((event) => {
-    setWorldTexture(SceneTextureType.Image, event)
+    setWorldTexture(DrawingTextureType.Simple, event)
   }, [])
 
   const setSceneCubeMap = useCallback((event) => {
-    setWorldTexture(SceneTextureType.CubeMap, event)
+    setWorldTexture(DrawingTextureType.Cubemap, event)
   }, [])
   
   const setGrayscale = useCallback(() => updateWorldEnvironment({grayscale: !world.environment.grayscale}), [world.environment.grayscale])
@@ -124,7 +124,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                 onSetValue={setBackground}
             />
           </div> }
-          {(!world.textureType || world.textureType === SceneTextureType.CubeMap) && <FileInput
+          {(!world.textureType || world.textureType === DrawingTextureType.Cubemap) && <FileInput
               onChange={setSceneCubeMap}
               label={"Scene Cube map"}
               value={world.sceneTexture && path.basename(world.sceneTexture)}
@@ -132,7 +132,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
               canRemove={ true }
             />
           }
-          {(!world.textureType || world.textureType === SceneTextureType.Image) && <FileInput
+          {(!world.textureType || world.textureType !== DrawingTextureType.Cubemap) && <FileInput
               onChange={setSceneTextureFile}
               label={"Scene texture"}
               value={world.sceneTexture && path.basename(world.sceneTexture)}

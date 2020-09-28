@@ -162,7 +162,7 @@ const SceneManagerR3fLarge = connect(
       }
     }, [drawMode.isEnabled, drawMode.brush])
 
-    const {drawingTextures, drawingSceneTexture} = useDrawOnImage(drawMode, storyboarderFilePath, updateObject)
+    const drawingTextures = useDrawOnImage(drawMode, storyboarderFilePath, updateObject)
 
     useEffect(() => {
       let sgIkHelper = SGIkHelper.getInstance()
@@ -490,7 +490,7 @@ const SceneManagerR3fLarge = connect(
               world={world}
               storyboarderFilePath={ storyboarderFilePath }
               updateWorld={ updateWorld }
-              drawingSceneTexture={ drawingSceneTexture }/>
+              drawingTextures={ drawingTextures }/>
     }
     {
         roomTexture && <Room

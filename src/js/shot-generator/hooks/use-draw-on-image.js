@@ -1,13 +1,20 @@
 import React, {useEffect, useRef } from "react"
 import { useThree } from "react-three-fiber";
 import mouse from '../utils/mouseToClipSpace'
-import { saveDataURLtoTempFile } from '../helpers/saveDataURLtoFile'
-const useDrawOnImage = (drawMode, storyboarderFilePath, updateObject ) => {
+import { DrawingTextureContainer, TextureObjectType } from '../components/Three/Helpers/DrawingTextureContainer'
+
+const useDrawOnImage = (drawMode) => {
     const {gl, scene, camera} = useThree()
     const isDrawStarted = useRef(false)
     const raycaster = useRef(new THREE.Raycaster())
-    const drawingTextures = useRef({})
-    const drawingSceneTexture = useRef({})
+    const drawingTextures = useRef(null)
+    const getDrawingTextures = () => {
+      if(drawingTextures.current === null) {
+        drawingTextures.current = new DrawingTextureContainer()
+      }
+      return drawingTextures.current
+    }
+
     useEffect(() => {
       if(drawMode.isEnabled) {
         gl.domElement.addEventListener( 'mousedown', onKeyDown )
@@ -22,52 +29,44 @@ const useDrawOnImage = (drawMode, storyboarderFilePath, updateObject ) => {
     useEffect(() => {
       if(!drawMode.cleanImages || !drawMode.cleanImages.length) return
       for(let i = 0; i < drawMode.cleanImages.length; i++) {
-        drawingTextures.current[drawMode.cleanImages[i]].cleanImage()
+        getDrawingTextures().getTextures()[drawMode.cleanImages[i]].cleanImage()
       }
     }, [drawMode.cleanImages])
 
     useEffect(() => {
-      let keys = Object.keys(drawingTextures.current)
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        drawingTextures.current[key].setMesh(drawMode.brush.type)
+      let values = Object.values(getDrawingTextures().getTextures())
+      for(let i = 0; i < values.length; i++) {
+        values[i].texture.setMesh(drawMode.brush.type)
       }
-      if(drawingSceneTexture.current && drawingSceneTexture.current.texture)
-        drawingSceneTexture.current.texture.setMesh(drawMode.brush.type)
     }, [drawMode.brush.type])
 
-    let getImageObjects = () => scene.__interaction.filter(object => object.userData.type === "image")
-
     const onKeyDown = (event) => {
-      isDrawStarted.current = true;
-      let keys = Object.keys(drawingTextures.current)
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        drawingTextures.current[key].prepareToDraw();
-      }
-      if(drawingSceneTexture.current && drawingSceneTexture.current.texture) {
-        drawingSceneTexture.current.texture.prepareToDraw()
+      isDrawStarted.current = true
+      let values = Object.values(getDrawingTextures().getTextures())
+      for(let i = 0; i < values.length; i++) {
+        values[i].texture.setMesh(drawMode.brush.type)
+        values[i].texture.prepareToDraw()
       }
       draw(event)
       gl.domElement.addEventListener('mousemove', draw)
     }
 
     const draw = (event) => {
-      let keys = Object.keys(drawingTextures.current)
+      let values = Object.values(getDrawingTextures().getTexturesByObjectType(TextureObjectType.Image))
       let {x, y} = mouse({x: event.clientX, y: event.clientY}, gl)
       raycaster.current.setFromCamera({x, y}, camera)
-      let imageObjects = getImageObjects()
+      let imageObjects = scene.__interaction.filter(object => object.userData.type === "image")
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
-      if(!intersections.length && drawingSceneTexture.current.draw) {
-        let texture = drawingSceneTexture.current
+      let backgroundTexture = getDrawingTextures().getTexturesByObjectType(TextureObjectType.Background)
+      if(!intersections.length && backgroundTexture.length) {
+        let texture = backgroundTexture[0]
         texture.draw({x, y}, camera, drawMode.brush)
       }
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        let drawingTexture = drawingTextures.current[key];
-        let object = drawingTexture.material.parent.parent;
+      for(let i = 0; i < values.length; i++) {
+        let drawingTexture = values[i].texture
+        let object = drawingTexture.material.parent.parent
         if(!object || !object.visible) continue
-        drawingTexture.draw({x, y}, object, camera, drawMode.brush, gl)
+        values[i].draw({x, y}, object, camera, drawMode.brush, gl)
       }
     } 
 
@@ -75,23 +74,17 @@ const useDrawOnImage = (drawMode, storyboarderFilePath, updateObject ) => {
       if(!isDrawStarted.current) return
       gl.domElement.removeEventListener('mousemove', draw)
       isDrawStarted.current = false;
-      let keys = Object.keys(drawingTextures.current)
-      for(let i = 0; i < keys.length; i++) {
-        let key = keys[i]
-        drawingTextures.current[key].endDraw();
-        let object = scene.__interaction.find((obj) => obj.userData.id === key)
-        if(drawingTextures.current[key].isChanged) {
-          drawingTextures.current[key].isChanged = false
-          saveDataURLtoTempFile(drawingTextures.current[key].getImage("image/png"), storyboarderFilePath, updateObject, object)
+      let values = Object.values(getDrawingTextures().getTextures())
+      for(let i = 0; i < values.length; i++) {
+        let texture = values[i].texture
+        texture.endDraw()
+        if(texture.isChanged) {
+          texture.isChanged = false
+          values[i].save()
         }
       }
-      if( drawingSceneTexture.current.save && drawingSceneTexture.current.texture.isChanged) {
-        drawingSceneTexture.current.texture.isChanged = false
-        drawingSceneTexture.current.texture.endDraw()
-        drawingSceneTexture.current.save()
-      }
     }
-    return {drawingTextures: drawingTextures.current, drawingSceneTexture: drawingSceneTexture.current}
+    return getDrawingTextures()
 }
 
 export default useDrawOnImage

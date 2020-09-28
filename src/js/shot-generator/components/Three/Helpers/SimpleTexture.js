@@ -17,7 +17,6 @@ class SimpleTexture extends DrawingTexture {
 
     getImage(mime) { 
         return super.getImage(mime)[0];
-
     }
 
     setMesh(type) {
