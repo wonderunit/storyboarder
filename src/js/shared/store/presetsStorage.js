@@ -104,7 +104,6 @@ module.exports = {
     if (fs.existsSync(filepath)) {
       let string = fs.readFileSync(filepath)
       let data = JSON.parse(string)
-      migratePosePresets(data)
       return { emotions: data }
     } else {
       return { emotions: undefined }
@@ -114,7 +113,6 @@ module.exports = {
   saveEmotionsPresets: ({ emotions }) => {
     if (!fs.existsSync(getPresetsFolderPath())) { fs.mkdirSync(getPresetsFolderPath()) }
 
-    migratePosePresets(emotions)
     let string = JSON.stringify(emotions, null, 2)
     fs.writeFileSync(getEmotionsPresetsFilePath(), string)
   }
