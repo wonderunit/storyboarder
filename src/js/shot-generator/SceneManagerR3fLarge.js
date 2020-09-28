@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState, useContext } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import TWEEN from '@tweenjs/tween.js'
@@ -48,6 +48,8 @@ import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
 import path from "path"
+
+import FilepathsContext from './contexts/filepaths'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -333,6 +335,8 @@ const SceneManagerR3fLarge = connect(
 
       if (stats) stats.end()
     }, 1)
+
+    const { getAssetPath, getUserPresetPath } = useContext(FilepathsContext)
 
     return <group ref={ rootRef }> 
     <CameraUpdate/>
