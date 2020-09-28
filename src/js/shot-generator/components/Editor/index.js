@@ -43,13 +43,13 @@ import Stats from 'stats.js'
 
 import FilepathsContext from '../../contexts/filepaths'
 const {
-  createPresetPathResolver,
+  createUserPresetPathResolver,
   createAssetPathResolver
 } = require('../../services/filepaths')
 
 const maxZoom = {in: 0.4, out: -1.6}
 
-const getPresetPath = createPresetPathResolver(remote.app.getPath('userData'))
+const getUserPresetPath = createUserPresetPathResolver(remote.app.getPath('userData'))
 
 const Editor = React.memo(({
   mainViewCamera, aspectRatio, board, world, storyboarderFilePath,
@@ -207,7 +207,7 @@ const Editor = React.memo(({
   const filepathsState = useMemo(
     () => ({
       getAssetPath: createAssetPathResolver(window.__dirname, storyboarderFilePath),
-      getPresetPath
+      getUserPresetPath
     }),
     [window.__dirname, storyboarderFilePath]
   )
@@ -268,13 +268,15 @@ const Editor = React.memo(({
                     updateDefaultCamera={ true }
                     noEvents={ true }>
                       <Provider store={ store }>
-                        <SceneManagerR3fLarge
-                          renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                          setLargeCanvasData= { setLargeCanvasData }
-                          mainViewCamera={mainViewCamera}
-                          stats={stats}
-                          />
-                      </Provider>                    
+                        <FilepathsContext.Provider value={filepathsState}>
+                          <SceneManagerR3fLarge
+                            renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
+                            setLargeCanvasData= { setLargeCanvasData }
+                            mainViewCamera={mainViewCamera}
+                            stats={stats}
+                            />
+                        </FilepathsContext.Provider>
+                      </Provider>
                     </Canvas>
                     <GuidesView
                       dimensions={guidesDimensions}
