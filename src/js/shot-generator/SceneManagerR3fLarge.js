@@ -23,6 +23,8 @@ import {
 
  } from '../shared/reducers/shot-generator'
 
+import systemEmotionPresets from '../shared/reducers/shot-generator-presets/emotions.json'
+
 import { useThree, useFrame } from 'react-three-fiber'
 
 import ModelLoader from '../services/model-loader'
@@ -65,10 +67,18 @@ const sceneObjectSelector = (state) => {
 }
 const attachableIdsSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
-  return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
+  return Object.values(sceneObjects).filter(o => o.type === 'attachable' && o.attachableType != 'emotion').map(o => o.id)
 }
 const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects) => sceneObjects)
 const getAttachableIdsM = deepEqualSelector([attachableIdsSelector], (sceneObjects) => sceneObjects)
+
+const getEmotionAttachableByCharacterId = (sceneObjects, id) =>
+  Object.values(sceneObjects)
+      .find(s =>
+        s.type === 'attachable' &&
+        s.attachableType === 'emotion' &&
+        s.attachToId === id
+      )
 
 const SceneManagerR3fLarge = connect(
     state => ({
@@ -81,7 +91,8 @@ const SceneManagerR3fLarge = connect(
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
         aspectRatio: state.aspectRatio,
-        attachableIds: getAttachableIdsM(state)
+        attachableIds: getAttachableIdsM(state),
+        emotionPresets: state.presets.emotions
     }),
     {
         selectObject,
@@ -115,6 +126,7 @@ const SceneManagerR3fLarge = connect(
     deleteObjects,
     withState,
     attachableIds,
+    emotionPresets,
 
     stats,
     mainViewCamera
@@ -375,6 +387,13 @@ const SceneManagerR3fLarge = connect(
     {    
         characterIds.map(id => {
           let sceneObject = sceneObjects[id]
+          let emotionAttachable = getEmotionAttachableByCharacterId(sceneObjects, id)
+          let imagePath = emotionAttachable
+            ? Object.keys(systemEmotionPresets).includes(emotionAttachable.presetId)
+              ? getAssetPath('emotion', `${emotionAttachable.presetId}-texture.png`)
+              : getUserPresetPath('emotions', `${emotionAttachable.presetId}-texture.png`)
+            : null
+
             return <SimpleErrorBoundary  key={ id }>
               <Character
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -388,7 +407,7 @@ const SceneManagerR3fLarge = connect(
                 withState={ withState }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
-                imagePath={  !sceneObject.emotion ? null : getFilePathForImages({type: sceneObject.type, imageAttachmentIds: [sceneObject.emotion]}, storyboarderFilePath)[0] }
+                imagePath={imagePath}
                 forceUpdate={ forceUpdate }
                 />
               </SimpleErrorBoundary>

@@ -1181,6 +1181,21 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
         return
 
+      // Delete Attachable Emotions that are using the deleted Emotion preset
+      case 'DELETE_EMOTION_PRESET':
+        // for every SceneObject ...
+        for (let id in state) {
+          // ... if it is an Attachable Emotion with a matching presetId ...
+          if (
+            state[id].attachableType === 'emotion' &&
+            state[id].presetId === action.payload.id
+          ) {
+            // ... delete the Attachable SceneObject
+            delete draft[id]
+          }
+        }
+        return
+
       default:
         return
     }

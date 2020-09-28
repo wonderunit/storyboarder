@@ -2,36 +2,45 @@ import React, {
   useMemo,
   useRef,
   useState,
-  useEffect,
-  useCallback
+  useContext,
+  useEffect
 } from 'react'
-import classNames from 'classnames'
-import { connect } from 'react-redux'
+import { connect, useDispatch } from 'react-redux'
+import { createSelector } from 'reselect'
 import fs from 'fs-extra'
 import path from 'path'
 import { useTranslation } from 'react-i18next'
 import { remote } from 'electron'
+import * as THREE from 'three'
+import { filter } from 'ramda'
 
 import {
-  updateObject,
-  getSelections,
   getSceneObjects,
+  getSelections,
+
+  updateObject,
   createEmotionPreset,
-  deleteEmotionPreset
+  deleteEmotionPreset,
+
+  createObject,
+  deleteObjects,
+
+  undoGroupStart,
+  undoGroupEnd
 } from '../../../../shared/reducers/shot-generator'
-import FileInput from '../../FileInput'
-import deepEqualSelector from '../../../../utils/deepEqualSelector'
 import presetsStorage from '../../../../shared/store/presetsStorage'
 import {
   NUM_COLS,
   ITEM_HEIGHT,
   CHARACTER_MODEL
 } from '../../../utils/InspectorElementsSettings'
-import EmotionInspectorItem from './EmotionInspectorItem'
+const { id: CHARACTER_MODEL_BASENAME } = CHARACTER_MODEL
+import EmotionPresetThumbnailRenderer from './thumbnail-renderer'
+
 import Grid from '../../Grid'
+import GridItem from '../GridItem'
 import Scrollable from '../../Scrollable'
-import FaceMesh from '../../Three/Helpers/FaceMesh'
-import { filepathFor } from '../../../utils/filepathFor'
+
 import { useAsset } from '../../../hooks/use-assets-manager'
 import {
   comparePresetNames,
@@ -39,172 +48,311 @@ import {
 } from '../../../utils/searchPresetsForTerms'
 import SearchList from '../../SearchList'
 import Modal from '../../Modal'
-import isUserModel from '../../../helpers/isUserModel'
 
-import defaultEmotions from '../../../../shared/reducers/shot-generator-presets/emotions.json'
+import FilepathsContext from '../../../contexts/filepaths'
+
+import systemEmotions from '../../../../shared/reducers/shot-generator-presets/emotions.json'
+
+import { Machine, assign } from 'xstate'
+import { useMachine } from '@xstate/react'
 
 const shortId = (id) => id.toString().substr(0, 7).toLowerCase()
 
-const copyImages = (files, baseDir) => {
-  return new Promise((resolve, reject) => {
-    let projectDir = path.dirname(baseDir)
-    let assetsDir = path.join(projectDir, 'models', 'emotions')
-    fs.ensureDirSync(assetsDir)
+const promptForFilepath = async () => remote.dialog.showOpenDialog(null, {})
 
-    let dsts = []
-    for (let src of files) {
-      let dst = path.join(assetsDir, path.basename(src))
-      try {
-        fs.copySync(src, dst)
-        dsts.push(dst)
-      } catch (err) {
-        reject(src)
-      }
-    }
-
-    let ids = dsts.map((filepath) => path.relative(projectDir, filepath))
-
-    resolve(ids)
-  })
-}
-const getModelData = deepEqualSelector(
-  [
-    (state) => {
-      const selectedId = getSelections(state)[0]
-      const object = getSceneObjects(state)[selectedId]
-
-      return {
-        sceneObject: object,
-        characterPath: filepathFor(CHARACTER_MODEL),
-        emotions: state.presets.emotions,
-        storyboarderFilePath: state.meta.storyboarderFilePath
-      }
-    }
-  ],
-  (data) => data
+const getFirstSelectedSceneObject = createSelector(
+  [getSceneObjects, getSelections],
+  (sceneObjects, selections) => sceneObjects[selections[0]]
 )
-const EmotionsInspector = connect(getModelData, {
-  updateObject,
-  createEmotionPreset,
-  deleteEmotionPreset,
-  withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
-})(
+
+const getEmotionAttachableByCharacterId = (sceneObjects, id) =>
+  Object.values(sceneObjects)
+      .find(s =>
+        s.type === 'attachable' &&
+        s.attachableType === 'emotion' &&
+        s.attachToId === id
+      )
+
+// TODO extract to store middleware or store subscriber
+const writeEmotionPresets = () => {
+  return (dispatch, getState) => {
+    let allEmotions = getState().presets.emotions
+
+    let userEmotions = filter(
+      ({ id }) => systemEmotions[id] == null,
+      allEmotions
+    )
+
+    presetsStorage.saveEmotionsPresets({ emotions: userEmotions })
+  }
+}
+
+const emotionAttachableFactory = (changes) => ({
+  id: THREE.Math.generateUUID(),
+
+  type: 'attachable',
+
+  x: 0,
+  y: 0,
+  z: 0,
+  rotation: { x: 0, y: 0, z: 0 },
+  size: 1,
+
+  model: null,
+  attachableType: 'emotion',
+  bindBone: 'Head',
+  ...changes
+})
+
+const emotionPresetFactory = ({ name, priority = 0 }) => ({
+  id: THREE.Math.generateUUID(),
+  name,
+  priority
+})
+
+const createPreset = async (context, event) => {
+  console.log('createPreset', context)
+  let { name, source, dispatch, getUserPresetPath, getThumbnailRenderer } = context
+
+  // ensure the emotions user preset directory exists
+  fs.mkdirpSync(getUserPresetPath('emotions'))
+
+  let emotionPreset = emotionPresetFactory({ name })
+
+  // import image to presets folder
+  let src = source
+  let dest = getUserPresetPath('emotions', `${emotionPreset.id}-texture.png`)
+  fs.copyFileSync(src, dest)
+
+  // load image as a Texture
+  // TODO can this use loadAsset instead?
+  let faceTexture = await new Promise((resolve, reject) => {
+    new THREE.TextureLoader().load(
+      dest,
+      resolve,
+      null,
+      reject
+    )
+  })
+
+  // generate and write the thumbnail
+  let thumbnailFilePath = getUserPresetPath('emotions', `${emotionPreset.id}-thumbnail.jpg`)
+  getThumbnailRenderer().render({ faceTexture })
+  fs.writeFileSync(
+    thumbnailFilePath,
+    getThumbnailRenderer().toBase64('image/jpg'),
+    'base64'
+  )
+  getThumbnailRenderer().clear()
+
+  // create preset data
+  dispatch(createEmotionPreset(emotionPreset))
+
+  // write presets to file
+  dispatch(writeEmotionPresets())
+
+  // set emotion preset for current Character
+  selectItem(
+    { dispatch },
+    {
+      attachableId: context.attachableId,
+      attachToId: context.attachToId,
+      presetId: emotionPreset.id,
+      name
+    }
+  )
+}
+
+const deletePreset = (context, event) => {
+  let { dispatch, getUserPresetPath } = context
+  let { id, sceneObject, emotionAttachable } = event
+
+  console.log('delete preset', id, 'used by character', sceneObject, 'via attachable', emotionAttachable)
+
+  // delete the preset
+  dispatch(deleteEmotionPreset(id))
+
+  // write presets to file
+  dispatch(writeEmotionPresets())
+
+  // delete the images
+  let textureFilepath = getUserPresetPath('emotions', `${id}-texture.png`)
+  let thumbnailFilepath = getUserPresetPath('emotions', `${id}-thumbnail.jpg`)
+
+  fs.removeSync(textureFilepath)
+  fs.removeSync(thumbnailFilepath)
+}
+
+const selectItem = (context, event) => {
+  console.log('selectItem', context, event)
+
+  let { dispatch } = context
+  let { attachableId, presetId, attachToId, name } = event
+
+  dispatch(undoGroupStart())
+
+  if (presetId) {
+    let changes = {
+      presetId,
+      attachToId,
+      name
+    }
+
+    if (attachableId) {
+      console.log('updateObject', attachableId, changes)
+      dispatch(updateObject(attachableId, changes))
+    } else {
+      let emotionAttachable = emotionAttachableFactory(changes)
+      console.log('createObject', emotionAttachable)
+      dispatch(createObject(emotionAttachable))
+    }
+  } else {
+    console.log('deleteObjects', attachableId)
+    dispatch(deleteObjects([attachableId]))
+  }
+
+  dispatch(undoGroupEnd())
+}
+
+const machine = Machine({
+  id: 'emotions',
+  initial: 'idle',
+  context: {
+    placeholder: null,
+    name: null,
+    source: null
+  },
+  states: {
+    idle: {
+      on: {
+        SELECT_FILE: 'selectFile',
+        SELECT_ITEM: {
+          actions: selectItem
+        },
+        DELETE_PRESET: {
+          actions: deletePreset
+        }
+      }
+    },
+    selectFile: {
+      entry: [
+        assign({
+          source: () => null,
+          attachToId: (context, event) => event.attachToId,
+          attachableId: (context, event) => event.attachableId
+        }),
+      ],
+      invoke: {
+        src: promptForFilepath,
+        onDone: [
+          {
+            cond: (context, event) => event.data.canceled,
+            target: 'idle'
+          },
+          {
+            actions: assign({
+              source: (context, event) => event.data.filePaths[0],
+            }),
+            target: 'prompt'
+          }
+        ]
+      }
+    },
+    prompt: {
+      entry: assign((context, event) => {
+        let basename = path.basename(context.source, path.extname(context.source))
+        let placeholder = `${basename}-${shortId(THREE.Math.generateUUID())}`
+        return {
+          ...context,
+          placeholder,
+          name: placeholder
+        }
+      }),
+      exit: assign({
+        placeholder: () => null
+      }),
+      on: {
+        NAME: {
+          actions: assign({ name: (context, event) => event.value })
+        },
+        CANCEL: 'idle',
+        NEXT: 'save'
+      }
+    },
+    save: {
+      invoke: {
+        src: createPreset,
+        onDone: {
+          target: 'idle'
+        }
+      }
+    }
+  }
+})
+
+const mapStateToProps = state => {
+  let sceneObjects = getSceneObjects(state)
+
+  let id = getSelections(state)[0]
+  let sceneObject = sceneObjects[id]
+
+  let emotionAttachable = getEmotionAttachableByCharacterId(sceneObjects, sceneObject.id)
+
+  return {
+    sceneObject,
+    userEmotions: filter(
+      ({ id }) => systemEmotions[id] == null,
+      state.presets.emotions
+    ),
+    emotionAttachable
+  }
+}
+const EmotionInspector = connect(mapStateToProps)(
   React.memo(
     ({
       sceneObject,
-      updateObject,
-      characterPath,
-      createEmotionPreset,
-      withState,
-      emotions,
-      storyboarderFilePath,
-      deleteEmotionPreset
+      userEmotions,
+      emotionAttachable
     }) => {
       const { t } = useTranslation()
+      const { getAssetPath, getUserPresetPath } = useContext(FilepathsContext)
 
-      const faceMesh = useRef(null)
-      function getFaceMesh() {
-        if (faceMesh.current === null) {
-          faceMesh.current = new FaceMesh()
-        }
-        return faceMesh.current
-      }
-
+      const { asset: characterGltf } = useAsset(getAssetPath('character', `${CHARACTER_MODEL_BASENAME}.glb`))
       const thumbnailRenderer = useRef()
-      const textureLoader = useRef(new THREE.TextureLoader())
-      const [results, setResult] = useState()
-      const { asset: attachment } = useAsset(characterPath)
-      const [isModalShown, showModal] = useState(false)
-      const newPresetName = useRef('')
-      const newGeneratedId = useRef()
-      const filePath = useRef()
-
-      useEffect(() => {
-        setResult(Object.values(emotions))
-      }, [emotions])
-
-      const onSelectFile = (filepath) => {
-        if (filepath.file) {
-          copyImages(filepath.files, storyboarderFilePath).then((ids) => {
-            addEmotionPreset(ids[0], newPresetName.current)
-          })
+      const getThumbnailRenderer = () => {
+        if (thumbnailRenderer.current == null) {
+          thumbnailRenderer.current = characterGltf
+            ? new EmotionPresetThumbnailRenderer({ characterGltf })
+            : null
         }
+        return thumbnailRenderer.current
       }
-
-      const onCreatePosePreset = (filepath) => {
-        if (!filepath.file) return
-        newGeneratedId.current = 'Emotion ' + shortId(THREE.Math.generateUUID())
-        newPresetName.current = newGeneratedId.current
-        filePath.current = filepath
-        showModal(true)
-      }
-
-      const presets = useMemo(() => {
-        let sortedPoses = Object.values(emotions)
-          .sort(comparePresetNames)
-          .sort(comparePresetPriority)
-          .map((preset, index) => {
-            return {
-              ...preset,
-              value: preset.name + '|' + preset.keywords,
-              index: index
-            }
-          })
-        setResult(sortedPoses)
-        return sortedPoses
+      useEffect(() => {
+        return function cleanup () {
+          if (thumbnailRenderer.current) {
+            thumbnailRenderer.current.dispose()
+            thumbnailRenderer.current = null
+          }
+        }
       }, [])
 
-      const saveFilteredPresets = useCallback(
-        (filteredPreset) => {
-          let objects = []
-          for (let i = 0; i < filteredPreset.length; i++) {
-            objects.push(presets[filteredPreset[i].index])
-          }
-          setResult(objects)
-        },
-        [presets]
-      )
+      const dispatch = useDispatch()
+      const [current, send, service] = useMachine(machine,{
+        context: {
+          dispatch,
+          getAssetPath,
+          getUserPresetPath,
+          getThumbnailRenderer
+        }
+      })
 
-      const addEmotionPreset = (filepath, name) => {
-        if (name != null && name != '' && name != ' ') {
-          // create a preset out of it
-          let newPreset = {
-            id: THREE.Math.generateUUID(),
-            name,
-            keywords: name, // TODO keyword editing
-            filename: filepath
-          }
-
-          // add it to state
-          createEmotionPreset(newPreset)
-          if (!isUserModel(sceneObject.model)) {
-            // select the preset in the list
-            updateObject(sceneObject.id, { emotion: filepath })
-          }
-
-          // get updated state (with newly created pose preset)
-          withState((dispatch, state) => {
-            // ... and save it to the presets file
-            let denylist = Object.keys(defaultEmotions)
-            let filteredPoses = Object.values(state.presets.emotions)
-              .filter((pose) => denylist.includes(pose.id) === false)
-              .reduce((coll, pose) => {
-                coll[pose.id] = pose
-                return coll
-              }, {})
-            presetsStorage.saveEmotionsPresets({ emotions: filteredPoses })
-          })
+      const onModalClose = () => {
+        if (current.matches('prompt')) {
+          send('CANCEL')
         }
       }
 
-      const onSelectItem = (filepath) => {
-        if (!isUserModel(sceneObject.model)) {
-          // select the preset in the list
-          updateObject(sceneObject.id, { emotion: filepath })
-        }
-      }
-
-      const onRemoval = (data) => {
+      const onDeletePreset = ({ id }) => {
         const choice = remote.dialog.showMessageBoxSync({
           type: 'question',
           buttons: [t('shot-generator.inspector.common.yes'), t('shot-generator.inspector.common.no')],
@@ -214,108 +362,126 @@ const EmotionsInspector = connect(getModelData, {
 
         if (choice !== 0) return
 
-        let sceneObjects
-        withState((dispatch, state) => {
-          sceneObjects = Object.values(getSceneObjects(state)).filter(
-            (object) => object.emotion === data.filename
-          )
-          for (let i = 0; i < sceneObjects.length; i++) {
-            updateObject(sceneObjects[i].id, { emotion: null })
-          }
-          // ... and save it to the presets file
-          let denylist = Object.keys(defaultEmotions)
-          denylist.push(data.id)
-          let filteredPoses = Object.values(state.presets.emotions)
-            .filter((pose) => denylist.includes(pose.id) === false)
-            .reduce((coll, pose) => {
-              coll[pose.id] = pose
-              return coll
-            }, {})
-          presetsStorage.saveEmotionsPresets({ emotions: filteredPoses })
-        })
-        deleteEmotionPreset(data.id)
-        let emotionPath = path.join(
-          path.dirname(storyboarderFilePath),
-          data.filename
-        )
-        fs.remove(emotionPath)
+        send({ type: 'DELETE_PRESET', id, sceneObject, emotionAttachable })
       }
 
-      const refClassName = classNames('button__file', 'button__file--selected')
-      // allow a little text overlap
-      const wrapperClassName = 'button__file__wrapper'
+      const EMOTION_PRESET_NONE = {
+        id: null,
+        name: t('shot-generator.inspector.emotions.no-value'),
+        keywords: undefined,
+        priority: 0
+      }
 
-      return (
-        <React.Fragment>
-          <Modal visible={isModalShown} onClose={() => showModal(false)}>
-            <div style={{ margin: '5px 5px 5px 5px' }}>
-              {t("shot-generator.inspector.common.select-preset-name")}
+      const presets = [
+        EMOTION_PRESET_NONE
+      ].concat(
+        [
+          ...Object.values(systemEmotions),
+          ...Object.values(userEmotions)
+        ]
+        .sort(comparePresetNames)
+        .sort(comparePresetPriority)
+      )
+
+      const presetsAsGridItems = presets.map(({ id, name, keywords }) => ({
+        title: name,
+        src: id == null
+          ? getAssetPath('emotion', `emotions-none.png`)
+          : systemEmotions[id] != null
+            ? getAssetPath('emotion', `${id}-thumbnail.jpg`)
+            : getUserPresetPath('emotions', `${id}-thumbnail.jpg`),
+        isSelected: id == null
+          ? emotionAttachable == null
+          : emotionAttachable && emotionAttachable.presetId == id,
+        id: id,
+        onDelete: id == null || systemEmotions[id] != null ? null : onDeletePreset
+      }))
+
+      const searchList = useMemo(() =>
+        presets.map(({ id, name, keywords }) => ({ id, value: name + ' ' + keywords })),
+        [userEmotions]
+      )
+
+      const [resultIds, setResultIds] = useState([])
+      const onSearch = results => setResultIds(results.map(r => r.id))
+      const elements = presetsAsGridItems.filter(({ id }) => resultIds.includes(id))
+
+      return <React.Fragment>
+        <Modal visible={current.matches('prompt')} onClose={onModalClose}>
+          <div style={{ margin: '5px 5px 5px 5px' }}>
+            {t("shot-generator.inspector.common.select-preset-name")}
+          </div>
+          <div className="column" style={{ flex: 1 }}>
+            <input
+              className="modalInput"
+              type="text"
+              placeholder={current.context.placeholder}
+              onChange={
+                event => send({
+                  type: 'NAME',
+                  value: event.currentTarget.value || event.currentTarget.placeholder
+                })
+              }
+            />
+          </div>
+          <div className="skeleton-selector__div">
+            <button
+              className="skeleton-selector__button"
+              onClick={() => send('NEXT')}
+            >
+              {t("shot-generator.inspector.common.add-preset")}
+            </button>
+          </div>
+        </Modal>
+
+        <div className="thumbnail-search column">
+          <div className="row" style={{ padding: '6px 0' }}>
+            <SearchList
+              label="Search Your Emotions …"
+              list={searchList}
+              onSearch={onSearch}
+            />
+
+            <div className="column" style={{ marginLeft: 5 }}> 
+              <a className="button_add" href="#"
+                style={{ width: 30, height: 34 }}
+                onPointerDown={() => send({
+                  type: 'SELECT_FILE',
+                  attachToId: sceneObject.id,
+                  attachableId: emotionAttachable && emotionAttachable.id
+                })}
+              >+</a>
             </div>
-            <div className="column" style={{ flex: 1 }}>
-              <input
-                className="modalInput"
-                type="text"
-                placeholder={newGeneratedId.current}
-                onChange={(value) =>
-                  (newPresetName.current = value.currentTarget.value)
-                }
-              />
-            </div>
-            <div className="skeleton-selector__div">
-              <button
-                className="skeleton-selector__button"
-                onClick={() => {
-                  showModal(false)
-                  onSelectFile(filePath.current)
-                }}
-              >
-                {t("shot-generator.inspector.common.add-preset")}
-              </button>
-            </div>
-          </Modal>
-          <div className="thumbnail-search column">
-            <div className="row" style={{ padding: '6px 0' }}>
-              <SearchList
-                label={t('shot-generator.inspector.emotions.search-list-label')}
-                list={presets}
-                onSearch={saveFilteredPresets}
-              />
-              <div
-                className="column"
-                style={{ alignSelf: 'center', padding: 6, lineHeight: 1 }}
-              >
-                or
-              </div>
-              <FileInput
-                value={t('shot-generator.inspector.common.select-image')}
-                onChange={onCreatePosePreset}
-                refClassName={refClassName}
-                wrapperClassName={wrapperClassName}
-              />
-            </div>
+          </div>
+          {
+            (emotionAttachable && emotionAttachable.presetId == null) &&
+             <div className="row" style={{ padding: '6px 0' }}>
+              Embedded: {shortId(emotionAttachable.id)} ({emotionAttachable.name})
+             </div>
+          }          
+          <div className="thumbnail-search__list">
             <Scrollable>
               <Grid
                 itemData={{
-                  id: sceneObject.id,
-                  onSelectItem,
-                  thumbnailRenderer,
-                  textureLoader,
-                  faceMesh: getFaceMesh(),
-                  attachment,
-                  selectedSrc: sceneObject.emotion,
-                  storyboarderFilePath,
-                  onRemoval
+                  onSelect: ({ id, title }) => send({
+                    type: 'SELECT_ITEM',
+                    attachToId: sceneObject.id,
+                    attachableId: emotionAttachable && emotionAttachable.id,
+                    presetId: id,
+                    name: title
+                  })
                 }}
-                Component={EmotionInspectorItem}
-                elements={results}
+                Component={GridItem}
+                elements={elements}
                 numCols={NUM_COLS}
                 itemHeight={ITEM_HEIGHT}
               />
             </Scrollable>
           </div>
-        </React.Fragment>
-      )
+        </div>
+
+      </React.Fragment>
     }
   )
 )
-export default EmotionsInspector
+export default EmotionInspector
