@@ -40,6 +40,8 @@ function createUserPresetPathResolver (userDataFilePath) {
 }
 
 /**
+  * @param {string} appDirectory
+  * @param {string} storyboarderFilePath
  * @example
  * const getAssetPath = createAssetPathResolver(window.__dirname, storyboarderFilePath)
  * getAssetPath('emotion', 'emotions-none.png')
