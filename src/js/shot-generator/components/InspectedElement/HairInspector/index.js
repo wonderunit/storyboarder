@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useContext } from 'react'
+import React, { useCallback, useState, useContext, useMemo } from 'react'
 import { connect } from 'react-redux'
 import { createSelector } from 'reselect'
 import classNames from 'classnames'
@@ -187,10 +187,13 @@ const HairInspector = connect(
         }
       ].concat(attachableHairModels)
 
-      let searchList = modelsList.map(({ id, name, keywords }) => ({
-        value: [name, keywords].filter(Boolean).join(' '),
-        id
-      }))
+      let searchList = useMemo(
+        () => modelsList.map(({ id, name, keywords }) => ({
+          value: [name, keywords].filter(Boolean).join(' '),
+          id
+        })),
+        attachableHairModels
+      )
 
       let matches =
         results == null
