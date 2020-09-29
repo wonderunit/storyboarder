@@ -12,7 +12,6 @@
     "heroku:deploy": "git subtree push --prefix dist heroku master"
   },
   "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@babel/core": "^7.10.5",
     "@babel/plugin-transform-async-to-generator": "^7.10.4",
