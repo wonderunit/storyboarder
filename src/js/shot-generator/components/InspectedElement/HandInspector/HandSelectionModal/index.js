@@ -1,7 +1,7 @@
 import React, {useRef, useMemo, useState, useEffect} from 'react'
 import Modal from '../../../Modal'
 import Select from '../../../Select'
-
+import { useTranslation } from 'react-i18next'
 const HandSelectionModal = React.memo(({
     visible,
     setVisible,
@@ -11,6 +11,7 @@ const HandSelectionModal = React.memo(({
     onSuccess,
     defaultSelectedHand = null
 }) => {
+    const { t } = useTranslation()
     const [selectedHand, setSelectedHand] = useState(null)
     const selectOptions = useMemo(() => {
         if(!skeleton) return []
@@ -37,7 +38,7 @@ const HandSelectionModal = React.memo(({
 
     return <Modal visible={visible} onClose={() => setVisible(false)}>
                 <div style={{margin:"5px 5px 5px 5px"}}>
-                  Select Hand:
+                  {t("shot-generator.inspector.hand-preset.select-hand")}:
                 </div>
                 <div className="select">
                   <Select 
@@ -53,7 +54,7 @@ const HandSelectionModal = React.memo(({
                       setVisible(false)
                       onSuccess(model, id, selectedHand.value)
                     }}>
-                      Proceed
+                      {t("shot-generator.inspector.common.proceed-button")}
                   </button>
                   </div>
             </Modal>

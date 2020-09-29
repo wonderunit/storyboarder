@@ -1,6 +1,6 @@
 const { BrowserWindow, ipcMain, app, dialog, session } = electron = require('electron')
 const isDev = require('electron-is-dev')
-
+const SettingsService = require("./SettingsService")
 const path = require('path')
 const url = require('url')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
@@ -25,12 +25,15 @@ const removeExtensions = () => {
   }
 }
 
+const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"))
+let windowSize = settingsService.getSettingByKey("shotGeneratorSize") 
+windowSize = windowSize ? windowSize : { x:undefined, y:undefined, width: 1505, height: 1080 }
 let win
 let memento = {
-  x: undefined,
-  y: undefined,
-  width: 1505,
-  height: 1080,
+  x: windowSize.x,
+  y: windowSize.y,
+  width: windowSize.width,
+  height: windowSize.height,
 }
 
 const reveal = onComplete => {
@@ -101,10 +104,13 @@ const show = async (onComplete) => {
     }
   })
 
-  win.on('resize', () => memento = win.getBounds())
+  win.on('resize', () => { 
+    memento = win.getBounds()
+  })
   win.on('move', () => memento = win.getBounds())
 
   win.once('closed', () => {
+    settingsService.setSettingByKey("shotGeneratorSize", memento)
     win = null
   })
   win.loadURL(url.format({

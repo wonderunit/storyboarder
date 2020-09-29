@@ -7,6 +7,7 @@ const trash = require('trash')
 const chokidar = require('chokidar')
 const os = require('os')
 const log = require('electron-log')
+const fileSystem = require('fs')
 
 const prefModule = require('./prefs')
 prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -36,9 +37,9 @@ const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index')
-
+const {settings:languageSettings} = require('./services/language.config')
 const autoUpdater = require('./auto-updater')
-
+const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 
@@ -93,15 +94,56 @@ app.on('open-file', (event, path) => {
   }
 })
 
+const syncLanguages = (dir, isLanguageFile, array) => {
+  let files = fileSystem.readdirSync(dir)
+  for(let i = 0; i < files.length; i++) {
+    let fileName = files[i]
+    let { name, ext } = path.parse(fileName)
+    
+    if(isLanguageFile(name, ext)) { 
+      let data = fs.readFileSync(path.join(dir, fileName))
+      let json = JSON.parse(data)
+      let language = {}
+      language.fileName = name
+      language.displayName = json.Name
+      array.push(language)
+    }
+  }
+}
+
 app.on('ready', async () => {
   analytics.init(prefs.enableAnalytics)
 
   const exporterFfmpeg = require('./exporters/ffmpeg')
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
   log.info('ffmpeg version', ffmpegVersion)
+  
+  // Initial set up of language-settings file
+  let settings = {builtInLanguages:[], customLanguages:[]}
+  let dir = path.join(__dirname, "locales")
+  syncLanguages(dir, (name, ext) => ext === ".json", settings.builtInLanguages)
+  dir = path.join(app.getPath('userData'), "locales")
+  syncLanguages(dir, (name, ext) => ext === ".json" && name !== "language-settings", settings.customLanguages)
+  if(Object.keys(languageSettings.getSettings()).length === 0) {
+    let appLocale = app.getLocale()
+    if(!settings.builtInLanguages.some((item) => item.fileName === app.getLocale())) {
+      appLocale = 'en-US'
+    }
+    settings.selectedLanguage = appLocale
+    settings.defaultLanguage = appLocale
+  } else {
+    let selectedLanguage = languageSettings.getSettingByKey("selectedLanguage")
+    if(!settings.builtInLanguages.some((item) => item.fileName === selectedLanguage) &&
+    !settings.customLanguages.some((item) => item.fileName === selectedLanguage)) {
+    settings.selectedLanguage = languageSettings.getSettingByKey("defaultLanguage")
+}
+  }
 
 
 
+
+  languageSettings.setSettings(settings)
+  //TODO(): Check if files of custom languages exist
   // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
   let payload = {}
@@ -149,6 +191,7 @@ app.on('ready', async () => {
     // create new keymap.json
     shouldOverwrite = true
   }
+
 
   // merge with defaults
   store.dispatch({
@@ -303,7 +346,6 @@ let openKeyCommandWindow = () => {
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
-
 })
 
 let openNewWindow = () => {
@@ -385,6 +427,7 @@ let openWelcomeWindow = () => {
       count++
     }
     prefs.recentDocuments = recentDocumentsCopy
+
     prefModule.set('recentDocuments', recentDocumentsCopy)
   }
 
@@ -394,6 +437,7 @@ let openWelcomeWindow = () => {
       if (!isDev) autoUpdater.init()
       analytics.screenView('welcome')
     }, 300)
+
   })
 
   welcomeWindow.once('close', () => {
@@ -1205,6 +1249,7 @@ ipcMain.on('undo', (e, arg)=> {
   mainWindow.webContents.send('undo')
 })
 
+
 ipcMain.on('redo', (e, arg)=> {
   mainWindow.webContents.send('redo')
 })
@@ -1367,6 +1412,7 @@ ipcMain.on('exportImages', (event, arg) => {
 ipcMain.on('exportPDF', (event, arg) => {
   mainWindow.webContents.send('exportPDF', arg)
 })
+
 ipcMain.on('exportWeb', (event, arg) => {
   mainWindow.webContents.send('exportWeb', arg)
 })
@@ -1441,6 +1487,49 @@ ipcMain.on('workspaceReady', event => {
     }
   })
 })
+
+const notifyAllsWindows = (event, ...args) => {
+  let allWindows = BrowserWindow.getAllWindows()
+  for(let i = 0; i < allWindows.length; i ++) {
+    if(! allWindows[i]) continue
+    allWindows[i].send(event, ...args)
+  }
+}
+
+ipcMain.on('languageChanged', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageChanged", lng)
+})
+
+ipcMain.on('languageModified', (event, lng) => {
+  notifyAllsWindows("languageModified", lng)
+})
+
+ipcMain.on('languageAdded', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageAdded", lng)
+})
+
+ipcMain.on('languageRemoved', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageRemoved", lng)
+})
+
+ipcMain.on('getCurrentLanguage', (event) => {
+  event.returnValue = languageSettings.getSettingByKey("selectedLanguage")
+})
+
+ipcMain.on('openLanguagePreferences', (event) => {
+  let win = LanguagePreferencesWindow.getWindow()
+  if (win) {
+    LanguagePreferencesWindow.reveal()
+  } else {
+    LanguagePreferencesWindow.createWindow(() => {LanguagePreferencesWindow.reveal()})
+  }
+  //openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
+  //ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
+})
+
 
 ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
   mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)

@@ -9,7 +9,7 @@ const WS = require('ws')
 
 const path = require('path')
 const shotExplorer = require('../shot-explorer/main')
-const React = require('react')
+const { Suspense } = React = require('react')
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
@@ -47,6 +47,8 @@ const { reducer } = require('../../shared/reducers/shot-generator')
 const loadBoardFromData = require('../../shared/actions/load-board-from-data')
 let sendedAction = null
 
+const { I18nextProvider } = require('react-i18next')
+const i18n = require('../../services/i18next.config')
 const {SGMiddleware} = require('./../../xr/sockets')
 
 require("../../shared/helpers/monkeyPatchGrayscale")
@@ -304,6 +306,42 @@ ipcRenderer.on('shot-explorer:show', (event) => {
   }
 })
 
+//#region Localization 
+i18n.on('loaded', (loaded) => {
+  let lng = ipcRenderer.sendSync("getCurrentLanguage")
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+  })
+  i18n.off('loaded')
+})
+
+const updateLanguageInStore = (lng) => {
+  store.dispatch({
+    type: "SET_CURRENT_LANGUAGE",
+    payload: lng
+  })
+}
+const changeLanguage = (lng) => {
+  updateLanguageInStore(lng)
+  ipcRenderer.send("languageChanged", lng)
+}
+
+
+ipcRenderer.on("languageChanged", (event, lng) => {
+  i18n.off("languageChanged", changeLanguage)
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+  })
+  shotExplorer.getWindow().webContents.send('shot-explorer:change-language', lng)
+})
+
+ipcRenderer.on("languageModified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
+  shotExplorer.getWindow().webContents.send('shot-explorer:language-modified', lng)
+})
+//#endregion
+
+
 window.$r = { store }
 
 // disabled for now so we can reload the window easily during development
@@ -311,10 +349,13 @@ window.$r = { store }
 
 log.info('ready!')
 electronUtil.disableZoom()
-
 ReactDOM.render(
-  <Provider store={store}>
-    <Editor store={store}/>
-  </Provider>,
+    <Provider store={ store }>
+      <I18nextProvider i18n={ i18n }>
+        <Suspense fallback="loading">
+          <Editor store={store}/>
+        </Suspense>
+      </I18nextProvider>
+    </Provider>,
   document.getElementById('main')
 )

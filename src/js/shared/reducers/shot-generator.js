@@ -1473,6 +1473,9 @@ const mainReducer = (state/* = initialState*/, action) => {
       case 'SET_ASPECT_RATIO':
         draft.aspectRatio = action.payload
         return
+      case 'SET_CURRENT_LANGUAGE':
+        draft.language = action.payload
+        return
 
       case 'SET_MAIN_VIEW_CAMERA':
         draft.mainViewCamera = action.payload

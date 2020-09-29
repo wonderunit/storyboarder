@@ -55,12 +55,12 @@ class ShotItem {
         let indexOf = this.subscribers.indexOf(fn)
         indexOf !== -1 && this.subscribers.splice(indexOf, 1)
     }
-
-    toString() {
+    
+    toString(t) {
         if(!this.camera) return
         let focalLength = this.camera.getFocalLength()
         let index = indexIn(mms, focalLength)
-        return `${this.size}, ${this.angle} on ${this.character && this.character.userData.name}, ${mms[index]}mm`;
+        return `${this.size}, ${this.angle} ${t("shot-explorer.on")} ${this.character && this.character.userData.name}, ${mms[index]}mm`;
     }
 
     destroy() {

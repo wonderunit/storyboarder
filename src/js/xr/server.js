@@ -2,9 +2,8 @@ import path from 'path'
 import electron from 'electron'
 import {useState, useMemo, useEffect, useCallback} from 'react'
 
-import {updateServer} from '../shared/reducers/shot-generator'
-
 import {serve} from './sockets'
+import { updateServer } from '../shared/reducers/shot-generator'
 
 const electronApp = electron.app ? electron.app : electron.remote.app
 

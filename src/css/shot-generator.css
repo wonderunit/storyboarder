@@ -541,6 +541,10 @@ input[type=checkbox] {
 input[type="checkbox"] + label {
   cursor: default;
   position: relative;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 input[type="checkbox"] + label span {
@@ -556,13 +560,13 @@ input[type="checkbox"] + label span {
 
 input[type=checkbox]:checked + label:before {
   content:'\2716';
-  padding-left: 5px;
-  padding-top: 4px;
+  /* padding-left: 5px;
+  padding-top: 4px; */
   text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
   font-size: 15px;
   text-align: center;
   line-height: 1;
-  position: absolute;
+  /* position: absolute; */
   color: rgba(255,255,255,0.5);
 }
 
@@ -1484,14 +1488,22 @@ div.fatal-error-screen__report::selection {
 
 .checkbox input:checked + label:before {
   content:'\2716';
-  padding-left: 5px;
-  padding-top: 4px;
+  /* padding-left: 5px;
+  padding-top: 4px; */
   text-shadow: 0 1px 1px rgba(0, 0, 0, .2);
   font-size: 15px;
   text-align: center;
   line-height: 1;
   position: absolute;
   color: rgba(255,255,255,0.5);
+
+  margin: auto;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 15px;
+  width: 20px;
 }
 
 /* End of checkbox */
