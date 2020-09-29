@@ -1,5 +1,9 @@
 # P2P Shot Generator Server
 
+## .env
+
+TODO
+
 ## HTTPS Setup
 
 To test locally via HTTPS without annoying warnings, you'll need to generate and install a local certificate authority and a locally-trusted development certificate. `mkcert` makes this pretty easy:
