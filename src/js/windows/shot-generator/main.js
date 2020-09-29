@@ -1,4 +1,4 @@
-const { BrowserWindow, ipcMain, app, dialog, session } = electron = require('electron')
+const { BrowserWindow, ipcMain, app, dialog } = electron = require('electron')
 const isDev = require('electron-is-dev')
 const SettingsService = require("./SettingsService")
 const path = require('path')
