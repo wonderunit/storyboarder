@@ -103,10 +103,9 @@ const Editor = require('../../shot-generator/components/Editor').default
 const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState, setBoard } = require('../../shared/reducers/shot-generator')
 
-const XRServer = require('../../xr/server')
+const {initServer} = require('../../xr/server')
 const service = require('./service')
 
-let xrServer
 let showShotExplorerOnRead = false
 
 
@@ -230,9 +229,7 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
 
   await loadBoard(board)
 
-  if (!xrServer) {
-    xrServer = new XRServer({ store, service })
-  }
+  initServer({ store, service })
 
   await preloadData()
 })

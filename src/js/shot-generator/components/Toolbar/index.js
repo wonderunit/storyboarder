@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import React, { useMemo, useRef }  from 'react'
+import React, { useMemo, useRef, useCallback }  from 'react'
 import {
   // action creators
   selectObject,
@@ -17,6 +17,8 @@ import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 
 import Icon from '../Icon'
 import useTooltip from '../../../hooks/use-tooltip'
+
+import {useServerConnect, SERVER_STATUS} from '../../../xr/server'
 
 // because webpack
 const { shell } = require('electron')
@@ -169,24 +171,45 @@ const Toolbar = connect(
       ipcRenderer.send('shot-generator:requestInsertShot')
     }
 
-    const onOpenVR = preventDefault(() => {
-      notifications.notify({
-        message:
-          `To view, open a VR web browser to:\n` +
-          `<a href="${server.xrUri}">${server.xrUri}</a>.`,
-        timing: 30,
-        onClick: () => shell.openExternal(server.xrUri)
-      })
-      notifications.notify({
-        message:
-          `You may see a scary browser warning message ` +
-          `because VR runs from this computer, not a trusted server.\n` +
-          `In Oculus Browser, click “Advanced” and then “Proceed” to accept the self-signed certificate.\n` +
-          `Learn more in the <a href="https://wonderunit.com/storyboarder/faq/">Storyboarder FAQ</a>.`,
-        timing: 30,
-        onClick: () => shell.openExternal('https://wonderunit.com/storyboarder/faq')
-      })
-    })
+    const [serverStatus, onConnect] = useServerConnect()
+    const onVRClick = useCallback(preventDefault(() => {
+      console.log('SERVER CONN', serverStatus)
+      if (serverStatus === SERVER_STATUS.DISABLED) {
+        console.log('SERVER CONN 22')
+        onConnect()
+      } else if (serverStatus === SERVER_STATUS.ACTIVE) {
+        notifications.notify({
+          message:
+            `To view, open a VR web browser to:\n` +
+            `<a href="${server.xrUri}">${server.xrUri}</a>`,
+          timing: 30,
+          onClick: () => shell.openExternal(server.xrUri)
+        })
+      } else if (serverStatus === SERVER_STATUS.ERROR) {
+        notifications.notify({
+          message:
+            `Server connection error\n` +
+            `Try later`,
+          timing: 30
+        })
+      }
+
+    }), [serverStatus])
+
+    useMemo(() => {
+      if (serverStatus === SERVER_STATUS.ACTIVE) {
+        notifications.notify({
+          message:
+            `To view, open a VR web browser to:\n` +
+            `<a href="${server.xrUri}">${server.xrUri}</a>`,
+          timing: 30,
+          onClick: () => shell.openExternal(server.xrUri)
+        })
+      }
+    }, [serverStatus])
+
+    const VRStatusClassname = (serverStatus === SERVER_STATUS.CONNECTING) ? 'active' : null
+
     const cameraTooltipEvents = useTooltip("Add Camera", "Add a new camera in the scene.", null, "bottom center")
     const objectTooltipEvents = useTooltip("Add Object", "Add a new object. You can change the properties to the left.", null, "bottom center")
     const characterTooltipEvents = useTooltip("Add Character", "Add a new character in the scene. You can change the pose by dragging the control point spheres around.", null, "bottom center")
@@ -240,14 +263,13 @@ const Toolbar = connect(
           </a>
         </div>
         <div className="toolbar__board-actions row">
-          {server.xrUri && (
-            <a href="#"
-               onClick={preventDefault(onOpenVR) }
-               {...vrTooltipEvents}>
-              <Icon src="icon-toolbar-vr"/>
-              <span>Open in VR</span>
-            </a>
-          )}
+          <a href="#"
+            className={VRStatusClassname}
+            onClick={ onVRClick }
+            {...vrTooltipEvents}>
+            <Icon src="icon-toolbar-vr"/>
+            <span>Open in VR</span>
+          </a>
         <a href="#"
            onClick={preventDefault(onSaveToBoardClick)}
            {...saveTooltipEvents}>

@@ -14,8 +14,8 @@ import {appRouter} from "../routes"
 
 import apps from './../../apps.json'
 
-// no 1, i, 0, or 0 to avoid confusion
-const nanoid = customAlphabet('234567890abcdefghjklmnpqrstuvwxyz', 5)
+// no 1, i, 0, l, or 0 to avoid confusion
+const nanoid = customAlphabet('234567890abcdefghjkmnpqrstuvwxyz', 5)
 
 // via https://github.com/parcel-bundler/parcel/blob/8e80016d8b61c5d68759bfd1caa9fb827e46643c/packages/core/utils/src/generateCertificate.js
 const generateCertificate = (host) => {

@@ -168,6 +168,11 @@ kbd {
   display: flex;
   padding-right: 0.5rem;
 }
+
+#toolbar a.active {
+  background-color: #5c65c0;
+}
+
 .icon {
   width: 32px;
   height: 32px;
