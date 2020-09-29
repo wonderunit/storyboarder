@@ -18,7 +18,7 @@ import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 import Icon from '../Icon'
 import useTooltip from '../../../hooks/use-tooltip'
 
-import {useServerConnect, SERVER_STATUS} from '../../../xr/server'
+import {useServerConnect, SERVER_STATUS} from '../../../services/server'
 import { useTranslation } from 'react-i18next'
 // because webpack
 const { shell } = require('electron')

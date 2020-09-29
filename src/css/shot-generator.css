@@ -171,6 +171,19 @@ kbd {
 
 #toolbar a.active {
   background-color: #5c65c0;
+  animation: blink 1.0s infinite;
+  -webkit-animation: blink 1.0s infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.7;
+  }
+}
+@-webkit-keyframes blink {
+  50% {
+    opacity: 0.7;
+  }
 }
 
 .icon {

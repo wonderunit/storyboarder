@@ -1,9 +1,9 @@
 import path from 'path'
 import electron from 'electron'
-import {useState, useMemo, useEffect, useCallback} from 'react'
+import {useState, useCallback} from 'react'
 
 import {serve} from './sockets'
-import { updateServer } from '../shared/reducers/shot-generator'
+import { updateServer } from '../../shared/reducers/shot-generator'
 
 const electronApp = electron.app ? electron.app : electron.remote.app
 
@@ -36,6 +36,7 @@ export const useServerConnect = () => {
   const [serverStatus, setServerStatus] = useState(SERVER_STATUS.DISABLED)
   const onServerConnect = useCallback(() => {
     setServerStatus(SERVER_STATUS.CONNECTING)
+    // Connect to the lobby server to get a remote id
     serve(ServerInfo.store, ServerInfo.service, ServerInfo.staticPath, ServerInfo.projectPath, ServerInfo.userDataPath)
     .then(({host, port, id}) => {
       if ([80, 443].indexOf(port) !== -1) {

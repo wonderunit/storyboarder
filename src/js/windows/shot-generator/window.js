@@ -49,7 +49,7 @@ let sendedAction = null
 
 const { I18nextProvider } = require('react-i18next')
 const i18n = require('../../services/i18next.config')
-const {SGMiddleware} = require('./../../xr/sockets')
+const {SGMiddleware} = require('./../../services/server/sockets')
 
 require("../../shared/helpers/monkeyPatchGrayscale")
 
@@ -105,7 +105,7 @@ const Editor = require('../../shot-generator/components/Editor').default
 const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState, setBoard } = require('../../shared/reducers/shot-generator')
 
-const {initServer} = require('../../xr/server')
+const {initServer} = require('../../services/server')
 const service = require('./service')
 
 let showShotExplorerOnRead = false
