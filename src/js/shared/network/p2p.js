@@ -3,31 +3,28 @@ import Packer from 'peerjs-js-binarypack'
 
 const EventEmitter = require('events')
 
+// client instance
 const Client = (connection) => {
     const emitter = new EventEmitter()
     emitter.setMaxListeners(1000)
 
     // Receiving data from the client
     connection.on('data', (msg) => {
+        /**
+         * @TODO peerjs bug! Message always must not be a Blob, if Blob than parse using peerjs internal lib 
+         */
         if (msg instanceof Blob) {
             msg.arrayBuffer().then(buf => {
                 const {action, payload} = Packer.unpack(buf)
-                console.log({action, payload})
                 emitter.emit(action, payload)
             })
         } else {
-            console.log(msg)
-            const {action, payload} = msg//JSON.parse(data)
+            const {action, payload} = msg
             emitter.emit(action, payload)
         }
     })
 
     const emit = (action, payload = null) => {
-        //const pack = JSON.stringify({action, payload})
-        //console.log(pack)
-        
-        //console.log(connection)
-        //const data = new Blob([JSON.stringify({action, payload})], {type : 'application/json'})
         connection.send({action, payload})
     }
 
@@ -40,10 +37,10 @@ const Client = (connection) => {
 }
 
 const P2P = (host = 'stbr.link') => {
-    const isLocal = '127.0.0.1'
+    // Connect to the lobby server
     const peer = new Peer(null, {
         host,
-        port: 443,//isLocal ? 80 : undefined,
+        port: 443,
         key: 'shot-generator',
         path: '/peerjs',
         secure: true,
@@ -75,13 +72,10 @@ const P2P = (host = 'stbr.link') => {
 
     // Client connected
     peer.on('connection', (connection) => {
-        // console.log('Connected: ', connection.peer)
         const client = Client(connection)
 
         clients.push(client)
         clientsMap.set(connection.peer, client)
-
-        //emitter.emit('connection', client)
 
         // Client disconnected
         connection.on('close', (msg) => {
@@ -95,26 +89,29 @@ const P2P = (host = 'stbr.link') => {
         // Client connection ready to use
         connection.on('open', () => {
             const client = clientsMap.get(connection.peer)
-
-            // const client = new Client(connection)
-            // clients.push(client)
-            // clientsMap.set(connection.peer, client)
             emitter.emit('connection', client)
         })
     })
 
     let client
+    // Send an action the all the clients
     const broadcast = (action, payload) => {
         for (client of clients) {
             client.emit(action, payload)
         }
     }
 
+    // Connect to the client
     const P2PClientConnection = (roomId) => {
         return new Promise((resolve, reject) => {
+            // Wait until connects to the lobby server
             emitter.on('open', () => {
+                // Connect
                 client = peer.connect(roomId, {reliable: true, serialization: 'binary'})
+
+                // Wait until connects to the client
                 client.on('open', () => {
+                    // @TODO wait 1s until connection is estabilished
                     setTimeout(() => resolve(Client(client)), 1000)
                 })
             })

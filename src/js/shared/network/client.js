@@ -3,6 +3,7 @@ import {_blockObject, _unblockObject, getSelections} from "../reducers/shot-gene
 import P2P from './p2p'
 import EventEmmiter from 'events'
 
+// Helper function to call some fn once per N calls
 const each = (fn, countRef) => {
   let times = 0
   return (args, immediate = false) => {
@@ -19,9 +20,12 @@ export const ResourceInfo = new EventEmmiter()
 const resourcesMap = {}
 const ResourcesMapStatuses = {PENDING: 'PENDING', LOADING: 'LOADING', SUCCESS: 'SUCCESS'}
 
+// Connect both to the lobby server and to the target client
 export const connect = (URI = '') => {
   return new Promise((resolve, reject) => {
     let roomId = window.location.pathname
+
+    // If id isn't a part of the path then reject
     if (!roomId) {
       reject('Room is not entered')
       return false
@@ -35,23 +39,27 @@ export const connect = (URI = '') => {
       roomId = roomId.slice(0, -1)
     }
 
+    // If id isn't valid then reject
     if (!roomId) {
       reject('Room is not entered')
       return false
     }
 
+    // Connect to the lobby server
     const p2p = P2P(location.hostname)
     const {io, peer, P2PClientConnection} = p2p
 
     let store = {current: null}
     let FRAME_RATE = {current: 10}
     
+    // Connect to the client
     P2PClientConnection(roomId).then((conn) => {
       const client = conn.emitter
       const emit = conn.emit
 
       console.log('Connected !!!', store)
 
+      // Send an action to the SG
       const dispatchRemote = (action, meta = {}) => {
         if (!client) {
           return false
@@ -67,23 +75,28 @@ export const connect = (URI = '') => {
         emit('action', XRAction)
       }
       
+      // Connect server to the application store
       const connectStore = (appStore) => {
+        // Resolve users actions, such as controllers position, etc. 
         client.on('remoteAction', (data) => {
           console.log('remoteAction', data)
           remoteStore.dispatch(data)
         })
   
+        // Resolve app actions
         client.on('action', (data) => {
           console.log('Action', data)
           appStore.dispatch(data)
         })
 
+        // Send objects to block
         client.on('askForBlock', () => {
           let meta = {ignore: [remoteStore.getState().id]}
           dispatchRemote(_blockObject(getSelections(appStore.getState())), meta)
         })
       }
   
+      // Get all the boards
       const getBoards = async () => {
         return new Promise((resolve, reject) => {
           client.once('getBoards', resolve)
@@ -91,6 +104,7 @@ export const connect = (URI = '') => {
         })
       }
   
+      // Save current shot
       const saveShot = async () => {
         return new Promise((resolve, reject) => {
           client.once('saveShot', resolve)
@@ -98,6 +112,7 @@ export const connect = (URI = '') => {
         })
       }
   
+      // Insert shot as new one
       const insertShot = () => {
         return new Promise((resolve, reject) => {
           client.once('insertShot', resolve)
@@ -105,6 +120,7 @@ export const connect = (URI = '') => {
         })
       }
   
+      // Get board uid
       const getSg = () => {
         return new Promise((resolve, reject) => {
           client.once('getSg', resolve)
@@ -112,6 +128,7 @@ export const connect = (URI = '') => {
         })
       }
   
+      // Set current board
       const setBoard = (board) => {
         return new Promise((resolve, reject) => {
           client.once('setBoard', resolve)
@@ -119,6 +136,7 @@ export const connect = (URI = '') => {
         })
       }
   
+      // Check if scene is dirty
       const isSceneDirty = () => {
         return new Promise((resolve, reject) => {
           client.once('isSceneDirty', resolve)
@@ -126,23 +144,29 @@ export const connect = (URI = '') => {
         })
       }
 
+      // Connect request to get the actual data(store, users, id, etc.)
       const connectRequest = () => {
         console.log('Send connect request')
         emit('connectRequest')
       }
 
+      // Before SG send a resource we should know what resource we are waiting for
       client.on('willLoad', ({path}) => {
         resourcesMap[path] = {status: ResourcesMapStatuses.LOADING}
         ResourceInfo.emit('willLoad', path)
       })
+
+      // Request resource from the SG
       const getResource = (type, filePath) => {
         return new Promise((resolve, reject) => {
           console.log('Getting - ', filePath)
 
+          // If resource allready in the cache, then return it
           if (resourcesMap[filePath] && resourcesMap[filePath].status === ResourcesMapStatuses.SUCCESS) {
             resolve(resourcesMap[filePath].data)
           }
 
+          // Temp function that used to resolve current asset
           const Fn = (res) => {
             if (res.filePath === filePath) {
               console.log('Resolved(*), ', filePath, res)
@@ -152,25 +176,33 @@ export const connect = (URI = '') => {
             }
           }
 
+          // Listen for current resource
           client.on('getResource', Fn)
+
+          // request resource
           emit('getResource', {type, filePath})
 
+          // Mark resource as pending
           resourcesMap[filePath] = {status: ResourcesMapStatuses.PENDING}
+
+          // If the resource wasn't accepted for loading by the server then reask
           const interval = setInterval(() => {
             if (resourcesMap[filePath] && resourcesMap[filePath].status === ResourcesMapStatuses.PENDING) {
               emit('getResource', {type, filePath})
             } else {
+              // if a resource was accepted then remove interval
               clearInterval(interval)
             }
           }, 10 * 1000)
         })
       }
   
+      // Redu middleware
       const ClientMiddleware = store => next => action => {
-        /* Not send restricted actions */
+        // Not send restricted actions
         if (RestrictedActions.indexOf(action.type) !== -1) {
   
-          /* Send deselect if we select something */
+          // If we select something
           if (SelectActions.indexOf(action.type) !== -1) {
             let meta = {ignore: [remoteStore.getState().id]}
 
@@ -186,8 +218,6 @@ export const connect = (URI = '') => {
             if (selectionsToBlock.length) dispatchRemote(_blockObject(selectionsToBlock), meta) // Block selected
 
             return result
-
-            //dispatchRemote(deselectObject(action.payload), meta)
           }
   
           /* Dispatch */
@@ -211,10 +241,12 @@ export const connect = (URI = '') => {
         // Not send actions to the reducer, instead wait for the server answer
       }
   
+      // Log to the SG
       const sendRemoteInfo = each((info) => {
         emit('remote', info)
       }, FRAME_RATE)
   
+      // Set current user as active to enable 3d model
       const setActive = (active = true) => {
         emit('remote', {active})
       }

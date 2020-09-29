@@ -38,9 +38,8 @@ const removeDir = (src) => {
 }
 
 const run = (command, args = [], cwd) => {
-    const ls = spawnSync( command, args, {cwd, shell: true, env: {PATH: process.env.PATH}});//shell: true
-    //console.log(ls)
-    //ls.error && console.log('error', ls.error.toString());
+    const ls = spawnSync( command, args, {cwd, shell: true, env: {PATH: process.env.PATH}});
+    
     ls.stdout && console.log(ls.stdout.toString());
     ls.stderr && console.error(ls.stderr.toString());
 }
@@ -49,13 +48,16 @@ const run = (command, args = [], cwd) => {
 const src = path.join(__dirname, SOURCE_FOLDER)
 const dst = path.join(__dirname, DIST_FOLDER)
 
-// STEP 0 - remove dist dir if exists
+// STEP 0 - remove temp dist dir if exists
+console.log('Clearing previous build')
 removeDir(dst)
 
 // STEP 1 - copy server into temp directory
+console.log('Copying last build')
 copyRecursiveSync(src, dst)
 
 // STEP 2 - init and setup git repository
+console.log('Initializing git pepository')
 run('git init', [], dst)
 run(`git remote add heroku ${GIT_URL}`, [], dst)
 run('git add .', [], dst)
@@ -65,5 +67,6 @@ run('git commit -m "update"', [], dst)
 console.log('Deploying...')
 run('git push --force heroku master', [], dst)
 
-// STEP 4 - remove dist dir
+// STEP 4 - remove temp dist dir
+console.log('Cleaning up')
 removeDir(dst)
