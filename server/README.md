@@ -1,9 +1,5 @@
 # P2P Shot Generator Server
 
-## Requirements
-
-Before you start running your server, you should install MongoDB server from the original site (see https://www.mongodb.com/)
-
 ## Usage
 
 From the Storyboarder root source folder:
