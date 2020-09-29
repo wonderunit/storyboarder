@@ -39,7 +39,7 @@ class EraserBrush extends Brush {
         }
         this.drawingCtx.stroke();
         this.drawingCtx.fill(circle);
-        this.positionBuffer.addElements(currentPos.x, currentPos.y);
+        this.positionBuffer.addElements(currentPos);
     }
 }
 

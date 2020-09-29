@@ -48,7 +48,7 @@ class SimpleBrush extends Brush {
             prevPos = getVector2FromBuffer(this.positionBuffer, this.positionBuffer.currentLength - 1);
         }
         if(this.positionBuffer.currentLength === 0) {
-            this.positionBuffer.addElements(currentPos.x, currentPos.y);
+            this.positionBuffer.addElements(currentPos);
             return;
         }
         this.drawingCtx.moveTo(currentPos.x, currentPos.y);
@@ -56,7 +56,7 @@ class SimpleBrush extends Brush {
         let distance = getDistanceTo(currentPos, prevPos);
         let angle = getAngleTo(currentPos, prevPos);
         let newPos = moveByAngle(angle, distance, prevPos);
-        this.positionBuffer.addElements(newPos.x, newPos.y);
+        this.positionBuffer.addElements(newPos);
         let p1 = getVector2FromBuffer(this.positionBuffer, 0);
         let p2 = getVector2FromBuffer(this.positionBuffer, 1);
         for(let i = 1, length = this.positionBuffer.currentLength; i < length; i++) {

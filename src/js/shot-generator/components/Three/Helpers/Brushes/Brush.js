@@ -16,7 +16,6 @@ class Brush {
     }
 
     stopDrawing() {
-        this.drawingCtx.save()
         this.isDrawing = false;
         this.positionBuffer.flushArray();
     }

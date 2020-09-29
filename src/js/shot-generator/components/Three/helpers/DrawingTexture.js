@@ -1,7 +1,9 @@
 
 import * as THREE from 'three'
 import SimpleBrush from './Brushes/SimpleBrush'
+import CurveBrush from './Brushes/CurveBrush'
 import EraserBrush from './Brushes/EraserBrush'
+import BrushType from '../Helpers/Brushes/TextureBrushTypes'
 class DrawingTexture {
     constructor() {
         this.drawingCanvases = [];
@@ -24,10 +26,10 @@ class DrawingTexture {
     setMesh(type) {
         if(this.drawingBrush) this.drawingBrush.cleanUp()
         switch(type) {
-            case "Simple":
-                this.drawingBrush = new SimpleBrush();
+            case BrushType.SIMPLE:
+                this.drawingBrush = new CurveBrush();
                 break;
-            case "Eraser":
+            case BrushType.ERASER:
                 this.drawingBrush = new EraserBrush();
                 break;
             default: 
