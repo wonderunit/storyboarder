@@ -62,6 +62,11 @@ export const App = async () => {
   app.use('/peerjs', peerServer)
   //app.use('/', appRouter)
 
+  // redirect home page to wonderunit.com
+  app.get('/', (req, res) => {
+    res.redirect('http://wonderunit.com/storyboarder')
+  })
+
 
   const XRPath = process.env.NODE_ENV === 'development' ? apps.development.XR : apps.production.XR
   app.use('/:id', express.static(
