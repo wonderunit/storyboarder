@@ -13,6 +13,15 @@ Then, from the Storyboarder root source folder, run:
 
 Now you'll have `server/cert.pem` and `server/key.pem`, which the server will use automatically when in `development` mode.
 
+To test, temporarily edit `src/js/services/server/sockets.js` to point to `localhost`:
+```diff
+ export const serve = (store, service, staticPath, projectPath, userDataPath) => {
+   return new Promise((resolve, reject) => {
+-    const peer = P2P() // Connect
++    const peer = P2P('localhost') // Connect
+     const {io, broadcast} = peer
+```
+
 ## Usage
 
 From the Storyboarder root source folder:
