@@ -2,10 +2,10 @@ const { ipcRenderer, shell } = electron = require('electron')
 const { app } = electron.remote
 const electronUtil = require('electron-util')
 
-const https = require('https')
-https.globalAgent.options.rejectUnauthorized = false;
-const nodeFetch = require('node-fetch').default
-const WS = require('ws')
+// const https = require('https')
+// https.globalAgent.options.rejectUnauthorized = false;
+// const nodeFetch = require('node-fetch').default
+// const WS = require('ws')
 
 const path = require('path')
 const shotExplorer = require('../shot-explorer/main')

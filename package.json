@@ -208,7 +208,6 @@
     "lodash.throttle": "4.1.1",
     "moment": "2.19.3",
     "node-fetch": "2.1.2",
-    "node-forge": "0.9.1",
     "node-machine-id": "1.1.10",
     "object-assign": "^4.1.1",
     "paper": "0.11.5",

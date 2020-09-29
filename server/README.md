@@ -1,5 +1,18 @@
 # P2P Shot Generator Server
 
+## HTTPS Setup
+
+To test locally via HTTPS without annoying warnings, you'll need to generate and install a local certificate authority and a locally-trusted development certificate. `mkcert` makes this pretty easy:
+
+    brew install mkcert # install mkcert
+    mkcert -install # install CA
+
+Then, from the Storyboarder root source folder, run:
+
+    mkcert -cert-file server/cert.pem -key-file server/key.pem localhost 127.0.0.1
+
+Now you'll have `server/cert.pem` and `server/key.pem`, which the server will use automatically when in `development` mode.
+
 ## Usage
 
 From the Storyboarder root source folder:
