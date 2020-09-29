@@ -41,11 +41,6 @@ dist/
 
 src/build
 
-server/.git
-server/dist
-server/node_modules
-server/.idea
-
 .vscode
 .idea
 
