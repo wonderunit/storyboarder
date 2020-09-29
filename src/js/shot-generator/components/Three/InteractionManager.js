@@ -446,8 +446,6 @@ const InteractionManager = connect(
               pointerUpEvent={ pointerUpEvent }
               activeGL={ activeGL }
               isCameraControlsEnabled={ isCameraControlsEnabled }
-              takeSceneObjects={ takeSceneObjects }
-              activeCamera={ activeCamera }
               /> 
 }))
 
