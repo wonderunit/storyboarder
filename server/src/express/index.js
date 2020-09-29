@@ -64,7 +64,7 @@ export const App = async () => {
 
   // redirect home page to wonderunit.com
   app.get('/', (req, res) => {
-    res.redirect('http://wonderunit.com/storyboarder')
+    res.redirect('https://wonderunit.com/storyboarder')
   })
 
 
