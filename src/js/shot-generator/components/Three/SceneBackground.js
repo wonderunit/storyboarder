@@ -28,7 +28,6 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     useEffect(() => {
         if(!imagePath[0]) {
             if(scene.background instanceof THREE.Texture) {
-                console.log("clean up background")
                 scene.background.dispose()
                 scene.background = new THREE.Color(world.backgroundColor)
                 cleanUpTempFile()
