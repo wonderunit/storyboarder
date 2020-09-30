@@ -1,39 +1,35 @@
 
 const electron = require('electron')
-const path = require('path')
-const { app } = electron.remote
 const { webFrame } = electron
 const SettingsService = require('../windows/shot-generator/SettingsService')
 const AutoUIScaler = require('./AutoUIScaler')
 let settingsService
-let uiScaler 
+let autoUIScaler 
 let onChange = ( scale ) => {    
     webFrame.setZoomFactor(scale)
     settingsService.setSettings({scale})
 }
 
 const scaleBy = ( value ) => {
-    console.log(uiScaler, settingsService)
-    uiScaler.scaleBy(value)
+    autoUIScaler.scaleBy(value)
 }
 
 const setScale = ( value ) => {
-    uiScaler.setScale(value)
+    autoUIScaler.setScale(value)
 }
 
 const updateScaleBoundaries = () => {
     let currentBound = electron.remote.getCurrentWindow().getBounds()
-    uiScaler.updateScaleBoundaries(currentBound)
+    autoUIScaler.updateScaleBoundaries(currentBound)
 }
 const resizeScale = () => {
     updateScaleBoundaries()
-    uiScaler.updateScale()
+    autoUIScaler.updateScale()
 }
 
-const initialize = () => {
-    const scaleDefault = { max: 1.2, min: 0.7 }
+const initialize = (settingPath, scaleDefault = { max: 1.2, min: 0.7 }) => {
     const minimalWindowSize = { height: 768, width:1024 }
-    settingsService = new SettingsService(path.join(app.getPath('userData'), 'storyboarder-settings.json'))
+    settingsService = new SettingsService(settingPath)
     let currentWindow = electron.remote.getCurrentWindow()
     let settingsZoom = settingsService.getSettingByKey('scale')
     let scale 
@@ -44,9 +40,9 @@ const initialize = () => {
         scale = settingsZoom
     }
     webFrame.setZoomFactor(scale)
-    uiScaler = new AutoUIScaler({ max: scaleDefault.max, min: scaleDefault.min }, minimalWindowSize, scale, onChange)
+    autoUIScaler = new AutoUIScaler(scaleDefault, minimalWindowSize, scale, onChange)
     updateScaleBoundaries()
-    uiScaler.updateScale()
+    autoUIScaler.updateScale()
 }
 
 module.exports = {

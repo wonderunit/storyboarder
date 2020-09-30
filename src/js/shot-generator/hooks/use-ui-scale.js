@@ -1,56 +1,20 @@
-import React, { useRef, useMemo, useCallback } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import path from 'path'
-import SettingsService from '../../windows/shot-generator/SettingsService'
-import AutoUIScale from '../../utils/AutoUIScaler'
-const { webFrame } = electron
 const { app } = electron.remote
-
+import UIScaler from '../../utils/uiScale'
 const useUIScale = () => {
-    const settingsService = useRef()
-    const autoUIScale = useRef()
     const scaleBy = useCallback(( event, value ) => {
-        autoUIScale.current.scaleBy(value)
+        UIScaler.scaleBy(value)
     }, [])
     
     const setScale = useCallback(( event, value ) => {
-        console.log("Set scale value", value)
-        autoUIScale.current.setScale(value)
+        UIScaler.setScale(value)
     }, [])
     
-    const updateScaleBoundaries = () => {
-        let currentBound = electron.remote.getCurrentWindow().getBounds()
-        autoUIScale.current.updateScaleBoundaries(currentBound)
-    }
-    
-    const resizeScale = () => {
-        updateScaleBoundaries()
-        autoUIScale.current.updateScale()
-    }
-
-    const onChange = ( scale ) => {
-        webFrame.setZoomFactor(scale)
-        settingsService.current.setSettings({scale})
-    } 
-    
-    useMemo(() =>{
-        const scaleDefault = { max: 1.2, min: 0.6 }
-        const minimalWindowSize = { height: 768, width:1024 }
-        settingsService.current = new SettingsService(path.join(app.getPath('userData'), 'shot-generator-settings.json'))
-        let currentWindow = electron.remote.getCurrentWindow()
-        let settingsZoom = settingsService.current.getSettingByKey('scale')
-        let scale 
-        if(!settingsZoom && currentWindow.getBounds().height < minimalWindowSize.height) {
-            scale = scaleDefault.min
-        } else {
-            settingsZoom = settingsZoom !== null && settingsZoom >= 0 ? settingsZoom : 1
-            scale = settingsZoom
-        }
-        webFrame.setZoomFactor(scale)
-        autoUIScale.current = new AutoUIScale(scaleDefault, minimalWindowSize, scale, onChange)
-        updateScaleBoundaries()
-        autoUIScale.current.updateScale()
+    useMemo(() => {
+        UIScaler.initialize(path.join(app.getPath('userData'), 'shot-generator-settings.json'), {max: 1.2, min: 0.6})
     }, [])
 
-    return { setScale, scaleBy, resizeScale }
+    return { setScale, scaleBy, resizeScale: UIScaler.resizeScale }
 }
 export default useUIScale
