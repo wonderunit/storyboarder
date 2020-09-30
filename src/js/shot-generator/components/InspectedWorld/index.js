@@ -24,6 +24,7 @@ import {
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from '../../utils/CopyFile'
 import DrawingTextureType from './DrawingTextureType'
+import ModelLoader from '../../../services/model-loader'
 const imageFilters = ["jpg", "jpeg", "png", "gif", "dds"]
 
 const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
@@ -52,19 +53,21 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
 
   const setWorldTexture = useCallback((type, event) => {
     if (event.file) {
-      updateWorld({textureType: type, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
+      if(!world.sceneTexture || path.basename(world.sceneTexture) !== path.basename(event.file)) {
+        updateWorld({textureType: type, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
+      }
     } else {
       updateWorld({textureType:null, sceneTexture: null})
     }
-  }, [])
+  }, [world])
 
   const setSceneTextureFile = useCallback((event) => {
     setWorldTexture(DrawingTextureType.Simple, event)
-  }, [])
+  }, [setWorldTexture])
 
   const setSceneCubeMap = useCallback((event) => {
     setWorldTexture(DrawingTextureType.Cubemap, event)
-  }, [])
+  }, [setWorldTexture])
   
   const setGrayscale = useCallback(() => updateWorldEnvironment({grayscale: !world.environment.grayscale}), [world.environment.grayscale])
   

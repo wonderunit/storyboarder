@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import React, { useEffect, useRef } from 'react'
 import { useThree } from 'react-three-fiber'
-import { useAsset } from '../../hooks/use-assets-manager'
+import { useAsset, removeAsset } from '../../hooks/use-assets-manager'
 import CubeTextureCreator from './helpers/CubeTextureCreator'
 import fs from 'fs-extra'
 import path from 'path'
@@ -9,7 +9,6 @@ import DrawingTextureType from '../InspectedWorld/DrawingTextureType'
 import { saveDataURLtoFile } from '../../helpers/saveDataURLtoFile'
 import { TextureObjectType } from './Helpers/DrawingTextureContainer'
 const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, updateWorld, drawingTextures }) => {
-    const texturePath = useRef()
     const { scene, camera, gl } = useThree()
     const { asset: texture } = useAsset( !imagePath[0] || !scene.userData.tempPath ? imagePath[0] : imagePath[0].includes(scene.userData.tempPath ) ? null : imagePath[0])
     const intersectionBox = useRef()
@@ -29,10 +28,14 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     useEffect(() => {
         if(!imagePath[0]) {
             if(scene.background instanceof THREE.Texture) {
+                console.log("clean up background")
                 scene.background.dispose()
                 scene.background = new THREE.Color(world.backgroundColor)
                 cleanUpTempFile()
             }
+        }
+        return () => {
+            removeAsset(imagePath[0])
         }
     }, [imagePath[0]])
 
@@ -70,7 +73,6 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         saveDataURLtoFile(dataUrl, tempFileName, path.join('models', 'sceneTextures'), storyboarderFilePath);
         updateWorld({sceneTexture: path.join('models', 'sceneTextures', tempFileName) })
         scene.userData.tempPath = tempFileName
-        texturePath.current = tempFileName
     }
 
 
