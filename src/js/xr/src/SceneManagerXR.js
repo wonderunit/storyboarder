@@ -835,15 +835,16 @@ const SceneContent = connect(
     )
   })
 
-const XRStartButton = (({  }) => {
+const XRStartButton = () => {
   const { gl } = useThree()
   const elementP = useRef()
   const { t } = useTranslation()
+
   useMemo(() => { 
     document.body.appendChild(VRButton.createButton(gl))
-    let p = document.createElement("p");
+    let p = document.createElement('p')
     elementP.current = p
-    document.body.appendChild(p);
+    document.body.appendChild(p)
   }, [])
 
   useEffect(() => {
@@ -851,7 +852,7 @@ const XRStartButton = (({  }) => {
   }, [t])
 
   return null
-})
+}
 
 const APP_GLTFS = [
   '/data/system/xr/controller.glb',
