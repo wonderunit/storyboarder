@@ -1,16 +1,15 @@
 import fs from 'fs'
+import {promisify} from 'util'
 
-// Loads file content as Buffer for sending throught the peerjs
-export const loadFileToBlob = (path) => {
-    return new Promise((resolve, reject) => {
-        fs.readFile(path, (err, buffer) => {
-            if (err) {
-                console.log(err)
-                reject(err)
-            } else {
-                resolve(Uint8Array.from(buffer).buffer)
-            }
-        })
-    })
+const readFile = promisify(fs.readFile)
+
+// Loads file content as ArrayBuffer for sending through peerjs
+export const loadFileToBlob = async (path) => {
+  try {
+    const contents = await readFile(path)
+    return Uint8Array.from(contents).buffer
+  } catch (err) {
+    console.error(err)
+    throw err
+  }
 }
-
