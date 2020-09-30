@@ -13,6 +13,7 @@ const useUIScale = () => {
     }, [])
     
     const setScale = useCallback(( event, value ) => {
+        console.log("Set scale value", value)
         autoUIScale.current.setScale(value)
     }, [])
     
@@ -41,7 +42,7 @@ const useUIScale = () => {
         if(!settingsZoom && currentWindow.getBounds().height < minimalWindowSize.height) {
             scale = scaleDefault.min
         } else {
-            settingsZoom = settingsZoom !== undefined && settingsZoom >= 1 ? settingsZoom : 1
+            settingsZoom = settingsZoom !== null && settingsZoom >= 0 ? settingsZoom : 1
             scale = settingsZoom
         }
         webFrame.setZoomFactor(scale)

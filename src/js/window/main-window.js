@@ -7043,14 +7043,11 @@ ipcRenderer.on('exportZIP', (event, args) => exportZIP())
 ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 
 //#region UI scale
-ipcRenderer.on('scale-ui-up', value => {
-  scaleBy(0.1)
+ipcRenderer.on('scale-ui-by', (event, value) => {
+  scaleBy(value)
 })
-ipcRenderer.on('scale-ui-down', value => {
-  scaleBy(-0.1)
-})
-ipcRenderer.on('scale-ui-reset', () => {
-  setScale(0)
+ipcRenderer.on('scale-ui-reset', (event, value) => {
+  setScale(value)
 })
 //#endregion
 

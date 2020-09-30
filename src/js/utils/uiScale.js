@@ -13,6 +13,7 @@ let onChange = ( scale ) => {
 }
 
 const scaleBy = ( value ) => {
+    console.log(uiScaler, settingsService)
     uiScaler.scaleBy(value)
 }
 
@@ -39,7 +40,7 @@ const initialize = () => {
     if(!settingsZoom && currentWindow.getBounds().height < minimalWindowSize.height) {
         scale = scaleDefault.min
     } else {
-        settingsZoom = settingsZoom !== undefined && settingsZoom >= 1 ? settingsZoom : 1
+        settingsZoom = settingsZoom !== null && settingsZoom > 0 ? settingsZoom : 1
         scale = settingsZoom
     }
     webFrame.setZoomFactor(scale)

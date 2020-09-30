@@ -665,21 +665,21 @@ AppMenu.View = (i18n) => ({
       label: i18n.t('menu.view.zoom-in'),
       accelerator: keystrokeFor("menu:view:zoom-in"),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('scale-ui-up')
+        ipcRenderer.send('scale-ui-by', 0.1)
       }
     },
     {
       label: i18n.t('menu.view.zoom-out'),
       accelerator: keystrokeFor("menu:view:zoom-out"),
       click (item, focusedWindow, event) {
-        ipcRenderer.send('scale-ui-down')
+        ipcRenderer.send('scale-ui-by', -0.1)
       }
     },
     {
       label: i18n.t('menu.view.reset-ui-scale'),
       type: 'normal',
       click (item, focusedWindow, event) {
-        ipcRenderer.send('scale-ui-reset')
+        ipcRenderer.send('scale-ui-reset', 1)
       }
     }
   ]
@@ -990,7 +990,7 @@ const shotGeneratorMenu = (i18n) => [
         accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:scale-ui', 0.2)
+          ipcRenderer.send('shot-generator:menu:view:scale-ui-by', 0.1)
         }
       },
       {
@@ -998,7 +998,7 @@ const shotGeneratorMenu = (i18n) => [
         accelerator: keystrokeFor("menu:view:zoom-out"),
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:scale-ui', -0.2)
+          ipcRenderer.send('shot-generator:menu:view:scale-ui-by', -0.1)
         }
       },
       {
@@ -1006,7 +1006,7 @@ const shotGeneratorMenu = (i18n) => [
         accelerator: 'CommandOrControl+0',
         type: 'normal',
         click (item, focusedWindow, event) {
-          ipcRenderer.send('shot-generator:menu:view:reset-ui', 0)
+          ipcRenderer.send('shot-generator:menu:view:scale-ui-reset', 1)
         }
       },
       {type: 'separator'},

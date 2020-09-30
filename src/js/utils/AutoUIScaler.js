@@ -27,7 +27,7 @@ class AutoUIScaler {
 
     setScale(value) {
         this.scale = Math.min(this.defaultScaleLimits.max, Math.max(this.defaultScaleLimits.min, value))
-        this.onChange(this.relativeScale)
+        this.updateScale()
     }
 
     updateScaleBoundaries(currentWindowSize) {
