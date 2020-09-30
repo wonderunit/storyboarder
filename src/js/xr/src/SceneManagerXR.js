@@ -3,13 +3,16 @@ const SHOW_LOG = false
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate, useFrame } = require('react-three-fiber')
-const TWEEN = require('@tweenjs/tween.js').default
+require('./three/GPUPickers/utils/Object3dExtension')
 
+const { useMemo, useRef, useState, useEffect, useCallback, Suspense } = React = require('react')
+const { Canvas, useThree, useUpdate, useFrame } = require('react-three-fiber')
 const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
-const { useMemo, useRef, useState, useEffect, useCallback, Suspense } = React = require('react')
-require('./three/GPUPickers/utils/Object3dExtension')
+const { createSelector } = require('reselect')
+
+const TWEEN = require('@tweenjs/tween.js').default
+const { useTranslation } = require('react-i18next')
 
 const RemoteProvider = require('../../shot-generator/components/RemoteProvider').default
 const RemoteClients = require('../../shot-generator/components/RemoteClients').default
@@ -71,7 +74,6 @@ const Voicer = require('./three/Voicer')
 
 const musicSystem = require('./music-system')
 
-const { createSelector } = require('reselect')
 const i18n = require('../../services/xr.i18next.config')
 const { useTranslation, I18nextProvider } = require('react-i18next')
 i18n.on('loaded', (loaded) => {
