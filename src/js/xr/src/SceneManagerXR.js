@@ -74,11 +74,10 @@ const Voicer = require('./three/Voicer')
 
 const musicSystem = require('./music-system')
 
+// TODO load the language from the hosting shot generator peer
+// currently i18n is hardcoded to en-US.json which is embedded within XR
 const i18n = require('../../services/xr.i18next.config')
-const { useTranslation, I18nextProvider } = require('react-i18next')
-i18n.on('loaded', (loaded) => {
-  i18n.off('loaded')
-})
+
 // TODO move to selectors if useful
 // TODO optimize to only change if top-level keys change
 const getSceneObjectCharacterIds = createSelector(
@@ -140,7 +139,8 @@ const SceneContent = connect(
 
     characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
-    resources, getAsset, language,
+    resources, getAsset,
+    language,
 
     SGConnection
   }) => {
@@ -152,7 +152,8 @@ const SceneContent = connect(
 
     useEffect(() => {
       if(!language) return
-      i18n.changeLanguage(language)
+      // TODO
+      // i18n.changeLanguage(language)
     }, [language])
 
     useMemo(() => {
@@ -1052,8 +1053,8 @@ const SceneManagerXR = ({SGConnection}) => {
         vr
       >
         <Provider store={store}>
-          <I18nextProvider i18n={ i18n }>
           <Suspense fallback="loading">
+
           {
             ready && <XRStartButton />
           }
@@ -1094,8 +1095,8 @@ const SceneManagerXR = ({SGConnection}) => {
                 SGConnection={SGConnection} />
               : null
           }
+
           </Suspense>
-          </I18nextProvider>
         </Provider>
       </Canvas>
       <div className='scene-overlay' />
