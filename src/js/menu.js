@@ -662,14 +662,14 @@ AppMenu.View = (i18n) => ({
       }
     },
     {
-      label: i18n.t('menu.view.zoom-in'),
+      label: i18n.t('menu.view.scale-ui-up'),
       accelerator: keystrokeFor("menu:view:zoom-in"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('scale-ui-by', 0.1)
       }
     },
     {
-      label: i18n.t('menu.view.zoom-out'),
+      label: i18n.t('menu.view.scale-ui-down'),
       accelerator: keystrokeFor("menu:view:zoom-out"),
       click (item, focusedWindow, event) {
         ipcRenderer.send('scale-ui-by', -0.1)
