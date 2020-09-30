@@ -61,18 +61,13 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
     const save = () => {
         cleanUpTempFile()
         let tempFileName = `temp_scenetexture-${Date.now()}.jpg`
+        let dataUrl 
         if(world.textureType === DrawingTextureType.Cubemap)  {
-            let dataUrl = cubeTextureCreator.current.combineImages(scene.background) 
-            let {dir, ext, name} = path.parse(imagePath[0]);
-            let properName = tempFileName ? tempFileName : name + ext; 
-            saveDataURLtoFile(dataUrl, `${properName}`, 'models/sceneTextures', storyboarderFilePath);
-        } else if(world.textureType === DrawingTextureType.Simple) {
-            let imageData = drawingTextures.getTextureById(id.current).texture.getImage('image/jpg').replace(/^data:image\/\w+;base64,/, '')
-            let dirpath = path.join(path.dirname(storyboarderFilePath), 'models', 'sceneTextures')
-            let imageFilePath = path.join(dirpath, tempFileName)
-            fs.ensureDirSync(dirpath)
-            fs.writeFileSync(imageFilePath, imageData, 'base64')
+            dataUrl = cubeTextureCreator.current.combineImages(scene.background) 
+        } else {
+            dataUrl = drawingTextures.getTextureById(id.current).texture.getImage('image/jpg')
         }
+        saveDataURLtoFile(dataUrl, tempFileName, path.join('models', 'sceneTextures'), storyboarderFilePath);
         updateWorld({sceneTexture: path.join('models', 'sceneTextures', tempFileName) })
         scene.userData.tempPath = tempFileName
         texturePath.current = tempFileName

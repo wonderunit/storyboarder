@@ -14,12 +14,12 @@ const saveDataURLtoFile = (dataURL, filename, type, boardPath, async = false) =>
 const saveDataURLtoTempFile = (dataURL, boardPath, updateObject, object) => {
   let imageData = dataURL.replace(/^data:image\/\w+;base64,/, '')
   if(object.userData.tempImagePath) {
-    let tempImageFilePath = path.join(path.dirname(boardPath), 'models/images', object.userData.tempImagePath)
+    let tempImageFilePath = path.join(path.dirname(boardPath), 'models', 'images', object.userData.tempImagePath)
     fs.remove(tempImageFilePath)
   }
   let tempFilename = `temp_${object.userData.id}-${Date.now()}-texture.png`
   object.userData.tempImagePath = tempFilename
-  let filePath = path.join(path.dirname(boardPath), 'models/images')
+  let filePath = path.join(path.dirname(boardPath), 'models','images')
   let imageFilePath = path.join(filePath, tempFilename)
   fs.ensureDirSync(filePath)
   fs.writeFileSync(imageFilePath, imageData, 'base64')
