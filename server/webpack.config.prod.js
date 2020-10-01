@@ -1,6 +1,6 @@
 const webpack = require('webpack')
 const path = require('path')
-const DotEnv = require('dotenv-webpack')
+// const DotEnv = require('dotenv-webpack')
 const {CleanWebpackPlugin} = require('clean-webpack-plugin')
 const CopyPlugin = require('copy-webpack-plugin')
 
@@ -18,6 +18,9 @@ module.exports = {
   target: 'node',
   node: {
     __dirname: false
+  },
+  optimization: {
+    minimize: false
   },
   module: {
     rules: [
