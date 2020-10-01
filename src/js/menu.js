@@ -663,7 +663,7 @@ AppMenu.View = (i18n) => ({
     },
     {
       label: i18n.t('menu.view.scale-ui-up'),
-      accelerator: keystrokeFor("menu:view:zoom-in"),
+      accelerator: process.platform === 'darwin' ? 'CommandOrControl+=' : 'CommandOrControl+Plus',
       click (item, focusedWindow, event) {
         ipcRenderer.send('scale-ui-by', 0.1)
       }
@@ -987,7 +987,7 @@ const shotGeneratorMenu = (i18n) => [
       {type: 'separator'},
       {
         label: i18n.t('menu.view.scale-ui-up'),
-        accelerator: 'CommandOrControl+=',
+        accelerator: process.platform === 'darwin' ? 'CommandOrControl+=' : 'CommandOrControl+Plus',
         type: 'normal',
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:scale-ui-by', 0.1)
