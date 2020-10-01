@@ -263,16 +263,16 @@ const SceneContent = connect(
       audio.stop()
 
       // attach the music system
-      // musicSystem.init({
-      //   urlMap: {
-      //     'C4': '/data/system/xr/snd/vr-instrument-c4.ogg',
-      //     'C5': '/data/system/xr/snd/vr-instrument-c5.ogg',
-      //     'C6': '/data/system/xr/snd/vr-instrument-c6.ogg'
-      //   },
-      //   audioContext: audio.context,
-      //   audioNode: audio,
-      //   onComplete: musicSystem.start
-      // })
+      musicSystem.init({
+        urlMap: {
+          'C4': resources.instrumentC4,
+          'C5': resources.instrumentC5,
+          'C6': resources.instrumentC6
+        },
+        audioContext: audio.context,
+        audioNode: audio,
+        onComplete: musicSystem.start
+      })
 
       return audio
     }, [])
@@ -917,6 +917,10 @@ const SceneManagerXR = ({SGConnection}) => {
   const xrPosing = useAudioLoader(SGConnection, '/data/system/xr/snd/xr-posing.ogg')
   const xrEndPosing = useAudioLoader(SGConnection, '/data/system/xr/snd/xr-end-posing.ogg')
 
+  const instrumentC4 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-instrument-c4.ogg')
+  const instrumentC5 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-instrument-c5.ogg')
+  const instrumentC6 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-instrument-c6.ogg')
+
   // scene
   const sceneObjects = useSelector(getSceneObjects)
   const world = useSelector(getWorld)
@@ -970,7 +974,8 @@ const SceneManagerXR = ({SGConnection}) => {
     undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
     uiCreateBuffer, uiDeleteBuffer,
     vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
-    xrPosing, xrEndPosing
+    xrPosing, xrEndPosing,
+    instrumentC4, instrumentC5, instrumentC6
   ]
   let gltfResources = APP_GLTFS.map(getAsset)
 
@@ -986,7 +991,8 @@ const SceneManagerXR = ({SGConnection}) => {
         undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
         uiCreateBuffer, uiDeleteBuffer,
         vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
-        xrPosing, xrEndPosing
+        xrPosing, xrEndPosing,
+        instrumentC4, instrumentC5, instrumentC6
       ]
 
       // fail if any app resources are missing
@@ -1091,6 +1097,7 @@ const SceneManagerXR = ({SGConnection}) => {
 
                   vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
                   xrPosing, xrEndPosing,
+                  instrumentC4, instrumentC5, instrumentC6
                 }}
                 getAsset={getAsset}
                 SGConnection={SGConnection} />
