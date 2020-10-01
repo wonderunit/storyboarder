@@ -18,6 +18,7 @@ class Brush {
     stopDrawing() {
         this.isDrawing = false;
         this.positionBuffer.flushArray();
+        this.drawingCtx && this.drawingCtx.closePath();
     }
     
     set DrawingContext(value) {

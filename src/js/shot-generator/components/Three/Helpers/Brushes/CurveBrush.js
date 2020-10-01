@@ -70,7 +70,7 @@ class CurveBrush extends Brush {
             this.positionBuffer.setElements(Object.values(matrixMathToBezier[0][2]), this.positionBuffer.getLength() - 1)
 
     } else {
-        this.drawingCtx.moveTo(floats[0][0], floats[0][1])
+        this.drawingCtx.moveTo(currentPos.x, currentPos.y)
     }
     this.drawingCtx.stroke();
 

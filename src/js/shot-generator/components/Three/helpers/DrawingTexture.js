@@ -13,6 +13,7 @@ class DrawingTexture {
         this.drawingBrush = null;
         this.isChanged = false;
         this.setMesh();
+        this.prevMousePosition;
     }
 
     prepareToDraw() {
@@ -21,6 +22,7 @@ class DrawingTexture {
 
     endDraw() {
         this.drawingBrush.stopDrawing();
+        this.isChanged = false;
     }
 
     setMesh(type) {
@@ -33,7 +35,7 @@ class DrawingTexture {
                 this.drawingBrush = new EraserBrush();
                 break;
             default: 
-                this.drawingBrush = new SimpleBrush();
+                this.drawingBrush = new CurveBrush();
         }
     }
 
@@ -72,13 +74,15 @@ class DrawingTexture {
         return intersects.length && intersects[0];
     }
   
-    draw (mousePosition, object, camera) {
+    draw (mousePosition, object, camera, onlyContinuousDrawing) {
 
-        let intersection = this.intersectImage(mousePosition.x, mousePosition.y, object, camera);
-        if(intersection.uv === null) {
+        let intersection = onlyContinuousDrawing ? false : this.intersectImage(mousePosition.x, mousePosition.y, object, camera);
+        if(!intersection || intersection.uv === null) {
             return;
         }
         this.isChanged = true;
+        this.isNeedSaving = true;
+        this.prevMousePosition = mousePosition;
         return intersection;
 
     }

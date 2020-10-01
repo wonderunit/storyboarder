@@ -55,18 +55,36 @@ const useDrawOnImage = (drawMode) => {
       let values = Object.values(getDrawingTextures().getTexturesByObjectType(TextureObjectType.Image))
       let {x, y} = mouse({x: event.clientX, y: event.clientY}, gl)
       raycaster.current.setFromCamera({x, y}, camera)
-      let imageObjects = scene.__interaction.filter(object => object.userData.type === "image")
+      let imageObjects = scene.children[0].children.filter(object => object.visible === true)//.filter(object => object.userData.type !== "image")
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
       let backgroundTexture = getDrawingTextures().getTexturesByObjectType(TextureObjectType.Background)
-      if(!intersections.length && backgroundTexture.length) {
+      if(backgroundTexture.length) {
         let texture = backgroundTexture[0]
-        texture.draw({x, y}, camera, drawMode.brush)
+        if(!intersections.length) {
+          texture.draw({x, y}, camera, drawMode.brush)  
+        } else {
+          texture.texture.endDraw()
+          texture.texture.prepareToDraw()
+        }
       }
       for(let i = 0; i < values.length; i++) {
         let drawingTexture = values[i].texture
         let object = drawingTexture.material.parent.parent
-        if(!object || !object.visible) continue
-        values[i].draw({x, y}, object, camera, drawMode.brush, gl)
+
+        // Hack to avoid drawing on image when there's object in front of them
+        let onlyContinuousDrawing = true 
+        //console.log( intersections[0].object)
+        if(intersections.length && intersections[0].object.parent === object) {
+          onlyContinuousDrawing = false
+        }
+      
+        if(!object || !object.visible ) continue
+        values[i].draw({x, y}, object, camera, drawMode.brush, gl, imageObjects, onlyContinuousDrawing)
+        if(onlyContinuousDrawing) {
+          values[i].texture.endDraw()
+          values[i].texture.prepareToDraw()
+        }
+
       }
     } 
 
@@ -77,9 +95,9 @@ const useDrawOnImage = (drawMode) => {
       let values = Object.values(getDrawingTextures().getTextures())
       for(let i = 0; i < values.length; i++) {
         let texture = values[i].texture
-        if(texture.isChanged) {
+        if(texture.isNeedSaving) {
           texture.endDraw()
-          texture.isChanged = false
+          texture.isNeedSaving = false
           values[i].save()
         }
       }
