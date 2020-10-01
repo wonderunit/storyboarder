@@ -1,42 +1,10 @@
-const fs = require('fs')
+const fs = require('fs-extra')
 const path = require('path')
-const util = require('util')
 const { spawnSync } = require('child_process')
 
 const GIT_URL = 'https://git.heroku.com/stbr-link.git'
 const SOURCE_FOLDER = '../server/dist'
 const DIST_FOLDER = '__temp'
-
-/**
- * Look ma, it's cp -R.
- * @param {string} src The path to the thing to copy.
- * @param {string} dest The path to the new copy.
- */
-const copyRecursiveSync = (src, dest) => {
-  const exists = fs.existsSync(src)
-  const stats = exists && fs.statSync(src)
-  const isDirectory = exists && stats.isDirectory()
-  if (isDirectory) {
-    fs.mkdirSync(dest)
-    fs.readdirSync(src).forEach((childItemName) => {
-      copyRecursiveSync(
-        path.join(src, childItemName),
-        path.join(dest, childItemName)
-      )
-    })
-  } else {
-    fs.copyFileSync(src, dest)
-  }
-}
-
-const removeDir = (src) => {
-  const exists = fs.existsSync(src)
-  const stats = exists && fs.statSync(src)
-  const isDirectory = exists && stats.isDirectory()
-  if (isDirectory) {
-    fs.rmdirSync(src, { recursive: true })
-  }
-}
 
 const run = (command, args = [], cwd) => {
   const ls = spawnSync(command, args, {
@@ -53,12 +21,12 @@ const src = path.join(__dirname, SOURCE_FOLDER)
 const dst = path.join(__dirname, DIST_FOLDER)
 
 // STEP 0 - remove temp dist dir if exists
-console.log('Clearing previous build')
-removeDir(dst)
+console.log('Clearing previous build', dst)
+fs.removeSync(dst)
 
 // STEP 1 - copy server into temp directory
 console.log('Copying last build')
-copyRecursiveSync(src, dst)
+fs.copySync(src, dst)
 
 // STEP 2 - init and setup git repository
 console.log('Initializing git pepository')
@@ -73,4 +41,4 @@ run('git push --force heroku master', [], dst)
 
 // STEP 4 - remove temp dist dir
 console.log('Cleaning up')
-removeDir(dst)
+fs.removeSync(dst)
