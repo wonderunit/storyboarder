@@ -1,4 +1,4 @@
-const {ipcRenderer, shell, remote, nativeImage, clipboard, webFrame} = require('electron')
+const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
 const { app } = require('electron').remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
@@ -68,6 +68,7 @@ const LinkedFileManager = require('./linked-file-manager')
 const getIpAddress = require('../utils/getIpAddress')
 
 const pkg = require('../../../package.json')
+const { scaleBy, setScale, resizeScale, initialize} = require('../utils/uiScale')
 
 const sharedObj = remote.getGlobal('sharedObj')
 //#region Localization 
@@ -112,7 +113,6 @@ const translateTooltip = (elementName, traslationKey) => {
   element.setAttribute("data-tooltip-title", i18n.t(`${traslationKey}.title`))
   element.setAttribute("data-tooltip-description", i18n.t(`${traslationKey}.description`))
 }
-const SettingsService = require("../windows/shot-generator/SettingsService")
 
 ipcRenderer.on("languageModified", (event, lng) => {
   i18n.reloadResources(lng).then(() => updateHTMLText())
@@ -527,6 +527,8 @@ const load = async (event, args) => {
     })
     // TODO add a cancel button to loading view when a fatal error occurs?
   }
+  initialize(path.join(app.getPath('userData'), 'storyboarder-settings.json'))
+  electron.remote.getCurrentWindow().on('resize', resizeScale)
 }
 ipcRenderer.on('load', load)
 
@@ -7040,6 +7042,15 @@ ipcRenderer.on('exportZIP', (event, args) => exportZIP())
 
 ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 
+//#region UI scale
+ipcRenderer.on('scale-ui-by', (event, value) => {
+  scaleBy(value)
+})
+ipcRenderer.on('scale-ui-reset', (event, value) => {
+  setScale(value)
+})
+//#endregion
+
 ipcRenderer.on('focus', async event => {
   if (!prefsModule.getPrefs()['enableForcePsdReloadOnFocus']) return
 
@@ -7103,27 +7114,6 @@ const closest = (arr, target) => {
 ipcRenderer.on('zoomReset', value => {
   zoomIndex = ZOOM_CENTER
   storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
-})
-const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"));
-let zoom = settingsService.getSettingByKey("zoom")
-zoom = zoom ? zoom : 0
-const maxZoom = {in: 0.2, out: -1.0}
-webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-webFrame.setZoomLevel(zoom)
-ipcRenderer.on('scale-ui-up', value => {
-  zoom = zoom >= maxZoom.in ? maxZoom.in : zoom + 0.1
-  webFrame.setZoomLevel(zoom)
-  settingsService.setSettings({zoom})
-})
-ipcRenderer.on('scale-ui-down', value => {
-  zoom = zoom <= maxZoom.out ? maxZoom.out : zoom - 0.1
-  webFrame.setZoomLevel(zoom)
-  settingsService.setSettings({zoom})
-})
-ipcRenderer.on('scale-ui-reset', () => {
-  let zoom = 0
-  webFrame.setZoomLevel(zoom)
-  settingsService.setSettings({ zoom })
 })
 
 const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
