@@ -837,19 +837,10 @@ const SceneContent = connect(
 
 const XRStartButton = () => {
   const { gl } = useThree()
-  const elementP = useRef()
-  const { t } = useTranslation()
 
   useMemo(() => { 
     document.body.appendChild(VRButton.createButton(gl))
-    let p = document.createElement('p')
-    elementP.current = p
-    document.body.appendChild(p)
   }, [])
-
-  useEffect(() => {
-    elementP.current.innerHTML = t('vr-enter')
-  }, [t])
 
   return null
 }
