@@ -1,6 +1,5 @@
 
 import * as THREE from 'three'
-import SimpleBrush from './Brushes/SimpleBrush'
 import CurveBrush from './Brushes/CurveBrush'
 import EraserBrush from './Brushes/EraserBrush'
 import BrushType from '../Helpers/Brushes/TextureBrushTypes'

@@ -55,7 +55,7 @@ const useDrawOnImage = (drawMode) => {
       let values = Object.values(getDrawingTextures().getTexturesByObjectType(TextureObjectType.Image))
       let {x, y} = mouse({x: event.clientX, y: event.clientY}, gl)
       raycaster.current.setFromCamera({x, y}, camera)
-      let imageObjects = scene.children[0].children.filter(object => object.visible === true)//.filter(object => object.userData.type !== "image")
+      let imageObjects = scene.children[0].children.filter(object => object.visible === true)
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
       let backgroundTexture = getDrawingTextures().getTexturesByObjectType(TextureObjectType.Background)
       if(backgroundTexture.length) {
@@ -73,7 +73,6 @@ const useDrawOnImage = (drawMode) => {
 
         // Hack to avoid drawing on image when there's object in front of them
         let onlyContinuousDrawing = true 
-        //console.log( intersections[0].object)
         if(intersections.length && intersections[0].object.parent === object) {
           onlyContinuousDrawing = false
         }

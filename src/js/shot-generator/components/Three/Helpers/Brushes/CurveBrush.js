@@ -32,6 +32,7 @@ class CurveBrush extends Brush {
         this.drawingCtx.strokeStyle = brush.color;
         this.drawingCtx.fillStyle = brush.color;
         this.drawingCtx.lineWidth = this.brushSize * 2;
+        this.drawingCtx.lineJoin = this.drawingCtx.lineCap = 'round';
         this.positionBuffer.addElements(currentPos);
         this.drawingCtx.beginPath()
 
