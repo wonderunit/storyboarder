@@ -56,7 +56,7 @@ const AttachableInspector = connect(
       let attachableModels = null
       withState((dispatch, state) => {
         let allModels = state.models
-        attachableModels = Object.values(allModels).filter(m => m.type === "attachable" && m.attachableType !== "hair" && m.attachableType !== "emotion")
+        attachableModels = Object.values(allModels).filter(m => m.type === "attachable" && m.attachableType !== 'hair')
       })
       setResults(attachableModels)
       sortedAttachables.current = attachableModels.map((attachable, index) => {

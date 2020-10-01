@@ -67,18 +67,10 @@ const sceneObjectSelector = (state) => {
 }
 const attachableIdsSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
-  return Object.values(sceneObjects).filter(o => o.type === 'attachable' && o.attachableType != 'emotion').map(o => o.id)
+  return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
 }
 const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects) => sceneObjects)
 const getAttachableIdsM = deepEqualSelector([attachableIdsSelector], (sceneObjects) => sceneObjects)
-
-const getEmotionAttachableByCharacterId = (sceneObjects, id) =>
-  Object.values(sceneObjects)
-      .find(s =>
-        s.type === 'attachable' &&
-        s.attachableType === 'emotion' &&
-        s.attachToId === id
-      )
 
 const SceneManagerR3fLarge = connect(
     state => ({
@@ -387,11 +379,12 @@ const SceneManagerR3fLarge = connect(
     {    
         characterIds.map(id => {
           let sceneObject = sceneObjects[id]
-          let emotionAttachable = getEmotionAttachableByCharacterId(sceneObjects, id)
-          let imagePath = emotionAttachable
-            ? Object.keys(systemEmotionPresets).includes(emotionAttachable.presetId)
-              ? getAssetPath('emotion', `${emotionAttachable.presetId}-texture.png`)
-              : getUserPresetPath('emotions', `${emotionAttachable.presetId}-texture.png`)
+
+          let { emotionPresetId } = sceneObject
+          let imagePath =  emotionPresetId
+            ? Object.keys(systemEmotionPresets).includes(emotionPresetId)
+              ? getAssetPath('emotion', `${emotionPresetId}-texture.png`)
+              : getUserPresetPath('emotions', `${emotionPresetId}-texture.png`)
             : null
 
             return <SimpleErrorBoundary  key={ id }>

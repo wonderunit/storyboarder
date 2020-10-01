@@ -60,19 +60,6 @@ const shortId = (id) => id.toString().substr(0, 7).toLowerCase()
 
 const promptForFilepath = async () => remote.dialog.showOpenDialog(null, {})
 
-const getFirstSelectedSceneObject = createSelector(
-  [getSceneObjects, getSelections],
-  (sceneObjects, selections) => sceneObjects[selections[0]]
-)
-
-const getEmotionAttachableByCharacterId = (sceneObjects, id) =>
-  Object.values(sceneObjects)
-      .find(s =>
-        s.type === 'attachable' &&
-        s.attachableType === 'emotion' &&
-        s.attachToId === id
-      )
-
 // TODO extract to store middleware or store subscriber
 const writeEmotionPresets = () => {
   return (dispatch, getState) => {
@@ -87,27 +74,6 @@ const writeEmotionPresets = () => {
   }
 }
 
-const emotionAttachableFactory = (changes) => ({
-  id: THREE.Math.generateUUID(),
-
-  type: 'attachable',
-
-  x: 0,
-  y: 0,
-  z: 0,
-  rotation: { x: 0, y: 0, z: 0 },
-  size: 1,
-
-  model: null,
-  attachableType: 'emotion',
-  bindBone: 'Head',
-
-  // presetId
-  // attachToId
-  // name
-  ...changes
-})
-
 const emotionPresetFactory = ({ name, priority = 0 }) => ({
   id: THREE.Math.generateUUID(),
   name,
@@ -116,7 +82,7 @@ const emotionPresetFactory = ({ name, priority = 0 }) => ({
 
 const createPreset = async (context, event) => {
   console.log('createPreset', context)
-  let { name, source, dispatch, getUserPresetPath, getThumbnailRenderer } = context
+  let { name, source, sceneObjectId, dispatch, getUserPresetPath, getThumbnailRenderer } = context
 
   // ensure the emotions user preset directory exists
   fs.mkdirpSync(getUserPresetPath('emotions'))
@@ -159,19 +125,17 @@ const createPreset = async (context, event) => {
   selectItem(
     { dispatch },
     {
-      attachableId: context.attachableId,
-      attachToId: context.attachToId,
-      presetId: emotionPreset.id,
-      name
+      sceneObjectId,
+      emotionPresetId: emotionPreset.id
     }
   )
 }
 
 const deletePreset = (context, event) => {
   let { dispatch, getUserPresetPath } = context
-  let { id, sceneObject, emotionAttachable } = event
+  let { id } = event
 
-  console.log('delete preset', id, 'used by character', sceneObject, 'via attachable', emotionAttachable)
+  console.log('delete preset', id)
 
   // delete the preset
   dispatch(deleteEmotionPreset(id))
@@ -188,33 +152,15 @@ const deletePreset = (context, event) => {
 }
 
 const selectItem = (context, event) => {
-  console.log('selectItem', context, event)
-
   let { dispatch } = context
-  let { attachableId, presetId, attachToId, name } = event
+  let { sceneObjectId, emotionPresetId } = event
 
   dispatch(undoGroupStart())
-
-  if (presetId) {
-    let changes = {
-      presetId,
-      attachToId,
-      name
-    }
-
-    if (attachableId) {
-      console.log('updateObject', attachableId, changes)
-      dispatch(updateObject(attachableId, changes))
-    } else {
-      let emotionAttachable = emotionAttachableFactory(changes)
-      console.log('createObject', emotionAttachable)
-      dispatch(createObject(emotionAttachable))
-    }
+  if (emotionPresetId) {
+    dispatch(updateObject(sceneObjectId, { emotionPresetId }))
   } else {
-    console.log('deleteObjects', attachableId)
-    dispatch(deleteObjects([attachableId]))
+    dispatch(updateObject(sceneObjectId, { emotionPresetId: undefined }))
   }
-
   dispatch(undoGroupEnd())
 }
 
@@ -224,7 +170,8 @@ const machine = Machine({
   context: {
     placeholder: null,
     name: null,
-    source: null
+    source: null,
+    sceneObjectId: null
   },
   states: {
     idle: {
@@ -242,8 +189,7 @@ const machine = Machine({
       entry: [
         assign({
           source: () => null,
-          attachToId: (context, event) => event.attachToId,
-          attachableId: (context, event) => event.attachableId
+          sceneObjectId: (context, event) => event.sceneObjectId
         }),
       ],
       invoke: {
@@ -267,7 +213,6 @@ const machine = Machine({
         let basename = path.basename(context.source, path.extname(context.source))
         let placeholder = `${basename}-${shortId(THREE.Math.generateUUID())}`
         return {
-          ...context,
           placeholder,
           name: placeholder
         }
@@ -300,15 +245,13 @@ const mapStateToProps = state => {
   let id = getSelections(state)[0]
   let sceneObject = sceneObjects[id]
 
-  let emotionAttachable = getEmotionAttachableByCharacterId(sceneObjects, sceneObject.id)
-
   return {
     sceneObject,
     userEmotions: filter(
       ({ id }) => systemEmotions[id] == null,
       state.presets.emotions
     ),
-    emotionAttachable
+    selectedPreset: state.presets.emotions[sceneObject.emotionPresetId]
   }
 }
 const EmotionInspector = connect(mapStateToProps)(
@@ -316,7 +259,7 @@ const EmotionInspector = connect(mapStateToProps)(
     ({
       sceneObject,
       userEmotions,
-      emotionAttachable
+      selectedPreset
     }) => {
       const { t } = useTranslation()
       const { getAssetPath, getUserPresetPath } = useContext(FilepathsContext)
@@ -366,7 +309,7 @@ const EmotionInspector = connect(mapStateToProps)(
 
         if (choice !== 0) return
 
-        send({ type: 'DELETE_PRESET', id, sceneObject, emotionAttachable })
+        send({ type: 'DELETE_PRESET', id })
       }
 
       const EMOTION_PRESET_NONE = {
@@ -395,8 +338,8 @@ const EmotionInspector = connect(mapStateToProps)(
             ? getAssetPath('emotion', `${id}-thumbnail.jpg`)
             : getUserPresetPath('emotions', `${id}-thumbnail.jpg`),
         isSelected: id == null
-          ? emotionAttachable == null
-          : emotionAttachable && emotionAttachable.presetId == id,
+          ? selectedPreset == null
+          : selectedPreset && selectedPreset.id == id,
         id: id,
         onDelete: id == null || systemEmotions[id] != null ? null : onDeletePreset
       }))
@@ -451,28 +394,19 @@ const EmotionInspector = connect(mapStateToProps)(
                 style={{ width: 30, height: 34 }}
                 onPointerDown={() => send({
                   type: 'SELECT_FILE',
-                  attachToId: sceneObject.id,
-                  attachableId: emotionAttachable && emotionAttachable.id
+                  sceneObjectId: sceneObject.id
                 })}
               >+</a>
             </div>
           </div>
-          {
-            (emotionAttachable && emotionAttachable.presetId == null) &&
-             <div className="row" style={{ padding: '6px 0' }}>
-              Embedded: {shortId(emotionAttachable.id)} ({emotionAttachable.name})
-             </div>
-          }          
           <div className="thumbnail-search__list">
             <Scrollable>
               <Grid
                 itemData={{
-                  onSelect: ({ id, title }) => send({
+                  onSelect: ({ id }) => send({
                     type: 'SELECT_ITEM',
-                    attachToId: sceneObject.id,
-                    attachableId: emotionAttachable && emotionAttachable.id,
-                    presetId: id,
-                    name: title
+                    sceneObjectId: sceneObject.id,
+                    emotionPresetId: id
                   })
                 }}
                 Component={GridItem}
