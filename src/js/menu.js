@@ -987,7 +987,7 @@ const shotGeneratorMenu = (i18n) => [
       {type: 'separator'},
       {
         label: i18n.t('menu.view.scale-ui-up'),
-        accelerator: keystrokeFor("menu:view:zoom-in"),
+        accelerator: 'CommandOrControl+=',
         type: 'normal',
         click (item, focusedWindow, event) {
           ipcRenderer.send('shot-generator:menu:view:scale-ui-by', 0.1)
