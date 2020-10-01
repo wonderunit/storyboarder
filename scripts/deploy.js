@@ -1,8 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const util = require('util');
-const { spawnSync } = require( 'child_process' );
-
+const fs = require('fs')
+const path = require('path')
+const util = require('util')
+const { spawnSync } = require('child_process')
 
 const GIT_URL = 'https://git.heroku.com/stbr-link.git'
 const SOURCE_FOLDER = '../server/dist'
@@ -14,36 +13,41 @@ const DIST_FOLDER = '__temp'
  * @param {string} dest The path to the new copy.
  */
 const copyRecursiveSync = (src, dest) => {
-    const exists = fs.existsSync(src);
-    const stats = exists && fs.statSync(src);
-    const isDirectory = exists && stats.isDirectory();
-    if (isDirectory) {
-        fs.mkdirSync(dest);
-        fs.readdirSync(src).forEach((childItemName) => {
-        copyRecursiveSync(path.join(src, childItemName),
-                            path.join(dest, childItemName));
-        });
-    } else {
-        fs.copyFileSync(src, dest);
-    }
-};
+  const exists = fs.existsSync(src)
+  const stats = exists && fs.statSync(src)
+  const isDirectory = exists && stats.isDirectory()
+  if (isDirectory) {
+    fs.mkdirSync(dest)
+    fs.readdirSync(src).forEach((childItemName) => {
+      copyRecursiveSync(
+        path.join(src, childItemName),
+        path.join(dest, childItemName)
+      )
+    })
+  } else {
+    fs.copyFileSync(src, dest)
+  }
+}
 
 const removeDir = (src) => {
-    const exists = fs.existsSync(src);
-    const stats = exists && fs.statSync(src);
-    const isDirectory = exists && stats.isDirectory();
-    if (isDirectory) {
-        fs.rmdirSync(src, { recursive: true });
-    }
+  const exists = fs.existsSync(src)
+  const stats = exists && fs.statSync(src)
+  const isDirectory = exists && stats.isDirectory()
+  if (isDirectory) {
+    fs.rmdirSync(src, { recursive: true })
+  }
 }
 
 const run = (command, args = [], cwd) => {
-    const ls = spawnSync( command, args, {cwd, shell: true, env: {PATH: process.env.PATH}});
-    
-    ls.stdout && console.log(ls.stdout.toString());
-    ls.stderr && console.error(ls.stderr.toString());
-}
+  const ls = spawnSync(command, args, {
+    cwd,
+    shell: true,
+    env: { PATH: process.env.PATH }
+  })
 
+  ls.stdout && console.log(ls.stdout.toString())
+  ls.stderr && console.error(ls.stderr.toString())
+}
 
 const src = path.join(__dirname, SOURCE_FOLDER)
 const dst = path.join(__dirname, DIST_FOLDER)
