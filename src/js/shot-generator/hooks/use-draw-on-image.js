@@ -55,7 +55,7 @@ const useDrawOnImage = (drawMode) => {
       let values = Object.values(getDrawingTextures().getTexturesByObjectType(TextureObjectType.Image))
       let {x, y} = mouse({x: event.clientX, y: event.clientY}, gl)
       raycaster.current.setFromCamera({x, y}, camera)
-      let imageObjects = scene.children[0].children.filter(object => object.visible === true)
+      let imageObjects = scene.children[0].children.filter(object => object.visible === true && object.userData.type !== "volume" && object.userData.type !== "character")
       let intersections = raycaster.current.intersectObjects(imageObjects, true)
       let backgroundTexture = getDrawingTextures().getTexturesByObjectType(TextureObjectType.Background)
       if(backgroundTexture.length) {
