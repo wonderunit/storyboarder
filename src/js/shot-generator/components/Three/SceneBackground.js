@@ -2,7 +2,7 @@ import * as THREE from 'three'
 import React, { useEffect, useRef } from 'react'
 import { useThree } from 'react-three-fiber'
 import { useAsset, removeAsset } from '../../hooks/use-assets-manager'
-import CubeTextureCreator from './helpers/CubeTextureCreator'
+import { CubeTextureCreator } from './Helpers/CubeTextureCreator'
 import fs from 'fs-extra'
 import path from 'path'
 import DrawingTextureType from '../InspectedWorld/DrawingTextureType'
@@ -116,9 +116,11 @@ const SceneBackground = React.memo(({ imagePath, world, storyboarderFilePath, up
         let textureObject = drawingTextures.getTextureById(id.current)
         if(world.textureType === DrawingTextureType.Cubemap)  {
             backgroundTexture = cubeTextureCreator.current.getCubeMapTexture(texture, storyboarderFilePath);
+            // Checks if image is appropriate format 
             if(backgroundTexture) {
                 textureObject.save = () => save()
             } else {
+                //...removes it if doesn't 
                 updateWorld({ sceneTexture: null, textureType: null })
                 return
             }

@@ -26,7 +26,7 @@ const isObj = (type) => type === 'object'
 const isImage = (type) => type === 'image' || !type
 const nullTab = {tab: null, panel: null}
 
-const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isInspectedWorld}) => {
+const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isInspectedWorld, notifications}) => {
   const [isModalShown, showModal] = useState(false)
   const [changedName, changeNameTo] = useState(false)
   const handPoseTab = useMemo(() => {
@@ -72,7 +72,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
       panel: <Panel><BrushInspector /></Panel>
     }
   }, [selectedType])
-
+  console.log("notifications", notifications)
   return (
     <React.Fragment>
        { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
@@ -111,7 +111,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
         </div>
 
         <div className="tabs-body">
-          <Panel>{isInspectedWorld ? <InspectedWorld/> : <GeneralInspector/>}</Panel>
+          <Panel>{isInspectedWorld ? <InspectedWorld notifications={notifications}/> : <GeneralInspector/>}</Panel>
           {handPoseTab.panel}
           {charPoseTab.panel}
           {modelTab.panel}

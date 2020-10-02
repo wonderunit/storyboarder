@@ -1,6 +1,6 @@
-import React, {useCallback, useMemo} from 'react'
+import React, {useCallback, useMemo, useState} from 'react'
 import {Math as _Math} from 'three'
-
+import electron from 'electron'
 import {connect} from 'react-redux'
 import path from 'path'
 
@@ -25,9 +25,11 @@ import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from '../../utils/CopyFile'
 import DrawingTextureType from './DrawingTextureType'
 import ModelLoader from '../../../services/model-loader'
+import { isSupportedCubeMap } from '../Three/Helpers/CubeTextureCreator'
+const cubemapWiki = 'https://github.com/wonderunit/storyboarder/wiki'
 const imageFilters = ["jpg", "jpeg", "png", "gif", "dds"]
 
-const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
+const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath, notifications}) => {
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
   const setEnvVisible = useCallback(() => updateWorldEnvironment({visible: !world.environment.visible}), [world.environment.visible])
@@ -66,7 +68,25 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   }, [setWorldTexture])
 
   const setSceneCubeMap = useCallback((event) => {
-    setWorldTexture(DrawingTextureType.Cubemap, event)
+    if(!event.file) { 
+      setWorldTexture(DrawingTextureType.Cubemap, event)
+      return
+    }
+    let image = new Image()
+    image.addEventListener('load', () => {
+      if(isSupportedCubeMap(image)) {
+        setWorldTexture(DrawingTextureType.Cubemap, event)
+      } else {
+        notifications.notify({
+          message:
+            `Whoops cubemap format isn't supported check the` +
+            ` <a href="${cubemapWiki}">Supported formats</a> for details.`,
+          timing: 30,
+          onClick: () => electron.shell.openExternal(cubemapWiki)
+        })
+      }
+    })
+    image.src = event.file
   }, [setWorldTexture])
   
   const setGrayscale = useCallback(() => updateWorldEnvironment({grayscale: !world.environment.grayscale}), [world.environment.grayscale])

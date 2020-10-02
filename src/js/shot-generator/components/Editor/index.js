@@ -290,7 +290,7 @@ const Editor = React.memo(({
             </div>
 
             <div id="elements">
-              <ElementsPanel/>
+              <ElementsPanel notifications={notifications}/>
             </div>
           </div>
 

@@ -1,6 +1,9 @@
 import * as THREE from 'three'
-
-class CubeTextureCreator {
+export const isSupportedCubeMap = ( image ) => {
+    return image.width / 4 === image.height / 3 || image.width / 3 === image.height / 4
+        || image.width / 6 === image.height || image.width === image.height / 6
+}
+export class CubeTextureCreator {
     constructor() {
         this.drawingCanvas = document.createElement('canvas');
         this.croppedCanvas = document.createElement('canvas');
@@ -126,5 +129,3 @@ class CubeTextureCreator {
         return texture.image;
     }
 }
-
-export default CubeTextureCreator;
