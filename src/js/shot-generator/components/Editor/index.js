@@ -4,8 +4,7 @@ import path from 'path'
 import fs from 'fs-extra'
 import SettingsService from '../../../windows/shot-generator/SettingsService'
 import electron from 'electron'
-const { ipcRenderer, webFrame } = electron
-const { app } = electron.remote
+const { ipcRenderer } = electron
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -40,9 +39,10 @@ import BoardInspector from '../BoardInspector'
 import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
 import {useAsset, removeAsset} from '../../hooks/use-assets-manager'
-import Stats from 'stats.js'
 
-const maxZoom = {in: 0.4, out: -1.6}
+import { useTranslation } from 'react-i18next';
+import Stats from 'stats.js'
+import useUIScale from '../../hooks/use-ui-scale'
 
 const Editor = React.memo(({
   mainViewCamera, aspectRatio, board, world,
@@ -51,13 +51,14 @@ const Editor = React.memo(({
   if (!board.uid) {
     return null
   }
-  
+  const { t } = useTranslation()
   const notificationsRef = useRef(null)
-  const settingsService = useRef()
+
   const mainViewContainerRef = useRef(null)
   const [stats, setStats] = useState()
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
   const [largeCanvasInfo, setLargeCanvasInfo] = useState({width: 0, height: 0})
+  const { setScale, scaleBy, resizeScale } = useUIScale()
   const toggleStats = (event, value) => {
     if (!stats) {
       let newStats
@@ -73,50 +74,23 @@ const Editor = React.memo(({
       }
   }
 
-  useMemo(() =>{
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-    settingsService.current = new SettingsService(path.join(app.getPath('userData'), 'shot-generator-settings.json'))
-    let currentWindow = electron.remote.getCurrentWindow()
-    let settingsZoom = settingsService.current.getSettingByKey("zoom")
-    settingsZoom = settingsZoom ? settingsZoom : 0
-    if(!settingsZoom && currentWindow.getBounds().height < 800) {
-      webFrame.setZoomLevel(maxZoom.out)
-    } else {
-      settingsZoom = settingsZoom ? settingsZoom : 0
-      webFrame.setZoomLevel(settingsZoom)
-    }
-  }, [])
-
   useEffect(() => {
     loadCameraModel()
   }, [])
 
   useEffect(() => {
+    electron.remote.getCurrentWindow().on('resize', resizeScale)
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
-    ipcRenderer.on('shot-generator:menu:view:scale-ui', zoom)
-    ipcRenderer.on('shot-generator:menu:view:set-ui-scale', setZoom)
+    ipcRenderer.on('shot-generator:menu:view:scale-ui-by', scaleBy)
+    ipcRenderer.on('shot-generator:menu:view:scale-ui-reset', setScale)
     return () => {
+      electron.remote.getCurrentWindow().off('resize', resizeScale)
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
-      ipcRenderer.off('shot-generator:menu:view:scale-ui', zoom)
-      ipcRenderer.off('shot-generator:menu:view:set-ui-scale', setZoom)
+      ipcRenderer.off('shot-generator:menu:view:scale-ui-by', scaleBy)
+      ipcRenderer.off('shot-generator:menu:view:scale-ui-reset', setScale)
     }
   }, [])
 
-  const zoom = useCallback((event, value) => {
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-    let zoomLevel = webFrame.getZoomLevel()
-    let zoom = zoomLevel + value 
-    zoom = zoom >= maxZoom.in ? maxZoom.in : zoom <= maxZoom.out ? maxZoom.out : zoom
-    webFrame.setZoomLevel(zoom)
-    settingsService.current.setSettings({zoom})
-  }, [])
-
-  const setZoom = useCallback((event, value) => {
-    webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-    let zoom = value >= maxZoom.in ? maxZoom.in : value <= maxZoom.out ? maxZoom.out : value
-    webFrame.setZoomLevel(zoom)
-    settingsService.current.setSettings({zoom})
-  }, [])
 
   /** Resources loading end */
   useEffect(() => {
@@ -330,7 +304,7 @@ const Editor = React.memo(({
         </div>
       </div>
       <KeyHandler/>
-      <MenuManager/>
+      <MenuManager t={ t }/>
 
       <div
         className="notifications"

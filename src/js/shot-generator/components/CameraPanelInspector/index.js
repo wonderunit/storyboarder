@@ -19,7 +19,7 @@ import { useDrag } from 'react-use-gesture'
 import KeyCommandsSingleton from '../KeyHandler/KeyCommandsSingleton'
 
 import useTooltip from '../../../hooks/use-tooltip'
-
+import { useTranslation } from 'react-i18next'
 /**
  * Return the first index containing an *item* which is greater than *item*.
  * @arguments _(item)_
@@ -78,7 +78,7 @@ const CameraPanelInspector = connect(
     const [currentShotAngle, setCurrentShotAngle] = useState(shotInfo.angle)
     const isDragging = useRef(false)
     const dragInfo = useRef({prev: [0, 0], current: [0, 0]})
-
+    const { t } = useTranslation()
     const fakeCamera = useRef()
     useEffect(() => {
       setCurrentShotSize(shotInfo.size)
@@ -266,12 +266,12 @@ const CameraPanelInspector = connect(
       { value: ShotAngles.WORMS_EYE,        label: "Worm\'s Eye" }
     ]
 
-    const rollTooltipEvents = useTooltip("Roll Camera Angle", "Rotate the camera around the roll axis to create a dutch angle.", "Z|X", "top center")
-    const panTooltipEvents = useTooltip("Pan / Tilt Camera Angle", "Pan or tilt the camera by clicking and dragging on this control, or clicking and dragging on the 3D viewport. You can also move while clicking and dragging.", null, "top center")
-    const moveTooltipEvents = useTooltip("Move Camera", "Move the camera forward, backward, left and right. You can also pan while moving the camera. You can hold shift to move faster.", "W+A+S+D", "top center")
-    const elevateTooltipEvents = useTooltip("Elevate Camera", "Elevate the camera up and down. You can hold shift to elevate faster.", "R|F", "top center")
-    const lensTooltipEvents = useTooltip("Change Camera Lens (Zoom)", "Change the field of view of the camera's lens. If you press the bracket keys, it will snap to standard prime lens angles.", "[|]", "top center")
-    const shotsizeTooltipEvents = useTooltip("Auto Shot Framing", "Select a character and then select the Shot Size and or Camera Angle to automatically position the camera to frame the shot.", null, "top center")
+    const rollTooltipEvents = useTooltip(t("shot-generator.camera-panel.roll-camera.title"), t("shot-generator.camera-panel.roll-camera.description"), "Z|X", "top center")
+    const panTooltipEvents = useTooltip(t("shot-generator.camera-panel.pan-tilt-camera.title"), t("shot-generator.camera-panel.pan-tilt-camera.description"), null, "top center")
+    const moveTooltipEvents = useTooltip(t("shot-generator.camera-panel.move-camera.title"), t("shot-generator.camera-panel.move-camera.description"), "W+A+S+D", "top center")
+    const elevateTooltipEvents = useTooltip(t("shot-generator.camera-panel.elevate-camera.title"), t("shot-generator.camera-panel.elevate-camera.description"), "R|F", "top center")
+    const lensTooltipEvents = useTooltip(t("shot-generator.camera-panel.change-camera-lens.title"), t("shot-generator.camera-panel.change-camera-lens.description"), "[|]", "top center")
+    const shotsizeTooltipEvents = useTooltip(t("shot-generator.camera-panel.auto-shot-framing.title"), t("shot-generator.camera-panel.auto-shot-framing.description"), null, "top center")
 
     return <div className="camera-inspector">
             <div className="camera-item roll" {...rollTooltipEvents}>
@@ -281,7 +281,7 @@ const CameraPanelInspector = connect(
                         <div className="camera-item-button" {...useLongPress(getValueShifter({ roll: THREE.Math.DEG2RAD }))}><div className="arrow right"/></div>
                     </div>
                 </div>
-                <div className="camera-item-label">Roll: { cameraRoll }°</div>
+                <div className="camera-item-label">{t("shot-generator.camera-panel.roll")}: { cameraRoll }°</div>
             </div>
             <div className="camera-item pan" {...panTooltipEvents}>
                 <div className="camera-item-control">
@@ -289,7 +289,7 @@ const CameraPanelInspector = connect(
                         <div className="pan-control" {...getCameraPanEvents()}><div className="pan-control-target"/></div>
                     </div>
                 </div>
-                <div className="camera-item-label">Pan: { Math.round(THREE.Math.radToDeg(activeCamera.rotation)) }° // Tilt: { Math.round(THREE.Math.radToDeg(activeCamera.tilt)) }°</div>
+                <div className="camera-item-label">{t("shot-generator.camera-panel.pan")}: { Math.round(THREE.Math.radToDeg(activeCamera.rotation)) }° // {t("shot-generator.camera-panel.tilt")}: { Math.round(THREE.Math.radToDeg(activeCamera.tilt)) }°</div>
             </div>
             <div className="camera-item move" {...moveTooltipEvents}>
                 <div className="camera-item-control">
@@ -302,7 +302,7 @@ const CameraPanelInspector = connect(
                         <div className="camera-item-button" {...useLongPress(moveCamera([0.1, 0]))}><div className="arrow right"/></div>
                     </div>
                 </div>
-                <div className="camera-item-label">Move</div>
+                <div className="camera-item-label">{t("shot-generator.camera-panel.move")}</div>
             </div>
             <div className="camera-item elevate" {...elevateTooltipEvents}>
                 <div className="camera-item-control">
@@ -313,7 +313,7 @@ const CameraPanelInspector = connect(
                         <div className="camera-item-button" {...useLongPress(getValueShifter({ z: -0.1 }))}><div className="arrow down"/></div>
                     </div>
                 </div>
-                <div className="camera-item-label">Elevate: { activeCamera.z.toFixed(2) }m</div>
+                <div className="camera-item-label">{t("shot-generator.camera-panel.elevate")}: { activeCamera.z.toFixed(2) }m</div>
             </div>
             <div className="camera-item lens" {...lensTooltipEvents}>
 
@@ -323,7 +323,7 @@ const CameraPanelInspector = connect(
                         <div className="camera-item-button" {...useLongPress(getValueShifter({ fov: -0.2 }))}><div className="arrow right"/></div>
                     </div>
                 </div>
-                <div className="camera-item-label">Lens: { focalLength.toFixed(2) }mm</div>
+                <div className="camera-item-label">{t("shot-generator.camera-panel.lens")}: { focalLength.toFixed(2) }mm</div>
             </div>
             <div className="camera-item shots" {...shotsizeTooltipEvents}>
                 <div className="select">
@@ -343,7 +343,7 @@ const CameraPanelInspector = connect(
                 <div className="select">
                   <div className="select-shot-explorer" onPointerDown={ () => ipcRenderer.send('shot-generator:show:shot-explorer')}>
                       <a className="select-shot-explorer-text">
-                      Open Shot Explorer
+                     {t("shot-generator.camera-panel.open-shot-explorer")}
                       </a>
                     </div>
                 </div>

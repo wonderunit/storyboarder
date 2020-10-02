@@ -16,7 +16,7 @@ import {
 import presetsStorage from '../../../../shared/store/presetsStorage'
 import Modal from '../../Modal'
 import deepEqualSelector from '../../../../utils/deepEqualSelector'
-
+import { useTranslation } from 'react-i18next'
 const preventDefault = (fn, ...args) => e => {
     e.preventDefault()
     fn(e, ...args)
@@ -135,10 +135,10 @@ const CharacterPresetsEditor = connect(
     createCharacterPreset, 
     withState
    }) => {
+     const { t } = useTranslation()
     const [isModalShown, showModal] = useState(false)
     const newPresetName = useRef('')
     const newGeneratedId = useRef()
-
     const getSceneObject = useCallback(() => {
       let sceneObject = null
       withState((dispatch, state) => {
@@ -182,7 +182,7 @@ const CharacterPresetsEditor = connect(
     return <div>
       <Modal visible={ isModalShown } onClose={ () => showModal(false) }>
         <div style={{ margin: "5px 5px 5px 5px" }}>
-          Select a Preset Name:
+        {t("shot-generator.inspector.common.select-preset-name")}
         </div>
         <div className="column" style={{ flex: 1 }}> 
           <input 
@@ -198,12 +198,12 @@ const CharacterPresetsEditor = connect(
               showModal(false)
               addNewCharacterPreset(newPresetName.current)
             }}>
-              Proceed
+              {t("shot-generator.inspector.common.proceed-button")}
           </button>
           </div>
       </Modal>
       <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}>
-          <div style={{ width: 50, display: "flex", alignSelf: "center" }}>preset</div>
+          <div style={{ width: 50, display: "flex", alignSelf: "center" }}>{t("shot-generator.inspector.character-preset.preset")}</div>
           <select required={ true }
             value={ characterPresetId || "" }
             onChange={ preventDefault(onSelectCharacterPreset) }

@@ -17,7 +17,7 @@ import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 
 import Icon from '../Icon'
 import useTooltip from '../../../hooks/use-tooltip'
-
+import { useTranslation } from 'react-i18next'
 // because webpack
 const { shell } = require('electron')
 
@@ -72,6 +72,7 @@ const Toolbar = connect(
   }) => {
     let cameraState = null
     let camera = useRef(null)
+    let { t } = useTranslation()
 
     const roomObject3dFactory = ({ width, height, length }) => {
       let geometry = new THREE.BoxBufferGeometry(
@@ -136,18 +137,18 @@ const Toolbar = connect(
 
     const onCreateLightClick = () => {
       let id = THREE.Math.generateUUID()
-
+      initCamera()
       undoGroupStart()
-      createLight(id)
+      createLight(id, camera.current, room.visible && roomObject3d)
       selectObject(id)
       undoGroupEnd()
     }
 
     const onCreateVolumeClick = () => {
       let id = THREE.Math.generateUUID()
-
+      initCamera()
       undoGroupStart()
-      createVolume(id)
+      createVolume(id, camera.current, room.visible && roomObject3d)
       selectObject(id)
       undoGroupEnd()
     }
@@ -172,32 +173,29 @@ const Toolbar = connect(
     const onOpenVR = preventDefault(() => {
       notifications.notify({
         message:
-          `To view, open a VR web browser to:\n` +
+          `${t("shot-generator.toolbar.popup.open-vr")}:\n` +
           `<a href="${server.xrUri}">${server.xrUri}</a>.`,
         timing: 30,
         onClick: () => shell.openExternal(server.xrUri)
       })
       notifications.notify({
         message:
-          `You may see a scary browser warning message ` +
-          `because VR runs from this computer, not a trusted server.\n` +
-          `In Oculus Browser, click “Advanced” and then “Proceed” to accept the self-signed certificate.\n` +
-          `Learn more in the <a href="https://wonderunit.com/storyboarder/faq/">Storyboarder FAQ</a>.`,
+          t("shot-generator.toolbar.popup.scary-warning", {link:'<a href="https://wonderunit.com/storyboarder/faq/">Storyboarder FAQ</a>.'}),
         timing: 30,
         onClick: () => shell.openExternal('https://wonderunit.com/storyboarder/faq')
       })
     })
-    const cameraTooltipEvents = useTooltip("Add Camera", "Add a new camera in the scene.", null, "bottom center")
-    const objectTooltipEvents = useTooltip("Add Object", "Add a new object. You can change the properties to the left.", null, "bottom center")
-    const characterTooltipEvents = useTooltip("Add Character", "Add a new character in the scene. You can change the pose by dragging the control point spheres around.", null, "bottom center")
-    const lightTooltipEvents = useTooltip("Add Light", "Add a spot light into the scene.", null, "bottom center")
-    const volumeTooltipEvents = useTooltip("Add Volume", "Add a volume like rain, fog, explosion.", null, "bottom center")
-    const imageTooltipEvents = useTooltip("Add Image", "Add an image. You can specify a custom image properties on the left. This is useful for reference images or posters or matte paintings in your scene.", null, "bottom center")
+    const cameraTooltipEvents = useTooltip(t("shot-generator.toolbar.camera.tooltip.title"), t("shot-generator.toolbar.camera.tooltip.description"), null, "bottom center")
+    const objectTooltipEvents = useTooltip(t("shot-generator.toolbar.object.tooltip.title"), t("shot-generator.toolbar.object.tooltip.description"), null, "bottom center")
+    const characterTooltipEvents = useTooltip(t("shot-generator.toolbar.character.tooltip.title"), t("shot-generator.toolbar.character.tooltip.description"), null, "bottom center")
+    const lightTooltipEvents = useTooltip(t("shot-generator.toolbar.light.tooltip.title"), t("shot-generator.toolbar.light.tooltip.description"), null, "bottom center")
+    const volumeTooltipEvents = useTooltip(t("shot-generator.toolbar.volume.tooltip.title"), t("shot-generator.toolbar.volume.tooltip.description"), null, "bottom center")
+    const imageTooltipEvents = useTooltip(t("shot-generator.toolbar.image.tooltip.title"), t("shot-generator.toolbar.image.tooltip.description"), null, "bottom center")
 
-    const vrTooltipEvents = useTooltip("Open in VR", "Click this to see the address you should type into your VR browser like the Oculus Quest.", null, "bottom center")
+    const vrTooltipEvents = useTooltip(t("shot-generator.toolbar.open-in-vr.tooltip.title"), t("shot-generator.toolbar.open-in-vr.tooltip.description"), null, "bottom center")
 
-    const saveTooltipEvents = useTooltip("Save to Board", "Save the current shot to the current Storyboard. After you save it, you can close this window.", null, "bottom center")
-    const insertTooltipEvents = useTooltip("Insert As New Board", "Insert the current shot after the current Storyboard. After you insert a new board, you can close this window, or continue to insert more shots.", null, "bottom right")
+    const saveTooltipEvents = useTooltip(t("shot-generator.toolbar.save-to-board.tooltip.title"), t("shot-generator.toolbar.save-to-board.tooltip.description"), null, "bottom center")
+    const insertTooltipEvents = useTooltip(t("shot-generator.toolbar.insert-as-new-board.tooltip.title"), t("shot-generator.toolbar.insert-as-new-board.tooltip.description"), null, "bottom right")
 
     return (
       <div id="toolbar" key="toolbar">
@@ -206,37 +204,37 @@ const Toolbar = connect(
              onClick={preventDefault(onCreateCameraClick)}
              {...cameraTooltipEvents}>
             <Icon src="icon-toolbar-camera"/>
-            <span>Camera</span>
+            <span>{t("shot-generator.toolbar.camera.title")}</span>
           </a>
           <a href="#"
              onClick={preventDefault(onCreateObjectClick)}
              {...objectTooltipEvents}>
             <Icon src="icon-toolbar-object"/>
-            <span>Object</span>
+            <span>{t("shot-generator.toolbar.object.title")}</span>
           </a>
           <a href="#"
              onClick={preventDefault(onCreateCharacterClick)}
              {...characterTooltipEvents}>
             <Icon src="icon-toolbar-character"/>
-            <span>Character</span>
+            <span>{t("shot-generator.toolbar.character.title")}</span>
           </a>
           <a href="#"
              onClick={preventDefault(onCreateLightClick)}
              {...lightTooltipEvents}>
             <Icon src="icon-toolbar-light"/>
-            <span>Light</span>
+            <span>{t("shot-generator.toolbar.light.title")}</span>
           </a>
           <a href="#"
              onClick={preventDefault(onCreateVolumeClick)}
              {...volumeTooltipEvents}>
             <Icon src="icon-toolbar-volume"/>
-            <span>Volume</span>
+            <span>{t("shot-generator.toolbar.volume.title")}</span>
           </a>
           <a href="#"
              onClick={preventDefault(onCreateImageClick)}
              {...imageTooltipEvents}>
             <Icon src="icon-toolbar-image"/>
-            <span>Image</span>
+            <span>{t("shot-generator.toolbar.image.title")}</span>
           </a>
         </div>
         <div className="toolbar__board-actions row">
@@ -245,20 +243,20 @@ const Toolbar = connect(
                onClick={preventDefault(onOpenVR) }
                {...vrTooltipEvents}>
               <Icon src="icon-toolbar-vr"/>
-              <span>Open in VR</span>
+              <span>{t("shot-generator.toolbar.open-in-vr.title")}</span>
             </a>
           )}
         <a href="#"
            onClick={preventDefault(onSaveToBoardClick)}
            {...saveTooltipEvents}>
           <Icon src="icon-toolbar-save-to-board"/>
-          <span>Save to Board</span>
+          <span>{t("shot-generator.toolbar.save-to-board.title")}</span>
         </a>
         <a href="#"
            onClick={preventDefault(onInsertNewBoardClick)}
            {...insertTooltipEvents}>
           <Icon src="icon-toolbar-insert-as-new-board"/>
-          <span>Insert As New Board</span>
+          <span>{t("shot-generator.toolbar.insert-as-new-board.title")}</span>
         </a>
         </div>
       </div>

@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react'
 import {connect} from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 import {
   getSelections,
@@ -18,6 +19,8 @@ import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
 import BrushInspector from './BrushInspector'
 import InspectedWorld from '../InspectedWorld'
+import HairInspector from './HairInspector/index'
+
 import Icon from '../Icon'
 import Modal from '../Modal'
 
@@ -27,6 +30,7 @@ const isImage = (type) => type === 'image' || !type
 const nullTab = {tab: null, panel: null}
 
 const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isInspectedWorld, notifications}) => {
+  const { t } = useTranslation()
   const [isModalShown, showModal] = useState(false)
   const [changedName, changeNameTo] = useState(false)
   const handPoseTab = useMemo(() => {
@@ -61,7 +65,16 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
 
     return {
       tab: <Tab><Icon src='icon-tab-attachable'/></Tab>,
-      panel: <Panel><AttachableInspector /></Panel>
+      panel: <Panel><AttachableInspector/></Panel>
+    }
+  }, [selectedType])
+
+  const hairInspectorTab = useMemo(() => {
+    if (!isChar(selectedType)) return nullTab
+
+    return {
+      tab: <Tab><Icon src='icon-tab-hair'/></Tab>,
+      panel: <Panel><HairInspector /></Panel>
     }
   }, [selectedType])
 
@@ -72,34 +85,34 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
       panel: <Panel><BrushInspector /></Panel>
     }
   }, [selectedType])
-  console.log("notifications", notifications)
+  
   return (
     <React.Fragment>
-       { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
-          <div style={{ margin:"5px 5px 5px 5px" }}>
-            Select a Preset Name:
-          </div>
-          <div className="column" style={{ flex: 1}}>
-            <input
-              className="modalInput"
-              type="text"
-              placeholder={ selectedName }
-              onChange={ (value) => changeNameTo(value.currentTarget.value) }/>
-          </div>
-          <div className="skeleton-selector__div">
-            <button
-              className="skeleton-selector__button"
-              onClick={() => {
-                showModal(false)
-                updateObject(id, { displayName: changedName, name: changedName })
-              }}>
-                Proceed
-            </button>
-          </div>
+      { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
+        <div style={{ margin:"5px 5px 5px 5px" }}>
+        {t("shot-generator.inspector.common.select-preset-name")}
+        </div>
+        <div className="column" style={{ flex: 1}}>
+          <input
+            className="modalInput"
+            type="text"
+            placeholder={ selectedName }
+            onChange={ (value) => changeNameTo(value.currentTarget.value) }/>
+        </div>
+        <div className="skeleton-selector__div">
+          <button
+            className="skeleton-selector__button"
+            onClick={() => {
+              showModal(false)
+              updateObject(id, { displayName: changedName, name: changedName })
+            }}>
+                {t("shot-generator.inspector.common.proceed-button")}
+          </button>
+      </div>
       </Modal> }
-      { !isInspectedWorld && <a href="#" className="object-property-heading" style={{ overflow: "hidden", textOverflow: "ellipsis", flexShrink:0, width: 288 }} onClick={ () => showModal(true) }>
-        {selectedName} Properties
-        </a> }
+      <a href="#" className="object-property-heading" style={{ overflow: "hidden", textOverflow: "ellipsis", flexShrink:0, width: 288 }} onClick={ () => showModal(true) }>
+        {selectedName} {t("shot-generator.inspector.inspected-element.properties")}
+      </a>
       <Tabs key={id}>
         <div className="tabs-header">
           <Tab><Icon src="icon-tab-parameters"/></Tab>
@@ -108,6 +121,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
           {modelTab.tab}
           {attachmentTab.tab}
           {meshTab.tab}
+          {hairInspectorTab.tab}
         </div>
 
         <div className="tabs-body">
@@ -117,6 +131,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
           {modelTab.panel}
           {attachmentTab.panel}
           {meshTab.panel}
+          {hairInspectorTab.panel}
         </div>
       </Tabs>
     </React.Fragment>

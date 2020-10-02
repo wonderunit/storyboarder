@@ -1,6 +1,6 @@
 const { BrowserWindow, ipcMain, app, dialog } = electron = require('electron')
 const isDev = require('electron-is-dev')
-
+const SettingsService = require("./SettingsService")
 const path = require('path')
 const url = require('url')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
@@ -25,12 +25,15 @@ const removeExtensions = () => {
   }
 }
 
+const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"))
+let windowSize = settingsService.getSettingByKey("shotGeneratorSize") 
+windowSize = windowSize ? windowSize : { x:undefined, y:undefined, width: 1505, height: 1080 }
 let win
 let memento = {
-  x: undefined,
-  y: undefined,
-  width: 1505,
-  height: 1080,
+  x: windowSize.x,
+  y: windowSize.y,
+  width: windowSize.width,
+  height: windowSize.height,
 }
 
 const reveal = onComplete => {
@@ -102,10 +105,13 @@ const show = async (onComplete) => {
     }
   })
 
-  win.on('resize', () => memento = win.getBounds())
+  win.on('resize', () => { 
+    memento = win.getBounds()
+  })
   win.on('move', () => memento = win.getBounds())
 
   win.once('closed', () => {
+    settingsService.setSettingByKey("shotGeneratorSize", memento)
     win = null
   })
   win.loadURL(url.format({
@@ -126,11 +132,11 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
 })
 
-ipcMain.on('shot-generator:menu:view:scale-ui', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:scale-ui', value)
+ipcMain.on('shot-generator:menu:view:scale-ui-by', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:scale-ui-by', value)
 })
-ipcMain.on('shot-generator:menu:view:reset-ui', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:set-ui-scale', value)
+ipcMain.on('shot-generator:menu:view:scale-ui-reset', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:scale-ui-reset', value)
 })
 
 ipcMain.on('shot-generator:object:duplicate', () => {

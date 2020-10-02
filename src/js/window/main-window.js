@@ -1,4 +1,4 @@
-const {ipcRenderer, shell, remote, nativeImage, clipboard, webFrame} = require('electron')
+const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
 const { app } = require('electron').remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
@@ -68,11 +68,160 @@ const LinkedFileManager = require('./linked-file-manager')
 const getIpAddress = require('../utils/getIpAddress')
 
 const pkg = require('../../../package.json')
+const { scaleBy, setScale, resizeScale, initialize} = require('../utils/uiScale')
 
 const sharedObj = remote.getGlobal('sharedObj')
+//#region Localization 
+const i18n = require('../services/i18next.config')
+i18n.on('loaded', (loaded) => {
+  let lng = ipcRenderer.sendSync("getCurrentLanguage")
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+    updateHTMLText()
+  })
+  i18n.off('loaded')
+})
 
-const SettingsService = require("../windows/shot-generator/SettingsService")
+const changeLanguage = (lng) => {
+  if(remote.getCurrentWindow().isFocused()) {
+    menu.setMenu(i18n)
+  }
+  ipcRenderer.send("languageChanged", lng)
+}
 
+ipcRenderer.on("languageChanged", (event, lng) => {
+  i18n.off("languageChanged", changeLanguage)
+  i18n.changeLanguage(lng, () => {
+    i18n.on("languageChanged", changeLanguage)
+    updateHTMLText()
+  })
+})
+
+const translateHtml = (elementName, traslationKey) => {
+  document.querySelector(elementName).innerHTML = i18n.t(`${traslationKey}`)
+}
+
+const translateCheckbox = (elementName, traslationKey) => {
+  let childNodes = document.querySelector(elementName).childNodes
+  if(childNodes.length === 0) return
+  childNodes[childNodes.length - 1].textContent = i18n.t(traslationKey)
+}
+
+const translateTooltip = (elementName, traslationKey) => {
+  let element = document.querySelector(elementName)
+  if(!element) return
+  element.setAttribute("data-tooltip-title", i18n.t(`${traslationKey}.title`))
+  element.setAttribute("data-tooltip-description", i18n.t(`${traslationKey}.description`))
+}
+
+ipcRenderer.on("languageModified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => updateHTMLText())
+})
+
+ipcRenderer.on("languageAdded", (event, lng) => {
+  i18n.loadLanguages(lng).then(() => { i18n.changeLanguage(lng); menu.setWelcomeMenu(i18n)})
+})
+
+ipcRenderer.on("languageRemoved", (event, lng) => {
+  i18n.changeLanguage(lng)
+  menu.setWelcomeMenu(i18n)
+})
+
+const updateHTMLText = () => { 
+  //#region Toolbar elements
+    //#region Tools
+    translateTooltip("#toolbar-light-pencil", "main-window.toolbar.tools.light-pencil")
+    translateTooltip("#toolbar-brush", "main-window.toolbar.tools.brush")
+    translateTooltip("#toolbar-tone", "main-window.toolbar.tools.tone")
+    translateTooltip("#toolbar-pencil", "main-window.toolbar.tools.pencil")
+    translateTooltip("#toolbar-pen", "main-window.toolbar.tools.pen")
+    translateTooltip("#toolbar-light-pencil", "main-window.toolbar.tools.light-pencil")
+    translateTooltip("#toolbar-note-pen", "main-window.toolbar.tools.note-pen")
+    translateTooltip("#toolbar-eraser", "main-window.toolbar.tools.eraser")
+    //#endregion
+    //#region Colors
+    translateTooltip("#toolbar-current-color", "main-window.toolbar.colors.current-color")
+    translateTooltip(".toolbar-brush-modifier-controls_size", "main-window.toolbar.colors.controls-size")
+    translateTooltip(".toolbar-brush-modifier-controls_stroke-opacity", "main-window.toolbar.colors.controls-stroke-opacity")
+    translateTooltip("#toolbar-palette-colorA", "main-window.toolbar.colors.palette-colorA")
+    translateTooltip("#toolbar-palette-colorB", "main-window.toolbar.colors.palette-colorB")
+    translateTooltip("#toolbar-palette-colorC", "main-window.toolbar.colors.palette-colorC")
+    //#endregion
+    //#region Editing
+    translateTooltip("#toolbar-trash", "main-window.toolbar.editing.toolbar-trash")
+    translateTooltip("#toolbar-move", "main-window.toolbar.editing.toolbar-move")
+    translateTooltip("#toolbar-scale", "main-window.toolbar.editing.toolbar-scale")
+    translateTooltip("#toolbar-marquee", "main-window.toolbar.editing.toolbar-marquee")
+    //#endregion
+    //#region Undo / Redo
+    translateTooltip("#toolbar-undo", "main-window.toolbar.actions.toolbar-undo")
+    translateTooltip("#toolbar-redo", "main-window.toolbar.actions.toolbar-redo")
+    //#endregion
+    //#region Views
+    translateTooltip("#toolbar-grid", "main-window.toolbar.view.toolbar-grid")
+    translateTooltip("#toolbar-center", "main-window.toolbar.view.toolbar-center")
+    translateTooltip("#toolbar-thirds", "main-window.toolbar.view.toolbar-thirds")
+    translateTooltip("#toolbar-perspective", "main-window.toolbar.view.toolbar-perspective")
+    translateTooltip("#toolbar-onion", "main-window.toolbar.view.toolbar-onion")
+    translateTooltip("#toolbar-captions", "main-window.toolbar.view.toolbar-captions")
+    //#endregion
+    //#region Externals
+    translateTooltip("#toolbar-open-in-editor", "main-window.toolbar.externals.toolbar-open-in-editor")
+    //#endregion
+    //#region prpomodoroomodoro
+    translateTooltip("#toolbar-pomodoro-rest", "main-window.toolbar.pomodoro.toolbar-pomodoro-rest")
+    translateTooltip("#toolbar-pomodoro-running", "main-window.toolbar.pomodoro.toolbar-pomodoro-running")
+    //#endregion
+  //#endregion
+  //#region board-information
+  renderShotMetadata()
+
+  translateCheckbox("#new-shot-label", "main-window.board-information.new-shot")
+  translateCheckbox("#duration", "main-window.board-information.duration")
+  translateTooltip("#line-mileage", "main-window.board-information.line-mileage")
+  translateTooltip("#shot-generator-container", "main-window.board-information.shot-generator-container")
+  translateTooltip("#new-shot", "main-window.board-information.new-shot-tooltip")
+  translateTooltip("#duration-ms", "main-window.board-information.duration-ms")
+  translateTooltip("#duration-fps", "main-window.board-information.duration-fps")
+  translateHtml("#dialog-title", "main-window.board-information.dialog-title")
+  translateTooltip("#suggested-dialogue-duration", "main-window.board-information.suggested-dialogue-duration")
+  translateTooltip("#dialogue-tooltip", "main-window.board-information.dialogue-tooltip")
+  translateHtml("#action-title", "main-window.board-information.action-title")
+  translateTooltip("#action-tooltip", "main-window.board-information.action-tooltip")
+  translateHtml("#note-title", "main-window.board-information.note-title")
+  translateTooltip("#note-tooltip", "main-window.board-information.note-tooltip")
+  translateHtml("#clear-note-title", "main-window.board-information.clear-note-title")
+  translateTooltip("#clear-note-tooltip", "main-window.board-information.clear-note-tooltip")
+  translateTooltip("#remove-audio", "main-window.board-information.remove-audio")
+  translateHtml("#reference-layer-title", "main-window.board-information.reference-layer-title")
+  translateTooltip("#reference-layer-tooltip", "main-window.board-information.reference-layer-tooltip")
+  translateHtml("#clear-title", "main-window.board-information.clear-title")
+  translateTooltip("#reference-layer-tooltip", "main-window.board-information.reference-layer-tooltip")
+  
+  translateTooltip("#merge-down-tooltip", "main-window.board-information.merge-down-tooltip")
+  translateHtml("#merge-down-title", "main-window.board-information.merge-down-title")
+  translateTooltip("#merge-up-tooltip", "main-window.board-information.merge-up-tooltip")
+  translateHtml("#merge-up-title", "main-window.board-information.merge-up-title")
+  translateTooltip("#layer-opacity-tooltip", "main-window.board-information.layer-opacity-tooltip")
+  translateTooltip("#sts-random", "main-window.board-information.sts-random")
+  translateTooltip("#sts-input1", "main-window.board-information.sts-input1")
+  translateTooltip("#sts-select", "main-window.board-information.sts-select")
+  translateTooltip("#sts-shots", "main-window.board-information.sts-shots")
+  
+  translateHtml("#scene", "main-window.board-information.scene")
+  translateHtml("#frame-rate", "main-window.board-information.frame-rate")
+  translateTooltip("#show-in-finder-button", "main-window.board-information.show-in-finder-button")
+  translateHtml("#show-in-finder-title", "main-window.board-information.show-in-finder-title")
+  
+  translateTooltip("#prev-scene-tooltip", "main-window.playback.prev-scene-tooltip")
+  translateTooltip("#prev-board-tooltip", "main-window.playback.prev-board-tooltip")
+  translateTooltip("#play-tooltip", "main-window.playback.play-tooltip")
+  translateTooltip("#next-board-tooltip", "main-window.playback.next-board-tooltip")
+  translateTooltip("#next-scene-tooltip", "main-window.playback.next-scene-tooltip")
+
+  //#endregion
+}
+//#endregion
 const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
@@ -210,7 +359,7 @@ let shouldRenderThumbnailDrawer = true
 let hasWarnedOnceAboutFps = false
 
 remote.getCurrentWindow().on('focus', () => {
-  menu.setMenu()
+  menu.setMenu(i18n)
   // HACK update to reflect current value
   audioPlayback && audioPlayback.setEnableAudition(audioPlayback.enableAudition)
 })
@@ -378,6 +527,8 @@ const load = async (event, args) => {
     })
     // TODO add a cancel button to loading view when a fatal error occurs?
   }
+  initialize(path.join(app.getPath('userData'), 'storyboarder-settings.json'))
+  electron.remote.getCurrentWindow().on('resize', resizeScale)
 }
 ipcRenderer.on('load', load)
 
@@ -1634,6 +1785,7 @@ const loadBoardUI = async () => {
 
     // otherwise, allow direct text input again
     textInputMode = false
+    
   })
   // changedPrefs is an object with only the top-level primitive prefs that have actually changed (it does not track objects or arrays nested in prefs)
   ipcRenderer.on('prefs:change', (event, changedPrefs) => {
@@ -1926,7 +2078,7 @@ const loadBoardUI = async () => {
     }
   })
 
-  menu.setMenu()
+  menu.setMenu(i18n)
   // HACK initialize the menu to match the value in preferences
   audioPlayback.setEnableAudition(prefsModule.getPrefs().enableBoardAudition)
 
@@ -2160,11 +2312,11 @@ let insertNewBoardsWithFiles = async filepaths => {
 const importImageAndReplace = async filepath => {
   log.info('main-window#importImageAndReplace')
 
-  let dataURL = loadImageFileAsDataURL(filepath)
-
   try {
+    let dataURL = loadImageFileAsDataURL(filepath)
     await replaceReferenceLayerImage(dataURL)
   } catch (err) {
+    log.error(err)
     notifications.notify({ message: err.toString() })
     sfx.error()
   }
@@ -2176,6 +2328,7 @@ const importImageFromMobile = async dataURL => {
   try {
     await replaceReferenceLayerImage(dataURL)
   } catch (err) {
+    log.error(err)
     notifications.notify({ message: err.toString() })
     sfx.error()
   } 
@@ -3472,9 +3625,13 @@ let renderMarkerPosition = () => {
   })
 }
 
+const renderShotMetadata = () => {
+  document.querySelector('#board-metadata #shot').innerHTML = `${i18n.t('main-window.board-information.shot')}: ` + boardData.boards[currentBoard].shot
+  document.querySelector('#board-metadata #board-numbers').innerHTML = `${i18n.t('main-window.board-information.board')}: ` + boardData.boards[currentBoard].number + ` ${i18n.t("main-window.board-information.of")} ` + boardData.boards.length
+}
+
 let renderMetaData = () => {
-  document.querySelector('#board-metadata #shot').innerHTML = 'Shot: ' + boardData.boards[currentBoard].shot
-  document.querySelector('#board-metadata #board-numbers').innerHTML = 'Board: ' + boardData.boards[currentBoard].number + ' of ' + boardData.boards.length
+  renderShotMetadata()
 
   // reset values
   let editableInputs = document.querySelectorAll('#board-metadata input:not(.layers-ui-reference-opacity), textarea')
@@ -6885,6 +7042,15 @@ ipcRenderer.on('exportZIP', (event, args) => exportZIP())
 
 ipcRenderer.on('reloadScript', (event, args) => reloadScript(args))
 
+//#region UI scale
+ipcRenderer.on('scale-ui-by', (event, value) => {
+  scaleBy(value)
+})
+ipcRenderer.on('scale-ui-reset', (event, value) => {
+  setScale(value)
+})
+//#endregion
+
 ipcRenderer.on('focus', async event => {
   if (!prefsModule.getPrefs()['enableForcePsdReloadOnFocus']) return
 
@@ -6948,27 +7114,6 @@ const closest = (arr, target) => {
 ipcRenderer.on('zoomReset', value => {
   zoomIndex = ZOOM_CENTER
   storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
-})
-const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"));
-let zoom = settingsService.getSettingByKey("zoom")
-zoom = zoom ? zoom : 0
-const maxZoom = {in: 0.2, out: -1.0}
-webFrame.setLayoutZoomLevelLimits(maxZoom.out, maxZoom.in)
-webFrame.setZoomLevel(zoom)
-ipcRenderer.on('scale-ui-up', value => {
-  zoom = zoom >= maxZoom.in ? maxZoom.in : zoom + 0.1
-  webFrame.setZoomLevel(zoom)
-  settingsService.setSettings({zoom})
-})
-ipcRenderer.on('scale-ui-down', value => {
-  zoom = zoom <= maxZoom.out ? maxZoom.out : zoom - 0.1
-  webFrame.setZoomLevel(zoom)
-  settingsService.setSettings({zoom})
-})
-ipcRenderer.on('scale-ui-reset', () => {
-  let zoom = 0
-  webFrame.setZoomLevel(zoom)
-  settingsService.setSettings({ zoom })
 })
 
 const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {

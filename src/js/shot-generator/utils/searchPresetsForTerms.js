@@ -1,5 +1,3 @@
-import LiquidMetal from 'liquidmetal'
-
 const comparePresetNames = (a, b) => {
   var nameA = a.name.toUpperCase()
   var nameB = b.name.toUpperCase()
