@@ -687,7 +687,7 @@ const SceneContent = connect(
                     sceneObject={sceneObject}
                     modelSettings={models[sceneObject.model] || undefined}
                     isSelected={selections.includes(id)}
-                    updateSkeleton= {updateCharacterIkSkeleton} 
+                    updateSkeleton={updateCharacterIkSkeleton} 
                     texture={texture}/>
                 </SimpleErrorBoundary>
             })
