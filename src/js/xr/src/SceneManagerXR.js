@@ -66,7 +66,7 @@ const Boards = require('./components/ui/Boards')
 const BonesHelper = require('./three/BonesHelper')
 const Voicer = require('./three/Voicer')
 
-const { CubeTextureCreator }  = require('../../shot-generator/components/Three/Helpers/CubeTextureCreator').default
+const { CubeTextureCreator }  = require('../../shot-generator/components/Three/Helpers/CubeTextureCreator')
 
 const musicSystem = require('./music-system')
 
