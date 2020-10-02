@@ -43,7 +43,6 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-mana
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
 const getFilepathForImage = require('./helpers/get-filepath-for-image')
-const getFilepathForEmotion = require('./helpers/get-filepath-for-emotion')
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -105,6 +104,14 @@ const getSceneObjectAttachableIds = createSelector(
   [getSceneObjects],
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
 )
+
+const systemEmotions = require('../../shared/reducers/shot-generator-presets/emotions.json')
+function getEmotionTextureUriByPresetId (id) {
+  // TODO provide XR FilepathsContext functions to get asset and user preset uri
+  return systemEmotions[id]
+    ? `/data/system/emotions/${id}-texture.png`
+    : `/data/presets/emotions/${id}-texture.png`
+}
 
 const SceneContent = connect(
   state => ({
@@ -669,11 +676,10 @@ const SceneContent = connect(
 
           {
             characterIds.map(id => {
-             // getAsset(getFilepathForModelByType(sceneObjects[id]))
-               // ?
-               let sceneObject = sceneObjects[id]
-               let emotionFilepath = sceneObject.emotion && getFilepathForEmotion(sceneObject.emotion)
-               let texture = getAsset(emotionFilepath)
+              let sceneObject = sceneObjects[id]    
+              let { emotionPresetId } = sceneObject
+              let textureUri = sceneObject.emotionPresetId && getEmotionTextureUriByPresetId(emotionPresetId)
+              let texture = textureUri && getAsset(textureUri)
                return <SimpleErrorBoundary key={id}>
                   <Character
                     key={id}
@@ -682,9 +688,8 @@ const SceneContent = connect(
                     modelSettings={models[sceneObject.model] || undefined}
                     isSelected={selections.includes(id)}
                     updateSkeleton= {updateCharacterIkSkeleton} 
-                    texture={ texture }/>
+                    texture={texture}/>
                 </SimpleErrorBoundary>
-               // : null
             })
           }
 
