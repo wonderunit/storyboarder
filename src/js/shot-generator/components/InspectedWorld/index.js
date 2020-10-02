@@ -81,8 +81,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
       } else {
         notifications.notify({
           message:
-            `Whoops cubemap format isn't supported check the` +
-            ` <a href="${cubemapWiki}">Supported formats</a> for details.`,
+          t("shot-generator.inspector.inspected-world.cubemap-not-supported", {link:`<a href="${cubemapWiki}">Supported formats</a> `}),
           timing: 30,
           onClick: () => electron.shell.openExternal(cubemapWiki)
         })
@@ -151,7 +150,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div> }
           {(!world.textureType || world.textureType === DrawingTextureType.Cubemap) && <FileInput
               onChange={setSceneCubeMap}
-              label={"Scene Cube map"}
+              label={t("shot-generator.inspector.inspected-world.scene-cubemap")}
               value={world.sceneTexture && path.basename(world.sceneTexture)}
               filters={ [ { name:"Images", extensions: imageFilters } ] }
               canRemove={ true }
@@ -159,7 +158,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           }
           {(!world.textureType || world.textureType !== DrawingTextureType.Cubemap) && <FileInput
               onChange={setSceneTextureFile}
-              label={"Scene texture"}
+              label={t("shot-generator.inspector.inspected-world.scene-texture")}
               value={world.sceneTexture && path.basename(world.sceneTexture)}
               filters={ [ { name:"Images", extensions: imageFilters } ] }
               canRemove={ true }
