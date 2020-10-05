@@ -39,6 +39,7 @@ module.exports = {
     new CopyPlugin({
       patterns: [
         { from: apps.development.XR, to: apps.production.XR },
+        { from: apps.development.AR, to: apps.production.AR },
         { from: 'dist-package.json', to: 'package.json' },
         '.gitignore',
       ],

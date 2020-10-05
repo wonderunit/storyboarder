@@ -69,9 +69,24 @@ export const App = async () => {
 
 
   const XRPath = process.env.NODE_ENV === 'development' ? apps.development.XR : apps.production.XR
-  app.use('/:id', express.static(
-    path.join(XRPath)
-  ))
+  const ARPath = process.env.NODE_ENV === 'development' ? apps.development.AR : apps.production.AR
+
+  const XRStatic = express.static(path.join(XRPath))
+  const ARStatic = express.static(path.join(ARPath))
+
+  app.use('/:id', (...params) => {
+    const req = params[0]
+    const agent = req.headers['user-agent']
+
+    if (/Windows NT/.test(agent) === false) {
+      ARStatic(...params)
+    } else {
+      XRStatic(...params)
+    }
+  })
+  // app.use('/:id', express.static(
+  //   path.join(XRPath)
+  // ))
 
   //const server = app.listen(PORT)
 

@@ -1,8 +1,10 @@
 {
     "development": {
-        "XR": "../src/js/xr/dist"
+        "XR": "../src/js/xr/dist",
+        "AR": "../src/js/ar/dist"
     },
     "production": {
-        "XR": "xr"
+        "XR": "xr",
+        "AR": "ar"
     }
 }

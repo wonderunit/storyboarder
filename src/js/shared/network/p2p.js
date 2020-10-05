@@ -36,7 +36,7 @@ const Client = (connection) => {
     }
 }
 
-const P2P = (host = 'stbr.link') => {
+const P2P = (host = process.env.NODE_ENV === 'development' ? '127.0.0.1' : 'stbr.link') => {
     // Connect to the lobby server
     const peer = new Peer(null, {
         host,
