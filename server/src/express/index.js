@@ -13,7 +13,7 @@ import {appRouter} from "../routes"
 
 import apps from './../../apps.json'
 
-// no 1, i, 0, l, or 0 to avoid confusion
+// no 1, i, o, l, or 0 to avoid confusion
 const nanoid = customAlphabet('234567890abcdefghjkmnpqrstuvwxyz', 5)
 
 const PORT = process.env.PORT
