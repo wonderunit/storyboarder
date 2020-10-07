@@ -375,7 +375,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
       lod.traverse((child) => {
         if (child.isMesh) {
-          setSelected(child, isSelected)
+          setSelected(child, isSelected, false, 0xffffff)
         }
       })
     }, [lod, isSelected, ready])
