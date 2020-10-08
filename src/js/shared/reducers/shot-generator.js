@@ -1694,8 +1694,8 @@ module.exports = {
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
-  selectAttachable: id => ({ type: 'SELECT_ATTACHABLE', payload: id }),
-  deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
+  selectAttachable: payload => ({ type: 'SELECT_ATTACHABLE', payload }),
+  deselectAttachable: () => ({ type: 'DESELECT_ATTACHABLE' }),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),

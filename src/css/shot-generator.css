@@ -1582,6 +1582,11 @@ div.fatal-error-screen__report::selection {
   height: 100%;
 }
 
+.tabs-tab .icon {
+  width: 25px;
+  height: 25px;
+}
+
 /* End of tabs */
 
 /* Modal block */

@@ -131,11 +131,11 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
 })
 
-ipcMain.on('shot-generator:menu:view:scale-ui', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:scale-ui', value)
+ipcMain.on('shot-generator:menu:view:scale-ui-by', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:scale-ui-by', value)
 })
-ipcMain.on('shot-generator:menu:view:reset-ui', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:set-ui-scale', value)
+ipcMain.on('shot-generator:menu:view:scale-ui-reset', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:scale-ui-reset', value)
 })
 
 ipcMain.on('shot-generator:object:duplicate', () => {

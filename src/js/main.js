@@ -1549,12 +1549,10 @@ ipcMain.on('revealShotGenerator',
 
 ipcMain.on('zoomReset',
   event => mainWindow.webContents.send('zoomReset'))
-ipcMain.on('scale-ui-up',
-  event => mainWindow.webContents.send('scale-ui-up'))
-ipcMain.on('scale-ui-down',
-  event => mainWindow.webContents.send('scale-ui-down'))
+ipcMain.on('scale-ui-by',
+  (event, value) => mainWindow.webContents.send('scale-ui-by', value))
 ipcMain.on('scale-ui-reset',
-  event => mainWindow.webContents.send('scale-ui-reset'))
+  (event, value) => mainWindow.webContents.send('scale-ui-reset', value))
 
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))

@@ -146,10 +146,15 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
       if(sceneObject.status === "PENDING") {
         let modelPosition = new THREE.Vector3()
         let quat = null
-        if(isUserModel(sceneObject.model)) {
+        if (
+          // a non-hair custom model
+          isUserModel(sceneObject.model) &&
+          !(sceneObject.attachableType === 'hair' && sceneObject.bindBone === 'Head')
+        ) {
           modelPosition.copy(bone.worldPosition())
           quat = bone.worldQuaternion()
         } else {
+          // built-in system models, or custom models with hair
           let {x, y, z} = sceneObject
           modelPosition.set(x, y, z)
           let newGroup = new THREE.Object3D()
@@ -196,7 +201,7 @@ const Attachable = React.memo(({ path, sceneObject, isSelected, updateObject, с
     }, [characterLOD, isAllowedToInitialize])
 
     useEffect(() => {
-      if(!ref.current) return
+      if(!ref.current || !objectRotationControl.current) return
       if(isSelected) {
         KeyCommandsSingleton.getInstance().addKeyCommand({
           key: "Switch attachables to rotation", 

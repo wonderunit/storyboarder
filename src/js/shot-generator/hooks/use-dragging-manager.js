@@ -9,7 +9,7 @@ const useDraggingManager = (useIcons) => {
     const objectChanges = useRef()
     const offsets = useRef()
     const prevMouse = useRef()
-
+    const isCtrlPressed = useRef()
     const prepareDrag = useCallback((target, { x, y, camera, scene, selections }) => {
       if (!raycaster.current) raycaster.current = new THREE.Raycaster()
       if (!plane.current) plane.current = new THREE.Plane()
@@ -88,11 +88,13 @@ const useDraggingManager = (useIcons) => {
                 let newRotation = target.rotation.y + ((rotationSpeed) * direction)
                 objectChanges.current[selection] = { rotation: newRotation }
                 target.rotation.y = newRotation
+                target.updateMatrixWorld(true)
                 prevMouse.current = mouse
               } else {
                 target.position.set( x, target.position.y, z )
                 objectChanges.current[selection] = { x, y: z }
               }
+              isCtrlPressed.current = isRotation
             }
           }
         }
@@ -100,7 +102,7 @@ const useDraggingManager = (useIcons) => {
     }, [plane.current, raycaster.current, intersection.current])
     
     const updateStore = (updateObjects) => {
-        if (!objectChanges.current || !objectChanges.current || !Object.keys(objectChanges.current).length) {
+        if (!objectChanges.current || !objectChanges.current || !Object.keys(objectChanges.current).length || isCtrlPressed.current) {
             return false
           }
         updateObjects(objectChanges.current)

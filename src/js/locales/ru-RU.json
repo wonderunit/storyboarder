@@ -18,8 +18,6 @@
 			"toggle-boards-timeline-mode": "Переключить Boards/Timeline мод",
 			"toggle-fullscreen": "Включит полный экран",
 			"actual-size": "Реальный размер",
-			"zoom-in": "Приблизить",
-			"zoom-out": "Отдалить",
 			"enable-fps-meter": "Включить счетчик ФПС ",
 			"scale-ui-up": "Увеличить размер UI",
 			"scale-ui-down": "Уменьшить размер UI",
@@ -466,6 +464,9 @@
 			},
 			"attachables-inspector": {
 			  "attached-to-bone": "Присоединить к кости"
+			},
+			"hair":{
+					"no-value":"No Hair"
 			},
 			"object": {
 			  "drop-object": "Опустить объект на пол"

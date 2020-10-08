@@ -1,5 +1,6 @@
 import React, {useMemo, useState} from 'react'
 import {connect} from 'react-redux'
+import { useTranslation } from 'react-i18next'
 
 import {
   getSelections,
@@ -16,7 +17,8 @@ import HandInspector from './HandInspector/HandPresetsEditor/index'
 import PosePresetsInspector from './PosePresetsInspector/index'
 import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
-import { useTranslation } from 'react-i18next'
+import HairInspector from './HairInspector/index'
+
 import Icon from '../Icon'
 import Modal from '../Modal'
 
@@ -64,6 +66,15 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     }
   }, [selectedType])
 
+  const hairInspectorTab = useMemo(() => {
+    if (!isChar(selectedType)) return nullTab
+
+    return {
+      tab: <Tab><Icon src='icon-tab-hair'/></Tab>,
+      panel: <Panel><HairInspector /></Panel>
+    }
+  }, [selectedType])
+
 
   return (
     <React.Fragment>
@@ -99,6 +110,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           {charPoseTab.tab}
           {modelTab.tab}
           {attachmentTab.tab}
+          {hairInspectorTab.tab}
         </div>
 
         <div className="tabs-body">
@@ -107,6 +119,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           {charPoseTab.panel}
           {modelTab.panel}
           {attachmentTab.panel}
+          {hairInspectorTab.panel}
         </div>
       </Tabs>
     </React.Fragment>

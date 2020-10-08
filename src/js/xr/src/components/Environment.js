@@ -34,6 +34,7 @@ const Environment = React.memo(({ gltf, environment, grayscale }) => {
 
         if (child.material.map) {
           material.map = child.material.map
+          material.flatShading = child.material.flatShading
           material.map.needsUpdate = true
         }
 
