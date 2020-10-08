@@ -78,11 +78,11 @@ export const App = async () => {
     const req = params[0]
     const agent = req.headers['user-agent']
 
-    if (/Windows NT/.test(agent) === false) {
-      ARStatic(...params)
-    } else {
+    // if (/Windows NT/.test(agent) === false) {
+    //   ARStatic(...params)
+    // } else {
       XRStatic(...params)
-    }
+    // }
   })
   // app.use('/:id', express.static(
   //   path.join(XRPath)
