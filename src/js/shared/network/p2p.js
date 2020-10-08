@@ -1,5 +1,6 @@
 import Peer from 'peerjs'
 import Packer from 'peerjs-js-binarypack'
+import { STBR_LINK } from './config'
 
 const EventEmitter = require('events')
 
@@ -36,7 +37,7 @@ const Client = (connection) => {
     }
 }
 
-const P2P = (host = process.env.NODE_ENV === 'development' ? '127.0.0.1' : 'stbr.link') => {
+const P2P = (host = STBR_LINK) => {
     // Connect to the lobby server
     const peer = new Peer(null, {
         host,

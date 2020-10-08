@@ -17,6 +17,9 @@ Then, from the Storyboarder root source folder, run:
 
 Now you'll have `server/cert.pem` and `server/key.pem`, which the server will use automatically when in `development` mode.
 
+By default, all the apps (Shot Generator, AR, XR) connects to the `stbr.link`, but not to the localhost.
+If you want to change it to the localhost, then change the link in the `root/src/js/shared/network/config.js`
+
 ## Usage
 
 From the Storyboarder root source folder:
