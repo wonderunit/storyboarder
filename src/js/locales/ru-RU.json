@@ -467,11 +467,11 @@
 			  "attached-to-bone": "Присоединить к кости"
 			},
 			"hair":{
-					"no-value":"No Hair"
+					"no-value":"Без волос"
 			},
 			"emotions": {
-					"no-value":"None",
-					"search-list-label": "Search emotions …"
+					"no-value":"Ничто",
+					"search-list-label": "Искать эмоции …"
 			},
 			"object": {
 			  "drop-object": "Опустить объект на пол"
