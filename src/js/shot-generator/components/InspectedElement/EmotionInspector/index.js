@@ -6,7 +6,6 @@ import React, {
   useEffect
 } from 'react'
 import { connect, useDispatch } from 'react-redux'
-import { createSelector } from 'reselect'
 import fs from 'fs-extra'
 import path from 'path'
 import { useTranslation } from 'react-i18next'
@@ -21,9 +20,6 @@ import {
   updateObject,
   createEmotionPreset,
   deleteEmotionPreset,
-
-  createObject,
-  deleteObjects,
 
   undoGroupStart,
   undoGroupEnd
@@ -81,7 +77,6 @@ const emotionPresetFactory = ({ name, priority = 0 }) => ({
 })
 
 const createPreset = async (context, event) => {
-  console.log('createPreset', context)
   let { name, source, sceneObjectId, dispatch, getUserPresetPath, getThumbnailRenderer } = context
 
   // ensure the emotions user preset directory exists
@@ -134,8 +129,6 @@ const createPreset = async (context, event) => {
 const deletePreset = (context, event) => {
   let { dispatch, getUserPresetPath } = context
   let { id } = event
-
-  console.log('delete preset', id)
 
   // delete the preset
   dispatch(deleteEmotionPreset(id))
