@@ -384,7 +384,7 @@ const EmotionInspector = connect(mapStateToProps)(
         <div className="thumbnail-search column">
           <div className="row" style={{ padding: '6px 0' }}>
             <SearchList
-              label="Search Your Emotions …"
+              label={t('shot-generator.inspector.emotions.search-list-label')}
               list={searchList}
               onSearch={onSearch}
             />

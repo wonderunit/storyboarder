@@ -472,7 +472,7 @@
           },
           "emotions": {
              "no-value":"None",
-             "search-list-label": "Search emotions …"
+             "search-list-label": "Search Your Emotions …"
           },
           "object":{
              "drop-object":"Drop Object to the floor"
