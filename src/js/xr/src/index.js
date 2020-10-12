@@ -27,6 +27,7 @@ const configureStore = preloadedState => {
   }
   return store
 }
+require("../../shared/helpers/monkeyPatchGrayscale")
 
 const SceneManagerXR = require('./SceneManagerXR')
 

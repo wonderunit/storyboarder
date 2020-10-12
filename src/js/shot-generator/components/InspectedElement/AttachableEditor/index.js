@@ -43,7 +43,8 @@ const AttachableEditor = connect(
     deleteObjects,
     withState,
 
-    id
+    id,
+    t
   }) => {
     const [isModalVisible, showModal] = useState(false)
     const selectedId = useRef(null)
@@ -71,7 +72,7 @@ const AttachableEditor = connect(
             for(let i = 0; i < keys.length; i++) {
                 let key = keys[i]
                 let value = sceneObjects[key]
-                if(value.attachToId === sceneObject.id)
+                if(value.attachToId === sceneObject.id && value.attachableType !== "hair")
                     result.push(value)
             }
         })
@@ -84,20 +85,23 @@ const AttachableEditor = connect(
     }
 
     const onDelete = (attachable) => {
-      let choice = dialog.showMessageBox(null, {
+      dialog.showMessageBox(null, {
         type: "question",
-        buttons: ["Yes", "No"],
-        message: "Are you sure?",
+        buttons: [t("shot-generator.inspector.common.yes"), t("shot-generator.inspector.common.no")],
+        message: t("shot-generator.inspector.common.are-you-sure"),
         defaultId: 1 // default to No
       })
-      if (choice === 0) {
-        deleteObjects([attachable.id])
-      }
+      .then(({ response }) => {
+        if (response === 0) {
+          deleteObjects([attachable.id])
+        }
+      })
+      .catch(err => console.error(err))
     }
 
     const getNumberSlider = (sceneObject) => {
       return <NumberSlider 
-        label="size"
+        label={t("shot-generator.inspector.common.size")}
         value={ sceneObject.size }   
         min={ 0.7 }
         max={ 2 }
@@ -117,7 +121,8 @@ const AttachableEditor = connect(
           id={ selectedId.current }
           skeleton={ sceneObject.skeleton }
           onSuccess={ updateAttachableBone }
-          defaultSelectedHand={ selectedBindBone }/> 
+          defaultSelectedHand={ selectedBindBone }
+          t={t}/> 
         <div className="thumbnail-search.column">
             <div className="thumbnail-search__list"> 
                 <div> 
@@ -128,7 +133,8 @@ const AttachableEditor = connect(
                       props={{
                         onSelectItem,
                         onDelete,
-                        getNumberSlider
+                        getNumberSlider,
+                        t
                       }}
                      />
                    )}

@@ -5,6 +5,7 @@ class ObjectRotationControl
     {
         this.control = axis ? new TransformControls(camera, domElement, axis) : new TransformControls(camera, domElement);
         this.control.rotationOnly = true;
+        this.control.setSpace("local")
         this.control.setMode('rotate');
         this.control.size = 0.2;
         this.control.userData.type = "objectControl";
@@ -16,8 +17,11 @@ class ObjectRotationControl
         this.isEnabled = false;
         this.customOnMouseDownAction = null;
         this.customOnMouseUpAction = null;
+        this.offsetObject = new THREE.Object3D()
+        this.scene.add(this.offsetObject)
+        this.offsetObject.userData.type = 'controlTarget'
     }
-
+    
     set IsEnabled(value) 
     {
         this.control.enabled = value
@@ -39,7 +43,7 @@ class ObjectRotationControl
         this.control.characterId = characterId;
     }
 
-    selectObject(object, hitmeshid)
+    selectObject(object, hitmeshid, offset = null)
     {
         if(this.object !== null && !this.isSelected(object))
         {
@@ -48,10 +52,17 @@ class ObjectRotationControl
         }
         if (object)
         {
-            this.scene.add(this.control);
+            this.offsetObject.add(this.control);
             this.control.addToScene();
         }
         this.control.objectId = hitmeshid;
+        if(offset) {
+            this.offsetObject.position.copy(offset)
+            this.offsetObject.position.y -= object.position.y
+            this.offsetObject.updateMatrixWorld(true)
+        } else {
+            this.offsetObject.position.set(0, 0, 0)
+        }
         this.control.attach(object);
         this.object = object;
         this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
@@ -88,6 +99,7 @@ class ObjectRotationControl
 
     cleanUp()
     {
+        this.scene.remove(this.offsetObject)
         this.deselectObject();
         this.control.cleanUp();
         this.control = null;

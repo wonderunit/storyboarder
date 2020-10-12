@@ -34,19 +34,17 @@ class Exporter {
           title: 'Are You Sure?',
           message: `Clean Up deletes unused image files, reducing file size. It cannot be undone. Are you sure you want to do this?`,
           buttons: ['Yes', 'No'],
-        },
-        index => {
-          if (index == 1) {
-            reject()
-          } else {
-            exporterCleanup.cleanupScene(projectFileAbsolutePath).then(newBoardData => {
-              resolve(newBoardData)
-            }).catch(err => {
-              reject(err)
-            })
-          }
+      }).then(({ response }) => {
+        if (response == 1) {
+          reject()
+        } else {
+          exporterCleanup.cleanupScene(projectFileAbsolutePath).then(newBoardData => {
+            resolve(newBoardData)
+          }).catch(err => {
+            reject(err)
+          })
         }
-      )
+      }).catch(err => console.error(err))
     })
   }
 

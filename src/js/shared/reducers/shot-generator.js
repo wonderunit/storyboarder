@@ -12,6 +12,7 @@ const serializeSceneObject = require('./shot-generator/serialize-scene-object')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
+const { ShadingType } = require('../../vendor/shading-effects/ShadingType')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -195,17 +196,32 @@ const migrateRotations = sceneObjects =>
       return o
     }, {})
 
+// migrate older scenes which were missing ambient and directional light settings
 const migrateWorldLights = world => ({
   ...world,
-
-  // migrate older scenes which were missing ambient and directional light settings
   ambient: world.ambient || initialScene.world.ambient,
   directional: world.directional || initialScene.world.directional
 })
 
+// migrate older scenes which were missing ambient and directional light settings
 const migrateWorldFog = world => ({
   ...world,
   fog: world.fog || initialScene.world.fog
+})
+
+// migrate older scenes which were missing shadingMode
+const migrateWorldShadingMode = world => ({
+  ...world,
+  shadingMode: world.shadingMode == null ? initialScene.world.shadingMode : world.shadingMode
+})
+
+// migrate older scenes which were missing grayscale
+const migrateWorldEnvironmentGrayscale = world => ({
+  ...world,
+  environment: {
+    ...world.environment,
+    grayscale: world.environment.grayscale == null ? false : world.environment.grayscale
+  }  
 })
 
 const updateObject = (draft, state, props, { models }) => {
@@ -430,7 +446,8 @@ const defaultScenePreset = {
       z: 0,
       rotation: 0,
       scale: 1,
-      visible: true
+      visible: true,
+      grayscale: true
     },
     ambient: {
       intensity: 0.1
@@ -443,7 +460,8 @@ const defaultScenePreset = {
     fog: {
       visible: true,
       far: 40
-    }
+    },
+    shadingMode: ShadingType.Outline
   },
   sceneObjects: {
     'C2062AFC-D710-4C7D-942D-A3BAF8A76D5C': {
@@ -557,7 +575,8 @@ const initialScene = {
       z: 0,
       rotation: 0,
       scale: 1,
-      visible: true
+      visible: true,
+      grayscale: true
     },
     ambient: {
       intensity: 0.5
@@ -570,7 +589,8 @@ const initialScene = {
     fog: {
       visible: true,
       far: 40
-    }
+    },
+    shadingMode: ShadingType.Outline
   },
   sceneObjects: {
     '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
@@ -1238,11 +1258,12 @@ const worldReducer = (state = initialState.undoable.world, action) => {
     switch (action.type) {
       case 'LOAD_SCENE':
       case 'UPDATE_SCENE_FROM_XR':
-        return migrateWorldLights(
-          migrateWorldFog(
-            action.payload.world
-          )
-        )
+        return R.pipe(
+          migrateWorldLights,
+          migrateWorldFog,
+          migrateWorldShadingMode,
+          migrateWorldEnvironmentGrayscale,
+        )(action.payload.world)
 
       case 'UPDATE_WORLD':
         if (action.payload.hasOwnProperty('ground')) {
@@ -1269,6 +1290,9 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         }
         if (action.payload.visible != null) {
           draft.environment.visible = action.payload.visible
+        }
+        if (action.payload.grayscale != null) {
+          draft.environment.grayscale = action.payload.grayscale
         }
         if (action.payload.rotation != null) {
           draft.environment.rotation = action.payload.rotation
@@ -1303,6 +1327,25 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         if (action.payload.hasOwnProperty('far')) {
           draft.fog.far = action.payload.far
         }
+        return
+
+      case 'CYCLE_SHADING_MODE':
+        let types = Object.values(ShadingType)
+
+        let { shadingMode } = state
+
+        let index = -1
+
+        // if shadingMode has no value, or is invalid ...
+        if (shadingMode == null || types.includes(shadingMode) == false) {
+          // ... default to Outline
+          index = types.indexOf(ShadingType.Outline)
+        } else {
+          index = types.indexOf(shadingMode)
+          index = (index + 1) % types.length
+        }
+
+        draft.shadingMode = types[index]
         return
 
       default:
@@ -1400,6 +1443,9 @@ const mainReducer = (state/* = initialState*/, action) => {
 
       case 'SET_ASPECT_RATIO':
         draft.aspectRatio = action.payload
+        return
+      case 'SET_CURRENT_LANGUAGE':
+        draft.language = action.payload
         return
 
       case 'SET_MAIN_VIEW_CAMERA':
@@ -1614,8 +1660,8 @@ module.exports = {
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
-  selectAttachable: id => ({ type: 'SELECT_ATTACHABLE', payload: id }),
-  deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
+  selectAttachable: payload => ({ type: 'SELECT_ATTACHABLE', payload }),
+  deselectAttachable: () => ({ type: 'DESELECT_ATTACHABLE' }),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),
@@ -1650,6 +1696,8 @@ module.exports = {
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
+
+  cycleShadingMode: () => ({ type: 'CYCLE_SHADING_MODE' }),
   
   setCameraShot: (cameraId, values) => ({ type: 'SET_CAMERA_SHOT', payload: { cameraId, ...values } }),
 

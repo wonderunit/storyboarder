@@ -32,7 +32,7 @@ import Scrollable from '../../../Scrollable'
 import Grid from '../../../Grid'
 import HandPresetsEditorItem from './HandPresetsEditorItem'
 import {useAsset} from '../../../../hooks/use-assets-manager'
-
+import { useTranslation } from 'react-i18next'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
   return sceneObjects[selections[0]].handPosePresetId
@@ -76,17 +76,16 @@ React.memo(({
   undoGroupEnd,
   withState
 }) => {
+  const { t } = useTranslation()
   const thumbnailRenderer = useRef()
   const sortedPresets = useRef([])
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
   const newGeneratedId = useRef()
-  const [selectedHand, setSelectedHand] = useState("BothHands")
+  const [selectedHand, setSelectedHand] = useState(selectedHandOptions[2].value)
   const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
   const {asset: attachment} = useAsset(characterPath)
-
-  
   const presets = useMemo(() => {
     if(!handPosePresets) return
     let sortedPoses = Object.values(handPosePresets).sort(comparePresetNames).sort(comparePresetPriority)
@@ -99,6 +98,14 @@ React.memo(({
     setResult(sortedPoses)
     return sortedPoses
   }, [handPosePresets])
+
+  useEffect(() => {
+    savePresetHand[0].label = t("shot-generator.inspector.hand-preset.left-hand")
+    savePresetHand[1].label = t("shot-generator.inspector.hand-preset.right-hand")
+    selectedHandOptions[0].label = t("shot-generator.inspector.hand-preset.left-hand")
+    selectedHandOptions[1].label = t("shot-generator.inspector.hand-preset.right-hand")
+    selectedHandOptions[2].label = t("shot-generator.inspector.hand-preset.both-hands")
+  }, [t])
 
   const onChangeHand = useCallback((event) => {
     setSelectedHand(event.value)
@@ -188,7 +195,7 @@ React.memo(({
     <React.Fragment>
       <Modal visible={ isModalShown } onClose={() => showModal(false)}>
         <div style={{ margin:"5px 5px 5px 5px" }}>
-          Select a Preset Name:
+        {t("shot-generator.inspector.common.select-preset-name")}
         </div>
         <div className="column" style={{ flex: 1 }}> 
           <input 
@@ -198,11 +205,11 @@ React.memo(({
             onChange={ (value) => newPresetName.current = value.currentTarget.value }/>
         </div>
         <div style={{ margin:"5px 5px 5px 5px" }}>
-          Select a Hand to save:
+        {t("shot-generator.inspector.hand-preset.select-saving-hand")}
         </div>
         <div className="select">
           <Select 
-            label="Hand"
+            label={t("shot-generator.inspector.hand-preset.hand")}
             value={ selectedModalHand }
             options={ savePresetHand }
             onSetValue={ (item) => setSelectedModalHand(item) }/>
@@ -214,13 +221,13 @@ React.memo(({
               showModal(false)
               addNewPosePreset(newPresetName.current, selectedModalHand.value)
             }}>
-              Proceed
+              {t("shot-generator.inspector.common.proceed-button")}
           </button>
         </div>
      </Modal>
     <div className="thumbnail-search column">
         <div className="row" style={{ padding: "6px 0" }}> 
-          <SearchList label="Search for a hand pose …" list={ sortedPresets.current } onSearch={ saveFilteredPresets }/>
+          <SearchList label={t("shot-generator.inspector.hand-preset.search-hand-pose")} list={ sortedPresets.current } onSearch={ saveFilteredPresets }/>
           <div className="column" style={{ marginLeft: 5 }}> 
             <a className="button_add" href="#"
               style={{ width: 30, height: 34 }}
@@ -230,7 +237,7 @@ React.memo(({
         </div> 
         <div className="row" style= {{ padding: "6px 0" }} >
           <Select
-            label="Select hand"
+            label={t("shot-generator.inspector.hand-preset.select-hand")}
             value={selectedHandOptions.find(item => item.value === selectedHand)}
             options={selectedHandOptions}
             onSetValue={onChangeHand}

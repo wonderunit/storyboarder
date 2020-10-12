@@ -8,7 +8,7 @@ import {formatters, NumberSlider, transforms, textFormatters, textConstraints} f
 
 import FileInput from '../../FileInput'
 import Checkbox from '../../Checkbox'
-
+import { useTranslation } from 'react-i18next'
 const loadImages = (files, baseDir) => {
   return new Promise((resolve, reject) => {
     let projectDir = path.dirname(baseDir)
@@ -34,7 +34,7 @@ const loadImages = (files, baseDir) => {
 
 const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFilePath}) => {
   const {id, ...props} = sceneObject
-
+  const { t } = useTranslation()
   const setX = useCallback((x) => updateObject(id, {x}), [])
   const setY = useCallback((y) => updateObject(id, {y}), [])
   const setZ = useCallback((z) => updateObject(id, {z}), [])
@@ -71,10 +71,10 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
       <NumberSlider label="Y" value={props.y} min={-30} max={30} onSetValue={setY} textFormatter={ textFormatters.imperialToMetric }/>
       <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ} textFormatter={ textFormatters.imperialToMetric }/>
 
-      <NumberSlider label="Size" value={props.height} min={0.025} max={5} onSetValue={setSize} textConstraint={ textConstraints.sizeConstraint }/>
+      <NumberSlider label={t("shot-generator.inspector.common.scale")} value={props.height} min={0.025} max={5} onSetValue={setSize} textConstraint={ textConstraints.sizeConstraint }/>
 
       <NumberSlider
-        label="Rotate X"
+        label={t("shot-generator.inspector.common.rotate-x")}
         value={_Math.radToDeg(props.rotation.x)}
         min={-180}
         max={180}
@@ -85,7 +85,7 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
       />
 
       <NumberSlider
-        label="Rotate Y"
+        label={t("shot-generator.inspector.common.rotate-y")}
         value={_Math.radToDeg(props.rotation.z)}
         min={-180}
         max={180}
@@ -96,7 +96,7 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
       />
 
       <NumberSlider
-        label="Rotate Z"
+        label={t("shot-generator.inspector.common.rotate-z")}
         value={_Math.radToDeg(props.rotation.y)}
         min={-180}
         max={180}
@@ -106,17 +106,17 @@ const ImageInspector = React.memo(({updateObject, sceneObject, storyboarderFileP
         formatter={formatters.degrees}
       />
 
-      <NumberSlider label="Opacity" value={props.opacity} min={0.1} max={1} onSetValue={setOpacity}/>
+      <NumberSlider label={t("shot-generator.inspector.common.opacity")} value={props.opacity} min={0.1} max={1} onSetValue={setOpacity}/>
 
       <FileInput
         onChange={setImageFile}
-        label="Image File"
+        label={t("shot-generator.inspector.image.image-file")}
         value={imageFileLabel}
         refClassName="file-input image-file-input"
       />
       
       <Checkbox
-        label="Visible to camera"
+        label={t("shot-generator.inspector.image.visible-to-camera")}
         checked={props.visibleToCam}
         onClick={setVisibleToCam}
       />

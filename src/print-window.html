@@ -14,24 +14,24 @@
         <div id="config-intro">Your storyboard printed the way you like. Choose the format and either directly print or export it to PDF.</div>
         
         <div class="row">
-          <label for="paper-size">Paper Size</label>
+          <label for="paper-size" id="paper-size">Paper Size</label>
           <select name="select" id="paper-size"> <!--Supplement an id here instead of using 'name'-->
-            <option value="LTR">Letter</option> 
-            <option value="A4" selected>A4</option>
+            <option value="LTR" id="letter">Letter</option> 
+            <option value="A4" selected id="format">A4</option>
           </select>
         </div>
 
         <div class="row" id="paper-orientation-row">
-          <label for="paper-size">Paper Orientation</label>
+          <label for="paper-size" id="paper-orientation-label">Paper Orientation</label>
           <select name="select" id="paper-orientation"> <!--Supplement an id here instead of using 'name'-->
-            <option value="landscape">Landscape</option>
-            <option value="portrait" selected>Portrait</option>
+            <option value="landscape" id="paper-orientation-landscape">Landscape</option>
+            <option value="portrait" selected id="paper-orientation-portrait">Portrait</option>
           </select>
         </div>
         
         <div class="row row-grid">
           <div class="col">
-            <label for="column-number">Columns</label>
+            <label for="column-number" id="columns-label">Columns</label>
             <select name="select" id="column-number"> <!--Supplement an id here instead of using 'name'-->
               <option value="1">1</option> 
               <option value="2">2</option>
@@ -44,7 +44,7 @@
             </select>
           </div>
           <div class="col">
-            <label for="row-number">Rows</label>
+            <label for="row-number" id="rows-label">Rows</label>
             <select name="select" id="row-number"> <!--Supplement an id here instead of using 'name'-->
               <option value="1">1</option> 
               <option value="2">2</option>
@@ -58,7 +58,7 @@
           </div>
         </div>
         <div class="row">
-          <label for="spacing">Spacing</label>
+          <label for="spacing" id="spacing-label">Spacing</label>
           <select name="select" id="spacing"> <!--Supplement an id here instead of using 'name'-->
             <option value="15">15</option> 
             <option value="20">20</option>
@@ -68,7 +68,7 @@
         </div>
         <div class="row row-grid">
           <div class="col">
-            <label for="column-number">Copies</label>
+            <label for="column-number" id="copies-label">Copies</label>
             <select name="select" id="copies"> <!--Supplement an id here instead of using 'name'-->
               <option value="1">1</option> 
               <option value="2">2</option>
@@ -109,7 +109,7 @@
 
         <div id="page-navigation" style="display:none;">
           <button id="prev_button" class="page-button">Previous</button>
-          <div class="page-info">Page <span id="page_num">1</span> / <span id="page_count">3</span></div>
+          <div class="page-info" id="page-info">Page <span id="page_num">1</span> / <span id="page_count">3</span></div>
           <button id="next_button" class="page-button">Next</button>
         </div>
         <div id="preview-pane-content">

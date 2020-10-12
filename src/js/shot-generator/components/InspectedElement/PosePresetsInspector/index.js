@@ -30,6 +30,7 @@ import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
 import PostureComponent from './PostureComponent'
 const defaultPostureValue = 0.5
+import { useTranslation } from 'react-i18next'
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -64,11 +65,12 @@ React.memo(({
   updateCharacterIkSkeleton,
   withState
 }) => {
+  const { t } = useTranslation()
   const thumbnailRenderer = useRef()
 
   const sortedAttachament = useRef([])
   const {asset: attachment} = useAsset(characterPath)
-
+  
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
@@ -225,7 +227,7 @@ React.memo(({
     <React.Fragment>
     <Modal visible={ isModalShown } onClose={() => showModal(false)}>
       <div style={{ margin:"5px 5px 5px 5px" }}>
-        Select a Preset Name:
+      {t("shot-generator.inspector.common.select-preset-name")} 
       </div>
       <div className="column" style={{ flex: 1 }}> 
         <input 
@@ -241,13 +243,13 @@ React.memo(({
             showModal(false)
             addNewPosePreset(newPresetName.current)
           }}>
-            Proceed
+             {t("shot-generator.inspector.common.proceed-button")}
         </button>
       </div>
    </Modal>
    <div className="thumbnail-search column">
       <div className="row" style={{ padding: "6px 0" } }> 
-        <SearchList label="Search for a pose …" list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>
+        <SearchList label={t("shot-generator.inspector.pose-preset.search-pose")} list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>
         <div className="column" style={{ marginLeft: 5 }}> 
           <a className="button_add" href="#"
             style={{ width: 30, height: 34 }}
@@ -256,7 +258,7 @@ React.memo(({
         </div>
       </div> 
       <div className="mirror_button__wrapper">
-        <div className="mirror_button" onPointerDown={ mirrorSkeleton }>Mirror pose</div>
+        <div className="mirror_button" onPointerDown={ mirrorSkeleton }>{t('shot-generator.inspector.pose-preset.mirror-pose')}</div>
       </div>
       <PostureComponent
         id={ id }

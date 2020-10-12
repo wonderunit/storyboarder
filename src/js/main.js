@@ -7,6 +7,7 @@ const trash = require('trash')
 const chokidar = require('chokidar')
 const os = require('os')
 const log = require('electron-log')
+const fileSystem = require('fs')
 
 const prefModule = require('./prefs')
 prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -36,9 +37,9 @@ const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index')
-
+const {settings:languageSettings} = require('./services/language.config')
 const autoUpdater = require('./auto-updater')
-
+const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 
@@ -80,6 +81,8 @@ let appServer
 
 // attempt to support older GPUs
 app.commandLine.appendSwitch('ignore-gpu-blacklist')
+// fix issue where iframe content could not be modified in welcome window
+app.commandLine.appendSwitch('disable-site-isolation-trials')
 
 // this only works on mac.
 app.on('open-file', (event, path) => {
@@ -91,15 +94,56 @@ app.on('open-file', (event, path) => {
   }
 })
 
+const syncLanguages = (dir, isLanguageFile, array) => {
+  let files = fileSystem.readdirSync(dir)
+  for(let i = 0; i < files.length; i++) {
+    let fileName = files[i]
+    let { name, ext } = path.parse(fileName)
+    
+    if(isLanguageFile(name, ext)) { 
+      let data = fs.readFileSync(path.join(dir, fileName))
+      let json = JSON.parse(data)
+      let language = {}
+      language.fileName = name
+      language.displayName = json.Name
+      array.push(language)
+    }
+  }
+}
+
 app.on('ready', async () => {
   analytics.init(prefs.enableAnalytics)
 
   const exporterFfmpeg = require('./exporters/ffmpeg')
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
   log.info('ffmpeg version', ffmpegVersion)
+  
+  // Initial set up of language-settings file
+  let settings = {builtInLanguages:[], customLanguages:[]}
+  let dir = path.join(__dirname, "locales")
+  syncLanguages(dir, (name, ext) => ext === ".json", settings.builtInLanguages)
+  dir = path.join(app.getPath('userData'), "locales")
+  syncLanguages(dir, (name, ext) => ext === ".json" && name !== "language-settings", settings.customLanguages)
+  if(Object.keys(languageSettings.getSettings()).length === 0) {
+    let appLocale = app.getLocale()
+    if(!settings.builtInLanguages.some((item) => item.fileName === app.getLocale())) {
+      appLocale = 'en-US'
+    }
+    settings.selectedLanguage = appLocale
+    settings.defaultLanguage = appLocale
+  } else {
+    let selectedLanguage = languageSettings.getSettingByKey("selectedLanguage")
+    if(!settings.builtInLanguages.some((item) => item.fileName === selectedLanguage) &&
+    !settings.customLanguages.some((item) => item.fileName === selectedLanguage)) {
+    settings.selectedLanguage = languageSettings.getSettingByKey("defaultLanguage")
+}
+  }
 
 
 
+
+  languageSettings.setSettings(settings)
+  //TODO(): Check if files of custom languages exist
   // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
   let payload = {}
@@ -148,6 +192,7 @@ app.on('ready', async () => {
     shouldOverwrite = true
   }
 
+
   // merge with defaults
   store.dispatch({
     type: 'SET_KEYMAP',
@@ -174,7 +219,7 @@ app.on('ready', async () => {
 
   if (os.platform() === 'darwin') {
     if (!isDev && !app.isInApplicationsFolder()) {
-      const choice = dialog.showMessageBox({
+      const { response } = await dialog.showMessageBox({
         type: 'question',
         title: 'Move to Applications folder?',
         message: 'Would you like to move Storyboarder to the Applications folder?',
@@ -182,7 +227,7 @@ app.on('ready', async () => {
         defaultId: 1
       })
 
-      const yes = (choice === 0)
+      const yes = (response === 0)
 
       if (yes) {
         try {
@@ -301,7 +346,6 @@ let openKeyCommandWindow = () => {
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
-
 })
 
 let openNewWindow = () => {
@@ -348,6 +392,7 @@ let openWelcomeWindow = () => {
     resizable: false,
     frame: false,
     webPreferences: {
+      webSecurity: false,
       nodeIntegration: true
     }
   })
@@ -382,6 +427,7 @@ let openWelcomeWindow = () => {
       count++
     }
     prefs.recentDocuments = recentDocumentsCopy
+
     prefModule.set('recentDocuments', recentDocumentsCopy)
   }
 
@@ -391,6 +437,7 @@ let openWelcomeWindow = () => {
       if (!isDev) autoUpdater.init()
       analytics.screenView('welcome')
     }, 300)
+
   })
 
   welcomeWindow.once('close', () => {
@@ -530,11 +577,13 @@ let openDialogue = () => {
           'fdx'
         ]
       },
-    ]}, filenames => {
-      if (filenames) {
-        openFile(filenames[0])
-      }
+    ]}
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      openFile(filePaths[0])
+    }
   })
+  .catch(err => log.error(err))
 }
 
 let importImagesDialogue = (shouldReplace = false) => {
@@ -553,43 +602,49 @@ let importImagesDialogue = (shouldReplace = false) => {
             // ... Windows and Linux can’t
             : []
         ),
-        "multiSelections"
+        ...(
+          shouldReplace
+            // "replace" only allows a single image
+            ? []
+            // "import new" allows multiple images
+            : ["multiSelections"]
+        )
       ]
-    },
-
-    (filepaths)=>{
-      if (filepaths) {
-        filepaths = filepaths.sort()
-        let filepathsRecursive = []
-        let handleDirectory = (dirPath) => {
-          let innerFilenames = fs.readdirSync(dirPath)
-          for(let innerFilename of innerFilenames) {
-            var innerFilePath = path.join(dirPath, innerFilename)
-            let stats = fs.statSync(innerFilePath)
-            if(stats.isFile()) {
-              filepathsRecursive.push(innerFilePath)
-            } else if(stats.isDirectory()) {
-              handleDirectory(innerFilePath)
-            }
-          }
-        }
-        for(let filepath of filepaths) {
-          let stats = fs.statSync(filepath)
+    }
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      filePaths = filePaths.sort()
+      let filepathsRecursive = []
+      let handleDirectory = (dirPath) => {
+        let innerFilenames = fs.readdirSync(dirPath)
+        for(let innerFilename of innerFilenames) {
+          var innerFilePath = path.join(dirPath, innerFilename)
+          let stats = fs.statSync(innerFilePath)
           if(stats.isFile()) {
-            filepathsRecursive.push(filepath)
+            filepathsRecursive.push(innerFilePath)
           } else if(stats.isDirectory()) {
-            handleDirectory(filepath)
+            handleDirectory(innerFilePath)
           }
-        }
-
-        if (shouldReplace) {
-          mainWindow.webContents.send('importImageAndReplace', filepathsRecursive)
-        } else {
-          mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
         }
       }
+      for(let filepath of filePaths) {
+        let stats = fs.statSync(filepath)
+        if(stats.isFile()) {
+          filepathsRecursive.push(filepath)
+        } else if(stats.isDirectory()) {
+          handleDirectory(filepath)
+        }
+      }
+
+      if (shouldReplace) {
+        mainWindow.webContents.send('importImageAndReplace', filepathsRecursive)
+      } else {
+        mainWindow.webContents.send('insertNewBoardsWithFiles', filepathsRecursive)
+      }
     }
-  )
+  }).catch(err => {
+    log.error(err)
+  })
 }
 
 let importWorksheetDialogue = () => {
@@ -602,14 +657,13 @@ let importWorksheetDialogue = () => {
       properties: [
         "openFile",
       ]
-    },
-
-    (filepath)=>{
-      if (filepath) {
-        mainWindow.webContents.send('importWorksheets', filepath)
-      }
     }
-  )
+  ).then(({ filePaths }) => {
+    if (filePaths.length) {
+      mainWindow.webContents.send('importWorksheets', filePaths)
+    }
+  })
+  .catch(err => log.error(err))
 }
 
 const processFdxData = fdxObj => {
@@ -836,56 +890,59 @@ const ensureFountainSceneIds = (filePath, data) => {
 // new functions
 ////////////////////////////////////////////////////////////
 
-const createAndLoadScene = aspectRatio =>
-  new Promise((resolve, reject) => {
-    dialog.showSaveDialog({
-      title: "New Storyboard",
-      buttonLabel: "Create",
-      defaultPath: app.getPath('documents'),
-    },
-    async filename => {
-      if (filename) {
-        log.info(filename)
-
-        if (fs.existsSync(filename)) {
-          if (fs.lstatSync(filename).isDirectory()) {
-            log.info('\ttrash existing folder', filename)
-            await trash(filename)
-          } else {
-            dialog.showMessageBox(null, {
-              message: "Could not overwrite file " + path.basename(filename) + ". Only folders can be overwritten."
-            })
-            return reject(null)
-          }
-        }
-
-        fs.mkdirSync(filename)
-
-        let boardName = path.basename(filename)
-        let filePath = path.join(filename, boardName + '.storyboarder')
-
-        let newBoardObject = {
-          version: pkg.version,
-          aspectRatio: aspectRatio,
-          fps: prefModule.getPrefs().lastUsedFps || 24,
-          defaultBoardTiming: prefs.defaultBoardTiming,
-          boards: []
-        }
-
-        fs.writeFileSync(filePath, JSON.stringify(newBoardObject))
-        fs.mkdirSync(path.join(filename, 'images'))
-
-        addToRecentDocs(filePath, newBoardObject)
-        loadStoryboarderWindow(filePath)
-
-        analytics.event('Application', 'new', newBoardObject.aspectRatio)
-
-        resolve()
-      } else {
-        reject()
-      }
-    })
+const createAndLoadScene = async aspectRatio => {
+  // if directory exists, showSaveDialog will prompt to confirm overwrite
+  let { canceled, filePath } = await dialog.showSaveDialog({
+    title: "New Storyboard",
+    buttonLabel: "Create",
+    defaultPath: app.getPath('documents'),
+    options: {
+      properties: [
+        // show overwrite confirmation on linux (UNTESTED)
+        // is `true` the default? not sure …
+        "showOverwriteConfirmation"
+      ]
+    }
   })
+
+  if (canceled) return
+
+  // if the filePath exists ...
+  if (fs.existsSync(filePath)) {
+    // ... and is a folder ...
+    if (fs.lstatSync(filePath).isDirectory()) {
+      // ... try to trash it ...
+      log.info('\ttrash existing folder', filePath)
+      await trash(filePath)
+    } else {
+      dialog.showMessageBox(null, {
+        message: "Could not overwrite file " + path.basename(filePath) + ". Only folders can be overwritten."
+      })
+      return
+    }
+  }
+
+  fs.mkdirSync(filePath)
+
+  let boardName = path.basename(filePath)
+  let storyboarderFilePath = path.join(filePath, boardName + '.storyboarder')
+
+  let newBoardObject = {
+    version: pkg.version,
+    aspectRatio: aspectRatio,
+    fps: prefModule.getPrefs().lastUsedFps || 24,
+    defaultBoardTiming: prefs.defaultBoardTiming,
+    boards: []
+  }
+
+  fs.writeFileSync(storyboarderFilePath, JSON.stringify(newBoardObject))
+  fs.mkdirSync(path.join(filePath, 'images'))
+
+  addToRecentDocs(storyboarderFilePath, newBoardObject)
+  loadStoryboarderWindow(storyboarderFilePath)
+
+  analytics.event('Application', 'new', newBoardObject.aspectRatio)
+}
 
 const createAndLoadProject = aspectRatio => {
   fs.ensureDirSync(currentPath)
@@ -996,7 +1053,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
   //
   // if beforeunload is telling us to prevent unload ...
   mainWindow.webContents.on('will-prevent-unload', event => {
-    const choice = dialog.showMessageBox({
+    const choice = dialog.showMessageBoxSync({
       type: 'question',
       buttons: ['Yes', 'No'],
       title: 'Confirm',
@@ -1192,6 +1249,7 @@ ipcMain.on('undo', (e, arg)=> {
   mainWindow.webContents.send('undo')
 })
 
+
 ipcMain.on('redo', (e, arg)=> {
   mainWindow.webContents.send('redo')
 })
@@ -1354,6 +1412,7 @@ ipcMain.on('exportImages', (event, arg) => {
 ipcMain.on('exportPDF', (event, arg) => {
   mainWindow.webContents.send('exportPDF', arg)
 })
+
 ipcMain.on('exportWeb', (event, arg) => {
   mainWindow.webContents.send('exportWeb', arg)
 })
@@ -1429,6 +1488,49 @@ ipcMain.on('workspaceReady', event => {
   })
 })
 
+const notifyAllsWindows = (event, ...args) => {
+  let allWindows = BrowserWindow.getAllWindows()
+  for(let i = 0; i < allWindows.length; i ++) {
+    if(! allWindows[i]) continue
+    allWindows[i].send(event, ...args)
+  }
+}
+
+ipcMain.on('languageChanged', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageChanged", lng)
+})
+
+ipcMain.on('languageModified', (event, lng) => {
+  notifyAllsWindows("languageModified", lng)
+})
+
+ipcMain.on('languageAdded', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageAdded", lng)
+})
+
+ipcMain.on('languageRemoved', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageRemoved", lng)
+})
+
+ipcMain.on('getCurrentLanguage', (event) => {
+  event.returnValue = languageSettings.getSettingByKey("selectedLanguage")
+})
+
+ipcMain.on('openLanguagePreferences', (event) => {
+  let win = LanguagePreferencesWindow.getWindow()
+  if (win) {
+    LanguagePreferencesWindow.reveal()
+  } else {
+    LanguagePreferencesWindow.createWindow(() => {LanguagePreferencesWindow.reveal()})
+  }
+  //openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
+  //ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
+})
+
+
 ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
   mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)
 })
@@ -1447,17 +1549,15 @@ ipcMain.on('revealShotGenerator',
 
 ipcMain.on('zoomReset',
   event => mainWindow.webContents.send('zoomReset'))
-ipcMain.on('zoomIn',
-  event => mainWindow.webContents.send('zoomIn'))
-ipcMain.on('zoomOut',
-  event => mainWindow.webContents.send('zoomOut'))
+ipcMain.on('scale-ui-by',
+  (event, value) => mainWindow.webContents.send('scale-ui-by', value))
+ipcMain.on('scale-ui-reset',
+  (event, value) => mainWindow.webContents.send('scale-ui-reset', value))
 
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
 ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
-ipcMain.on('saveShotPlot',
-  (event, data) => mainWindow.webContents.send('saveShotPlot', data))
 ipcMain.on('storyboarder:get-boards',
   event => mainWindow.webContents.send('storyboarder:get-boards'))
 ipcMain.on('shot-generator:get-boards', (event, data) => {
