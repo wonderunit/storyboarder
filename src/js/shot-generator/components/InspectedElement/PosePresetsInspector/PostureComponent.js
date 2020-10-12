@@ -1,7 +1,8 @@
 import React, {useEffect, useState, useMemo} from 'react'
 import {formatters, NumberSlider} from '../../NumberSlider'
+import { useTranslation } from 'react-i18next'
 const PostureComponent = React.memo(({id, getSceneObjects, updateObject, withState, data, defaultPostureValue}) => {
-
+    const { t } = useTranslation()
     const [postureValue, setPostureValue] = useState(defaultPostureValue)
 
     useMemo(() => {
@@ -39,7 +40,7 @@ const PostureComponent = React.memo(({id, getSceneObjects, updateObject, withSta
     } 
     return ( 
         <NumberSlider
-        label="Posture"
+        label={t("shot-generator.inspector.pose-preset.posture")}
         value={postureValue}
         min={-100} max={100} step={10}
         formatter={formatters.percent}
