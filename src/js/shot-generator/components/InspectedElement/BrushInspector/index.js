@@ -8,6 +8,7 @@ import {
   } from '../../../../shared/reducers/shot-generator'
 import {NumberSlider, textConstraints} from '../../NumberSlider'
 import BrushType from '../../Three/Helpers/Brushes/TextureBrushTypes'
+import { useTranslation } from 'react-i18next'
 
 const BrushInspector = connect((state) => ({
     drawMode: getDrawMode(state),
@@ -22,7 +23,7 @@ React.memo(({
     drawMode,
     selections
 }) => {
-
+    const { t } = useTranslation()
 
     useEffect(() => {
         updateDrawMode({isEnabled: true})
@@ -50,7 +51,7 @@ React.memo(({
     return (
         <React.Fragment>
             <div className="row" style={{ margin: "9px 0 6px 0", paddingRight: 0 }}> 
-                <div style={{ width: 50, display: "flex", alignSelf: "center" }}>Type</div>
+                <div style={{ width: 50, display: "flex", alignSelf: "center" }}>{t("shot-generator.inspector.inspected-element.type")}</div>
                 <select required={ true }
                   value={ drawMode.brush.type }
                   onChange={ setType }
@@ -58,12 +59,12 @@ React.memo(({
                         marginBottom: 0,
                         maxWidth: 192 }}>
                     { Object.values(BrushType).map((preset, index) =>
-                      <option key={ index } value={ preset }>{ preset }</option>
+                      <option key={ index } value={ preset }>{ t(`shot-generator.inspector.inspected-element.${preset.toLowerCase()}`)}</option>
                     )}
                 </select>
             </div>
             <NumberSlider 
-                label="Size"
+                label={t("shot-generator.inspector.common.size")}
                 value={ drawMode.brush.size} 
                 min={0.5} 
                 max={15} 
@@ -71,7 +72,7 @@ React.memo(({
                 textConstraint={ textConstraints.sizeConstraint }/>
           
             {drawMode.brush.type !== BrushType.ERASER && <ColorSelect
-                label="mesh color"
+                label={t("shot-generator.inspector.inspected-element.brush-color")}
                 value={ drawMode.brush.color}
                 onSetValue={setColor}/> }
            { selections.length > 0 && <div className="mirror_button__wrapper">

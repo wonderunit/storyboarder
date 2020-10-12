@@ -436,7 +436,11 @@
              "are-you-sure":"Are you sure?"
           },
           "inspected-element":{
-             "properties":"Properties:"
+             "properties":"Properties:",
+             "brush-color":"Brush color",
+             "type":"Type",
+             "simple": "Brush",
+             "eraser": "Eraser"
           },
           "camera":{
              "fov":"F.O.V."
