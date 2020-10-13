@@ -471,7 +471,7 @@
 			},
 			"emotions": {
 					"no-value":"Ничто",
-					"search-list-label": "Искать эмоции …"
+					"search-list-label": "Найти эмоции …"
 			},
 			"object": {
 			  "drop-object": "Опустить объект на пол"
