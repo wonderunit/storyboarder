@@ -122,6 +122,10 @@ const store = configureStore({
     handPoses: {
       ...initialState.presets.handPoses,
       ...presetsStorage.loadHandPosePresets().handPoses
+    },
+    emotions: {
+      ...initialState.presets.emotions,
+      ...presetsStorage.loadEmotionsPresets().emotions
     }
   },
 })

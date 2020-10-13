@@ -54,7 +54,7 @@ const HandSelectionModal = React.memo(({
                       setVisible(false)
                       onSuccess(model, id, selectedHand.value)
                     }}>
-                      {t("shot-generator.inspector.common.proceed-button")}
+                      {t("shot-generator.inspector.common.add-preset")}
                   </button>
                   </div>
             </Modal>

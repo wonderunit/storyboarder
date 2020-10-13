@@ -208,6 +208,10 @@ class XRServer {
       path.join(userDataPath, 'presets', 'handPoses')
     ))
 
+    app.use('/data/presets/emotions', express.static(
+      path.join(userDataPath, 'presets', 'emotions')
+    ))
+
     app.use('/boards/images', express.static(
       path.join(projectPath, 'images')
     ))

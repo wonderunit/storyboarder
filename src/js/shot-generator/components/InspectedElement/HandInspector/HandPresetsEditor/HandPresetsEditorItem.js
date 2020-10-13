@@ -11,7 +11,12 @@ import clampInstance from '../../../../utils/clampInstance'
 import Image from '../../../Image'
 import cloneGltf from '../../../../helpers/cloneGltf'
 import {patchMaterial} from '../../../../helpers/outlineMaterial'
-
+import RemovableItem from '../../RemovableItem/RemovableItem'
+import defaultPosePresets from '../../../../../shared/reducers/shot-generator-presets/hand-poses.json'
+let defaultArray = Object.values(defaultPosePresets)
+const isDefaultPreset = (id) => {
+  return defaultArray.find(image => image.id === id)
+} 
 const createCharacter = (gltf) => {
   let lod = new THREE.LOD()
   let { scene } = cloneGltf(gltf)
@@ -105,7 +110,7 @@ const setupRenderer = ({ thumbnailRenderer, attachment, preset, selectedHand }) 
   bone.parent.parent.parent.updateWorldMatrix(true, true)
 }
 
-const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand, undoGroupStart, undoGroupEnd, }) => {
+const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : preset, updateObject, attachment, thumbnailRenderer, withState, selectedHand, undoGroupStart, undoGroupEnd, onRemoval }) => {
     const src = path.join(remote.app.getPath('userData'), 'presets', 'handPoses', `${preset.id}.jpg`)
     const onPointerDown = event => {
       event.preventDefault()
@@ -186,11 +191,14 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : 
       "thumbnail-search__item--selected": handPosePresetId === preset.id
     })
 
-    return <div className={ className }
-      style={ style }
-      onPointerUp={ onPointerDown }
-      data-id={ preset.id }
-      title={ preset.name }>
+    return <RemovableItem 
+        className={ className } 
+        style={ style }
+        onPointerUp={ onPointerDown }
+        title={ preset.name }
+        onRemoval= { onRemoval }
+        data={ preset }
+        isRemovable={ !isDefaultPreset(preset.id) }> 
         <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
           <Image src={ src } className="thumbnail"/>
         </div>
@@ -201,7 +209,7 @@ const HandPresetsEditorItem = React.memo(({ style, id, handPosePresetId, data : 
           }}>
         { preset.name }
         </div>
-      </div>
+      </RemovableItem>
 })
 
 export default HandPresetsEditorItem

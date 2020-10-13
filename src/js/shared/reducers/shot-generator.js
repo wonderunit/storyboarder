@@ -414,6 +414,7 @@ const getCameraShot = (draft, cameraId) => {
 
 // load up the default poses
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
+const defaultEmotionsPresets = require('./shot-generator-presets/emotions.json')
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -740,7 +741,8 @@ const initialState = {
     poses: {
       ...defaultPosePreset
     },
-    handPoses: defaultHandPosePresets
+    handPoses: defaultHandPosePresets,
+    emotions: defaultEmotionsPresets
   },
   server: {
     uri: undefined,
@@ -1179,6 +1181,15 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
         return
 
+      // When an Emotion preset is removed, also remove references to it in any Scene Object
+      case 'DELETE_EMOTION_PRESET':
+        for (let id in state) {
+          if (state[id].emotionPresetId === action.payload.id) {
+            delete draft[id].emotionPresetId
+          }
+        }
+        return
+
       default:
         return
     }
@@ -1384,6 +1395,7 @@ const presetsReducer = (state = initialState.presets, action) => {
         delete draft.poses[action.payload.id]
         return
 
+
       case 'UPDATE_POSE_PRESET':
         // allow a null value for name
         if (action.payload.hasOwnProperty('name')) {
@@ -1393,6 +1405,15 @@ const presetsReducer = (state = initialState.presets, action) => {
 
       case 'CREATE_HAND_POSE_PRESET':
         draft.handPoses[action.payload.id] = action.payload
+        return
+      case 'DELETE_HAND_POSE_PRESET':
+        delete draft.handPoses[action.payload.id]
+        return        
+      case 'CREATE_EMOTION_PRESET':
+        draft.emotions[action.payload.id] = action.payload
+        return
+      case 'DELETE_EMOTION_PRESET':
+        delete draft.emotions[action.payload.id]
         return
     }
   })
@@ -1660,8 +1681,8 @@ module.exports = {
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
-  selectAttachable: id => ({ type: 'SELECT_ATTACHABLE', payload: id }),
-  deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
+  selectAttachable: payload => ({ type: 'SELECT_ATTACHABLE', payload }),
+  deselectAttachable: () => ({ type: 'DESELECT_ATTACHABLE' }),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),
@@ -1738,8 +1759,11 @@ module.exports = {
 
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
+  createEmotionPreset: payload => ({ type: 'CREATE_EMOTION_PRESET', payload }),
+  deleteEmotionPreset: id => ({ type: 'DELETE_EMOTION_PRESET', payload: { id } }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
+  deleteHandPosePreset: id => ({ type: 'DELETE_HAND_POSE_PRESET', payload: { id } }),
 
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),

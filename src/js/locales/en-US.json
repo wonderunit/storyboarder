@@ -18,8 +18,6 @@
           "toggle-boards-timeline-mode":"Toggle Boards/Timeline Mode",
           "toggle-fullscreen":"Toggle Fullscreen",
           "actual-size":"Canvas: Actual Size",
-          "zoom-in":"Zoom In",
-          "zoom-out":"Zoom Out",
           "enable-fps-meter":"Enable FPS Meter",
           "scale-ui-up":"UI: Scale Up",
           "scale-ui-down":"UI: Scale Down",
@@ -415,13 +413,14 @@
              "tilt":"Tilt",
              "distance":"Distance",
              "roll":"Roll",
-             "select-preset-name":"Select a Preset Name:",
-             "proceed-button":"Proceed",
+             "select-preset-name":"New Preset Name:",
+             "add-preset":"Add",
              "height":"Height",
              "tint-color":"Tint Color",
              "search-models":"Search models …",
              "or":"or",
              "select-file":"Select File …",
+             "select-image":"Select Image …",
              "size":"Size",
              "width":"Width",
              "length":"Length",
@@ -431,8 +430,8 @@
              "rotate-z":"Rotate Z",
              "scale":"Scale",
              "opacity":"Opacity",
-             "yes":"yes",
-             "no":"no",
+             "yes":"Yes",
+             "no":"No",
              "are-you-sure":"Are you sure?"
           },
           "inspected-element":{
@@ -467,6 +466,13 @@
           },
           "attachables-inspector":{
              "attached-to-bone":"Attached to bone"
+          },
+          "hair":{
+             "no-value":"No Hair"
+          },
+          "emotions": {
+             "no-value":"None",
+             "search-list-label": "Search Your Emotions …"
           },
           "object":{
              "drop-object":"Drop Object to the floor"
