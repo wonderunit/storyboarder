@@ -732,6 +732,6 @@
        "aspect-vertical-hd" : "Vertical HD",
        "aspect-square" : "Square",
        "aspect-old" : "Old",
-       "aspect-description" : "The aspect ratio defines the size of your boards.\n\n2.39:1 is the widest, like what you would watch in a movie.\n\n16:9 is what you would watch on a modern TV.\n4:3 is what your grandpops watched back when screens flickered and programming was wholesome.n\n\nPlease don't select vertical HD. We added it as a joke.<br/>"
+       "aspect-description" : "The aspect ratio defines the size of your boards.\n\n2.39:1 is the widest, like what you would watch in a movie.\n\n16:9 is what you would watch on a modern TV.\n4:3 is what your grandpops watched back when screens flickered and programming was wholesome.\n\nPlease don't select vertical HD. We added it as a joke.<br/>"
     }
  }
