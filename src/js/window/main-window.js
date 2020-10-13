@@ -93,6 +93,7 @@ ipcRenderer.on("languageChanged", (event, lng) => {
   i18n.off("languageChanged", changeLanguage)
   i18n.changeLanguage(lng, () => {
     i18n.on("languageChanged", changeLanguage)
+    console.log("Language changed to ", lng)
     updateHTMLText()
   })
 })
@@ -172,6 +173,7 @@ const updateHTMLText = () => {
     translateTooltip("#toolbar-pomodoro-rest", "main-window.toolbar.pomodoro.toolbar-pomodoro-rest")
     translateTooltip("#toolbar-pomodoro-running", "main-window.toolbar.pomodoro.toolbar-pomodoro-running")
     //#endregion
+    tooltips.update()
   //#endregion
   //#region board-information
   renderShotMetadata()
