@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useState, useEffect } from 'react'
+import React, { useRef, useMemo, useState, useEffect, useLayoutEffect } from 'react'
 import * as THREE from 'three'
 import { useUpdate, useThree } from 'react-three-fiber'
 import cloneGltf from '../../helpers/cloneGltf'
@@ -10,6 +10,9 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
+
+import FaceMesh from "./Helpers/FaceMesh"
+
 let boneWorldPosition = new THREE.Vector3()
 let worldPositionHighestBone = new THREE.Vector3()
 
@@ -36,15 +39,25 @@ const findHighestBone = (object) =>
     return highestBone
 }
 
+
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
+    const faceMesh = useRef(null)
+    function getFaceMesh () {
+      if (faceMesh.current === null) {
+        faceMesh.current = new FaceMesh()
+      }
+      return faceMesh.current
+    }
+
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
         lod && lod.traverse(child => child.layers.enable(SHOT_LAYERS))
       }
-    )
+      )
     const [ready, setReady] = useState(false)
+    const {asset: texture} = useAsset(ready ? props.imagePath : null)
     const isFullyUpdate = useRef(false)
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
@@ -103,6 +116,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
               morphNormals: true,
               morphTargets: true
             })
+            
 
             patchMaterial(mesh.material)
             
@@ -111,15 +125,14 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
-
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
-
       let armature = scene.getObjectByProperty("type", "Bone").parent
       let originalHeight
       if (isUserModel(sceneObject.model)) {
             originalHeight = 1
       } else {
+        getFaceMesh().setSkinnedMesh(lod, gl)
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
@@ -412,6 +425,15 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       if(!props.objectRotationControl || !isSelected) return
       props.objectRotationControl.IsEnabled = !locked
     }, [locked])
+
+    useEffect(() => {
+      if(!skeleton) return
+      if(!texture) {
+        getFaceMesh().resetTexture()
+        return
+      }
+      getFaceMesh().draw(texture)
+    }, [texture, lod])
     
     return <group
         ref={ ref }

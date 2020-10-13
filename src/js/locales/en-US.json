@@ -413,13 +413,14 @@
              "tilt":"Tilt",
              "distance":"Distance",
              "roll":"Roll",
-             "select-preset-name":"Select a Preset Name:",
-             "proceed-button":"Proceed",
+             "select-preset-name":"New Preset Name:",
+             "add-preset":"Add",
              "height":"Height",
              "tint-color":"Tint Color",
              "search-models":"Search models …",
              "or":"or",
              "select-file":"Select File …",
+             "select-image":"Select Image …",
              "size":"Size",
              "width":"Width",
              "length":"Length",
@@ -429,8 +430,8 @@
              "rotate-z":"Rotate Z",
              "scale":"Scale",
              "opacity":"Opacity",
-             "yes":"yes",
-             "no":"no",
+             "yes":"Yes",
+             "no":"No",
              "are-you-sure":"Are you sure?"
           },
           "inspected-element":{
@@ -468,6 +469,10 @@
           },
           "hair":{
              "no-value":"No Hair"
+          },
+          "emotions": {
+             "no-value":"None",
+             "search-list-label": "Search Your Emotions …"
           },
           "object":{
              "drop-object":"Drop Object to the floor"

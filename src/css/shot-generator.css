@@ -1052,6 +1052,18 @@ input[type="color"]::-webkit-color-swatch {
 .thumbnail-search .button__file--selected {
   color: #fff;
 }
+.thumbnail-search__item .button__delete {
+  display: block;
+  line-height: 1;
+  padding: 2px;
+  box-sizing: content-box;
+}
+.invisible {
+  visibility: hidden;
+}
+.group:hover .group-hover\:visible {
+  visibility: visible;
+}
 
 .mirror_button__wrapper {
   display: flex;

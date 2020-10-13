@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from '../shot-generator/components/Three/ModelObject'
 import Environment from '../shot-generator/components/Three/Environment'
-import React, { useRef, useEffect, useMemo } from 'react'
+import React, { useRef, useEffect, useMemo, useContext } from 'react'
 import Ground from '../shot-generator/components/Three/Ground'
 import useTextureLoader from '../shot-generator/hooks/use-texture-loader'
 import { 
@@ -10,6 +10,7 @@ import {
     getSelectedBone,
 
  } from '../shared/reducers/shot-generator'
+ import systemEmotionPresets from '../shared/reducers/shot-generator-presets/emotions.json'
 import { useThree } from 'react-three-fiber'
 import ModelLoader from '../services/model-loader'
 import Character from './Character'
@@ -22,6 +23,7 @@ import { getFilePathForImages } from '../shot-generator/helpers/get-filepath-for
 import Room from '../shot-generator/components/Three/Room'
 import CameraUpdate from '../shot-generator/CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
+import FilepathsContext from '../shot-generator/contexts/filepaths'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -116,6 +118,8 @@ const ShotExplorerSceneManager = connect(
       directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world.directional.rotation, world.directional.tilt])
 
+    const { getAssetPath, getUserPresetPath } = useContext(FilepathsContext)
+
     return <group ref={ rootRef }> 
     { shouldRender && <CameraUpdate/> }
     <ambientLight
@@ -147,11 +151,20 @@ const ShotExplorerSceneManager = connect(
     {    
         characterIds.map(id => {
             let sceneObject = sceneObjects[id]
+
+            let { emotionPresetId } = sceneObject
+            let imagePath =  emotionPresetId
+              ? Object.keys(systemEmotionPresets).includes(emotionPresetId)
+                ? getAssetPath('emotion', `${emotionPresetId}-texture.png`)
+                : getUserPresetPath('emotions', `${emotionPresetId}-texture.png`)
+              : null
+
             return <SimpleErrorBoundary  key={ id }>
               <Character
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
                 sceneObject={ sceneObject }
                 modelSettings={ models[sceneObject.model] }
+                imagePath={imagePath}
                 />
               </SimpleErrorBoundary>
         })

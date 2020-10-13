@@ -413,12 +413,13 @@
 			  "distance": "Расстояние",
 			  "roll": "Ролл",
 			  "select-preset-name": "Укажите имя пресету:",
-			  "proceed-button": "Продолжить",
+			  "add-preset": "Продолжить",
 			  "height": "Высота",
 			  "tint-color": "Цвет оттенка",
 			  "search-models": "Найти модели  …",
 			  "or": "или",
 			  "select-file": "Выбрать файл …",
+			  "select-image":"Выбрать изображение …",
 			  "size": "Размер",
 			  "width": "Ширина",
 			  "length": "Длина",
@@ -428,8 +429,8 @@
 			  "rotate-z": "Повернуть по Z",
 			  "scale": "Размер",
 			  "opacity": "Непрозрачность",
-			  "yes": "да",
-			  "no": "не",
+			  "yes": "Да",
+			  "no": "Не",
 			  "are-you-sure": "Вы уверены?"
 			},
 			"inspected-element": {
@@ -466,7 +467,11 @@
 			  "attached-to-bone": "Присоединить к кости"
 			},
 			"hair":{
-					"no-value":"No Hair"
+					"no-value":"Без волос"
+			},
+			"emotions": {
+					"no-value":"Ничто",
+					"search-list-label": "Найти эмоции …"
 			},
 			"object": {
 			  "drop-object": "Опустить объект на пол"

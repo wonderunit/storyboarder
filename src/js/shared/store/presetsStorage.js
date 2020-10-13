@@ -8,6 +8,7 @@ const getScenePresetsFilePath = () => path.join(getPresetsFolderPath(), 'scenes.
 const getCharacterPresetsFilePath = () => path.join(getPresetsFolderPath(), 'characters.json')
 const getPosePresetsFilePath = () => path.join(getPresetsFolderPath(), 'poses.json')
 const getHandPosePresetsFilePath = () => path.join(getPresetsFolderPath(), 'hand-poses.json')
+const getEmotionsPresetsFilePath = () => path.join(getPresetsFolderPath(), 'emotions.json')
 
 // versions 1.13.0 and before had no priority field for poses
 // ensure that all poses have a priority field
@@ -96,5 +97,24 @@ module.exports = {
     migratePosePresets(handPoses)
     let string = JSON.stringify(handPoses, null, 2)
     fs.writeFileSync(getHandPosePresetsFilePath(), string)
+  },
+
+  loadEmotionsPresets: () => {
+    let filepath = getEmotionsPresetsFilePath()
+    if (fs.existsSync(filepath)) {
+      let string = fs.readFileSync(filepath)
+      let data = JSON.parse(string)
+      return { emotions: data }
+    } else {
+      return { emotions: undefined }
+    }
+  },
+
+  saveEmotionsPresets: ({ emotions }) => {
+    if (!fs.existsSync(getPresetsFolderPath())) { fs.mkdirSync(getPresetsFolderPath()) }
+
+    let string = JSON.stringify(emotions, null, 2)
+    fs.writeFileSync(getEmotionsPresetsFilePath(), string)
   }
+
 }

@@ -198,7 +198,7 @@ const CharacterPresetsEditor = connect(
               showModal(false)
               addNewCharacterPreset(newPresetName.current)
             }}>
-              {t("shot-generator.inspector.common.proceed-button")}
+              {t("shot-generator.inspector.common.add-preset")}
           </button>
           </div>
       </Modal>
