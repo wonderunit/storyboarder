@@ -103,8 +103,18 @@ const init = () => {
   }
 }
 
+const update = () => {
+  for(let i = 0; i < tooltips.length; i++) {
+    let tooltip = tooltips[i]
+    tooltip.destroy()
+  }
+  tooltips = [];
+  init()
+}
+
 module.exports = {
   init,
+  update,
   setupTooltipForElement,
   housekeeping,
   getPrefs,
