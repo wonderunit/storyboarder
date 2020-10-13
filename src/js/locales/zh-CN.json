@@ -1,732 +1,730 @@
 {
-	"vr-enter": "VR 输入",
-	"Language": "语言",
-	"Name": "中文",
-	"menu": {
-		"view": {
-			"title": "视图",
-			"reload": "重新加载",
-			"toggle-dev-tools": "打开开发人员工具",
-			"cycle-view-mode": "循环视图模式",
-			"reverse-cycle-view-mode": "反向循环视图模式",
-			"toggle-grid-guide": "启用网格提示",
-			"toggle-center-guide": "启用 中心指南",
-			"toggle-thirds-guide": "启用 第三方指南",
-			"toggle-3D-guide": "启用 3D 指南",
-			"toggle-onion-skin": "启用 洋葱皮",
-			"toggle-captions": "启用 字幕",
-			"toggle-boards-timeline-mode": "切换板/时间轴模块",
-			"toggle-fullscreen": "启用全屏",
-			"actual-size": "画布实际尺寸",
-			"zoom-in": "放大",
-			"zoom-out": "缩小",
-			"enable-fps-meter": "启用 FPS计数器",
-			"scale-ui-up": "增加用户界面大小",
-			"scale-ui-down": "缩小用户界面大小",
-			"reset-ui-scale": "将用户界面大小重置为100％",
-			"cycle-shading-mode": "循环阴影模式"
-		},
-		"file": {
-			"title": "文件",
-			"open": "打开...",
-			"save": "保存",
-			"save-as": "另存为...",
-			"export-animated-gif": "导出GIF",
-			"export-scene-final-cut-proX-and-premiere": "导出Final Cut Pro X和Premiere的导出场景",
-			"export-scene-as-images": "“将场景导出为图像",
-			"export-video": "导出视频",
-			"export-to-web": "导出到Web ...",
-			"export-project-as-zip": "将项目导出到ZIP",
-			"clean-up-scene": "清除场景...",
-			"print-pdf": "打印或导出为PDF ...",
-			"print-storyboarder-worksheet": "打印 Storyboarder 工作表...",
-			"import-worksheets": "导入工作表...",
-			"import-images-to-new-boards": "将图像导入到新板...",
-			"import-image-and-replace": "导入图像并替换...",
-			"export-glTF": "导出GlTF"
-		},
-		"edit": {
-			"title": "编辑",
-			"undo": "撤消更改",
-			"redo": "还原更改",
-			"cut": "剪切",
-			"copy": "复制",
-			"paste": "粘贴",
-			"paste-and-replace": "粘贴并替换",
-			"select-all": "全选",
-			"preferences": "首选项",
-			"delete": "删除",
-			"group-ungroup": "分组/取消分组",
-			"open-shot-explorer": "打开资源管理器",
-			"duplicate": "副本",
-			"drop": "drop"
-		},
-		"window": {
-			"title": "窗口",
-			"zoom": "Zoom",
-			"bring-all-to-front": "将所有东西带到最上层",
-			"minimize": "最小化",
-			"close-window": "关闭窗口"
-		},
-		"help": { 
-			"title":"帮助",
-			"key-commands": "键盘命令...",
-			"show-me-story-tip": "给些故事提示！",
-			"learn-more": "了解更多",
-			"getting-started": "如何入门",
-			"faq": "常见问题...",
-			"bug-submit": "发现了bug？留下问题!!!",
-			"show-log-file":"打开日志文件..."
-		},
-		"navigation": {
-			"title": "导航",
-			"play": "播放",
-			"previous-board": "上一个绘板",
-			"next-board": "下一个绘板",
-			"previous-scene": "上一个场景",
-			"next-scene": "下一个场景",
-			"stop-all-board-audio": "停止所有在绘板上的声音",
-			"toggle-speaking": "启用 麦克风",
-			"audition-board-audio": "试听板音频"
-		},
-		"boards": {
-			"title": "绘板",
-			"new-board": "新建绘板",
-			"new-board-before": "之前的新建绘板",
-			"delete-boards": "删除绘板",
-			"delete-boards-go-forward": "删除绘板-前进",
-			"duplicate-board": "复制绘板",
-			"reorder-left": "向左重新排序",
-			"reorder-right": "向右重新排序",
-			"add-audio-file": "添加音频文件...",
-			"toggle-board-as-new-shot": "将绘板作为新镜头插入"
-		},
-		"tools": { 
-			"title": "工具",
-			"light-pencil": "软铅笔",
-			"brush": "刷柄",
-			"tone": "调和",
-			"pencil": "铅笔",
-			"pen": "笔",
-			"note-pen": "便签笔",
-			"eraser": "橡皮擦",
-			"clear-all-layers": "清除所有层",
-			"clear-layer": "透明层",
-			"smaller-brush": "小刷子",
-			"larger-brush": "大笔刷",
-			"use-palette-color1": "使用调色板1",
-			"use-palette-color2": "使用调色板2",
-			"use-palette-color3": "使用调色板3",
-			"flip-horizontal": "水平翻转",
-			"flip-vertical": "垂直翻转",
-			"shot-generator": "射击生成器？",
-			"edit-in-photoshop": "在Photoshop中编辑"
-		},
-		"about": { 
-			"title": "关于应用程序",
-			"services": "服务",
-			"hide": "隐藏",
-			"hide-others": "隐藏其他人",
-			"unhide": "取消隐藏",
-			"quit": "退出"
-		},
-		"language": {
-			"edit": "语言编辑"
-		}
-	},
-	"welcome-window": {
-	  	"recentStoryboards": "最近的故事板",
-	  	"new-storyboard": "创建新的故事板...",
-	  	"welcome-line-1": "Storyboarder可以让您尽快形象化您的故事。",
-	  	"welcome-line-2": "您可以使用编写的故事，也可以创建一个全新的文件。创建一个绘板，在其上绘制，并观看您的故事成真。您还可以打印出工作表（大雾）， 利用它们并轻松将它们重新导入。",
-	  	"welcome-line-3": "开始吧..."
-	},
-	"main-window": {
-		"toolbar": {
-			"tools": {
-			  	"light-pencil": {
-					"title": "软铅笔",
-					"description": "使用此工具可以得出您的任何想法。 不要害怕犯错误。 该工具绘制在参考图层上，因此您可以轻松清理这些线条。"
-			  	},
-			  	"brush": {
-					"title": "刷柄",
-					"description": "绘制并填充此工具。 毛笔是连续的墨水流。 该工具在“填充”层上绘制。"
-			  	},
-			  	"tone": {
-					"title": "色调调和",
-					"description": "使用此工具进行色调和着色。 此工具在“色调”层上绘制。"
-			  	},
-			  	"pencil": {
-					"title": "铅笔",
-					"description": "使用此工具绘制并强调细节。 铅笔比笔细，软。 该工具绘制在铅笔层上。"
-			  	},
-			  	"pen": {
-					"title": "墨水标记",
-					"description": "此工具适用于较硬的粗线。 使用此工具进行最终的上墨和勾画轮廓。 该工具在墨水层上绘制。"
-			  	},
-			  	"note-pen": {
-					"title": "便签笔",
-					"description": "使用此工具修订绘板。 有东西要写下来吗？ 在绘板顶部画图。 该工具在笔记层上绘画，因此您可以轻松清理它。"
-			  	},
-			  	"eraser": {
-					"title": "橡皮擦",
-					"description": "犯了一个错误？ 使用橡皮擦。 如果按下选项（或alt）按钮，只会删除您所在工具的图层。 否则，将擦除所有层。”"
-			  	}
-			},
-			"colors": {
-			  	"current-color": {
-					"title": "当前颜色",
-					"description": "单击以更改当前颜色。别问左右，自己试"
-			  	},
-			  	"controls-size": {
-					"title": "刷子大小",
-					"description": "拖动值以增加或减小笔刷大小……或只使用诸如真正专业人士之类的按键命令！"
-			  	},
-			  	"controls-stroke-opacity": {
-					"title": "控制刷子透明度",
-					"description": "移动值以调整新笔刷的不透明度。"
-			  	},
-			  	"palette-colorA": {
-					"title": "调色板1",
-					"description": "单击以用该颜色替换当前颜色。 按下以更改调色板的颜色。"
-			  	},
-			  	"palette-colorB": {
-					"title": "调色板2",
-					"description": "单击以设置当前颜色。 按住可将此颜色设置为另一种颜色。"
-			  	},
-			  	"palette-colorC": {
-					"title": "调色板3",
-					"description": "同上"
-			  	}
-			},
-			"editing": {
-			  	"toolbar-trash": {
-					"title": "清除画布",
-					"description": "按此清除整个图形！ 不用担心 您可以随时撤消。"
-			  	},
-			  	"toolbar-move": {
-					"title": "移动模式",
-					"description": "拖动图像以移动它。"
-			  	},
-			  	"toolbar-scale": {
-					"title": "缩放模式",
-					"description": "拖动图像以更改缩放比例。"
-			  	},
-			  	"toolbar-marquee": {
-					"title": "套索工具",
-					"description": "套索要操纵的艺术区域。\n<p>\n绘制以套索一个区域。 使用SHIFT +绘制添加到区域。 减去ALT / OPTION +绘制。 \n 按'f'用当前画笔的颜色和不透明度填充区域。 按DELETE / BACKSPACE删除区域。\n</p>\n<p>\n在套索区域内按住并开始移动，然后拖动。 移动后也要填充和擦除工作。\n</p>\n<p>\nENTER 进行提交。 退出以取消。\n</p>"
-			  	}
-			},
-			"actions": {
-			  	"toolbar-undo": {
-					"title": "取消变更",
-					"description": "犯了一个错误？ 没问题。 您随时可以撤消更改！"
-			  	},
-			  	"toolbar-redo": {
-					"title": "还原更改",
-					"description": "撤消太多更改？ 您可以返回取消的内容。"
-			  	}
-			},
-			"view": {
-			  	"toolbar-grid": {
-					"title": "网格引导",
-					"description": "显示用于测量图案或直线的网格。"
-			  	},
-			  	"toolbar-center": {
-					  "title": "中心引导",
-					  "description": "显示用于确保图形居中的中心线网格。"
-			  	},
-			  	"toolbar-thirds": {
-					  "title": "三分法则",
-					  "description": "显示以三分法为重点的三分法则。 任何自重的电影制片人一直都在使用它"
-			  	},
-			  	"toolbar-perspective": {
-					  "title": "3D引导",
-					  "description": "为生成的镜头匹配3d网格。如果没有生成的镜头，则将获得与视线相同的3d视图。"
-			  	},
-			  	"toolbar-onion": {
-					  "title": "洋葱皮",
-					  "description": "添加前一帧和后一帧的显示，以便您可以为切换和动画补间快照。"
-			  	},
-			  	"toolbar-captions": {
-					"title": "字幕",
-					"description": "启用/关闭对话框模板的显示。"
-			  	}
-			},
-			"externals": {
-			  	"toolbar-open-in-editor": {
-					"title": "在Photoshop中编辑",
-					"description": "单击以开始在Photoshop中编辑当前板。 完成编辑后，只需将文件保存在Photoshop中即可。 该文件将在Storyboarder中自动更新。"
-			  	}
-			},
-			"pomodoro": {
-			  	"toolbar-pomodoro-rest": {
-					"title": "制作时间休息",
-					"description": "设置一个计时器并记录您的工作时间。"
-			  	},
-			  	"toolbar-pomodoro-running": {
-					"title": "制作时间开始",
-					"description": "设置一个计时器并记录您的工作间隔。"
-			  	}
-			}
-		},
-		"board-information": {
-			"shot": "帧",
-			"of": "的",
-			"board": "绘板",
-			"line-mileage": {
-				"title": "线长（英里）",
-				"description": "绘制时，将添加以英里为单位的线的长度。 一个非常有用的工具，可以了解拍摄的内容。 记住，您不是在画新的《蒙娜丽莎》。 您只是想传达信息。"
-			},
-			"shot-generator-container": {
-				"title": "打开",
-				"description": "开帧数发生器"
-			},
-			"new-shot": "新镜头？",
-			"new-shot-tooltip": {
-				"title": "这绘板是新镜头吗？",
-				"description": "如果板子是新镜头，请选中此框。 每个镜头可以有多个木板。 这样，您可以为镜头制作动画或进行过渡"
-			},
-			"duration": "持续时间",
-			"duration-ms": {
-				"title": "设置板持续时间-ms",
-				"description": "输入木板的值（以毫秒为单位）。 一秒有1000毫秒。 默认为2000毫秒。"
-			},
-			"duration-fps": {
-				"title": "设置板持续时间-fps",
-				"description": "输入板上的帧数。"
-			},
-			"dialog-title": "对话",
-			"suggested-dialogue-duration": {
-				"title": "设置对话持续时间",
-				"description": "单击以根据对话框的文本设置持续时间。"
-			},
-			"dialogue-tooltip": {
-				"title": "对话工具提示",
-				"description": "写一些可爱的对话，例如“如你所知，我不是你的父亲！”如果启用，它将显示为字幕。"
-			},
-			"action-title": "行动",
-			"action-tooltip": {
-				"title": "绘板行动",
-				"description": "为绘板写些行动"
-			},
-			"note-title": "笔记",
-			"note-tooltip": {
-				"title": "绘板笔记",
-				"description": "写一些笔记。 可能是更改的绘板笔记，也可能只是镜头的一些笔记。"
-			},
-			"clear-note-title": "清理注释层",
-			"clear-note-tooltip": {
-				"title": "清理注释绘图层",
-				"description": "清除此绘板的注释层。 当您在便签绘图工具上并按以下键时，也可以清除它:"
-			},
-			"remove-audio": {
-			  	"title": "删除音频",
-			  	"description": "从该板上移除音频参考。 除非使用“清理场景”，否则文件将保留在磁盘上"
-			},
-			"reference-layer-title": "参考层",
-			"reference-layer-tooltip": {
-			  	"title": "清除参考层",
-			  	"description": "清除该板的参考层。 您也可以在使用轻铅笔绘图工具并按以下键时清除它："
-			},
-			"clear-title": "清除",
-			"merge-down-tooltip": {
-			  	"title": "将填充层合并到参考层",
-			  	"description": "如果要保留现有的填充层并重新绘制以进行清理，这将很有用。 这会将两层组合到参考层。 填充层将为空白。"
-			},
-			"merge-down-title": "向下合并",
-			"merge-up-tooltip": {
-			  	"title": "将参考层合并至填充层",
-			  	"description": "更改参考层和“镜头生成器”层的不透明度。 如果存在保存的生成器的镜头或参考层上的某些内容，您将只能看到更改。"
-			},
-			"merge-up-title": "向上合并",
-			"layer-opacity-tooltip": {
-			  	"title": "更改参考层和Shot Generator层的透明度",
-			  	"description": "更改参考层和Shot Generator层的不透明度。您会注意到，如果将帧保存在Shot Generator中或更改了参考层上的内容，则可以看到差异。"
-			},
-			"sts-random": {
-			  	"title": "生成随机帧图像",
-			  	"description": "随机化一帧的图像生成器字符串"
-			},
-			"sts-input1": {
-			 	 "title": "镜头说明",
-			  	"description": "描述镜头：例如平均镜头。 按Enter生成新框架。"
-			},
-			"sts-select": {
-			  	"title": "框架描述信息",
-			  	"description": "优化用于生成拍摄图像的数据。"
-			},
-			"sts-shots": {
-			  	"title": "生成框架图像",
-			  	"description": "单击以细化生成的拍摄图像的数据。 双击以将生成的图像帧用作参考层。"
-			},
-			"scene": "舞台",
-			"frame-rate": "帧频",
-			"show-in-finder-button": {
-			  	"title": "在文件夹中显示板",
-			  	"description": "单击以打开文件夹中的电路板图像。 如果您需要外部编辑器，则很有用。"
-			},
-			"show-in-finder-title": "在资料夹中开启"
-		},
-		"playback": {
-			"prev-scene-tooltip": {
-				"title": "上一个场景",
-				"description": "如果当前板位于场景的开始或结尾，它将返回一个场景。 否则，它将跳到当前场景的开始。"
-			},
-			"prev-board-tooltip": {
-				"title": "前一个绘板",
-				"description": "使用箭头快速在板之间切换以查看故事流程。"
-			},
-			"play-tooltip": {
-				"title": "开始/停止",
-				"description": "它将在自动播放与否之间切换。 默认的播放时间是每块板2秒钟或设置的时间。"
-			},
-			"next-board-tooltip": {
-				"title": "下一板",
-				"description": "使用箭头快速在板之间切换以查看故事流程。"
-			},
-			"next-scene-tooltip": {
-				"title": "下一个场景",
-				"description": "如果当前板位于场景的开始或结尾，它将向前跳一个场景。 否则，它将跳到当前场景的结尾。"
-			}
-		}
-	},
-	"shot-generator": {
-		"inspector": {
-			"inspected-world": {
-			  "file": "文件",
-			  "scene": "场景",
-			  "ground": "地面",
-			  "bg-color": "背景色",
-			  "room": "房间",
-			  "environment": "环境",
-			  "ambient-light": "环境光",
-			  "directional-light": "定向光",
-			  "fog": "雾",
-			  "grayscale": "灰度",
-			  "shading-mode": "阴影模式"
-			},
-			"common": {
-			  "object-creation-help": "如何为自定义对象创建3D模型",
-			  "visible": "可见性",
-			  "rotation": "旋转",
-			  "intensity": "强度",
-			  "tilt": "倾斜",
-			  "distance": "距离",
-			  "roll": "滚动",
-			  "select-preset-name": "为预设指定名称：",
-			  "proceed-button": "继续",
-			  "height": "高度",
-			  "tint-color": "淡色",
-			  "search-models": "查找模型...",
-			  "or": "或",
-			  "select-file": "选择文件...",
-			  "size": "大小尺寸",
-			  "width": "宽度",
-			  "length": "长度",
-			  "depth": "深度",
-			  "rotate-x": "旋转X",
-			  "rotate-y": "旋转Y",
-			  "rotate-z": "旋转Z",
-			  "scale": "比例",
-			  "opacity": "不透明度",
-			  "yes": "好",
-			  "no": "不",
-			  "are-you-sure": "您确定吗？"
-			},
-			"inspected-element": {
-			  "properties": "特性："
-			},
-			"camera": {
-			  "fov": "F.O.V."
-			},
-			"character": {
-			  "skinny": "瘦的",
-			  "obese": "肥胖",
-			  "muscular": "肌肉",
-			  "head": "头部",
-			  "drop-character": "将角色放到地板上",
-			  "morphs": "改变图像"
-			},
-			"character-preset": {
-			  "preset": "预设"
-			},
-			"hand-preset": {
-			  "select-saving-hand": "选择要保存的手：",
-			  "hand": "手",
-			  "search-hand-pose": "找到手的姿势...",
-			  "select-hand": "附加到",
-			  "left-hand": "左手",
-			  "right-hand": "右手",
-			  "both-hands": "双手"
-			},
-			"pose-preset": {
-			  "search-pose": "寻找姿势...",
-			  "mirror-pose": "镜像姿势"
-			},
-			"attachables-inspector": {
-			  "attached-to-bone": "附加到骨骼"
-			},
-			"object": {
-			  "drop-object": "将物体放到地板上"
-			},
-			"image": {
-			  "image-file": "图像文件",
-			  "visible-to-camera": "相机可见"
-			},
-			"light": {
-			  "angle": "角度",
-			  "penumbra": "半影",
-			  "decay": "分散"
-			},
-			"volume": {
-			  "layer-image-files": "层图像文件",
-			  "select-layer-images": "选择图像层",
-			  "layers": "图层面板",
-			  "color": "颜色"
-			}
-		  },
-		  "toolbar": {
-			"camera": {
-			  "tooltip": {
-				"title": "添加相机",
-				"description": "将新摄像机添加到场景中。"
-			  },
-			  "title": "相机"
-			},
-			"object": {
-			  "tooltip": {
-				"title": "添加对象",
-				"description": "添加一个新对象。 您可以在左侧更改属性。"
-			  },
-			  "title": "物体"
-			},
-			"character": {
-			  "tooltip": {
-				"title": "添加字符",
-				"description": "在场景中添加一个新角色。 您可以通过移动控制球来更改姿势。"
-			  },
-			  "title": "人物"
-			},
-			"light": {
-			  "tooltip": {
-				"title": "加光",
-				"description": "向场景添加聚光灯。"
-			  },
-			  "title": "灯光"
-			},
-			"volume": {
-			  "tooltip": {
-				"title": "增加音量",
-				"description": "增加雨，雾，爆炸等体积。"
-			  },
-			  "title": "音量"
-			},
-			"image": {
-			  "tooltip": {
-				"title": "添加图片",
-				"description": "添加图像。 您可以在左侧的属性菜单中设置自定义图像。 这对于链接到场景中的图像或海报或遮罩画非常有用。"
-			  },
-			  "title": "图片"
-			},
-			"open-in-vr": {
-			  "tooltip": {
-				"title": "在VR中打开",
-				"description": "单击此处查看您需要在Oculus Quest等VR浏览器中输入的URL。"
-			  },
-			  "title": "在VR中打开"
-			},
-			"save-to-board": {
-			  "tooltip": {
-				"title": "保存到绘板",
-				"description": "将当前帧保存到当前的Storyboard。 保存后，您可以关闭窗口。"
-			  },
-			  "title": "保存到绘板"
-			},
-			"insert-as-new-board": {
-			  "tooltip": {
-				"title": "添加为新板",
-				"description": "在当前故事板之后添加当前框架。 插入新板后，您可以关闭此窗口，或继续添加新框架。"
-			  },
-			  "title": "添加为新板"
-			},
-			"popup": {
-				"open-vr": "要观看，请打开",
-				"scary-warning": "如果看到可怕的警告，不要害怕\n由于VR从该计算机启动不受信任的服务器的事实。\n在Oculus浏览器中，单击“高级”，然后单击“访问站点（不安全）” 接受自签名证书。\n学习更多关于 {{link}}"
-			}
-		  },
-		  "camera-panel": {
-			  "roll-camera": {
-				"title": "相机旋转角度",
-				"description": "围绕旋转轴旋转摄像机以创建荷兰（dutch）角"
-			  },
-			  "pan-tilt-camera": {
-				"title": "平移/倾斜摄像机角度",
-				"description": "通过单击和拖动此控件，或在3D视口中拖动和拖动，来移动或倾斜相机。单击和拖动时，也可以移动。"
-			  },
-			  "move-camera": {
-				"title": "移动相机",
-				"description": "向前，向后，向左和向右移动摄像机。移动摄像机时也可以平移。按住Shift键可以更快地移动摄像机。"
-			  },
-			  "elevate-camera": {
-				"title": "举起相机",
-				"description": "上下移动相机。您可以按住shift键以更快地升高相机。"
-			  },
-			  "change-camera-lens": {
-				"title": "更换相机镜头（变焦）",
-				"description": "更改摄像机镜头的视野。如果单击括号，将在标准定焦镜头之间切换。"
-			  },
-			  "auto-shot-framing": {
-				"title": "自动拍摄构图",
-				"description": "选择一个字符，然后选择“ Shot Size”和/或“ Camera Angle”以自动定位相机。"
-			  },
-			  "roll": "转动",
-			  "pan": "平移",
-			  "tilt": "倾斜",
-			  "move": "移动",
-			  "elevate": "提升",
-			  "lens": "镜头",
-			  "open-shot-explorer": "打开 Shot Explorer"
-  
-		  },
-		  "board-inspector": {
-			  "dialogue": "对白",
-			  "action": "动作",
-			  "notes": "文本"
-		  },
-		  "camera-inspector": {
-			  "camera": "相机",
-			  "change-active-camera": {
-				  "title": "更换活动相机",
-				  "description": "如果场景中有多个摄像机，则可以更改框架的活动摄像机。"
-			  }
-		  },
-		  "guides-inspector": {
-			  "guides": "导游"
-		  }
-	},
-	"shot-explorer": {
-		"insert-camera": "新增相机",
-		"characters-warning": "舞台上必须至少有一个嵌入式角色",
-		"on": "上"
-	},
-    "xr": {
-        "controls": {
-            "width": "宽度",
-            "height": "长度",
-            "depth": "深度",
-            "size": "尺寸",
-            "opacity": "不透明度",
-            "scale": "比例",
-            "head":"头",
-            "morph-target": "变形目标",
-            "skinny": "瘦的",
-            "muscular": "肌肉",
-            "obese": "肥胖",
-            "intensity": "Intensity",
-            "angle": "角度",
-            "distance": "距离",
-            "penumbra": "半影",
-            "visible-to-camera": "对摄像机可见",
-            "set-visible-to-camera": "设置为对相机可见",
-            "active-camera": "活动相机",
-            "set-active-camera": "设置为活动相机",
-            "pose-capture": "捕捉姿势",
-            "left": "左",
-            "both": "两",
-            "right": "是的",
-            "objects": "对象"
-
-        },
-        "boards": {
-            "sg-has-unsaved-changed": "Shot Generator具有未保存的更改。",
-            "boards.overwrite-with-vr-changes": "您确定要覆盖VR更改吗？",
-            "changes-not-saved": "尚未保存更改。",
-            "change-without-saving": "您确定要不保存就更改板吗？",
-            "ok": "OK",
-            "cancel": "取消",
-            "settings": "环境",
-            "show-cameras": "显示相机"
-        }
-	},
-    "preferences": {
-       "title": "设置",
-       "restart-hint": "请重新启动Storyboarder以应用更改。",
-       "show-tooltips": "显示工具提示",
-       "save-automatically": "自动保存项目",
-       "saving-hint": "如果禁用，请使用'File> Save'保存项目。提醒：对图像的更改将自动保存。",
-       "force-psd-reload": "当Storyboarder重新获得焦点时，强制扫描的PSD重新加载",
-       "psd-reload-hint": "如果使用网络驱动器，则启用。\n在\nStoryboarder和其他应用程序之间切换时，不能提高性能。禁用时，Storyboarder \n仅在后台查看PSD文件（不支持所有计算机）。",
-       "default-timing": "默认绘板时间（以毫秒为单位）",
-       "external-psd-editor": "外部PSD编辑器",
-       "psd-editor-hint": "选择一个应用程序（例如：.exe或.app）。默认情况下，这是与您的操作系统关联的应用程序，用于打开PSD文件。\n要重置为默认值，请取消文件请求。",
-       "reveal-keymap-file": "显示关键图文件",
-       "reveal-keymap-file-hint": "您可以通过在源编辑器（例如Atom或VS Code）中编辑Keymap JSON文件，来选择将哪些键绑定到Storyboarder命令。",
-       "show-diagnostics": "显示诊断",
-       "show-diagnostics-hint": "显示Storyboarder在一段时间内每秒可以运行的速度，以每秒帧数为单位。对于解决问题很有用。",
-       "line-delay": "线路延迟",
-       "line-delay-hint": "在此期间停止绘制以进入直线模式。<br/> \n按住<kbd> Shift </ kbd>绘制直线。<br/>按住<kbd> Alt / Option </ kbd>，同时绘制直线以对齐角。",
-       "notifications": "通知",
-       "show-notifications": "启用 通知",
-       "aspirational-message": "显示每小时确认信息",
-       "notifications-line-mileage": "允许线路里程注释",
-       "sounds": "音效",
-       "sounds-hint": "声音可能会使某些计算机上的Storyboarder变慢。<br /> 您可以将其关闭以提高性能。",
-       "drawing-sound-effect": "绘图声音效果",
-       "drawing-melodies": "绘画旋律",
-       "ui-sound-effect": "用户界面的声音效果",
-       "enable-high-quality-audio": "启用 高质量音频",
-       "performance-enhancements": "性能增强",
-       "performance-enhancements-hint": "如果绘图缓慢，请禁用。",
-       "high-quality-drawing-engine": "高质量绘图引擎",
-       "high-quality-drawing-engine-hint": "启用后，将使用具有更高级笔刷的更好的绘图引擎。禁用时，将使用效率模式的（更快）绘图引擎。",
-       "languages": "语言",
-       "languages-hint": "选择一种语言或添加您自己的语言",
-       "open-language-editor": "开放语言编辑器",
-       "sign-out": "退出",
-       "sign-out-hint": "您已登录Storyboarders.com帐户",
-       "thanks-for-support": "感谢支持Storyboarder！",
-       "additional-features-for-support": "以下是支持者的一些其他功能。",
-       "add-watermark": "为导出的图像和视频添加水印。",
-       "custom-watermark": "自定义水印图像（默认为空白）"
+  "vr-enter": "VR 输入",
+  "Language": "语言",
+  "Name": "中文",
+  "menu": {
+    "view": {
+      "title": "视图",
+      "reload": "重新加载",
+      "toggle-dev-tools": "打开开发人员工具",
+      "cycle-view-mode": "循环视图模式",
+      "reverse-cycle-view-mode": "反向循环视图模式",
+      "toggle-grid-guide": "启用网格提示",
+      "toggle-center-guide": "启用 中心指南",
+      "toggle-thirds-guide": "启用 第三方指南",
+      "toggle-3D-guide": "启用 3D 指南",
+      "toggle-onion-skin": "启用 洋葱皮",
+      "toggle-captions": "启用 字幕",
+      "toggle-boards-timeline-mode": "切换板/时间轴模块",
+      "toggle-fullscreen": "启用全屏",
+      "actual-size": "画布实际尺寸",
+      "zoom-in": "放大",
+      "zoom-out": "缩小",
+      "enable-fps-meter": "启用 FPS计数器",
+      "scale-ui-up": "增加用户界面大小",
+      "scale-ui-down": "缩小用户界面大小",
+      "reset-ui-scale": "将用户界面大小重置为100％",
+      "cycle-shading-mode": "循环阴影模式"
     },
-    "print-window": {
-       "pdf-title": "打印",
-       "pdf-intro": "您的情节提要板将按照您喜欢的方式进行打印。 选择一种格式并直接打印或导出为PDF。",
-       "worksheet-title": "打印工作表",
-       "worksheet-intro": "在此印刷纸上绘制草图板，然后将其神奇地重新导入到情节提要文件中！",
-       "paper-size": "纸张尺寸",
-	   "letter": "信封",
-       "format": "A4",
-       "paper-orientation-label": "页面方向",
-       "paper-orientation-landscape": "风景画",
-       "paper-orientation-portrait": "肖像",
-       "columns-label": "列",
-       "rows-label": "行",
-       "spacing-label": "间隔",
-       "copies-label": "份数",
-       "print-button": "打印！",
-       "pdf-button": "导出PDF",
-       "prev_button": "上一个",
-       "page-info": "页",
-       "next_button": "下一个"
+    "file": {
+      "title": "文件",
+      "open": "打开...",
+      "save": "保存",
+      "save-as": "另存为...",
+      "export-animated-gif": "导出GIF",
+      "export-scene-final-cut-proX-and-premiere": "导出Final Cut Pro X和Premiere的导出场景",
+      "export-scene-as-images": "“将场景导出为图像",
+      "export-video": "导出视频",
+      "export-to-web": "导出到Web ...",
+      "export-project-as-zip": "将项目导出到ZIP",
+      "clean-up-scene": "清除场景...",
+      "print-pdf": "打印或导出为PDF ...",
+      "print-storyboarder-worksheet": "打印 Storyboarder 工作表...",
+      "import-worksheets": "导入工作表...",
+      "import-images-to-new-boards": "将图像导入到新板...",
+      "import-image-and-replace": "导入图像并替换...",
+      "export-glTF": "导出GlTF"
     },
-    "new-window": {
-       "creation-title": "有两种创建新情节提要的方法。 你更倾向哪个？",
-       "script-based-title": "通过脚本创建",
-       "script-based-description": "如果您正在使用脚本编写故事，则可以指定\n脚本，Storyboarder会帮助您为每个场景登机，并在登机时向您显示脚本。 登机时随时更改\n脚本。 脚本可以是源泉（.fountain）\n最终稿（.fdx）格式。",
-       "blank-title" : "空白情节提要",
-       "blank-description" : "您可以简单地创建一个完全空白的情节提要。只是做绘板和涂鸦。\n如果您只是刚开始，为什么不创建一个新的空白情节提要有趣呢？",
-       "new-script": "新脚本...",
-       "new-blank": "新绘板...",
-       "aspect-title": "长宽比是多少？",
-       "aspect-ultrawide": "超宽",
-       "aspect-doublewide": "双倍宽",
-       "aspect-wide": "宽",
-       "aspect-hd": "HD",
-       "aspect-vertical-hd": "垂直 HD",
-       "aspect-square": "正方",
-       "aspect-old": "老式",
-       "aspect-description": "“宽高比决定了面板的尺寸。\n\n2.39：1是最宽的面板，就像在电影中看到的一样。\n\n16：9是在现代电视上看到的东西。\n4：3是您的流行音乐人在屏幕闪烁且编程有益时回首的内容。\n\n请不要选择垂直高清。我们把它作为一个玩笑而添加。"
+    "edit": {
+      "title": "编辑",
+      "undo": "撤消更改",
+      "redo": "还原更改",
+      "cut": "剪切",
+      "copy": "复制",
+      "paste": "粘贴",
+      "paste-and-replace": "粘贴并替换",
+      "select-all": "全选",
+      "preferences": "首选项",
+      "delete": "删除",
+      "group-ungroup": "分组/取消分组",
+      "open-shot-explorer": "打开资源管理器",
+      "duplicate": "副本",
+      "drop": "drop"
+    },
+    "window": {
+      "title": "窗口",
+      "zoom": "Zoom",
+      "bring-all-to-front": "将所有东西带到最上层",
+      "minimize": "最小化",
+      "close-window": "关闭窗口"
+    },
+    "help": {
+      "title": "帮助",
+      "key-commands": "键盘命令...",
+      "show-me-story-tip": "给些故事提示！",
+      "learn-more": "了解更多",
+      "getting-started": "如何入门",
+      "faq": "常见问题...",
+      "bug-submit": "发现了bug？留下问题!!!",
+      "show-log-file": "打开日志文件..."
+    },
+    "navigation": {
+      "title": "导航",
+      "play": "播放",
+      "previous-board": "上一个绘板",
+      "next-board": "下一个绘板",
+      "previous-scene": "上一个场景",
+      "next-scene": "下一个场景",
+      "stop-all-board-audio": "停止所有在绘板上的声音",
+      "toggle-speaking": "启用 麦克风",
+      "audition-board-audio": "试听板音频"
+    },
+    "boards": {
+      "title": "绘板",
+      "new-board": "新建绘板",
+      "new-board-before": "之前的新建绘板",
+      "delete-boards": "删除绘板",
+      "delete-boards-go-forward": "删除绘板-前进",
+      "duplicate-board": "复制绘板",
+      "reorder-left": "向左重新排序",
+      "reorder-right": "向右重新排序",
+      "add-audio-file": "添加音频文件...",
+      "toggle-board-as-new-shot": "将绘板作为新镜头插入"
+    },
+    "tools": {
+      "title": "工具",
+      "light-pencil": "软铅笔",
+      "brush": "刷柄",
+      "tone": "调和",
+      "pencil": "铅笔",
+      "pen": "笔",
+      "note-pen": "便签笔",
+      "eraser": "橡皮擦",
+      "clear-all-layers": "清除所有层",
+      "clear-layer": "透明层",
+      "smaller-brush": "小刷子",
+      "larger-brush": "大笔刷",
+      "use-palette-color1": "使用调色板1",
+      "use-palette-color2": "使用调色板2",
+      "use-palette-color3": "使用调色板3",
+      "flip-horizontal": "水平翻转",
+      "flip-vertical": "垂直翻转",
+      "shot-generator": "射击生成器？",
+      "edit-in-photoshop": "在Photoshop中编辑"
+    },
+    "about": {
+      "title": "关于应用程序",
+      "services": "服务",
+      "hide": "隐藏",
+      "hide-others": "隐藏其他人",
+      "unhide": "取消隐藏",
+      "quit": "退出"
+    },
+    "language": {
+      "edit": "语言编辑"
     }
+  },
+  "welcome-window": {
+    "recentStoryboards": "最近的故事板",
+    "new-storyboard": "创建新的故事板...",
+    "welcome-line-1": "Storyboarder可以让您尽快形象化您的故事。",
+    "welcome-line-2": "您可以使用编写的故事，也可以创建一个全新的文件。创建一个绘板，在其上绘制，并观看您的故事成真。您还可以打印出工作表（大雾）， 利用它们并轻松将它们重新导入。",
+    "welcome-line-3": "开始吧..."
+  },
+  "main-window": {
+    "toolbar": {
+      "tools": {
+        "light-pencil": {
+          "title": "软铅笔",
+          "description": "使用此工具可以得出您的任何想法。 不要害怕犯错误。 该工具绘制在参考图层上，因此您可以轻松清理这些线条。"
+        },
+        "brush": {
+          "title": "刷柄",
+          "description": "绘制并填充此工具。 毛笔是连续的墨水流。 该工具在“填充”层上绘制。"
+        },
+        "tone": {
+          "title": "色调调和",
+          "description": "使用此工具进行色调和着色。 此工具在“色调”层上绘制。"
+        },
+        "pencil": {
+          "title": "铅笔",
+          "description": "使用此工具绘制并强调细节。 铅笔比笔细，软。 该工具绘制在铅笔层上。"
+        },
+        "pen": {
+          "title": "墨水标记",
+          "description": "此工具适用于较硬的粗线。 使用此工具进行最终的上墨和勾画轮廓。 该工具在墨水层上绘制。"
+        },
+        "note-pen": {
+          "title": "便签笔",
+          "description": "使用此工具修订绘板。 有东西要写下来吗？ 在绘板顶部画图。 该工具在笔记层上绘画，因此您可以轻松清理它。"
+        },
+        "eraser": {
+          "title": "橡皮擦",
+          "description": "犯了一个错误？ 使用橡皮擦。 如果按下选项（或alt）按钮，只会删除您所在工具的图层。 否则，将擦除所有层。”"
+        }
+      },
+      "colors": {
+        "current-color": {
+          "title": "当前颜色",
+          "description": "单击以更改当前颜色。别问左右，自己试"
+        },
+        "controls-size": {
+          "title": "刷子大小",
+          "description": "拖动值以增加或减小笔刷大小……或只使用诸如真正专业人士之类的按键命令！"
+        },
+        "controls-stroke-opacity": {
+          "title": "控制刷子透明度",
+          "description": "移动值以调整新笔刷的不透明度。"
+        },
+        "palette-colorA": {
+          "title": "调色板1",
+          "description": "单击以用该颜色替换当前颜色。 按下以更改调色板的颜色。"
+        },
+        "palette-colorB": {
+          "title": "调色板2",
+          "description": "单击以设置当前颜色。 按住可将此颜色设置为另一种颜色。"
+        },
+        "palette-colorC": {
+          "title": "调色板3",
+          "description": "同上"
+        }
+      },
+      "editing": {
+        "toolbar-trash": {
+          "title": "清除画布",
+          "description": "按此清除整个图形！ 不用担心 您可以随时撤消。"
+        },
+        "toolbar-move": {
+          "title": "移动模式",
+          "description": "拖动图像以移动它。"
+        },
+        "toolbar-scale": {
+          "title": "缩放模式",
+          "description": "拖动图像以更改缩放比例。"
+        },
+        "toolbar-marquee": {
+          "title": "套索工具",
+          "description": "套索要操纵的艺术区域。\n<p>\n绘制以套索一个区域。 使用SHIFT +绘制添加到区域。 减去ALT / OPTION +绘制。 \n 按'f'用当前画笔的颜色和不透明度填充区域。 按DELETE / BACKSPACE删除区域。\n</p>\n<p>\n在套索区域内按住并开始移动，然后拖动。 移动后也要填充和擦除工作。\n</p>\n<p>\nENTER 进行提交。 退出以取消。\n</p>"
+        }
+      },
+      "actions": {
+        "toolbar-undo": {
+          "title": "取消变更",
+          "description": "犯了一个错误？ 没问题。 您随时可以撤消更改！"
+        },
+        "toolbar-redo": {
+          "title": "还原更改",
+          "description": "撤消太多更改？ 您可以返回取消的内容。"
+        }
+      },
+      "view": {
+        "toolbar-grid": {
+          "title": "网格引导",
+          "description": "显示用于测量图案或直线的网格。"
+        },
+        "toolbar-center": {
+          "title": "中心引导",
+          "description": "显示用于确保图形居中的中心线网格。"
+        },
+        "toolbar-thirds": {
+          "title": "三分法则",
+          "description": "显示以三分法为重点的三分法则。 任何自重的电影制片人一直都在使用它"
+        },
+        "toolbar-perspective": {
+          "title": "3D引导",
+          "description": "为生成的镜头匹配3d网格。如果没有生成的镜头，则将获得与视线相同的3d视图。"
+        },
+        "toolbar-onion": {
+          "title": "洋葱皮",
+          "description": "添加前一帧和后一帧的显示，以便您可以为切换和动画补间快照。"
+        },
+        "toolbar-captions": {
+          "title": "字幕",
+          "description": "启用/关闭对话框模板的显示。"
+        }
+      },
+      "externals": {
+        "toolbar-open-in-editor": {
+          "title": "在Photoshop中编辑",
+          "description": "单击以开始在Photoshop中编辑当前板。 完成编辑后，只需将文件保存在Photoshop中即可。 该文件将在Storyboarder中自动更新。"
+        }
+      },
+      "pomodoro": {
+        "toolbar-pomodoro-rest": {
+          "title": "制作时间休息",
+          "description": "设置一个计时器并记录您的工作时间。"
+        },
+        "toolbar-pomodoro-running": {
+          "title": "制作时间开始",
+          "description": "设置一个计时器并记录您的工作间隔。"
+        }
+      }
+    },
+    "board-information": {
+      "shot": "帧",
+      "of": "的",
+      "board": "绘板",
+      "line-mileage": {
+        "title": "线长（英里）",
+        "description": "绘制时，将添加以英里为单位的线的长度。 一个非常有用的工具，可以了解拍摄的内容。 记住，您不是在画新的《蒙娜丽莎》。 您只是想传达信息。"
+      },
+      "shot-generator-container": {
+        "title": "打开",
+        "description": "开帧数发生器"
+      },
+      "new-shot": "新镜头？",
+      "new-shot-tooltip": {
+        "title": "这绘板是新镜头吗？",
+        "description": "如果板子是新镜头，请选中此框。 每个镜头可以有多个木板。 这样，您可以为镜头制作动画或进行过渡"
+      },
+      "duration": "持续时间",
+      "duration-ms": {
+        "title": "设置板持续时间-ms",
+        "description": "输入木板的值（以毫秒为单位）。 一秒有1000毫秒。 默认为2000毫秒。"
+      },
+      "duration-fps": {
+        "title": "设置板持续时间-fps",
+        "description": "输入板上的帧数。"
+      },
+      "dialog-title": "对话",
+      "suggested-dialogue-duration": {
+        "title": "设置对话持续时间",
+        "description": "单击以根据对话框的文本设置持续时间。"
+      },
+      "dialogue-tooltip": {
+        "title": "对话工具提示",
+        "description": "写一些可爱的对话，例如“如你所知，我不是你的父亲！”如果启用，它将显示为字幕。"
+      },
+      "action-title": "行动",
+      "action-tooltip": {
+        "title": "绘板行动",
+        "description": "为绘板写些行动"
+      },
+      "note-title": "笔记",
+      "note-tooltip": {
+        "title": "绘板笔记",
+        "description": "写一些笔记。 可能是更改的绘板笔记，也可能只是镜头的一些笔记。"
+      },
+      "clear-note-title": "清理注释层",
+      "clear-note-tooltip": {
+        "title": "清理注释绘图层",
+        "description": "清除此绘板的注释层。 当您在便签绘图工具上并按以下键时，也可以清除它:"
+      },
+      "remove-audio": {
+        "title": "删除音频",
+        "description": "从该板上移除音频参考。 除非使用“清理场景”，否则文件将保留在磁盘上"
+      },
+      "reference-layer-title": "参考层",
+      "reference-layer-tooltip": {
+        "title": "清除参考层",
+        "description": "清除该板的参考层。 您也可以在使用轻铅笔绘图工具并按以下键时清除它："
+      },
+      "clear-title": "清除",
+      "merge-down-tooltip": {
+        "title": "将填充层合并到参考层",
+        "description": "如果要保留现有的填充层并重新绘制以进行清理，这将很有用。 这会将两层组合到参考层。 填充层将为空白。"
+      },
+      "merge-down-title": "向下合并",
+      "merge-up-tooltip": {
+        "title": "将参考层合并至填充层",
+        "description": "更改参考层和“镜头生成器”层的不透明度。 如果存在保存的生成器的镜头或参考层上的某些内容，您将只能看到更改。"
+      },
+      "merge-up-title": "向上合并",
+      "layer-opacity-tooltip": {
+        "title": "更改参考层和Shot Generator层的透明度",
+        "description": "更改参考层和Shot Generator层的不透明度。您会注意到，如果将帧保存在Shot Generator中或更改了参考层上的内容，则可以看到差异。"
+      },
+      "sts-random": {
+        "title": "生成随机帧图像",
+        "description": "随机化一帧的图像生成器字符串"
+      },
+      "sts-input1": {
+        "title": "镜头说明",
+        "description": "描述镜头：例如平均镜头。 按Enter生成新框架。"
+      },
+      "sts-select": {
+        "title": "框架描述信息",
+        "description": "优化用于生成拍摄图像的数据。"
+      },
+      "sts-shots": {
+        "title": "生成框架图像",
+        "description": "单击以细化生成的拍摄图像的数据。 双击以将生成的图像帧用作参考层。"
+      },
+      "scene": "舞台",
+      "frame-rate": "帧频",
+      "show-in-finder-button": {
+        "title": "在文件夹中显示板",
+        "description": "单击以打开文件夹中的电路板图像。 如果您需要外部编辑器，则很有用。"
+      },
+      "show-in-finder-title": "在资料夹中开启"
+    },
+    "playback": {
+      "prev-scene-tooltip": {
+        "title": "上一个场景",
+        "description": "如果当前板位于场景的开始或结尾，它将返回一个场景。 否则，它将跳到当前场景的开始。"
+      },
+      "prev-board-tooltip": {
+        "title": "前一个绘板",
+        "description": "使用箭头快速在板之间切换以查看故事流程。"
+      },
+      "play-tooltip": {
+        "title": "开始/停止",
+        "description": "它将在自动播放与否之间切换。 默认的播放时间是每块板2秒钟或设置的时间。"
+      },
+      "next-board-tooltip": {
+        "title": "下一板",
+        "description": "使用箭头快速在板之间切换以查看故事流程。"
+      },
+      "next-scene-tooltip": {
+        "title": "下一个场景",
+        "description": "如果当前板位于场景的开始或结尾，它将向前跳一个场景。 否则，它将跳到当前场景的结尾。"
+      }
+    }
+  },
+  "shot-generator": {
+    "inspector": {
+      "inspected-world": {
+        "file": "文件",
+        "scene": "场景",
+        "ground": "地面",
+        "bg-color": "背景色",
+        "room": "房间",
+        "environment": "环境",
+        "ambient-light": "环境光",
+        "directional-light": "定向光",
+        "fog": "雾",
+        "grayscale": "灰度",
+        "shading-mode": "阴影模式"
+      },
+      "common": {
+        "object-creation-help": "如何为自定义对象创建3D模型",
+        "visible": "可见性",
+        "rotation": "旋转",
+        "intensity": "强度",
+        "tilt": "倾斜",
+        "distance": "距离",
+        "roll": "滚动",
+        "select-preset-name": "为预设指定名称：",
+        "proceed-button": "继续",
+        "height": "高度",
+        "tint-color": "淡色",
+        "search-models": "查找模型...",
+        "or": "或",
+        "select-file": "选择文件...",
+        "size": "大小尺寸",
+        "width": "宽度",
+        "length": "长度",
+        "depth": "深度",
+        "rotate-x": "旋转X",
+        "rotate-y": "旋转Y",
+        "rotate-z": "旋转Z",
+        "scale": "比例",
+        "opacity": "不透明度",
+        "yes": "好",
+        "no": "不",
+        "are-you-sure": "您确定吗？"
+      },
+      "inspected-element": {
+        "properties": "特性："
+      },
+      "camera": {
+        "fov": "F.O.V."
+      },
+      "character": {
+        "skinny": "瘦的",
+        "obese": "肥胖",
+        "muscular": "肌肉",
+        "head": "头部",
+        "drop-character": "将角色放到地板上",
+        "morphs": "改变图像"
+      },
+      "character-preset": {
+        "preset": "预设"
+      },
+      "hand-preset": {
+        "select-saving-hand": "选择要保存的手：",
+        "hand": "手",
+        "search-hand-pose": "找到手的姿势...",
+        "select-hand": "附加到",
+        "left-hand": "左手",
+        "right-hand": "右手",
+        "both-hands": "双手"
+      },
+      "pose-preset": {
+        "search-pose": "寻找姿势...",
+        "mirror-pose": "镜像姿势"
+      },
+      "attachables-inspector": {
+        "attached-to-bone": "附加到骨骼"
+      },
+      "object": {
+        "drop-object": "将物体放到地板上"
+      },
+      "image": {
+        "image-file": "图像文件",
+        "visible-to-camera": "相机可见"
+      },
+      "light": {
+        "angle": "角度",
+        "penumbra": "半影",
+        "decay": "分散"
+      },
+      "volume": {
+        "layer-image-files": "层图像文件",
+        "select-layer-images": "选择图像层",
+        "layers": "图层面板",
+        "color": "颜色"
+      }
+    },
+    "toolbar": {
+      "camera": {
+        "tooltip": {
+          "title": "添加相机",
+          "description": "将新摄像机添加到场景中。"
+        },
+        "title": "相机"
+      },
+      "object": {
+        "tooltip": {
+          "title": "添加对象",
+          "description": "添加一个新对象。 您可以在左侧更改属性。"
+        },
+        "title": "物体"
+      },
+      "character": {
+        "tooltip": {
+          "title": "添加字符",
+          "description": "在场景中添加一个新角色。 您可以通过移动控制球来更改姿势。"
+        },
+        "title": "人物"
+      },
+      "light": {
+        "tooltip": {
+          "title": "加光",
+          "description": "向场景添加聚光灯。"
+        },
+        "title": "灯光"
+      },
+      "volume": {
+        "tooltip": {
+          "title": "增加音量",
+          "description": "增加雨，雾，爆炸等体积。"
+        },
+        "title": "音量"
+      },
+      "image": {
+        "tooltip": {
+          "title": "添加图片",
+          "description": "添加图像。 您可以在左侧的属性菜单中设置自定义图像。 这对于链接到场景中的图像或海报或遮罩画非常有用。"
+        },
+        "title": "图片"
+      },
+      "open-in-vr": {
+        "tooltip": {
+          "title": "在VR中打开",
+          "description": "单击此处查看您需要在Oculus Quest等VR浏览器中输入的URL。"
+        },
+        "title": "在VR中打开"
+      },
+      "save-to-board": {
+        "tooltip": {
+          "title": "保存到绘板",
+          "description": "将当前帧保存到当前的Storyboard。 保存后，您可以关闭窗口。"
+        },
+        "title": "保存到绘板"
+      },
+      "insert-as-new-board": {
+        "tooltip": {
+          "title": "添加为新板",
+          "description": "在当前故事板之后添加当前框架。 插入新板后，您可以关闭此窗口，或继续添加新框架。"
+        },
+        "title": "添加为新板"
+      },
+      "popup": {
+        "open-vr": "要观看，请打开",
+        "scary-warning": "如果看到可怕的警告，不要害怕\n由于VR从该计算机启动不受信任的服务器的事实。\n在Oculus浏览器中，单击“高级”，然后单击“访问站点（不安全）” 接受自签名证书。\n学习更多关于 {{link}}"
+      }
+    },
+    "camera-panel": {
+      "roll-camera": {
+        "title": "相机旋转角度",
+        "description": "围绕旋转轴旋转摄像机以创建荷兰（dutch）角"
+      },
+      "pan-tilt-camera": {
+        "title": "平移/倾斜摄像机角度",
+        "description": "通过单击和拖动此控件，或在3D视口中拖动和拖动，来移动或倾斜相机。单击和拖动时，也可以移动。"
+      },
+      "move-camera": {
+        "title": "移动相机",
+        "description": "向前，向后，向左和向右移动摄像机。移动摄像机时也可以平移。按住Shift键可以更快地移动摄像机。"
+      },
+      "elevate-camera": {
+        "title": "举起相机",
+        "description": "上下移动相机。您可以按住shift键以更快地升高相机。"
+      },
+      "change-camera-lens": {
+        "title": "更换相机镜头（变焦）",
+        "description": "更改摄像机镜头的视野。如果单击括号，将在标准定焦镜头之间切换。"
+      },
+      "auto-shot-framing": {
+        "title": "自动拍摄构图",
+        "description": "选择一个字符，然后选择“ Shot Size”和/或“ Camera Angle”以自动定位相机。"
+      },
+      "roll": "转动",
+      "pan": "平移",
+      "tilt": "倾斜",
+      "move": "移动",
+      "elevate": "提升",
+      "lens": "镜头",
+      "open-shot-explorer": "打开 Shot Explorer"
+    },
+    "board-inspector": {
+      "dialogue": "对白",
+      "action": "动作",
+      "notes": "文本"
+    },
+    "camera-inspector": {
+      "camera": "相机",
+      "change-active-camera": {
+        "title": "更换活动相机",
+        "description": "如果场景中有多个摄像机，则可以更改框架的活动摄像机。"
+      }
+    },
+    "guides-inspector": {
+      "guides": "导游"
+    }
+  },
+  "shot-explorer": {
+    "insert-camera": "新增相机",
+    "characters-warning": "舞台上必须至少有一个嵌入式角色",
+    "on": "上"
+  },
+  "xr": {
+    "controls": {
+      "width": "宽度",
+      "height": "长度",
+      "depth": "深度",
+      "size": "尺寸",
+      "opacity": "不透明度",
+      "scale": "比例",
+      "head": "头",
+      "morph-target": "变形目标",
+      "skinny": "瘦的",
+      "muscular": "肌肉",
+      "obese": "肥胖",
+      "intensity": "Intensity",
+      "angle": "角度",
+      "distance": "距离",
+      "penumbra": "半影",
+      "visible-to-camera": "对摄像机可见",
+      "set-visible-to-camera": "设置为对相机可见",
+      "active-camera": "活动相机",
+      "set-active-camera": "设置为活动相机",
+      "pose-capture": "捕捉姿势",
+      "left": "左",
+      "both": "两",
+      "right": "是的",
+      "objects": "对象"
+    },
+    "boards": {
+      "sg-has-unsaved-changed": "Shot Generator具有未保存的更改。",
+      "boards.overwrite-with-vr-changes": "您确定要覆盖VR更改吗？",
+      "changes-not-saved": "尚未保存更改。",
+      "change-without-saving": "您确定要不保存就更改板吗？",
+      "ok": "OK",
+      "cancel": "取消",
+      "settings": "环境",
+      "show-cameras": "显示相机"
+    }
+  },
+  "preferences": {
+    "title": "设置",
+    "restart-hint": "请重新启动Storyboarder以应用更改。",
+    "show-tooltips": "显示工具提示",
+    "save-automatically": "自动保存项目",
+    "saving-hint": "如果禁用，请使用'File> Save'保存项目。提醒：对图像的更改将自动保存。",
+    "force-psd-reload": "当Storyboarder重新获得焦点时，强制扫描的PSD重新加载",
+    "psd-reload-hint": "如果使用网络驱动器，则启用。\n在\nStoryboarder和其他应用程序之间切换时，不能提高性能。禁用时，Storyboarder \n仅在后台查看PSD文件（不支持所有计算机）。",
+    "default-timing": "默认绘板时间（以毫秒为单位）",
+    "external-psd-editor": "外部PSD编辑器",
+    "psd-editor-hint": "选择一个应用程序（例如：.exe或.app）。默认情况下，这是与您的操作系统关联的应用程序，用于打开PSD文件。\n要重置为默认值，请取消文件请求。",
+    "reveal-keymap-file": "显示关键图文件",
+    "reveal-keymap-file-hint": "您可以通过在源编辑器（例如Atom或VS Code）中编辑Keymap JSON文件，来选择将哪些键绑定到Storyboarder命令。",
+    "show-diagnostics": "显示诊断",
+    "show-diagnostics-hint": "显示Storyboarder在一段时间内每秒可以运行的速度，以每秒帧数为单位。对于解决问题很有用。",
+    "line-delay": "线路延迟",
+    "line-delay-hint": "在此期间停止绘制以进入直线模式。<br/> \n按住<kbd> Shift </ kbd>绘制直线。<br/>按住<kbd> Alt / Option </ kbd>，同时绘制直线以对齐角。",
+    "notifications": "通知",
+    "show-notifications": "启用 通知",
+    "aspirational-message": "显示每小时确认信息",
+    "notifications-line-mileage": "允许线路里程注释",
+    "sounds": "音效",
+    "sounds-hint": "声音可能会使某些计算机上的Storyboarder变慢。<br /> 您可以将其关闭以提高性能。",
+    "drawing-sound-effect": "绘图声音效果",
+    "drawing-melodies": "绘画旋律",
+    "ui-sound-effect": "用户界面的声音效果",
+    "enable-high-quality-audio": "启用 高质量音频",
+    "performance-enhancements": "性能增强",
+    "performance-enhancements-hint": "如果绘图缓慢，请禁用。",
+    "high-quality-drawing-engine": "高质量绘图引擎",
+    "high-quality-drawing-engine-hint": "启用后，将使用具有更高级笔刷的更好的绘图引擎。禁用时，将使用效率模式的（更快）绘图引擎。",
+    "languages": "语言",
+    "languages-hint": "选择一种语言或添加您自己的语言",
+    "open-language-editor": "开放语言编辑器",
+    "sign-out": "退出",
+    "sign-out-hint": "您已登录Storyboarders.com帐户",
+    "thanks-for-support": "感谢支持Storyboarder！",
+    "additional-features-for-support": "以下是支持者的一些其他功能。",
+    "add-watermark": "为导出的图像和视频添加水印。",
+    "custom-watermark": "自定义水印图像（默认为空白）"
+  },
+  "print-window": {
+    "pdf-title": "打印",
+    "pdf-intro": "您的情节提要板将按照您喜欢的方式进行打印。 选择一种格式并直接打印或导出为PDF。",
+    "worksheet-title": "打印工作表",
+    "worksheet-intro": "在此印刷纸上绘制草图板，然后将其神奇地重新导入到情节提要文件中！",
+    "paper-size": "纸张尺寸",
+    "letter": "信封",
+    "format": "A4",
+    "paper-orientation-label": "页面方向",
+    "paper-orientation-landscape": "风景画",
+    "paper-orientation-portrait": "肖像",
+    "columns-label": "列",
+    "rows-label": "行",
+    "spacing-label": "间隔",
+    "copies-label": "份数",
+    "print-button": "打印！",
+    "pdf-button": "导出PDF",
+    "prev_button": "上一个",
+    "page-info": "页",
+    "next_button": "下一个"
+  },
+  "new-window": {
+    "creation-title": "有两种创建新情节提要的方法。 你更倾向哪个？",
+    "script-based-title": "通过脚本创建",
+    "script-based-description": "如果您正在使用脚本编写故事，则可以指定\n脚本，Storyboarder会帮助您为每个场景登机，并在登机时向您显示脚本。 登机时随时更改\n脚本。 脚本可以是源泉（.fountain）\n最终稿（.fdx）格式。",
+    "blank-title": "空白情节提要",
+    "blank-description": "您可以简单地创建一个完全空白的情节提要。只是做绘板和涂鸦。\n如果您只是刚开始，为什么不创建一个新的空白情节提要有趣呢？",
+    "new-script": "新脚本...",
+    "new-blank": "新绘板...",
+    "aspect-title": "长宽比是多少？",
+    "aspect-ultrawide": "超宽",
+    "aspect-doublewide": "双倍宽",
+    "aspect-wide": "宽",
+    "aspect-hd": "HD",
+    "aspect-vertical-hd": "垂直 HD",
+    "aspect-square": "正方",
+    "aspect-old": "老式",
+    "aspect-description": "“宽高比决定了面板的尺寸。\n\n2.39：1是最宽的面板，就像在电影中看到的一样。\n\n16：9是在现代电视上看到的东西。\n4：3是您的流行音乐人在屏幕闪烁且编程有益时回首的内容。\n\n请不要选择垂直高清。我们把它作为一个玩笑而添加。"
+  }
 }
