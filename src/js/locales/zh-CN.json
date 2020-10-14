@@ -413,7 +413,7 @@
         "distance": "距离",
         "roll": "滚动",
         "select-preset-name": "为预设指定名称：",
-        "proceed-button": "继续",
+        "add-preset": "添加",
         "height": "高度",
         "tint-color": "淡色",
         "search-models": "查找模型...",
@@ -464,6 +464,13 @@
       },
       "attachables-inspector": {
         "attached-to-bone": "附加到骨骼"
+      },
+      "hair": {
+        "no-value": "没有头发"
+      },
+      "emotions": {
+        "no-value": "没有表情",
+        "search-list-label": "搜索情绪 …"
       },
       "object": {
         "drop-object": "将物体放到地板上"
