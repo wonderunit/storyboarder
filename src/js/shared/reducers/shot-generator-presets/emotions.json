@@ -34,5 +34,126 @@
     "name": "Neutral",
     "keywords": "Neutral",
     "priority": 0
+  },
+
+  "1f7bbfb4-dc48-45a8-8a4a-fc50eb3e6eed": {
+    "id": "1f7bbfb4-dc48-45a8-8a4a-fc50eb3e6eed",
+    "name": "Anger (Mouth Open)",
+    "keywords": "anger mouth open",
+    "priority": 0
+  },
+  "b9496da5-ade5-493f-ad59-355418b4549b": {
+    "id": "b9496da5-ade5-493f-ad59-355418b4549b",
+    "name": "Anger (Mouth Closed)",
+    "keywords": "anger mouth closed",
+    "priority": 0
+  },
+  "b44845e0-b425-4eb2-b219-a198c92bfe9a": {
+    "id": "b44845e0-b425-4eb2-b219-a198c92bfe9a",
+    "name": "Anger (Eyes Open)",
+    "keywords": "anger eyes open",
+    "priority": 0
+  },
+  "f521c2c3-0341-4a70-b232-aab1ce004735": {
+    "id": "f521c2c3-0341-4a70-b232-aab1ce004735",
+    "name": "Anger (Eyes Closed)",
+    "keywords": "anger eyes closed",
+    "priority": 0
+  },
+  "803fcd54-0515-42ee-8d76-ee30a1cddbe2": {
+    "id": "803fcd54-0515-42ee-8d76-ee30a1cddbe2",
+    "name": "Disgust (Mouth Open)",
+    "keywords": "disgust mouth open",
+    "priority": 0
+  },
+  "074f2f63-7a30-4dfc-8337-96acc3ea4a32": {
+    "id": "074f2f63-7a30-4dfc-8337-96acc3ea4a32",
+    "name": "Disgust (Mouth Closed)",
+    "keywords": "disgust mouth closed",
+    "priority": 0
+  },
+  "35165b90-91df-4bc9-a8a9-b3912c1a722f": {
+    "id": "35165b90-91df-4bc9-a8a9-b3912c1a722f",
+    "name": "Disgust (Eyes Open)",
+    "keywords": "disgust eyes open",
+    "priority": 0
+  },
+  "8e8fd0e8-4f78-4de7-9da3-870a05f3be6d": {
+    "id": "8e8fd0e8-4f78-4de7-9da3-870a05f3be6d",
+    "name": "Disgust (Eyes Closed)",
+    "keywords": "disgust eyes closed",
+    "priority": 0
+  },
+  "f677d64c-9596-44b3-97a4-35c80858de07": {
+    "id": "f677d64c-9596-44b3-97a4-35c80858de07",
+    "name": "Happiness (Mouth Open)",
+    "keywords": "happiness mouth open",
+    "priority": 0
+  },
+  "10f61fa3-6929-42cb-ab09-14ca36ac3dc8": {
+    "id": "10f61fa3-6929-42cb-ab09-14ca36ac3dc8",
+    "name": "Happiness (Mouth Closed)",
+    "keywords": "happiness mouth closed",
+    "priority": 0
+  },
+  "06eab4b9-7135-44c6-bafb-094068a1cc4e": {
+    "id": "06eab4b9-7135-44c6-bafb-094068a1cc4e",
+    "name": "Happiness (Eyes Open)",
+    "keywords": "happiness eyes open",
+    "priority": 0
+  },
+  "a09aec3b-26f9-4de1-9704-5681045bae8a": {
+    "id": "a09aec3b-26f9-4de1-9704-5681045bae8a",
+    "name": "Happiness (Eyes Closed)",
+    "keywords": "happiness eyes closed",
+    "priority": 0
+  },
+  "189efe23-09ef-4364-9138-dd7a8573c153": {
+    "id": "189efe23-09ef-4364-9138-dd7a8573c153",
+    "name": "Sadness (Mouth Open)",
+    "keywords": "sadness mouth open",
+    "priority": 0
+  },
+  "65150bc6-8683-4545-8980-4d020cc12095": {
+    "id": "65150bc6-8683-4545-8980-4d020cc12095",
+    "name": "Sadness (Mouth Closed)",
+    "keywords": "sadness mouth closed",
+    "priority": 0
+  },
+  "1a063a1e-3157-4530-aa5b-a1b62127f47d": {
+    "id": "1a063a1e-3157-4530-aa5b-a1b62127f47d",
+    "name": "Sadness (Eyes Open)",
+    "keywords": "sadness eyes open",
+    "priority": 0
+  },
+  "b6d5edc3-163b-48a3-bb86-65c6387d9fcd": {
+    "id": "b6d5edc3-163b-48a3-bb86-65c6387d9fcd",
+    "name": "Sadness (Eyes Closed)",
+    "keywords": "sadness eyes closed",
+    "priority": 0
+  },
+  "1f90a1ca-8f8e-4530-96ed-f94fda48023d": {
+    "id": "1f90a1ca-8f8e-4530-96ed-f94fda48023d",
+    "name": "Neutral (Mouth Open)",
+    "keywords": "neutral mouth open",
+    "priority": 0
+  },
+  "f33d2700-1fef-4155-9ba0-500cc61a6b84": {
+    "id": "f33d2700-1fef-4155-9ba0-500cc61a6b84",
+    "name": "Neutral (Mouth Closed)",
+    "keywords": "neutral mouth closed",
+    "priority": 0
+  },
+  "ec443cd6-6273-44a7-929b-4d41ffa43365": {
+    "id": "ec443cd6-6273-44a7-929b-4d41ffa43365",
+    "name": "Neutral (Eyes Open)",
+    "keywords": "neutral eyes open",
+    "priority": 0
+  },
+  "6b8f08d1-fc41-43ce-a04e-ff7cf62a5de3": {
+    "id": "6b8f08d1-fc41-43ce-a04e-ff7cf62a5de3",
+    "name": "Neutral (Eyes Closed)",
+    "keywords": "neutral eyes closed",
+    "priority": 0
   }
 }
