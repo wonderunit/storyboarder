@@ -32,7 +32,7 @@ const i18nextOptions = {
         useSuspense: true,
         wait: false
     },
-    fallbackLng:  config.getSettingByKey('defaultLanguage'),
+    fallbackLng:  [config.getSettingByKey('defaultLanguage'), 'en-US'],
     backend: {
         loadPath: getLoadPath,
 
