@@ -12,10 +12,10 @@ const fs = require('fs-extra')
 const { useMemoOne } = require('use-memo-one')
 const { Suspense } = React = require('react')
 const ReactDOM = require('react-dom')
-const { Provider } = require('react-redux')
+const { Provider, useSelector } = require('react-redux')
 const { createStore } = require('redux')
 const { createAsset, useAsset } = require('use-asset')
-const { useLoader } = require('react-three-fiber')
+const { useLoader, render } = require('react-three-fiber')
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader')
 
 const { reducer, initialState } = require('../../../src/js/shared/reducers/shot-generator')
@@ -27,6 +27,8 @@ const getAssetPath = createAssetPathResolver(
   window.__dirname
 )
 
+const ModelThumbnailRenderer = require('./ModelThumbnailRenderer').default
+const ThumbnailRenderer = require('../../../src/js/shot-generator/utils/ThumbnailRenderer').default
 const EmotionPresetThumbnailRenderer = require('../../../src/js/shot-generator/components/InspectedElement/EmotionInspector/thumbnail-renderer').default
 const systemEmotionPresets = require('../../../src/js/shared/reducers/shot-generator-presets/emotions.json')
 
@@ -38,7 +40,13 @@ const textureLoader = filepath =>
     (resolve, reject) => new THREE.TextureLoader().load(filepath, resolve, null, reject)
   )
 
-const thumbnailAsset = createAsset(async (thumbnailRenderer, filepath, type = 'image/jpg') => {
+// TODO switch to useLoader or use-asset for caching?
+const gltfLoader = filepath =>
+  new Promise(
+    (resolve, reject) => new GLTFLoader().load(filepath, resolve, null, reject)
+  )
+
+const emotionThumbnailAsset = createAsset(async (thumbnailRenderer, filepath, type = 'image/jpg') => {
   const faceTexture = await textureLoader(filepath)
   thumbnailRenderer.render({ faceTexture })
   let result = thumbnailRenderer.toDataURL(type)
@@ -46,9 +54,18 @@ const thumbnailAsset = createAsset(async (thumbnailRenderer, filepath, type = 'i
   return result
 })
 
-const Item = ({ thumbnailRenderer, name, filepath }) => {
-  const src = thumbnailAsset.read(thumbnailRenderer, filepath)
+const modelThumbnailAsset = createAsset(async (thumbnailRenderer, filepath, loadable, type = 'image/jpg') => {
+  let modelData
+  if (loadable.id != 'box') {
+    modelData = await gltfLoader(filepath)
+  }
+  thumbnailRenderer.render({ model: loadable, modelData })
+  let result = thumbnailRenderer.toDataURL(type)
+  thumbnailRenderer.clear()
+  return result
+})
 
+const Image = ({ src, name }) => {
   return <img
     src={src}
     width={68}
@@ -60,38 +77,127 @@ const Item = ({ thumbnailRenderer, name, filepath }) => {
 const TestView = () => {
   const characterGltf = useLoader(GLTFLoader, getAssetPath('character', 'adult-male.glb'))
 
-  const emotionPresetThumbnailRenderer = useMemoOne(() => new EmotionPresetThumbnailRenderer({ characterGltf }))
+  const modelThumbnailRenderer = useMemoOne(() => new ModelThumbnailRenderer(), [])
+  const emotionPresetThumbnailRenderer = useMemoOne(() => new EmotionPresetThumbnailRenderer({ characterGltf }), [])
+
+  return (
+    <Suspense fallback={<span>Rendering ...</span>}>
+      <ThumbnailsView
+        modelThumbnailRenderer={modelThumbnailRenderer}
+        emotionPresetThumbnailRenderer={emotionPresetThumbnailRenderer}
+        />
+    </Suspense>
+  )
+}
+
+const Item = ({ modelThumbnailRenderer, loadable }) => {
+  const src = modelThumbnailAsset.read(
+    modelThumbnailRenderer,
+    getAssetPath(loadable.type, `${loadable.id}.glb`),
+    loadable
+  )
+
+  return (
+    <Image
+      src={src}
+      name={loadable.name}>
+    </Image>
+  )
+}
+
+const ModelThumbnailsView = ({ modelThumbnailRenderer }) => {
+  const allowedTypes = ['object', 'attachable']
+  const models = useSelector(state => Object.values(state.models).filter(({ type }) => allowedTypes.includes(type)))
 
   const onSaveClick = event => {
-    for (let emotion of Object.values(systemEmotionPresets)) {
-      let textureFilepath = getAssetPath('emotion', `${emotion.id}-texture.png`)
-      let thumbnailFilepath = getAssetPath('emotion', `${emotion.id}-thumbnail.jpg`)
-      let cached = thumbnailAsset.read(emotionPresetThumbnailRenderer, textureFilepath)
+    for (let model of models) {
+      let thumbnailFilepath = getAssetPath(model.type, `${model.id}.jpg`)
+      let cached = modelThumbnailAsset.read(
+        modelThumbnailRenderer,
+        getAssetPath(model.type, `${model.id}.glb`),
+        model
+      )
       console.log(`writing ${thumbnailFilepath}`)
+      // TODO fs.ensureDirSync(path.dirname(thumbnailFilepath))
       fs.writeFileSync(thumbnailFilepath, asBase64(cached), 'base64')
     }
   }
 
+  const asItem = loadable => (
+    <Suspense
+      key={loadable.id}
+      fallback={<span>Rendering ...</span>}
+    >
+      <Item
+        modelThumbnailRenderer={modelThumbnailRenderer}
+        loadable={loadable}
+      />
+    </Suspense>
+  )
+
+  return <>
+    <div>
+    {
+      models.filter(o => o.type === 'object').map(asItem)
+    }
+    </div>
+    <div>
+    {
+      models.filter(o => o.type === 'attachable').map(asItem)
+    }
+    </div>
+    <div>
+      <button
+        onClick={onSaveClick}
+        style={{ fontSize: 14, padding: 10 }}>
+          Export Model Thumbnails
+        </button>
+    </div>
+  </>
+}
+
+const EmotionThumbnailsView = ({ emotionPresetThumbnailRenderer }) => {
+  const onSaveClick = event => {
+    for (let emotion of Object.values(systemEmotionPresets)) {
+      let textureFilepath = getAssetPath('emotion', `${emotion.id}-texture.png`)
+      let thumbnailFilepath = getAssetPath('emotion', `${emotion.id}-thumbnail.jpg`)
+      let cached = emotionThumbnailAsset.read(emotionPresetThumbnailRenderer, textureFilepath)
+      console.log(`writing ${thumbnailFilepath}`)
+      // TODO fs.ensureDirSync(path.dirname(thumbnailFilepath))
+      // fs.writeFileSync(thumbnailFilepath, asBase64(cached), 'base64')
+    }
+  }
+
+  return <>
+    <div>
+      {
+        Object.values(systemEmotionPresets).map(emotion =>
+          <Image
+            key={emotion.id}
+            src={emotionThumbnailAsset.read(emotionPresetThumbnailRenderer, getAssetPath('emotion', `${emotion.id}-texture.png`))}
+            name={emotion.name}
+          />
+        )
+      }
+    </div>
+    <div>
+      <button
+        onClick={onSaveClick}
+        style={{ fontSize: 14, padding: 10 }}>
+          Export Emotion Thumbnails
+        </button>
+    </div>
+  </>
+}
+
+const ThumbnailsView = ({ modelThumbnailRenderer, emotionPresetThumbnailRenderer }) => {
   return (
     <>
-      <div>
-        {
-          Object.values(systemEmotionPresets).map(emotion =>
-            <Item
-              key={emotion.id}
-              thumbnailRenderer={emotionPresetThumbnailRenderer}
-              name={emotion.name}
-              filepath={getAssetPath('emotion', `${emotion.id}-texture.png`)}
-            />
-          )
-        }
+      <div style={{ marginBottom: 10 }}>
+        <ModelThumbnailsView modelThumbnailRenderer={modelThumbnailRenderer} />
       </div>
-      <div>
-        <button
-          onClick={onSaveClick}
-          style={{ fontSize: 14, padding: 10 }}>
-            Export Thumbnails
-          </button>
+      <div style={{ marginBottom: 10 }}>
+        <EmotionThumbnailsView emotionPresetThumbnailRenderer={emotionPresetThumbnailRenderer} />
       </div>
     </>
   )
