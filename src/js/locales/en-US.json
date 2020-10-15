@@ -459,6 +459,9 @@
         "right-hand": "Right hand",
         "both-hands": "Both hands"
       },
+			"hair-preset": {
+			  "search-hair": "Search Hair …"
+			},
       "pose-preset": {
         "search-pose": "Search for a pose …",
         "mirror-pose": "Mirror pose"

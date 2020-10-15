@@ -237,7 +237,7 @@ const HairInspector = connect(
           <div className="thumbnail-search column">
             <div className="row" style={{ padding: '6px 0' }}>
               <SearchList
-                label="Search Hair …"
+                label={t("shot-generator.inspector.hair-preset.search-hair")}
                 list={searchList}
                 onSearch={setResults}
               />

@@ -459,6 +459,9 @@
 			  "right-hand": "Правая рука",
 			  "both-hands": "Обе руки"
 			},
+			"hair-preset": {
+			  "search-hair": "Найти волосы …"
+			},
 			"pose-preset": {
 			  "search-pose": "Найти позы …",
 			  "mirror-pose": "Зеркально отобразить позу"
