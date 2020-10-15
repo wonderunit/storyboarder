@@ -19,7 +19,7 @@ let _uvC = new THREE.Vector2();
 let _vA = new THREE.Vector3();
 let _vB = new THREE.Vector3();
 let _vC = new THREE.Vector3();
-const applyMorph = (_vA, _vB, _vC, morphPosition, morphInfluences) => {
+const applyMorph = (_vA, _vB, _vC, morphPosition, morphInfluences, a, b, c, morphTargetsRelative) => {
     _morphA.set( 0, 0, 0 );
     _morphB.set( 0, 0, 0 );
     _morphC.set( 0, 0, 0 );
@@ -135,6 +135,7 @@ class FaceMesh {
         let uv2 = geometry.attributes.uv2;
         let position = geometry.attributes.position
         let morphPosition = geometry.morphAttributes.position;
+        let morphTargetsRelative = geometry.morphTargetsRelative;
 		let start = Math.max( 0, drawRange.start );
         let end = Math.min( index.count, ( drawRange.start + drawRange.count ) );
 
@@ -161,7 +162,7 @@ class FaceMesh {
             var morphInfluences = object.morphTargetInfluences;
             //#region Apply morph 
             if( morphInfluences && morphPosition)
-                applyMorph(_vA, _vB, _vC, morphPosition, morphInfluences)
+                applyMorph(_vA, _vB, _vC, morphPosition, morphInfluences, a, b, c, morphTargetsRelative)
             ////#endregion
 
             object.boneTransform(a, _vA)
