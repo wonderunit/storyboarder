@@ -218,12 +218,12 @@ class FaceMesh {
         let headBone = this.skinnedMesh.skeleton.getBoneByName("Head")
         let leftEye = this.skinnedMesh.skeleton.getBoneByName("LeftEye")
         let rightEye = this.skinnedMesh.skeleton.getBoneByName("RightEye")
+        this.skinnedMesh.updateMatrixWorld()
         let rightEyePosition = rightEye.worldPosition()
         let leftEyePosition = leftEye.worldPosition()
         let headPosition = headBone.worldPosition()
         let position = getMidpoint(headPosition, leftEyePosition, rightEyePosition)
         let intersect = this.facesSearch(position, headBone)
-       
         if(!intersect) return
         let uv = intersect.uv
         let meshPos = {
