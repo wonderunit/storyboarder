@@ -53,7 +53,7 @@ const App = () => {
   }, [])
 
   if (!connection) {
-    return <ProgressIntro value={0} delay={300} msg={'Connecting...'} />
+    return <ProgressIntro value={0} delay={300} msg={'Connecting…'} />
   }
 
   return (
