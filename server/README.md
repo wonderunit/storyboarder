@@ -1,10 +1,6 @@
 # P2P Shot Generator Server
 
-## .env
-
-TODO
-
-## HTTPS Setup
+## Running the Server Locally with HTTPS
 
 To test locally via HTTPS without annoying warnings, you'll need to generate and install a local certificate authority and a locally-trusted development certificate. `mkcert` makes this pretty easy:
 
@@ -17,25 +13,34 @@ Then, from the Storyboarder root source folder, run:
 
 Now you'll have `server/cert.pem` and `server/key.pem`, which the server will use automatically when in `development` mode.
 
-By default, all the apps (Shot Generator, AR, XR) connects to the `stbr.link`, but not to the localhost.
-If you want to change it to the localhost, then change the link in the `root/src/js/shared/network/config.js`
+By default, all the apps (Shot Generator, AR, XR) connect to `https://stbr.link`.
+
+To connect to a local server instead, temporarily change `STBR_HOST` in `src/js/shared/network/config.js` to `localhost`.
 
 ## Usage
 
 From the Storyboarder root source folder:
 
+    cd server
     npm install
-    npm run build
-    cd server/dist
-    node ./server.js
+    PORT=443 npm start
+
+If a `server/.env` file exists, it can be used to define the `PORT` environment variable, e.g.:
+
+    PORT=443
 
 or, from root, to run both Storyboarder and the P2P server in development mode
 
     npm start
 
+To build to `server/dist/server.js`:
+
+    cd server
+    npm install
+    npm run build
+
 ## Deploy
 
-0. Don't forget to install all the node modules in the server folder
-1. Build whole app, using `npm run build` in the root directory
-6. Run `npm run deploy:prod` in the root directory to deploy server to the stbr.link
-
+- Don't forget to install all the node modules in the server folder
+- Build whole app, using `npm run build` in the root directory
+- Run `npm run deploy:prod` in the root directory to deploy server to the stbr.link
