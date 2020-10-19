@@ -68,12 +68,20 @@ class ThumbnailRenderer {
     return this.renderer.domElement.toDataURL(...args)
   }
 
+  toBase64 (...args) {
+    return this.toDataURL(...args).replace(/^data:image\/\w+;base64,/, '')
+  }
+
   getGroup () {
     return this.group
   }
 
   getCamera () {
     return this.camera
+  }
+
+  dispose () {
+    this.renderer.dispose()
   }
 }
 

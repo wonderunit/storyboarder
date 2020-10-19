@@ -17,6 +17,9 @@ import HandInspector from './HandInspector/HandPresetsEditor/index'
 import PosePresetsInspector from './PosePresetsInspector/index'
 import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
+
+import EmotionInspector from './EmotionInspector/index'
+
 import HairInspector from './HairInspector/index'
 
 import Icon from '../Icon'
@@ -66,6 +69,15 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     }
   }, [selectedType])
 
+  const emotionsTab = useMemo(() => {
+    if (!isChar(selectedType)) return nullTab
+
+    return {
+      tab: <Tab><Icon src='icon-tab-emotions'/></Tab>,
+      panel: <Panel><EmotionInspector/></Panel>
+    }
+  }, [selectedType])
+
   const hairInspectorTab = useMemo(() => {
     if (!isChar(selectedType)) return nullTab
 
@@ -96,7 +108,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
               showModal(false)
               updateObject(id, { displayName: changedName, name: changedName })
             }}>
-                {t("shot-generator.inspector.common.proceed-button")}
+                {t("shot-generator.inspector.common.add-preset")}
           </button>
       </div>
       </Modal> }
@@ -110,6 +122,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           {charPoseTab.tab}
           {modelTab.tab}
           {attachmentTab.tab}
+          {emotionsTab.tab}
           {hairInspectorTab.tab}
         </div>
 
@@ -119,6 +132,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           {charPoseTab.panel}
           {modelTab.panel}
           {attachmentTab.panel}
+          {emotionsTab.panel}
           {hairInspectorTab.panel}
         </div>
       </Tabs>

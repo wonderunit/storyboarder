@@ -9,17 +9,30 @@ import {
 } from '../../../utils/InspectorElementsSettings'
 import Image from '../../Image'
 
+const DeleteButton = ({ onPointerUp }) => {
+  return <a
+    className={'button__delete invisible group-hover:visible'}
+    href="#"
+    onPointerUp={onPointerUp}
+  >X</a>
+}
+
 const GridItem = React.memo(
   ({
     style,
     data,
     ...itemData
   }) => {
-    const { title, src, isSelected } = data
+    const { title, src, isSelected, onDelete } = data
 
     const onPointerUp = event => itemData.onSelect(data)
 
-    const className = classNames('thumbnail-search__item', {
+    const onDeletePointerUp = event => {
+      event.stopPropagation()
+      onDelete(data)
+    }
+
+    const className = classNames('group', 'thumbnail-search__item', {
       'thumbnail-search__item--selected': isSelected
     })
 
@@ -31,7 +44,18 @@ const GridItem = React.memo(
         className={className}
         onPointerUp={onPointerUp}
         title={title}
+        style={{ position: 'relative '}}
       >
+        {
+          onDelete &&
+            <div
+              style={{ position: 'absolute', right: GUTTER_SIZE }}
+            >
+              <DeleteButton
+                onPointerUp={onDeletePointerUp}
+              />
+            </div>
+        }
         <div style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}>
           { src && <Image src={src} className="thumbnail" /> }
         </div>

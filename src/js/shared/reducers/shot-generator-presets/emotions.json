@@ -1,0 +1,38 @@
+{
+  "27934E27-CB0C-40EF-B72C-5A939DA3BFB3": {
+    "id": "27934E27-CB0C-40EF-B72C-5A939DA3BFB3",
+    "name": "Joker",
+    "keywords": "Joker",
+    "priority": 0
+  },
+  "3287C85D-2DD7-42E5-BCA4-3186B39A713A": {
+    "id": "3287C85D-2DD7-42E5-BCA4-3186B39A713A",
+    "name": "Angry",
+    "keywords": "Angry",
+    "priority": 0
+  },
+  "1FD9B63F-F2EC-4F43-9CFB-61B2997F263C": {
+    "id": "1FD9B63F-F2EC-4F43-9CFB-61B2997F263C",
+    "name": "Cry",
+    "keywords": "Cry",
+    "priority": 0
+  },
+  "9AA20E02-E1B1-45B4-A31B-B40771B68A8A": {
+    "id": "9AA20E02-E1B1-45B4-A31B-B40771B68A8A",
+    "name": "Dead",
+    "keywords": "Dead",
+    "priority": 0
+  },
+  "86D4CB7B-18F2-4DB3-95BC-A7A23FB168B1": {
+    "id": "86D4CB7B-18F2-4DB3-95BC-A7A23FB168B1",
+    "name": "Garold",
+    "keywords": "Garold",
+    "priority": 0
+  },
+  "2D8A6BDA-DF79-471B-B798-64DDF079683E": {
+    "id": "2D8A6BDA-DF79-471B-B798-64DDF079683E",
+    "name": "Neutral",
+    "keywords": "Neutral",
+    "priority": 0
+  }
+}

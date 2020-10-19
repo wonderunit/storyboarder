@@ -9,14 +9,25 @@ const VirtualCamera = require('../components/VirtualCamera')
 
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
+const FaceMesh = require('../../../shot-generator/components/Three/Helpers/FaceMesh').default
 
-const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton }) => {
+const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton, texture }) => {
+    const faceMesh = useRef(null)
+    function getFaceMesh () {
+      if (faceMesh.current === null) {
+        faceMesh.current = new FaceMesh()
+      }
+      return faceMesh.current
+    }
+
     const [ready, setReady] = useState(false)
+    const { gl } = useThree()
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
       }
     )
+
     useEffect(() => {
       return () => {
         ref.current.remove(BonesHelper.getInstance())
@@ -82,15 +93,15 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
-
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
-
+      
       let armature = scene.getObjectByProperty("type", "Bone").parent
       let originalHeight
       if (isUserModel(sceneObject.model)) {
-            originalHeight = 1
+        originalHeight = 1
       } else {
+        getFaceMesh().setSkinnedMesh(lod, gl)
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
@@ -213,6 +224,15 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
         
       }
     }, [lod, isSelected, ready])
+
+    useEffect(() => {      
+      if(!skeleton) return
+      if(!texture) {
+        getFaceMesh().resetTexture()
+        return
+      }
+      getFaceMesh().draw(texture)
+    }, [texture, lod])
   
     const { x, y, z, visible, rotation, locked } = sceneObject
 
