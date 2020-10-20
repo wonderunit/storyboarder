@@ -15,7 +15,7 @@ const ReactDOM = require('react-dom')
 const { Provider, useSelector } = require('react-redux')
 const { createStore } = require('redux')
 const { createAsset, useAsset } = require('use-asset')
-const { useLoader, render } = require('react-three-fiber')
+const { useLoader } = require('react-three-fiber')
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader')
 
 const { reducer, initialState } = require('../../../src/js/shared/reducers/shot-generator')
@@ -28,7 +28,6 @@ const getAssetPath = createAssetPathResolver(
 )
 
 const ModelThumbnailRenderer = require('./ModelThumbnailRenderer').default
-const ThumbnailRenderer = require('../../../src/js/shot-generator/utils/ThumbnailRenderer').default
 const EmotionPresetThumbnailRenderer = require('../../../src/js/shot-generator/components/InspectedElement/EmotionInspector/thumbnail-renderer').default
 const systemEmotionPresets = require('../../../src/js/shared/reducers/shot-generator-presets/emotions.json')
 
@@ -158,13 +157,13 @@ const ModelThumbnailsView = ({ modelThumbnailRenderer }) => {
 
 const EmotionThumbnailsView = ({ emotionPresetThumbnailRenderer }) => {
   const onSaveClick = event => {
+    fs.ensureDirSync(getAssetPath('emotion'))
     for (let emotion of Object.values(systemEmotionPresets)) {
       let textureFilepath = getAssetPath('emotion', `${emotion.id}-texture.png`)
       let thumbnailFilepath = getAssetPath('emotion', `${emotion.id}-thumbnail.jpg`)
       let cached = emotionThumbnailAsset.read(emotionPresetThumbnailRenderer, textureFilepath)
       console.log(`writing ${thumbnailFilepath}`)
-      // TODO fs.ensureDirSync(path.dirname(thumbnailFilepath))
-      // fs.writeFileSync(thumbnailFilepath, asBase64(cached), 'base64')
+      fs.writeFileSync(thumbnailFilepath, asBase64(cached), 'base64')
     }
   }
 
