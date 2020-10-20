@@ -1,6 +1,7 @@
 import ThumbnailRenderer from '../../../src/js/shot-generator/utils/ThumbnailRenderer'
 import {patchMaterial} from '../../../src/js/shot-generator/helpers/outlineMaterial'
-require('three-rounded-box')(THREE)
+import RoundedBoxGeometryCreator from '../../../src/js/vendor/three-rounded-box'
+const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 const roundedBoxFactory = () => {
   const boxRadius = 0.005
   const boxRadiusSegments = 5
