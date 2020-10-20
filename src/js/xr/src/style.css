@@ -74,14 +74,14 @@ div#main {
 
 .progress-bar {
   box-sizing: border-box;
+
   width: 60%;
   height: 20px;
 
-  padding: 1px;
-
   border: 1px solid #5c65c0;
-
   border-radius: 9px;
+
+  overflow: hidden;
 }
 
 .progress-bar > div {
