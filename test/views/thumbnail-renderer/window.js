@@ -78,7 +78,7 @@ const TestView = () => {
   const characterGltf = useLoader(GLTFLoader, getAssetPath('character', 'adult-male.glb'))
 
   const modelThumbnailRenderer = useMemoOne(() => new ModelThumbnailRenderer(), [])
-  const emotionPresetThumbnailRenderer = useMemoOne(() => new EmotionPresetThumbnailRenderer({ characterGltf }), [])
+  const emotionPresetThumbnailRenderer = useMemoOne(() => new EmotionPresetThumbnailRenderer({ characterGltf, inverseSide:true }), [])
 
   return (
     <Suspense fallback={<span>Rendering ...</span>}>

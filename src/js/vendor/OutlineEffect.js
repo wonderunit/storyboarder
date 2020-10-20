@@ -71,6 +71,7 @@ export const OutlineEffect = function ( renderer, parameters ) {
 	var defaultColor = new THREE.Color().fromArray( parameters.defaultColor !== undefined ? parameters.defaultColor : [ 0, 0, 0 ] );
 	var defaultAlpha = parameters.defaultAlpha !== undefined ? parameters.defaultAlpha : 1.0;
 	var defaultKeepAlive = parameters.defaultKeepAlive !== undefined ? parameters.defaultKeepAlive : false;
+	var inverseSide = parameters.inverseSide !== undefined ?  parameters.inverseSide : false;
 
 	// object.material.uuid -> outlineMaterial or
 	// object.material[ n ].uuid -> outlineMaterial
@@ -118,8 +119,13 @@ export const OutlineEffect = function ( renderer, parameters ) {
     " float aspect = projectionMatrix[0][0]/projectionMatrix[1][1];",
     "	const float ratio = 1.0;", // TODO: support outline thickness ratio for each vertex
     "	vec4 pos2 = projectionMatrix * modelViewMatrix * vec4( skinned.xyz + objectNormal, 1.0 );",
-    // NOTE: subtract pos2 from pos because BackSide objectNormal is negative
+	// NOTE: subtract pos2 from pos because BackSide objectNormal is negative
+	
+    "	#ifdef INVERSE_SIDE",
+    "	vec4 norm = normalize( pos - pos2 );",
+    "	#else ",
     "	vec4 norm = -normalize( pos - pos2 );",
+    "	#endif ",
     "	return pos + norm * thickness * pos.w * ratio * vec4(aspect,1.0,1.0,1.0);",
 
     "}"
@@ -223,6 +229,7 @@ export const OutlineEffect = function ( renderer, parameters ) {
 
 		var defines = {};
 		defines.FLAT_SHADED = true;
+		defines.INVERSE_SIDE = inverseSide;
 		if ( ! /vec3\s+transformed\s*=/.test( originalVertexShader ) &&
 		     ! /#include\s+<begin_vertex>/.test( originalVertexShader ) ) defines.DECLARE_TRANSFORMED = true;
 		return new THREE.ShaderMaterial( {

@@ -76,8 +76,8 @@ const createCharacter = (gltf) => {
 }
 
 class EmotionPresetThumbnailRenderer {
-  constructor ({ characterGltf }) {
-    this.thumbnailRenderer = new ThumbnailRenderer()
+  constructor ({ characterGltf, inverseSide }) {
+    this.thumbnailRenderer = new ThumbnailRenderer( { inverseSide})
 
     let characterGroup = createCharacter(characterGltf)
   

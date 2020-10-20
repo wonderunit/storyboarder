@@ -1,5 +1,5 @@
 import ThumbnailRenderer from '../../../src/js/shot-generator/utils/ThumbnailRenderer'
-
+import {patchMaterial} from '../../../src/js/shot-generator/helpers/outlineMaterial'
 require('three-rounded-box')(THREE)
 const roundedBoxFactory = () => {
   const boxRadius = 0.005
@@ -69,7 +69,7 @@ const groupFactory = ({ model, modelData }) => {
 
       //console.log('factory got data: ', data)
       let boneLengthScale = 1
-      let material = new THREE.MeshToonMaterial({
+      let material = patchMaterial(new THREE.MeshToonMaterial({
         color: 0xffffff,
         emissive: 0x0,
         specular: 0x0,
@@ -78,7 +78,7 @@ const groupFactory = ({ model, modelData }) => {
         flatShading: false,
         morphNormals: true,
         morphTargets: true
-      })
+      }))
 
       let mesh
       let skeleton
@@ -234,7 +234,7 @@ const groupFactory = ({ model, modelData }) => {
   } else {
     modelData.scene.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        group.add(meshFactory(child.clone()))
+        group.add(meshFactory(child))
       }
     })
   }
@@ -244,12 +244,14 @@ const groupFactory = ({ model, modelData }) => {
 
 // via SceneObject
 const materialFactory = () =>
-  new THREE.MeshToonMaterial({
+patchMaterial(new THREE.MeshToonMaterial({
     color: 0xcccccc,
     emissive: 0x0,
     specular: 0x0,
     shininess: 0,
     flatShading: false
+  }), {
+    thickness: 0.008
   })
 
 const meshFactory = (originalMesh) => {
@@ -366,7 +368,7 @@ const clampInstance = (instance, camera) => {
 
 class ModelThumbnailRenderer {
   constructor() {
-    this.thumbnailRenderer = new ThumbnailRenderer()
+    this.thumbnailRenderer = new ThumbnailRenderer({inverseSide: true})
   }
 
   render({ model, modelData }) {
