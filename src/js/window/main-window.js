@@ -172,6 +172,7 @@ const updateHTMLText = () => {
     translateTooltip("#toolbar-pomodoro-rest", "main-window.toolbar.pomodoro.toolbar-pomodoro-rest")
     translateTooltip("#toolbar-pomodoro-running", "main-window.toolbar.pomodoro.toolbar-pomodoro-running")
     //#endregion
+    tooltips.update()
   //#endregion
   //#region board-information
   renderShotMetadata()

@@ -109,6 +109,14 @@ const getSceneObjectAttachableIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
 )
 
+const systemEmotions = require('../../shared/reducers/shot-generator-presets/emotions.json')
+function getEmotionTextureUriByPresetId (id) {
+  // TODO provide XR FilepathsContext functions to get asset and user preset uri
+  return systemEmotions[id]
+    ? `/data/system/emotions/${id}-texture.png`
+    : `/data/presets/emotions/${id}-texture.png`
+}
+
 const SceneContent = connect(
   state => ({
     aspectRatio: state.aspectRatio,
@@ -673,20 +681,22 @@ const SceneContent = connect(
           />
 
           {
-            characterIds.map(id =>
-             // getAsset(getFilepathForModelByType(sceneObjects[id]))
-               // ?
-               <SimpleErrorBoundary key={id}>
+            characterIds.map(id => {
+              let sceneObject = sceneObjects[id]    
+              let { emotionPresetId } = sceneObject
+              let textureUri = sceneObject.emotionPresetId && getEmotionTextureUriByPresetId(emotionPresetId)
+              let texture = textureUri && getAsset(textureUri)
+               return <SimpleErrorBoundary key={id}>
                   <Character
                     key={id}
-                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
-                    sceneObject={sceneObjects[id]}
-                    modelSettings={models[sceneObjects[id].model] || undefined}
+                    gltf={getAsset(getFilepathForModelByType(sceneObject))}
+                    sceneObject={sceneObject}
+                    modelSettings={models[sceneObject.model] || undefined}
                     isSelected={selections.includes(id)}
-                    updateSkeleton= {updateCharacterIkSkeleton} />
+                    updateSkeleton={updateCharacterIkSkeleton} 
+                    texture={texture}/>
                 </SimpleErrorBoundary>
-               // : null
-            )
+            })
           }
 
 
