@@ -471,7 +471,8 @@
       },
       "emotions": {
         "no-value": "没有表情",
-        "search-list-label": "搜索情绪 …"
+        "search-list-label": "搜索情绪 …",
+        "emotion-creation-help": "如何为角色创造情感"
       },
       "object": {
         "drop-object": "将物体放到地板上"

@@ -46,11 +46,13 @@ import {
 } from '../../../utils/searchPresetsForTerms'
 import SearchList from '../../SearchList'
 import Modal from '../../Modal'
+import HelpButton from '../../HelpButton'
 
 import FilepathsContext from '../../../contexts/filepaths'
 
 import systemEmotions from '../../../../shared/reducers/shot-generator-presets/emotions.json'
 
+const HELP_URI = 'https://github.com/wonderunit/storyboarder/wiki/Creating-Emotions-for-Characters-in-Shot-Generator'
 
 const shortId = (id) => id.toString().substr(0, 7).toLowerCase()
 
@@ -390,6 +392,20 @@ const EmotionInspector = connect(mapStateToProps)(
                   sceneObjectId: sceneObject.id
                 })}
               >+</a>
+            </div>
+
+            <div
+              className="column"
+              style={{
+                width: 20,
+                margin: '0 0 0 6px',
+                alignSelf: 'center',
+                alignItems: 'flex-end'
+              }}
+            >
+              <HelpButton
+                url={HELP_URI}
+                title={t("shot-generator.inspector.emotions.emotion-creation-help")}/>
             </div>
           </div>
           <div className="thumbnail-search__list">

@@ -471,7 +471,8 @@
       },
       "emotions": {
         "no-value": "None",
-        "search-list-label": "Search Your Emotions …"
+        "search-list-label": "Search Your Emotions …",
+        "emotion-creation-help": "How to Create Emotions for Characters"
       },
       "object": {
         "drop-object": "Drop Object to the floor"
