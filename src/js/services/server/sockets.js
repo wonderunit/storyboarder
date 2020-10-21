@@ -15,27 +15,30 @@ import P2P from '../../shared/network/p2p'
 
 import {loadFileToBlob} from '../../shared/network/peerUtils'
 
-// TODO test user hair in XR
-// TODO test emotions in XR
 export const getPublicDirectories = (staticPath, projectPath, userDataPath) =>
   new Map(Object.entries({
+    // e.g.:
     // /data/system
     // /data/system/attachables
-    // /data/system/dummies
     // /data/system/dummies
     // /data/system/emotions
     // /data/system/icons
     // /data/system/images
     // /data/system/objects
     // /data/system/volumes
-    // '/data/system/xr'
-    // '/data/system/xr/ui
-    // '/data/system/xr/snd
+    // /data/system/xr
+    // /data/system/xr/ui
+    // /data/system/xr/snd
     '/data/system': path.join(staticPath, 'data', 'shot-generator'),
 
+    // e.g.:
+    // data/user
+    // data/user/attachables
     '/data/user': path.join(projectPath, 'models'),
+
     '/data/snd': path.join(staticPath, 'public', 'snd'),
 
+    // e.g.:
     // /data/presets
     // /data/presets/poses
     // /data/presets/handPoses
