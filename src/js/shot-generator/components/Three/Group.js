@@ -4,10 +4,17 @@ import React, { useRef, useEffect, useMemo } from 'react'
 import { batch } from 'react-redux'
 import { useThree } from 'react-three-fiber'
 import { axis } from "../../../shared/IK/utils/TransformControls"
-
+const isNan = (quaternion) => {
+  return isNaN(quaternion.x) || isNaN(quaternion.y) || 
+  isNaN(quaternion.z) || isNaN(quaternion.w) 
+}
 const Group = React.memo(({ id, type, ...props }) => {
   const ref = useRef()
   const { scene } = useThree()
+
+  useEffect(() => {
+    setPosition()
+  }, [])
 
   const children = useMemo(() => {
     return scene.__interaction.filter((object) => props.children.includes(object.userData.id))
@@ -15,7 +22,8 @@ const Group = React.memo(({ id, type, ...props }) => {
 
   const addArrayToObject = (object, array) => {
     for(let i = 0; i < array.length; i++) {
-      object.attach(array[i])
+      let child = array[i]
+      object.attach(child)
     }
   } 
 
@@ -28,7 +36,8 @@ const Group = React.memo(({ id, type, ...props }) => {
           let euler = new THREE.Euler()
           switch(child.userData.type) {
             case "character":
-             // let quaternion = child.quaternion.clone().multiply(ref.current.quaternion)
+             let quaternion = child.worldQuaternion()
+             if(isNan(quaternion)) continue
               euler.setFromQuaternion(child.worldQuaternion(), "YXZ")
               state.rotation = euler.y
               break;
@@ -107,6 +116,20 @@ const Group = React.memo(({ id, type, ...props }) => {
       }
     }
   }, [props.isSelected])
+
+  const setPosition = () => {
+    ref.current.position.x = props.x || ref.current.position.x
+    ref.current.position.y = props.z || ref.current.position.y
+    ref.current.position.z = props.y || ref.current.position.z
+  }
+
+  useEffect(() => {
+    if(!ref.current || !children.length ) return
+    addArrayToObject(ref.current, children)
+    setPosition()
+    addArrayToObject(scene.children[0], children)
+    updateAllChildren()
+  }, [props.x, props.y, props.z])
 
   return <group
   ref={ ref }

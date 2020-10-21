@@ -102,8 +102,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       </mesh>
     </group>
   )
-}, (prevProps, nextProps) => {
-  return isEqual(prevProps, nextProps)
-})
+}, isEqual)
 
 export default Image
