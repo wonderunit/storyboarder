@@ -34,7 +34,7 @@ const Group = React.memo(({ id, type, ...props }) => {
               break;
               case "image":
               case "object":
-              euler.setFromQuaternion(child.worldQuaternion())
+              euler.setFromQuaternion(child.worldQuaternion(), "YXZ")
               state.rotation = { x : euler.x, y : euler.y, z : euler.z }
               break;
             case "light":

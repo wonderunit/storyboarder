@@ -5,6 +5,7 @@ import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { axis } from "../../../shared/IK/utils/TransformControls"
+import isEqual from 'lodash.isequal'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
@@ -101,6 +102,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       </mesh>
     </group>
   )
+}, (prevProps, nextProps) => {
+  return isEqual(prevProps, nextProps)
 })
 
 export default Image
