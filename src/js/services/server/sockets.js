@@ -199,7 +199,7 @@ export const serve = (store, service, staticPath, projectPath, userDataPath) => 
 
         try {
           // Load resource as blob
-          let publicPath = resolvePublicPath(publicDirectories, { type, filePath })
+          let publicPath = resolvePublicPath(publicDirectories, filePath)
           const image = await loadFileToBlob(publicPath)
 
           // Tell user that some resource will be loaded next
