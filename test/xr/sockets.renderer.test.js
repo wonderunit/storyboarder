@@ -1,7 +1,5 @@
 // npx electron-mocha -r @babel/register --watch --renderer test/xr/sockets.renderer.test.js
 
-import path from 'path'
-import fs from 'fs'
 import assert from 'assert'
 
 import {
