@@ -12,6 +12,8 @@ import { useTranslation } from 'react-i18next'
 import { remote } from 'electron'
 import * as THREE from 'three'
 import { filter } from 'ramda'
+import { Machine, assign } from 'xstate'
+import { useMachine } from '@xstate/react'
 
 import {
   getSceneObjects,
@@ -49,8 +51,6 @@ import FilepathsContext from '../../../contexts/filepaths'
 
 import systemEmotions from '../../../../shared/reducers/shot-generator-presets/emotions.json'
 
-import { Machine, assign } from 'xstate'
-import { useMachine } from '@xstate/react'
 
 const shortId = (id) => id.toString().substr(0, 7).toLowerCase()
 
