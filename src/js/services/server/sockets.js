@@ -15,6 +15,8 @@ import P2P from '../../shared/network/p2p'
 
 import {loadFileToBlob} from '../../shared/network/peerUtils'
 
+// TODO test user hair in XR
+// TODO test emotions in XR
 export const getPublicDirectories = (staticPath, projectPath, userDataPath) =>
   new Map(Object.entries({
     // /data/system
@@ -59,7 +61,7 @@ export const resolvePublicPath = (publicDirectories, filepath) => {
 
 const IO = {current: null}
 
-// Map ation to the server standard
+// Map action to the server standard
 const getRemoteAction = (action, meta = {}) => {
   return {
     ...action,
