@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import React, { useMemo, useRef, useEffect }  from 'react'
+import React, { useMemo, useRef, useEffect, useContext }  from 'react'
 import {
   // action creators
   selectObject,
@@ -17,6 +17,8 @@ import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 
 import Icon from '../Icon'
 import useTooltip from '../../../hooks/use-tooltip'
+import FilepathsContext from '../../contexts/filepaths'
+
 import { useTranslation } from 'react-i18next'
 import fs from 'fs-extra'
 import path from 'path'
@@ -32,8 +34,7 @@ const preventDefault = (fn, ...args) => e => {
 const Toolbar = connect(
     state => ({
       room: getWorld(state).room,
-      server: state.server,
-      storyboarderFilePath: state.meta.storyboarderFilePath
+      server: state.server
     }),
     {
       selectObject,
@@ -71,10 +72,10 @@ const Toolbar = connect(
     ipcRenderer,
     withState,
 
-    notifications,
-
-    storyboarderFilePath
+    notifications
   }) => {
+    const { getAssetPath } = useContext(FilepathsContext)
+
     let cameraState = null
     let camera = useRef(null)
     let { t } = useTranslation()
@@ -116,8 +117,8 @@ const Toolbar = connect(
         let blob = item.getAsFile()
 
         let imageId = THREE.Math.generateUUID()
-        let imageDst = path.join('models', 'images', `${imageId}-texture.png`)
-        let imagePath = path.join(path.dirname(storyboarderFilePath), imageDst)
+        let imageProjectPath = `models/images/${imageId}-texture.png`
+        let imagePath = getAssetPath('image', imageProjectPath)
         let reader = new FileReader()
         reader.onload = function() {
           if(reader.readyState == 2) {
@@ -125,7 +126,7 @@ const Toolbar = connect(
             fs.writeFileSync(imagePath, buffer)
             initCamera()
             undoGroupStart()
-            createImage(imageId, camera.current, room.visible && roomObject3d, imageDst)
+            createImage(imageId, camera.current, room.visible && roomObject3d, imageProjectPath)
             selectObject(imageId)
             undoGroupEnd()
           }
