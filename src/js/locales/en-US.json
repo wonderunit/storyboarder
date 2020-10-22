@@ -532,7 +532,7 @@
       "image": {
         "tooltip": {
           "title": "Add Image",
-          "description": "Add an image. You can specify a custom image properties on the left. This is useful for reference images or posters or matte paintings in your scene."
+          "description": "Useful for reference images, posters, or matte paintings in your scene. Once added, use the Inspector (at left) to select an image file and set properties. Images can also be pasted from the clipboard."
         },
         "title": "Image"
       },
