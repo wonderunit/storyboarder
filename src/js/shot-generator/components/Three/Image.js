@@ -5,13 +5,12 @@ import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
 import { axis } from "../../../shared/IK/utils/TransformControls"
-import isEqual from 'lodash.isequal'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
-const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
-  const {asset: texture} = useAsset(imagesPaths[0] || null)
+const Image = React.memo(({ sceneObject, isSelected, imagePath, ...props }) => {
+  const {asset: texture} = useAsset(imagePath || null)
   
   const aspect = useRef(1)
   const ref = useRef()
@@ -34,7 +33,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
         material.map = texture
         material.needsUpdate = true
     } 
-  }, [texture, imagesPaths[0]])
+  }, [texture, imagePath])
 
   useEffect(() => {
     material.opacity = sceneObject.opacity
@@ -102,6 +101,6 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       </mesh>
     </group>
   )
-}, isEqual)
+})
 
 export default Image

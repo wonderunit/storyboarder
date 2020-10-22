@@ -454,7 +454,7 @@ const SceneManagerR3fLarge = connect(
             let sceneObject = sceneObjects[id]
             return <SimpleErrorBoundary key={ id }>
               <Image
-                imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
+                imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)[0]}
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) }
                 updateObject={ updateObject }
