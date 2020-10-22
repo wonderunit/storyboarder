@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import React, { useMemo, useRef }  from 'react'
+import React, { useMemo, useRef, useEffect }  from 'react'
 import {
   // action creators
   selectObject,
@@ -18,6 +18,8 @@ import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 import Icon from '../Icon'
 import useTooltip from '../../../hooks/use-tooltip'
 import { useTranslation } from 'react-i18next'
+import fs from 'fs-extra'
+import path from 'path'
 // because webpack
 const { shell } = require('electron')
 
@@ -30,7 +32,8 @@ const preventDefault = (fn, ...args) => e => {
 const Toolbar = connect(
     state => ({
       room: getWorld(state).room,
-      server: state.server
+      server: state.server,
+      storyboarderFilePath: state.meta.storyboarderFilePath
     }),
     {
       selectObject,
@@ -68,7 +71,9 @@ const Toolbar = connect(
     ipcRenderer,
     withState,
 
-    notifications
+    notifications,
+
+    storyboarderFilePath
   }) => {
     let cameraState = null
     let camera = useRef(null)
@@ -89,6 +94,46 @@ const Toolbar = connect(
       () => roomObject3dFactory(room),
       [room]
     )
+
+    useEffect(() => {
+      window.addEventListener('paste', createImageFromClipboard, false)
+      return () => {
+        window.removeEventListener('paste', createImageFromClipboard)
+      }
+    }, [])
+
+    const createImageFromClipboard = (pasteEvent) => {
+      if(pasteEvent.clipboardData == false) {
+        return
+      }
+      let items = pasteEvent.clipboardData.items
+      if(items == undefined) {
+        return 
+      }
+      for(let i = 0; i < items.length; i++) {
+        let item = items[i]
+        if(item.type.indexOf("image") == -1) continue
+        let blob = item.getAsFile()
+
+        let imageId = THREE.Math.generateUUID()
+        let imageDst = path.join('models', 'images', `${imageId}-texture.png`)
+        let imagePath = path.join(path.dirname(storyboarderFilePath), imageDst)
+        let reader = new FileReader()
+        reader.onload = function() {
+          if(reader.readyState == 2) {
+            let buffer = new Buffer(reader.result)
+            fs.writeFileSync(imagePath, buffer)
+            initCamera()
+            undoGroupStart()
+            createImage(imageId, camera.current, room.visible && roomObject3d, imageDst)
+            selectObject(imageId)
+            undoGroupEnd()
+          }
+        }
+        reader.readAsArrayBuffer(blob)
+      }
+
+    }
 
     const initCamera = () => {
       withState((dispatch, state) => {
