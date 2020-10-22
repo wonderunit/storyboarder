@@ -469,7 +469,7 @@ const SceneManagerR3fLarge = connect(
           return <Group
             key={ sceneObject.id }
             isSelected={ selections.includes(sceneObject.id) }
-            updateObject={ updateObject }
+            updateObjects={ updateObjects }
             withState={ withState }
             objectRotationControl={ objectRotationControl.current }
             { ...sceneObject }

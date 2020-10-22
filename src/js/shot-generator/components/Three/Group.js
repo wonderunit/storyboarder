@@ -30,6 +30,7 @@ const Group = React.memo(({ id, type, ...props }) => {
   const updateAllChildren = () => {
     props.withState((dispatch, state) => {
       batch(() => {
+        let changes = {}
         for(let i = 0; i < children.length; i++) {
           let child = children[i]
           let state = {}
@@ -59,8 +60,7 @@ const Group = React.memo(({ id, type, ...props }) => {
           state.x = position.x 
           state.y = position.z
           state.z = position.y
-          
-          dispatch(props.updateObject(child.userData.id, state))
+          changes[child.userData.id] = state
 
           if(child.userData.type === "character") {
             let attachables = scene.__interaction.filter(object => object.userData.bindedId === child.userData.id)
@@ -73,14 +73,14 @@ const Group = React.memo(({ id, type, ...props }) => {
                 matrix.premultiply(attachable.parent.matrixWorld)
                 matrix.decompose(position, quaternion, new THREE.Vector3())
                 let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
-                dispatch(props.updateObject(attachable.userData.id, 
-                { 
+                changes[attachable.userData.id] = { 
                     x: position.x, y: position.y, z: position.z,
                     rotation: { x: rot.x, y: rot.y, z: rot.z },
-                }))
+                }
             }
           }
         }   
+        dispatch(props.updateObjects(changes))
       })
     })
   }
