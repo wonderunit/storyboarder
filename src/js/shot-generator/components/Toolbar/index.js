@@ -122,7 +122,7 @@ const Toolbar = connect(
         let reader = new FileReader()
         reader.onload = function() {
           if(reader.readyState == 2) {
-            let buffer = new Buffer(reader.result)
+            let buffer = Buffer.from(reader.result)
             fs.writeFileSync(imagePath, buffer)
             initCamera()
             undoGroupStart()
