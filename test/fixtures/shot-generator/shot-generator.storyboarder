@@ -1,5 +1,5 @@
 {
-  "version": "1.12.0",
+  "version": "2.1.0",
   "aspectRatio": 2.39,
   "fps": 24,
   "defaultBoardTiming": 2000,
@@ -21,12 +21,12 @@
       "time": 0,
       "lineMileage": 821.5682133251058,
       "sg": {
-        "version": "1.12.0",
+        "version": "2.1.0",
         "data": {
           "activeCamera": "6BC46A44-7965-43B5-B290-E3D2B9D15EEE",
           "sceneObjects": {
             "26332F12-28FE-444C-B73F-B3F90B8C62A2": {
-              "displayName": "Character 1",
+              "displayName": "Actor 1",
               "headScale": 1,
               "height": 1.8,
               "id": "26332F12-28FE-444C-B73F-B3F90B8C62A2",
@@ -47,7 +47,7 @@
             },
             "3F659237-C3B2-42D3-B16C-8E9C1AC4D442": {
               "depth": 0.5,
-              "displayName": "Object 2",
+              "displayName": "Sphere 1",
               "height": 0.5,
               "id": "3F659237-C3B2-42D3-B16C-8E9C1AC4D442",
               "model": "primitive-sphere",
@@ -118,7 +118,7 @@
             },
             "AA58B60E-8DF2-4586-BBB8-CEB50D1EBA35": {
               "depth": 0.5,
-              "displayName": "Object 1",
+              "displayName": "Box 1",
               "height": 0.5,
               "id": "AA58B60E-8DF2-4586-BBB8-CEB50D1EBA35",
               "model": "box",
@@ -152,7 +152,8 @@
               "visible": true,
               "x": 0,
               "y": 0,
-              "z": 0
+              "z": 0,
+              "grayscale": false
             },
             "ground": false,
             "room": {
@@ -160,7 +161,12 @@
               "length": 10,
               "visible": true,
               "width": 10
-            }
+            },
+            "fog": {
+              "visible": true,
+              "far": 40
+            },
+            "shadingMode": "Outline"
           }
         }
       }
