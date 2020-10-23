@@ -147,7 +147,7 @@ const preloadData = async () => {
 }
 
 const loadBoard = async (board) => {
-  loadBoardFromData(board, store.dispatch)
+  store.dispatch(loadBoardFromData(board))
   
   if (!board.sg) {
     return false

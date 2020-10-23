@@ -6,18 +6,20 @@ const {
   resetScene,
 } = require('../reducers/shot-generator')
 
-const loadBoardFromData = (board, dispatch) => {
-  let shot = board.sg
+function loadBoardFromData (board) {
+  return function (dispatch) {
+    let shot = board.sg
 
-  dispatch(setBoard(board))
+    dispatch(setBoard(board))
 
-  if (shot) {
-    dispatch(loadScene(shot.data))
-  } else {
-    dispatch(resetScene())
+    if (shot) {
+      dispatch(loadScene(shot.data))
+    } else {
+      dispatch(resetScene())
+    }
+
+    dispatch(ActionCreators.clearHistory())
   }
-
-  dispatch(ActionCreators.clearHistory())
 }
 
 module.exports = loadBoardFromData
