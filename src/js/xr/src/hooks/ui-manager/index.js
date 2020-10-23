@@ -1192,7 +1192,6 @@ const {
   setActiveCamera,
   undoGroupStart,
   undoGroupEnd,
-  loadScene,
 
   getDefaultPosePreset,
 
