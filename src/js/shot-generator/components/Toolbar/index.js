@@ -98,10 +98,32 @@ const Toolbar = connect(
 
     useEffect(() => {
       window.addEventListener('paste', createImageFromClipboard, false)
+      window.addEventListener('drop', imageDrop, false) 
+      window.addEventListener('dragover', dragOver, false); 
       return () => {
+        window.removeEventListener('dragover', dragOver); 
+        window.removeEventListener('drop', imageDrop)
         window.removeEventListener('paste', createImageFromClipboard)
       }
     }, [])
+  
+    const dragOver =  (e) => { 
+      e.preventDefault(); 
+      e.stopPropagation(); 
+    }
+
+    const imageDrop = (e) => {
+      for (const f of e.dataTransfer.files) { 
+        let { name, ext } = path.parse( f.path)
+        let imageId = THREE.Math.generateUUID()
+        let imageProjectPath = path.join('models', 'images', name + ext)
+        let imagePath = getAssetPath('image', imageProjectPath)
+        fs.ensureDirSync(path.dirname(imagePath))
+        if(!fs.existsSync(imagePath))
+          fs.copyFileSync(f.path, imagePath)
+        initializeImage(imageId, imageProjectPath)
+       } 
+    } 
 
     const createImageFromClipboard = (pasteEvent) => {
       if(pasteEvent.clipboardData == false) {
@@ -117,7 +139,7 @@ const Toolbar = connect(
         let blob = item.getAsFile()
 
         let imageId = THREE.Math.generateUUID()
-        let imageProjectPath = `models/images/${imageId}-texture.png`
+        let imageProjectPath =path.join('models', 'images', `${imageId}-texture.png}`)
         let imagePath = getAssetPath('image', imageProjectPath)
         let reader = new FileReader()
         reader.onload = function() {
@@ -125,11 +147,7 @@ const Toolbar = connect(
             let buffer = Buffer.from(reader.result)
             fs.ensureDirSync(path.dirname(imagePath))
             fs.writeFileSync(imagePath, buffer)
-            initCamera()
-            undoGroupStart()
-            createImage(imageId, camera.current, room.visible && roomObject3d, imageProjectPath)
-            selectObject(imageId)
-            undoGroupEnd()
+            initializeImage(imageId, imageProjectPath)
           }
         }
         reader.readAsArrayBuffer(blob)
@@ -202,9 +220,13 @@ const Toolbar = connect(
 
     const onCreateImageClick = () => {
       let id = THREE.Math.generateUUID()
+      initializeImage(id)
+    }
+
+    const initializeImage = (id, imagePath = "") => {
       initCamera()
       undoGroupStart()
-      createImage(id, camera.current, room.visible && roomObject3d)
+      createImage(id, camera.current, room.visible && roomObject3d, imagePath)
       selectObject(id)
       undoGroupEnd()
     }
