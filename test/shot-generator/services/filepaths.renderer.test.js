@@ -1,5 +1,13 @@
 // npx electron-mocha --require esm -w -R min --renderer test/shot-generator/services/filepaths.renderer.test.js
 
+// for testing windows-style paths:
+//
+//     npm install --save-dev mock-require
+//
+//     const mock = require('mock-require')
+//     mock('path', require('path').win32)
+//
+
 const assert = require('assert')
 const path = require('path')
 
