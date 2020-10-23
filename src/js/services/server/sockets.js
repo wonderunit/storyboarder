@@ -15,23 +15,56 @@ import P2P from '../../shared/network/p2p'
 
 import {loadFileToBlob} from '../../shared/network/peerUtils'
 
-// Map all the reosource paths to actual paths
-const pathMap = {
-  '/data/system': (staticPath, projectPath, userDataPath) => path.join(staticPath, 'data', 'shot-generator'),
-  '/data/user': (staticPath, projectPath, userDataPath) => path.join(projectPath, 'models'),
-  '/data/snd': (staticPath, projectPath, userDataPath) => path.join(staticPath, 'public', 'snd'),
-  '/data/presets/poses': (staticPath, projectPath, userDataPath) => path.join(userDataPath, 'presets', 'poses'),
-  '/data/presets/handPoses': (staticPath, projectPath, userDataPath) => path.join(userDataPath, 'presets', 'handPoses'),
-  '/boards/images': (staticPath, projectPath, userDataPath) => path.join(projectPath, 'images')
+export const getPublicDirectories = (staticPath, projectPath, userDataPath) =>
+  new Map(Object.entries({
+    // e.g.:
+    // /data/system
+    // /data/system/attachables
+    // /data/system/dummies
+    // /data/system/emotions
+    // /data/system/icons
+    // /data/system/images
+    // /data/system/objects
+    // /data/system/volumes
+    // /data/system/xr
+    // /data/system/xr/ui
+    // /data/system/xr/snd
+    '/data/system': path.join(staticPath, 'data', 'shot-generator'),
+
+    // e.g.:
+    // data/user
+    // data/user/attachables
+    '/data/user': path.join(projectPath, 'models'),
+
+    '/data/snd': path.join(staticPath, 'public', 'snd'),
+
+    // e.g.:
+    // /data/presets
+    // /data/presets/poses
+    // /data/presets/handPoses
+    // /data/presets/emotions
+    // /data/presets/objects
+    '/data/presets': path.join(userDataPath, 'presets'),
+
+    '/boards/images': path.join(projectPath, 'images')
+  }))
+
+// via https://nodejs.org/en/knowledge/file-system/security/introduction/#preventing-directory-traversal
+export const resolvePublicPath = (publicDirectories, filepath) => {
+  let normalized = path.normalize(filepath)
+
+  for (let [src, dst] of publicDirectories) {
+    if (normalized.startsWith(src)) {
+      return path.join(dst, normalized.substring(src.length))
+    }
+  }
+
+  throw new Error(`Access Denied for ${filepath}`)
 }
-
-const pathMapKeys = Object.keys(pathMap)
-
-
 
 const IO = {current: null}
 
-// Map ation to the server standard
+// Map action to the server standard
 const getRemoteAction = (action, meta = {}) => {
   return {
     ...action,
@@ -60,6 +93,8 @@ const onUserConnect = (emit, broadcast, id, store) => {
 
 // Connect to the lobby server and watch all the eventss
 export const serve = (store, service, staticPath, projectPath, userDataPath) => {
+  const publicDirectories = getPublicDirectories(staticPath, projectPath, userDataPath)
+
   return new Promise((resolve, reject) => {
     const peer = P2P() // Connect
     const {io, broadcast} = peer
@@ -163,19 +198,22 @@ export const serve = (store, service, staticPath, projectPath, userDataPath) => 
 
       // Send a resource
       emitter.on('getResource', async ({type, filePath}) => {
-        console.log(type, filePath)
-        const key = pathMapKeys.find((item) => filePath.indexOf(item) !== -1)
-        
-        // Load resource as blob
-        console.log('Getting resource: ', filePath)
-        const image = await loadFileToBlob(path.join(pathMap[key](staticPath, projectPath, userDataPath), path.relative(key, filePath)))
-        console.log('Sending resource: ', image)
+        console.log('getResource', 'type:', type, 'filePath:', filePath)
 
-        // Tell user that some resource will be loaded next
-        emit('willLoad', {path: filePath})
+        try {
+          // Load resource as blob
+          let publicPath = resolvePublicPath(publicDirectories, filePath)
+          const image = await loadFileToBlob(publicPath)
 
-        // Send resource(might be sent as a lot of chunks)
-        emit('getResource', {type, filePath, data: image})
+          // Tell user that some resource will be loaded next
+          emit('willLoad', { path: filePath })
+
+          // Send resource (might be sent as a lot of chunks)
+          emit('getResource', { type, filePath, data: image })
+
+        } catch (err) {
+          console.error(err)
+        }
       })
       
     })
