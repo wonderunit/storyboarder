@@ -123,8 +123,12 @@ class XRPickableObjectContainer extends Pickable
             id = this.idPool.getAvaibleId();
             let sceneMesh = this.listOfChangedObjects[i];
             super.initialize(id);
-            this.pickingMaterials.push(this.pickingMaterial);
-            this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, this.pickingMaterial);
+            let pickingMaterial = this.pickingMaterial
+            pickingMaterial.depthTest = sceneMesh.material.depthTest;
+            pickingMaterial.depthWrite = sceneMesh.material.depthWrite;
+            pickingMaterial.transparent = sceneMesh.material.transparent;  
+            this.pickingMaterials.push(pickingMaterial);
+            this.pickingMesh = new THREE.Mesh(sceneMesh.geometry, pickingMaterial);
             this.node.add(this.pickingMesh);
             this.changedIds = [];
             this.pickingMeshes.push(this.pickingMesh);
