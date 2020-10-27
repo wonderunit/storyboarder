@@ -89,7 +89,9 @@ class XRPickableObjectContainer extends Pickable
     {
         this.listOfChangedObjects = [];
         this.getMeshes(this.sceneObject, this.listOfChangedObjects, excludingList);
-        return this.listOfChangedObjects.length === 0 ? false : true;
+        let isChanged = this.listOfChangedObjects.length === 0 ? false : true
+        if(this.sceneObject.visible !== this.node.visible) isChanged = true
+        return isChanged; 
     }
 
     getMeshes(object, listOfMeshes, excludingList)
@@ -136,6 +138,7 @@ class XRPickableObjectContainer extends Pickable
             this.pickingMesh.pickerId = id;
             this.listOfChangedObjects[i] = {pickingMesh: this.pickingMesh, sceneMesh: sceneMesh};
         }
+        this.node.visible = this.sceneObject.visible; 
     }
 
     dispose()

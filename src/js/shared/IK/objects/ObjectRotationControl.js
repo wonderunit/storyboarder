@@ -75,6 +75,7 @@ class ObjectRotationControl
             this.offsetObject.position.set(0, 0, 0)
         }
         this.control.attach(object);
+        this.offsetObject.visible = true;
         this.object = object;
         this.control.addEventListener("transformMouseDown", this.onMouseDown, false);
         this.control.addEventListener("transformMouseUp", this.onMouseUp, false);
@@ -88,6 +89,7 @@ class ObjectRotationControl
     deselectObject()
     {
         this.control.detach();
+        this.offsetObject.visible = false;
         this.scene.remove(this.control);
         this.control.dispose();
         this.object = null;
