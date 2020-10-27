@@ -14,18 +14,27 @@ class ObjectRotationControl
         });
         this.object = null;
         this.scene = scene;
-        this.isEnabled = false;
+        this.defaultEnabled = false;
+        this.control.enabled = this.defaultEnabled;
         this.customOnMouseDownAction = null;
         this.customOnMouseUpAction = null;
         this.offsetObject = new THREE.Object3D()
         this.scene.add(this.offsetObject)
         this.offsetObject.userData.type = 'controlTarget'
+        this.control.select = (event) => this.select(event);
     }
     
     set IsEnabled(value) 
     {
-        this.control.enabled = value
+
+        this.control.enabled = value;
     }
+
+    select(event) {
+        this.IsEnabled = true;
+        this.control.pointerPressedDown(event);
+    }
+
     //#region Events
     onMouseDown = event => {
         this.object.isRotated = true;
@@ -36,6 +45,8 @@ class ObjectRotationControl
         this.customOnMouseUpAction && this.customOnMouseUpAction();
         this.updateCharacter && this.updateCharacter(this.object.name, this.object.rotation);
         this.object.isRotated = false;
+        this.control.enabled = this.defaultEnabled;
+
     };
     //#enderegion
 
@@ -78,7 +89,6 @@ class ObjectRotationControl
     {
         this.control.detach();
         this.scene.remove(this.control);
-        this.IsEnabled = true;
         this.control.dispose();
         this.object = null;
         this.control.removeEventListener("transformMouseDown", this.onMouseDown);

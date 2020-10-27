@@ -376,7 +376,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         highestPoint.z = 0
         props.objectRotationControl.selectObject(ref.current, ref.current.uuid, highestPoint)
         props.objectRotationControl.control.setShownAxis(axis.Y_axis)
-        props.objectRotationControl.IsEnabled = !sceneObject.locked
         //#endregion
       } else { 
         ref.current.remove(BonesHelper.getInstance())
@@ -421,10 +420,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
   
     const { x, y, z, visible, rotation, locked } = sceneObject
 
-    useEffect(() => {
-      if(!props.objectRotationControl || !isSelected) return
-      props.objectRotationControl.IsEnabled = !locked
-    }, [locked])
 
     useEffect(() => {
       if(!skeleton) return

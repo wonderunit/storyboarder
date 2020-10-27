@@ -105,7 +105,6 @@ const Group = React.memo(({ id, type, ...props }) => {
       ref.current.updateMatrixWorld(true)
       props.objectRotationControl.setCharacterId(ref.current.uuid)
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
-      props.objectRotationControl.IsEnabled = !props.locked
       props.objectRotationControl.customOnMouseDownAction = () => { addArrayToObject(ref.current, children) };
       props.objectRotationControl.customOnMouseUpAction = () => { addArrayToObject(scene.children[0], children) };
       props.objectRotationControl.control.setShownAxis(axis.Y_axis)
