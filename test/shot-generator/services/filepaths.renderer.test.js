@@ -1,4 +1,4 @@
-// npx electron-mocha --require esm -w -R min --renderer test/shot-generator/services/filepaths.renderer.test.js
+// npx electron-mocha -R min --renderer test/shot-generator/services/filepaths.renderer.test.js
 
 // for testing windows-style paths:
 //
