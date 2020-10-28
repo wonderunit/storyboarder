@@ -4,7 +4,6 @@ import { ipcRenderer } from 'electron'
 
 import { 
   getSerializedState,
-  getWorld,
 
   selectObject,
   markSaved,
