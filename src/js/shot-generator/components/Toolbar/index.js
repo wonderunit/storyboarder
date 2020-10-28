@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import React, { useMemo, useRef, useEffect, useContext }  from 'react'
+import React, { useMemo, useRef, useEffect }  from 'react'
 import {
   // action creators
   selectObject,
@@ -17,11 +17,10 @@ import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 
 import Icon from '../Icon'
 import useTooltip from '../../../hooks/use-tooltip'
-import FilepathsContext from '../../contexts/filepaths'
+
 
 import { useTranslation } from 'react-i18next'
-import fs from 'fs-extra'
-import path from 'path'
+import { useInsertImage } from '../../hooks/use-insert-image'
 // because webpack
 const { shell } = require('electron')
 
@@ -74,7 +73,6 @@ const Toolbar = connect(
 
     notifications
   }) => {
-    const { getAssetPath } = useContext(FilepathsContext)
 
     let cameraState = null
     let camera = useRef(null)
@@ -96,6 +94,16 @@ const Toolbar = connect(
       [room]
     )
 
+    const initializeImage = (id, imagePath = "") => {
+      initCamera()
+      undoGroupStart()
+      createImage(id, camera.current, room.visible && roomObject3d, imagePath)
+      selectObject(id)
+      undoGroupEnd()
+    }
+
+    const { dragOver, imageDrop, createImageFromClipboard } = useInsertImage(initializeImage)
+
     useEffect(() => {
       window.addEventListener('paste', createImageFromClipboard, false)
       window.addEventListener('drop', imageDrop, false) 
@@ -107,53 +115,6 @@ const Toolbar = connect(
       }
     }, [])
   
-    const dragOver =  (e) => { 
-      e.preventDefault(); 
-      e.stopPropagation(); 
-    }
-
-    const imageDrop = (e) => {
-      for (const f of e.dataTransfer.files) { 
-        let { name, ext } = path.parse( f.path)
-        let imageId = THREE.Math.generateUUID()
-        let imageProjectPath = path.join('models', 'images', name + ext)
-        let imagePath = getAssetPath('image', imageProjectPath)
-        fs.ensureDirSync(path.dirname(imagePath))
-        if(!fs.existsSync(imagePath))
-          fs.copyFileSync(f.path, imagePath)
-        initializeImage(imageId, imageProjectPath)
-       } 
-    } 
-
-    const createImageFromClipboard = (pasteEvent) => {
-      if(pasteEvent.clipboardData == false) {
-        return
-      }
-      let items = pasteEvent.clipboardData.items
-      if(items == undefined) {
-        return 
-      }
-      for(let i = 0; i < items.length; i++) {
-        let item = items[i]
-        if(item.type.indexOf("image") == -1) continue
-        let blob = item.getAsFile()
-
-        let imageId = THREE.Math.generateUUID()
-        let imageProjectPath =path.join('models', 'images', `${imageId}-texture.png}`)
-        let imagePath = getAssetPath('image', imageProjectPath)
-        let reader = new FileReader()
-        reader.onload = function() {
-          if(reader.readyState == 2) {
-            let buffer = Buffer.from(reader.result)
-            fs.ensureDirSync(path.dirname(imagePath))
-            fs.writeFileSync(imagePath, buffer)
-            initializeImage(imageId, imageProjectPath)
-          }
-        }
-        reader.readAsArrayBuffer(blob)
-      }
-
-    }
 
     const initCamera = () => {
       withState((dispatch, state) => {
@@ -223,13 +184,7 @@ const Toolbar = connect(
       initializeImage(id)
     }
 
-    const initializeImage = (id, imagePath = "") => {
-      initCamera()
-      undoGroupStart()
-      createImage(id, camera.current, room.visible && roomObject3d, imagePath)
-      selectObject(id)
-      undoGroupEnd()
-    }
+
 
     const onSaveToBoardClick = () => {
       ipcRenderer.send('shot-generator:requestSaveShot')
