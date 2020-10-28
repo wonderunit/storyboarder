@@ -70,6 +70,9 @@ const getIpAddress = require('../utils/getIpAddress')
 const pkg = require('../../../package.json')
 const { scaleBy, setScale, resizeScale, initialize} = require('../utils/uiScale')
 
+const { exportPresetFilesToProject } = require('../shot-generator/services/presets')
+const { createUserPresetPathResolver } = require('../shot-generator/services/filepaths')
+
 const sharedObj = remote.getGlobal('sharedObj')
 //#region Localization 
 const i18n = require('../services/i18next.config')
@@ -7117,6 +7120,7 @@ ipcRenderer.on('zoomReset', value => {
   storyboarderSketchPane.zoomCenter(ZOOM_LEVELS[zoomIndex])
 })
 
+const getUserPresetPath = createUserPresetPathResolver(app.getPath('userData'))
 const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   // find the board by id
   let index = boardData.boards.findIndex(b => b.uid === uid)
@@ -7213,6 +7217,11 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
     // FIXME known issue: onion skin does not reload to reflect the changed file
     //       see: https://github.com/wonderunit/storyboarder/issues/1185
     await updateSketchPaneBoard()
+  }
+
+  if (data.presets) {
+    // TODO should preset file export be undo-able?
+    exportPresetFilesToProject(data.presets, path.dirname(boardFilename), getUserPresetPath)
   }
 
   renderShotGeneratorPanel()

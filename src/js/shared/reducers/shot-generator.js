@@ -40,17 +40,59 @@ const getSelectedAttachable = state => state.undoable.present.selectedAttachable
 const getWorld = state => state.undoable.present.world
 
 
+const getExportableUserPresets = state => {
+  // get all the emotion presetIds
+  let emotionPresetIds = 
+    R.pipe(
+      R.filter(sceneObject => sceneObject.type === 'character'),
+      R.values,
+      R.pluck(['emotionPresetId']),
+      R.uniq
+    )(getSceneObjects(state))
+
+  // get the user preset data matching those ids
+  let exportableUserPresets = R.pipe(
+    // exclude system presets
+    R.filter(id => systemEmotionPresets.hasOwnProperty(id) == false),
+    // find by id
+    R.map(id => state.presets.emotions[id])
+  )(emotionPresetIds)
+
+  // add filenames for emotion files
+  let withFilenames = R.map(
+    metadata => ({
+      metadata,
+      presetType: 'emotions',
+      filenames: [
+        `${metadata.id}-texture.png`,
+        `${metadata.id}-thumbnail.jpg`
+      ]
+    })
+  )(exportableUserPresets)
+
+  // group by preset type
+  return R.pipe(
+    R.groupBy(R.prop('presetType')),
+    R.map(R.map(R.pick(['metadata', 'filenames'])))
+  )(withFilenames)
+}
+
 const getHash = state =>
-  hashify(JSON.stringify(getSerializedState(state)))
+  hashify(JSON.stringify(getSerializedState(state, { includePresets: false })))
 
 const getIsSceneDirty = state => getHash(state) !== state.meta.lastSavedHash
 
 // return only the stuff we want to save to JSON
-const getSerializedState = state => {
+const getSerializedState = (state, opt = { includePresets: true }) => {
+  let presets = opt.includePresets
+    ? getExportableUserPresets(state)
+    : null
+
   return {
     world: getWorld(state),
     sceneObjects: R.map(serializeSceneObject, getSceneObjects(state)),
-    activeCamera: getActiveCamera(state)
+    activeCamera: getActiveCamera(state),
+    ...(presets && Object.values(presets).length && { presets })
   }
 }
 
@@ -1794,6 +1836,7 @@ module.exports = {
   getSelectedBone,
   getWorld,
 
+  getExportableUserPresets,
   getSerializedState,
   getSelectedAttachable,
 
