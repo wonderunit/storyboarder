@@ -112,6 +112,7 @@ const getSceneObjectAttachableIds = createSelector(
 const systemEmotions = require('../../shared/reducers/shot-generator-presets/emotions.json')
 function getEmotionTextureUriByPresetId (id) {
   // TODO provide XR FilepathsContext functions to get asset and user preset uri
+  console.log('EmotionID: ', id, systemEmotions[id])
   return systemEmotions[id]
     ? `/data/system/emotions/${id}-texture.png`
     : `/data/presets/emotions/${id}-texture.png`
@@ -684,6 +685,7 @@ const SceneContent = connect(
             characterIds.map(id => {
               let sceneObject = sceneObjects[id]    
               let { emotionPresetId } = sceneObject
+              console.log(sceneObject)
               let textureUri = sceneObject.emotionPresetId && getEmotionTextureUriByPresetId(emotionPresetId)
               let texture = textureUri && getAsset(textureUri)
                return <SimpleErrorBoundary key={id}>

@@ -89,7 +89,7 @@ const useAssetsManager = (SGConnection) => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-        if (!id.includes('/images/')) {
+        if (!id.includes('/images/') && !id.includes('/emotions/')) {
           SGConnection.getResource('gltf', id)
           .then(({data}) => {
             onGLTFBufferLoad(data)
@@ -102,7 +102,6 @@ const useAssetsManager = (SGConnection) => {
               dispatch({ type: 'ERROR', payload: { id, error } })
             })
           })
-
           dispatch({ type: 'LOAD', payload: { id } })
         } else {
           SGConnection.getResource('image', id)

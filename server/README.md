@@ -21,6 +21,20 @@ To connect to a local server instead, temporarily change `STBR_HOST` in `src/js/
 
 From the Storyboarder root source folder:
 
+To run both Storyboarder and the P2P server in development mode:
+
+    PORT=443 npm start
+
+This will also build the XR client JavaScript bundle the P2P server needs.
+
+To build just the server to `server/dist/server.js`:
+
+    cd server
+    npm install
+    npm run build
+
+To build and run just the server:
+
     cd server
     npm install
     PORT=443 npm start
@@ -28,16 +42,6 @@ From the Storyboarder root source folder:
 If a `server/.env` file exists, it can be used to define the `PORT` environment variable, e.g.:
 
     PORT=443
-
-or, from root, to run both Storyboarder and the P2P server in development mode
-
-    npm start
-
-To build to `server/dist/server.js`:
-
-    cd server
-    npm install
-    npm run build
 
 ## Deploy
 
