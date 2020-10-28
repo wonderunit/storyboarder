@@ -14,6 +14,9 @@ const ObjectModelFileDescriptions = require('../../../data/shot-generator/object
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
 const { ShadingType } = require('../../vendor/shading-effects/ShadingType')
 
+const systemEmotionPresets = require('./shot-generator-presets/emotions.json')
+const systemHandPosePresets = require('./shot-generator-presets/hand-poses.json')
+
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
 const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
@@ -412,10 +415,6 @@ const getCameraShot = (draft, cameraId) => {
   return draft[cameraId]
 }
 
-// load up the default poses
-const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
-const defaultEmotionsPresets = require('./shot-generator-presets/emotions.json')
-
 const defaultCharacterPreset = {
   height: 1.6256,
   model: 'adult-female',
@@ -741,8 +740,8 @@ const initialState = {
     poses: {
       ...defaultPosePreset
     },
-    handPoses: defaultHandPosePresets,
-    emotions: defaultEmotionsPresets
+    handPoses: systemHandPosePresets,
+    emotions: systemEmotionPresets
   },
   server: {
     uri: undefined,
