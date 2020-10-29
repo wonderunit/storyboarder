@@ -1,27 +1,27 @@
 /*
 # watch
 find \
-  test/shot-generator/extract-preset-data.test.renderer.js \
+  test/shot-generator/preset-import-export.test.renderer.js \
   src/js/shot-generator/services/presets.js \
   src/js/shared/reducers/shot-generator.js \
 | entr -c \
 npx electron-mocha \
 --preload test/lib/setup-renderer.js \
 --renderer \
-test/shot-generator/extract-preset-data.test.renderer.js
+test/shot-generator/preset-import-export.test.renderer.js
 
 # run once (if it hangs, try running interactively)
 npx electron-mocha \
 --preload test/lib/setup-renderer.js \
 --renderer \
-test/shot-generator/extract-preset-data.test.renderer.js
+test/shot-generator/preset-import-export.test.renderer.js
 
 # run interactively (can't reload for some reason, have to quit and restart each time)
 npx electron-mocha \
 --interactive \
 --preload test/lib/setup-renderer.js \
 --renderer \
-test/shot-generator/extract-preset-data.test.renderer.js
+test/shot-generator/preset-import-export.test.renderer.js
 
 */
 
