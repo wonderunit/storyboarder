@@ -157,7 +157,7 @@ const createVolume = (id, camera, room) => {
   })
 }
 
-const createImage = (id, camera, room) => {
+const createImage = (id, camera, room, imagePath = 'placeholder') => {
   let { x, y, z, rotation } = generatePositionAndRotation(camera, room)
   
   return createObject({
@@ -174,7 +174,7 @@ const createImage = (id, camera, room) => {
     visible: true,
     opacity: 1,
     visibleToCam: true,
-    imageAttachmentIds: ['placeholder']
+    imageAttachmentIds: [imagePath]
   })
 }
 

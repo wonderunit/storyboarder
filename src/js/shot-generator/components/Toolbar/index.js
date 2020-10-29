@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import React, { useMemo, useRef }  from 'react'
+import React, { useMemo, useRef, useEffect }  from 'react'
 import {
   // action creators
   selectObject,
@@ -17,7 +17,10 @@ import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 
 import Icon from '../Icon'
 import useTooltip from '../../../hooks/use-tooltip'
+
+
 import { useTranslation } from 'react-i18next'
+import { useInsertImage } from '../../hooks/use-insert-image'
 // because webpack
 const { shell } = require('electron')
 
@@ -70,6 +73,7 @@ const Toolbar = connect(
 
     notifications
   }) => {
+
     let cameraState = null
     let camera = useRef(null)
     let { t } = useTranslation()
@@ -89,6 +93,28 @@ const Toolbar = connect(
       () => roomObject3dFactory(room),
       [room]
     )
+
+    const initializeImage = (id, imagePath = "") => {
+      initCamera()
+      undoGroupStart()
+      createImage(id, camera.current, room.visible && roomObject3d, imagePath)
+      selectObject(id)
+      undoGroupEnd()
+    }
+
+    const { dragOver, imageDrop, createImageFromClipboard } = useInsertImage(initializeImage)
+
+    useEffect(() => {
+      window.addEventListener('paste', createImageFromClipboard, false)
+      window.addEventListener('drop', imageDrop, false) 
+      window.addEventListener('dragover', dragOver, false); 
+      return () => {
+        window.removeEventListener('dragover', dragOver); 
+        window.removeEventListener('drop', imageDrop)
+        window.removeEventListener('paste', createImageFromClipboard)
+      }
+    }, [])
+  
 
     const initCamera = () => {
       withState((dispatch, state) => {
@@ -155,12 +181,10 @@ const Toolbar = connect(
 
     const onCreateImageClick = () => {
       let id = THREE.Math.generateUUID()
-      initCamera()
-      undoGroupStart()
-      createImage(id, camera.current, room.visible && roomObject3d)
-      selectObject(id)
-      undoGroupEnd()
+      initializeImage(id)
     }
+
+
 
     const onSaveToBoardClick = () => {
       ipcRenderer.send('shot-generator:requestSaveShot')

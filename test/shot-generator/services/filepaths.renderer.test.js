@@ -74,5 +74,17 @@ describe('filepaths', function () {
         path.normalize('PROJECT_DIR/models/attachables')
       )
     })
+    it('can get system image file path', () => {
+      assert.strictEqual(
+        getAssetPath('image', `placeholder.png`),
+        'APP_DIR/data/shot-generator/images/placeholder.png'
+      )
+    })
+    it('can get user image file path', () => {
+      assert.strictEqual(
+        getAssetPath('image', `models/images/texture.png`),
+        'PROJECT_DIR/models/images/texture.png'
+      )
+    })
   })
 })
