@@ -7,7 +7,8 @@ function getSystemDirectoryFor (pathToShotGeneratorData) {
       'character': path.join(pathToShotGeneratorData, 'dummies', 'gltf'),
       'attachable': path.join(pathToShotGeneratorData, 'attachables'),
       'emotion': path.join(pathToShotGeneratorData, 'emotions'),
-      'xr': path.join(pathToShotGeneratorData, 'xr')
+      'xr': path.join(pathToShotGeneratorData, 'xr'),
+      'image': path.join(pathToShotGeneratorData, 'images')
     }[type]
   }
 }
@@ -19,7 +20,8 @@ function getProjectDirectory (base) {
       'character': path.join(base, 'models', 'characters'),
       'environment': path.join(base, 'models', 'environments'),
       'attachable': path.join(base, 'models', 'attachables'),
-      'emotion': path.join(base, 'models', 'emotions')
+      'emotion': path.join(base, 'models', 'emotions'),
+      'image': path.join(base, 'models', 'images')
     }[type]
   }
 }

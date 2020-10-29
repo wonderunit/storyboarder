@@ -471,7 +471,8 @@
 			},
 			"emotions": {
 					"no-value":"Ничто",
-					"search-list-label": "Найти эмоции …"
+					"search-list-label": "Найти эмоции …",
+					"emotion-creation-help": "Как создать эмоции для персонажей"
 			},
 			"object": {
 			  "drop-object": "Опустить объект на пол"

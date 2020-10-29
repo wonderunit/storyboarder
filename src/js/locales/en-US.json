@@ -48,7 +48,7 @@
       "undo": "Undo",
       "redo": "Redo",
       "cut": "Cut",
-      "copy": "Cpy",
+      "copy": "Copy",
       "paste": "Paste",
       "paste-and-replace": "Paste and Replace",
       "select-all": "Select All",
@@ -471,7 +471,8 @@
       },
       "emotions": {
         "no-value": "None",
-        "search-list-label": "Search Your Emotions …"
+        "search-list-label": "Search Your Emotions …",
+        "emotion-creation-help": "How to Create Emotions for Characters"
       },
       "object": {
         "drop-object": "Drop Object to the floor"
@@ -531,7 +532,7 @@
       "image": {
         "tooltip": {
           "title": "Add Image",
-          "description": "Add an image. You can specify a custom image properties on the left. This is useful for reference images or posters or matte paintings in your scene."
+          "description": "Useful for reference images, posters, or matte paintings in your scene. Once added, use the Inspector (at left) to select an image file and set properties. You can also drag and drop an image file onto the scene, or paste an image from the clipboard."
         },
         "title": "Image"
       },
