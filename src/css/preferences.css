@@ -67,16 +67,26 @@ input[type="checkbox"] + label span {
   cursor: pointer;
 }
 
+input[type=checkbox]:checked + label {
+  position: relative;
+}
+
 input[type=checkbox]:checked + label:before {
   content:'✖';
-  padding-left: 5px;
-  padding-top: 3px;
+  /* padding-left: 5px;
+  padding-top: 3px; */
   text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
   font-size: 15px;
   text-align: center;
   line-height: 1;
   position: absolute;
   color: white;
+
+  margin: auto;
+  left: 1px;
+  top: 1px;
+  width: 20px;
+  height: 14px;
 }
 
 input[type=number] {

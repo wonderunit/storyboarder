@@ -96,7 +96,7 @@ const SceneManagerR3fSmall = connect(
       e.object.traverseAncestors((o) => {
         if(o.userData.id) match = o
       })
-      if(!match || !match.userData || match.userData.locked ) return
+      if(!match || !match.userData || match.userData.locked || match.userData.blocked) return
       selectObject(match.userData.id)
       if(match.userData.type === "camera") {
         setActiveCamera(match.userData.id)

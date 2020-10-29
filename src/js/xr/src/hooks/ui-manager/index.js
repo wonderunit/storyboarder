@@ -907,7 +907,19 @@ class CanvasRenderer {
     if (image) {
       onSuccess(image)
     } else {
-      new THREE.ImageBitmapLoader().load(filepath, this.requestRender.bind(this))
+      SG.getResource('image', filepath)
+      .then(({type, filePath, data}) => {
+        onBitmapImageBufferLoad(filepath, data)
+        .then((bitmap) => {
+          console.log('BITMAP LOADED: ', filepath)
+          THREE.Cache.add( filepath, bitmap )
+          this.requestRender()
+        })
+        .catch(err => {
+          console.log('BITMAP ERROR', err)
+        })
+      })
+      //ImageBitmapLoader
       onFail()
     }
   }
@@ -1200,6 +1212,7 @@ const {
   reducer,
   getHash
 } = require('../../../../shared/reducers/shot-generator')
+const { onBitmapImageBufferLoad } = require('../../helpers/resourceLoaders')
 
 // the 'stand' pose preset used for new characters
 const defaultPosePreset = getDefaultPosePreset()
@@ -1278,12 +1291,38 @@ const useUiManager = ({ playSound, stopSound, SG }) => {
     characterModels
       .map(model => model.id)
       .map(getCharacterImageFilepathById)
-      .map(filepath => new THREE.ImageBitmapLoader().load(filepath))
+      .map(filepath => {
+        SG.getResource('image', filepath)
+        .then(({type, filePath, data}) => {
+          onBitmapImageBufferLoad(filepath, data)
+          .then((bitmap) => {
+            console.log('BITMAP LOADED: ', filepath)
+            THREE.Cache.add( filepath, bitmap )
+          })
+          .catch(err => {
+            console.log('BITMAP ERROR', err)
+          })
+        })
+      })
+      //.map(filepath => new THREE.ImageBitmapLoader().load(filepath))
 
     objectModels
       .map(model => model.id)
       .map(getModelImageFilepathById)
-      .map(filepath => new THREE.ImageBitmapLoader().load(filepath))
+      .map(filepath => {
+        SG.getResource('image', filepath)
+        .then(({type, filePath, data}) => {
+          onBitmapImageBufferLoad(filepath, data)
+          .then((bitmap) => {
+            console.log('BITMAP LOADED: ', filepath)
+            THREE.Cache.add( filepath, bitmap )
+          })
+          .catch(err => {
+            console.log('BITMAP ERROR', err)
+          })
+        })
+      })
+      //.map(filepath => new THREE.ImageBitmapLoader().load(filepath))
   }, [])
 
   const [uiCurrent, uiSend, uiService] = useMachine(

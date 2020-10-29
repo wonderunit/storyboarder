@@ -83,7 +83,6 @@ const show = async (onComplete) => {
     }
   })
 
-
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
   //

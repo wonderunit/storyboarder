@@ -905,6 +905,35 @@ const sceneObjectsReducer = (state = {}, action) => {
           )
         )
 
+      case 'BLOCK_OBJECT': 
+        let objectsToBlock = Array.isArray(action.payload) ? action.payload : [action.payload]
+        for(let id of objectsToBlock) {
+          if (draft[id]) {
+            draft[id].blocked = true
+          }
+        }
+
+        return draft
+
+      case 'UNBLOCK_OBJECT': 
+        let objectsToUnblock = Array.isArray(action.payload) ? action.payload : [action.payload]
+        for(let id of objectsToUnblock) {
+          if (draft[id]) {
+            draft[id].blocked = false
+          }
+        }
+
+        return draft
+
+      case 'UNBLOCK_ALL':
+        for(let id of Object.keys(draft)) {
+          if (draft[id]) {
+            draft[id].blocked = false
+          }
+        }
+
+        return draft
+
       case 'CREATE_OBJECT':
         let id = action.payload.id != null
           ? action.payload.id
@@ -1670,6 +1699,11 @@ module.exports = {
   initialState,
 
   reducer: rootReducer,
+
+  // internal actions
+  _blockObject: id => ({ type: 'BLOCK_OBJECT', payload: id}),
+  _unblockObject: id => ({ type: 'UNBLOCK_OBJECT', payload: id}),
+  _unblockAll: id => ({ type: 'UNBLOCK_ALL' }),
 
   //
   //

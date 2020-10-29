@@ -276,7 +276,7 @@ const InteractionManager = connect(
                     //  and its the one we pointerdown'd ...
                     selections[0] === target.userData.id
                   ) {
-                    if (target.userData.locked) {
+                    if (target.userData.locked || target.userData.blocked) {
                       selectObject(null)
                       selectBone(null)
                       setLastDownId(null)
@@ -411,7 +411,7 @@ const InteractionManager = connect(
                   }
                 } else {
                   // if the pointerup'd target is not part of the multi-selection
-                  if (!selections.includes(target.userData.id) && !target.userData.locked) {
+                  if (!selections.includes(target.userData.id) && !target.userData.locked && !target.userData.blocked) {
                     // clear the multi-selection and select just the target
                     let object = sceneObjects[target.userData.id]
                     if (object && object.group) {

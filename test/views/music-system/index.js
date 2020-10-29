@@ -17,6 +17,22 @@ const preventDefault = (fn, ...args) => e => {
   fn(e, ...args)
 }
 
+let urlMap
+async function loadFileAsAudioBuffer (audioContext, filename) {
+  let response = await fetch(filename)
+  let arrayBuffer = await response.arrayBuffer()
+  return await new Promise(resolve => audioContext.decodeAudioData(arrayBuffer, resolve))
+}
+async function preload () {
+  let audioContext = new AudioContext()
+  urlMap = {
+    'C4': await loadFileAsAudioBuffer(audioContext, '/src/data/shot-generator/xr/snd/vr-instrument-c4.ogg'),
+    'C5': await loadFileAsAudioBuffer(audioContext, '/src/data/shot-generator/xr/snd/vr-instrument-c5.ogg'),
+    'C6': await loadFileAsAudioBuffer(audioContext, '/src/data/shot-generator/xr/snd/vr-instrument-c6.ogg')
+  }
+}
+preload()
+
 window.onclick = function () {
   window.onclick = undefined
 
@@ -36,11 +52,7 @@ window.onclick = function () {
 
     // attach the music system
     let { sampler } = musicSystem.init({
-      urlMap: {
-        'C4': '/src/data/shot-generator/xr/snd/vr-instrument-c4.ogg',
-        'C5': '/src/data/shot-generator/xr/snd/vr-instrument-c5.ogg',
-        'C6': '/src/data/shot-generator/xr/snd/vr-instrument-c6.ogg'
-      },
+      urlMap,
       audioContext: audio.context,
       audioNode: audio,
       onComplete: function () {

@@ -1,0 +1,8 @@
+node_modules
+.idea
+.vscode
+dist
+
+# used in development mode
+cert.pem
+key.pem

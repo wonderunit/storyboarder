@@ -58,7 +58,7 @@ const Light = React.memo(({sceneObject, isSelected, children, show = true,...pro
     }
   }, [])
 
-  const { x, y, z, visible, locked } = sceneObject
+  const { x, y, z, visible, locked, blocked } = sceneObject
   return <group
       ref={ ref }
       onController={ visible ? () => null : null }
@@ -66,7 +66,8 @@ const Light = React.memo(({sceneObject, isSelected, children, show = true,...pro
       userData={{
         id: sceneObject.id,
         type: "light",
-        locked: locked
+        locked: locked,
+        blocked: blocked
       }}
       position={ [x, z, y] }
     >
