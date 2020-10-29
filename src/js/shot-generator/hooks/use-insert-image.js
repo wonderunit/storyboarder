@@ -36,7 +36,7 @@ const useInsertImage = (initializeImage) => {
           let blob = item.getAsFile()
   
           let imageId = THREE.Math.generateUUID()
-          let imageProjectPath =path.join('models', 'images', `${imageId}-texture.png}`)
+          let imageProjectPath = path.join('models', 'images', `${imageId}-texture.png`)
           let imagePath = getAssetPath('image', imageProjectPath)
           let reader = new FileReader()
           reader.onload = function() {
