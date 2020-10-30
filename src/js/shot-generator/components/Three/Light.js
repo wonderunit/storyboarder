@@ -50,7 +50,15 @@ const Light = React.memo(({sceneObject, isSelected, children, show = true,...pro
     }
   }, [isSelected]) 
 
-  const { x, y, z, visible, locked } = sceneObject
+  useEffect(() => {
+    return () => {
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      }
+    }
+  }, [])
+
+  const { x, y, z, visible, locked, blocked } = sceneObject
   return <group
       ref={ ref }
       onController={ visible ? () => null : null }
@@ -58,7 +66,8 @@ const Light = React.memo(({sceneObject, isSelected, children, show = true,...pro
       userData={{
         id: sceneObject.id,
         type: "light",
-        locked: locked
+        locked: locked,
+        blocked: blocked
       }}
       position={ [x, z, y] }
     >

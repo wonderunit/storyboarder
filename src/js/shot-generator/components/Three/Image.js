@@ -45,6 +45,14 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   }, [ref.current, sceneObject.visibleToCam])
 
   useEffect(() => {
+    return () => {
+      if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+        props.objectRotationControl.deselectObject()
+      }
+    }
+  }, [])
+
+  useEffect(() => {
     if (isSelected) {
       props.objectRotationControl.setUpdateCharacter((name, rotation) => {
         let euler = new THREE.Euler().setFromQuaternion(ref.current.worldQuaternion())
@@ -66,7 +74,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     }
   }, [isSelected]) 
 
-  const { x, y, z, visible, height, rotation, locked } = sceneObject
+  const { x, y, z, visible, height, rotation, locked, blocked } = sceneObject
 
   useEffect(() => {
     if(!props.objectRotationControl || !isSelected) return
@@ -80,7 +88,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       userData={{
         type: "image",
         id: sceneObject.id,
-        locked: locked
+        locked: locked,
+        blocked: blocked
       }}
       visible={ visible }
       position={ [x, z, y] }

@@ -1,8 +1,4 @@
-//
-// USAGE:
-//
-// find src/js/exporters/copy-project.js test/exporters/copy-project.test.js | entr -c npx electron-mocha --renderer test/exporters/copy-project.test.js
-//
+// npx electron-mocha --watch --renderer test/exporters/copy-project.test.js
 
 'use strict';
 const fs = require('fs-extra')
@@ -39,6 +35,13 @@ const withCustomModels = string => {
     .world
     .environment
     .file = 'models/environments/skatepark.glb'
+  board.sg.data
+    .sceneObjects['14A97259-9282-4725-B8A1-00A03E57831A'] = {
+      id: '14A97259-9282-4725-B8A1-00A03E57831A',
+      type: 'attachable',
+      attachableType: 'hair',
+      model: 'models/attachables/custom-hair.glb'
+    }
   return JSON.stringify(data)
 }
 
@@ -141,6 +144,9 @@ describe('exporters/copyProject', () => {
             },
             'environments': {
               'skatepark.glb':                    EMPTY_BUFFER
+            },
+            'attachables': {
+              'custom-hair.glb':                  EMPTY_BUFFER
             }
           }
         }
@@ -236,9 +242,10 @@ describe('exporters/copyProject', () => {
       assert(fs.existsSync(path.join(dstFolderPath, 'images')), 'images/ folder should exist')
       assert(fs.existsSync(path.join(dstFolderPath, 'models')), 'models/ folder should exist')
     
-      // custom model is included
+      // custom models are included
       assert(fs.existsSync(path.join(dstFolderPath, 'models', 'characters', 'character.glb')), 'includes character.glb')
       assert(fs.existsSync(path.join(dstFolderPath, 'models', 'environments', 'skatepark.glb')), 'includes skatepark.glb')
+      assert(fs.existsSync(path.join(dstFolderPath, 'models', 'attachables', 'custom-hair.glb')), 'includes custom-hair.glb')
     })
 
     it('includes camera plot', () => {

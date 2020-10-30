@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
-import TWEEN from '@tweenjs/tween.js'
-
-import { ipcRenderer } from 'electron'
+import electron from 'electron'
+const { ipcRenderer, webFrame, remote } = electron
+const { app } = remote
 import KeyHandler from './../KeyHandler'
 import CameraPanelInspector from './../CameraPanelInspector'
 import CamerasInspector from './../CamerasInspector'
@@ -12,14 +12,16 @@ import SceneManagerR3fSmall from '../../SceneManagerR3fSmall'
 import Toolbar from './../Toolbar'
 import FatalErrorBoundary from './../FatalErrorBoundary'
 
-import { useExportToGltf } from '../../../hooks/use-export-to-gltf'
+import useSaveToStoryboarder from '../../hooks/use-save-to-storyboarder'
+import { useExportToGltf, loadCameraModel } from '../../../hooks/use-export-to-gltf'
 
 import useComponentSize from './../../../hooks/use-component-size'
 
-import { Canvas, useFrame, useThree } from 'react-three-fiber'
+import { Canvas } from 'react-three-fiber'
 
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import {
+  getWorld,
   selectObject,
   setMainViewCamera,
   getIsSceneDirty
@@ -32,44 +34,36 @@ import ElementsPanel from '../ElementsPanel'
 import BoardInspector from '../BoardInspector'
 import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
-import {useAsset, cleanUpCache} from '../../hooks/use-assets-manager'
+import { useAsset } from '../../hooks/use-assets-manager'
 
-
-import {OutlineEffect} from './../../../vendor/OutlineEffect'
+import { useTranslation } from 'react-i18next';
 import Stats from 'stats.js'
 
-const Effect = ({renderData, stats}) => {
-  const {gl, size} = useThree()
+import FilepathsContext from '../../contexts/filepaths'
+const {
+  createUserPresetPathResolver,
+  createAssetPathResolver
+} = require('../../services/filepaths')
 
-  const outlineEffect = new OutlineEffect(gl, { defaultThickness: 0.015 })
-  
-  useEffect(() => void outlineEffect.setSize(size.width, size.height), [size])
-  useFrame(({ scene, camera }) => {
-    if(stats) stats.begin()
-    TWEEN.update()
-    if(renderData) {
-      outlineEffect.render(renderData.scene, renderData.camera)
-    } else {
-      outlineEffect.render(scene, camera)
-    }
-    if(stats) stats.end()
-  }, 1)
-  
-  return null
-}
+import useUIScale from '../../hooks/use-ui-scale'
+
+const getUserPresetPath = createUserPresetPathResolver(remote.app.getPath('userData'))
 
 const Editor = React.memo(({
-  mainViewCamera, aspectRatio, board, setMainViewCamera, withState, store, onBeforeUnload
+  mainViewCamera, aspectRatio, board, world, storyboarderFilePath,
+  setMainViewCamera, withState, store, onBeforeUnload,
 }) => {
   if (!board.uid) {
     return null
   }
-  
+  const { t } = useTranslation()
   const notificationsRef = useRef(null)
+
   const mainViewContainerRef = useRef(null)
   const [stats, setStats] = useState()
   const largeCanvasSize = useComponentSize(mainViewContainerRef)
   const [largeCanvasInfo, setLargeCanvasInfo] = useState({width: 0, height: 0})
+  const { setScale, scaleBy, resizeScale } = useUIScale()
   const toggleStats = (event, value) => {
     if (!stats) {
       let newStats
@@ -83,14 +77,25 @@ const Editor = React.memo(({
       document.body.removeChild( stats.dom )
       setStats(undefined)
       }
-    }
+  }
 
   useEffect(() => {
+    loadCameraModel()
+  }, [])
+
+  useEffect(() => {
+    electron.remote.getCurrentWindow().on('resize', resizeScale)
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
+    ipcRenderer.on('shot-generator:menu:view:scale-ui-by', scaleBy)
+    ipcRenderer.on('shot-generator:menu:view:scale-ui-reset', setScale)
     return () => {
+      electron.remote.getCurrentWindow().off('resize', resizeScale)
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
+      ipcRenderer.off('shot-generator:menu:view:scale-ui-by', scaleBy)
+      ipcRenderer.off('shot-generator:menu:view:scale-ui-reset', setScale)
     }
   }, [])
+
 
   /** Resources loading end */
   useEffect(() => {
@@ -141,11 +146,13 @@ const Editor = React.memo(({
     setLargeCanvasInfo({width, height})
   }, [largeCanvasSize.width, largeCanvasSize.height, aspectRatio])
 
+  const [mainCanvasData, setMainCanvasData] = useState({})
   const largeCanvasData = useRef({})
   const setLargeCanvasData = (camera, scene, gl) => {
     largeCanvasData.current.camera = camera
     largeCanvasData.current.scene = scene
     largeCanvasData.current.gl = gl
+    setMainCanvasData(largeCanvasData.current)
   }
 
   const smallCanvasData = useRef({})
@@ -155,95 +162,119 @@ const Editor = React.memo(({
     smallCanvasData.current.gl = gl
   }
 
-  useExportToGltf(largeCanvasData.current.scene, withState)
-  
-  return (
-    <FatalErrorBoundary key={board.uid}>
-      <div id="root">
-        <Toolbar
-          withState={withState}
-          ipcRenderer={ipcRenderer}
-          notifications={notifications}
-        />
-        <div id="main">
-          <div id="aside">
+  const { insertNewShot, saveCurrentShot } = useSaveToStoryboarder(
+    largeCanvasData, smallCanvasData, aspectRatio, world.shadingMode, world.backgroundColor
+  )
+  useEffect(() => {
+    ipcRenderer.on('requestSaveShot', saveCurrentShot)
+    return () => ipcRenderer.removeListener('requestSaveShot', saveCurrentShot)
+  }, [saveCurrentShot])
+  useEffect(() => {
+    ipcRenderer.on('requestInsertShot', insertNewShot)
+    return () => ipcRenderer.removeListener('requestInsertShot', insertNewShot)
+  }, [insertNewShot])
 
-            <div id="topdown">
-            <Canvas
-                key="top-down-canvas"
-                id="top-down-canvas"
-                tabIndex={0}
-                gl2={true}
-                orthographic={ true }
-                updateDefaultCamera={ false }
-                noEvents={ true }>
-                <Provider store={ store }>
-                  <SceneManagerR3fSmall
-                    renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
-                    mainRenderData={ mainViewCamera === "live" ? largeCanvasData.current : smallCanvasData.current }
-                    setSmallCanvasData={ setSmallCanvasData }
-                    />
-                </Provider>
-                <Effect renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }/>
-              </Canvas>
-              <div className="topdown__controls">
-                <div className="row"/>
-                <div className="row">
-                  <a href="#" onClick={onSwapCameraViewsClick}>
-                    <Icon src="icon-camera-view-expand"/>
-                  </a>
+  useExportToGltf( mainCanvasData.scene, withState)
+
+  const filepathsState = useMemo(
+    () => ({
+      getAssetPath: createAssetPathResolver(window.__dirname, storyboarderFilePath),
+      getUserPresetPath
+    }),
+    [window.__dirname, storyboarderFilePath]
+  )
+
+  return (
+    <FilepathsContext.Provider value={filepathsState}>
+      <FatalErrorBoundary key={board.uid}>
+        <div id="root">
+          <Toolbar
+            withState={withState}
+            ipcRenderer={ipcRenderer}
+            notifications={notifications}
+          />
+          <div id="sg-main">
+            <div id="aside">
+
+              <div id="topdown">
+              <Canvas
+                  key="top-down-canvas"
+                  id="top-down-canvas"
+                  tabIndex={0}
+                  gl2={true}
+                  orthographic={ true }
+                  updateDefaultCamera={ false }
+                  noEvents={ true }>
+                  <Provider store={ store }>
+                    <SceneManagerR3fSmall
+                      renderData={ mainViewCamera === "live" ? null : largeCanvasData.current }
+                      mainRenderData={ mainViewCamera === "live" ? largeCanvasData.current : smallCanvasData.current }
+                      setSmallCanvasData={ setSmallCanvasData }
+                      mainViewCamera={mainViewCamera}
+                      />
+                  </Provider>
+                </Canvas>
+                <div className="topdown__controls">
+                  <div className="row"/>
+                  <div className="row">
+                    <a href="#" onClick={onSwapCameraViewsClick}>
+                      <Icon src="icon-camera-view-expand"/>
+                    </a>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div id="elements">
-              <ElementsPanel/>
-            </div>
-          </div>
-
-          <div className="column fill">
-            <div id="camera-view" ref={ mainViewContainerRef }>
-              <div id="camera-view-view" style={{ width: largeCanvasInfo.width, height: largeCanvasInfo.height }}>
-                  <Canvas
-                  tabIndex={ 1 }
-                  key="camera-canvas"
-                  id="camera-canvas"
-                  gl2={true}
-                  updateDefaultCamera={ true }
-                  noEvents={ true }>
-                    <Provider store={ store }>
-                      <SceneManagerR3fLarge
-                        renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                        setLargeCanvasData= { setLargeCanvasData }/>
-                    </Provider>
-                    <Effect renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
-                          stats={ stats } />
-                    
-                  </Canvas>
-                  <GuidesView
-                    dimensions={guidesDimensions}
-                  />
+              <div id="elements">
+                <ElementsPanel/>
               </div>
             </div>
-            <div className="inspectors">
-              <CameraPanelInspector/>
-              <BoardInspector/>
-              <div style={{ flex: "1 1 auto" }}>
-                <CamerasInspector/>
-                <GuidesInspector/>
+
+            <div className="column fill">
+              <div id="camera-view" ref={ mainViewContainerRef }>
+                <div id="camera-view-view" style={{ width: largeCanvasInfo.width, height: largeCanvasInfo.height }}>
+                    <Canvas
+                    tabIndex={ 1 }
+                    key="camera-canvas"
+                    id="camera-canvas"
+                    gl2={true}
+                    updateDefaultCamera={ true }
+                    noEvents={ true }>
+                      <Provider store={ store }>
+                        <FilepathsContext.Provider value={filepathsState}>
+                          <SceneManagerR3fLarge
+                            renderData={ mainViewCamera === "live" ? null : smallCanvasData.current }
+                            setLargeCanvasData= { setLargeCanvasData }
+                            mainViewCamera={mainViewCamera}
+                            stats={stats}
+                            />
+                        </FilepathsContext.Provider>
+                      </Provider>
+                    </Canvas>
+                    <GuidesView
+                      dimensions={guidesDimensions}
+                    />
+                </div>
+              </div>
+              <div className="inspectors">
+                <CameraPanelInspector/>
+                <BoardInspector/>
+                <div style={{ flex: "1 1 auto" }}>
+                  <CamerasInspector/>
+                  <GuidesInspector/>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-      <KeyHandler/>
-      <MenuManager/>
+        <KeyHandler/>
+        <MenuManager t={ t }/>
 
-      <div
-        className="notifications"
-        ref={notificationsRef}
-      />
-    </FatalErrorBoundary>
+        <div
+          className="notifications"
+          ref={notificationsRef}
+        />
+      </FatalErrorBoundary>
+    </FilepathsContext.Provider>
   )
 })
 
@@ -252,7 +283,9 @@ export default connect(
   (state) => ({
     mainViewCamera: state.mainViewCamera,
     aspectRatio: state.aspectRatio,
-    board: state.board
+    board: state.board,
+    world: getWorld(state),
+    storyboarderFilePath: state.meta.storyboarderFilePath
   }),
   {
     withState,
@@ -264,6 +297,6 @@ export default connect(
         // to trigger `will-prevent-unload` on BrowserWindow
         event.returnValue = false
       }
-    },
+    }
   }
 )(Editor)

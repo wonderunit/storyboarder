@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useRef} from 'react'
+import React, {useCallback, useEffect, useRef, useMemo} from 'react'
 
 import {acceleratorAsHtml} from '../utils'
 
@@ -90,36 +90,35 @@ const tooltipContent = (title, description, keys, position = 'top center') => {
  * @returns {Object} Events to attach
  */
 const useTooltip = (title, description, keys, position = 'top center', time = 2000) => {
-  const content = useRef(tooltipContent(title, description, keys, position))
+  const content = useMemo(() => tooltipContent(title, description, keys, position), [title])
   const timeoutRef = useRef(-1)
   const offsets = tooltipOffset[position] || tooltipOffset['top center']
-
   const onPointerEnter = useCallback((event) => {
     const element = event.currentTarget
     const rect = element.getBoundingClientRect()
     
     timeoutRef.current = setTimeout(() => {
-      document.body.appendChild(content.current)
+      document.body.appendChild(content)
       
-      const {heightOffset, widthOffset} = offsets(element, content.current)
+      const {heightOffset, widthOffset} = offsets(element, content)
 
-      content.current.style.top = `${rect.top + heightOffset}px`
-      content.current.style.left = `${rect.left + widthOffset}px`
+      content.style.top = `${rect.top + heightOffset}px`
+      content.style.left = `${rect.left + widthOffset}px`
     }, time)
-  }, [])
+  }, [title])
 
   const onPointerLeave = useCallback(() => {
     if (timeoutRef.current !== -1) {
       clearTimeout(timeoutRef.current)
     }
-    if (content.current.parentNode) {
-      content.current.parentNode.removeChild(content.current)
+    if (content.parentNode) {
+      content.parentNode.removeChild(content)
     }
-  }, [])
+  }, [title])
   
   useEffect(() => () => {
-    if (content.current.parentNode) {
-      content.current.parentNode.removeChild(content.current)
+    if (content.parentNode) {
+      content.parentNode.removeChild(content)
     }
   }, [])
 

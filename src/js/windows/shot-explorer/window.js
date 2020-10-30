@@ -9,7 +9,6 @@ const thunkMiddleware = require('redux-thunk').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState } = require('../../shared/reducers/shot-generator')
-
 const poses = require('../../shared/reducers/shot-generator-presets/poses.json')
 const ShotExplorer = require('../../shot-explorer').default
 const service = require('../shot-generator/service')
@@ -21,7 +20,9 @@ const {
   loadScene,
   resetScene,
 } = require('../../shared/reducers/shot-generator')
+const i18n = require('../../services/i18next.config')
 
+require("../../shared/helpers/monkeyPatchGrayscale")
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false
@@ -59,7 +60,7 @@ const configureStore = function configureStore (preloadedState) {
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
               }
-              next(action)
+              return next(action)
             })
       )
     )
@@ -140,6 +141,14 @@ ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
   sendedAction.push(action)
 })
 
+ipcRenderer.on("shot-explorer:change-language", (event, lng) => {
+  i18n.changeLanguage(lng)
+})
+
+ipcRenderer.on("shot-explorer:language-modified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
+})
+
 electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
   isBoardShown = false
 })
@@ -151,11 +160,12 @@ electron.remote.getCurrentWindow().on("hide", () => {
 const pushUpdates = () => {
   shotExplorerElement = renderShotExplorer()
   batch(() => {
-    for(let i = 0; i < sendedAction.length; i++) {
+    for(let i = 0, length = sendedAction.length; i < length; i++) {
       let object = sendedAction[i]
       let action = object
       if(!action.type) {
         action = JSON.parse(object)
+        sendedAction.push(action)
       }
       store.dispatch(action)
     }

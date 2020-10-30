@@ -50,3 +50,77 @@ div#main {
 
   cursor: default;
 }
+
+
+.progress-container {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+
+  top: 0;
+  left: 0;
+
+  z-index: 999;
+
+  background: #212128;
+
+
+  display: flex;
+  flex-direction: column;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.progress-bar {
+  box-sizing: border-box;
+
+  width: 60%;
+  height: 18px;
+
+  border: 1px solid transparent;
+  border-radius: 9px;
+
+  box-shadow: 0 0 0 1px #5c65c0;
+
+  overflow: hidden;
+}
+
+.progress-bar > div {
+  height: 100%;
+  width: 0;
+
+  transition: width 0.3s;
+
+  background: #5c65c0;
+}
+
+.progress-msg {
+  color: #9A9EC7;
+  opacity: 0.8;
+  padding: 6px 4px;
+
+  font: normal 15px sans-serif;
+
+  min-height: 25px;
+}
+
+.progress-branding {
+  color: #9A9EC7;
+  font-family: sans-serif;
+  margin: 4rem 0;
+  margin-top: -6rem;
+  font-size: 1.5rem;
+}
+.progress-branding div:first-child {
+  font-size: 0.75em;
+  font-weight: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  opacity: 0.4;
+}
+.progress-branding div:last-child {
+  font-size: 2em;
+  font-weight: bold;
+  opacity: 0.8;
+}

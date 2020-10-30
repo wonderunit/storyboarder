@@ -18,9 +18,10 @@ const Ground = React.memo(({ objRef, texture, visible }) => {
       type: "ground"
     }}
     onUpdate={self => (self.layers.enable(SHOT_LAYERS))}
+    visible={ visible }
   >
     <planeBufferGeometry attach="geometry" args={ [135 / 3, 135 / 3, 32] } />
-    <meshToonMaterial attach="material" side={ THREE.FrontSide } visible={ visible }>
+    <meshToonMaterial attach="material" side={ THREE.FrontSide } >
       <primitive attach="map" object={ texture } />
     </meshToonMaterial>
   </mesh>

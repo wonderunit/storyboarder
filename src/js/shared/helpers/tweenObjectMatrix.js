@@ -13,6 +13,11 @@ const tweenObjectMatrix = (object, matrix = null, parameters = {}) => {
 
   const localMatrix = new THREE.Matrix4()
   localMatrix.elements = Array.isArray(matrix) ? matrix : matrix.elements
+  
+  if (!localMatrix.elements || localMatrix.elements.length !== 16) {
+    return false
+  }
+  
   localMatrix.decompose(pos, rot, scale)
 
   const prevPos = object.position.clone()

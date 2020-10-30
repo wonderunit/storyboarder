@@ -8,7 +8,7 @@ import {
   updateObjects,
   setActiveCamera
 } from '../shared/reducers/shot-generator'
-import { useThree } from 'react-three-fiber'
+import { useThree, useFrame } from 'react-three-fiber'
 import IconsComponent from './components/IconsComponent'
 import CameraIcon from './components/Three/Icons/CameraIcon'
 import useFontLoader from './hooks/use-font-loader'
@@ -16,7 +16,8 @@ import path from 'path'
 import ModelObject from './components/Three/ModelObject'
 import ModelLoader from '../services/model-loader'
 import { useDraggingManager } from './hooks/use-dragging-manager'
-import SaveShot from './components/Three/SaveShot'
+import useShadingEffect from './hooks/use-shading-effect'
+import { ShadingType } from '../vendor/shading-effects/ShadingType'
 import Room from './components/Three/Room'
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
@@ -47,9 +48,11 @@ const SceneManagerR3fSmall = connect(
     setSmallCanvasData,
     renderData,
     mainRenderData,
-    setActiveCamera
+    setActiveCamera,
+
+    mainViewCamera
 }) => {
-    const { scene, camera, gl } = useThree()
+    const { scene, camera, gl, size } = useThree()
     const rootRef = useRef()
     const draggedObject = useRef(null)
 
@@ -80,14 +83,6 @@ const SceneManagerR3fSmall = connect(
     }, [actualGL])
 
     useEffect(() => {
-      if(renderData) {
-        gl.setSize(Math.floor(300), Math.floor(300 / renderData.camera.aspect))
-      } else {
-        gl.setSize(300, 300)
-      }
-    }, [renderData])
-
-    useEffect(() => {
       if(!scene) return
       scene.background = new THREE.Color('#FFFFFF')
     }, [scene])
@@ -101,7 +96,7 @@ const SceneManagerR3fSmall = connect(
       e.object.traverseAncestors((o) => {
         if(o.userData.id) match = o
       })
-      if(!match || !match.userData || match.userData.locked ) return
+      if(!match || !match.userData || match.userData.locked || match.userData.blocked) return
       selectObject(match.userData.id)
       if(match.userData.type === "camera") {
         setActiveCamera(match.userData.id)
@@ -216,12 +211,48 @@ const SceneManagerR3fSmall = connect(
       return () => window.removeEventListener("pointerup", onPointerUp)
     }, [onPointerUp])
 
+    const getIntersectable = () => {
+      let objects = scene.children[0].children
+      for(let i = 0; i < objects.length; i++) {
+        let object = objects[i]
+        object.renderOrder = i
+      }
+      return objects
+    }
+
     const raycaster = useRef(new THREE.Raycaster())
     const intersectLogic = useCallback((e) => {
       const { x, y } = mouse(e)
       raycaster.current.setFromCamera({x, y}, camera)
-      var intersects = raycaster.current.intersectObjects( scene.children[0].children, true )
-      let target = intersects[0]
+      var intersects = raycaster.current.intersectObjects( getIntersectable(), true )
+      let target
+
+      if (intersects.length) {
+        let closest 
+        let linkedPosition
+        for (let intersect of intersects) {
+          let parent
+          if (intersect.object.type === 'Sprite') {
+            parent = intersect.object.parent.parent
+          } else {
+            parent = intersect.object.parent
+          }
+          linkedPosition = parent.position.clone().setY(0)
+          let newDist = linkedPosition.distanceTo(intersect.point.setY(0))
+          if (newDist < 0.30){
+            if(!closest) {
+              closest = {}
+              closest.parent = parent
+              closest.target = intersect
+            } else if(closest.parent.renderOrder < parent.renderOrder) {
+              closest.parent = parent
+              closest.target = intersect
+            }
+          }
+        }
+
+        target = closest ? closest.target : intersects[0]
+      }
       if(!target || (target.object.userData && target.object.userData.type === "ground")) {
         deselect()
         return
@@ -244,10 +275,32 @@ const SceneManagerR3fSmall = connect(
       }
     }, [actualGL, intersectLogic, onPointerMove])
 
+    const renderer = useShadingEffect(
+      gl,
+      mainViewCamera === 'live' ? ShadingType.Outline : world.shadingMode,
+      world.backgroundColor
+    )
+    useEffect(
+      () => {
+        if (renderData) {
+          renderer.current.setSize(300, Math.floor(300 / aspectRatio))
+        } else {
+          renderer.current.setSize(300, 300)
+        }
+      },
+      [renderer.current, renderData, aspectRatio, size]
+    )
+    useFrame(({ scene, camera }) => {
+      if (renderData) {
+        renderer.current.render(renderData.scene, renderData.camera)
+      } else {
+        renderer.current.render(scene, camera)
+      }
+    }, 1)
+
     /////Render components
     return <group ref={rootRef}>
    
-      <SaveShot isPlot={ true }/>
       <ambientLight
         ref={ambientLightRef}
         color={0xffffff}

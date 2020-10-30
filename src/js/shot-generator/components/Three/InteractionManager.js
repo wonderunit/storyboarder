@@ -178,7 +178,7 @@ const InteractionManager = connect(
     }, [dragTarget])
 
     const onPointerDown = event => {
-        event.preventDefault()
+       // event.preventDefault()
         filterIntersectables()
         let selections = takeSelections()
         // get the mouse coords
@@ -234,6 +234,7 @@ const InteractionManager = connect(
             } else if(target.userData && target.userData.type === 'objectControl') {
                 let objectId = target.characterId
                 let targetElement = target.object
+                if(!targetElement) return
                 if(targetElement.type === "Bone") {
                     let characters = intersectables.current.filter(value => value.uuid === objectId)
                     target = characters[0]
@@ -275,7 +276,7 @@ const InteractionManager = connect(
                     //  and its the one we pointerdown'd ...
                     selections[0] === target.userData.id
                   ) {
-                    if (target.userData.locked) {
+                    if (target.userData.locked || target.userData.blocked) {
                       selectObject(null)
                       selectBone(null)
                       setLastDownId(null)
@@ -338,11 +339,11 @@ const InteractionManager = connect(
         if(dragTarget.target.userData.type === 'character') {
           let ikRig = SGIkHelper.getInstance().ragDoll;
           if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown) {
-            drag({ x, y }, dragTarget.target, camera, selections)
+            drag({ x, y }, dragTarget.target, camera, selections, event.ctrlKey)
           }
         }
         else {
-          drag({ x, y }, dragTarget.target, camera, selections)
+          drag({ x, y }, dragTarget.target, camera, selections, event.ctrlKey)
         }
       }
     }
@@ -410,7 +411,7 @@ const InteractionManager = connect(
                   }
                 } else {
                   // if the pointerup'd target is not part of the multi-selection
-                  if (!selections.includes(target.userData.id) && !target.userData.locked) {
+                  if (!selections.includes(target.userData.id) && !target.userData.locked && !target.userData.blocked) {
                     // clear the multi-selection and select just the target
                     let object = sceneObjects[target.userData.id]
                     if (object && object.group) {
@@ -427,7 +428,7 @@ const InteractionManager = connect(
     
         setLastDownId(null)
     }
-    
+
     useLayoutEffect(() => {
       activeGL.domElement.addEventListener('pointerdown', onPointerDown)
       activeGL.domElement.addEventListener('pointermove', onPointerMove)

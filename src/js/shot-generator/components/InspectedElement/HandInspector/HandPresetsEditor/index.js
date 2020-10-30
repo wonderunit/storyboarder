@@ -5,6 +5,8 @@ import * as THREE from 'three'
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../../package.json'
 import request from 'request'
+import { useTranslation } from 'react-i18next'
+import { remote } from 'electron'
 
 import {
   updateObject,
@@ -14,6 +16,7 @@ import {
   getSelections,
   undoGroupStart,
   undoGroupEnd,
+  deleteHandPosePreset
 } from '../../../../../shared/reducers/shot-generator'
 import defaultPosePresets from '../../../../../shared/reducers/shot-generator-presets/hand-poses.json'
 import presetsStorage from '../../../../../shared/store/presetsStorage'
@@ -34,6 +37,7 @@ import HandPresetsEditorItem from './HandPresetsEditorItem'
 import {useAsset} from '../../../../hooks/use-assets-manager'
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
+
 const getPresetId = deepEqualSelector([getSelections, getSceneObjects], (selections, sceneObjects) => {
   return sceneObjects[selections[0]].handPosePresetId
 })
@@ -61,6 +65,7 @@ const HandPresetsEditor = connect(
     createHandPosePreset,
     undoGroupStart,
     undoGroupEnd,
+    deleteHandPosePreset,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -72,21 +77,21 @@ React.memo(({
   updateObject,
   createHandPosePreset,
   characterPath,
+  deleteHandPosePreset,
   undoGroupStart,
   undoGroupEnd,
   withState
 }) => {
+  const { t } = useTranslation()
   const thumbnailRenderer = useRef()
   const sortedPresets = useRef([])
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
   const newGeneratedId = useRef()
-  const [selectedHand, setSelectedHand] = useState("BothHands")
+  const [selectedHand, setSelectedHand] = useState(selectedHandOptions[2].value)
   const [selectedModalHand, setSelectedModalHand] = useState(savePresetHand[0])
   const {asset: attachment} = useAsset(characterPath)
-
-  
   const presets = useMemo(() => {
     if(!handPosePresets) return
     let sortedPoses = Object.values(handPosePresets).sort(comparePresetNames).sort(comparePresetPriority)
@@ -99,6 +104,14 @@ React.memo(({
     setResult(sortedPoses)
     return sortedPoses
   }, [handPosePresets])
+
+  useEffect(() => {
+    savePresetHand[0].label = t("shot-generator.inspector.hand-preset.left-hand")
+    savePresetHand[1].label = t("shot-generator.inspector.hand-preset.right-hand")
+    selectedHandOptions[0].label = t("shot-generator.inspector.hand-preset.left-hand")
+    selectedHandOptions[1].label = t("shot-generator.inspector.hand-preset.right-hand")
+    selectedHandOptions[2].label = t("shot-generator.inspector.hand-preset.both-hands")
+  }, [t])
 
   const onChangeHand = useCallback((event) => {
     setSelectedHand(event.value)
@@ -184,11 +197,39 @@ React.memo(({
     }
   }
 
+  const onRemoval = (data) => {
+    const choice = remote.dialog.showMessageBoxSync({
+      type: 'question',
+      buttons: [t('shot-generator.inspector.common.yes'), t('shot-generator.inspector.common.no')],
+      message: t('shot-generator.inspector.common.are-you-sure'),
+      defaultId: 1
+    })
+
+    if (choice !== 0) return
+
+    withState((dispatch, state) => {
+      // ... and save it to the presets file
+      let denylist = Object.keys(defaultPosePresets)
+      denylist.push(data.id)
+      let filteredPoses = Object.values(state.presets.handPoses)
+        .filter(pose => denylist.includes(pose.id) === false)
+        .reduce(
+          (coll, pose) => {
+            coll[pose.id] = pose
+            return coll
+          },
+          {}
+        )
+      presetsStorage.saveHandPosePresets({ handPoses: filteredPoses })
+    })
+    deleteHandPosePreset(data.id)
+  }
+
   return (
     <React.Fragment>
       <Modal visible={ isModalShown } onClose={() => showModal(false)}>
         <div style={{ margin:"5px 5px 5px 5px" }}>
-          Select a Preset Name:
+        {t("shot-generator.inspector.common.select-preset-name")}
         </div>
         <div className="column" style={{ flex: 1 }}> 
           <input 
@@ -198,11 +239,11 @@ React.memo(({
             onChange={ (value) => newPresetName.current = value.currentTarget.value }/>
         </div>
         <div style={{ margin:"5px 5px 5px 5px" }}>
-          Select a Hand to save:
+        {t("shot-generator.inspector.hand-preset.select-saving-hand")}
         </div>
         <div className="select">
           <Select 
-            label="Hand"
+            label={t("shot-generator.inspector.hand-preset.hand")}
             value={ selectedModalHand }
             options={ savePresetHand }
             onSetValue={ (item) => setSelectedModalHand(item) }/>
@@ -214,13 +255,13 @@ React.memo(({
               showModal(false)
               addNewPosePreset(newPresetName.current, selectedModalHand.value)
             }}>
-              Proceed
+              {t("shot-generator.inspector.common.add-preset")}
           </button>
         </div>
      </Modal>
     <div className="thumbnail-search column">
         <div className="row" style={{ padding: "6px 0" }}> 
-          <SearchList label="Search for a hand pose …" list={ sortedPresets.current } onSearch={ saveFilteredPresets }/>
+          <SearchList label={t("shot-generator.inspector.hand-preset.search-hand-pose")} list={ sortedPresets.current } onSearch={ saveFilteredPresets }/>
           <div className="column" style={{ marginLeft: 5 }}> 
             <a className="button_add" href="#"
               style={{ width: 30, height: 34 }}
@@ -230,7 +271,7 @@ React.memo(({
         </div> 
         <div className="row" style= {{ padding: "6px 0" }} >
           <Select
-            label="Select hand"
+            label={t("shot-generator.inspector.hand-preset.select-hand")}
             value={selectedHandOptions.find(item => item.value === selectedHand)}
             options={selectedHandOptions}
             onSetValue={onChangeHand}
@@ -252,6 +293,7 @@ React.memo(({
               selectedHand,
               undoGroupStart,
               undoGroupEnd,
+              onRemoval
             }}
             elements={results}
             numCols={NUM_COLS}

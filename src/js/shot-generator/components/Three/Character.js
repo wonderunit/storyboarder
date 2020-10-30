@@ -1,4 +1,4 @@
-import React, { useRef, useMemo, useState, useEffect } from 'react'
+import React, { useRef, useMemo, useState, useEffect, useLayoutEffect } from 'react'
 import * as THREE from 'three'
 import { useUpdate, useThree } from 'react-three-fiber'
 import cloneGltf from '../../helpers/cloneGltf'
@@ -10,6 +10,7 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
+import FaceMesh from "./Helpers/FaceMesh"
 
 let ikBonesName = ["Hips", "Spine", "Spine1", "Spine2", "Neck", "Head", 
                   "LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand", 
@@ -35,15 +36,51 @@ const isSuitableForIk = (skeleton) => {
   return isSiutable
 }
 
+let boneWorldPosition = new THREE.Vector3()
+let worldPositionHighestBone = new THREE.Vector3()
+
+const findHighestBone = (object) =>
+{   
+    let highestBone = null
+    let bones = object.skeleton.bones
+    for(let i = 0; i < bones.length; i ++)
+    {
+        let bone = bones[i]
+        if(!highestBone)
+        {
+            highestBone = bone
+            continue
+        }
+        bone.getWorldPosition(boneWorldPosition)
+        highestBone.getWorldPosition(worldPositionHighestBone)
+
+        if(boneWorldPosition.y > worldPositionHighestBone.y)
+        {
+            highestBone = bone
+        }
+    }
+    return highestBone
+}
+
+
 const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, selectedBone, updateCharacterSkeleton, updateCharacterIkSkeleton, renderData, withState, ...props}) => {
+    const faceMesh = useRef(null)
+    function getFaceMesh () {
+      if (faceMesh.current === null) {
+        faceMesh.current = new FaceMesh()
+      }
+      return faceMesh.current
+    }
+
     const {asset: gltf} = useAsset(path)
     const ref = useUpdate(
       self => {
         let lod = self.getObjectByProperty("type", "LOD") || self
         lod && lod.traverse(child => child.layers.enable(SHOT_LAYERS))
       }
-    )
+      )
     const [ready, setReady] = useState(false)
+    const {asset: texture} = useAsset(ready ? props.imagePath : null)
     const isFullyUpdate = useRef(false)
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
@@ -63,7 +100,6 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         setReady(false)
         return [null, null, null, null, null]
       }
-  
       let lod = new THREE.LOD()
       let { scene } = cloneGltf(gltf)
       let map
@@ -105,6 +141,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
               morphNormals: true,
               morphTargets: true
             })
+            
 
             patchMaterial(mesh.material)
             
@@ -115,12 +152,12 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       isIkCharacter.current = isSuitableForIk(skeleton)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
-
       let armature = scene.getObjectByProperty("type", "Bone").parent
       let originalHeight
       if (isUserModel(sceneObject.model)) {
             originalHeight = 1
       } else {
+        getFaceMesh().setSkinnedMesh(lod, gl)
         let bbox = new THREE.Box3().setFromObject(lod)
         originalHeight = bbox.max.y - bbox.min.y
       }
@@ -166,6 +203,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         ref.current.remove(SGIkHelper.getInstance())
         boneRotationControl.current.cleanUp()
         boneRotationControl.current = null
+        if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
+          props.objectRotationControl.deselectObject()
+        }
         if(!lod) return
         for(let i = 0; i < lod.children.length; i++) {
             lod.children[i].geometry.dispose()
@@ -227,14 +267,12 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         boneMatrix.premultiply(inverseMatrixWorld)
         position = position.setFromMatrixPosition(boneMatrix)
         let quaternion = new THREE.Quaternion().setFromRotationMatrix(boneMatrix)
-        boneMatrix.premultiply(ref.current.matrixWorld)
         changedSkeleton.push({ 
-          id: bone.uuid,
           name: bone.name,
           position: { 
-            x: position.x, 
-            y: position.y, 
-            z: position.z 
+            x: position.x,
+            y: position.y,
+            z: position.z
           }, 
           rotation: { 
             x: rotation.x, 
@@ -293,6 +331,12 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     }, [sceneObject.tintColor, ready])
 
     useEffect(() => {
+      if(ready) {
+        props.forceUpdate({id:sceneObject.id})
+      }
+    }, [ready])
+
+    useEffect(() => {
       if(!lod) return
       if (modelSettings && modelSettings.validMorphTargets && modelSettings.validMorphTargets.length) {
         lod.children.forEach(skinnedMesh => {
@@ -343,6 +387,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         }
         ref.current.add(BonesHelper.getInstance())
         //#region Character's object rotation control
+        let highestBone = findHighestBone(lod.children[0])
         props.objectRotationControl.setCharacterId(ref.current.uuid)
         props.objectRotationControl.control.canSwitch = false
         props.objectRotationControl.isEnabled = true
@@ -351,7 +396,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           props.updateObject(sceneObject.id, {
             rotation: euler.y,
           } )})
-        props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
+        let highestPoint = highestBone.worldPosition()
+        highestPoint.x = 0
+        highestPoint.z = 0
+        props.objectRotationControl.selectObject(ref.current, ref.current.uuid, highestPoint)
         props.objectRotationControl.control.setShownAxis(axis.Y_axis)
         props.objectRotationControl.IsEnabled = !sceneObject.locked
         //#endregion
@@ -365,7 +413,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
       lod.traverse((child) => {
         if (child.isMesh) {
-          setSelected(child, isSelected)
+          setSelected(child, isSelected, false, 0xffffff)
         }
       })
     }, [lod, isSelected, ready])
@@ -396,12 +444,21 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       } ) })
     }, [ref.current])
   
-    const { x, y, z, visible, rotation, locked } = sceneObject
+    const { x, y, z, visible, rotation, locked, blocked } = sceneObject
 
     useEffect(() => {
       if(!props.objectRotationControl || !isSelected) return
       props.objectRotationControl.IsEnabled = !locked
     }, [locked])
+
+    useEffect(() => {
+      if(!skeleton) return
+      if(!texture) {
+        getFaceMesh().resetTexture()
+        return
+      }
+      getFaceMesh().draw(texture)
+    }, [texture, lod])
     
     return <group
         ref={ ref }
@@ -413,6 +470,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           poleTargets: sceneObject.poleTargets || {},
           height: originalHeight,
           locked: locked,
+          blocked: blocked,
           model: sceneObject.model,
           name: sceneObject.displayName
         }}

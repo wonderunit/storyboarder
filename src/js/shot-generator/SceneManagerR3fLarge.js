@@ -1,9 +1,12 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState, useContext } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
+import TWEEN from '@tweenjs/tween.js'
+import useShadingEffect from './hooks/use-shading-effect'
+import { ShadingType } from '../vendor/shading-effects/ShadingType'
 import { 
     getSceneObjects,
     getWorld,
@@ -19,7 +22,11 @@ import {
     deleteObjects,
 
  } from '../shared/reducers/shot-generator'
-import { useThree } from 'react-three-fiber'
+
+import systemEmotionPresets from '../shared/reducers/shot-generator-presets/emotions.json'
+
+import { useThree, useFrame } from 'react-three-fiber'
+
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
@@ -33,7 +40,6 @@ import { getFilePathForImages } from './helpers/get-filepath-for-images'
 import { setShot } from './utils/cameraUtils'
 import KeyCommandsSingleton from './components/KeyHandler/KeyCommandsSingleton'
 import { dropObject, dropCharacter } from '../utils/dropToObjects'
-import SaveShot from './components/Three/SaveShot'
 import { SHOT_LAYERS } from './utils/ShotLayers'
 import Room from './components/Three/Room'
 import Group from './components/Three/Group'
@@ -43,7 +49,9 @@ import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
 import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
+import path from "path"
 
+import FilepathsContext from './contexts/filepaths'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -57,8 +65,12 @@ const sceneObjectSelector = (state) => {
   }
   return newSceneObjects
 }
-
+const attachableIdsSelector = (state) => {
+  const sceneObjects = getSceneObjects(state)
+  return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
+}
 const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects) => sceneObjects)
+const getAttachableIdsM = deepEqualSelector([attachableIdsSelector], (sceneObjects) => sceneObjects)
 
 const SceneManagerR3fLarge = connect(
     state => ({
@@ -69,7 +81,10 @@ const SceneManagerR3fLarge = connect(
         models: state.models,
         selectedBone: getSelectedBone(state),
         cameraShots: state.cameraShots,
-        selectedAttachable: getSelectedAttachable(state)
+        selectedAttachable: getSelectedAttachable(state),
+        aspectRatio: state.aspectRatio,
+        attachableIds: getAttachableIdsM(state),
+        emotionPresets: state.presets.emotions
     }),
     {
         selectObject,
@@ -99,10 +114,16 @@ const SceneManagerR3fLarge = connect(
     setLargeCanvasData,
     renderData,
     selectedAttachable,
+    aspectRatio,
     deleteObjects,
     withState,
+    attachableIds,
+    emotionPresets,
+
+    stats,
+    mainViewCamera
 }) => {
-    const { scene, camera, gl } = useThree()
+    const { scene, camera, gl, size } = useThree()
     const rootRef = useRef()
     const groundRef = useRef()
     const ambientLightRef = useRef()
@@ -111,6 +132,7 @@ const SceneManagerR3fLarge = connect(
 
     const objectRotationControl = useRef()
     const sceneObjectLength = Object.values(sceneObjects).length
+    const [update, forceUpdate] = useState(null)
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
 
     const modelObjectIds = useMemo(() => {
@@ -123,10 +145,6 @@ const SceneManagerR3fLarge = connect(
 
     const lightIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'light').map(o => o.id)
-    }, [sceneObjectLength])
-
-    const attachableIds = useMemo(() => {
-      return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
     }, [sceneObjectLength])
 
     const volumeIds = useMemo(() => {
@@ -179,6 +197,7 @@ const SceneManagerR3fLarge = connect(
         updateObjects
       )
 
+      
       //#region initialization of objectRotationControl 
       objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement)
       objectRotationControl.current.control.canSwitch = false
@@ -301,9 +320,30 @@ const SceneManagerR3fLarge = connect(
       directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world.directional.rotation, world.directional.tilt])
 
+    const renderer = useShadingEffect(
+      gl,
+      mainViewCamera === 'live' ? world.shadingMode : ShadingType.Outline,
+      world.backgroundColor
+    )
+    useFrame(({ scene, camera }) => {
+      // SceneManagerR3FLarge view is responsible for stats
+      if (stats) stats.begin()
+
+      TWEEN.update()
+
+      if (renderData) {
+        renderer.current.render(renderData.scene, renderData.camera)
+      } else {
+        renderer.current.render(scene, camera)
+      }
+
+      if (stats) stats.end()
+    }, 1)
+
+    const { getAssetPath, getUserPresetPath } = useContext(FilepathsContext)
+
     return <group ref={ rootRef }> 
     <CameraUpdate/>
-    <SaveShot isPlot={ false }/>
     <InteractionManager renderData={ renderData }/> 
     <ambientLight
         ref={ ambientLightRef }
@@ -335,9 +375,18 @@ const SceneManagerR3fLarge = connect(
             </SimpleErrorBoundary>
         })
     }
+
     {    
         characterIds.map(id => {
-            let sceneObject = sceneObjects[id]
+          let sceneObject = sceneObjects[id]
+
+          let { emotionPresetId } = sceneObject
+          let imagePath =  emotionPresetId
+            ? Object.keys(systemEmotionPresets).includes(emotionPresetId)
+              ? getAssetPath('emotion', `${emotionPresetId}-texture.png`)
+              : getUserPresetPath('emotions', `${emotionPresetId}-texture.png`)
+            : null
+
             return <SimpleErrorBoundary  key={ id }>
               <Character
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -351,6 +400,8 @@ const SceneManagerR3fLarge = connect(
                 withState={ withState }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
+                imagePath={imagePath}
+                forceUpdate={ forceUpdate }
                 />
               </SimpleErrorBoundary>
         })
@@ -371,6 +422,7 @@ const SceneManagerR3fLarge = connect(
     {
         attachableIds.map(id => {
             let sceneObject = sceneObjects[id]
+            let needsUpdate = !update || update.id !== sceneObject.attachToId ? null : update.id
             return <SimpleErrorBoundary  key={ id }>
               <Attachable
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -381,6 +433,7 @@ const SceneManagerR3fLarge = connect(
                 deleteObjects={ deleteObjects }
                 character={ sceneObjects[sceneObject.attachToId] }
                 withState={ withState }
+                needsUpdate={ needsUpdate }
               />
               </SimpleErrorBoundary>
         })
@@ -438,7 +491,8 @@ const SceneManagerR3fLarge = connect(
                 model: world.environment.file
               }, { storyboarderFilePath } )}
               environment={world.environment}
-              visible={world.environment.visible} />
+              visible={world.environment.visible}
+              grayscale={ world.environment.grayscale } />
     }
     {
         roomTexture && <Room

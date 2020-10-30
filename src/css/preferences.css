@@ -37,7 +37,6 @@
 .preferences-input {
   margin: 24px 0;
 }
-
 .preferences-hint {
   margin-top: 0.5rem;
   opacity: 0.5;
@@ -68,16 +67,26 @@ input[type="checkbox"] + label span {
   cursor: pointer;
 }
 
+input[type=checkbox]:checked + label {
+  position: relative;
+}
+
 input[type=checkbox]:checked + label:before {
   content:'✖';
-  padding-left: 5px;
-  padding-top: 3px;
+  /* padding-left: 5px;
+  padding-top: 3px; */
   text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
   font-size: 15px;
   text-align: center;
   line-height: 1;
   position: absolute;
   color: white;
+
+  margin: auto;
+  left: 1px;
+  top: 1px;
+  width: 20px;
+  height: 14px;
 }
 
 input[type=number] {
@@ -147,3 +156,105 @@ a.button:hover {
   margin: 0 2px;
   line-height: 1;
 }
+
+
+
+#preferences-list {
+  display: block;
+}
+
+.open-language-editor {
+  padding-top: 24px;
+  position: relative;
+  display: relative;
+}
+
+.open-language-editor button {
+  background-color: #333333;
+  color: white;
+  padding: 12px;
+  font-size: 12px;
+  border: none;
+  cursor: pointer;
+  outline: none;
+  border-radius: 6px;
+}
+
+/* Dropdown Button */
+.dropbtn-container { 
+  display: flex;
+  background-color:  #333333;
+  width: -webkit-fit-content;
+  width: fit-content;
+  margin-top: 6px;
+  border-radius: 5px;
+  cursor: pointer;
+  outline: none;
+  border: none;
+  width:120px;
+  padding: 12px;
+  font-size: 12px;
+}
+
+.dropbtn {
+  background-color: inherit;
+  color: white;
+  outline: none;
+  border: none;
+  width: 80px;
+  cursor: pointer;
+  pointer-events: inherit;
+  pointer-events: none;
+}
+
+.dropbtn-container .arrow {
+  width: 16px;
+  height: 16px;
+  background-image: url(../img/arrow-down.png);
+  pointer-events: inherit;
+  pointer-events: none;
+}
+
+/* Dropdown button on hover & focus */
+.dropbtn-container:hover, .dropbtn-container:focus {
+  background-color: #3e3d3d;
+}
+
+/* The container <div> - needed to position the dropdown content */
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Dropdown Content (Hidden by Default) */
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #333333;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  height:100px;
+  overflow: auto;
+  border-radius: 5px;
+  width:120px;
+}
+
+/* Links inside the dropdown */
+.dropdown-content div {
+  color: white;
+  padding: 12px;
+  font-size: 12px;
+  
+  border: none;
+  cursor: pointer;
+  outline: none;
+  border-radius: 2px;
+}
+
+
+/* Change color of dropdown links on hover */
+.dropdown-content div:hover {background-color: #4f4e4e}
+.selected {background-color: #5c65c0}
+
+/* Show the dropdown menu (use JS to add this class to the .dropdown-content container when the user clicks on the dropdown button) */
+.show {display:block;}
