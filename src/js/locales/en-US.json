@@ -337,7 +337,7 @@
         "title": "Merge the reference layer up to the fill layer",
         "description": "This is useful if you draw on the reference layer and you want to keep it in your drawing. This will combine both layers to the fill layer. The reference layer will be blank."
       },
-      "merge-up-title": "Merge Up/ndonw",
+      "merge-up-title": "Merge Up/Down",
       "layer-opacity-tooltip": {
         "title": "Merge the reference layer up to the fill layer",
         "description": "Change the opacity of the reference layer and Shot Generator layer. You will only be able to see the change if there is a saved Shot Generator shot, or something on the reference layer."
