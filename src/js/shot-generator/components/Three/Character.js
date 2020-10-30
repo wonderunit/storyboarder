@@ -10,8 +10,31 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
-
 import FaceMesh from "./Helpers/FaceMesh"
+
+let ikBonesName = ["Hips", "Spine", "Spine1", "Spine2", "Neck", "Head", 
+                  "LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand", 
+                  "RightShoulder", "RightArm", "RightForeArm", "RightHand",
+                  "LeftUpLeg", "LeftLeg", "LeftFoot",
+                  "RightUpLeg", "RightLeg", "RightFoot"]
+const isSuitableForIk = (skeleton) => {
+  //let isSuitable = true
+  let foundBones = []
+  for(let i = 0; i < skeleton.bones.length; i++) {
+    let bone = skeleton.bones[i]
+    let ikBoneName = ikBonesName.filter(name => bone.name.includes(name))[0]
+    if(ikBoneName) {
+      foundBones.push(ikBoneName)
+      let indexOf = ikBonesName.indexOf(ikBoneName)
+      ikBonesName.splice(indexOf, 1)
+      bone.name = ikBoneName
+      bone.userData.name = ikBoneName
+    } 
+  }
+  let isSiutable = ikBonesName.length === 0
+  ikBonesName = ikBonesName.concat(foundBones)
+  return isSiutable
+}
 
 let boneWorldPosition = new THREE.Vector3()
 let worldPositionHighestBone = new THREE.Vector3()
@@ -62,6 +85,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const boneRotationControl = useRef(null)
+    const isIkCharacter = useRef(null)
     useEffect(() => {
       return () => {
         ref.current.remove(SGIkHelper.getInstance())
@@ -82,19 +106,20 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
       // for built-in Characters
       // SkinnedMeshes are immediate children
-      let meshes = scene.children.filter(child => child.isSkinnedMesh)
-
+      let meshes = scene.children.filter(child => child.isSkinnedMesh)     
+     
       // if no SkinnedMeshes are found there, this may be a custom model file
       if (meshes.length === 0 && scene.children.length && scene.children[0].children) {
             // try to find the first SkinnedMesh in the first child object's children
-            let mesh = scene.children[0].children.find(child => child.isSkinnedMesh)
-            if (mesh) {
-              meshes = [mesh]
-            }
+            scene.traverse((object) => {
+              if(object.isSkinnedMesh) {
+                meshes.push(object)
+              }
+            })
       }
 
       // if there's only 1 mesh
-      let startAt = meshes.length == 1
+      let startAt = meshes.length === 1
         // start at mesh index 0 (for custom characters)
         ? 0
         // otherwise start at mesh index 1 (for built-in characters)
@@ -122,9 +147,9 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
             
             lod.addLevel(mesh, d * 16)
       }
-
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
+      isIkCharacter.current = isSuitableForIk(skeleton)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
       let armature = scene.getObjectByProperty("type", "Bone").parent
@@ -355,10 +380,10 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
 
       if (isSelected) {
         BonesHelper.getInstance().initialize(lod.children[0])
-        if(!isUserModel(sceneObject.model) && !SGIkHelper.getInstance().isIkDisabled) {
+        if(isIkCharacter.current && !SGIkHelper.getInstance().isIkDisabled) {
           SGIkHelper.getInstance().initialize(ref.current, originalHeight, lod.children[0], sceneObject)
           ref.current.add(SGIkHelper.getInstance())
-          ref.current.updateWorldMatrix(true, true)
+          //ref.current.updateWorldMatrix(true, true)
         }
         ref.current.add(BonesHelper.getInstance())
         //#region Character's object rotation control
