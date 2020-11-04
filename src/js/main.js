@@ -40,6 +40,7 @@ const util = require('./utils/index')
 const {settings:languageSettings} = require('./services/language.config')
 const autoUpdater = require('./auto-updater')
 const LanguagePreferencesWindow = require('./windows/language-preferences/main')
+const AspectSettingsWindow = require('./windows/aspect-settings/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 
@@ -1534,6 +1535,14 @@ ipcMain.on('openLanguagePreferences', (event) => {
   //ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
 })
 
+ipcMain.on('openAspectSettings', (event) => {
+  let win = AspectSettingsWindow.getWindow()
+  if (win) {
+    AspectSettingsWindow.reveal()
+  } else {
+    AspectSettingsWindow.createWindow(() => {AspectSettingsWindow.reveal()})
+  }
+})
 
 ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
   mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)

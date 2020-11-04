@@ -1,5 +1,4 @@
 const {BrowserWindow} = electron = require('electron')
-const log = require('electron-log')
 const path = require('path')
 const url = require('url')
 
@@ -55,10 +54,12 @@ const createWindow = async ( onComplete) => {
     win = new BrowserWindow({
       x,
       y,
-      width: 1200,
-      height: 800,
+      width: 640,
+      height: 640,
       minWidth: 600,
       minHeight: 600,
+      maxHeight: 700,
+      maxWidth: 700,
   
       show: false,
       center: true,
@@ -66,7 +67,7 @@ const createWindow = async ( onComplete) => {
   
       backgroundColor: '#333333',
       titleBarStyle: 'hiddenInset',
-      title: "Language Preferences",
+      title: "Aspect settings",
       acceptFirstMouse: true,
       simpleFullscreen: true,
       webPreferences: {
@@ -90,9 +91,8 @@ const createWindow = async ( onComplete) => {
     win.once('closed', () => {
       win = null
     })
-    log.info(path.join(__dirname, '..', '..', '..', 'language-preferences'))
     win.loadURL(url.format({
-      pathname: path.join(__dirname, '..', '..', '..', 'language-preferences.html'),
+      pathname: path.join(__dirname, '..', '..', '..', 'aspect-settings.html'),
       protocol: 'file:',
       slashes: true
     }))

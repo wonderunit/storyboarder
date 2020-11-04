@@ -7083,22 +7083,6 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
   renderShotGeneratorPanel()
 })
 
-window.addEventListener('keydown', (event) => {
-  let aspectRatio = boardData.aspectRatio || 1
-  let keyPressed = false 
-  switch(event.keyCode) {
-    case 38: 
-      aspectRatio = 0.5625
-      keyPressed = true
-      break;
-    case 40:
-      aspectRatio = 1.85
-      keyPressed = true
-      break;
-  }
-  if(keyPressed) ipcRenderer.send('changeAspectRatio', { aspectRatio })
-})
-
 ipcRenderer.on('importWorksheets', (event, args) => {
   if (!importWindow) {
     importWindow = new remote.BrowserWindow({

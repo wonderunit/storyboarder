@@ -305,6 +305,10 @@ const openLanguageEditor = () => {
   ipcRenderer.send('openLanguagePreferences')
 }
 
+const openAspectSettings = () => {
+  ipcRenderer.send('openAspectSettings')
+}
+
 let selectedOption
 
 const selectLanguage = (language) => {
@@ -365,7 +369,8 @@ const init = () => {
   initializeLanguageList()
   let languageEditor = document.getElementsByClassName('open-language-editor')[0].children[0]
   languageEditor.onclick = openLanguageEditor
-
+  let aspectSettings = document.getElementById('open-aspect-settings')
+  aspectSettings.onclick = openAspectSettings
   // bind
   for (let el of inputs) {
     el.addEventListener('change', onChange.bind(this, el.name))
