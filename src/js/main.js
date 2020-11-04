@@ -1191,6 +1191,10 @@ ipcMain.on('newBoard', (e, arg)=> {
   mainWindow.webContents.send('newBoard', arg)
 })
 
+ipcMain.on('changeAspectRatio', (e, arg)=> {
+  mainWindow.webContents.send('changeAspectRatio', arg)
+})
+
 ipcMain.on('deleteBoards', (e, arg)=> {
   mainWindow.webContents.send('deleteBoards', arg)
 })
