@@ -235,7 +235,7 @@ const updateObject = (draft, state, props, { models }) => {
     delete props["locked"]
   }
   
-  if (draft.locked) {
+  if (draft.locked || draft.blocked) {
     return
   }
 
