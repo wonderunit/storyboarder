@@ -6999,84 +6999,13 @@ ipcRenderer.on('importNotification', () => {
   }
 })
 
-const resizeSketchPane = (size) => {
-  let width = Math.ceil(size[0])
-  let height =  Math.ceil(size[1])
-  let sketchPane = storyboarderSketchPane.sketchPane
-  storyboarderSketchPane.canvasSize = [width, height]
-  sketchPane.width = width
-  sketchPane.height = height
-
-  let layers = sketchPane.layers
-  layers.width = width
-  layers.height = height
-
-  for(let i = 0; i < layers.length; i++) {
-    let layer =  layers[i]
-    layer.width = width
-    layer.height = height
-    layer.container.height = height
-    layer.container.width = width
-    layer.container.calculateBounds()
-
-    
-    layer.sprite._texture.resize(width, height)
-    layer.sprite.width = width
-    layer.sprite.height = height
-    layer.sprite.calculateBounds()
-  }
- 
-  sketchPane.eraseMask.height = height
-  sketchPane.eraseMask.width = width
-  sketchPane.eraseMask.calculateBounds()
-  sketchPane.eraseMask.texture = PIXI.RenderTexture.create(width, height)
-  sketchPane.strokeSprite.texture = PIXI.RenderTexture.create(width, height)
-
-  let paneChildren = sketchPane.sketchPaneContainer.children
-  for(let i = 0; i < paneChildren.length; i++) {
-    let child = paneChildren[i]
-    if(child.name === "layerMask") {
-      child.clear()
-      child.beginFill(0x0, 1)
-            .drawRect(0, 0, width, height)
-            .endFill()
-    } 
-  }
-
-  sketchPane.strokeSprite.width = width
-  sketchPane.strokeSprite.height = height
-  sketchPane.strokeSprite.calculateBounds()
-  sketchPane.strokeSprite.containerUpdateTransform()
-  
-  let layersChildren = sketchPane.layersContainer.children
-   for(let i = 0; i < layersChildren.length; i++) {
-      let child = layersChildren[i]
-      if(child.name === "background") {
-        child.clear()
-        child.beginFill(0xffffff)
-              .drawRect(0, 0, width, height)
-              .endFill()
-      } else if(child.name.includes("container")) {
-         child.width = width
-         child.height = height
-         child.calculateBounds()
-      }
-  }
-  sketchPane.layersContainer.width = width
-  sketchPane.layersContainer.height = height
-  sketchPane.layersContainer.calculateBounds()
-  sketchPane.layersContainer.containerUpdateTransform()
-  
-  sketchPane.strokeSprite.width = width
-  sketchPane.strokeSprite.height = height
-}
 
 ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
   boardData = JSON.parse(fs.readFileSync(boardFilename))
   boardData.aspectRatio = aspectRatio
   fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
   let size = boardModel.boardFileImageSize(boardData)
-  resizeSketchPane(size)
+  storyboarderSketchPane.changePaneSize(size[0], size[1])
   await renderScene()
 
   resize()
