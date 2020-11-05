@@ -1389,7 +1389,7 @@ const useInteractionsManager = ({
             
             controller.attach(object)
             object.updateMatrixWorld(true)
-            dispatch(SGConnection.blockObject(context.selection))
+            SGConnection.blockObject(context.selection)
           }
 
           playSound('beam', object)
@@ -1433,7 +1433,7 @@ const useInteractionsManager = ({
             }
           }
 
-          dispatch(SGConnection.unblockObject(context.selection))
+          SGConnection.unblockObject(context.selection)
 
           uiService.send({ type: 'UNLOCK' })
         },
