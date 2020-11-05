@@ -103,6 +103,7 @@ const updateHTML = () => {
   translateHtml("#languages", "preferences.languages")
   translateHtml("#languages-hint", "preferences.languages-hint")
   translateHtml("#open-language-editor", "preferences.open-language-editor")
+  translateHtml("#open-aspect-settings", "preferences.open-aspect-settings")
   translateHtml("#sign-out", "preferences.sign-out")
   translateHtml("#sign-out-hint", "preferences.sign-out-hint")
   translateHtml("#thanks-for-support", "preferences.thanks-for-support")
