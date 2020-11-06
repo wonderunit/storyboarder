@@ -168,8 +168,13 @@ a.button:hover {
   position: relative;
   display: relative;
 }
+.open-aspect-settings {
+  position: relative;
+  display: relative;
+}
 
-.open-language-editor button {
+.open-language-editor button,
+.open-aspect-settings button {
   background-color: #333333;
   color: white;
   padding: 12px;
