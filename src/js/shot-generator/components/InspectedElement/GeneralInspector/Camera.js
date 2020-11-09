@@ -1,10 +1,10 @@
 import React, {useCallback} from 'react'
 import {Math as _Math} from 'three'
 import {formatters, NumberSlider, transforms, textFormatters} from '../../NumberSlider'
-
+import { useTranslation } from 'react-i18next'
 const CameraInspector = React.memo(({updateObject, sceneObject}) => {
   const {id, ...props} = sceneObject
-
+  const { t } = useTranslation()
   const setX = useCallback((x) => updateObject(id, {x}), [])
   const setY = useCallback((y) => updateObject(id, {y}), [])
   const setZ = useCallback((z) => updateObject(id, {z}), [])
@@ -24,7 +24,7 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
       <NumberSlider label="Z" value={props.z} min={-30} max={30} onSetValue={setZ} textFormatter={ textFormatters.imperialToMetric }/>
 
       <NumberSlider
-        label="Rotation"
+        label={t("shot-generator.inspector.common.rotation")}
         value={_Math.radToDeg(props.rotation)}
         min={-180}
         max={180}
@@ -35,7 +35,7 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label="Roll"
+        label={t("shot-generator.inspector.common.roll")}
         value={_Math.radToDeg(props.roll)}
         min={-45}
         max={45}
@@ -46,7 +46,7 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label="Tilt"
+        label={t("shot-generator.inspector.common.tilt")}
         value={_Math.radToDeg(props.tilt)}
         min={-90}
         max={90}
@@ -57,7 +57,7 @@ const CameraInspector = React.memo(({updateObject, sceneObject}) => {
       />
 
       <NumberSlider
-        label="F.O.V."
+        label={t("shot-generator.inspector.camera.fov")}
         value={props.fov}
         min={1}
         max={120}

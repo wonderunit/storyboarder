@@ -34,6 +34,7 @@ module.exports = () => {
   }
 
   return {
+    getWindow: () => win,
     show
   }
 }

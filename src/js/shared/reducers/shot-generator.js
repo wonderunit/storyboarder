@@ -12,6 +12,7 @@ const serializeSceneObject = require('./shot-generator/serialize-scene-object')
 
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
+const { ShadingType } = require('../../vendor/shading-effects/ShadingType')
 
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
@@ -195,17 +196,32 @@ const migrateRotations = sceneObjects =>
       return o
     }, {})
 
+// migrate older scenes which were missing ambient and directional light settings
 const migrateWorldLights = world => ({
   ...world,
-
-  // migrate older scenes which were missing ambient and directional light settings
   ambient: world.ambient || initialScene.world.ambient,
   directional: world.directional || initialScene.world.directional
 })
 
+// migrate older scenes which were missing ambient and directional light settings
 const migrateWorldFog = world => ({
   ...world,
   fog: world.fog || initialScene.world.fog
+})
+
+// migrate older scenes which were missing shadingMode
+const migrateWorldShadingMode = world => ({
+  ...world,
+  shadingMode: world.shadingMode == null ? initialScene.world.shadingMode : world.shadingMode
+})
+
+// migrate older scenes which were missing grayscale
+const migrateWorldEnvironmentGrayscale = world => ({
+  ...world,
+  environment: {
+    ...world.environment,
+    grayscale: world.environment.grayscale == null ? false : world.environment.grayscale
+  }  
 })
 
 const updateObject = (draft, state, props, { models }) => {
@@ -398,6 +414,7 @@ const getCameraShot = (draft, cameraId) => {
 
 // load up the default poses
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
+const defaultEmotionsPresets = require('./shot-generator-presets/emotions.json')
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -430,7 +447,8 @@ const defaultScenePreset = {
       z: 0,
       rotation: 0,
       scale: 1,
-      visible: true
+      visible: true,
+      grayscale: true
     },
     ambient: {
       intensity: 0.1
@@ -443,7 +461,8 @@ const defaultScenePreset = {
     fog: {
       visible: true,
       far: 40
-    }
+    },
+    shadingMode: ShadingType.Outline
   },
   sceneObjects: {
     'C2062AFC-D710-4C7D-942D-A3BAF8A76D5C': {
@@ -557,7 +576,8 @@ const initialScene = {
       z: 0,
       rotation: 0,
       scale: 1,
-      visible: true
+      visible: true,
+      grayscale: true
     },
     ambient: {
       intensity: 0.5
@@ -570,7 +590,8 @@ const initialScene = {
     fog: {
       visible: true,
       far: 40
-    }
+    },
+    shadingMode: ShadingType.Outline
   },
   sceneObjects: {
     '6BC46A44-7965-43B5-B290-E3D2B9D15EEE': {
@@ -720,7 +741,8 @@ const initialState = {
     poses: {
       ...defaultPosePreset
     },
-    handPoses: defaultHandPosePresets
+    handPoses: defaultHandPosePresets,
+    emotions: defaultEmotionsPresets
   },
   server: {
     uri: undefined,
@@ -882,6 +904,35 @@ const sceneObjectsReducer = (state = {}, action) => {
             )
           )
         )
+
+      case 'BLOCK_OBJECT': 
+        let objectsToBlock = Array.isArray(action.payload) ? action.payload : [action.payload]
+        for(let id of objectsToBlock) {
+          if (draft[id]) {
+            draft[id].blocked = true
+          }
+        }
+
+        return draft
+
+      case 'UNBLOCK_OBJECT': 
+        let objectsToUnblock = Array.isArray(action.payload) ? action.payload : [action.payload]
+        for(let id of objectsToUnblock) {
+          if (draft[id]) {
+            draft[id].blocked = false
+          }
+        }
+
+        return draft
+
+      case 'UNBLOCK_ALL':
+        for(let id of Object.keys(draft)) {
+          if (draft[id]) {
+            draft[id].blocked = false
+          }
+        }
+
+        return draft
 
       case 'CREATE_OBJECT':
         let id = action.payload.id != null
@@ -1159,6 +1210,15 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
         return
 
+      // When an Emotion preset is removed, also remove references to it in any Scene Object
+      case 'DELETE_EMOTION_PRESET':
+        for (let id in state) {
+          if (state[id].emotionPresetId === action.payload.id) {
+            delete draft[id].emotionPresetId
+          }
+        }
+        return
+
       default:
         return
     }
@@ -1238,11 +1298,12 @@ const worldReducer = (state = initialState.undoable.world, action) => {
     switch (action.type) {
       case 'LOAD_SCENE':
       case 'UPDATE_SCENE_FROM_XR':
-        return migrateWorldLights(
-          migrateWorldFog(
-            action.payload.world
-          )
-        )
+        return R.pipe(
+          migrateWorldLights,
+          migrateWorldFog,
+          migrateWorldShadingMode,
+          migrateWorldEnvironmentGrayscale,
+        )(action.payload.world)
 
       case 'UPDATE_WORLD':
         if (action.payload.hasOwnProperty('ground')) {
@@ -1269,6 +1330,9 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         }
         if (action.payload.visible != null) {
           draft.environment.visible = action.payload.visible
+        }
+        if (action.payload.grayscale != null) {
+          draft.environment.grayscale = action.payload.grayscale
         }
         if (action.payload.rotation != null) {
           draft.environment.rotation = action.payload.rotation
@@ -1303,6 +1367,25 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         if (action.payload.hasOwnProperty('far')) {
           draft.fog.far = action.payload.far
         }
+        return
+
+      case 'CYCLE_SHADING_MODE':
+        let types = Object.values(ShadingType)
+
+        let { shadingMode } = state
+
+        let index = -1
+
+        // if shadingMode has no value, or is invalid ...
+        if (shadingMode == null || types.includes(shadingMode) == false) {
+          // ... default to Outline
+          index = types.indexOf(ShadingType.Outline)
+        } else {
+          index = types.indexOf(shadingMode)
+          index = (index + 1) % types.length
+        }
+
+        draft.shadingMode = types[index]
         return
 
       default:
@@ -1341,6 +1424,7 @@ const presetsReducer = (state = initialState.presets, action) => {
         delete draft.poses[action.payload.id]
         return
 
+
       case 'UPDATE_POSE_PRESET':
         // allow a null value for name
         if (action.payload.hasOwnProperty('name')) {
@@ -1350,6 +1434,15 @@ const presetsReducer = (state = initialState.presets, action) => {
 
       case 'CREATE_HAND_POSE_PRESET':
         draft.handPoses[action.payload.id] = action.payload
+        return
+      case 'DELETE_HAND_POSE_PRESET':
+        delete draft.handPoses[action.payload.id]
+        return        
+      case 'CREATE_EMOTION_PRESET':
+        draft.emotions[action.payload.id] = action.payload
+        return
+      case 'DELETE_EMOTION_PRESET':
+        delete draft.emotions[action.payload.id]
         return
     }
   })
@@ -1400,6 +1493,9 @@ const mainReducer = (state/* = initialState*/, action) => {
 
       case 'SET_ASPECT_RATIO':
         draft.aspectRatio = action.payload
+        return
+      case 'SET_CURRENT_LANGUAGE':
+        draft.language = action.payload
         return
 
       case 'SET_MAIN_VIEW_CAMERA':
@@ -1604,6 +1700,11 @@ module.exports = {
 
   reducer: rootReducer,
 
+  // internal actions
+  _blockObject: id => ({ type: 'BLOCK_OBJECT', payload: id}),
+  _unblockObject: id => ({ type: 'UNBLOCK_OBJECT', payload: id}),
+  _unblockAll: id => ({ type: 'UNBLOCK_ALL' }),
+
   //
   //
   // action creators 
@@ -1614,8 +1715,8 @@ module.exports = {
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
-  selectAttachable: id => ({ type: 'SELECT_ATTACHABLE', payload: id }),
-  deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
+  selectAttachable: payload => ({ type: 'SELECT_ATTACHABLE', payload }),
+  deselectAttachable: () => ({ type: 'DESELECT_ATTACHABLE' }),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),
@@ -1650,6 +1751,8 @@ module.exports = {
   duplicateObjects: (ids, newIds) => ({ type: 'DUPLICATE_OBJECTS', payload: { ids, newIds } }),
 
   setMainViewCamera: name => ({ type: 'SET_MAIN_VIEW_CAMERA', payload: name }),
+
+  cycleShadingMode: () => ({ type: 'CYCLE_SHADING_MODE' }),
   
   setCameraShot: (cameraId, values) => ({ type: 'SET_CAMERA_SHOT', payload: { cameraId, ...values } }),
 
@@ -1690,8 +1793,11 @@ module.exports = {
 
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
+  createEmotionPreset: payload => ({ type: 'CREATE_EMOTION_PRESET', payload }),
+  deleteEmotionPreset: id => ({ type: 'DELETE_EMOTION_PRESET', payload: { id } }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
+  deleteHandPosePreset: id => ({ type: 'DELETE_HAND_POSE_PRESET', payload: { id } }),
 
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),

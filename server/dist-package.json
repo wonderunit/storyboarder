@@ -1,0 +1,13 @@
+{
+    "name": "server",
+    "version": "1.0.0",
+    "description": "p2p server",
+    "main": "index.js",
+    "scripts": {
+      "test": "echo \"Error: no test specified\" && exit 1",
+      "start": "node server.js"
+    },
+    "engines" : { "node" : "12.18.3" },
+    "author": ""
+  }
+  

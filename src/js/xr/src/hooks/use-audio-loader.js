@@ -2,18 +2,25 @@
 
 const THREE = require('three')
 const { useState, useEffect, useMemo } = React = require('react')
+const {onAudioBufferLoad} = require('../helpers/resourceLoaders')
 
-const useAudioLoader = filepath => {
+const useAudioLoader = (SGConnection, filepath) => {
   const key = useMemo(() => ({}), [filepath])
   const [cache] = useState(() => new WeakMap())
   const [loader] = useState(() => new THREE.AudioLoader())
   const [_, forceUpdate] = useState(false)
   useEffect(() => {
     if (!cache.has(key)) {
-      loader.load(filepath, buffer => {
-        cache.set(key, buffer)
-        forceUpdate(i => !i)
+
+      SGConnection.getResource('audio', filepath)
+      .then(({data}) => {
+        onAudioBufferLoad(data)
+        .then((buffer) => {
+          cache.set(key, buffer)
+          forceUpdate(i => !i)
+        })
       })
+
     }
   }, [filepath])
   return cache.get(key) || null

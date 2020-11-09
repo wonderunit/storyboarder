@@ -74,7 +74,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     }
   }, [isSelected]) 
 
-  const { x, y, z, visible, height, rotation, locked } = sceneObject
+  const { x, y, z, visible, height, rotation, locked, blocked } = sceneObject
 
   useEffect(() => {
     if(!props.objectRotationControl || !isSelected) return
@@ -88,7 +88,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       userData={{
         type: "image",
         id: sceneObject.id,
-        locked: locked
+        locked: locked,
+        blocked: blocked
       }}
       visible={ visible }
       position={ [x, z, y] }

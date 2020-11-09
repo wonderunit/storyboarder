@@ -86,13 +86,16 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => 
         if (isSelected) {
           material.emissive = new THREE.Color( 0x755bf9 )
           material.color = new THREE.Color( 0x222222 )
+        } else if (sceneObject.blocked) {
+          material.emissive = new THREE.Color( 0x000000 )
+          material.color = new THREE.Color( 0x888888 )
         } else {
           material.emissive = new THREE.Color( sceneObject.tintColor || '#000000' )
           material.color = new THREE.Color( 0xcccccc )
         }
       }
     })
-  }, [ref.current, isSelected, sceneObject.tintColor])
+  }, [ref.current, isSelected, sceneObject.tintColor, sceneObject.blocked])
 
   const { x, y, z, visible, width, height, depth, rotation } = sceneObject
 

@@ -219,7 +219,7 @@ THREE.Object3D.prototype.copyMesh = function( source, recursive)
         for ( var i = 0; i < source.children.length; i ++ ) {
 
             var child = source.children[ i ];
-            if(child.type !== "Audio" && child.userData.type !== "IkHelper")
+            if(child.type !== "Audio" && child.userData.type !== "IkHelper" && child.userData.type !== "BonesHelper")
             {
                 this.add( child.clone() );
             }
@@ -262,7 +262,7 @@ THREE.Object3D.prototype.copy = function ( source, recursive ) {
         for ( var i = 0; i < source.children.length; i ++ ) {
 
             var child = source.children[ i ];
-            if(child.type !== "Audio" && child.userData.type !== "attachable") {
+            if(child.type !== "Audio" && (child.isMesh || child.userData.type !== "attachable")) {
                 this.add( child.clone() );
             }
         }

@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useLayoutEffect } from 'react'
+import React, { useState, useEffect, useLayoutEffect, useMemo } from 'react'
 import ShotMaker from './ShotMaker'
-import { Provider, connect} from 'react-redux'
+import { Provider, connect, useSelector } from 'react-redux'
 import { Canvas } from 'react-three-fiber'
 import { useThree, useFrame } from 'react-three-fiber'
 import ShotExplorerSceneManager from './ShotExplorerSceneManager'
@@ -9,6 +9,14 @@ import {OutlineEffect} from '../vendor/OutlineEffect'
 import {cache} from '../shot-generator/hooks/use-assets-manager'
 import TWEEN from '@tweenjs/tween.js'
 import electron from 'electron'
+
+import FilepathsContext from '../shot-generator/contexts/filepaths'
+const {
+  createUserPresetPathResolver,
+  createAssetPathResolver
+} = require('../shot-generator/services/filepaths')
+const getUserPresetPath = createUserPresetPathResolver(electron.remote.app.getPath('userData'))
+
 const Effect = ({ shouldRender }) => {
     const {gl, size} = useThree()
   
@@ -35,6 +43,8 @@ const ShotExplorer = React.memo(({
     const [sceneInfo, setSceneInfo] = useState(null)
     const [newAssetsLoaded, setLoadedAssets] = useState()
     const [shouldRender, setShouldRender] = useState(false)
+
+    const storyboarderFilePath = useSelector(state => state.meta.storyboarderFilePath)
 
     const stopUnload = (event) => {
         event.returnValue = false
@@ -73,40 +83,58 @@ const ShotExplorer = React.memo(({
         }
     }, [])
 
+    // FIXME
+    // apparently, storyboarderFilePath is not immediately available,
+    // so we wait to setup the resolvers until it has a value
+    // and we also don't render anything until it is
+    const filepathsState = useMemo(
+      () => {
+        if (storyboarderFilePath) {
+          return {
+            getAssetPath: createAssetPathResolver(window.__dirname, storyboarderFilePath),
+            getUserPresetPath
+          }
+        }
+      },
+      [window.__dirname, storyboarderFilePath]
+    )
+
     // padding for right side of canvas
     let paddingToRight = 5
-    return (
-    <FatalErrorBoundary key={ board.uid }>
-        <div className="shot-explorer-shot-preview" style={{ width: windowWidth }}>
-            <Canvas
-                tabIndex={ 1 }
-                key="camera-canvas"
-                id="camera-canvas"
-                gl2={true}
-                updateDefaultCamera={ true }
-                noEvents={ true }
-                className="three-canvas" 
-                style={{ width: (canvasHeight - paddingToRight ) * aspectRatio, height: canvasHeight - paddingToRight, userSelect: "none" }}
-                >
-                <Provider store={store}>
-                    <ShotExplorerSceneManager
-                                setLargeCanvasData= { setLargeCanvasData }
-                                isPreview={ true }
-                                shouldRender={ shouldRender }
-                                />
-                </Provider>
-                <Effect shouldRender={ shouldRender }/> 
-            </Canvas>
-        </div>
-        {sceneInfo && <ShotMaker key={ elementKey }
-                    sceneInfo={ sceneInfo } 
-                    withState={ withState }
-                    aspectRatio={ aspectRatio }
-                    newAssetsLoaded={ newAssetsLoaded }
-                    canvasHeight={ canvasHeight }
-                    elementKey={ elementKey }/> 
-    }
-    </FatalErrorBoundary>
+    return storyboarderFilePath && (
+      <FatalErrorBoundary key={ board.uid }>
+          <div className="shot-explorer-shot-preview" style={{ width: windowWidth }}>
+              <Canvas
+                  tabIndex={ 1 }
+                  key="camera-canvas"
+                  id="camera-canvas"
+                  gl2={true}
+                  updateDefaultCamera={ true }
+                  noEvents={ true }
+                  className="three-canvas" 
+                  style={{ width: (canvasHeight - paddingToRight ) * aspectRatio, height: canvasHeight - paddingToRight, userSelect: "none" }}
+                  >
+                  <Provider store={store}>
+                    <FilepathsContext.Provider value={filepathsState}>
+                      <ShotExplorerSceneManager
+                                  setLargeCanvasData= { setLargeCanvasData }
+                                  isPreview={ true }
+                                  shouldRender={ shouldRender }
+                                  />
+                    </FilepathsContext.Provider>
+                  </Provider>
+                  <Effect shouldRender={ shouldRender }/> 
+              </Canvas>
+          </div>
+          {sceneInfo && <ShotMaker key={ elementKey }
+                      sceneInfo={ sceneInfo } 
+                      withState={ withState }
+                      aspectRatio={ aspectRatio }
+                      newAssetsLoaded={ newAssetsLoaded }
+                      canvasHeight={ canvasHeight }
+                      elementKey={ elementKey }/> 
+      }
+      </FatalErrorBoundary>
     )
 })
 

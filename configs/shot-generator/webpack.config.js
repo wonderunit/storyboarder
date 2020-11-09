@@ -42,5 +42,10 @@ module.exports = {
   ],
   externals: {
     uws: "uws"
+  },
+  resolve: {
+    alias: {
+      'events': 'node_modules/events/index.js'
+    }
   }
 }
