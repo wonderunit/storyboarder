@@ -113,3 +113,25 @@ img, a{ -webkit-user-select: none; /* Safari 3.1+ */ -moz-user-select: none; /* 
   font-size: 18px;
   color: #9d9d9d;
 }
+
+.camera-view {
+  height: 100%;
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  background-color: #111114;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.camera-view-view {
+  position: relative;
+  overflow: hidden;
+  background-color: #111114;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}

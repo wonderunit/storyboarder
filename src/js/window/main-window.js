@@ -21,7 +21,7 @@ const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../shared/store/configureStore')
 const observeStore = require('../shared/helpers/observeStore')
 
-
+//const shotGeneratorWindow = require('../windows/shot-generator/main')
 const StoryboarderSketchPane = require('./storyboarder-sketch-pane')
 const { SketchPane } = require('alchemancy')
 const SketchPaneUtil = require('alchemancy').util
@@ -54,6 +54,7 @@ const exporterWeb = require('../exporters/web')
 const exporterPsd = require('../exporters/psd')
 
 const importerPsd = require('../importers/psd')
+const headlessRender = require('../windows/headless-render/main')
 
 const sceneSettingsView = require('./scene-settings-view')
 
@@ -6999,18 +7000,41 @@ ipcRenderer.on('importNotification', () => {
   }
 })
 
-
+ipcRenderer.on('headless-render:loaded', (event) => {
+  log.info("sending save shot event ")
+  let win = headlessRender.getWindow()
+  win && win.webContents.send('headless-render:save-shot')
+})
 ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
   boardData = JSON.parse(fs.readFileSync(boardFilename))
   boardData.aspectRatio = aspectRatio
   fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
   let size = boardModel.boardFileImageSize(boardData)
   storyboarderSketchPane.changePaneSize(size[0], size[1])
-  await renderScene()
-
-  resize()
+  
   renderShotGeneratorPanel()
+  await renderScene()
+  resize()
+  updateThumbnailDisplayFromFile(currentBoard)
+  await updateSketchPaneBoard()
+  headlessRender.createWindow(() => {
+    let win = headlessRender.getWindow()
+    win.webContents.send('headless-render:open')
+
+  }, aspectRatio)
 })
+/* document.addEventListener('keydown', (event) => {
+  let aspectRatio = 1
+  switch(event.keyCode) {
+    case 38:
+      aspectRatio = 2
+      break
+    case 40: 
+      aspectRatio = 0.7
+      break
+  }
+  ipcRenderer.send('changeAspectRatio', {aspectRatio})
+} ) */
 
 ipcRenderer.on('importWorksheets', (event, args) => {
   if (!importWindow) {
@@ -7190,14 +7214,16 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   saveDataURLtoFile(context.canvas.toDataURL(), board.layers['shot-generator'].url)
 
   // save camera-plot (re-use context)
-  let plotImage = await exporterCommon.getImage(images.plot)
-  context.canvas.width = 900
-  context.canvas.height = 900
-  context.drawImage(plotImage, 0, 0)
-  saveDataURLtoFile(
-    context.canvas.toDataURL(),
-    boardModel.boardFilenameForCameraPlot(board)
-  )
+  if(images.plot) {
+    let plotImage = await exporterCommon.getImage(images.plot)
+    context.canvas.width = 900
+    context.canvas.height = 900
+    context.drawImage(plotImage, 0, 0)
+    saveDataURLtoFile(
+      context.canvas.toDataURL(),
+      boardModel.boardFilenameForCameraPlot(board)
+    )
+  }
 
   // save shot-generator-thumbnail.jpg
   // thumbnail size
@@ -7263,10 +7289,22 @@ ipcRenderer.on('storyboarder:get-boards', event => {
       hasSg: board.sg ? true : false
     }))
   })
+  headlessRender.getWindow().webContents.send('headless-render:get-boards', {
+    boards: boardData.boards.map(board => ({
+      uid: board.uid,
+      shot: board.shot,
+      thumbnail: boardModel.boardFilenameForThumbnail(board),
+      hasSg: board.sg ? true : false
+    }))
+  })
 })
 ipcRenderer.on('storyboarder:get-board', (event, uid) => {
   ipcRenderer.send(
     'shot-generator:get-board',
+    boardData.boards.find(board => board.uid === uid)
+  )
+  headlessRender.getWindow().webContents.send(
+    'headless-render:get-board',
     boardData.boards.find(board => board.uid === uid)
   )
 })
@@ -7281,11 +7319,27 @@ ipcRenderer.on('storyboarder:get-storyboarder-file-data', (event, uid) => {
       }
     }
   )
+  headlessRender.getWindow().webContents.send(
+    'headless-render:get-storyboarder-file-data',
+    {
+      storyboarderFilePath: boardFilename,
+      boardData: {
+        version: boardData.version,
+        aspectRatio: boardData.aspectRatio
+      }
+    }
+  )
 })
 ipcRenderer.on('storyboarder:get-state', event => {
   let board = boardData.boards[currentBoard]
   ipcRenderer.send(
     'shot-generator:get-state',
+    {
+      board
+    }
+  )
+  headlessRender.getWindow().webContents.send(
+    'headless-render:get-state',
     {
       board
     }

@@ -1566,7 +1566,9 @@ ipcMain.on('scale-ui-by',
   (event, value) => mainWindow.webContents.send('scale-ui-by', value))
 ipcMain.on('scale-ui-reset',
   (event, value) => mainWindow.webContents.send('scale-ui-reset', value))
-
+  ipcMain.on('headless-render:loaded', (event) => {
+    mainWindow.webContents.send('headless-render:loaded')
+  })
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
 ipcMain.on('insertShot',
