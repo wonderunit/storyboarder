@@ -7001,7 +7001,6 @@ ipcRenderer.on('importNotification', () => {
 })
 
 ipcRenderer.on('headless-render:loaded', (event) => {
-  log.info("sending save shot event ")
   let win = headlessRender.getWindow()
   win && win.webContents.send('headless-render:save-shot')
 })
@@ -7023,18 +7022,6 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
 
   }, aspectRatio)
 })
-/* document.addEventListener('keydown', (event) => {
-  let aspectRatio = 1
-  switch(event.keyCode) {
-    case 38:
-      aspectRatio = 2
-      break
-    case 40: 
-      aspectRatio = 0.7
-      break
-  }
-  ipcRenderer.send('changeAspectRatio', {aspectRatio})
-} ) */
 
 ipcRenderer.on('importWorksheets', (event, args) => {
   if (!importWindow) {
@@ -7289,7 +7276,8 @@ ipcRenderer.on('storyboarder:get-boards', event => {
       hasSg: board.sg ? true : false
     }))
   })
-  headlessRender.getWindow().webContents.send('headless-render:get-boards', {
+  let win = headlessRender.getWindow()
+  win && win.webContents.send('headless-render:get-boards', {
     boards: boardData.boards.map(board => ({
       uid: board.uid,
       shot: board.shot,
@@ -7303,7 +7291,8 @@ ipcRenderer.on('storyboarder:get-board', (event, uid) => {
     'shot-generator:get-board',
     boardData.boards.find(board => board.uid === uid)
   )
-  headlessRender.getWindow().webContents.send(
+  let win = headlessRender.getWindow()
+  win && win.webContents.send(
     'headless-render:get-board',
     boardData.boards.find(board => board.uid === uid)
   )
@@ -7319,7 +7308,8 @@ ipcRenderer.on('storyboarder:get-storyboarder-file-data', (event, uid) => {
       }
     }
   )
-  headlessRender.getWindow().webContents.send(
+  let win = headlessRender.getWindow()
+  win && win.webContents.send(
     'headless-render:get-storyboarder-file-data',
     {
       storyboarderFilePath: boardFilename,
@@ -7338,7 +7328,8 @@ ipcRenderer.on('storyboarder:get-state', event => {
       board
     }
   )
-  headlessRender.getWindow().webContents.send(
+  let win = headlessRender.getWindow()
+  win && win.webContents.send(
     'headless-render:get-state',
     {
       board
