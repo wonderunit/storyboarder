@@ -7010,12 +7010,12 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
   fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
   let size = boardModel.boardFileImageSize(boardData)
   storyboarderSketchPane.changePaneSize(size[0], size[1])
-  
   renderShotGeneratorPanel()
   await renderScene()
   resize()
   updateThumbnailDisplayFromFile(currentBoard)
   await updateSketchPaneBoard()
+  ipcRenderer.send('aspectRatioChanged', aspectRatio)
   headlessRender.createWindow(() => {
     let win = headlessRender.getWindow()
     win.webContents.send('headless-render:open')

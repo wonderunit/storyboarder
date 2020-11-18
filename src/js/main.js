@@ -1196,6 +1196,11 @@ ipcMain.on('changeAspectRatio', (e, arg)=> {
   mainWindow.webContents.send('changeAspectRatio', arg)
 })
 
+ipcMain.on('aspectRatioChanged', (e, aspectRatio)=> {
+  let win = shotGeneratorWindow.getWindow()
+  win && win.webContents.send('aspectRatioChanged', aspectRatio)
+})
+
 ipcMain.on('deleteBoards', (e, arg)=> {
   mainWindow.webContents.send('deleteBoards', arg)
 })

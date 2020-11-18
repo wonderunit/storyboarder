@@ -260,6 +260,14 @@ ipcRenderer.on('shot-generator:edit:redo', () => {
   store.dispatch( ActionCreators.redo() )
 })
 
+ipcRenderer.on('aspectRatioChanged', (event, aspectRatio) => {
+  store.dispatch({
+    type: 'SET_ASPECT_RATIO',
+    payload: aspectRatio
+  })
+  shotExplorer.getWindow().webContents.send('shot-explorer:change-aspect', aspectRatio)
+})
+
 ipcRenderer.on('shot-generator:show:shot-explorer', () => {
 
   if(!shotExplorer.isLoaded()) {

@@ -32,12 +32,10 @@ const CameraUpdate = connect(
         camera.userData.type = cameraObject.type
         camera.userData.locked = cameraObject.locked
         camera.userData.id = cameraObject.id
-        console.log("camera update")
     }, [activeCamera, aspectRatio])
     
     useEffect(() => {
         camera.fov = activeCamera.fov
-        console.log("camera's fov update")
         camera.updateProjectionMatrix()
     }, [activeCamera.fov, aspectRatio])
     return null

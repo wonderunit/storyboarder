@@ -107,19 +107,27 @@ ipcRenderer.on('shot-explorer:show', (event) => {
   showShotExplorer()
 })
 
+const updateWindow = (aspectRatio) => {
+  let scaledWidth = Math.ceil(canvasHeight * aspectRatio)
+  scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
+  let win = electron.remote.getCurrentWindow()
+  win.setMinimumSize(scaledWidth, defaultHeight)
+  win.setMaximumSize(scaledWidth, 100000)
+  win.setSize(scaledWidth, defaultHeight)
+  win.center()
+}
+
+ipcRenderer.on("shot-explorer:change-aspect", (event, aspectRatio) => {
+  updateWindow(aspectRatio)
+})
+
 ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
   canvasHeight = defaultHeight * 0.45
-  let scaledWidth = Math.ceil(canvasHeight * aspectRatio)
-  scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
-  let win = electron.remote.getCurrentWindow()
-  win.setSize(scaledWidth, defaultHeight)
-  win.setMinimumSize(scaledWidth, defaultHeight)
-  win.setMaximumSize(scaledWidth, 100000)
-  win.center()
+  updateWindow(aspectRatio)
   let action  = {
     type: 'SET_META_STORYBOARDER_FILE_PATH',
     payload: storyboarderFilePath
