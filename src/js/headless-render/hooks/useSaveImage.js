@@ -27,10 +27,8 @@ const useSaveImage = (renderer, dispatch) => {
     const { camera, scene } = useThree()
     
     const saveImage = () => (dispatch, getState) => {
-        console.log("saving image")
         let state = getState()
         let aspectRatio = state.aspectRatio
-            console.log("saving shot")
         let shotSize = new THREE.Vector2(Math.ceil(aspectRatio * 900), 900)
 
         let {shotImageDataUrl} = renderShot(renderer, scene, camera, shotSize)

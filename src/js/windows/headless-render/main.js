@@ -51,7 +51,7 @@ const createWindow = async ( onComplete, aspectRatio) => {
     }
   
     if (win) {
-     onComplete()
+      onComplete()
       return
     }
     let { x, y, width, height } = memento

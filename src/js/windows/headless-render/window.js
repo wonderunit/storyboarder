@@ -89,6 +89,10 @@ ipcRenderer.on("headless-render:open", async (event) => {
   renderDom()
 })
 
+ipcRenderer.on("headless-render:load-board", async (event, boardData) => {
+  const { storyboarderFilePath, board } = boardData
+  await loadBoard(board, storyboarderFilePath)
+})
 
 const loadBoard = async (board, storyboarderFilePath) => {
   let shot = board.sg
