@@ -66,6 +66,8 @@ const AudioFileControlView = require('./audio-file-control-view')
 
 const LinkedFileManager = require('./linked-file-manager')
 
+const ImageService = require('../utils/ImageService')
+
 const getIpAddress = require('../utils/getIpAddress')
 
 const pkg = require('../../../package.json')
@@ -7001,43 +7003,8 @@ ipcRenderer.on('importNotification', () => {
 })
 
 //#region Board images rerender
-let isImageRerendering = false
-let boards 
-let initialBoardIndex
-let lastIndex
-let iteration
-const continueBoardUpdate = () => {
-  let win = headlessRender.getWindow()
-  if(lastIndex === initialBoardIndex - iteration) iteration++
+let imageService = new ImageService(headlessRender)
 
-  let highestIndex = initialBoardIndex + iteration 
-  let lowestIndex = initialBoardIndex - iteration 
-  let board
-  if(highestIndex !== lastIndex && highestIndex < boards.length ) {
-    board = boards[highestIndex]
-    lastIndex = highestIndex
-    win.webContents.send('headless-render:load-board', {
-      storyboarderFilePath: boardFilename,
-      board
-    })
-    return
-  } else if(lowestIndex !== lastIndex && lowestIndex >= 0) {
-    board = boards[lowestIndex]
-    lastIndex = lowestIndex
-    win.webContents.send('headless-render:load-board', {
-      storyboarderFilePath: boardFilename,
-      board
-    })
-    return
-  }
-  isImageRerendering = false
-
-}
-
-ipcRenderer.on('headless-render:loaded', (event) => {
-  let win = headlessRender.getWindow()
-  win && win.webContents.send('headless-render:save-shot')
-})
 ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
   boardData = JSON.parse(fs.readFileSync(boardFilename))
   boardData.aspectRatio = aspectRatio
@@ -7056,10 +7023,7 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
     let selectedBoard = boardData.boards[currentBoard]
     boards = Object.values(boardData.boards)
     initialBoardIndex = boards.indexOf(selectedBoard)
-    lastIndex = initialBoardIndex
-    isImageRerendering = true
-    iteration = 1
-
+    imageService.initialize(boards, initialBoardIndex, boardFilename)
   }, aspectRatio)
 })
 
@@ -7285,7 +7249,9 @@ const saveToBoardFromShotGenerator = async ({ uid, data, images }) => {
   renderShotGeneratorPanel()
 }
 ipcRenderer.on('saveShot', async (event, { uid, data, images }) => {
-  isImageRerendering && continueBoardUpdate()
+  let needsSaving = imageService.continueBoardUpdate(images)
+  if(!needsSaving) return
+
   storeUndoStateForScene(true)
   await saveToBoardFromShotGenerator({ uid, data, images })
   storeUndoStateForScene()
