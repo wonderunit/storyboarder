@@ -13,6 +13,7 @@ class ImageService {
         this.initialBoardIndex = 0
         this.lastIndex = 0
         this.iteration = 1
+        this.previousIndex = 0
         ipcRenderer.on('headless-render:loaded', (event) => {
             let win = headlessRender.getWindow()
             if(this.boards[this.lastIndex].state !== BoardState.Cancelled) {
@@ -29,6 +30,7 @@ class ImageService {
         this.boards = boards.map(board => { return {state: BoardState.Pending, data:board} } )
         this.initialBoardIndex = currentBoard
         this.lastIndex = currentBoard
+        this.previousIndex = currentBoard
         this.iteration = 1
         this.boardFilename = boardFilename
     }
@@ -42,13 +44,13 @@ class ImageService {
         let highestIndex = this.initialBoardIndex + this.iteration 
         let lowestIndex = this.initialBoardIndex - this.iteration 
         let newIndex 
-        this.boards[this.lastIndex].state = BoardState.Saved
-        if(highestIndex !== this.lastIndex && highestIndex < this.boards.length ) {
-          newIndex = highestIndex
-        } else if(lowestIndex !== this.lastIndex && lowestIndex >= 0) {
-          newIndex = lowestIndex
+        if(this.boards[this.lastIndex]) this.boards[this.lastIndex].state = BoardState.Saved
+        if(highestIndex !== this.lastIndex) {
+            newIndex = highestIndex
+        } else if(lowestIndex !== this.lastIndex) {
+            newIndex = lowestIndex
         } 
-        if(newIndex) {
+        if(newIndex < this.boards.length && newIndex >= 0) {
             let board = this.boards[newIndex]
             this.lastIndex = newIndex
             if(board.state === BoardState.Cancelled) {
@@ -58,10 +60,12 @@ class ImageService {
                 storyboarderFilePath: this.boardFilename,
                 board: board.data
             })
-        }
-        else {
+        } else if(highestIndex >= this.boards.length - 1 && lowestIndex <= 0) {
             this.isImageRerendering = false
-            if( this.boards[this.lastIndex].state === BoardState.Cancelled) return false
+            if(this.boards[this.lastIndex] && this.boards[this.lastIndex].state === BoardState.Cancelled) return false
+        } else {
+            this.lastIndex = newIndex
+            return this.continueBoardUpdate(images)
         }
         return true
     }
