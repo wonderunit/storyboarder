@@ -532,7 +532,7 @@ const load = async (event, args) => {
     // TODO add a cancel button to loading view when a fatal error occurs?
   }
   initialize(path.join(app.getPath('userData'), 'storyboarder-settings.json'))
-  electron.remote.getCurrentWindow().on('resize', resizeScale)
+  remote.getCurrentWindow().on('resize', resizeScale)
 }
 ipcRenderer.on('load', load)
 

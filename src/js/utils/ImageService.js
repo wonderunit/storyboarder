@@ -13,7 +13,6 @@ class ImageService {
         this.initialBoardIndex = 0
         this.lastIndex = 0
         this.iteration = 1
-        this.previousIndex = 0
         ipcRenderer.on('headless-render:loaded', (event) => {
             let win = headlessRender.getWindow()
             if(this.boards[this.lastIndex].state !== BoardState.Cancelled) {
@@ -30,7 +29,6 @@ class ImageService {
         this.boards = boards.map(board => { return {state: BoardState.Pending, data:board} } )
         this.initialBoardIndex = currentBoard
         this.lastIndex = currentBoard
-        this.previousIndex = currentBoard
         this.iteration = 1
         this.boardFilename = boardFilename
     }

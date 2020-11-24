@@ -95,7 +95,7 @@ const Toolbar = connect(
       [room]
     )
 
-    const initializeImage = (id, imagePath = "") => {
+    const initializeImage = (id, imagePath = 'placeholder') => {
       initCamera()
       undoGroupStart()
       createImage(id, camera.current, room.visible && roomObject3d, imagePath)
