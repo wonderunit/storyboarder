@@ -1,3 +1,19 @@
+@font-face {
+  font-family: THICCCBoi;
+  font-weight: normal;
+  src: url("/fonts/thicccboi/THICCCBOI-Regular.woff2") format("opentype");
+}
+
+@font-face {
+  font-family: THICCCBoi;
+  font-weight: bold;
+  src: url("/fonts/thicccboi/THICCCBOI-ExtraBold.woff2") format("opentype");
+}
+
+body {
+  font-family: THICCCBoi, sans-serif;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -37,7 +53,7 @@ div#main {
   border-radius: 9px;
   background: rgba(0, 0, 0, 0.5);
   color: #aaa;
-  font: normal 13px sans-serif;
+  font: normal 13px THICCCBoi, sans-serif;
   text-align: center;
   opacity: 0.5;
   outline: none;
@@ -100,14 +116,14 @@ div#main {
   opacity: 0.8;
   padding: 6px 4px;
 
-  font: normal 15px sans-serif;
+  font: normal 15px THICCCBoi, sans-serif;
 
   min-height: 25px;
 }
 
 .progress-branding {
   color: #9A9EC7;
-  font-family: sans-serif;
+  font-family: THICCCBoi, sans-serif;
   margin: 4rem 0;
   margin-top: -6rem;
   font-size: 1.5rem;
