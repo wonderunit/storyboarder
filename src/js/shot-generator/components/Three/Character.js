@@ -11,30 +11,7 @@ import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
 import FaceMesh from "./Helpers/FaceMesh"
-
-let ikBonesName = ["Hips", "Spine", "Spine1", "Spine2", "Neck", "Head", 
-                  "LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand", 
-                  "RightShoulder", "RightArm", "RightForeArm", "RightHand",
-                  "LeftUpLeg", "LeftLeg", "LeftFoot",
-                  "RightUpLeg", "RightLeg", "RightFoot"]
-const isSuitableForIk = (skeleton) => {
-  //let isSuitable = true
-  let foundBones = []
-  for(let i = 0; i < skeleton.bones.length; i++) {
-    let bone = skeleton.bones[i]
-    let ikBoneName = ikBonesName.filter(name => bone.name.includes(name))[0]
-    if(ikBoneName) {
-      foundBones.push(ikBoneName)
-      let indexOf = ikBonesName.indexOf(ikBoneName)
-      ikBonesName.splice(indexOf, 1)
-      bone.name = ikBoneName
-      bone.userData.name = ikBoneName
-    } 
-  }
-  let isSiutable = ikBonesName.length === 0
-  ikBonesName = ikBonesName.concat(foundBones)
-  return isSiutable
-}
+import isSuitableForIk from '../../../utils/isSuitableForIk'
 
 let boneWorldPosition = new THREE.Vector3()
 let worldPositionHighestBone = new THREE.Vector3()
