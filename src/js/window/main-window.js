@@ -7011,11 +7011,36 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
   fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
   let size = boardModel.boardFileImageSize(boardData)
   storyboarderSketchPane.changePaneSize(size[0], size[1])
+
+  for (let board of boardData.boards) {
+    // all the layers, by name, for this board
+
+    let name = 'reference'
+    if(! board.layers[name]) continue
+   // for (let name of Object.keys(board.layers)) {
+    let filepath = path.join(boardPath, 'images', board.layers[name].url)
+    let img = await exporterCommon.getImage(filepath + '?' + cacheKey(filepath))
+    if (img) {
+      let canvas = document.createElement('canvas')
+      let ctx = canvas.getContext('2d')
+      canvas.height = img.naturalHeight
+      canvas.width = img.naturalWidth
+      ctx.drawImage(img, 0, 0)
+      let image = canvas.toDataURL()
+      let scaledImageData = await fitImageData(size, image)
+      saveDataURLtoFile(scaledImageData, board.layers[name].url)
+    } else {
+      log.warn("could not load image for board", board.layers[layerName].url)
+    }
+  }
+
   renderShotGeneratorPanel()
+  await updateSketchPaneBoard()
   await renderScene()
   resize()
   updateThumbnailDisplayFromFile(currentBoard)
-  await updateSketchPaneBoard()
+  //Update reference layer
+
   ipcRenderer.send('aspectRatioChanged', aspectRatio)
   headlessRender.createWindow(() => {
     let win = headlessRender.getWindow()
@@ -7026,7 +7051,18 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
     imageService.initialize(boards, initialBoardIndex, boardFilename)
   }, aspectRatio)
 })
-
+/* window.addEventListener('keydown', (event) => {
+  let aspect 
+  switch(event.keyCode) {
+    case 40: 
+      aspect = 2
+      break;
+    case 38: 
+      aspect = 0.7
+      break;
+  }
+  if(aspect) ipcRenderer.send('changeAspectRatio', { aspectRatio: aspect})
+}) */
 ////#endregion
 ipcRenderer.on('importWorksheets', (event, args) => {
   if (!importWindow) {
