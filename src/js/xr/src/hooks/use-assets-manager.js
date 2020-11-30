@@ -1,6 +1,6 @@
-const THREE = require('three')
 const React = require('react')
-const { useState, useReducer, useMemo, useCallback } = React
+const path = require('path')
+const { useReducer, useMemo, useCallback } = React
 
 const {onImageBufferLoad, onGLTFBufferLoad} = require('../helpers/resourceLoaders')
 
@@ -89,7 +89,9 @@ const useAssetsManager = (SGConnection) => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-        if (!id.includes('/images/') && !id.includes('/emotions/')) {
+        const extName = path.extname(id)
+        
+        if (['.png', '.jpg', '.jpeg'].indexOf(extName) === -1) {
           SGConnection.getResource('gltf', id)
           .then(({data}) => {
             onGLTFBufferLoad(data)
@@ -121,6 +123,25 @@ const useAssetsManager = (SGConnection) => {
       })
   }, [assets])
 
+  const progressInfo = useMemo(() => {
+    let loaded = 0;
+    let total = 0;
+
+    Object.entries(assets)
+    .map(([_, o]) => {
+      if (o.status === "Success") {
+        loaded++
+      }
+
+      total++
+    })
+  
+    return {
+      loaded,
+      total
+    }
+  }, [assets])
+
   const requestAsset = useCallback(
     id => {
       if (id && (!assets[id])) {
@@ -137,7 +158,7 @@ const useAssetsManager = (SGConnection) => {
     [assets]
   )
 
-  return { assets, requestAsset, getAsset }
+  return { assets, requestAsset, getAsset, ...progressInfo }
 }
 
 module.exports = {

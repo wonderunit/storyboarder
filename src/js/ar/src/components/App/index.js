@@ -1,4 +1,4 @@
-import React, {useCallback, useState, useEffect} from 'react'
+import React, {useCallback, useState} from 'react'
 import {Canvas} from 'react-three-fiber'
 import {Provider, connect} from "react-redux"
 
@@ -6,7 +6,7 @@ import {SceneState} from "../../helpers/sceneState"
 
 import Scene from "../Scene"
 
-import store from "../../helpers/store"
+import { Store } from "../../helpers/store"
 import Loader from "../Loader"
 import {ARButton} from "../../vendor/three/webxr/ARButton"
 import useSceneLoader from "../../hooks/useSceneLoader"
@@ -14,7 +14,6 @@ import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-genera
 
 import ScaleButtons from "../ScaleButtons"
 import MoveButtons from "../MoveButtons"
-import SelectButton from "../SelectButton"
 
 
 const preloadAssetsList = [
@@ -33,11 +32,18 @@ const App = ({sceneObjects, world, board}) => {
     position: [0, 0, 0],
     rotation: 0,
     scale: 1.0,
-    selectEnabled: false
+    
+    movement: {
+      left: false,
+      right: false,
+      top: false,
+      bottom: false
+    }
   })
   
-  const {assets, count} = useSceneLoader(sceneObjects, world, preloadAssetsList)
-  const progress = !board.uid ? 0 : assets.length / count
+  const {assets, count, loaded, getAsset} = useSceneLoader(sceneObjects, world, preloadAssetsList)
+  
+  const progress = !board.uid ? 0 : loaded / count
   const appReady = progress >= 1.0
   
   const onCreated = useCallback(({gl, scene}) => {
@@ -70,7 +76,6 @@ const App = ({sceneObjects, world, board}) => {
           <SceneState.Provider value={innerState}>
             <ScaleButtons/>
             <MoveButtons/>
-            <SelectButton/>
           </SceneState.Provider>
         </div>
       </div>
@@ -81,9 +86,10 @@ const App = ({sceneObjects, world, board}) => {
         onCreated={onCreated}
       >
         <SceneState.Provider value={innerState}>
-          <Provider store={store}>
+          <Provider store={Store.current}>
             <Scene
               ready={appReady}
+              getAsset={getAsset}
             />
           </Provider>
         </SceneState.Provider>

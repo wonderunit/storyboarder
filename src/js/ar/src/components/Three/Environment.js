@@ -4,11 +4,10 @@ import {connect} from 'react-redux'
 import {getWorld} from "../../../../shared/reducers/shot-generator"
 
 import getFilepathForModelByType from "../../../../xr/src/helpers/get-filepath-for-model-by-type"
-import {useAsset} from "../../../../shot-generator/hooks/use-assets-manager"
 import useGLTFAsset from "../../hooks/useGLTFAsset"
 
-const Environment = (props) => {
-  const {asset: env} = useAsset(props.file)
+const Environment = ({getAsset, ...props}) => {
+  const env = getAsset(props.file)
 
   const envObj = useGLTFAsset(env ? env.scene : null)
   

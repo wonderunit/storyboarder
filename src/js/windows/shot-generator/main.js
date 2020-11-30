@@ -25,6 +25,17 @@ const removeExtensions = () => {
   }
 }
 
+app.commandLine.appendSwitch('ignore-certificate-errors', 'true')
+app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+  if (url.indexOf(/(127\.0\.0\.1|localhost)/g) !== -1) {
+    // check if local cert
+    event.preventDefault()
+    callback(true)
+  } else {
+    callback(false)
+  }
+})
+
 const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"))
 let windowSize = settingsService.getSettingByKey("shotGeneratorSize") 
 windowSize = windowSize ? windowSize : { x:undefined, y:undefined, width: 1505, height: 1080 }

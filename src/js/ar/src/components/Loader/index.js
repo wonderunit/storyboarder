@@ -27,6 +27,11 @@ const Loader = ({progress = 0.0}) => {
   
   return (
     <div className={mountClassName}>
+      <div className='loading branding'>
+          <div>Wonder Unit</div>
+          <div>Shot Generator AR</div>
+      </div>
+
       <div className="loader container">
         <div
           className="loader progress"

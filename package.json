@@ -265,6 +265,7 @@
     "trash": "4.0.1",
     "use-asset": "0.1.2",
     "use-constant": "^1.0.0",
+    "use-long-press": "^1.0.4",
     "use-memo-one": "^1.1.1",
     "wav-encoder": "1.3.0",
     "ws": "6.1.2",

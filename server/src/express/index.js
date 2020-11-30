@@ -17,6 +17,7 @@ import apps from './../../apps.json'
 const nanoid = customAlphabet('234567890abcdefghjkmnpqrstuvwxyz', 5)
 
 const PORT = process.env.PORT
+console.log('PORT:', PORT)
 export const App = async () => {
   const app = express()
 
@@ -78,11 +79,11 @@ export const App = async () => {
     const req = params[0]
     const agent = req.headers['user-agent']
 
-    // if (/Windows NT/.test(agent) === false) {
-    //   ARStatic(...params)
-    // } else {
+    if (/(Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone)/.test(agent) === true) {
+      ARStatic(...params)
+    } else {
       XRStatic(...params)
-    // }
+    }
   })
   // app.use('/:id', express.static(
   //   path.join(XRPath)

@@ -33,3 +33,113 @@
     justify-content: space-evenly;
   }
 }
+
+.move-areas {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+
+  z-index: 0;
+
+  width: 100%;
+  height: 100%;
+
+  .buttons, .visual {
+    width: 100%;
+    height: 100%;
+
+    position: absolute;
+
+    top: 0;
+    left: 0;
+  }
+
+  .visual {
+    z-index: 0;
+
+    .top {
+      position: absolute;
+
+      top: 0;
+      left: 0;
+
+      width: 100%;
+      height: 32px;
+    }
+
+    .bottom {
+      position: absolute;
+
+      bottom: 0;
+      left: 0;
+
+      width: 100%;
+      height: 32px;
+    }
+
+    .left {
+      position: absolute;
+
+      top: 0;
+      left: 0;
+
+      width: 32px;
+      height: 100%;
+    }
+
+    .right {
+      position: absolute;
+
+      top: 0;
+      right: 0;
+
+      width: 32px;
+      height: 100%;
+    }
+  }
+
+  .buttons {
+    z-index: 1;
+
+    display: grid;
+    grid-template-columns: 10% auto 10%;
+  }
+
+  & .buttons .vertical {
+    display: grid;
+    grid-template-rows: 50% 50%;
+  }
+
+  & .top, & .bottom, & .left, & .right {
+    opacity: 0.0;
+
+    transition: opacity 0.3s;
+
+    &.active {
+      opacity: 0.5;
+    }
+  }
+
+  & .top.active {
+    background: linear-gradient(to top, transparent, black);
+  }
+
+  & .bottom.active {
+    background: linear-gradient(to bottom, transparent, black);
+  }
+
+  & .left.active {
+    background: linear-gradient(to left, transparent, black);
+  }
+
+  & .right.active {
+    background: linear-gradient(to right, transparent, black);
+  }
+}
+
+// @media screen and (orientation: portrait) {
+//   .move-areas {
+//     transform: rotate(90deg);
+//     transform-origin: left top;
+//   }
+// }

@@ -2,22 +2,25 @@
   position: absolute;
   top: 8px;
   right: 8px;
+
+  z-index: 1;
   
   text-align: center;
   font-size: 13px;
   
   &__button {
-    border: 2px solid #212128;/*#5c65c0*/
+    // border: 2px solid #212128;/*#5c65c0*/
     border-radius: 50%;
     
-    color: #212128;
+    color: #eee;
     
-    background: #eee;
+    background: #5c65c0;
     
     width: 40px;
     height: 40px;
     
     margin: 4px;
+    padding: 2px;
     
     display: flex;
     justify-content: center;

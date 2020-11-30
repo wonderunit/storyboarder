@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useCallback} from 'react'
+import {useEffect, useRef, useCallback} from 'react'
 import {useFrame, useThree} from "react-three-fiber"
 
 import store from './../helpers/store'

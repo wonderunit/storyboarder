@@ -2,7 +2,6 @@ import React, {useMemo, useEffect} from 'react'
 import {connect} from 'react-redux'
 
 import {getSceneObjects, getSelections} from "../../../../shared/reducers/shot-generator"
-import {useAsset} from "../../../../shot-generator/hooks/use-assets-manager"
 import useGLTFAsset from "../../hooks/useGLTFAsset"
 import {useUpdate} from "react-three-fiber"
 import traverseMeshMaterials from "../../../../shot-generator/helpers/traverse-mesh-materials"
@@ -12,8 +11,8 @@ const materialFactory = () => new THREE.MeshBasicMaterial({
   flatShading: false
 })
 
-const VirtualCamera = ({sceneObject, isSelected}) => {
-  const {asset} = useAsset('/data/system/xr/virtual-camera.glb')
+const VirtualCamera = ({sceneObject, isSelected, getAsset}) => {
+  const asset = getAsset('/data/system/xr/virtual-camera.glb')
   let object = useGLTFAsset(asset ? asset.scene : null, materialFactory)
 
   const lightColor = useMemo(() => {

@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react'
+import {useMemo} from 'react'
 import onlyOfTypes from "../../../shot-generator/utils/only-of-types"
 
 const templateFn = () => {}
