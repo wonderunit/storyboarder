@@ -7006,6 +7006,7 @@ ipcRenderer.on('importNotification', () => {
 let imageService = new ImageService(headlessRender)
 
 ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
+  imageService.cancelBoardUpdate()
   boardData = JSON.parse(fs.readFileSync(boardFilename))
   boardData.aspectRatio = aspectRatio
   fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
@@ -7017,17 +7018,10 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
 
     let name = 'reference'
     if(! board.layers[name]) continue
-   // for (let name of Object.keys(board.layers)) {
     let filepath = path.join(boardPath, 'images', board.layers[name].url)
     let img = await exporterCommon.getImage(filepath + '?' + cacheKey(filepath))
     if (img) {
-      let canvas = document.createElement('canvas')
-      let ctx = canvas.getContext('2d')
-      canvas.height = img.naturalHeight
-      canvas.width = img.naturalWidth
-      ctx.drawImage(img, 0, 0)
-      let image = canvas.toDataURL()
-      let scaledImageData = await fitImageData(size, image)
+      let scaledImageData = scaleImage(img, size)
       saveDataURLtoFile(scaledImageData, board.layers[name].url)
     } else {
       log.warn("could not load image for board", board.layers[layerName].url)
@@ -7051,7 +7045,18 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
     imageService.initialize(boards, initialBoardIndex, boardFilename)
   }, aspectRatio)
 })
-/* window.addEventListener('keydown', (event) => {
+
+const scaleImage = (image, boardSize) => {
+  let context = createSizedContext(boardSize)
+  let canvas = context.canvas
+  let scaleX = canvas.width / image.width 
+  let scaleY = canvas.height / image.height
+  let x = (canvas.width / 2) - (image.width / 2) * scaleX
+  let y = (canvas.height / 2) - (image.height / 2) * scaleY
+  context.drawImage(image, x, y, image.width * scaleX, image.height * scaleY)
+ return canvas.toDataURL()
+}
+window.addEventListener('keydown', (event) => {
   let aspect 
   switch(event.keyCode) {
     case 40: 
@@ -7062,7 +7067,7 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
       break;
   }
   if(aspect) ipcRenderer.send('changeAspectRatio', { aspectRatio: aspect})
-}) */
+})
 ////#endregion
 ipcRenderer.on('importWorksheets', (event, args) => {
   if (!importWindow) {
