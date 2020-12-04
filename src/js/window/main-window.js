@@ -7054,7 +7054,7 @@ const scaleImage = (image, boardSize) => {
   let x = (canvas.width / 2) - (image.width / 2) * scaleX
   let y = (canvas.height / 2) - (image.height / 2) * scaleY
   context.drawImage(image, x, y, image.width * scaleX, image.height * scaleY)
- return canvas.toDataURL()
+  return canvas.toDataURL()
 }
 window.addEventListener('keydown', (event) => {
   let aspect 

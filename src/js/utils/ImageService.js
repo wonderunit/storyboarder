@@ -58,7 +58,7 @@ class ImageService {
                 storyboarderFilePath: this.boardFilename,
                 board: board.data
             })
-        } else if(highestIndex >= this.boards.length - 1 && lowestIndex <= 0) {
+        } else if(highestIndex >= this.boards.length - 1 && lowestIndex < 0) {
             this.isImageRerendering = false
             if(this.boards[this.lastIndex] && this.boards[this.lastIndex].state === BoardState.Cancelled) return false
         } else {
