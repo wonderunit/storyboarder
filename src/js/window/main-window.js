@@ -7004,22 +7004,23 @@ ipcRenderer.on('importNotification', () => {
 
 //#region Board images rerender
 let imageService = new ImageService(headlessRender)
-
-ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
+let aspectThread
+function * aspectChange(signal, aspectRatio) {
   imageService.cancelBoardUpdate()
   boardData = JSON.parse(fs.readFileSync(boardFilename))
   boardData.aspectRatio = aspectRatio
   fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
   let size = boardModel.boardFileImageSize(boardData)
+  size = [Math.round(size[0]), Math.round(size[1])]
   storyboarderSketchPane.changePaneSize(size[0], size[1])
 
   for (let board of boardData.boards) {
     // all the layers, by name, for this board
-
+    yield CAF.delay(signal, 1)
     let name = 'reference'
     if(! board.layers[name]) continue
     let filepath = path.join(boardPath, 'images', board.layers[name].url)
-    let img = await exporterCommon.getImage(filepath + '?' + cacheKey(filepath))
+    let img = yield exporterCommon.getImage(filepath + '?' + cacheKey(filepath))
     if (img) {
       let scaledImageData = scaleImage(img, size)
       saveDataURLtoFile(scaledImageData, board.layers[name].url)
@@ -7029,12 +7030,12 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
   }
 
   renderShotGeneratorPanel()
-  await updateSketchPaneBoard()
-  await renderScene()
+  yield updateSketchPaneBoard()
+  yield renderScene()
   resize()
   updateThumbnailDisplayFromFile(currentBoard)
   //Update reference layer
-
+  yield CAF.delay(signal, 1)
   ipcRenderer.send('aspectRatioChanged', aspectRatio)
   headlessRender.createWindow(() => {
     let win = headlessRender.getWindow()
@@ -7044,6 +7045,24 @@ ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
     initialBoardIndex = boards.indexOf(selectedBoard)
     imageService.initialize(boards, initialBoardIndex, boardFilename)
   }, aspectRatio)
+}
+ipcRenderer.on('changeAspectRatio', async (event, {aspectRatio}) => {
+  // cancel any in-progress loading
+  if (cancelTokens.changeAspect && !cancelTokens.changeAspect.signal.aborted) {
+    log.info(`%ccanceling change of aspect`, 'color:red')
+    cancelTokens.changeAspect.abort('cancel')
+    cancelTokens.changeAspect = undefined
+  }
+
+  // start a new loading process
+  cancelTokens.changeAspect = new CAF.cancelToken()
+  try {
+    aspectThread = CAF(aspectChange)
+    await aspectThread(cancelTokens.changeAspect.signal, aspectRatio)
+  } catch (err) {
+    log.warn(err)
+  }
+
 })
 
 const scaleImage = (image, boardSize) => {
