@@ -15,7 +15,7 @@ class ImageService {
         this.iteration = 1
         ipcRenderer.on('headless-render:loaded', (event) => {
             let win = headlessRender.getWindow()
-            if(this.boards[this.lastIndex].state !== BoardState.Cancelled) {
+            if(this.boards[this.lastIndex].state !== BoardState.Cancelled && this.boards[this.lastIndex].data.layers['shot-generator'] ) {
                 this.boards[this.lastIndex].state = BoardState.Loaded
                 win && win.webContents.send('headless-render:save-shot')
             } else {
@@ -51,7 +51,7 @@ class ImageService {
         if(newIndex < this.boards.length && newIndex >= 0) {
             let board = this.boards[newIndex]
             this.lastIndex = newIndex
-            if(board.state === BoardState.Cancelled) {
+            if(board.state === BoardState.Cancelled || !board.data.layers['shot-generator']) {
                 return this.continueBoardUpdate(images)
             }
             win.webContents.send('headless-render:load-board', {

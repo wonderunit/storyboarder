@@ -7007,7 +7007,6 @@ let imageService = new ImageService(headlessRender)
 let aspectThread
 function * aspectChange(signal, aspectRatio) {
   imageService.cancelBoardUpdate()
-  boardData = JSON.parse(fs.readFileSync(boardFilename))
   boardData.aspectRatio = aspectRatio
   fs.writeFileSync(boardFilename, JSON.stringify(boardData, null, 2))
   let size = boardModel.boardFileImageSize(boardData)
