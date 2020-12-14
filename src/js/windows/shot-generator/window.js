@@ -1,6 +1,6 @@
 const { ipcRenderer, shell } = electron = require('electron')
 const { app } = electron.remote
-const electronUtil = require('electron-util')
+const { disableZoom } = require('electron-util')
 
 // const https = require('https')
 // https.globalAgent.options.rejectUnauthorized = false;
@@ -352,7 +352,7 @@ window.$r = { store }
 // ipcRenderer.once('ready', () => {})
 
 log.info('ready!')
-electronUtil.disableZoom()
+disableZoom()
 ReactDOM.render(
     <Provider store={ store }>
       <I18nextProvider i18n={ i18n }>
