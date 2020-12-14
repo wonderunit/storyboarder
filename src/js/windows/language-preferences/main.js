@@ -77,6 +77,7 @@ const createWindow = async ( onComplete) => {
         allowRunningInsecureContent: true,
         experimentalFeatures: true,
         backgroundThrottling: true,
+        enableRemoteModule: true
       },
     })
   

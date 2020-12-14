@@ -332,7 +332,8 @@ let openKeyCommandWindow = () => {
     frame: false,
     titleBarStyle: 'hiddenInset',
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
@@ -367,7 +368,8 @@ let openNewWindow = () => {
       frame: false,
       modal: true,
       webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+        enableRemoteModule: true
       }
     })
     newWindow.loadURL(`file://${__dirname}/../new.html`)
@@ -393,7 +395,8 @@ let openWelcomeWindow = () => {
     frame: false,
     webPreferences: {
       webSecurity: false,
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
@@ -407,7 +410,8 @@ let openWelcomeWindow = () => {
     frame: false,
     modal: true,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   newWindow.loadURL(`file://${__dirname}/../new.html`)
@@ -993,7 +997,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       experimentalCanvasFeatures: true,
       devTools: true,
       plugins: true,
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
 
@@ -1006,7 +1011,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     frame: false,
     resizable: isDev ? true : false,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)

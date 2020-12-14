@@ -39,7 +39,8 @@ const init = () => {
         backgroundColor: '#E5E5E5',
         webPreferences: {
           nodeIntegration: true,
-          devTools: true
+          devTools: true,
+          enableRemoteModule: true
         }
       })
       win.on('closed', () => {
