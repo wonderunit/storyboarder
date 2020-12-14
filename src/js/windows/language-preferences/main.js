@@ -1,5 +1,5 @@
 const {BrowserWindow} = electron = require('electron')
-const log = require('electron-log')
+const log = require('../../shared/storyboarder-electron-log')
 const path = require('path')
 const url = require('url')
 

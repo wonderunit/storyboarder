@@ -14,7 +14,7 @@ const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
 //console.clear() // clear the annoying dev tools warning
-const log = require('electron-log')
+const log = require('../../shared/storyboarder-electron-log')
 log.catchErrors()
 
 const observable = require("../../utils/observable").default

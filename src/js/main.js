@@ -6,7 +6,7 @@ const isDev = require('electron-is-dev')
 const trash = require('trash')
 const chokidar = require('chokidar')
 const os = require('os')
-const log = require('electron-log')
+const log = require('./shared/storyboarder-electron-log')
 const fileSystem = require('fs')
 
 const prefModule = require('./prefs')
