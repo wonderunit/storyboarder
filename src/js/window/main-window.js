@@ -2878,12 +2878,12 @@ let openInEditor = async () => {
           errmsg = 'Could not open editor'
         }
       } else {
-        log.info('\tshell.openItem', board.link)
+        log.info('\tshell.openPath', board.link)
         log.info('\t\t', board.link)
         log.info('\t\t', pathToLinkedFile)
-        let result = shell.openItem(pathToLinkedFile)
-        log.info('\t\tresult:', result)
-        if (!result) {
+        let err = await shell.openPath(pathToLinkedFile)
+        if (err != '') {
+          log.error(err)
           errmsg = 'Could not open editor'
         }
       }
