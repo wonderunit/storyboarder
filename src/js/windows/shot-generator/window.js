@@ -1,6 +1,5 @@
 const { ipcRenderer, shell } = electron = require('electron')
 const { app } = electron.remote
-const electronUtil = require('electron-util')
 
 // const https = require('https')
 // https.globalAgent.options.rejectUnauthorized = false;
@@ -14,7 +13,7 @@ const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
 const { ActionCreators } = require('redux-undo')
 //console.clear() // clear the annoying dev tools warning
-const log = require('electron-log')
+const log = require('../../shared/storyboarder-electron-log')
 log.catchErrors()
 
 const observable = require("../../utils/observable").default
@@ -352,7 +351,7 @@ window.$r = { store }
 // ipcRenderer.once('ready', () => {})
 
 log.info('ready!')
-electronUtil.disableZoom()
+
 ReactDOM.render(
     <Provider store={ store }>
       <I18nextProvider i18n={ i18n }>

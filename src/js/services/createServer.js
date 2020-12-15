@@ -2,7 +2,7 @@ const express = require('express')
 const WebSocket = require('ws')
 const path = require('path')
 
-const log = require('electron-log')
+const log = require('../shared/storyboarder-electron-log')
 
 const getIpAddress = require('../utils/getIpAddress')
 

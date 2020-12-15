@@ -1,8 +1,8 @@
-   const { Menu, app } = require('electron').remote
+const { Menu, app } = require('electron').remote
 const { ipcRenderer, shell } = require('electron')
 const isDev = require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
-const log = require('electron-log')
+const log = require('./shared/storyboarder-electron-log')
 
 // TODO subscribe to store, update menu when keymap changes
 const configureStore = require('./shared/store/configureStore')
@@ -55,7 +55,9 @@ SubMenuFragments.help = (i18n) => [
   },
   {
     label: i18n.t('menu.help.show-log-file'),
-    click () { shell.showItemInFolder(log.transports.file.findLogPath()) }
+    click () {
+      shell.showItemInFolder(log.transports.file.getFile().path)
+    }
   }
 ]
 SubMenuFragments.windowing = (i18n) => [

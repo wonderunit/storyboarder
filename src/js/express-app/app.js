@@ -7,7 +7,7 @@ const app = express()
 const http = require('http').Server(app)
 const io = require('socket.io')(http, { wsEngine: 'ws' })
 
-const log = require('electron-log')
+const log = require('../shared/storyboarder-electron-log')
 
 const getIpAddress = require('../utils/getIpAddress')
 
