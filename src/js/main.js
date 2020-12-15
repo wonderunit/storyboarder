@@ -46,6 +46,17 @@ const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 const store = configureStore({}, 'main')
 
 
+if (isDev) {
+  const { default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } = require('electron-devtools-installer')
+
+  app.whenReady().then(() => {
+    installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS])
+      .then((name) => console.log(`[Extensions] ADD ${name}`))
+      .catch((err) => console.log('[Extensions] ERR: ', err))
+  })
+}
+
+
 let welcomeWindow
 let newWindow
 
