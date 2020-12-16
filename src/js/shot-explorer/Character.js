@@ -7,7 +7,7 @@ import {useAsset} from '../shot-generator/hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../shot-generator/utils/ShotLayers'
 import {patchMaterial} from '../shot-generator/helpers/outlineMaterial'
 import isUserModel from '../shot-generator/helpers/isUserModel'
-import FaceMesh from "../shot-generator/components/three/Helpers/FaceMesh"
+import FaceMesh from "../shot-generator/components/Three/Helpers/FaceMesh"
 
 const Character = React.memo(({ path, sceneObject, modelSettings, ...props}) => {
     const faceMesh = useRef(null)
