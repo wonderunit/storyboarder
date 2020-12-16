@@ -111,12 +111,10 @@ iframe {
   display: flex;
   justify-content: space-between;
   padding: 20px;
-  gap: 15px;
   box-sizing: border-box;
 }
 .button-grid > :first-child {
   display: flex;
-  flex: 1;
 }
 .button-grid > :last-child {
   display: flex;
