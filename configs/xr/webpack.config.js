@@ -2,6 +2,7 @@ const path = require('path')
 const webpack = require('webpack')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const {CleanWebpackPlugin} = require('clean-webpack-plugin')
+const CopyPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: './src/js/xr/src/index.js',
@@ -58,6 +59,11 @@ module.exports = {
     new webpack.ProvidePlugin({
       'THREE': 'three'
     }),
-    new HtmlWebpackPlugin({template: './src/js/xr/src/index.html'})
+    new HtmlWebpackPlugin({template: './src/js/xr/src/index.html'}),
+    new CopyPlugin({
+      patterns: [
+        { from: 'src/fonts/thicccboi', to: 'fonts/thicccboi' }
+      ]
+    })
   ]
 }

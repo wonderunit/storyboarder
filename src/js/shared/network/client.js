@@ -1,5 +1,5 @@
 import {RestrictedActions, remoteStore, setId, SelectActions} from "../reducers/remoteDevice"
-import {_blockObject, _unblockObject, getSelections} from "../reducers/shot-generator"
+import {blockObject as blockObjectAction, unblockObject as unblockObjectAction, getSelections} from "../reducers/shot-generator"
 import P2P from './p2p'
 import EventEmmiter from 'events'
 
@@ -92,8 +92,18 @@ export const connect = (URI = '') => {
         // Send objects to block
         client.on('askForBlock', () => {
           let meta = {ignore: [remoteStore.getState().id]}
-          dispatchRemote(_blockObject(getSelections(appStore.getState())), meta)
+          dispatchRemote(blockObjectAction(getSelections(appStore.getState())), meta)
         })
+      }
+
+      const blockObject = (ids) => {
+        let meta = {ignore: [remoteStore.getState().id]}
+        dispatchRemote(blockObjectAction(ids), meta)
+      }
+      
+      const unblockObject = (ids) => {
+        let meta = {ignore: [remoteStore.getState().id]}
+        dispatchRemote(unblockObjectAction(ids), meta)
       }
   
       // Get all the boards
@@ -202,6 +212,7 @@ export const connect = (URI = '') => {
         // Not send restricted actions
         if (RestrictedActions.indexOf(action.type) !== -1) {
   
+          /*
           // If we select something
           if (SelectActions.indexOf(action.type) !== -1) {
             let meta = {ignore: [remoteStore.getState().id]}
@@ -214,11 +225,12 @@ export const connect = (URI = '') => {
             const selectionsToBlock = selectionsAfter.filter(item => selectionsBefore.indexOf(item) === -1)
             const selectionsToUnblock = selectionsBefore.filter(item => selectionsAfter.indexOf(item) === -1)
 
-            if (selectionsToUnblock.length) dispatchRemote(_unblockObject(selectionsToUnblock), meta) // Unblock deselected
-            if (selectionsToBlock.length) dispatchRemote(_blockObject(selectionsToBlock), meta) // Block selected
+            if (selectionsToUnblock.length) dispatchRemote(unblockObject(selectionsToUnblock), meta) // Unblock deselected
+            if (selectionsToBlock.length) dispatchRemote(blockObject(selectionsToBlock), meta) // Block selected
 
             return result
           }
+          */
   
           /* Dispatch */
           return next(action)
@@ -274,7 +286,11 @@ export const connect = (URI = '') => {
         isSceneDirty,
 
         getResource,
-        connectRequest
+        connectRequest,
+
+
+        blockObject,
+        unblockObject
       })
     })
   })

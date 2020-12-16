@@ -22,6 +22,7 @@ import {
     deselectAttachable,
     getSceneObjects,
 } from '../../../shared/reducers/shot-generator'
+import {blockObject, unblockObject} from '../../../services/server/sockets';
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import throttle from 'lodash.throttle'
 import CameraControlsComponent from './CameraControlsComponet'
@@ -277,6 +278,7 @@ const InteractionManager = connect(
                     selections[0] === target.userData.id
                   ) {
                     if (target.userData.locked || target.userData.blocked) {
+                      unblockObject(target.userData.id)
                       selectObject(null)
                       selectBone(null)
                       setLastDownId(null)
@@ -298,6 +300,7 @@ const InteractionManager = connect(
                     // select the bone
                     if (!isSelectedControlPoint && hits.length) {
                       selectObject(target.userData.id)
+                      blockObject(target.userData.id)
                       setLastDownId(null)
                       
                       selectBone(hits[0].bone.uuid)
@@ -312,6 +315,7 @@ const InteractionManager = connect(
                 selections.includes(target.userData.id)
               ) {
                 shouldDrag = true
+                blockObject(target.userData.id)
               }
             }
               selectBone(null)
@@ -354,6 +358,7 @@ const InteractionManager = connect(
         SGIkHelper.getInstance().deselectControlPoint(event)
         if (dragTarget && dragTarget.target) {
           endDrag(updateObjects)
+          unblockObject(dragTarget.target.userData.id)
           if(dragTarget.target.userData.type === "character") {
             let attachables = scene.__interaction.filter(object => object.userData.bindedId === dragTarget.target.userData.id)
             withState((dispatch, state) => {

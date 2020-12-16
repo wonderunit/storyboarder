@@ -66,7 +66,7 @@ ipcRenderer.on("languageRemoved", (event, lng) => {
 const translateHtml = (elementName, traslationKey) => {
   let elem = document.querySelector(elementName)
   if(!elem || !elem.childNodes.length) return
-  elem.childNodes[elem.childNodes.length - 1].textContent = i18n.t(traslationKey)
+  elem.childNodes[elem.childNodes.length - 1].innerHTML = i18n.t(traslationKey)
 }
 
 const updateHTML = () => {

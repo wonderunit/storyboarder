@@ -220,6 +220,14 @@ export const serve = (store, service, staticPath, projectPath, userDataPath) => 
   })
 }
 
+export const blockObject = (ids) => {
+  dispatchRemote(_blockObject(ids), {ignoreSG: true})
+}
+
+export const unblockObject = (ids) => {
+  dispatchRemote(_unblockObject(ids), {ignoreSG: true})
+}
+
 // Redux middleware
 export const SGMiddleware = store => next => action => {
   /**
@@ -231,6 +239,7 @@ export const SGMiddleware = store => next => action => {
   if (!IO.current || (RestrictedActions.indexOf(action.type) !== -1)) {
     // If we select something
     if (SelectActions.indexOf(action.type) !== -1) {
+      /*
       let selectionsBefore = getSelections(store.getState()) // Get selections before store update
 
       const result = next(action) // Update store
@@ -239,16 +248,20 @@ export const SGMiddleware = store => next => action => {
       /**
        * Next, we should compare to arrays to understand what objects are free to select and what objects are restricted to select
        */
+      /*
       console.log('Before/After', selectionsBefore, selectionsAfter)
       const selectionsToBlock = selectionsAfter.filter(item => selectionsBefore.indexOf(item) === -1) // Get objects block
       const selectionsToUnblock = selectionsBefore.filter(item => selectionsAfter.indexOf(item) === -1) // Get objects to unblock
       console.log('Block/Unblock', selectionsToBlock, selectionsToUnblock)
 
-      if (selectionsToUnblock.length) dispatchRemote(_unblockObject(selectionsToUnblock), {ignoreSG: true}) // Unblock deselected
-      if (selectionsToBlock.length) dispatchRemote(_blockObject(selectionsToBlock), {ignoreSG: true}) // Block selected
+      if (selectionsToUnblock.length) dispatchRemote(unblockObject(selectionsToUnblock), {ignoreSG: true}) // Unblock deselected
+      if (selectionsToBlock.length) dispatchRemote(blockObject(selectionsToBlock), {ignoreSG: true}) // Block selected
 
       // Return new state
       return result
+      */
+      
+      next(action)
     }
     
     // Return new state

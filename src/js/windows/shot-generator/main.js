@@ -5,26 +5,6 @@ const path = require('path')
 const url = require('url')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
-//const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
-  
-  return Promise.all(
-      extensions.map(name => installer.default(installer[name], forceDownload))
-  ).catch(console.log);
-};
-
-// Removes any extension from the production version
-const removeExtensions = () => {
-  const installed = BrowserWindow.getDevToolsExtensions()
-
-  for (let extension of Object.keys(installed)) {
-    BrowserWindow.removeDevToolsExtension(extension)
-  }
-}
-
 const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"))
 let windowSize = settingsService.getSettingByKey("shotGeneratorSize") 
 windowSize = windowSize ? windowSize : { x:undefined, y:undefined, width: 1505, height: 1080 }
@@ -43,12 +23,6 @@ const reveal = onComplete => {
 }
 
 const show = async (onComplete) => {
-  if (process.env.NODE_ENV === 'development') {
-    await installExtensions()
-  } else {
-    removeExtensions()
-  }
-
   if (win) {
     reveal(onComplete)
     return
@@ -80,6 +54,7 @@ const show = async (onComplete) => {
       allowRunningInsecureContent: true,
       experimentalFeatures: true,
       backgroundThrottling: true,
+      enableRemoteModule: true
     }
   })
 

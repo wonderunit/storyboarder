@@ -1,4 +1,4 @@
-import log from 'electron-log'
+import log from '../../../shared/storyboarder-electron-log'
 import React from 'react'
 class FatalErrorBoundary extends React.Component {
   constructor(props) {

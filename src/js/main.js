@@ -6,7 +6,7 @@ const isDev = require('electron-is-dev')
 const trash = require('trash')
 const chokidar = require('chokidar')
 const os = require('os')
-const log = require('electron-log')
+const log = require('./shared/storyboarder-electron-log')
 const fileSystem = require('fs')
 
 const prefModule = require('./prefs')
@@ -45,6 +45,17 @@ const AspectSettingsWindow = require('./windows/aspect-settings/main')
 
 
 const store = configureStore({}, 'main')
+
+
+if (isDev) {
+  const { default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } = require('electron-devtools-installer')
+
+  app.whenReady().then(() => {
+    installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS])
+      .then((name) => console.log(`[Extensions] ADD ${name}`))
+      .catch((err) => console.log('[Extensions] ERR: ', err))
+  })
+}
 
 
 let welcomeWindow
@@ -333,7 +344,8 @@ let openKeyCommandWindow = () => {
     frame: false,
     titleBarStyle: 'hiddenInset',
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
@@ -368,7 +380,8 @@ let openNewWindow = () => {
       frame: false,
       modal: true,
       webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+        enableRemoteModule: true
       }
     })
     newWindow.loadURL(`file://${__dirname}/../new.html`)
@@ -394,7 +407,8 @@ let openWelcomeWindow = () => {
     frame: false,
     webPreferences: {
       webSecurity: false,
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
@@ -408,7 +422,8 @@ let openWelcomeWindow = () => {
     frame: false,
     modal: true,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   newWindow.loadURL(`file://${__dirname}/../new.html`)
@@ -994,7 +1009,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       experimentalCanvasFeatures: true,
       devTools: true,
       plugins: true,
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
 
@@ -1007,7 +1023,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     frame: false,
     resizable: isDev ? true : false,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)

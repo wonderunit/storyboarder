@@ -12,7 +12,7 @@ export const patchMaterial = (material, customParameters = {}) => {
   return material
 }
 
-export const setSelected = (object, selected = false, blocked = false, defaultColor = 0xcccccc,) => {
+export const setSelected = (object, selected = false, blocked = false, defaultColor = 0xcccccc) => {
   if (!object.material && !object.isMaterial) {
     return false
   }

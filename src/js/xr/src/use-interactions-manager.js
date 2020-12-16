@@ -309,7 +309,8 @@ const useInteractionsManager = ({
   uiService,
   playSound,
   stopSound,
-  realCamera
+  realCamera,
+  SGConnection
 }) => {
   const { gl, camera, scene } = useThree()
 
@@ -1388,6 +1389,7 @@ const useInteractionsManager = ({
             
             controller.attach(object)
             object.updateMatrixWorld(true)
+            SGConnection.blockObject(context.selection)
           }
 
           playSound('beam', object)
@@ -1430,6 +1432,8 @@ const useInteractionsManager = ({
               commit(mapAttachables[i].userData.id, mapAttachables[i])
             }
           }
+
+          SGConnection.unblockObject(context.selection)
 
           uiService.send({ type: 'UNLOCK' })
         },
