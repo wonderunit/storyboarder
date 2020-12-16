@@ -102,12 +102,12 @@
     z-index: 1;
 
     display: grid;
-    grid-template-columns: 10% auto 10%;
+    grid-template-columns: 10% auto 10%; // Left button, middle part, right button
   }
 
   & .buttons .vertical {
     display: grid;
-    grid-template-rows: 50% 50%;
+    grid-template-rows: 50% 50%; // Top button, bottom button
   }
 
   & .top, & .bottom, & .left, & .right {
