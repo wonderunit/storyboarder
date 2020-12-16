@@ -7076,18 +7076,6 @@ const scaleImage = (image, boardSize) => {
   context.drawImage(image, x, y, image.width * scaleX, image.height * scaleY)
   return canvas.toDataURL()
 }
-window.addEventListener('keydown', (event) => {
-  let aspect 
-  switch(event.keyCode) {
-    case 40: 
-      aspect = 2
-      break;
-    case 38: 
-      aspect = 0.7
-      break;
-  }
-  if(aspect) ipcRenderer.send('changeAspectRatio', { aspectRatio: aspect})
-})
 ////#endregion
 ipcRenderer.on('importWorksheets', (event, args) => {
   if (!importWindow) {
