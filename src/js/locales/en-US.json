@@ -660,7 +660,7 @@
     "show-tooltips": "Show Tooltips",
     "save-automatically": "Save Project Data Automatically",
     "saving-hint": "When disabled, use 'File > Save' to save project data. Note that changes to image data are always saved automatically.",
-    "force-psd-reload": "Force reload of watched PSD when Storyboarder regains focus",
+    "force-psd-reload": "Force reload watched PSD when Storyboarder regains focus",
     "psd-reload-hint": "Enable if working from a network drive.\nDisable to improve performance when switching between\nStoryboarder and other apps. When disabled, Storyboarder only\nwatches PSD files in the background (which is not supported on all computers).",
     "default-timing": "Default Board Timing (in msecs)",
     "external-psd-editor": "External PSD Editor",
