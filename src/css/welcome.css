@@ -79,16 +79,17 @@ iframe {
 
 .button {
   background: rgb(200,200,200);
-  padding: 20px 20px;
   position: relative;
-  margin: 20px;
   bottom: 0;
-  border-radius: 10px;
-  font-weight: 400;
-  font-size: 18px;
   transition: 300ms background;
   box-sizing: border-box;
   -webkit-app-region: initial;
+
+  font-size: 17px;
+  font-weight: 400;
+
+  padding: 20px;
+  border-radius: 10px;
 }
 
 .button.blue {
@@ -103,14 +104,24 @@ iframe {
   background: rgb(210,210,210);
 }
 
-
-.button.left {
-  float: left;
+.button-grid {
+  position: absolute;
+  bottom: 0;
+  width: 600px;
+  display: flex;
+  justify-content: space-between;
+  padding: 20px;
+  gap: 15px;
+  box-sizing: border-box;
 }
-
-.button.right {
-  float: right;
-  margin-left: 0px;
+.button-grid > :first-child {
+  display: flex;
+  flex: 1;
+}
+.button-grid > :last-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 15px;
 }
 
 .recent {
