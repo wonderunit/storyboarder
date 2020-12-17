@@ -257,6 +257,7 @@
     "tether-drop": "./src/js/vendor/tether-drop",
     "tether-tooltip": "./src/js/vendor/tether-tooltip",
     "three": "^0.115.0",
+    "three-bmfont-text": "3.0.1",
     "three-rounded-box": "0.1.1",
     "tmp": "0.0.33",
     "tone": "0.12.0",

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import React, { useState, useEffect, useMemo } from 'react'
-import createGeometry from '../../vendor/three-bmfont-text'
+import createGeometry from 'three-bmfont-text'
 import loadFont from 'load-bmfont'
 import SDFShader from '../shaders/sdf-shader'
 
