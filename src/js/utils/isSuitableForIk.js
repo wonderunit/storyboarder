@@ -17,9 +17,9 @@ const isSuitableForIk = (skeleton) => {
       bone.userData.name = ikBoneName
     } 
   }
-  let isSiutable = ikBonesName.length === 0
+  let isSuitable = ikBonesName.length === 0
   ikBonesName = ikBonesName.concat(foundBones)
-  return isSiutable
+  return isSuitable
 }
 
 module.exports = isSuitableForIk
