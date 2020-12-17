@@ -10,6 +10,7 @@ const VirtualCamera = require('../components/VirtualCamera')
 const BonesHelper = require('../three/BonesHelper')
 const IKHelper = require('../../../shared/IK/IkHelper')
 const FaceMesh = require('../../../shot-generator/components/Three/Helpers/FaceMesh').default
+const isSuitableForIk = require('../../../utils/isSuitableForIk')
 
 const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, updateSkeleton, texture }) => {
     const faceMesh = useRef(null)
@@ -22,6 +23,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
     const [ready, setReady] = useState(false)
     const { gl } = useThree()
+    const isIkCharacter = useRef(null)
     const ref = useUpdate(
       self => {
         self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
@@ -93,6 +95,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
 
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
+      isIkCharacter.current = isSuitableForIk(skeleton)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
       
@@ -213,7 +216,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
       if (isSelected) {
 
         BonesHelper.getInstance().initialize(lod.children[0])
-        if(!isUserModel(sceneObject.model) && !IKHelper.getInstance().isIkDisabled) {
+        if(isIkCharacter.current && !IKHelper.getInstance().isIkDisabled) {
             IKHelper.getInstance().initialize(lod.children[0], originalHeight)
             ref.current.add(IKHelper.getInstance())
         }
@@ -226,7 +229,7 @@ const Character = React.memo(({ gltf, sceneObject, modelSettings, isSelected, up
     }, [lod, isSelected, ready])
 
     useEffect(() => {      
-      if(!skeleton) return
+      if(!skeleton || !getFaceMesh().defaultTexture) return
       if(!texture) {
         getFaceMesh().resetTexture()
         return
