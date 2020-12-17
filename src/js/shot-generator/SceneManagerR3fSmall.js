@@ -23,7 +23,9 @@ import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
 import RemoteProvider from "./components/RemoteProvider"
 
-const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'wonder-unit-bmfont', 'wonderunit-b.fnt')
+const fontpath = path.join(window.__dirname, '..', 'src', 'fonts', 'thicccboi-bmfont', 'thicccboi-bold.fnt')
+const fontpnguri = 'fonts/thicccboi-bmfont/thicccboi-bold.png'
+
 const SceneManagerR3fSmall = connect(
     state => ({
         sceneObjects: getSceneObjects(state),
@@ -118,7 +120,7 @@ const SceneManagerR3fSmall = connect(
       draggedObject.current = null
     }, [updateObjects])
 
-    const fontMesh = useFontLoader(fontpath, 'fonts/wonder-unit-bmfont/wonderunit-b.png')
+    const fontMesh = useFontLoader(fontpath, fontpnguri)
     useEffect(() => { 
         directionalLightRef.current.intensity = world.directional.intensity
         directionalLightRef.current.rotation.x = 0
