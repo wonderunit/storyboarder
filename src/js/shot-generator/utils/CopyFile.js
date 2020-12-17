@@ -1,7 +1,7 @@
 
 import path from 'path'
 import fs from 'fs-extra'
-import log from 'electron-log'
+import log from '../../shared/storyboarder-electron-log'
 import ModelLoader from '../../services/model-loader'
 
 const CopyFile = (storyboarderFilePath, absolutePath, type) => {

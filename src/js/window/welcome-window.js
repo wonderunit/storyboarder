@@ -4,7 +4,7 @@ const moment = require('moment')
 const menu = require('../menu')
 const sfx = require('../wonderunit-sound')
 const prefsModule = require('electron').remote.require('./prefs')
-const log = require('electron-log')
+const log = require('../shared/storyboarder-electron-log')
 const pkg = require('../../../package.json')
 
 //#region Localization 

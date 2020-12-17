@@ -5,7 +5,8 @@ const {
   propEq,
   evolve,
   map,
-  omit
+  omit,
+  pipe
 } = require('ramda')
 
 const isPresent = complement(isNil)
@@ -27,6 +28,10 @@ module.exports = sceneObject =>
       }
     )
   )(
-    // always omit `loaded` property, for all scene objects
-    omit(['loaded'], sceneObject)
+    pipe(
+      // always omit `loaded` property, for all scene objects
+      omit(['loaded']),
+      // always omit `blocked` property, for all scene objects
+      omit(['blocked'])
+    )(sceneObject)
   )

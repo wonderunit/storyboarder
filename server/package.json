@@ -1,0 +1,37 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "p2p server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start:webpack": "webpack --watch --mode=development --config=webpack.config.dev.js",
+    "start:node": "nodemon ./dist/server.js",
+    "start": "concurrently \"npm run start:webpack\" \"npm run start:node\"",
+    "build": "webpack --mode=production --config=webpack.config.prod.js"
+  },
+  "author": "",
+  "devDependencies": {
+    "@babel/core": "^7.10.5",
+    "@babel/plugin-transform-async-to-generator": "^7.10.4",
+    "@babel/plugin-transform-runtime": "^7.10.5",
+    "@babel/preset-env": "^7.10.4",
+    "babel-loader": "^8.1.0",
+    "clean-webpack-plugin": "^3.0.0",
+    "concurrently": "^5.2.0",
+    "copy-webpack-plugin": "^6.0.3",
+    "dotenv-webpack": "^2.0.0",
+    "nodemon": "^2.0.4",
+    "webpack": "^4.43.0",
+    "webpack-cli": "^3.3.12"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.10.5",
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nanoid": "^3.0.0",
+    "peer": "^0.5.3",
+    "pidusage": "^2.0.21",
+    "winston": "^3.3.3"
+  }
+}
