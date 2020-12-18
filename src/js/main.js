@@ -40,6 +40,7 @@ const util = require('./utils/index')
 const {settings:languageSettings} = require('./services/language.config')
 const autoUpdater = require('./auto-updater')
 const LanguagePreferencesWindow = require('./windows/language-preferences/main')
+const AspectSettingsWindow = require('./windows/aspect-settings/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 
@@ -1208,6 +1209,15 @@ ipcMain.on('newBoard', (e, arg)=> {
   mainWindow.webContents.send('newBoard', arg)
 })
 
+ipcMain.on('changeAspectRatio', (e, arg)=> {
+  mainWindow.webContents.send('changeAspectRatio', arg)
+})
+
+ipcMain.on('aspectRatioChanged', (e, aspectRatio)=> {
+  let win = shotGeneratorWindow.getWindow()
+  win && win.webContents.send('aspectRatioChanged', aspectRatio)
+})
+
 ipcMain.on('deleteBoards', (e, arg)=> {
   mainWindow.webContents.send('deleteBoards', arg)
 })
@@ -1547,6 +1557,14 @@ ipcMain.on('openLanguagePreferences', (event) => {
   //ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
 })
 
+ipcMain.on('openAspectSettings', (event) => {
+  let win = AspectSettingsWindow.getWindow()
+  if (win) {
+    AspectSettingsWindow.reveal()
+  } else {
+    AspectSettingsWindow.createWindow(() => {AspectSettingsWindow.reveal()})
+  }
+})
 
 ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
   mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)
@@ -1570,7 +1588,9 @@ ipcMain.on('scale-ui-by',
   (event, value) => mainWindow.webContents.send('scale-ui-by', value))
 ipcMain.on('scale-ui-reset',
   (event, value) => mainWindow.webContents.send('scale-ui-reset', value))
-
+  ipcMain.on('headless-render:loaded', (event) => {
+    mainWindow.webContents.send('headless-render:loaded')
+  })
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
 ipcMain.on('insertShot',

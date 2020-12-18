@@ -157,14 +157,14 @@ const useSaveToStoryboarder = (largeCanvasData, smallCanvasData, aspectRatio, sh
     () => dispatch(
       saveCurrentShot(shotRenderer, cameraPlotRenderer, largeCanvasData, smallCanvasData, shotSize, cameraPlotSize, aspectRatio)
     ),
-    []
+    [shotSize]
   )
 
   const insertNewShotCb = useCallback(
     () => dispatch(
       insertNewShot(shotRenderer, cameraPlotRenderer, largeCanvasData, smallCanvasData, shotSize, cameraPlotSize, aspectRatio)
     ),
-    []
+    [shotSize]
   )
 
   return {

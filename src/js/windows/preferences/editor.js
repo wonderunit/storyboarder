@@ -103,6 +103,9 @@ const updateHTML = () => {
   translateHtml("#languages", "preferences.languages")
   translateHtml("#languages-hint", "preferences.languages-hint")
   translateHtml("#open-language-editor", "preferences.open-language-editor")
+  translateHtml("#aspect", "preferences.aspect")
+  translateHtml("#aspect-hint", "preferences.aspect-hint")
+  translateHtml("#open-aspect-settings", "preferences.open-aspect-settings")
   translateHtml("#sign-out", "preferences.sign-out")
   translateHtml("#sign-out-hint", "preferences.sign-out-hint")
   translateHtml("#thanks-for-support", "preferences.thanks-for-support")
@@ -305,6 +308,10 @@ const openLanguageEditor = () => {
   ipcRenderer.send('openLanguagePreferences')
 }
 
+const openAspectSettings = () => {
+  ipcRenderer.send('openAspectSettings')
+}
+
 let selectedOption
 
 const selectLanguage = (language) => {
@@ -365,7 +372,8 @@ const init = () => {
   initializeLanguageList()
   let languageEditor = document.getElementsByClassName('open-language-editor')[0].children[0]
   languageEditor.onclick = openLanguageEditor
-
+  let aspectSettings = document.getElementById('open-aspect-settings')
+  aspectSettings.onclick = openAspectSettings
   // bind
   for (let el of inputs) {
     el.addEventListener('change', onChange.bind(this, el.name))

@@ -9,15 +9,18 @@ import {
 const CameraUpdate = connect(    
     state => ({
     activeCamera: getSceneObjects(state)[getActiveCamera(state)],
+    aspectRatio: state.aspectRatio
 }),
 {
 }
 )( React.memo(({ 
-    activeCamera
+    activeCamera,
+    aspectRatio
 }) => {
     const { camera } = useThree()
     useEffect(() => {
         let cameraObject = activeCamera
+        camera.aspect = aspectRatio
         camera.position.x = cameraObject.x
         camera.position.y = cameraObject.z
         camera.position.z = cameraObject.y
@@ -29,12 +32,12 @@ const CameraUpdate = connect(
         camera.userData.type = cameraObject.type
         camera.userData.locked = cameraObject.locked
         camera.userData.id = cameraObject.id
-    }, [activeCamera])
-
+    }, [activeCamera, aspectRatio])
+    
     useEffect(() => {
         camera.fov = activeCamera.fov
         camera.updateProjectionMatrix()
-    }, [activeCamera.fov])
+    }, [activeCamera.fov, aspectRatio])
     return null
     })
 )

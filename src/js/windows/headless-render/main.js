@@ -1,5 +1,6 @@
-const {BrowserWindow} = electron = require('electron')
-const log = require('../../shared/storyboarder-electron-log')
+const { BrowserWindow, ipcMain, app, dialog } = electron = require('electron').remote
+const isDev = require('electron-is-dev')
+
 const path = require('path')
 const url = require('url')
 
@@ -18,22 +19,25 @@ let memento = {
 const reveal = () => {
     win.show()
     win.focus()
+    //win.webContents.openDevTools()
     //onComplete(win)
   }
 
-const createWindow = async ( onComplete) => {
+const createWindow = async ( onComplete, aspectRatio) => {
     if (win) {
-      //reveal(onComplete)
+      onComplete()
       return
     }
-    let { x, y } = memento
+    let { x, y, width, height } = memento
     win = new BrowserWindow({
+     // minWidth: (500 * aspectRatio),
+      //minHeight: 800,
+
+     // maxWidth: (300 * aspectRatio),
       x,
       y,
-      width: 1200,
-      height: 800,
-      minWidth: 600,
-      minHeight: 600,
+      width,
+      height,
   
       show: false,
       center: true,
@@ -41,7 +45,7 @@ const createWindow = async ( onComplete) => {
   
       backgroundColor: '#333333',
       titleBarStyle: 'hiddenInset',
-      title: "Language Preferences",
+      title: "Headless render",
       acceptFirstMouse: true,
       simpleFullscreen: true,
       webPreferences: {
@@ -65,9 +69,8 @@ const createWindow = async ( onComplete) => {
     win.once('closed', () => {
       win = null
     })
-    log.info(path.join(__dirname, '..', '..', '..', 'language-preferences'))
     win.loadURL(url.format({
-      pathname: path.join(__dirname, '..', '..', '..', 'language-preferences.html'),
+      pathname: path.join(window.__dirname, 'headless-render.html'),
       protocol: 'file:',
       slashes: true
     }))

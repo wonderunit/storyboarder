@@ -2,16 +2,14 @@ const ReactDOM = require('react-dom')
 const React = require('react')
 const { ipcRenderer, shell } = electron = require('electron')
 const { Provider, batch } = require('react-redux')
-const { dialog } = electron.remote
-const THREE = require('three')
 const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
 const { reducer } = require('../../shared/reducers/shot-generator')
 const presetsStorage = require('../../shared/store/presetsStorage')
 const { initialState } = require('../../shared/reducers/shot-generator')
 const poses = require('../../shared/reducers/shot-generator-presets/poses.json')
-const ShotExplorer = require('../../shot-explorer').default
-const service = require('../shot-generator/service')
+const HeadlessRender = require('../../headless-render').default
+const service = require('./service')
 const {loadAsset, cleanUpCache} = require("../../shot-generator/hooks/use-assets-manager")
 const ModelLoader = require("./../../services/model-loader")
 const {getFilePathForImages} = require("./../../shot-generator/helpers/get-filepath-for-images")
@@ -20,19 +18,7 @@ const {
   loadScene,
   resetScene,
 } = require('../../shared/reducers/shot-generator')
-const i18n = require('../../services/i18next.config')
-
 require("../../shared/helpers/monkeyPatchGrayscale")
-let sendedAction = []
-let isBoardShown = false
-let isBoardLoaded = false
-let componentKey = THREE.Math.generateUUID()
-let shotExplorerElement 
-let isVisible = electron.remote.getCurrentWindow().visible
-let defaultHeight = 800
-let canvasHeight = 400
-let minimumWidth = 300
-
 const actionSanitizer = action => (
     action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
     { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
@@ -54,14 +40,7 @@ const configureStore = function configureStore (preloadedState) {
       reducer,
       preloadedState,
       composeEnhancers(
-        applyMiddleware(
-            thunkMiddleware, store => next => action => {
-              let indexOf = sendedAction.indexOf(action)
-              if(action && indexOf === -1) {
-                ipcRenderer.send("shot-generator:updateStore", action)
-              }
-              return next(action)
-            })
+        applyMiddleware(thunkMiddleware)
       )
     )
     return store
@@ -71,7 +50,7 @@ const store = configureStore({
   ...initialState,
   presets: {
     ...initialState.presets,
-    scenes: {
+    scenes: { 
       ...initialState.presets.scenes,
       ...presetsStorage.loadScenePresets().scenes
     },
@@ -91,115 +70,40 @@ const store = configureStore({
   },
 })
 
-const showShotExplorer = () => {
-  if(!isBoardLoaded) {
-    setTimeout( () => {
-      showShotExplorer()
-    }, 100)
-    return
-  }
-  isVisible = true;
-  pushUpdates();
-  isBoardShown = true;
-}
-
-ipcRenderer.on('shot-explorer:show', (event) => {
-  showShotExplorer()
-})
-
-const updateWindow = (aspectRatio) => {
-  let scaledWidth = Math.ceil(canvasHeight * aspectRatio)
-  scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
-  let win = electron.remote.getCurrentWindow()
-  win.setMinimumSize(scaledWidth, defaultHeight)
-  win.setMaximumSize(scaledWidth, 100000)
-  win.setSize(scaledWidth, defaultHeight)
-  win.center()
-}
-
-ipcRenderer.on("shot-explorer:change-aspect", (event, aspectRatio) => {
-  updateWindow(aspectRatio)
-})
-
-ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
+ipcRenderer.on("headless-render:open", async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
 
-  canvasHeight = defaultHeight * 0.45
-  updateWindow(aspectRatio)
   let action  = {
     type: 'SET_META_STORYBOARDER_FILE_PATH',
     payload: storyboarderFilePath
   }
-  sendedAction.push(action)
   store.dispatch(action)
   action = {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   }
-  sendedAction.push(action)
   store.dispatch(action)
-
   await loadBoard(board, storyboarderFilePath)
-  isBoardLoaded = true
-})
-
-ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
-  sendedAction.push(action)
-})
-
-ipcRenderer.on("shot-explorer:change-language", (event, lng) => {
-  i18n.changeLanguage(lng)
-})
-
-ipcRenderer.on("shot-explorer:language-modified", (event, lng) => {
-  i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
-})
-
-electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
-  isBoardShown = false
-})
-
-electron.remote.getCurrentWindow().on("hide", () => {
-  isVisible = false
-})
-
-const pushUpdates = () => {
-  shotExplorerElement = renderShotExplorer()
-  batch(() => {
-    for(let i = 0, length = sendedAction.length; i < length; i++) {
-      let object = sendedAction[i]
-      let action = object
-      if(!action.type) {
-        action = JSON.parse(object)
-        sendedAction.push(action)
-      }
-      store.dispatch(action)
-    }
-  })
-  sendedAction = []
   renderDom()
-}
+})
 
-electron.remote.getCurrentWindow().on("focus", () => {
-  if(!sendedAction.length || !isBoardShown || !isBoardLoaded) return
-  pushUpdates()
+ipcRenderer.on("headless-render:load-board", async (event, boardData) => {
+  const { storyboarderFilePath, board } = boardData
+  await loadBoard(board, storyboarderFilePath)
 })
 
 const loadBoard = async (board, storyboarderFilePath) => {
   let shot = board.sg
   let action = setBoard(board)
-  sendedAction.push(action)
   store.dispatch(action)
   
   if (shot) {
     action = loadScene(shot.data)
-    sendedAction.push(action)
     store.dispatch(action)
   } else {
     action = resetScene()
-    sendedAction.push(action)
     store.dispatch(action)
   }
   
@@ -244,19 +148,10 @@ const loadBoard = async (board, storyboarderFilePath) => {
   }
 }
 
-const renderShotExplorer = () => {
-  componentKey = THREE.Math.generateUUID()
-  return <ShotExplorer 
-                elementKey={ componentKey } 
-                store={ store }
-                canvasHeight={ canvasHeight }/>
-}
-shotExplorerElement = renderShotExplorer()
-
 const renderDom = () => {
   ReactDOM.render(
     (store && <Provider store={ store }>
-     { shotExplorerElement }
+    <HeadlessRender store={ store }/>
     </Provider> ),
   document.getElementById('main')
     )
