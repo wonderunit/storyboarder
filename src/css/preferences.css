@@ -163,6 +163,10 @@ a.button:hover {
   display: block;
 }
 
+button {
+  font-family: var(--default-font-stack);
+}
+
 .open-language-editor {
   padding-top: 24px;
   position: relative;
