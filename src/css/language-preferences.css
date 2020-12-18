@@ -5,7 +5,7 @@ body {
     padding: 0;
     color: white;
     background-size: cover;
-    font-family: 'thicccboi';
+    font-family: var(--default-font-stack);
     font-weight: 300;
     overflow: hidden;
     display: flex;

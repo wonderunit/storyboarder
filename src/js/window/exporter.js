@@ -279,7 +279,7 @@ class Exporter {
       if (boards[i].dialogue) {
         let text = boards[i].dialogue
         let fontSize = 22
-        context.font = '300 ' + fontSize + 'px thicccboi'
+        context.font = '300 ' + fontSize + 'px thicccboi, sans-serif'
         context.textAlign = 'center'
         context.fillStyle = 'white'
         context.miterLimit = 1

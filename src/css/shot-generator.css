@@ -2,7 +2,7 @@ body {
   margin: 0;
   padding: 0;
   color: black;
-  font-family: 'thicccboi';
+  font-family: var(--default-font-stack);
   font-weight: 300;
   background: #333639;
   color: #777;
@@ -71,7 +71,7 @@ a.button:hover {
   display: inline-block;
   position: relative;
   padding: 0.5rem;
-  font-family: 'thicccboi';
+  font-family: var(--default-font-stack);
   font-weight: 700;
   text-align: center;
   text-decoration: none;
@@ -1933,7 +1933,7 @@ a.button,
   display: flex;
   flex-direction: column;
 
-  font-family: 'thicccboi';
+  font-family: var(--default-font-stack);
   font-weight: 300;
 }
 

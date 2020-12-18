@@ -6,7 +6,7 @@ body {
   color: white;
   background: black;
   background-size: cover;
-  font-family: 'thicccboi';
+  font-family: var(--default-font-stack);
   font-weight: 300;
   overflow: hidden;
 }
