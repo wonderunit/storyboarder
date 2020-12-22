@@ -413,7 +413,7 @@ let openWelcomeWindow = () => {
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
   newWindow = new BrowserWindow({
-    width: 600,
+    width: 640,
     height: 580,
     show: false,
     parent: welcomeWindow,

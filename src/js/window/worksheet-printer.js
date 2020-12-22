@@ -46,10 +46,10 @@ class WorksheetPrinter extends EventEmitter {
 
     let doc = new pdfDocument({size: documentSize, layout: 'landscape', margin: 0})
 
-    doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Thin.ttf'))
-    doc.registerFont('light', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Light.ttf'))
-    doc.registerFont('regular', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Regular.ttf'))
-    doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'wonder-unit-sans', 'WonderUnitSans-Bold.ttf'))
+    doc.registerFont('thin', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Thin.ttf'))
+    doc.registerFont('light', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Light.ttf'))
+    doc.registerFont('regular', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Regular.ttf'))
+    doc.registerFont('bold', path.join(__dirname, '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Bold.ttf'))
 
     let stream = doc.pipe(fs.createWriteStream(path.join(app.getPath('temp'), 'worksheetoutput.pdf')))
 
