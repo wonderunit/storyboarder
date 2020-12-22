@@ -73,7 +73,7 @@ const translateHtml = (selector, key) => withLastChild(selector, el => el.innerH
 
 const updateHTML = () => {
   translateText("#preferences-title", "preferences.title")
-  translateText("#preferences-hint",  "preferences.restart-hint")
+  translateText("#restart-hint",  "preferences.restart-hint")
   translateText("#show-tooltips",      "preferences.show-tooltips")
   translateText("#save-automatically", "preferences.save-automatically")
   translateText("#saving-hint", "preferences.saving-hint")
