@@ -13,7 +13,8 @@ const {
   initialState,
   reducer,
   getSceneObjects,
-  getWorld
+  getWorld,
+  getSerializedState
 } = require('../../src/js/shared/reducers/shot-generator')
 
 const serializeSceneObject = require('../../src/js/shared/reducers/shot-generator/serialize-scene-object')
@@ -439,6 +440,16 @@ describe('reducer', () => {
       store.dispatch({ type: 'LOAD_SCENE', payload })
 
       assert.equal(getWorld(store.getState()).environment.grayscale, false)
+    })
+  })
+
+  describe('sceneObject .blocked', () => {
+    it('is not saved to .storyboarder JSON file', () => {
+      let cameraId = '6BC46A44-7965-43B5-B290-E3D2B9D15EEE'
+      store.dispatch({ type: 'BLOCK_OBJECT', payload: cameraId })
+      assert(getSceneObjects(store.getState())[cameraId].hasOwnProperty('blocked'))
+      let saved = getSerializedState(store.getState())
+      assert(saved.sceneObjects[cameraId].hasOwnProperty('blocked') === false, '.blocked should not be present')
     })
   })
 })

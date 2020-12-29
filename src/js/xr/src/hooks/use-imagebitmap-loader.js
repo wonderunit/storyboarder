@@ -1,15 +1,21 @@
 const THREE = require('three')
+const { onBitmapImageBufferLoad } = require('../helpers/resourceLoaders')
 const { useState, useEffect } = React = require('react')
 
-const useImageBitmapLoader = filepath => {
+const useImageBitmapLoader = (SGConnection, filepath) => {
   const [_, forceUpdate] = useState(false)
 
   useEffect(() => {
     if (!THREE.Cache.get(filepath)) {
-      new THREE.ImageBitmapLoader().load(
-        filepath,
-        () => forceUpdate(i => !i)
-      )
+      SGConnection.getResource('image', filepath)
+      .then(({data}) => {
+        onBitmapImageBufferLoad(filepath, data)
+        .then((bitmap) => {
+          console.log('Loaded TEXTUREBITMAP: ', bitmap)
+          THREE.Cache.add( filepath, bitmap )
+          forceUpdate(i => !i)
+        })
+      })
     }
   }, [filepath])
 

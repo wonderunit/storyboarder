@@ -155,14 +155,8 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 	this.addToScene = () =>
 	{
 		this.domElement.addEventListener( "pointerdown", onPointerDown, false );
-		this.domElement.addEventListener( "touchstart", onPointerDown, false );
 		this.domElement.addEventListener( "pointermove", onPointerHover, false );
-		this.domElement.addEventListener( "touchmove", onPointerHover, false );
-		this.domElement.addEventListener( "touchmove", onPointerMove, false );
 		document.addEventListener( "pointerup", onPointerUp, false );
-		this.domElement.addEventListener( "touchend", onPointerUp, false );
-		this.domElement.addEventListener( "touchcancel", onPointerUp, false );
-		this.domElement.addEventListener( "touchleave", onPointerUp, false );
 		if(this.canSwitch)
 		window.addEventListener( "keydown", onKeyDown, false );
 		
@@ -180,15 +174,9 @@ const TransformControls = function ( camera, domElement, shownAxis = axis.X_axis
 	this.dispose = () =>
 	{
 		this.domElement.removeEventListener( "pointerdown", onPointerDown );
-		document.removeEventListener( "pointermove", onPointerMove, false );
-		this.domElement.removeEventListener( "touchstart", onPointerDown );
 		this.domElement.removeEventListener( "pointermove", onPointerHover );
-		this.domElement.removeEventListener( "touchmove", onPointerHover );
-		this.domElement.removeEventListener( "touchmove", onPointerMove );
+		document.removeEventListener( "pointermove", onPointerMove );
 		document.removeEventListener( "pointerup", onPointerUp );
-		this.domElement.removeEventListener( "touchend", onPointerUp );
-		this.domElement.removeEventListener( "touchcancel", onPointerUp );
-		this.domElement.removeEventListener( "touchleave", onPointerUp );
 		if(this.canSwitch)
 			window.removeEventListener( "keydown", onKeyDown );
 	};

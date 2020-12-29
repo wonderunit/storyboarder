@@ -3,7 +3,7 @@
 // https://github.com/wulkano/kap/blob/b326a5a/app/src/main/auto-updater.js
 
 const { BrowserWindow, dialog, app } = electron = require('electron')
-const log = require('electron-log')
+const log = require('./shared/storyboarder-electron-log')
 const { autoUpdater } = require('electron-updater')
 
 log.transports.file.level = 'info'
@@ -39,7 +39,8 @@ const init = () => {
         backgroundColor: '#E5E5E5',
         webPreferences: {
           nodeIntegration: true,
-          devTools: true
+          devTools: true,
+          enableRemoteModule: true
         }
       })
       win.on('closed', () => {

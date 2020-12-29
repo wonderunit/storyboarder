@@ -20,7 +20,7 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
 }))
 
 const meshFactory = source => {
-  let mesh = source.clone()
+  let mesh = source.isSkinnedMesh ? THREE.SkeletonUtils.clone(source) : source.clone()
 
   let material = materialFactory()
 

@@ -18,7 +18,8 @@ module.exports = () => {
       backgroundColor: '#E5E5E5',
       webPreferences: {
         devTools: true,
-        nodeIntegration: true
+        nodeIntegration: true,
+        enableRemoteModule: true
       }
     })
     win.once('closed', () => {

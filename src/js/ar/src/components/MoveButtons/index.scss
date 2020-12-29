@@ -1,0 +1,35 @@
+.move-buttons {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  
+  
+  
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  
+  &__button {
+    border: 2px solid #212128;
+    border-radius: 6px;
+    
+    color: #212128;
+    
+    background: #eee;
+    
+    width: 24px;
+    height: 40px;
+  }
+  
+  &__h > &__button {
+    width: 40px;
+    height: 24px;
+    
+    margin: 0 10px;
+  }
+  
+  &__row {
+    display: flex;
+    justify-content: space-evenly;
+  }
+}

@@ -36,7 +36,8 @@ const show = () => {
     modal: true,
     webPreferences: {
       nodeIntegration: true,
-      devTools: true
+      devTools: true,
+      enableRemoteModule: true
     }
   })
   win.once('closed', () => {

@@ -1,5 +1,5 @@
 import { connect } from 'react-redux'
-import React, { useMemo, useRef }  from 'react'
+import React, { useMemo, useRef, useCallback, useEffect }  from 'react'
 import {
   // action creators
   selectObject,
@@ -17,7 +17,11 @@ import SceneObjectCreators from '../../../shared/actions/scene-object-creators'
 
 import Icon from '../Icon'
 import useTooltip from '../../../hooks/use-tooltip'
+
+import {useServerConnect, SERVER_STATUS} from '../../../services/server'
+
 import { useTranslation } from 'react-i18next'
+import { useInsertImage } from '../../hooks/use-insert-image'
 // because webpack
 const { shell } = require('electron')
 
@@ -70,6 +74,7 @@ const Toolbar = connect(
 
     notifications
   }) => {
+
     let cameraState = null
     let camera = useRef(null)
     let { t } = useTranslation()
@@ -89,6 +94,28 @@ const Toolbar = connect(
       () => roomObject3dFactory(room),
       [room]
     )
+
+    const initializeImage = (id, imagePath = "") => {
+      initCamera()
+      undoGroupStart()
+      createImage(id, camera.current, room.visible && roomObject3d, imagePath)
+      selectObject(id)
+      undoGroupEnd()
+    }
+
+    const { dragOver, imageDrop, createImageFromClipboard } = useInsertImage(initializeImage)
+
+    useEffect(() => {
+      window.addEventListener('paste', createImageFromClipboard, false)
+      window.addEventListener('drop', imageDrop, false) 
+      window.addEventListener('dragover', dragOver, false); 
+      return () => {
+        window.removeEventListener('dragover', dragOver); 
+        window.removeEventListener('drop', imageDrop)
+        window.removeEventListener('paste', createImageFromClipboard)
+      }
+    }, [])
+  
 
     const initCamera = () => {
       withState((dispatch, state) => {
@@ -155,12 +182,10 @@ const Toolbar = connect(
 
     const onCreateImageClick = () => {
       let id = THREE.Math.generateUUID()
-      initCamera()
-      undoGroupStart()
-      createImage(id, camera.current, room.visible && roomObject3d)
-      selectObject(id)
-      undoGroupEnd()
+      initializeImage(id)
     }
+
+
 
     const onSaveToBoardClick = () => {
       ipcRenderer.send('shot-generator:requestSaveShot')
@@ -170,21 +195,45 @@ const Toolbar = connect(
       ipcRenderer.send('shot-generator:requestInsertShot')
     }
 
-    const onOpenVR = preventDefault(() => {
-      notifications.notify({
-        message:
-          `${t("shot-generator.toolbar.popup.open-vr")}:\n` +
-          `<a href="${server.xrUri}">${server.xrUri}</a>.`,
-        timing: 30,
-        onClick: () => shell.openExternal(server.xrUri)
-      })
-      notifications.notify({
-        message:
-          t("shot-generator.toolbar.popup.scary-warning", {link:'<a href="https://wonderunit.com/storyboarder/faq/">Storyboarder FAQ</a>.'}),
-        timing: 30,
-        onClick: () => shell.openExternal('https://wonderunit.com/storyboarder/faq')
-      })
-    })
+    const [serverStatus, onConnect] = useServerConnect()
+    const onVRClick = useCallback(preventDefault(() => {
+      console.log('SERVER CONN', serverStatus)
+      if (serverStatus === SERVER_STATUS.DISABLED) {
+        console.log('SERVER CONN 22')
+        onConnect()
+      } else if (serverStatus === SERVER_STATUS.ACTIVE) {
+        notifications.notify({
+          message:
+            `To view, open a VR web browser to:\n` +
+            `<a href="${server.xrUri}">${server.xrUri}</a>`,
+          timing: 30,
+          onClick: () => shell.openExternal(server.xrUri)
+        })
+      } else if (serverStatus === SERVER_STATUS.ERROR) {
+        notifications.notify({
+          message:
+            `Server connection error\n` +
+            `Try later`,
+          timing: 30
+        })
+      }
+
+    }), [serverStatus])
+
+    useMemo(() => {
+      if (serverStatus === SERVER_STATUS.ACTIVE) {
+        notifications.notify({
+          message:
+            `${t("shot-generator.toolbar.popup.open-vr")}:\n` +
+            `<a href="${server.xrUri}">${server.xrUri}</a>`,
+          timing: 30,
+          onClick: () => shell.openExternal(server.xrUri)
+        })
+      }
+    }, [serverStatus])
+
+    const VRStatusClassname = (serverStatus === SERVER_STATUS.CONNECTING) ? 'active' : null
+
     const cameraTooltipEvents = useTooltip(t("shot-generator.toolbar.camera.tooltip.title"), t("shot-generator.toolbar.camera.tooltip.description"), null, "bottom center")
     const objectTooltipEvents = useTooltip(t("shot-generator.toolbar.object.tooltip.title"), t("shot-generator.toolbar.object.tooltip.description"), null, "bottom center")
     const characterTooltipEvents = useTooltip(t("shot-generator.toolbar.character.tooltip.title"), t("shot-generator.toolbar.character.tooltip.description"), null, "bottom center")
@@ -238,26 +287,25 @@ const Toolbar = connect(
           </a>
         </div>
         <div className="toolbar__board-actions row">
-          {server.xrUri && (
-            <a href="#"
-               onClick={preventDefault(onOpenVR) }
-               {...vrTooltipEvents}>
-              <Icon src="icon-toolbar-vr"/>
-              <span>{t("shot-generator.toolbar.open-in-vr.title")}</span>
-            </a>
-          )}
-        <a href="#"
-           onClick={preventDefault(onSaveToBoardClick)}
-           {...saveTooltipEvents}>
-          <Icon src="icon-toolbar-save-to-board"/>
-          <span>{t("shot-generator.toolbar.save-to-board.title")}</span>
-        </a>
-        <a href="#"
-           onClick={preventDefault(onInsertNewBoardClick)}
-           {...insertTooltipEvents}>
-          <Icon src="icon-toolbar-insert-as-new-board"/>
-          <span>{t("shot-generator.toolbar.insert-as-new-board.title")}</span>
-        </a>
+          <a href="#"
+            className={VRStatusClassname}
+            onClick={ onVRClick }
+            {...vrTooltipEvents}>
+            <Icon src="icon-toolbar-vr"/>
+            <span>{t("shot-generator.toolbar.open-in-vr.title")}</span>
+          </a>
+          <a href="#"
+            onClick={preventDefault(onSaveToBoardClick)}
+            {...saveTooltipEvents}>
+            <Icon src="icon-toolbar-save-to-board"/>
+            <span>{t("shot-generator.toolbar.save-to-board.title")}</span>
+          </a>
+          <a href="#"
+            onClick={preventDefault(onInsertNewBoardClick)}
+            {...insertTooltipEvents}>
+            <Icon src="icon-toolbar-insert-as-new-board"/>
+            <span>{t("shot-generator.toolbar.insert-as-new-board.title")}</span>
+          </a>
         </div>
       </div>
     )

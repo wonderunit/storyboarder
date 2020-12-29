@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
+import { useTranslation } from 'react-i18next'
+import { remote } from 'electron'
 
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../package.json'
@@ -12,6 +14,7 @@ import {
   getSelections,
   undoGroupStart,
   undoGroupEnd,
+  deletePosePreset,
   updateCharacterIkSkeleton
 } from '../../../../shared/reducers/shot-generator'
 
@@ -30,7 +33,7 @@ import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
 import PostureComponent from './PostureComponent'
 const defaultPostureValue = 0.5
-import { useTranslation } from 'react-i18next'
+
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -50,6 +53,7 @@ const PosePresetsEditor = connect(
     undoGroupStart,
     undoGroupEnd,
     updateCharacterIkSkeleton,
+    deletePosePreset,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -63,6 +67,7 @@ React.memo(({
   undoGroupStart,
   undoGroupEnd,
   updateCharacterIkSkeleton,
+  deletePosePreset,
   withState
 }) => {
   const { t } = useTranslation()
@@ -223,6 +228,39 @@ React.memo(({
     updateCharacterIkSkeleton({id:sceneObject.id, skeleton: oppositeSkeleton})
   }
 
+  const onRemoval = (data) => {
+    const choice = remote.dialog.showMessageBoxSync({
+      type: 'question',
+      buttons: [t('shot-generator.inspector.common.yes'), t('shot-generator.inspector.common.no')],
+      message: t('shot-generator.inspector.common.are-you-sure'),
+      defaultId: 1
+    })
+
+    if (choice !== 0) return
+
+    //let sceneObjects 
+    withState((dispatch, state) => {
+      //sceneObjects = Object.values(getSceneObjects(state)).filter(object => object.emotion === data.filename)
+/*       for(let i = 0; i < sceneObjects.length; i++) {
+        updateObject(sceneObjects[i].id, { posePresetId: null }) 
+      } */
+      // ... and save it to the presets file
+      let denylist = Object.keys(defaultPosePresets)
+      denylist.push(data.id)
+      let filteredPoses = Object.values(state.presets.poses)
+        .filter(pose => denylist.includes(pose.id) === false)
+        .reduce(
+          (coll, pose) => {
+            coll[pose.id] = pose
+            return coll
+          },
+          {}
+        )
+      presetsStorage.savePosePresets({ poses: filteredPoses })
+    })
+    deletePosePreset(data.id)
+  }
+
   return (
     <React.Fragment>
     <Modal visible={ isModalShown } onClose={() => showModal(false)}>
@@ -243,7 +281,7 @@ React.memo(({
             showModal(false)
             addNewPosePreset(newPresetName.current)
           }}>
-             {t("shot-generator.inspector.common.proceed-button")}
+             {t("shot-generator.inspector.common.add-preset")}
         </button>
       </div>
    </Modal>
@@ -282,6 +320,7 @@ React.memo(({
             thumbnailRenderer,
             undoGroupStart,
             undoGroupEnd,
+            onRemoval
           }}
           Component={PosePresetInspectorItem}
           elements={results}

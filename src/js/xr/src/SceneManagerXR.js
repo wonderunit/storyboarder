@@ -3,16 +3,20 @@ const SHOW_LOG = false
 
 const THREE = require('three')
 window.THREE = window.THREE || THREE
-const { Canvas, useThree, useUpdate, useFrame } = require('react-three-fiber')
-const TWEEN = require('@tweenjs/tween.js').default
+require('./three/GPUPickers/utils/Object3dExtension')
 
+const { useMemo, useRef, useState, useEffect, useCallback, Suspense } = React = require('react')
+const { Canvas, useThree, useUpdate, useFrame } = require('react-three-fiber')
 const { connect, Provider, useSelector } = require('react-redux')
 const useReduxStore = require('react-redux').useStore
-const { useMemo, useRef, useState, useEffect, useCallback, Suspense } = React = require('react')
-require('./three/GPUPickers/utils/Object3dExtension')
+const { createSelector } = require('reselect')
+
+const TWEEN = require('@tweenjs/tween.js').default
+const { useTranslation } = require('react-i18next')
 
 const RemoteProvider = require('../../shot-generator/components/RemoteProvider').default
 const RemoteClients = require('../../shot-generator/components/RemoteClients').default
+const {ResourceInfo} = require('../../shared/network/client')
 
 const XRClient = require("./components/XRClient").default
 const { VRButton } = require('three/examples/jsm/webxr/VRButton')
@@ -34,7 +38,7 @@ const {
 const useRStats = require('./hooks/use-rstats')
 const useIsXrPresenting = require('./hooks/use-is-xr-presenting')
 const useTextureLoader = require('./hooks/use-texture-loader')
-const useImageBitmapLoader = require('./hooks/use-texture-loader')
+const useImageBitmapLoader = require('./hooks/use-imagebitmap-loader')
 const useAudioLoader = require('./hooks/use-audio-loader')
 
 const { WORLD_SCALE_LARGE, WORLD_SCALE_SMALL, useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
@@ -43,6 +47,8 @@ const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-mana
 const { useAssetsManager } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
 const getFilepathForImage = require('./helpers/get-filepath-for-image')
+
+const ProgressIntro = require('./components/ProgressIntro').default
 
 const Stats = require('./components/Stats')
 const Ground = require('./components/Ground')
@@ -68,12 +74,10 @@ const Voicer = require('./three/Voicer')
 
 const musicSystem = require('./music-system')
 
-const { createSelector } = require('reselect')
+// TODO load the language from the hosting shot generator peer
+// currently i18n is hardcoded to en-US.json which is embedded within XR
 const i18n = require('../../services/xr.i18next.config')
-const { useTranslation, I18nextProvider } = require('react-i18next')
-i18n.on('loaded', (loaded) => {
-  i18n.off('loaded')
-})
+
 // TODO move to selectors if useful
 // TODO optimize to only change if top-level keys change
 const getSceneObjectCharacterIds = createSelector(
@@ -105,6 +109,15 @@ const getSceneObjectAttachableIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
 )
 
+const systemEmotions = require('../../shared/reducers/shot-generator-presets/emotions.json')
+function getEmotionTextureUriByPresetId (id) {
+  // TODO provide XR FilepathsContext functions to get asset and user preset uri
+  // console.log('EmotionID: ', id, systemEmotions[id])
+  return systemEmotions[id]
+    ? `/data/system/emotions/${id}-texture.png`
+    : `/data/presets/emotions/${id}-texture.png`
+}
+
 const SceneContent = connect(
   state => ({
     aspectRatio: state.aspectRatio,
@@ -135,7 +148,8 @@ const SceneContent = connect(
 
     characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
-    resources, getAsset, language,
+    resources, getAsset,
+    language,
 
     SGConnection
   }) => {
@@ -147,7 +161,8 @@ const SceneContent = connect(
 
     useEffect(() => {
       if(!language) return
-      i18n.changeLanguage(language)
+      // TODO
+      // i18n.changeLanguage(language)
     }, [language])
 
     useMemo(() => {
@@ -259,9 +274,9 @@ const SceneContent = connect(
       // attach the music system
       musicSystem.init({
         urlMap: {
-          'C4': '/data/system/xr/snd/vr-instrument-c4.ogg',
-          'C5': '/data/system/xr/snd/vr-instrument-c5.ogg',
-          'C6': '/data/system/xr/snd/vr-instrument-c6.ogg'
+          'C4': resources.instrumentC4,
+          'C5': resources.instrumentC5,
+          'C6': resources.instrumentC6
         },
         audioContext: audio.context,
         audioNode: audio,
@@ -542,7 +557,8 @@ const SceneContent = connect(
       uiService,
       playSound,
       stopSound,
-      realCamera
+      realCamera,
+      SGConnection
     })
     
     useFrame(({camera, gl}) => {
@@ -667,20 +683,23 @@ const SceneContent = connect(
           />
 
           {
-            characterIds.map(id =>
-             // getAsset(getFilepathForModelByType(sceneObjects[id]))
-               // ?
-               <SimpleErrorBoundary key={id}>
+            characterIds.map(id => {
+              let sceneObject = sceneObjects[id]    
+              let { emotionPresetId } = sceneObject
+              // console.log(sceneObject)
+              let textureUri = sceneObject.emotionPresetId && getEmotionTextureUriByPresetId(emotionPresetId)
+              let texture = textureUri && getAsset(textureUri)
+               return <SimpleErrorBoundary key={id}>
                   <Character
                     key={id}
-                    gltf={getAsset(getFilepathForModelByType(sceneObjects[id]))}
-                    sceneObject={sceneObjects[id]}
-                    modelSettings={models[sceneObjects[id].model] || undefined}
+                    gltf={getAsset(getFilepathForModelByType(sceneObject))}
+                    sceneObject={sceneObject}
+                    modelSettings={models[sceneObject.model] || undefined}
                     isSelected={selections.includes(id)}
-                    updateSkeleton= {updateCharacterIkSkeleton} />
+                    updateSkeleton={updateCharacterIkSkeleton} 
+                    texture={texture}/>
                 </SimpleErrorBoundary>
-               // : null
-            )
+            })
           }
 
 
@@ -829,23 +848,15 @@ const SceneContent = connect(
     )
   })
 
-const XRStartButton = (({  }) => {
+const XRStartButton = () => {
   const { gl } = useThree()
-  const elementP = useRef()
-  const { t } = useTranslation()
+
   useMemo(() => { 
     document.body.appendChild(VRButton.createButton(gl))
-    let p = document.createElement("p");
-    elementP.current = p
-    document.body.appendChild(p);
   }, [])
 
-  useEffect(() => {
-    elementP.current.innerHTML = t('vr-enter')
-  }, [t])
-
   return null
-})
+}
 
 const APP_GLTFS = [
   '/data/system/xr/controller.glb',
@@ -865,14 +876,14 @@ const SceneManagerXR = ({SGConnection}) => {
   const store = useReduxStore()
   const [appAssetsLoaded, setAppAssetsLoaded] = useState(false)
 
-  const { assets, requestAsset, getAsset } = useAssetsManager()
+  const { assets, requestAsset, getAsset } = useAssetsManager(SGConnection)
 
   // preload textures
-  const groundTexture = useTextureLoader('/data/system/grid_floor_1.png')
-  const roomTexture = useTextureLoader('/data/system/grid_wall2.png')
+  const groundTexture = useTextureLoader(SGConnection, '/data/system/grid_floor_1.png')
+  const roomTexture = useTextureLoader(SGConnection, '/data/system/grid_wall2.png')
 
   // preload icons
-  const uiResources = UI_ICON_FILEPATHS.map(useImageBitmapLoader)
+  const uiResources = UI_ICON_FILEPATHS.map((icon) => useImageBitmapLoader(SGConnection, icon))
 
   // preload app gltfs
   useEffect(
@@ -881,34 +892,38 @@ const SceneManagerXR = ({SGConnection}) => {
   )
 
   // preload audio
-  const welcomeAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-welcome.ogg')
-  const atmosphereAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-drone.ogg')
-  const selectAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-select.ogg')
-  const beamAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-drag-drone.ogg')
-  const teleportAudioBuffer = useAudioLoader('/data/system/xr/snd/vr-teleport.ogg')
+  const welcomeAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-welcome.ogg')
+  const atmosphereAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-drone.ogg')
+  const selectAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-select.ogg')
+  const beamAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-drag-drone.ogg')
+  const teleportAudioBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-teleport.ogg')
 
-  const undoBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-undo.ogg')
-  const redoBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-redo.ogg')
-  const boneHoverBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-hover.ogg')
-  const boneDroneBuffer = useAudioLoader('/data/system/xr/snd/vr-bone-drone.ogg')
-  const fastSwooshBuffer = useAudioLoader('/data/system/xr/snd/vr-fast-swoosh.ogg')
-  const dropBuffer = useAudioLoader('/data/system/xr/snd/vr-drop.ogg')
-  const uiCreateBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-create.ogg')
-  const uiDeleteBuffer = useAudioLoader('/data/system/xr/snd/vr-ui-delete.ogg')
+  const undoBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-ui-undo.ogg')
+  const redoBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-ui-redo.ogg')
+  const boneHoverBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-bone-hover.ogg')
+  const boneDroneBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-bone-drone.ogg')
+  const fastSwooshBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-fast-swoosh.ogg')
+  const dropBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-drop.ogg')
+  const uiCreateBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-ui-create.ogg')
+  const uiDeleteBuffer = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-ui-delete.ogg')
 
-  const vrHelp1 = useAudioLoader('/data/system/xr/snd/vr-help-1.ogg')
-  const vrHelp2 = useAudioLoader('/data/system/xr/snd/vr-help-2.ogg')
-  const vrHelp3 = useAudioLoader('/data/system/xr/snd/vr-help-3.ogg')
-  const vrHelp4 = useAudioLoader('/data/system/xr/snd/vr-help-4.ogg')
-  const vrHelp5 = useAudioLoader('/data/system/xr/snd/vr-help-5.ogg')
-  const vrHelp6 = useAudioLoader('/data/system/xr/snd/vr-help-6.ogg')
-  const vrHelp7 = useAudioLoader('/data/system/xr/snd/vr-help-7.ogg')
-  const vrHelp8 = useAudioLoader('/data/system/xr/snd/vr-help-8.ogg')
-  const vrHelp9 = useAudioLoader('/data/system/xr/snd/vr-help-9.ogg')
-  const vrHelp10 = useAudioLoader('/data/system/xr/snd/vr-help-10.ogg')
+  const vrHelp1 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-1.ogg')
+  const vrHelp2 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-2.ogg')
+  const vrHelp3 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-3.ogg')
+  const vrHelp4 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-4.ogg')
+  const vrHelp5 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-5.ogg')
+  const vrHelp6 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-6.ogg')
+  const vrHelp7 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-7.ogg')
+  const vrHelp8 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-8.ogg')
+  const vrHelp9 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-9.ogg')
+  const vrHelp10 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-help-10.ogg')
 
-  const xrPosing = useAudioLoader('/data/system/xr/snd/xr-posing.ogg')
-  const xrEndPosing = useAudioLoader('/data/system/xr/snd/xr-end-posing.ogg')
+  const xrPosing = useAudioLoader(SGConnection, '/data/system/xr/snd/xr-posing.ogg')
+  const xrEndPosing = useAudioLoader(SGConnection, '/data/system/xr/snd/xr-end-posing.ogg')
+
+  const instrumentC4 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-instrument-c4.ogg')
+  const instrumentC5 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-instrument-c5.ogg')
+  const instrumentC6 = useAudioLoader(SGConnection, '/data/system/xr/snd/vr-instrument-c6.ogg')
 
   // scene
   const sceneObjects = useSelector(getSceneObjects)
@@ -943,7 +958,6 @@ const SceneManagerXR = ({SGConnection}) => {
 
   // world model files
   useEffect(() => {
-    console.log(world)
     if (world.environment.file) {
       // TODO figure out why gltf.scene.children of environment becomes empty array when changing between boards
       const environmentPath = getFilepathForModelByType({
@@ -957,6 +971,21 @@ const SceneManagerXR = ({SGConnection}) => {
     }
   }, [world.environment])
 
+  let appResources = [groundTexture, roomTexture]
+  let soundResources = [
+    welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
+    teleportAudioBuffer,
+    undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
+    uiCreateBuffer, uiDeleteBuffer,
+    vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
+    xrPosing, xrEndPosing,
+    instrumentC4, instrumentC5, instrumentC6
+  ]
+  let gltfResources = APP_GLTFS.map(getAsset)
+
+  const assetIncomplete = useCallback(a => a => a === null || (a.status !== 'Success' && a.status !== 'Error'), [])
+  const assetLoaded = useCallback(a => a => a !== null && a.status === 'Success', [])
+
   useEffect(() => {
     if (!appAssetsLoaded) {
       let appResources = [groundTexture, roomTexture]
@@ -966,20 +995,37 @@ const SceneManagerXR = ({SGConnection}) => {
         undoBuffer, redoBuffer, boneHoverBuffer, boneDroneBuffer, fastSwooshBuffer, dropBuffer,
         uiCreateBuffer, uiDeleteBuffer,
         vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
-        xrPosing, xrEndPosing
+        xrPosing, xrEndPosing,
+        instrumentC4, instrumentC5, instrumentC6
       ]
 
       // fail if any app resources are missing
-      if ([...appResources, ...soundResources, ...uiResources].some(n => n === null)) return
-      if (APP_GLTFS.map(getAsset).some(n => n === null)) return
+      if ([...appResources, ...soundResources, ...uiResources, ...gltfResources].some(n => n === null)) return
+      //if (gltfResources.some(n => n === null)) return
 
       setAppAssetsLoaded(true)
     }
-  }, [appAssetsLoaded, groundTexture, roomTexture, uiResources, APP_GLTFS, assets])
+  }, [appAssetsLoaded, groundTexture, roomTexture, uiResources, assets])
+
+  const [currentMsg, setCurrentMsg] = useState('Waiting for the assets..')
+  const progress = useMemo(() => {
+    let assetsValues = Object.values(assets)
+
+    let count = appResources.length + soundResources.length + uiResources.length + assetsValues.length
+
+    let globalResourcesLoaded = [...appResources, ...soundResources, ...uiResources].filter(res => res !== null).length + assetsValues.filter(assetLoaded).length
+    let progress = (globalResourcesLoaded / count) * 100
+    
+    return progress
+  }, [...appResources, ...soundResources, ...uiResources, assets])
+
+  useEffect(() => {
+    ResourceInfo.on('willLoad', path => setCurrentMsg('Loading: ' + path))
+  }, [setCurrentMsg])
 
   const [isLoading, setIsLoading] = useState(false)
   const [sceneObjectsPreloaded, setSceneObjectsPreloaded] = useState(false)
-  useMemo(() => {
+  useEffect(() => {
     let incomplete = a => a.status !== 'Success' && a.status !== 'Error'
     let remaining = Object.values(assets).filter(incomplete)
 
@@ -1006,7 +1052,7 @@ const SceneManagerXR = ({SGConnection}) => {
   return (
     <>
       {
-        !ready && <div className='loading-button'>LOADING …</div>
+        !ready && <ProgressIntro value={progress} msg={currentMsg} />
       }
       <Canvas
         // initialize camera for browser view at a standing height off the floor
@@ -1018,8 +1064,8 @@ const SceneManagerXR = ({SGConnection}) => {
         vr
       >
         <Provider store={store}>
-          <I18nextProvider i18n={ i18n }>
           <Suspense fallback="loading">
+
           {
             ready && <XRStartButton />
           }
@@ -1055,13 +1101,14 @@ const SceneManagerXR = ({SGConnection}) => {
 
                   vrHelp1, vrHelp2, vrHelp3, vrHelp4, vrHelp5, vrHelp6, vrHelp7, vrHelp8, vrHelp9, vrHelp10,
                   xrPosing, xrEndPosing,
+                  instrumentC4, instrumentC5, instrumentC6
                 }}
                 getAsset={getAsset}
                 SGConnection={SGConnection} />
               : null
           }
+
           </Suspense>
-          </I18nextProvider>
         </Provider>
       </Canvas>
       <div className='scene-overlay' />

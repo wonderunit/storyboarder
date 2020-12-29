@@ -5,7 +5,7 @@
   background-color: #E5E5E5;
   color: #3A3A3A;
 
-  font-family: 'wonderunitsans';
+  font-family: var(--default-font-stack);
   font-weight: 300;
 
   user-select: none;
@@ -67,16 +67,26 @@ input[type="checkbox"] + label span {
   cursor: pointer;
 }
 
+input[type=checkbox]:checked + label {
+  position: relative;
+}
+
 input[type=checkbox]:checked + label:before {
   content:'✖';
-  padding-left: 5px;
-  padding-top: 3px;
+
   text-shadow: 0px 1px 1px rgba(0, 0, 0, .2);
   font-size: 15px;
   text-align: center;
   line-height: 1;
   position: absolute;
   color: white;
+
+  margin: auto;
+  left: 1px;
+  top: 0px;
+  width: 20px;
+  height: 20px;
+  line-height: 20px;
 }
 
 input[type=number] {
@@ -131,10 +141,10 @@ a.button:hover {
 
 .preferences-window kbd {
   display: inline-block;
-  font-family: 'wonderunitsans';
+  font-family: var(--default-font-stack);
   font-size: 12px;  
   background: rgba(255,255,255,0.3);
-  padding: 2px 5px 0;
+  padding: 2px 5px;
   border: 1px solid #999;
   border-radius: 2px;
   color: #333333;
@@ -151,6 +161,10 @@ a.button:hover {
 
 #preferences-list {
   display: block;
+}
+
+button {
+  font-family: var(--default-font-stack);
 }
 
 .open-language-editor {
@@ -223,7 +237,7 @@ a.button:hover {
   background-color: #333333;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 1;
-  height:80px;
+  height:100px;
   overflow: auto;
   border-radius: 5px;
   width:120px;
