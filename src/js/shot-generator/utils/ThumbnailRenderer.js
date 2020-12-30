@@ -6,7 +6,7 @@ const IMAGE_WIDTH = 68
 const IMAGE_HEIGHT = 100
 
 class ThumbnailRenderer {
-  constructor () {
+  constructor (renderParameters) {
     this.renderer = new THREE.WebGLRenderer({
       canvas: document.createElement('canvas'),
       antialias: true
@@ -52,7 +52,8 @@ class ThumbnailRenderer {
       {
         defaultThickness: 0.018, // 0.008, 0.009
         ignoreMaterial: false,
-        defaultColor: [0, 0, 0]
+        defaultColor: [0, 0, 0],
+        ...renderParameters
       }
     )
   }
@@ -68,12 +69,20 @@ class ThumbnailRenderer {
     return this.renderer.domElement.toDataURL(...args)
   }
 
+  toBase64 (...args) {
+    return this.toDataURL(...args).replace(/^data:image\/\w+;base64,/, '')
+  }
+
   getGroup () {
     return this.group
   }
 
   getCamera () {
     return this.camera
+  }
+
+  dispose () {
+    this.renderer.dispose()
   }
 }
 

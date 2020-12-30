@@ -1,0 +1,10 @@
+{
+    "development": {
+        "XR": "../src/js/xr/dist",
+        "AR": "../src/js/ar/dist"
+    },
+    "production": {
+        "XR": "xr",
+        "AR": "ar"
+    }
+}

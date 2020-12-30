@@ -235,7 +235,7 @@ const updateObject = (draft, state, props, { models }) => {
     delete props["locked"]
   }
   
-  if (draft.locked) {
+  if (draft.locked || draft.blocked) {
     return
   }
 
@@ -414,6 +414,7 @@ const getCameraShot = (draft, cameraId) => {
 
 // load up the default poses
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
+const defaultEmotionsPresets = require('./shot-generator-presets/emotions.json')
 
 const defaultCharacterPreset = {
   height: 1.6256,
@@ -740,7 +741,8 @@ const initialState = {
     poses: {
       ...defaultPosePreset
     },
-    handPoses: defaultHandPosePresets
+    handPoses: defaultHandPosePresets,
+    emotions: defaultEmotionsPresets
   },
   server: {
     uri: undefined,
@@ -902,6 +904,35 @@ const sceneObjectsReducer = (state = {}, action) => {
             )
           )
         )
+
+      case 'BLOCK_OBJECT': 
+        let objectsToBlock = Array.isArray(action.payload) ? action.payload : [action.payload]
+        for(let id of objectsToBlock) {
+          if (draft[id]) {
+            draft[id].blocked = true
+          }
+        }
+
+        return draft
+
+      case 'UNBLOCK_OBJECT': 
+        let objectsToUnblock = Array.isArray(action.payload) ? action.payload : [action.payload]
+        for(let id of objectsToUnblock) {
+          if (draft[id]) {
+            draft[id].blocked = false
+          }
+        }
+
+        return draft
+
+      case 'UNBLOCK_ALL':
+        for(let id of Object.keys(draft)) {
+          if (draft[id]) {
+            draft[id].blocked = false
+          }
+        }
+
+        return draft
 
       case 'CREATE_OBJECT':
         let id = action.payload.id != null
@@ -1179,6 +1210,15 @@ const sceneObjectsReducer = (state = {}, action) => {
         }
         return
 
+      // When an Emotion preset is removed, also remove references to it in any Scene Object
+      case 'DELETE_EMOTION_PRESET':
+        for (let id in state) {
+          if (state[id].emotionPresetId === action.payload.id) {
+            delete draft[id].emotionPresetId
+          }
+        }
+        return
+
       default:
         return
     }
@@ -1384,6 +1424,7 @@ const presetsReducer = (state = initialState.presets, action) => {
         delete draft.poses[action.payload.id]
         return
 
+
       case 'UPDATE_POSE_PRESET':
         // allow a null value for name
         if (action.payload.hasOwnProperty('name')) {
@@ -1393,6 +1434,15 @@ const presetsReducer = (state = initialState.presets, action) => {
 
       case 'CREATE_HAND_POSE_PRESET':
         draft.handPoses[action.payload.id] = action.payload
+        return
+      case 'DELETE_HAND_POSE_PRESET':
+        delete draft.handPoses[action.payload.id]
+        return        
+      case 'CREATE_EMOTION_PRESET':
+        draft.emotions[action.payload.id] = action.payload
+        return
+      case 'DELETE_EMOTION_PRESET':
+        delete draft.emotions[action.payload.id]
         return
     }
   })
@@ -1443,6 +1493,9 @@ const mainReducer = (state/* = initialState*/, action) => {
 
       case 'SET_ASPECT_RATIO':
         draft.aspectRatio = action.payload
+        return
+      case 'SET_CURRENT_LANGUAGE':
+        draft.language = action.payload
         return
 
       case 'SET_MAIN_VIEW_CAMERA':
@@ -1647,6 +1700,11 @@ module.exports = {
 
   reducer: rootReducer,
 
+  // internal actions
+  _blockObject: id => ({ type: 'BLOCK_OBJECT', payload: id}),
+  _unblockObject: id => ({ type: 'UNBLOCK_OBJECT', payload: id}),
+  _unblockAll: id => ({ type: 'UNBLOCK_ALL' }),
+
   //
   //
   // action creators 
@@ -1657,8 +1715,8 @@ module.exports = {
   selectObjectToggle: id => ({ type: 'SELECT_OBJECT_TOGGLE', payload: id }),
 
   selectBone: id => ({ type: 'SELECT_BONE', payload: id }),
-  selectAttachable: id => ({ type: 'SELECT_ATTACHABLE', payload: id }),
-  deselectAttachable: id => ({ type: 'DESELECT_ATTACHABLE', payload: id}),
+  selectAttachable: payload => ({ type: 'SELECT_ATTACHABLE', payload }),
+  deselectAttachable: () => ({ type: 'DESELECT_ATTACHABLE' }),
 
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),
@@ -1735,8 +1793,11 @@ module.exports = {
 
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
+  createEmotionPreset: payload => ({ type: 'CREATE_EMOTION_PRESET', payload }),
+  deleteEmotionPreset: id => ({ type: 'DELETE_EMOTION_PRESET', payload: { id } }),
   updatePosePreset: (id, values) => ({ type: 'UPDATE_POSE_PRESET', payload: { id, ...values} }),
   deletePosePreset: id => ({ type: 'DELETE_POSE_PRESET', payload: { id } }),
+  deleteHandPosePreset: id => ({ type: 'DELETE_HAND_POSE_PRESET', payload: { id } }),
 
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),

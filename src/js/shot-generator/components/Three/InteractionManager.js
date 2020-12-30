@@ -22,6 +22,7 @@ import {
     deselectAttachable,
     getSceneObjects,
 } from '../../../shared/reducers/shot-generator'
+import {blockObject, unblockObject} from '../../../services/server/sockets';
 import BonesHelper from '../../../xr/src/three/BonesHelper'
 import throttle from 'lodash.throttle'
 import CameraControlsComponent from './CameraControlsComponet'
@@ -178,7 +179,7 @@ const InteractionManager = connect(
     }, [dragTarget])
 
     const onPointerDown = event => {
-        event.preventDefault()
+       // event.preventDefault()
         filterIntersectables()
         let selections = takeSelections()
         // get the mouse coords
@@ -234,6 +235,7 @@ const InteractionManager = connect(
             } else if(target.userData && target.userData.type === 'objectControl') {
                 let objectId = target.characterId
                 let targetElement = target.object
+                if(!targetElement) return
                 if(targetElement.type === "Bone") {
                     let characters = intersectables.current.filter(value => value.uuid === objectId)
                     target = characters[0]
@@ -275,7 +277,8 @@ const InteractionManager = connect(
                     //  and its the one we pointerdown'd ...
                     selections[0] === target.userData.id
                   ) {
-                    if (target.userData.locked) {
+                    if (target.userData.locked || target.userData.blocked) {
+                      unblockObject(target.userData.id)
                       selectObject(null)
                       selectBone(null)
                       setLastDownId(null)
@@ -297,6 +300,7 @@ const InteractionManager = connect(
                     // select the bone
                     if (!isSelectedControlPoint && hits.length) {
                       selectObject(target.userData.id)
+                      blockObject(target.userData.id)
                       setLastDownId(null)
                       
                       selectBone(hits[0].bone.uuid)
@@ -311,6 +315,7 @@ const InteractionManager = connect(
                 selections.includes(target.userData.id)
               ) {
                 shouldDrag = true
+                blockObject(target.userData.id)
               }
             }
               selectBone(null)
@@ -338,11 +343,11 @@ const InteractionManager = connect(
         if(dragTarget.target.userData.type === 'character') {
           let ikRig = SGIkHelper.getInstance().ragDoll;
           if(!ikRig || !ikRig.isEnabledIk && !ikRig.hipsMoving && !ikRig.hipsMouseDown) {
-            drag({ x, y }, dragTarget.target, camera, selections)
+            drag({ x, y }, dragTarget.target, camera, selections, event.ctrlKey)
           }
         }
         else {
-          drag({ x, y }, dragTarget.target, camera, selections)
+          drag({ x, y }, dragTarget.target, camera, selections, event.ctrlKey)
         }
       }
     }
@@ -353,6 +358,7 @@ const InteractionManager = connect(
         SGIkHelper.getInstance().deselectControlPoint(event)
         if (dragTarget && dragTarget.target) {
           endDrag(updateObjects)
+          unblockObject(dragTarget.target.userData.id)
           if(dragTarget.target.userData.type === "character") {
             let attachables = scene.__interaction.filter(object => object.userData.bindedId === dragTarget.target.userData.id)
             withState((dispatch, state) => {
@@ -410,7 +416,7 @@ const InteractionManager = connect(
                   }
                 } else {
                   // if the pointerup'd target is not part of the multi-selection
-                  if (!selections.includes(target.userData.id) && !target.userData.locked) {
+                  if (!selections.includes(target.userData.id) && !target.userData.locked && !target.userData.blocked) {
                     // clear the multi-selection and select just the target
                     let object = sceneObjects[target.userData.id]
                     if (object && object.group) {
@@ -427,7 +433,7 @@ const InteractionManager = connect(
     
         setLastDownId(null)
     }
-    
+
     useLayoutEffect(() => {
       activeGL.domElement.addEventListener('pointerdown', onPointerDown)
       activeGL.domElement.addEventListener('pointermove', onPointerMove)

@@ -1,36 +1,19 @@
 const { BrowserWindow, ipcMain, app, dialog } = electron = require('electron')
 const isDev = require('electron-is-dev')
-
+const SettingsService = require("./SettingsService")
 const path = require('path')
 const url = require('url')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
-//const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
-const installExtensions = async () => {
-  const installer = require('electron-devtools-installer');
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
-  
-  return Promise.all(
-      extensions.map(name => installer.default(installer[name], forceDownload))
-  ).catch(console.log);
-};
-
-// Removes any extension from the production version
-const removeExtensions = () => {
-  const installed = BrowserWindow.getDevToolsExtensions()
-
-  for (let extension of Object.keys(installed)) {
-    BrowserWindow.removeDevToolsExtension(extension)
-  }
-}
-
+const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"))
+let windowSize = settingsService.getSettingByKey("shotGeneratorSize") 
+windowSize = windowSize ? windowSize : { x:undefined, y:undefined, width: 1505, height: 1080 }
 let win
 let memento = {
-  x: undefined,
-  y: undefined,
-  width: 1505,
-  height: 1080,
+  x: windowSize.x,
+  y: windowSize.y,
+  width: windowSize.width,
+  height: windowSize.height,
 }
 
 const reveal = onComplete => {
@@ -40,12 +23,6 @@ const reveal = onComplete => {
 }
 
 const show = async (onComplete) => {
-  if (process.env.NODE_ENV === 'development') {
-    await installExtensions()
-  } else {
-    removeExtensions()
-  }
-
   if (win) {
     reveal(onComplete)
     return
@@ -77,9 +54,9 @@ const show = async (onComplete) => {
       allowRunningInsecureContent: true,
       experimentalFeatures: true,
       backgroundThrottling: true,
+      enableRemoteModule: true
     }
   })
-
 
   // via https://github.com/electron/electron/blob/master/docs/api/web-contents.md#event-will-prevent-unload
   //     https://github.com/electron/electron/pull/9331
@@ -102,10 +79,13 @@ const show = async (onComplete) => {
     }
   })
 
-  win.on('resize', () => memento = win.getBounds())
+  win.on('resize', () => { 
+    memento = win.getBounds()
+  })
   win.on('move', () => memento = win.getBounds())
 
   win.once('closed', () => {
+    settingsService.setSettingByKey("shotGeneratorSize", memento)
     win = null
   })
   win.loadURL(url.format({
@@ -126,11 +106,11 @@ ipcMain.on('shot-generator:menu:view:fps-meter', (event, value) => {
   win && win.webContents.send('shot-generator:menu:view:fps-meter', value)
 })
 
-ipcMain.on('shot-generator:menu:view:scale-ui', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:scale-ui', value)
+ipcMain.on('shot-generator:menu:view:scale-ui-by', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:scale-ui-by', value)
 })
-ipcMain.on('shot-generator:menu:view:reset-ui', (event, value) => {
-  win && win.webContents.send('shot-generator:menu:view:set-ui-scale', value)
+ipcMain.on('shot-generator:menu:view:scale-ui-reset', (event, value) => {
+  win && win.webContents.send('shot-generator:menu:view:scale-ui-reset', value)
 })
 
 ipcMain.on('shot-generator:object:duplicate', () => {

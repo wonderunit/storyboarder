@@ -1,7 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
-import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState, useContext } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import TWEEN from '@tweenjs/tween.js'
@@ -22,7 +22,11 @@ import {
     deleteObjects,
 
  } from '../shared/reducers/shot-generator'
+
+import systemEmotionPresets from '../shared/reducers/shot-generator-presets/emotions.json'
+
 import { useThree, useFrame } from 'react-three-fiber'
+
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
@@ -45,7 +49,9 @@ import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
 import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
+import path from "path"
 
+import FilepathsContext from './contexts/filepaths'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -59,8 +65,12 @@ const sceneObjectSelector = (state) => {
   }
   return newSceneObjects
 }
-
+const attachableIdsSelector = (state) => {
+  const sceneObjects = getSceneObjects(state)
+  return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
+}
 const getSceneObjectsM = deepEqualSelector([sceneObjectSelector], (sceneObjects) => sceneObjects)
+const getAttachableIdsM = deepEqualSelector([attachableIdsSelector], (sceneObjects) => sceneObjects)
 
 const SceneManagerR3fLarge = connect(
     state => ({
@@ -73,6 +83,8 @@ const SceneManagerR3fLarge = connect(
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
         aspectRatio: state.aspectRatio,
+        attachableIds: getAttachableIdsM(state),
+        emotionPresets: state.presets.emotions
     }),
     {
         selectObject,
@@ -105,6 +117,8 @@ const SceneManagerR3fLarge = connect(
     aspectRatio,
     deleteObjects,
     withState,
+    attachableIds,
+    emotionPresets,
 
     stats,
     mainViewCamera
@@ -131,10 +145,6 @@ const SceneManagerR3fLarge = connect(
 
     const lightIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'light').map(o => o.id)
-    }, [sceneObjectLength])
-
-    const attachableIds = useMemo(() => {
-      return Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
     }, [sceneObjectLength])
 
     const volumeIds = useMemo(() => {
@@ -187,6 +197,7 @@ const SceneManagerR3fLarge = connect(
         updateObjects
       )
 
+      
       //#region initialization of objectRotationControl 
       objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement)
       objectRotationControl.current.control.canSwitch = false
@@ -329,6 +340,8 @@ const SceneManagerR3fLarge = connect(
       if (stats) stats.end()
     }, 1)
 
+    const { getAssetPath, getUserPresetPath } = useContext(FilepathsContext)
+
     return <group ref={ rootRef }> 
     <CameraUpdate/>
     <InteractionManager renderData={ renderData }/> 
@@ -362,9 +375,18 @@ const SceneManagerR3fLarge = connect(
             </SimpleErrorBoundary>
         })
     }
+
     {    
         characterIds.map(id => {
-            let sceneObject = sceneObjects[id]
+          let sceneObject = sceneObjects[id]
+
+          let { emotionPresetId } = sceneObject
+          let imagePath =  emotionPresetId
+            ? Object.keys(systemEmotionPresets).includes(emotionPresetId)
+              ? getAssetPath('emotion', `${emotionPresetId}-texture.png`)
+              : getUserPresetPath('emotions', `${emotionPresetId}-texture.png`)
+            : null
+
             return <SimpleErrorBoundary  key={ id }>
               <Character
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -378,6 +400,7 @@ const SceneManagerR3fLarge = connect(
                 withState={ withState }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
+                imagePath={imagePath}
                 forceUpdate={ forceUpdate }
                 />
               </SimpleErrorBoundary>

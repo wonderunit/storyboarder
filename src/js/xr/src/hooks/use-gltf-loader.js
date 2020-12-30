@@ -3,18 +3,25 @@
 const THREE = require('three')
 const { GLTFLoader } = require('three/examples/jsm/loaders/GLTFLoader')
 const { useState, useEffect, useMemo } = React = require('react')
+const {onGLTFBufferLoad} = require('../helpers/resourceLoaders')
 
 const useGltfLoader = filepath => {
   const key = useMemo(() => ({}), [filepath])
   const [cache] = useState(() => new WeakMap())
-  const [loader] = useState(() => new GLTFLoader())
   const [_, forceUpdate] = useState(false)
   useEffect(() => {
     if (!cache.has(key)) {
-      loader.load(filepath, gltf => {
-        cache.set(key, gltf)
-        forceUpdate(i => !i)
+
+      SGConnection.getResource('gltf', filepath)
+      .then(({data}) => {
+        onGLTFBufferLoad(data)
+        .then((gltf) => {
+          console.log('Loaded GLTF: ', gltf)
+          cache.set(key, gltf)
+          forceUpdate(i => !i)
+        })
       })
+
     }
   }, [filepath])
   return cache.get(key) || null

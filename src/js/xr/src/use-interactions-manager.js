@@ -309,7 +309,8 @@ const useInteractionsManager = ({
   uiService,
   playSound,
   stopSound,
-  realCamera
+  realCamera,
+  SGConnection
 }) => {
   const { gl, camera, scene } = useThree()
 
@@ -589,7 +590,8 @@ const useInteractionsManager = ({
       }
     }
 
-    if (match && !sceneObjects[match.userData.id].locked) {
+    let targetObj = match ? sceneObjects[match.userData.id] : null
+    if (match && !targetObj.locked && !targetObj.blocked) {
       // console.log('found sceneObject:', sceneObjects[match.userData.id])
       // console.log('intersection', intersection)
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
@@ -1223,15 +1225,13 @@ const useInteractionsManager = ({
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
 
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
+          teleport(realCamera, worldPosition.x, worldPosition.y - realCamera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
           let eulerRot = new THREE.Euler(0, 0, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
           staticLimbRotation.setFromEuler(eulerRot)
           
           relativeAngle(realCamera, headBone, staticLimbRotation, realCamera.parent)
-          console.log("realCamera",realCamera)
-          console.log("camera",camera)
 
           eulerRot = new THREE.Euler(0, 0 ,0)
           eulerRot.x = THREE.Math.degToRad(90)
@@ -1320,6 +1320,10 @@ const useInteractionsManager = ({
         onSelected: (context, event) => {
           let controller = event.controller
           let { object, distance, point } = event.intersection
+          if (object.userData.blocked || object.userData.locked) {
+            return
+          }
+
           log('-- onSelected')
           // selectOffset is used for Character
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
@@ -1363,6 +1367,9 @@ const useInteractionsManager = ({
           let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
 
+          if (object.userData.locked || object.userData.blocked) {
+            return
+          }
 
           if (object.userData.type !== 'character') {
             if(object.userData.type === "attachable")
@@ -1380,6 +1387,7 @@ const useInteractionsManager = ({
             
             controller.attach(object)
             object.updateMatrixWorld(true)
+            SGConnection.blockObject(context.selection)
           }
 
           playSound('beam', object)
@@ -1414,10 +1422,6 @@ const useInteractionsManager = ({
           }
 
           stopSound('beam', object)
-          
-          if (isDeselected && selections.length === 0) {
-            return false
-          }
 
           commit(context.selection, object)
           if (object.userData.type === 'character') {
@@ -1426,6 +1430,8 @@ const useInteractionsManager = ({
               commit(mapAttachables[i].userData.id, mapAttachables[i])
             }
           }
+
+          SGConnection.unblockObject(context.selection)
 
           uiService.send({ type: 'UNLOCK' })
         },
@@ -1566,12 +1572,6 @@ const useInteractionsManager = ({
       logger: log
     }
   )
-
-  useEffect(() => {
-    if (selections.length === 0 && lastAction === 'DESELECT_OBJECT') {
-      interactionService.send({type: 'CLEAR_SELECTION'})
-    }
-  }, [selections.length, lastAction])
 
   return { controllers, interactionServiceCurrent, interactionServiceSend }
 }

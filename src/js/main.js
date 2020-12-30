@@ -6,7 +6,8 @@ const isDev = require('electron-is-dev')
 const trash = require('trash')
 const chokidar = require('chokidar')
 const os = require('os')
-const log = require('electron-log')
+const log = require('./shared/storyboarder-electron-log')
+const fileSystem = require('fs')
 
 const prefModule = require('./prefs')
 prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -36,13 +37,24 @@ const JWT = require('jsonwebtoken')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index')
-
+const {settings:languageSettings} = require('./services/language.config')
 const autoUpdater = require('./auto-updater')
-
+const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 
 const store = configureStore({}, 'main')
+
+
+if (isDev) {
+  const { default: installExtension, REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS } = require('electron-devtools-installer')
+
+  app.whenReady().then(() => {
+    installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS])
+      .then((name) => console.log(`[Extensions] ADD ${name}`))
+      .catch((err) => console.log('[Extensions] ERR: ', err))
+  })
+}
 
 
 let welcomeWindow
@@ -93,15 +105,56 @@ app.on('open-file', (event, path) => {
   }
 })
 
+const syncLanguages = (dir, isLanguageFile, array) => {
+  let files = fileSystem.readdirSync(dir)
+  for(let i = 0; i < files.length; i++) {
+    let fileName = files[i]
+    let { name, ext } = path.parse(fileName)
+    
+    if(isLanguageFile(name, ext)) { 
+      let data = fs.readFileSync(path.join(dir, fileName))
+      let json = JSON.parse(data)
+      let language = {}
+      language.fileName = name
+      language.displayName = json.Name
+      array.push(language)
+    }
+  }
+}
+
 app.on('ready', async () => {
   analytics.init(prefs.enableAnalytics)
 
   const exporterFfmpeg = require('./exporters/ffmpeg')
   let ffmpegVersion = await exporterFfmpeg.checkVersion()
   log.info('ffmpeg version', ffmpegVersion)
+  
+  // Initial set up of language-settings file
+  let settings = {builtInLanguages:[], customLanguages:[]}
+  let dir = path.join(__dirname, "locales")
+  syncLanguages(dir, (name, ext) => ext === ".json", settings.builtInLanguages)
+  dir = path.join(app.getPath('userData'), "locales")
+  syncLanguages(dir, (name, ext) => ext === ".json" && name !== "language-settings", settings.customLanguages)
+  if(Object.keys(languageSettings.getSettings()).length === 0) {
+    let appLocale = app.getLocale()
+    if(!settings.builtInLanguages.some((item) => item.fileName === app.getLocale())) {
+      appLocale = 'en-US'
+    }
+    settings.selectedLanguage = appLocale
+    settings.defaultLanguage = appLocale
+  } else {
+    let selectedLanguage = languageSettings.getSettingByKey("selectedLanguage")
+    if(!settings.builtInLanguages.some((item) => item.fileName === selectedLanguage) &&
+    !settings.customLanguages.some((item) => item.fileName === selectedLanguage)) {
+    settings.selectedLanguage = languageSettings.getSettingByKey("defaultLanguage")
+}
+  }
 
 
 
+
+  languageSettings.setSettings(settings)
+  //TODO(): Check if files of custom languages exist
   // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
   let payload = {}
@@ -149,6 +202,7 @@ app.on('ready', async () => {
     // create new keymap.json
     shouldOverwrite = true
   }
+
 
   // merge with defaults
   store.dispatch({
@@ -289,7 +343,8 @@ let openKeyCommandWindow = () => {
     frame: false,
     titleBarStyle: 'hiddenInset',
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
@@ -303,7 +358,6 @@ let openKeyCommandWindow = () => {
 
 app.on('activate', ()=> {
   if (!mainWindow && !welcomeWindow) openWelcomeWindow()
-
 })
 
 let openNewWindow = () => {
@@ -325,7 +379,8 @@ let openNewWindow = () => {
       frame: false,
       modal: true,
       webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+        enableRemoteModule: true
       }
     })
     newWindow.loadURL(`file://${__dirname}/../new.html`)
@@ -351,13 +406,14 @@ let openWelcomeWindow = () => {
     frame: false,
     webPreferences: {
       webSecurity: false,
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
   newWindow = new BrowserWindow({
-    width: 600,
+    width: 640,
     height: 580,
     show: false,
     parent: welcomeWindow,
@@ -365,7 +421,8 @@ let openWelcomeWindow = () => {
     frame: false,
     modal: true,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   newWindow.loadURL(`file://${__dirname}/../new.html`)
@@ -385,6 +442,7 @@ let openWelcomeWindow = () => {
       count++
     }
     prefs.recentDocuments = recentDocumentsCopy
+
     prefModule.set('recentDocuments', recentDocumentsCopy)
   }
 
@@ -394,6 +452,7 @@ let openWelcomeWindow = () => {
       if (!isDev) autoUpdater.init()
       analytics.screenView('welcome')
     }, 300)
+
   })
 
   welcomeWindow.once('close', () => {
@@ -949,7 +1008,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       experimentalCanvasFeatures: true,
       devTools: true,
       plugins: true,
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
 
@@ -962,7 +1022,8 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
     frame: false,
     resizable: isDev ? true : false,
     webPreferences: {
-      nodeIntegration: true
+      nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)
@@ -1205,6 +1266,7 @@ ipcMain.on('undo', (e, arg)=> {
   mainWindow.webContents.send('undo')
 })
 
+
 ipcMain.on('redo', (e, arg)=> {
   mainWindow.webContents.send('redo')
 })
@@ -1367,6 +1429,7 @@ ipcMain.on('exportImages', (event, arg) => {
 ipcMain.on('exportPDF', (event, arg) => {
   mainWindow.webContents.send('exportPDF', arg)
 })
+
 ipcMain.on('exportWeb', (event, arg) => {
   mainWindow.webContents.send('exportWeb', arg)
 })
@@ -1442,6 +1505,49 @@ ipcMain.on('workspaceReady', event => {
   })
 })
 
+const notifyAllsWindows = (event, ...args) => {
+  let allWindows = BrowserWindow.getAllWindows()
+  for(let i = 0; i < allWindows.length; i ++) {
+    if(! allWindows[i]) continue
+    allWindows[i].send(event, ...args)
+  }
+}
+
+ipcMain.on('languageChanged', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageChanged", lng)
+})
+
+ipcMain.on('languageModified', (event, lng) => {
+  notifyAllsWindows("languageModified", lng)
+})
+
+ipcMain.on('languageAdded', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageAdded", lng)
+})
+
+ipcMain.on('languageRemoved', (event, lng) => {
+  languageSettings._loadFile()
+  notifyAllsWindows("languageRemoved", lng)
+})
+
+ipcMain.on('getCurrentLanguage', (event) => {
+  event.returnValue = languageSettings.getSettingByKey("selectedLanguage")
+})
+
+ipcMain.on('openLanguagePreferences', (event) => {
+  let win = LanguagePreferencesWindow.getWindow()
+  if (win) {
+    LanguagePreferencesWindow.reveal()
+  } else {
+    LanguagePreferencesWindow.createWindow(() => {LanguagePreferencesWindow.reveal()})
+  }
+  //openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
+  //ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
+})
+
+
 ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) => {
   mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)
 })
@@ -1460,12 +1566,10 @@ ipcMain.on('revealShotGenerator',
 
 ipcMain.on('zoomReset',
   event => mainWindow.webContents.send('zoomReset'))
-ipcMain.on('scale-ui-up',
-  event => mainWindow.webContents.send('scale-ui-up'))
-ipcMain.on('scale-ui-down',
-  event => mainWindow.webContents.send('scale-ui-down'))
+ipcMain.on('scale-ui-by',
+  (event, value) => mainWindow.webContents.send('scale-ui-by', value))
 ipcMain.on('scale-ui-reset',
-  event => mainWindow.webContents.send('scale-ui-reset'))
+  (event, value) => mainWindow.webContents.send('scale-ui-reset', value))
 
 ipcMain.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))

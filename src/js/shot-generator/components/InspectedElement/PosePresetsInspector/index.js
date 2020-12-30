@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
+import { useTranslation } from 'react-i18next'
+import { remote } from 'electron'
 
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../package.json'
@@ -12,6 +14,7 @@ import {
   getSelections,
   undoGroupStart,
   undoGroupEnd,
+  deletePosePreset,
   updateCharacterIkSkeleton
 } from '../../../../shared/reducers/shot-generator'
 
@@ -28,6 +31,7 @@ import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
+
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
 const getAttachmentM = deepEqualSelector([(state) => state.attachments], (attachments) => { 
@@ -47,6 +51,7 @@ const PosePresetsEditor = connect(
     undoGroupStart,
     undoGroupEnd,
     updateCharacterIkSkeleton,
+    deletePosePreset,
     withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
   }
 )(
@@ -60,13 +65,15 @@ React.memo(({
   undoGroupStart,
   undoGroupEnd,
   updateCharacterIkSkeleton,
+  deletePosePreset,
   withState
 }) => {
+  const { t } = useTranslation()
   const thumbnailRenderer = useRef()
 
   const sortedAttachament = useRef([])
   const {asset: attachment} = useAsset(characterPath)
-
+  
   const [results, setResult] = useState([])
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
@@ -208,11 +215,44 @@ React.memo(({
     updateCharacterIkSkeleton({id:sceneObject.id, skeleton: oppositeSkeleton})
   }
 
+  const onRemoval = (data) => {
+    const choice = remote.dialog.showMessageBoxSync({
+      type: 'question',
+      buttons: [t('shot-generator.inspector.common.yes'), t('shot-generator.inspector.common.no')],
+      message: t('shot-generator.inspector.common.are-you-sure'),
+      defaultId: 1
+    })
+
+    if (choice !== 0) return
+
+    //let sceneObjects 
+    withState((dispatch, state) => {
+      //sceneObjects = Object.values(getSceneObjects(state)).filter(object => object.emotion === data.filename)
+/*       for(let i = 0; i < sceneObjects.length; i++) {
+        updateObject(sceneObjects[i].id, { posePresetId: null }) 
+      } */
+      // ... and save it to the presets file
+      let denylist = Object.keys(defaultPosePresets)
+      denylist.push(data.id)
+      let filteredPoses = Object.values(state.presets.poses)
+        .filter(pose => denylist.includes(pose.id) === false)
+        .reduce(
+          (coll, pose) => {
+            coll[pose.id] = pose
+            return coll
+          },
+          {}
+        )
+      presetsStorage.savePosePresets({ poses: filteredPoses })
+    })
+    deletePosePreset(data.id)
+  }
+
   return (
     <React.Fragment>
     <Modal visible={ isModalShown } onClose={() => showModal(false)}>
       <div style={{ margin:"5px 5px 5px 5px" }}>
-        Select a Preset Name:
+      {t("shot-generator.inspector.common.select-preset-name")} 
       </div>
       <div className="column" style={{ flex: 1 }}> 
         <input 
@@ -228,13 +268,13 @@ React.memo(({
             showModal(false)
             addNewPosePreset(newPresetName.current)
           }}>
-            Proceed
+             {t("shot-generator.inspector.common.add-preset")}
         </button>
       </div>
    </Modal>
    <div className="thumbnail-search column">
       <div className="row" style={{ padding: "6px 0" } }> 
-        <SearchList label="Search for a pose …" list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>
+        <SearchList label={t("shot-generator.inspector.pose-preset.search-pose")} list={ sortedAttachament.current } onSearch={ saveFilteredPresets }/>
         <div className="column" style={{ marginLeft: 5 }}> 
           <a className="button_add" href="#"
             style={{ width: 30, height: 34 }}
@@ -243,7 +283,7 @@ React.memo(({
         </div>
       </div> 
       <div className="mirror_button__wrapper">
-        <div className="mirror_button" onPointerDown={ mirrorSkeleton }>Mirror pose</div>
+        <div className="mirror_button" onPointerDown={ mirrorSkeleton }>{t('shot-generator.inspector.pose-preset.mirror-pose')}</div>
       </div>
       <Scrollable>
        <Grid
@@ -259,6 +299,7 @@ React.memo(({
             thumbnailRenderer,
             undoGroupStart,
             undoGroupEnd,
+            onRemoval
           }}
           Component={PosePresetInspectorItem}
           elements={results}

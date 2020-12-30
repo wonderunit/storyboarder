@@ -55,6 +55,10 @@ const mainReducer =  (state = initState, action) => {
       case 'SET_ID':
         draft.id = action.payload
         return
+
+      case 'SET_USERS':
+        draft.users = action.payload
+        return
       
       default: 
         return state
@@ -66,6 +70,7 @@ export const addUser = id => ({ type: 'ADD_USER', payload: id })
 export const removeUser = id => ({ type: 'REMOVE_USER', payload: id })
 export const updateUser = (id, values) => ({ type: 'UPDATE_USER', payload: {id, ...values} })
 export const setId = (id) => ({ type: 'SET_ID', payload: id })
+export const setUsers = (users) => ({ type: 'SET_USERS', payload: users })
 
 
 export const getRemoteDevices = state => state.users

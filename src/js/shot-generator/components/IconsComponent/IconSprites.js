@@ -2,7 +2,7 @@
 
 import * as THREE from 'three'
 import { Object3D, Sprite } from 'three'
-import createGeometry from '../../../vendor/three-bmfont-text'
+import createGeometry from 'three-bmfont-text'
 
 import allSprites from './IconContainer'
 class IconSprites extends Object3D {
