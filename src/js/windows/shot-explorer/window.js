@@ -23,6 +23,7 @@ const {batchActions, enableBatching} = require('redux-batched-actions')
 const i18n = require('../../services/i18next.config')
 
 require("../../shared/helpers/monkeyPatchGrayscale")
+
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false
