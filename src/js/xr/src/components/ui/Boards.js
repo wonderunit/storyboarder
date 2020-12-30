@@ -1,12 +1,12 @@
 const { useEffect, useMemo, useRef, useCallback } = React = require('react')
 const { useFrame, useThree } = require('react-three-fiber')
-
+const { useTranslation } = require('react-i18next')
 const SCALE = 1
 const POSITION = [0, 0, 0]
 
 const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showSettings, rotation = -Math.PI * 1 }) => {
   const { camera, gl } = useThree()
-
+  const { t } = useTranslation()
   const ref = useRef()
 
   const textureRef = useRef(null)
@@ -72,6 +72,9 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
     return [mesh, confirmMesh, settingsMesh]
   }, [mode])
 
+  useEffect(() => {
+    getCanvasRenderer().boardsNeedsRender = true
+  }, [t])
   // to hide boards when locked, uncomment this:
   //
   // useMemo(() => {
@@ -80,7 +83,7 @@ const Boards = React.memo(({ mode, locked, getCanvasRenderer, showConfirm, showS
 
   useFrame((state, delta) => {
     if (getCanvasRenderer().boardsNeedsRender) {
-      getCanvasRenderer().renderBoards()
+      getCanvasRenderer().renderBoards(t)
       getTexture().needsUpdate = true
     }
     getCanvasRenderer().boardsNeedsRender = false

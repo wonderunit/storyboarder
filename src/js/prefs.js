@@ -3,7 +3,7 @@ const path = require('path')
 const { app } = require('electron')
 const os = require("os")
 const R = require('ramda')
-const log = require('electron-log')
+const log = require('./shared/storyboarder-electron-log')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index') // for Object.equals
@@ -20,7 +20,7 @@ const defaultPrefs = {
   enableAspirationalMessages: true,
   defaultBoardTiming: 2000,
   pomodoroTimerMinutes: 25,
-  importTargetLayer: "reference",
+  importTargetLayer: "reference", // DEPRECATED was used for image import but never had UI
   enableCanvasPaintingOpacity: true, // DEPRECATED used by old SketchPane
   enableBrushCursor: true,
   enableStabilizer: true, // DEPRECATED used by old SketchPane

@@ -2,18 +2,26 @@
 
 const THREE = require('three')
 const { useState, useEffect, useMemo } = React = require('react')
+const {onImageBufferLoad} = require('../helpers/resourceLoaders')
 
-const useTextureLoader = filepath => {
+const useTextureLoader = (SGConnection, filepath) => {
   const key = useMemo(() => ({}), [filepath])
   const [cache] = useState(() => new WeakMap())
-  const [loader] = useState(() => new THREE.TextureLoader())
   const [_, forceUpdate] = useState(false)
+  
   useEffect(() => {
     if (!cache.has(key)) {
-      loader.load(filepath, gltf => {
-        cache.set(key, gltf)
-        forceUpdate(i => !i)
+
+      SGConnection.getResource('image', filepath)
+      .then(({data}) => {
+        onImageBufferLoad(filepath, data)
+        .then((texture) => {
+          console.log('Loaded TEXTURE: ', texture)
+          cache.set(key, texture)
+          forceUpdate(i => !i)
+        })
       })
+
     }
   }, [filepath])
   return cache.get(key) || null

@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react'
 import * as THREE from 'three'
-import { useUpdate } from 'react-three-fiber'
+import { useUpdate, useThree} from 'react-three-fiber'
 import cloneGltf from '../shot-generator/helpers/cloneGltf'
 import SGIkHelper from '../shared/IK/SGIkHelper'
 import {useAsset} from '../shot-generator/hooks/use-assets-manager'
@@ -8,8 +8,17 @@ import { SHOT_LAYERS } from '../shot-generator/utils/ShotLayers'
 import {patchMaterial} from '../shot-generator/helpers/outlineMaterial'
 import isUserModel from '../shot-generator/helpers/isUserModel'
 import isSuitableForIk from './utils/isSuitableForIk'
+import FaceMesh from "../shot-generator/components/Three/Helpers/FaceMesh"
 
-const Character = React.memo(({ path, sceneObject, modelSettings}) => {
+const Character = React.memo(({ path, sceneObject, modelSettings, ...props}) => {
+    const faceMesh = useRef(null)
+    function getFaceMesh () {
+      if (faceMesh.current === null) {
+        faceMesh.current = new FaceMesh()
+      }
+      return faceMesh.current
+    }
+
     const {asset: gltf} = useAsset(path)
     const isIkCharacter = useRef()
     const ref = useUpdate(
@@ -19,7 +28,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings}) => {
       }
     )
     const [ready, setReady] = useState(false)
-
+    const {asset: texture} = useAsset(ready ? props.imagePath : null)
+    const { gl } = useThree()
     const [skeleton, lod, originalSkeleton, armature, originalHeight] = useMemo(() => {
       if(!gltf) {
         setReady(false)
@@ -75,6 +85,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings}) => {
       let skeleton = lod.children[0].skeleton
       skeleton.pose()
       isIkCharacter.current = isSuitableForIk(skeleton)
+      getFaceMesh().setSkinnedMesh(lod, gl)
       let originalSkeleton = skeleton.clone()
       originalSkeleton.bones = originalSkeleton.bones.map(bone => bone.clone())
 
@@ -175,6 +186,15 @@ const Character = React.memo(({ path, sceneObject, modelSettings}) => {
         skinnedMesh.material.emissive.set(sceneObject.tintColor)
       })
     }, [sceneObject.tintColor, ready])
+
+    useEffect(() => {
+      if(!skeleton) return
+      if(!texture) {
+        getFaceMesh().resetTexture()
+        return
+      }
+      getFaceMesh().draw(texture)
+    }, [texture, lod])
 
     useEffect(() => {
       if(!lod) return

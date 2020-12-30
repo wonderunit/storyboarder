@@ -20,6 +20,9 @@ const {
   resetScene,
 } = require('../../shared/reducers/shot-generator')
 const {batchActions, enableBatching} = require('redux-batched-actions')
+const i18n = require('../../services/i18next.config')
+
+require("../../shared/helpers/monkeyPatchGrayscale")
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false
@@ -134,6 +137,14 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
 
 ipcRenderer.on("shot-explorer:updateStore", (event, action) => {
   sendedAction.push(action)
+})
+
+ipcRenderer.on("shot-explorer:change-language", (event, lng) => {
+  i18n.changeLanguage(lng)
+})
+
+ipcRenderer.on("shot-explorer:language-modified", (event, lng) => {
+  i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
 })
 
 electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {

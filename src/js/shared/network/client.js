@@ -1,8 +1,9 @@
-import SocketClient from 'socket.io-client'
-
 import {RestrictedActions, remoteStore, setId, SelectActions} from "../reducers/remoteDevice"
-import {deselectObject} from "../reducers/shot-generator"
+import {blockObject as blockObjectAction, unblockObject as unblockObjectAction, getSelections} from "../reducers/shot-generator"
+import P2P from './p2p'
+import EventEmmiter from 'events'
 
+// Helper function to call some fn once per N calls
 const each = (fn, countRef) => {
   let times = 0
   return (args, immediate = false) => {
@@ -15,134 +16,282 @@ const each = (fn, countRef) => {
   }
 }
 
+export const ResourceInfo = new EventEmmiter()
+const resourcesMap = {}
+const ResourcesMapStatuses = {PENDING: 'PENDING', LOADING: 'LOADING', SUCCESS: 'SUCCESS'}
+
+// Connect both to the lobby server and to the target client
 export const connect = (URI = '') => {
-  //localStorage.debug = '*'
-  localStorage.removeItem('debug')
-  const client = SocketClient.connect(URI, {rejectUnauthorized: false})
+  return new Promise((resolve, reject) => {
+    let roomId = window.location.pathname
 
-  let FRAME_RATE = {current: 10}
-
-  const dispatchRemote = (action, meta = {}) => {
-    const XRAction = {
-      ...action,
-      meta: {
-        ...meta,
-        isXR: true
-      }
+    // If id isn't a part of the path then reject
+    if (!roomId) {
+      reject('Room is not entered')
+      return false
+    }
+    
+    if (roomId[0] === '/') {
+      roomId = roomId.slice(1)
     }
 
-    client.emit('action', XRAction)
-  }
+    if (roomId[roomId.length - 1] === '/') {
+      roomId = roomId.slice(0, -1)
+    }
+
+    // If id isn't valid then reject
+    if (!roomId) {
+      reject('Room is not entered')
+      return false
+    }
+
+    // Connect to the lobby server
+    const p2p = P2P(location.hostname)
+    const {io, peer, P2PClientConnection} = p2p
+
+    let store = {current: null}
+    let FRAME_RATE = {current: 10}
+    
+    // Connect to the client
+    P2PClientConnection(roomId).then((conn) => {
+      const client = conn.emitter
+      const emit = conn.emit
+
+      console.log('Connected !!!', store)
+
+      // Send an action to the SG
+      const dispatchRemote = (action, meta = {}) => {
+        if (!client) {
+          return false
+        }
   
-  const connectStore = (store) => {
-    client.on('remoteAction', (data) => {
-      remoteStore.dispatch(data)
-    })
-
-    client.on('action', (data) => {
-      store.dispatch(data)
-    })
-  }
-
-  const getBoards = async () => {
-    return new Promise((resolve) => {
-      client.once('getBoards', resolve)
-      client.emit('getBoards')
-    })
-  };
-
-  const saveShot = async () => {
-    return new Promise((resolve) => {
-      client.once('saveShot', resolve)
-      client.emit('saveShot')
-    })
-  };
-
-  const insertShot = () => {
-    return new Promise((resolve) => {
-      client.once('insertShot', resolve)
-      client.emit('insertShot')
-    })
-  };
-
-  const getSg = () => {
-    return new Promise((resolve) => {
-      client.once('getSg', resolve)
-      client.emit('getSg')
-    })
-  };
-
-  const setBoard = (board) => {
-    return new Promise((resolve) => {
-      client.once('setBoard', resolve)
-      client.emit('setBoard', board)
-    })
-  };
-
-  const isSceneDirty = () => {
-    return new Promise((resolve) => {
-      client.once('isSceneDirty', resolve)
-      client.emit('isSceneDirty')
-    })
-  };
-
-  const ClientMiddleware = store => next => action => {
-    /* Not send restricted actions */
-    if (RestrictedActions.indexOf(action.type) !== -1) {
-
-      /* Send deselect if we select something */
-      if (SelectActions.indexOf(action.type) !== -1) {
-        let meta = {ignore: [remoteStore.getState().id]}
-        dispatchRemote(deselectObject(action.payload), meta)
+        const XRAction = {
+          ...action,
+          meta: {
+            ...meta,
+            isXR: true
+          }
+        }
+        emit('action', XRAction)
       }
-
-      /* Dispatch */
-      return next(action)
-    }
-    
-    /* Dispatch if the message came from SG */
-    if (action.meta && action.meta.isSG) {
-      /* Are we listed on the ignore list? */
-      let isIgnored = action.meta.ignore && action.meta.ignore.indexOf(remoteStore.getState().id) !== 1
       
-      if (!isIgnored) {
-        return next(action)
+      // Connect server to the application store
+      const connectStore = (appStore) => {
+        // Resolve users actions, such as controllers position, etc. 
+        client.on('remoteAction', (data) => {
+          console.log('remoteAction', data)
+          remoteStore.dispatch(data)
+        })
+  
+        // Resolve app actions
+        client.on('action', (data) => {
+          console.log('Action', data)
+          appStore.dispatch(data)
+        })
+
+        // Send objects to block
+        client.on('askForBlock', () => {
+          let meta = {ignore: [remoteStore.getState().id]}
+          dispatchRemote(blockObjectAction(getSelections(appStore.getState())), meta)
+        })
       }
-    } else {
-      /* Send to the SG */
-      dispatchRemote(action)
-    }
-    // Not send actions to the reducer, instead wait for the server answer
-  }
 
-  const sendRemoteInfo = each((info) => {
-    client.emit('remote', info)
-  }, FRAME_RATE)
+      const blockObject = (ids) => {
+        let meta = {ignore: [remoteStore.getState().id]}
+        dispatchRemote(blockObjectAction(ids), meta)
+      }
+      
+      const unblockObject = (ids) => {
+        let meta = {ignore: [remoteStore.getState().id]}
+        dispatchRemote(unblockObjectAction(ids), meta)
+      }
+  
+      // Get all the boards
+      const getBoards = async () => {
+        return new Promise((resolve, reject) => {
+          client.once('getBoards', resolve)
+          emit('getBoards')
+        })
+      }
+  
+      // Save current shot
+      const saveShot = async () => {
+        return new Promise((resolve, reject) => {
+          client.once('saveShot', resolve)
+          emit('saveShot')
+        })
+      }
+  
+      // Insert shot as new one
+      const insertShot = () => {
+        return new Promise((resolve, reject) => {
+          client.once('insertShot', resolve)
+          emit('insertShot')
+        })
+      }
+  
+      // Get board uid
+      const getSg = () => {
+        return new Promise((resolve, reject) => {
+          client.once('getSg', resolve)
+          emit('getSg')
+        })
+      }
+  
+      // Set current board
+      const setBoard = (board) => {
+        return new Promise((resolve, reject) => {
+          client.once('setBoard', resolve)
+          emit('setBoard', board)
+        })
+      }
+  
+      // Check if scene is dirty
+      const isSceneDirty = () => {
+        return new Promise((resolve, reject) => {
+          client.once('isSceneDirty', resolve)
+          emit('isSceneDirty')
+        })
+      }
 
-  const setActive = (active = true) => {
-    client.emit('remote', {active})
-  }
+      // Connect request to get the actual data(store, users, id, etc.)
+      const connectRequest = () => {
+        console.log('Send connect request')
+        emit('connectRequest')
+      }
 
-  return {
-    connectStore,
-    
-    sendInfo: (info, immediate) => sendRemoteInfo([info], immediate),
-    setActive,
-    log: (info) => client.emit('debug', info),
-    
-    ClientMiddleware,
-    
-    setFrameRate: (value) => {
-      FRAME_RATE.current = value
-    },
+      // Before SG send a resource we should know what resource we are waiting for
+      client.on('willLoad', ({path}) => {
+        resourcesMap[path] = {status: ResourcesMapStatuses.LOADING}
+        ResourceInfo.emit('willLoad', path)
+      })
 
-    uriForThumbnail: filename => `${URI}/boards/images/${filename}`,
-    
-    getBoards,
-    saveShot,
-    insertShot,
-    getSg,
-    setBoard,
-    isSceneDirty
-  }
+      // Request resource from the SG
+      const getResource = (type, filePath) => {
+        return new Promise((resolve, reject) => {
+          console.log('Getting - ', filePath)
+
+          // If resource allready in the cache, then return it
+          if (resourcesMap[filePath] && resourcesMap[filePath].status === ResourcesMapStatuses.SUCCESS) {
+            resolve(resourcesMap[filePath].data)
+          }
+
+          // Temp function that used to resolve current asset
+          const Fn = (res) => {
+            if (res.filePath === filePath) {
+              console.log('Resolved(*), ', filePath, res)
+              resourcesMap[filePath] = {status: ResourcesMapStatuses.SUCCESS, data: res}
+              client.off('getResource', Fn)
+              resolve(res)
+            }
+          }
+
+          // Listen for current resource
+          client.on('getResource', Fn)
+
+          // request resource
+          emit('getResource', {type, filePath})
+
+          // Mark resource as pending
+          resourcesMap[filePath] = {status: ResourcesMapStatuses.PENDING}
+
+          // If the resource wasn't accepted for loading by the server then reask
+          const interval = setInterval(() => {
+            if (resourcesMap[filePath] && resourcesMap[filePath].status === ResourcesMapStatuses.PENDING) {
+              emit('getResource', {type, filePath})
+            } else {
+              // if a resource was accepted then remove interval
+              clearInterval(interval)
+            }
+          }, 10 * 1000)
+        })
+      }
+  
+      // Redu middleware
+      const ClientMiddleware = store => next => action => {
+        // Not send restricted actions
+        if (RestrictedActions.indexOf(action.type) !== -1) {
+  
+          /*
+          // If we select something
+          if (SelectActions.indexOf(action.type) !== -1) {
+            let meta = {ignore: [remoteStore.getState().id]}
+
+            let selectionsBefore = getSelections(store.getState())
+
+            const result = next(action)
+            let selectionsAfter = getSelections(store.getState())
+            
+            const selectionsToBlock = selectionsAfter.filter(item => selectionsBefore.indexOf(item) === -1)
+            const selectionsToUnblock = selectionsBefore.filter(item => selectionsAfter.indexOf(item) === -1)
+
+            if (selectionsToUnblock.length) dispatchRemote(unblockObject(selectionsToUnblock), meta) // Unblock deselected
+            if (selectionsToBlock.length) dispatchRemote(blockObject(selectionsToBlock), meta) // Block selected
+
+            return result
+          }
+          */
+  
+          /* Dispatch */
+          return next(action)
+        }
+        
+        /* Dispatch if the message came from SG */
+        if (action.meta && action.meta.isSG) {
+          /* Are we listed on the ignore list? */
+          let id = remoteStore.getState().id
+          let isIgnored = action.meta.ignore && (action.meta.ignore.indexOf(id) !== -1) && (id !== null)
+          
+          if (!isIgnored) {
+            console.log('ACTION', action)
+            return next(action)
+          }
+        } else {
+          /* Send to the SG */
+          dispatchRemote(action)
+        }
+        // Not send actions to the reducer, instead wait for the server answer
+      }
+  
+      // Log to the SG
+      const sendRemoteInfo = each((info) => {
+        emit('remote', info)
+      }, FRAME_RATE)
+  
+      // Set current user as active to enable 3d model
+      const setActive = (active = true) => {
+        emit('remote', {active})
+      }
+  
+      resolve({
+        connectStore,
+        
+        sendInfo: (info, immediate) => sendRemoteInfo([info], immediate),
+        setActive,
+        log: (info) => emit('debug', info),
+        
+        ClientMiddleware,
+        
+        setFrameRate: (value) => {
+          FRAME_RATE.current = value
+        },
+  
+        uriForThumbnail: filename => `${URI}/boards/images/${filename}`,
+        
+        getBoards,
+        saveShot,
+        insertShot,
+        getSg,
+        setBoard,
+        isSceneDirty,
+
+        getResource,
+        connectRequest,
+
+
+        blockObject,
+        unblockObject
+      })
+    })
+  })
 }

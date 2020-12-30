@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import classNames from 'classnames'
 import { filepathFor } from '../../../utils/filepathFor'
 import {IMAGE_HEIGHT, IMAGE_WIDTH} from '../../../utils/InspectorElementsSettings'
@@ -10,13 +10,19 @@ const ModelInspectorItem = React.memo(({
     selectedFunc = () => false,
     data : model,
     onSelectItem,
-    itemSettings
+    itemSettings,
+    selectInitial = false
   }) => {
     const src = filepathFor(model).replace(/.glb$/, '.jpg')
-    const isSelected = selectedFunc(model)
-
+    const [isSelected, setSelected] = useState()
+    useEffect(() => {
+      if(selectInitial && selectedFunc(model)) {
+        onSelect()
+      }
+    }, [])
     const onSelect = () => {
-      onSelectItem(model)
+      onSelectItem(model, () => setSelected(false))
+      setSelected(true)
     }
 
     const className = classNames("thumbnail-search__item", {

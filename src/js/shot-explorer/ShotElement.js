@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-
+import { useTranslation } from 'react-i18next';
 const ShotElement = React.memo((
     {
         setSelectedShot, 
@@ -11,7 +11,7 @@ const ShotElement = React.memo((
     
     const [renderImage, setRenderImage] = useState() 
     const [imageChanged, setImageChanged] = useState({})
-
+    const { t } = useTranslation()
     const updateImage = () => {
         setImageChanged({})
     }
@@ -37,7 +37,7 @@ const ShotElement = React.memo((
             <div className="shot-explorer-shot" style={{ width, height, maxHeight: height }}>
                 <img className="shot-explorer-image" src={ renderImage } onPointerDown={() =>{ setSelectedShot(object) }}/>
             </div>
-            <div className="description">{object.toString()}</div>
+            <div className="description">{object.toString(t)}</div>
         </div>
 })
 

@@ -20,9 +20,9 @@ const getPlaceholder = (elementStyle, i, k, isLoading = false) => (
   </div>
 )
 
-const getComponent = (Component, itemData, elements, elementStyle, i, k) => (
+const getComponent = (Component, itemData, elements, elementStyle, i, k, id) => (
   <Component
-    key={`grid-element-${i + k}`}
+    key={`grid-element-${id}`}
     style={elementStyle}
     {...itemData}
     data={elements[i + k]}
@@ -34,7 +34,6 @@ const Grid = React.memo(({
    elements,
 
    itemData,
-
    numCols,
    itemHeight,
    itemWidth = '100%'
@@ -76,7 +75,8 @@ const Grid = React.memo(({
         const index = i + k
         if (elements[index]) {
           if (index < currentIndex) {
-            row.push(getComponent(Component, itemData, elements, elementStyle, i, k))
+            const id = elements[index].id ? elements[index].id : index
+            row.push(getComponent(Component, itemData, elements, elementStyle, i, k, id))
           } else {
             row.push(getPlaceholder(elementStyle, i, k, true))
           }

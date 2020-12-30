@@ -31,6 +31,8 @@ const {
   drawRow
 } = require('./draw')
 
+const { useTranslation } = require('react-i18next')
+
 const { setupHomePane, setupAddPane, setupHelpPane, setupBoardsPane } = require('./setup')
 
 const [useUiStore] = create((set, get) => ({
@@ -263,7 +265,7 @@ class CanvasRenderer {
 
     this.needsRender = false
   }
-  render () {
+  render (t) {
     this.state.boardsData.cata({
       NOT_ASKED: () => {
         console.log('boards list has not loaded')
@@ -324,21 +326,21 @@ class CanvasRenderer {
           ...(sceneObject.model === 'box')
             ? {
               width: {
-                label: `Width - ${sceneObject.width}m`,
+                label: `${t("xr.controls.width")} - ${sceneObject.width}m`,
                 lens: R.compose(R.lensPath(['width']), lenses.width)
               },
               height: {
-                label: `Height - ${sceneObject.height}m`,
+                label: `${t("xr.controls.height")} - ${sceneObject.height}m`,
                 lens: R.compose(R.lensPath(['height']), lenses.height)
               },
               depth: {
-                label: `Depth - ${sceneObject.depth}m`,
+                label: `${t("xr.controls.depth")} - ${sceneObject.depth}m`,
                 lens: R.compose(R.lensPath(['depth']), lenses.depth)
               }
             }
             : {
               size: {
-                label: `Size - ${sceneObject.height}m`,
+                label: `${t("xr.controls.size")} - ${sceneObject.height}m`,
                 lens: R.compose(R.lensPath(['height']), lenses.height)
               }
             }
@@ -346,11 +348,11 @@ class CanvasRenderer {
 
         ...(sceneObject.type === 'image') && {
           size: {
-            label: `Size - ${sceneObject.height}m`,
+            label: `${t("xr.controls.size")} - ${sceneObject.height}m`,
             lens: R.compose(R.lensPath(['height']), lenses.height)
           },
           opacity: {
-            label: `Opacity - ${sceneObject.opacity}`,
+            label: `${t("xr.controls.opacity")} - ${sceneObject.opacity}`,
             lens: R.compose(R.lensPath(['opacity']), lenses.opacity)
           }
         },
@@ -360,17 +362,17 @@ class CanvasRenderer {
             ...(isUserModel(sceneObject.model))
               ? {
                 scale: {
-                  label: `Scale - ${rounded(percent(sceneObject.height), 1)}%`,
+                  label: `${t("xr.controls.scale")} - ${rounded(percent(sceneObject.height), 1)}%`,
                   lens: R.compose(R.lensPath(['height']), lenses.characterScale)
                 }
               }
               : {
                 height: {
-                  label: `Height - ${rounded(sceneObject.height)}m`,
+                  label: `${t("xr.controls.height")} - ${rounded(sceneObject.height)}m`,
                   lens: R.compose(R.lensPath(['height']), characterHeightLens)
                 },
                 headScale: {
-                  label: `Head - ${rounded(percent(sceneObject.headScale))}%`,
+                  label: `${t("xr.controls.head")} - ${rounded(percent(sceneObject.headScale))}%`,
                   lens: R.compose(R.lensPath(['headScale']), lenses.headScale)
                 }
               },
@@ -379,10 +381,10 @@ class CanvasRenderer {
               modelSettings &&
               modelSettings.validMorphTargets &&
               modelSettings.validMorphTargets.reduce((components, morphTargetName) => {
-                let name = 'Morph Target'
-                if (morphTargetName == 'ectomorphic') name = 'Skinny'
-                if (morphTargetName == 'mesomorphic') name = 'Muscular'
-                if (morphTargetName == 'endomorphic') name = 'Obese'
+                let name = t('xr.controls.morph-target')
+                if (morphTargetName == 'ectomorphic') name = t('xr.controls.skinny')
+                if (morphTargetName == 'mesomorphic') name = t('xr.controls.muscular')
+                if (morphTargetName == 'endomorphic') name = t('xr.controls.obese')
                 let pathLens = R.lensPath(['morphTargets', morphTargetName])
                 components[morphTargetName] = {
                   label: `${name} - ${Math.round(R.view(pathLens, sceneObject) * 100)}%`,
@@ -396,19 +398,19 @@ class CanvasRenderer {
         ...(sceneObject.type === 'light') &&
           {
             intensity: {
-              label: `Intensity - ${rounded(sceneObject.intensity)}`,
+              label: `${t('xr.controls.intensity')} - ${rounded(sceneObject.intensity)}`,
               lens: R.compose(R.lensPath(['intensity']), lenses.intensity)
             },
             angle: {
-              label: `Angle - ${rounded(THREE.Math.radToDeg(sceneObject.angle), 1)}°`,
+              label: `${t('xr.controls.angle')} - ${rounded(THREE.Math.radToDeg(sceneObject.angle), 1)}°`,
               lens: R.compose(R.lensPath(['angle']), lenses.angle)
             },
             distance: {
-              label: `Distance - ${rounded(sceneObject.distance)}`,
+              label: `${t('xr.controls.distance')} - ${rounded(sceneObject.distance)}`,
               lens: R.compose(R.lensPath(['distance']), lenses.distance)
             },
             penumbra: {
-              label: `Penumbra - ${rounded(percent(sceneObject.penumbra), 1)}%`,
+              label: `${t('xr.controls.penumbra')} - ${rounded(percent(sceneObject.penumbra), 1)}%`,
               lens: R.compose(R.lensPath(['penumbra']), lenses.penumbra)
             }
           }
@@ -505,7 +507,7 @@ class CanvasRenderer {
           y: 30 + 90 * 3,
           width: 420,
           height: 80,
-          label: sceneObject.visibleToCam ? 'Visible to Camera' : 'Set as visible to Camera',
+          label: sceneObject.visibleToCam ? t('xr.controls.visible-to-camera') : t('xr.controls.set-visible-to-camera'),
           state: Number(sceneObject.visibleToCam),
           onSelect: () => {
             this.dispatch(
@@ -528,7 +530,7 @@ class CanvasRenderer {
           y: 30 + 90 * 2,
           width: 420,
           height: 80,
-          label: isActive ? 'Active Camera' : 'Set as Active Camera',
+          label: isActive ? t('xr.controls.active-camera') : t('xr.controls.set-active-camera'),
           state: Number(isActive),
           onSelect: () => {
             if (!isActive) {
@@ -549,7 +551,7 @@ class CanvasRenderer {
           y: 30 + 90 * (characterSliders.length + 1),
           width: 420,
           height: 80,
-          label: 'Pose Capture',
+          label: t('xr.controls.pose-capture'),
           state: 0,
           onSelect: () => {
             this.interactionServiceSend('POSE_CHARACTER')
@@ -664,7 +666,7 @@ class CanvasRenderer {
           y: 30 + 90,
           width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Left',
+          label: t('xr.controls.left'),
           state: this.state.selectedHand === 'LeftHand',
           onSelect: () => {
             this.state.selectedHand = "LeftHand"
@@ -678,7 +680,7 @@ class CanvasRenderer {
           y: 30 + 90,
           width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Both',
+          label: t('xr.controls.both'),
           state: this.state.selectedHand === 'BothHands',
           onSelect: () => {
             this.state.selectedHand = "BothHands"
@@ -692,7 +694,7 @@ class CanvasRenderer {
           y: 30 + 90,
           width: (buttonSize - 45) / 2,
           height: titleHeight - 10,
-          label: 'Right',
+          label: t('xr.controls.right'),
           state: this.state.selectedHand === 'RightHand',
           onSelect: () => {
             this.state.selectedHand = "RightHand"
@@ -710,7 +712,7 @@ class CanvasRenderer {
           y: 30,
           width: 440 - 45,
           height: titleHeight - 10,
-          label: 'Objects',
+          label: t('xr.controls.objects'),
           state: 1
         }
       }
@@ -745,7 +747,7 @@ class CanvasRenderer {
     this.renderObjects(ctx, this.paneComponents['help'])
   }
 
-  renderBoards () {
+  renderBoards (t) {
 
     let canvas = this.boardsCanvas
     let ctx = this.boardsContext
@@ -778,8 +780,8 @@ class CanvasRenderer {
       roundRect(ctx, 0, 430 + 18 * 3, 118 + 168 + 18 * 4 + 15, 18 * 3 * 2 + 30, 25, true, false)
 
       const labels = this.state.boards.confirmDialogType === 'overwrite' ?
-        [`Shot Generator has unsaved changes.`, `Are you sure you want to overwrite with VR changes?`] :
-        [`Changes have not been saved.`, `Are you sure you want to change board without saving?`]
+        [t(`xr.boards.sg-has-unsaved-changed`), t(`xr.boards.overwrite-with-vr-changes`)] :
+        [t(`xr.boards.changes-not-saved`), t(`xr.boards.change-without-saving`)]
 
       this.paneComponents['boards']['confirm-1'] = {
         id: 'confirm-1',
@@ -807,7 +809,7 @@ class CanvasRenderer {
         width: 118 + 18 * 2 - 15,
         height: 18 * 3,
         fill: '#737373',
-        label: 'OK',
+        label: t('xr.boards.ok'),
         fontSize: 18,
         fontWeight: 'bold',
 
@@ -824,7 +826,7 @@ class CanvasRenderer {
         width: 168 + 18 * 2 - 15,
         height: 18 * 3,
         fill: '#4D4E51',
-        label: 'Cancel',
+        label: t('xr.boards.cancel'),
         fontSize: 18,
         fontWeight: 'bold',
 
@@ -843,7 +845,7 @@ class CanvasRenderer {
         type: 'text',
         x: 1024 - 439 + 30,
         y: 483 + 30,
-        label: 'Settings',
+        label: t('xr.boards.settings'),
         size: 36
       }
 
@@ -852,7 +854,7 @@ class CanvasRenderer {
         type: 'text',
         x: 1024 - 439 + 30,
         y: 483 + 20 + 48 + 40 + 40 - 12,
-        label: 'Show Cameras',
+        label: t('xr.boards.show-cameras'),
         size: 24
       }
 
@@ -905,7 +907,19 @@ class CanvasRenderer {
     if (image) {
       onSuccess(image)
     } else {
-      new THREE.ImageBitmapLoader().load(filepath, this.requestRender.bind(this))
+      SG.getResource('image', filepath)
+      .then(({type, filePath, data}) => {
+        onBitmapImageBufferLoad(filepath, data)
+        .then((bitmap) => {
+          console.log('BITMAP LOADED: ', filepath)
+          THREE.Cache.add( filepath, bitmap )
+          this.requestRender()
+        })
+        .catch(err => {
+          console.log('BITMAP ERROR', err)
+        })
+      })
+      //ImageBitmapLoader
       onFail()
     }
   }
@@ -1109,14 +1123,14 @@ class CanvasRenderer {
    // useUiStore(state => state.setShowHelp)(false)
   }
 
-  onShow () {
+  onShow (t) {
     let ctx =  this.context
     this.state.context.isUIHidden = false
     drawPaneBGs(ctx)
     this.renderObjects(ctx, this.paneComponents['home'])
     this.renderObjects(ctx, this.paneComponents['add'])
     this.renderObjects(ctx, this.paneComponents['settings'])
-    this.render()
+    this.render(t)
   }
 
   getCanvasIntersection (u, v, ignoreInvisible = true, intersectHelp = false) {
@@ -1198,6 +1212,7 @@ const {
   reducer,
   getHash
 } = require('../../../../shared/reducers/shot-generator')
+const { onBitmapImageBufferLoad } = require('../../helpers/resourceLoaders')
 
 // the 'stand' pose preset used for new characters
 const defaultPosePreset = getDefaultPosePreset()
@@ -1224,7 +1239,7 @@ const getCharacterImageFilepathById = id => `/data/system/dummies/gltf/${id}.jpg
 
 const useUiManager = ({ playSound, stopSound, SG }) => {
   const { scene, camera, gl } = useThree()
-
+  const { t } = useTranslation()
   const store = useReduxStore()
 
   const setSwitchHand = useUiStore(state => state.setSwitchHand)
@@ -1276,12 +1291,38 @@ const useUiManager = ({ playSound, stopSound, SG }) => {
     characterModels
       .map(model => model.id)
       .map(getCharacterImageFilepathById)
-      .map(filepath => new THREE.ImageBitmapLoader().load(filepath))
+      .map(filepath => {
+        SG.getResource('image', filepath)
+        .then(({type, filePath, data}) => {
+          onBitmapImageBufferLoad(filepath, data)
+          .then((bitmap) => {
+            console.log('BITMAP LOADED: ', filepath)
+            THREE.Cache.add( filepath, bitmap )
+          })
+          .catch(err => {
+            console.log('BITMAP ERROR', err)
+          })
+        })
+      })
+      //.map(filepath => new THREE.ImageBitmapLoader().load(filepath))
 
     objectModels
       .map(model => model.id)
       .map(getModelImageFilepathById)
-      .map(filepath => new THREE.ImageBitmapLoader().load(filepath))
+      .map(filepath => {
+        SG.getResource('image', filepath)
+        .then(({type, filePath, data}) => {
+          onBitmapImageBufferLoad(filepath, data)
+          .then((bitmap) => {
+            console.log('BITMAP LOADED: ', filepath)
+            THREE.Cache.add( filepath, bitmap )
+          })
+          .catch(err => {
+            console.log('BITMAP ERROR', err)
+          })
+        })
+      })
+      //.map(filepath => new THREE.ImageBitmapLoader().load(filepath))
   }, [])
 
   const [uiCurrent, uiSend, uiService] = useMachine(
@@ -1508,7 +1549,7 @@ const useUiManager = ({ playSound, stopSound, SG }) => {
         },
 
         onShowUI (context, event) {
-          getCanvasRenderer().onShow()
+          getCanvasRenderer().onShow(t)
         },
 
         onToggleHUD (context, event) {

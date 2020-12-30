@@ -157,7 +157,7 @@ const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
         }
     }, [sceneObject.opacity, sceneObject.color])
 
-    const {x, y, z, rotation, width, height, visible, locked } = sceneObject
+    const {x, y, z, rotation, width, height, visible, locked, blocked } = sceneObject
     return <group 
         ref={ ref }
         position={ [x, z, y] }
@@ -167,7 +167,8 @@ const Volume = React.memo(({numberOfLayers, sceneObject, imagesPaths}) => {
         userData={{
             type: "volume",
             id: sceneObject,
-            locked: locked
+            locked: locked,
+            blocked: blocked
         }}
     >
         <primitive object={group.current}/>
