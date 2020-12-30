@@ -19,6 +19,9 @@ import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
 import BrushInspector from './BrushInspector'
 import InspectedWorld from '../InspectedWorld'
+
+import EmotionInspector from './EmotionInspector/index'
+
 import HairInspector from './HairInspector/index'
 
 import Icon from '../Icon'
@@ -69,6 +72,15 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
     }
   }, [selectedType])
 
+  const emotionsTab = useMemo(() => {
+    if (!isChar(selectedType)) return nullTab
+
+    return {
+      tab: <Tab><Icon src='icon-tab-emotions'/></Tab>,
+      panel: <Panel><EmotionInspector/></Panel>
+    }
+  }, [selectedType])
+
   const hairInspectorTab = useMemo(() => {
     if (!isChar(selectedType)) return nullTab
 
@@ -106,7 +118,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
               showModal(false)
               updateObject(id, { displayName: changedName, name: changedName })
             }}>
-                {t("shot-generator.inspector.common.proceed-button")}
+                {t("shot-generator.inspector.common.add-preset")}
           </button>
       </div>
       </Modal> }
@@ -121,6 +133,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
           {modelTab.tab}
           {attachmentTab.tab}
           {meshTab.tab}
+          {emotionsTab.tab}
           {hairInspectorTab.tab}
         </div>
 
@@ -131,6 +144,7 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isI
           {modelTab.panel}
           {attachmentTab.panel}
           {meshTab.panel}
+          {emotionsTab.panel}
           {hairInspectorTab.panel}
         </div>
       </Tabs>

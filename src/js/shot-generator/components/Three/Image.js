@@ -94,8 +94,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       } 
     }
   }, [isSelected]) 
-  
-  const { x, y, z, visible, height, rotation, locked } = sceneObject
+
+  const { x, y, z, visible, height, rotation, locked, blocked } = sceneObject
 
   
   useEffect(() => {
@@ -106,7 +106,8 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
   const userDataInfo = {  
     type: "image",
     id: sceneObject.id,
-    locked: locked
+    locked: locked,
+    blocked: blocked
   }
 
   return (

@@ -1,8 +1,4 @@
-const THREE = require('three')
-
 const path = require('path')
-
-
 
 const isCustomModel = string => {
   const { root, dir, base, ext, name } = path.parse(string)

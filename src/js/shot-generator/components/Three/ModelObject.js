@@ -14,7 +14,7 @@ const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
 extend({RoundedBoxGeometry})
 
-const materialFactory = (isIcon) => patchMaterial(new THREE.MeshToonMaterial({
+const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xcccccc,
   emissive: 0x0,
   specular: 0x0,
@@ -28,7 +28,7 @@ const materialFactory = (isIcon) => patchMaterial(new THREE.MeshToonMaterial({
 })
 
 const meshFactory = (source, isIcon) => {
-  let mesh = source.clone()
+  let mesh = source.isSkinnedMesh ? THREE.SkeletonUtils.clone(source) : source.clone()
 
   let material = materialFactory(isIcon)
 
@@ -94,10 +94,10 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
   useEffect(() => {
     ref.current.traverse((child) => {
       if (child.isMesh) {
-        setSelected(child, isSelected)
+        setSelected(child, isSelected, sceneObject.blocked)
       }
     })
-  }, [ref.current, isSelected, asset])
+  }, [ref.current, isSelected, sceneObject.blocked, asset])
 
   useEffect(() => {
     if(isIcon) return
@@ -133,7 +133,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     }
   }, [])
 
-  const { x, y, z, visible, width, height, depth, rotation, locked } = sceneObject
+  const { x, y, z, visible, width, height, depth, rotation, locked, blocked } = sceneObject
 
   useEffect(() => {
     if(!props.objectRotationControl || !isSelected) return
@@ -147,7 +147,8 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     userData={{
       type: 'object',
       id: sceneObject.id,
-      locked: locked
+      locked: locked,
+      blocked: blocked
     }}
 
     visible={ visible }

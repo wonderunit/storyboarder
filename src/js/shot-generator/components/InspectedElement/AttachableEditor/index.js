@@ -72,7 +72,7 @@ const AttachableEditor = connect(
             for(let i = 0; i < keys.length; i++) {
                 let key = keys[i]
                 let value = sceneObjects[key]
-                if(value.attachToId === sceneObject.id && value.attachableType !== "hair")
+                if(value.attachToId === sceneObject.id && value.attachableType !== 'hair')
                     result.push(value)
             }
         })

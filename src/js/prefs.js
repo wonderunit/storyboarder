@@ -3,7 +3,7 @@ const path = require('path')
 const { app } = require('electron')
 const os = require("os")
 const R = require('ramda')
-const log = require('electron-log')
+const log = require('./shared/storyboarder-electron-log')
 
 const pkg = require('../../package.json')
 const util = require('./utils/index') // for Object.equals

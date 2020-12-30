@@ -7,8 +7,7 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xffffff,
-  emissive: 0x0,
-  flatShading: false
+  emissive: 0x0
 })
 
 const Environment = React.memo(({ path, environment, grayscale }) => {
@@ -23,15 +22,18 @@ const Environment = React.memo(({ path, environment, grayscale }) => {
     if (!gltf) return []
     let children = []
     let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Mesh', 'Group'])
+
     sceneData.traverse(child => {
       if (child.isMesh) {
         let mesh = child.clone()
         let material = materialFactory() 
         if (mesh.material.map) {
           material.map = mesh.material.map
+          material.flatShading = mesh.material.flatShading
           material.map.needsUpdate = true
         }
         mesh.material = material
+       
         children.push( <primitive
           key={`${mesh.uuid}`}
           object={mesh}

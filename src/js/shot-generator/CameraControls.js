@@ -64,6 +64,8 @@ class CameraControls {
       value: () => {}})
     window.addEventListener( 'keyup', this.onKeyUp, false )
     this.domElement.addEventListener("wheel", this.onWheel, false )
+    this.onBlurReset = () => this.reset()
+    window.addEventListener('blur', this.onBlurReset, false)
   }
   
   dispose () {
@@ -71,6 +73,7 @@ class CameraControls {
     KeyCommandsSingleton.getInstance().removeKeyCommand({key: "camera-controls"})
     window.removeEventListener( 'keyup', this.onKeyUp )
     this.domElement.removeEventListener("wheel", this.onWheel )
+    window.removeEventListener('blur', this.onBlurReset)
   }
 
   calculateInitialHeight (position) {
@@ -267,6 +270,9 @@ class CameraControls {
     this.moveUp = false
     this.moveDown = false
     this.moveAnalogue = false
+    this.altPressed = false
+    this.controlPressed = false
+    this.shiftPressed = false
   }
   
   isChanged() {
@@ -294,7 +300,6 @@ class CameraControls {
   update ( delta, state ) {
     
     if ( this.enabled === false ) return
-    
     this._object.fov += this.zoomSpeed
     this._object.fov = Math.max(1, this._object.fov)
     this._object.fov = Math.min(90, this._object.fov)

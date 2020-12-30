@@ -2,7 +2,7 @@ import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
 import SceneBackground from './components/Three/SceneBackground'
-import React, { useRef, useEffect, useMemo, useCallback, useState } from 'react'
+import React, { useRef, useEffect, useMemo, useCallback, useState, useContext } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
 import TWEEN from '@tweenjs/tween.js'
@@ -25,7 +25,11 @@ import {
     getDrawMode
 
  } from '../shared/reducers/shot-generator'
+
+import systemEmotionPresets from '../shared/reducers/shot-generator-presets/emotions.json'
+
 import { useThree, useFrame } from 'react-three-fiber'
+
 import ModelLoader from '../services/model-loader'
 import Character from './components/Three/Character'
 import Attachable from './components/Three/Attachable'
@@ -45,10 +49,13 @@ import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
 import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
-import RemoteProvider from './components/RemoteProvider'
-import RemoteClients from './components/RemoteClients'
-import XRClient from './components/Three/XRClient'
 import useDrawOnImage from './hooks/use-draw-on-image'
+import RemoteProvider from "./components/RemoteProvider"
+import RemoteClients from "./components/RemoteClients"
+import XRClient from "./components/Three/XRClient"
+import path from "path"
+
+import FilepathsContext from './contexts/filepaths'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -81,7 +88,8 @@ const SceneManagerR3fLarge = connect(
         selectedAttachable: getSelectedAttachable(state),
         aspectRatio: state.aspectRatio,
         drawMode: getDrawMode(state),
-        attachableIds: getAttachableIdsM(state)
+        attachableIds: getAttachableIdsM(state),
+        emotionPresets: state.presets.emotions
     }),
     {
         selectObject,
@@ -119,6 +127,7 @@ const SceneManagerR3fLarge = connect(
     withState,
     updateWorld,
     attachableIds,
+    emotionPresets,
 
     stats,
     mainViewCamera
@@ -204,6 +213,7 @@ const SceneManagerR3fLarge = connect(
         updateObjects
       )
 
+      
       //#region initialization of objectRotationControl 
       objectRotationControl.current = new ObjectRotationControl(scene.children[0], camera, gl.domElement)
       objectRotationControl.current.control.canSwitch = false
@@ -342,6 +352,8 @@ const SceneManagerR3fLarge = connect(
       if (stats) stats.end()
     }, 1)
 
+    const { getAssetPath, getUserPresetPath } = useContext(FilepathsContext)
+
     return <group ref={ rootRef }> 
     <CameraUpdate/>
    {!drawMode.isEnabled && <InteractionManager renderData={ renderData }/> }
@@ -375,9 +387,18 @@ const SceneManagerR3fLarge = connect(
             </SimpleErrorBoundary>
         })
     }
+
     {    
         characterIds.map(id => {
-            let sceneObject = sceneObjects[id]
+          let sceneObject = sceneObjects[id]
+
+          let { emotionPresetId } = sceneObject
+          let imagePath =  emotionPresetId
+            ? Object.keys(systemEmotionPresets).includes(emotionPresetId)
+              ? getAssetPath('emotion', `${emotionPresetId}-texture.png`)
+              : getUserPresetPath('emotions', `${emotionPresetId}-texture.png`)
+            : null
+
             return <SimpleErrorBoundary  key={ id }>
               <Character
                 path={ModelLoader.getFilepathForModel(sceneObject, {storyboarderFilePath}) }
@@ -391,6 +412,7 @@ const SceneManagerR3fLarge = connect(
                 withState={ withState }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
+                imagePath={imagePath}
                 forceUpdate={ forceUpdate }
                 />
               </SimpleErrorBoundary>
@@ -442,6 +464,7 @@ const SceneManagerR3fLarge = connect(
     {
         imageIds.map(id => {
             let sceneObject = sceneObjects[id]
+            console.log(sceneObject, "sceneObject")
             return <SimpleErrorBoundary key={ id }>
               <Image
                 imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}

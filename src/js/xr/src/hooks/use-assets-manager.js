@@ -3,7 +3,7 @@ const React = require('react')
 const path = require('path')
 const { useState, useReducer, useMemo, useCallback } = React
 
-const { GLTFLoader} = require("three/examples/jsm/loaders/GLTFLoader")
+const {onImageBufferLoad, onGLTFBufferLoad} = require('../helpers/resourceLoaders')
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -85,10 +85,7 @@ const load = (loader, path, events, times = 1) => {
   }
 }
 
-const useAssetsManager = () => {
-  const [loader] = useState(() => new GLTFLoader())
-  const [textureLoader] = useState(() => new THREE.TextureLoader())
-  const [cubeLoader] = useState(() => new THREE.CubeTextureLoader())
+const useAssetsManager = (SGConnection) => {
 
   const [assets, dispatch] = useReducer(reducer, {})
 
@@ -97,19 +94,33 @@ const useAssetsManager = () => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-        if (!id.includes('/images/') && !id.includes('/sceneTextures/')) {
-          load(loader, id, {
-            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+        if (!id.includes('/images/') && !id.includes('/emotions/')) {
+          SGConnection.getResource('gltf', id)
+          .then(({data}) => {
+            onGLTFBufferLoad(data)
+            .then((gltf) => {
+              console.log('Loaded GLTF: ', gltf)
+              dispatch({ type: 'SUCCESS', payload: { id, value: gltf } })
+            })
+            .catch((error) => {
+              console.log('GLTF loading error', error)
+              dispatch({ type: 'ERROR', payload: { id, error } })
+            })
           })
           dispatch({ type: 'LOAD', payload: { id } })
-        }  else {
-          load(textureLoader, `${id}?ts=` + Date.now(), {
-            onload: value => dispatch({ type: 'SUCCESS', payload: { id, value } }),
-            onprogress: progress => dispatch({ type: 'PROGRESS', payload: { id, progress } }),
-            onerror: error => dispatch({ type: 'ERROR', payload: { id, error } })
+        } else {
+          SGConnection.getResource('image', `${id}?ts=` + Date.now())
+          .then(({type, filePath, data}) => {
+            onImageBufferLoad(id, data)
+            .then((texture) => {
+              console.log('Loaded TEXTURE: ', texture)
+              dispatch({ type: 'SUCCESS', payload: { id, value: texture } })
+            })
+            .catch((error) => {
+              dispatch({ type: 'ERROR', payload: { id, error } })
+            })
           })
+
           dispatch({ type: 'LOAD', payload: { id } })
         }
       })

@@ -157,7 +157,7 @@ const machine = Machine({
         },
 
         CLEAR_SELECTION: {
-          actions: ['onSnapEnd', 'onSelectionClear'],
+          actions: ['onDragObjectExit', 'onSnapEnd', 'onSelectionClear'],
           target: 'selected'
         }
       }
