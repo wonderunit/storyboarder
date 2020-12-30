@@ -76,7 +76,6 @@ const { CubeTextureCreator }  = require('../../shot-generator/components/Three/H
 
 const musicSystem = require('./music-system')
 
-const { createSelector } = require('reselect')
 
 const getSceneTextureFilePath = (world, prevTexture, removeAsset) => {
   if(!world.sceneTexture) return false
