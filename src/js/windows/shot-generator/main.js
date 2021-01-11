@@ -5,6 +5,7 @@ const path = require('path')
 const url = require('url')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
+<<<<<<< HEAD
 //const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
@@ -36,6 +37,8 @@ app.on('certificate-error', (event, webContents, url, error, certificate, callba
   }
 })
 
+=======
+>>>>>>> a91ae72cf181fd07f4f5a90cc404466600d84ce6
 const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"))
 let windowSize = settingsService.getSettingByKey("shotGeneratorSize") 
 windowSize = windowSize ? windowSize : { x:undefined, y:undefined, width: 1505, height: 1080 }
@@ -54,12 +57,6 @@ const reveal = onComplete => {
 }
 
 const show = async (onComplete) => {
-  if (process.env.NODE_ENV === 'development') {
-    await installExtensions()
-  } else {
-    removeExtensions()
-  }
-
   if (win) {
     reveal(onComplete)
     return
@@ -91,6 +88,7 @@ const show = async (onComplete) => {
       allowRunningInsecureContent: true,
       experimentalFeatures: true,
       backgroundThrottling: true,
+      enableRemoteModule: true
     }
   })
 

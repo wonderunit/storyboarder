@@ -75,6 +75,13 @@ export const App = async () => {
   const XRStatic = express.static(path.join(XRPath))
   const ARStatic = express.static(path.join(ARPath))
 
+  // specifically serve the font from root,
+  // so it will be cached by the browser across sessions, e.g.:
+  //   /fonts/thicccboi/THICCCBOI-Regular.woff2
+  // although, due to XRStatic, this works, too:
+  //   /1234/fonts/thicccboi/THICCCBOI-Regular.woff2
+  app.use('/fonts', express.static(path.join(XRPath, 'fonts'), { index: false }))
+
   app.use('/:id', (...params) => {
     const req = params[0]
     const agent = req.headers['user-agent']

@@ -309,7 +309,8 @@ const useInteractionsManager = ({
   uiService,
   playSound,
   stopSound,
-  realCamera
+  realCamera,
+  SGConnection
 }) => {
   const { gl, camera, scene } = useThree()
 
@@ -1224,15 +1225,13 @@ const useInteractionsManager = ({
           camera.parent.userData.prevRotation = useStoreApi.getState().teleportRot
 
           // Setting teleport position and apply rotation influence by 180 degree to translate it to hmd
-          teleport(camera, worldPosition.x, worldPosition.y - camera.position.y * 0.5, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
+          teleport(realCamera, worldPosition.x, worldPosition.y - realCamera.position.y, worldPosition.z, ikHelper.ragDoll.originalObject.rotation.y + THREE.Math.degToRad(180))
 
           let eulerRot = new THREE.Euler(0, 0, 0)
           let staticLimbRotation = new THREE.Quaternion().setFromEuler(eulerRot)
           staticLimbRotation.setFromEuler(eulerRot)
           
           relativeAngle(realCamera, headBone, staticLimbRotation, realCamera.parent)
-          console.log("realCamera",realCamera)
-          console.log("camera",camera)
 
           eulerRot = new THREE.Euler(0, 0 ,0)
           eulerRot.x = THREE.Math.degToRad(90)
@@ -1388,6 +1387,7 @@ const useInteractionsManager = ({
             
             controller.attach(object)
             object.updateMatrixWorld(true)
+            SGConnection.blockObject(context.selection)
           }
 
           playSound('beam', object)
@@ -1430,6 +1430,8 @@ const useInteractionsManager = ({
               commit(mapAttachables[i].userData.id, mapAttachables[i])
             }
           }
+
+          SGConnection.unblockObject(context.selection)
 
           uiService.send({ type: 'UNLOCK' })
         },

@@ -2,7 +2,7 @@ body {
   margin: 0;
   padding: 0;
   color: black;
-  font-family: 'wonderunitsans';
+  font-family: var(--default-font-stack);
   font-weight: 300;
   background: #333639;
   color: #777;

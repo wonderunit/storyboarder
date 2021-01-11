@@ -134,7 +134,7 @@
   },
   "welcome-window": {
     "recentStoryboards": "Recent Storyboards",
-    "new-storyboard": "Create New Storyboard...",
+    "new-storyboard": "Create New Storyboard…",
     "welcome-line-1": "Storyboarder simply allows you to visually board your stories as fast as you possibly can.",
     "welcome-line-2": "Either work from a written story, or create a completely new board file. Create a board, draw in it, create a board, draw in it, and start to see your story come to life. You can also print out worksheets, draw on them, and easily import them.",
     "welcome-line-3": "Let's get started..."
@@ -660,7 +660,7 @@
     "show-tooltips": "Show Tooltips",
     "save-automatically": "Save Project Data Automatically",
     "saving-hint": "When disabled, use 'File > Save' to save project data. Note that changes to image data are always saved automatically.",
-    "force-psd-reload": "Force reload of watched PSD when Storyboarder regains focus",
+    "force-psd-reload": "Force reload watched PSD when Storyboarder regains focus",
     "psd-reload-hint": "Enable if working from a network drive.\nDisable to improve performance when switching between\nStoryboarder and other apps. When disabled, Storyboarder only\nwatches PSD files in the background (which is not supported on all computers).",
     "default-timing": "Default Board Timing (in msecs)",
     "external-psd-editor": "External PSD Editor",

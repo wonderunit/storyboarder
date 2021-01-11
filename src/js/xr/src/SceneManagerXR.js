@@ -557,7 +557,8 @@ const SceneContent = connect(
       uiService,
       playSound,
       stopSound,
-      realCamera
+      realCamera,
+      SGConnection
     })
     
     useFrame(({camera, gl}) => {

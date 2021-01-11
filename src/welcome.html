@@ -9,11 +9,14 @@
   <body style="">
     <div id="drag-handle"></div>
     <div id="ad">
-    <iframe id="Example2"
-        frameborder="0"
-        scrolling="no"
-        marginheight="0"
-        marginwidth="0" />
+    <iframe
+      id="Example2"
+      frameborder="0"
+      scrolling="no"
+      marginheight="0"
+      marginwidth="0"
+      sandbox="allow-scripts"
+    >
     </iframe>
     <div id="close-button">&#10005;</div>
     </div>
@@ -40,10 +43,14 @@
           </div>
         </div>
       </div>
-      <div style="position: absolute; bottom: 0; width: 600px;">
-      <div class="button blue left" id="getting-started">Getting started...</div>
-      <div class="button blue right" id="new-storyboard">Create New Storyboard...</div>
-      <div class="button blue right" id="open-storyboard">Open...</div>
+      <div class="button-grid">
+        <div>
+          <div class="button blue" id="getting-started">Getting started…</div>
+        </div>
+        <div>
+          <div class="button blue" id="open-storyboard">Open…</div>
+          <div class="button blue" id="new-storyboard">Create New Storyboard…</div>
+        </div>
       </div>
     </div>
   </body>

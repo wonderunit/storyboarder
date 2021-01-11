@@ -11,7 +11,7 @@ const plist = require('plist')
 const R = require('ramda')
 const CAF = require('caf')
 const isDev = require('electron-is-dev')
-const log = require('electron-log')
+const log = require('../shared/storyboarder-electron-log')
 log.catchErrors()
 const ReactDOM = require('react-dom')
 const h = require('../utils/h')
@@ -2878,12 +2878,12 @@ let openInEditor = async () => {
           errmsg = 'Could not open editor'
         }
       } else {
-        log.info('\tshell.openItem', board.link)
+        log.info('\tshell.openPath', board.link)
         log.info('\t\t', board.link)
         log.info('\t\t', pathToLinkedFile)
-        let result = shell.openItem(pathToLinkedFile)
-        log.info('\t\tresult:', result)
-        if (!result) {
+        let err = await shell.openPath(pathToLinkedFile)
+        if (err != '') {
+          log.error(err)
           errmsg = 'Could not open editor'
         }
       }
@@ -6576,6 +6576,7 @@ const showSignInWindow = () => {
       devTools: true,
       plugins: true,
       nodeIntegration: true,
+      enableRemoteModule: true
     }
   })
   exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
@@ -6961,7 +6962,8 @@ const openPrintWindow = (printWindowType, showPrintWindow) => {
       frame: false,
       modal: true,
       webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+        enableRemoteModule: true
       }
     })
     printWindow[printWindowType].loadURL(`file://${__dirname}/../../print-window.html`)
@@ -7014,7 +7016,8 @@ ipcRenderer.on('importWorksheets', (event, args) => {
       frame: false,
       modal: true,
       webPreferences: {
-        nodeIntegration: true
+        nodeIntegration: true,
+        enableRemoteModule: true
       }
     })
     importWindow.loadURL(`file://${__dirname}/../../import-window.html`)
