@@ -1,5 +1,5 @@
-import {RestrictedActions, remoteStore, setId, SelectActions} from "../reducers/remoteDevice"
-import {blockObject as blockObjectAction, unblockObject as unblockObjectAction, getSelections} from "../reducers/shot-generator"
+import {RestrictedActions, remoteStore} from "../reducers/remoteDevice"
+import {_blockObject as blockObjectAction, _unblockObject as unblockObjectAction, getSelections} from "../reducers/shot-generator"
 import P2P from './p2p'
 import EventEmmiter from 'events'
 
