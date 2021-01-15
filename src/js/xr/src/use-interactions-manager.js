@@ -1423,6 +1423,10 @@ const useInteractionsManager = ({
 
           stopSound('beam', object)
 
+          if (SGConnection.unblockObject && context.selection) {
+            SGConnection.unblockObject(context.selection)
+          }
+          
           commit(context.selection, object)
           if (object.userData.type === 'character') {
             let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === object.userData.id)
@@ -1430,8 +1434,6 @@ const useInteractionsManager = ({
               commit(mapAttachables[i].userData.id, mapAttachables[i])
             }
           }
-
-          SGConnection.unblockObject(context.selection)
 
           uiService.send({ type: 'UNLOCK' })
         },
