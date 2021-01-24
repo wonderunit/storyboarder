@@ -42,7 +42,10 @@
     "storyboard",
     "storyboarder"
   ],
-  "author": "Wonder Unit Inc.",
+  "author": {
+    "email": "charles@wonderunit.com",
+    "name": "Wonder Unit Inc."
+  },
   "build": {
     "afterSign": "scripts/notarize.js",
     "asar": true,
@@ -98,6 +101,9 @@
       ]
     },
     "linux": {
+      "target": ["AppImage", "snap", "deb"],
+      "icon": "build/icon.icns",
+      "synopsis": "The fastest way to storyboard.",
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
       "category": "Graphics"
     },
