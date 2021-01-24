@@ -153,7 +153,7 @@
     "dotenv": "8.2.0",
     "dotenv-webpack": "^3.0.0",
     "electron": "11.1.0",
-    "electron-builder": "22.9.1",
+    "electron-builder": "22.10.4",
     "electron-devtools-installer": "3.1.1",
     "electron-mocha": "8.0.2",
     "electron-notarize": "^1.0.0",
