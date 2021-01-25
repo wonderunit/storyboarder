@@ -13,7 +13,7 @@
     "start:electron": "cross-env NODE_ENV=development electron .",
     "start:language-preferences": "webpack --mode=development --watch --progress --config configs/language-preferences/webpack.config.js",
     "start": "npm-run-all --parallel start:*",
-    "dist:mac": "npm run build && electron-builder build -m",
+    "dist:mac": "npm run build && electron-builder build -m --arm64 --x64",
     "dist:win": "npm run build && electron-builder build -w",
     "dist:linux": "npm run build && electron-builder build -l",
     "dist": "npm run build && build -mwl",
@@ -101,7 +101,11 @@
       ]
     },
     "linux": {
-      "target": ["AppImage", "snap", "deb"],
+      "target": [
+        "AppImage",
+        "snap",
+        "deb"
+      ],
       "icon": "build/icon.icns",
       "synopsis": "The fastest way to storyboard.",
       "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
