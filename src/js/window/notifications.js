@@ -89,7 +89,11 @@ const formatMessageData = (data) => {
 }
 
 const onPointerDown = event =>
-  removeNotification(event.target.dataset.index)
+  removeNotification(
+    (event.target.classList.contains('notification')
+      ? event.target
+      : event.target.closest('.notification')).dataset.index
+  )
 
 let enabled
 
