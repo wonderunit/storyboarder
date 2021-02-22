@@ -1491,7 +1491,13 @@ ipcMain.on('workspaceReady', event => {
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
 
   if (!mainWindow) return
-  mainWindow.show()
+  
+  if (os.platform() == 'win32') {
+    setTimeout(()=> {mainWindow.show()}, 1000)
+  } else {
+    mainWindow.show()
+  }
+
   // only after the workspace is ready will it start getting future focus events
   mainWindow.on('focus', () => {
     mainWindow.webContents.send('focus')
