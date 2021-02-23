@@ -9,7 +9,7 @@ const Background = ({backgroundColor}) => {
   const {gl} = useThree()
 
   useEffect(() => {
-    gl.setClearColor(new THREE.Color(backgroundColor), 1.0)
+    gl.setClearColor(new THREE.Color(backgroundColor), 0.5)
   }, [backgroundColor, gl])
   
   return null

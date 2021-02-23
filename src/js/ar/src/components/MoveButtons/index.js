@@ -1,8 +1,6 @@
-import React, {useContext, useCallback, useState, useEffect, useMemo} from 'react'
-import { useFrame, useThree } from 'react-three-fiber'
-import classnames from 'classnames'
+import React, {useContext, useCallback, useEffect} from 'react'
 
-import {useThreeFrame} from "../../hooks/useThreeHooks"
+import classnames from 'classnames'
 
 import {SceneState} from "../../helpers/sceneState"
 

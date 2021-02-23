@@ -1,8 +1,6 @@
-import React, {useState, useContext, useRef, useEffect} from 'react'
+import React, {useState, useContext, useRef} from 'react'
 import {connect} from "react-redux"
 import {useFrame, useThree} from "react-three-fiber"
-
-import {Connection} from "../../helpers/store"
 
 import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-generator"
 import {SceneState} from "../../helpers/sceneState"
@@ -17,8 +15,11 @@ import VirtualCamera from "../Three/VirtualCamera"
 import Character from "../Three/Character"
 import Background from "../Three/Background"
 import Ground from "../Three/Ground"
-import useHitTestManager from "../../hooks/useHitTestManager"
+import Teleport from '../Three/Teleport'
 
+import useHitTestManager from "../../hooks/useHitTestManager"
+import { Matrix4, Vector3 } from 'three'
+import WorldCamera from '../Three/WorldCamera'
 
 const componentMap = {
   object: Model,
@@ -37,46 +38,41 @@ const renderObject = (sceneObject, getAsset) => {
   return null
 }
 
-let tmpPos = new THREE.Vector3()
-let tmpScale = new THREE.Vector3()
-let tmpRot = new THREE.Quaternion()
 
-let tmpRotVector = new THREE.Vector3(0.0, 0.0, 0.0)
-let angle = 0
+const transformMatrix = new Matrix4();
 
 const Scene = ({sceneObjects, world, getAsset}) => {
-  const [currentSceneState, setSceneState] = useContext(SceneState)
+  const [currentSceneState] = useContext(SceneState)
   const [sceneVisible, setSceneVisible] = useState(true)
 
   const {camera} = useThree()
 
   const rotationRef = useRef(null)
   const positionRef = useRef(null)
+  const transformRef = useRef(null)
+  const angleRef = useRef(new Vector3())
 
   useFrame((state, delta) => {
-    // As use frame is an async function then ref has been already declared
-    if (currentSceneState.movement.left) {
+    if (currentSceneState.movement.top) {
 
-      rotationRef.current.rotation.y -= delta;
-    } else if (currentSceneState.movement.right) {
+      let e = camera.matrixWorld.elements
+		  angleRef.current.set( e[ 8 ], 0.0, e[ 10 ] ).setLength(delta)
+      angleRef.current.y = 0.0;
 
-      rotationRef.current.rotation.y += delta;
-    } else if (currentSceneState.movement.top) {
-
-      tmpRotVector.set(camera.matrixWorld.elements[8], 0.0, camera.matrixWorld.elements[10])
-      angle = Math.atan2(tmpRotVector.x, tmpRotVector.z)
-
-      positionRef.current.position.x += Math.sin(angle - rotationRef.current.rotation.y) * delta
-      positionRef.current.position.z += Math.cos(angle - rotationRef.current.rotation.y) * delta
+      transformRef.current.position.add(angleRef.current)
+      transformRef.current.updateMatrixWorld(true)
     } else if (currentSceneState.movement.bottom) {
 
-      tmpRotVector.set(camera.matrixWorld.elements[8], 0.0, camera.matrixWorld.elements[10])
-      angle = Math.atan2(tmpRotVector.x, tmpRotVector.z)
+      let e = camera.matrixWorld.elements
+		  angleRef.current.set( e[ 8 ], 0.0, e[ 10 ] ).setLength(delta).negate()
+      angleRef.current.y = 0.0;
 
-      positionRef.current.position.x -= Math.sin(angle - rotationRef.current.rotation.y) * delta
-      positionRef.current.position.z -= Math.cos(angle - rotationRef.current.rotation.y) * delta
+      transformRef.current.position.add(angleRef.current)
+      transformRef.current.updateMatrixWorld(true)
     }
   })
+
+  
 
   /*
   useFrame(({camera}) => {
@@ -87,42 +83,43 @@ const Scene = ({sceneObjects, world, getAsset}) => {
   })
   */
 
-  useThreeFrameProvider()
-  useThreeStateProvider()
+  // useThreeFrameProvider()
+  // useThreeStateProvider()
 
-  useHitTestManager(currentSceneState.selectEnabled)
+  // useHitTestManager(currentSceneState.selectEnabled)
   
   return (
     <group
-      ref={rotationRef}
-      
+      // ref={rotationRef}
+      ref={transformRef}
     >
+      
       <group
-        ref={positionRef}
+        // ref={positionRef}
+        position={[0.0, -1.0, 0.0]}
+        frustumCulled={false}
       >
+        
         <group
-          position={[0, -1.0, 0]}
+          scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
+          visible={sceneVisible}
         >
-          <group
-            
-            scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
-            visible={sceneVisible}
-          >
-            <Background/>
-            <Ground getAsset={getAsset}/>
-            <ambientLight
-              color={ 0xffffff }
-              intensity={ world.ambient.intensity }
-            />
-            <directionalLight
-              color={ 0xffffff }
-              intensity={ world.directional.intensity }
-              position={ [0, 1.5, 0] }
-              target-position={ [0, 0, 0.4] }
-            />
-            <Environment getAsset={getAsset}/>
-            {Object.values(sceneObjects).map(target => renderObject(target, getAsset))}
-          </group>
+          {/* <WorldCamera rotationRef={rotationRef} positionRef={positionRef} /> */}
+          {/* <Teleport rotationRef={rotationRef} positionRef={positionRef} angleRef={angleRef} /> */}
+          <Background/>
+          <Ground getAsset={getAsset}/>
+          <ambientLight
+            color={ 0xffffff }
+            intensity={ world.ambient.intensity }
+          />
+          <directionalLight
+            color={ 0xffffff }
+            intensity={ world.directional.intensity }
+            position={ [0, 1.5, 0] }
+            target-position={ [0, 0, 0.4] }
+          />
+          <Environment getAsset={getAsset}/>
+          {Object.values(sceneObjects).map(target => renderObject(target, getAsset))}
         </group>
       </group>
     </group>

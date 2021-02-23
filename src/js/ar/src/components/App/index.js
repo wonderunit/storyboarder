@@ -14,6 +14,7 @@ import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-genera
 
 import ScaleButtons from "../ScaleButtons"
 import MoveButtons from "../MoveButtons"
+import TeleportButtons from '../TeleportButton'
 
 
 const preloadAssetsList = [
@@ -38,10 +39,11 @@ const App = ({sceneObjects, world, board}) => {
       right: false,
       top: false,
       bottom: false
-    }
+    },
+    shouldTeleport: false
   })
   
-  const {assets, count, loaded, getAsset} = useSceneLoader(sceneObjects, world, preloadAssetsList)
+  const {count, loaded, getAsset} = useSceneLoader(sceneObjects, world, preloadAssetsList)
   
   const progress = !board.uid ? 0 : loaded / count
   const appReady = progress >= 1.0
@@ -62,7 +64,7 @@ const App = ({sceneObjects, world, board}) => {
     gl.xr.setReferenceSpaceType('unbounded')
     
     const controller = gl.xr.getController(0) // Add finger touch element to the scene
-    scene.add(controller)// scene.children[0]
+    scene.add(controller)
   }, [])
   
   return (
@@ -76,6 +78,7 @@ const App = ({sceneObjects, world, board}) => {
           <SceneState.Provider value={innerState}>
             <ScaleButtons/>
             <MoveButtons/>
+            <TeleportButtons/>
           </SceneState.Provider>
         </div>
       </div>
