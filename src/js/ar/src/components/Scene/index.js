@@ -38,41 +38,9 @@ const renderObject = (sceneObject, getAsset) => {
   return null
 }
 
-
-const transformMatrix = new Matrix4();
-
 const Scene = ({sceneObjects, world, getAsset}) => {
   const [currentSceneState] = useContext(SceneState)
   const [sceneVisible, setSceneVisible] = useState(true)
-
-  const {camera} = useThree()
-
-  const rotationRef = useRef(null)
-  const positionRef = useRef(null)
-  const transformRef = useRef(null)
-  const angleRef = useRef(new Vector3())
-
-  useFrame((state, delta) => {
-    if (currentSceneState.movement.top) {
-
-      let e = camera.matrixWorld.elements
-		  angleRef.current.set( e[ 8 ], 0.0, e[ 10 ] ).setLength(delta)
-      angleRef.current.y = 0.0;
-
-      transformRef.current.position.add(angleRef.current)
-      transformRef.current.updateMatrixWorld(true)
-    } else if (currentSceneState.movement.bottom) {
-
-      let e = camera.matrixWorld.elements
-		  angleRef.current.set( e[ 8 ], 0.0, e[ 10 ] ).setLength(delta).negate()
-      angleRef.current.y = 0.0;
-
-      transformRef.current.position.add(angleRef.current)
-      transformRef.current.updateMatrixWorld(true)
-    }
-  })
-
-  
 
   /*
   useFrame(({camera}) => {
@@ -82,29 +50,16 @@ const Scene = ({sceneObjects, world, getAsset}) => {
     })
   })
   */
-
-  // useThreeFrameProvider()
-  // useThreeStateProvider()
-
-  // useHitTestManager(currentSceneState.selectEnabled)
   
   return (
-    <group
-      // ref={rotationRef}
-      ref={transformRef}
-    >
-      
+    <group>
+      <WorldCamera/>
       <group
-        // ref={positionRef}
         position={[0.0, -1.0, 0.0]}
-        frustumCulled={false}
       >
-        
         <group
           scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
-          visible={sceneVisible}
         >
-          {/* <WorldCamera rotationRef={rotationRef} positionRef={positionRef} /> */}
           {/* <Teleport rotationRef={rotationRef} positionRef={positionRef} angleRef={angleRef} /> */}
           <Background/>
           <Ground getAsset={getAsset}/>

@@ -3,53 +3,17 @@ import { useThree, useFrame } from "react-three-fiber"
 import { Matrix4, Vector3 } from "three"
 import { SceneState } from "../../helpers/sceneState"
 
+const transformMatrix = new Matrix4()
+const moveMatrix = new Matrix4()
+const moveInvertMatrix = new Matrix4()
+
 const position = new Vector3()
-
-const translationMatrix = new Matrix4()
-const rotationMatrix = new Matrix4()
-const inverseTranslationMatrix = new Matrix4()
-
-const updateRotation = (ref, camera, rotation) => {
-  position.setFromMatrixPosition(camera.matrixWorld)
-
-  translationMatrix.makeTranslation(-position.x, -position.y, -position.z)
-  rotationMatrix.makeRotationY(rotation)
-  inverseTranslationMatrix.makeTranslation(position.x, position.y, position.z)
-
-  ref.current.matrixWorld
-  .identity()
-  .multiply(inverseTranslationMatrix)
-  .multiply(rotationMatrix)
-  .multiply(translationMatrix)
-
-  // inverseTranslationMatrix.getInverse(camera.matrixWorld)
-  // rotationMatrix.makeRotationY(rotation)
-
-  // ref.current.matrixWorld
-  // .identity()
-  // .multiply(camera.matrixWorld)
-  // .multiply(rotationMatrix)
-  // .multiply(inverseTranslationMatrix)
-
-  ref.current.matrixWorld.decompose(
-    ref.current.position,
-    ref.current.quaternion,
-    ref.current.scale
-  )
-
-  // ref.current.updateMatrixWorld(true);
-
-  //camera.updateMatrixWorld(true)
-}
 
 const WorldCamera = (props) => {
   const [currentSceneState] = useContext(SceneState)
 
   const cameraRef = useRef()
-  const positionRef = useRef()
-  const rotationRef = useRef()
-
-  const rotation = useRef(0.0);
+  const transformRef = useRef()
 
   const { setDefaultCamera } = useThree()
 
@@ -57,44 +21,72 @@ const WorldCamera = (props) => {
   useEffect(() => void setDefaultCamera(cameraRef.current), [])
   useFrame(({ gl, scene }) => gl.render(scene, cameraRef.current), 1)
 
-  useFrame(({camera}, delta) => {
-    if (currentSceneState.movement.left) {
-      rotation.current += delta
-    } else if (currentSceneState.movement.right) {
-      rotation.current -= delta
-    }
+  
+  const angleRef = useRef(new Vector3())
+  const rotation = useRef(0);
 
-    //updateRotation(props.positionRef, camera, rotation.current)
-
-    // rotationRef.current.position.copy(cameraRef.current.position)//.negate()
-    // rotationRef.current.position.y = 0.0
-    
+  useFrame((state, delta) => {
+    const dt = Math.max(delta, 0.0001)
     if (currentSceneState.movement.top) {
 
-      // positionRef.current.position.x += angleRef.current.x * delta
-      // positionRef.current.position.z += angleRef.current.z * delta
+      let e = cameraRef.current.matrixWorld.elements
+		  angleRef.current.set( -e[ 8 ], 0.0, -e[ 10 ] ).setLength(dt)
+      angleRef.current.y = 0.0;
+
+      transformRef.current.position.add(angleRef.current)
+      transformRef.current.updateMatrixWorld(true)
     } else if (currentSceneState.movement.bottom) {
 
-      // positionRef.current.position.x -= angleRef.current.x * delta
-      // positionRef.current.position.z -= angleRef.current.z * delta
-    }
-  }, 2)
+      let e = cameraRef.current.matrixWorld.elements
+		  angleRef.current.set( e[ 8 ], 0.0, e[ 10 ] ).setLength(dt)
+      angleRef.current.y = 0.0;
 
-  const onBeforeRender = useCallback((renderer, scene, camera) => {
-    camera.matrixWorld.setPosition(0, 0, 0);
-  }, [])
+      transformRef.current.position.add(angleRef.current)
+      transformRef.current.updateMatrixWorld(true)
+    }
+
+    if (currentSceneState.movement.left) {
+      position.setFromMatrixPosition(transformRef.current.matrixWorld)
+
+      moveMatrix.makeTranslation(-position.x, -position.y, -position.z)
+      transformMatrix.makeRotationY((Math.PI / 180.0) * dt * 24.0)
+      moveInvertMatrix.makeTranslation(position.x, position.y, position.z)
+
+      transformRef.current.matrixWorld
+      .identity()
+      .multiply(moveInvertMatrix)
+      .multiply(transformMatrix)
+      .multiply(moveMatrix)
+
+      transformRef.current.matrixWorld.decompose(
+        transformRef.current.position,
+        transformRef.current.quaternion,
+        transformRef.current.scale
+      )
+    } else if (currentSceneState.movement.right) {
+      position.setFromMatrixPosition(transformRef.current.matrixWorld)
+
+      moveMatrix.makeTranslation(-position.x, -position.y, -position.z)
+      transformMatrix.makeRotationY(-(Math.PI / 180.0) * dt * 24.0)
+      moveInvertMatrix.makeTranslation(position.x, position.y, position.z)
+
+      transformRef.current.matrixWorld
+      .identity()
+      .multiply(moveInvertMatrix)
+      .multiply(transformMatrix)
+      .multiply(moveMatrix)
+
+      transformRef.current.matrixWorld.decompose(
+        transformRef.current.position,
+        transformRef.current.quaternion,
+        transformRef.current.scale
+      )
+    }
+  })
 
   return (
-    <group
-      position={[0.0, 1.0, 0.0]}
-      ref={props.positionRef}
-      onBeforeRender={onBeforeRender}
-    >
-      <group
-        ref={props.rotationRef}
-      >
-        <perspectiveCamera ref={cameraRef} {...props} />
-      </group>
+    <group ref={transformRef} >
+      <perspectiveCamera ref={cameraRef} {...props} near={1.0} />
     </group>
   )
 }

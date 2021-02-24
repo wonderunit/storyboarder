@@ -52,7 +52,7 @@ const App = ({sceneObjects, world, board}) => {
     gl.getContext().makeXRCompatible()// Because of we enabled Webgl2
     
     const sessionParams = {
-      requiredFeatures: ['local', 'hit-test'],
+      // requiredFeatures: ['local', 'hit-test'],
       optionalFeatures: ["dom-overlay"],
       domOverlay: { root: document.getElementById("overlay") }
     }
@@ -87,12 +87,14 @@ const App = ({sceneObjects, world, board}) => {
         gl2={true}
         noEvents={true}
         onCreated={onCreated}
+        pixelRatio={window.devicePixelRatio}
       >
         <SceneState.Provider value={innerState}>
           <Provider store={Store.current}>
             <Scene
               ready={appReady}
               getAsset={getAsset}
+              key="primary-window"
             />
           </Provider>
         </SceneState.Provider>
