@@ -61,7 +61,7 @@ const App = ({sceneObjects, world, board}) => {
       ARButton.createButton(gl, sessionParams)
     )
     
-    gl.xr.setReferenceSpaceType('unbounded')
+    gl.xr.setReferenceSpaceType('viewer')
     
     const controller = gl.xr.getController(0) // Add finger touch element to the scene
     scene.add(controller)
@@ -87,7 +87,8 @@ const App = ({sceneObjects, world, board}) => {
         gl2={true}
         noEvents={true}
         onCreated={onCreated}
-        pixelRatio={window.devicePixelRatio}
+        pixelRatio={devicePixelRatio}
+        className="view"
       >
         <SceneState.Provider value={innerState}>
           <Provider store={Store.current}>

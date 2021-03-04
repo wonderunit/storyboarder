@@ -40,7 +40,6 @@ const renderObject = (sceneObject, getAsset) => {
 
 const Scene = ({sceneObjects, world, getAsset}) => {
   const [currentSceneState] = useContext(SceneState)
-  const [sceneVisible, setSceneVisible] = useState(true)
 
   /*
   useFrame(({camera}) => {
@@ -55,27 +54,23 @@ const Scene = ({sceneObjects, world, getAsset}) => {
     <group>
       <WorldCamera/>
       <group
-        position={[0.0, -1.0, 0.0]}
+        scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
       >
-        <group
-          scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
-        >
-          {/* <Teleport rotationRef={rotationRef} positionRef={positionRef} angleRef={angleRef} /> */}
-          <Background/>
-          <Ground getAsset={getAsset}/>
-          <ambientLight
-            color={ 0xffffff }
-            intensity={ world.ambient.intensity }
-          />
-          <directionalLight
-            color={ 0xffffff }
-            intensity={ world.directional.intensity }
-            position={ [0, 1.5, 0] }
-            target-position={ [0, 0, 0.4] }
-          />
-          <Environment getAsset={getAsset}/>
-          {Object.values(sceneObjects).map(target => renderObject(target, getAsset))}
-        </group>
+        {/* <Teleport rotationRef={rotationRef} positionRef={positionRef} angleRef={angleRef} /> */}
+        <Background/>
+        <Ground getAsset={getAsset}/>
+        <ambientLight
+          color={ 0xffffff }
+          intensity={ world.ambient.intensity }
+        />
+        <directionalLight
+          color={ 0xffffff }
+          intensity={ world.directional.intensity }
+          position={ [0, 1.5, 0] }
+          target-position={ [0, 0, 0.4] }
+        />
+        <Environment getAsset={getAsset}/>
+        {Object.values(sceneObjects).map(target => renderObject(target, getAsset))}
       </group>
     </group>
   )

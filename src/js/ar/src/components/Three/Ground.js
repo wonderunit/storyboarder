@@ -26,7 +26,7 @@ const Ground = React.memo(({ visible, getAsset }) => {
     rotation={ [-Math.PI / 2, 0, 0] }
   >
     <planeBufferGeometry attach="geometry" args={ [100, 100] } />
-    <meshToonMaterial attach="material" side={ THREE.DoubleSide } visible={ visible }>
+    <meshToonMaterial attach="material" visible={ visible }>
       <primitive attach="map" object={ texture } />
     </meshToonMaterial>
   </mesh>

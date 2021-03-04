@@ -2,91 +2,126 @@ import React, { useRef, useEffect, useContext, useCallback } from "react"
 import { useThree, useFrame } from "react-three-fiber"
 import { Matrix4, Vector3 } from "three"
 import { SceneState } from "../../helpers/sceneState"
+import { Connection } from "../../helpers/store";
 
-const transformMatrix = new Matrix4()
-const moveMatrix = new Matrix4()
-const moveInvertMatrix = new Matrix4()
 
-const position = new Vector3()
+
+const tmpVec = new Vector3();
+const tmpVec2 = new Vector3();
+const tmpVec3 = new Vector3();
+const tmpMat = new Matrix4();
+const tmpMat2 = new Matrix4();
+
+const saveCameraMatrixWorld = (camera) => {
+  tmpMat2.copy(camera.matrixWorld)
+  camera.parent.updateMatrix()
+  camera.parent.updateMatrixWorld()
+
+  tmpMat.getInverse(camera.parent.matrixWorld)
+  tmpMat2.multiply(tmpMat)
+  tmpMat2.decompose(camera.position, camera.quaternion, camera.scale)
+
+  camera.updateMatrix()
+  camera.updateMatrixWorld()
+}
 
 const WorldCamera = (props) => {
   const [currentSceneState] = useContext(SceneState)
 
   const cameraRef = useRef()
-  const transformRef = useRef()
-
   const { setDefaultCamera } = useThree()
 
   // Make the camera known to the system
   useEffect(() => void setDefaultCamera(cameraRef.current), [])
-  useFrame(({ gl, scene }) => gl.render(scene, cameraRef.current), 1)
+  //useFrame(({ gl, scene }) => gl.render(scene, cameraRef.current), 1)
 
-  
-  const angleRef = useRef(new Vector3())
-  const rotation = useRef(0);
-
-  useFrame((state, delta) => {
+  useFrame(({camera}, delta) => {
     const dt = Math.max(delta, 0.0001)
+    //const camera = cameraRef.current
+    //saveCameraMatrixWorld(camera)
+
     if (currentSceneState.movement.top) {
-
-      let e = cameraRef.current.matrixWorld.elements
-		  angleRef.current.set( -e[ 8 ], 0.0, -e[ 10 ] ).setLength(dt)
-      angleRef.current.y = 0.0;
-
-      transformRef.current.position.add(angleRef.current)
-      transformRef.current.updateMatrixWorld(true)
+      tmpVec.set( camera.matrixWorld.elements[ 8 ], camera.matrixWorld.elements[ 9 ], camera.matrixWorld.elements[ 10 ] )
+      tmpVec.normalize()
+      tmpVec.y = 0.0
+      tmpVec.multiplyScalar(2.0 * dt)
+      
+  
+      camera.parent.position.sub(tmpVec)
+      camera.parent.updateMatrixWorld()
     } else if (currentSceneState.movement.bottom) {
-
-      let e = cameraRef.current.matrixWorld.elements
-		  angleRef.current.set( e[ 8 ], 0.0, e[ 10 ] ).setLength(dt)
-      angleRef.current.y = 0.0;
-
-      transformRef.current.position.add(angleRef.current)
-      transformRef.current.updateMatrixWorld(true)
+      tmpVec.set( camera.matrixWorld.elements[ 8 ], camera.matrixWorld.elements[ 9 ], camera.matrixWorld.elements[ 10 ] )
+      tmpVec.normalize()
+      tmpVec.y = 0.0
+      tmpVec.multiplyScalar(2.0 * dt)
+  
+      camera.parent.position.add(tmpVec)
+      camera.parent.updateMatrixWorld()
     }
-
+  
     if (currentSceneState.movement.left) {
-      position.setFromMatrixPosition(transformRef.current.matrixWorld)
+      //saveCameraMatrixWorld(camera)
+      
+      let y = camera.parent.position.y
+      tmpMat.getInverse(camera.parent.matrixWorld)
+      tmpMat2.copy(camera.matrixWorld).multiply(tmpMat)
 
-      moveMatrix.makeTranslation(-position.x, -position.y, -position.z)
-      transformMatrix.makeRotationY((Math.PI / 180.0) * dt * 24.0)
-      moveInvertMatrix.makeTranslation(position.x, position.y, position.z)
+      tmpVec.setFromMatrixPosition(camera.matrixWorld)
+  
+      camera.parent.rotation.y += Math.PI / 180.0 * 24.0 * dt
+      camera.parent.updateMatrixWorld()
+  
+      tmpMat2.multiply(camera.parent.matrixWorld)
+      tmpVec2.setFromMatrixPosition(tmpMat2)
+      tmpVec.sub(tmpVec2)
+      //tmpVec.y = 0.0
+  
+      camera.parent.position.add(tmpVec)
+      camera.parent.updateMatrixWorld()
 
-      transformRef.current.matrixWorld
-      .identity()
-      .multiply(moveInvertMatrix)
-      .multiply(transformMatrix)
-      .multiply(moveMatrix)
-
-      transformRef.current.matrixWorld.decompose(
-        transformRef.current.position,
-        transformRef.current.quaternion,
-        transformRef.current.scale
-      )
+      //camera.parent.position.y = y
     } else if (currentSceneState.movement.right) {
-      position.setFromMatrixPosition(transformRef.current.matrixWorld)
+      //saveCameraMatrixWorld(camera)
+      //Connection.current.log({...camera.position})
 
-      moveMatrix.makeTranslation(-position.x, -position.y, -position.z)
-      transformMatrix.makeRotationY(-(Math.PI / 180.0) * dt * 24.0)
-      moveInvertMatrix.makeTranslation(position.x, position.y, position.z)
+      tmpMat.getInverse(camera.parent.matrixWorld)
+      tmpMat2.copy(camera.matrixWorld).multiply(tmpMat)
 
-      transformRef.current.matrixWorld
-      .identity()
-      .multiply(moveInvertMatrix)
-      .multiply(transformMatrix)
-      .multiply(moveMatrix)
+      tmpVec.setFromMatrixPosition(camera.matrixWorld)
+      tmpVec3.copy(tmpVec)
+  
+      camera.parent.rotation.y -= Math.PI / 180.0 * 24.0 * dt
+      camera.parent.updateMatrixWorld()
+  
+      tmpMat2.multiply(camera.parent.matrixWorld)
+      tmpVec2.setFromMatrixPosition(tmpMat2)
+      tmpVec.sub(tmpVec2)
+      //tmpVec.y = 0.0
 
-      transformRef.current.matrixWorld.decompose(
-        transformRef.current.position,
-        transformRef.current.quaternion,
-        transformRef.current.scale
-      )
+      // Connection.current.log({...camera.parent.position.clone().sub(tmpVec).sub(tmpVec3)})
+      // Connection.current.log([
+      //   {...camera.parent.position},
+      //   {...tmpVec},
+      //   {...tmpVec2},
+      //   {...tmpVec3}
+      // ])
+  
+      camera.parent.position.add(tmpVec)
+      camera.parent.updateMatrixWorld()
+
+      //camera.parent.position.y = y
+
+      //Connection.current.log({...tmpVec})
     }
   })
 
   return (
-    <group ref={transformRef} >
-      <perspectiveCamera ref={cameraRef} {...props} near={1.0} />
+    <group position={[0.0, 1.0, 0.0]}>
+      <group>
+        <group>
+          <perspectiveCamera ref={cameraRef} {...props} />
+        </group>
+      </group>
     </group>
   )
 }
