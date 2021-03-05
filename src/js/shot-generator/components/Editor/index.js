@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useMemo, useCallback, useState } from 'react'
 import { Provider, connect} from 'react-redux'
 import path from 'path'
+import fs from 'fs-extra'
+import SettingsService from '../../../windows/shot-generator/SettingsService'
 import electron from 'electron'
 const { ipcRenderer, webFrame, remote } = electron
 const { app } = remote
@@ -24,7 +26,10 @@ import {
   getWorld,
   selectObject,
   setMainViewCamera,
-  getIsSceneDirty
+  getIsSceneDirty,
+  getSceneObjects,
+  updateObject,
+  updateWorld
 } from './../../../shared/reducers/shot-generator'
 
 import notifications from './../../../window/notifications'
@@ -34,7 +39,7 @@ import ElementsPanel from '../ElementsPanel'
 import BoardInspector from '../BoardInspector'
 import GuidesInspector from '../GuidesInspector'
 import GuidesView from '../GuidesView'
-import { useAsset } from '../../hooks/use-assets-manager'
+import {useAsset, removeAsset} from '../../hooks/use-assets-manager'
 
 import { useTranslation } from 'react-i18next';
 import Stats from 'stats.js'
@@ -104,12 +109,31 @@ const Editor = React.memo(({
     }
   }, [notificationsRef.current])
 
+  const cleanUpContent = () => {
+    let scene = largeCanvasData.current.scene
+    let images = scene.children[0].children.filter(obj => obj.userData.type === "image")
+    for(let i = 0; i < images.length; i++) {
+      let image = images[i]
+      if(image.userData.tempImagePath) {
+        let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images/', image.userData.tempImagePath)
+        fs.removeSync(tempImageFilePath)
+      }
+    }
+
+    if(scene.userData.tempPath) {
+      let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures/', scene.userData.tempPath)
+      fs.removeSync(tempImageFilePath)
+    }
+  }
+
   useEffect(() => {
     window.addEventListener('beforeunload', onBeforeUnload)
+    window.addEventListener('unload', cleanUpContent)
     return function cleanup () {
       window.removeEventListener('beforeunload', onBeforeUnload)
+      window.removeEventListener('unload', cleanUpContent)
     }
-  }, [onBeforeUnload])
+  }, [onBeforeUnload, cleanUpContent])
 
   const guidesDimensions = useMemo(() => {
     return {
@@ -162,8 +186,42 @@ const Editor = React.memo(({
     smallCanvasData.current.gl = gl
   }
 
+  const saveImages = () => {
+    let imageObjects 
+    withState((dispatch, state) => {
+      let storyboarderFilePath = state.meta.storyboarderFilePath
+      imageObjects = Object.values(getSceneObjects(state)).filter(obj => obj.type === "image")
+      for( let i = 0; i < imageObjects.length; i++ ) {
+          let image = imageObjects[i]
+          let imgComponent = largeCanvasData.current.scene.__interaction.find(obj => obj.userData.id === image.id)
+          let isImageExist = imgComponent.userData.tempImagePath
+          if(!isImageExist) continue
+          let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', imgComponent.userData.tempImagePath)
+          let imageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/images', `${image.id}-texture.png`)
+          let projectDir = path.dirname(storyboarderFilePath)
+          let assetsDir = path.join(projectDir, 'models', 'images')
+          fs.ensureDirSync(assetsDir)
+          let dst = path.join(assetsDir, path.basename(imageFilePath))
+          let id = path.relative(projectDir, dst)
+          fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
+          fs.remove(tempImageFilePath)
+          removeAsset(imageFilePath)
+          imgComponent.userData.tempImagePath = null
+          dispatch(updateObject(image.id, {imageAttachmentIds: [id]}))
+      }
+      if(largeCanvasData.current.scene.userData.tempPath) {
+        let tempImageFilePath = path.join(path.dirname(storyboarderFilePath), 'models/sceneTextures/', largeCanvasData.current.scene.userData.tempPath)
+        let imageFilePath = path.join(path.dirname(storyboarderFilePath), largeCanvasData.current.scene.userData.texturePath)
+        removeAsset(imageFilePath)
+        fs.copySync(tempImageFilePath, imageFilePath, {overwrite:true})
+        fs.remove(tempImageFilePath)
+        dispatch(updateWorld({sceneTexture: largeCanvasData.current.scene.userData.texturePath}))
+        largeCanvasData.current.scene.userData.tempPath = null
+      }
+    })
+  }
   const { insertNewShot, saveCurrentShot } = useSaveToStoryboarder(
-    largeCanvasData, smallCanvasData, aspectRatio, world.shadingMode, world.backgroundColor
+    largeCanvasData, smallCanvasData, aspectRatio, world.shadingMode, world.backgroundColor, saveImages
   )
   useEffect(() => {
     ipcRenderer.on('requestSaveShot', saveCurrentShot)
@@ -225,7 +283,7 @@ const Editor = React.memo(({
               </div>
 
               <div id="elements">
-                <ElementsPanel/>
+                <ElementsPanel notifications={notifications}/>
               </div>
             </div>
 

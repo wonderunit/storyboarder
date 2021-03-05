@@ -170,7 +170,6 @@ const createImage = (id, camera, room, imagePath = 'placeholder') => {
     x, y, z: 1,
 
     rotation: { x: 0, y: rotation, z: 0 },
-
     visible: true,
     opacity: 1,
     visibleToCam: true,

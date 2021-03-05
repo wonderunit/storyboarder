@@ -214,7 +214,7 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
   const { storyboarderFilePath, boardData } = await service.getStoryboarderFileData()
   const { board } = await service.getStoryboarderState()
   let aspectRatio = parseFloat(boardData.aspectRatio)
-
+  let drawingBrush = board.sg ? board.sg.data.drawingBrush : null
   store.dispatch({
     type: 'SET_META_STORYBOARDER_FILE_PATH',
     payload: storyboarderFilePath
@@ -223,7 +223,10 @@ ipcRenderer.on('shot-generator:reload', async (event) => {
     type: 'SET_ASPECT_RATIO',
     payload: aspectRatio
   })
-
+  store.dispatch({
+    type: 'UPDATE_DRAW_MODE',
+    payload: { brush: drawingBrush }
+  })
   shotExplorer.createWindow(() => {
     shotExplorer.getWindow().webContents.send('shot-generator:open:shot-explorer')
     if(showShotExplorerOnRead){

@@ -1,6 +1,6 @@
-import React, {useCallback, useMemo} from 'react'
+import React, {useCallback, useMemo, useState} from 'react'
 import {Math as _Math} from 'three'
-
+import electron from 'electron'
 import {connect} from 'react-redux'
 import path from 'path'
 
@@ -23,8 +23,14 @@ import {
 
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from '../../utils/CopyFile'
+import DrawingTextureType from './DrawingTextureType'
+import ModelLoader from '../../../services/model-loader'
+import { isSupportedCubeMap } from '../Three/Helpers/CubeTextureCreator'
+const cubemapWiki = 'https://github.com/wonderunit/storyboarder/wiki'
+const imageFilters = ["jpg", "jpeg", "png", "gif", "dds"]
+
 import { useTranslation } from 'react-i18next'
-const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
+const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath, notifications}) => {
   const { t } = useTranslation()
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
@@ -48,6 +54,42 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
       updateWorldEnvironment({file: CopyFile(storyboarderFilePath, event.file, 'environment')})
     }
   }, [])
+
+  const setWorldTexture = useCallback((type, event) => {
+    if (event.file) {
+      if(!world.sceneTexture || path.basename(world.sceneTexture) !== path.basename(event.file)) {
+        updateWorld({textureType: type, sceneTexture: CopyFile(storyboarderFilePath, event.file, 'sceneTexture')})
+      }
+    } else {
+      updateWorld({textureType:null, sceneTexture: null})
+    }
+  }, [world])
+
+  const setSceneTextureFile = useCallback((event) => {
+    setWorldTexture(DrawingTextureType.Simple, event)
+  }, [setWorldTexture])
+
+  const setSceneCubeMap = useCallback((event) => {
+    if(!event.file) { 
+      setWorldTexture(DrawingTextureType.Cubemap, event)
+      return
+    }
+    let image = new Image()
+    image.addEventListener('load', () => {
+      if(isSupportedCubeMap(image)) {
+        setWorldTexture(DrawingTextureType.Cubemap, event)
+      } else {
+        notifications.notify({
+          message:
+          t("shot-generator.inspector.inspected-world.cubemap-not-supported", {link:`<a href="${cubemapWiki}">Supported formats</a> `}),
+          timing: 30,
+          onClick: () => electron.shell.openExternal(cubemapWiki)
+        })
+      }
+    })
+    image.src = event.file
+  }, [setWorldTexture])
+  
   const setGrayscale = useCallback(() => updateWorldEnvironment({grayscale: !world.environment.grayscale}), [world.environment.grayscale])
   
   const setAmbientIntensity = useCallback((intensity) => updateWorldEnvironment({intensity}), [])
@@ -97,7 +139,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
             />
           </div>
 
-          <div className="inspector-row">
+          { !world.sceneTexture && <div className="inspector-row">
             <NumberSlider
                 label={t("shot-generator.inspector.inspected-world.bg-color")}
                 value={world.backgroundColor / 0xFFFFFF}
@@ -105,8 +147,23 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                 max={1}
                 onSetValue={setBackground}
             />
-          </div>
-
+          </div> }
+          {(!world.textureType || world.textureType === DrawingTextureType.Cubemap) && <FileInput
+              onChange={setSceneCubeMap}
+              label={t("shot-generator.inspector.inspected-world.scene-cubemap")}
+              value={world.sceneTexture && path.basename(world.sceneTexture)}
+              filters={ [ { name:"Images", extensions: imageFilters } ] }
+              canRemove={ true }
+            />
+          }
+          {(!world.textureType || world.textureType !== DrawingTextureType.Cubemap) && <FileInput
+              onChange={setSceneTextureFile}
+              label={t("shot-generator.inspector.inspected-world.scene-texture")}
+              value={world.sceneTexture && path.basename(world.sceneTexture)}
+              filters={ [ { name:"Images", extensions: imageFilters } ] }
+              canRemove={ true }
+            />
+            }
           <div className="inspector-row">
             <div className="input-group">
               <div className="input-group__label">

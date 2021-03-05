@@ -13,7 +13,7 @@ const serializeSceneObject = require('./shot-generator/serialize-scene-object')
 const ObjectModelFileDescriptions = require('../../../data/shot-generator/objects/objects.json')
 const AttachablesModelFileDescriptions = require('../../../data/shot-generator/attachables/attachables.json')
 const { ShadingType } = require('../../vendor/shading-effects/ShadingType')
-
+const BrushType = require('../../shot-generator/components/Three/Helpers/Brushes/TextureBrushTypes')
 const hashify = string => crypto.createHash('sha1').update(string).digest('base64')
 
 const capitalize = string => string.charAt(0).toUpperCase() + string.slice(1)
@@ -36,6 +36,7 @@ const getSelectedAttachable = state => state.undoable.present.selectedAttachable
 
 const getWorld = state => state.undoable.present.world
 
+const getDrawMode = state => state.undoable.present.drawMode 
 
 const getHash = state =>
   hashify(JSON.stringify(getSerializedState(state)))
@@ -47,7 +48,8 @@ const getSerializedState = state => {
   return {
     world: getWorld(state),
     sceneObjects: R.map(serializeSceneObject, getSceneObjects(state)),
-    activeCamera: getActiveCamera(state)
+    activeCamera: getActiveCamera(state),
+    drawingBrush: getDrawMode(state).brush
   }
 }
 
@@ -674,6 +676,11 @@ const initialState = {
 
   undoable: {
     world: initialScene.world,
+    drawMode: { 
+      brush: { color: '#000000', size: 2 },
+      isEnabled: false,
+      type: BrushType.SIMPLE
+    },
     activeCamera: initialScene.activeCamera,
     sceneObjects: withDisplayNames(initialScene.sceneObjects),
     selections: [],
@@ -1312,6 +1319,12 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         if (action.payload.hasOwnProperty('backgroundColor')) {
           draft.backgroundColor = action.payload.backgroundColor
         }
+        if (action.payload.hasOwnProperty('sceneTexture')) {
+          draft.sceneTexture = action.payload.sceneTexture
+        }
+        if (action.payload.hasOwnProperty('textureType')) {
+          draft.textureType = action.payload.textureType
+        }
         return
 
       case 'UPDATE_WORLD_ROOM':
@@ -1564,6 +1577,29 @@ const mainReducer = (state/* = initialState*/, action) => {
   })
 }
 
+const drawModeReducer = (state = initialState.undoable.drawMode, action) => {
+  return produce(state, draft => {
+    switch(action.type) {
+      case 'UPDATE_DRAW_MODE':
+        if(action.payload.hasOwnProperty('isEnabled')) {
+          draft.isEnabled = action.payload.isEnabled
+        } 
+        if(action.payload.hasOwnProperty('cleanImages')) {
+          draft.cleanImages = action.payload.cleanImages
+        }
+        if(action.payload.brush) {
+          draft.brush.color = action.payload.brush.color ? action.payload.brush.color : draft.brush.color
+          draft.brush.size = action.payload.brush.size ? action.payload.brush.size : draft.brush.size
+          draft.brush.type = action.payload.brush.type ? action.payload.brush.type : draft.brush.type
+        }
+        return
+
+      default:
+        return 
+    }
+  })
+}
+
 const checksReducer = (state, action) => {
   return produce(state, draft => {
     switch (action.type) {
@@ -1644,6 +1680,7 @@ const undoableReducers = combineReducers({
   sceneObjects: sceneObjectsReducer,
   activeCamera: activeCameraReducer,
   world: worldReducer,
+  drawMode: drawModeReducer,
   selections: selectionsReducer,
   selectedBone: selectedBoneReducer,
   selectedAttachable: attachableSelectionsReducer
@@ -1790,7 +1827,7 @@ module.exports = {
   deleteScenePreset: id => ({ type: 'DELETE_SCENE_PRESET', payload: { id } }),
 
   createCharacterPreset: payload => ({ type: 'CREATE_CHARACTER_PRESET', payload }),
-
+  updateDrawMode: payload => ({ type: 'UPDATE_DRAW_MODE', payload: payload}),
   createPosePreset: payload => ({ type: 'CREATE_POSE_PRESET', payload }),
   createHandPosePreset: payload => ({ type: 'CREATE_HAND_POSE_PRESET', payload }),
   createEmotionPreset: payload => ({ type: 'CREATE_EMOTION_PRESET', payload }),
@@ -1824,6 +1861,7 @@ module.exports = {
   // selectors
   //
   getSceneObjects,
+  getDrawMode,
   getSelections,
   getActiveCamera,
   getSelectedBone,

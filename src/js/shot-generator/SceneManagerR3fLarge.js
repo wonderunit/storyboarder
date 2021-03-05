@@ -1,6 +1,7 @@
 import { connect } from 'react-redux'
 import ModelObject from './components/Three/ModelObject'
 import Environment from './components/Three/Environment'
+import SceneBackground from './components/Three/SceneBackground'
 import React, { useRef, useEffect, useMemo, useCallback, useState, useContext } from 'react'
 import Ground from './components/Three/Ground'
 import useTextureLoader from './hooks/use-texture-loader'
@@ -20,6 +21,8 @@ import {
     updateObjects,
     updateCharacterPoleTargets,
     deleteObjects,
+    updateWorld,
+    getDrawMode
 
  } from '../shared/reducers/shot-generator'
 
@@ -46,6 +49,7 @@ import Group from './components/Three/Group'
 import CameraUpdate from './CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
 import ObjectRotationControl from '../shared/IK/objects/ObjectRotationControl'
+import useDrawOnImage from './hooks/use-draw-on-image'
 import RemoteProvider from "./components/RemoteProvider"
 import RemoteClients from "./components/RemoteClients"
 import XRClient from "./components/Three/XRClient"
@@ -83,6 +87,7 @@ const SceneManagerR3fLarge = connect(
         cameraShots: state.cameraShots,
         selectedAttachable: getSelectedAttachable(state),
         aspectRatio: state.aspectRatio,
+        drawMode: getDrawMode(state),
         attachableIds: getAttachableIdsM(state),
         emotionPresets: state.presets.emotions
     }),
@@ -94,6 +99,7 @@ const SceneManagerR3fLarge = connect(
         updateCharacterPoleTargets,
         updateObjects,
         deleteObjects,
+        updateWorld,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
@@ -110,6 +116,8 @@ const SceneManagerR3fLarge = connect(
     updateObjects,
     selectedBone,
 
+    drawMode,
+
     cameraShots,
     setLargeCanvasData,
     renderData,
@@ -117,6 +125,7 @@ const SceneManagerR3fLarge = connect(
     aspectRatio,
     deleteObjects,
     withState,
+    updateWorld,
     attachableIds,
     emotionPresets,
 
@@ -134,7 +143,6 @@ const SceneManagerR3fLarge = connect(
     const sceneObjectLength = Object.values(sceneObjects).length
     const [update, forceUpdate] = useState(null)
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
-
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
     }, [sceneObjectLength])
@@ -158,6 +166,14 @@ const SceneManagerR3fLarge = connect(
     const groupIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
     }, [sceneObjectLength]) 
+
+    useEffect(() => {
+      if(drawMode.isEnabled) {
+        objectRotationControl.current.deselectObject();
+      }
+    }, [drawMode.isEnabled, drawMode.brush])
+
+    const drawingTextures = useDrawOnImage(drawMode, storyboarderFilePath, updateObject)
 
     useEffect(() => {
       let sgIkHelper = SGIkHelper.getInstance()
@@ -309,10 +325,6 @@ const SceneManagerR3fLarge = connect(
     }, [world])
 
     useEffect(() => {
-      scene.background = new THREE.Color(world.backgroundColor)
-    }, [world.backgroundColor])
-
-    useEffect(() => {
       if(!directionalLightRef.current) return
       directionalLightRef.current.rotation.x = 0
       directionalLightRef.current.rotation.z = 0
@@ -344,7 +356,7 @@ const SceneManagerR3fLarge = connect(
 
     return <group ref={ rootRef }> 
     <CameraUpdate/>
-    <InteractionManager renderData={ renderData }/> 
+   {!drawMode.isEnabled && <InteractionManager renderData={ renderData }/> }
     <ambientLight
         ref={ ambientLightRef }
         color={ 0xffffff }
@@ -452,13 +464,16 @@ const SceneManagerR3fLarge = connect(
     {
         imageIds.map(id => {
             let sceneObject = sceneObjects[id]
+            console.log(sceneObject, "sceneObject")
             return <SimpleErrorBoundary key={ id }>
               <Image
                 imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
+                storyboarderFilePath={ storyboarderFilePath }
                 sceneObject={ sceneObject }
                 isSelected={ selections.includes(id) }
                 updateObject={ updateObject }
                 objectRotationControl={ objectRotationControl.current }
+                drawTextures={ drawingTextures }
                 />
               </SimpleErrorBoundary>
         })
@@ -493,6 +508,14 @@ const SceneManagerR3fLarge = connect(
               environment={world.environment}
               visible={world.environment.visible}
               grayscale={ world.environment.grayscale } />
+    }
+    {
+         <SceneBackground
+              imagePath={ getFilePathForImages({imageAttachmentIds: world.sceneTexture ? [world.sceneTexture] : [] }, storyboarderFilePath) }
+              world={world}
+              storyboarderFilePath={ storyboarderFilePath }
+              updateWorld={ updateWorld }
+              drawingTextures={ drawingTextures }/>
     }
     {
         roomTexture && <Room

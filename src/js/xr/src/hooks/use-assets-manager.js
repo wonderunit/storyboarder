@@ -1,5 +1,6 @@
 const THREE = require('three')
 const React = require('react')
+const path = require('path')
 const { useState, useReducer, useMemo, useCallback } = React
 
 const {onImageBufferLoad, onGLTFBufferLoad} = require('../helpers/resourceLoaders')
@@ -7,7 +8,6 @@ const {onImageBufferLoad, onGLTFBufferLoad} = require('../helpers/resourceLoader
 const reducer = (state, action) => {
   const { type, payload } = action
   const { id, progress, value, error } = payload
-
   switch (type) {
     case 'PENDING':
       // ignore if already exists
@@ -49,6 +49,11 @@ const reducer = (state, action) => {
         ...state,
         [id]: { status: 'Error', error }
       }
+    case 'REMOVE': 
+      delete state[id]
+      return {
+        ...state
+      }
     default:
       return state
   }
@@ -89,7 +94,7 @@ const useAssetsManager = (SGConnection) => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-        if (!id.includes('/images/') && !id.includes('/emotions/')) {
+        if (!id.includes('/images/') && !id.includes('/emotions/') && !id.includes('/sceneTextures/')) {
           SGConnection.getResource('gltf', id)
           .then(({data}) => {
             onGLTFBufferLoad(data)
@@ -137,7 +142,13 @@ const useAssetsManager = (SGConnection) => {
     [assets]
   )
 
-  return { assets, requestAsset, getAsset }
+  const removeAsset = useCallback((id) => {
+    if(assets[id]) {
+      dispatch({type: "REMOVE", payload: {id}})
+    }
+  }, [assets])
+
+  return { assets, requestAsset, getAsset, removeAsset }
 }
 
 module.exports = {

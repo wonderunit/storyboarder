@@ -8,6 +8,7 @@ import {
     getSceneObjects,
     getWorld,
     getSelectedBone,
+    updateWorld,
 
  } from '../shared/reducers/shot-generator'
  import systemEmotionPresets from '../shared/reducers/shot-generator-presets/emotions.json'
@@ -23,6 +24,7 @@ import { getFilePathForImages } from '../shot-generator/helpers/get-filepath-for
 import Room from '../shot-generator/components/Three/Room'
 import CameraUpdate from '../shot-generator/CameraUpdate'
 import deepEqualSelector from '../utils/deepEqualSelector'
+import SceneBackground from '../shot-generator/components/Three/SceneBackground'
 import FilepathsContext from '../shot-generator/contexts/filepaths'
 
 const sceneObjectSelector = (state) => {
@@ -49,6 +51,7 @@ const ShotExplorerSceneManager = connect(
         selectedBone: getSelectedBone(state),
     }),
     {
+        updateWorld,
         withState: (fn) => (dispatch, getState) => fn(dispatch, getState())
     }
 )( React.memo(({ 
@@ -60,13 +63,15 @@ const ShotExplorerSceneManager = connect(
     setLargeCanvasData,
     withState,
     shouldRender,
+    updateWorld,
 }) => {
     const { scene, camera, gl } = useThree()
     const rootRef = useRef()
     const groundRef = useRef()
     const ambientLightRef = useRef()
     const directionalLightRef = useRef()
-
+    const drawingTextures = useRef({})
+    const drawingSceneTexture = useRef({})
     const sceneObjectLength = Object.values(sceneObjects).length
     const modelObjectIds = useMemo(() => {
       return Object.values(sceneObjects).filter(o => o.type === 'object').map(o => o.id)
@@ -105,10 +110,6 @@ const ShotExplorerSceneManager = connect(
         directionalLightRef.current.rotation.y = world.directional.rotation
         directionalLightRef.current.rotateX(world.directional.tilt+Math.PI/2)
     }, [world])
-
-    useEffect(() => {
-      scene.background = new THREE.Color(world.backgroundColor)
-    }, [world.backgroundColor])
 
     useEffect(() => {
       if(!directionalLightRef.current) return
@@ -210,7 +211,8 @@ const ShotExplorerSceneManager = connect(
             return <SimpleErrorBoundary key={ id }>
               <Image
                 imagesPaths={getFilePathForImages(sceneObject, storyboarderFilePath)}
-                sceneObject={ sceneObject }/>
+                sceneObject={ sceneObject }
+                drawTextures={ drawingTextures.current }/>
               </SimpleErrorBoundary>
         })
     }
@@ -229,6 +231,14 @@ const ShotExplorerSceneManager = connect(
               environment={world.environment}
               visible={world.environment.visible}
               grayscale={ world.environment.grayscale } />
+    }
+    {
+         <SceneBackground
+              imagePath={ getFilePathForImages({imageAttachmentIds: world.sceneTexture ? [world.sceneTexture] : [] }, storyboarderFilePath) }
+              world={world}
+              storyboarderFilePath={ storyboarderFilePath }
+              updateWorld={ updateWorld }
+              drawingSceneTexture={ drawingSceneTexture.current }/>
     }
     {
         roomTexture && <Room

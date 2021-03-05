@@ -4,36 +4,52 @@ import { extend } from 'react-three-fiber'
 import { useAsset } from '../../hooks/use-assets-manager'
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import RoundedBoxGeometryCreator from './../../../vendor/three-rounded-box'
-import { axis } from "../../../shared/IK/utils/TransformControls"
+import { axis } from '../../../shared/IK/utils/TransformControls'
+import DrawingTextureType from '../InspectedWorld/DrawingTextureType'
+import { TextureObjectType} from './Helpers/DrawingTextureContainer'
+import createRoundedPlane from './Helpers/create-rounded-plane'
+import { saveDataURLtoTempFile } from '../../helpers/saveDataURLtoFile'
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
-
+import fs from 'fs-extra'
+import path from 'path'
 extend({RoundedBoxGeometry})
 
 const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) => {
-  const {asset: texture} = useAsset(imagesPaths[0] || null)
-  
+  const {asset: texture, loaded} = useAsset(imagesPaths[0] || null)
   const aspect = useRef(1)
   const ref = useRef()
-
   const material = useMemo(() => {
-    return new THREE.MeshToonMaterial({ transparent: true })
+    let texture = props.drawTextures.createTexture(sceneObject.id, DrawingTextureType.Simple, TextureObjectType.Image)
+    let material = new THREE.MeshToonMaterial({ transparent: true, side: THREE.DoubleSide });
+    texture.createMaterial(material)
+    return material
+  }, [])
+
+  const save = () => {
+    saveDataURLtoTempFile( props.drawTextures.getTextureById(sceneObject.id).texture.getImage("image/png"), props.storyboarderFilePath, props.updateObject, ref.current)
+  }
+
+  useEffect(() => {
+    return () => {
+      delete props.drawTextures.removeTexture(sceneObject.id) 
+    }
   }, [])
 
   useMemo(() => {
     if(!texture) return
-    
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping
     texture.offset.set(0, 0)
     texture.repeat.set(1, 1)
 
     const { width, height } = texture.image
     aspect.current = width / height
-
     if (material) {
-        material.map = texture
-        material.needsUpdate = true
+      let textureObject = props.drawTextures.getTextureById(sceneObject.id)
+      textureObject.texture.setTexture(texture)
+      textureObject.save = () => save()
+      material.needsUpdate = true
     } 
-  }, [texture, imagesPaths[0]])
+  }, [texture])
 
   useEffect(() => {
     material.opacity = sceneObject.opacity
@@ -48,6 +64,10 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
     return () => {
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
+      }
+      if(ref.current.userData.tempImagePath) {
+        let tempImageFilePath = path.join(path.dirname(props.storyboarderFilePath), 'models/images/', ref.current.userData.tempImagePath)
+        fs.removeSync(tempImageFilePath)
       }
     }
   }, [])
@@ -67,6 +87,7 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
       props.objectRotationControl.selectObject(ref.current, ref.current.uuid)
       props.objectRotationControl.IsEnabled = !sceneObject.locked
       props.objectRotationControl.control.setShownAxis(axis.X_axis | axis.Y_axis | axis.Z_axis)
+
     } else {
       if(props.objectRotationControl && props.objectRotationControl.isSelected(ref.current)) {
         props.objectRotationControl.deselectObject()
@@ -76,28 +97,34 @@ const Image = React.memo(({ sceneObject, isSelected, imagesPaths, ...props }) =>
 
   const { x, y, z, visible, height, rotation, locked, blocked } = sceneObject
 
+  
   useEffect(() => {
     if(!props.objectRotationControl || !isSelected) return
     props.objectRotationControl.IsEnabled = !locked
   }, [locked])
 
+  const userDataInfo = {  
+    type: "image",
+    id: sceneObject.id,
+    locked: locked,
+    blocked: blocked
+  }
+
   return (
     <group
       ref={ ref }
       onController={ sceneObject.visible ? () => null : null }
-      userData={{
-        type: "image",
-        id: sceneObject.id,
-        locked: locked,
-        blocked: blocked
-      }}
+      userData={ref.current ? { 
+        ...ref.current.userData,
+        ...userDataInfo
+      } : userDataInfo}
       visible={ visible }
       position={ [x, z, y] }
       scale={ [height * aspect.current, height, 1] }
       rotation={ [rotation.x, rotation.y, rotation.z] }
     >
       <mesh>
-        <roundedBoxGeometry attach="geometry" args={ [1, 1, 0.01, 0.01] } />
+        <primitive attach="geometry" object={ createRoundedPlane(0.1, 1)} />
         <primitive attach="material" object={ material } />
       </mesh>
     </group>

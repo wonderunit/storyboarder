@@ -32,7 +32,7 @@ const {
   selectObject,
   updateObject,
   updateCharacterIkSkeleton,
-  getSelectedAttachable
+  getSelectedAttachable,
 } = require('../../shared/reducers/shot-generator')
 
 const useRStats = require('./hooks/use-rstats')
@@ -72,7 +72,21 @@ const Boards = require('./components/ui/Boards')
 const BonesHelper = require('./three/BonesHelper')
 const Voicer = require('./three/Voicer')
 
+const { CubeTextureCreator }  = require('../../shot-generator/components/Three/Helpers/CubeTextureCreator')
+
 const musicSystem = require('./music-system')
+
+
+const getSceneTextureFilePath = (world, prevTexture, removeAsset) => {
+  if(!world.sceneTexture) return false
+  let currentPath = getFilepathForModelByType({type: 'sceneTexture', model: world.sceneTexture })
+  if(prevTexture && world.sceneTexture !== prevTexture) {
+    let tempPath = getFilepathForModelByType({type: 'sceneTexture', model: prevTexture })
+    removeAsset(tempPath)
+  }
+  prevTexture = world.sceneTexture
+  return currentPath
+}
 
 // TODO load the language from the hosting shot generator peer
 // currently i18n is hardcoded to en-US.json which is embedded within XR
@@ -149,11 +163,14 @@ const SceneContent = connect(
     characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
     resources, getAsset,
-    language,
+    language, removeAsset,
 
     SGConnection
   }) => {
     const { gl, camera, scene } = useThree()
+    const prevSceneTexture = useRef()
+    const cubeMapCreator = useRef(new CubeTextureCreator())
+    const sceneTexture = getAsset(getSceneTextureFilePath(world, prevSceneTexture.current, removeAsset))
     const teleportRef = useRef()
     // actions
     const set = useStore(state => state.set)
@@ -194,6 +211,7 @@ const SceneContent = connect(
     const showHelp = useUiStore(state => state.showHelp)
     const showHUD = useUiStore(state => state.showHUD)
     const showConfirm = useUiStore(state => state.showConfirm)
+    const prevImagePaths = useRef({})
 
     const fog = useRef()
     const getFog = () => {
@@ -253,6 +271,13 @@ const SceneContent = connect(
         0.04
       )
     }, [worldScale])
+
+    useEffect(() => {
+      if(!sceneTexture) return
+      let cubeTexture = cubeMapCreator.current.getCubeMapTexture(sceneTexture)
+      scene.background = cubeTexture
+    }, [sceneTexture])
+
     const welcomeAudio = useMemo(() => {
       const audio = new THREE.Audio(cameraAudioListener)
       audio.setBuffer(resources.welcomeAudioBuffer)
@@ -786,11 +811,20 @@ const SceneContent = connect(
           {
             imageIds.map(id => {
               let sceneObject = sceneObjects[id]
-              let texture = getAsset(getFilepathForImage(sceneObject))
-
+              let imagePath = getFilepathForImage(sceneObject)
+              if(prevImagePaths.current[id] && prevImagePaths.current[id] !== sceneObject.imageAttachmentIds[0]) {
+                  let tempPath = getFilepathForImage({ imageAttachmentIds: [prevImagePaths.current[id]] })
+                  removeAsset(tempPath)
+                  if(sceneObject.imageAttachmentIds[0] === `models/images/${id}-texture.png`) {
+                    removeAsset(imagePath)
+                  }
+              }
+              prevImagePaths.current[id] = sceneObject.imageAttachmentIds[0]
+              let texture = getAsset(imagePath)
               return <Image
                 key={id}
                 texture={texture}
+                imagePath={ imagePath }
                 sceneObject={sceneObject}
                 visibleToCam={sceneObject.visibleToCam}
                 isSelected={selections.includes(id)}/>
@@ -876,7 +910,7 @@ const SceneManagerXR = ({SGConnection}) => {
   const store = useReduxStore()
   const [appAssetsLoaded, setAppAssetsLoaded] = useState(false)
 
-  const { assets, requestAsset, getAsset } = useAssetsManager(SGConnection)
+  const { assets, requestAsset, getAsset, removeAsset } = useAssetsManager(SGConnection)
 
   // preload textures
   const groundTexture = useTextureLoader(SGConnection, '/data/system/grid_floor_1.png')
@@ -1104,6 +1138,7 @@ const SceneManagerXR = ({SGConnection}) => {
                   instrumentC4, instrumentC5, instrumentC6
                 }}
                 getAsset={getAsset}
+                removeAsset={removeAsset}
                 SGConnection={SGConnection} />
               : null
           }

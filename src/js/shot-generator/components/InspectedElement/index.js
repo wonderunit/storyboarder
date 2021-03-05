@@ -17,6 +17,8 @@ import HandInspector from './HandInspector/HandPresetsEditor/index'
 import PosePresetsInspector from './PosePresetsInspector/index'
 import ModelInspector from './ModelInspector/index'
 import AttachableInspector from './AttachableInspector/index'
+import BrushInspector from './BrushInspector'
+import InspectedWorld from '../InspectedWorld'
 
 import EmotionInspector from './EmotionInspector/index'
 
@@ -27,9 +29,10 @@ import Modal from '../Modal'
 
 const isChar = (type) => type === 'character'
 const isObj = (type) => type === 'object'
+const isImage = (type) => type === 'image' || !type
 const nullTab = {tab: null, panel: null}
 
-const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) => {
+const Inspector = React.memo(({id, selectedName, selectedType, updateObject, isInspectedWorld, notifications}) => {
   const { t } = useTranslation()
   const [isModalShown, showModal] = useState(false)
   const [changedName, changeNameTo] = useState(false)
@@ -87,7 +90,14 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
     }
   }, [selectedType])
 
-
+  const meshTab = useMemo(() => {
+    if (!isImage(selectedType)) return nullTab
+    return {
+      tab: <Tab><Icon src='icon-tab-attachable'/></Tab>,
+      panel: <Panel><BrushInspector /></Panel>
+    }
+  }, [selectedType])
+  
   return (
     <React.Fragment>
       { isModalShown && <Modal visible={ isModalShown } onClose={() => showModal(false)}>
@@ -122,16 +132,18 @@ const Inspector = React.memo(({id, selectedName, selectedType, updateObject}) =>
           {charPoseTab.tab}
           {modelTab.tab}
           {attachmentTab.tab}
+          {meshTab.tab}
           {emotionsTab.tab}
           {hairInspectorTab.tab}
         </div>
 
         <div className="tabs-body">
-          <Panel><GeneralInspector/></Panel>
+          <Panel>{isInspectedWorld ? <InspectedWorld notifications={notifications}/> : <GeneralInspector/>}</Panel>
           {handPoseTab.panel}
           {charPoseTab.panel}
           {modelTab.panel}
           {attachmentTab.panel}
+          {meshTab.panel}
           {emotionsTab.panel}
           {hairInspectorTab.panel}
         </div>
@@ -145,7 +157,7 @@ const getObjectInfo = (state) => {
   const object = getSceneObjects(state)[selected]
 
   if (!object) {
-    return null
+    return {}
   }
 
   return {

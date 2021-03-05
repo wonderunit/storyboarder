@@ -402,7 +402,10 @@
         "directional-light": "Directional light",
         "fog": "Fog",
         "grayscale": "Grayscale",
-        "shading-mode": "Shading Mode"
+        "shading-mode": "Shading Mode",
+	      "cubemap-not-supported": "Whoops cubemap format isn't supported check the {{link}} for details.",
+	      "scene-cubemap":"Scene Cube map",
+	      "scene-texture":"Scene Texture"
       },
       "common": {
         "object-creation-help": "How to Create 3D Models for Custom Objects",
@@ -434,7 +437,11 @@
         "are-you-sure": "Are you sure?"
       },
       "inspected-element": {
-        "properties": "Properties:"
+        "properties": "Properties:",
+        "brush-color":"Brush color",	           
+        "type":"Type",	           
+        "simple": "Brush",	
+        "eraser": "Eraser"
       },
       "camera": {
         "fov": "F.O.V."

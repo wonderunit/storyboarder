@@ -4,7 +4,6 @@ import { ipcRenderer } from 'electron'
 
 import { 
   getSerializedState,
-  getWorld,
 
   selectObject,
   markSaved,
@@ -136,7 +135,7 @@ const insertNewShot = (shotRenderer, cameraPlotRenderer, largeCanvasData, smallC
   }, 0)
 }
 
-const useSaveToStoryboarder = (largeCanvasData, smallCanvasData, aspectRatio, shadingMode, backgroundColor) => {
+const useSaveToStoryboarder = (largeCanvasData, smallCanvasData, aspectRatio, shadingMode, backgroundColor, saveImages) => {
   const dispatch = useDispatch()
 
   const imageRenderer = useRef()
@@ -154,16 +153,20 @@ const useSaveToStoryboarder = (largeCanvasData, smallCanvasData, aspectRatio, sh
   const cameraPlotRenderer = useShadingEffect(imageRenderer.current, ShadingType.Outline, backgroundColor)
 
   const saveCurrentShotCb = useCallback(
-    () => dispatch(
-      saveCurrentShot(shotRenderer, cameraPlotRenderer, largeCanvasData, smallCanvasData, shotSize, cameraPlotSize, aspectRatio)
-    ),
+    () => {
+      saveImages()
+      dispatch(
+      saveCurrentShot(shotRenderer, cameraPlotRenderer, largeCanvasData, smallCanvasData, shotSize, cameraPlotSize, aspectRatio))
+    },
     []
   )
 
   const insertNewShotCb = useCallback(
-    () => dispatch(
-      insertNewShot(shotRenderer, cameraPlotRenderer, largeCanvasData, smallCanvasData, shotSize, cameraPlotSize, aspectRatio)
-    ),
+    () => { 
+      saveImages()
+      dispatch(
+      insertNewShot(shotRenderer, cameraPlotRenderer, largeCanvasData, smallCanvasData, shotSize, cameraPlotSize, aspectRatio))
+    },
     []
   )
 
