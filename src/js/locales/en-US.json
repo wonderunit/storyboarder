@@ -461,7 +461,8 @@
       },
       "pose-preset": {
         "search-pose": "Search for a pose …",
-        "mirror-pose": "Mirror pose"
+        "mirror-pose": "Mirror pose",
+        "posture": "Posture"
       },
       "attachables-inspector": {
         "attached-to-bone": "Attached to bone"

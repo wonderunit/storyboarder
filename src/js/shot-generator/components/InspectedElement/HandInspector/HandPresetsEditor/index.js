@@ -169,7 +169,7 @@ React.memo(({
       request.post('https://storyboarders.com/api/create_pose', {
           form: {
             name: name,
-            json: JSON.stringify(skeleton),
+            json: JSON.stringify(handSkeleton),
             model_type: model,
             storyboarder_version: pkg.version,
             machine_id: machineIdSync()

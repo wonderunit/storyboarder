@@ -10,6 +10,7 @@ import { SHOT_LAYERS } from '../../utils/ShotLayers'
 import {patchMaterial, setSelected} from '../../helpers/outlineMaterial'
 import isUserModel from '../../helpers/isUserModel'
 import { axis } from "../../../shared/IK/utils/TransformControls"
+import posturesJson from '../../../shared/reducers/shot-generator-presets/postures.json'
 import FaceMesh from "./Helpers/FaceMesh"
 import isSuitableForIk from '../../../utils/isSuitableForIk'
 
@@ -62,6 +63,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
     const { scene, camera, gl } = useThree()
     const activeGL = useMemo(() => renderData ? renderData.gl : gl, [renderData]) 
     const boneRotationControl = useRef(null)
+    const postureDeltas = useRef({})
+    const postureStatics = useRef(null)
     const isIkCharacter = useRef(null)
     useEffect(() => {
       return () => {
@@ -224,6 +227,8 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
           if(!type.includes("UNDO") && !type.includes("REDO"))
             fullyUpdateIkSkeleton()
         })
+        postureDeltas.current = {}
+        postureStatics.current = null
       } else {
         isFullyUpdate.current = false
       }
@@ -236,6 +241,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       let inverseMatrixWorld = new THREE.Matrix4()
       inverseMatrixWorld.getInverse(ref.current.matrixWorld)
       let position = new THREE.Vector3()
+      let quaternion = new THREE.Quaternion()
       for(let i = 0; i < skeleton.bones.length; i++) {
         let bone = skeleton.bones[i]
         if(bone.name.includes("leaf")) continue
@@ -243,13 +249,13 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
         let boneMatrix = bone.matrixWorld.clone()
         boneMatrix.premultiply(inverseMatrixWorld)
         position = position.setFromMatrixPosition(boneMatrix)
-        let quaternion = new THREE.Quaternion().setFromRotationMatrix(boneMatrix)
+        quaternion.setFromRotationMatrix(boneMatrix)
         changedSkeleton.push({ 
           name: bone.name,
           position: { 
-            x: position.x,
-            y: position.y,
-            z: position.z
+            x: position.x, 
+            y: position.y, 
+            z: position.z 
           }, 
           rotation: { 
             x: rotation.x, 
@@ -267,6 +273,67 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       isFullyUpdate.current = true
       updateCharacterIkSkeleton && updateCharacterIkSkeleton({id:sceneObject.id, skeleton:changedSkeleton})
     }
+
+    useMemo(() => {
+      postureDeltas.current = {}
+      postureStatics.current = null
+    }, [sceneObject.posePresetId, sceneObject.rotation, isSelected])
+
+    useEffect(() => {
+      if(!sceneObject.posturePercentage || !ref.current || !skeleton) return
+      let postures = Object.values(posturesJson)
+      let badPostureSkeleton = postures.find(o => o.name === "BadPosture").state.skeleton
+      let goodPostureSkeleton = postures.find(o => o.name === "GoodPosture").state.skeleton
+      let badQuat = new THREE.Quaternion()
+      let currentQuat = new THREE.Quaternion()
+      let goodQuat = new THREE.Quaternion()
+      let postureBones = ["Spine", "Spine1", "Spine2", "Neck", "LeftShoulder", "RightShoulder"]
+      let headBone = skeleton.getBoneByName("Head")
+      let rightArm = skeleton.getBoneByName("LeftArm")
+      let leftArm = skeleton.getBoneByName("RightArm")
+      if(!postureStatics.current) {
+        postureStatics.current = {}
+        headBone.updateMatrixWorld(true)
+        rightArm.updateMatrixWorld(true)
+        leftArm.updateMatrixWorld(true)
+        postureStatics.current.headBoneQuat = headBone.worldQuaternion()
+        postureStatics.current.rightArmQuat = rightArm.worldQuaternion()
+        postureStatics.current.leftArmQuat = leftArm.worldQuaternion()
+      }
+      let euler = new THREE.Euler()
+      for( let i = 0; i < postureBones.length; i++ ) {
+        let key = postureBones[i]
+        let currentBone = skeleton.bones.find(o => o.name === key)
+        currentBone.updateMatrixWorld(true)
+        let parentQuat = currentBone.parent.worldQuaternion()
+        let badBone = badPostureSkeleton[key]
+        badQuat.setFromEuler(euler.set(badBone.rotation.x, badBone.rotation.y, badBone.rotation.z))    
+        badQuat.premultiply(parentQuat)
+        let goodBone = goodPostureSkeleton[key]
+        goodQuat.setFromEuler(euler.set(goodBone.rotation.x, goodBone.rotation.y, goodBone.rotation.z))
+        goodQuat.premultiply(parentQuat)
+
+        if(!postureDeltas.current[key]) {
+          postureDeltas.current[key] = {}
+          THREE.Quaternion.slerp(badQuat, goodQuat, currentQuat, sceneObject.posturePercentage)
+          
+          let delta = new THREE.Quaternion()
+          delta.multiply(currentQuat.conjugate())
+          delta.multiply(currentBone.worldQuaternion())
+          postureDeltas.current[key].delta = delta
+        }
+        THREE.Quaternion.slerp(badQuat, goodQuat, currentQuat, sceneObject.posturePercentage)
+        
+        currentQuat.multiply(postureDeltas.current[key].delta)
+        currentQuat.applyMatrix4(currentBone.parent.getInverseMatrixWorld())
+        currentBone.quaternion.copy(currentQuat)
+      }
+
+      headBone.quaternion.multiplyQuaternions(headBone.parent.worldQuaternion().inverse(), postureStatics.current.headBoneQuat)
+      rightArm.quaternion.multiplyQuaternions(rightArm.parent.worldQuaternion().inverse(), postureStatics.current.rightArmQuat)
+      leftArm.quaternion.multiplyQuaternions(leftArm.parent.worldQuaternion().inverse(), postureStatics.current.leftArmQuat)
+      fullyUpdateIkSkeleton()
+    }, [sceneObject.posturePercentage])
 
     useEffect(() => {
       if(!camera) return
@@ -311,7 +378,7 @@ const Character = React.memo(({ path, sceneObject, modelSettings, isSelected, se
       if(ready) {
         props.forceUpdate({id:sceneObject.id})
       }
-    }, [ready])
+    }, [ready])    
 
     useEffect(() => {
       if(!lod) return

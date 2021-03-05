@@ -31,6 +31,8 @@ import SearchList from '../../SearchList/index.js'
 import Grid from '../../Grid'
 import Scrollable from '../../Scrollable';
 import { useAsset } from '../../../hooks/use-assets-manager'
+import PostureComponent from './PostureComponent'
+const defaultPostureValue = 0.5
 
 const shortId = id => id.toString().substr(0, 7).toLowerCase()
 
@@ -78,6 +80,7 @@ React.memo(({
   const [isModalShown, showModal] = useState(false)
   const newPresetName = useRef('')
   const newGeneratedId = useRef()
+  const postureData = useRef({})
 
   const presets = useMemo(() => {
     if(!posePresets) return
@@ -123,13 +126,23 @@ React.memo(({
         let skeleton = sceneObject.skeleton
         let model = sceneObject.model
 
+        let newSkeleton = {}
+        let keys = Object.keys(skeleton)
+        for(let i = 0; i < keys.length; i++) {
+          let key = keys[i]
+          let currentBone = skeleton[key]
+          newSkeleton[key] = {}
+          newSkeleton[key].rotation = { ...currentBone.rotation }
+          newSkeleton[key].name = currentBone.name
+          newSkeleton[key].id = currentBone.id
+        }
         // create a preset out of it
         let newPreset = {
           id: THREE.Math.generateUUID(),
           name,
           keywords: name, // TODO keyword editing
           state: {
-            skeleton: skeleton || {}
+            skeleton: newSkeleton || {}
           },
           priority: 0
         }
@@ -142,7 +155,7 @@ React.memo(({
         request.post('https://storyboarders.com/api/create_pose', {
           form: {
             name: name,
-            json: JSON.stringify(skeleton),
+            json: JSON.stringify(newSkeleton),
             model_type: model,
             storyboarder_version: pkg.version,
             machine_id: machineIdSync()
@@ -285,6 +298,15 @@ React.memo(({
       <div className="mirror_button__wrapper">
         <div className="mirror_button" onPointerDown={ mirrorSkeleton }>{t('shot-generator.inspector.pose-preset.mirror-pose')}</div>
       </div>
+      <PostureComponent
+        id={ id }
+        withState={ withState }
+        updateObject={ updateObject }
+        getSceneObjects={ getSceneObjects }
+        data={postureData.current}
+        defaultPostureValue={ defaultPostureValue }
+      />
+
       <Scrollable>
        <Grid
           itemData={{
@@ -292,10 +314,9 @@ React.memo(({
 
             id: id,
             posePresetId: getPosePresetId(),
-
+            resetPosture: () => { postureData.current.setPostureValue(defaultPostureValue) },
             attachment,
             updateObject,
-
             thumbnailRenderer,
             undoGroupStart,
             undoGroupEnd,

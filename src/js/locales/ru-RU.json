@@ -461,7 +461,8 @@
 			},
 			"pose-preset": {
 			  "search-pose": "Найти позы …",
-			  "mirror-pose": "Зеркально отобразить позу"
+			  "mirror-pose": "Зеркально отобразить позу",
+			  "posture": "Осанка"
 			},
 			"attachables-inspector": {
 			  "attached-to-bone": "Присоединить к кости"
