@@ -2,7 +2,6 @@ const ReactDOM = require('react-dom')
 const React = require('react')
 const { ipcRenderer, shell } = electron = require('electron')
 const { Provider, batch } = require('react-redux')
-const { dialog } = electron.remote
 const THREE = require('three')
 const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
@@ -20,15 +19,16 @@ const {
   loadScene,
   resetScene,
 } = require('../../shared/reducers/shot-generator')
+const {batchActions, enableBatching} = require('redux-batched-actions')
 const i18n = require('../../services/i18next.config')
 
 require("../../shared/helpers/monkeyPatchGrayscale")
+
 let sendedAction = []
 let isBoardShown = false
 let isBoardLoaded = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
-let isVisible = electron.remote.getCurrentWindow().visible
 let defaultHeight = 800
 let canvasHeight = 400
 let minimumWidth = 300
@@ -51,11 +51,11 @@ const composeEnhancers = (
 
 const configureStore = function configureStore (preloadedState) {
     const store = createStore(
-      reducer,
+      enableBatching(reducer),
       preloadedState,
       composeEnhancers(
         applyMiddleware(
-            thunkMiddleware, store => next => action => {
+          thunkMiddleware, store => next => action => {
               let indexOf = sendedAction.indexOf(action)
               if(action && indexOf === -1) {
                 ipcRenderer.send("shot-generator:updateStore", action)
@@ -98,7 +98,6 @@ const showShotExplorer = () => {
     }, 100)
     return
   }
-  isVisible = true;
   pushUpdates();
   isBoardShown = true;
 }
@@ -153,25 +152,18 @@ electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event =
   isBoardShown = false
 })
 
-electron.remote.getCurrentWindow().on("hide", () => {
-  isVisible = false
-})
-
 const pushUpdates = () => {
   shotExplorerElement = renderShotExplorer()
-  batch(() => {
-    for(let i = 0, length = sendedAction.length; i < length; i++) {
-      let object = sendedAction[i]
-      let action = object
-      if(!action.type) {
-        action = JSON.parse(object)
-        sendedAction.push(action)
-      }
-      store.dispatch(action)
+  for(let i = 0, length = sendedAction.length; i < length; i++) {
+    let object = sendedAction[i]
+    let action = object
+    if(!action.type) {
+      action = JSON.parse(object)
+      sendedAction[i] = action
     }
-  })
+  }
+  store.dispatch(batchActions(sendedAction))
   sendedAction = []
-  renderDom()
 }
 
 electron.remote.getCurrentWindow().on("focus", () => {

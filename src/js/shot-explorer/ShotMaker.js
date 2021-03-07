@@ -17,9 +17,30 @@ import ObjectTween from './objectTween'
 import ShotElement from './ShotElement'
 import InfiniteScroll from './InfiniteScroll'
 import generateRule from './ShotsRule/RulesGenerator'
-import isUserModel from '../shot-generator/helpers/isUserModel'
 
 import getRandomNumber from './utils/getRandomNumber'
+import {cache} from '../shot-generator/hooks/use-assets-manager'
+const shotSizes = [
+    { value: ShotSizes.EXTREME_CLOSE_UP,  label: "Extreme Close Up" },
+    { value: ShotSizes.VERY_CLOSE_UP,     label: "Very Close Up" },
+    { value: ShotSizes.CLOSE_UP,          label: "Close Up" },
+    { value: ShotSizes.MEDIUM_CLOSE_UP,   label: "Medium Close Up" },
+    { value: ShotSizes.BUST,              label: "Bust" },
+    { value: ShotSizes.MEDIUM,            label: "Medium Shot" },
+    { value: ShotSizes.MEDIUM_LONG,       label: "Medium Long Shot" },
+    { value: ShotSizes.LONG,              label: "Long Shot / Wide" },
+    { value: ShotSizes.EXTREME_LONG,      label: "Extreme Long Shot" },
+    { value: ShotSizes.ESTABLISHING,      label: "Establishing Shot" }
+]
+
+const shotAngles = [
+  { value: ShotAngles.BIRDS_EYE,        label: "Bird\'s Eye" },
+  { value: ShotAngles.HIGH,             label: "High" },
+  { value: ShotAngles.EYE,              label: "Eye" },
+  { value: ShotAngles.LOW,              label: "Low" },
+  { value: ShotAngles.WORMS_EYE,        label: "Worm\'s Eye" }
+]
+
 import { useTranslation } from 'react-i18next'
 const getRandomFov = (aspectRatio) => {
 
@@ -39,7 +60,8 @@ const ShotMaker = React.memo(({
     withState,
     aspectRatio,
     newAssetsLoaded,
-    canvasHeight
+    canvasHeight,
+    sceneObjects
 }) => {
     const camera = useRef()
     const [selectedShot, selectShot] = useState(null)
@@ -51,6 +73,7 @@ const ShotMaker = React.memo(({
     const [windowHeight, setWindowHeight] = useState(window.innerWidth)
     const [windowWidth, setWindowWidth] = useState(window.innerWidth)
     const containerHeight = useRef()
+    const [assetsLoaded, setAssetsLoaded] = useState()
     const { t } = useTranslation()
     const handleResize = () => {
         let container = document.getElementsByClassName("shots-container")
@@ -75,13 +98,31 @@ const ShotMaker = React.memo(({
         })
         selectShot(newSelectedShot)
     }
+
+    const isAnyAssetsPending = () => {
+        let assets = Object.values(cache.get())
+        for(let i = 0; i < assets.length; i++) {
+            if(assets[i].status === "PENDING") return true
+        }
+        return false
+    }
+
+    const updateAssets = (event) => { 
+       // console.log("Trying to update assets")
+        if(!isAnyAssetsPending()) {
+            setAssetsLoaded({})
+        }
+    }
+
     useEffect(() => {
         if (!imageRenderer.current) {
             imageRenderer.current = new THREE.WebGLRenderer({ antialias: true })
         }
         outlineEffect.current = new OutlineEffect(imageRenderer.current, { defaultThickness: 0.015 })
+        cache.subscribe(updateAssets)
         handleResize()
         return () => {
+            cache.unsubscribe(updateAssets)
             imageRenderer.current = null
             outlineEffect.current = null
             cleanUpShots()
@@ -96,29 +137,27 @@ const ShotMaker = React.memo(({
 
     const convertCanvasToImage = async (outlineEffect, scene, camera) => {
         return new Promise((resolve, reject) => {
-            setTimeout(() => {
-                outlineEffect.render(scene, camera)
-                let image = outlineEffect.domElement.toDataURL('image/jpeg', 0.5)
-                resolve(image);
-            }, 10)
+            outlineEffect.render(scene, camera)
+            let image = outlineEffect.domElement.toDataURL('image/jpeg', 0.5)
+            resolve(image);
         })
     }
 
     const renderSceneWithCamera = useCallback((shotsArray) => {
         let width = Math.ceil(900 * aspectRatio)
         outlineEffect.current.setSize(width, 900)
+
         for(let i = 0; i < shotsArray.length; i++) {
             let shot = shotsArray[i]
             convertCanvasToImage(outlineEffect.current, sceneInfo.scene, shot.camera).then((cameraImage) => {
                 // NOTE() : a bad practice to update component but it's okay for now
-                shot.setRenderImage( cameraImage )
+                shot.setRenderImage( cameraImage ) 
             })
         }
-
     }, [sceneInfo])
 
     const generateShot = (shotsArray, shotsCount) => {
-        let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character' && !isUserModel(object.userData.modelName))
+        let characters = sceneInfo.scene.__interaction.filter(object => object.userData.type === 'character' && object.userData.isSameSkeleton) 
         if(!characters.length) {
             setNoCharacterWarn(true)
             return;
@@ -127,16 +166,16 @@ const ShotMaker = React.memo(({
         }
         for(let i = 0; i < shotsCount; i++) {
             let cameraCopy = camera.current.clone()
-            let shotAngleKeys = Object.keys(ShotAngles)
-            let randomAngle = ShotAngles[shotAngleKeys[getRandomNumber(shotAngleKeys.length)]]
+            let shotAngleKeys = Object.keys(shotAngles)
+            let randomAngle = shotAngles[shotAngleKeys[getRandomNumber(shotAngleKeys.length)]]
             
-            let shotSizeKeys = Object.keys(ShotSizes)
-            let randomSize = ShotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length - 2)]]
+            let shotSizeKeys = Object.keys(shotSizes)
+            let randomSize = shotSizes[shotSizeKeys[getRandomNumber(shotSizeKeys.length)]]
 
             let character = characters[getRandomNumber(characters.length)]
             let skinnedMesh = character.getObjectByProperty("type", "SkinnedMesh")
-            if(!skinnedMesh) continue
-            let shot = new ShotItem(randomAngle, randomSize, character)
+            if(!skinnedMesh || !skinnedMesh.skeleton) continue
+            let shot = new ShotItem(randomAngle.label, randomSize.label, character)
             cameraCopy.fov = getRandomFov(aspectRatio)
             cameraCopy.updateProjectionMatrix()
             let box = setShot({camera: cameraCopy, characters, selected:character, shotAngle:shot.angle, shotSize:shot.size})
@@ -145,23 +184,21 @@ const ShotMaker = React.memo(({
             // Calculates box center in order to calculate camera height
             let center = new THREE.Vector3()
             box.getCenter(center)
-
-            // Generates random rule for shot
-            shot.rules = generateRule(center, character, shot, cameraCopy, skinnedMesh)  
             
+            // Generates random rule for shot
+            shot.rules = generateRule(center, character, shot, cameraCopy, skinnedMesh, characters)
             // Removes applying rule to Establishing, cause Establishing take in cosiderationg multiple chracters while 
             // rule is designed to apply to one character 
             if(ShotSizes.ESTABLISHING !== shot.size) {
                 for(let i = 0; i < shot.rules.length; i++) {
-                    shot.rules[i].applyRule()
+                    shot.rules[i].applyRule(sceneInfo.scene)
                 }
             }
             shot.camera = cameraCopy
             shotsArray.push(shot)
         }
     }
-
-    useEffect(() => {
+    const generateShots = () => {
         if(sceneInfo) {
             camera.current = sceneInfo.camera.clone()
             withState((dispatch, state) => {
@@ -187,13 +224,18 @@ const ShotMaker = React.memo(({
             let shotsArray = []
             let shotsCount =  Math.ceil(containerHeight.current / (height + 20)) * 3
             generateShot(shotsArray, shotsCount)
-
             renderSceneWithCamera(shotsArray)
             shotsArray[0] && setSelectedShot(shotsArray[0])
             cleanUpShots()
             setShots(shotsArray)
         }
-    }, [sceneInfo, newAssetsLoaded])
+    }
+
+    useEffect(() => {
+        if(!isAnyAssetsPending()) {
+            generateShots()
+        }
+    }, [sceneInfo, sceneObjects, assetsLoaded])
 
     const generateMoreShots = useCallback(() => {
         let shotsArray = []

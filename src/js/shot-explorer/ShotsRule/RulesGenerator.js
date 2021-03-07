@@ -3,6 +3,7 @@ import RollRule from "./RollRule"
 import * as THREE from 'three'
 import HorizontalOneThirdRule from './HorizontalOneThirdRule'
 import OrbitingRule from './OrbitingRule'
+import AreaShotRule from './AreaShotRule'
 // Clamps rotation so it's stay in -180 and 180 degrees range
 const clamRotationTo = (rotation, clampDegree = 180) => {
     if(rotation === clampDegree || rotation === -clampDegree) return rotation
@@ -19,21 +20,27 @@ const getRandomNumber = (maxLength) => {
     return number;
 }
 
-const generateRule = (focusedCenter, character, shot, camera, skinnedMesh) => {
+const generateRule = (focusedCenter, character, shot, camera, skinnedMesh, characters, isCustomModel = false) => {
     let i = getRandomNumber(100);
     let results = [];
 
     //#region Finds Headbone and it's children and calculates their center for vertical oneThird
-    let headBone = skinnedMesh.skeleton.bones.filter(bone => bone.name === "Head")[0]
-    let headPoints = []
-    headPoints.push(headBone.worldPosition())
-    for(let i = 0; i < headBone.children.length; i++) {
-        if(headBone.children[i].name.includes('leaf'))
-            headPoints.push(headBone.children[i].worldPosition())
-    }
-    let headBox = new THREE.Box3().setFromPoints(headPoints)
     let headCenter = new THREE.Vector3()
-    headBox.getCenter(headCenter)
+    let headBone = skinnedMesh.skeleton.bones.filter(bone => bone.name === "Head")[0]
+    if(!isCustomModel) {
+        let headPoints = []
+        headPoints.push(headBone.worldPosition())
+        for(let i = 0; i < headBone.children.length; i++) {
+            if(headBone.children[i].name.includes('leaf'))
+                headPoints.push(headBone.children[i].worldPosition())
+        }
+        let headBox = new THREE.Box3().setFromPoints(headPoints)
+        
+        headBox.getCenter(headCenter)
+    } else {
+        headCenter.copy(focusedCenter)
+    }
+
     //#endregion
     // Chance to apply orbiting rule is 100%. Orbiting should be always applied
     if(i < 100) {
@@ -49,11 +56,16 @@ const generateRule = (focusedCenter, character, shot, camera, skinnedMesh) => {
     // Chance to apply vertical one third rule is 70%. VerticalOneThirdRule is left/right framing rule 
     // rotates camera to left or right so that character stays in one third part of scene
     if(i < 70) {
-        let headQuaternion = headBone.worldQuaternion()
-        let rotation = new THREE.Euler().setFromQuaternion(headQuaternion)
+        let headQuaternion = new THREE.Quaternion()
+        if(!isCustomModel) {
+            headBone.getWorldQuaternion(headQuaternion)
+        } else {
+            character.getWorldQuaternion(headQuaternion)
+        }
+        let rotation = new THREE.Euler().setFromQuaternion(headQuaternion, "YXZ")
         let characterRotation = rotation.y * THREE.Math.RAD2DEG
         let cameraRotation = shot.cameraRotation ? shot.cameraRotation * THREE.Math.RAD2DEG : 0
-        let characterFacingRotation = cameraRotation - (characterRotation)
+        let characterFacingRotation = cameraRotation - characterRotation
         characterFacingRotation = clamRotationTo(characterFacingRotation)
         results.push(new VerticalOneThirdRule(focusedCenter, camera, headCenter, characterFacingRotation < 0 ? "left" : "right"));
     }
@@ -61,6 +73,11 @@ const generateRule = (focusedCenter, character, shot, camera, skinnedMesh) => {
     // It makes sure that character head is always in top one third part of camera
     if(i < 100) {
         results.push( new HorizontalOneThirdRule(headCenter, camera, focusedCenter))
+    }
+    if(i < 10) {
+        let areaShotRule = new AreaShotRule(headCenter, camera, characters, shot)
+        results.push(areaShotRule)
+
     }
 
     return results

@@ -17,15 +17,18 @@ class HorizontalOneThirdRule extends ShotRule {
         let desiredPos = new THREE.Vector3(centerOfView.x, y, centerOfView.z);
         let minHeight = centerOfView.y - height / 2;
         desiredPos.y += minHeight;
-
+        center = center.clone()
         // Calculates angle between two vectors
         let BA = new THREE.Vector3().subVectors(center, this.camera.position)
         let BC = new THREE.Vector3().subVectors(desiredPos, this.camera.position)
         let cosineAngle = BA.dot(BC) / (BA.length() * BC.length());
         let angle = Math.acos(cosineAngle);
-        angle = desiredPos.y > center.y ? -angle : angle;
         this.cameraRotation = angle;
-        this.camera.rotateX(angle);
+        let normalCenter =  center.clone().sub(desiredPos).normalize()
+        normalCenter.x += normalCenter.y
+        normalCenter.y = normalCenter.x - normalCenter.y
+        normalCenter.x = normalCenter.x - normalCenter.y
+        this.camera.rotateOnAxis(normalCenter, angle)
         this.camera.updateMatrixWorld(true);
     }
 }

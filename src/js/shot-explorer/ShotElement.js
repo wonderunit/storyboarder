@@ -15,6 +15,9 @@ const ShotElement = React.memo((
     const updateImage = () => {
         setImageChanged({})
     }
+    useEffect(() => {
+        return () => object.unsubscribe(updateImage)
+    }, [])
 
     useEffect(() => {
         object.subscribe(updateImage)
