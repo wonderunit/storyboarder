@@ -20,7 +20,7 @@ Also, if this project seems interesting, could you press that star button at the
 2. Start drawing boards using a mouse or wacom open. Or print out
 3. Flip through the boards, play it back, pitch it, make changes.
 
-Don't get slowed down by too many buttons or options. You're here to board stories, not make the next Moner Lisa.
+Don't get slowed down by too many buttons or options. You're here to board stories, not make the next Mona Lisa.
 
 Works with Pens on any tablet or Cintiq or even a Microsoft Surface. Also works with a mouse.
 

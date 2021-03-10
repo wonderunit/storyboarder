@@ -617,7 +617,7 @@ const commentOnLineMileage = (miles) => {
         "Alright, I think this one is done.",
         "Yes.. Very close to done. Actually, looks done to me.",
         "Let's move on.",
-        "Remember, you're not making the next Moner Lisa.",
+        "Remember, you're not making the next Mona Lisa.",
         "Who do you think you are, Picaso?",
         "Looks great! But let's not make it too great.",
         "Sweet!",
