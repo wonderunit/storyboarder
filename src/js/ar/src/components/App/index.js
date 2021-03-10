@@ -84,6 +84,7 @@ const App = ({sceneObjects, world, board}) => {
       </div>
       <Canvas
         vr={true}
+        gl={{logarithmicDepthBuffer: true}}
         gl2={true}
         noEvents={true}
         onCreated={onCreated}

@@ -27,7 +27,7 @@ const Model = ({sceneObject, path, isSelected, getAsset}) => {
   const ref = useRef(null)
 
   const asset = getAsset((sceneObject.model === 'box') ? null : path)
-  let object = useGLTFAsset(asset ? asset.scene : null)
+  let object = useGLTFAsset(asset ? asset.scene : null, materialFactory)
   
   object = useMemo(() => {
     if (sceneObject.model !== 'box') {

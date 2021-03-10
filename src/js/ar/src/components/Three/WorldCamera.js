@@ -35,8 +35,9 @@ const WorldCamera = (props) => {
   useEffect(() => void setDefaultCamera(cameraRef.current), [])
   //useFrame(({ gl, scene }) => gl.render(scene, cameraRef.current), 1)
 
-  useFrame(({camera}, delta) => {
+  useFrame(({camera, gl}, delta) => {
     const dt = Math.max(delta, 0.0001)
+
     //const camera = cameraRef.current
     //saveCameraMatrixWorld(camera)
 
@@ -60,9 +61,8 @@ const WorldCamera = (props) => {
     }
   
     if (currentSceneState.movement.left) {
-      //saveCameraMatrixWorld(camera)
-      
-      let y = camera.parent.position.y
+      gl.xr.getCamera(camera)
+
       tmpMat.getInverse(camera.parent.matrixWorld)
       tmpMat2.copy(camera.matrixWorld).multiply(tmpMat)
 
@@ -72,17 +72,16 @@ const WorldCamera = (props) => {
       camera.parent.updateMatrixWorld()
   
       tmpMat2.multiply(camera.parent.matrixWorld)
+
+      gl.xr.getCamera(camera)
       tmpVec2.setFromMatrixPosition(tmpMat2)
       tmpVec.sub(tmpVec2)
-      //tmpVec.y = 0.0
   
       camera.parent.position.add(tmpVec)
       camera.parent.updateMatrixWorld()
-
-      //camera.parent.position.y = y
+      
     } else if (currentSceneState.movement.right) {
-      //saveCameraMatrixWorld(camera)
-      //Connection.current.log({...camera.position})
+      gl.xr.getCamera(camera)
 
       tmpMat.getInverse(camera.parent.matrixWorld)
       tmpMat2.copy(camera.matrixWorld).multiply(tmpMat)
@@ -94,24 +93,14 @@ const WorldCamera = (props) => {
       camera.parent.updateMatrixWorld()
   
       tmpMat2.multiply(camera.parent.matrixWorld)
-      tmpVec2.setFromMatrixPosition(tmpMat2)
+      
+      gl.xr.getCamera(camera)
+      tmpVec2.setFromMatrixPosition(camera.matrixWorld)
       tmpVec.sub(tmpVec2)
-      //tmpVec.y = 0.0
 
-      // Connection.current.log({...camera.parent.position.clone().sub(tmpVec).sub(tmpVec3)})
-      // Connection.current.log([
-      //   {...camera.parent.position},
-      //   {...tmpVec},
-      //   {...tmpVec2},
-      //   {...tmpVec3}
-      // ])
   
       camera.parent.position.add(tmpVec)
       camera.parent.updateMatrixWorld()
-
-      //camera.parent.position.y = y
-
-      //Connection.current.log({...tmpVec})
     }
   })
 
@@ -119,7 +108,7 @@ const WorldCamera = (props) => {
     <group position={[0.0, 1.0, 0.0]}>
       <group>
         <group>
-          <perspectiveCamera ref={cameraRef} {...props} />
+          <perspectiveCamera ref={cameraRef} {...props} near={0.1} far={100.0} />
         </group>
       </group>
     </group>
