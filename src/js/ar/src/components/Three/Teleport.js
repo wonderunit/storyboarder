@@ -9,38 +9,32 @@ let cameraOrigin = new Vector3()
 let cameraDirection = new Vector3()
 let dist = 0;
 
-const Teleport = ({rotationRef, positionRef}) => {
+const Teleport = ({}) => {
   const [currentSceneState, setSceneState] = useContext(SceneState)
 
   const ref = useRef(null)
-  const parentInverseRef = useRef(new Matrix4())
 
-  useFrame(({camera}) => {
+  useFrame(({camera, gl}) => {
+    gl.xr.getCamera(camera)
+
     cameraOrigin.setFromMatrixPosition( camera.matrixWorld )
     cameraDirection.set( 0.0, 0.0, 0.5 ).unproject( camera ).sub( cameraOrigin ).normalize()
 
-    dist = (cameraOrigin.y + 1.0) / Math.max(Math.abs(cameraDirection.y), 0.0001)
+    dist = cameraOrigin.y / Math.max(Math.abs(cameraDirection.y), 0.0001)
     
     ref.current.position.x = (cameraOrigin.x + cameraDirection.x * dist)
     ref.current.position.z = (cameraOrigin.z + cameraDirection.z * dist)
-    ref.current.position.y = -1.0
 
-    parentInverseRef.current.getInverse(ref.current.parent.matrixWorld)
-    ref.current.position.applyMatrix4(parentInverseRef.current)
-  })
-
-  useEffect(() => {
     if (currentSceneState.shouldTeleport) {
-      positionRef.current.position.x = ref.current.position.x
-      positionRef.current.position.z = ref.current.position.z
+      camera.parent.position.x = ref.current.position.x
+      camera.parent.position.z = ref.current.position.z
 
       setSceneState({
         ...currentSceneState,
         shouldTeleport: false
-      });
+      })
     }
-  }, [currentSceneState.shouldTeleport])
-  
+  })
   
   return (
     <mesh ref={ref} >

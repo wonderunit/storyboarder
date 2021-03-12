@@ -56,7 +56,7 @@ const Scene = ({sceneObjects, world, getAsset}) => {
       <group
         scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
       >
-        {/* <Teleport rotationRef={rotationRef} positionRef={positionRef} angleRef={angleRef} /> */}
+        <Teleport/>
         <Background/>
         <Ground getAsset={getAsset}/>
         <ambientLight
