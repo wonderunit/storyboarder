@@ -50,15 +50,17 @@ const WorldCamera = (props) => {
       tmpMat2.copy(camera.matrixWorld).multiply(tmpMat)
 
       tmpVec.setFromMatrixPosition(camera.matrixWorld)
+      tmpVec3.copy(tmpVec)
   
       camera.parent.rotation.y += Math.PI / 180.0 * 24.0 * dt
       camera.parent.updateMatrixWorld()
   
       tmpMat2.multiply(camera.parent.matrixWorld)
-
+      
       gl.xr.isPresenting && gl.xr.getCamera(camera)
-      tmpVec2.setFromMatrixPosition(tmpMat2)
+      tmpVec2.setFromMatrixPosition(camera.matrixWorld)
       tmpVec.sub(tmpVec2)
+
   
       camera.parent.position.add(tmpVec)
       camera.parent.updateMatrixWorld()
