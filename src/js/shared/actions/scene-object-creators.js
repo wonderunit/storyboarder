@@ -83,7 +83,7 @@ const createModelObject = (id, camera, room) => {
     width: 1, height: 1, depth: 1,
 
     x, y, z,
-
+ 
     rotation: { x: 0, y: rotation, z: 0 },
 
     visible: true

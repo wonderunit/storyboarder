@@ -1,10 +1,10 @@
-import React, {useRef, useContext, useEffect} from 'react'
+import React, {useRef, useContext} from 'react'
 import { useFrame } from 'react-three-fiber'
-import { Matrix4, Quaternion, Vector3 } from 'three'
+import { Vector3 } from 'three'
 import { SceneState } from '../../helpers/sceneState'
 
 
-let axisAngle = new Vector3(0.0, 1.0, 0.0)
+
 let cameraOrigin = new Vector3()
 let cameraDirection = new Vector3()
 let dist = 0;
@@ -15,7 +15,7 @@ const Teleport = ({}) => {
   const ref = useRef(null)
 
   useFrame(({camera, gl}) => {
-    gl.xr.getCamera(camera)
+    gl.xr.isPresenting && gl.xr.getCamera(camera)
 
     cameraOrigin.setFromMatrixPosition( camera.matrixWorld )
     cameraDirection.set( 0.0, 0.0, 0.5 ).unproject( camera ).sub( cameraOrigin ).normalize()

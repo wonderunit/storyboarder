@@ -7,9 +7,8 @@ import './index.scss'
 
 const preventFn = (e) => e.preventDefault()
 
-const TeleportButtons = () => {
+const TeleportButton = () => {
   const [sceneState, setSceneState] = useContext(SceneState)
-  const [isVisible, setVisibility] = useState(false)
   
   const onTeleport = useCallback(() => setSceneState({...sceneState, shouldTeleport: true}), [sceneState])
 
@@ -22,4 +21,4 @@ const TeleportButtons = () => {
   )
 }
 
-export default TeleportButtons
+export default TeleportButton

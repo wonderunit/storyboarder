@@ -1,11 +1,9 @@
-import React, {useState, useContext, useRef} from 'react'
+import React, {useContext} from 'react'
 import {connect} from "react-redux"
-import {useFrame, useThree} from "react-three-fiber"
 
 import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-generator"
 import {SceneState} from "../../helpers/sceneState"
 
-import {useThreeFrameProvider, useThreeStateProvider} from "../../hooks/useThreeHooks"
 
 import Environment from "../Three/Environment"
 import Model from "../Three/Model"
@@ -17,9 +15,9 @@ import Background from "../Three/Background"
 import Ground from "../Three/Ground"
 import Teleport from '../Three/Teleport'
 
-import useHitTestManager from "../../hooks/useHitTestManager"
-import { Matrix4, Vector3 } from 'three'
+
 import WorldCamera from '../Three/WorldCamera'
+import CameraCreator from '../Three/CameraCreator'
 
 const componentMap = {
   object: Model,
@@ -40,15 +38,6 @@ const renderObject = (sceneObject, getAsset) => {
 
 const Scene = ({sceneObjects, world, getAsset}) => {
   const [currentSceneState] = useContext(SceneState)
-
-  /*
-  useFrame(({camera}) => {
-    Connection.current.sendInfo({
-      matrix: camera.matrixWorld.toArray(),
-      controllers: []
-    })
-  })
-  */
   
   return (
     <group>
@@ -57,6 +46,7 @@ const Scene = ({sceneObjects, world, getAsset}) => {
         scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
       >
         <Teleport/>
+        <CameraCreator/>
         <Background/>
         <Ground getAsset={getAsset}/>
         <ambientLight

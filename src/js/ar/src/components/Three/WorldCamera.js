@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useContext, useCallback } from "react"
+import React, { useRef, useEffect, useContext } from "react"
 import { useThree, useFrame } from "react-three-fiber"
 import { Matrix4, Vector3 } from "three"
 import { SceneState } from "../../helpers/sceneState"
@@ -12,19 +12,6 @@ const tmpVec3 = new Vector3();
 const tmpMat = new Matrix4();
 const tmpMat2 = new Matrix4();
 
-const saveCameraMatrixWorld = (camera) => {
-  tmpMat2.copy(camera.matrixWorld)
-  camera.parent.updateMatrix()
-  camera.parent.updateMatrixWorld()
-
-  tmpMat.getInverse(camera.parent.matrixWorld)
-  tmpMat2.multiply(tmpMat)
-  tmpMat2.decompose(camera.position, camera.quaternion, camera.scale)
-
-  camera.updateMatrix()
-  camera.updateMatrixWorld()
-}
-
 const WorldCamera = (props) => {
   const [currentSceneState] = useContext(SceneState)
 
@@ -33,13 +20,9 @@ const WorldCamera = (props) => {
 
   // Make the camera known to the system
   useEffect(() => void setDefaultCamera(cameraRef.current), [])
-  //useFrame(({ gl, scene }) => gl.render(scene, cameraRef.current), 1)
 
   useFrame(({camera, gl}, delta) => {
     const dt = Math.max(delta, 0.0001)
-
-    //const camera = cameraRef.current
-    //saveCameraMatrixWorld(camera)
 
     if (currentSceneState.movement.top) {
       tmpVec.set( camera.matrixWorld.elements[ 8 ], camera.matrixWorld.elements[ 9 ], camera.matrixWorld.elements[ 10 ] )
@@ -61,7 +44,7 @@ const WorldCamera = (props) => {
     }
   
     if (currentSceneState.movement.left) {
-      gl.xr.getCamera(camera)
+      gl.xr.isPresenting && gl.xr.getCamera(camera)
 
       tmpMat.getInverse(camera.parent.matrixWorld)
       tmpMat2.copy(camera.matrixWorld).multiply(tmpMat)
@@ -73,7 +56,7 @@ const WorldCamera = (props) => {
   
       tmpMat2.multiply(camera.parent.matrixWorld)
 
-      gl.xr.getCamera(camera)
+      gl.xr.isPresenting && gl.xr.getCamera(camera)
       tmpVec2.setFromMatrixPosition(tmpMat2)
       tmpVec.sub(tmpVec2)
   
@@ -81,7 +64,7 @@ const WorldCamera = (props) => {
       camera.parent.updateMatrixWorld()
       
     } else if (currentSceneState.movement.right) {
-      gl.xr.getCamera(camera)
+      gl.xr.isPresenting && gl.xr.getCamera(camera)
 
       tmpMat.getInverse(camera.parent.matrixWorld)
       tmpMat2.copy(camera.matrixWorld).multiply(tmpMat)
@@ -94,7 +77,7 @@ const WorldCamera = (props) => {
   
       tmpMat2.multiply(camera.parent.matrixWorld)
       
-      gl.xr.getCamera(camera)
+      gl.xr.isPresenting && gl.xr.getCamera(camera)
       tmpVec2.setFromMatrixPosition(camera.matrixWorld)
       tmpVec.sub(tmpVec2)
 
@@ -102,6 +85,11 @@ const WorldCamera = (props) => {
       camera.parent.position.add(tmpVec)
       camera.parent.updateMatrixWorld()
     }
+
+    Connection.current.sendInfo({
+      matrix: camera.matrixWorld.toArray(),
+      controllers: []
+    })
   })
 
   return (

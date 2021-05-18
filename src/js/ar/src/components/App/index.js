@@ -14,7 +14,8 @@ import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-genera
 
 import ScaleButtons from "../ScaleButtons"
 import MoveButtons from "../MoveButtons"
-import TeleportButtons from '../TeleportButton'
+import TeleportButton from '../TeleportButton'
+import CreateCameraButton from '../CreateCameraButton'
 
 
 const preloadAssetsList = [
@@ -40,7 +41,8 @@ const App = ({sceneObjects, world, board}) => {
       top: false,
       bottom: false
     },
-    shouldTeleport: false
+    shouldTeleport: false,
+    shouldCreateCamera: false
   })
   
   const {count, loaded, getAsset} = useSceneLoader(sceneObjects, world, preloadAssetsList)
@@ -78,7 +80,8 @@ const App = ({sceneObjects, world, board}) => {
           <SceneState.Provider value={innerState}>
             <ScaleButtons/>
             <MoveButtons/>
-            <TeleportButtons/>
+            <TeleportButton/>
+            <CreateCameraButton/>
           </SceneState.Provider>
         </div>
       </div>

@@ -372,7 +372,7 @@ const InteractionManager = connect(
                   matrix.premultiply(attachable.parent.matrixWorld)
                   matrix.decompose(position, quaternion, new THREE.Vector3())
                   let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
-                  dispatch(updateObject(attachable.userData.id, 
+                  dispatch(updateObject(attachable.userData.id,
                   { 
                       x: position.x, y: position.y, z: position.z,
                       rotation: { x: rot.x, y: rot.y, z: rot.z },

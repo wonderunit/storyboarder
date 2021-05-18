@@ -16,7 +16,7 @@ const MoveButtons = () => {
     }
     
     document.addEventListener('pointerout', cancelMove)
-    document.addEventListener('pointerup', cancelMove)
+    document.addEventListener('pointerup', cancelMove) 
 
     return () => {
       document.removeEventListener('pointerout', cancelMove)

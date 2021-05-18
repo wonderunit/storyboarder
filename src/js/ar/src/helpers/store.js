@@ -19,7 +19,7 @@ export const connect = async () => {
     return false;
   })
 
-  //SGConnection.setActive(true)
+  SGConnection.setActive(true)
 
   SGConnection.connectRequest()
 
