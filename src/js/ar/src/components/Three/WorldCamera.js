@@ -12,6 +12,8 @@ const tmpVec3 = new Vector3();
 const tmpMat = new Matrix4();
 const tmpMat2 = new Matrix4();
 
+const identMat = new Matrix4().toArray();
+
 const WorldCamera = (props) => {
   const [currentSceneState] = useContext(SceneState)
 
@@ -91,7 +93,7 @@ const WorldCamera = (props) => {
     gl.xr.isPresenting && gl.xr.getCamera(camera)
     Connection.current.sendInfo({
       matrix: camera.matrixWorld.toArray(),
-      controllers: []
+      controllers: [identMat, identMat]
     })
   })
 
