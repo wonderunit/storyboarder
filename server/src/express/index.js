@@ -89,7 +89,7 @@ export const App = async () => {
     if (/(Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone)/.test(agent) === true) {
       ARStatic(...params)
     } else {
-      ARStatic(...params)
+      XRStatic(...params)
     }
   })
   // app.use('/:id', express.static(
