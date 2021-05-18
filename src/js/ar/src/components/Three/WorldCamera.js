@@ -88,9 +88,10 @@ const WorldCamera = (props) => {
       camera.parent.updateMatrixWorld()
     }
 
+    gl.xr.isPresenting && gl.xr.getCamera(camera)
     Connection.current.sendInfo({
       matrix: camera.matrixWorld.toArray(),
-      controllers: []
+      controllers: [null, null]
     })
   })
 
