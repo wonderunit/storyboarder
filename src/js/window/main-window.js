@@ -4360,11 +4360,7 @@ let renderTimeline = () => {
 
   let defaultBoardTiming = prefsModule.getPrefs().defaultBoardTiming
   boardData.boards.forEach((board, i) => {
-    // if board duration is undefined or 0, use the default,
-    // otherwise use the value given
-    let duration = (util.isUndefined(board.duration) || board.duration === 0)
-      ? defaultBoardTiming
-      : board.duration
+    let duration = boardModel.boardDuration(boardData, board)
 
     html.push(
       `<div style="flex: ${duration}" data-node="${i}" class="t-scene"></div>`
