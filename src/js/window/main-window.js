@@ -718,6 +718,14 @@ const commentOnLineMileage = (miles) => {
 const migrateScene = () => {
   let boardImagesPath = path.join(boardPath, 'images')
 
+  // Old file may contain string board.duration due to issue #2275
+  for (let board of boardData.boards) {
+    if (typeof(board.duration) != 'number') {
+      board.duration = parseInt(board.duration)
+      markBoardFileDirty()
+    }
+  }
+
   // if at least one board.url file exists, consider this an old project
   let needsMigration = false
   for (let board of boardData.boards) {
