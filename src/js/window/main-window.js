@@ -721,7 +721,9 @@ const migrateScene = () => {
   // Old file may contain string board.duration due to issue #2275
   for (let board of boardData.boards) {
     if (typeof(board.duration) != 'number') {
-      board.duration = parseInt(board.duration)
+      board.duration
+        ? board.duration = parseInt(board.duration)
+        : boardData.defaultBoardTiming
       markBoardFileDirty()
     }
   }
@@ -1070,7 +1072,7 @@ const loadBoardUI = async () => {
           // set to undefined
           // which will render as the scene's default duration
           let newDuration = isNaN(parseInt(e.target.value, 10))
-            ? undefined
+            ? boardData.defaultBoardTiming
             : parseInt(e.target.value, 10)
 
           // set the new duration value
@@ -1079,26 +1081,22 @@ const loadBoardUI = async () => {
           }
 
           // update the `frames` view
-          document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard]))
+          document.querySelector('input[name="frames"]').value = msecsToFrames(newDuration)
 
           renderThumbnailDrawer()
           renderMarkerPosition()
           break
         case 'frames':
           let newFrames = isNaN(parseInt(e.target.value, 10))
-            ? undefined
+            ? msecsToFrames(boardData.defaultBoardTiming)
             : parseInt(e.target.value, 10)
 
           for (let index of selections) {
-            boardData.boards[index].duration = newFrames != null
-              ? framesToMsecs(newFrames)
-              : undefined
+            boardData.boards[index].duration = framesToMsecs(newFrames)
           }
 
           // update the `duration` view
-          document.querySelector('input[name="duration"]').value = newFrames != null
-            ? framesToMsecs(newFrames)
-            : ''
+          document.querySelector('input[name="duration"]').value = framesToMsecs(newFrames)
 
           renderThumbnailDrawer()
           renderMarkerPosition()
@@ -3662,7 +3660,7 @@ let renderMetaData = () => {
         label && label.classList.remove('disabled')
       }
 
-      document.querySelector('input[name="duration"]').value = boardData.boards[currentBoard].duration != null
+      document.querySelector('input[name="duration"]').value = !isNaN(boardData.boards[currentBoard].duration)
         ? boardData.boards[currentBoard].duration
         : ''
       document.querySelector('input[name="frames"]').value = msecsToFrames(boardData.boards[currentBoard].duration)
@@ -3678,7 +3676,7 @@ let renderMetaData = () => {
       if (uniqueDurations.length == 1) {
         // unified
         let duration = uniqueDurations[0]
-        document.querySelector('input[name="duration"]').value = duration != null
+        document.querySelector('input[name="duration"]').value = !isNaN(duration)
           ? duration
           : ''
         document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard].duration))
