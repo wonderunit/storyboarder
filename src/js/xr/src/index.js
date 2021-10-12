@@ -7,7 +7,8 @@ require("../../shared/helpers/monkeyPatchGrayscale")
 
 const {
   createStore,
-  applyMiddleware
+  applyMiddleware,
+  compose
 } = require('redux')
 
 const ReactDOM = require('react-dom')
@@ -32,7 +33,16 @@ const App = () => {
   useEffect(() => {
     RemoteDevice.connect()
     .then((SGConnection) => {
-      storeRef.current = createStore(reducer, {...initialState}, applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware))
+      // storeRef.current = createStore(reducer, {...initialState}, applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware))
+
+      const composeEnhancers =
+      typeof window === 'object' &&
+      window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?   
+        window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({
+          // Specify extension's options like name, actionsBlacklist, actionsCreators, serialize...
+        }) : compose;
+
+      storeRef.current = createStore(reducer, {...initialState}, composeEnhancers(applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware)))
       window.$r = {
         store: storeRef.current
       }

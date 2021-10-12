@@ -291,6 +291,24 @@ const updateObject = (draft, state, props, { models }) => {
   }
 }
 
+const updateGroup = (draft, state, props) => {
+
+  let keys = Object.keys(props)
+
+  // console.log(state)
+
+  for(let i = 0; i < keys.length; i++ ){
+    if (keys[i] != 'id'){
+      draft[props.id][keys[i]] = props[keys[i]]
+      for (let k=0; k < draft[props.id].children.length; k++){
+        let id = draft[props.id].children[k]
+        draft[id][keys[i]] +=  props[keys[i]] - state[props.id][keys[i]]
+      }
+    } 
+  }
+
+}
+
 // `loaded` status is not serialized
 // when we load a new file, we need to initialize it
 // so it can be read to determine loading progress
@@ -994,7 +1012,10 @@ const sceneObjectsReducer = (state = {}, action) => {
           name: 'Group',
           type: 'group',
           visible: true,
-          children: action.payload.ids
+          children: action.payload.ids,
+          x: 0,
+          y: 0,
+          z: 0
         }
     
         action.payload.ids.forEach((childId) => draft[childId].group = action.payload.groupId)
@@ -1075,6 +1096,11 @@ const sceneObjectsReducer = (state = {}, action) => {
           { models: initialState.models }
         )
         return
+
+      case 'UPDATE_GROUP':
+        if (draft[action.payload.id] == null) return
+          updateGroup(draft,state,action.payload)
+          return
 
       case 'UPDATE_OBJECTS':
         for (let [ key, value ] of Object.entries(action.payload)) {
@@ -1721,9 +1747,11 @@ module.exports = {
   createObject: values => ({ type: 'CREATE_OBJECT', payload: values }),
   createObjects: objects => ({ type: 'CREATE_OBJECTS', payload: {objects} }),
   updateObject: (id, values) => ({ type: 'UPDATE_OBJECT', payload: { id, ...values } }),
+  updateGroup:  (id, values) => ({ type: 'UPDATE_GROUP',  payload: { id, ...values } }),
 
   // batch update
   updateObjects: payload => ({ type: 'UPDATE_OBJECTS', payload }),
+
 
   deleteObjects: ids => ({ type: 'DELETE_OBJECTS', payload: { ids } }),
   groupObjects: ids => ({
