@@ -16,18 +16,9 @@ import {
 
 const InspectedGroup = (props) => {
 
-    // console.log(props)
-
     const setX = useCallback((x) => props.updateGroup(props.id, {x}), [])
     const setY = useCallback((y) => props.updateGroup(props.id, {y}), [])
     const setZ = useCallback((z) => props.updateGroup(props.id, {z}), [])
-
-    // console.log(props)
-
-    // const setX = useCallback(() => console.log('insp group: upd X'));
-    // const setY = useCallback(() => console.log('insp group: upd Y'));
-    // const setZ = useCallback(() => console.log('insp group: upd Z'));
-
 
     const { t } = useTranslation()
     const [isModalShown, showModal] = useState(false)
@@ -79,8 +70,6 @@ const getObjectInfo = (state) => {
       return null
     }
 
-    // console.log(object)
-  
     return {
       id: selected,
       selectedName: object.name || object.displayName,
