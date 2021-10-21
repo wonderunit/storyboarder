@@ -88,6 +88,7 @@ const getSelectOffset = (controller, object, distance, point) => {
 }
 
 const moveObjectZ = (object, event, worldScale) => {
+  console.log('moveObjectZ')
   if (Math.abs(event.axes[1]) < Math.abs(event.axes[0])) return
 
   const amount = event.axes[1] * 0.08
@@ -101,6 +102,7 @@ const moveObjectZ = (object, event, worldScale) => {
 }
 
 const rotateObjectY = (object, event) => {
+  console.log('rotateObjectY')
   if (Math.abs(event.axes[0]) < Math.abs(event.axes[1])) return
 
   const amount = event.axes[0] * 0.07
@@ -111,6 +113,7 @@ const rotateObjectY = (object, event) => {
 }
 
 const snapObjectRotation = (object) => {
+  console.log('snapObjectRotation')
   // setup for rotation
   object.userData.order = object.rotation.order
   object.rotation.reorder('YXZ')
@@ -134,6 +137,7 @@ const snapObjectRotation = (object) => {
 }
 
 const teleportState = ({ teleportPos, teleportRot }, camera, x, y, z, r) => {
+  console.log('teleportState')
   // create virtual parent and child
   let parent = new THREE.Object3D()
   parent.position.set(teleportPos.x, teleportPos.y, teleportPos.z)
@@ -566,6 +570,8 @@ const useInteractionsManager = ({
       }
     }
 
+    // console.log('intersection before',scene, controller, intersection )
+
     let match = null
 
     // include all interactables (Model Object, Character, Virtual Camera, etc)
@@ -591,6 +597,9 @@ const useInteractionsManager = ({
     }
 
     let targetObj = match ? sceneObjects[match.userData.id] : null
+
+    console.log('info final', list, hits, intersection, match, targetObj, sceneObjects )
+    
     if (match && !targetObj.locked && !targetObj.blocked) {
       // console.log('found sceneObject:', sceneObjects[match.userData.id])
       // console.log('intersection', intersection)
@@ -651,6 +660,7 @@ const useInteractionsManager = ({
   }
 
   const onGripDown = event => {
+    console.log('onGripDown')
     const controller = event.target
     if (BonesHelper.getInstance().isSelected) {
 
@@ -724,6 +734,7 @@ const useInteractionsManager = ({
   }
 
   const onGripUp = event => {
+    console.log('onGripUp')
     interactionService.send({ type: 'GRIP_UP', controller: event.target })
   }
 
@@ -981,6 +992,8 @@ const useInteractionsManager = ({
     let mode = interactionService.state.value
     let context = interactionService.state.context
 
+    // console.log(mode)
+
     // highlight hovered bone
     if (mode === 'selected') {
       let match
@@ -1023,6 +1036,7 @@ const useInteractionsManager = ({
     }
 
     if (mode === 'drag_object') {
+      console.log('drag_object')
       let controller = gl.xr.getController(context.draggingController)
       let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
@@ -1049,6 +1063,87 @@ const useInteractionsManager = ({
 
         //object3d.updateMatrix()
       }
+
+      // if (context.selection){
+      //   if (sceneObjects[context.selection].group){
+      //     console.log('group obj')
+      //     let idGroup = sceneObjects[context.selection].group
+      //     let childrenGroup = sceneObjects[idGroup].children.slice()
+
+      //     let groupObjects = null
+  
+      //     if (childrenGroup){
+      //       groupObjects = []
+      //       for (let i=0; i<childrenGroup.length; i++){
+      //         groupObjects[i] = scene.__interaction.find(item => item.userData.id == childrenGroup[i])
+      //       }
+      //     }
+    
+      //     console.log(groupObjects)
+
+      //     for (let i=0;i<groupObjects.length; i++){
+
+      //       let object = groupObjects[i]
+      
+      //       let shouldMoveWithCursor = (object.userData.type == 'character') || object.userData.staticRotation
+      //       if (shouldMoveWithCursor) {
+      
+      //         // update position via cursor
+      //         const cursorGr = controller.getObjectByName('cursor')
+      //         let wpGr = cursorGr.getWorldPosition(getReusableVector())
+      //         if (controller.userData.selectOffset && object.userData.type == 'character') {
+      //           wpGr.sub(controller.userData.selectOffset)
+      //           object.applyMatrix(object.parent.matrixWorld)
+      //           object.position.copy(wpGr)
+      //           object.updateMatrixWorld()
+      //           object.applyMatrix(object.parent.getInverseMatrixWorld())
+      //         }
+      
+      //         if (object.userData.staticRotation) {
+      //           let quaternion = object.parent.worldQuaternion().inverse()
+      //           let rotation = quaternion.multiply(object.userData.staticRotation)
+      //           object.quaternion.copy(rotation)
+      //         }
+      //         object.updateMatrixWorld()
+      
+      //         //object.updateMatrix()
+      //       }
+      //     }
+  
+
+      //   } else {
+
+      //     // console.log('no group obj')
+
+      //     // let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
+  
+      //     // // console.log('drag_object',context, object3d)
+    
+      //     // let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
+      //     // if (shouldMoveWithCursor) {
+    
+      //     //   // update position via cursor
+      //     //   const cursor = controller.getObjectByName('cursor')
+      //     //   let wp = cursor.getWorldPosition(getReusableVector())
+      //     //   if (controller.userData.selectOffset && object3d.userData.type == 'character') {
+      //     //     wp.sub(controller.userData.selectOffset)
+      //     //     object3d.applyMatrix(object3d.parent.matrixWorld)
+      //     //     object3d.position.copy(wp)
+      //     //     object3d.updateMatrixWorld()
+      //     //     object3d.applyMatrix(object3d.parent.getInverseMatrixWorld())
+      //     //   }
+    
+      //     //   if (object3d.userData.staticRotation) {
+      //     //     let quaternion = object3d.parent.worldQuaternion().inverse()
+      //     //     let rotation = quaternion.multiply(object3d.userData.staticRotation)
+      //     //     object3d.quaternion.copy(rotation)
+      //     //   }
+      //     //   object3d.updateMatrixWorld()
+    
+      //     //   //object3d.updateMatrix()
+      //     // }
+      //   }
+      // }
     }
 
     if (mode === 'rotate_bone') {
@@ -1114,16 +1209,19 @@ const useInteractionsManager = ({
     {
       actions: {
         onDragTeleportStart: (context, event) => {
+          console.log('onDragTeleportStart')
           log('-- onDragTeleportStart')
           // the target position value will be old until the next gl render
           // so consider teleportTargetValid to be false, to hide the mesh, until then
           set(state => ({ ...state, teleportTargetValid: false }))
         },
         onDragTeleportEnd: (context, event) => {
+          console.log('onDragTeleportEnd')
           log('-- onDragTeleportEnd')
           set(state => ({ ...state, teleportTargetValid: false }))
         },
         onTeleport: (context, event) => {
+          console.log('onTeleport')
           log('-- teleport')
           if (teleportTargetValid) {
             let pos = useStoreApi.getState().teleportTargetPos
@@ -1141,6 +1239,7 @@ const useInteractionsManager = ({
           }
         },
         onPosingCharacterEntry: (context, event) => {
+          console.log('onPosingCharacterEntry')
           let ikHelper = getIkHelper()
           if(!ikHelper.isSelected())
           {
@@ -1268,6 +1367,7 @@ const useInteractionsManager = ({
           uiService.send({ type: 'HIDE' })
         },
         onPosingCharacterExit: (context, event) => {
+          console.log('onPosingCharacterExit')
           let ikHelper = getIkHelper()
           ikHelper.ragDoll.isEnabledIk = false
           if(!ikHelper.isSelected())
@@ -1291,6 +1391,7 @@ const useInteractionsManager = ({
           uiService.send({ type: 'SHOW' })
         },
         onDropLowest: (context, event) => {
+          console.log('onDropLowest')
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let placesForDrop = scene.__interaction.concat([groundRef.current])
 
@@ -1312,12 +1413,14 @@ const useInteractionsManager = ({
 
           // if we're in `selected` mode, we can commit the change immediately
           if (interactionService.state.value === 'selected') {
+            console.log('onDropLowest selected')
             commit(context.selection, object)
           }
 
           playSound('drop')
         },
         onSelected: (context, event) => {
+          console.log('onSelected')
           let controller = event.controller
           let { object, distance, point } = event.intersection
           if (object.userData.blocked || object.userData.locked) {
@@ -1337,6 +1440,7 @@ const useInteractionsManager = ({
         },
 
         onSelectNone: (context, event) => {
+          console.log('onSelectNone')
           let controller = event.controller
           log('-- onSelectNone', controller)
 
@@ -1347,6 +1451,7 @@ const useInteractionsManager = ({
 
         onDragControlPointEntry: (context, event) =>
         {
+          console.log('onDragControlPointEntry')
           let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
           getIkHelper().selectControlPoint(object.name)
@@ -1354,6 +1459,7 @@ const useInteractionsManager = ({
         },
         moveAndRotateControlPoint: (context, event) =>
         {
+          console.log('moveAndRotateControlPoint')
           let selectedControlTarget = getIkHelper().selectedControlPoint
           let { worldScale } = useStoreApi.getState()
           moveObjectZ(selectedControlTarget, event, worldScale)
@@ -1364,6 +1470,7 @@ const useInteractionsManager = ({
         },
 
         onDragObjectEntry: (context, event) => {
+          console.log('onDragObjectEntry')
           let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
 
@@ -1407,6 +1514,7 @@ const useInteractionsManager = ({
         },
         
         onDragObjectExit: (context, event) => {
+          console.log('onDragObjectExit')
           let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
@@ -1429,6 +1537,7 @@ const useInteractionsManager = ({
           
           commit(context.selection, object)
           if (object.userData.type === 'character') {
+            console.log('onDragObjectExit, character')
             let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === object.userData.id)
             for(let i = 0; i < mapAttachables.length; i++) {
               commit(mapAttachables[i].userData.id, mapAttachables[i])
@@ -1439,6 +1548,7 @@ const useInteractionsManager = ({
         },
         
         onSnapStart: (context, event) => {
+          console.log('onSnapStart')
           let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
@@ -1456,6 +1566,7 @@ const useInteractionsManager = ({
           object.updateMatrixWorld(true)
         },
         onSnapEnd: (context, event) => {
+          console.log('onSnapEnd')
           let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
@@ -1470,6 +1581,7 @@ const useInteractionsManager = ({
         },
 
         moveAndRotateObject: (context, event) => {
+          console.log('moveAndRotateObject')
           let controller = gl.xr.getController(context.draggingController)
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           

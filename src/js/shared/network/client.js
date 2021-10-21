@@ -79,7 +79,7 @@ export const connect = (URI = '') => {
       const connectStore = (appStore) => {
         // Resolve users actions, such as controllers position, etc. 
         client.on('remoteAction', (data) => {
-          console.log('remoteAction', data)
+          // console.log('remoteAction', data)
           remoteStore.dispatch(data)
         })
   
