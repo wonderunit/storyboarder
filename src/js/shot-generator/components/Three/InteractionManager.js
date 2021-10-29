@@ -249,6 +249,7 @@ const InteractionManager = connect(
                     setDragTarget({ target, x, y, isObjectControl: true })
                     return
                 } else if(targetElement.userData.type === "group") {
+                  console.log('interactionManager',targetElement,targetElement.parent.parent)
                     setDragTarget({ target:null, x, y, isObjectControl: true })
                     return
                 }
