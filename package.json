@@ -21,6 +21,7 @@
     "test": "mocha $(find test -name '*[!renderer].test.js') && electron-mocha --renderer test/*.renderer.test.js test/**/*.renderer.test.js && electron-mocha test/**/*.main.test.js",
     "clean:fixtures": "git checkout test/fixtures && git clean test/fixtures -f",
     "clean:xr": "trash src/js/xr/dist",
+    "clean:ar": "trash src/js/ar/dist",
     "prefs": "echo ~/Library/Application\\\\ Support/Storyboarder/pref.json",
     "prefs:reveal": "open ~/Library/Application\\ Support/Storyboarder",
     "postinstall": "electron-builder install-app-deps",
