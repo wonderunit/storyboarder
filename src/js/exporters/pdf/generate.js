@@ -17,9 +17,10 @@ const {
   sceneDuration
 } = require('../../models/scene')
 
-const REGULAR = path.join(__dirname, '..', '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Regular.woff2')
-const BOLD = path.join(__dirname, '..', '..', '..', 'fonts', 'thicccboi', 'THICCCBOI-Bold.woff2')
-const FALLBACK = path.join(__dirname, '..', '..', '..', 'fonts', 'unicore.ttf')
+let fontPath = path.join('.', 'src', 'fonts')
+const REGULAR = path.join(fontPath, 'thicccboi', 'THICCCBOI-Regular.woff2')
+const BOLD = path.join(fontPath, 'thicccboi', 'THICCCBOI-Bold.woff2')
+const FALLBACK = path.join(fontPath, 'unicore.ttf')
 
 // via https://stackoverflow.com/questions/6565703
 const fit = ([wi, hi], [ws, hs]) =>
