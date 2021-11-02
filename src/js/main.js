@@ -662,25 +662,6 @@ let importImagesDialogue = (shouldReplace = false) => {
   })
 }
 
-let importWorksheetDialogue = () => {
-  dialog.showOpenDialog(
-    {
-      title:"Import Worksheet",
-      filters:[
-        {name: 'Images', extensions: ['png', 'jpg', 'jpeg']},
-      ],
-      properties: [
-        "openFile",
-      ]
-    }
-  ).then(({ filePaths }) => {
-    if (filePaths.length) {
-      mainWindow.webContents.send('importWorksheets', filePaths)
-    }
-  })
-  .catch(err => log.error(err))
-}
-
 const processFdxData = fdxObj => {
   try {
     ensureFdxSceneIds(fdxObj)
@@ -1442,12 +1423,6 @@ ipcMain.on('printWorksheet', (event, arg) => {
   mainWindow.webContents.send('printWorksheet', arg)
 })
 
-ipcMain.on('importWorksheets', (event, arg) => {
-  //openPrintWindow()
-  importWorksheetDialogue()
-  mainWindow.webContents.send('importNotification', arg)
-})
-
 ipcMain.on('save', (event, arg) => {
   mainWindow.webContents.send('save', arg)
 })
@@ -1572,6 +1547,27 @@ ipcMain.handle('exportPDF:getData', async () => {
   })
 })
 
+// Worksheet Import
+ipcMain.on('importWorksheets', async (event, arg) => {
+  try {
+    let { filePaths } = await dialog.showOpenDialog({
+      title: 'Import Worksheet',
+      filters:[
+        { name: 'Images', extensions: ['png', 'jpg', 'jpeg'] },
+      ],
+      properties: [
+        'openFile',
+      ]
+    })
+
+    if (filePaths.length) {
+      mainWindow.webContents.send('importWorksheets', filePaths)
+      mainWindow.webContents.send('importNotification', arg)
+    }
+
+  } catch (err) {
+    log.error(err)
+  }
 })
 
 ipcMain.on('toggleAudition', (event) => {
