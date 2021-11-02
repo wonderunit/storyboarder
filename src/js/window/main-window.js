@@ -6904,7 +6904,6 @@ ipcRenderer.on('exportVideo', (event, args) => {
   ipcRenderer.send('analyticsEvent', 'Board', 'exportVideo')
 })
 
-let importWindow
 let printWindow = [null, null]
 const WORKSHEETPW = 0
 const PDFEXPORTPW = 1
@@ -6990,6 +6989,7 @@ ipcRenderer.on('importNotification', () => {
   }
 })
 
+let importWindow
 ipcRenderer.on('importWorksheets', (event, args) => {
   if (!importWindow) {
     importWindow = new remote.BrowserWindow({
