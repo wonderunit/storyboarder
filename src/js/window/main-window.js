@@ -6971,11 +6971,6 @@ const openPrintWindow = (printWindowType, showPrintWindow) => {
   ipcRenderer.send('analyticsEvent', 'Board', 'show print window')
 }
 
-const showPDFPrintWindow = (printWindow) => {
-  printWindow.webContents.send('exportPDFData', boardData, boardFilename)
-  setTimeout(()=>{printWindow.show()}, 200)
-}
-
 const showWorksheetPrintWindow = (printWindow) => {
   printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
   setTimeout(()=>{printWindow.show()}, 200)
