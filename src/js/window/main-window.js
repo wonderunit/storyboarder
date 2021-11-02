@@ -6979,9 +6979,8 @@ ipcRenderer.on('importFromWorksheet', (event, args) => {
   importFromWorksheet(args)
 })
 
-ipcRenderer.on('importNotification', () => {
-  let that = this
 
+ipcRenderer.on('importNotification', () => {
   let ip = getIpAddress()
   if (ip) {
     let message = "Did you know that you can import directly from your phone?\n\nOn your mobile phone, go to the web browser and type in: \n\n" + ip + ":1888"
