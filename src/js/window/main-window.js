@@ -6936,12 +6936,6 @@ ipcRenderer.on('exportPrintablePdf', (event, sourcePath, filename) => {
   }
 })
 
-ipcRenderer.on('exportPDF', (event, args) => {
-  openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
-  ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
-})
-
-
 ipcRenderer.on('printWorksheet', (event, args) => {
   log.info(boardData)
   openPrintWindow(WORKSHEETPW, showWorksheetPrintWindow);
