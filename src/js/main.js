@@ -62,7 +62,6 @@ let welcomeWindow
 let newWindow
 
 let mainWindow
-let printWindow
 let sketchWindow
 let keyCommandWindow
 
@@ -1427,10 +1426,6 @@ ipcMain.on('exportImages', (event, arg) => {
   mainWindow.webContents.send('exportImages', arg)
 })
 
-ipcMain.on('exportPDF', (event, arg) => {
-  mainWindow.webContents.send('exportPDF', arg)
-})
-
 ipcMain.on('exportWeb', (event, arg) => {
   mainWindow.webContents.send('exportWeb', arg)
 })
@@ -1573,7 +1568,6 @@ ipcMain.handle('exportPDF:getData', async () => {
         projectData
       })
     })
-    console.log('sending exportPDF:getProjectData-request')
     mainWindow.webContents.send('exportPDF:getProjectData-request')
   })
 })
