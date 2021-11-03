@@ -82,29 +82,36 @@ const getRotationMemento = (controller, object) => {
 }
 
 const getSelectOffset = (controller, object, distance, point) => {
-  console.log('getSelectOffset')
+  console.log('getSelectOffset',object,object.constructor)
   let cursor = controller.getObjectByName('cursor')
   cursor.position.z = -distance
+  if (object.constructor === Array){
+    console.log('arr')
+    const groupeOffsets = {}
+    for ( let i =0; i< object.length; i++){
+      groupeOffsets[object[i].userData.id] = {
+        type: object[i].userData.type,
+        offset: new THREE.Vector3().subVectors(point, object[i].getWorldPosition(new THREE.Vector3()))
+      }
+    }
+    return groupeOffsets
+  } 
   const pos = object.getWorldPosition(new THREE.Vector3())
   const offset = new THREE.Vector3().subVectors(point, pos)
   return offset
 }
 
-const getGroupObjects = (id,sceneObjects,scene) => {
+const getGroupObjects = (idSelectedObject,sceneObjectsStore,scene) => {
+
   const objects = []
 
-    if (sceneObjects[id].group){
-      const groupId = sceneObjects[id].group
-
-      const groupElem = sceneObjects[groupId].children.slice()
-      for (let i = 0; i<groupElem.length;i++){
-            scene.__interaction.forEach(element => {
-            if (element.userData.id == groupElem[i]){
-              objects.push(element)
-            }
-          })
+  if (sceneObjectsStore[idSelectedObject].hasOwnProperty('group')){
+      const groupId = sceneObjectsStore[idSelectedObject].group
+      const groupChildrens = sceneObjectsStore[groupId].children.slice()
+      for (let i = 0; i< groupChildrens.length;i++){
+        objects.push( scene.__interaction.find(o => o.userData.id === groupChildrens[i]) )
       }
-    }
+  }else return objects
 
   return objects
 }
@@ -668,11 +675,11 @@ const useInteractionsManager = ({
       // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
       log(`trigger start on: ${match.userData.id.slice(0, 7)}`)
 
-
+      let group = null
       if (sceneObjects[match.userData.id].group){
         const groupId = sceneObjects[match.userData.id].group
         const groupStoreData = sceneObjects[groupId]
-        let group = rootRef.current.children.find(item => item.userData.id == groupId)
+        group = rootRef.current.children.find(item => item.userData.id == groupId)
   
         if (group === undefined){
           group = new THREE.Group()
@@ -680,6 +687,7 @@ const useInteractionsManager = ({
           group.userData.id = groupStoreData.id
           group.userData.children = groupStoreData.children.slice()
           group.userData.type = groupStoreData.type
+          // group.add(new THREE.Mesh(new THREE.BoxGeometry(1,1,1), new THREE.MeshBasicMaterial({color:'red'})))
           rootRef.current.add(group)    
           group.updateMatrixWorld()
           // console.log(group)
@@ -1126,7 +1134,7 @@ const useInteractionsManager = ({
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
-    let selectedId = selections.length ? selections[0] : null
+    let selectedId = selections.length ? selections[0] : null  
 
     let mode = interactionService.state.value
     let context = interactionService.state.context
@@ -1179,9 +1187,7 @@ const useInteractionsManager = ({
       let controller = gl.xr.getController(context.draggingController)
 
       if (sceneObjects[context.selection].hasOwnProperty('group')){
-        const groupId = sceneObjects[context.selection].group 
-        const groupData = sceneObjects[groupId]
-        const objects = getGroupObjects(groupId,sceneObjects,scene)
+        const objects = getGroupObjects(context.selection,sceneObjects,scene)
 
         for (let i = 0; i<objects.length;i++){
           let object3d = objects[i]
@@ -1191,12 +1197,12 @@ const useInteractionsManager = ({
             // update position via cursor
             const cursor = controller.getObjectByName('cursor')
             let wp = cursor.getWorldPosition(getReusableVector())
-            if (controller.userData.selectOffset && object3d.userData.type == 'character') {
-              wp.sub(controller.userData.selectOffset)
-              object3d.applyMatrix(object3d.parent.matrixWorld)
+            if (controller.userData.hasOwnProperty('selectOffsetGroup') && object3d.userData.type == 'character') {
+              wp.sub(controller.userData.selectOffsetGroup[object3d.userData.id].offset)
+              object3d.applyMatrix4(object3d.parent.matrixWorld)
               object3d.position.copy(wp)
               object3d.updateMatrixWorld()
-              object3d.applyMatrix(object3d.parent.getInverseMatrixWorld())
+              object3d.applyMatrix4(object3d.parent.getInverseMatrixWorld())
             }
     
             if (object3d.userData.staticRotation) {
@@ -1222,10 +1228,10 @@ const useInteractionsManager = ({
           let wp = cursor.getWorldPosition(getReusableVector())
           if (controller.userData.selectOffset && object3d.userData.type == 'character') {
             wp.sub(controller.userData.selectOffset)
-            object3d.applyMatrix(object3d.parent.matrixWorld)
+            object3d.applyMatrix4(object3d.parent.matrixWorld)
             object3d.position.copy(wp)
             object3d.updateMatrixWorld()
-            object3d.applyMatrix(object3d.parent.getInverseMatrixWorld())
+            object3d.applyMatrix4(object3d.parent.getInverseMatrixWorld())
           }
   
           if (object3d.userData.staticRotation) {
@@ -1520,26 +1526,17 @@ const useInteractionsManager = ({
           let controller = event.controller
           let { object, distance, point, id } = event.intersection
 
-          if (sceneObjects[id].group){
-            const objects = getGroupObjects(id,sceneObjects,scene)
-
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const grId = sceneObjects[context.selection].group
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
 
             for (let i = 0; i<objects.length;i++){
-              if (objects[i].userData.blocked || objects[i].userData.locked) {
-                return
-              }
-
-
-    
+              if (objects[i].userData.blocked || objects[i].userData.locked) return
               log('-- onSelected')
-              // selectOffset is used for Character
-              controller.userData.selectOffset = getSelectOffset(controller, objects[i], distance, point)
-              // if(objects[i].userData.type === "attachable") {
-              //   dispatch(selectAttachable({id: objects[i].userData.id, bindId: objects[i].userData.attachToId}))
-              // } else {
-              //   dispatch(selectObject(objects[i].userData.id))
-              // }
             }
+            // selectOffset is used for Character
+            controller.userData.selectOffsetGroup =getSelectOffset(controller, objects, distance, point)
+            dispatch(selectObject([grId, ...sceneObjects[grId].children]))
             return
           } 
 
@@ -1565,7 +1562,10 @@ const useInteractionsManager = ({
           let controller = event.controller
           log('-- onSelectNone', controller)
 
-          if (controller) controller.userData.selectOffset = null
+          if (controller){
+            controller.userData.selectOffset = null
+            if (controller.userData.hasOwnProperty('selectOffsetGroup ')) delete controller.userData.selectOffsetGroup 
+          } 
           dispatch(selectObject(null))
           BonesHelper.getInstance().resetSelection()
         },
@@ -1596,29 +1596,33 @@ const useInteractionsManager = ({
           console.log('onDragObjectEntry')
           let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
-          if (sceneObjects[event.intersection.id].group){
-            const objects = getGroupObjects(event.intersection.id,sceneObjects,scene)
+
+          const groupId = sceneObjects[event.intersection.id].group
+          let group = rootRef.current.children.find(item => item.userData.id == groupId)
+          
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
             for (let i = 0; i<objects.length;i++){
 
               if (objects[i].userData.locked || objects[i].userData.blocked) {
                 return
               }
 
-              // if (objects[i].userData.type !== 'character') {
+              if (objects[i].userData.type !== 'character') {
                 if(objects[i].userData.type === "attachable")
                 {
                   attachableParent.current = []
                   attachableParent.current.push(objects[i].parent)
                 }
 
-              // }
 
               controller.attach(objects[i])  
               objects[i].updateMatrixWorld(true)
               SGConnection.blockObject(objects[i].userData.id) // action 'block obkect'
+
+              }
             }
-            const groupId = sceneObjects[event.intersection.id].group
-            let group = rootRef.current.children.find(item => item.userData.id == groupId)
+
             controller.attach(group)  
             group.updateMatrixWorld(true)
             return
@@ -1631,8 +1635,7 @@ const useInteractionsManager = ({
           }
 
           if (object.userData.type !== 'character') {
-            if(object.userData.type === "attachable")
-            {
+            if(object.userData.type === "attachable"){
               attachableParent.current = object.parent
             }
             
@@ -1674,7 +1677,7 @@ const useInteractionsManager = ({
           let root = rootRef.current // корневая группа 
           console.log(controller.position.clone())
 
-          if (sceneObjects[context.selection].group){
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
             const objects = getGroupObjects(context.selection,sceneObjects,scene)
             for (let i = 0; i<objects.length;i++){
               // let object = scene.__interaction.find(o => o.userData.id === objects[i].userData.id)
@@ -1695,9 +1698,8 @@ const useInteractionsManager = ({
               if (SGConnection.unblockObject && objects[i].userData.id) {
                 SGConnection.unblockObject(objects[i].userData.id) // action 'unblock object'
               }
-              console.log('pos after attach',objects[i].position.clone())
+              // console.log('pos after attach',objects[i].position.clone())
               commit(objects[i].userData.id, objects[i])
-              // commitRotObj(objects[i].userData.id, objects[i])
               if (objects[i].userData.type === 'character') {
                 console.log('onDragObjectExit, character')
                 let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === objects[i].userData.id)
@@ -1705,17 +1707,14 @@ const useInteractionsManager = ({
                   commit(mapAttachables[i].userData.id, mapAttachables[i])
                 }
               }
-    
-
             }
             // commitGroup(event,context,sceneObjects[context.selection].group)
             const groupId = sceneObjects[context.selection].group
             let group = controller.children.find(item => item.userData.id == groupId)
-            console.log('group before attach',group.position.clone())
+
             root.attach(group)
             group.updateWorldMatrix(true, true) // upd parents & children
-            // group.updateMatrixWorld(true)
-            console.log('group after attach',group.position.clone())
+
             const groupNewPos = {
               x: objects[0].position.x - sceneObjects[objects[0].userData.id].x + sceneObjects[groupId].x,
               y: objects[0].position.y - sceneObjects[objects[0].userData.id].y + sceneObjects[groupId].y,
@@ -1726,12 +1725,12 @@ const useInteractionsManager = ({
               y: objects[1].position.y - sceneObjects[objects[1].userData.id].y + sceneObjects[groupId].y,
               z: objects[1].position.z - sceneObjects[objects[1].userData.id].z + sceneObjects[groupId].z
             }
-            console.log(groupNewPos,objects[0].position.clone())
-            console.log(groupNewPos2,objects[1].position.clone())
+            console.log(objects[0].userData,groupNewPos,objects[0].position.clone(),[sceneObjects[objects[0].userData.id].x,sceneObjects[objects[0].userData.id].y,sceneObjects[objects[0].userData.id].z])
+            console.log(objects[1].userData,groupNewPos2,objects[1].position.clone(),[sceneObjects[objects[1].userData.id].x,sceneObjects[objects[1].userData.id].y,sceneObjects[objects[1].userData.id].z])
+            console.log('offset',controller.userData.selectOffsetGroup)
 
-            // commitGroup2(groupId, group.position.clone())
-            // commitRotObj(objects[0].userData.id, objects[0])
-            // commitRotObj(objects[1].userData.id, objects[1])
+            // commitGroup2(groupId, groupNewPos)
+
             uiService.send({ type: 'UNLOCK' })
             return
           }
@@ -1815,12 +1814,30 @@ const useInteractionsManager = ({
         },
 
         moveAndRotateObject: (context, event) => {
-          console.log('moveAndRotateObject')
+          console.log('moveAndRotateObject',event)
           let controller = gl.xr.getController(context.draggingController)
-          let object = scene.__interaction.find(o => o.userData.id === context.selection)
-          
           let { worldScale } = useStoreApi.getState()
 
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
+
+            for (let i=0; i<objects.length; i++ ){
+
+              let shouldMoveWithCursor = (objects[i].userData.type === 'character')
+              let target = shouldMoveWithCursor
+                ? controller.getObjectByName('cursor')
+                : objects[i]
+              moveObjectZ(target, event, worldScale)
+    
+              rotateObjectY(objects[i], event, controller)
+
+            }
+
+            return
+          }
+
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+          
           let shouldMoveWithCursor = (object.userData.type === 'character')
           let target = shouldMoveWithCursor
             ? controller.getObjectByName('cursor')

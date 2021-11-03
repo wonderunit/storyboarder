@@ -290,6 +290,16 @@ class CanvasRenderer {
     let id = this.state.selections[0]
     let sceneObject = this.state.sceneObjects[id]
 
+    // let childrens = null
+
+    // if (sceneObject){
+    //   childrens = (sceneObject.type === 'group') ? sceneObject.children : null
+    // }
+
+    // let grBox = null
+    // if (childrens && !grBox) grBox = this.state.sceneObjects["2DDAE72E-D21D-4B10-A3FD-9F8C689261A8"]
+
+    // console.log(id,sceneObject,this.state.sceneObjects)
     // console.log("render")
     if(this.state.context.isUIHidden)  return
 
@@ -345,6 +355,30 @@ class CanvasRenderer {
               }
             }
         },
+
+        // ...(sceneObject.type === 'group') && {
+        //   ...(sceneObject.type === 'group')
+        //     ? {
+        //       width: {
+        //         label: `${t("xr.controls.width")} - ${grBox.width}m`,
+        //         lens: R.compose(R.lensPath(['width']), lenses.width)
+        //       },
+        //       height: {
+        //         label: `${t("xr.controls.height")} - ${grBox.height}m`,
+        //         lens: R.compose(R.lensPath(['height']), lenses.height)
+        //       },
+        //       depth: {
+        //         label: `${t("xr.controls.depth")} - ${grBox.depth}m`,
+        //         lens: R.compose(R.lensPath(['depth']), lenses.depth)
+        //       }
+        //     }
+        //     : {
+        //       size: {
+        //         label: `${t("xr.controls.size")} - ${sceneObject.height}m`,
+        //         lens: R.compose(R.lensPath(['height']), lenses.height)
+        //       }
+        //     }
+        // },
 
         ...(sceneObject.type === 'image') && {
           size: {
@@ -429,6 +463,24 @@ class CanvasRenderer {
 
           // Object sizes
           if (key === 'size') {
+            // if (sceneObject.hasOwnProperty('group')){
+            //   console.log('Object sizes')
+            //   this.dispatch(
+            //     updateObject(grBox.id, {
+            //       width: result.height,
+            //       height: result.height,
+            //       depth: result.height
+            //     })
+            //   )
+            // } else{
+            //   this.dispatch(
+            //     updateObject(sceneObject.id, {
+            //       width: result.height,
+            //       height: result.height,
+            //       depth: result.height
+            //     })
+            //   )
+            // }
             this.dispatch(
               updateObject(sceneObject.id, {
                 width: result.height,
@@ -436,6 +488,7 @@ class CanvasRenderer {
                 depth: result.height
               })
             )
+
 
           // character scale
           } else if (key === 'scale') {
@@ -559,6 +612,24 @@ class CanvasRenderer {
         }
       }
 
+      // if (sceneObject.type === 'group'){
+      //   // console.log('ui group', this  )
+      //   roundRect(ctx, 483, 288, 66, 105, 25, true, false)
+      //   this.paneComponents['properties']['extend-button'] = {
+      //     id: 'extend-button',
+      //     type: 'image-button',
+      //     x: 483 - 32 + 66 * 0.5,
+      //     y: 288 - 32 + 105 * 0.5,
+      //     width: 64,
+      //     height: 64,
+      //     image: 'arrow',
+      //     flip: true,
+
+      //     onSelect: () => {
+      //       this.send('TOGGLE_GRID')
+      //     }
+      //   }
+      // }
       if (sceneObject.type === 'character' || sceneObject.type === 'object') {
         roundRect(ctx, 483, 288, 66, 105, 25, true, false)
         this.paneComponents['properties']['extend-button'] = {
@@ -578,6 +649,8 @@ class CanvasRenderer {
       } else {
         ctx.clearRect(483, 288, 66, 105)
       }
+
+
 
       this.renderObjects(ctx, this.paneComponents['properties'])
     }

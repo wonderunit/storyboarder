@@ -295,7 +295,7 @@ const updateGroup = (draft, state, props) => {
 
   let keys = Object.keys(props)
 
-  console.log(state,draft,props)
+  // console.log(state,draft,props)
 
   for(let i = 0; i < keys.length; i++ ){
     if (keys[i] != 'id'){
@@ -303,8 +303,9 @@ const updateGroup = (draft, state, props) => {
         for (let k=0; k < draft[props.id].children.length; k++){
           let id = draft[props.id].children[k]
           if (keys[i]!= 'rotation'){
-            if (keys[i] == 'x') console.log(draft[id][keys[i]],props[keys[i]],state[props.id][keys[i]])
+            // if (keys[i] == 'x') console.log(draft[id][keys[i]],props[keys[i]],state[props.id][keys[i]])
             draft[id][keys[i]] +=  props[keys[i]] - state[props.id][keys[i]]
+
           }else {
             // draft[id][keys[i]].x = props[keys[i]].x
             // draft[id][keys[i]].y = props[keys[i]].y
