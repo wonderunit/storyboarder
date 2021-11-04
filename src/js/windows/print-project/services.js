@@ -67,7 +67,8 @@ const exportToFile = async (context, event) => {
 
   let filename = getExportFilename(project, new Date())
   let filepath = path.join(project.root, 'exports', filename)
-  fs.mkdirp(path.dirname(filepath))
+  // ensure `exports` folder exists
+  fs.mkdirpSync(path.dirname(filepath))
 
   let stream = fs.createWriteStream(filepath)
   await generate(stream, { project }, getGeneratorConfig(context))
