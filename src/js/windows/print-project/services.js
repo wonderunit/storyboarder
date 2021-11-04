@@ -70,8 +70,12 @@ const exportToFile = async (context, event) => {
   // ensure `exports` folder exists
   fs.mkdirpSync(path.dirname(filepath))
 
-  let stream = fs.createWriteStream(filepath)
-  await generate(stream, { project }, getGeneratorConfig(context))
+  await new Promise(async (resolve, reject) => {
+    let stream = fs.createWriteStream(filepath)
+    stream.on('error', reject)
+    stream.on('finish', resolve)
+    await generate(stream, { project }, getGeneratorConfig(context))
+  })
 
   log.info('exported to ' + filepath)
   shell.showItemInFolder(filepath)
