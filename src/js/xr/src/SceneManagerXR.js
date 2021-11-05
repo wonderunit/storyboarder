@@ -64,6 +64,7 @@ const Controller = require('./components/Controller')
 const TeleportTarget = require('./components/TeleportTarget')
 const { Log } = require('./components/Log')
 const SimpleErrorBoundary = require('./components/SimpleErrorBoundary')
+const Group = require('./components/Group')
 
 const Controls = require('./components/ui/Controls')
 const Help = require('./components/ui/Help')
@@ -109,6 +110,11 @@ const getSceneObjectAttachableIds = createSelector(
   sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'attachable').map(o => o.id)
 )
 
+const getSceneObjectGroupIds = createSelector(
+  [getSceneObjects],
+  sceneObjects => Object.values(sceneObjects).filter(o => o.type === 'group').map(o => o.id)
+)
+
 const systemEmotions = require('../../shared/reducers/shot-generator-presets/emotions.json')
 function getEmotionTextureUriByPresetId (id) {
   // TODO provide XR FilepathsContext functions to get asset and user preset uri
@@ -135,6 +141,7 @@ const SceneContent = connect(
     lightIds: getSceneObjectLightIds(state),
     virtualCameraIds: getSceneObjectVirtualCamerasIds(state),
     imageIds: getSceneObjectImageIds(state),
+    groupIds: getSceneObjectGroupIds(state),
     language: state.language
   }),
   {
@@ -146,7 +153,7 @@ const SceneContent = connect(
   ({
     aspectRatio, sceneObjects, world, activeCamera, selections, models,
 
-    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
+    characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, groupIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
     resources, getAsset,
     language,
@@ -613,7 +620,7 @@ const SceneContent = connect(
         thumbnailRenderer.current = null
       }
     }, [aspectRatio])
-
+  
     return (
       <>
         <group
@@ -751,6 +758,15 @@ const SceneContent = connect(
                     character={ sceneObjects[sceneObject.attachToId] }/>
                 </SimpleErrorBoundary>
             })
+          }
+          {
+            groupIds.map(id =>
+              <Group 
+                key={id}
+                sceneObject={sceneObjects[id]}
+                isSelected={selections.includes(id)}
+              />
+            )
           }
           {
             lightIds.map(id =>

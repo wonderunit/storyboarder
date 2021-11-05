@@ -140,20 +140,15 @@ const getObjectInfo = (state) => {
   const selected = getSelections(state)[0]
   const object = getSceneObjects(state)[selected]
 
-  let rslt = {}
-
   if (!object) {
-    return rslt
+    return {}
   }
 
-  rslt = {
+  return {
     x: object.x,
     y: object.y,
     z: object.z
   }
-
-
-  return rslt
 }
 
 const getObjectInfoMM = deepEqualSelector([getObjectInfo], (info) => info)
