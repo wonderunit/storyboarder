@@ -294,3 +294,7 @@ form.busy {
 form.busy * {
   pointer-events: none;
 }
+
+.output.busy--generating {
+  cursor: wait;
+}
