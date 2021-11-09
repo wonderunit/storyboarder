@@ -70,8 +70,8 @@ const exportToFile = async (context, event) => {
   // ensure `exports` folder exists
   fs.mkdirpSync(path.dirname(filepath))
 
+  let stream = fs.createWriteStream(filepath)
   await new Promise(async (resolve, reject) => {
-    let stream = fs.createWriteStream(filepath)
     stream.on('error', reject)
     stream.on('finish', resolve)
     await generate(stream, { project }, getGeneratorConfig(context))
@@ -92,7 +92,11 @@ const generateToCanvas = async (context, event) => {
   // create and save the file
   let outfile = getTempFilepath()
   let stream = fs.createWriteStream(outfile)
-  await generate(stream, { project }, getGeneratorConfig(cfg))
+  await new Promise(async (resolve, reject) => {
+    stream.on('error', reject)
+    stream.on('finish', resolve)
+    await generate(stream, { project }, getGeneratorConfig(cfg))
+  })
 
   // load and render the file to the canvas
   let task = pdfjsLib.getDocument(outfile)
