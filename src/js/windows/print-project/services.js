@@ -106,9 +106,16 @@ const generateToCanvas = async (context, event) => {
   let pdf = await task.promise
   let page = await pdf.getPage(1)
 
-  let available = canvas.parentNode.getBoundingClientRect()
   let full = page.getViewport({ scale: 1 })
 
+  // fit to the space available within the output element, minus its padding
+  let outputEl = canvas.parentNode.parentNode
+  let available = outputEl.getBoundingClientRect()
+  let styles = getComputedStyle(outputEl)
+  let w = parseInt(styles.paddingLeft) + parseInt(styles.paddingRight)
+  let h = parseInt(styles.paddingTop) + parseInt(styles.paddingBottom)
+  available.width -= w
+  available.height -= h
   let [width, height] = fit([full.width, full.height], [available.width, available.height])
 
   let scale = Math.min((width / full.width), (height / full.height))
