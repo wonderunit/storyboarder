@@ -62,18 +62,18 @@ form {
   background-color: rgba(255, 255, 255, 0.1);
 }
 .output {
-  flex: 1;
-  padding: 1rem;
   display: flex;
+  flex: 1;
+  padding: 2rem;
   background: url(../../../img/wood-texture.png) no-repeat center center fixed;
   background-size: cover;
+  justify-content: center;
 }
 .output .inner {
-  flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  overflow: hidden;
+  position: relative;
+  height: min-content;
+}
 }
 button {
   align-self: flex-start;
