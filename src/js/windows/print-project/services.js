@@ -45,7 +45,6 @@ const createGetTempFilepath = function () {
     } else {
       let directory = fs.mkdtempSync(path.join(os.tmpdir(), 'storyboarder-'))
       filepath = path.join(directory, 'export.pdf')
-      log.info('writing to', filepath)
       return filepath
     }
   }
@@ -92,6 +91,7 @@ const generateToCanvas = async (context, event) => {
   // create and save the file
   let outfile = getTempFilepath()
   let stream = fs.createWriteStream(outfile)
+  log.info('generating temporary pdf to', outfile)
   await new Promise(async (resolve, reject) => {
     stream.on('error', reject)
     stream.on('finish', resolve)
@@ -99,6 +99,7 @@ const generateToCanvas = async (context, event) => {
   })
 
   // load and render the file to the canvas
+  log.info('displaying pdf')
   let task = pdfjsLib.getDocument(outfile)
   let pdf = await task.promise
   let page = await pdf.getPage(1)
@@ -123,6 +124,8 @@ const generateToCanvas = async (context, event) => {
   }
   let renderTask = page.render(renderContext)
   await renderTask.promise
+
+  log.info('write complete')
 }
 
 const displayWarning = async (context, event) => {
