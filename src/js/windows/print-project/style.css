@@ -74,6 +74,18 @@ form {
   position: relative;
   height: min-content;
 }
+.output .inner:after {
+  /* add the transparent pattern overlay */
+  background: url(../../../img/paper-texture.png) center no-repeat;
+  background-size: cover;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  top: 0;
+  display: block;
+  mix-blend-mode: multiply;
 }
 button {
   align-self: flex-start;
