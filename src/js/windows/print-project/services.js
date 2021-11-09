@@ -88,6 +88,8 @@ const generateToCanvas = async (context, event) => {
     pages: [context.pageToPreview, context.pageToPreview]
   }
 
+  canvas.parentNode.parentNode.classList.add('busy--generating')
+
   // create and save the file
   let outfile = getTempFilepath()
   let stream = fs.createWriteStream(outfile)
@@ -126,6 +128,8 @@ const generateToCanvas = async (context, event) => {
   await renderTask.promise
 
   log.info('write complete')
+
+  canvas.parentNode.parentNode.classList.remove('busy--generating')
 }
 
 const displayWarning = async (context, event) => {
