@@ -247,7 +247,8 @@ const machine = Machine({
           invoke: {
             src: 'exportToFile',
             onDone: {
-              target: '#available'
+              target: '#available',
+              actions: 'reportAnalyticsEvent'
             },
             onError: {
               target: '#warning'
