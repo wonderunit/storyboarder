@@ -1,5 +1,4 @@
 const EventEmitter = require('events').EventEmitter
-// const child_process = require('child_process')
 const fs = require('fs')
 const path = require('path')
 const pdfDocument = require('pdfkit')
