@@ -6,12 +6,9 @@ const userDataPath = electronApp.getPath('userData')
 const path = require('path')
 const { initReactI18next } = require("react-i18next")
 const {settings:config} = require('./language.config')
-let loadPath 
-if(window) {
-    loadPath = path.join(window.__dirname, "js", "locales")
-} else {
-    loadPath = path.join(__dirname, "..", "js", "locales")
-}
+
+const loadPath = path.join(electronApp.getAppPath(), 'src', 'js', 'locales')
+
 const getLoadPath = (lng, namespace) => {
     let builtInPath = path.join(loadPath, `${lng}.json`)
     if(config.getSettingByKey("builtInLanguages").some((item) => item.fileName === lng)) {
