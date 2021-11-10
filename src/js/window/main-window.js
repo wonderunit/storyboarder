@@ -6905,30 +6905,25 @@ ipcRenderer.on('exportVideo', (event, args) => {
 })
 
 
-ipcRenderer.on('exportPrintablePdf', (event, sourcePath, filename) => {
+ipcRenderer.on('exportPrintableWorksheetPdf', (event, sourcePath) => {
+  let filename = 'Worksheet'
+
   let outputPath = path.join(
-    exporterCommon.ensureExportsPathExists(boardFilename), filename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
+    exporterCommon.ensureExportsPathExists(boardFilename),
+    filename + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf'
   )
 
   if (!fs.existsSync(outputPath)) {
     fs.writeFileSync(outputPath, fs.readFileSync(sourcePath))
 
-    if (filename == 'Worksheet') {
-      notifications.notify({message: "A Worksheet PDF has been exported.", timing: 20})
-    } else {
-      notifications.notify({message: "A Storyboard PDF has been exported.", timing: 20})
-    }
+    notifications.notify({message: "A Worksheet PDF has been exported.", timing: 20})
     sfx.positive()
     shell.showItemInFolder(outputPath)
 
   } else {
     log.error('File exists')
     sfx.error()
-    if (filename == 'Worksheet') {
-      notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
-    } else {
-      notifications.notify({message: "Could not export Storyboard PDF.", timing: 20})
-    }
+    notifications.notify({ message: "Could not export Worksheet PDF.", timing: 20 })
   }
 })
 
