@@ -124,7 +124,7 @@ document.querySelector('#pdf-button').onclick = (e) => {
     let basenameWithoutExt = path.basename(boardFilename, path.extname(boardFilename))
     ipcRenderer.send('exportPrintablePdf', pdfdocument, basenameWithoutExt)
   } else {
-    ipcRenderer.send('exportPrintablePdf', pdfdocument, 'Worksheet')
+    ipcRenderer.send('exportPrintableWorksheetPdf', pdfdocument)
   }
   cleanup()
   remote.getCurrentWindow().hide()
