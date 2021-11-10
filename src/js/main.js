@@ -1586,8 +1586,8 @@ ipcMain.on('importWorksheets', async (event, arg) => {
   }
 })
 
-ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) =>
-  mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)
+ipcMain.on('exportPrintableWorksheetPdf', (event, sourcePath) =>
+  mainWindow.webContents.send('exportPrintableWorksheetPdf', sourcePath)
 )
 
 ipcMain.on('toggleAudition', (event) => {
