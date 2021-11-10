@@ -6904,9 +6904,6 @@ ipcRenderer.on('exportVideo', (event, args) => {
   ipcRenderer.send('analyticsEvent', 'Board', 'exportVideo')
 })
 
-let printWindow = [null, null]
-const WORKSHEETPW = 0
-const PDFEXPORTPW = 1
 
 ipcRenderer.on('exportPrintablePdf', (event, sourcePath, filename) => {
   let outputPath = path.join(
@@ -6935,45 +6932,6 @@ ipcRenderer.on('exportPrintablePdf', (event, sourcePath, filename) => {
   }
 })
 
-ipcRenderer.on('printWorksheet', (event, args) => {
-  log.info(boardData)
-  openPrintWindow(WORKSHEETPW, showWorksheetPrintWindow);
-})
-
-const openPrintWindow = (printWindowType, showPrintWindow) => {
-  if (!printWindow[printWindowType]) {
-    printWindow[printWindowType] = new remote.BrowserWindow({
-      width: 1200,
-      height: 800,
-      minWidth: 600,
-      minHeight: 600,
-      backgroundColor: '#333333',
-      show: false,
-      center: true,
-      parent: remote.getCurrentWindow(),
-      resizable: true,
-      frame: false,
-      modal: true,
-      webPreferences: {
-        nodeIntegration: true,
-        enableRemoteModule: true
-      }
-    })
-    printWindow[printWindowType].loadURL(`file://${__dirname}/../../print-window.html`)
-    printWindow[printWindowType].once('ready-to-show', () => {
-      showPrintWindow(printWindow[printWindowType]);
-    })
-  } else if (!printWindow[printWindowType].isVisible()) {
-      showPrintWindow(printWindow[printWindowType]);
-  }
-
-  ipcRenderer.send('analyticsEvent', 'Board', 'show print window')
-}
-
-const showWorksheetPrintWindow = (printWindow) => {
-  printWindow.webContents.send('worksheetData',boardData.aspectRatio, currentScene, scriptData)
-  setTimeout(()=>{printWindow.show()}, 200)
-}
 
 ipcRenderer.on('importFromWorksheet', (event, args) => {
   importFromWorksheet(args)
