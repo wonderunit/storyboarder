@@ -33,6 +33,7 @@ const preferencesUI = require('./windows/preferences')()
 const registration = require('./windows/registration/main')
 const shotGeneratorWindow = require('./windows/shot-generator/main')
 const printProject = require('./windows/print-project/main')
+const printWorksheet = require('./windows/print-worksheet/main')
 
 const JWT = require('jsonwebtoken')
 
@@ -1418,11 +1419,6 @@ ipcMain.on('exportCleanup', (event, arg) => {
   mainWindow.webContents.send('exportCleanup', arg)
 })
 
-ipcMain.on('printWorksheet', (event, arg) => {
-  //openPrintWindow()
-  mainWindow.webContents.send('printWorksheet', arg)
-})
-
 ipcMain.on('save', (event, arg) => {
   mainWindow.webContents.send('save', arg)
 })
@@ -1520,8 +1516,6 @@ ipcMain.on('openLanguagePreferences', (event) => {
   } else {
     LanguagePreferencesWindow.createWindow(() => {LanguagePreferencesWindow.reveal()})
   }
-  //openPrintWindow(PDFEXPORTPW, showPDFPrintWindow);
-  //ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
 })
 
 
@@ -1547,6 +1541,28 @@ ipcMain.handle('exportPDF:getData', async () => {
   })
 })
 
+// Worksheet Export
+ipcMain.on('printWorksheet', () => {
+  if (!mainWindow) return
+
+  printWorksheet.show({ parent: mainWindow })
+
+  analytics.event('Board', 'show print worksheet window')
+})
+ipcMain.handle('printWorksheet:getData', async () => {
+  if (!mainWindow) return
+
+  return await new Promise(resolve => {
+    ipcMain.once('printWorksheet:getProjectData-response', (event, projectData) => {
+      resolve({
+        currentFilePath: currentFile,
+        projectData
+      })
+    })
+    mainWindow.webContents.send('printWorksheet:getProjectData-request')
+  })
+})
+
 // Worksheet Import
 ipcMain.on('importWorksheets', async (event, arg) => {
   try {
@@ -1569,6 +1585,10 @@ ipcMain.on('importWorksheets', async (event, arg) => {
     log.error(err)
   }
 })
+
+ipcMain.on('exportPrintablePdf', (event, sourcePath, fileName) =>
+  mainWindow.webContents.send('exportPrintablePdf', sourcePath, fileName)
+)
 
 ipcMain.on('toggleAudition', (event) => {
   mainWindow.webContents.send('toggleAudition')
