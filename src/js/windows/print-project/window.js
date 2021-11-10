@@ -10,6 +10,11 @@ const { PrintApp } = require('./components')
 
 const getData = () => ipcRenderer.invoke('exportPDF:getData')
 
+const reportAnalyticsEvent = (context, event) => {
+  if (event.type == 'done.invoke.exportToFile') {
+    ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
+  }
+}
 
 
 
@@ -25,6 +30,9 @@ const start = async () => {
   const service = interpret(
     printProjectMachine
       .withConfig({
+        actions: {
+          reportAnalyticsEvent
+        },
         services: {
           generateToCanvas,
           exportToFile,
