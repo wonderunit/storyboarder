@@ -1,13 +1,17 @@
 const {ipcRenderer, remote} = require('electron')
 const pdf = require('pdfjs-dist')
-const child_process = require('child_process')
 const app = remote.app
-const os = require('os')
 const path = require('path')
 
 const prefModule = remote.require('./prefs')
 const worksheetPrinter = require('./worksheet-printer')
 const storyTips = new(require('../../window/story-tips'))
+
+const { createPrint } = require('../../print.js')
+
+const print = createPrint({
+  pathToSumatraExecutable: path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe')
+})
 
 //#region Localization
 const i18n = require('../../services/i18next.config.js')
@@ -109,9 +113,17 @@ document.addEventListener('keyup', event => {
 
 document.querySelector('#print-button').onclick = (e) => {
   if (!pdfdocument) return false;
+
+  print({
+    filepath: pdfdocument,
+    paperSize,
+    paperOrientation,
+    copies: document.querySelector('#copies').value
+  })
+
+  ipcRenderer.send('analyticsEvent', 'Application', 'print-worksheet', null, copies)
+
   ipcRenderer.send('playsfx', 'positive')
-  // PRINT
-  print()
   let window = remote.getCurrentWindow()
   cleanup()
   window.hide()
@@ -122,31 +134,6 @@ document.querySelector('#pdf-button').onclick = (e) => {
   ipcRenderer.send('exportPrintableWorksheetPdf', pdfdocument)
   cleanup()
   remote.getCurrentWindow().hide()
-}
-
-const print = () => {
-  let boardFilename = null
-  let cmd
-  let output
-  switch (os.platform()) {
-    case 'darwin':
-      cmd = 'lpr -o media=' + ((paperSize === 'LTR') ? 'letter' : 'a4') + ((paperOrientation === 'landscape' || !boardFilename) ? ' -o orientation-requested=4' : '') + ' -#' + document.querySelector('#copies').value + ' ' + pdfdocument
-      output = child_process.execSync(cmd)
-      break
-    case 'linux':
-      cmd = 'lp -n ' + document.querySelector('#copies').value + ' ' +  pdfdocument
-      output = child_process.execSync(cmd)
-      break
-    case 'win32':
-      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe')
-      let params = ['-print-to-default', '-silent', '-print-settings "' + document.querySelector('#copies').value + 'x"', pdfdocument]
-      console.log(params)
-      child_process.execFile(cmd, params, (e,s,d)=> {
-        console.log(s)
-      })
-      break
-  }
-  ipcRenderer.send('analyticsEvent', 'Board', 'print', null, document.querySelector('#copies').value)
 }
 
 document.querySelector('#paper-size').addEventListener('change', (e) => {
