@@ -1,18 +1,20 @@
-const {ipcRenderer, shell, remote} = require('electron')
-const prefModule = remote.require('./prefs')
+const {ipcRenderer, remote} = require('electron')
 const pdf = require('pdfjs-dist')
-const worksheetPrinter = require('./worksheet-printer')
-const exporter = require('./exporter')
-const storyTips = new(require('./story-tips'))
 const child_process = require('child_process')
 const app = remote.app
 const os = require('os')
 const path = require('path')
 
-const exporterCommon = require('../exporters/common')
+const prefModule = remote.require('./prefs')
+const worksheetPrinter = require('./worksheet-printer')
+// const exporter = require('../../window/exporter')
+const storyTips = new(require('../../window/story-tips'))
+// const exporterCommon = require('../../exporters/common')
+
 //#region Localization
 let isWorksheetExport = false
-const i18n = require('../services/i18next.config')
+const i18n = require('../../services/i18next.config.js')
+
 i18n.on('loaded', (loaded) => {
   let lng = ipcRenderer.sendSync("getCurrentLanguage")
   i18n.changeLanguage(lng, () => {
@@ -252,7 +254,7 @@ let pdfDoc = null,
     ctx = canvas.getContext('2d')
 
 const reloadPDFDocument = (path) => {
-  pdf.GlobalWorkerOptions.workerSrc = '../node_modules/pdfjs-dist/build/pdf.worker.js'
+  pdf.GlobalWorkerOptions.workerSrc = '../../../../node_modules/pdfjs-dist/build/pdf.worker.js'
 
   let retry = 0
 
@@ -376,7 +378,7 @@ const generateWorksheet = () => {
 }
 
 const prefsModule = require('electron').remote.require('./prefs')
-const watermarkModel = require('../models/watermark')
+const watermarkModel = require('../../models/watermark')
 
 const exportPDF = async () => {
   let shouldWatermark = prefsModule.getPrefs().enableWatermark
