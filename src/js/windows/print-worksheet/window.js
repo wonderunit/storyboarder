@@ -92,14 +92,12 @@ let aspectRatio
 let currentScene
 let scriptData
 let boardData
-let boardFilename
 let pdfdocument
 // on change save preferences
 
 const cleanup = () => {
   pdfdocument = null
   boardData = null
-  boardFilename = null
 }
 
 window.pdf = pdf
@@ -130,17 +128,13 @@ document.querySelector('#print-button').onclick = (e) => {
 
 document.querySelector('#pdf-button').onclick = (e) => {
   if (!pdfdocument) return false;
-  if (boardFilename) {
-    let basenameWithoutExt = path.basename(boardFilename, path.extname(boardFilename))
-    ipcRenderer.send('exportPrintablePdf', pdfdocument, basenameWithoutExt)
-  } else {
-    ipcRenderer.send('exportPrintableWorksheetPdf', pdfdocument)
-  }
+  ipcRenderer.send('exportPrintableWorksheetPdf', pdfdocument)
   cleanup()
   remote.getCurrentWindow().hide()
 }
 
 const print = () => {
+  let boardFilename = null
   let cmd
   let output
   switch (os.platform()) {
