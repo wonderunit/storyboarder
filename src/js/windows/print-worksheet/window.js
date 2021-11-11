@@ -236,7 +236,7 @@ const loadWindow = () => {
   document.querySelector('#prev_button').addEventListener('click', onPrevPage);
   document.querySelector('#next_button').addEventListener('click', onNextPage);
 
-  worksheetPrinter.on('generated', (path)=>{
+  worksheetPrinter.on('generated', async (path)=>{
     // Disable workers to avoid yet another cross-origin issue (workers need
     // the URL of the script to be loaded, and dynamically loading a cross-origin
     // script does not work).
@@ -245,7 +245,7 @@ const loadWindow = () => {
     // The workerSrc property shall be specified.
     //console.log(require('pdfjs-dist/build/pdf.worker'))
 
-    reloadPDFDocument(path)
+    await reloadPDFDocument(path)
 
     //console.log(remote.getCurrentWindow().webContents.getPrinters())
     //document.querySelector("#preview").src = 'zoinks.png'
@@ -261,7 +261,8 @@ let pdfDoc = null,
     canvas = document.createElement('canvas'),
     ctx = canvas.getContext('2d')
 
-const reloadPDFDocument = (path) => {
+let retry = 0
+const reloadPDFDocument = async (path) => {
   pdf.GlobalWorkerOptions.workerSrc = '../../../../node_modules/pdfjs-dist/build/pdf.worker.js'
 
   let retry = 0
@@ -269,25 +270,27 @@ const reloadPDFDocument = (path) => {
   /**
    * Asynchronously downloads PDF.
    */
-  pdf.getDocument(path).then(function(pdfDoc_) {
-    pdfDoc = pdfDoc_;
-    document.querySelector('#page_count').textContent = pdfDoc.numPages;
+  try {
+    let pdfDoc_ = await pdf.getDocument(path).promise
+    pdfDoc = pdfDoc_
+    document.querySelector('#page_count').textContent = pdfDoc.numPages
 
     if (pageNum >= pdfDoc.numPages) {
       pageNum = pdfDoc.numPages
     }
 
     // Initial/first page rendering
-    renderPage(pageNum);
-    pdfdocument = path;
-  }).catch(() => {
+    renderPage(pageNum)
+    pdfdocument = path
+  } catch (err) {
+    console.error(err)
     // Sometime the PDF loading fails for obscur reason and retrying succeed, hence this code
     if (retry < 3) {
       console.log('retry loading ' + path)
       retry++
-      reloadPDFDocument(path)
+      await reloadPDFDocument(path)
     }
-  });
+  }
 }
 
 /**
@@ -299,7 +302,7 @@ function renderPage(num) {
   pageRendering = true;
   // Using promise to fetch the page
   pdfDoc.getPage(num).then(function(page) {
-    let viewport = page.getViewport(scale);
+    let viewport = page.getViewport({ scale });
     canvas.height = viewport.height;
     canvas.width = viewport.width;
 
