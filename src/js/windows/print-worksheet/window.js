@@ -370,41 +370,6 @@ const generateWorksheet = () => {
   }, 500)
 }
 
-const prefsModule = require('electron').remote.require('./prefs')
-const watermarkModel = require('../../models/watermark')
-
-const exportPDF = async () => {
-  let shouldWatermark = prefsModule.getPrefs().enableWatermark
-  let watermarkImagePath = watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData'))
-
-  let image = await exporterCommon.getImage(watermarkImagePath)
-  let watermarkDimensions = [image.width, image.height]
-
-  displaySpinner(true)
-  setTimeout(() => {
-    exporter
-      .exportPDF(
-        boardData,
-        boardFilename,
-        paperSize,
-        paperOrientation,
-        rows,
-        cols,
-        spacing,
-        path.join(app.getPath('temp'), 'boardoutput.pdf'),
-        shouldWatermark,
-        watermarkImagePath,
-        watermarkDimensions
-      )
-      .then(outputPath => {
-        reloadPDFDocument(outputPath)
-      })
-      .catch(err => {
-        console.error(err)
-        alert(err)
-      })
-  }, 500)
-}
 ;(async function () {
   let { projectData } = await ipcRenderer.invoke('exportPDF:getData')
   let { currentBoardData } = projectData
