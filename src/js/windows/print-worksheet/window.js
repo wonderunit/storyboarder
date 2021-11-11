@@ -87,13 +87,11 @@ let spacing
 let aspectRatio
 let currentScene
 let scriptData
-let boardData
 let pdfdocument
 // on change save preferences
 
 const cleanup = () => {
   pdfdocument = null
-  boardData = null
 }
 
 window.pdf = pdf
@@ -361,12 +359,8 @@ function onNextPage() {
 }
 
 const generatePDF = () => {
-  pdfdocument = null;
-  if (boardData) {
-    exportPDF()
-  } else {
-    generateWorksheet()
-  }
+  pdfdocument = null
+  generateWorksheet()
 }
 
 const generateWorksheet = () => {
