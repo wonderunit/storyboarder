@@ -259,7 +259,6 @@ let retry = 0
 const reloadPDFDocument = async (path) => {
   pdf.GlobalWorkerOptions.workerSrc = '../../../../node_modules/pdfjs-dist/build/pdf.worker.js'
 
-  let retry = 0
 
   /**
    * Asynchronously downloads PDF.
