@@ -417,24 +417,21 @@ const exportPDF = async () => {
       })
   }, 500)
 }
+;(async function () {
+  let { projectData } = await ipcRenderer.invoke('exportPDF:getData')
+  let { currentBoardData } = projectData
 
-loadWindow()
+  aspectRatio = currentBoardData.aspectRatio
+  currentScene = projectData.currentScene
+  scriptData = projectData.scriptData
 
-ipcRenderer.on('worksheetData', (event, _aspectRatio, _currentScene, _scriptData) => {
-  aspectRatio = _aspectRatio
-  currentScene = _currentScene
-  scriptData = _scriptData
-  document.querySelector('#paper-orientation-row').style.display = 'none';
+  document.querySelector('#paper-orientation-row').style.display = 'none'
+
   updateHTML()
-  isWorksheetExport = true
   generateWorksheet()
-})
 
-ipcRenderer.on('exportPDFData', (event, _boardData, _boardFilename) => {
-  boardData = _boardData
-  boardFilename = _boardFilename
-  exportPDF()
-})
+  loadWindow()
+})()
 
 window.ondragover = () => { return false }
 window.ondragleave = () => { return false }
