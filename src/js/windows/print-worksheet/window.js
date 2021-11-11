@@ -12,7 +12,7 @@ const storyTips = new(require('../../window/story-tips'))
 // const exporterCommon = require('../../exporters/common')
 
 //#region Localization
-let isWorksheetExport = false
+let isWorksheetExport = true
 const i18n = require('../../services/i18next.config.js')
 
 i18n.on('loaded', (loaded) => {
