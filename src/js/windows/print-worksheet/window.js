@@ -114,11 +114,13 @@ document.addEventListener('keyup', event => {
 document.querySelector('#print-button').onclick = (e) => {
   if (!pdfdocument) return false;
 
+  let copies = document.querySelector('#copies').value
+
   print({
     filepath: pdfdocument,
     paperSize,
     paperOrientation,
-    copies: document.querySelector('#copies').value
+    copies
   })
 
   ipcRenderer.send('analyticsEvent', 'Application', 'print-worksheet', null, copies)
