@@ -56,13 +56,9 @@ const translateHtml = (elementName, traslationKey) => {
 }
 
 const updateHTML = () => {
-  if(!isWorksheetExport) {
-    translateHtml("#config-title", "print-window.pdf-title")
-    translateHtml("#config-intro", "print-window.pdf-intro") 
-  } else {
-    translateHtml("#config-title", "print-window.worksheet-title")
-    translateHtml("#config-intro", "print-window.worksheet-intro") 
-  }
+  translateHtml("#config-title", "print-window.worksheet-title")
+  translateHtml("#config-intro", "print-window.worksheet-intro") 
+
   translateHtml("#paper-size", "print-window.paper-size")
   translateHtml("#letter", "print-window.letter")
   translateHtml("#format", "print-window.format")
