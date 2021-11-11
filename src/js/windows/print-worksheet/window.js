@@ -7,9 +7,7 @@ const path = require('path')
 
 const prefModule = remote.require('./prefs')
 const worksheetPrinter = require('./worksheet-printer')
-// const exporter = require('../../window/exporter')
 const storyTips = new(require('../../window/story-tips'))
-// const exporterCommon = require('../../exporters/common')
 
 //#region Localization
 const i18n = require('../../services/i18next.config.js')
