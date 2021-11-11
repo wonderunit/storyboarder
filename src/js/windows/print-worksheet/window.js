@@ -109,6 +109,14 @@ document.querySelector('#close-button').onclick = (e) => {
   cleanup()
   window.hide()
 }
+document.addEventListener('keyup', event => {
+  if (event.key == 'Escape') {
+    ipcRenderer.send('playsfx', 'negative')
+    let window = remote.getCurrentWindow()
+    cleanup()
+    window.hide()
+  }
+})
 
 document.querySelector('#print-button').onclick = (e) => {
   if (!pdfdocument) return false;
