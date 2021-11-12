@@ -6,9 +6,16 @@ const createPrint = ({
 }) =>
   (
     {
+      // absolute filepath to source
       filepath,
+
+      // a4, letter, legal
       paperSize,
+
+      // landscape, portrait
       paperOrientation,
+
+      // number of copies
       copies
     }
   ) => {
@@ -18,7 +25,7 @@ const createPrint = ({
     switch (os.platform()) {
       case 'darwin':
         cmd = 'lpr' +
-              ' -o media=' + ((paperSize === 'LTR') ? 'letter' : 'a4') +
+              ' -o media=' + paperSize +
               ((paperOrientation === 'landscape') ? ' -o orientation-requested=4' : '') +
               ' -#' + copies +
               ' ' + filepath
