@@ -115,7 +115,7 @@ document.querySelector('#print-button').onclick = (e) => {
 
   print({
     filepath: pdfdocument,
-    paperSize,
+    paperSize: paperSize === 'LTR' ? 'letter' : 'a4',
     paperOrientation: 'landscape',
     copies
   })
