@@ -63,9 +63,6 @@ const updateHTML = () => {
   translateHtml("#paper-size", "print-window.paper-size")
   translateHtml("#letter", "print-window.letter")
   translateHtml("#format", "print-window.format")
-  translateHtml("#paper-orientation-label", "print-window.paper-orientation-label")
-  translateHtml("#paper-orientation-landscape", "print-window.paper-orientation-landscape")
-  translateHtml("#paper-orientation-portrait", "print-window.paper-orientation-portrait")
   translateHtml("#columns-label", "print-window.columns-label")
   translateHtml("#rows-label", "print-window.rows-label")
   translateHtml("#spacing-label", "print-window.spacing-label")
@@ -119,7 +116,7 @@ document.querySelector('#print-button').onclick = (e) => {
   print({
     filepath: pdfdocument,
     paperSize,
-    paperOrientation,
+    paperOrientation: 'landscape',
     copies
   })
 
@@ -144,12 +141,6 @@ document.querySelector('#paper-size').addEventListener('change', (e) => {
   prefModule.set('printingWindowState.paperSize', paperSize)
 })
 
-document.querySelector('#paper-orientation').addEventListener('change', (e) => {
-  paperOrientation = e.target.value
-  generatePDF()
-  prefModule.set('printingWindowState.paperOrientation', paperOrientation)
-})
-
 document.querySelector('#row-number').addEventListener('change', (e) => {
   rows = e.target.value
   generatePDF()
@@ -171,7 +162,6 @@ document.querySelector('#spacing').addEventListener('change', (e) => {
 const displaySpinner = (visible) => {
   document.querySelector('#preview-loading').style.display = (visible) ? 'flex' : 'none';
   document.querySelector('#paper-size').disabled = visible
-  document.querySelector('#paper-orientation').disabled = visible
   document.querySelector('#row-number').disabled = visible
   document.querySelector('#column-number').disabled = visible
   document.querySelector('#spacing').disabled = visible
@@ -202,7 +192,6 @@ const loadWindow = () => {
   spacing = printingWindowState.spacing
 
   document.querySelector('#paper-size').value = paperSize
-  document.querySelector('#paper-orientation').value = paperOrientation
   document.querySelector('#row-number').value = rows
   document.querySelector('#column-number').value = cols
   document.querySelector('#spacing').value = spacing
@@ -364,8 +353,6 @@ const generateWorksheet = () => {
   aspectRatio = currentBoardData.aspectRatio
   currentScene = projectData.currentScene
   scriptData = projectData.scriptData
-
-  document.querySelector('#paper-orientation-row').style.display = 'none'
 
   updateHTML()
   generateWorksheet()
