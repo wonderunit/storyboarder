@@ -41,6 +41,16 @@ const meshFactory = (source, isIcon) => {
   return mesh
 }
 
+const checkStandardMaterial = (child) => {
+  // let prevMaterial = null
+  if (!child.material.isMeshStandardMaterial){
+    // prevMaterial = child.material.clone()
+    child.material = new THREE.MeshStandardMaterial()
+    // child.material.copy(prevMaterial)
+  }
+  return
+}
+
 const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, ...props }) => {
   const ref = useUpdate(
     self => {
@@ -48,7 +58,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     }
   )
   
-  const {asset} = useAsset((sceneObject.model === 'box') ? null : path)
+  const {asset, ext} = useAsset((sceneObject.model === 'box') ? null : path)
 
   const meshes = useMemo(() => {
     if (sceneObject.model === 'box') {
@@ -67,16 +77,36 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
 
     if (asset) {
       let children = []
-      asset.scene.traverse(child => {
-        if (child.isMesh) {
-          children.push(
-            <primitive
-              key={`${sceneObject.id}-${child.uuid}`}
-              object={meshFactory(child, isIcon)}
-            />
-          )
-        }
-      })
+      let object3d = null
+      switch (ext) {
+        case '.stl':  
+          object3d = new THREE.Object3D().add(new THREE.Mesh(asset,new THREE.MeshStandardMaterial()))
+          break
+        case '.fbx':
+        case '.obj':
+          object3d = asset
+          break
+        case '.glb': 
+        case '.glb':
+        case '.dae':
+          object3d = asset.scene
+          break                                      
+        default:
+          break
+      }
+      if (object3d){
+        object3d.traverse(child => {
+          if (child.isMesh) {
+            checkStandardMaterial(child)
+            children.push(
+              <primitive
+                key={`${sceneObject.id}-${child.uuid}`}
+                object={meshFactory(child, isIcon)}
+              />
+            )
+          }
+        })
+      }
       return children
     }
 
