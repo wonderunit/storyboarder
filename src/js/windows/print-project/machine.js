@@ -248,7 +248,10 @@ const machine = Machine({
             src: 'exportToFile',
             onDone: {
               target: '#available',
-              actions: 'reportAnalyticsEvent'
+              actions: [
+                'showItemInFolder',
+                'reportAnalyticsEvent'
+              ]
             },
             onError: {
               target: '#warning'

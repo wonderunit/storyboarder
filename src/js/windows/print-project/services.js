@@ -1,7 +1,6 @@
 const fs = require('fs-extra')
 const os = require('os')
 const path = require('path')
-const { shell } = require('electron')
 
 const moment = require('moment')
 const pdfjsLib = require('pdfjs-dist')
@@ -77,7 +76,6 @@ const exportToFile = async (context, event) => {
   })
 
   log.info('exported to ' + filepath)
-  shell.showItemInFolder(filepath)
 }
 
 const generateToCanvas = async (context, event) => {
