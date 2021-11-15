@@ -305,15 +305,17 @@ const InputView = ({
                       ['legend', { name: 'board-text-size' }, 'Text Size']
                     ],
 
-                    ['.select',
-                      ['select', {
-                        value: boardTextSize,
-                        onChange: event =>
-                          send({ type: 'SET_BOARD_TEXT_SIZE', value: parseInt(event.target.value) })
-                        },
-                        range(...specs.boardTextSize).map(value =>
-                          ['option', { name: 'board-text-size', value: value }, value]
-                        )
+                    ['.group',
+                      ['.select',
+                        ['select', {
+                          value: boardTextSize,
+                          onChange: event =>
+                            send({ type: 'SET_BOARD_TEXT_SIZE', value: parseInt(event.target.value) })
+                          },
+                          range(...specs.boardTextSize).map(value =>
+                            ['option', { name: 'board-text-size', value: value }, value]
+                          )
+                        ]
                       ]
                     ]
                   ]
