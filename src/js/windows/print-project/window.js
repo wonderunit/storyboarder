@@ -10,11 +10,6 @@ const { PrintApp } = require('./components')
 
 const getData = () => ipcRenderer.invoke('exportPDF:getData')
 
-const reportAnalyticsEvent = (context, event) => {
-  if (event.type == 'done.invoke.exportToFile') {
-    ipcRenderer.send('analyticsEvent', 'Board', 'exportPDF')
-  }
-}
 
 
 
