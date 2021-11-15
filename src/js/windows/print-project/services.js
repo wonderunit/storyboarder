@@ -76,6 +76,8 @@ const exportToFile = async (context, event) => {
   })
 
   log.info('exported to ' + filepath)
+
+  return { filepath }
 }
 
 const generateToCanvas = async (context, event) => {
