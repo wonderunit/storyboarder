@@ -8,7 +8,7 @@ const reportAnalyticsEvent = (context, event) => {
 }
 
 const showItemInFolder = (context, event) =>
-  shell.showItemInFolder(event.data.filepath)
+  shell.showItemInFolder(context.filepath)
 
 module.exports = {
   reportAnalyticsEvent,

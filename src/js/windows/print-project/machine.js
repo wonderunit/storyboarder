@@ -1,6 +1,8 @@
-const { Machine, assign } = require('xstate')
+const { Machine, assign, send } = require('xstate')
 
 const groupByPage = require('../../exporters/pdf/group-by-page')
+
+const { getTemporaryFilepath, getExportFilepath } = require('./context-helpers')
 
 const specs = {
   paperSize: {
@@ -54,7 +56,9 @@ const initialContext = {
       aspectRatio: true,
       dateExported: true
     }
-  }
+  },
+
+  filepath: getTemporaryFilepath()
 }
 
 const createHeaderStatsAssigner = name => (context, event) => ({
@@ -88,6 +92,14 @@ const pagesAssigner = (context, event) => {
   }
 }
 
+const temporaryFilepathAssigner = (context, event) => ({
+  filepath: getTemporaryFilepath(context, event)
+})
+
+const exportFilepathAssigner = (context, event) => ({
+  filepath: getExportFilepath(context, event)
+})
+
 const machine = Machine({
   id: 'print-project',
   context: initialContext,
@@ -102,12 +114,22 @@ const machine = Machine({
         },
         debouncing: {
           after: {
-            1100: '#busy.generating'
+            1100: {
+              target: '#busy.generating',
+              actions: assign(exportFilepathAssigner)
+            }
           }
         }
       },
       on: {
-        'EXPORT': 'busy.exporting',
+        'EXPORT': {
+          target: 'busy.exporting',
+          actions: assign(exportFilepathAssigner)
+        },
+        'PRINT': {
+          target: 'busy.printing',
+          actions: assign(temporaryFilepathAssigner)
+        },
         'SET_PAPER_SIZE_KEY': [
           {
             actions: assign((context, event) => ({

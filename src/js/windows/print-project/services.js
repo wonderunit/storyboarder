@@ -29,43 +29,10 @@ const fit = ([wi, hi], [ws, hs]) =>
     ? [wi * hs / hi, hs]
     : [ws, hi * ws / wi]
 
-
-
-//
-//
-// TODO store outpath in context?
-//
-// memoize tmp filepath
-const createGetTempFilepath = function () {
-  let filepath
-  return function () {
-    if (filepath) {
-      return filepath
-    } else {
-      let directory = fs.mkdtempSync(path.join(os.tmpdir(), 'storyboarder-'))
-      filepath = path.join(directory, 'export.pdf')
-      return filepath
-    }
-  }
-}
-const getTempFilepath = createGetTempFilepath()
-
-const getExportFilename = (project, date) => {
-  let base = project.scenes.length > 1
-    ? path.parse(project.scriptFilepath).name
-    : path.parse(project.scenes[0].storyboarderFilePath).name
-  let datestamp = moment(date).format('YYYY-MM-DD hh.mm.ss')
-  return filename = `${base} ${datestamp}.pdf`
-}
-
-
-
 const exportToFile = async (context, event) => {
-  const { project } = context
+  const { project, filepath } = context
 
-  let filename = getExportFilename(project, new Date())
-  let filepath = path.join(project.root, 'exports', filename)
-  // ensure `exports` folder exists
+  // ensure directory exists
   fs.mkdirpSync(path.dirname(filepath))
 
   let stream = fs.createWriteStream(filepath)
@@ -74,35 +41,24 @@ const exportToFile = async (context, event) => {
     stream.on('finish', resolve)
     await generate(stream, { project }, getGeneratorConfig(context))
   })
-
-  log.info('exported to ' + filepath)
-
-  return { filepath }
 }
 
 const generateToCanvas = async (context, event) => {
   let { project, canvas } = context
 
-  let cfg = {
+  let contextWithPages = {
     ...context,
+    // override to force a single page preview
     pages: [context.pageToPreview, context.pageToPreview]
   }
 
   canvas.parentNode.parentNode.classList.add('busy--generating')
 
-  // create and save the file
-  let outfile = getTempFilepath()
-  let stream = fs.createWriteStream(outfile)
-  log.info('generating temporary pdf to', outfile)
-  await new Promise(async (resolve, reject) => {
-    stream.on('error', reject)
-    stream.on('finish', resolve)
-    await generate(stream, { project }, getGeneratorConfig(cfg))
-  })
+  await exportToFile(contextWithPages, event)
 
   // load and render the file to the canvas
   log.info('displaying pdf')
-  let task = pdfjsLib.getDocument(outfile)
+  let task = pdfjsLib.getDocument(context.filepath)
   let pdf = await task.promise
   let page = await pdf.getPage(1)
 
