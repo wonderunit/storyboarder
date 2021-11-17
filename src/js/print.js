@@ -1,4 +1,4 @@
-const { execSync, execFile } = require('child_process')
+const { spawnSync } = require('child_process')
 const os = require('os')
 
 const createPrint = ({
@@ -19,26 +19,29 @@ const createPrint = ({
       copies
     }
   ) => {
-    let cmd
     let output
 
     switch (os.platform()) {
       case 'darwin':
-        cmd = 'lpr' +
-              ' -o media=' + paperSize +
-              ((paperOrientation === 'landscape') ? ' -o orientation-requested=4' : '') +
-              ' -#' + copies +
-              ' ' + filepath
-        output = execSync(cmd)
-        console.log(output.toString())
+        output = spawnSync('lpr', [
+          '-o', `media=${paperSize}`,
+          ...paperOrientation == 'landscape'
+            ? ['-o', 'orientation-requested=4']
+            : [],
+          '-#', copies,
+          filepath
+        ])
+        console.log(output.stdout.toString())
+        console.error(output.stderr.toString())
         break
 
       case 'linux':
-        cmd = 'lp' +
-              ' -n ' + copies +
-              ' ' + filepath
-        output = execSync(cmd)
-        console.log(output.toString())
+        output = spawnSync('lp', [
+          '-n', copies,
+          filepath
+        ])
+        console.log(output.stdout.toString())
+        console.error(output.stderr.toString())
         break
 
       case 'win32':
@@ -53,6 +56,7 @@ const createPrint = ({
             console.error('error', err)
           }
           console.log(stdout)
+          console.error(stderr)
         })
         break
     }
