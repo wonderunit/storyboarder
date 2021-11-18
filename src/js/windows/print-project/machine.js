@@ -279,6 +279,20 @@ const machine = Machine({
               target: '#warning'
             }
           },
+        },
+        printing: {
+          invoke: {
+            src: 'requestPrint',
+            onDone: {
+              actions: [
+                'reportAnalyticsEvent',
+                send('CLOSE')
+              ]
+            },
+            onError: {
+              target: '#warning'
+            }
+          }
         }
       }
     },

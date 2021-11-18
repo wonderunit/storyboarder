@@ -1,13 +1,17 @@
 const fs = require('fs-extra')
-const os = require('os')
 const path = require('path')
 
-const moment = require('moment')
 const pdfjsLib = require('pdfjs-dist')
 pdfjsLib.GlobalWorkerOptions.workerSrc = '../../../../node_modules/pdfjs-dist/build/pdf.worker.js'
 
 const generate = require('../../exporters/pdf')
 const log = require('../../shared/storyboarder-electron-log')
+
+const { remote } = require('electron')
+const { createPrint } = require('../../print')
+const print = createPrint({
+  pathToSumatraExecutable: path.join(remote.app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe')
+})
 
 const omit = (original = {}, keys = []) => {
   const clone = { ...original }
@@ -46,13 +50,13 @@ const exportToFile = async (context, event) => {
 const generateToCanvas = async (context, event) => {
   let { project, canvas } = context
 
+  canvas.parentNode.parentNode.classList.add('busy--generating')
+
   let contextWithPages = {
     ...context,
     // override to force a single page preview
     pages: [context.pageToPreview, context.pageToPreview]
   }
-
-  canvas.parentNode.parentNode.classList.add('busy--generating')
 
   await exportToFile(contextWithPages, event)
 
@@ -103,8 +107,29 @@ const displayWarning = async (context, event) => {
   alert(event.data)
 }
 
+const requestPrint = async (context, event) => {
+  await exportToFile(context, event)
+
+  // a4, letter
+  let paperSize = context.paperSizeKey
+
+  // landscape, portrait
+  let paperOrientation = context.orientation
+
+  // hardcoded
+  let copies = 1
+
+  print({
+    filepath: context.filepath,
+    paperSize,
+    paperOrientation,
+    copies
+  })
+}
+
 module.exports = {
   generateToCanvas,
   exportToFile,
-  displayWarning
+  displayWarning,
+  requestPrint
 }

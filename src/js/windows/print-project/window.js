@@ -5,7 +5,7 @@ const ReactDOM = require('react-dom')
 
 const { getProjectData } = require('./data')
 const { machine: printProjectMachine } = require('./machine')
-const { generateToCanvas, exportToFile, displayWarning } = require('./services')
+const { generateToCanvas, exportToFile, displayWarning, requestPrint } = require('./services')
 const { reportAnalyticsEvent, showItemInFolder } = require('./actions')
 const { PrintApp } = require('./components')
 
@@ -33,7 +33,8 @@ const start = async () => {
         services: {
           generateToCanvas,
           exportToFile,
-          displayWarning 
+          displayWarning,
+          requestPrint 
         }
       })
       .withContext({

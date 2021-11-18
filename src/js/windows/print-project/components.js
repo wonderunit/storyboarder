@@ -49,6 +49,7 @@ const Checkbox = ({ name, label, onChange, checked }) =>
 
 const InputView = ({
   onClose,
+  onPrint,
   onExport,
 
   state,
@@ -77,7 +78,7 @@ const InputView = ({
 
       ['form', { action: '#', className: state.matches('busy') ? 'busy' : null },
         ['div.upper',
-          ['h1.title', 'Print'],
+          ['h1.title', 'Print Scene'],
 
           ['fieldset',
             ['div',
@@ -336,6 +337,7 @@ const InputView = ({
 
           ['div.lower',
               ['div.row',
+                  ['button', { onClick: onPrint }, 'Print!'],
                   ['button', { onClick: onExport }, 'Export PDF']]]]
     ]]
   )
@@ -346,11 +348,13 @@ const PrintApp = ({ service }) => {
 
   const onClose = () => send('CLOSE')
 
+  const onPrint = preventDefault(event => send('PRINT'))
+
   const onExport = preventDefault(event => send('EXPORT'))
 
   return React.createElement(
     InputView, {
-      onClose, onExport,
+      onClose, onPrint, onExport,
       state, send,
       ...state.context
   })
