@@ -7,7 +7,9 @@ const getFilepathForModelByType = require('../helpers/get-filepath-for-model-by-
 const traverseMeshMaterials = require('../helpers/traverse-mesh-materials')
 
 const VirtualCamera = require('../components/VirtualCamera')
+// import traverseAsset from '../../../shared/helpers/traverseAsset'
 
+const traverseAsset = require('../../../shared/helpers/traverseAsset')
 // old material
 // const materialFactory = () => new THREE.MeshLambertMaterial({
 //   color: 0xcccccc,
@@ -39,8 +41,15 @@ const meshFactory = source => {
 
   return mesh
 }
+const checkStandardMaterial = (child) => {
+  // child.material = !child.material.isMeshStandardMaterial ? new THREE.MeshStandardMaterial()
+  if (!child.material.isMeshStandardMaterial){
+    child.material = new THREE.MeshStandardMaterial()
+  }
+  return
+}
 
-const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => {
+const ModelObject = React.memo(({ model, ext, sceneObject, isSelected, children }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
@@ -62,23 +71,12 @@ const ModelObject = React.memo(({ gltf, sceneObject, isSelected, children }) => 
       ]
     }
 
-    if (gltf) {
-      let children = []
-      gltf.scene.traverse(child => {
-        if (child.isMesh) {
-          children.push(
-            <primitive
-              key={`${sceneObject.id}-${child.uuid}`}
-              object={meshFactory(child)}
-            />
-          )
-        }
-      })
-      return children
+    if (model) {
+      return traverseAsset({asset:model,ext,sceneObject,meshFactory})
     }
 
     return []
-  }, [sceneObject.model, gltf])
+  }, [sceneObject.model, model])
 
   useEffect(() => {
     traverseMeshMaterials(ref.current, material => {

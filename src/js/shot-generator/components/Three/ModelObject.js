@@ -3,6 +3,7 @@ import React, { useMemo, useEffect, useRef } from 'react'
 import { useUpdate, extend } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
+import traverseAsset from '../../../shared/helpers/traverseAsset'
 import { useAsset } from "../../hooks/use-assets-manager"
 
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
@@ -75,39 +76,8 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       ]
     }
 
-    if (asset) {
-      let children = []
-      let object3d = null
-      switch (ext) {
-        case '.stl':  
-          object3d = new THREE.Object3D().add(new THREE.Mesh(asset,new THREE.MeshStandardMaterial()))
-          break
-        case '.fbx':
-        case '.obj':
-          object3d = asset
-          break
-        case '.glb': 
-        case '.glb':
-        case '.dae':
-          object3d = asset.scene
-          break                                      
-        default:
-          break
-      }
-      if (object3d){
-        object3d.traverse(child => {
-          if (child.isMesh) {
-            checkStandardMaterial(child)
-            children.push(
-              <primitive
-                key={`${sceneObject.id}-${child.uuid}`}
-                object={meshFactory(child, isIcon)}
-              />
-            )
-          }
-        })
-      }
-      return children
+    if (asset){
+      return traverseAsset({asset,ext,sceneObject,meshFactory})
     }
 
     return []

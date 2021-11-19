@@ -148,7 +148,7 @@ const SceneContent = connect(
 
     characterIds, modelObjectIds, lightIds, virtualCameraIds, imageIds, attachablesIds, boardUid, selectedAttachable, updateCharacterIkSkeleton, updateObject,
 
-    resources, getAsset,
+    resources, getAsset, getExt,
     language,
 
     SGConnection
@@ -706,25 +706,29 @@ const SceneContent = connect(
           {
             modelObjectIds.map(id => {
               let sceneObject = sceneObjects[id]
+              const path = getFilepathForModelByType(sceneObject)
 
               if (
                 // not a box
                 sceneObject.model != 'box' &&
                 // but the gltf is missing
-                getAsset(getFilepathForModelByType(sceneObject)) == null
+                getAsset(path) == null
               ) {
                 // return null until it loads
                 return null
               }
 
-              let gltf = sceneObject.model != 'box'
-                ? getAsset(getFilepathForModelByType(sceneObject))
+              let model = sceneObject.model != 'box'
+                ? getAsset(path)
                 : null
+
+              let ext = model ? getExt(path) : null
 
               return <SimpleErrorBoundary key={id}>
                 <ModelObject
                   key={id}
-                  gltf={gltf}
+                  model={model}
+                  ext={ext}
                   sceneObject={sceneObject}
                   isSelected={selections.includes(id)} />
               </SimpleErrorBoundary>
@@ -876,7 +880,7 @@ const SceneManagerXR = ({SGConnection}) => {
   const store = useReduxStore()
   const [appAssetsLoaded, setAppAssetsLoaded] = useState(false)
 
-  const { assets, requestAsset, getAsset } = useAssetsManager(SGConnection)
+  const { assets, requestAsset, getAsset, getExt } = useAssetsManager(SGConnection)
 
   // preload textures
   const groundTexture = useTextureLoader(SGConnection, '/data/system/grid_floor_1.png')
@@ -1104,6 +1108,7 @@ const SceneManagerXR = ({SGConnection}) => {
                   instrumentC4, instrumentC5, instrumentC6
                 }}
                 getAsset={getAsset}
+                getExt={getExt}
                 SGConnection={SGConnection} />
               : null
           }

@@ -41,7 +41,7 @@ const App = () => {
 
       window.addEventListener("error", function (e) {
         SGConnection.log([e.error.message, e.error.stack])
-        return false;
+        return false
       })
 
       window.SG = SGConnection

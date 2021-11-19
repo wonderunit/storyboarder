@@ -70,6 +70,7 @@ export const loadAsset = (path) => {
           match = path.match(exts) 
           ext = match[0].toLowerCase()
           switch (ext) {
+            case '.gltf':
             case '.glb':
               loader = gltfLoader
               break

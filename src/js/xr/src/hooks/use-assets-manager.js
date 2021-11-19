@@ -2,11 +2,11 @@ const THREE = require('three')
 const React = require('react')
 const { useState, useReducer, useMemo, useCallback } = React
 
-const {onImageBufferLoad, onGLTFBufferLoad} = require('../helpers/resourceLoaders')
+const {onImageBufferLoad, onGLTFBufferLoad, onColladaBufferLoad, onObjBufferLoad, onFbxBufferLoad, onStlBufferLoad} = require('../helpers/resourceLoaders')
 
 const reducer = (state, action) => {
   const { type, payload } = action
-  const { id, progress, value, error } = payload
+  const { id, progress, value, error, ext } = payload
 
   switch (type) {
     case 'PENDING':
@@ -42,7 +42,7 @@ const reducer = (state, action) => {
     case 'SUCCESS':
       return {
         ...state,
-        [id]: { status: 'Success', value }
+        [id]: { status: 'Success', value, ext }
       }
     case 'ERROR':
       return {
@@ -62,6 +62,7 @@ const reducer = (state, action) => {
  * */
 const MaxTimes = 3
 const load = (loader, path, events, times = 1) => {
+  console.log('load',loader,path,events,times)
   try {
     loader.load(
       path,
@@ -84,40 +85,55 @@ const useAssetsManager = (SGConnection) => {
 
   const [assets, dispatch] = useReducer(reducer, {})
 
+  console.log('useAssetsManager',assets)
+
   useMemo(() => {
     Object.entries(assets)
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-        if (!id.includes('/images/') && !id.includes('/emotions/')) {
-          SGConnection.getResource('gltf', id)
+          const exts = /(\.(glb|gltf|obj|dae|fbx|stl|png|jpeg|jpg))$/gim 
+          const match = id.match(exts) 
+          const ext = match ? match[0].toLowerCase() : null
+          let bufferLoader = null
+          switch (ext) {
+            case '.jpg':
+            case '.jpeg':
+            case '.png':
+              bufferLoader = onImageBufferLoad
+              break     
+            case '.gltf':
+            case '.glb':
+              bufferLoader = onGLTFBufferLoad
+              break
+            case '.obj':
+              bufferLoader = onObjBufferLoad
+              break
+            case '.dae':
+              bufferLoader = onColladaBufferLoad
+              break
+            case '.fbx':
+              bufferLoader = onFbxBufferLoad  
+              break;    
+            case '.stl':
+              bufferLoader = onStlBufferLoad
+              break                                          
+            default:
+              break
+          }
+          SGConnection.getResource(ext, id)
           .then(({data}) => {
-            onGLTFBufferLoad(data)
-            .then((gltf) => {
-              console.log('Loaded GLTF: ', gltf)
-              dispatch({ type: 'SUCCESS', payload: { id, value: gltf } })
+            bufferLoader(data,id)
+            .then((model) => {
+              console.log(`Loaded ${ext}: `, model)
+              dispatch({ type: 'SUCCESS', payload: { id, value: model, ext } })
             })
             .catch((error) => {
-              console.log('GLTF loading error', error)
+              console.log(`${ext} loading error`, error)
               dispatch({ type: 'ERROR', payload: { id, error } })
             })
           })
           dispatch({ type: 'LOAD', payload: { id } })
-        } else {
-          SGConnection.getResource('image', id)
-          .then(({type, filePath, data}) => {
-            onImageBufferLoad(id, data)
-            .then((texture) => {
-              console.log('Loaded TEXTURE: ', texture)
-              dispatch({ type: 'SUCCESS', payload: { id, value: texture } })
-            })
-            .catch((error) => {
-              dispatch({ type: 'ERROR', payload: { id, error } })
-            })
-          })
-
-          dispatch({ type: 'LOAD', payload: { id } })
-        }
       })
   }, [assets])
 
@@ -137,7 +153,12 @@ const useAssetsManager = (SGConnection) => {
     [assets]
   )
 
-  return { assets, requestAsset, getAsset }
+  const getExt = useCallback(
+    id => assets[id] && assets[id].ext ? assets[id].ext : null,
+    [assets]
+  )
+
+  return { assets, requestAsset, getAsset, getExt }
 }
 
 module.exports = {

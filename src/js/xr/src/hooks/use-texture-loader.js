@@ -14,7 +14,7 @@ const useTextureLoader = (SGConnection, filepath) => {
 
       SGConnection.getResource('image', filepath)
       .then(({data}) => {
-        onImageBufferLoad(filepath, data)
+        onImageBufferLoad(data, filepath)
         .then((texture) => {
           console.log('Loaded TEXTURE: ', texture)
           cache.set(key, texture)
