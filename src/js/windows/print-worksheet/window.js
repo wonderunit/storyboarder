@@ -57,21 +57,21 @@ const translateHtml = (elementName, traslationKey) => {
 }
 
 const updateHTML = () => {
-  translateHtml("#config-title", "print-window.worksheet-title")
-  translateHtml("#config-intro", "print-window.worksheet-intro") 
+  translateHtml("#config-title", "print-worksheet.worksheet-title")
+  translateHtml("#config-intro", "print-worksheet.worksheet-intro") 
 
-  translateHtml("#paper-size", "print-window.paper-size")
-  translateHtml("#letter", "print-window.letter")
-  translateHtml("#format", "print-window.format")
-  translateHtml("#columns-label", "print-window.columns-label")
-  translateHtml("#rows-label", "print-window.rows-label")
-  translateHtml("#spacing-label", "print-window.spacing-label")
-  translateHtml("#copies-label", "print-window.copies-label")
-  translateHtml("#print-button", "print-window.print-button")
-  translateHtml("#pdf-button", "print-window.pdf-button")
-  translateHtml("#prev_button", "print-window.prev_button")
-  translateHtml("#page-info", "print-window.page-info")
-  translateHtml("#next_button", "print-window.next_button")
+  translateHtml("#paper-size", "print-worksheet.paper-size")
+  translateHtml("#letter", "print-worksheet.letter")
+  translateHtml("#format", "print-worksheet.format")
+  translateHtml("#columns-label", "print-worksheet.columns-label")
+  translateHtml("#rows-label", "print-worksheet.rows-label")
+  translateHtml("#spacing-label", "print-worksheet.spacing-label")
+  translateHtml("#copies-label", "print-worksheet.copies-label")
+  translateHtml("#print-button", "print-worksheet.print-button")
+  translateHtml("#pdf-button", "print-worksheet.pdf-button")
+  translateHtml("#prev_button", "print-worksheet.prev_button")
+  translateHtml("#page-info", "print-worksheet.page-info")
+  translateHtml("#next_button", "print-worksheet.next_button")
 }
 //#endregion
 

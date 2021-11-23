@@ -1,7 +1,10 @@
-const React = require('react')
+const { Suspense } = React = require('react')
 const { useService } = require('@xstate/react')
+const { useTranslation } = require('react-i18next')
+
 const h = require('../../utils/h')
 const { specs } = require('./machine')
+const i18n = require('../../services/i18next.config')
 
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
@@ -47,7 +50,16 @@ const Checkbox = ({ name, label, onChange, checked }) =>
         ['label', { htmlFor: name }, label ]]
   )
 
-const InputView = ({
+const InputView = props => h([
+  Suspense, { fallback: h([InputLoadingView]) }, [
+    InputControlsView, { ...props }
+  ]
+])
+
+// TODO loading spinner while i18n is loading
+const InputLoadingView = () => null
+
+const InputControlsView = ({
   onClose,
   onPrint,
   onExport,
@@ -67,6 +79,8 @@ const InputView = ({
   boardTextSize,
   header
 }) => {
+  const { t, i18n } = useTranslation()
+
   const setPaperSizeKey = event => send({
     type: 'SET_PAPER_SIZE_KEY',
     value: event.target.value
@@ -78,8 +92,10 @@ const InputView = ({
 
       ['form', { action: '#', className: state.matches('busy') ? 'busy' : null },
         ['div.upper',
-          ['h1.title', 'Print Scene'],
+          ['h1.title', t('print-project.title')],
+          ['.description', t('print-project.description')],
 
+          ['.div.collection', [
           ['fieldset',
             ['div',
               ['legend', { name: 'paper-size-key' }, 'Paper Size']
@@ -156,8 +172,8 @@ const InputView = ({
               [Radio, { value: 'column', label: 'Standard' }],
               [Radio, { value: 'row', label: 'Japanese' }],
             ]
-          ],
-
+          ]
+        ]],
 
 
               ['div.collection',

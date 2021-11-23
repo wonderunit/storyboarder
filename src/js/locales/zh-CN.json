@@ -695,9 +695,11 @@
     "add-watermark": "为导出的图像和视频添加水印。",
     "custom-watermark": "自定义水印图像（默认为空白）"
   },
-  "print-window": {
-    "pdf-title": "打印",
-    "pdf-intro": "您的情节提要板将按照您喜欢的方式进行打印。 选择一种格式并直接打印或导出为PDF。",
+  "print-project": {
+    "title": "打印",
+    "description": "您的情节提要板将按照您喜欢的方式进行打印。 选择一种格式并直接打印或导出为PDF。"
+  },
+  "print-worksheet": {
     "worksheet-title": "打印工作表",
     "worksheet-intro": "在此印刷纸上绘制草图板，然后将其神奇地重新导入到情节提要文件中！",
     "paper-size": "纸张尺寸",

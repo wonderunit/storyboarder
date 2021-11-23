@@ -695,9 +695,11 @@
     "add-watermark": "Add watermark to exported images and video.",
     "custom-watermark": "Custom watermark image (leave blank for default)"
   },
-  "print-window": {
-    "pdf-title": "Print Scene",
-    "pdf-intro": "Your storyboard printed the way you like. Choose the format and either directly print or export it to PDF.",
+  "print-project": {
+    "title": "Print Scene",
+    "description": "Your storyboard printed the way you like. Choose the format and either directly print or export it to PDF."
+  },
+  "print-worksheet": {
     "worksheet-title": "Print a worksheet",
     "worksheet-intro": "Draw thumbnail boards on this printed worksheet and magically import them back into your Storyboarder file!",
     "paper-size": "Paper Size",
