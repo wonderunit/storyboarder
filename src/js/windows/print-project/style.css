@@ -44,10 +44,32 @@ body {
   color: rgba(0, 0, 0, 0.6);
 }
 .title {
-  margin: 1.5rem 0 0.5rem 0;
+  margin: 0.75rem 0 0.5rem 0;
   padding: 0;
   color: rgba(0, 0, 0, 0.8);
-  font-size: 2rem;
+  font-size: 1.75rem;
+  line-height: 1;
+}
+.description {
+  display: none;
+}
+@media only screen and (min-height: 700px) {
+  .description {
+    margin: 0.5rem 0 0 0;
+    color: rgba(0, 0, 0, 0.6);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    max-width: 88%;
+  }
+}
+
+html {
+  font-size: 14px;
+}
+@media only screen and (min-height: 700px) {
+  html {
+    font-size: unset;
+  }
 }
 
 form {
@@ -249,9 +271,8 @@ details .group {
   padding: 0.5rem 0;
 }
 .collection > div:first-child {
-  padding: 1rem 0 0.5rem 0;
+  padding: 0.5rem 0 0.5rem 0;
   margin: 0;
-  margin-top: 0.25rem;
   line-height: 1;
   font-size: 0.875rem;
   /* text-transform: uppercase; */
