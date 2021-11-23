@@ -34,6 +34,9 @@ body {
   margin-left: -0.5rem;
   margin-bottom: -0.5rem;
 }
+.close:hover {
+  opacity: 0.8;
+}
 .editor {
   display: flex;
   flex: 1;
