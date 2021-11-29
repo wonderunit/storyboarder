@@ -98,7 +98,7 @@ const InputControlsView = ({
           ['.div.collection', [
           ['fieldset',
             ['div',
-              ['legend', { name: 'paper-size-key' }, 'Paper Size']
+              ['legend', { name: 'paper-size-key' }, t('print-project.paper-size')]
             ],
             [RadioGroup,
               {
@@ -106,8 +106,8 @@ const InputControlsView = ({
                 value: paperSizeKey,
                 onChange: setPaperSizeKey
               },
-              [Radio, { value: 'a4', label: 'A4', title: 'A4 (8 ¼″ × 11 ¾″)' }],
-              [Radio, { value: 'letter', label: 'Letter', title: 'Letter (8 ½″ × 11″)' }],
+              [Radio, { value: 'a4', label: t('print-project.paper-size-a4-label'), title: t('print-project.paper-size-a4-hint') }],
+              [Radio, { value: 'letter', label: t('print-project.paper-size-letter-label'), title: t('print-project.paper-size-letter-hint') }],
             ]
           ],
 
@@ -124,14 +124,14 @@ const InputControlsView = ({
                   value: event.target.value
                 })
               },
-              [Radio, { value: 'landscape', label: 'Landscape' }],
-              [Radio, { value: 'portrait', label: 'Portrait' }],
+              [Radio, { value: 'landscape', label: t('print-project.landscape') }],
+              [Radio, { value: 'portrait', label: t('print-project.portrait') }],
             ]
           ],
 
           ['fieldset',
             ['div',
-              ['legend', { name: 'grid' }, 'Grid']],
+              ['legend', { name: 'grid' }, t('print-project.grid-title')]],
             ['div.group',
               ['div.select',
                 ['select', {
@@ -161,7 +161,7 @@ const InputControlsView = ({
 
           ['fieldset',
             ['div',
-              ['legend', { name: 'direction' }, 'Board Layout']
+              ['legend', { name: 'direction' }, t('print-project.board-layout-title')]
             ],
             [RadioGroup,
               {
@@ -169,15 +169,15 @@ const InputControlsView = ({
                 value: direction,
                 onChange: event => send({ type: 'SET_DIRECTION', value: event.target.value })
               },
-              [Radio, { value: 'column', label: 'Standard' }],
-              [Radio, { value: 'row', label: 'Japanese' }],
+              [Radio, { value: 'column', label: t('print-project.board-layout-column') }],
+              [Radio, { value: 'row', label: t('print-project.board-layout-row') }],
             ]
           ]
         ]],
 
 
               ['div.collection',
-                  ['div', 'Header'],
+                  ['div', t('print-project.header-title')],
 
               //     ['fieldset',
               //         ['div',
@@ -211,40 +211,40 @@ const InputControlsView = ({
 
               ['fieldset',
                 ['div',
-                  ['legend', { name: 'stats' }, 'Stats']],
+                  ['legend', { name: 'stats' }, t('print-project.header-stats-title')]],
                 ['div.group',
 
                   [Checkbox, {
                     name: 'stats-boards',
-                    label: 'Boards',
+                    label: t('print-project.header-stats-boards'),
                     checked: header.stats.boards,
                     onChange: event =>
                       send({ type: 'SET_HEADER_STATS_BOARDS', value: event.target.checked })
                   }],
                   [Checkbox, {
                     name: 'stats-shots',
-                    label: 'Shots',
+                    label: t('print-project.header-stats-shots'),
                     checked: header.stats.shots,
                     onChange: event =>
                       send({ type: 'SET_HEADER_STATS_SHOTS', value: event.target.checked })
                   }],
                   [Checkbox, {
                     name: 'stats-scene-duration',
-                    label: 'Duration',
+                    label: t('print-project.header-stats-scene-duration'),
                     checked: header.stats.sceneDuration,
                     onChange: event =>
                       send({ type: 'SET_HEADER_STATS_SCENE_DURATION', value: event.target.checked })
                   }],
                   [Checkbox, {
                     name: 'stats-aspect-ratio',
-                    label: 'Aspect Ratio',
+                    label: t('print-project.header-stats-aspect-ratio'),
                     checked: header.stats.aspectRatio,
                     onChange: event =>
                       send({ type: 'SET_HEADER_STATS_ASPECT_RATIO', value: event.target.checked })
                   }],
                   [Checkbox, {
                     name: 'stats-date-exported',
-                    label: 'Date',
+                    label: t('print-project.header-stats-date-exported'),
                     checked: header.stats.dateExported,
                     onChange: event =>
                       send({ type: 'SET_HEADER_STATS_DATE_EXPORTED', value: event.target.checked })
@@ -254,14 +254,14 @@ const InputControlsView = ({
               ],
 
               ['div.collection',
-                ['div', 'Boards'],
+                ['div', t('print-project.boards-title')],
                 ['fieldset',
                   ['div',
                     ['legend', { name: 'text' }, 'Text']],
                   ['div.group',
                     [Checkbox, {
                       name: 'text-dialogue',
-                      label: 'Dialogue',
+                      label: t('print-project.boards-text-dialogue'),
                       checked: enableDialogue,
                       onChange: (event =>
                         send({ type: 'SET_ENABLE_DIALOGUE', value: event.target.checked })
@@ -269,7 +269,7 @@ const InputControlsView = ({
                     }],
                     [Checkbox, {
                       name: 'text-action',
-                      label: 'Action',
+                      label: t('print-project.boards-text-action'),
                       checked: enableAction,
                       onChange: (event =>
                         send({ type: 'SET_ENABLE_ACTION', value: event.target.checked })
@@ -277,7 +277,7 @@ const InputControlsView = ({
                     }],
                     [Checkbox, {
                       name: 'text-notes',
-                      label: 'Notes',
+                      label: t('print-project.boards-text-notes'),
                       checked: enableNotes,
                       onChange: (event =>
                         send({ type: 'SET_ENABLE_NOTES', value: event.target.checked })
@@ -287,11 +287,11 @@ const InputControlsView = ({
 
                   ['fieldset',
                     ['div',
-                      ['legend', { name: 'details' }, 'Details']],
+                      ['legend', { name: 'details' }, t('print-project.boards-details-title')]],
                     ['div.group',
                       [Checkbox, {
                         name: 'details-shot-number',
-                        label: 'Shot Number',
+                        label: t('print-project.boards-details-shot-number'),
                         checked: enableShotNumber,
                         onChange: (event =>
                           send({ type: 'SET_ENABLE_SHOT_NUMBER', value: event.target.checked })
@@ -302,7 +302,7 @@ const InputControlsView = ({
 
                   ['fieldset',
                     ['div',
-                      ['legend', { name: 'board-time-display' }, 'Time']
+                      ['legend', { name: 'board-time-display' }, t('print-project.boards-time-display-title')]
                     ],
                     [RadioGroup,
                       {
@@ -310,8 +310,8 @@ const InputControlsView = ({
                         value: boardTimeDisplay,
                         onChange: event => send({ type: 'SET_BOARD_TIME_DISPLAY', value: event.target.value })
                       },
-                      [Radio, { value: 'none', label: 'None' }],
-                      [Radio, { value: 'duration', label: 'Duration' }], // Dur.
+                      [Radio, { value: 'none', label: t('print-project.boards-time-display-none') }],
+                      [Radio, { value: 'duration', label: t('print-project.boards-time-display-duration') }], // Dur.
                       // [Radio, { value: 'sceneTime', label: 'Scene Time' }], // TODO Scene
                       // [Radio, { value: 'scriptTime', label: 'Script Time' }] // TODO Script
                     ]
@@ -319,7 +319,7 @@ const InputControlsView = ({
 
                   ['fieldset',
                     ['div',
-                      ['legend', { name: 'board-text-size' }, 'Text Size']
+                      ['legend', { name: 'board-text-size' }, t('print-project.boards-text-size-title')]
                     ],
 
                     ['.group',
@@ -353,8 +353,8 @@ const InputControlsView = ({
 
           ['div.lower',
               ['div.row',
-                  ['button', { onClick: onPrint }, 'Print!'],
-                  ['button', { onClick: onExport }, 'Export PDF']]]]
+                  ['button', { onClick: onPrint }, t('print-project.print-button-label')],
+                  ['button', { onClick: onExport }, t('print-project.export-pdf-button-label')]]]]
     ]]
   )
 }
