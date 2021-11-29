@@ -55,6 +55,7 @@ body {
 }
 @media only screen and (min-height: 700px) {
   .description {
+    display: inherit;
     margin: 0.5rem 0 0 0;
     color: rgba(0, 0, 0, 0.6);
     font-size: 0.875rem;
