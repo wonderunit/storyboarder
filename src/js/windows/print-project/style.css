@@ -68,7 +68,7 @@ html {
 }
 @media only screen and (min-height: 700px) {
   html {
-    font-size: unset;
+    font-size: inherit;
   }
 }
 
