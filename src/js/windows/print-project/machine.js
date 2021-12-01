@@ -116,7 +116,7 @@ const machine = Machine({
           after: {
             1100: {
               target: '#busy.generating',
-              actions: assign(exportFilepathAssigner)
+              actions: assign(temporaryFilepathAssigner)
             }
           }
         }
