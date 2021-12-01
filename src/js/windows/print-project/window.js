@@ -6,7 +6,7 @@ const ReactDOM = require('react-dom')
 const { getProjectData } = require('./data')
 const { machine: printProjectMachine } = require('./machine')
 const { generateToCanvas, exportToFile, displayWarning, requestPrint } = require('./services')
-const { reportAnalyticsEvent, showItemInFolder } = require('./actions')
+const { reportAnalyticsEvent, showItemInFolder, persist } = require('./actions')
 const { PrintApp } = require('./components')
 
 const getData = () => ipcRenderer.invoke('exportPDF:getData')
@@ -28,7 +28,8 @@ const start = async () => {
       .withConfig({
         actions: {
           reportAnalyticsEvent,
-          showItemInFolder
+          showItemInFolder,
+          persist
         },
         services: {
           generateToCanvas,

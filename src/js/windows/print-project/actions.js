@@ -14,7 +14,11 @@ const reportAnalyticsEvent = (context, event) => {
 const showItemInFolder = (context, event) =>
   shell.showItemInFolder(context.filepath)
 
+const persist = (context, event) => {
+}
+
 module.exports = {
   reportAnalyticsEvent,
-  showItemInFolder
+  showItemInFolder,
+  persist
 }
