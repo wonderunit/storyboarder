@@ -1,4 +1,7 @@
-const { ipcRenderer, shell } = require('electron')
+const { ipcRenderer, shell, remote } = require('electron')
+
+const prefs = remote.require('./prefs')
+const { toMemento } = require('./memento')
 
 const reportAnalyticsEvent = (context, event) => {
   if (event.type == 'done.invoke.exportToFile') {
@@ -15,6 +18,7 @@ const showItemInFolder = (context, event) =>
   shell.showItemInFolder(context.filepath)
 
 const persist = (context, event) => {
+  prefs.set('printProjectState', toMemento(context), true)
 }
 
 module.exports = {
