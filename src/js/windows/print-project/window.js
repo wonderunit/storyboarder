@@ -1,4 +1,3 @@
-const { ipcRenderer } = require('electron')
 const { ipcRenderer, remote } = require('electron')
 const { interpret } = require('xstate')
 const React = require('react')
