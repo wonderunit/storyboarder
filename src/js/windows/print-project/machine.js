@@ -132,82 +132,88 @@ const machine = Machine({
         },
         'SET_PAPER_SIZE_KEY': [
           {
-            actions: assign((context, event) => ({
-              paperSizeKey: event.value,
-              paperSize: getPaperSize(event.value, context.orientation)
-            })),
+            actions: [
+              assign((context, event) => ({
+                paperSizeKey: event.value,
+                paperSize: getPaperSize(event.value, context.orientation)
+              })),
+              'persist'
+            ],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_ORIENTATION': [
           {
-            actions: assign((context, event) => ({
-              orientation: event.value,
-              paperSize: getPaperSize(context.paperSizeKey, event.value)
-            })),
+            actions: [
+              assign((context, event) => ({
+                orientation: event.value,
+                paperSize: getPaperSize(context.paperSizeKey, event.value)
+              })),
+              'persist'
+            ],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_GRID_ROWS': [
           {
-            actions: [assign(gridRowsAssigner), assign(pagesAssigner)],
+            actions: [assign(gridRowsAssigner), assign(pagesAssigner), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_GRID_COLUMNS': [
           {
-            actions: [assign(gridColumnsAssigner), assign(pagesAssigner)],
+            actions: [assign(gridColumnsAssigner), assign(pagesAssigner), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_DIRECTION': [
           {
-            actions: assign({ direction: (_, { value }) => value }),
+            actions: [assign({ direction: (_, { value }) => value }), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_ENABLE_DIALOGUE': [
           {
-            actions: assign({ enableDialogue: (_, { value }) => value }),
+            actions: [assign({ enableDialogue: (_, { value }) => value }), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_ENABLE_ACTION': [
           {
-            actions: assign({ enableAction: (_, { value }) => value }),
+            actions: [assign({ enableAction: (_, { value }) => value }), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_ENABLE_NOTES': [
           {
-            actions: assign({ enableNotes: (_, { value }) => value }),
+            actions: [assign({ enableNotes: (_, { value }) => value }), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_ENABLE_SHOT_NUMBER': [
           {
-            actions: assign({ enableShotNumber: (_, { value }) => value }),
+            actions: [assign({ enableShotNumber: (_, { value }) => value }), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_BOARD_TIME_DISPLAY': [
           {
-            actions: assign({ boardTimeDisplay: (_, { value }) => value }),
+            actions: [assign({ boardTimeDisplay: (_, { value }) => value }), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_BOARD_TEXT_SIZE': {
-          actions: assign({ boardTextSize: (_, { value }) => value }),
+          actions: [assign({ boardTextSize: (_, { value }) => value }), 'persist'],
           target: '.debouncing',
           internal: false
         },
@@ -215,35 +221,35 @@ const machine = Machine({
 
         'SET_HEADER_STATS_BOARDS': [
           {
-            actions: assign(createHeaderStatsAssigner('boards')),
+            actions: [assign(createHeaderStatsAssigner('boards')), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_HEADER_STATS_SHOTS': [
           {
-            actions: assign(createHeaderStatsAssigner('shots')),
+            actions: [assign(createHeaderStatsAssigner('shots')), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_HEADER_STATS_SCENE_DURATION': [
           {
-            actions: assign(createHeaderStatsAssigner('sceneDuration')),
+            actions: [assign(createHeaderStatsAssigner('sceneDuration')), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_HEADER_STATS_ASPECT_RATIO': [
           {
-            actions: assign(createHeaderStatsAssigner('aspectRatio')),
+            actions: [assign(createHeaderStatsAssigner('aspectRatio')), 'persist'],
             target: '.debouncing',
             internal: false
           }
         ],
         'SET_HEADER_STATS_DATE_EXPORTED': [
           {
-            actions: assign(createHeaderStatsAssigner('dateExported')),
+            actions: [assign(createHeaderStatsAssigner('dateExported')), 'persist'],
             target: '.debouncing',
             internal: false
           }
