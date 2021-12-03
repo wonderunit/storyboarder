@@ -3,6 +3,8 @@ import {ColladaLoader} from 'three/examples/jsm/loaders/ColladaLoader'
 import {OBJLoader} from 'three/examples/jsm/loaders/OBJLoader'
 import {FBXLoader} from 'three/examples/jsm/loaders/FBXLoader'
 import {STLLoader} from 'three/examples/jsm/loaders/STLLoader'
+import { TDSLoader } from 'three/examples/jsm/loaders/TDSLoader'
+import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader'
 
 export const onImageBufferLoad = (buffer, url) => {
   return new Promise((resolve, reject) => {
@@ -104,6 +106,20 @@ export const onFbxBufferLoad = (buffer) => {
 export const onStlBufferLoad = (buffer) => {
   return new Promise((resolve, reject) => {
     const loader = new STLLoader()
+    resolve(loader.parse(buffer))
+  })
+}
+
+export const on3dsBufferLoad = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const loader = new TDSLoader()
+    resolve(loader.parse(buffer,''))
+  })
+}
+
+export const onPLYBufferLoad = (buffer) => {
+  return new Promise((resolve, reject) => {
+    const loader = new PLYLoader()
     resolve(loader.parse(buffer))
   })
 }

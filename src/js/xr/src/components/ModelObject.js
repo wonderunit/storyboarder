@@ -29,6 +29,11 @@ const materialFactory = () => new THREE.MeshToonMaterial({
 })
 
 const meshFactory = source => {
+
+  if (source.isBufferGeometry){
+    return new THREE.Mesh(source,materialFactory())
+  }
+
   let mesh = source.clone()
 
   let material = materialFactory()
@@ -40,13 +45,6 @@ const meshFactory = source => {
   mesh.material = material
 
   return mesh
-}
-const checkStandardMaterial = (child) => {
-  // child.material = !child.material.isMeshStandardMaterial ? new THREE.MeshStandardMaterial()
-  if (!child.material.isMeshStandardMaterial){
-    child.material = new THREE.MeshStandardMaterial()
-  }
-  return
 }
 
 const ModelObject = React.memo(({ model, ext, sceneObject, isSelected, children }) => {

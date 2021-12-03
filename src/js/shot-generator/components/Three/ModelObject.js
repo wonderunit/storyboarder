@@ -28,28 +28,23 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   thickness: 0.008
 })
 
-const meshFactory = (source, isIcon) => {
+const meshFactory = (source, isIcon, isCopyTextures) => {
+
+  if (source.isBufferGeometry){
+    return new THREE.Mesh(source,materialFactory(isIcon))
+  }
+
   let mesh = source.isSkinnedMesh ? THREE.SkeletonUtils.clone(source) : source.clone()
 
   let material = materialFactory(isIcon)
 
-  if (mesh.material.map) {
+  if (mesh.material.map && isCopyTextures) {
     material.map = mesh.material.map
     material.map.needsUpdate = true
   }
   mesh.material = material
 
   return mesh
-}
-
-const checkStandardMaterial = (child) => {
-  // let prevMaterial = null
-  if (!child.material.isMeshStandardMaterial){
-    // prevMaterial = child.material.clone()
-    child.material = new THREE.MeshStandardMaterial()
-    // child.material.copy(prevMaterial)
-  }
-  return
 }
 
 const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, ...props }) => {

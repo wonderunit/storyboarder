@@ -1,31 +1,29 @@
 
-// import * as THREE from 'three'
-const THREE = require('three')
+const { MathUtils } = require('three')
 
-const checkStandardMaterial = (child) => {
-    // let prevMaterial = null
-    if (!child.material.isMeshStandardMaterial){
-      // prevMaterial = child.material.clone()
-      child.material = new THREE.MeshStandardMaterial()
-      // child.material.copy(prevMaterial)
-    }
-    return null
-  }
+const traverseAsset = (data) => {
 
-const traverseAsset = ({asset, ext, sceneObject, meshFactory}) => {
+    let {asset, ext, sceneObject, meshFactory} = data
 
     if (!asset) return []
 
     const children = []
     let object3d = null
+    let isCopyTextures = false 
 
     switch (ext) {
-        case '.stl':  
-            object3d = new THREE.Object3D().add(new THREE.Mesh(asset,new THREE.MeshStandardMaterial()))
-        break
+        case '.stl': 
+        case '.ply':  
+            children.push(
+                <primitive
+                key={`${sceneObject.id}-${new MathUtils.generateUUID()}`}
+                object={meshFactory(asset,false,isCopyTextures)}
+                />)
+            return children
 
         case '.fbx':
         case '.obj':
+        case '.3ds':
             object3d = asset
         break
 
@@ -34,6 +32,7 @@ const traverseAsset = ({asset, ext, sceneObject, meshFactory}) => {
         case '.glb':
         case '.dae':
             object3d = asset.scene
+            isCopyTextures = true
         break              
 
         default:
@@ -44,11 +43,10 @@ const traverseAsset = ({asset, ext, sceneObject, meshFactory}) => {
         
     object3d.traverse(child => {
         if (child.isMesh) {
-            checkStandardMaterial(child)
             children.push(
                 <primitive
                 key={`${sceneObject.id}-${child.uuid}`}
-                object={meshFactory(child)}
+                object={meshFactory(child,false,isCopyTextures)}
                 />)
         }
     })
@@ -57,5 +55,4 @@ const traverseAsset = ({asset, ext, sceneObject, meshFactory}) => {
     
 }
 
-// export default traverseAsset
 module.exports = traverseAsset

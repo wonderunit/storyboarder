@@ -6,6 +6,8 @@ import { objLoader } from '../utils/objLoader'
 import { colladaLoader } from '../utils/colladaLoader'
 import { fbxLoader } from '../utils/fbxLoader'
 import { stlLoader } from '../utils/stlLoader'
+import { tdsLoader } from '../utils/3dsLoader'
+import { plyLoader } from '../utils/plyLoader'
 /**
  * Resources storage
  * @type {observable}
@@ -66,7 +68,7 @@ export const loadAsset = (path) => {
         let loader, match, ext
         if (!path.match(/(\.(png|jpg|jpeg|gif)$)|((\\|\/)(images|volumes)(\\|\/))/mi)) {
           /** Current resource is model */
-          const exts = /(\.(glb|gltf|obj|dae|fbx|stl|))$/gim 
+          const exts = /(\.(glb|gltf|obj|dae|fbx|stl|3ds|ply))$/gim 
           match = path.match(exts) 
           ext = match[0].toLowerCase()
           switch (ext) {
@@ -85,7 +87,13 @@ export const loadAsset = (path) => {
               break;    
             case '.stl':
               loader = stlLoader
-              break                                             
+              break 
+            case '.3ds':
+              loader = tdsLoader
+              break  
+            case '.ply':
+              loader = plyLoader
+              break                                              
             default:
               break
           }
@@ -222,7 +230,7 @@ export const useAssets = (paths) => {
 /**
  * Hook that allows components to fetch single resource
  * @param path Resources path
- * @returns {{loaded: boolean, asset: THREE.Texture|THREE.Object}}
+ * @returns {{loaded: boolean, asset: THREE.Texture|THREE.Object, ext: string}}
  */
 export const useAsset = (path) => {
   const {assets, loaded, ext} = useAssets(path ? [path] : [])
