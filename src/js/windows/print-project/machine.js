@@ -38,7 +38,6 @@ const initialContext = {
 
   pages: [0, 0],
 
-  // pages to preview (TODO constrain max, depends .pages)
   pageToPreview: 0,
 
   enableDialogue: true,
@@ -92,6 +91,14 @@ const pagesAssigner = (context, event) => {
   }
 }
 
+const createPageToPreviewAssigner = delta => (context, event) => {
+  let { pageToPreview, pages: [_, endIndex] } = context
+  let size = endIndex + 1
+  return {
+    pageToPreview: (pageToPreview + delta + size) % size
+  }
+}
+
 const temporaryFilepathAssigner = (context, event) => ({
   filepath: getTemporaryFilepath(context, event)
 })
@@ -103,8 +110,13 @@ const exportFilepathAssigner = (context, event) => ({
 const machine = Machine({
   id: 'print-project',
   context: initialContext,
-  initial: 'busy',
+  initial: 'loading',
   states: {
+    loading: {
+      on: {
+        'CANVAS_READY': 'busy'
+      }
+    },
     available: {
       id: 'available',
       initial: 'idle',
@@ -254,6 +266,28 @@ const machine = Machine({
             internal: false
           }
         ],
+
+        'INCREMENT_PAGE_TO_PREVIEW': [
+          {
+            actions: [
+              assign(createPageToPreviewAssigner(+1)),
+              assign(temporaryFilepathAssigner)
+            ],
+            target: '#busy.generating',
+            internal: false
+          }
+        ],
+        'DECREMENT_PAGE_TO_PREVIEW': [
+          {
+            actions: [
+              assign(createPageToPreviewAssigner(-1)),
+              assign(temporaryFilepathAssigner)
+            ],
+            target: '#busy.generating',
+            internal: false
+          }
+        ],
+
       }
     },
     busy: {

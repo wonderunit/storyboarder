@@ -31,8 +31,8 @@ const start = async () => {
 
   project = await getProjectData(await getData())
 
+  // create canvas
   canvas = document.createElement('canvas')
-  document.querySelector('.output .inner').appendChild(canvas)
 
   // system defaults
   let systemContext = printProjectMachine.context
@@ -68,12 +68,18 @@ const start = async () => {
   .start()
 
   ReactDOM.render(
-    React.createElement(PrintApp, { service }),
-    document.querySelector('.input')
+    React.createElement(PrintApp, { service, canvas }),
+    document.querySelector('.container')
   )
 
-  document.addEventListener('keydown', event => {
+  document.addEventListener('keyup', event => {
     switch (event.key) {
+      case 'ArrowLeft':
+        service.send('DECREMENT_PAGE_TO_PREVIEW')
+        break
+      case 'ArrowRight':
+        service.send('INCREMENT_PAGE_TO_PREVIEW')
+        break
       case 'Escape':
         service.send('CLOSE')
         break

@@ -90,10 +90,11 @@ form {
 .output {
   display: flex;
   flex: 1;
-  padding: 2rem;
+  padding: 3rem 2rem 2rem 2rem;
   background: url(../../../img/wood-texture.png) no-repeat center center fixed;
   background-size: cover;
   justify-content: center;
+  position: relative;
 }
 .output .inner {
   display: flex;
@@ -335,4 +336,47 @@ form.busy * {
 
 .output.busy--generating {
   cursor: wait;
+}
+
+
+.pagination {
+  color: white;
+  top: 0.5rem;
+  height: 2rem;
+  width: 100%;
+  position: absolute;
+  font-size: 0.875rem;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding: 0 1rem;
+}
+.pagination .pagination__next-button,
+.pagination .pagination__previous-button {
+  color: white;
+  height: 100%;
+  padding: 0 1rem;
+  line-height: 1;
+  background: none;
+  user-select: none;
+}
+.pagination .pagination__status {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  height: 2rem;
+  opacity: 0.5;
+  font-size: 0.8125rem;
+}
+.pagination .pagination__status * {
+  display: flex;
+  line-height: 2rem;
+  margin: 0 0.05rem;
+}
+.pagination {
+  transition: opacity 0.2s linear;
+}
+.pagination.busy {
+  pointer-events: none;
+  opacity: 0.8;
 }
