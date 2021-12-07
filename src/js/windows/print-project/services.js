@@ -61,7 +61,7 @@ const generateToCanvas = async (context, event) => {
   await exportToFile(contextWithPages, event)
 
   // load and render the file to the canvas
-  log.info('displaying pdf')
+  // log.info('displaying pdf')
   let task = pdfjsLib.getDocument(context.filepath)
   let pdf = await task.promise
   let page = await pdf.getPage(1)
@@ -97,7 +97,7 @@ const generateToCanvas = async (context, event) => {
   let renderTask = page.render(renderContext)
   await renderTask.promise
 
-  log.info('write complete')
+  // log.info('write complete')
 
   canvas.parentNode.parentNode.classList.remove('busy--generating')
 }
