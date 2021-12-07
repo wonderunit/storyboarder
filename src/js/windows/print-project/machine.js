@@ -113,6 +113,7 @@ const machine = Machine({
   initial: 'loading',
   states: {
     loading: {
+      entry: [assign(pagesAssigner)],
       on: {
         'CANVAS_READY': 'busy'
       }
