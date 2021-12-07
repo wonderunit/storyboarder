@@ -274,7 +274,8 @@ const machine = Machine({
               assign(temporaryFilepathAssigner)
             ],
             target: '#busy.generating',
-            internal: false
+            internal: false,
+            cond: 'hasMultiplePages'
           }
         ],
         'DECREMENT_PAGE_TO_PREVIEW': [
@@ -284,7 +285,8 @@ const machine = Machine({
               assign(temporaryFilepathAssigner)
             ],
             target: '#busy.generating',
-            internal: false
+            internal: false,
+            cond: 'hasMultiplePages'
           }
         ],
 
@@ -349,6 +351,10 @@ const machine = Machine({
   },
   on: {
     'CLOSE': 'finished'
+  }
+}, {
+  guards: {
+    hasMultiplePages: (context, event) => context.pages[1] > 1
   }
 })
 
