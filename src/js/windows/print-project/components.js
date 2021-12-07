@@ -6,8 +6,6 @@ const h = require('../../utils/h')
 const { specs } = require('./machine')
 const i18n = require('../../services/i18next.config')
 
-const groupByPage = require('../../exporters/pdf/group-by-page')
-
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
   fn(e, ...args)
@@ -53,10 +51,8 @@ const Checkbox = ({ name, label, onChange, checked }) =>
   )
 
 const Pagination = ({ project, pages, gridDim, pageToPreview, isBusy, send }) => {
-  let groups = groupByPage(project.scenes, gridDim[0] * gridDim[1])
-
   const current = pageToPreview + 1
-  const total = groups.length
+  const total = pages[1] + 1
 
   const canNext = total > 1
   const canPrevious = total > 1
