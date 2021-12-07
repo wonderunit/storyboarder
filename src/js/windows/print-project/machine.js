@@ -87,7 +87,10 @@ const pagesAssigner = (context, event) => {
   let groups = groupByPage(project.scenes, rows * columns)
 
   return {
-    pages: [0, groups.length - 1]
+    pages: [0, groups.length - 1],
+    pageToPreview: context.pageToPreview <= groups.length - 1
+      ? context.pageToPreview
+      : groups.length - 1
   }
 }
 
