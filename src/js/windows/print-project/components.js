@@ -1,10 +1,12 @@
-const { Suspense } = React = require('react')
+const { Suspense, useRef, useEffect } = React = require('react')
 const { useService } = require('@xstate/react')
 const { useTranslation } = require('react-i18next')
 
 const h = require('../../utils/h')
 const { specs } = require('./machine')
 const i18n = require('../../services/i18next.config')
+
+const groupByPage = require('../../exporters/pdf/group-by-page')
 
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
@@ -49,6 +51,56 @@ const Checkbox = ({ name, label, onChange, checked }) =>
         }],
         ['label', { htmlFor: name }, label ]]
   )
+
+const Pagination = ({ project, pages, gridDim, pageToPreview, isBusy, send }) => {
+  let groups = groupByPage(project.scenes, gridDim[0] * gridDim[1])
+
+  const current = pageToPreview + 1
+  const total = groups.length
+
+  const canNext = total > 1
+  const canPrevious = total > 1
+  
+  const onPrevious = preventDefault(event => send('DECREMENT_PAGE_TO_PREVIEW'))
+  const onNext = preventDefault(event => send('INCREMENT_PAGE_TO_PREVIEW'))
+
+  return h(['div.pagination', { className: isBusy ? 'busy' : null }, [
+    ['button.pagination__previous-button', { onClick: onPrevious, style: { visibility: canPrevious ? 'visible' : 'hidden' } }, 'Previous'],
+    ['div.pagination__status', [
+      ['span', 'Page\u00A0'],
+      ['span.pagination__current', current], ['span', '/'], ['span.pagination__total', total]
+    ]],
+    ['button.pagination__next-button', { onClick: onNext, style: { visibility: canNext ? 'visible' : 'hidden' } }, 'Next']
+  ]])
+}
+
+const EditorView = ({ onClose, onPrint, onExport, state, send, canvas, ...rest }) => {
+  const innerRef = useRef(null)
+
+  useEffect(() => {
+    innerRef.current.innerHTML = ''
+    innerRef.current.appendChild(canvas)
+    send('CANVAS_READY')
+  }, [ innerRef, canvas ])
+
+  return h(['div.editor',
+    ['div.input', {}, [
+      InputView, {
+        onClose, onPrint, onExport,
+        state, send,
+        ...rest
+      }
+    ]],
+    ['div.output',
+      [Pagination, {
+          project: rest.project, pages: rest.pages, gridDim: rest.gridDim, pageToPreview: rest.pageToPreview,
+          isBusy: state.matches('busy'),
+          send
+        }],
+      ['div.inner', { ref: innerRef }]
+    ]
+  ])
+}
 
 const InputView = props => h([
   Suspense, { fallback: h([InputLoadingView]) }, [
@@ -359,7 +411,7 @@ const InputControlsView = ({
   )
 }
 
-const PrintApp = ({ service }) => {
+const PrintApp = ({ service, canvas }) => {
   const [state, send] = useService(service)
 
   const onClose = () => send('CLOSE')
@@ -369,11 +421,13 @@ const PrintApp = ({ service }) => {
   const onExport = preventDefault(event => send('EXPORT'))
 
   return React.createElement(
-    InputView, {
+    EditorView, {
       onClose, onPrint, onExport,
       state, send,
+      canvas,
       ...state.context
-  })
+    }
+  )
 }
 
 module.exports = {
