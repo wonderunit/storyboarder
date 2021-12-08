@@ -205,21 +205,6 @@ const InputControlsView = ({
                 ]
               ]
             ]
-          ],
-
-          ['fieldset',
-            ['div',
-              ['legend', { name: 'direction' }, t('print-project.board-layout-title')]
-            ],
-            [RadioGroup,
-              {
-                name: 'direction',
-                value: direction,
-                onChange: event => send({ type: 'SET_DIRECTION', value: event.target.value })
-              },
-              [Radio, { value: 'column', label: t('print-project.board-layout-column') }],
-              [Radio, { value: 'row', label: t('print-project.board-layout-row') }],
-            ]
           ]
         ]],
 
@@ -303,6 +288,22 @@ const InputControlsView = ({
 
               ['div.collection',
                 ['div', t('print-project.boards-title')],
+
+                ['fieldset',
+                  ['div',
+                    ['legend', { name: 'direction' }, t('print-project.board-layout-title')]
+                  ],
+                  [RadioGroup,
+                    {
+                      name: 'direction',
+                      value: direction,
+                      onChange: event => send({ type: 'SET_DIRECTION', value: event.target.value })
+                    },
+                    [Radio, { value: 'column', label: t('print-project.board-layout-column') }],
+                    [Radio, { value: 'row', label: t('print-project.board-layout-row') }],
+                  ]
+                ],
+    
                 ['fieldset',
                   ['div',
                     ['legend', { name: 'text' }, 'Text']],
