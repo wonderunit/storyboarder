@@ -696,7 +696,7 @@
     "custom-watermark": "Custom watermark image (leave blank for default)"
   },
   "print-project": {
-    "title": "Print Scene",
+    "title": "Print",
     "description": "Your storyboard printed the way you like. Choose the format and either directly print or export it to PDF.",
     "paper-size": "Paper Size",
     "paper-size-a4-label": "A4",
