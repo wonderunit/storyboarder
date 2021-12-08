@@ -21,13 +21,6 @@ const parse = {
   }
 }
 
-const sceneFromCurrent = current => {
-  return ({
-    ...current,
-    title: parse.sceneTitleFromFilePath(current.storyboarderFilePath)
-  })
-}
-
 const scenesFromScriptData = ({ filepath, current, scriptData }) => {
   let directoriesBySceneId = 
     Object.fromEntries(
@@ -39,9 +32,17 @@ const scenesFromScriptData = ({ filepath, current, scriptData }) => {
   return scriptData
     .filter(({ type }) => type == 'scene')
     .map(scene => {
+      // if the scene is currently in memory
       if (scene.scene_number == current.sceneNumber) {
-        return sceneFromCurrent(current)
+        return {
+          // use in-memory data
+          ...current,
+          // but provide some missing values
+          sceneId: scene.scene_id,
+          title: scene.slugline
+        }
       } else {
+        // load data from disk
         let dir = directoriesBySceneId[last(scene.scene_id.split('-'))]
         let storyboarderFilePath = path.join(path.dirname(filepath), 'storyboards', dir, `${dir}.storyboarder`)
         return {
@@ -63,12 +64,14 @@ const getProjectData = async ({ currentFilePath, projectData }) => {
     scriptData
   } = projectData
 
-  let current = sceneFromCurrent({
+  // for in-memory scene
+  let current = {
     sceneId: null,
     sceneNumber: currentScene + 1,
     storyboarderFilePath: currentStoryboarderFilePath,
-    data: currentBoardData
-  })
+    data: currentBoardData,
+    title: parse.sceneTitleFromFilePath(currentStoryboarderFilePath)
+  }
 
   return {
     root: path.dirname(scriptData ? currentFilePath : currentStoryboarderFilePath),
@@ -77,7 +80,7 @@ const getProjectData = async ({ currentFilePath, projectData }) => {
     scriptFilepath: scriptData ? currentFilePath : null,
     scenes: scriptData
       ? scenesFromScriptData({ filepath: currentFilePath, current, scriptData })
-      : [sceneFromCurrent(current)]
+      : [current]
   }
 }
 
