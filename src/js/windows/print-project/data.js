@@ -21,7 +21,10 @@ const parse = {
   }
 }
 
-const scenesFromScriptData = ({ filepath, current, scriptData }) => {
+const scenesFromScriptData = (
+  { filepath, scriptData },
+  { sceneNumber, storyboarderFilePath, data }
+) => {
   let directoriesBySceneId = 
     Object.fromEntries(
       getDirectories(path.join(path.dirname(filepath), 'storyboards'))
@@ -33,13 +36,16 @@ const scenesFromScriptData = ({ filepath, current, scriptData }) => {
     .filter(({ type }) => type == 'scene')
     .map(scene => {
       // if the scene is currently in memory
-      if (scene.scene_number == current.sceneNumber) {
+      if (scene.scene_number == sceneNumber) {
         return {
-          // use in-memory data
-          ...current,
-          // but provide some missing values
+          // merge scene values from script
           sceneId: scene.scene_id,
-          title: scene.slugline
+          title: scene.slugline,
+
+          // use in-memory values for the rest
+          sceneNumber,
+          storyboarderFilePath,
+          data
         }
       } else {
         // load data from disk
@@ -64,13 +70,10 @@ const getProjectData = async ({ currentFilePath, projectData }) => {
     scriptData
   } = projectData
 
-  // for in-memory scene
-  let current = {
-    sceneId: null,
+  let localSceneDataFragment = {
     sceneNumber: currentScene + 1,
     storyboarderFilePath: currentStoryboarderFilePath,
-    data: currentBoardData,
-    title: parse.sceneTitleFromFilePath(currentStoryboarderFilePath)
+    data: currentBoardData
   }
 
   return {
@@ -79,8 +82,19 @@ const getProjectData = async ({ currentFilePath, projectData }) => {
     title: scriptData ? parse.titlePage(scriptData).text : null,
     scriptFilepath: scriptData ? currentFilePath : null,
     scenes: scriptData
-      ? scenesFromScriptData({ filepath: currentFilePath, current, scriptData })
-      : [current]
+      ? scenesFromScriptData(
+          {
+            filepath: currentFilePath,
+            scriptData
+          },
+          localSceneDataFragment
+        )
+      : [{
+          sceneId: null,
+          title: parse.sceneTitleFromFilePath(currentStoryboarderFilePath),
+
+          ...localSceneDataFragment
+        }]
   }
 }
 
