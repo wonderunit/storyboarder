@@ -17,6 +17,7 @@ import {
   updateWorldEnvironment,
   updateWorldFog,
   getWorld,
+  getPlatform,
   
   selectObject, deleteObjects, updateObject, updateWorld
 } from './../../../shared/reducers/shot-generator'
@@ -24,7 +25,8 @@ import {
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from '../../utils/CopyFile'
 import { useTranslation } from 'react-i18next'
-const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, storyboarderFilePath}) => {
+import CopyFiles from '../../utils/CopyFiles'
+const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, platform, storyboarderFilePath}) => {
   const { t } = useTranslation()
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
@@ -43,9 +45,15 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   
   const setEnvScale = useCallback((scale) => updateWorldEnvironment({scale}), [])
   const setEnvRotation = useCallback((rotation) => updateWorldEnvironment({rotation: _Math.radToDeg(rotation)}), [])
-  const setEnvFile = useCallback((event) => {
+  const setEnvModelFile = useCallback((event) => {
     if (event.file) {
       updateWorldEnvironment({file: CopyFile(storyboarderFilePath, event.file, 'environment')})
+    }
+  }, [])
+  const setEnvMapFile = useCallback((event) => {
+    console.log('setEnvMapFile',event)
+    if (event.file || (event.files.length>=1) && !event.canceled) {
+      updateWorldEnvironment({background: CopyFiles({storyboarderFilePath, absolutePathInfo: {...event}, type: 'environment'})})
     }
   }, [])
   const setGrayscale = useCallback(() => updateWorldEnvironment({grayscale: !world.environment.grayscale}), [world.environment.grayscale])
@@ -83,7 +91,33 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
         }
       </React.Fragment>
   ), [])
-  
+
+  const getEnvironmentLabel = useCallback(({lableName='(none)',helpButtonVisu='visible'})=>{
+
+   return (
+     <React.Fragment>
+      <span>{t(lableName)}</span>
+      {
+        (helpButtonVisu ==='visible') ? 
+          <HelpButton
+            url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
+            title={t("shot-generator.inspector.common.object-creation-help")}
+            style={{
+              marginLeft: 6,
+              color: "#eee",
+              backgroundColor: "#333",
+              width: 16,
+              height: 16,
+              fontSize: 10
+            }}
+          /> 
+        : null
+      }
+    </React.Fragment>
+   )
+
+ },[])
+
   return (
       <Scrollable>
         <h4 className="inspector-label">{t("shot-generator.inspector.inspected-world.scene")}</h4>
@@ -141,7 +175,23 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
         </div>
 
-        <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.environment")}</h5>
+        <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.environmentMap")}</h5>
+
+        <div className="inspector-group">
+          <div className="inspector-row">
+              <FileInput
+                  onChange={setEnvMapFile}
+                  label={getEnvironmentLabel({
+                          lableName:"shot-generator.inspector.inspected-world.map",
+                          helpButtonVisu:'hidden'  
+                        })}
+                  value={world.environment.file && path.basename(world.environment.file)}
+                  platform={platform}
+                />
+            </div>
+        </div>
+
+        <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.environmentModel")}</h5>
 
         <div className="inspector-group">
           <div className="inspector-row">
@@ -152,8 +202,10 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           </div>
           <div className="inspector-column inspector-offset-row">
             <FileInput
-              onChange={setEnvFile}
-              label={EnvironmentModelLabel}
+              onChange={setEnvModelFile}
+              label={getEnvironmentLabel({
+                      lableName:"shot-generator.inspector.inspected-world.file"
+                    })}
               value={world.environment.file && path.basename(world.environment.file)}
             />
             <NumberSlider label="X" value={world.environment.x} min={-30} max={30} onSetValue={setEnvX} textFormatter={ textFormatters.imperialToMetric }/>
@@ -226,9 +278,11 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
 })
 
 const getWorldM = deepEqualSelector([getWorld], world => world)
+const getPlatformM = deepEqualSelector([getPlatform], platform => platform)
 
 const mapStateToProps = (state) => ({
   world: getWorldM(state),
+  platform: getPlatformM(state),
   storyboarderFilePath: state.meta.storyboarderFilePath
 })
 

@@ -393,11 +393,13 @@
     "inspector": {
       "inspected-world": {
         "file": "文件",
+        "map": "质地",
         "scene": "场景",
         "ground": "地面",
         "bg-color": "背景色",
         "room": "房间",
-        "environment": "环境",
+        "environmentMap": "环境图",
+			  "environmentModel": "环境模型",
         "ambient-light": "环境光",
         "directional-light": "定向光",
         "fog": "雾",

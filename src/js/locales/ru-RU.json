@@ -393,11 +393,13 @@
 		"inspector": {
 			"inspected-world": {
 			  "file": "Файл",
+			  "map": "Текстура",
 			  "scene": "Сцена",
 			  "ground": "Поверхность",
 			  "bg-color": "Цвет фона",
 			  "room": "Комната",
-			  "environment": "Окружение",
+			  "environmentMap": "Текстура окружения",
+			  "environmentModel": "Модель окружения",
 			  "ambient-light": "Окружающее освещение",
 			  "directional-light": "Направленое освещение",
 			  "fog": "Туман",

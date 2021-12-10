@@ -7,6 +7,7 @@ import ModelLoader from '../../services/model-loader'
 const CopyFile = (storyboarderFilePath, absolutePath, type) => {
     let expectedFilepath = absolutePath
     if (ModelLoader.needsCopy({model: expectedFilepath, type})) {
+      console.log('needCopy')
       let src = expectedFilepath
       let dst = path.join(
         path.dirname(storyboarderFilePath),

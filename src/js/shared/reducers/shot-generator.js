@@ -6,6 +6,7 @@ const crypto = require('crypto')
 const reduceReducers = require('../../vendor/reduce-reducers')
 const { combineReducers } = require('redux')
 const R = require('ramda')
+const os = require('os')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
 const serializeSceneObject = require('./shot-generator/serialize-scene-object')
@@ -36,6 +37,7 @@ const getSelectedAttachable = state => state.undoable.present.selectedAttachable
 
 const getWorld = state => state.undoable.present.world
 
+const getPlatform = state => state.platform
 
 const getHash = state =>
   hashify(JSON.stringify(getSerializedState(state)))
@@ -412,6 +414,29 @@ const getCameraShot = (draft, cameraId) => {
   return draft[cameraId]
 }
 
+const currentPlatform = () => {
+  const platforms = {
+    WINDOWS: 'WINDOWS',
+    MAC: 'MAC',
+    LINUX: 'LINUX',
+    SUN: 'SUN',
+    OPENBSD: 'OPENBSD',
+    ANDROID: 'ANDROID',
+    AIX: 'AIX',
+  };
+
+  const platformsNames = {
+    win32: platforms.WINDOWS,
+    darwin: platforms.MAC,
+    linux: platforms.LINUX,
+    sunos: platforms.SUN,
+    openbsd: platforms.OPENBSD,
+    android: platforms.ANDROID,
+    aix: platforms.AIX,
+  }
+  return platformsNames[os.platform()];
+}
+
 // load up the default poses
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
 const defaultEmotionsPresets = require('./shot-generator-presets/emotions.json')
@@ -571,6 +596,7 @@ const initialScene = {
     },
     environment: {
       file: undefined,
+      background: [],
       x: 0,
       y: 0,
       z: 0,
@@ -669,6 +695,8 @@ const initialState = {
   attachments: {},
 
   aspectRatio: 2.35,
+
+  platform: currentPlatform(),
 
   board: {},
 
@@ -1325,6 +1353,9 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         if (action.payload.hasOwnProperty('file')) {
           draft.environment.file = action.payload.file
         }
+        if (action.payload.hasOwnProperty('background')) {
+          draft.environment.background = [...action.payload.background]
+        }
         if (action.payload.scale != null) {
           draft.environment.scale = action.payload.scale
         }
@@ -1828,6 +1859,7 @@ module.exports = {
   getActiveCamera,
   getSelectedBone,
   getWorld,
+  getPlatform,
 
   getSerializedState,
   getSelectedAttachable,
