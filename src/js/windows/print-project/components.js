@@ -291,16 +291,16 @@ const InputControlsView = ({
 
                 ['fieldset',
                   ['div',
-                    ['legend', { name: 'direction' }, t('print-project.board-layout-title')]
-                  ],
-                  [RadioGroup,
-                    {
-                      name: 'direction',
-                      value: direction,
-                      onChange: event => send({ type: 'SET_DIRECTION', value: event.target.value })
-                    },
-                    [Radio, { value: 'column', label: t('print-project.board-layout-column') }],
-                    [Radio, { value: 'row', label: t('print-project.board-layout-row') }],
+                    ['legend', { name: 'details' }, t('print-project.boards-details-title')]],
+                  ['div.group',
+                    [Checkbox, {
+                      name: 'details-shot-number',
+                      label: t('print-project.boards-details-shot-number'),
+                      checked: enableShotNumber,
+                      onChange: (event =>
+                        send({ type: 'SET_ENABLE_SHOT_NUMBER', value: event.target.checked })
+                      )
+                    }]
                   ]
                 ],
     
@@ -336,21 +336,6 @@ const InputControlsView = ({
 
                   ['fieldset',
                     ['div',
-                      ['legend', { name: 'details' }, t('print-project.boards-details-title')]],
-                    ['div.group',
-                      [Checkbox, {
-                        name: 'details-shot-number',
-                        label: t('print-project.boards-details-shot-number'),
-                        checked: enableShotNumber,
-                        onChange: (event =>
-                          send({ type: 'SET_ENABLE_SHOT_NUMBER', value: event.target.checked })
-                        )
-                      }]
-                    ]
-                  ],
-
-                  ['fieldset',
-                    ['div',
                       ['legend', { name: 'board-time-display' }, t('print-project.boards-time-display-title')]
                     ],
                     [RadioGroup,
@@ -366,6 +351,18 @@ const InputControlsView = ({
                     ]
                   ],
 
+                  ['fieldset',
+                    ['div',
+                      ['legend', { name: 'direction' }, t('print-project.board-layout-title')]
+                    ],
+                    [RadioGroup,
+                      {
+                        name: 'direction',
+                        value: direction,
+                        onChange: event => send({ type: 'SET_DIRECTION', value: event.target.value })
+                      },
+                      [Radio, { value: 'column', label: t('print-project.board-layout-column') }],
+                      [Radio, { value: 'row', label: t('print-project.board-layout-row') }],
                     ]
                   ],
 
