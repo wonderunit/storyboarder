@@ -304,9 +304,12 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
           ...textR.pos,
           {
             align: e == 0
+              // first entry
               ? 'left'
-              : e == entries.length - 1
+              // last entry, if more than than two entries present
+              : (e == entries.length - 1) && entries.length > 2
               ? 'right'
+              // all other cases
               : 'center',
             width: textR.size[0],
             height: textR.size[1]
