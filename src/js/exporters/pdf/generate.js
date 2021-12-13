@@ -262,8 +262,13 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
     { text: cfg.enableDialogue ? board.dialogue : undefined },
     { text: cfg.enableAction ? board.action : undefined },
     { text: cfg.enabledNotes ? board.notes : undefined },
-    // TODO handle sceneTime, scriptTime
-    { text: cfg.boardTimeDisplay == 'duration' && durationMsecsToString(boardDuration(scene, board)) }
+    ...(
+      cfg.boardTimeDisplay == 'duration'
+        ? [{ text: durationMsecsToString(boardDuration(scene, board)) }]
+        : cfg.boardTimeDisplay == 'sceneTime'
+        ? [{ text: durationMsecsToString(board.time) }]
+        : [] // TODO scriptTime
+    )
   ]
   for (let e = 0; e < entries.length; e++) {
     let textR = cellBinner.copy()
@@ -367,11 +372,15 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
         baseline: 'middle'
       })
   }
-  if (cfg.boardTimeDisplay == 'duration') {
+  if (['sceneTime', 'duration'].includes(cfg.boardTimeDisplay)) {
+    let boardTimeDisplayString =
+      cfg.boardTimeDisplay == 'sceneTime'
+        ? durationMsecsToString(board.time)
+        : durationMsecsToString(boardDuration(scene, board))
     doc
       .fontSize(cfg.boardTextSize)
       .fillColor('black')
-      .text(durationMsecsToString(boardDuration(scene, board)), ...middle, {
+      .text(boardTimeDisplayString, ...middle, {
         width: upperR.size[0],
         align: 'right',
         baseline: 'middle'
