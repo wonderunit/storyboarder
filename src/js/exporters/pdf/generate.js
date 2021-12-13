@@ -291,6 +291,9 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
     textR.pos[0] += textR.size[0] * e
     textR.size[0] -= 5
 
+    // HACK expand to allow text to hit bottom edge
+    textR.size[1] += 5
+
     let entry = entries[e]
     if (entry.text) {
     doc
