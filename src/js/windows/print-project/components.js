@@ -361,8 +361,11 @@ const InputControlsView = ({
                       },
                       [Radio, { value: 'none', label: t('print-project.boards-time-display-none') }],
                       [Radio, { value: 'duration', label: t('print-project.boards-time-display-duration') }], // Dur.
-                      // [Radio, { value: 'sceneTime', label: 'Scene Time' }], // TODO Scene
-                      // [Radio, { value: 'scriptTime', label: 'Script Time' }] // TODO Script
+                      [Radio, { value: 'sceneTime', label: 'In Scene' }],
+                      // [Radio, { value: 'scriptTime', label: 'In Script' }] // TODO Script Time
+                    ]
+                  ],
+
                     ]
                   ],
 
