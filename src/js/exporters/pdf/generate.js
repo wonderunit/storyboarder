@@ -184,7 +184,9 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   let imageR = inset(inner, [5, 5])
   imageR.size = fit(
     boardFileImageSize(scene),
-    imageR.size
+    // HACK constrain max image width to 3/5ths of available row space
+    //      allows space for text on either side
+    [imageR.size[0] * 0.6, imageR.size[1]]
   )
 
   let cellA = inner.copy()
