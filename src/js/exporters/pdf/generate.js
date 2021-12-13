@@ -259,9 +259,24 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   // board text
   //
   let entries = [
-    { text: cfg.enableDialogue ? board.dialogue : undefined },
-    { text: cfg.enableAction ? board.action : undefined },
-    { text: cfg.enabledNotes ? board.notes : undefined },
+    ...(
+      cfg.enableDialogue
+        ? [{ text: board.dialogue }]
+        : []
+    ),
+
+    ...(
+      cfg.enableAction
+        ? [{ text: board.action }]
+        : []
+    ),
+
+    ...(
+      cfg.enableNotes
+        ? [{ text: board.notes }]
+        : []
+    ),
+
     ...(
       cfg.boardTimeDisplay == 'duration'
         ? [{ text: durationMsecsToString(boardDuration(scene, board)) }]
