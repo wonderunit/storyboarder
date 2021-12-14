@@ -575,6 +575,26 @@ async function generate (stream, { project }, cfg) {
       v.copy(grid.pos),
       v.div2([], grid.size, gridDim)
     )
+
+    if (direction == 'column') {
+      // Center the Grid
+      //
+      // kind of a HACK
+      // based on calculations in drawBoardColumn
+      //
+      // determine the expected board drawing area
+      let boardSize = [...template.size]
+        v.sub2(null, boardSize, [10, 10])
+        boardSize = fit(
+          boardFileImageSize(pageData.scene.data),
+          v.mul2([], boardSize, [1, 0.6])
+        )
+      let drawingWidth = template.size[0] * (gridDim[0] - 1)
+          + boardSize[0]
+      // offset the template to center
+      template.pos[0] += (grid.size[0] - drawingWidth) / 2
+
+    }
     for (let n = 0; n < pageData.boards.length; n++) {
       let board = pageData.boards[n]
 
