@@ -46,6 +46,7 @@ const initialContext = {
   enableShotNumber: true,
   boardTimeDisplay: 'duration', // none, duration, TODO: sceneTime, scriptTime
   boardTextSize: 10,
+  boardBorderStyle: 'full',
 
   header: {
     stats: {
@@ -230,6 +231,11 @@ const machine = Machine({
         ],
         'SET_BOARD_TEXT_SIZE': {
           actions: [assign({ boardTextSize: (_, { value }) => value }), 'persist'],
+          target: '.debouncing',
+          internal: false
+        },
+        'SET_BOARD_BORDER_STYLE': {
+          actions: [assign({ boardBorderStyle: (_, { value }) => value }), 'persist'],
           target: '.debouncing',
           internal: false
         },

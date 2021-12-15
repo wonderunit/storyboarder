@@ -20,6 +20,7 @@ const allowlist = [
   'enableShotNumber',
   'boardTimeDisplay',
   'boardTextSize',
+  'boardBorderStyle',
 
   'header' // { ... }
 ]
