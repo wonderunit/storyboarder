@@ -178,6 +178,14 @@ const drawBoard = (doc, { direction, ...options }, cfg) =>
   : null
 
 const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
+  /*
+  boardBorderStrokeColor: '#999' | '#333',
+  boardBorderLineWidth: 0.5 | 1.0
+  */
+  let localCfg = cfg.boardBorderStyle == 'minimal'
+    ? { boardBorderStrokeColor: '#999', boardBorderLineWidth: 0.5 }
+    : { boardBorderStrokeColor: '#333', boardBorderLineWidth: 1.0 }
+
   let inner = rect.copy()
   v.sub2(null, inner.size, [10, 0])
 
@@ -240,11 +248,12 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   // borders
   //
   doc
-    .strokeColor('#333')
+    .strokeColor(localCfg.boardBorderStrokeColor)
     .strokeOpacity(1)
-    .lineWidth(1)
+    .lineWidth(localCfg.boardBorderLineWidth)
     .rect(...inner.pos, ...inner.size)
     .stroke()
+
   //
   //
   // shot number
@@ -326,6 +335,26 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 }
 
 const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
+  /*
+  insetUpperText: true | false,
+  boardBorder: true | false
+  upperBaseline: 'bottom' | 'middle'
+  newShotMarkerHeight: 'image' | 'full
+  */
+  let localCfg = cfg.boardBorderStyle == 'minimal'
+    ? {
+      insetUpperText: false,
+      boardBorder: false,
+      upperBaseline: 'bottom',
+      newShotMarkerHeight: 'image'
+    }
+    : {
+      insetUpperText: true,
+      boardBorder: true,
+      upperBaseline: 'middle',
+      newShotMarkerHeight: 'full'
+    }
+
   let inner = rect.copy()
   v.sub2(null, inner.size, [10, 10])
 
@@ -340,11 +369,13 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
   let remainingH = inner.size[1] - imageR.size[1]
 
-  // upper: 30%, max 3x font size
+  // upper: 30%, max 3x avg. font size
   let upperR = inner.copy()
   upperR.size[1] = remainingH * 0.3
   upperR.size[1] = Math.min(upperR.size[1], 12 * 3)
-  upperR = inset(upperR.copy(), [5, 0])
+  if (localCfg.insetUpperText) {
+    upperR = inset(upperR.copy(), [5, 0])
+  }
   // lower: 70%
   let lowerR = inner.copy()
   lowerR.size[1] = remainingH - upperR.size[1]
@@ -370,7 +401,10 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
   // new shot marker
   //
   if (board.newShot) {
-    let marker = inner.copy()
+    let marker = localCfg.newShotMarkerHeight == 'full'
+      ? inner.copy()
+      : imageR.copy()
+
     // width
     marker.size[0] = 2
     marker.pos[0] -= (2 + 0.5) // border
@@ -387,12 +421,16 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
   // upper
   //
   let middle = [upperR.pos[0], upperR.pos[1] + upperR.size[1] * 0.5]
+  let bottom = [upperR.pos[0], upperR.pos[1] + (upperR.size[1] * 0.875)]
+  let upperTextCfg = localCfg.upperBaseline == 'bottom'
+    ? { pos: bottom, baseline: 'bottom' }
+    : { pos: middle, baseline: 'middle' }
   if (cfg.enableShotNumber) {
     doc
       .fontSize(cfg.boardTextSize)
       .fillColor('black')
-      .text(board.shot, ...middle, {
-        baseline: 'middle'
+      .text(board.shot, ...upperTextCfg.pos, {
+        baseline: upperTextCfg.baseline
       })
   }
   if (['sceneTime', 'duration'].includes(cfg.boardTimeDisplay)) {
@@ -403,10 +441,10 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     doc
       .fontSize(cfg.boardTextSize)
       .fillColor('black')
-      .text(boardTimeDisplayString, ...middle, {
+      .text(boardTimeDisplayString, ...upperTextCfg.pos, {
         width: upperR.size[0],
         align: 'right',
-        baseline: 'middle'
+        baseline: upperTextCfg.baseline
       })
   }
 
@@ -448,12 +486,14 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
   //
   // borders
   //
-  doc
-    .strokeColor('#333')
-    .strokeOpacity(1)
-    .lineWidth(1)
-    .rect(...inner.pos, ...inner.size)
-    .stroke()
+  if (localCfg.boardBorder) {
+    doc
+      .strokeColor('#333')
+      .strokeOpacity(1)
+      .lineWidth(1)
+      .rect(...inner.pos, ...inner.size)
+      .stroke()
+  }
   doc
     .strokeColor('#333')
     .strokeOpacity(1)

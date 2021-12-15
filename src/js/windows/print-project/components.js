@@ -125,6 +125,7 @@ const InputControlsView = ({
   enableShotNumber,
   boardTimeDisplay,
   boardTextSize,
+  boardBorderStyle,
   header
 }) => {
   const { t, i18n } = useTranslation()
@@ -384,8 +385,23 @@ const InputControlsView = ({
                         ]
                       ]
                     ]
-                  ]
+                  ],
 
+                  ['fieldset',
+                    ['div',
+                      ['legend', { name: 'board-border-style' }, 'Borders']
+                    ],
+
+                    [RadioGroup,
+                      {
+                        name: 'board-border-style',
+                        value: boardBorderStyle,
+                        onChange: event => send({ type: 'SET_BOARD_BORDER_STYLE', value: event.target.value })
+                      },
+                      [Radio, { value: 'full', label: 'Full' }],
+                      [Radio, { value: 'minimal', label: 'Minimal' }],
+                    ]
+                  ]
                 ],
 
               // ['details', { open: true },
