@@ -726,6 +726,9 @@
     "boards-time-display-none": "None",
     "boards-time-display-duration": "Duration",
     "boards-text-size-title": "Text Size",
+    "board-border-style-title": "Borders",
+    "board-border-style-label-full": "Full",
+    "board-border-style-label-minimal": "Minimal",
     "print-button-label": "Print!",
     "export-pdf-button-label": "Export PDF"
   },

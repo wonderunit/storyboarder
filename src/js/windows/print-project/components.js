@@ -389,7 +389,7 @@ const InputControlsView = ({
 
                   ['fieldset',
                     ['div',
-                      ['legend', { name: 'board-border-style' }, 'Borders']
+                      ['legend', { name: 'board-border-style' }, t('print-project.board-border-style-title')]
                     ],
 
                     [RadioGroup,
@@ -398,8 +398,8 @@ const InputControlsView = ({
                         value: boardBorderStyle,
                         onChange: event => send({ type: 'SET_BOARD_BORDER_STYLE', value: event.target.value })
                       },
-                      [Radio, { value: 'full', label: 'Full' }],
-                      [Radio, { value: 'minimal', label: 'Minimal' }],
+                      [Radio, { value: 'full', label: t('print-project.board-border-style-label-full') }],
+                      [Radio, { value: 'minimal', label: t('print-project.board-border-style-label-minimal') }],
                     ]
                   ]
                 ],
