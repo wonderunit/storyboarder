@@ -1,9 +1,48 @@
 const execa = require('execa')
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked');
 const fs = require('fs-extra')
 const path = require('path')
 const moment = require('moment')
 const tmp = require('tmp')
+const os = require('os')
+
+
+
+let ffmpegPath
+// https://github.com/sindresorhus/electron-util/blob/main/source/is-using-asar.js
+const isUsingAsar = ('electron' in process.versions) && require.main && require.main.filename && require.main.filename.includes('app.asar')
+// https://developer.apple.com/documentation/apple-silicon/about-the-rosetta-translation-environment
+// https://github.com/feross/arch/pull/22
+// https://github.com/electron/build-tools/blob/1684dbe/src/utils/arm.js
+const isArm = () => {
+  try {
+    let { stdout } = execa.sync('sysctl', ['-in', 'sysctl.proc_translated'])
+    let isCurrentlyTranslated = stdout == '1'
+
+    // either native arm64, or running within the Rosetta 2 translation environment
+    return (process.arch === 'arm64' || isCurrentlyTranslated)
+
+  } catch (err) {
+    return false
+  }
+}
+// if we're in a compiled Electron app using asar
+if (isUsingAsar) {
+  let { app } = require('electron')
+
+  // report system architecture
+  // if we're on macOS and the system architecture is arm64 report that
+  let sysarch = os.platform() == 'darwin' && isArm()
+    ? 'arm64'
+    // otherwise, report architecture used to compile Electron
+    : os.arch()
+
+  let fragment = os.platform() + '-' + sysarch
+  ffmpegPath = path.join(app.getAppPath(), '..', 'app.asar.unpacked', 'node_modules', '@ffmpeg-installer', fragment, 'ffmpeg')
+} else {
+  ffmpegPath = require('@ffmpeg-installer/ffmpeg').path
+}
+
+
 
 const boardModel = require('../models/board')
 const exporterCommon = require('../exporters/common')
@@ -28,6 +67,8 @@ const checkVersion = async () =>
   new Promise((resolve, reject) => {
     let matchedVersion
 
+    console.log('Checking for ffmpeg at', ffmpegPath)
+    console.log(`system platform: ${os.platform()}, compiled arch: ${os.arch()}`)
     const process = execa(ffmpegPath, [
       '-version'
     ])
