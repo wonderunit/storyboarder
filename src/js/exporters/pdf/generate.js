@@ -177,6 +177,7 @@ const drawBoard = (doc, { direction, ...options }, cfg) =>
   ? drawBoardRow(doc, options, cfg)
   : null
 
+// Place Text Right
 const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   /*
   boardBorderStrokeColor: '#999' | '#333',
@@ -334,6 +335,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   }
 }
 
+// Place Text Below
 const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
   /*
   insetUpperText: true | false,
