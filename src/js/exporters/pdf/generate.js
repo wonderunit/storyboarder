@@ -371,10 +371,18 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
   let remainingH = inner.size[1] - imageR.size[1]
 
-  // upper: 30%, max 3x avg. font size
+  // upper: 30%, not larger than text size value x 3
   let upperR = inner.copy()
-  upperR.size[1] = remainingH * 0.3
-  upperR.size[1] = Math.min(upperR.size[1], 12 * 3)
+  // test with:
+  //   Place Text: Below
+  //   Grid: 3x1 or 3x3 or 1x1
+  //   Text Size: 9…16
+  //   Border: Image & Text or Image Only
+  upperR.size[1] = Math.min(
+    cfg.boardTextSize * 3,
+    remainingH * 0.3
+  )
+
   if (localCfg.insetUpperText) {
     upperR = inset(upperR.copy(), [5, 0])
   }
