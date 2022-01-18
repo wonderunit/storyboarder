@@ -72,6 +72,32 @@ const start = async () => {
     document.querySelector('.container')
   )
 
+  // quick hack to provide print-project with a custom menu
+  //   so user keyboard input is not intercepted and sent to main-window unexpectedly
+  const i18n = require('../../services/i18next.config')
+  const menu = require('../../menu')
+  // i18n probably won't be initialized at this point, so if not ...
+  if (!i18n.isInitialized) {
+    // ... wait until it's initialized before calling setting the print-project menu
+    i18n.on('initialized', event =>
+      menu.setPrintProjectMenu(i18n))
+  } else {
+    // otherwise, set the print-project menu immediately
+    menu.setPrintProjectMenu(i18n)
+  }
+  window.addEventListener('focus', (event) => {
+    // because main-window holds this modal,
+    //   main-window will try to set the menu first when re-focused
+    //     so just wait until after that’s done lol
+    setTimeout(() => {
+      menu.setPrintProjectMenu(i18n)
+    }, 10)
+  })
+  // when this modal closes, explicitly set the main-window menu again
+  window.addEventListener('close', () => {
+    menu.setMenu(i18n)
+  })
+
   document.addEventListener('keyup', event => {
     switch (event.key) {
       case 'ArrowLeft':
