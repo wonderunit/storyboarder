@@ -1037,6 +1037,42 @@ const shotGeneratorMenu = (i18n) => [
   }
 ]
 
+const printProjectTemplate = (i18n) => [
+  ...AppMenu.about({ includePreferences: false }, i18n),
+  {
+    label: i18n.t('menu.edit.title'),
+    submenu: [
+      {
+        role: 'cut',
+        label: i18n.t("menu.edit.cut")
+      },
+      {
+        role: 'copy',
+        label: i18n.t("menu.edit.copy")
+      },
+      {
+        role: 'paste',
+        label: i18n.t("menu.edit.paste")
+      },
+      {
+        role: 'delete',
+        label: i18n.t("menu.edit.delete")
+      },
+      {
+        role: 'selectall',
+        label: i18n.t("menu.edit.select-all")
+      }
+    ]
+  },
+  {
+    role: 'window',
+    label: i18n.t('menu.window.title'),
+    submenu: [
+      ...SubMenuFragments.windowing(i18n)
+    ]
+  }
+]
+
 const setWelcomeMenu = (i18n) => {
   let welcomeMenuInstance = Menu.buildFromTemplate(welcomeTemplate(i18n))
   Menu.setApplicationMenu(welcomeMenuInstance)
@@ -1051,6 +1087,14 @@ const setShotGeneratorMenu = (i18n) => {
   Menu.setApplicationMenu(Menu.buildFromTemplate(shotGeneratorMenu(i18n)))
 }
 
+const setPrintProjectMenu = (i18n) => {
+  Menu.setApplicationMenu(
+      Menu.buildFromTemplate(
+        printProjectTemplate(i18n)
+      )
+    )
+}
+
 const setEnableAudition = value =>
   Menu
     .getApplicationMenu().items.find(n => n.label === i18n.t('menu.navigation.title'))
@@ -1061,6 +1105,7 @@ module.exports = {
   setWelcomeMenu,
   setShotGeneratorMenu,
   setMenu,
+  setPrintProjectMenu,
 
   setEnableAudition
 }
