@@ -4,6 +4,9 @@ const React = require('react')
 const ReactDOM = require('react-dom')
 const { mergeDeepRight } = require('ramda')
 
+const i18n = require('../../services/i18next.config')
+const menu = require('../../menu')
+
 const prefs = remote.require('./prefs')
 
 const { getProjectData } = require('./data')
@@ -72,10 +75,11 @@ const start = async () => {
     document.querySelector('.container')
   )
 
+
+
   // quick hack to provide print-project with a custom menu
   //   so user keyboard input is not intercepted and sent to main-window unexpectedly
-  const i18n = require('../../services/i18next.config')
-  const menu = require('../../menu')
+  //
   // i18n probably won't be initialized at this point, so if not ...
   if (!i18n.isInitialized) {
     // ... wait until it's initialized before calling setting the print-project menu
@@ -97,6 +101,8 @@ const start = async () => {
   window.addEventListener('close', () => {
     menu.setMenu(i18n)
   })
+
+
 
   document.addEventListener('keyup', event => {
     switch (event.key) {
