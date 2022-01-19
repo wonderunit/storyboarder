@@ -109,7 +109,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
     .fontSize(rems(1.25))
     .fillColor('black')
     .text(
-      pageData.scene.title.toUpperCase(),
+      pageData.scene.title,
         pos[0], pos[1] + rems(1.25),
       { baseline: 'bottom', width: size[0] }
     )
