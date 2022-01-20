@@ -52,6 +52,7 @@ import XRClient from "./components/Three/XRClient"
 import path from "path"
 
 import FilepathsContext from './contexts/filepaths'
+import EnvironmentViewer from './components/Three/EnvironmentViewer'
 
 const sceneObjectSelector = (state) => {
   const sceneObjects = getSceneObjects(state)
@@ -493,6 +494,13 @@ const SceneManagerR3fLarge = connect(
               environment={world.environment}
               visible={world.environment.visible}
               grayscale={ world.environment.grayscale } />
+    }
+    {
+        world.environmentMap.background.length && <EnvironmentViewer 
+            storyboarderFilePath = { storyboarderFilePath }
+            visible = { world.environmentMap.visible }
+            background = { world.environmentMap.background }
+            rotation = { world.environmentMap.rotation } />
     }
     {
         roomTexture && <Room

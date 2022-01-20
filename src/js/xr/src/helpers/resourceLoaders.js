@@ -1,4 +1,6 @@
-import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader'
+import { RGBELoader} from 'three/examples/jsm/loaders/RGBELoader'
 
 export const onImageBufferLoad = (url, buffer) => {
   return new Promise((resolve, reject) => {
@@ -66,5 +68,27 @@ export const onGLTFBufferLoad = (buffer) => {
       resolve,
       reject
     )
+  })
+}
+
+export const onEXRImageBufferLoad = (url, buffer) => {
+  return new Promise((resolve, reject) => {
+    const loader = new EXRLoader()
+    const data = loader.parse(buffer)
+    const texture = new THREE.DataTexture(data.data,data.width,data.height,data.format,data.type)
+    texture.needsUpdate = true
+    resolve(texture)
+  })
+}
+
+export const onHDRImageBufferLoad = (url, buffer) => {
+  return new Promise((resolve, reject) => {
+    const loader = new RGBELoader()
+    const data = loader.parse(buffer)
+    const texture = new THREE.DataTexture(data.data,data.width,data.height,data.format,data.type)
+    texture.encoding = THREE.RGBEEncoding
+    texture.flipY = true
+    texture.needsUpdate = true
+    resolve(texture)
   })
 }

@@ -4,14 +4,13 @@ import fs from 'fs-extra'
 import log from '../../shared/storyboarder-electron-log'
 import ModelLoader from '../../services/model-loader'
 
-const CopyFile = (storyboarderFilePath, absolutePath, type) => {
+const CopyFile = (storyboarderFilePath, absolutePath, type, customDir = '') => {
     let expectedFilepath = absolutePath
     if (ModelLoader.needsCopy({model: expectedFilepath, type})) {
-      console.log('needCopy')
       let src = expectedFilepath
       let dst = path.join(
         path.dirname(storyboarderFilePath),
-        ModelLoader.projectFolder(type),
+        ModelLoader.projectFolder(type, customDir),
         path.basename(expectedFilepath)
       )
       log.info('will copy from', src, 'to', dst)
@@ -25,7 +24,7 @@ const CopyFile = (storyboarderFilePath, absolutePath, type) => {
       }
       // update it in the data
       return path.join(
-        ModelLoader.projectFolder(type),
+        ModelLoader.projectFolder(type, customDir),
         path.basename(dst)
       ).split('\\').join('/')
     }

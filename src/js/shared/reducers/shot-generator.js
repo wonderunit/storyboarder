@@ -226,6 +226,27 @@ const migrateWorldEnvironmentGrayscale = world => ({
   }  
 })
 
+// migrate older scenes which were missing file
+const migrateWorldEnvironmentFile = world => ({
+  ...world,
+  environment: {
+    ...world.environment,
+    file: world.environment.file === undefined ? initialState.undoable.world.environment.file : world.environment.file
+  }  
+})
+
+// migrate older scenes which were missing envMap
+const migrateWorldEnvironmentMap = world => ({
+    ...world,
+    environmentMap: !world.hasOwnProperty('environmentMap') ? {...initialScene.world.environmentMap} : {
+      ...world.environmentMap,
+      background: world.environmentMap.background === undefined ? [...initialState.undoable.world.environmentMap.background] : world.environmentMap.background,
+      rotation: world.environmentMap.rotation === undefined ? {...initialState.undoable.world.environmentMap.rotation} : world.environmentMap.rotation,
+    }
+
+  }
+)
+
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
   if (props.hasOwnProperty('locked')) {
@@ -414,28 +435,16 @@ const getCameraShot = (draft, cameraId) => {
   return draft[cameraId]
 }
 
-const currentPlatform = () => {
-  const platforms = {
-    WINDOWS: 'WINDOWS',
-    MAC: 'MAC',
-    LINUX: 'LINUX',
-    SUN: 'SUN',
-    OPENBSD: 'OPENBSD',
-    ANDROID: 'ANDROID',
-    AIX: 'AIX',
-  };
+const currentPlatform = () => ({
+    win32: 'WINDOWS',
+    darwin: 'MAC',
+    linux: 'LINUX',
+    sunos: 'SUN',
+    openbsd: 'OPENBSD',
+    android: 'ANDROID',
+    aix: 'AIX',
+  }[ os.platform() ])
 
-  const platformsNames = {
-    win32: platforms.WINDOWS,
-    darwin: platforms.MAC,
-    linux: platforms.LINUX,
-    sunos: platforms.SUN,
-    openbsd: platforms.OPENBSD,
-    android: platforms.ANDROID,
-    aix: platforms.AIX,
-  }
-  return platformsNames[os.platform()];
-}
 
 // load up the default poses
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
@@ -474,6 +483,10 @@ const defaultScenePreset = {
       scale: 1,
       visible: true,
       grayscale: true
+    },
+    environmentMap: {
+      background: [],
+      visible: true,
     },
     ambient: {
       intensity: 0.1
@@ -596,7 +609,7 @@ const initialScene = {
     },
     environment: {
       file: undefined,
-      background: [],
+      // background: [],
       x: 0,
       y: 0,
       z: 0,
@@ -604,6 +617,15 @@ const initialScene = {
       scale: 1,
       visible: true,
       grayscale: true
+    },
+    environmentMap: {
+      background: [],
+      visible: true,
+      rotation: {
+        x: 0,
+        y: 0,
+        z: 0
+      }
     },
     ambient: {
       intensity: 0.5
@@ -1331,6 +1353,8 @@ const worldReducer = (state = initialState.undoable.world, action) => {
           migrateWorldFog,
           migrateWorldShadingMode,
           migrateWorldEnvironmentGrayscale,
+          migrateWorldEnvironmentFile,
+          migrateWorldEnvironmentMap
         )(action.payload.world)
 
       case 'UPDATE_WORLD':
@@ -1352,9 +1376,6 @@ const worldReducer = (state = initialState.undoable.world, action) => {
       case 'UPDATE_WORLD_ENVIRONMENT':
         if (action.payload.hasOwnProperty('file')) {
           draft.environment.file = action.payload.file
-        }
-        if (action.payload.hasOwnProperty('background')) {
-          draft.environment.background = [...action.payload.background]
         }
         if (action.payload.scale != null) {
           draft.environment.scale = action.payload.scale
@@ -1389,6 +1410,22 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         if (action.payload.tiltDirectional != null) {
           draft.directional.tilt = action.payload.tiltDirectional
         }
+        return
+      
+      case 'UPDATE_ENVIRONMENT_MAP':
+        if (action.payload.hasOwnProperty('background')) {
+          draft.environmentMap.background = [...action.payload.background]
+        }
+        if (action.payload.visible != null) {
+          draft.environmentMap.visible = action.payload.visible
+        }
+        if (action.payload.rotation != null) {
+          draft.environmentMap.rotation = {
+            ...state.environmentMap.rotation,
+            ...action.payload.rotation
+          }
+        }
+    
         return
 
       case 'UPDATE_WORLD_FOG':
@@ -1833,6 +1870,7 @@ module.exports = {
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
   updateWorldEnvironment: payload => ({ type: 'UPDATE_WORLD_ENVIRONMENT', payload }),
+  updateWorldEnvironmentMap: payload => ({ type: 'UPDATE_ENVIRONMENT_MAP', payload }),
   updateWorldFog: payload => ({ type: 'UPDATE_WORLD_FOG', payload }),
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),

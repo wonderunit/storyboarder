@@ -2,6 +2,9 @@ import * as THREE from 'three'
 import React, { useState, useMemo, useEffect } from 'react'
 import observable from '../../utils/observable'
 import { gltfLoader } from '../utils/gltfLoader'
+import { rgbeLoader } from '../utils/rgbeLoader'
+import { exrLoader } from '../utils/exrLoader'
+import path, * as pathFile from 'path'
 
 /**
  * Resources storage
@@ -61,17 +64,19 @@ export const loadAsset = (path) => {
       if (!current[path].data) {
 
         let loader
-        if (!path.match(/(\.(png|jpg|jpeg|gif)$)|((\\|\/)(images|volumes)(\\|\/))/mi)) {
+        if (!path.match(/(\.(png|jpg|jpeg|gif|hdr|exr)$)|((\\|\/)(images|volumes|environments)(\\|\/))/mi)) {
           /** Current resource is model */
           loader = gltfLoader
         } else {
           /** Current resource is texture */
-          loader = textureLoader
+          // loader = textureLoader
+          loader = pathFile.extname(path) === '.hdr' ? rgbeLoader : pathFile.extname(path) === '.exr' ? exrLoader : textureLoader
         }
 
         loader.load(
           path,
-          value => {
+          (value, data) => {
+            value.name = pathFile.parse(path).name
             cache.set({
               ...cache.get(),
               [path]: {data: value, status: LOADING_MODE.SUCCESS, usageCount: current[path].usageCount, lastUsedDate: current[path].lastUsedDate }
@@ -94,6 +99,21 @@ export const loadAsset = (path) => {
   }
 }
 
+const cleanUnusedAssets = () => {
+  const current = cache.get()
+  let keys = Object.keys(current)
+  for(let i = 0; i < keys.length; i++) {
+      let key = keys[i]
+      let currentAsset = current[key]
+      if(currentAsset.usageCount === 0) {
+          let difference = (Date.now() - currentAsset.lastUsedDate) / 60000
+          if(difference >= 15) {
+              delete current[key]
+          }
+      }
+  }
+} 
+
 export const cleanUpCache = () => {
   cache.set({})
 }
@@ -105,19 +125,6 @@ export const cleanUpCache = () => {
 export const useAssets = (paths) => {
   const [assetsToLoad, setAssetsToLoad] = useState(paths || [])
 
-  const cleanUnusedAssets = () => {
-    let keys = Object.keys(cache.get())
-    for(let i = 0; i < keys.length; i++) {
-      let key = keys[i]
-      let currentAsset = cache.get()[key]
-      if(currentAsset.usageCount === 0) {
-        let difference = (Date.now() - currentAsset.lastUsedDate) / 60000
-        if(difference >= 15) {
-          delete cache.get()[key]
-        }
-      }
-    }
-  } 
   /**
    * Fetch not fetched resources if 'paths' variable was changed
    */

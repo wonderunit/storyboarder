@@ -15,6 +15,7 @@ import {NumberSlider, formatters, transforms, textFormatters, textConstraints} f
 import {
   updateWorldRoom,
   updateWorldEnvironment,
+  updateWorldEnvironmentMap,
   updateWorldFog,
   getWorld,
   getPlatform,
@@ -25,12 +26,14 @@ import {
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from '../../utils/CopyFile'
 import { useTranslation } from 'react-i18next'
-import CopyFiles from '../../utils/CopyFiles'
-const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog, world, platform, storyboarderFilePath}) => {
+import { CopyFiles } from '../../utils/CopyFiles'
+
+const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldEnvironmentMap,updateWorldFog, world, platform, storyboarderFilePath}) => {
   const { t } = useTranslation()
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
   const setEnvVisible = useCallback(() => updateWorldEnvironment({visible: !world.environment.visible}), [world.environment.visible])
+  const setEnvMapVisible = useCallback(() => updateWorldEnvironmentMap({visible: !world.environmentMap.visible}), [world.environmentMap.visible])
   const setFogVisible = useCallback(() => updateWorldFog({visible: !world.fog.visible}), [world.fog.visible])
 
   const setFogDistance = useCallback((far) => updateWorldFog({far}), [])
@@ -42,6 +45,10 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   const setEnvX = useCallback((x) => updateWorldEnvironment({x}), [])
   const setEnvY = useCallback((y) => updateWorldEnvironment({y}), [])
   const setEnvZ = useCallback((z) => updateWorldEnvironment({z}), [])
+
+  const setEnvMapRotateX = useCallback((x) => updateWorldEnvironmentMap({ rotation: {x: _Math.degToRad(x)} }), [])
+  const setEnvMapRotateY = useCallback((z) => updateWorldEnvironmentMap({ rotation: {z: _Math.degToRad(z)} }), [])
+  const setEnvMapRotateZ = useCallback((y) => updateWorldEnvironmentMap({ rotation: {y: _Math.degToRad(y)} }), [])
   
   const setEnvScale = useCallback((scale) => updateWorldEnvironment({scale}), [])
   const setEnvRotation = useCallback((rotation) => updateWorldEnvironment({rotation: _Math.radToDeg(rotation)}), [])
@@ -51,9 +58,8 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
     }
   }, [])
   const setEnvMapFile = useCallback((event) => {
-    console.log('setEnvMapFile',event)
     if (event.file || (event.files.length>=1) && !event.canceled) {
-      updateWorldEnvironment({background: CopyFiles({storyboarderFilePath, absolutePathInfo: {...event}, type: 'environment'})})
+      updateWorldEnvironmentMap({background: CopyFiles({storyboarderFilePath, absolutePathInfo: {...event}, type: 'environment'})})
     }
   }, [])
   const setGrayscale = useCallback(() => updateWorldEnvironment({grayscale: !world.environment.grayscale}), [world.environment.grayscale])
@@ -92,13 +98,10 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
       </React.Fragment>
   ), [])
 
-  const getEnvironmentLabel = useCallback(({lableName='(none)',helpButtonVisu='visible'})=>{
-
-   return (
+  const getEnvironmentLabel = useCallback(({lableName='(none)',helpButtonVisu='visible'}) => (
      <React.Fragment>
       <span>{t(lableName)}</span>
-      {
-        (helpButtonVisu ==='visible') ? 
+      {(helpButtonVisu ==='visible') ? 
           <HelpButton
             url="https://github.com/wonderunit/storyboarder/wiki/Creating-custom-3D-Models-for-Shot-Generator"
             title={t("shot-generator.inspector.common.object-creation-help")}
@@ -114,9 +117,14 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
         : null
       }
     </React.Fragment>
-   )
+   ),[])
 
- },[])
+  const backgroundMapValue = useMemo(() => (
+    !world.environmentMap.background.length ? undefined : 
+    (world.environmentMap.background.length>1) ? path.basename(path.dirname(world.environmentMap.background[0])) : 
+    path.basename(world.environmentMap.background[0])
+  ),[world.environmentMap.background])
+
 
   return (
       <Scrollable>
@@ -179,16 +187,51 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
 
         <div className="inspector-group">
           <div className="inspector-row">
-              <FileInput
-                  onChange={setEnvMapFile}
-                  label={getEnvironmentLabel({
-                          lableName:"shot-generator.inspector.inspected-world.map",
-                          helpButtonVisu:'hidden'  
-                        })}
-                  value={world.environment.file && path.basename(world.environment.file)}
-                  platform={platform}
-                />
-            </div>
+            <Checkbox label={t("shot-generator.inspector.common.visible")} checked={world.environmentMap.visible} onClick={setEnvMapVisible}/>
+          </div>
+          <div className="inspector-row">
+            <FileInput
+              onChange={setEnvMapFile}
+              label={getEnvironmentLabel({
+                      lableName:"shot-generator.inspector.inspected-world.map",
+                      helpButtonVisu:'hidden'  
+                    })}
+              value={backgroundMapValue}
+              platform={platform}
+            />
+          </div>
+          <NumberSlider
+            label={t("shot-generator.inspector.common.rotate-x")}
+            value={_Math.radToDeg(world.environmentMap.rotation.x)}
+            min={-180}
+            max={180}
+            step={1}
+            onSetValue={setEnvMapRotateX}
+            transform={transforms.degrees}
+            formatter={formatters.degrees}
+          />
+
+          <NumberSlider
+            label={t("shot-generator.inspector.common.rotate-y")}
+            value={_Math.radToDeg(world.environmentMap.rotation.z)}
+            min={-180}
+            max={180}
+            step={1}
+            onSetValue={setEnvMapRotateY}
+            transform={transforms.degrees}
+            formatter={formatters.degrees}
+          />
+
+          <NumberSlider
+            label={t("shot-generator.inspector.common.rotate-z")}
+            value={_Math.radToDeg(world.environmentMap.rotation.y)}
+            min={-180}
+            max={180}
+            step={1}
+            onSetValue={setEnvMapRotateZ}
+            transform={transforms.degrees}
+            formatter={formatters.degrees}
+          />
         </div>
 
         <h5 className="inspector-label">{t("shot-generator.inspector.inspected-world.environmentModel")}</h5>
@@ -287,7 +330,7 @@ const mapStateToProps = (state) => ({
 })
 
 const mapDispatchToProps = {
-  selectObject, deleteObjects, updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldFog
+  selectObject, deleteObjects, updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldEnvironmentMap, updateWorldFog
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(InspectedWorld)

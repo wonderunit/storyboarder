@@ -54,10 +54,10 @@ const builtInFolder = type => ({
   'xr': path.join(pathToShotGeneratorData, 'xr')
 }[type])
 
-const projectFolder = type => ({
+const projectFolder = (type, customDir = '') => ({
   'object': path.join('models', 'objects'),
   'character': path.join('models', 'characters'),
-  'environment': path.join('models', 'environments'),
+  'environment': path.join('models', 'environments', customDir),
   'attachable': path.join('models', 'attachables')
 }[type])
 
@@ -90,6 +90,8 @@ const getFilepathForModel = ({ model, type }, { storyboarderFilePath }) => {
   }
 }
 
+const getFilepathForEnvironment = ({storyboarderFilePath, envPath}) => path.join(path.dirname(storyboarderFilePath),'/', envPath)
+
 const needsCopy = ({ model, type }) => {
   // is it built-in?
   if (!isCustomModel(model)) {
@@ -118,6 +120,7 @@ module.exports = {
   isUserFile,
 
   getFilepathForModel,
+  getFilepathForEnvironment,
   needsCopy,
 
   projectFolder

@@ -12,53 +12,27 @@ const FileInput = React.memo(({
   ...props
 }) => {
 
-  const dialogSettings = useMemo(()=>{
-    if (!platform) return {}
-    switch (platform) {
-      case 'MAC':
-          return {
-            properties:['openFile','openDirectory','multiSelections'],
-            message:'Choose file or path!'
-          }
-
-      default:
-        return {
-          properties:['openFile','multiSelections'],
-        }
-    }
-  },[platform])
-
   const onFileSelect = useCallback((e) => {
     e.preventDefault()
     if (!onChange) {
       return false
     }
-    dialog.showOpenDialog(null, dialogSettings)
-    .then(({ filePaths, canceled }) => {
-      
-      console.log('FileInput',filePaths,dialogSettings)
-      if (filePaths.length) {
-        if (filePaths.length>1){
-          onChange({
-            file:undefined,
-            files: filePaths,
-            canceled
-          })
-        } else {
-          onChange({
-            file: filePaths[0],
-            files: filePaths,
-            canceled
-          })
+    
+    dialog.showOpenDialog(null,
+      !platform ? {} : 
+      (platform === 'MAC') ? {
+          properties:['openFile','openDirectory','multiSelections'],
+          message:'Choose file or folder!'
+        } : {
+          properties:['openFile','multiSelections'],
         }
-
-      } else {
-        onChange({
-          file: undefined,
-          files: [],
-          canceled
-        })
-      }
+      )
+    .then(({ filePaths, canceled }) => {
+      onChange({
+        file: ( canceled || (filePaths.length > 1) ) ? undefined : filePaths[0],
+        files: ( canceled ) ? [] : filePaths,
+        canceled
+      })
     })
     .catch(err => console.error(err))
     .finally(() => {
@@ -87,9 +61,3 @@ const FileInput = React.memo(({
 })
 
 export default FileInput
-
-/*
-    // filters:[
-    //   {name:'images',extensions:['jpg','jpeg','png']}
-    // ]
-*/

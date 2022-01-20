@@ -48,7 +48,7 @@ const App = () => {
       const composeEnhancers =
             typeof window === 'object' &&
             window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?   
-              window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__({}) : compose
+              window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(reduxDevtoolsExtensionOptions) : compose
 
       const enhancer = composeEnhancers(
         applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware),
