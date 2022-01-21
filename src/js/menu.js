@@ -1065,6 +1065,12 @@ const printProjectTemplate = (i18n) => [
     ]
   },
   {
+    label: i18n.t('menu.view.title'),
+    submenu: [
+      ...SubMenuFragments.View(i18n)
+    ]
+  },
+  {
     role: 'window',
     label: i18n.t('menu.window.title'),
     submenu: [
