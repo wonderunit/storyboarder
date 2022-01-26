@@ -418,8 +418,8 @@ const InputControlsView = ({
 
           ['div.lower',
               ['div.row',
-                  ['button', { onClick: onPrint }, t('print-project.print-button-label')],
-                  ['button', { onClick: onExport }, t('print-project.export-pdf-button-label')]]]]
+                  ['button.primary-button', { onClick: onPrint }, t('print-project.print-button-label')],
+                  ['button.secondary-button', { onClick: onExport }, t('print-project.export-pdf-button-label')]]]]
     ]]
   )
 }
