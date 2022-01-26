@@ -216,7 +216,7 @@ button:focus {
   .lower {
     width: 70%;
     align-self: center;
-    margin-left: -5%;
+    margin-left: -9%; /* optical */
   }
 }
 
