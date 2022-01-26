@@ -44,12 +44,18 @@ body {
   color: rgba(0, 0, 0, 0.6);
 }
 .title {
-  margin: 0.75rem 0 0.5rem 0;
+  margin: 0.75rem 0 0;
   padding: 0;
   color: rgba(0, 0, 0, 0.8);
   font-size: 1.75rem;
   line-height: 1;
 }
+@media only screen and (min-height: 700px) {
+  .title {
+    margin: 0.75rem 0 0.5rem 0;
+  }
+}
+
 .description {
   display: none;
 }
@@ -115,7 +121,6 @@ form {
   mix-blend-mode: multiply;
 }
 button {
-  align-self: flex-start;
   padding: 1rem 1.5rem;
   border: none;
   outline: none;
@@ -127,12 +132,13 @@ form button {
   appearance: none;
   border: none;
   /* font-size: 14px; */
-  padding: 1em 1.25em;
   line-height: 1;
   background-color: #111;
   color: #eee;
-  border-radius: 0.5rem;
+  border-radius: 0.75rem;
   cursor: pointer;
+  line-height: 1.2;
+  padding: 0.5rem;
 }
 
 
@@ -203,14 +209,30 @@ button:focus {
   overflow: scroll;
   flex: 1;
 }
-.lower {}
+.lower {
+  width: 100%;
+}
+@media only screen and (min-height: 700px) {
+  .lower {
+    width: 70%;
+    align-self: center;
+    margin-left: -5%;
+  }
+}
 
 form {
   width: 100%;
+  align-self: flex-end;
   height: 100%;
   display: flex;
   flex-direction: column;
 }
+@media only screen and (min-height: 700px) {
+  form {
+    width: calc(100% - 1rem);
+  }
+}
+
 form,
 form select,
 form button {
@@ -379,4 +401,29 @@ form.busy * {
 .pagination.busy {
   pointer-events: none;
   opacity: 0.8;
+}
+
+
+.primary-button, .secondary-button {
+  transition: all 0.2s linear;
+}
+.primary-button {
+  background-color: #6f68f0;
+}
+.secondary-button {
+  background-color: #111;
+}
+.primary-button:hover,
+.secondary-button:hover {
+  filter: brightness(1.2);
+  opacity: 0.8;
+}
+
+@media only screen and (min-height: 700px) {
+  .primary-button {
+    width: 61.8%;
+  }
+  .secondary-button {
+    width: 38.2%
+  }
 }
