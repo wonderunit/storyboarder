@@ -1,4 +1,4 @@
-import React, {useCallback, useMemo} from 'react'
+import React, {useCallback, useEffect, useMemo, useState} from 'react'
 import {Math as _Math} from 'three'
 
 import {connect} from 'react-redux'
@@ -26,9 +26,22 @@ import {
 import deepEqualSelector from './../../../utils/deepEqualSelector'
 import CopyFile from '../../utils/CopyFile'
 import { useTranslation } from 'react-i18next'
-import { CopyFiles } from '../../utils/CopyFiles'
+import { CopyFiles, envFilesPatterns} from '../../utils/CopyFiles'
+import Select from '../Select'
+
+const savePresetEnv = [
+  {value:"sphere", label:"Spherical map"},
+  {value:"cube", label:"Cubetexture map"},
+  {value:"cross", label:"Croos-horizontal map"},
+]
 
 const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, updateWorldEnvironment, updateWorldEnvironmentMap,updateWorldFog, world, platform, storyboarderFilePath}) => {
+
+  const [selectedModalEnv, setSelectedModalEnv] = useState(savePresetEnv[0])
+
+  //update drop-down evironment menu after mount component 
+  useEffect(()=>{ setSelectedModalEnv(savePresetEnv.find(item => item.value === world.environmentMap.mapType))},[])
+
   const { t } = useTranslation()
   const setGround = useCallback(() => updateWorld({ground: !world.ground}), [world.ground])
   const setRoomVisible = useCallback(() => updateWorldRoom({visible: !world.room.visible}), [world.room.visible])
@@ -59,9 +72,11 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
   }, [])
   const setEnvMapFile = useCallback((event) => {
     if (event.file || (event.files.length>=1) && !event.canceled) {
-      updateWorldEnvironmentMap({background: CopyFiles({storyboarderFilePath, absolutePathInfo: {...event}, type: 'environment'})})
+      const background = CopyFiles({storyboarderFilePath, absolutePathInfo: {...event}, type: 'environment'})
+      const sett = background.length ? { background, mapType: selectedModalEnv.value} : { background }
+      updateWorldEnvironmentMap(sett)
     }
-  }, [])
+  }, [selectedModalEnv])
   const setGrayscale = useCallback(() => updateWorldEnvironment({grayscale: !world.environment.grayscale}), [world.environment.grayscale])
   
   const setAmbientIntensity = useCallback((intensity) => updateWorldEnvironment({intensity}), [])
@@ -77,6 +92,12 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
     let backgroundColor = (c << 16) | (c << 8) | c
     updateWorld({backgroundColor})
   }, [])
+
+  useEffect(() => {
+    savePresetEnv[0].label = t("shot-generator.inspector.envMap-preset.sphere")
+    savePresetEnv[1].label = t("shot-generator.inspector.envMap-preset.cube")
+    savePresetEnv[2].label = t("shot-generator.inspector.envMap-preset.cross")
+  }, [t])
   
   const EnvironmentModelLabel = useMemo(() => (
       <React.Fragment>
@@ -117,7 +138,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
         : null
       }
     </React.Fragment>
-   ),[])
+  ),[])
 
   const backgroundMapValue = useMemo(() => (
     !world.environmentMap.background.length ? undefined : 
@@ -125,6 +146,39 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
     path.basename(world.environmentMap.background[0])
   ),[world.environmentMap.background])
 
+  const getDialogSettByEnvType = useCallback((inpType = null) => {
+
+    const filters = [
+      { name: 'Images', extensions: envFilesPatterns.avaliableExt },
+      { name: 'All', extensions: ['*'] }
+    ]
+
+    const type = inpType || selectedModalEnv.value 
+
+    switch (type) {
+      case 'sphere':
+        return {
+          properties: ['openFile'],
+          filters 
+        }
+      case 'cube':
+        return {
+          properties: platform === 'MAC' ? ['openFile','openDirectory','multiSelections'] : ['openFile','multiSelections'],
+          filters 
+        }
+      case 'cross':
+        return {
+          properties: ['openFile'],
+          filters 
+        }
+      default: 
+        return {
+          properties: platform === 'MAC' ? ['openFile','openDirectory','multiSelections'] : ['openFile','multiSelections'],
+          filters 
+        }
+    }
+
+  },[selectedModalEnv, platform, envFilesPatterns]) 
 
   return (
       <Scrollable>
@@ -189,6 +243,15 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
           <div className="inspector-row">
             <Checkbox label={t("shot-generator.inspector.common.visible")} checked={world.environmentMap.visible} onClick={setEnvMapVisible}/>
           </div>
+          <div className="thumbnail-search column">
+            <div className="row" style= {{ padding: "6px 0" }} >
+                <Select 
+                  label={t("shot-generator.inspector.envMap-preset.sphere")}
+                  value={ selectedModalEnv}
+                  options={ savePresetEnv }
+                  onSetValue={ (item) => {setSelectedModalEnv(item)} }/>
+            </div>
+          </div>
           <div className="inspector-row">
             <FileInput
               onChange={setEnvMapFile}
@@ -198,6 +261,7 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                     })}
               value={backgroundMapValue}
               platform={platform}
+              dialogSettings = { getDialogSettByEnvType } 
             />
           </div>
           <NumberSlider

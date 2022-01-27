@@ -435,6 +435,11 @@
         "no": "No",
         "are-you-sure": "Are you sure?"
       },
+      "envMap-preset": {
+        "sphere": "Spherical map",
+        "cross": "Croos-horizontal map",
+        "cube": "Cubetexture map"
+      },
       "inspected-element": {
         "properties": "Properties:"
       },

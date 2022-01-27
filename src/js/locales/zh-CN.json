@@ -435,8 +435,13 @@
         "no": "不",
         "are-you-sure": "您确定吗？"
       },
+      "envMap-preset": {
+        "sphere": "球面图",
+        "cross": "横向地图",
+        "cube": "立方体纹理贴图"
+      },
       "inspected-element": {
-        "properties": "特性："
+        "properties": "特性:"
       },
       "camera": {
         "fov": "F.O.V."

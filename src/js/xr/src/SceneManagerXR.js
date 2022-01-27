@@ -822,7 +822,8 @@ const SceneContent = connect(
             world.environmentMap.background.length && <EnvironmentViewer  
               visible = { world.environmentMap.visible }
               assets = { resources.envMapHandler }
-              rotation = { world.environmentMap.rotation }/>
+              rotation = { world.environmentMap.rotation } 
+              type = {world.environmentMap.mapType}/>
           }
           <RemoteProvider>
             <RemoteClients

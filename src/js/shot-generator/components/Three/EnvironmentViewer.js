@@ -5,7 +5,7 @@ import Viewer from '../../../shared/THREE/environmentViewer'
 import { SHOT_LAYERS } from "../../utils/ShotLayers"
 import path from 'path'
 
-const EnvironmentViewer = React.memo(({ background, storyboarderFilePath, visible, rotation }) => { 
+const EnvironmentViewer = React.memo(({ background, storyboarderFilePath, visible, rotation , type }) => { 
 
     const ref = useUpdate(
         self => {
@@ -21,12 +21,12 @@ const EnvironmentViewer = React.memo(({ background, storyboarderFilePath, visibl
     const { assets, loaded } = useAssets( pathEnvironment )
 
     const cubeMaps = useMemo(() => (
-        ((assets.length > 1) && loaded && pathEnvironment.length) ? assets : undefined
-    ),[assets,loaded,pathEnvironment])
+        loaded && pathEnvironment.length && ( (assets.length > 1) || ( assets.length === 1 && type === 'cross') ) ? assets : undefined 
+    ),[assets,loaded,pathEnvironment, type])
 
     const sphereMap = useMemo(() => (
-        ((assets.length == 1) && loaded && pathEnvironment.length) ? assets[0] : undefined
-    ),[assets,loaded,pathEnvironment]) 
+        loaded && pathEnvironment.length && assets.length == 1 && type !== 'cross' ? assets[0] : undefined 
+    ),[assets,loaded,pathEnvironment, type]) 
 
     const rotateEnvironmet = useMemo(() => [rotation.x,rotation.z,rotation.y],[rotation])
 

@@ -242,6 +242,7 @@ const migrateWorldEnvironmentMap = world => ({
       ...world.environmentMap,
       background: world.environmentMap.background === undefined ? [...initialState.undoable.world.environmentMap.background] : world.environmentMap.background,
       rotation: world.environmentMap.rotation === undefined ? {...initialState.undoable.world.environmentMap.rotation} : world.environmentMap.rotation,
+      mapType: world.environmentMap.mapType === undefined ? initialState.undoable.world.environmentMap.mapType : world.environmentMap.mapType,
     }
 
   }
@@ -620,6 +621,7 @@ const initialScene = {
     },
     environmentMap: {
       background: [],
+      mapType: 'sphere',
       visible: true,
       rotation: {
         x: 0,
@@ -1424,6 +1426,9 @@ const worldReducer = (state = initialState.undoable.world, action) => {
             ...state.environmentMap.rotation,
             ...action.payload.rotation
           }
+        }
+        if (action.payload.mapType != null) {
+          draft.environmentMap.mapType = action.payload.mapType 
         }
     
         return

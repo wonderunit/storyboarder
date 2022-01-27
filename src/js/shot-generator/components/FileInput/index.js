@@ -1,7 +1,7 @@
-import React, {useCallback, useMemo} from 'react'
+import React, { useCallback } from 'react'
 
 import {remote} from 'electron'
-const {dialog} = remote
+const {dialog, BrowserWindow} = remote
 
 const FileInput = React.memo(({
   value = "(none)", 
@@ -9,6 +9,7 @@ const FileInput = React.memo(({
   wrapperClassName="input-group",
   refClassName="file-input",
   platform = null,
+  dialogSettings = null,
   ...props
 }) => {
 
@@ -17,8 +18,9 @@ const FileInput = React.memo(({
     if (!onChange) {
       return false
     }
-    
-    dialog.showOpenDialog(null,
+
+    dialog.showOpenDialog( BrowserWindow.getFocusedWindow(), 
+      dialogSettings ? dialogSettings() :
       !platform ? {} : 
       (platform === 'MAC') ? {
           properties:['openFile','openDirectory','multiSelections'],
@@ -39,7 +41,7 @@ const FileInput = React.memo(({
       // automatically blur to return keyboard control
       document.activeElement.blur()
     })    
-  }, [onChange])
+  }, [onChange,dialogSettings,platform])
   
   return (
       <div className={ wrapperClassName }>

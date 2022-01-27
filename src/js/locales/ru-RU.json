@@ -435,6 +435,11 @@
 			  "no": "Не",
 			  "are-you-sure": "Вы уверены?"
 			},
+			"envMap-preset": {
+				"sphere": "Сферическая карта",
+				"cross": "Croos-horizontal карта",
+				"cube": "Кубическая карта"
+			},
 			"inspected-element": {
 			  "properties": "Свойства:"
 			},

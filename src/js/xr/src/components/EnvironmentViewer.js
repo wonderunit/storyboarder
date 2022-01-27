@@ -3,7 +3,7 @@ import { useFrame, useUpdate } from "react-three-fiber"
 import Viewer from '../../../shared/THREE/environmentViewer'
 import VirtualCamera from "./VirtualCamera"
 
-const EnvironmentViewer = React.memo(({ assets, visible, rotation }) => {
+const EnvironmentViewer = React.memo(({ assets, visible, rotation, type }) => {
 
     const ref = useUpdate(
         self => {
@@ -13,11 +13,11 @@ const EnvironmentViewer = React.memo(({ assets, visible, rotation }) => {
     )
 
     const cubeMaps = useMemo(() => (
-        (assets && (assets.length > 1)) ? assets : undefined
+        assets && ((assets.length > 1) || type === 'cross' && assets.length === 1) ? assets : undefined
     ),[assets])
 
     const sphereMap = useMemo(() => (
-        (assets && (assets.length == 1)) ? assets[0] : undefined
+        assets && (type !== 'cross' && assets.length === 1) ? assets[0] : undefined
     ),[assets]) 
 
     const rotateEnvironmet = useMemo(() => [rotation.x,rotation.z,rotation.y],[rotation])
