@@ -184,8 +184,8 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   boardBorderLineWidth: 0.5 | 1.0
   */
   let localCfg = cfg.boardBorderStyle == 'minimal'
-    ? { boardBorderStrokeColor: '#999', boardBorderLineWidth: 0.5 }
-    : { boardBorderStrokeColor: '#333', boardBorderLineWidth: 1.0 }
+    ? { boardBorderStrokeColor: '#999', boardBorderLineWidth: 0.5, boardBorderStrokeOpacity: 0 }
+    : { boardBorderStrokeColor: '#333', boardBorderLineWidth: 1.0, boardBorderStrokeOpacity: 1 }
 
   let inner = rect.copy()
   v.sub2(null, inner.size, [10, 0])
@@ -250,7 +250,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   //
   doc
     .strokeColor(localCfg.boardBorderStrokeColor)
-    .strokeOpacity(1)
+    .strokeOpacity(localCfg.boardBorderStrokeOpacity)
     .lineWidth(localCfg.boardBorderLineWidth)
     .rect(...inner.pos, ...inner.size)
     .stroke()
