@@ -70,7 +70,12 @@ const start = async () => {
       })
   )
   // .onTransition(logTransition)
-  .onDone(() => window.close())
+  .onDone(() => {
+    // when this modal closes, explicitly set the main-window menu again
+    menu.setMenu(i18n)
+
+    window.close()
+  })
   .start()
 
   ReactDOM.render(
@@ -99,10 +104,6 @@ const start = async () => {
     setTimeout(() => {
       menu.setPrintProjectMenu(i18n)
     }, 10)
-  })
-  // when this modal closes, explicitly set the main-window menu again
-  window.addEventListener('close', () => {
-    menu.setMenu(i18n)
   })
 
 
