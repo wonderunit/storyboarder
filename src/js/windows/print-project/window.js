@@ -28,6 +28,9 @@ const maybeReadContextFromPrefs = () => {
     : undefined
 }
 
+// const logTransition = (state, event) =>
+//   console.log(JSON.stringify(event) + ' ➤ ' + JSON.stringify(state.value))
+
 const start = async () => {
   let project
   let canvas
@@ -66,7 +69,7 @@ const start = async () => {
         canvas
       })
   )
-  .onTransition((state, event) => console.log(JSON.stringify(event) + ' ➤ ' + JSON.stringify(state.value)))
+  // .onTransition(logTransition)
   .onDone(() => window.close())
   .start()
 
