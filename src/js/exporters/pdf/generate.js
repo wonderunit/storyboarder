@@ -3,6 +3,7 @@ const PDFDocument = require('pdfkit')
 const v = require('@thi.ng/vectors')
 const { Rect } = require('@thi.ng/geom')
 const moment = require('moment')
+const fs = require('fs')
 
 const groupByPage = require('./group-by-page')
 const stringContainsForeign = require('./string-contains-foreign')
@@ -177,6 +178,38 @@ const drawBoard = (doc, { direction, ...options }, cfg) =>
   ? drawBoardRow(doc, options, cfg)
   : null
 
+const drawImageOrPlaceholder = (doc, { filepath, rect }, cfg) => {
+  if (fs.existsSync(filepath)) {
+    doc.image(
+      filepath,
+      ...rect.pos,
+      { fit: rect.size }
+    )
+  } else {
+    // TODO i18n
+    let warningText = 'Error: Missing Posterframe'
+    doc
+      .save()
+      /* background */
+      .fillColor('#f00')
+      .rect(...rect.pos, ...rect.size)
+      .fill()
+      /* text */
+      .fillColor('black')
+      .fontSize(cfg.boardTextSize)
+      .text(
+        warningText,
+        ...v.add2([], rect.pos, [0, (rect.size[1] - doc.heightOfString(warningText)) / 2]),
+        {
+          align: 'center',
+          width: rect.size[0]
+        }
+      )
+      /* restore */
+      .restore()
+  }
+}
+
 // Place Text Right
 const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   /*
@@ -221,11 +254,10 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   //
   // image
   //
-  doc.image(
-    path.join(imagesPath, boardFilenameForPosterFrame(board)),
-    ...imageR.pos,
-    { fit: imageR.size }
-  )
+  drawImageOrPlaceholder(doc, {
+    filepath: path.join(imagesPath, boardFilenameForPosterFrame(board)),
+    rect: imageR
+  }, cfg)
 
   //
   //
@@ -400,11 +432,10 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
   //
   // image
   //
-  doc.image(
-    path.join(imagesPath, boardFilenameForPosterFrame(board)),
-    ...imageR.pos,
-    { fit: imageR.size }
-  )
+  drawImageOrPlaceholder(doc, {
+    filepath: path.join(imagesPath, boardFilenameForPosterFrame(board)),
+    rect: imageR
+  }, cfg)
 
   //
   //
