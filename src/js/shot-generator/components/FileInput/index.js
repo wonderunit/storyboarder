@@ -10,6 +10,7 @@ const FileInput = React.memo(({
   refClassName="file-input",
   platform = null,
   dialogSettings = null,
+  onClickUsed = true,
   ...props
 }) => {
 
@@ -48,7 +49,7 @@ const FileInput = React.memo(({
         {label ? <div className="input-group__label">{label}</div> : null}
         <div
             className={ refClassName }
-            onClick={ onFileSelect }
+            onClick={ onClickUsed ? onFileSelect : null }
             title={value}
         >
           <a

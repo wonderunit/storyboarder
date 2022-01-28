@@ -29,6 +29,9 @@ import { useTranslation } from 'react-i18next'
 import { CopyFiles, envFilesPatterns} from '../../utils/CopyFiles'
 import Select from '../Select'
 
+import {remote} from 'electron'
+const {dialog, BrowserWindow} = remote
+
 const savePresetEnv = [
   {value:"sphere", label:"Spherical map"},
   {value:"cube", label:"Cubetexture map"},
@@ -70,10 +73,10 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
       updateWorldEnvironment({file: CopyFile(storyboarderFilePath, event.file, 'environment')})
     }
   }, [])
-  const setEnvMapFile = useCallback((event) => {
+  const setEnvMapFile = useCallback((event, mapType = null) => {
     if (event.file || (event.files.length>=1) && !event.canceled) {
       const background = CopyFiles({storyboarderFilePath, absolutePathInfo: {...event}, type: 'environment'})
-      const sett = background.length ? { background, mapType: selectedModalEnv.value} : { background }
+      const sett = background.length ? { background, mapType: mapType || selectedModalEnv.value} : { background }
       updateWorldEnvironmentMap(sett)
     }
   }, [selectedModalEnv])
@@ -249,7 +252,22 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                   label={t("shot-generator.inspector.envMap-preset.sphere")}
                   value={ selectedModalEnv}
                   options={ savePresetEnv }
-                  onSetValue={ (item) => {setSelectedModalEnv(item)} }/>
+                  onSetValue={ (item) => {
+                    setSelectedModalEnv(item)
+                    dialog.showOpenDialog( BrowserWindow.getFocusedWindow(), getDialogSettByEnvType(item.value))
+                    .then(({ filePaths, canceled }) => {
+                      setEnvMapFile({
+                        file: ( canceled || (filePaths.length > 1) ) ? undefined : filePaths[0],
+                        files: ( canceled ) ? [] : filePaths,
+                        canceled
+                      },item.value)
+                    })
+                    .catch(err => console.error(err))
+                    .finally(() => {
+                      // automatically blur to return keyboard control
+                      document.activeElement.blur()
+                    }) 
+                  }}/>
             </div>
           </div>
           <div className="inspector-row">
@@ -261,7 +279,8 @@ const InspectedWorld = React.memo(({updateObject, updateWorld, updateWorldRoom, 
                     })}
               value={backgroundMapValue}
               platform={platform}
-              dialogSettings = { getDialogSettByEnvType } 
+              dialogSettings = { getDialogSettByEnvType }
+              onClickUsed = {false} 
             />
           </div>
           <NumberSlider
