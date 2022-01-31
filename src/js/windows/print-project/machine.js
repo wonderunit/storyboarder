@@ -11,7 +11,7 @@ const specs = {
   },
   rows: [1, 10],
   columns: [1, 10],
-  boardTextSize: [4, 16]
+  boardTextSize: [8, 16]
 }
 
 const getPaperSize = (key, orientation) => {
