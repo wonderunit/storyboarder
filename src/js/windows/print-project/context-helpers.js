@@ -2,7 +2,7 @@ const moment = require('moment')
 const path = require('path')
 const fs = require('fs-extra')
 const os = require('os')
-const R = require('ramda')
+const { memoizeWith, pipe, clone, pick, without } = require('ramda')
 
 const createTempFilePath = () =>
   path.join(
@@ -10,7 +10,7 @@ const createTempFilePath = () =>
     'export.pdf'
   )
 
-const getTemporaryFilepath = R.memoizeWith(String, createTempFilePath)
+const getTemporaryFilepath = memoizeWith(String, createTempFilePath)
 
 const getExportFilename = (project, date) => {
   let base = project.scenes.length > 1
@@ -26,16 +26,17 @@ const getExportFilepath = (context, event) =>
     'exports',
     getExportFilename(context.project, new Date()))
 
-/*
- serialize/deserialize state machine context to/from a prefs "memento" for storage in prefs
- remembers values which must persist across sessions
- ignores temporary values (e.g. `pages`, `pageToPreview`)
-*/
-const { pipe, clone, pick } = require('ramda')
 
-// TODO
+/*
+ Prefs Memento
+
+ remembers partial context which must persist across sessions
+ serialize/deserialize state machine context to/from a prefs "memento" for storage in prefs
+ ignores temporary or calculated values (e.g. `pages`, `pageToPreview`)
+*/
+
 // list of all keys in context that should be stored in prefs
-const allowlist = [
+const prefsAllowList = [
   'paperSizeKey',
   'orientation',
 
@@ -57,11 +58,10 @@ const allowlist = [
 ]
 
 // context -> prefs
-const toPrefsMemento = pipe(clone, pick(allowlist))
+const toPrefsMemento = pipe(clone, pick(prefsAllowlist))
 
 // prefs -> context
-// NOTE does not validate any input (e.g. trusts whatever prefs gives it)
-const fromPrefsMemento = pipe(clone, pick(allowlist))
+const fromPrefsMemento = pipe(clone, pick(prefsAllowlist))
 
 module.exports = {
   getTemporaryFilepath,
