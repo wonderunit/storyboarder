@@ -36,7 +36,7 @@ const getExportFilepath = (context, event) =>
 */
 
 // list of all keys in context that should be stored in prefs
-const prefsAllowList = [
+const prefsAllowlist = [
   'paperSizeKey',
   'orientation',
 
