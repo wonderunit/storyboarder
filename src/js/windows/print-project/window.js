@@ -15,7 +15,7 @@ const { generateToCanvas, exportToFile, displayWarning, requestPrint } = require
 const { reportAnalyticsEvent, showItemInFolder, persist } = require('./actions')
 const { PrintApp } = require('./components')
 
-const { fromMemento } = require('./context-helpers')
+const { fromPrefsMemento } = require('./context-helpers')
 const getData = () => ipcRenderer.invoke('exportPDF:getData')
 
 
@@ -24,7 +24,7 @@ const maybeReadContextFromPrefs = () => {
   let { printProjectState } = prefs.getPrefs()
 
   return printProjectState
-    ? fromMemento(printProjectState)
+    ? fromPrefsMemento(printProjectState)
     : undefined
 }
 
