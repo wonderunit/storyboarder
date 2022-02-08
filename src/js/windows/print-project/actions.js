@@ -1,7 +1,7 @@
 const { ipcRenderer, shell, remote } = require('electron')
 
 const prefs = remote.require('./prefs')
-const { toMemento } = require('./memento')
+const { toMemento } = require('./context-helpers')
 
 const reportAnalyticsEvent = (context, event) => {
   if (event.type == 'done.invoke.exportToFile') {

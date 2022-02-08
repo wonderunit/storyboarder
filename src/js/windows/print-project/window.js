@@ -14,8 +14,8 @@ const { machine: printProjectMachine } = require('./machine')
 const { generateToCanvas, exportToFile, displayWarning, requestPrint } = require('./services')
 const { reportAnalyticsEvent, showItemInFolder, persist } = require('./actions')
 const { PrintApp } = require('./components')
-const { fromMemento } = require('./memento')
 
+const { fromMemento } = require('./context-helpers')
 const getData = () => ipcRenderer.invoke('exportPDF:getData')
 
 

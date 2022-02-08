@@ -26,7 +26,46 @@ const getExportFilepath = (context, event) =>
     'exports',
     getExportFilename(context.project, new Date()))
 
+/*
+ serialize/deserialize state machine context to/from a prefs "memento" for storage in prefs
+ remembers values which must persist across sessions
+ ignores temporary values (e.g. `pages`, `pageToPreview`)
+*/
+const { pipe, clone, pick } = require('ramda')
+
+// TODO
+// list of all keys in context that should be stored in prefs
+const allowlist = [
+  'paperSizeKey',
+  'orientation',
+
+  // calculated -- TODO remove this? should always be calculated, not stored?
+  'paperSize',
+
+  'gridDim',
+  'direction',
+
+  'enableDialogue',
+  'enableAction',
+  'enableNotes',
+  'enableShotNumber',
+  'boardTimeDisplay',
+  'boardTextSize',
+  'boardBorderStyle',
+
+  'header' // { ... }
+]
+
+// context -> prefs
+const toMemento = pipe(clone, pick(allowlist))
+
+// prefs -> context
+// NOTE does not validate any input (e.g. trusts whatever prefs gives it)
+const fromMemento = pipe(clone, pick(allowlist))
+
 module.exports = {
   getTemporaryFilepath,
-  getExportFilepath
+  getExportFilepath,
+  toMemento,
+  fromMemento
 }
