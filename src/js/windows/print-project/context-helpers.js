@@ -57,15 +57,15 @@ const allowlist = [
 ]
 
 // context -> prefs
-const toMemento = pipe(clone, pick(allowlist))
+const toPrefsMemento = pipe(clone, pick(allowlist))
 
 // prefs -> context
 // NOTE does not validate any input (e.g. trusts whatever prefs gives it)
-const fromMemento = pipe(clone, pick(allowlist))
+const fromPrefsMemento = pipe(clone, pick(allowlist))
 
 module.exports = {
   getTemporaryFilepath,
   getExportFilepath,
-  toMemento,
-  fromMemento
+  toPrefsMemento,
+  fromPrefsMemento
 }
