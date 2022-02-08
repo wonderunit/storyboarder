@@ -2,20 +2,15 @@ const moment = require('moment')
 const path = require('path')
 const fs = require('fs-extra')
 const os = require('os')
+const R = require('ramda')
 
-// memoized
-const createGetTempFilepath = function () {
-  let filepath
-  return function () {
-    if (filepath) {
-      return filepath
-    } else {
-      let directory = fs.mkdtempSync(path.join(os.tmpdir(), 'storyboarder-'))
-      filepath = path.join(directory, 'export.pdf')
-      return filepath
-    }
-  }
-}
+const createTempFilePath = () =>
+  path.join(
+    fs.mkdtempSync(path.join(os.tmpdir(), 'storyboarder-')),
+    'export.pdf'
+  )
+
+const getTemporaryFilepath = R.memoizeWith(String, createTempFilePath)
 
 const getExportFilename = (project, date) => {
   let base = project.scenes.length > 1
@@ -24,8 +19,6 @@ const getExportFilename = (project, date) => {
   let datestamp = moment(date).format('YYYY-MM-DD hh.mm.ss')
   return filename = `${base} ${datestamp}.pdf`
 }
-
-const getTemporaryFilepath = createGetTempFilepath()
 
 const getExportFilepath = (context, event) =>
   path.join(
