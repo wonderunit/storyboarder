@@ -63,9 +63,19 @@ const toPrefsMemento = pipe(clone, pick(prefsAllowlist))
 // prefs -> context
 const fromPrefsMemento = pipe(clone, pick(prefsAllowlist))
 
+/*
+ * toPresetMemento
+ * given a full state machine context, return the preset data
+ */
+const presetAllowlist = without(['paperSize', 'paperSizeKey'], contextAllowList)
+const toPresetMemento = pick(presetAllowlist)
+
 module.exports = {
   getTemporaryFilepath,
   getExportFilepath,
+
   toPrefsMemento,
-  fromPrefsMemento
+  fromPrefsMemento,
+
+  toPresetMemento
 }
