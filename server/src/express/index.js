@@ -86,10 +86,19 @@ export const App = async () => {
     const req = params[0]
     const agent = req.headers['user-agent']
 
-    if (/(Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone)/.test(agent) === true) {
-      ARStatic(...params)
-    } else {
+    appLogger.info(`Server AGENT ${agent} !!!!!`)
+
+    // if (/(Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone)/.test(agent) === true) {
+    //   ARStatic(...params)
+    // } else {
+    //   XRStatic(...params)
+    //   // ARStatic(...params)
+    // }
+
+    if (/(VR|Oculus Browser)/.test(agent) === true) {
       XRStatic(...params)
+    } else {
+      ARStatic(...params)
     }
   })
   // app.use('/:id', express.static(

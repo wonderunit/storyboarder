@@ -429,7 +429,7 @@ const SceneManagerR3fLarge = connect(
                 sceneObject={ sceneObject }
                 isSelected={ selectedAttachable === sceneObject.id } 
                 updateObject={ updateObject }
-                сharacterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
+                characterModelPath={ ModelLoader.getFilepathForModel(sceneObjects[sceneObject.attachToId], {storyboarderFilePath}) }
                 deleteObjects={ deleteObjects }
                 character={ sceneObjects[sceneObject.attachToId] }
                 withState={ withState }
