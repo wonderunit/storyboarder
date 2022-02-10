@@ -1101,11 +1101,14 @@ const setPrintProjectMenu = (i18n) => {
     )
 }
 
-const setEnableAudition = value =>
-  Menu
-    .getApplicationMenu().items.find(n => n.label === i18n.t('menu.navigation.title'))
-    .submenu.items.find(n => n.label === i18n.t('menu.navigation.audition-board-audio'))
-    .checked = value
+const setEnableAudition = value => {
+  let navigation = Menu.getApplicationMenu().items.find(n => n.label === i18n.t('menu.navigation.title'))
+  if (navigation) {
+    navigation
+      .submenu.items.find(n => n.label === i18n.t('menu.navigation.audition-board-audio'))
+      .checked = value
+  }
+}
 
 module.exports = {
   setWelcomeMenu,
