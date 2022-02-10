@@ -146,7 +146,7 @@ const InputControlsView = ({
     options: [
       Object.entries(presets).map(([value, { title }]) => (['option', { value }, title])),
       ['option', { disabled: true }, '──────────'],
-      ['option', { disabled: true, value: 'no-preset' }, '(Customized)']
+      ['option', { disabled: true, value: 'no-preset' }, t('print-project.preset-selection-none')]
     ]
   }
 
@@ -176,7 +176,7 @@ const InputControlsView = ({
             ],
             ['fieldset',
               ['div',
-                ['legend', { name: 'selected-preset' }, 'Preset']
+                ['legend', { name: 'selected-preset' }, t('print-project.preset-selection-title')]
               ],
 
               [
@@ -188,8 +188,8 @@ const InputControlsView = ({
           ]],
 
           ['.collection', [
+            ['div', t('print-project.layout-title')],
 
-            ['div', 'Layout'],
 
           ['fieldset',
             ['div',
