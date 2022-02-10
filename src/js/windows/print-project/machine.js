@@ -46,7 +46,6 @@ const findMatchingPresetIdForContext = (list, context) => {
 
 const initialContext = {
   paperSizeKey: 'a4',
-  paperSize: getPaperSize('a4', 'landscape'),
   
   pages: [0, 0],
   pageToPreview: 0,
