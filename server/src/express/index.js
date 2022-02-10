@@ -86,8 +86,6 @@ export const App = async () => {
     const req = params[0]
     const agent = req.headers['user-agent']
 
-    appLogger.info(`Server AGENT ${agent} !!!!!`)
-
     // if (/(Android|webOS|iPhone|iPad|iPod|BlackBerry|Windows Phone)/.test(agent) === true) {
     //   ARStatic(...params)
     // } else {
