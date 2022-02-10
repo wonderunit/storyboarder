@@ -1,4 +1,31 @@
 module.exports = (t) => ({
+  "preset-bf414b1": {
+    "title": t("print-project.preset-bf414b1-title"),
+    "data": {
+      "orientation": "landscape",
+      "gridDim": [
+        3,
+        5
+      ],
+      "direction": "column",
+      "enableDialogue": true,
+      "enableAction": true,
+      "enableNotes": true,
+      "enableShotNumber": true,
+      "boardTimeDisplay": "duration",
+      "boardTextSize": 10,
+      "boardBorderStyle": "minimal",
+      "header": {
+        "stats": {
+          "boards": true,
+          "shots": true,
+          "sceneDuration": true,
+          "aspectRatio": true,
+          "dateExported": true
+        }
+      }
+    }
+  },
   "preset-55af116": {
     "title": t("print-project.preset-55af116-title"),
     "data": {
