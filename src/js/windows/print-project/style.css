@@ -247,6 +247,18 @@ fieldset {
   flex-direction: row;
   align-items: baseline;
 }
+
+/* quick hack to fit all controls and text in window */
+fieldset {
+  margin-bottom: -0.5rem;
+}
+@media only screen and (min-height: 700px) {
+  fieldset {
+    margin-bottom: -0.125rem;
+  }
+}
+
+
 fieldset > div:first-child {
   width: 5rem;
 }
