@@ -544,7 +544,7 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
 }
 
 const drawFooter = (doc, { rect }, cfg) => {
-  let inner = inset(rect.copy(), [12, 4])
+  let inner = rect.copy()
 
   let text = "Storyboarder by \\\\ wonder unit"
   doc
