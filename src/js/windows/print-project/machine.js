@@ -9,8 +9,6 @@ const {
   toPresetMemento
 } = require('./context-helpers')
 
-const presets = require('./presets')
-
 const specs = {
   paperSize: {
     'a4': [841.89, 595.28],
@@ -55,11 +53,7 @@ const initialContext = {
 
   filepath: getTemporaryFilepath(),
 
-  selectedPresetId: null,
-
-  // use data from first system preset by default
-  // if `printProjectState` memento exists in prefs, it overrides these settings when machine is created
-  ...Object.entries(presets)[0][1].data
+  selectedPresetId: null
 }
 
 /*
@@ -116,7 +110,7 @@ const exportFilepathAssigner = (context, event) => ({
 })
 
 const selectedPresetIdFromContextAssigner = (context, event) => {
-  let id = findMatchingPresetIdForContext(presets, context)
+  let id = findMatchingPresetIdForContext(context.presets, context)
   return {
     selectedPresetId: id != null ? id : null
   }
@@ -130,7 +124,7 @@ const paperSizeAssigner = (context, event) => ({
 /*
  * guards
 */
-const presetExists = (context, event) => presets[event.value] != undefined
+const presetExists = (context, event) => context.presets[event.value] != undefined
 
 const machine = Machine({
   id: 'print-project',
@@ -198,7 +192,7 @@ const machine = Machine({
               // merge data from preset into context
               assign((context, event) => {
                 let selectedPresetId = event.value
-                let memento = presets[selectedPresetId].data
+                let memento = context.presets[selectedPresetId].data
                 return {
                   // set the id
                   selectedPresetId,

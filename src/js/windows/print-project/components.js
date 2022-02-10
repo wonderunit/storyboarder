@@ -4,8 +4,6 @@ const { useTranslation } = require('react-i18next')
 
 const h = require('../../utils/h')
 const { specs } = require('./machine')
-const presets = require('./presets.js')
-const i18n = require('../../services/i18next.config')
 
 const preventDefault = (fn, ...args) => e => {
   e.preventDefault()
@@ -113,6 +111,7 @@ const InputControlsView = ({
   onPrint,
   onExport,
   onSelectedPresetChange,
+  presets,
 
   state,
   send,

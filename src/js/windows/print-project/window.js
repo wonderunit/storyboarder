@@ -14,8 +14,9 @@ const { machine: printProjectMachine } = require('./machine')
 const { generateToCanvas, exportToFile, displayWarning, requestPrint } = require('./services')
 const { reportAnalyticsEvent, showItemInFolder, persist } = require('./actions')
 const { PrintApp } = require('./components')
-
 const { fromPrefsMemento } = require('./context-helpers')
+const getPresets = require('./presets')
+
 const getData = () => ipcRenderer.invoke('exportPDF:getData')
 
 
@@ -34,6 +35,7 @@ const maybeReadContextFromPrefs = () => {
 const start = async () => {
   let project
   let canvas
+  let presets = getPresets(i18n.t.bind(i18n))
 
   project = await getProjectData(await getData())
 
@@ -41,7 +43,12 @@ const start = async () => {
   canvas = document.createElement('canvas')
 
   // system defaults
-  let systemContext = printProjectMachine.context
+  let systemContext = {
+    ...printProjectMachine.context,
+    // include data from first system preset by default for first run
+    ...Object.entries(presets)[0][1].data
+  }
+  
   // user context overrides from prefs (if available)
   let userContext = maybeReadContextFromPrefs() || {}
 
@@ -66,7 +73,8 @@ const start = async () => {
           userContext
         ),
         project,
-        canvas
+        canvas,
+        presets
       })
   )
   // .onTransition(logTransition)
@@ -88,15 +96,8 @@ const start = async () => {
   // quick hack to provide print-project with a custom menu
   //   so user keyboard input is not intercepted and sent to main-window unexpectedly
   //
-  // i18n probably won't be initialized at this point, so if not ...
-  if (!i18n.isInitialized) {
-    // ... wait until it's initialized before calling setting the print-project menu
-    i18n.on('initialized', event =>
-      menu.setPrintProjectMenu(i18n))
-  } else {
-    // otherwise, set the print-project menu immediately
-    menu.setPrintProjectMenu(i18n)
-  }
+  // set the print-project menu immediately
+  menu.setPrintProjectMenu(i18n)
   window.addEventListener('focus', (event) => {
     // because main-window holds this modal,
     //   main-window will try to set the menu first when re-focused
@@ -122,4 +123,5 @@ const start = async () => {
     }
   })
 }
-start()
+
+i18n.on('initialized', event => start())
