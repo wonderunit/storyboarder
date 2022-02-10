@@ -333,7 +333,10 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
     let textR = cellBinner.copy()
     textR.size[0] *= 1 / entries.length
     textR.pos[0] += textR.size[0] * e
-    textR.size[0] -= 5
+    // 5px right margin, except last child
+    if (e < entries.length - 1) {
+      textR.size[0] -= 5
+    }
 
     // HACK expand to allow text to hit bottom edge
     textR.size[1] += 5
