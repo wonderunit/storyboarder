@@ -657,10 +657,11 @@ async function generate (stream, { project }, cfg) {
       v.div2([], grid.size, gridDim)
     )
 
+    // Center the Grid
     if (direction == 'column') {
-      // Center the Grid
+      // Place Text: Bottom
       //
-      // kind of a HACK
+      // very HACKY
       // based on calculations in drawBoardColumn
       //
       // determine the expected board drawing area
@@ -674,7 +675,17 @@ async function generate (stream, { project }, cfg) {
           + boardSize[0]
       // offset the template to center
       template.pos[0] += (grid.size[0] - drawingWidth) / 2
+    } else {
+      // Place Text: Right
+      //
+      // very HACKY
+      // based on calculations in drawBoardRow
 
+      // offset the template to center
+      let boardSize = v.sub2([], template.size, [10, 0])
+      let drawingWidth = template.size[0] * (gridDim[0] - 1)
+          + boardSize[0]
+      template.pos[0] += (grid.size[0] - drawingWidth) / 2
     }
     for (let n = 0; n < pageData.boards.length; n++) {
       let board = pageData.boards[n]
