@@ -597,7 +597,7 @@ async function generate (stream, { project }, cfg) {
     const imagesPath = path.join(path.dirname(pageData.scene.storyboarderFilePath), 'images')
 
     doc.addPage({
-      margins: { top: 36, right: 36, bottom: 36, left: 36 },
+      margins: { top: 36, right: 36, bottom: 18, left: 36 },
       size: cfg.paperSize
     })
 
@@ -612,8 +612,8 @@ async function generate (stream, { project }, cfg) {
       ]
     )
 
-    let header = new Rect(v.copy(pg.pos), [pg.size[0], pg.size[1] * 1/6])
-    let footer = new Rect(v.copy(pg.pos), [pg.size[0], pg.size[1] * 1/16])
+    let header = new Rect(v.copy(pg.pos), [pg.size[0], pg.size[1] * 1/8])
+    let footer = new Rect(v.copy(pg.pos), [pg.size[0], pg.size[1] * 1/24])
     let grid = new Rect(v.copy(pg.pos), v.copy(pg.size))
 
     grid.size[1] = pg.size[1] - header.size[1] - footer.size[1]
