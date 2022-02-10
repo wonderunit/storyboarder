@@ -364,7 +364,7 @@ form.busy * {
 
 
 .pagination {
-  color: white;
+  color: rgba(255, 255, 255, 0.8);
   top: 0.5rem;
   height: 2rem;
   width: 100%;
@@ -377,12 +377,17 @@ form.busy * {
 }
 .pagination .pagination__next-button,
 .pagination .pagination__previous-button {
-  color: white;
+  color: rgba(255, 255, 255, 0.8);
   height: 100%;
   padding: 0 1rem;
   line-height: 1;
   background: none;
   user-select: none;
+  transition: color 0.1s linear;
+}
+.pagination .pagination__next-button:hover,
+.pagination .pagination__previous-button:hover {
+  color: rgba(255, 255, 255, 1.0);
 }
 .pagination .pagination__status {
   display: flex;
