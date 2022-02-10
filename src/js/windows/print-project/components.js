@@ -4,6 +4,7 @@ const { useTranslation } = require('react-i18next')
 
 const h = require('../../utils/h')
 const { specs } = require('./machine')
+const presets = require('./presets.js')
 const i18n = require('../../services/i18next.config')
 
 const preventDefault = (fn, ...args) => e => {
@@ -70,7 +71,7 @@ const Pagination = ({ project, pages, gridDim, pageToPreview, isBusy, send }) =>
   ]])
 }
 
-const EditorView = ({ onClose, onPrint, onExport, state, send, canvas, ...rest }) => {
+const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state, send, canvas, ...rest }) => {
   const innerRef = useRef(null)
 
   useEffect(() => {
@@ -82,7 +83,7 @@ const EditorView = ({ onClose, onPrint, onExport, state, send, canvas, ...rest }
   return h(['div.editor',
     ['div.input', {}, [
       InputView, {
-        onClose, onPrint, onExport,
+        onClose, onPrint, onExport, onSelectedPresetChange,
         state, send,
         ...rest
       }
@@ -111,6 +112,7 @@ const InputControlsView = ({
   onClose,
   onPrint,
   onExport,
+  onSelectedPresetChange,
 
   state,
   send,
@@ -126,7 +128,8 @@ const InputControlsView = ({
   boardTimeDisplay,
   boardTextSize,
   boardBorderStyle,
-  header
+  header,
+  selectedPresetId
 }) => {
   const { t, i18n } = useTranslation()
 
@@ -134,6 +137,18 @@ const InputControlsView = ({
     type: 'SET_PAPER_SIZE_KEY',
     value: event.target.value
   })
+
+  const presetSelector = {
+    select: {
+      value: selectedPresetId == null ? 'no-preset' : selectedPresetId,
+      onChange: onSelectedPresetChange,
+    },
+    options: [
+      Object.entries(presets).map(([value, { title }]) => (['option', { value }, title])),
+      ['option', { disabled: true }, '──────────'],
+      ['option', { disabled: true, value: 'no-preset' }, '(Customized)']
+    ]
+  }
 
   return h(
     [React.Fragment, [
@@ -144,21 +159,37 @@ const InputControlsView = ({
           ['h1.title', t('print-project.title')],
           ['.description', t('print-project.description')],
 
-          ['.div.collection', [
-          ['fieldset',
-            ['div',
-              ['legend', { name: 'paper-size-key' }, t('print-project.paper-size')]
+          ['.collection', [
+            ['fieldset',
+              ['div',
+                ['legend', { name: 'paper-size-key' }, t('print-project.paper-size')]
+              ],
+              [RadioGroup,
+                {
+                  name: 'paper-size-key',
+                  value: paperSizeKey,
+                  onChange: setPaperSizeKey
+                },
+                [Radio, { value: 'a4', label: t('print-project.paper-size-a4-label'), title: t('print-project.paper-size-a4-hint') }],
+                [Radio, { value: 'letter', label: t('print-project.paper-size-letter-label'), title: t('print-project.paper-size-letter-hint') }],
+              ]
             ],
-            [RadioGroup,
-              {
-                name: 'paper-size-key',
-                value: paperSizeKey,
-                onChange: setPaperSizeKey
-              },
-              [Radio, { value: 'a4', label: t('print-project.paper-size-a4-label'), title: t('print-project.paper-size-a4-hint') }],
-              [Radio, { value: 'letter', label: t('print-project.paper-size-letter-label'), title: t('print-project.paper-size-letter-hint') }],
+            ['fieldset',
+              ['div',
+                ['legend', { name: 'selected-preset' }, 'Preset']
+              ],
+
+              [
+                'select',
+                { ...presetSelector.select, style: { width: 'calc(100% - 5rem)' }},
+                presetSelector.options
+              ]
             ]
-          ],
+          ]],
+
+          ['.collection', [
+
+            ['div', 'Layout'],
 
           ['fieldset',
             ['div',
@@ -419,7 +450,10 @@ const InputControlsView = ({
           ['div.lower',
               ['div.row',
                   ['button.primary-button', { onClick: onPrint }, t('print-project.print-button-label')],
-                  ['button.secondary-button', { onClick: onExport }, t('print-project.export-pdf-button-label')]]]]
+                  ['button.secondary-button', { onClick: onExport }, t('print-project.export-pdf-button-label')]
+                ]
+              ]
+            ]
     ]]
   )
 }
@@ -433,9 +467,11 @@ const PrintApp = ({ service, canvas }) => {
 
   const onExport = preventDefault(event => send('EXPORT'))
 
+  const onSelectedPresetChange = preventDefault(event => send({ type: 'SET_SELECTED_PRESET_BY_ID', value: event.target.value }))
+
   return React.createElement(
     EditorView, {
-      onClose, onPrint, onExport,
+      onClose, onPrint, onExport, onSelectedPresetChange,
       state, send,
       canvas,
       ...state.context

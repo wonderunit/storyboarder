@@ -1,8 +1,15 @@
 const { Machine, assign, send } = require('xstate')
+const { equals } = require('ramda')
 
 const groupByPage = require('../../exporters/pdf/group-by-page')
 
-const { getTemporaryFilepath, getExportFilepath } = require('./context-helpers')
+const {
+  getTemporaryFilepath,
+  getExportFilepath,
+  toPresetMemento
+} = require('./context-helpers')
+
+const presets = require('./presets')
 
 const specs = {
   paperSize: {
@@ -28,39 +35,36 @@ const getPaperSize = (key, orientation) => {
   }
 }
 
-const initialContext = {
-  paperSizeKey: 'a4',
-  orientation: 'landscape',
-  paperSize: getPaperSize('a4', 'landscape'),
-
-  gridDim: [2, 5],
-  direction: 'row',
-
-  pages: [0, 0],
-
-  pageToPreview: 0,
-
-  enableDialogue: true,
-  enableAction: true,
-  enableNotes: true,
-  enableShotNumber: true,
-  boardTimeDisplay: 'duration', // none, duration, TODO: sceneTime, scriptTime
-  boardTextSize: 10,
-  boardBorderStyle: 'full',
-
-  header: {
-    stats: {
-      boards: true,
-      shots: true,
-      sceneDuration: true,
-      aspectRatio: true,
-      dateExported: true
-    }
-  },
-
-  filepath: getTemporaryFilepath()
+// find matching system preset (if any) given current user context
+const findMatchingPresetIdForContext = (list, context) => {
+  // given the current user context converted to a preset memento …
+  let contextAsPreset = toPresetMemento(context)
+  // … does it match an existing system preset?
+  let match = Object.entries(list)
+    .find(([id, { data }]) => equals(contextAsPreset, data))
+  // return id of match, if any, or null
+  return match ? match[0] : null
 }
 
+const initialContext = {
+  paperSizeKey: 'a4',
+  paperSize: getPaperSize('a4', 'landscape'),
+  
+  pages: [0, 0],
+  pageToPreview: 0,
+
+  filepath: getTemporaryFilepath(),
+
+  selectedPresetId: null,
+
+  // use data from first system preset by default
+  // if `printProjectState` memento exists in prefs, it overrides these settings when machine is created
+  ...Object.entries(presets)[0][1].data
+}
+
+/*
+ * assigners
+*/
 const createHeaderStatsAssigner = name => (context, event) => ({
   ...context,
   header: {
@@ -111,13 +115,34 @@ const exportFilepathAssigner = (context, event) => ({
   filepath: getExportFilepath(context, event)
 })
 
+const selectedPresetIdFromContextAssigner = (context, event) => {
+  let id = findMatchingPresetIdForContext(presets, context)
+  return {
+    selectedPresetId: id != null ? id : null
+  }
+}
+
+// paperSize depends on paperSizeKey and orientation
+const paperSizeAssigner = (context, event) => ({
+  paperSize: getPaperSize(context.paperSizeKey, context.orientation)
+})
+
+/*
+ * guards
+*/
+const presetExists = (context, event) => presets[event.value] != undefined
+
 const machine = Machine({
   id: 'print-project',
   context: initialContext,
   initial: 'loading',
   states: {
     loading: {
-      entry: [assign(pagesAssigner)],
+      entry: [
+        assign(pagesAssigner),
+        assign(selectedPresetIdFromContextAssigner),
+        assign(paperSizeAssigner)
+      ],
       on: {
         'CANVAS_READY': 'busy'
       }
@@ -130,13 +155,19 @@ const machine = Machine({
         idle: {
         },
         debouncing: {
+          entry: assign(selectedPresetIdFromContextAssigner),
           after: {
             1100: {
-              target: '#busy.generating',
-              actions: assign(temporaryFilepathAssigner)
+              target: 'updating'
             }
           }
-        }
+        },
+        updating: {
+          always: {
+            target: '#busy.generating',
+            actions: assign(temporaryFilepathAssigner)
+          }
+        },
       },
       on: {
         'EXPORT': {
@@ -147,26 +178,49 @@ const machine = Machine({
           target: 'busy.printing',
           actions: assign(temporaryFilepathAssigner)
         },
+
         'SET_PAPER_SIZE_KEY': [
           {
             actions: [
               assign((context, event) => ({
-                paperSizeKey: event.value,
-                paperSize: getPaperSize(event.value, context.orientation)
+                paperSizeKey: event.value
               })),
+              assign(paperSizeAssigner),
               'persist'
             ],
             target: '.debouncing',
             internal: false
           }
         ],
+        'SET_SELECTED_PRESET_BY_ID': [
+          {
+            actions: [
+              // merge data from preset into context
+              assign((context, event) => {
+                let selectedPresetId = event.value
+                let memento = presets[selectedPresetId].data
+                return {
+                  // set the id
+                  selectedPresetId,
+                  // merge the preset data
+                  ...memento
+                }
+              }),
+              assign(paperSizeAssigner),
+              'persist'
+            ],
+            target: '.updating',
+            internal: false,
+            cond: presetExists
+          }
+        ],
         'SET_ORIENTATION': [
           {
             actions: [
               assign((context, event) => ({
-                orientation: event.value,
-                paperSize: getPaperSize(context.paperSizeKey, event.value)
+                orientation: event.value
               })),
+              assign(paperSizeAssigner),
               'persist'
             ],
             target: '.debouncing',
@@ -298,8 +352,7 @@ const machine = Machine({
             internal: false,
             cond: 'hasMultiplePages'
           }
-        ],
-
+        ]
       }
     },
     busy: {
