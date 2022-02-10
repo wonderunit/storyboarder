@@ -1,6 +1,6 @@
-module.exports = {
+module.exports = (t) => ({
   "preset-55af116": {
-    "title": "Landscape Minimal 6",
+    "title": t("print-project.preset-55af116-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -27,7 +27,7 @@ module.exports = {
     }
   },
   "preset-fb7dab2": {
-    "title": "Landscape 3",
+    "title": t("print-project.preset-fb7dab2-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -54,7 +54,7 @@ module.exports = {
     }
   },
   "preset-f3c7c88": {
-    "title": "Landscape Minimal 16",
+    "title": t("print-project.preset-f3c7c88-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -81,7 +81,7 @@ module.exports = {
     }
   },
   "preset-d20bda1": {
-    "title": "Landscape Solo 1",
+    "title": t("print-project.preset-d20bda1-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -108,7 +108,7 @@ module.exports = {
     }
   },
   "preset-bb737a2": {
-    "title": "Landscape Minimal 1",
+    "title": t("print-project.preset-bb737a2-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -135,7 +135,7 @@ module.exports = {
     }
   },
   "preset-9a32762": {
-    "title": "Landscape Thumbs 9",
+    "title": t("print-project.preset-9a32762-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -162,7 +162,7 @@ module.exports = {
     }
   },
   "preset-f20b88c": {
-    "title": "Landscape Thumbs 30",
+    "title": t("print-project.preset-f20b88c-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -189,7 +189,7 @@ module.exports = {
     }
   },
   "preset-2f44f08": {
-    "title": "Portrait Hey-oh! 5",
+    "title": t("print-project.preset-2f44f08-title"),
     "data": {
       "orientation": "portrait",
       "gridDim": [
@@ -216,7 +216,7 @@ module.exports = {
     }
   },
   "preset-feac2bc": {
-    "title": "Landscape Hey-oh! 10",
+    "title": t("print-project.preset-feac2bc-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -243,7 +243,7 @@ module.exports = {
     }
   },
   "preset-f2a6408": {
-    "title": "Landscape Storytime 8",
+    "title": t("print-project.preset-f2a6408-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -270,7 +270,7 @@ module.exports = {
     }
   },
   "preset-5958bce": {
-    "title": "Portrait Storytime 12",
+    "title": t("print-project.preset-5958bce-title"),
     "data": {
       "orientation": "portrait",
       "gridDim": [
@@ -297,7 +297,7 @@ module.exports = {
     }
   },
   "preset-08683fc": {
-    "title": "Landscape Pairs 2",
+    "title": t("print-project.preset-08683fc-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
@@ -324,7 +324,7 @@ module.exports = {
     }
   },
   "preset-a5e2e8d": {
-    "title": "Portrait Pairs 8",
+    "title": t("print-project.preset-a5e2e8d-title"),
     "data": {
       "orientation": "portrait",
       "gridDim": [
@@ -350,4 +350,4 @@ module.exports = {
       }
     }
   }
-}
+})
