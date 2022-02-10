@@ -40,9 +40,6 @@ const prefsAllowlist = [
   'paperSizeKey',
   'orientation',
 
-  // calculated -- TODO remove this? should always be calculated, not stored?
-  'paperSize',
-
   'gridDim',
   'direction',
 
@@ -67,7 +64,7 @@ const fromPrefsMemento = pipe(clone, pick(prefsAllowlist))
  * toPresetMemento
  * given a full state machine context, return the preset data
  */
-const presetAllowlist = without(['paperSize', 'paperSizeKey'], prefsAllowlist)
+const presetAllowlist = without(['paperSizeKey'], prefsAllowlist)
 const toPresetMemento = pick(presetAllowlist)
 
 module.exports = {
