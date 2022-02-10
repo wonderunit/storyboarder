@@ -357,7 +357,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
               : (e == entries.length - 1) && entries.length > 2
               ? 'right'
               // all other cases
-              : 'center',
+              : 'left',
             width: textR.size[0],
             height: textR.size[1]
           }
