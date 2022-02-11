@@ -1,5 +1,6 @@
-const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
-const { app } = require('@electron/remote')
+const {ipcRenderer, shell, nativeImage, clipboard} = require('electron')
+const remote = require('@electron/remote')
+const { app } = remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
 const path = require('path')
@@ -529,7 +530,7 @@ const load = async (event, args) => {
     // TODO add a cancel button to loading view when a fatal error occurs?
   }
   initialize(path.join(app.getPath('userData'), 'storyboarder-settings.json'))
-  electron.remote.getCurrentWindow().on('resize', resizeScale)
+  remote.getCurrentWindow().on('resize', resizeScale)
 }
 ipcRenderer.on('load', load)
 
