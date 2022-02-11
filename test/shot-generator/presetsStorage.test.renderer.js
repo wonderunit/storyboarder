@@ -3,7 +3,7 @@
 const assert = require('assert')
 const mockFs = require('mock-fs')
 
-const { app } = require('electron').remote
+const { app } = require('@electron/remote')
 const fs = require('fs')
 const path = require('path')
 

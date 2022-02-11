@@ -6,7 +6,7 @@ const vec2 = require('gl-vec2')
 const util = require('../../utils/index')
 const Loop = require('../../utils/loop')
 
-const prefsModule = require('electron').remote.require('./prefs')
+const prefsModule = require('@electron/remote').require('./prefs')
 
 const BrushInstrument = require('./brush-instrument')
 const MelodicInstrument = require('./melodic-instrument')

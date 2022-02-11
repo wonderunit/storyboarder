@@ -1,4 +1,4 @@
-const { BrowserWindow, ipcMain, app, dialog } = electron = require('electron').remote
+const { BrowserWindow, ipcMain, app, dialog } = electron = require('@electron/remote')
 const isDev = require('electron-is-dev')
 
 const path = require('path')

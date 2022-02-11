@@ -16,14 +16,14 @@
 */
 
 const { ipcRenderer, shell, remote } = require('electron')
-const app = require('electron').remote.app
+const app = require('@electron/remote').app
 const path = require('path')
 const fs = require('fs')
 const QrCode = require('qrcode-reader')
 
 const jsfeat = require('../vendor/jsfeat-min')
 
-const prefModule = require('electron').remote.require('./prefs')
+const prefModule = require('@electron/remote').require('./prefs')
 
 let sourceImage
 let flatImage

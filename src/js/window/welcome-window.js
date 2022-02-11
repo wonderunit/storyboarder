@@ -3,7 +3,7 @@ const path = require('path')
 const moment = require('moment')
 const menu = require('../menu')
 const sfx = require('../wonderunit-sound')
-const prefsModule = require('electron').remote.require('./prefs')
+const prefsModule = require('@electron/remote').require('./prefs')
 const log = require('../shared/storyboarder-electron-log')
 const pkg = require('../../../package.json')
 

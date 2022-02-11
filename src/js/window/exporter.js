@@ -2,8 +2,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
-const app = require('electron').remote.app
-const { dialog } = require('electron').remote
+const app = require('@electron/remote').app
+const { dialog } = require('@electron/remote')
 
 const {
   boardFileImageSize,
