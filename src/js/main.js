@@ -1,3 +1,4 @@
+require('@electron/remote/main').initialize()
 const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
 const fs = require('fs-extra')
