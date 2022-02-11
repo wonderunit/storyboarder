@@ -186,6 +186,7 @@
     "winston": "^3.3.3"
   },
   "dependencies": {
+    "@electron/remote": "^2.0.4",
     "@thi.ng/geom": "3.0.7",
     "@thi.ng/vectors": "7.0.6",
     "@tweenjs/tween.js": "^18.5.0",
