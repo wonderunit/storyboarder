@@ -6576,7 +6576,7 @@ const showSignInWindow = () => {
       devTools: true,
       plugins: true,
       nodeIntegration: true,
-      enableRemoteModule: true
+      contextIsolation: false
     }
   })
   exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
@@ -6958,7 +6958,7 @@ ipcRenderer.on('importWorksheets', (event, args) => {
       modal: true,
       webPreferences: {
         nodeIntegration: true,
-        enableRemoteModule: true
+        contextIsolation: false
       }
     })
     importWindow.loadURL(`file://${__dirname}/../../import-window.html`)

@@ -29,7 +29,7 @@ const show = async ({ parent }) => {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      enableRemoteModule: true
+      contextIsolation: false
     }
   })
   win.on('closed', () => { win = null })

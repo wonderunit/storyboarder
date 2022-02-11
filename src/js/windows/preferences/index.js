@@ -19,7 +19,7 @@ module.exports = () => {
       webPreferences: {
         devTools: true,
         nodeIntegration: true,
-        enableRemoteModule: true
+        contextIsolation: false
       }
     })
     win.once('closed', () => {
