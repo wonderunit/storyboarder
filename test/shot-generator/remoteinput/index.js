@@ -32,7 +32,7 @@ function createWindow () {
       allowRunningInsecureContent: true,
       experimentalFeatures: true,
       backgroundThrottling: true,
-      enableRemoteModule: true
+      contextIsolation: false
     }
   })
   mainWindow.loadURL(url.format({

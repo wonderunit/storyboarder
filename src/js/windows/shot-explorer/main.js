@@ -55,7 +55,7 @@ const createWindow = async ( onComplete, aspectRatio) => {
         allowRunningInsecureContent: true,
         experimentalFeatures: true,
         backgroundThrottling: true,
-        enableRemoteModule: true
+        contextIsolation: false
       },
     })
   
