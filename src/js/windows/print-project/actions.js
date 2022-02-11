@@ -1,4 +1,5 @@
-const { ipcRenderer, shell, remote } = require('electron')
+const { ipcRenderer, shell } = require('electron')
+const remote = require('@electron/remote')
 
 const prefs = remote.require('./prefs')
 const { toPrefsMemento } = require('./context-helpers')

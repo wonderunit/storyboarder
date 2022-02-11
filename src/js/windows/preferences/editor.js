@@ -1,4 +1,5 @@
-const { remote, ipcRenderer, shell } = require('electron')
+const { ipcRenderer, shell } = require('electron')
+const remote = require('@electron/remote')
 const jwt = require('jsonwebtoken')
 const path = require('path')
 const fs = require('fs-extra')

@@ -2,7 +2,8 @@ const paper = require('paper')
 
 const EventEmitter = require('events').EventEmitter
 
-const { ipcRenderer, remote } = require('electron')
+const { ipcRenderer } = require('electron')
+const remote = require('@electron/remote')
 
 const fs = require('fs')
 const path = require('path')

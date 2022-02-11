@@ -15,8 +15,9 @@
     [x] make work with cell phone capture
 */
 
-const { ipcRenderer, shell, remote } = require('electron')
-const app = require('@electron/remote').app
+const { ipcRenderer, shell } = require('electron')
+const remote = require('@electron/remote')
+const { app } = remote
 const path = require('path')
 const fs = require('fs')
 const QrCode = require('qrcode-reader')

@@ -1,4 +1,5 @@
-const {ipcRenderer, shell, remote} = require('electron')
+const {ipcRenderer, shell} = require('electron')
+const remote = require('@electron/remote')
 const path = require('path')
 const moment = require('moment')
 const menu = require('../menu')
