@@ -1,5 +1,5 @@
 const {ipcRenderer, shell, remote, nativeImage, clipboard} = require('electron')
-const { app } = require('electron').remote
+const { app } = require('@electron/remote')
 const child_process = require('child_process')
 const fs = require('fs-extra')
 const path = require('path')
@@ -227,7 +227,7 @@ const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
 
-const prefsModule = require('electron').remote.require('./prefs')
+const prefsModule = require('@electron/remote').require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
 // we're gradually migrating prefs to a reducer
 // we read any 2.0 toolbar related prefs into the toolbar reducer manually

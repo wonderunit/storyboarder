@@ -4,7 +4,7 @@ const path = require('path')
 const pdfDocument = require('pdfkit')
 const qr = require('qr-image')
 const moment = require('moment')
-const app = require('electron').remote.app
+const app = require('@electron/remote').app
 
 const util = require('../../utils/index')
 const getIpAddress = require('../../utils/getIpAddress')

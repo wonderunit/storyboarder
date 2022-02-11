@@ -1,6 +1,6 @@
 const fs = require('fs')
 const path = require('path')
-const app = require('electron').remote.app
+const app = require('@electron/remote').app
 const os = require("os");
 
 let prefs

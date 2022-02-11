@@ -1,5 +1,5 @@
 const { ipcRenderer } = require('electron')
-const { app } = remote = require('electron').remote
+const { app } = remote = require('@electron/remote')
 const JWT = require('jsonwebtoken')
 const moment = require('moment')
 const { machineIdSync } = require('node-machine-id')

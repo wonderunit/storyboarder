@@ -1,5 +1,5 @@
 const { ipcRenderer } = require('electron')
-const remote = require('electron').remote
+const remote = require('@electron/remote')
 const request = require('request-promise-native')
 
 const exporterWeb = require('./js/exporters/web')
