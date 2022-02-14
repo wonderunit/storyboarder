@@ -8,17 +8,18 @@ const os = require('os')
 const reportedFfmpegPath = require('ffmpeg-static')
 
 // via https://github.com/sindresorhus/electron-util/blob/main/source/is-using-asar.js
-const isUsingAsar = ({ versions, mainModule }) => {
-  if (!('electron' in versions)) return
+const isUsingAsar = () => {
+  if (!('electron' in process.versions)) return
+
+  let mainModule = process.type == 'renderer'
+    ? require('@electron/remote').process.mainModule
+    : require.main
+
   return mainModule && mainModule.filename.includes('app.asar')
 }
 
 let ffmpegPath = reportedFfmpegPath
-if (isUsingAsar(
-  process.type == 'renderer'
-    ? require('electron').remote.process
-    : process
-)) {
+if (isUsingAsar()) {
   ffmpegPath = reportedFfmpegPath.replace('app.asar', 'app.asar.unpacked')
 }
 
