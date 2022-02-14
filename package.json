@@ -186,7 +186,6 @@
     "winston": "^3.3.3"
   },
   "dependencies": {
-    "@ffmpeg-installer/ffmpeg": "1.1.0",
     "@thi.ng/geom": "3.0.7",
     "@thi.ng/vectors": "7.0.6",
     "@tweenjs/tween.js": "^18.5.0",
@@ -212,6 +211,7 @@
     "events": "^3.2.0",
     "execa": "0.8.0",
     "express": "^4.15.4",
+    "ffmpeg-static": "^4.4.1",
     "flatten-vertex-data": "^1.0.2",
     "fraction.js": "4.0.3",
     "fs-extra": "7.0.1",
