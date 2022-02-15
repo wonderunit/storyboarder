@@ -1,7 +1,8 @@
-const { Menu, app } = require('@electron/remote')
 const { ipcRenderer, shell } = require('electron')
-const isDev = require('@electron/remote').require('electron-is-dev')
+const { app, Menu } = remote = require('@electron/remote')
+const isDev = remote.require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
+
 const log = require('./shared/storyboarder-electron-log')
 
 // TODO subscribe to store, update menu when keymap changes
