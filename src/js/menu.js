@@ -1,6 +1,6 @@
 const { Menu, app } = require('@electron/remote')
 const { ipcRenderer, shell } = require('electron')
-const isDev = require('electron-is-dev')
+const isDev = require('@electron/remote').require('electron-is-dev')
 const { getInitialStateRenderer } = require('electron-redux')
 const log = require('./shared/storyboarder-electron-log')
 
