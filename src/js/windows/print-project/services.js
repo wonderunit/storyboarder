@@ -7,7 +7,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '../../../../node_modules/pdfjs-dist/bu
 const generate = require('../../exporters/pdf')
 const log = require('../../shared/storyboarder-electron-log')
 
-const { remote } = require('electron')
+const remote = require('@electron/remote')
 const { createPrint } = require('../../print')
 const print = createPrint({
   pathToSumatraExecutable: path.join(remote.app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe')
