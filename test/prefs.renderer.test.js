@@ -1,5 +1,5 @@
 const assert = require('assert')
-const { remote } = require('electron')
+const remote = require('@electron/remote')
 const fs = require('fs-extra')
 const mockFs = require('mock-fs')
 const path = require('path')

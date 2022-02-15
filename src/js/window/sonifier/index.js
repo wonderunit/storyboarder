@@ -1,4 +1,4 @@
-const { remote } = require('electron')
+const remote = require('@electron/remote')
 const Tone = require('tone')
 const ease = require('eases')
 const vec2 = require('gl-vec2')

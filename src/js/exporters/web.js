@@ -2,7 +2,7 @@ const archiver = require('archiver')
 const fs = require('fs-extra')
 const moment = require('moment')
 const path = require('path')
-const { remote } = require('electron')
+const remote = require('@electron/remote')
 const request = require('request-promise-native')
 
 const boardModel = require('../models/board')

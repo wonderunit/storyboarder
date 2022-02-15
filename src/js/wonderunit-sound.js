@@ -1,4 +1,4 @@
-const { remote } = require('electron')
+const remote = require('@electron/remote')
 
 const Tone = require('tone')
 const { shuffle } = require('./utils/index')
