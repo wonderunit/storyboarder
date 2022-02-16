@@ -38,13 +38,10 @@ const App = () => {
         { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
       )
       const stateSanitizer = state => state.attachments ? { ...state, attachments: '<<ATTACHMENTS>>' } : state
-      const reduxDevtoolsExtensionOptions = {
+      const composeEnhancers = composeWithDevTools({
         actionSanitizer,
         stateSanitizer,
-        trace: true,
-      }
-      const composeEnhancers = composeWithDevTools({
-        reduxDevtoolsExtensionOptions
+        trace: true
       })
       const enhancer = composeEnhancers(
         applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware),
