@@ -1,3 +1,6 @@
+html {
+  height: 100%;
+}
 body {
   margin: 0;
   padding: 0;
@@ -10,7 +13,8 @@ body {
   cursor:default;
   display: flex;
   flex-direction: row;
-  min-height: 100vh;
+  /* min-height: 100vh; */
+  height: 100%;
   overflow: hidden;
 }
 
@@ -377,7 +381,6 @@ body::-webkit-scrollbar {
   display: flex;
   position: relative;
   width: 350px;
-  max-height: 100%;
   /* transition: 0.3s width; */
 }
 
