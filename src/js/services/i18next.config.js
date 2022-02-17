@@ -1,7 +1,8 @@
 let i18n = require('i18next')
 let i18nextBackend = require('i18next-fs-backend')
-const Electron = require('electron')
-const electronApp = Electron.app ? Electron.app : Electron.remote.app
+const electron = require('electron')
+const { app } = require('@electron/remote')
+const electronApp = electron.app ? electron.app : app
 const userDataPath = electronApp.getPath('userData')
 const path = require('path')
 const { initReactI18next } = require("react-i18next")

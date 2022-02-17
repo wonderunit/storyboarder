@@ -85,12 +85,12 @@ const Editor = React.memo(({
   }, [])
 
   useEffect(() => {
-    electron.remote.getCurrentWindow().on('resize', resizeScale)
+    remote.getCurrentWindow().on('resize', resizeScale)
     ipcRenderer.on('shot-generator:menu:view:fps-meter', toggleStats)
     ipcRenderer.on('shot-generator:menu:view:scale-ui-by', scaleBy)
     ipcRenderer.on('shot-generator:menu:view:scale-ui-reset', setScale)
     return () => {
-      electron.remote.getCurrentWindow().off('resize', resizeScale)
+      remote.getCurrentWindow().off('resize', resizeScale)
       ipcRenderer.off('shot-generator:menu:view:fps-meter', toggleStats)
       ipcRenderer.off('shot-generator:menu:view:scale-ui-by', scaleBy)
       ipcRenderer.off('shot-generator:menu:view:scale-ui-reset', setScale)

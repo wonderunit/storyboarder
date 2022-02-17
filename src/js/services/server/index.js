@@ -5,7 +5,7 @@ import {useState, useCallback} from 'react'
 import {serve} from './sockets'
 import { updateServer } from '../../shared/reducers/shot-generator'
 
-const electronApp = electron.app ? electron.app : electron.remote.app
+const electronApp = electron.app ? electron.app : require('@electron/remote').app
 
 const ServerInfo = {
   projectPath: null,

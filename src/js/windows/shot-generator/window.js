@@ -1,5 +1,5 @@
 const { ipcRenderer, shell } = electron = require('electron')
-const { app } = electron.remote
+const remote = require('@electron/remote')
 
 // const https = require('https')
 // https.globalAgent.options.rejectUnauthorized = false;
@@ -269,7 +269,7 @@ ipcRenderer.on('shot-generator:show:shot-explorer', () => {
   shotExplorer.getWindow().webContents.send('shot-explorer:show')
 })
 
-electron.remote.getCurrentWindow().on("close", () => {
+remote.getCurrentWindow().on("close", () => {
   let shotExplorerWindow = shotExplorer.getWindow()
   if(shotExplorerWindow)
     shotExplorerWindow.destroy()
