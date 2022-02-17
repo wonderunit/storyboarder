@@ -12,7 +12,7 @@ let keystrokeFor = command => store.getState().entities.keymap[command]
 
 // TODO remove unused
 // const observeStore = require('./shared/helpers/observeStore')
-const i18n = require('./services/i18next.config')
+
 let SubMenuFragments = {}
 SubMenuFragments.View = (i18n) => [
   ...isDev
@@ -280,6 +280,7 @@ AppMenu.Edit = (i18n) => ({
   ]
 })
 AppMenu.Navigation = (i18n) => ({
+  id: 'navigation',
   label: i18n.t('menu.navigation.title'),
   submenu: [
     {
@@ -342,6 +343,7 @@ AppMenu.Navigation = (i18n) => ({
       }
     },
     {
+      id: 'navigation.audition-board-audio',
       label: i18n.t('menu.navigation.audition-board-audio'),
       type: 'checkbox',
       accelerator: keystrokeFor('menu:navigation:toggle-audition'),
@@ -1103,10 +1105,10 @@ const setPrintProjectMenu = (i18n) => {
 }
 
 const setEnableAudition = value => {
-  let navigation = Menu.getApplicationMenu().items.find(n => n.label === i18n.t('menu.navigation.title'))
+  let navigation = Menu.getApplicationMenu().getMenuItemById('navigation')
   if (navigation) {
     navigation
-      .submenu.items.find(n => n.label === i18n.t('menu.navigation.audition-board-audio'))
+      .submenu.getMenuItemById('navigation.audition-board-audio')
       .checked = value
   }
 }
