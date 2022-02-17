@@ -2,7 +2,6 @@ import './style.css'
 import './../vendor/rStats.css'
 import React, { useState, useEffect, useRef } from 'react'
 import ProgressIntro from './components/ProgressIntro'
-import { compose } from 'redux'
 
 require("../../shared/helpers/monkeyPatchGrayscale")
 
@@ -33,28 +32,7 @@ const App = () => {
   useEffect(() => {
     RemoteDevice.connect()
     .then((SGConnection) => {
-      // storeRef.current = createStore(reducer, {...initialState}, applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware))
-      const actionSanitizer = action => (
-        action.type === 'ATTACHMENTS_SUCCESS' && action.payload ?
-        { ...action, payload: { ...action.payload, value: '<<DATA>>' } } : action
-      )
-      const stateSanitizer = state => state.attachments ? { ...state, attachments: '<<ATTACHMENTS>>' } : state
-      const reduxDevtoolsExtensionOptions = {
-        actionSanitizer,
-        stateSanitizer,
-        trace: true,
-      }
-
-      const composeEnhancers =
-            typeof window === 'object' &&
-            window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__ ?   
-              window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__(reduxDevtoolsExtensionOptions) : compose
-
-      const enhancer = composeEnhancers(
-        applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware),
-        // other store enhancers if any
-      )
-      storeRef.current = createStore(reducer,{...initialState}, enhancer)
+      storeRef.current = createStore(reducer, {...initialState}, applyMiddleware(thunkMiddleware, SGConnection.ClientMiddleware))
       window.$r = {
         store: storeRef.current
       }
