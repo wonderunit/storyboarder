@@ -228,7 +228,7 @@ const store = configureStore(getInitialStateRenderer(), 'renderer')
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
 
-const prefsModule = require('@electron/remote').require('./prefs')
+const prefsModule = remote.require('./prefs')
 prefsModule.init(path.join(app.getPath('userData'), 'pref.json'))
 // we're gradually migrating prefs to a reducer
 // we read any 2.0 toolbar related prefs into the toolbar reducer manually
