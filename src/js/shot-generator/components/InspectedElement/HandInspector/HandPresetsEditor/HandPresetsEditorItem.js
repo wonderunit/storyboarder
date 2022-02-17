@@ -1,6 +1,6 @@
 import fs from 'fs-extra'
 import path from 'path'
-import { remote } from 'electron'
+const remote = require('@electron/remote')
 import classNames from 'classnames'
 import ThumbnailRenderer from '../../../../utils/ThumbnailRenderer'
 import React, { useMemo } from 'react'

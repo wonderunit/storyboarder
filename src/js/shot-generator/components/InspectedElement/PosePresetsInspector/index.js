@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useCallback } from 'react'
 import { connect } from 'react-redux'
 import * as THREE from 'three'
 import { useTranslation } from 'react-i18next'
-import { remote } from 'electron'
+const remote = require('@electron/remote')
 
 import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../package.json'
