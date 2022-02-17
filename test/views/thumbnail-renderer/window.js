@@ -4,7 +4,7 @@ const THREE = require('three')
 require('../../../src/js/shared/IK/utils/Object3dExtension')
 window.THREE = THREE
 
-const electron = require('electron')
+const remote = require('@electron/remote')
 
 const path = require('path')
 const fs = require('fs-extra')
@@ -202,7 +202,7 @@ const ThumbnailsView = ({ modelThumbnailRenderer, emotionPresetThumbnailRenderer
   )
 }
 
-electron.remote.getCurrentWebContents().openDevTools()
+remote.getCurrentWebContents().openDevTools()
 
 let el = document.createElement('div')
 document.body.appendChild(el)

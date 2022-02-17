@@ -2,7 +2,7 @@ const ReactDOM = require('react-dom')
 const React = require('react')
 const { ipcRenderer, shell } = electron = require('electron')
 const { Provider, batch } = require('react-redux')
-const { dialog } = electron.remote
+const remote = require('@electron/remote')
 const THREE = require('three')
 const { createStore, applyMiddleware, compose } = require('redux')
 const thunkMiddleware = require('redux-thunk').default
@@ -28,7 +28,7 @@ let isBoardShown = false
 let isBoardLoaded = false
 let componentKey = THREE.Math.generateUUID()
 let shotExplorerElement 
-let isVisible = electron.remote.getCurrentWindow().visible
+let isVisible = remote.getCurrentWindow().visible
 let defaultHeight = 800
 let canvasHeight = 400
 let minimumWidth = 300
@@ -115,7 +115,7 @@ ipcRenderer.on("shot-generator:open:shot-explorer", async (event) => {
   canvasHeight = defaultHeight * 0.45
   let scaledWidth = Math.ceil(canvasHeight * aspectRatio)
   scaledWidth = minimumWidth > scaledWidth ? minimumWidth : scaledWidth
-  let win = electron.remote.getCurrentWindow()
+  let win = remote.getCurrentWindow()
   win.setSize(scaledWidth, defaultHeight)
   win.setMinimumSize(scaledWidth, defaultHeight)
   win.setMaximumSize(scaledWidth, 100000)
@@ -149,11 +149,11 @@ ipcRenderer.on("shot-explorer:language-modified", (event, lng) => {
   i18n.reloadResources(lng).then(() => i18n.changeLanguage(lng))
 })
 
-electron.remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
+remote.getCurrentWindow().webContents.on('will-prevent-unload', event => {
   isBoardShown = false
 })
 
-electron.remote.getCurrentWindow().on("hide", () => {
+remote.getCurrentWindow().on("hide", () => {
   isVisible = false
 })
 
@@ -174,7 +174,7 @@ const pushUpdates = () => {
   renderDom()
 }
 
-electron.remote.getCurrentWindow().on("focus", () => {
+remote.getCurrentWindow().on("focus", () => {
   if(!sendedAction.length || !isBoardShown || !isBoardLoaded) return
   pushUpdates()
 })
