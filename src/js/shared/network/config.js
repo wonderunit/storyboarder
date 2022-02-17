@@ -1,1 +1,1 @@
-export const STBR_HOST = 'localhost'
+export const STBR_HOST = 'stbr.link'
