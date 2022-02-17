@@ -5,7 +5,7 @@ import classNames from 'classnames'
 import '../../../vendor/three/examples/js/utils/SkeletonUtils'
 import ThumbnailRenderer from '../../ThumbnailRenderer'
 import { GUTTER_SIZE, ITEM_WIDTH, ITEM_HEIGHT, IMAGE_HEIGHT, IMAGE_WIDTH } from '../../utils/InspectorElementsSettings'
-import { remote } from 'electron'
+const remote = require('@electron/remote')
 import { useMemo } from 'react'
 
 const setupRenderer = ({ thumbnailRenderer, attachment, preset }) => {

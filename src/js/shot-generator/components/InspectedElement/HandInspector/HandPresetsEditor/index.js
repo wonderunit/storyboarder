@@ -6,7 +6,7 @@ import { machineIdSync } from 'node-machine-id'
 import pkg from '../../../../../../../package.json'
 import request from 'request'
 import { useTranslation } from 'react-i18next'
-import { remote } from 'electron'
+const remote = require('@electron/remote')
 
 import {
   updateObject,

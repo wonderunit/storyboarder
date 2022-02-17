@@ -1,4 +1,4 @@
-import { remote } from 'electron'
+const remote = require('@electron/remote')
 import React, { useEffect, useMemo } from 'react'
 import menu from '../../../menu'
 import i18n from '../../../services/i18next.config'
