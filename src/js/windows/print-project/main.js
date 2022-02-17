@@ -28,7 +28,6 @@ const show = async ({ parent }) => {
 
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false,
       contextIsolation: false
     }
   })
