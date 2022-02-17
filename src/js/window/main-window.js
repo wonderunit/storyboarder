@@ -1138,7 +1138,7 @@ const loadBoardUI = async () => {
   const renderScrollIndicator = () => {
     let target = document.querySelector('.board-metadata-container')
     let el = document.querySelector('#board-metadata .scroll-indicator')
-    if (target.offsetHeight + target.scrollTop === target.scrollHeight) {
+    if (Math.ceil(target.offsetHeight + target.scrollTop) >= target.scrollHeight) {
       el.style.opacity = 0
     } else {
       el.style.opacity = 1.0
