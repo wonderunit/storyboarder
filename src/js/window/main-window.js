@@ -1731,7 +1731,7 @@ const loadBoardUI = async () => {
     //
     // HACK find the Shot Generator window manually
     const shotGeneratorWindow = remote.BrowserWindow.getAllWindows()
-      .find(w => w.webContents.getURL().match(/shot\-generator\.html/))
+      .find(w => !w.isDestroyed() && w.webContents.getURL().match(/shot\-generator\.html/))
     // try to close it
     if (shotGeneratorWindow && !shotGeneratorWindow.isDestroyed()) {
       shotGeneratorWindow.close()
