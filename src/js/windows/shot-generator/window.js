@@ -7,7 +7,7 @@ const remote = require('@electron/remote')
 // const WS = require('ws')
 
 const path = require('path')
-const shotExplorer = require('../shot-explorer/main')
+const shotExplorer = require('../shot-explorer/setup')
 const { Suspense } = React = require('react')
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
