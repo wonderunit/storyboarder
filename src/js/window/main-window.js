@@ -6580,6 +6580,7 @@ const showSignInWindow = () => {
       contextIsolation: false
     }
   })
+  remoteMain.enable(exportWebWindow.webContents)
   exportWebWindow.loadURL(`file://${__dirname}/../../upload.html`)
   exportWebWindow.once('ready-to-show', () => {
     exportWebWindow.show()
@@ -6962,6 +6963,7 @@ ipcRenderer.on('importWorksheets', (event, args) => {
         contextIsolation: false
       }
     })
+    remoteMain.enable(importWindow.webContents)
     importWindow.loadURL(`file://${__dirname}/../../import-window.html`)
   } else {
     if (!importWindow.isVisible()) {

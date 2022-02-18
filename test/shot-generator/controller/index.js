@@ -1,7 +1,7 @@
+const remoteMain = require('@electron/remote/main')
 const electron = require('electron')
-const { ipcMain } = require('electron')
-const app = electron.app
-const BrowserWindow = electron.BrowserWindow
+const { app } = require('electron')
+const { BrowserWindow } = require('@electron/remote')
 
 const isDev = require('electron-is-dev')
 
@@ -35,6 +35,7 @@ function createWindow () {
       contextIsolation: false
     }
   })
+  remoteMain.enable(mainWindow.webContents)
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
     protocol: 'file:',
