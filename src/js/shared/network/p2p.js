@@ -92,6 +92,13 @@ const P2P = (host = STBR_HOST) => {
             const client = clientsMap.get(connection.peer)
             emitter.emit('connection', client)
         })
+
+        connection.on('iceStateChanged', (status) => {
+            if (status === 'disconnected') {
+                const client = clientsMap.get(connection.peer)
+                client.emitter.emit('close', 'socket-close')
+            }
+        })
     })
 
     let client
