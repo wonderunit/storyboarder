@@ -1,3 +1,4 @@
+const remoteMain = require('@electron/remote/main')
 const { BrowserWindow } = require('electron')
 const path = require('path')
 
@@ -32,6 +33,7 @@ const show = async ({ parent }) => {
       contextIsolation: false
     }
   })
+  remoteMain.enable(win.webContents)
   win.on('closed', () => (win = null))
   await win.loadFile(path.join(__dirname, 'index.html'))
   win.show()

@@ -1,4 +1,5 @@
-require('@electron/remote/main').initialize()
+const remoteMain = require('@electron/remote/main')
+remoteMain.initialize()
 const {app, ipcMain, BrowserWindow, dialog, powerSaveBlocker} = electron = require('electron')
 
 const fs = require('fs-extra')
@@ -349,6 +350,7 @@ let openKeyCommandWindow = () => {
       contextIsolation: false
     }
   })
+  remoteMain.enable(keyCommandWindow.webContents)
   keyCommandWindow.loadURL(`file://${__dirname}/../keycommand-window.html`)
   keyCommandWindow.once('ready-to-show', () => {
     setTimeout(() => keyCommandWindow.show(), 250) // wait for DOM
@@ -385,6 +387,7 @@ let openNewWindow = () => {
         contextIsolation: false
       }
     })
+    remoteMain.enable(newWindow.webContents)
     newWindow.loadURL(`file://${__dirname}/../new.html`)
     newWindow.once('ready-to-show', () => {
       newWindow.show()
@@ -412,6 +415,7 @@ let openWelcomeWindow = () => {
       contextIsolation: false
     }
   })
+  remoteMain.enable(welcomeWindow.webContents)
   welcomeWindow.loadURL(`file://${__dirname}/../welcome.html`)
 
   newWindow = new BrowserWindow({
@@ -427,6 +431,7 @@ let openWelcomeWindow = () => {
       contextIsolation: false
     }
   })
+  remoteMain.enable(newWindow.webContents)
   newWindow.loadURL(`file://${__dirname}/../new.html`)
 
   let recentDocumentsCopy
@@ -995,6 +1000,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       contextIsolation: false
     }
   })
+  remoteMain.enable(mainWindow.webContents)
 
   let projectName = path.basename(filename, path.extname(filename))
   loadingStatusWindow = new BrowserWindow({
@@ -1009,6 +1015,7 @@ let loadStoryboarderWindow = (filename, scriptData, locations, characters, board
       contextIsolation: false
     }
   })
+  remoteMain.enable(loadingStatusWindow.webContents)
   loadingStatusWindow.loadURL(`file://${__dirname}/../loading-status.html?name=${encodeURIComponent(projectName)}`)
   loadingStatusWindow.once('ready-to-show', () => {
     loadingStatusWindow.show()

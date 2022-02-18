@@ -1,4 +1,4 @@
-const { BrowserWindow, ipcMain } = electron = require('electron')
+const { BrowserWindow } = require('electron')
 
 let win
 let hasRendered = false
@@ -40,6 +40,7 @@ const show = () => {
       contextIsolation: false
     }
   })
+  remoteMain.enable(win.webContents)
   win.once('closed', () => {
     win = null
   })
