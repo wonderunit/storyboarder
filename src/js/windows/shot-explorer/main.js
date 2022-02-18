@@ -1,5 +1,5 @@
-const { BrowserWindow, ipcMain, app, dialog } = electron = require('@electron/remote')
-const isDev = require('electron-is-dev')
+const remote = require('@electron/remote')
+const remoteMain = remote.require('@electron/remote/main')
 
 const path = require('path')
 const url = require('url')
@@ -29,7 +29,7 @@ const createWindow = async ( onComplete, aspectRatio) => {
       return
     }
     let { x, y, width, height } = memento
-    win = new BrowserWindow({
+    win = new remote.BrowserWindow({
      // minWidth: (500 * aspectRatio),
       //minHeight: 800,
 
@@ -58,7 +58,8 @@ const createWindow = async ( onComplete, aspectRatio) => {
         contextIsolation: false
       },
     })
-  
+    remoteMain.enable(win.webContents)
+
     win.on('resize', () => memento = win.getBounds())
     win.on('move', () => memento = win.getBounds())
     win.webContents.on('will-prevent-unload', event => {
