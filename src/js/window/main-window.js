@@ -1,5 +1,7 @@
+require('electron-redux/preload')
 const {ipcRenderer, shell, nativeImage, clipboard} = require('electron')
 const remote = require('@electron/remote')
+const remoteMain = remote.require('@electron/remote/main')
 const { app } = remote
 const child_process = require('child_process')
 const fs = require('fs-extra')
@@ -18,7 +20,6 @@ const ReactDOM = require('react-dom')
 const h = require('../utils/h')
 const ShotGeneratorPanel = require('./components/ShotGeneratorPanel')
 
-const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../shared/store/configureStore')
 const observeStore = require('../shared/helpers/observeStore')
 
@@ -224,7 +225,7 @@ const updateHTMLText = () => {
   //#endregion
 }
 //#endregion
-const store = configureStore(getInitialStateRenderer(), 'renderer')
+const store = configureStore()
 window.$r = { store } // for debugging, e.g.: $r.store.getStore()
 const isCommandPressed = createIsCommandPressed(store)
 

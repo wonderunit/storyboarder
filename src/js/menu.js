@@ -1,13 +1,14 @@
+require('electron-redux/preload')
+
 const { ipcRenderer, shell } = require('electron')
 const { app, Menu } = remote = require('@electron/remote')
 const isDev = remote.require('electron-is-dev')
-const { getInitialStateRenderer } = require('electron-redux')
 
 const log = require('./shared/storyboarder-electron-log')
 
 // TODO subscribe to store, update menu when keymap changes
 const configureStore = require('./shared/store/configureStore')
-const store = configureStore(getInitialStateRenderer(), 'renderer')
+const store = configureStore()
 let keystrokeFor = command => store.getState().entities.keymap[command]
 
 // TODO remove unused

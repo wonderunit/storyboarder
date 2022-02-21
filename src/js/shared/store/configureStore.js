@@ -1,52 +1,27 @@
-// via https://github.com/hardchor/timesheets/blob/759f5b5fdea302f6792d79bdada35f99995c0a15/app/shared/store/configureStore.js
+// reference:
+// https://redux.js.org/usage/configuring-your-store
+// https://github.com/klarna/electron-redux/tree/alpha
+
 const { createStore, applyMiddleware } = require('redux')
-const { forwardToMain, forwardToRenderer, replayActionMain, replayActionRenderer, triggerAlias } = require('electron-redux')
+const { composeWithStateSync } = process.type == 'renderer'
+  ? require('electron-redux/renderer')
+  : require('electron-redux/main')
 const thunk = require('redux-thunk').default
 const promise = require('redux-promise')
-const throttle = require('lodash.throttle')
 
-const reducers = require('../reducers')
-const authStorage = require('./authStorage')
+const rootReducer = require('../reducers')
 
-const configureStore = (initialState, scope = 'main') => {
-  let middleware = [
-    thunk,
-    promise
-  ]
+const configureStore = (preloadedState) => {
+  let middleware = [thunk, promise]
+  let middlewareEnhancer = applyMiddleware(...middleware)
 
-  if (scope === 'renderer') {
-    middleware = [
-      forwardToMain,
-      ...middleware
-    ]
-  }
+  let enhancers = [middlewareEnhancer]
+  let composedEnhancers = composeWithStateSync(...enhancers)
 
-  if (scope === 'main') {
-    middleware = [
-      triggerAlias,
-      ...middleware,
-      forwardToRenderer
-    ]
-  }
-
-  const persistedState = authStorage.loadState()
   const store = createStore(
-    reducers,
-    { ...persistedState, ...initialState },
-    applyMiddleware(...middleware)
-  )
-
-  if (scope === 'main') {
-    replayActionMain(store)
-  } else {
-    replayActionRenderer(store)
-  }
-
-  store.subscribe(
-    throttle(
-      () => authStorage.saveState({ auth: store.getState().auth }),
-      5000
-    )
+    rootReducer,
+    preloadedState,
+    composedEnhancers
   )
 
   return store

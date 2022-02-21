@@ -17,7 +17,6 @@ prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
 
 const configureStore = require('./shared/store/configureStore')
 const observeStore = require('./shared/helpers/observeStore')
-const actions = require('./shared/actions')
 const defaultKeyMap = require('./shared/helpers/defaultKeyMap')
 
 const analytics = require('./analytics')
@@ -47,7 +46,16 @@ const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 
-const store = configureStore({}, 'main')
+const throttle = require('lodash.throttle')
+const authStorage = require('./shared/store/authStorage')
+const persistedState = authStorage.loadState()
+const store = configureStore({ ...persistedState })
+store.subscribe(
+  throttle(
+    () => authStorage.saveState({ auth: store.getState().auth }),
+    5000
+  )
+)
 
 
 if (isDev) {
