@@ -12,7 +12,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx)$/,
-        exclude: /(node_modules|bower_components)/,
+        exclude: /node_modules\/(?!(electron-redux)\/).*/,
         use: {
           loader: 'babel-loader',
           options: {
@@ -25,7 +25,10 @@ module.exports = {
               ],
               '@babel/preset-react'
             ],
-            plugins: ['@babel/plugin-proposal-class-properties']
+            plugins: [
+              '@babel/plugin-proposal-class-properties',
+              '@babel/plugin-proposal-optional-chaining'
+            ]
           }
         }
       }
