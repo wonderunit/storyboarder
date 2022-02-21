@@ -50,11 +50,10 @@ const throttle = require('lodash.throttle')
 const authStorage = require('./shared/store/authStorage')
 const persistedState = authStorage.loadState()
 const store = configureStore({ ...persistedState })
-store.subscribe(
-  throttle(
-    () => authStorage.saveState({ auth: store.getState().auth }),
-    5000
-  )
+observeStore(
+  store,
+  state => state.auth,
+  throttle(() => authStorage.saveState({ auth: store.getState().auth }), 5000)
 )
 
 
