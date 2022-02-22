@@ -1,3 +1,4 @@
+const remoteMain = require('@electron/remote/main')
 const { BrowserWindow } = require('electron')
 
 let win
