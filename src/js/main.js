@@ -46,15 +46,23 @@ const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
 
-const throttle = require('lodash.throttle')
-const authStorage = require('./shared/store/authStorage')
-const persistedState = authStorage.loadState()
-const store = configureStore({ ...persistedState })
-observeStore(
-  store,
-  state => state.auth,
-  throttle(() => authStorage.saveState({ auth: store.getState().auth }), 5000)
-)
+/*
+TODO
+used by license registration, which is disabled currently
+see: windows/registration
+auth.json can be saved/loaded, e.g.:
+
+    const throttle = require('lodash.throttle')
+    const authStorage = require('./shared/store/authStorage')
+    const persistedState = authStorage.loadState()
+    const store = configureStore({ ...persistedState })
+    observeStore(
+      store,
+      state => state.auth,
+      throttle(() => authStorage.saveState({ auth: store.getState().auth }), 5000)
+    )
+*/
+const store = configureStore()
 
 
 if (isDev) {
