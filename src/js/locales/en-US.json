@@ -393,11 +393,13 @@
     "inspector": {
       "inspected-world": {
         "file": "File",
+        "map": "Texture",
         "scene": "Scene",
         "ground": "Ground",
         "bg-color": "Background color",
         "room": "Room",
-        "environment": "Environment",
+        "environmentMap": "Environment map",
+        "environmentModel": "Environment model",
         "ambient-light": "Ambient light",
         "directional-light": "Directional light",
         "fog": "Fog",
@@ -432,6 +434,11 @@
         "yes": "Yes",
         "no": "No",
         "are-you-sure": "Are you sure?"
+      },
+      "envMap-preset": {
+        "sphere": "Spherical map",
+        "cross": "Croos-horizontal map",
+        "cube": "Cubetexture map"
       },
       "inspected-element": {
         "properties": "Properties:"

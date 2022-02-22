@@ -2,7 +2,10 @@ const THREE = require('three')
 const React = require('react')
 const { useState, useReducer, useMemo, useCallback } = React
 
-const {onImageBufferLoad, onGLTFBufferLoad, onColladaBufferLoad, onObjBufferLoad, onFbxBufferLoad, onStlBufferLoad, on3dsBufferLoad, onPLYBufferLoad} = require('../helpers/resourceLoaders')
+const {onImageBufferLoad, onGLTFBufferLoad, onColladaBufferLoad, onObjBufferLoad, onFbxBufferLoad, onStlBufferLoad, on3dsBufferLoad, onPLYBufferLoad, onEXRImageBufferLoad, onHDRImageBufferLoad} = require('../helpers/resourceLoaders')
+
+const path = require('path')
+const { useEffect } = require('react')
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -81,6 +84,36 @@ const load = (loader, path, events, times = 1) => {
   }
 }
 
+const useSelectedAssets = ( getAsset, needAssets, callback = null ) => {
+
+  const [successData, setSuccessData] = useState([]) // array of loaded assets 
+  const [assetsList, setAssetsList] = useState(needAssets ? [...needAssets] : [])   // list of need load assets 
+
+  useEffect(() => {   
+    setSuccessData([])  // clear array of loaded assets 
+    setAssetsList(needAssets ? [...needAssets] : []) // update list of need load assets 
+  },[needAssets])
+
+  useEffect(()=> { 
+    if (assetsList.length) {     // load assets from assetsList
+      const data = []
+      const newAssetsList = assetsList
+        .map((assetPath) => { 
+          const asset = getAsset(assetPath)
+          if (!asset) return assetPath  // if no asset try again
+          if (callback) callback(asset, assetPath) // fnc to process asset 
+          data.push(asset)
+          return null   
+        })
+        .filter((element) => Boolean(element)) // filtered unloaded assets 
+      if (data.length) setSuccessData([...successData, ...data]) // if new data -> add to successData
+      if (newAssetsList.length !== assetsList.length) setAssetsList(newAssetsList) // if new list of unloaded assets -> update assetsList
+    }
+  },[ getAsset, assetsList ])
+
+  return assetsList.length ? null : successData // return all assets 
+}
+
 const useAssetsManager = (SGConnection) => {
 
   const [assets, dispatch] = useReducer(reducer, {})
@@ -100,6 +133,12 @@ const useAssetsManager = (SGConnection) => {
             case '.png':
               bufferLoader = onImageBufferLoad
               break     
+            case '.exr':
+              bufferLoader = onEXRImageBufferLoad
+              break
+            case '.hdr':
+              bufferLoader = onHDRImageBufferLoad
+              break
             case '.gltf':
             case '.glb':
               bufferLoader = onGLTFBufferLoad
@@ -141,6 +180,45 @@ const useAssetsManager = (SGConnection) => {
       })
   }, [assets])
 
+  useMemo(() => {
+    Object.entries(assets)
+      .filter(([_, o]) => o.status === 'NotAsked')
+      .filter(([id]) => id !== false)
+      .forEach(([id]) => {
+        if (!id.includes('/images/') && !id.includes('/emotions/')&& !id.includes('/environments/')) {
+          SGConnection.getResource('gltf', id)
+          .then(({data}) => {
+            bufferLoader(data,id)
+            .then((model) => {
+              console.log(`Loaded ${ext}: `, model)
+              dispatch({ type: 'SUCCESS', payload: { id, value: model, ext } })
+            })
+            .catch((error) => {
+              console.log(`${ext} loading error`, error)
+              dispatch({ type: 'ERROR', payload: { id, error } })
+            })
+          })
+          dispatch({ type: 'LOAD', payload: { id } })
+        } else {
+          SGConnection.getResource('image', id)
+          .then(({type, filePath, data}) => {
+            const ext = path.extname(id)
+            const loader = (ext === '.exr') ? onEXRImageBufferLoad : (ext === '.hdr') ? onHDRImageBufferLoad : onImageBufferLoad
+            loader(id, data)
+            .then((texture) => {
+              console.log('Loaded TEXTURE: ', texture)
+              dispatch({ type: 'SUCCESS', payload: { id, value: texture } })
+            })
+            .catch((error) => {
+              dispatch({ type: 'ERROR', payload: { id, error } })
+            })
+          })
+
+          dispatch({ type: 'LOAD', payload: { id } })
+        }
+      })
+  }, [assets])
+
   const requestAsset = useCallback(
     id => {
       if (id && (!assets[id])) {
@@ -166,5 +244,6 @@ const useAssetsManager = (SGConnection) => {
 }
 
 module.exports = {
-  useAssetsManager
+  useAssetsManager,
+  useSelectedAssets
 }

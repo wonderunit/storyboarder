@@ -44,8 +44,9 @@ const useAudioLoader = require('./hooks/use-audio-loader')
 const { WORLD_SCALE_LARGE, WORLD_SCALE_SMALL, useStore, useStoreApi, useInteractionsManager } = require('./use-interactions-manager')
 const { useUiStore, useUiManager, UI_ICON_FILEPATHS } = require('./hooks/ui-manager')
 
-const { useAssetsManager } = require('./hooks/use-assets-manager')
+const { useAssetsManager, useSelectedAssets } = require('./hooks/use-assets-manager')
 const getFilepathForModelByType = require('./helpers/get-filepath-for-model-by-type')
+const getFilepathForEnv = require('./helpers/get-filepath-for-env')
 const getFilepathForImage = require('./helpers/get-filepath-for-image')
 
 const ProgressIntro = require('./components/ProgressIntro').default
@@ -110,6 +111,8 @@ const getSceneObjectAttachableIds = createSelector(
 )
 
 const systemEmotions = require('../../shared/reducers/shot-generator-presets/emotions.json')
+const path  = require('path')
+const {  default: EnvironmentViewer } = require('./components/EnvironmentViewer')
 function getEmotionTextureUriByPresetId (id) {
   // TODO provide XR FilepathsContext functions to get asset and user preset uri
   // console.log('EmotionID: ', id, systemEmotions[id])
@@ -819,7 +822,13 @@ const SceneContent = connect(
               </SimpleErrorBoundary>
               : null
           }
-          
+          {          
+            world.environmentMap.background.length && <EnvironmentViewer  
+              visible = { world.environmentMap.visible }
+              assets = { resources.envMapHandler }
+              rotation = { world.environmentMap.rotation } 
+              type = {world.environmentMap.mapType}/>
+          }
           <RemoteProvider>
             <RemoteClients
               clientProps={{
@@ -975,6 +984,21 @@ const SceneManagerXR = ({SGConnection}) => {
     }
   }, [world.environment])
 
+  const backgroundMaps = useMemo(() => (world.environmentMap.background.length ? 
+    world.environmentMap.background.map(file => {
+      const newPath = getFilepathForEnv({file})
+      requestAsset(newPath)
+      return newPath
+    }) 
+    : null 
+  ),[world.environmentMap.background])
+
+  const textureSettings = useCallback((texture, texturePath)=>{
+    if (texture.name === '') texture.name = path.basename(texturePath, path.extname(texturePath))
+  },[])
+
+  const envMapHandler = useSelectedAssets( getAsset, backgroundMaps , textureSettings )
+
   let appResources = [groundTexture, roomTexture]
   let soundResources = [
     welcomeAudioBuffer, atmosphereAudioBuffer, selectAudioBuffer, beamAudioBuffer,
@@ -1079,6 +1103,7 @@ const SceneManagerXR = ({SGConnection}) => {
                 resources={{
                   groundTexture,
                   roomTexture,
+                  envMapHandler,
 
                   controllerGltf: getAsset('/data/system/xr/controller.glb'),
                   controlsGltf: getAsset('/data/system/xr/ui/controls.glb'),

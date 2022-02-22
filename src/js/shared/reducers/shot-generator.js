@@ -6,6 +6,7 @@ const crypto = require('crypto')
 const reduceReducers = require('../../vendor/reduce-reducers')
 const { combineReducers } = require('redux')
 const R = require('ramda')
+const os = require('os')
 
 const batchGroupBy = require('./shot-generator/batchGroupBy')
 const serializeSceneObject = require('./shot-generator/serialize-scene-object')
@@ -36,6 +37,7 @@ const getSelectedAttachable = state => state.undoable.present.selectedAttachable
 
 const getWorld = state => state.undoable.present.world
 
+const getPlatform = state => state.platform
 
 const getHash = state =>
   hashify(JSON.stringify(getSerializedState(state)))
@@ -223,6 +225,28 @@ const migrateWorldEnvironmentGrayscale = world => ({
     grayscale: world.environment.grayscale == null ? false : world.environment.grayscale
   }  
 })
+
+// migrate older scenes which were missing file
+const migrateWorldEnvironmentFile = world => ({
+  ...world,
+  environment: {
+    ...world.environment,
+    file: world.environment.file === undefined ? initialState.undoable.world.environment.file : world.environment.file
+  }  
+})
+
+// migrate older scenes which were missing envMap
+const migrateWorldEnvironmentMap = world => ({
+    ...world,
+    environmentMap: !world.hasOwnProperty('environmentMap') ? {...initialScene.world.environmentMap} : {
+      ...world.environmentMap,
+      background: world.environmentMap.background === undefined ? [...initialState.undoable.world.environmentMap.background] : world.environmentMap.background,
+      rotation: world.environmentMap.rotation === undefined ? {...initialState.undoable.world.environmentMap.rotation} : world.environmentMap.rotation,
+      mapType: world.environmentMap.mapType === undefined ? initialState.undoable.world.environmentMap.mapType : world.environmentMap.mapType,
+    }
+
+  }
+)
 
 const updateObject = (draft, state, props, { models }) => {
   // TODO is there a simpler way to merge only non-null values?
@@ -412,6 +436,17 @@ const getCameraShot = (draft, cameraId) => {
   return draft[cameraId]
 }
 
+const currentPlatform = () => ({
+    win32: 'WINDOWS',
+    darwin: 'MAC',
+    linux: 'LINUX',
+    sunos: 'SUN',
+    openbsd: 'OPENBSD',
+    android: 'ANDROID',
+    aix: 'AIX',
+  }[ os.platform() ])
+
+
 // load up the default poses
 const defaultHandPosePresets = require('./shot-generator-presets/hand-poses.json')
 const defaultEmotionsPresets = require('./shot-generator-presets/emotions.json')
@@ -449,6 +484,10 @@ const defaultScenePreset = {
       scale: 1,
       visible: true,
       grayscale: true
+    },
+    environmentMap: {
+      background: [],
+      visible: true,
     },
     ambient: {
       intensity: 0.1
@@ -571,6 +610,7 @@ const initialScene = {
     },
     environment: {
       file: undefined,
+      // background: [],
       x: 0,
       y: 0,
       z: 0,
@@ -578,6 +618,16 @@ const initialScene = {
       scale: 1,
       visible: true,
       grayscale: true
+    },
+    environmentMap: {
+      background: [],
+      mapType: 'sphere',
+      visible: true,
+      rotation: {
+        x: 0,
+        y: 0,
+        z: 0
+      }
     },
     ambient: {
       intensity: 0.5
@@ -669,6 +719,8 @@ const initialState = {
   attachments: {},
 
   aspectRatio: 2.35,
+
+  platform: currentPlatform(),
 
   board: {},
 
@@ -1303,6 +1355,8 @@ const worldReducer = (state = initialState.undoable.world, action) => {
           migrateWorldFog,
           migrateWorldShadingMode,
           migrateWorldEnvironmentGrayscale,
+          migrateWorldEnvironmentFile,
+          migrateWorldEnvironmentMap
         )(action.payload.world)
 
       case 'UPDATE_WORLD':
@@ -1358,6 +1412,25 @@ const worldReducer = (state = initialState.undoable.world, action) => {
         if (action.payload.tiltDirectional != null) {
           draft.directional.tilt = action.payload.tiltDirectional
         }
+        return
+      
+      case 'UPDATE_ENVIRONMENT_MAP':
+        if (action.payload.hasOwnProperty('background')) {
+          draft.environmentMap.background = [...action.payload.background]
+        }
+        if (action.payload.visible != null) {
+          draft.environmentMap.visible = action.payload.visible
+        }
+        if (action.payload.rotation != null) {
+          draft.environmentMap.rotation = {
+            ...state.environmentMap.rotation,
+            ...action.payload.rotation
+          }
+        }
+        if (action.payload.mapType != null) {
+          draft.environmentMap.mapType = action.payload.mapType 
+        }
+    
         return
 
       case 'UPDATE_WORLD_FOG':
@@ -1802,6 +1875,7 @@ module.exports = {
   updateWorld: payload => ({ type: 'UPDATE_WORLD', payload }),
   updateWorldRoom: payload => ({ type: 'UPDATE_WORLD_ROOM', payload }),
   updateWorldEnvironment: payload => ({ type: 'UPDATE_WORLD_ENVIRONMENT', payload }),
+  updateWorldEnvironmentMap: payload => ({ type: 'UPDATE_ENVIRONMENT_MAP', payload }),
   updateWorldFog: payload => ({ type: 'UPDATE_WORLD_FOG', payload }),
 
   updateDevice: (id, values) => ({ type: 'UPDATE_DEVICE', payload: { id, ...values } }),
@@ -1828,6 +1902,7 @@ module.exports = {
   getActiveCamera,
   getSelectedBone,
   getWorld,
+  getPlatform,
 
   getSerializedState,
   getSelectedAttachable,
