@@ -180,45 +180,6 @@ const useAssetsManager = (SGConnection) => {
       })
   }, [assets])
 
-  useMemo(() => {
-    Object.entries(assets)
-      .filter(([_, o]) => o.status === 'NotAsked')
-      .filter(([id]) => id !== false)
-      .forEach(([id]) => {
-        if (!id.includes('/images/') && !id.includes('/emotions/')&& !id.includes('/environments/')) {
-          SGConnection.getResource('gltf', id)
-          .then(({data}) => {
-            bufferLoader(data,id)
-            .then((model) => {
-              console.log(`Loaded ${ext}: `, model)
-              dispatch({ type: 'SUCCESS', payload: { id, value: model, ext } })
-            })
-            .catch((error) => {
-              console.log(`${ext} loading error`, error)
-              dispatch({ type: 'ERROR', payload: { id, error } })
-            })
-          })
-          dispatch({ type: 'LOAD', payload: { id } })
-        } else {
-          SGConnection.getResource('image', id)
-          .then(({type, filePath, data}) => {
-            const ext = path.extname(id)
-            const loader = (ext === '.exr') ? onEXRImageBufferLoad : (ext === '.hdr') ? onHDRImageBufferLoad : onImageBufferLoad
-            loader(id, data)
-            .then((texture) => {
-              console.log('Loaded TEXTURE: ', texture)
-              dispatch({ type: 'SUCCESS', payload: { id, value: texture } })
-            })
-            .catch((error) => {
-              dispatch({ type: 'ERROR', payload: { id, error } })
-            })
-          })
-
-          dispatch({ type: 'LOAD', payload: { id } })
-        }
-      })
-  }, [assets])
-
   const requestAsset = useCallback(
     id => {
       if (id && (!assets[id])) {
