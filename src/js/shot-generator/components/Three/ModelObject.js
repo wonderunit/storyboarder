@@ -3,6 +3,7 @@ import React, { useMemo, useEffect, useRef } from 'react'
 import { useUpdate, extend } from 'react-three-fiber'
 
 import traverseMeshMaterials from '../../helpers/traverse-mesh-materials'
+import traverseAsset from '../../../shared/helpers/traverseAsset'
 import { useAsset } from "../../hooks/use-assets-manager"
 
 import { SHOT_LAYERS } from '../../utils/ShotLayers'
@@ -27,12 +28,17 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   thickness: 0.008
 })
 
-const meshFactory = (source, isIcon) => {
+const meshFactory = (source, isIcon, isCopyTextures) => {
+
+  if (source.isBufferGeometry){
+    return new THREE.Mesh(source,materialFactory(isIcon))
+  }
+
   let mesh = source.isSkinnedMesh ? THREE.SkeletonUtils.clone(source) : source.clone()
 
   let material = materialFactory(isIcon)
 
-  if (mesh.material.map) {
+  if (mesh.material.map && isCopyTextures) {
     material.map = mesh.material.map
     material.map.needsUpdate = true
   }
@@ -48,7 +54,7 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
     }
   )
   
-  const {asset} = useAsset((sceneObject.model === 'box') ? null : path)
+  const {asset, ext} = useAsset((sceneObject.model === 'box') ? null : path)
 
   const meshes = useMemo(() => {
     if (sceneObject.model === 'box') {
@@ -65,19 +71,8 @@ const ModelObject = React.memo(({path, isIcon = false, sceneObject, isSelected, 
       ]
     }
 
-    if (asset) {
-      let children = []
-      asset.scene.traverse(child => {
-        if (child.isMesh) {
-          children.push(
-            <primitive
-              key={`${sceneObject.id}-${child.uuid}`}
-              object={meshFactory(child, isIcon)}
-            />
-          )
-        }
-      })
-      return children
+    if (asset){
+      return traverseAsset({asset,ext,sceneObject,meshFactory})
     }
 
     return []

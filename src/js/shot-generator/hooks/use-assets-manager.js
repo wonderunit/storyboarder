@@ -2,7 +2,12 @@ import * as THREE from 'three'
 import React, { useState, useMemo, useEffect } from 'react'
 import observable from '../../utils/observable'
 import { gltfLoader } from '../utils/gltfLoader'
-
+import { objLoader } from '../utils/objLoader'
+import { colladaLoader } from '../utils/colladaLoader'
+import { fbxLoader } from '../utils/fbxLoader'
+import { stlLoader } from '../utils/stlLoader'
+import { tdsLoader } from '../utils/3dsLoader'
+import { plyLoader } from '../utils/plyLoader'
 /**
  * Resources storage
  * @type {observable}
@@ -60,21 +65,48 @@ export const loadAsset = (path) => {
 
       if (!current[path].data) {
 
-        let loader
+        let loader, match, ext
         if (!path.match(/(\.(png|jpg|jpeg|gif)$)|((\\|\/)(images|volumes)(\\|\/))/mi)) {
           /** Current resource is model */
-          loader = gltfLoader
+          const exts = /(\.(glb|gltf|obj|dae|fbx|stl|3ds|ply))$/gim 
+          match = path.match(exts) 
+          ext = match[0].toLowerCase()
+          switch (ext) {
+            case '.gltf':
+            case '.glb':
+              loader = gltfLoader
+              break
+            case '.obj':
+              loader = objLoader
+              break
+            case '.dae':
+              loader = colladaLoader
+              break
+            case '.fbx':
+              loader = fbxLoader
+              break;    
+            case '.stl':
+              loader = stlLoader
+              break 
+            case '.3ds':
+              loader = tdsLoader
+              break  
+            case '.ply':
+              loader = plyLoader
+              break                                              
+            default:
+              break
+          }
         } else {
           /** Current resource is texture */
           loader = textureLoader
         }
-
         loader.load(
           path,
           value => {
             cache.set({
               ...cache.get(),
-              [path]: {data: value, status: LOADING_MODE.SUCCESS, usageCount: current[path].usageCount, lastUsedDate: current[path].lastUsedDate }
+              [path]: {data: value, status: LOADING_MODE.SUCCESS, usageCount: current[path].usageCount, lastUsedDate: current[path].lastUsedDate, ext }
             })
             resolve(current[path])
           },
@@ -100,7 +132,7 @@ export const cleanUpCache = () => {
 /**
  * Hook that allows components to fetch resources
  * @param paths Array of resources paths
- * @returns {{loaded: boolean, assets: Array}}
+ * @returns {{loaded: boolean, assets: Array, ext: Array }}
  */
 export const useAssets = (paths) => {
   const [assetsToLoad, setAssetsToLoad] = useState(paths || [])
@@ -176,13 +208,21 @@ export const useAssets = (paths) => {
     const current = cache.get()
 
     // Get only loaded assets
-    return paths.filter(isLoaded).map((path) => {
+    let loadedAssets = paths.filter(isLoaded).map((path) => {
       return current[path].data
     })
+    let loadedAssetsExt = paths.filter(isLoaded).map((path) => {
+      return current[path].ext
+    })
+    return {
+      loadedAssets,
+      loadedAssetsExt
+    }
   }, [assetsToLoad, paths])
-  
+
   return {
-    assets, // Array of loaded assets
+    assets: assets.loadedAssets,
+    ext: assets.loadedAssetsExt,
     loaded: (assetsToLoad.length === 0) // Are assets loaded?
   }
 }
@@ -190,10 +230,10 @@ export const useAssets = (paths) => {
 /**
  * Hook that allows components to fetch single resource
  * @param path Resources path
- * @returns {{loaded: boolean, asset: THREE.Texture|THREE.Object}}
+ * @returns {{loaded: boolean, asset: THREE.Texture|THREE.Object, ext: string}}
  */
 export const useAsset = (path) => {
-  const {assets, loaded} = useAssets(path ? [path] : [])
-  
-  return {asset: assets[0], loaded}
+  const {assets, loaded, ext} = useAssets(path ? [path] : [])
+
+  return {asset: assets[0], ext: ext[0], loaded}
 }
