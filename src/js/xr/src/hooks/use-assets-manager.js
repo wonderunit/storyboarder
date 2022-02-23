@@ -123,7 +123,7 @@ const useAssetsManager = (SGConnection) => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-          const exts = /(\.(glb|gltf|obj|dae|fbx|stl|png|jpeg|jpg|3ds|ply))$/gim 
+          const exts = /(\.(glb|gltf|obj|dae|fbx|stl|png|jpeg|jpg|3ds|ply|exr|hdr))$/gim 
           const match = id.match(exts) 
           const ext = match ? match[0].toLowerCase() : null
           let bufferLoader = null

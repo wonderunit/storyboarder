@@ -125,7 +125,7 @@ export const onPLYBufferLoad = (buffer) => {
     resolve(loader.parse(buffer))
   })
 }
-export const onEXRImageBufferLoad = (url, buffer) => {
+export const onEXRImageBufferLoad = (buffer, url) => {
   return new Promise((resolve, reject) => {
     const loader = new EXRLoader()
     const data = loader.parse(buffer)
@@ -135,7 +135,7 @@ export const onEXRImageBufferLoad = (url, buffer) => {
   })
 }
 
-export const onHDRImageBufferLoad = (url, buffer) => {
+export const onHDRImageBufferLoad = (buffer, url) => {
   return new Promise((resolve, reject) => {
     const loader = new RGBELoader()
     const data = loader.parse(buffer)
