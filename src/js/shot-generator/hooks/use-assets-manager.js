@@ -1,16 +1,9 @@
 import * as THREE from 'three'
 import React, { useState, useMemo, useEffect } from 'react'
 import observable from '../../utils/observable'
-import { gltfLoader } from '../utils/gltfLoader'
-import { objLoader } from '../utils/objLoader'
-import { colladaLoader } from '../utils/colladaLoader'
-import { fbxLoader } from '../utils/fbxLoader'
-import { stlLoader } from '../utils/stlLoader'
-import { tdsLoader } from '../utils/3dsLoader'
-import { plyLoader } from '../utils/plyLoader'
-import { rgbeLoader } from '../utils/rgbeLoader'
-import { exrLoader } from '../utils/exrLoader'
 import path, * as pathFile from 'path'
+import SGLoaders from '../utils/shot-generator-loaders'
+import chooseLoader from '../../shared/THREE/loadRes'
 
 /**
  * Resources storage
@@ -18,7 +11,6 @@ import path, * as pathFile from 'path'
  */
 export const cache = observable({})
 
-const textureLoader = new THREE.TextureLoader()
 
 const LOADING_MODE = {
   PENDING: 'PENDING',
@@ -68,44 +60,7 @@ export const loadAsset = (path) => {
       const current = cache.get()
 
       if (!current[path].data) {
-
-        let loader, match, ext
-        if (!path.match(/(\.(png|jpg|jpeg|gif|hdr|exr)$)|((\\|\/)(images|volumes|environments)(\\|\/))/mi)) {
-          /** Current resource is model */
-          const exts = /(\.(glb|gltf|obj|dae|fbx|stl|3ds|ply))$/gim 
-          match = path.match(exts) 
-          ext = match[0].toLowerCase()
-          switch (ext) {
-            case '.gltf':
-            case '.glb':
-              loader = gltfLoader
-              break
-            case '.obj':
-              loader = objLoader
-              break
-            case '.dae':
-              loader = colladaLoader
-              break
-            case '.fbx':
-              loader = fbxLoader
-              break;    
-            case '.stl':
-              loader = stlLoader
-              break 
-            case '.3ds':
-              loader = tdsLoader
-              break  
-            case '.ply':
-              loader = plyLoader
-              break                                              
-            default:
-              break
-          }
-        } else {
-          /** Current resource is texture */
-          // loader = textureLoader
-          loader = pathFile.extname(path) === '.hdr' ? rgbeLoader : pathFile.extname(path) === '.exr' ? exrLoader : textureLoader
-        }
+        const { ext , loader } = chooseLoader({appLoaders: SGLoaders, id: path})
         loader.load(
           path,
           (value, data) => {

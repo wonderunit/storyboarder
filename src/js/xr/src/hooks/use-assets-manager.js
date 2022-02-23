@@ -2,10 +2,11 @@ const THREE = require('three')
 const React = require('react')
 const { useState, useReducer, useMemo, useCallback } = React
 
-const {onImageBufferLoad, onGLTFBufferLoad, onColladaBufferLoad, onObjBufferLoad, onFbxBufferLoad, onStlBufferLoad, on3dsBufferLoad, onPLYBufferLoad, onEXRImageBufferLoad, onHDRImageBufferLoad} = require('../helpers/resourceLoaders')
+const {XRBufferLoaders} = require('../helpers/resourceLoaders')
 
 const path = require('path')
 const { useEffect } = require('react')
+const { default: chooseLoader } = require('../../../shared/THREE/loadRes')
 
 const reducer = (state, action) => {
   const { type, payload } = action
@@ -123,50 +124,10 @@ const useAssetsManager = (SGConnection) => {
       .filter(([_, o]) => o.status === 'NotAsked')
       .filter(([id]) => id !== false)
       .forEach(([id]) => {
-          const exts = /(\.(glb|gltf|obj|dae|fbx|stl|png|jpeg|jpg|3ds|ply|exr|hdr))$/gim 
-          const match = id.match(exts) 
-          const ext = match ? match[0].toLowerCase() : null
-          let bufferLoader = null
-          switch (ext) {
-            case '.jpg':
-            case '.jpeg':
-            case '.png':
-              bufferLoader = onImageBufferLoad
-              break     
-            case '.exr':
-              bufferLoader = onEXRImageBufferLoad
-              break
-            case '.hdr':
-              bufferLoader = onHDRImageBufferLoad
-              break
-            case '.gltf':
-            case '.glb':
-              bufferLoader = onGLTFBufferLoad
-              break
-            case '.obj':
-              bufferLoader = onObjBufferLoad
-              break
-            case '.dae':
-              bufferLoader = onColladaBufferLoad
-              break
-            case '.fbx':
-              bufferLoader = onFbxBufferLoad  
-              break;    
-            case '.stl':
-              bufferLoader = onStlBufferLoad
-              break  
-            case '.3ds':
-              bufferLoader = on3dsBufferLoad  
-              break;    
-            case '.ply':
-              bufferLoader = onPLYBufferLoad
-              break               
-            default:
-              break
-          }
+          const { ext , loader } = chooseLoader({appLoaders: XRBufferLoaders, id})
           SGConnection.getResource(ext, id)
           .then(({data}) => {
-            bufferLoader(data,id)
+            loader(data,id)
             .then((model) => {
               console.log(`Loaded ${ext}: `, model)
               dispatch({ type: 'SUCCESS', payload: { id, value: model, ext } })

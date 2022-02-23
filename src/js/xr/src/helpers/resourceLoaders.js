@@ -146,3 +146,22 @@ export const onHDRImageBufferLoad = (buffer, url) => {
     resolve(texture)
   })
 }
+
+export const XRBufferLoaders = {
+
+  '.gltf': onGLTFBufferLoad,
+  '.glb': onGLTFBufferLoad,
+  '.obj': onObjBufferLoad,
+  '.dae': onColladaBufferLoad,
+  '.fbx': onFbxBufferLoad,
+  '.stl': onStlBufferLoad,
+  '.3ds': on3dsBufferLoad,
+  '.ply': onPLYBufferLoad,
+
+  '.hdr': onHDRImageBufferLoad,
+  '.exr': onEXRImageBufferLoad,
+  '.jpeg': onImageBufferLoad,
+  '.jpg': onImageBufferLoad,
+  '.png': onImageBufferLoad,
+
+}
