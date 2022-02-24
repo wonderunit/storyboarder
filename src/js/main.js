@@ -10,6 +10,7 @@ const chokidar = require('chokidar')
 const os = require('os')
 const log = require('./shared/storyboarder-electron-log')
 const fileSystem = require('fs')
+const EventEmitter = require('events')
 
 const prefModule = require('./prefs')
 prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
@@ -49,16 +50,7 @@ const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 // Menu
 // 
 const createMenu = require('./main/menu')
-// some menu features in main can also be called from a renderer process (via ipcRenderer.send)
-//   e.g.: (openDialogue, importImagesDialogue, registration:open, and possibly shot-generator:*)
-// `createResponders` allows us to listen to both ipc (for renderer) and a bus (for main), and run the same function
-// TODO extract functions which are main-only, they never need to be called via ipc
-const EventEmitter = require('events')
-let bus = new EventEmitter()
-const createResponders = (channel, listener) => {
-  ipcMain.on(channel, listener)
-  bus.on(channel, listener)
-}
+const menuBus = new EventEmitter()
 
 /*
 TODO
@@ -326,7 +318,7 @@ app.on('ready', async () => {
   // setup the menu
   createMenu({
     store,
-    send: (event, ...rest) => bus.emit(event, event, ...rest)
+    send: (event, ...rest) => menuBus.emit(event, event, ...rest)
   })
 
 
@@ -1236,103 +1228,103 @@ let attemptLicenseVerification = async () => {
 // Main Window
 //////////////////
 
-createResponders('newBoard', (e, arg)=> {
+menuBus.on('newBoard', (e, arg)=> {
   mainWindow.webContents.send('newBoard', arg)
 })
 
-createResponders('deleteBoards', (e, arg)=> {
+menuBus.on('deleteBoards', (e, arg)=> {
   mainWindow.webContents.send('deleteBoards', arg)
 })
 
-createResponders('duplicateBoard', (e, arg)=> {
+menuBus.on('duplicateBoard', (e, arg)=> {
   mainWindow.webContents.send('duplicateBoard')
 })
 
-createResponders('reorderBoardsLeft', (e, arg)=> {
+menuBus.on('reorderBoardsLeft', (e, arg)=> {
   mainWindow.webContents.send('reorderBoardsLeft')
 })
 
-createResponders('reorderBoardsRight', (e, arg)=> {
+menuBus.on('reorderBoardsRight', (e, arg)=> {
   mainWindow.webContents.send('reorderBoardsRight')
 })
 
-createResponders('togglePlayback', (e, arg)=> {
+menuBus.on('togglePlayback', (e, arg)=> {
   mainWindow.webContents.send('togglePlayback')
 })
 
-createResponders('openInEditor', (e, arg)=> {
+menuBus.on('openInEditor', (e, arg)=> {
   mainWindow.webContents.send('openInEditor')
 })
 
-createResponders('goPreviousBoard', (e, arg)=> {
+menuBus.on('goPreviousBoard', (e, arg)=> {
   mainWindow.webContents.send('goPreviousBoard')
 })
 
-createResponders('goNextBoard', (e, arg)=> {
+menuBus.on('goNextBoard', (e, arg)=> {
   mainWindow.webContents.send('goNextBoard')
 })
 
-createResponders('previousScene', (e, arg)=> {
+menuBus.on('previousScene', (e, arg)=> {
   mainWindow.webContents.send('previousScene')
 })
 
-createResponders('nextScene', (e, arg)=> {
+menuBus.on('nextScene', (e, arg)=> {
   mainWindow.webContents.send('nextScene')
 })
 
-createResponders('copy', (e, arg)=> {
+menuBus.on('copy', (e, arg)=> {
   mainWindow.webContents.send('copy')
 })
 
-createResponders('paste', (e, arg)=> {
+menuBus.on('paste', (e, arg)=> {
   mainWindow.webContents.send('paste')
 })
 
-createResponders('paste-replace', () => {
+menuBus.on('paste-replace', () => {
   mainWindow.webContents.send('paste-replace')
 })
 
 /// TOOLS
 
-createResponders('undo', (e, arg)=> {
+menuBus.on('undo', (e, arg)=> {
   mainWindow.webContents.send('undo')
 })
 
 
-createResponders('redo', (e, arg)=> {
+menuBus.on('redo', (e, arg)=> {
   mainWindow.webContents.send('redo')
 })
 
-createResponders('setTool', (e, arg) =>
+menuBus.on('setTool', (e, arg) =>
   mainWindow.webContents.send('setTool', arg))
 
-createResponders('useColor', (e, arg)=> {
+menuBus.on('useColor', (e, arg)=> {
   mainWindow.webContents.send('useColor', arg)
 })
 
-createResponders('clear', (e, arg) => {
+menuBus.on('clear', (e, arg) => {
   mainWindow.webContents.send('clear', arg)
 })
 
-createResponders('brushSize', (e, arg)=> {
+menuBus.on('brushSize', (e, arg)=> {
   mainWindow.webContents.send('brushSize', arg)
 })
 
-createResponders('flipBoard', (e, arg)=> {
+menuBus.on('flipBoard', (e, arg)=> {
   mainWindow.webContents.send('flipBoard', arg)
 })
 
 /// VIEW
 
-createResponders('cycleViewMode', (e, arg)=> {
+menuBus.on('cycleViewMode', (e, arg)=> {
   mainWindow.webContents.send('cycleViewMode', arg)
 })
 
-createResponders('toggleCaptions', (e, arg)=> {
+menuBus.on('toggleCaptions', (e, arg)=> {
   mainWindow.webContents.send('toggleCaptions', arg)
 })
 
-createResponders('toggleTimeline', () =>
+menuBus.on('toggleTimeline', () =>
   mainWindow.webContents.send('toggleTimeline'))
 
 //////////////////
@@ -1344,14 +1336,23 @@ ipcMain.on('openFile', (e, arg)=> {
   openFile(arg)
 })
 
-createResponders('openDialogue', (e, arg) => {
-  openDialogue()
-})
 
-createResponders('importImagesDialogue', (e, arg) => {
+
+// openDialogue (ipc and menu)
+ipcMain.on('openDialogue', () => openDialogue())
+menuBus.on('openDialogue', () => openDialogue())
+
+// importImagesDialogue (ipc and menu)
+ipcMain.on('importImagesDialogue', (e, arg) => {
   importImagesDialogue(arg)
   mainWindow.webContents.send('importNotification', arg)
 })
+menuBus.on('importImagesDialogue', (e, arg) => {
+  importImagesDialogue(arg)
+  mainWindow.webContents.send('importNotification', arg)
+})
+
+
 
 ipcMain.on('createNew', (e, aspectRatio) => {
   newWindow.hide()
@@ -1398,14 +1399,14 @@ ipcMain.on('goNextScene', (event, arg)=> {
   mainWindow.webContents.send('goNextScene')
 })
 
-createResponders('toggleSpeaking', (event, arg)=> {
+menuBus.on('toggleSpeaking', (event, arg)=> {
   mainWindow.webContents.send('toggleSpeaking')
 })
 
-createResponders('stopAllSounds', event =>
+menuBus.on('stopAllSounds', event =>
   mainWindow.webContents.send('stopAllSounds'))
 
-createResponders('addAudioFile', event =>
+menuBus.on('addAudioFile', event =>
   mainWindow.webContents.send('addAudioFile'))
 
 ipcMain.on('playsfx', (event, arg)=> {
@@ -1422,58 +1423,58 @@ ipcMain.on('textInputMode', (event, arg)=> {
   mainWindow.webContents.send('textInputMode', arg)
 })
 
-createResponders('preferences', (event, arg) => {
+menuBus.on('preferences', (event, arg) => {
   preferencesUI.show()
   analytics.screenView('preferences')
 })
 
-createResponders('toggleGuide', (event, arg) => {
+menuBus.on('toggleGuide', (event, arg) => {
   mainWindow.webContents.send('toggleGuide', arg)
 })
 
-createResponders('toggleOnionSkin', event =>
+menuBus.on('toggleOnionSkin', event =>
   mainWindow.webContents.send('toggleOnionSkin'))
 
-createResponders('toggleNewShot', (event, arg) => {
+menuBus.on('toggleNewShot', (event, arg) => {
   mainWindow.webContents.send('toggleNewShot', arg)
 })
 
-createResponders('showTip', (event, arg) => {
+menuBus.on('showTip', (event, arg) => {
   mainWindow.webContents.send('showTip', arg)
 })
 
-createResponders('exportAnimatedGif', (event, arg) => {
+menuBus.on('exportAnimatedGif', (event, arg) => {
   mainWindow.webContents.send('exportAnimatedGif', arg)
 })
 
-createResponders('exportVideo', (event, arg) => {
+menuBus.on('exportVideo', (event, arg) => {
   mainWindow.webContents.send('exportVideo', arg)
 })
 
-createResponders('exportFcp', (event, arg) => {
+menuBus.on('exportFcp', (event, arg) => {
   mainWindow.webContents.send('exportFcp', arg)
 })
 
-createResponders('exportImages', (event, arg) => {
+menuBus.on('exportImages', (event, arg) => {
   mainWindow.webContents.send('exportImages', arg)
 })
 
-createResponders('exportWeb', (event, arg) => {
+menuBus.on('exportWeb', (event, arg) => {
   mainWindow.webContents.send('exportWeb', arg)
 })
-createResponders('exportZIP', (event, arg) => {
+menuBus.on('exportZIP', (event, arg) => {
   mainWindow.webContents.send('exportZIP', arg)
 })
 
-createResponders('exportCleanup', (event, arg) => {
+menuBus.on('exportCleanup', (event, arg) => {
   mainWindow.webContents.send('exportCleanup', arg)
 })
 
-createResponders('save', (event, arg) => {
+menuBus.on('save', (event, arg) => {
   mainWindow.webContents.send('save', arg)
 })
 
-createResponders('saveAs', (event, arg) => {
+menuBus.on('saveAs', (event, arg) => {
   mainWindow.webContents.send('saveAs', arg)
 })
 
@@ -1481,7 +1482,7 @@ ipcMain.on('prefs:change', (event, arg) => {
   !mainWindow.isDestroyed() && mainWindow.webContents.send('prefs:change', arg)
 })
 
-createResponders('showKeyCommands', (event, arg) => {
+menuBus.on('showKeyCommands', (event, arg) => {
   openKeyCommandWindow()
   analytics.screenView('key commands')
 })
@@ -1571,7 +1572,7 @@ ipcMain.on('openLanguagePreferences', (event) => {
 
 
 // PDF Export
-createResponders('exportPDF', () => {
+menuBus.on('exportPDF', () => {
   if (!mainWindow) return
 
   printProject.show({ parent: mainWindow })
@@ -1592,7 +1593,7 @@ ipcMain.handle('exportPDF:getData', async () => {
 })
 
 // Worksheet Export
-createResponders('printWorksheet', () => {
+menuBus.on('printWorksheet', () => {
   if (!mainWindow) return
 
   printWorksheet.show({ parent: mainWindow })
@@ -1614,7 +1615,7 @@ ipcMain.handle('printWorksheet:getData', async () => {
 })
 
 // Worksheet Import
-createResponders('importWorksheets', async (event, arg) => {
+menuBus.on('importWorksheets', async (event, arg) => {
   try {
     let { filePaths } = await dialog.showOpenDialog({
       title: 'Import Worksheet',
@@ -1640,7 +1641,7 @@ ipcMain.on('exportPrintableWorksheetPdf', (event, sourcePath) =>
   mainWindow.webContents.send('exportPrintableWorksheetPdf', sourcePath)
 )
 
-createResponders('toggleAudition', (event) => {
+menuBus.on('toggleAudition', (event) => {
   mainWindow.webContents.send('toggleAudition')
 })
 
@@ -1649,17 +1650,17 @@ ipcMain.on('signInSuccess', (event, response) => {
   mainWindow.webContents.send('signInSuccess', response)
 })
 
-createResponders('revealShotGenerator',
+menuBus.on('revealShotGenerator',
   event => mainWindow.webContents.send('revealShotGenerator'))
 
-createResponders('zoomReset',
+menuBus.on('zoomReset',
   event => mainWindow.webContents.send('zoomReset'))
-createResponders('scale-ui-by',
+menuBus.on('scale-ui-by',
   (event, value) => mainWindow.webContents.send('scale-ui-by', value))
-createResponders('scale-ui-reset',
+menuBus.on('scale-ui-reset',
   (event, value) => mainWindow.webContents.send('scale-ui-reset', value))
 
-createResponders('saveShot',
+menuBus.on('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
 ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
@@ -1734,4 +1735,10 @@ ipcMain.on('shot-generator:updateStore', (event, action) => {
   }
 })
 
-createResponders('registration:open', event => registration.show())
+
+
+// ipc and menu
+ipcMain.on('registration:open', event => registration.show())
+menuBus.on('registration:open', event => registration.show())
+
+
