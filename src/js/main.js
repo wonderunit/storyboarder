@@ -45,6 +45,21 @@ const autoUpdater = require('./auto-updater')
 const LanguagePreferencesWindow = require('./windows/language-preferences/main')
 //https://github.com/luiseduardobrito/sample-chat-electron
 
+//
+//
+// Menu
+// 
+const createMenu = require('./main/menu')
+// some menu features in main can also be called from a renderer process (via ipcRenderer.send)
+//   e.g.: (openDialogue, importImagesDialogue, registration:open, and possibly shot-generator:*)
+// `createResponders` allows us to listen to both ipc (for renderer) and a bus (for main), and run the same function
+// TODO extract functions which are main-only, they never need to be called via ipc
+const EventEmitter = require('events')
+let bus = new EventEmitter()
+const createResponders = (channel, listener) => {
+  ipcMain.on(channel, listener)
+  bus.on(channel, listener)
+}
 
 /*
 TODO
@@ -303,6 +318,16 @@ app.on('ready', async () => {
   })
 
   await attemptLicenseVerification()
+
+
+
+  // setup the menu
+  createMenu({
+    store,
+    send: (event, ...rest) => bus.emit(event, event, ...rest)
+  })
+
+
 
   // open the welcome window when the app loads up first
   openWelcomeWindow()
@@ -1209,103 +1234,103 @@ let attemptLicenseVerification = async () => {
 // Main Window
 //////////////////
 
-ipcMain.on('newBoard', (e, arg)=> {
+createResponders('newBoard', (e, arg)=> {
   mainWindow.webContents.send('newBoard', arg)
 })
 
-ipcMain.on('deleteBoards', (e, arg)=> {
+createResponders('deleteBoards', (e, arg)=> {
   mainWindow.webContents.send('deleteBoards', arg)
 })
 
-ipcMain.on('duplicateBoard', (e, arg)=> {
+createResponders('duplicateBoard', (e, arg)=> {
   mainWindow.webContents.send('duplicateBoard')
 })
 
-ipcMain.on('reorderBoardsLeft', (e, arg)=> {
+createResponders('reorderBoardsLeft', (e, arg)=> {
   mainWindow.webContents.send('reorderBoardsLeft')
 })
 
-ipcMain.on('reorderBoardsRight', (e, arg)=> {
+createResponders('reorderBoardsRight', (e, arg)=> {
   mainWindow.webContents.send('reorderBoardsRight')
 })
 
-ipcMain.on('togglePlayback', (e, arg)=> {
+createResponders('togglePlayback', (e, arg)=> {
   mainWindow.webContents.send('togglePlayback')
 })
 
-ipcMain.on('openInEditor', (e, arg)=> {
+createResponders('openInEditor', (e, arg)=> {
   mainWindow.webContents.send('openInEditor')
 })
 
-ipcMain.on('goPreviousBoard', (e, arg)=> {
+createResponders('goPreviousBoard', (e, arg)=> {
   mainWindow.webContents.send('goPreviousBoard')
 })
 
-ipcMain.on('goNextBoard', (e, arg)=> {
+createResponders('goNextBoard', (e, arg)=> {
   mainWindow.webContents.send('goNextBoard')
 })
 
-ipcMain.on('previousScene', (e, arg)=> {
+createResponders('previousScene', (e, arg)=> {
   mainWindow.webContents.send('previousScene')
 })
 
-ipcMain.on('nextScene', (e, arg)=> {
+createResponders('nextScene', (e, arg)=> {
   mainWindow.webContents.send('nextScene')
 })
 
-ipcMain.on('copy', (e, arg)=> {
+createResponders('copy', (e, arg)=> {
   mainWindow.webContents.send('copy')
 })
 
-ipcMain.on('paste', (e, arg)=> {
+createResponders('paste', (e, arg)=> {
   mainWindow.webContents.send('paste')
 })
 
-ipcMain.on('paste-replace', () => {
+createResponders('paste-replace', () => {
   mainWindow.webContents.send('paste-replace')
 })
 
 /// TOOLS
 
-ipcMain.on('undo', (e, arg)=> {
+createResponders('undo', (e, arg)=> {
   mainWindow.webContents.send('undo')
 })
 
 
-ipcMain.on('redo', (e, arg)=> {
+createResponders('redo', (e, arg)=> {
   mainWindow.webContents.send('redo')
 })
 
-ipcMain.on('setTool', (e, arg) =>
+createResponders('setTool', (e, arg) =>
   mainWindow.webContents.send('setTool', arg))
 
-ipcMain.on('useColor', (e, arg)=> {
+createResponders('useColor', (e, arg)=> {
   mainWindow.webContents.send('useColor', arg)
 })
 
-ipcMain.on('clear', (e, arg) => {
+createResponders('clear', (e, arg) => {
   mainWindow.webContents.send('clear', arg)
 })
 
-ipcMain.on('brushSize', (e, arg)=> {
+createResponders('brushSize', (e, arg)=> {
   mainWindow.webContents.send('brushSize', arg)
 })
 
-ipcMain.on('flipBoard', (e, arg)=> {
+createResponders('flipBoard', (e, arg)=> {
   mainWindow.webContents.send('flipBoard', arg)
 })
 
 /// VIEW
 
-ipcMain.on('cycleViewMode', (e, arg)=> {
+createResponders('cycleViewMode', (e, arg)=> {
   mainWindow.webContents.send('cycleViewMode', arg)
 })
 
-ipcMain.on('toggleCaptions', (e, arg)=> {
+createResponders('toggleCaptions', (e, arg)=> {
   mainWindow.webContents.send('toggleCaptions', arg)
 })
 
-ipcMain.on('toggleTimeline', () =>
+createResponders('toggleTimeline', () =>
   mainWindow.webContents.send('toggleTimeline'))
 
 //////////////////
@@ -1313,20 +1338,20 @@ ipcMain.on('toggleTimeline', () =>
 //////////////////
 
 
-ipcMain.on('openFile', (e, arg)=> {
+createResponders('openFile', (e, arg)=> {
   openFile(arg)
 })
 
-ipcMain.on('openDialogue', (e, arg) => {
+createResponders('openDialogue', (e, arg) => {
   openDialogue()
 })
 
-ipcMain.on('importImagesDialogue', (e, arg) => {
+createResponders('importImagesDialogue', (e, arg) => {
   importImagesDialogue(arg)
   mainWindow.webContents.send('importNotification', arg)
 })
 
-ipcMain.on('createNew', (e, aspectRatio) => {
+createResponders('createNew', (e, aspectRatio) => {
   newWindow.hide()
 
   let isProject = currentFile && (path.extname(currentFile) === '.fdx' || path.extname(currentFile) === '.fountain')
@@ -1337,145 +1362,145 @@ ipcMain.on('createNew', (e, aspectRatio) => {
   }
 })
 
-ipcMain.on('openNewWindow', (e, arg)=> {
+createResponders('openNewWindow', (e, arg)=> {
   openNewWindow()
 })
 
-ipcMain.on('preventSleep', ()=> {
+createResponders('preventSleep', ()=> {
   powerSaveId = powerSaveBlocker.start('prevent-display-sleep')
 })
 
-ipcMain.on('resumeSleep', ()=> {
+createResponders('resumeSleep', ()=> {
   powerSaveBlocker.stop(powerSaveId)
 })
 
 /// menu pass through
 
-ipcMain.on('goBeginning', (event, arg)=> {
+createResponders('goBeginning', (event, arg)=> {
   mainWindow.webContents.send('goBeginning')
 })
 
-ipcMain.on('goPreviousScene', (event, arg)=> {
+createResponders('goPreviousScene', (event, arg)=> {
   mainWindow.webContents.send('goPreviousScene')
 })
 
-ipcMain.on('goPrevious', (event, arg)=> {
+createResponders('goPrevious', (event, arg)=> {
   mainWindow.webContents.send('goPrevious')
 })
 
-ipcMain.on('goNext', (event, arg)=> {
+createResponders('goNext', (event, arg)=> {
   mainWindow.webContents.send('goNext')
 })
 
-ipcMain.on('goNextScene', (event, arg)=> {
+createResponders('goNextScene', (event, arg)=> {
   mainWindow.webContents.send('goNextScene')
 })
 
-ipcMain.on('toggleSpeaking', (event, arg)=> {
+createResponders('toggleSpeaking', (event, arg)=> {
   mainWindow.webContents.send('toggleSpeaking')
 })
 
-ipcMain.on('stopAllSounds', event =>
+createResponders('stopAllSounds', event =>
   mainWindow.webContents.send('stopAllSounds'))
 
-ipcMain.on('addAudioFile', event =>
+createResponders('addAudioFile', event =>
   mainWindow.webContents.send('addAudioFile'))
 
-ipcMain.on('playsfx', (event, arg)=> {
+createResponders('playsfx', (event, arg)=> {
   if (welcomeWindow) {
     welcomeWindow.webContents.send('playsfx', arg)
   }
 })
 
-ipcMain.on('test', (event, arg)=> {
+createResponders('test', (event, arg)=> {
   log.info('test', arg)
 })
 
-ipcMain.on('textInputMode', (event, arg)=> {
+createResponders('textInputMode', (event, arg)=> {
   mainWindow.webContents.send('textInputMode', arg)
 })
 
-ipcMain.on('preferences', (event, arg) => {
+createResponders('preferences', (event, arg) => {
   preferencesUI.show()
   analytics.screenView('preferences')
 })
 
-ipcMain.on('toggleGuide', (event, arg) => {
+createResponders('toggleGuide', (event, arg) => {
   mainWindow.webContents.send('toggleGuide', arg)
 })
 
-ipcMain.on('toggleOnionSkin', event =>
+createResponders('toggleOnionSkin', event =>
   mainWindow.webContents.send('toggleOnionSkin'))
 
-ipcMain.on('toggleNewShot', (event, arg) => {
+createResponders('toggleNewShot', (event, arg) => {
   mainWindow.webContents.send('toggleNewShot', arg)
 })
 
-ipcMain.on('showTip', (event, arg) => {
+createResponders('showTip', (event, arg) => {
   mainWindow.webContents.send('showTip', arg)
 })
 
-ipcMain.on('exportAnimatedGif', (event, arg) => {
+createResponders('exportAnimatedGif', (event, arg) => {
   mainWindow.webContents.send('exportAnimatedGif', arg)
 })
 
-ipcMain.on('exportVideo', (event, arg) => {
+createResponders('exportVideo', (event, arg) => {
   mainWindow.webContents.send('exportVideo', arg)
 })
 
-ipcMain.on('exportFcp', (event, arg) => {
+createResponders('exportFcp', (event, arg) => {
   mainWindow.webContents.send('exportFcp', arg)
 })
 
-ipcMain.on('exportImages', (event, arg) => {
+createResponders('exportImages', (event, arg) => {
   mainWindow.webContents.send('exportImages', arg)
 })
 
-ipcMain.on('exportWeb', (event, arg) => {
+createResponders('exportWeb', (event, arg) => {
   mainWindow.webContents.send('exportWeb', arg)
 })
-ipcMain.on('exportZIP', (event, arg) => {
+createResponders('exportZIP', (event, arg) => {
   mainWindow.webContents.send('exportZIP', arg)
 })
 
-ipcMain.on('exportCleanup', (event, arg) => {
+createResponders('exportCleanup', (event, arg) => {
   mainWindow.webContents.send('exportCleanup', arg)
 })
 
-ipcMain.on('save', (event, arg) => {
+createResponders('save', (event, arg) => {
   mainWindow.webContents.send('save', arg)
 })
 
-ipcMain.on('saveAs', (event, arg) => {
+createResponders('saveAs', (event, arg) => {
   mainWindow.webContents.send('saveAs', arg)
 })
 
-ipcMain.on('prefs:change', (event, arg) => {
+createResponders('prefs:change', (event, arg) => {
   !mainWindow.isDestroyed() && mainWindow.webContents.send('prefs:change', arg)
 })
 
-ipcMain.on('showKeyCommands', (event, arg) => {
+createResponders('showKeyCommands', (event, arg) => {
   openKeyCommandWindow()
   analytics.screenView('key commands')
 })
 
-ipcMain.on('analyticsScreen', (event, screenName) => {
+createResponders('analyticsScreen', (event, screenName) => {
   analytics.screenView(screenName)
 })
 
-ipcMain.on('analyticsEvent', (event, category, action, label, value) => {
+createResponders('analyticsEvent', (event, category, action, label, value) => {
   analytics.event(category, action, label, value)
 })
 
-ipcMain.on('analyticsTiming', (event, category, name, ms) => {
+createResponders('analyticsTiming', (event, category, name, ms) => {
   analytics.timing(category, name, ms)
 })
 
-ipcMain.on('log', (event, opt) => {
+createResponders('log', (event, opt) => {
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.webContents.send('log', opt)
 })
 
-ipcMain.on('workspaceReady', event => {
+createResponders('workspaceReady', event => {
   appServer.setCanImport(true)
 
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
@@ -1509,30 +1534,30 @@ const notifyAllsWindows = (event, ...args) => {
   }
 }
 
-ipcMain.on('languageChanged', (event, lng) => {
+createResponders('languageChanged', (event, lng) => {
   languageSettings._loadFile()
   notifyAllsWindows("languageChanged", lng)
 })
 
-ipcMain.on('languageModified', (event, lng) => {
+createResponders('languageModified', (event, lng) => {
   notifyAllsWindows("languageModified", lng)
 })
 
-ipcMain.on('languageAdded', (event, lng) => {
+createResponders('languageAdded', (event, lng) => {
   languageSettings._loadFile()
   notifyAllsWindows("languageAdded", lng)
 })
 
-ipcMain.on('languageRemoved', (event, lng) => {
+createResponders('languageRemoved', (event, lng) => {
   languageSettings._loadFile()
   notifyAllsWindows("languageRemoved", lng)
 })
 
-ipcMain.on('getCurrentLanguage', (event) => {
+createResponders('getCurrentLanguage', (event) => {
   event.returnValue = languageSettings.getSettingByKey("selectedLanguage")
 })
 
-ipcMain.on('openLanguagePreferences', (event) => {
+createResponders('openLanguagePreferences', (event) => {
   let win = LanguagePreferencesWindow.getWindow()
   if (win) {
     LanguagePreferencesWindow.reveal()
@@ -1544,7 +1569,7 @@ ipcMain.on('openLanguagePreferences', (event) => {
 
 
 // PDF Export
-ipcMain.on('exportPDF', () => {
+createResponders('exportPDF', () => {
   if (!mainWindow) return
 
   printProject.show({ parent: mainWindow })
@@ -1565,7 +1590,7 @@ ipcMain.handle('exportPDF:getData', async () => {
 })
 
 // Worksheet Export
-ipcMain.on('printWorksheet', () => {
+createResponders('printWorksheet', () => {
   if (!mainWindow) return
 
   printWorksheet.show({ parent: mainWindow })
@@ -1587,7 +1612,7 @@ ipcMain.handle('printWorksheet:getData', async () => {
 })
 
 // Worksheet Import
-ipcMain.on('importWorksheets', async (event, arg) => {
+createResponders('importWorksheets', async (event, arg) => {
   try {
     let { filePaths } = await dialog.showOpenDialog({
       title: 'Import Worksheet',
@@ -1609,102 +1634,102 @@ ipcMain.on('importWorksheets', async (event, arg) => {
   }
 })
 
-ipcMain.on('exportPrintableWorksheetPdf', (event, sourcePath) =>
+createResponders('exportPrintableWorksheetPdf', (event, sourcePath) =>
   mainWindow.webContents.send('exportPrintableWorksheetPdf', sourcePath)
 )
 
-ipcMain.on('toggleAudition', (event) => {
+createResponders('toggleAudition', (event) => {
   mainWindow.webContents.send('toggleAudition')
 })
 
 // uploader > main-window
-ipcMain.on('signInSuccess', (event, response) => {
+createResponders('signInSuccess', (event, response) => {
   mainWindow.webContents.send('signInSuccess', response)
 })
 
-ipcMain.on('revealShotGenerator',
+createResponders('revealShotGenerator',
   event => mainWindow.webContents.send('revealShotGenerator'))
 
-ipcMain.on('zoomReset',
+createResponders('zoomReset',
   event => mainWindow.webContents.send('zoomReset'))
-ipcMain.on('scale-ui-by',
+createResponders('scale-ui-by',
   (event, value) => mainWindow.webContents.send('scale-ui-by', value))
-ipcMain.on('scale-ui-reset',
+createResponders('scale-ui-reset',
   (event, value) => mainWindow.webContents.send('scale-ui-reset', value))
 
-ipcMain.on('saveShot',
+createResponders('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
-ipcMain.on('insertShot',
+createResponders('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
-ipcMain.on('storyboarder:get-boards',
+createResponders('storyboarder:get-boards',
   event => mainWindow.webContents.send('storyboarder:get-boards'))
-ipcMain.on('shot-generator:get-boards', (event, data) => {
+createResponders('shot-generator:get-boards', (event, data) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.send('shot-generator:get-boards', data)
   }
 })
-ipcMain.on('storyboarder:get-board',
+createResponders('storyboarder:get-board',
   (event, uid) => mainWindow.webContents.send('storyboarder:get-board', uid))
-ipcMain.on('shot-generator:get-board', (event, board) => {
+createResponders('shot-generator:get-board', (event, board) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.send('shot-generator:get-board', board)
   }
 })
-ipcMain.on('storyboarder:get-storyboarder-file-data',
+createResponders('storyboarder:get-storyboarder-file-data',
   (event, uid) => mainWindow.webContents.send('storyboarder:get-storyboarder-file-data'))
-ipcMain.on('shot-generator:get-storyboarder-file-data', (event, data) => {
+createResponders('shot-generator:get-storyboarder-file-data', (event, data) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.send('shot-generator:get-storyboarder-file-data', data)
   }
 })
-ipcMain.on('storyboarder:get-state',
+createResponders('storyboarder:get-state',
   (event, uid) => mainWindow.webContents.send('storyboarder:get-state'))
-ipcMain.on('shot-generator:get-state', (event, data) => {
+createResponders('shot-generator:get-state', (event, data) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.send('shot-generator:get-state', data)
   }
 })
-ipcMain.on('shot-generator:open', () => {
+createResponders('shot-generator:open', () => {
   // TODO analytics?
   // analytics.screenView('shot-generator')
   shotGeneratorWindow.show(win => {
     win.webContents.send('shot-generator:reload')
   })
 })
-ipcMain.on('shot-generator:update', (event, { board }) => {
+createResponders('shot-generator:update', (event, { board }) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('update', { board })
   }
 })
-ipcMain.on('shot-generator:loadBoardByUid', (event, uid) => {
+createResponders('shot-generator:loadBoardByUid', (event, uid) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('loadBoardByUid', uid)
   }
 })
-ipcMain.on('shot-generator:requestSaveShot', (event, uid) => {
+createResponders('shot-generator:requestSaveShot', (event, uid) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('requestSaveShot', uid)
   }
 })
-ipcMain.on('shot-generator:requestInsertShot', (event, uid) => {
+createResponders('shot-generator:requestInsertShot', (event, uid) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('requestInsertShot', uid)
   }
 })
 
-ipcMain.on('shot-generator:updateStore', (event, action) => {
+createResponders('shot-generator:updateStore', (event, action) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('shot-generator:updateStore', action)
   }
 })
 
-ipcMain.on('registration:open', event => registration.show())
+createResponders('registration:open', event => registration.show())
