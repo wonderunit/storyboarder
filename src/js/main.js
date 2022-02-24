@@ -1340,7 +1340,7 @@ createResponders('toggleTimeline', () =>
 //////////////////
 
 
-createResponders('openFile', (e, arg)=> {
+ipcMain.on('openFile', (e, arg)=> {
   openFile(arg)
 })
 
@@ -1353,7 +1353,7 @@ createResponders('importImagesDialogue', (e, arg) => {
   mainWindow.webContents.send('importNotification', arg)
 })
 
-createResponders('createNew', (e, aspectRatio) => {
+ipcMain.on('createNew', (e, aspectRatio) => {
   newWindow.hide()
 
   let isProject = currentFile && (path.extname(currentFile) === '.fdx' || path.extname(currentFile) === '.fountain')
@@ -1364,37 +1364,37 @@ createResponders('createNew', (e, aspectRatio) => {
   }
 })
 
-createResponders('openNewWindow', (e, arg)=> {
+ipcMain.on('openNewWindow', (e, arg)=> {
   openNewWindow()
 })
 
-createResponders('preventSleep', ()=> {
+ipcMain.on('preventSleep', ()=> {
   powerSaveId = powerSaveBlocker.start('prevent-display-sleep')
 })
 
-createResponders('resumeSleep', ()=> {
+ipcMain.on('resumeSleep', ()=> {
   powerSaveBlocker.stop(powerSaveId)
 })
 
 /// menu pass through
 
-createResponders('goBeginning', (event, arg)=> {
+ipcMain.on('goBeginning', (event, arg)=> {
   mainWindow.webContents.send('goBeginning')
 })
 
-createResponders('goPreviousScene', (event, arg)=> {
+ipcMain.on('goPreviousScene', (event, arg)=> {
   mainWindow.webContents.send('goPreviousScene')
 })
 
-createResponders('goPrevious', (event, arg)=> {
+ipcMain.on('goPrevious', (event, arg)=> {
   mainWindow.webContents.send('goPrevious')
 })
 
-createResponders('goNext', (event, arg)=> {
+ipcMain.on('goNext', (event, arg)=> {
   mainWindow.webContents.send('goNext')
 })
 
-createResponders('goNextScene', (event, arg)=> {
+ipcMain.on('goNextScene', (event, arg)=> {
   mainWindow.webContents.send('goNextScene')
 })
 
@@ -1408,17 +1408,17 @@ createResponders('stopAllSounds', event =>
 createResponders('addAudioFile', event =>
   mainWindow.webContents.send('addAudioFile'))
 
-createResponders('playsfx', (event, arg)=> {
+ipcMain.on('playsfx', (event, arg)=> {
   if (welcomeWindow) {
     welcomeWindow.webContents.send('playsfx', arg)
   }
 })
 
-createResponders('test', (event, arg)=> {
+ipcMain.on('test', (event, arg)=> {
   log.info('test', arg)
 })
 
-createResponders('textInputMode', (event, arg)=> {
+ipcMain.on('textInputMode', (event, arg)=> {
   mainWindow.webContents.send('textInputMode', arg)
 })
 
@@ -1477,7 +1477,7 @@ createResponders('saveAs', (event, arg) => {
   mainWindow.webContents.send('saveAs', arg)
 })
 
-createResponders('prefs:change', (event, arg) => {
+ipcMain.on('prefs:change', (event, arg) => {
   !mainWindow.isDestroyed() && mainWindow.webContents.send('prefs:change', arg)
 })
 
@@ -1486,23 +1486,23 @@ createResponders('showKeyCommands', (event, arg) => {
   analytics.screenView('key commands')
 })
 
-createResponders('analyticsScreen', (event, screenName) => {
+ipcMain.on('analyticsScreen', (event, screenName) => {
   analytics.screenView(screenName)
 })
 
-createResponders('analyticsEvent', (event, category, action, label, value) => {
+ipcMain.on('analyticsEvent', (event, category, action, label, value) => {
   analytics.event(category, action, label, value)
 })
 
-createResponders('analyticsTiming', (event, category, name, ms) => {
+ipcMain.on('analyticsTiming', (event, category, name, ms) => {
   analytics.timing(category, name, ms)
 })
 
-createResponders('log', (event, opt) => {
+ipcMain.on('log', (event, opt) => {
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.webContents.send('log', opt)
 })
 
-createResponders('workspaceReady', event => {
+ipcMain.on('workspaceReady', event => {
   appServer.setCanImport(true)
 
   !loadingStatusWindow.isDestroyed() && loadingStatusWindow.hide()
@@ -1536,30 +1536,30 @@ const notifyAllsWindows = (event, ...args) => {
   }
 }
 
-createResponders('languageChanged', (event, lng) => {
+ipcMain.on('languageChanged', (event, lng) => {
   languageSettings._loadFile()
   notifyAllsWindows("languageChanged", lng)
 })
 
-createResponders('languageModified', (event, lng) => {
+ipcMain.on('languageModified', (event, lng) => {
   notifyAllsWindows("languageModified", lng)
 })
 
-createResponders('languageAdded', (event, lng) => {
+ipcMain.on('languageAdded', (event, lng) => {
   languageSettings._loadFile()
   notifyAllsWindows("languageAdded", lng)
 })
 
-createResponders('languageRemoved', (event, lng) => {
+ipcMain.on('languageRemoved', (event, lng) => {
   languageSettings._loadFile()
   notifyAllsWindows("languageRemoved", lng)
 })
 
-createResponders('getCurrentLanguage', (event) => {
+ipcMain.on('getCurrentLanguage', (event) => {
   event.returnValue = languageSettings.getSettingByKey("selectedLanguage")
 })
 
-createResponders('openLanguagePreferences', (event) => {
+ipcMain.on('openLanguagePreferences', (event) => {
   let win = LanguagePreferencesWindow.getWindow()
   if (win) {
     LanguagePreferencesWindow.reveal()
@@ -1636,7 +1636,7 @@ createResponders('importWorksheets', async (event, arg) => {
   }
 })
 
-createResponders('exportPrintableWorksheetPdf', (event, sourcePath) =>
+ipcMain.on('exportPrintableWorksheetPdf', (event, sourcePath) =>
   mainWindow.webContents.send('exportPrintableWorksheetPdf', sourcePath)
 )
 
@@ -1645,7 +1645,7 @@ createResponders('toggleAudition', (event) => {
 })
 
 // uploader > main-window
-createResponders('signInSuccess', (event, response) => {
+ipcMain.on('signInSuccess', (event, response) => {
   mainWindow.webContents.send('signInSuccess', response)
 })
 
@@ -1661,73 +1661,73 @@ createResponders('scale-ui-reset',
 
 createResponders('saveShot',
   (event, data) => mainWindow.webContents.send('saveShot', data))
-createResponders('insertShot',
+ipcMain.on('insertShot',
   (event, data) => mainWindow.webContents.send('insertShot', data))
-createResponders('storyboarder:get-boards',
+ipcMain.on('storyboarder:get-boards',
   event => mainWindow.webContents.send('storyboarder:get-boards'))
-createResponders('shot-generator:get-boards', (event, data) => {
+ipcMain.on('shot-generator:get-boards', (event, data) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.send('shot-generator:get-boards', data)
   }
 })
-createResponders('storyboarder:get-board',
+ipcMain.on('storyboarder:get-board',
   (event, uid) => mainWindow.webContents.send('storyboarder:get-board', uid))
-createResponders('shot-generator:get-board', (event, board) => {
+ipcMain.on('shot-generator:get-board', (event, board) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.send('shot-generator:get-board', board)
   }
 })
-createResponders('storyboarder:get-storyboarder-file-data',
+ipcMain.on('storyboarder:get-storyboarder-file-data',
   (event, uid) => mainWindow.webContents.send('storyboarder:get-storyboarder-file-data'))
-createResponders('shot-generator:get-storyboarder-file-data', (event, data) => {
+ipcMain.on('shot-generator:get-storyboarder-file-data', (event, data) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.send('shot-generator:get-storyboarder-file-data', data)
   }
 })
-createResponders('storyboarder:get-state',
+ipcMain.on('storyboarder:get-state',
   (event, uid) => mainWindow.webContents.send('storyboarder:get-state'))
-createResponders('shot-generator:get-state', (event, data) => {
+ipcMain.on('shot-generator:get-state', (event, data) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.send('shot-generator:get-state', data)
   }
 })
-createResponders('shot-generator:open', () => {
+ipcMain.on('shot-generator:open', () => {
   // TODO analytics?
   // analytics.screenView('shot-generator')
   shotGeneratorWindow.show(win => {
     win.webContents.send('shot-generator:reload')
   })
 })
-createResponders('shot-generator:update', (event, { board }) => {
+ipcMain.on('shot-generator:update', (event, { board }) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('update', { board })
   }
 })
-createResponders('shot-generator:loadBoardByUid', (event, uid) => {
+ipcMain.on('shot-generator:loadBoardByUid', (event, uid) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('loadBoardByUid', uid)
   }
 })
-createResponders('shot-generator:requestSaveShot', (event, uid) => {
+ipcMain.on('shot-generator:requestSaveShot', (event, uid) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('requestSaveShot', uid)
   }
 })
-createResponders('shot-generator:requestInsertShot', (event, uid) => {
+ipcMain.on('shot-generator:requestInsertShot', (event, uid) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('requestInsertShot', uid)
   }
 })
 
-createResponders('shot-generator:updateStore', (event, action) => {
+ipcMain.on('shot-generator:updateStore', (event, action) => {
   let win = shotGeneratorWindow.getWindow()
   if (win) {
     win.webContents.send('shot-generator:updateStore', action)
