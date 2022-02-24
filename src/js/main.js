@@ -16,7 +16,6 @@ prefModule.init(path.join(app.getPath('userData'), 'pref.json'))
 
 
 const configureStore = require('./shared/store/configureStore')
-const observeStore = require('./shared/helpers/observeStore')
 const defaultKeyMap = require('./shared/helpers/defaultKeyMap')
 
 const analytics = require('./analytics')
@@ -67,6 +66,7 @@ used by license registration, which is disabled currently
 see: windows/registration
 auth.json can be saved/loaded, e.g.:
 
+    const observeStore = require('./shared/helpers/observeStore')
     const throttle = require('lodash.throttle')
     const authStorage = require('./shared/store/authStorage')
     const persistedState = authStorage.loadState()
