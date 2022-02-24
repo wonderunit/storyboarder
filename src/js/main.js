@@ -185,9 +185,11 @@ app.on('ready', async () => {
 
 
 
-
   languageSettings.setSettings(settings)
   //TODO(): Check if files of custom languages exist
+
+
+
   // load key map
   const keymapPath = path.join(app.getPath('userData'), 'keymap.json')
   let payload = {}
