@@ -1,5 +1,6 @@
 const fs = require('fs-extra')
 const path = require('path')
+const { pipeline } = require('stream/promises')
 
 const pdfjsLib = require('pdfjs-dist')
 pdfjsLib.GlobalWorkerOptions.workerSrc = '../../../../node_modules/pdfjs-dist/build/pdf.worker.js'
@@ -39,12 +40,10 @@ const exportToFile = async (context, event) => {
   // ensure directory exists
   fs.mkdirpSync(path.dirname(filepath))
 
-  let stream = fs.createWriteStream(filepath)
-  await new Promise(async (resolve, reject) => {
-    stream.on('error', reject)
-    stream.on('finish', resolve)
-    await generate(stream, { project }, getGeneratorConfig(context))
-  })
+  await pipeline(
+    generate({ project }, getGeneratorConfig(context)),
+    fs.createWriteStream(filepath)
+  )
 }
 
 const generateToCanvas = async (context, event) => {

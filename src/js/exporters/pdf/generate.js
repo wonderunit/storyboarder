@@ -568,7 +568,7 @@ const drawFooter = (doc, { rect }, cfg) => {
     )
     .restore()
 }
-async function generate (stream, { project }, cfg) {
+function generate ({ project }, cfg) {
   const {
     paperSize,
     gridDim,
@@ -587,7 +587,6 @@ async function generate (stream, { project }, cfg) {
   })
   patchPDFDocument(doc)
 
-  doc.pipe(stream)
   doc.registerFont(REGULAR, REGULAR)
   doc.registerFont(BOLD, BOLD)
 
@@ -720,6 +719,8 @@ async function generate (stream, { project }, cfg) {
   }
 
   doc.end()
+
+  return doc
 }
 
 module.exports = generate
