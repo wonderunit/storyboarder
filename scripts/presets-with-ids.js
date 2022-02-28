@@ -47,5 +47,5 @@ console.log(
     mapKeyedByHashOfPresetData(presets(str => str)),
     null,
     2
-  )
+  ).replace(/("title": )"(.+)"/g, "$1t(\"$2\")")
 )
