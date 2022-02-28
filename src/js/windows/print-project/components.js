@@ -131,7 +131,7 @@ const InputControlsView = ({
   header,
   selectedPresetId
 }) => {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
 
   const setPaperSizeKey = event => send({
     type: 'SET_PAPER_SIZE_KEY',
