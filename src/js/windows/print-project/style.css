@@ -120,6 +120,17 @@ form {
   display: block;
   mix-blend-mode: multiply;
 }
+
+/* for 4K+ displays … */
+@media (min-width: 1536px) {
+  .output > * {
+    /* pagination and inner content get a max size … */
+    max-width: 1075px;
+    /* … and are centered in the output container */
+    margin: 0 auto;
+  }
+}
+
 button {
   padding: 1rem 1.5rem;
   border: none;
