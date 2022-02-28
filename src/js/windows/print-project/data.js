@@ -1,3 +1,18 @@
+/*
+ProjectData
+  root: String
+  script: Object
+  title: String
+  scriptFilepath
+  scenes: [SceneData]
+
+SceneData
+  sceneId: String,
+  sceneNumber: Number,
+  storyboarderFilePath: String
+  title: String
+  data: Object
+*/
 const fs = require('fs-extra')
 const path = require('path')
 
