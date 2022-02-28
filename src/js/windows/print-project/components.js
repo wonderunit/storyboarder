@@ -321,14 +321,15 @@ const InputControlsView = ({
 
               ['div.collection',
                 ['div', t('print-project.boards-title')],
-
                 ['fieldset',
                   ['div',
-                    ['legend', { name: 'details' }, t('print-project.boards-details-title')]],
+                    ['legend', { name: 'shot-number' }, t('print-project.boards-shot-number-title')]],
                   ['div.group',
                     [Checkbox, {
-                      name: 'details-shot-number',
-                      label: t('print-project.boards-details-shot-number'),
+                      name: 'boards-shot-number',
+                      label: enableShotNumber
+                        ? t('print-project.visible')
+                        : t('print-project.hidden'),
                       checked: enableShotNumber,
                       onChange: (event =>
                         send({ type: 'SET_ENABLE_SHOT_NUMBER', value: event.target.checked })

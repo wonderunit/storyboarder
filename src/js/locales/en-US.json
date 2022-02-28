@@ -737,8 +737,7 @@
     "boards-text-dialogue": "Dialogue",
     "boards-text-action": "Action",
     "boards-text-notes": "Notes",
-    "boards-details-title": "Details",
-    "boards-details-shot-number": "Shot Number",
+    "boards-shot-number-title": "Shot Number",
     "boards-time-display-title": "Time",
     "boards-time-display-none": "None",
     "boards-time-display-duration": "Duration",
@@ -747,7 +746,9 @@
     "board-border-style-label-full": "Image & Text",
     "board-border-style-label-minimal": "Image Only",
     "print-button-label": "Print!",
-    "export-pdf-button-label": "Export PDF"
+    "export-pdf-button-label": "Export PDF",
+    "visible": "Visible",
+    "hidden": "Hidden"
   },
   "print-worksheet": {
     "worksheet-title": "Print a worksheet",
