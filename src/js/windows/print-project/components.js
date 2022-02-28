@@ -334,7 +334,7 @@ const InputControlsView = ({
                     }]
                   ]
                 ],
-    
+
                 ['fieldset',
                   ['div',
                     ['legend', { name: 'text' }, 'Text']],
