@@ -382,6 +382,7 @@ const InputControlsView = ({
                     ]
                   ],
 
+                  // place text below (column) or right (row)
                   ['fieldset',
                     ['div',
                       ['legend', { name: 'direction' }, t('print-project.board-layout-title')]
