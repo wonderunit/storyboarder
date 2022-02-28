@@ -213,7 +213,7 @@ const InputControlsView = ({
               ['legend', { name: 'grid' }, t('print-project.grid-title')]],
             ['div.group',
               ['div.select',
-                ['select', {
+                ['select.arrowless', {
                   value: gridDim[0],
                   onChange: event =>
                     send({ type: 'SET_GRID_ROWS', value: parseInt(event.target.value) })
@@ -223,9 +223,10 @@ const InputControlsView = ({
                   )
                 ],
               ],
+              ['.arrow.arrow__right'],
               ['span', '×'],
               ['div.select',
-                ['select', {
+                ['select.arrowless', {
                   value: gridDim[1],
                   onChange: event =>
                     send({ type: 'SET_GRID_COLUMNS', value: parseInt(event.target.value) })
@@ -234,7 +235,8 @@ const InputControlsView = ({
                     ['option', { name: 'grid-columns', value: value }, value]
                   )
                 ]
-              ]
+              ],
+              ['.arrow.arrow__down']
             ]
           ]
         ]],
