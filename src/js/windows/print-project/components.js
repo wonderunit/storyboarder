@@ -103,8 +103,9 @@ const InputView = props => h([
   ]
 ])
 
-// TODO loading spinner while i18n is loading
-const InputLoadingView = () => null
+const InputLoadingView = () => {
+  return h(['div', 'Loading …'])
+}
 
 const InputControlsView = ({
   onClose,
