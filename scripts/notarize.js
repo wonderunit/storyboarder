@@ -2,10 +2,10 @@
  * notarize for macOS
  *   via https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application
  * 
- * electron-builder will load env vars from electron-builder.env
  * to configure, create an `electron-builder.env` with:
  *   APPLEID=...
  *   APPLEIDPASS=...
+ * electron-builder will load these automatically before running this script
  * 
  * to skip signing and notarizing during development, use this env var:
  *   CSC_IDENTITY_AUTO_DISCOVERY=false
