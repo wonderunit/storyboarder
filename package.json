@@ -49,6 +49,7 @@
     "name": "Wonder Unit Inc."
   },
   "build": {
+    "beforeBuild": "scripts/electron-builder-before-build.js",
     "afterSign": "scripts/notarize.js",
     "asar": true,
     "appId": "com.wonderunit.storyboarder",
