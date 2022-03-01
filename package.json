@@ -186,8 +186,8 @@
     "winston": "^3.3.3"
   },
   "dependencies": {
-    "@redux-devtools/extension": "^3.2.2",
     "@electron/remote": "^2.0.4",
+    "@redux-devtools/extension": "^3.2.2",
     "@thi.ng/geom": "3.0.7",
     "@thi.ng/vectors": "7.0.6",
     "@tweenjs/tween.js": "^18.5.0",
