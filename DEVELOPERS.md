@@ -42,6 +42,13 @@ To compile and build Storyboarder.app:
     $ npm run dist:linux  # Linux only
     $ npm run dist        # All Platforms
 
+For quick testing:
+
+    $ CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder build -m --arm64 --x64 --dir
+
+- `CSC_IDENTITY_AUTO_DISCOVERY=false` prevents Code Signing and Notarizing
+- `--dir` prevents packaging
+
 If cross-compiling from Mac to Windows, install [Wine](see https://github.com/electron-userland/electron-builder/wiki/Multi-Platform-Build) first.
 
 For Linux, you will need these dependencies:
