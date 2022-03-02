@@ -116,9 +116,10 @@ const requestPrint = async (context, event) => {
   // landscape, portrait
   let paperOrientation = context.orientation
 
-  // hardcoded
+  // TODO hardcoded # of copies
   let copies = 1
 
+  // TODO `print` could be its own service if context included `copies`
   print({
     filepath: context.filepath,
     paperSize,
