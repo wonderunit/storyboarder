@@ -1,3 +1,8 @@
+// NOTE this window’s session state is stored in prefs as `printingWindowState`
+// with the name unchanged for backward compatibility
+// even though it only handles worksheet printing now.
+// and print-project handles everything else.
+// previously this window handled worksheet AND project printing.
 const {ipcRenderer} = require('electron')
 const remote = require('@electron/remote')
 const pdf = require('pdfjs-dist')
