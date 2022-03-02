@@ -126,6 +126,8 @@ const requestPrint = async (context, event) => {
     paperOrientation,
     copies
   })
+
+  fs.rmSync(context.filepath)
 }
 
 module.exports = {
