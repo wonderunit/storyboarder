@@ -1,4 +1,4 @@
-const { spawnSync } = require('child_process')
+const { spawnSync, execFile } = require('child_process')
 const os = require('os')
 
 const createPrint = ({
