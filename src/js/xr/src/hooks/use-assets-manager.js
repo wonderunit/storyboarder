@@ -1,11 +1,9 @@
 const React = require('react')
 const path = require('path')
-const { useReducer, useMemo, useCallback } = React
+const { useReducer, useMemo, useCallback, useEffect, useState } = React
 
 const {XRBufferLoaders} = require('../helpers/resourceLoaders')
 
-const path = require('path')
-const { useEffect } = require('react')
 const { default: chooseLoader } = require('../../../shared/THREE/loadRes')
 
 const reducer = (state, action) => {
