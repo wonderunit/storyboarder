@@ -1,7 +1,4 @@
-import fs from 'fs'
-import {promisify} from 'util'
-
-const readFile = promisify(fs.readFile)
+import { readFile } from 'fs/promises'
 
 // Loads file content as ArrayBuffer for sending through peerjs
 export const loadFileToBlob = async (filepath) => {
