@@ -94,6 +94,7 @@ const generateToCanvas = async (context, event) => {
     viewport: viewport
   }
   let renderTask = page.render(renderContext)
+  // TODO could allow user to cancel, via `renderTask.cancel()`
   await renderTask.promise
 
   // log.info('write complete')
