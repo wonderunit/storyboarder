@@ -72,7 +72,7 @@ const preferences = (state = initialState, action) => {
               : initialState.toolbar.tools[name].strokeOpacity
           }
         } else {
-          // otherwise, use the old value
+          // otherwise, use the old value 
           tools[name] = initialState.toolbar.tools[name]
         }
       }

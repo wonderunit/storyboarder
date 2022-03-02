@@ -5,6 +5,37 @@ const path = require('path')
 const url = require('url')
 process.env['ELECTRON_DISABLE_SECURITY_WARNINGS'] = true
 
+//const { default: installExtension, REACT_DEVELOPER_TOOLS, REACT_PERF, REDUX_DEVTOOLS } = require('electron-devtools-installer')
+const installExtensions = async () => {
+  const installer = require('electron-devtools-installer');
+  const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
+  const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
+  
+  return Promise.all(
+      extensions.map(name => installer.default(installer[name], forceDownload))
+  ).catch(console.log);
+};
+
+// Removes any extension from the production version
+const removeExtensions = () => {
+  const installed = BrowserWindow.getDevToolsExtensions()
+
+  for (let extension of Object.keys(installed)) {
+    BrowserWindow.removeDevToolsExtension(extension)
+  }
+}
+
+app.commandLine.appendSwitch('ignore-certificate-errors', 'true')
+app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+  if (url.indexOf(/(127\.0\.0\.1|localhost)/g) !== -1) {
+    // check if local cert
+    event.preventDefault()
+    callback(true)
+  } else {
+    callback(false)
+  }
+})
+
 const settingsService = new SettingsService(path.join(app.getPath("userData"), "storyboarder-settings.json"))
 let windowSize = settingsService.getSettingByKey("shotGeneratorSize") 
 windowSize = windowSize ? windowSize : { x:undefined, y:undefined, width: 1505, height: 1080 }

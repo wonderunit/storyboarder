@@ -1,12 +1,15 @@
-import React, {useEffect, useMemo} from 'react'
+import {useEffect, useMemo} from 'react'
 
 import getFilepathForModelByType from './../../../xr/src/helpers/get-filepath-for-model-by-type'
 import getFilepathForImage from './../../../xr/src/helpers/get-filepath-for-image'
-import {useAsset, useAssets} from "../../../shot-generator/hooks/use-assets-manager"
+import {useAssetsManager} from '../../../xr/src/hooks/use-assets-manager'
 
 import * as BonesHelper from "../../../xr/src/three/BonesHelper"
+import { Connection } from '../helpers/store'
 
 const useSceneLoader = (sceneObjects, world, additionalAssets = []) => {
+  const {loaded, total, assets, requestAsset, getAsset} = useAssetsManager(Connection.current)
+
   const resources = useMemo(() => {
     let resourcesToLoad = []
     
@@ -21,29 +24,32 @@ const useSceneLoader = (sceneObjects, world, additionalAssets = []) => {
     .filter(o => o.model != null)
     .filter(o => !(o.type === 'object' && o.model === 'box'))
     .map(getFilepathForModelByType)
+    .map(requestAsset)
 
     let images = Object.values(sceneObjects)
     .filter(o => o.type === 'image')
     .map(getFilepathForImage)
+    .map(requestAsset)
+
+    additionalAssets.map(requestAsset)
 
     return resourcesToLoad.concat(models, images, additionalAssets)
-  }, [sceneObjects, world.environment.file])
+  }, [sceneObjects, world.environment.file, requestAsset])
   
-  const loadStatus = useAssets(resources)
-  const isLoaded = loadStatus.assets.length / resources.length
-
-  const {asset: boneGLTF} = useAsset('/data/system/dummies/bone.glb')
-
+  const boneGLTF = getAsset('/data/system/dummies/bone.glb')
   useEffect(() => {
-    if (isLoaded && boneGLTF) {
+    if (boneGLTF) {
+      console.log('BONE: ', boneGLTF)
       const mesh = boneGLTF.scene.children.find(child => child.isMesh)
       BonesHelper.getInstance(mesh)
     }
-  }, [isLoaded, boneGLTF])
+  }, [boneGLTF ? boneGLTF.scene : null])
   
   return {
-    ...loadStatus,
-    count: resources.length
+    assets,
+    loaded,
+    count: total,
+    getAsset
   }
 }
 

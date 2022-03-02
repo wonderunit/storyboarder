@@ -3,7 +3,6 @@ import {connect} from 'react-redux'
 
 import {getSceneObjects, getSelections} from "../../../../shared/reducers/shot-generator"
 
-import {useAsset} from "../../../../shot-generator/hooks/use-assets-manager"
 import {patchMaterial} from "../../../../shot-generator/helpers/outlineMaterial"
 
 
@@ -25,8 +24,8 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   morphTargets: true
 }))
 
-const Character = ({sceneObject, path, modelSettings, isSelected}) => {
-  const {asset: gltf} = useAsset(path)
+const Character = ({sceneObject, path, modelSettings, isSelected, getAsset}) => {
+  const gltf = getAsset(path)
 
   const ref = useRef(null)
   useEffect(() => {
@@ -215,20 +214,24 @@ const Character = ({sceneObject, path, modelSettings, isSelected}) => {
       visible={visible}
 
       position={ [x, z, y] }
-      rotation={ [0, rotation, 0] }
       scale={ [bodyScale, bodyScale, bodyScale] }
 
       userData={{
         isSelectable: true,
         type: 'character',
         id: sceneObject.id,
-        locked
+        locked,
+        rotation
       }}
 
       ref={ref}
     >
-      <primitive object={lod}/>
-      <primitive object={armature}/>
+      <group
+        rotation={ [0, rotation, 0] }
+      >
+        <primitive object={lod}/>
+        <primitive object={armature}/>
+      </group>
     </group>
   )
 }

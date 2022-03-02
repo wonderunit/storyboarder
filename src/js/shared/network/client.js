@@ -47,17 +47,14 @@ export const connect = (URI = '') => {
 
     // Connect to the lobby server
     const p2p = P2P(location.hostname)
-    const {io, peer, P2PClientConnection} = p2p
+    const {P2PClientConnection} = p2p
 
-    let store = {current: null}
     let FRAME_RATE = {current: 10}
     
     // Connect to the client
     P2PClientConnection(roomId).then((conn) => {
       const client = conn.emitter
       const emit = conn.emit
-
-      console.log('Connected !!!', store)
 
       // Send an action to the SG
       const dispatchRemote = (action, meta = {}) => {

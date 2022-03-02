@@ -1,6 +1,6 @@
-const THREE = require('three')
 const React = require('react')
-const { useState, useReducer, useMemo, useCallback } = React
+const path = require('path')
+const { useReducer, useMemo, useCallback } = React
 
 const {XRBufferLoaders} = require('../helpers/resourceLoaders')
 
@@ -141,6 +141,25 @@ const useAssetsManager = (SGConnection) => {
       })
   }, [assets])
 
+  const progressInfo = useMemo(() => {
+    let loaded = 0;
+    let total = 0;
+
+    Object.entries(assets)
+    .map(([_, o]) => {
+      if (o.status === "Success") {
+        loaded++
+      }
+
+      total++
+    })
+  
+    return {
+      loaded,
+      total
+    }
+  }, [assets])
+
   const requestAsset = useCallback(
     id => {
       if (id && (!assets[id])) {
@@ -162,7 +181,7 @@ const useAssetsManager = (SGConnection) => {
     [assets]
   )
 
-  return { assets, requestAsset, getAsset, getExt }
+  return { assets, requestAsset, getAsset, getExt, ...progressInfo }
 }
 
 module.exports = {

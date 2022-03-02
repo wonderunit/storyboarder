@@ -38,7 +38,7 @@ const ScaleButtons = () => {
     <div className='scale-buttons' onClick={preventFn}>
       <div className='scale-buttons__button scale-buttons__main-button' onClick={() => setVisibility(!isVisible)}>{getScaleLabel(currentSceneState.scale)}</div>
 
-      <Fade top cascade duration={300} when={isVisible}>
+      <Fade top cascade duration={300} when={isVisible} unmountOnExit={true} mountOnEnter={true} >
         <div>
           <div className='scale-buttons__button' onClick={() => onClick(0.16)}>mini</div>
           <div className='scale-buttons__button' onClick={() => onClick(0.5)}>50</div>

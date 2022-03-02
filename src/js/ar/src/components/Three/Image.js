@@ -3,18 +3,15 @@ import {connect} from 'react-redux'
 
 import {getSceneObjects, getSelections} from "../../../../shared/reducers/shot-generator"
 
-import {useAsset} from "../../../../shot-generator/hooks/use-assets-manager"
-
-
 import RoundedBoxGeometryCreator from "../../../../vendor/three-rounded-box"
 import getFilePathForImage from "../../../../xr/src/helpers/get-filepath-for-image"
 import selectObject from "../../helpers/selectObject"
 const RoundedBoxGeometry = RoundedBoxGeometryCreator(THREE)
 
-const Image = ({sceneObject, path, isSelected}) => {
+const Image = ({sceneObject, path, isSelected, getAsset}) => {
   const ref = useRef(null)
 
-  const {asset: texture} = useAsset(path || null)
+  const texture = getAsset(path || null)
   const [aspect, setAspect] = useState(1.0)
 
   const material = useMemo(() => {

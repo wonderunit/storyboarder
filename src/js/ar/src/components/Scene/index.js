@@ -1,13 +1,9 @@
-import React, {useState, useContext} from 'react'
+import React, {useContext, useMemo} from 'react'
 import {connect} from "react-redux"
-import {useFrame} from "react-three-fiber"
-
-import {SGConnection} from "../../helpers/store"
 
 import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-generator"
 import {SceneState} from "../../helpers/sceneState"
 
-import {useThreeFrameProvider, useThreeStateProvider} from "../../hooks/useThreeHooks"
 
 import Environment from "../Three/Environment"
 import Model from "../Three/Model"
@@ -17,8 +13,18 @@ import VirtualCamera from "../Three/VirtualCamera"
 import Character from "../Three/Character"
 import Background from "../Three/Background"
 import Ground from "../Three/Ground"
-import useHitTestManager from "../../hooks/useHitTestManager"
+import Teleport from '../Three/Teleport'
 
+
+import WorldCamera from '../Three/WorldCamera'
+import CameraCreator from '../Three/CameraCreator'
+import { useFrame } from 'react-three-fiber'
+
+import RemoteProvider from '../RemoteProvider'
+import RemoteClients from '../RemoteClients'
+
+import XRClient from '../Three/XRClient'
+import TWEEN from "@tweenjs/tween.js"
 
 const componentMap = {
   object: Model,
@@ -28,58 +34,56 @@ const componentMap = {
   character: Character
 }
 
-const renderObject = (sceneObject) => {
+const renderObject = (sceneObject, getAsset) => {
   const Component = componentMap[sceneObject.type]
   if (Component) {
-     return <Component id={sceneObject.id} key={sceneObject.id}/>
+     return <Component id={sceneObject.id} key={sceneObject.id} getAsset={getAsset}/>
   }
   
   return null
 }
 
-const Scene = ({sceneObjects, world}) => {
-  const [currentSceneState, setSceneState] = useContext(SceneState)
-  const [sceneVisible, setSceneVisible] = useState(true)
+const Scene = ({sceneObjects, world, getAsset, ready}) => {
+  const [currentSceneState] = useContext(SceneState)
 
-  useFrame(({camera}) => {
-    SGConnection.sendInfo({
-      matrix: camera.matrixWorld.toArray(),
-      controllers: []
-    })
+  const helmet = useMemo(() => ready ? getAsset('/data/system/xr/hmd.glb') : null,[ready])
+  const controller = useMemo(() => ready ? getAsset('/data/system/xr/controller.glb') : null,[ready])
+
+  useFrame(()=>{
+    TWEEN.update()
   })
 
-  useThreeFrameProvider()
-  useThreeStateProvider()
-
-  useHitTestManager(currentSceneState.selectEnabled)
-  
   return (
-    <group
-      rotation={[0, currentSceneState.rotation, 0]}
-    >
+    <group>
+      <WorldCamera/>
       <group
-          position={[0, -1.0, 0]}
+        scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
       >
-        <group
-          position={currentSceneState.position}
-          scale={[currentSceneState.scale, currentSceneState.scale, currentSceneState.scale]}
-          visible={sceneVisible}
-        >
-          <Background/>
-          <Ground/>
-          <ambientLight
-            color={ 0xffffff }
-            intensity={ world.ambient.intensity }
+        <Teleport/>
+        <CameraCreator/>
+        <Background/>
+        <Ground getAsset={getAsset}/>
+        <ambientLight
+          color={ 0xffffff }
+          intensity={ world.ambient.intensity }
+        />
+        <directionalLight
+          color={ 0xffffff }
+          intensity={ world.directional.intensity }
+          position={ [0, 1.5, 0] }
+          target-position={ [0, 0, 0.4] }
+        />
+        <Environment getAsset={getAsset}/>
+        <RemoteProvider>
+          <RemoteClients
+            clientProps={{
+              helmet: helmet,
+              controller: controller
+            }}
+            Component={XRClient}
           />
-          <directionalLight
-            color={ 0xffffff }
-            intensity={ world.directional.intensity }
-            position={ [0, 1.5, 0] }
-            target-position={ [0, 0, 0.4] }
-          />
-          <Environment/>
-          {Object.values(sceneObjects).map(renderObject)}
-        </group>
+        </RemoteProvider>
+        {Object.values(sceneObjects).map(target => renderObject(target, getAsset))}
       </group>
     </group>
   )

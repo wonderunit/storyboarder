@@ -1,4 +1,4 @@
-import React, {useCallback, useState, useEffect} from 'react'
+import React, {useCallback, useState} from 'react'
 import {Canvas} from 'react-three-fiber'
 import {Provider, connect} from "react-redux"
 
@@ -6,7 +6,7 @@ import {SceneState} from "../../helpers/sceneState"
 
 import Scene from "../Scene"
 
-import store from "../../helpers/store"
+import { Store } from "../../helpers/store"
 import Loader from "../Loader"
 import {ARButton} from "../../vendor/three/webxr/ARButton"
 import useSceneLoader from "../../hooks/useSceneLoader"
@@ -14,7 +14,8 @@ import {getSceneObjects, getWorld} from "../../../../shared/reducers/shot-genera
 
 import ScaleButtons from "../ScaleButtons"
 import MoveButtons from "../MoveButtons"
-import SelectButton from "../SelectButton"
+import TeleportButton from '../TeleportButton'
+import CreateCameraButton from '../CreateCameraButton'
 
 
 const preloadAssetsList = [
@@ -33,18 +34,27 @@ const App = ({sceneObjects, world, board}) => {
     position: [0, 0, 0],
     rotation: 0,
     scale: 1.0,
-    selectEnabled: false
+    
+    movement: {
+      left: false,
+      right: false,
+      top: false,
+      bottom: false
+    },
+    shouldTeleport: false,
+    shouldCreateCamera: false
   })
   
-  const {assets, count} = useSceneLoader(sceneObjects, world, preloadAssetsList)
-  const progress = !board.uid ? 0 : assets.length / count
+  const {count, loaded, getAsset} = useSceneLoader(sceneObjects, world, preloadAssetsList)
+  
+  const progress = !board.uid ? 0 : loaded / count
   const appReady = progress >= 1.0
   
   const onCreated = useCallback(({gl, scene}) => {
     gl.getContext().makeXRCompatible()// Because of we enabled Webgl2
     
     const sessionParams = {
-      requiredFeatures: ['local', 'hit-test'],
+      // requiredFeatures: ['local', 'hit-test'],
       optionalFeatures: ["dom-overlay"],
       domOverlay: { root: document.getElementById("overlay") }
     }
@@ -53,7 +63,7 @@ const App = ({sceneObjects, world, board}) => {
       ARButton.createButton(gl, sessionParams)
     )
     
-    gl.xr.setReferenceSpaceType('unbounded')
+    gl.xr.setReferenceSpaceType('viewer')
     
     const controller = gl.xr.getController(0) // Add finger touch element to the scene
     scene.add(controller)
@@ -70,20 +80,26 @@ const App = ({sceneObjects, world, board}) => {
           <SceneState.Provider value={innerState}>
             <ScaleButtons/>
             <MoveButtons/>
-            <SelectButton/>
+            <TeleportButton/>
+            <CreateCameraButton/>
           </SceneState.Provider>
         </div>
       </div>
       <Canvas
         vr={true}
+        gl={{logarithmicDepthBuffer: true}}
         gl2={true}
         noEvents={true}
         onCreated={onCreated}
+        pixelRatio={devicePixelRatio}
+        className="view"
       >
         <SceneState.Provider value={innerState}>
-          <Provider store={store}>
+          <Provider store={Store.current}>
             <Scene
               ready={appReady}
+              getAsset={getAsset}
+              key="primary-window"
             />
           </Provider>
         </SceneState.Provider>

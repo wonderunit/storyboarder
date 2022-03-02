@@ -3,7 +3,6 @@ import {connect} from 'react-redux'
 
 import {getSceneObjects, getSelections} from "../../../../shared/reducers/shot-generator"
 
-import {useAsset} from "../../../../shot-generator/hooks/use-assets-manager"
 import useGLTFAsset from "../../hooks/useGLTFAsset"
 import {patchMaterial} from "../../../../shot-generator/helpers/outlineMaterial"
 
@@ -24,11 +23,11 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   morphTargets: false
 }))
 
-const Model = ({sceneObject, path, isSelected}) => {
+const Model = ({sceneObject, path, isSelected, getAsset}) => {
   const ref = useRef(null)
 
-  const {asset} = useAsset((sceneObject.model === 'box') ? null : path)
-  let object = useGLTFAsset(asset ? asset.scene : null)
+  const asset = getAsset((sceneObject.model === 'box') ? null : path)
+  let object = useGLTFAsset(asset ? asset.scene : null, materialFactory)
   
   object = useMemo(() => {
     if (sceneObject.model !== 'box') {

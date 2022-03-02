@@ -4,7 +4,6 @@ import {useUpdate} from 'react-three-fiber'
 
 import {getSceneObjects, getSelections} from "../../../../shared/reducers/shot-generator"
 
-import {useAsset} from "../../../../shot-generator/hooks/use-assets-manager"
 import useGLTFAsset from "../../hooks/useGLTFAsset"
 import traverseMeshMaterials from "../../../../shot-generator/helpers/traverse-mesh-materials"
 
@@ -13,8 +12,8 @@ const materialFactory = () => new THREE.MeshBasicMaterial({
   flatShading: false
 })
 
-const Light = ({sceneObject, isSelected}) => {
-  const {asset} = useAsset('/data/system/xr/light.glb')
+const Light = ({sceneObject, isSelected, getAsset}) => {
+  const asset = getAsset('/data/system/xr/light.glb')
   let object = useGLTFAsset(asset ? asset.scene : null, materialFactory)
   
   const lightColor = useMemo(() => {
