@@ -340,8 +340,17 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
             align: e == 0
               // first entry
               ? 'left'
-              // last entry, if more than than two entries present
-              : (e == entries.length - 1) && entries.length > 2
+              // last entry …
+              : (e == entries.length - 1) && 
+                (
+                  // … if more than than two entries present …
+                  (entries.length > 2) ||
+                  /// … OR, if exactly two entries, and the last is time …
+                  (
+                    (entries.length == 2) &&
+                    (cfg.boardTimeDisplay == 'duration' || cfg.boardTimeDisplay == 'sceneTime')
+                  )
+                )
               ? 'right'
               // all other cases
               : 'left',
