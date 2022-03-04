@@ -144,7 +144,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
     let notLast = index < array.length - 1
     doc.font(THIN)
     doc.text(`${name} `, { continued: true })
-    doc.font(BOLD)
+    doc.font(REGULAR)
     doc.text(value, { continued: notLast ? true : false })
     doc.font(THIN)
     if (notLast) {
@@ -160,7 +160,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
     doc
       .font(THIN)
         .text(`Draft `.toUpperCase(), { continued: true }) // TODO i18n
-      .font(BOLD)
+      .font(REGULAR)
         .text(`${stats.date.toUpperCase()}`)
   }
   doc.restore()
