@@ -212,18 +212,12 @@ const drawImageOrPlaceholder = (doc, { filepath, rect }, cfg) => {
 
 // Place Text Right
 const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
-  /*
-  boardBorderStrokeColor: '#999' | '#333',
-  boardBorderLineWidth: 0.5 | 1.0
-  */
-  let localCfg = cfg.boardBorderStyle == 'minimal'
-    ? { boardBorderStrokeColor: '#999', boardBorderLineWidth: 0.5, boardBorderStrokeOpacity: 0 }
-    : { boardBorderStrokeColor: '#333', boardBorderLineWidth: 1.0, boardBorderStrokeOpacity: 1 }
+  let borderSize = 1
 
   let inner = rect.copy()
   v.sub2(null, inner.size, [10, 0])
 
-  let imageR = inset(inner, [5, 5])
+  let imageR = inset(inner, [borderSize, borderSize])
   imageR.size = fit(
     boardFileImageSize(scene),
     // HACK constrain max image width to 3/5ths of available row space
@@ -236,7 +230,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
   imageR.pos[0] += cellA.size[0] + 1
 
-  let imageB = inset(imageR, [-5, -5])
+  let imageB = inset(imageR, [-borderSize, -borderSize])
 
   let cellB = inner.copy()
   cellB.pos[0] = imageR.pos[0] + imageR.size[0] + 1 + 5
@@ -245,6 +239,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   let cellAinner = inset(cellA, [5, 5])
   let cellBinner = inset(cellB, [5, 5])
 
+  // image border
   doc
     .rect(...imageB.pos, ...imageB.size)
     .fillColor('black')
@@ -275,17 +270,6 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
       .lineWidth(1)
       .fillAndStroke()
   }
-
-  //
-  //
-  // borders
-  //
-  doc
-    .strokeColor(localCfg.boardBorderStrokeColor)
-    .strokeOpacity(localCfg.boardBorderStrokeOpacity)
-    .lineWidth(localCfg.boardBorderLineWidth)
-    .rect(...inner.pos, ...inner.size)
-    .stroke()
 
   //
   //
@@ -701,9 +685,11 @@ function generate ({ project }, cfg) {
         j = Math.floor(n / gridDim[0])
       }
 
-      let cell = template.copy()
-      v.add2(null, cell.pos, v.mul2([], cell.size, [i, j]))
-
+      let cell = new Rect(
+        v.add2([], template.pos, v.mul2([], template.size, [i, j])),
+        template.size,
+        template.attribs
+      )
       drawBoard(
         doc,
         {
@@ -715,12 +701,89 @@ function generate ({ project }, cfg) {
         },
         cfg
       )
+
+      if (direction == 'row') {
+        let borderRect = new Rect(
+          cell.pos,
+          v.sub2([], cell.size, [10, 0]),
+          cell.attribs
+        )
+        drawBoardBordersRow(
+          doc,
+          {
+            j,
+            rect: borderRect
+          },
+          cfg
+        )
+      }
     }
   }
 
   doc.end()
 
   return doc
+}
+
+//
+//
+// borders
+//
+const drawBoardBordersRow = (doc, options, cfg) => {
+  let localCfg = cfg.boardBorderStyle == 'minimal'
+    ? { boardBorderStrokeColor: '#999', boardBorderLineWidth: 0.5, boardBorderStrokeOpacity: 0 }
+    : { boardBorderStrokeColor: '#333', boardBorderLineWidth: 1.0, boardBorderStrokeOpacity: 0.25 }
+
+  let { j, rect } = options
+    
+  doc.save()
+
+  let innerOpacityScale = 0.4
+  let first = j == 0
+  let last = j == cfg.gridDim[1] - 1
+  if (first) {
+    // top
+    doc
+      .strokeOpacity(localCfg.boardBorderStrokeOpacity)
+      .moveTo(...rect.pos)
+      .lineTo(rect.pos[0] + rect.size[0], rect.pos[1])
+      .stroke()
+  } else if (last) {
+    // top
+    doc
+      .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
+      .moveTo(...rect.pos)
+      .lineTo(rect.pos[0] + rect.size[0], rect.pos[1])
+      .stroke()
+    // bottom
+    doc
+      .strokeOpacity(localCfg.boardBorderStrokeOpacity)
+      .moveTo(rect.pos[0], rect.pos[1] + rect.size[1])
+      .lineTo(rect.pos[0] + rect.size[0], rect.pos[1] + rect.size[1])
+      .stroke()
+  } else {
+    // bottom
+    doc
+      .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
+      .moveTo(...rect.pos)
+      .lineTo(rect.pos[0] + rect.size[0], rect.pos[1])
+      .stroke()
+  }
+
+  doc
+    .strokeColor(localCfg.boardBorderStrokeColor)
+    .strokeOpacity(localCfg.boardBorderStrokeOpacity)
+    .lineWidth(localCfg.boardBorderLineWidth)
+    // right
+    .moveTo(rect.pos[0] + rect.size[0], rect.pos[1])
+    .lineTo(rect.pos[0] + rect.size[0], rect.pos[1] + rect.size[1])
+    .stroke()
+    // left
+    .moveTo(rect.pos[0], rect.pos[1])
+    .lineTo(rect.pos[0], rect.pos[1] + rect.size[1])
+    .stroke()
+
+  doc.restore()
 }
 
 module.exports = generate
