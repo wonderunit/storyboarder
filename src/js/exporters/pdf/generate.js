@@ -376,19 +376,22 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
   boardBorder: true | false
   upperBaseline: 'bottom' | 'middle'
   newShotMarkerHeight: 'image' | 'full
+  singleMultiLineTextField: true | false
   */
   let localCfg = cfg.boardBorderStyle == 'minimal'
     ? {
       insetUpperText: false,
       boardBorder: false,
       upperBaseline: 'bottom',
-      newShotMarkerHeight: 'image'
+      newShotMarkerHeight: 'image',
+      singleMultiLineTextField: true
     }
     : {
       insetUpperText: true,
       boardBorder: true,
       upperBaseline: 'middle',
-      newShotMarkerHeight: 'full'
+      newShotMarkerHeight: 'full',
+      singleMultiLineTextField: false
     }
 
   let inner = rect.copy()
@@ -504,31 +507,68 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     cfg.enableAction && board.action && { text: board.action, font: REGULAR },
     cfg.enableNotes && board.notes && { text: board.notes, font: REGULAR }
   ]
-  // uncomment to omit cells if text is blank
-  //   entries = entries.filter(Boolean)
-  for (let e = 0; e < entries.length; e++) {
-    let entry = entries[e]
 
-    let textR = lowerR.copy()
-    textR.size[1] *= 1 / entries.length
-    textR.pos[1] += textR.size[1] * e
+  if (localCfg.singleMultiLineTextField) {
+    //
+    //
+    // single multi-line text field
+    //
 
-    if (entry) {
-      doc
-        .font(entry.font)
-        .fontSize(cfg.boardTextSize)
-        .fillColor('black')
-        .text(
-          entry.text,
-          ...textR.pos,
-          {
-            width: textR.size[0],
-            height: textR.size[1]
-          }
-        )
-        .font(REGULAR) // restore font
+    // omit cells with blank text
+    entries = entries.filter(Boolean)
+
+    // setup font size, color, and starting position
+    doc
+      .fontSize(cfg.boardTextSize)
+      .fillColor('black')
+      .text(null, ...lowerR.pos)
+
+    for (let e = 0; e < entries.length; e++) {
+      let entry = entries[e]
+
+      if (entry) {
+        doc
+          .font(entry.font)
+          .text(
+            entry.text,
+            {
+              width: lowerR.size[0]
+            }
+          )
+          .font(REGULAR) // restore font
+          .moveDown()
+      }
+    }
+  } else {
+    //
+    //
+    // cells
+    //
+    for (let e = 0; e < entries.length; e++) {
+      let entry = entries[e]
+
+      let entryCell = lowerR.copy()
+      entryCell.size[1] *= 1 / entries.length
+      entryCell.pos[1] += entryCell.size[1] * e
+
+      if (entry) {
+        doc
+          .font(entry.font)
+          .fontSize(cfg.boardTextSize)
+          .fillColor('black')
+          .text(
+            entry.text,
+            ...entryCell.pos,
+            {
+              width: entryCell.size[0],
+              height: entryCell.size[1]
+            }
+          )
+          .font(REGULAR) // restore font
+      }
     }
   }
+
   doc.restore()
 
   //
