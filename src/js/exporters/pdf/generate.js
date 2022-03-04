@@ -160,7 +160,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
       .font(REGULAR)
         .text(`Exported `, { continued: true })
       .font(BOLD)
-        .text(`${stats.date}`)
+        .text(`${stats.date.toUpperCase()}`)
   }
   doc.restore()
 
