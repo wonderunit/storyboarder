@@ -132,7 +132,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
   
   doc
     .fontSize(rems(0.625))
-    .fillOpacity(0.625)
+    .fillOpacity(0.8)
 
   let statsEntries = [
     cfg.header.stats.boards && ['Boards', stats.boards],
