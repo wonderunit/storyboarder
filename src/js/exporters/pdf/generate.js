@@ -503,7 +503,9 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     cfg.enableDialogue && board.dialogue && { text: board.dialogue, font: BOLD },
     cfg.enableAction && board.action && { text: board.action, font: REGULAR },
     cfg.enableNotes && board.notes && { text: board.notes, font: REGULAR }
-  ].filter(Boolean)
+  ]
+  // uncomment to omit cells if text is blank
+  //   entries = entries.filter(Boolean)
   for (let e = 0; e < entries.length; e++) {
     let entry = entries[e]
 
@@ -511,19 +513,21 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     textR.size[1] *= 1 / entries.length
     textR.pos[1] += textR.size[1] * e
 
-    doc
-      .font(entry.font)
-      .fontSize(cfg.boardTextSize)
-      .fillColor('black')
-      .text(
-        entry.text,
-        ...textR.pos,
-        {
-          width: textR.size[0],
-          height: textR.size[1]
-        }
-      )
-      .font(REGULAR) // restore font
+    if (entry) {
+      doc
+        .font(entry.font)
+        .fontSize(cfg.boardTextSize)
+        .fillColor('black')
+        .text(
+          entry.text,
+          ...textR.pos,
+          {
+            width: textR.size[0],
+            height: textR.size[1]
+          }
+        )
+        .font(REGULAR) // restore font
+    }
   }
   doc.restore()
 
