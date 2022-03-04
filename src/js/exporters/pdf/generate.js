@@ -22,6 +22,7 @@ let fontPath = path.join('.', 'src', 'fonts')
 const REGULAR = path.join(fontPath, 'thicccboi', 'THICCCBOI-Regular.woff2')
 const BOLD = path.join(fontPath, 'thicccboi', 'THICCCBOI-Bold.woff2')
 const FALLBACK = path.join(fontPath, 'unicore.ttf')
+const FALLBACK_BOLD = path.join(fontPath, 'unicore.ttf') // TODO bold version of unicore?
 
 // via https://stackoverflow.com/questions/6565703
 const fit = ([wi, hi], [ws, hs]) =>
@@ -65,14 +66,17 @@ const humanizeAspectRatio = aspectRatio => {
 //
 // patch PDFDocument .text to force FALLBACK font if "foreign" text is detected
 //
-// TODO allow for a bold weight fallback
 const patchPDFDocument = doc => {
   let fn = doc.text
 
   doc.text = function () {
     let [text, ...rest] = arguments
     if (stringContainsForeign(text)) {
-      this.font(FALLBACK)
+      if (doc._font.name.match(/bold/i)) {
+        this.font(FALLBACK_BOLD)
+      } else {
+        this.font(FALLBACK)
+      }
     }
     fn.apply(this, [text, ...rest])
     return this
@@ -289,27 +293,27 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   let entries = [
     ...(
       cfg.enableDialogue
-        ? [{ text: board.dialogue }]
+        ? [{ text: board.dialogue, font: BOLD }]
         : []
     ),
 
     ...(
       cfg.enableAction
-        ? [{ text: board.action }]
+        ? [{ text: board.action, font: REGULAR }]
         : []
     ),
 
     ...(
       cfg.enableNotes
-        ? [{ text: board.notes }]
+        ? [{ text: board.notes, font: REGULAR }]
         : []
     ),
 
     ...(
       cfg.boardTimeDisplay == 'duration'
-        ? [{ text: durationMsecsToString(boardDuration(scene, board)) }]
+        ? [{ text: durationMsecsToString(boardDuration(scene, board)), font: REGULAR }]
         : cfg.boardTimeDisplay == 'sceneTime'
-        ? [{ text: durationMsecsToString(board.time) }]
+        ? [{ text: durationMsecsToString(board.time), font: REGULAR }]
         : [] // TODO scriptTime
     )
   ]
@@ -331,6 +335,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
       .save()
       .rect(...textR.pos, ...textR.size)
       .clip()
+        .font(entry.font)
         .fontSize(cfg.boardTextSize)
         .fillColor('black')
         .text(
@@ -358,6 +363,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
             height: textR.size[1]
           }
         )
+        .font(REGULAR) // restore font
       .restore()
     }
   }
@@ -494,9 +500,9 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     .rect(...lowerR.pos, ...lowerR.size)
     .clip()
   let entries = [
-    cfg.enableDialogue && board.dialogue && { text: board.dialogue },
-    cfg.enableAction && board.action && { text: board.action },
-    cfg.enableNotes && board.notes && { text: board.notes }
+    cfg.enableDialogue && board.dialogue && { text: board.dialogue, font: BOLD },
+    cfg.enableAction && board.action && { text: board.action, font: REGULAR },
+    cfg.enableNotes && board.notes && { text: board.notes, font: REGULAR }
   ].filter(Boolean)
   for (let e = 0; e < entries.length; e++) {
     let entry = entries[e]
@@ -506,6 +512,7 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     textR.pos[1] += textR.size[1] * e
 
     doc
+      .font(entry.font)
       .fontSize(cfg.boardTextSize)
       .fillColor('black')
       .text(
@@ -516,6 +523,7 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
           height: textR.size[1]
         }
       )
+      .font(REGULAR) // restore font
   }
   doc.restore()
 
