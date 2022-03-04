@@ -802,6 +802,11 @@ const drawBoardBordersRow = (doc, options, cfg) => {
 
   doc.save()
 
+  doc
+    .strokeColor(localCfg.boardBorderStrokeColor)
+    .strokeOpacity(localCfg.boardBorderStrokeOpacity)
+    .lineWidth(localCfg.boardBorderLineWidth)
+
   let innerOpacityScale = 0.4
   // first of column
   let first = j == 0
@@ -840,9 +845,7 @@ const drawBoardBordersRow = (doc, options, cfg) => {
   }
 
   doc
-    .strokeColor(localCfg.boardBorderStrokeColor)
     .strokeOpacity(localCfg.boardBorderStrokeOpacity)
-    .lineWidth(localCfg.boardBorderLineWidth)
     // right
     .moveTo(rect.pos[0] + rect.size[0], rect.pos[1])
     .lineTo(rect.pos[0] + rect.size[0], rect.pos[1] + rect.size[1])
