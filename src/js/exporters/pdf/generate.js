@@ -127,8 +127,11 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
   //
   // stats
   //
+  doc.save()
+  
   doc
-    .fontSize(rems(0.75))
+    .fontSize(rems(0.625))
+    .fillOpacity(0.625)
 
   let statsEntries = [
     cfg.header.stats.boards && ['Boards', stats.boards],
@@ -159,6 +162,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
       .font(BOLD)
         .text(`${stats.date}`)
   }
+  doc.restore()
 
   //
   //
