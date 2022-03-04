@@ -119,7 +119,11 @@ const start = async () => {
         if (event.target == document.body) service.send('INCREMENT_PAGE_TO_PREVIEW')
         break
       case 'Escape':
-        service.send('CLOSE')
+        if (event.target == document.body) {
+          service.send('CLOSE')
+        } else {
+          event.target.blur && event.target.blur()
+        }
         break
     }
   })
