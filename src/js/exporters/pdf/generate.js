@@ -19,8 +19,9 @@ const {
 } = require('../../models/scene')
 
 let fontPath = path.join('.', 'src', 'fonts')
-const REGULAR = path.join(fontPath, 'thicccboi', 'THICCCBOI-Regular.woff2')
+const THIN = path.join(fontPath, 'thicccboi', 'THICCCBOI-Thin.woff2')
 const BOLD = path.join(fontPath, 'thicccboi', 'THICCCBOI-Bold.woff2')
+const REGULAR = path.join(fontPath, 'thicccboi', 'THICCCBOI-Regular.woff2')
 const FALLBACK = path.join(fontPath, 'unicore.ttf')
 const FALLBACK_BOLD = path.join(fontPath, 'unicore.ttf') // TODO bold version of unicore?
 
@@ -100,7 +101,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
   //
   if (projectTitle) {
     doc
-      .font(REGULAR)
+      .font(THIN)
       .fontSize(rems(1.25))
       .fillColor('black')
       .text(
@@ -120,7 +121,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
     )
     .moveUp()
     .fontSize(rems(1))
-    .font(REGULAR)
+    .font(THIN)
     .moveDown(between)
 
   //
@@ -141,11 +142,11 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
   ].filter(Boolean)
   statsEntries.forEach(([name, value], index, array) => {
     let notLast = index < array.length - 1
-    doc.font(REGULAR)
+    doc.font(THIN)
     doc.text(`${name} `, { continued: true })
     doc.font(BOLD)
     doc.text(value, { continued: notLast ? true : false })
-    doc.font(REGULAR)
+    doc.font(THIN)
     if (notLast) {
       doc.text(separator, { continued: true })
     }
@@ -157,7 +158,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
     }
 
     doc
-      .font(REGULAR)
+      .font(THIN)
         .text(`Draft `.toUpperCase(), { continued: true }) // TODO i18n
       .font(BOLD)
         .text(`${stats.date.toUpperCase()}`)
@@ -169,7 +170,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
   // pagination
   //
   doc
-    .font(REGULAR)
+    .font(THIN)
     .fontSize(rems(6/8))
     .text(`${pagination.curr + 1} / ${pagination.total}`, ...pos, {
       width: size[0],
@@ -309,15 +310,15 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
     ...(
       cfg.enableNotes
-        ? [{ text: board.notes, font: REGULAR }]
+        ? [{ text: board.notes, font: THIN }]
         : []
     ),
 
     ...(
       cfg.boardTimeDisplay == 'duration'
-        ? [{ text: durationMsecsToString(boardDuration(scene, board)), font: REGULAR }]
+        ? [{ text: durationMsecsToString(boardDuration(scene, board)), font: THIN }]
         : cfg.boardTimeDisplay == 'sceneTime'
-        ? [{ text: durationMsecsToString(board.time), font: REGULAR }]
+        ? [{ text: durationMsecsToString(board.time), font: THIN }]
         : [] // TODO scriptTime
     )
   ]
@@ -367,7 +368,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
             height: textR.size[1]
           }
         )
-        .font(REGULAR) // restore font
+        .font(THIN) // restore font
       .restore()
     }
   }
@@ -508,7 +509,7 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
   let entries = [
     cfg.enableDialogue && board.dialogue && { text: board.dialogue, font: BOLD },
     cfg.enableAction && board.action && { text: board.action, font: REGULAR },
-    cfg.enableNotes && board.notes && { text: board.notes, font: REGULAR }
+    cfg.enableNotes && board.notes && { text: board.notes, font: THIN }
   ]
 
   if (localCfg.singleMultiLineTextField) {
@@ -558,7 +559,7 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
               align: 'center'
             }
           )
-          .font(REGULAR) // restore font
+          .font(THIN) // restore font
           .moveDown()
       }
     }
@@ -590,7 +591,7 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
               height: entryCell.size[1]
             }
           )
-          .font(REGULAR) // restore font
+          .font(THIN) // restore font
       }
     }
   }
@@ -623,7 +624,7 @@ const drawFooter = (doc, { rect }, cfg) => {
   let text = "Storyboarder by \\\\ wonder unit"
   doc
     .save()
-    .font(REGULAR)
+    .font(THIN)
     .fontSize(10)
     .fillColor('black')
     .fillOpacity(0.6)
@@ -658,7 +659,7 @@ function generate ({ project }, cfg) {
   })
   patchPDFDocument(doc)
 
-  doc.registerFont(REGULAR, REGULAR)
+  doc.registerFont(THIN, THIN)
   doc.registerFont(BOLD, BOLD)
 
   let pages = groupByPage(project.scenes, gridDim[0] * gridDim[1])
