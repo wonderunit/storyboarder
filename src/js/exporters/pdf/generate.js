@@ -370,7 +370,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 }
 
 // Place Text Below
-const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
+const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg) => {
   /*
   insetUpperText: true | false,
   boardBorder: true | false
@@ -500,8 +500,7 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
   //
   doc
     .save()
-    .rect(...lowerR.pos, ...lowerR.size)
-    .clip()
+
   let entries = [
     cfg.enableDialogue && board.dialogue && { text: board.dialogue, font: BOLD },
     cfg.enableAction && board.action && { text: board.action, font: REGULAR },
@@ -514,6 +513,25 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     // single multi-line text field
     //
 
+    // HACKY some magic numbers here, related to hacky centering code
+    // allow textfield to be as large as outer containing cell
+    let textfieldR = new Rect(
+        [
+          lowerR.pos[0] + (lowerR.size[0] / 2),
+          lowerR.pos[1]
+        ],
+        [
+          container.size[0] - 10,
+          lowerR.size[1] + 5
+        ],
+        lowerR.attribs
+      )
+    textfieldR.pos[0] -= textfieldR.size[0] / 2
+
+    doc
+      .rect(...textfieldR.pos, ...textfieldR.size)
+      .clip()
+
     // omit cells with blank text
     entries = entries.filter(Boolean)
 
@@ -521,7 +539,7 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     doc
       .fontSize(cfg.boardTextSize)
       .fillColor('black')
-      .text(null, ...lowerR.pos)
+      .text(null, ...textfieldR.pos)
 
     for (let e = 0; e < entries.length; e++) {
       let entry = entries[e]
@@ -532,7 +550,8 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
           .text(
             entry.text,
             {
-              width: lowerR.size[0]
+              width: textfieldR.size[0],
+              align: 'center'
             }
           )
           .font(REGULAR) // restore font
@@ -544,6 +563,9 @@ const drawBoardColumn = (doc, { rect, scene, board, imagesPath }, cfg) => {
     //
     // cells
     //
+    doc
+      .rect(...lowerR.pos, ...lowerR.size)
+      .clip()
     for (let e = 0; e < entries.length; e++) {
       let entry = entries[e]
 
@@ -755,6 +777,7 @@ function generate ({ project }, cfg) {
         doc,
         {
           rect: cell,
+          container: template,
           board,
           scene: pageData.scene.data,
           imagesPath,
