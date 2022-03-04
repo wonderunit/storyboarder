@@ -113,10 +113,10 @@ const start = async () => {
   document.addEventListener('keyup', event => {
     switch (event.key) {
       case 'ArrowLeft':
-        service.send('DECREMENT_PAGE_TO_PREVIEW')
+        if (event.target == document.body) service.send('DECREMENT_PAGE_TO_PREVIEW')
         break
       case 'ArrowRight':
-        service.send('INCREMENT_PAGE_TO_PREVIEW')
+        if (event.target == document.body) service.send('INCREMENT_PAGE_TO_PREVIEW')
         break
       case 'Escape':
         service.send('CLOSE')
