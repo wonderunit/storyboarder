@@ -720,7 +720,10 @@ function generate ({ project }, cfg) {
         drawBoardBordersRow(
           doc,
           {
+            n,
+            i,
             j,
+            lastBoardIndex: pageData.boards.length - 1,
             rect: borderRect
           },
           cfg
@@ -743,13 +746,16 @@ const drawBoardBordersRow = (doc, options, cfg) => {
     ? { boardBorderStrokeColor: '#999', boardBorderLineWidth: 0.5, boardBorderStrokeOpacity: 0 }
     : { boardBorderStrokeColor: '#333', boardBorderLineWidth: 1.0, boardBorderStrokeOpacity: 0.25 }
 
-  let { j, rect } = options
-    
+  let { n, i, j, lastBoardIndex, rect } = options
+
   doc.save()
 
   let innerOpacityScale = 0.4
+  // first of column
   let first = j == 0
-  let last = j == cfg.gridDim[1] - 1
+  // last of column or last board
+  let last = j == (cfg.gridDim[1] - 1) || n == lastBoardIndex
+
   if (first) {
     // top
     doc
@@ -757,7 +763,8 @@ const drawBoardBordersRow = (doc, options, cfg) => {
       .moveTo(...rect.pos)
       .lineTo(rect.pos[0] + rect.size[0], rect.pos[1])
       .stroke()
-  } else if (last) {
+  }
+  if (last) {
     // top
     doc
       .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
@@ -770,7 +777,8 @@ const drawBoardBordersRow = (doc, options, cfg) => {
       .moveTo(rect.pos[0], rect.pos[1] + rect.size[1])
       .lineTo(rect.pos[0] + rect.size[0], rect.pos[1] + rect.size[1])
       .stroke()
-  } else {
+  }
+  if (!(first || last)) {
     // bottom
     doc
       .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
