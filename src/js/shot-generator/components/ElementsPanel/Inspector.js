@@ -1,7 +1,9 @@
 import InspectedWorld from '../InspectedWorld'
 import InspectedElement from '../InspectedElement'
-import React, { useContext } from 'react'
+import React from 'react'
 import MultiSelectionInspector from '../MultiSelectionInspector'
+import InspectedGroup from '../InspectedGroup'
+
 
 const Inspector = ({
   kind, data,
@@ -11,6 +13,9 @@ const Inspector = ({
   let isGroup = sceneObject && sceneObject.type === "group"
   let selectedCount = isGroup ? sceneObject.children.length + 1 : selections.length
 
+  if (isGroup && (sceneObject.children.length + 1 == selections.length)) 
+    return  <InspectedGroup sceneObject={sceneObject} />
+  
   return <div id="inspector">
     {(selectedCount > 1)
       ? <MultiSelectionInspector/>
@@ -20,3 +25,4 @@ const Inspector = ({
     </div>
 }
 export default Inspector
+
