@@ -7,6 +7,7 @@ import { TDSLoader } from 'three/examples/jsm/loaders/TDSLoader'
 import { PLYLoader } from 'three/examples/jsm/loaders/PLYLoader'
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader'
 import { RGBELoader} from 'three/examples/jsm/loaders/RGBELoader'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader'
 
 export const onImageBufferLoad = (buffer, url) => {
   return new Promise((resolve, reject) => {
@@ -68,6 +69,9 @@ export const onGLTFBufferLoad = (buffer) => {
   return new Promise((resolve, reject) => {
     console.log('BUFFER', buffer)
     const loader = new GLTFLoader()
+    const dracoLoader = new DRACOLoader()
+    dracoLoader.setDecoderPath('./loaders/draco/') 
+    loader.setDRACOLoader( dracoLoader )
     loader.parse(
       buffer,
       '',
