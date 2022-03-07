@@ -5,6 +5,8 @@ const { Rect } = require('@thi.ng/geom')
 const moment = require('moment')
 const fs = require('fs')
 
+const pkg = require('../../../../package.json')
+
 const groupByPage = require('./group-by-page')
 const stringContainsForeign = require('./string-contains-foreign')
 
@@ -660,7 +662,11 @@ function generate ({ project }, cfg) {
 
   let doc = new PDFDocument({
     autoFirstPage: false,
-    size: cfg.paperSize
+    size: cfg.paperSize,
+    info: {
+      Title: project.title || project.scenes[0].title,
+      Creator: `Storyboarder v${pkg.version}`
+    }
   })
   patchPDFDocument(doc)
 
