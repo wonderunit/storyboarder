@@ -47,16 +47,19 @@ const {
   selectAttachable,
   updateObject,
   updateObjects,
+  updateGroup,
   updateCharacterSkeleton,
   updateCharacterIkSkeleton,
   updateCharacterPoleTargets,
   selectBone
 } = require('../../shared/reducers/shot-generator')
+const { forEach, identity } = require('lodash')
 
 const WORLD_SCALE_LARGE = 1
 const WORLD_SCALE_SMALL = 0.1
 
 const getRotationMemento = (controller, object) => {
+  console.log('getRotationMemento')
   let controllerRot = new THREE.Matrix4().extractRotation(controller.matrixWorld)
   let startingDeviceRotation = new THREE.Quaternion().setFromRotationMatrix(controllerRot)
   let startingDeviceOffset = new THREE.Quaternion()
@@ -82,9 +85,34 @@ const getRotationMemento = (controller, object) => {
 const getSelectOffset = (controller, object, distance, point) => {
   let cursor = controller.getObjectByName('cursor')
   cursor.position.z = -distance
+  if (object.constructor === Array){
+    const groupeOffsets = {}
+    for ( let i =0; i< object.length; i++){
+      groupeOffsets[object[i].userData.id] = {
+        type: object[i].userData.type,
+        offset: new THREE.Vector3().subVectors(point, object[i].getWorldPosition(new THREE.Vector3()))
+      }
+    }
+    return groupeOffsets
+  } 
   const pos = object.getWorldPosition(new THREE.Vector3())
   const offset = new THREE.Vector3().subVectors(point, pos)
   return offset
+}
+
+const getGroupObjects = (idSelectedObject,sceneObjectsStore,scene) => {
+
+  const objects = []
+
+  if (sceneObjectsStore[idSelectedObject].hasOwnProperty('group')){
+      const groupId = sceneObjectsStore[idSelectedObject].group
+      const groupChildrens = sceneObjectsStore[groupId].children.slice()
+      for (let i = 0; i< groupChildrens.length;i++){
+        objects.push( scene.__interaction.find(o => o.userData.id === groupChildrens[i]) )
+      }
+  }else return objects
+
+  return objects
 }
 
 const moveObjectZ = (object, event, worldScale) => {
@@ -431,6 +459,7 @@ const useInteractionsManager = ({
         tilt: euler.x
       }))
     } else if (object.userData.type === 'attachable') {
+      console.log('attachable')
       let position = object.worldPosition()// new THREE.Vector3()
       let quaternion = object.worldQuaternion()
       let scale = new THREE.Vector3()
@@ -448,6 +477,7 @@ const useInteractionsManager = ({
       let rotation = object.userData.type === 'character'
         ? euler.y
         : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+        console.log('no attachable' ,object.position.clone())
       dispatch(updateObject(id, {
         x: object.position.x,
         y: object.position.z,
@@ -455,6 +485,67 @@ const useInteractionsManager = ({
         rotation
       }))
     }
+  }
+
+  const commitObjects = (objects) => {
+
+    let objectsChange = {}
+
+    const ids = Object.keys(objects)
+    const objts = Object.values(objects)
+
+    for (let i = 0; i<objts.length;i++){
+      let object = objts[i]
+      let id = ids[i]
+      const euler = new THREE.Euler().setFromQuaternion(object.quaternion, 'YXZ')
+      if (object.userData.type == 'light' || object.userData.type == 'virtual-camera') {
+
+        objectsChange[id] = {
+          x: object.position.x,
+          y: object.position.z,
+          z: object.position.y,
+          rotation: euler.y,
+          roll: euler.z,
+          tilt: euler.x
+        }
+
+      } else if (object.userData.type === 'attachable') {
+        console.log('attachable')
+        let position = object.worldPosition()// new THREE.Vector3()
+        let quaternion = object.worldQuaternion()
+        let scale = new THREE.Vector3()
+        let matrix = object.matrix.clone()
+        matrix.premultiply(object.parent.matrixWorld)
+        matrix.decompose(position, quaternion, scale)
+        let rot = new THREE.Euler().setFromQuaternion(quaternion, 'XYZ')
+
+        objectsChange[id] = {
+          x: position.x,
+          y: position.y,
+          z: position.z,
+          rotation: {x: rot.x, y: rot.y, z: rot.z}
+        }
+      } else {
+        let rotation = object.userData.type === 'character'
+          ? euler.y
+          : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
+          // console.log('no attachable' ,object.position.clone())
+          objectsChange[id] = {
+            x: object.position.x,
+            y: object.position.z,
+            z: object.position.y,
+            rotation
+          }
+      }
+    }
+
+
+    // objts.forEach(( value, key )=>{
+
+    // })
+
+    dispatch(updateObjects(objectsChange))
+
   }
 
   const onTriggerStart = event => {
@@ -591,6 +682,7 @@ const useInteractionsManager = ({
     }
 
     let targetObj = match ? sceneObjects[match.userData.id] : null
+
     if (match && !targetObj.locked && !targetObj.blocked) {
       // console.log('found sceneObject:', sceneObjects[match.userData.id])
       // console.log('intersection', intersection)
@@ -976,7 +1068,7 @@ const useInteractionsManager = ({
     // don't wait for a React update
     // read values directly from stores
     let selections = getSelections(store.getState())
-    let selectedId = selections.length ? selections[0] : null
+    let selectedId = selections.length ? selections[0] : null  
 
     let mode = interactionService.state.value
     let context = interactionService.state.context
@@ -1024,31 +1116,66 @@ const useInteractionsManager = ({
 
     if (mode === 'drag_object') {
       let controller = gl.xr.getController(context.draggingController)
-      let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
 
-      let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
-      if (shouldMoveWithCursor) {
+      if (sceneObjects[context.selection].hasOwnProperty('group')){
+        const objects = getGroupObjects(context.selection,sceneObjects,scene)
 
-        // update position via cursor
-        const cursor = controller.getObjectByName('cursor')
-        let wp = cursor.getWorldPosition(getReusableVector())
-        if (controller.userData.selectOffset && object3d.userData.type == 'character') {
-          wp.sub(controller.userData.selectOffset)
-          object3d.applyMatrix(object3d.parent.matrixWorld)
-          object3d.position.copy(wp)
+        for (let i = 0; i<objects.length;i++){
+          let object3d = objects[i]
+          let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
+          if (shouldMoveWithCursor) {
+    
+            // update position via cursor
+            const cursor = controller.getObjectByName('cursor')
+            let wp = cursor.getWorldPosition(getReusableVector())
+            if (controller.userData.hasOwnProperty('selectOffsetGroup') && object3d.userData.type == 'character') {
+              wp.sub(controller.userData.selectOffsetGroup[object3d.userData.id].offset)
+              object3d.applyMatrix4(object3d.parent.matrixWorld)
+              object3d.position.copy(wp)
+              object3d.updateMatrixWorld()
+              object3d.applyMatrix4(object3d.parent.getInverseMatrixWorld())
+            }
+    
+            if (object3d.userData.staticRotation) {
+              let quaternion = object3d.parent.worldQuaternion().inverse()
+              let rotation = quaternion.multiply(object3d.userData.staticRotation)
+              object3d.quaternion.copy(rotation)
+            }
+            object3d.updateMatrixWorld()
+    
+            //object3d.updateMatrix()
+          }
+        }
+      
+      } else {
+
+        let object3d = scene.__interaction.find(o => o.userData.id === context.selection)
+
+        let shouldMoveWithCursor = (object3d.userData.type == 'character') || object3d.userData.staticRotation
+        if (shouldMoveWithCursor) {
+  
+          // update position via cursor
+          const cursor = controller.getObjectByName('cursor')
+          let wp = cursor.getWorldPosition(getReusableVector())
+          if (controller.userData.selectOffset && object3d.userData.type == 'character') {
+            wp.sub(controller.userData.selectOffset)
+            object3d.applyMatrix4(object3d.parent.matrixWorld)
+            object3d.position.copy(wp)
+            object3d.updateMatrixWorld()
+            object3d.applyMatrix4(object3d.parent.getInverseMatrixWorld())
+          }
+  
+          if (object3d.userData.staticRotation) {
+            let quaternion = object3d.parent.worldQuaternion().inverse()
+            let rotation = quaternion.multiply(object3d.userData.staticRotation)
+            object3d.quaternion.copy(rotation)
+          }
           object3d.updateMatrixWorld()
-          object3d.applyMatrix(object3d.parent.getInverseMatrixWorld())
+  
+          //object3d.updateMatrix()
         }
-
-        if (object3d.userData.staticRotation) {
-          let quaternion = object3d.parent.worldQuaternion().inverse()
-          let rotation = quaternion.multiply(object3d.userData.staticRotation)
-          object3d.quaternion.copy(rotation)
-        }
-        object3d.updateMatrixWorld()
-
-        //object3d.updateMatrix()
       }
+
     }
 
     if (mode === 'rotate_bone') {
@@ -1268,6 +1395,7 @@ const useInteractionsManager = ({
           uiService.send({ type: 'HIDE' })
         },
         onPosingCharacterExit: (context, event) => {
+          console.log('onPosingCharacterExit')
           let ikHelper = getIkHelper()
           ikHelper.ragDoll.isEnabledIk = false
           if(!ikHelper.isSelected())
@@ -1291,6 +1419,47 @@ const useInteractionsManager = ({
           uiService.send({ type: 'SHOW' })
         },
         onDropLowest: (context, event) => {
+          let controller = gl.xr.getController(context.draggingController)
+
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const grId = sceneObjects[context.selection].group
+            const group = rootRef.current.children.find(item => item.userData.id == grId) || 
+                          controller.children.find(item => item.userData.id == grId)
+
+            let placesForDrop = scene.__interaction.concat([groundRef.current])
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
+            const objectChanges = {}
+            objectChanges[grId] = group
+            for (let i=0; i<objects.length;i++){
+              let object = objects[i]
+              objectChanges[objects[i].userData.id] = objects[i]
+              if (object.userData.type === 'character') {
+                let positionDifference = object.worldPosition().clone()
+                dropCharacter(object, placesForDrop)
+                positionDifference.sub(object.worldPosition())
+                group.updateWorldMatrix(true, true)
+    
+                // if a controller is dragging the character ...
+                if (context.draggingController != null) {
+                  // ... find out which controller it is
+                  // ... and add the difference to that controller's selectOffset
+                  controller.userData.selectOffsetGroup[object.userData.id].offset.add(positionDifference)
+                }
+              } else {
+                dropObject(object, placesForDrop)
+                group.updateWorldMatrix(true, true)
+              }
+            }
+            dropObject(group, placesForDrop)
+            group.updateWorldMatrix(true, true)
+            // if we're in `selected` mode, we can commit the change immediately
+            if (interactionService.state.value === 'selected') {
+              commitObjects(objectChanges)   
+            }
+            playSound('drop')
+            return
+          }
+
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
           let placesForDrop = scene.__interaction.concat([groundRef.current])
 
@@ -1312,6 +1481,7 @@ const useInteractionsManager = ({
 
           // if we're in `selected` mode, we can commit the change immediately
           if (interactionService.state.value === 'selected') {
+            console.log('onDropLowest selected')
             commit(context.selection, object)
           }
 
@@ -1319,11 +1489,24 @@ const useInteractionsManager = ({
         },
         onSelected: (context, event) => {
           let controller = event.controller
-          let { object, distance, point } = event.intersection
-          if (object.userData.blocked || object.userData.locked) {
-            return
-          }
+          let { object, distance, point, id } = event.intersection
 
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const grId = sceneObjects[context.selection].group
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
+            const group = rootRef.current.children.find(item => item.userData.id == grId)
+            for (let i = 0; i<objects.length;i++){ 
+              if (objects[i].userData.blocked || objects[i].userData.locked) return
+              log('-- onSelected')
+            }
+            controller.userData.selectOffsetGroup = getSelectOffset(controller, objects, distance, point)
+            controller.userData.selectOffset = getSelectOffset(controller, group, distance, point)
+            dispatch(selectObject([grId, ...sceneObjects[grId].children]))
+            return
+          } 
+
+          if (object.userData.blocked || object.userData.locked) return
+          
           log('-- onSelected')
           // selectOffset is used for Character
           controller.userData.selectOffset = getSelectOffset(controller, object, distance, point)
@@ -1340,40 +1523,75 @@ const useInteractionsManager = ({
           let controller = event.controller
           log('-- onSelectNone', controller)
 
-          if (controller) controller.userData.selectOffset = null
+          if (controller){
+            controller.userData.selectOffset = null
+            if (controller.userData.hasOwnProperty('selectOffsetGroup ')) delete controller.userData.selectOffsetGroup 
+          } 
           dispatch(selectObject(null))
           BonesHelper.getInstance().resetSelection()
         },
 
-        onDragControlPointEntry: (context, event) =>
-        {
+        onDragControlPointEntry: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
           getIkHelper().selectControlPoint(object.name)
           controller.attach(object)
         },
-        moveAndRotateControlPoint: (context, event) =>
-        {
+        moveAndRotateControlPoint: (context, event) => {
           let selectedControlTarget = getIkHelper().selectedControlPoint
           let { worldScale } = useStoreApi.getState()
           moveObjectZ(selectedControlTarget, event, worldScale)
         },
-        onDragControlPointExit: (context, event) =>
-        {
+        onDragControlPointExit: (context, event) => {
           getIkHelper().deselectControlPoint()
         },
 
         onDragObjectEntry: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
           let object = event.intersection.object
+          
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
+
+            const groupId = sceneObjects[event.intersection.id].group
+            let group = rootRef.current.children.find(item => item.userData.id == groupId)
+
+            targetObject.current = {
+              group,
+              startData: {
+                pos: group.position.clone(),
+                rot: group.rotation.clone()
+              }
+            }
+            for (let i = 0; i<objects.length;i++){
+              if (objects[i].userData.locked || objects[i].userData.blocked) continue
+              
+              if (objects[i].userData.type !== 'character') {
+                if(objects[i].userData.type === "attachable"){
+                  attachableParent.current = []
+                  attachableParent.current.push(objects[i].parent)
+                }
+                group.attach(objects[i])  
+                objects[i].updateMatrixWorld(true)
+                SGConnection.blockObject(objects[i].userData.id)
+              }
+            }
+
+            controller.attach(group)  
+            group.updateMatrixWorld(true)
+
+            playSound('beam', group)
+
+            uiService.send({ type: 'LOCK' })
+            return
+          }
 
           if (object.userData.locked || object.userData.blocked) {
             return
           }
 
           if (object.userData.type !== 'character') {
-            if(object.userData.type === "attachable")
-            {
+            if(object.userData.type === "attachable"){
               attachableParent.current = object.parent
             }
             
@@ -1384,8 +1602,8 @@ const useInteractionsManager = ({
                 rot: object.rotation.clone()
               }
             }
-            
-            controller.attach(object)
+
+            controller.attach(object)  
             object.updateMatrixWorld(true)
             SGConnection.blockObject(context.selection)
           }
@@ -1408,9 +1626,51 @@ const useInteractionsManager = ({
         
         onDragObjectExit: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
+          let root = rootRef.current 
+
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
+            const groupId = sceneObjects[context.selection].group
+            let group = controller.children.find(item => item.userData.id == groupId)
+            const objectChanges = {}
+            for (let i = 0; i<objects.length;i++){
+
+              if (objects[i] && objects[i].parent !== root) {
+                if(objects[i].userData.type !== "attachable"){
+                  root.attach(objects[i])
+                }
+                else {
+                  attachableParent.current[i].attach(objects[i])
+                }
+                objects[i].updateWorldMatrix(true, true)
+              }
+    
+              if (SGConnection.unblockObject && objects[i].userData.id) {
+                SGConnection.unblockObject(objects[i].userData.id) 
+              }
+
+              objectChanges[objects[i].userData.id] = objects[i]
+
+              if (objects[i].userData.type === 'character') {
+                let mapAttachables = Object.values(scene.__interaction).filter(sceneObject => sceneObject.userData.bindedId === objects[i].userData.id)
+                for(let i = 0; i < mapAttachables.length; i++) {
+                  commit(mapAttachables[i].userData.id, mapAttachables[i])
+                }
+              }
+            }
+            root.attach(group)
+            group.updateWorldMatrix(true, true)
+
+            objectChanges[groupId] = group
+            commitObjects(objectChanges)
+
+            stopSound('beam', group)
+            uiService.send({ type: 'UNLOCK' })
+            return
+          }
+
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          let root = rootRef.current
           if (object && object.parent !== root) {
             if(object.userData.type !== "attachable"){
               root.attach(object)
@@ -1440,9 +1700,27 @@ const useInteractionsManager = ({
         
         onSnapStart: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
+          let root = rootRef.current
+
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const groupId = sceneObjects[context.selection].group
+            let group = rootRef.current.children.find(item => item.userData.id == groupId)
+            // put object in root space
+            root.attach(group)
+            group.updateMatrixWorld(true)
+  
+            // rotate
+            snapObjectRotation(group)
+            group.userData.staticRotation = group.quaternion.clone()
+  
+            // put object in controller space
+            controller.attach(group) 
+            group.updateMatrixWorld(true)
+
+            return
+          }
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
-          let root = rootRef.current
           // put object in root space
           root.attach(object)
           object.updateMatrixWorld(true)
@@ -1452,11 +1730,23 @@ const useInteractionsManager = ({
           object.userData.staticRotation = object.quaternion.clone()
 
           // put object in controller space
-          controller.attach(object)
+          controller.attach(object) 
           object.updateMatrixWorld(true)
         },
         onSnapEnd: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
+
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
+            for (let i = 0; i<objects.length;i++){
+              let object = objects[i]
+
+              if (object && object.userData.staticRotation) {
+                object.userData.staticRotation = null
+              }
+            }
+            return
+          }
           let object = scene.__interaction.find(o => o.userData.id === context.selection)
 
           if (object && object.userData.staticRotation) {
@@ -1471,10 +1761,26 @@ const useInteractionsManager = ({
 
         moveAndRotateObject: (context, event) => {
           let controller = gl.xr.getController(context.draggingController)
-          let object = scene.__interaction.find(o => o.userData.id === context.selection)
-          
           let { worldScale } = useStoreApi.getState()
 
+          if (sceneObjects[context.selection].hasOwnProperty('group')){
+            const objects = getGroupObjects(context.selection,sceneObjects,scene)
+            const groupId = sceneObjects[context.selection].group
+
+            for (let i=0; i<objects.length; i++ ){
+              let shouldMoveWithCursor = (objects[i].userData.type === 'character')
+              let target = shouldMoveWithCursor
+                ? controller.getObjectByName('cursor')
+                : controller.children.find(item => item.userData.id == groupId)
+              moveObjectZ(target, event, worldScale)
+              rotateObjectY(objects[i], event, controller)
+            }
+
+            return
+          }
+
+          let object = scene.__interaction.find(o => o.userData.id === context.selection)
+          
           let shouldMoveWithCursor = (object.userData.type === 'character')
           let target = shouldMoveWithCursor
             ? controller.getObjectByName('cursor')
