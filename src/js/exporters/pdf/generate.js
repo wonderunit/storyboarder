@@ -298,27 +298,27 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   let entries = [
     ...(
       cfg.enableDialogue
-        ? [{ text: board.dialogue, font: BOLD }]
+        ? [{ text: board.dialogue, font: BOLD, align: 'left' }]
         : []
     ),
 
     ...(
       cfg.enableAction
-        ? [{ text: board.action, font: REGULAR }]
+        ? [{ text: board.action, font: REGULAR, align: 'left' }]
         : []
     ),
 
     ...(
       cfg.enableNotes
-        ? [{ text: board.notes, font: THIN }]
+        ? [{ text: board.notes, font: THIN, align: 'left' }]
         : []
     ),
 
     ...(
       cfg.boardTimeDisplay == 'duration'
-        ? [{ text: durationMsecsToString(boardDuration(scene, board)), font: THIN }]
+        ? [{ text: durationMsecsToString(boardDuration(scene, board)), font: THIN, align: 'right' }]
         : cfg.boardTimeDisplay == 'sceneTime'
-        ? [{ text: durationMsecsToString(board.time), font: THIN }]
+        ? [{ text: durationMsecsToString(board.time), font: THIN, align: 'right' }]
         : [] // TODO scriptTime
     )
   ]
@@ -347,23 +347,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
           entry.text,
           ...textR.pos,
           {
-            align: e == 0
-              // first entry
-              ? 'left'
-              // last entry …
-              : (e == entries.length - 1) && 
-                (
-                  // … if more than than two entries present …
-                  (entries.length > 2) ||
-                  /// … OR, if exactly two entries, and the last is time …
-                  (
-                    (entries.length == 2) &&
-                    (cfg.boardTimeDisplay == 'duration' || cfg.boardTimeDisplay == 'sceneTime')
-                  )
-                )
-              ? 'right'
-              // all other cases
-              : 'left',
+            align: entry.align,
             width: textR.size[0],
             height: textR.size[1]
           }
