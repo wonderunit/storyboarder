@@ -13,7 +13,7 @@ const prefModule = remote.require('./prefs')
 const worksheetPrinter = require('./worksheet-printer')
 const storyTips = new(require('../../window/story-tips'))
 
-const { createPrint } = require('../../print.js')
+const createPrint = require('../../print.js')
 
 const print = createPrint({
   pathToSumatraExecutable: path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe')
@@ -119,19 +119,23 @@ document.querySelector('#print-button').onclick = (e) => {
 
   let copies = document.querySelector('#copies').value
 
-  print({
-    filepath: pdfdocument,
-    paperSize: paperSize === 'LTR' ? 'letter' : 'a4',
-    paperOrientation: 'landscape',
-    copies
-  })
+  try {
+    print({
+      filepath: pdfdocument,
+      paperSize: paperSize === 'LTR' ? 'letter' : 'a4',
+      paperOrientation: 'landscape',
+      copies
+    })
 
-  ipcRenderer.send('analyticsEvent', 'Application', 'print-worksheet', null, copies)
+    ipcRenderer.send('analyticsEvent', 'Application', 'print-worksheet', null, copies)
 
-  ipcRenderer.send('playsfx', 'positive')
-  let window = remote.getCurrentWindow()
-  cleanup()
-  window.hide()
+    ipcRenderer.send('playsfx', 'positive')
+    let window = remote.getCurrentWindow()
+    cleanup()
+    window.hide()
+  } catch (err) {
+    alert(err)
+  }
 }
 
 document.querySelector('#pdf-button').onclick = (e) => {

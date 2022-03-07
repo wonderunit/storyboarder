@@ -31,6 +31,7 @@ const createPrint = ({
           '-#', copies,
           filepath
         ])
+        if (output.error) throw new Error(output.error)
         console.log(output.stdout.toString())
         console.error(output.stderr.toString())
         break
@@ -40,6 +41,7 @@ const createPrint = ({
           '-n', copies,
           filepath
         ])
+        if (output.error) throw new Error(output.error)
         console.log(output.stdout.toString())
         console.error(output.stderr.toString())
         break
@@ -54,6 +56,7 @@ const createPrint = ({
         execFile(pathToSumatraExecutable, args, (err, stdout, stderr) => {
           if (err) {
             console.error('error', err)
+            throw new Error(err)
           }
           console.log(stdout)
           console.error(stderr)
@@ -62,4 +65,4 @@ const createPrint = ({
     }
   }
 
-module.exports = { createPrint }
+module.exports = createPrint
