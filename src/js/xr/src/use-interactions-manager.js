@@ -59,7 +59,6 @@ const WORLD_SCALE_LARGE = 1
 const WORLD_SCALE_SMALL = 0.1
 
 const getRotationMemento = (controller, object) => {
-  console.log('getRotationMemento')
   let controllerRot = new THREE.Matrix4().extractRotation(controller.matrixWorld)
   let startingDeviceRotation = new THREE.Quaternion().setFromRotationMatrix(controllerRot)
   let startingDeviceOffset = new THREE.Quaternion()
@@ -459,7 +458,6 @@ const useInteractionsManager = ({
         tilt: euler.x
       }))
     } else if (object.userData.type === 'attachable') {
-      console.log('attachable')
       let position = object.worldPosition()// new THREE.Vector3()
       let quaternion = object.worldQuaternion()
       let scale = new THREE.Vector3()
@@ -477,7 +475,6 @@ const useInteractionsManager = ({
       let rotation = object.userData.type === 'character'
         ? euler.y
         : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-        console.log('no attachable' ,object.position.clone())
       dispatch(updateObject(id, {
         x: object.position.x,
         y: object.position.z,
@@ -510,7 +507,6 @@ const useInteractionsManager = ({
         }
 
       } else if (object.userData.type === 'attachable') {
-        console.log('attachable')
         let position = object.worldPosition()// new THREE.Vector3()
         let quaternion = object.worldQuaternion()
         let scale = new THREE.Vector3()
@@ -529,7 +525,6 @@ const useInteractionsManager = ({
         let rotation = object.userData.type === 'character'
           ? euler.y
           : { x: object.rotation.x, y: object.rotation.y, z: object.rotation.z }
-          // console.log('no attachable' ,object.position.clone())
           objectsChange[id] = {
             x: object.position.x,
             y: object.position.z,
@@ -684,11 +679,7 @@ const useInteractionsManager = ({
     let targetObj = match ? sceneObjects[match.userData.id] : null
 
     if (match && !targetObj.locked && !targetObj.blocked) {
-      // console.log('found sceneObject:', sceneObjects[match.userData.id])
-      // console.log('intersection', intersection)
-      // log(`select ${sceneObjects[match.userData.id].name || sceneObjects[match.userData.id].displayName}`)
       log(`trigger start on: ${match.userData.id.slice(0, 7)}`)
-
       interactionService.send({
         type: 'TRIGGER_START',
         controller: event.target,
@@ -701,7 +692,6 @@ const useInteractionsManager = ({
         }
       })
     } else {
-      // console.log('clearing selection')
       log(`trigger start on: none`)
       interactionService.send({ type: 'TRIGGER_START', controller: event.target })
     }
@@ -1395,7 +1385,6 @@ const useInteractionsManager = ({
           uiService.send({ type: 'HIDE' })
         },
         onPosingCharacterExit: (context, event) => {
-          console.log('onPosingCharacterExit')
           let ikHelper = getIkHelper()
           ikHelper.ragDoll.isEnabledIk = false
           if(!ikHelper.isSelected())
@@ -1481,7 +1470,6 @@ const useInteractionsManager = ({
 
           // if we're in `selected` mode, we can commit the change immediately
           if (interactionService.state.value === 'selected') {
-            console.log('onDropLowest selected')
             commit(context.selection, object)
           }
 
