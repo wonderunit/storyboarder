@@ -87,7 +87,7 @@ const patchPDFDocument = doc => {
   doc.textWithoutFallback = fn
 }
 
-const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cfg) => {
+const drawHeader = (doc, { rect, titles, pagination, stats }, cfg) => {
   const { pos, size } = rect.copy()
 
   const rems = n => Math.round(n * 16)
@@ -101,13 +101,13 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
   //
   // project and scene titles
   //
-  if (projectTitle) {
+  if (titles.project) {
     doc
       .font(THIN)
       .fontSize(rems(1.25))
       .fillColor('black')
       .text(
-        projectTitle + ' / ',
+        titles.project + ' / ',
         pos[0], pos[1] + rems(1.25),
         { continued: true, baseline: 'bottom', width: size[0] }
       )
@@ -117,7 +117,7 @@ const drawHeader = (doc, { rect, projectTitle, pageData, pagination, stats }, cf
     .fontSize(rems(1.25))
     .fillColor('black')
     .text(
-      pageData.scene.title,
+      titles.scene,
         pos[0], pos[1] + rems(1.25),
       { baseline: 'bottom', width: size[0] }
     )
@@ -712,8 +712,10 @@ function generate ({ project }, cfg) {
     drawHeader(doc,
       {
         rect: header,
-        projectTitle: project.title,
-        pageData,
+        titles: {
+          project: project.title,
+          scene: pageData.scene.title
+        },
         stats: {
           boards: getBoardsCount(pageData.scene.data),
           shots: getShotsCount(pageData.scene.data),
