@@ -389,7 +389,7 @@ const InputControlsView = ({
                   // place text below (column) or right (row)
                   ['fieldset',
                     ['div',
-                      ['legend', { name: 'direction' }, t('print-project.board-layout-title')]
+                      ['legend', { name: 'direction' }, t('print-project.boards-layout-title')]
                     ],
                     [RadioGroup,
                       {
@@ -397,8 +397,8 @@ const InputControlsView = ({
                         value: direction,
                         onChange: event => send({ type: 'SET_DIRECTION', value: event.target.value })
                       },
-                      [Radio, { value: 'column', label: t('print-project.board-layout-column') }],
-                      [Radio, { value: 'row', label: t('print-project.board-layout-row') }],
+                      [Radio, { value: 'column', label: t('print-project.boards-layout-column') }],
+                      [Radio, { value: 'row', label: t('print-project.boards-layout-row') }],
                     ]
                   ],
 
@@ -424,7 +424,7 @@ const InputControlsView = ({
 
                   ['fieldset',
                     ['div',
-                      ['legend', { name: 'board-border-style' }, t('print-project.board-border-style-title')]
+                      ['legend', { name: 'board-border-style' }, t('print-project.boards-border-style-title')]
                     ],
 
                     [RadioGroup,
@@ -433,8 +433,8 @@ const InputControlsView = ({
                         value: boardBorderStyle,
                         onChange: event => send({ type: 'SET_BOARD_BORDER_STYLE', value: event.target.value })
                       },
-                      [Radio, { value: 'full', label: t('print-project.board-border-style-label-full') }],
-                      [Radio, { value: 'minimal', label: t('print-project.board-border-style-label-minimal') }],
+                      [Radio, { value: 'full', label: t('print-project.boards-border-style-label-full') }],
+                      [Radio, { value: 'minimal', label: t('print-project.boards-border-style-label-minimal') }],
                     ]
                   ]
                 ],
