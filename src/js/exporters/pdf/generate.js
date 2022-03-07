@@ -242,11 +242,12 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   let imageB = inset(imageR, [-borderSize, -borderSize])
 
   let cellB = inner.copy()
-  cellB.pos[0] = imageR.pos[0] + imageR.size[0] + 1 + 5
-  cellB.size[0] -= cellA.size[0] + 1 + imageR.size[0] + 1 + 10
+  cellB.pos[0] = imageR.pos[0] + imageR.size[0] + 1
+  cellB.size[0] -= cellA.size[0] + 1 + imageR.size[0] + 1
 
   let cellAinner = inset(cellA, [5, 5])
   let cellBinner = inset(cellB, [5, 5])
+  cellBinner.size[0] += 5
 
   // image border
   doc
@@ -326,10 +327,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
     let textR = cellBinner.copy()
     textR.size[0] *= 1 / entries.length
     textR.pos[0] += textR.size[0] * e
-    // 5px right margin, except last child
-    if (e < entries.length - 1) {
-      textR.size[0] -= 5
-    }
+    textR.size[0] -= 5
 
     // HACK expand to allow text to hit bottom edge
     textR.size[1] += 5
@@ -354,6 +352,29 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
         )
         .font(THIN) // restore font
       .restore()
+    }
+
+    if (cfg.boardBorderStyle != 'minimal') {
+      if (e != entries.length - 1) {
+        let borderR = cellB.copy()
+        borderR.pos[0] += 5
+        borderR.size[0] -= 5
+        borderR.size[0] *= 1 / entries.length
+        borderR.pos[0] += borderR.size[0] * e
+        borderR.size[0] -= 5
+    
+        borderR.pos[0] += 2.5
+
+        doc
+          .save()
+          .strokeColor('#333')
+          .strokeOpacity(0.25 * 0.4)
+          .lineWidth(1)
+          .moveTo(borderR.pos[0] + borderR.size[0], borderR.pos[1])
+          .lineTo(borderR.pos[0] + borderR.size[0], borderR.pos[1] + borderR.size[1])
+          .stroke()
+          .restore()
+      }
     }
   }
 }
@@ -777,7 +798,7 @@ function generate ({ project }, cfg) {
 
       if (direction == 'row') {
         let borderRect = new Rect(
-          cell.pos,
+          v.add2([],  cell.pos, [ 1, 0]),
           v.sub2([], cell.size, [10, 0]),
           cell.attribs
         )
@@ -834,12 +855,12 @@ const drawBoardBordersRow = (doc, options, cfg) => {
       .stroke()
   }
   if (last) {
-    // top
-    doc
-      .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
-      .moveTo(...rect.pos)
-      .lineTo(rect.pos[0] + rect.size[0], rect.pos[1])
-      .stroke()
+    // top (interior)
+      // doc
+      //   .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
+      //   .moveTo(...rect.pos)
+      //   .lineTo(rect.pos[0] + rect.size[0], rect.pos[1])
+      //   .stroke()
     // bottom
     doc
       .strokeOpacity(localCfg.boardBorderStrokeOpacity)
@@ -848,12 +869,12 @@ const drawBoardBordersRow = (doc, options, cfg) => {
       .stroke()
   }
   if (!(first || last)) {
-    // bottom
-    doc
-      .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
-      .moveTo(...rect.pos)
-      .lineTo(rect.pos[0] + rect.size[0], rect.pos[1])
-      .stroke()
+    // bottom (interior)
+      // doc
+      //   .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
+      //   .moveTo(...rect.pos)
+      //   .lineTo(rect.pos[0] + rect.size[0], rect.pos[1])
+      //   .stroke()
   }
 
   doc
