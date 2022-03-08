@@ -524,7 +524,7 @@ form.busy * {
 .output.busy--generating .preview-loading-animation {
   opacity: 1;
   transition: opacity 0.25s ease-out;
-  transition-delay: 300ms;
+  transition-delay: 1000ms;
 }
 .output:not(.busy--generating) .preview-loading-animation {
   opacity: 0;
