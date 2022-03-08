@@ -13,6 +13,18 @@ const preventDefault = (fn, ...args) => e => {
 var range = (start, end) =>
   [...Array(end - start + 1)].map((_, i) => start + i)
 
+// via https://stackoverflow.com/a/67183414
+const restartAnimations = (element) => {
+  let treeWalker = document.createTreeWalker(element)
+  let next
+  while (next = treeWalker.nextNode()) {
+    for (let animation of next.getAnimations()) {
+      animation.cancel()
+      animation.play()
+    }
+  }
+}
+
 const RadioGroup = ({ name, value, onChange, children }) =>
   React.createElement('div', { className: 'group' }, React.Children.map(children, child =>
     React.cloneElement(child, {
@@ -49,9 +61,13 @@ const Checkbox = ({ name, label, onChange, checked }) =>
         ['label', { htmlFor: name }, label ]]
   )
 
-const PreviewLoadingAnimation = ({ }) =>
-  h(
-    ['.preview-loading-animation',
+const PreviewLoadingAnimation = ({ shouldRestart }) => {
+  const ref = useRef(null)
+
+  useEffect(() => { shouldRestart && restartAnimations(ref.current) }, [shouldRestart])
+
+  return h(
+    ['.preview-loading-animation', { ref },
       ['.preview-loading-animation__item',
         ['.sk-grid', [
           ['.sk-grid-cube'],
@@ -67,6 +83,7 @@ const PreviewLoadingAnimation = ({ }) =>
       ]
     ]
   )
+}
 
 const Pagination = ({ project, pages, gridDim, pageToPreview, isBusy, send }) => {
   const current = pageToPreview + 1
@@ -91,6 +108,7 @@ const Pagination = ({ project, pages, gridDim, pageToPreview, isBusy, send }) =>
 const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state, send, canvas, ...rest }) => {
   const editorRef = useRef(null)
   const innerRef = useRef(null)
+  const isBusyGenerating = state.matches('busy.generating')
 
   useEffect(() => {
     innerRef.current.innerHTML = ''
@@ -114,7 +132,7 @@ const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state,
           send
         }],
       ['div.inner', { ref: innerRef }],
-      [PreviewLoadingAnimation]
+      [PreviewLoadingAnimation, { shouldRestart: isBusyGenerating }]
     ]
   ])
 }

@@ -122,18 +122,6 @@ const paperSizeAssigner = (context, event) => ({
   paperSize: getPaperSize(context.paperSizeKey, context.orientation)
 })
 
-// via https://stackoverflow.com/a/67183414
-const restartAnimations = (element) => {
-  let treeWalker = document.createTreeWalker(element)
-  let next
-  while (next = treeWalker.nextNode()) {
-    for (let animation of next.getAnimations()) {
-      animation.cancel()
-      animation.play()
-    }
-  }
-}
-
 /*
  * guards
 */
