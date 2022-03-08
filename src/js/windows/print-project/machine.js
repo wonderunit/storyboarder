@@ -142,10 +142,14 @@ const presetExists = (context, event) => context.presets[event.value] != undefin
 /*
  * actions for preview canvas replacement and conditional random rotation
  */
+const isNotPageTurningEvent = event => !event.type.match(/_PAGE_TO_PREVIEW$/)
+
 const rotationAssigner = (context, event) => {
+  if (isNotPageTurningEvent(event)) {
     return {
       rotation: ((Math.random() * 4) - 2)
     }
+  }
 }
 
 // TODO avoid storing canvas reference in context
