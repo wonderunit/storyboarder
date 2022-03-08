@@ -49,6 +49,25 @@ const Checkbox = ({ name, label, onChange, checked }) =>
         ['label', { htmlFor: name }, label ]]
   )
 
+const PreviewLoadingAnimation = ({ }) =>
+  h(
+    ['.preview-loading-animation',
+      ['.preview-loading-animation__item',
+        ['.sk-grid', [
+          ['.sk-grid-cube'],
+          ['.sk-grid-cube'],
+          ['.sk-grid-cube'],
+          ['.sk-grid-cube'],
+          ['.sk-grid-cube'],
+          ['.sk-grid-cube'],
+          ['.sk-grid-cube'],
+          ['.sk-grid-cube'],
+          ['.sk-grid-cube'],
+        ]]
+      ]
+    ]
+  )
+
 const Pagination = ({ project, pages, gridDim, pageToPreview, isBusy, send }) => {
   const current = pageToPreview + 1
   const total = pages[1] + 1
@@ -92,7 +111,8 @@ const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state,
           isBusy: state.matches('busy'),
           send
         }],
-      ['div.inner', { ref: innerRef }]
+      ['div.inner', { ref: innerRef }],
+      [PreviewLoadingAnimation]
     ]
   ])
 }
