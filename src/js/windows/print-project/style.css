@@ -9,6 +9,7 @@ body {
   color: #aaa;
   font-family: var(--default-font-stack);
   line-height: 1.2;
+  text-rendering: geometricPrecision;
 }
 
 .container {
