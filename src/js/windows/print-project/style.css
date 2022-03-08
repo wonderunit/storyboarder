@@ -44,6 +44,14 @@ body {
   background: rgb(229, 229, 229);
   color: rgba(0, 0, 0, 0.6);
 }
+.editor.editor--loading {
+  opacity: 0;
+  transition: none;
+}
+.editor:not(.editor--loading) {
+  opacity: 1;
+  transition: opacity 0.4s ease-out;
+}
 .title {
   margin: 0.75rem 0 0;
   padding: 0;

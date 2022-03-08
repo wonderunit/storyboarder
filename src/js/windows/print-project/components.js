@@ -89,6 +89,7 @@ const Pagination = ({ project, pages, gridDim, pageToPreview, isBusy, send }) =>
 }
 
 const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state, send, canvas, ...rest }) => {
+  const editorRef = useRef(null)
   const innerRef = useRef(null)
 
   useEffect(() => {
@@ -97,7 +98,7 @@ const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state,
     send('CANVAS_READY')
   }, [ innerRef, canvas ])
 
-  return h(['div.editor',
+  return h(['div.editor', { ref: editorRef, className: editorRef.current ? null : 'editor--loading' },
     ['div.input', {}, [
       InputView, {
         onClose, onPrint, onExport, onSelectedPresetChange,
