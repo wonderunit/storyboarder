@@ -125,7 +125,7 @@ const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state,
         ...rest
       }
     ]],
-    ['div.output',
+    ['div.output', { className: isBusyGenerating ? 'busy--generating' : null },
       [Pagination, {
           project: rest.project, pages: rest.pages, gridDim: rest.gridDim, pageToPreview: rest.pageToPreview,
           isBusy: state.matches('busy'),

@@ -388,12 +388,6 @@ const machine = Machine({
       initial: 'generating',
       states: {
         generating: {
-          entry: (context) => {
-            context.canvas.parentNode.parentNode.classList.add('busy--generating')
-          },
-          exit: (context) => {
-            context.canvas.parentNode.parentNode.classList.remove('busy--generating')
-          },
           entry: assign(rotationAssigner),
           invoke: {
             src: 'generateToCanvas',
