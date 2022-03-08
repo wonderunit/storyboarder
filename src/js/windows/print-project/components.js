@@ -96,6 +96,7 @@ const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state,
     innerRef.current.innerHTML = ''
     innerRef.current.appendChild(canvas)
     send('CANVAS_READY')
+    send('EDITOR_READY')
   }, [ innerRef, canvas ])
 
   return h(['div.editor', { ref: editorRef, className: editorRef.current ? null : 'editor--loading' },

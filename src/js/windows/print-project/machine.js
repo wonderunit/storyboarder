@@ -150,9 +150,11 @@ const machine = Machine({
       ],
       on: {
         'CANVAS_READY': {
-          target: 'busy',
           // hidden by default, until first render
           actions: 'hidePreviewDisplay'
+        },
+        'EDITOR_READY': {
+          target: 'busy'
         }
       }
     },
