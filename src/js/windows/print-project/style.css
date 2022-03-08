@@ -199,13 +199,13 @@ fieldset:disabled .radio {
 }
 fieldset .checkbox,
 fieldset .radio {
-  transition: all 150ms ease-out;
+  transition: opacity 150ms ease-out, filter 150ms ease-out;
 }
 select:disabled {
   opacity: 0.6;
 }
 select {
-  transition: all 150ms ease-out;
+  transition: opacity 150ms ease-out, filter 150ms ease-out;
 }
 
 /* form inputs: select */
