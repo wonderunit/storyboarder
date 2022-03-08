@@ -47,20 +47,21 @@ const exportToFile = async (context, event) => {
 }
 
 const generateToCanvas = async (context, event) => {
-  let { project, canvas } = context
+  let { canvas: oldCanvas } = context
+  let parentNode = oldCanvas.parentNode
+  let outputEl = parentNode.parentNode
 
-  canvas.parentNode.parentNode.classList.add('busy--generating')
+  await exportToFile(
+    {
+      ...context,
 
-  let contextWithPages = {
-    ...context,
-    // override to force a single page preview
-    pages: [context.pageToPreview, context.pageToPreview]
-  }
-
-  await exportToFile(contextWithPages, event)
+      // override `pages` to force a single-page preview
+      pages: [context.pageToPreview, context.pageToPreview]
+    },
+    event
+  )
 
   // load and render the file to the canvas
-  // log.info('displaying pdf')
   let task = pdfjsLib.getDocument(context.filepath)
   let pdf = await task.promise
   let page = await pdf.getPage(1)
@@ -68,7 +69,6 @@ const generateToCanvas = async (context, event) => {
   let full = page.getViewport({ scale: 1 })
 
   // fit to the space available within the output element, minus its padding
-  let outputEl = canvas.parentNode.parentNode
   let available = outputEl.getBoundingClientRect()
   let styles = getComputedStyle(outputEl)
   let w = parseInt(styles.paddingLeft) + parseInt(styles.paddingRight)
@@ -78,28 +78,25 @@ const generateToCanvas = async (context, event) => {
   let [width, height] = fit([full.width, full.height], [available.width, available.height])
 
   let scale = Math.min((width / full.width), (height / full.height))
-
   let viewport = page.getViewport({ scale: scale * window.devicePixelRatio })
-  canvas.width = viewport.width
-  canvas.height = viewport.height
-  canvas.style.width = px(viewport.width / window.devicePixelRatio)
-  canvas.style.height = px(viewport.height / window.devicePixelRatio)
 
   // lol
-  canvas.parentNode.style.transform = 'rotate3d(1, 0, 1, ' + ((Math.random() * 4)-2) + 'deg)'
+  parentNode.style.transform = 'rotate3d(1, 0, 1, ' + ((Math.random() * 4)-2) + 'deg)'
 
-  let ctx = canvas.getContext('2d')
-  let renderContext = {
-    canvasContext: ctx,
+  // create the new canvas
+  let newCanvas = document.createElement('canvas')
+  newCanvas.width = viewport.width
+  newCanvas.height = viewport.height
+  newCanvas.style.width = px(viewport.width / window.devicePixelRatio)
+  newCanvas.style.height = px(viewport.height / window.devicePixelRatio)
+  let renderTask = page.render({
+    canvasContext: newCanvas.getContext('2d'),
     viewport: viewport
-  }
-  let renderTask = page.render(renderContext)
+  })
   // TODO could allow user to cancel, via `renderTask.cancel()`
   await renderTask.promise
 
-  // log.info('write complete')
-
-  canvas.parentNode.parentNode.classList.remove('busy--generating')
+  return newCanvas
 }
 
 const displayWarning = async (context, event) => {

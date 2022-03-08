@@ -357,11 +357,26 @@ const machine = Machine({
       initial: 'generating',
       states: {
         generating: {
+          entry: (context) => {
+            context.canvas.parentNode.parentNode.classList.add('busy--generating')
+          },
+          exit: (context) => {
+            context.canvas.parentNode.parentNode.classList.remove('busy--generating')
+          },
           invoke: {
             src: 'generateToCanvas',
             onDone: {
               target: '#available',
               actions: [
+                // TODO avoid storing canvas reference in context
+                // assign `canvas` to context
+                assign((context, event) => {
+                  let newCanvas = event.data
+                  context.canvas.parentNode.replaceChild(newCanvas, context.canvas)
+                  return {
+                    canvas: newCanvas
+                  }
+                }),
                 'showPreviewDisplay'
               ]
             },
