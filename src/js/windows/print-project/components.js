@@ -10,7 +10,7 @@ const preventDefault = (fn, ...args) => e => {
   fn(e, ...args)
 }
 
-var range = (start, end) =>
+const range = (start, end) =>
   [...Array(end - start + 1)].map((_, i) => start + i)
 
 // via https://stackoverflow.com/a/67183414
