@@ -52,7 +52,9 @@ const initialContext = {
 
   filepath: getTemporaryFilepath(),
 
-  selectedPresetId: null
+  selectedPresetId: null,
+
+  rotation: 0
 }
 
 /*
@@ -136,6 +138,29 @@ const restartAnimations = (element) => {
  * guards
 */
 const presetExists = (context, event) => context.presets[event.value] != undefined
+
+/*
+ * actions for preview canvas replacement and conditional random rotation
+ */
+const rotationAssigner = (context, event) => {
+    return {
+      rotation: ((Math.random() * 4) - 2)
+    }
+}
+
+// TODO avoid storing canvas reference in context
+const renderNewCanvasAssigner = (context, event) => {
+  let newCanvas = event.data
+  context.canvas.parentNode.replaceChild(newCanvas, context.canvas)
+  return {
+    canvas: newCanvas
+  }
+}
+
+const renderRotation = (context, event) => {
+  // lol
+  context.canvas.parentNode.style.transform = 'rotate3d(1, 0, 1, ' + context.rotation + 'deg)'
+}
 
 const machine = Machine({
   id: 'print-project',
@@ -377,24 +402,14 @@ const machine = Machine({
           exit: (context) => {
             context.canvas.parentNode.parentNode.classList.remove('busy--generating')
           },
+          entry: assign(rotationAssigner),
           invoke: {
             src: 'generateToCanvas',
             onDone: {
               target: '#available',
               actions: [
-                // TODO avoid storing canvas reference in context
-                // assign `canvas` to context
-                assign((context, event) => {
-                  let newCanvas = event.data
-                  context.canvas.parentNode.replaceChild(newCanvas, context.canvas)
-                  return {
-                    canvas: newCanvas
-                  }
-                }),
-                (context, event) => {
-                  // lol
-                  context.canvas.parentNode.style.transform = 'rotate3d(1, 0, 1, ' + ((Math.random() * 4)-2) + 'deg)'
-                },
+                assign(renderNewCanvasAssigner),
+                renderRotation,
                 'showPreviewDisplay'
               ]
             },
