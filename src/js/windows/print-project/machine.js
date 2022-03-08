@@ -377,6 +377,10 @@ const machine = Machine({
                     canvas: newCanvas
                   }
                 }),
+                (context, event) => {
+                  // lol
+                  context.canvas.parentNode.style.transform = 'rotate3d(1, 0, 1, ' + ((Math.random() * 4)-2) + 'deg)'
+                },
                 'showPreviewDisplay'
               ]
             },

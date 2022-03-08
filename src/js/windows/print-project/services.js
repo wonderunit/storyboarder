@@ -80,9 +80,6 @@ const generateToCanvas = async (context, event) => {
   let scale = Math.min((width / full.width), (height / full.height))
   let viewport = page.getViewport({ scale: scale * window.devicePixelRatio })
 
-  // lol
-  parentNode.style.transform = 'rotate3d(1, 0, 1, ' + ((Math.random() * 4)-2) + 'deg)'
-
   // create the new canvas
   let newCanvas = document.createElement('canvas')
   newCanvas.width = viewport.width
