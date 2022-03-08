@@ -190,6 +190,8 @@ const InputControlsView = ({
     ]
   }
 
+  const isDisabled = state.matches('busy') || state.matches('loading')
+
   return h(
     [React.Fragment, [
       ['a.close', { href: '#', onClick: onClose }, '×'],
@@ -200,7 +202,7 @@ const InputControlsView = ({
           ['.description', t('print-project.description')],
 
           ['.collection', [
-            ['fieldset',
+            ['fieldset', { disabled: isDisabled },
               ['div',
                 ['legend', { name: 'paper-size-key' }, t('print-project.paper-size')]
               ],
@@ -214,7 +216,7 @@ const InputControlsView = ({
                 [Radio, { value: 'letter', label: t('print-project.paper-size-letter-label'), title: t('print-project.paper-size-letter-hint') }],
               ]
             ],
-            ['fieldset',
+            ['fieldset', { disabled: isDisabled },
               ['div',
                 ['legend', { name: 'selected-preset' }, t('print-project.preset-selection-title')]
               ],
@@ -231,7 +233,7 @@ const InputControlsView = ({
             ['div', t('print-project.layout-title')],
 
 
-          ['fieldset',
+          ['fieldset', { disabled: isDisabled },
             ['div',
               ['legend', { name: 'orientation' }, 'Orientation']
             ],
@@ -249,7 +251,7 @@ const InputControlsView = ({
             ]
           ],
 
-          ['fieldset',
+          ['fieldset', { disabled: isDisabled },
             ['div',
               ['legend', { name: 'grid' }, t('print-project.grid-title')]],
             ['div.group',
@@ -286,7 +288,7 @@ const InputControlsView = ({
               ['div.collection',
                   ['div', t('print-project.header-title')],
 
-              //     ['fieldset',
+              //     ['fieldset', { disabled: isDisabled },
               //         ['div',
               //             ['legend', { name: 'header-pages' }, 'Pages']],
               //         ['div.group',
@@ -316,7 +318,7 @@ const InputControlsView = ({
               //                     }],
               //                 ['label', { htmlFor: 'pages-scene' }, 'First of Scene']]]],
 
-              ['fieldset',
+              ['fieldset', { disabled: isDisabled },
                 ['div',
                   ['legend', { name: 'stats' }, t('print-project.header-stats-title')]],
                 ['div.group',
@@ -362,7 +364,7 @@ const InputControlsView = ({
 
               ['div.collection',
                 ['div', t('print-project.boards-title')],
-                ['fieldset',
+                ['fieldset', { disabled: isDisabled },
                   ['div',
                     ['legend', { name: 'shot-number' }, t('print-project.boards-shot-number-title')]],
                   ['div.group',
@@ -379,7 +381,7 @@ const InputControlsView = ({
                   ]
                 ],
 
-                ['fieldset',
+                ['fieldset', { disabled: isDisabled },
                   ['div',
                     ['legend', { name: 'text' }, 'Text']],
                   ['div.group',
@@ -409,7 +411,7 @@ const InputControlsView = ({
                     }]
                   ]],
 
-                  ['fieldset',
+                  ['fieldset', { disabled: isDisabled },
                     ['div',
                       ['legend', { name: 'board-time-display' }, t('print-project.boards-time-display-title')]
                     ],
@@ -427,7 +429,7 @@ const InputControlsView = ({
                   ],
 
                   // place text below (column) or right (row)
-                  ['fieldset',
+                  ['fieldset', { disabled: isDisabled },
                     ['div',
                       ['legend', { name: 'direction' }, t('print-project.boards-layout-title')]
                     ],
@@ -442,7 +444,7 @@ const InputControlsView = ({
                     ]
                   ],
 
-                  ['fieldset',
+                  ['fieldset', { disabled: isDisabled },
                     ['div',
                       ['legend', { name: 'board-text-size' }, t('print-project.boards-text-size-title')]
                     ],
@@ -462,7 +464,7 @@ const InputControlsView = ({
                     ]
                   ],
 
-                  ['fieldset',
+                  ['fieldset', { disabled: isDisabled },
                     ['div',
                       ['legend', { name: 'board-border-style' }, t('print-project.boards-border-style-title')]
                     ],

@@ -192,6 +192,21 @@ form button {
   color: rgba(0, 0, 0, 1.0);
   transition: color 0.1s;
 }
+fieldset:disabled .checkbox,
+fieldset:disabled .radio {
+  opacity: 0.6;
+  filter: contrast(20%) brightness(110%);
+}
+fieldset .checkbox,
+fieldset .radio {
+  transition: all 150ms ease-out;
+}
+select:disabled {
+  opacity: 0.6;
+}
+select {
+  transition: all 150ms ease-out;
+}
 
 /* form inputs: select */
 /* via https://www.filamentgroup.com/lab/select-css.html */
@@ -383,15 +398,7 @@ details .group {
 
 
 
-form.busy,
-form:not(.busy) {
-  transition: opacity 0.2s linear;
-}
-form:not(.busy) {
-  opacity: 1.0;
-}
 form.busy {
-  opacity: 0.75;
   cursor: wait;
 }
 form.busy * {
