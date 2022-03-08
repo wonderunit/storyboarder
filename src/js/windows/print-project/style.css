@@ -106,6 +106,7 @@ form {
   display: flex;
   position: relative;
   height: min-content;
+  box-shadow: 0px 3px 7px rgba(0, 0, 0, 0.3);
 }
 .output .inner:after {
   /* add the transparent pattern overlay */
