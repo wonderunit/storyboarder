@@ -523,7 +523,7 @@ form.busy * {
 }
 .output.busy--generating .preview-loading-animation {
   opacity: 1;
-  transition: opacity 0.1s ease-out;
+  transition: opacity 0.25s ease-out;
 }
 .output:not(.busy--generating) .preview-loading-animation {
   opacity: 0;
