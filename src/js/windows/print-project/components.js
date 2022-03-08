@@ -132,7 +132,7 @@ const EditorView = ({ onClose, onPrint, onExport, onSelectedPresetChange, state,
           send
         }],
       ['div.inner', { ref: innerRef }],
-      [PreviewLoadingAnimation, { shouldRestart: isBusyGenerating }]
+      [PreviewLoadingAnimation, { shouldRestart: isBusyGenerating == true }]
     ]
   ])
 }
