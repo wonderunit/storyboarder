@@ -529,6 +529,7 @@ form.busy * {
 .output:not(.busy--generating) .preview-loading-animation {
   opacity: 0;
   transition: opacity 0.3s ease-out;
+  transition-delay: 60ms;
 }
 .preview-loading-animation__item {
   display: flex;
