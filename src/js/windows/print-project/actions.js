@@ -22,8 +22,18 @@ const persist = (context, event) => {
   prefs.set('printProjectState', toPrefsMemento(context), true)
 }
 
+const hidePreviewDisplay = (context, event) => {
+  context.canvas.parentNode.style.visibility = 'hidden'
+}
+
+const showPreviewDisplay = (context, event) => {
+  context.canvas.parentNode.style.visibility = 'visible'
+}
+
 module.exports = {
   reportAnalyticsEvent,
   showItemInFolder,
-  persist
+  persist,
+  hidePreviewDisplay,
+  showPreviewDisplay
 }

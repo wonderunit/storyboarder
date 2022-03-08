@@ -137,7 +137,11 @@ const machine = Machine({
         assign(paperSizeAssigner)
       ],
       on: {
-        'CANVAS_READY': 'busy'
+        'CANVAS_READY': {
+          target: 'busy',
+          // hidden by default, until first render
+          actions: 'hidePreviewDisplay'
+        }
       }
     },
     available: {
@@ -356,7 +360,10 @@ const machine = Machine({
           invoke: {
             src: 'generateToCanvas',
             onDone: {
-              target: '#available'
+              target: '#available',
+              actions: [
+                'showPreviewDisplay'
+              ]
             },
             onError: {
               target: '#warning'

@@ -13,7 +13,13 @@ const prefs = remote.require('./prefs')
 const { getProjectData } = require('./data')
 const { machine: printProjectMachine } = require('./machine')
 const { generateToCanvas, exportToFile, displayWarning, requestPrint } = require('./services')
-const { reportAnalyticsEvent, showItemInFolder, persist } = require('./actions')
+const {
+  reportAnalyticsEvent,
+  showItemInFolder,
+  persist,
+  hidePreviewDisplay,
+  showPreviewDisplay
+} = require('./actions')
 const { PrintApp } = require('./components')
 const { fromPrefsMemento } = require('./context-helpers')
 const getPresets = require('./presets')
@@ -59,7 +65,9 @@ const start = async () => {
         actions: {
           reportAnalyticsEvent,
           showItemInFolder,
-          persist
+          persist,
+          hidePreviewDisplay,
+          showPreviewDisplay
         },
         services: {
           generateToCanvas,
