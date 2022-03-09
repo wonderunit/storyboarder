@@ -31,6 +31,8 @@
     "build:ar": "webpack --mode=production --progress --config configs/ar/webpack.config.js",
     "build:shot-generator": "webpack --mode=production --progress --config configs/shot-generator/webpack.config.js",
     "build:shot-explorer": "webpack --mode=production --progress --config configs/shot-explorer/webpack.config.js",
+    "build:language-preferences": "webpack --mode=production --progress --config configs/language-preferences/webpack.config.js",
+    "build:print-project": "webpack --mode=production --progress --config configs/print-project/webpack.config.js",
     "build:server": "cd server && npm run build",
     "build": "npm-run-all build:*",
     "deploy:prod": "node ./scripts/deploy.js"
