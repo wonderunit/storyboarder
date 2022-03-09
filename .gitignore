@@ -49,3 +49,4 @@ src/build
 .cache
 
 .env
+*.env

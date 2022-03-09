@@ -3,7 +3,8 @@ import React, { useEffect, useMemo, useRef, useCallback, useState } from 'react'
 import { connect } from 'react-redux'
 import getGroupAction from '../../../utils/getGroupAction'
 import { createSelector } from 'reselect'
-import { ipcRenderer, remote} from 'electron'
+import { ipcRenderer} from 'electron'
+const remote = require('@electron/remote')
 const { dialog } = remote
 import KeyCommandsSingleton from './KeyCommandsSingleton'
 

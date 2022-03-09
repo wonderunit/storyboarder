@@ -40,7 +40,7 @@ const isUserFile = string => {
 
 // TODO could use app.getAppPath() instead?
 //
-// const { app } = require('electron').remote
+// const { app } = require('@electron/remote')
 // path.join(app.getAppPath(), 'src', 'data', 'shot-generator')
 
 const pathToShotGeneratorData =

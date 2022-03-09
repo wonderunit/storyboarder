@@ -4,6 +4,7 @@ Tested with node v6.1.0.
 
 ## Developing
 
+    $ cd server && npm install && cd ..
     $ npm install
     $ npm start
 
@@ -37,10 +38,18 @@ To compile only (Shot Generator, Shot Explorer, and Shot Generator XR)
 
 To compile and build Storyboarder.app:
 
+    $ sudo npm install -g electron-builder
     $ npm run dist:mac    # Mac only
     $ npm run dist:win    # Windows only
     $ npm run dist:linux  # Linux only
     $ npm run dist        # All Platforms
+
+For quick testing:
+
+    $ CSC_IDENTITY_AUTO_DISCOVERY=false electron-builder build -m --arm64 --x64 --dir
+
+- `CSC_IDENTITY_AUTO_DISCOVERY=false` prevents Code Signing and Notarizing
+- `--dir` prevents packaging
 
 If cross-compiling from Mac to Windows, install [Wine](see https://github.com/electron-userland/electron-builder/wiki/Multi-Platform-Build) first.
 

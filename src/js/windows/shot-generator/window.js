@@ -1,5 +1,5 @@
 const { ipcRenderer, shell } = electron = require('electron')
-const { app } = electron.remote
+const remote = require('@electron/remote')
 
 // const https = require('https')
 // https.globalAgent.options.rejectUnauthorized = false;
@@ -7,7 +7,7 @@ const { app } = electron.remote
 // const WS = require('ws')
 
 const path = require('path')
-const shotExplorer = require('../shot-explorer/main')
+const shotExplorer = require('../shot-explorer/setup')
 const { Suspense } = React = require('react')
 const { Provider, connect } = require('react-redux')
 const ReactDOM = require('react-dom')
@@ -269,7 +269,7 @@ ipcRenderer.on('shot-generator:show:shot-explorer', () => {
   shotExplorer.getWindow().webContents.send('shot-explorer:show')
 })
 
-electron.remote.getCurrentWindow().on("close", () => {
+remote.getCurrentWindow().on("close", () => {
   let shotExplorerWindow = shotExplorer.getWindow()
   if(shotExplorerWindow)
     shotExplorerWindow.destroy()

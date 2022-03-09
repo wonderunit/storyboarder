@@ -2,8 +2,8 @@ const fs = require('fs-extra')
 const path = require('path')
 const GIFEncoder = require('gifencoder')
 const moment = require('moment')
-const app = require("electron").remote.app
-const { dialog } = require('electron').remote
+const app = require('@electron/remote').app
+const { dialog } = require('@electron/remote')
 
 const {
   boardFileImageSize,
@@ -19,7 +19,6 @@ const {
 
 const exporterFcpX = require('../exporters/final-cut-pro-x')
 const exporterFcp = require('../exporters/final-cut-pro')
-const exporterPDF = require('../exporters/pdf')
 const exporterCleanup = require('../exporters/cleanup')
 const exporterFfmpeg = require('../exporters/ffmpeg')
 const util = require('../utils/index')
@@ -94,52 +93,6 @@ class Exporter {
     })
 
     return outputPath
-  }
- 
-  exportPDF (boardData, projectFileAbsolutePath, _paperSize, _paperOrientation, _rows, _cols, _spacing, _filepath, shouldWatermark = false, watermarkImagePath = undefined, watermarkDimensions = []) {
-    return new Promise((resolve, reject) => {
-      let outputPath = app.getPath('temp')
-
-      let basenameWithoutExt = path.basename(projectFileAbsolutePath, path.extname(projectFileAbsolutePath))
-
-      boardData.boards.forEach((board, index) => {
-        let from = path.join(path.dirname(projectFileAbsolutePath), 'images', boardFilenameForPosterFrame(board))
-        let to = path.join(outputPath, `board-` + index + '.jpg')
-        try {
-          if (!fs.existsSync(from)) throw new Error('Missing posterframe ' + from)
-
-          fs.copySync(from, to)
-        } catch (err) {
-          reject(err)
-        }
-      })
-
-      try {
-        let exportsPath = ensureExportsPathExists(projectFileAbsolutePath)
-        let filepath = _filepath ? _filepath : path.join(exportsPath, basenameWithoutExt + ' ' + moment().format('YYYY-MM-DD hh.mm.ss') + '.pdf')
-        let paperSize = _paperSize ? _paperSize : 'LTR'
-        let paperOrientation = _paperOrientation ? _paperOrientation : "landscape"
-        let rows = _rows ? _rows : 3
-        let cols = _cols ? _cols : 3
-        let spacing = _spacing ? _spacing : 10
-        exporterPDF.generatePDF(
-          paperSize,
-          paperOrientation,
-          rows,
-          cols,
-          spacing,
-          boardData,
-          basenameWithoutExt,
-          filepath,
-          shouldWatermark,
-          watermarkImagePath,
-          watermarkDimensions
-        )
-        resolve(filepath)
-      } catch(err) {
-        reject(err)
-      }
-    })
   }
 
   exportImages (boardData, projectFileAbsolutePath, outputPath = null) {

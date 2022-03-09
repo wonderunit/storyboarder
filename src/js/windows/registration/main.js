@@ -1,4 +1,5 @@
-const { BrowserWindow, ipcMain } = electron = require('electron')
+const remoteMain = require('@electron/remote/main')
+const { BrowserWindow } = require('electron')
 
 let win
 let hasRendered = false
@@ -37,9 +38,10 @@ const show = () => {
     webPreferences: {
       nodeIntegration: true,
       devTools: true,
-      enableRemoteModule: true
+      contextIsolation: false
     }
   })
+  remoteMain.enable(win.webContents)
   win.once('closed', () => {
     win = null
   })

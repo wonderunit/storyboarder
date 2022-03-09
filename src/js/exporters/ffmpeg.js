@@ -1,13 +1,30 @@
 const execa = require('execa')
-const ffmpegPath = require('@ffmpeg-installer/ffmpeg').path.replace('app.asar', 'app.asar.unpacked');
 const fs = require('fs-extra')
 const path = require('path')
 const moment = require('moment')
 const tmp = require('tmp')
+const os = require('os')
+
+const reportedFfmpegPath = require('ffmpeg-static')
+
+// via https://github.com/sindresorhus/electron-util/blob/main/source/is-using-asar.js
+const isUsingAsar = () => {
+  if (!('electron' in process.versions)) return
+
+  let mainModule = process.type == 'renderer'
+    ? require('@electron/remote').process.mainModule
+    : require.main
+
+  return mainModule && mainModule.filename.includes('app.asar')
+}
+
+let ffmpegPath = reportedFfmpegPath
+if (isUsingAsar()) {
+  ffmpegPath = reportedFfmpegPath.replace('app.asar', 'app.asar.unpacked')
+}
 
 const boardModel = require('../models/board')
 const exporterCommon = require('../exporters/common')
-
 
 // const durationRegex = /Duration: (\d\d:\d\d:\d\d.\d\d)/gm
 // const frameRegex = /frame=\s+(\d+)/gm
@@ -28,6 +45,7 @@ const checkVersion = async () =>
   new Promise((resolve, reject) => {
     let matchedVersion
 
+    console.log('Checking for ffmpeg at', ffmpegPath)
     const process = execa(ffmpegPath, [
       '-version'
     ])

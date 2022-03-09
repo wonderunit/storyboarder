@@ -1,3 +1,4 @@
+const remoteMain = require('@electron/remote/main')
 const { BrowserWindow } = electron = require('electron')
 
 const path = require('path')
@@ -39,9 +40,10 @@ const show = (onComplete) => {
       allowRunningInsecureContent: true,
       experimentalFeatures: true,
       backgroundThrottling: true,
-      enableRemoteModule: true
+      contextIsolation: false
     }
   })
+  remoteMain.enable(win.webContents)
 
   win.once('closed', () => {
     win = null

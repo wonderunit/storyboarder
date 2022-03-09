@@ -1,5 +1,6 @@
+require('electron-redux/preload')
 const { ipcRenderer } = require('electron')
-const { app } = remote = require('electron').remote
+const { app } = remote = require('@electron/remote')
 const JWT = require('jsonwebtoken')
 const moment = require('moment')
 const { machineIdSync } = require('node-machine-id')
@@ -7,10 +8,8 @@ const fs = require('fs')
 const path = require('path')
 const trash = require('trash')
 
-const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('../src/js/shared/store/configureStore')
-
-const store = configureStore(getInitialStateRenderer(), 'renderer')
+const store = configureStore()
 
 const fetchWithTimeout = require('../src/js/utils/fetchWithTimeout')
 

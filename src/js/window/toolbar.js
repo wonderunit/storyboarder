@@ -1,4 +1,4 @@
-const { remote } = require('electron')
+const remote = require('@electron/remote')
 const EventEmitter = require('events').EventEmitter
 const Color = require('color-js')
 

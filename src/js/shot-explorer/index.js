@@ -8,14 +8,14 @@ import FatalErrorBoundary from '../shot-generator/components/FatalErrorBoundary'
 import {OutlineEffect} from '../vendor/OutlineEffect'
 import {cache} from '../shot-generator/hooks/use-assets-manager'
 import TWEEN from '@tweenjs/tween.js'
-import electron from 'electron'
+const remote = require('@electron/remote')
 
 import FilepathsContext from '../shot-generator/contexts/filepaths'
 const {
   createUserPresetPathResolver,
   createAssetPathResolver
 } = require('../shot-generator/services/filepaths')
-const getUserPresetPath = createUserPresetPathResolver(electron.remote.app.getPath('userData'))
+const getUserPresetPath = createUserPresetPathResolver(remote.app.getPath('userData'))
 
 const Effect = ({ shouldRender }) => {
     const {gl, size} = useThree()
@@ -73,13 +73,13 @@ const ShotExplorer = React.memo(({
     useEffect(() => {
         cache.subscribe(updateAssets)
         window.addEventListener("beforeunload", stopUnload)
-        electron.remote.getCurrentWindow().on("blur", hide)
-        electron.remote.getCurrentWindow().on("focus", show)
+        remote.getCurrentWindow().on("blur", hide)
+        remote.getCurrentWindow().on("focus", show)
         return () => {
             cache.unsubscribe(updateAssets)
             window.removeEventListener("beforeunload", stopUnload)
-            electron.remote.getCurrentWindow().removeListener("blur", hide)
-            electron.remote.getCurrentWindow().removeListener("focus", show)
+            remote.getCurrentWindow().removeListener("blur", hide)
+            remote.getCurrentWindow().removeListener("focus", show)
         }
     }, [])
 

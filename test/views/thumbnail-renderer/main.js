@@ -6,7 +6,7 @@ app.on('ready', () => {
     width: 1052,
     webPreferences: {
       nodeIntegration: true,
-      enableRemoteModule: true
+      contextIsolation: false
     }
   })
 

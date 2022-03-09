@@ -1,3 +1,4 @@
+const remoteMain = require('@electron/remote/main')
 const {BrowserWindow} = electron = require('electron')
 const log = require('../../shared/storyboarder-electron-log')
 const path = require('path')
@@ -52,10 +53,10 @@ const createWindow = async ( onComplete) => {
         allowRunningInsecureContent: true,
         experimentalFeatures: true,
         backgroundThrottling: true,
-        enableRemoteModule: true
+        contextIsolation: false
       },
     })
-  
+    remoteMain.enable(win.webContents)
     win.on('resize', () => memento = win.getBounds())
     win.on('move', () => memento = win.getBounds())
     win.webContents.on('will-prevent-unload', event => {

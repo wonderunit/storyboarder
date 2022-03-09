@@ -1,7 +1,7 @@
 const Tone = require('tone')
 
-const { remote } = require('electron')
-const prefsModule = require('electron').remote.require('./prefs')
+const remote = require('@electron/remote')
+const prefsModule = remote.require('./prefs')
 const enableHighQualityAudio = prefsModule.getPrefs('melo hi gual')['enableHighQualityAudio']
 
 const util = require('../../utils')

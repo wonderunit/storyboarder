@@ -1,17 +1,15 @@
 let i18n = require('i18next')
 let i18nextBackend = require('i18next-fs-backend')
-const Electron = require('electron')
-const electronApp = Electron.app ? Electron.app : Electron.remote.app
-const userDataPath = electronApp.getPath('userData')
+const { app } = process && process.type == 'renderer'
+  ? require('@electron/remote')
+  : require('electron')
 const path = require('path')
 const { initReactI18next } = require("react-i18next")
 const {settings:config} = require('./language.config')
-let loadPath 
-if(window) {
-    loadPath = path.join(window.__dirname, "js", "locales")
-} else {
-    loadPath = path.join(__dirname, "..", "js", "locales")
-}
+
+const loadPath = path.join(app.getAppPath(), 'src', 'js', 'locales')
+const userDataPath = app.getPath('userData')
+
 const getLoadPath = (lng, namespace) => {
     let builtInPath = path.join(loadPath, `${lng}.json`)
     if(config.getSettingByKey("builtInLanguages").some((item) => item.fileName === lng)) {

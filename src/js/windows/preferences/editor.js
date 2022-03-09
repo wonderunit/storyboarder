@@ -1,14 +1,15 @@
-const { remote, ipcRenderer, shell } = require('electron')
+require('electron-redux/preload')
+const { ipcRenderer, shell } = require('electron')
+const remote = require('@electron/remote')
 const jwt = require('jsonwebtoken')
 const path = require('path')
 const fs = require('fs-extra')
 
 const util = require('./js/utils')
-const prefsModule = require('electron').remote.require('./prefs')
+const prefsModule = require('@electron/remote').require('./prefs')
 
-const { getInitialStateRenderer } = require('electron-redux')
 const configureStore = require('./js/shared/store/configureStore')
-const store = configureStore(getInitialStateRenderer(), 'renderer')
+const store = configureStore()
 
 let prefs,
     inputs,

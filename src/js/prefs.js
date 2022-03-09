@@ -49,6 +49,14 @@ const defaultPrefs = {
   // licensed
   enableWatermark: true,
   userWatermark: undefined
+
+  // Print and PDF Export (optional)
+  // printProjectState: { … }
+
+  // Print Worksheet (optional)
+  // NOTE this was the original key, before the feature was split into two windows (Print/PDF and Worksheet)
+  // TODO could rename (and write prefs migration) to be less confusing, e.g. printWorksheetState
+  // printingWindowState: { … }
 }
 
 // For slow computers, override the defaults here.

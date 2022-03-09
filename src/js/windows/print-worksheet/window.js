@@ -1,18 +1,27 @@
-const {ipcRenderer, shell, remote} = require('electron')
-const prefModule = remote.require('./prefs')
+// NOTE this window’s session state is stored in prefs as `printingWindowState`
+// with the name unchanged for backward compatibility
+// even though it only handles worksheet printing now.
+// and print-project handles everything else.
+// previously this window handled worksheet AND project printing.
+const {ipcRenderer} = require('electron')
+const remote = require('@electron/remote')
 const pdf = require('pdfjs-dist')
-const worksheetPrinter = require('./worksheet-printer')
-const exporter = require('./exporter')
-const storyTips = new(require('./story-tips'))
-const child_process = require('child_process')
 const app = remote.app
-const os = require('os')
 const path = require('path')
 
-const exporterCommon = require('../exporters/common')
+const prefModule = remote.require('./prefs')
+const worksheetPrinter = require('./worksheet-printer')
+const storyTips = new(require('../../window/story-tips'))
+
+const createPrint = require('../../print.js')
+
+const print = createPrint({
+  pathToSumatraExecutable: path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe')
+})
+
 //#region Localization
-let isWorksheetExport = false
-const i18n = require('../services/i18next.config')
+const i18n = require('../../services/i18next.config.js')
+
 i18n.on('loaded', (loaded) => {
   let lng = ipcRenderer.sendSync("getCurrentLanguage")
   i18n.changeLanguage(lng, () => {
@@ -54,28 +63,21 @@ const translateHtml = (elementName, traslationKey) => {
 }
 
 const updateHTML = () => {
-  if(!isWorksheetExport) {
-    translateHtml("#config-title", "print-window.pdf-title")
-    translateHtml("#config-intro", "print-window.pdf-intro") 
-  } else {
-    translateHtml("#config-title", "print-window.worksheet-title")
-    translateHtml("#config-intro", "print-window.worksheet-intro") 
-  }
-  translateHtml("#paper-size", "print-window.paper-size")
-  translateHtml("#letter", "print-window.letter")
-  translateHtml("#format", "print-window.format")
-  translateHtml("#paper-orientation-label", "print-window.paper-orientation-label")
-  translateHtml("#paper-orientation-landscape", "print-window.paper-orientation-landscape")
-  translateHtml("#paper-orientation-portrait", "print-window.paper-orientation-portrait")
-  translateHtml("#columns-label", "print-window.columns-label")
-  translateHtml("#rows-label", "print-window.rows-label")
-  translateHtml("#spacing-label", "print-window.spacing-label")
-  translateHtml("#copies-label", "print-window.copies-label")
-  translateHtml("#print-button", "print-window.print-button")
-  translateHtml("#pdf-button", "print-window.pdf-button")
-  translateHtml("#prev_button", "print-window.prev_button")
-  translateHtml("#page-info", "print-window.page-info")
-  translateHtml("#next_button", "print-window.next_button")
+  translateHtml("#config-title", "print-worksheet.worksheet-title")
+  translateHtml("#config-intro", "print-worksheet.worksheet-intro") 
+
+  translateHtml("#paper-size", "print-worksheet.paper-size")
+  translateHtml("#letter", "print-worksheet.letter")
+  translateHtml("#format", "print-worksheet.format")
+  translateHtml("#columns-label", "print-worksheet.columns-label")
+  translateHtml("#rows-label", "print-worksheet.rows-label")
+  translateHtml("#spacing-label", "print-worksheet.spacing-label")
+  translateHtml("#copies-label", "print-worksheet.copies-label")
+  translateHtml("#print-button", "print-worksheet.print-button")
+  translateHtml("#pdf-button", "print-worksheet.pdf-button")
+  translateHtml("#prev_button", "print-worksheet.prev_button")
+  translateHtml("#page-info", "print-worksheet.page-info")
+  translateHtml("#next_button", "print-worksheet.next_button")
 }
 //#endregion
 
@@ -89,15 +91,11 @@ let spacing
 let aspectRatio
 let currentScene
 let scriptData
-let boardData
-let boardFilename
 let pdfdocument
 // on change save preferences
 
 const cleanup = () => {
   pdfdocument = null
-  boardData = null
-  boardFilename = null
 }
 
 window.pdf = pdf
@@ -107,63 +105,50 @@ document.querySelector('#close-button').onclick = (e) => {
   cleanup()
   window.hide()
 }
+document.addEventListener('keyup', event => {
+  if (event.key == 'Escape') {
+    ipcRenderer.send('playsfx', 'negative')
+    let window = remote.getCurrentWindow()
+    cleanup()
+    window.hide()
+  }
+})
 
 document.querySelector('#print-button').onclick = (e) => {
   if (!pdfdocument) return false;
-  ipcRenderer.send('playsfx', 'positive')
-  // PRINT
-  print()
-  let window = remote.getCurrentWindow()
-  cleanup()
-  window.hide()
+
+  let copies = document.querySelector('#copies').value
+
+  try {
+    print({
+      filepath: pdfdocument,
+      paperSize: paperSize === 'LTR' ? 'letter' : 'a4',
+      paperOrientation: 'landscape',
+      copies
+    })
+
+    ipcRenderer.send('analyticsEvent', 'Application', 'print-worksheet', null, copies)
+
+    ipcRenderer.send('playsfx', 'positive')
+    let window = remote.getCurrentWindow()
+    cleanup()
+    window.hide()
+  } catch (err) {
+    alert(err)
+  }
 }
 
 document.querySelector('#pdf-button').onclick = (e) => {
   if (!pdfdocument) return false;
-  if (boardFilename) {
-    let basenameWithoutExt = path.basename(boardFilename, path.extname(boardFilename))
-    ipcRenderer.send('exportPrintablePdf', pdfdocument, basenameWithoutExt)
-  } else {
-    ipcRenderer.send('exportPrintablePdf', pdfdocument, 'Worksheet')
-  }
+  ipcRenderer.send('exportPrintableWorksheetPdf', pdfdocument)
   cleanup()
   remote.getCurrentWindow().hide()
-}
-
-const print = () => {
-  let cmd
-  let output
-  switch (os.platform()) {
-    case 'darwin':
-      cmd = 'lpr -o media=' + ((paperSize === 'LTR') ? 'letter' : 'a4') + ((paperOrientation === 'landscape' || !boardFilename) ? ' -o orientation-requested=4' : '') + ' -#' + document.querySelector('#copies').value + ' ' + pdfdocument
-      output = child_process.execSync(cmd)
-      break
-    case 'linux':
-      cmd = 'lp -n ' + document.querySelector('#copies').value + ' ' +  pdfdocument
-      output = child_process.execSync(cmd)
-      break
-    case 'win32':
-      cmd = path.join(app.getAppPath(), 'src', 'data', 'app', 'SumatraPDF.exe')
-      let params = ['-print-to-default', '-silent', '-print-settings "' + document.querySelector('#copies').value + 'x"', pdfdocument]
-      console.log(params)
-      child_process.execFile(cmd, params, (e,s,d)=> {
-        console.log(s)
-      })
-      break
-  }
-  ipcRenderer.send('analyticsEvent', 'Board', 'print', null, document.querySelector('#copies').value)
 }
 
 document.querySelector('#paper-size').addEventListener('change', (e) => {
   paperSize = e.target.value
   generatePDF()
   prefModule.set('printingWindowState.paperSize', paperSize)
-})
-
-document.querySelector('#paper-orientation').addEventListener('change', (e) => {
-  paperOrientation = e.target.value
-  generatePDF()
-  prefModule.set('printingWindowState.paperOrientation', paperOrientation)
 })
 
 document.querySelector('#row-number').addEventListener('change', (e) => {
@@ -187,7 +172,6 @@ document.querySelector('#spacing').addEventListener('change', (e) => {
 const displaySpinner = (visible) => {
   document.querySelector('#preview-loading').style.display = (visible) ? 'flex' : 'none';
   document.querySelector('#paper-size').disabled = visible
-  document.querySelector('#paper-orientation').disabled = visible
   document.querySelector('#row-number').disabled = visible
   document.querySelector('#column-number').disabled = visible
   document.querySelector('#spacing').disabled = visible
@@ -218,7 +202,6 @@ const loadWindow = () => {
   spacing = printingWindowState.spacing
 
   document.querySelector('#paper-size').value = paperSize
-  document.querySelector('#paper-orientation').value = paperOrientation
   document.querySelector('#row-number').value = rows
   document.querySelector('#column-number').value = cols
   document.querySelector('#spacing').value = spacing
@@ -226,7 +209,7 @@ const loadWindow = () => {
   document.querySelector('#prev_button').addEventListener('click', onPrevPage);
   document.querySelector('#next_button').addEventListener('click', onNextPage);
 
-  worksheetPrinter.on('generated', (path)=>{
+  worksheetPrinter.on('generated', async (path)=>{
     // Disable workers to avoid yet another cross-origin issue (workers need
     // the URL of the script to be loaded, and dynamically loading a cross-origin
     // script does not work).
@@ -235,7 +218,7 @@ const loadWindow = () => {
     // The workerSrc property shall be specified.
     //console.log(require('pdfjs-dist/build/pdf.worker'))
 
-    reloadPDFDocument(path)
+    await reloadPDFDocument(path)
 
     //console.log(remote.getCurrentWindow().webContents.getPrinters())
     //document.querySelector("#preview").src = 'zoinks.png'
@@ -251,33 +234,35 @@ let pdfDoc = null,
     canvas = document.createElement('canvas'),
     ctx = canvas.getContext('2d')
 
-const reloadPDFDocument = (path) => {
-  pdf.GlobalWorkerOptions.workerSrc = '../node_modules/pdfjs-dist/build/pdf.worker.js'
+let retry = 0
+const reloadPDFDocument = async (path) => {
+  pdf.GlobalWorkerOptions.workerSrc = '../../../../node_modules/pdfjs-dist/build/pdf.worker.js'
 
-  let retry = 0
 
   /**
    * Asynchronously downloads PDF.
    */
-  pdf.getDocument(path).then(function(pdfDoc_) {
-    pdfDoc = pdfDoc_;
-    document.querySelector('#page_count').textContent = pdfDoc.numPages;
+  try {
+    let pdfDoc_ = await pdf.getDocument(path).promise
+    pdfDoc = pdfDoc_
+    document.querySelector('#page_count').textContent = pdfDoc.numPages
 
     if (pageNum >= pdfDoc.numPages) {
       pageNum = pdfDoc.numPages
     }
 
     // Initial/first page rendering
-    renderPage(pageNum);
-    pdfdocument = path;
-  }).catch(() => {
+    renderPage(pageNum)
+    pdfdocument = path
+  } catch (err) {
+    console.error(err)
     // Sometime the PDF loading fails for obscur reason and retrying succeed, hence this code
     if (retry < 3) {
       console.log('retry loading ' + path)
       retry++
-      reloadPDFDocument(path)
+      await reloadPDFDocument(path)
     }
-  });
+  }
 }
 
 /**
@@ -289,7 +274,7 @@ function renderPage(num) {
   pageRendering = true;
   // Using promise to fetch the page
   pdfDoc.getPage(num).then(function(page) {
-    let viewport = page.getViewport(scale);
+    let viewport = page.getViewport({ scale });
     canvas.height = viewport.height;
     canvas.width = viewport.width;
 
@@ -359,12 +344,8 @@ function onNextPage() {
 }
 
 const generatePDF = () => {
-  pdfdocument = null;
-  if (boardData) {
-    exportPDF()
-  } else {
-    generateWorksheet()
-  }
+  pdfdocument = null
+  generateWorksheet()
 }
 
 const generateWorksheet = () => {
@@ -375,59 +356,19 @@ const generateWorksheet = () => {
   }, 500)
 }
 
-const prefsModule = require('electron').remote.require('./prefs')
-const watermarkModel = require('../models/watermark')
+;(async function () {
+  let { projectData } = await ipcRenderer.invoke('exportPDF:getData')
+  let { currentBoardData } = projectData
 
-const exportPDF = async () => {
-  let shouldWatermark = prefsModule.getPrefs().enableWatermark
-  let watermarkImagePath = watermarkModel.watermarkImagePath(prefsModule.getPrefs(), app.getPath('userData'))
+  aspectRatio = currentBoardData.aspectRatio
+  currentScene = projectData.currentScene
+  scriptData = projectData.scriptData
 
-  let image = await exporterCommon.getImage(watermarkImagePath)
-  let watermarkDimensions = [image.width, image.height]
-
-  displaySpinner(true)
-  setTimeout(() => {
-    exporter
-      .exportPDF(
-        boardData,
-        boardFilename,
-        paperSize,
-        paperOrientation,
-        rows,
-        cols,
-        spacing,
-        path.join(app.getPath('temp'), 'boardoutput.pdf'),
-        shouldWatermark,
-        watermarkImagePath,
-        watermarkDimensions
-      )
-      .then(outputPath => {
-        reloadPDFDocument(outputPath)
-      })
-      .catch(err => {
-        console.error(err)
-        alert(err)
-      })
-  }, 500)
-}
-
-loadWindow()
-
-ipcRenderer.on('worksheetData', (event, _aspectRatio, _currentScene, _scriptData) => {
-  aspectRatio = _aspectRatio
-  currentScene = _currentScene
-  scriptData = _scriptData
-  document.querySelector('#paper-orientation-row').style.display = 'none';
   updateHTML()
-  isWorksheetExport = true
   generateWorksheet()
-})
 
-ipcRenderer.on('exportPDFData', (event, _boardData, _boardFilename) => {
-  boardData = _boardData
-  boardFilename = _boardFilename
-  exportPDF()
-})
+  loadWindow()
+})()
 
 window.ondragover = () => { return false }
 window.ondragleave = () => { return false }
