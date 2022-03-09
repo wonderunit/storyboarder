@@ -6,7 +6,7 @@ module.exports = {
   entry: {
     'print-project': './src/js/windows/print-project/window.js'
   },
-  target: 'electron-main',
+  target: 'electron-renderer',
   externals: [nodeExternals({
     allowlist: [/^@thi.ng/]
   })],
