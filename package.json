@@ -188,8 +188,8 @@
   "dependencies": {
     "@electron/remote": "^2.0.4",
     "@redux-devtools/extension": "^3.2.2",
-    "@thi.ng/geom": "3.0.7",
     "@thi.ng/vectors": "7.0.6",
+    "@thi.ng/geom": "3.1.7",
     "@tweenjs/tween.js": "^18.5.0",
     "@xstate/react": "0.7.1",
     "ag-psd": "^11.1.3",
