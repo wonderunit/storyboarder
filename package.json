@@ -210,7 +210,7 @@
     "electron-is-dev": "2.0.0",
     "electron-log": "4.3.0",
     "electron-redux": "^2.0.0-alpha.9",
-    "electron-updater": "4.3.1",
+    "electron-updater": "4.6.5",
     "etch": "0.12.8",
     "events": "^3.2.0",
     "execa": "0.8.0",
