@@ -719,8 +719,27 @@ const commentOnLineMileage = (miles) => {
   notifications.notify({message: message.join(' '), timing: 10})
 }
 
+const migrateStringDurations = () => {
+  for (let board of boardData.boards) {
+    // fix bug where board.duration is a string instead of an integer (#2275)
+    if (typeof board.duration == 'string') {
+      let parsedDuration = parseInt(board.duration, 10)
+      if (isNaN(parsedDuration) == false) {
+        log.warn('migrateStringDurations: Parsing duration string', board.duration, 'as number', parsedDuration)
+        board.duration = parsedDuration
+        markBoardFileDirty()
+      } else {
+        log.error('migrateStringDurations: Unexpected value for board duration: ', board.duration)
+      }
+    }
+  }
+}
+
 // TODO this is really similar to verifyScene, but verifyScene requires the UI to be ready (for notifications)
 const migrateScene = () => {
+  // see: https://github.com/wonderunit/storyboarder/issues/2275
+  migrateStringDurations()
+
   let boardImagesPath = path.join(boardPath, 'images')
 
   // if at least one board.url file exists, consider this an old project
