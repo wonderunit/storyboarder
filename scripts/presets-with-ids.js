@@ -43,7 +43,16 @@ const digest = obj => {
 const mapKeyedByHashOfPresetData = list =>
   Object.fromEntries(
     Object.entries(list)
-    .map(([id, preset]) => [`preset-${digest(hashable(preset.data))}`, preset])
+    .map(([id, preset]) => {
+      let uid = digest(hashable(preset.data))
+      return [
+        `preset-${uid}`,
+        {
+          ...preset,
+          title: `print-project.preset-${uid}-title`
+        }
+      ]
+    })
   )
 
 let output = JSON.stringify(
