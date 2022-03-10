@@ -330,6 +330,9 @@ let cancelTokens = {}
 const msecsToFrames = value => Math.round(value / 1000 * boardData.fps)
 const framesToMsecs = value => Math.round(value / boardData.fps * 1000)
 
+// via ramda
+const defaultTo = (d, v) => v == null || v !== v ? d : v
+
 // via https://stackoverflow.com/a/41115086
 const serial = funcs =>
     funcs.reduce((promise, func) =>
@@ -1060,36 +1063,43 @@ const loadBoardUI = async () => {
     item.addEventListener('input', e => {
       switch (e.target.name) {
         case 'duration':
-          // if we can't parse the value as a number (e.g.: empty string),
-          // set to undefined
-          // which will render as the scene's default duration
-          let newDuration = isNaN(parseInt(e.target.value, 10))
-            ? undefined
-            : e.target.value
+          // .duration can be an integer or undefined
+          let newDuration = defaultTo(undefined, parseInt(e.target.value, 10))
 
-          // set the new duration value
+          // set .duration for all selected boards
           for (let index of selections) {
             boardData.boards[index].duration = newDuration
           }
 
-          // update the `frames` view
-          document.querySelector('input[name="frames"]').value = msecsToFrames(boardModel.boardDuration(boardData, boardData.boards[currentBoard]))
+          // render `frames` view
+          // see also: renderMetaData()
+          document.querySelector('input[name="frames"]').value = newDuration != null
+            // number, if present
+            ? msecsToFrames(
+                boardModel.boardDuration(
+                  boardData,
+                  boardData.boards[currentBoard]
+                )
+              )
+            // otherwise, 
+            : ''
 
           renderThumbnailDrawer()
           renderMarkerPosition()
           break
         case 'frames':
-          let newFrames = isNaN(parseInt(e.target.value, 10))
-            ? undefined
-            : e.target.value
+          // .frames can be an integer or undefined
+          let newFrames = defaultTo(undefined, parseInt(e.target.value, 10))
 
+          // set .duration for all selected boards
           for (let index of selections) {
             boardData.boards[index].duration = newFrames != null
               ? framesToMsecs(newFrames)
               : undefined
           }
 
-          // update the `duration` view
+          // render `duration` view
+          // see also: renderMetaData()
           document.querySelector('input[name="duration"]').value = newFrames != null
             ? framesToMsecs(newFrames)
             : ''
