@@ -3657,7 +3657,7 @@ let renderMetaData = () => {
     document.querySelector('input[name="newShot"]').checked = true
   }
 
-  if (boardData.boards[currentBoard].duration) {
+  if (boardData.boards[currentBoard].duration != null) {
     if (selections.size == 1) {
       // show current board
       for (let input of editableInputs) {
