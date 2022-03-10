@@ -237,7 +237,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   )
 
   let cellA = inner.copy()
-  cellA.size[0] = (cellA.size[0] * 0.1) - 1
+  cellA.size[0] = Math.min((cfg.boardTextSize * 4), cellA.size[0] * 0.1) - 1
 
   imageR.pos[0] += cellA.size[0] + 1
 
@@ -325,11 +325,32 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
         : [] // TODO scriptTime
     )
   ]
+
+  let maxNarrowTimeDisplayWidth = cfg.boardTextSize * 5
+  let hasNarrowTimeDisplay = entries.find(e => e.align == 'right') && entries.length > 1
+  let containerR = cellBinner.copy()
+  if (hasNarrowTimeDisplay) containerR.size[0] -= maxNarrowTimeDisplayWidth
+  let rects = []
+  let xpos = 0
   for (let e = 0; e < entries.length; e++) {
-    let textR = cellBinner.copy()
-    textR.size[0] *= 1 / entries.length
-    textR.pos[0] += textR.size[0] * e
-    textR.size[0] -= 5
+    let r = containerR.copy()
+
+    if (e == entries.length - 1 && hasNarrowTimeDisplay) {
+      r.size[0] = maxNarrowTimeDisplayWidth
+    } else {
+      r.size[0] = containerR.size[0] / (entries.length - (hasNarrowTimeDisplay ? 1 : 0))
+    }
+    r.pos[0] = containerR.pos[0] + xpos
+    xpos += r.size[0]
+
+    // right-side margin
+    r.size[0] -= 5
+
+    rects.push(r)
+  }
+
+  for (let e = 0; e < entries.length; e++) {
+    let textR = rects[e]
 
     // HACK expand to allow text to hit bottom edge
     textR.size[1] += 5
@@ -358,13 +379,9 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
     if (cfg.boardBorderStyle != 'minimal') {
       if (e != entries.length - 1) {
-        let borderR = cellB.copy()
-        borderR.pos[0] += 5
-        borderR.size[0] -= 5
-        borderR.size[0] *= 1 / entries.length
-        borderR.pos[0] += borderR.size[0] * e
-        borderR.size[0] -= 5
-    
+        let borderR = rects[e]
+        borderR.pos[1] = cellB.pos[1]
+        borderR.size[1] = cellB.size[1]
         borderR.pos[0] += 2.5
 
         doc
