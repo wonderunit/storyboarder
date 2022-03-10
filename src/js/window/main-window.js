@@ -721,9 +721,9 @@ const commentOnLineMileage = (miles) => {
 
 const migrateStringDurations = () => {
   for (let board of boardData.boards) {
-    // fix bug where board.duration is a string instead of an integer (#2275)
+    // fix bug where board.duration is a string instead of a float (#2275)
     if (typeof board.duration == 'string') {
-      let parsedDuration = parseInt(board.duration, 10)
+      let parsedDuration = parseFloat(board.duration)
       if (isNaN(parsedDuration) == false) {
         log.warn('migrateStringDurations: Parsing duration string', board.duration, 'as number', parsedDuration)
         board.duration = parsedDuration
@@ -1082,8 +1082,8 @@ const loadBoardUI = async () => {
     item.addEventListener('input', e => {
       switch (e.target.name) {
         case 'duration':
-          // .duration can be an integer or undefined
-          let newDuration = defaultTo(undefined, parseInt(e.target.value, 10))
+          // .duration can be a float or undefined
+          let newDuration = defaultTo(undefined, parseFloat(e.target.value))
 
           // set .duration for all selected boards
           for (let index of selections) {
@@ -1107,8 +1107,8 @@ const loadBoardUI = async () => {
           renderMarkerPosition()
           break
         case 'frames':
-          // .frames can be an integer or undefined
-          let newFrames = defaultTo(undefined, parseInt(e.target.value, 10))
+          // .frames can be a float or undefined
+          let newFrames = defaultTo(undefined, parseFloat(e.target.value))
 
           // set .duration for all selected boards
           for (let index of selections) {
