@@ -876,7 +876,6 @@ const drawBoardBordersRow = (doc, options, cfg) => {
     .strokeOpacity(localCfg.boardBorderStrokeOpacity)
     .lineWidth(localCfg.boardBorderLineWidth)
 
-  let innerOpacityScale = 0.4
   // first of column
   let first = j == 0
   // last of column or last board
@@ -892,6 +891,7 @@ const drawBoardBordersRow = (doc, options, cfg) => {
   }
   if (last) {
     // top (interior)
+      // let innerOpacityScale = 0.4
       // doc
       //   .strokeOpacity(localCfg.boardBorderStrokeOpacity * innerOpacityScale)
       //   .moveTo(...rect.pos)
