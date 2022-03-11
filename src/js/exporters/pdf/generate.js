@@ -725,7 +725,7 @@ function generate ({ project }, cfg) {
       ]
     )
 
-    let header = new Rect(v.copy(pg.pos), [pg.size[0], pg.size[1] * 1/8])
+    let header = new Rect(v.copy(pg.pos), [pg.size[0], pg.size[1] * 1/12])
     let footer = new Rect(v.copy(pg.pos), [pg.size[0], pg.size[1] * 1/24])
     let grid = new Rect(v.copy(pg.pos), v.copy(pg.size))
 
