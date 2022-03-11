@@ -214,12 +214,12 @@ const drawImageOrPlaceholder = (doc, { filepath, rect }, cfg) => {
 
 // Place Text Right
 const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
-  let borderSize = 1
+  let imageBorderSize = 1
 
   let inner = rect.copy()
   v.sub2(null, inner.size, [10, 0])
 
-  let imageR = inset(inner, [borderSize, borderSize])
+  let imageR = inset(inner, [imageBorderSize, imageBorderSize])
   imageR.size = fit(
     boardFileImageSize(scene),
     // HACK constrain max image width to 3/5ths of available row space
@@ -232,7 +232,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
   imageR.pos[0] += cellA.size[0] + 1
 
-  let imageB = inset(imageR, [-borderSize, -borderSize])
+  let imageB = inset(imageR, [-imageBorderSize, -imageBorderSize])
 
   let cellB = inner.copy()
   cellB.pos[0] = imageR.pos[0] + imageR.size[0] + 1
