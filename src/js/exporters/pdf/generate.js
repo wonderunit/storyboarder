@@ -267,13 +267,13 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   if (board.newShot) {
     let marker = inner.copy()
     // width
-    marker.size[0] = 3
-    marker.pos[0] -= 3 // offset
+    marker.size[0] = 2
+    marker.pos[0] -= 1 + borderLineWidth // offset
     doc
       .rect(...marker.pos, ...marker.size)
       .fillColor('black')
       .strokeColor('black')
-      .lineWidth(1)
+      .lineWidth(borderLineWidth)
       .fillAndStroke()
   }
 
@@ -480,12 +480,11 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
 
     // width
     marker.size[0] = 2
-    marker.pos[0] -= (2 + 0.5) // border
+    marker.pos[0] -= 2 // border
     doc
       .rect(...marker.pos, ...marker.size)
       .fillColor('black')
-      .strokeColor('black')
-      .lineWidth(1)
+      .lineWidth(localCfg.borderLineWidth)
       .fillAndStroke()
   }
 
