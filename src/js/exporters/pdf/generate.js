@@ -660,7 +660,7 @@ const drawFooter = (doc, { rect }, cfg) => {
   doc
     .save()
     .font(THIN)
-    .fontSize(10)
+    .fontSize(8)
     .fillColor('black')
     .fillOpacity(0.6)
     .textWithoutFallback(
