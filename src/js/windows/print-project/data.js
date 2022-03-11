@@ -25,15 +25,11 @@ const getDirectories = filepath =>
 
 const parse = {
   titlePage: script => script.find(({ type }) => type == 'title'),
-  sceneTitleFromFilePath: storyboarderFilePath => {
-    let parts = path.basename(
+  sceneTitleFromFilePath: storyboarderFilePath =>
+    path.basename(
       storyboarderFilePath,
       path.extname(storyboarderFilePath)
-    ).split('-')
-    return parts.length > 1
-      ? parts.slice(0, -1).join('-')
-      : parts[0]
-  }
+    )
 }
 
 const scenesFromScriptData = (
