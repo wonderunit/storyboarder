@@ -30,6 +30,8 @@ const FALLBACK_BOLD = path.join(fontPath, 'unicore.ttf') // TODO bold version of
 
 const ELLIPSES = '[…]'
 
+const ROW_BOARD_MARGIN = 15 // HACKY-y lol
+
 // via https://stackoverflow.com/questions/6565703
 const fit = ([wi, hi], [ws, hs]) =>
   ws / hs > wi / hi
@@ -416,7 +418,7 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
     }
 
   let inner = rect.copy()
-  v.sub2(null, inner.size, [10, 10])
+  v.sub2(null, inner.size, [ROW_BOARD_MARGIN, 10])
 
   // reserve max 60% height for image
   let imageR = inner.copy()
@@ -775,7 +777,7 @@ function generate ({ project }, cfg) {
       //
       // determine the expected board drawing area
       let boardSize = [...template.size]
-        v.sub2(null, boardSize, [10, 10])
+        v.sub2(null, boardSize, [ROW_BOARD_MARGIN, 10])
         boardSize = fit(
           boardFileImageSize(pageData.scene.data),
           v.mul2([], boardSize, [1, 0.6])
