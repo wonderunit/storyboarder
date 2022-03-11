@@ -83,8 +83,6 @@ const patchPDFDocument = doc => {
 const drawHeader = (doc, { rect, titles, pagination, stats }, cfg) => {
   const { pos, size } = rect.copy()
 
-  const rems = n => Math.round(n * 16)
-
   let separator = ' / '
   let between = 0.25
 
@@ -97,25 +95,25 @@ const drawHeader = (doc, { rect, titles, pagination, stats }, cfg) => {
   if (titles.project) {
     doc
       .font(THIN)
-      .fontSize(rems(1.25))
+      .fontSize(20)
       .fillColor('black')
       .text(
         titles.project + ' / ',
-        pos[0], pos[1] + rems(1.25),
+        pos[0], pos[1] + 20,
         { continued: true, baseline: 'bottom', width: size[0] }
       )
   }
   doc
     .font(BOLD)
-    .fontSize(rems(1.25))
+    .fontSize(20)
     .fillColor('black')
     .text(
       titles.scene,
-        pos[0], pos[1] + rems(1.25),
+        pos[0], pos[1] + 20,
       { baseline: 'bottom', width: size[0] }
     )
     .moveUp()
-    .fontSize(rems(1))
+    .fontSize(7)
     .font(THIN)
     .moveDown(between)
 
@@ -126,7 +124,7 @@ const drawHeader = (doc, { rect, titles, pagination, stats }, cfg) => {
   doc.save()
   
   doc
-    .fontSize(rems(0.625))
+    .fontSize(6)
     .fillOpacity(0.8)
 
   let statsEntries = [
@@ -166,7 +164,7 @@ const drawHeader = (doc, { rect, titles, pagination, stats }, cfg) => {
   //
   doc
     .font(THIN)
-    .fontSize(rems(6/8))
+    .fontSize(7)
     .text(`${pagination.curr + 1} / ${pagination.total}`, ...pos, {
       width: size[0],
       align: 'right'
