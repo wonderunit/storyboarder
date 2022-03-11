@@ -9,6 +9,7 @@ const pkg = require('../../../../package.json')
 
 const groupByPage = require('./group-by-page')
 const stringContainsForeign = require('./string-contains-foreign')
+const formatMsecs = require('./format-msecs')
 
 const {
   boardDuration,
@@ -39,16 +40,6 @@ const inset = (rect, depth) =>
     v.sub2([], rect.size, v.mulN([], depth, 2)),
     rect.attribs
   )
-
-// via shot-core
-const durationMsecsToString = msecs => {
-  let t = msecs / 1000
-  let h = Math.floor(t / (60 * 60)) % 24
-  let m = Math.floor(t / 60) % 60
-  let s = Math.floor(t % 60)
-  let parts = (h > 0) ? [h, m, s] : [m, s]
-  return parts.map(v => v.toString().padStart(2, '0')).join(':')
-}
 
 const HUMANIZED_ASPECT_RATIOS = {
   '2.390': '2.39:1',
@@ -139,7 +130,7 @@ const drawHeader = (doc, { rect, titles, pagination, stats }, cfg) => {
   let statsEntries = [
     cfg.header.stats.boards && ['Boards', stats.boards],
     cfg.header.stats.shots && ['Shots', stats.shots],
-    cfg.header.stats.sceneDuration && ['Duration', durationMsecsToString(stats.sceneDuration)],
+    cfg.header.stats.sceneDuration && ['Duration', formatMsecs(stats.sceneDuration)],
     cfg.header.stats.aspectRatio && ['Aspect Ratio', humanizeAspectRatio(stats.aspectRatio)]
   ].filter(Boolean)
   statsEntries.forEach(([name, value], index, array) => {
@@ -319,9 +310,9 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
     ...(
       cfg.boardTimeDisplay == 'duration'
-        ? [{ text: durationMsecsToString(boardDuration(scene, board)), font: THIN, align: 'right' }]
+        ? [{ text: formatMsecs(boardDuration(scene, board)), font: THIN, align: 'right' }]
         : cfg.boardTimeDisplay == 'sceneTime'
-        ? [{ text: durationMsecsToString(board.time), font: THIN, align: 'right' }]
+        ? [{ text: formatMsecs(board.time), font: THIN, align: 'right' }]
         : [] // TODO scriptTime
     )
   ]
@@ -511,8 +502,8 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
   if (['sceneTime', 'duration'].includes(cfg.boardTimeDisplay)) {
     let boardTimeDisplayString =
       cfg.boardTimeDisplay == 'sceneTime'
-        ? durationMsecsToString(board.time)
-        : durationMsecsToString(boardDuration(scene, board))
+        ? formatMsecs(board.time)
+        : formatMsecs(boardDuration(scene, board))
     doc
       .fontSize(cfg.boardTextSize)
       .fillColor('black')
