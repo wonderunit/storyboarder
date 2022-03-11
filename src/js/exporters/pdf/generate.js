@@ -217,6 +217,7 @@ const drawImageOrPlaceholder = (doc, { filepath, rect }, cfg) => {
 // Place Text Right
 const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   let imageBorderSize = 1
+  let borderLineWidth = 0.1
 
   let inner = rect.copy()
   v.sub2(null, inner.size, [10, 0])
@@ -382,9 +383,9 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
         doc
           .save()
-          .strokeColor('#333')
-          .strokeOpacity(0.25 * 0.4)
-          .lineWidth(1)
+          .strokeColor('black')
+          .strokeOpacity(0.25)
+          .lineWidth(borderLineWidth)
           .moveTo(borderR.pos[0] + borderR.size[0], borderR.pos[1])
           .lineTo(borderR.pos[0] + borderR.size[0], borderR.pos[1] + borderR.size[1])
           .stroke()
@@ -418,6 +419,7 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
       newShotMarkerHeight: 'full',
       singleMultiLineTextField: false
     }
+  localCfg.borderLineWidth = 0.1
 
   let inner = rect.copy()
   v.sub2(null, inner.size, [ROW_BOARD_MARGIN, 10])
@@ -639,16 +641,16 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
   //
   if (localCfg.boardBorder) {
     doc
-      .strokeColor('#333')
+      .strokeColor('black')
       .strokeOpacity(1)
-      .lineWidth(1)
+      .lineWidth(localCfg.borderLineWidth)
       .rect(...inner.pos, ...inner.size)
       .stroke()
   }
   doc
-    .strokeColor('#333')
+    .strokeColor('black')
     .strokeOpacity(1)
-    .lineWidth(1)
+    .lineWidth(localCfg.borderLineWidth)
     .rect(...imageR.pos, ...imageR.size)
     .stroke()
 }
@@ -863,10 +865,9 @@ function generate ({ project }, cfg) {
 // borders
 //
 const drawBoardBordersRow = (doc, options, cfg) => {
-  let localCfg = cfg.boardBorderStyle == 'minimal'
-    ? { boardBorderStrokeColor: '#999', boardBorderLineWidth: 0.5, boardBorderStrokeOpacity: 0 }
-    : { boardBorderStrokeColor: '#333', boardBorderLineWidth: 1.0, boardBorderStrokeOpacity: 0.25 }
+  if (cfg.boardBorderStyle == 'minimal') return
 
+  let localCfg = { boardBorderStrokeColor: 'black', boardBorderLineWidth: 0.1, boardBorderStrokeOpacity: 0.25 }
   let { n, i, j, lastBoardIndex, rect } = options
 
   doc.save()
