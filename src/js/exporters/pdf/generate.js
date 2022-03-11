@@ -551,10 +551,6 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
       )
     textfieldR.pos[0] -= textfieldR.size[0] / 2
 
-    doc
-      .rect(...textfieldR.pos, ...textfieldR.size)
-      .clip()
-
     // omit cells with blank text
     entries = entries.filter(Boolean)
 
@@ -564,22 +560,37 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
       .fillColor('black')
       .text(null, ...textfieldR.pos)
 
+    
+    let tw = doc.widthOfString('M')
+    let th = doc.heightOfString('M')
+    textfieldR.size[0] = Math.round(textfieldR.size[0] / tw) * tw
+    textfieldR.size[1] = Math.round(textfieldR.size[1] / th) * th
+
     for (let e = 0; e < entries.length; e++) {
       let entry = entries[e]
 
-      if (entry) {
+      if (entry) {  
+        let entryR = new Rect(
+          [doc.x, doc.y],
+          [textfieldR.size[0], Math.max(0, textfieldR.size[1] - (doc.y - textfieldR.pos[1]))],
+          rect.attribs
+        )
+
         doc
+          .save()
+          .rect(...entryR.pos, ...entryR.size)
+          .clip()
           .font(entry.font)
           .text(
             entry.text,
             {
-              width: textfieldR.size[0],
-              align: 'center',
-              ellipsis: ELLIPSES
+              width: entryR.size[0],
+              height: entryR.size[1],
+              align: 'center'
             }
           )
           .font(THIN) // restore font
-          .moveDown()
+          .restore()
       }
     }
   } else {
