@@ -563,8 +563,8 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
     
     let tw = doc.widthOfString('M')
     let th = doc.heightOfString('M')
-    textfieldR.size[0] = Math.round(textfieldR.size[0] / tw) * tw
-    textfieldR.size[1] = Math.round(textfieldR.size[1] / th) * th
+    textfieldR.size[0] = Math.ceil(textfieldR.size[0] / tw) * tw
+    textfieldR.size[1] = Math.ceil(textfieldR.size[1] / th) * th
 
     for (let e = 0; e < entries.length; e++) {
       let entry = entries[e]
