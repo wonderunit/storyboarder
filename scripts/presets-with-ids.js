@@ -2,6 +2,7 @@
 //     node scripts/presets-with-ids.js | pbcopy && pbpaste > src/js/windows/print-project/presets.js
 //     git diff src/js/windows/print-project/presets.js
 // see also: `en-US.json` `preset-*-title`
+// Object.keys(require('./src/js/windows/print-project/presets')(t => t)).forEach(k => console.log(k)) 
 const presets = require('../src/js/windows/print-project/presets')
 
 // via https://github.com/juanelas/object-sha/blob/5d0683d/src/ts/hashable.ts
