@@ -244,12 +244,12 @@ module.exports = (t) => ({
       }
     }
   },
-  "preset-feac2bc": {
-    "title": t("print-project.preset-feac2bc-title"),
+  "preset-f4dbaa0": {
+    "title": t("print-project.preset-f4dbaa0-title"),
     "data": {
       "orientation": "landscape",
       "gridDim": [
-        2,
+        1,
         5
       ],
       "direction": "row",
