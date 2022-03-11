@@ -315,9 +315,9 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
 
     ...(
       cfg.boardTimeDisplay == 'duration'
-        ? [{ text: formatMsecs(boardDuration(scene, board)), font: THIN, align: 'right' }]
+        ? [{ text: formatMsecs(boardDuration(scene, board)), font: THIN, align: 'right', fontSize: cfg.boardTextSize - 1 }]
         : cfg.boardTimeDisplay == 'sceneTime'
-        ? [{ text: formatMsecs(board.time), font: THIN, align: 'right' }]
+        ? [{ text: formatMsecs(board.time), font: THIN, align: 'right', fontSize: cfg.boardTextSize - 1 }]
         : [] // TODO scriptTime
     )
   ]
@@ -358,7 +358,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
       .rect(...textR.pos, ...textR.size)
       .clip()
         .font(entry.font)
-        .fontSize(cfg.boardTextSize)
+        .fontSize(entry.fontSize || cfg.boardTextSize)
         .fillColor('black')
         .text(
           entry.text,
@@ -371,6 +371,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
           }
         )
         .font(THIN) // restore font
+        .fontSize(cfg.boardTextSize)
       .restore()
     }
 
@@ -513,13 +514,14 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
         ? formatMsecs(board.time)
         : formatMsecs(boardDuration(scene, board))
     doc
-      .fontSize(cfg.boardTextSize)
+      .fontSize(cfg.boardTextSize - 1)
       .fillColor('black')
       .text(boardTimeDisplayString, ...upperTextCfg.pos, {
         width: upperR.size[0],
         align: 'right',
         baseline: upperTextCfg.baseline
       })
+      .fontSize(cfg.boardTextSize)
   }
 
   //
