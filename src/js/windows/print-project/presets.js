@@ -163,6 +163,33 @@ module.exports = (t) => ({
       }
     }
   },
+  "preset-3c3532b": {
+    "title": t("print-project.preset-3c3532b-title"),
+    "data": {
+      "orientation": "landscape",
+      "gridDim": [
+        2,
+        2
+      ],
+      "direction": "column",
+      "enableDialogue": false,
+      "enableAction": false,
+      "enableNotes": false,
+      "enableShotNumber": false,
+      "boardTimeDisplay": "none",
+      "boardTextSize": 7,
+      "boardBorderStyle": "minimal",
+      "header": {
+        "stats": {
+          "boards": true,
+          "shots": true,
+          "sceneDuration": true,
+          "aspectRatio": true,
+          "dateExported": true
+        }
+      }
+    }
+  },
   "preset-7415d88": {
     "title": t("print-project.preset-7415d88-title"),
     "data": {
