@@ -28,6 +28,8 @@ const REGULAR = path.join(fontPath, 'thicccboi', 'THICCCBOI-Regular.woff2')
 const FALLBACK = path.join(fontPath, 'unicore.ttf')
 const FALLBACK_BOLD = path.join(fontPath, 'unicore.ttf') // TODO bold version of unicore?
 
+const ELLIPSES = '[…]'
+
 // via https://stackoverflow.com/questions/6565703
 const fit = ([wi, hi], [ws, hs]) =>
   ws / hs > wi / hi
@@ -361,7 +363,8 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
           {
             align: entry.align,
             width: textR.size[0],
-            height: textR.size[1]
+            height: textR.size[1],
+            ellipsis: ELLIPSES
           }
         )
         .font(THIN) // restore font
@@ -571,7 +574,8 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
             entry.text,
             {
               width: textfieldR.size[0],
-              align: 'center'
+              align: 'center',
+              ellipsis: ELLIPSES
             }
           )
           .font(THIN) // restore font
@@ -603,7 +607,8 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
             ...entryCell.pos,
             {
               width: entryCell.size[0],
-              height: entryCell.size[1]
+              height: entryCell.size[1],
+              ellipsis: ELLIPSES
             }
           )
           .font(THIN) // restore font
