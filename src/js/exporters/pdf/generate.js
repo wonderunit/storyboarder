@@ -317,7 +317,7 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
     )
   ]
 
-  let maxNarrowTimeDisplayWidth = cfg.boardTextSize * 5
+  let maxNarrowTimeDisplayWidth = cfg.boardTextSize * 4
   let hasNarrowTimeDisplay = entries.find(e => e.align == 'right') && entries.length > 1
   let containerR = cellBinner.copy()
   if (hasNarrowTimeDisplay) containerR.size[0] -= maxNarrowTimeDisplayWidth
