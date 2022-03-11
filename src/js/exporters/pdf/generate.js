@@ -282,9 +282,11 @@ const drawBoardRow = (doc, { rect, scene, board, imagesPath }, cfg) => {
   //
   if (cfg.enableShotNumber) {
     doc
+      .font(board.newShot ? BOLD : THIN)
       .fontSize(cfg.boardTextSize)
       .fillColor('black')
       .text(board.shot, ...cellAinner.pos)
+      .font(THIN)
   }
 
   //
@@ -496,11 +498,13 @@ const drawBoardColumn = (doc, { rect, container, scene, board, imagesPath }, cfg
     : { pos: middle, baseline: 'middle' }
   if (cfg.enableShotNumber) {
     doc
+      .font(board.newShot ? BOLD : THIN)
       .fontSize(cfg.boardTextSize)
       .fillColor('black')
       .text(board.shot, ...upperTextCfg.pos, {
         baseline: upperTextCfg.baseline
       })
+      .font(THIN)
   }
   if (['sceneTime', 'duration'].includes(cfg.boardTimeDisplay)) {
     let boardTimeDisplayString =
