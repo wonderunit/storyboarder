@@ -4,6 +4,7 @@ import {connect} from 'react-redux'
 import {getSceneObjects, getSelections} from "../../../../shared/reducers/shot-generator"
 
 import useGLTFAsset from "../../hooks/useGLTFAsset"
+import useModelAsset from '../../hooks/useModelAsset'
 import {patchMaterial} from "../../../../shot-generator/helpers/outlineMaterial"
 
 
@@ -27,7 +28,9 @@ const Model = ({sceneObject, path, isSelected, getAsset}) => {
   const ref = useRef(null)
 
   const asset = getAsset((sceneObject.model === 'box') ? null : path)
-  let object = useGLTFAsset(asset ? asset.scene : null, materialFactory)
+
+  // let object = useGLTFAsset(asset ? (asset.scene !== undefined) ? asset.scene : asset : null, materialFactory)
+  let object = useModelAsset(asset, materialFactory)
   
   object = useMemo(() => {
     if (sceneObject.model !== 'box') {
