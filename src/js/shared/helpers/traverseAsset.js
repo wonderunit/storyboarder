@@ -16,7 +16,7 @@ const traverseAsset = (data) => {
         case '.ply':  
             children.push(
                 <primitive
-                key={`${sceneObject.id}-${new MathUtils.generateUUID()}`}
+                key={sceneObject ? `${sceneObject.id}-${new MathUtils.generateUUID()}` : `${new MathUtils.generateUUID()}`}
                 object={meshFactory(asset,false,isCopyTextures)}
                 />)
             return children
@@ -28,7 +28,6 @@ const traverseAsset = (data) => {
         break
 
         case '.gltf':
-        case '.glb':
         case '.glb':
         case '.dae':
             object3d = asset.scene
