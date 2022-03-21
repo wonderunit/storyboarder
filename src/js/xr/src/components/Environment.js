@@ -14,38 +14,48 @@ const materialFactory = () => new THREE.MeshToonMaterial({
   flatShading: false
 })
 
-const Environment = React.memo(({ gltf, environment, grayscale }) => {
+const meshFactory = (source) => {
+
+  const material = materialFactory()
+
+  if (source.material.map) {
+    material.map = source.material.map
+    material.flatShading = source.material.flatShading
+    material.map.needsUpdate = true
+  }
+
+  source.material = material
+}
+
+const traverseFcn = (object3d) => {
+
+  if (!object3d) return null
+
+  const group = new THREE.Group()
+
+  if (object3d.isBufferGeometry){ 
+    group.add(new THREE.Mesh(object3d, materialFactory()))
+    return group
+  }
+
+  const sceneData = onlyOfTypes(object3d.scene ? object3d.scene : object3d, ['Scene', 'Mesh', 'Group'])
+
+  sceneData.traverse(child => {
+    if (child.isMesh) meshFactory(child)
+  })
+
+  group.add(...sceneData.children)
+  return group
+}
+
+const Environment = React.memo(({ model, environment, grayscale }) => {
   const ref = useUpdate(
     self => {
       self.traverse(child => child.layers.enable(VirtualCamera.VIRTUAL_CAMERA_LAYER))
     }
   )
 
-  const group = useMemo(() => {
-    if (!gltf) return null
-
-    let g = new THREE.Group()
-
-    let sceneData = onlyOfTypes(gltf.scene, ['Scene', 'Mesh', 'Group'])
-
-    sceneData.traverse(child => {
-      if (child.isMesh) {
-        let material = materialFactory()
-
-        if (child.material.map) {
-          material.map = child.material.map
-          material.flatShading = child.material.flatShading
-          material.map.needsUpdate = true
-        }
-
-        child.material = material
-      }
-    })
-
-    g.add(...sceneData.children)
-
-    return g
-  }, [gltf])
+  const group = useMemo(() => traverseFcn(model), [model])
 
   useEffect(() => {
     group.traverse(child => {

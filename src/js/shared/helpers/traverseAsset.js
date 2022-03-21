@@ -8,45 +8,27 @@ const traverseAsset = (data) => {
     if (!asset) return []
 
     const children = []
-    let object3d = null
-    let isCopyTextures = false 
 
-    switch (ext) {
-        case '.stl': 
-        case '.ply':  
-            children.push(
-                <primitive
+    if (asset.isBufferGeometry){
+        children.push(
+            <primitive
                 key={sceneObject ? `${sceneObject.id}-${new MathUtils.generateUUID()}` : `${new MathUtils.generateUUID()}`}
-                object={meshFactory(asset,false,isCopyTextures)}
-                />)
-            return children
-
-        case '.fbx':
-        case '.obj':
-        case '.3ds':
-            object3d = asset
-        break
-
-        case '.gltf':
-        case '.glb':
-        case '.dae':
-            object3d = asset.scene
-            isCopyTextures = true
-        break              
-
-        default:
-        break
+                object={meshFactory(asset,false)}
+            />
+        )
+        return children
     }
 
-    if (!object3d) return []
-        
+    const object3d = asset.scene ? asset.scene : asset
+
     object3d.traverse(child => {
         if (child.isMesh) {
             children.push(
                 <primitive
-                key={`${sceneObject.id}-${child.uuid}`}
-                object={meshFactory(child,false,isCopyTextures)}
-                />)
+                    key={sceneObject ? `${sceneObject.id}-${child.uuid}` : `${new MathUtils.generateUUID()}`}
+                    object={meshFactory(child,false)}
+                />
+            )
         }
     })
 

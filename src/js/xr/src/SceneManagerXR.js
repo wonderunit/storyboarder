@@ -828,7 +828,7 @@ const SceneContent = connect(
             }))
               ? <SimpleErrorBoundary>
                 <Environment
-                  gltf={getAsset(getFilepathForModelByType({
+                  model={getAsset(getFilepathForModelByType({
                     type: 'environment',
                     model: world.environment.file
                   }))}
