@@ -5,11 +5,13 @@ import {getWorld} from "../../../../shared/reducers/shot-generator"
 
 import getFilepathForModelByType from "../../../../xr/src/helpers/get-filepath-for-model-by-type"
 import useGLTFAsset from "../../hooks/useGLTFAsset"
+import useModelAsset from '../../hooks/useModelAsset'
 
 const Environment = ({getAsset, ...props}) => {
   const env = getAsset(props.file)
 
-  const envObj = useGLTFAsset(env ? env.scene : null)
+  // const envObj = useGLTFAsset(env ? env.scene : null)
+  const envObj = useModelAsset(env)
   
   return (
     <primitive
