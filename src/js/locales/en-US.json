@@ -697,7 +697,7 @@
   },
   "print-project": {
     "title": "Print",
-    "description": "Start from a Preset you like, then adjust the advanced settings to customize.",
+    "description": "Start from a Preset, then adjust Layout, Header, and Boards settings to customize.",
     "paper-size": "Paper Size",
     "paper-size-a4-label": "A4",
     "paper-size-letter-label": "Letter",
