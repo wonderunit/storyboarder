@@ -28,7 +28,7 @@ const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   thickness: 0.008
 })
 
-const meshFactory = (source, isIcon, isCopyTextures) => {
+const meshFactory = (source, isIcon, isCopyTextures = true) => {
 
   if (source.isBufferGeometry){
     return new THREE.Mesh(source,materialFactory(isIcon))
