@@ -668,11 +668,13 @@ const drawFooter = (doc, { rect }, cfg) => {
     .fillOpacity(0.6)
     .textWithoutFallback(
       text,
-      ...v.add2([], inner.pos, [0, inner.size[1] * 0.5 - 1/* optical */]),
+      rect.pos[0],
+      rect.pos[1] + inner.size[1],
       {
         align: 'right',
-        baseline: 'middle',
+        baseline: 'alphabetic',
         width: inner.size[0],
+        height: inner.size[1],
         features: ['liga']
       }
     )
