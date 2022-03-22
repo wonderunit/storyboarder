@@ -21,7 +21,7 @@ const {
   sceneDuration
 } = require('../../models/scene')
 
-let fontPath = path.join('.', 'src', 'fonts')
+const fontPath = path.join('.', 'src', 'fonts')
 const THIN = path.join(fontPath, 'thicccboi', 'THICCCBOI-Thin.woff2')
 const BOLD = path.join(fontPath, 'thicccboi', 'THICCCBOI-Bold.woff2')
 const REGULAR = path.join(fontPath, 'thicccboi', 'THICCCBOI-Regular.woff2')
