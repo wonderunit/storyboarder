@@ -101,7 +101,7 @@ const WorldCamera = (props) => {
     <group position={[0.0, 1.0, 0.0]}>
       <group>
         <group>
-          <perspectiveCamera ref={cameraRef} {...props} near={0.1} far={100.0} />
+          <perspectiveCamera ref={cameraRef} {...props} near={0.1} far={10000.0} />
         </group>
       </group>
     </group>

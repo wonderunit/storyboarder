@@ -121,12 +121,12 @@ const CubeTexturesViewer = React.memo(({asset, visible, textureSettings}) => {
 
     useMemo(() => {
 
-        const pattern = ['px','nx','py', 'ny', 'pz','nz']
+        const pattern = ['px', 'nx', 'py', 'ny', 'pz', 'nz']
         const asset = getCubeMaps()
         const sortAssets = asset ? asset.sort((a,b)=> pattern.indexOf(a.name) - pattern.indexOf(b.name)) : null
 
         if (sortAssets) {
-            for (let i=0;i<materials.length; i++) {
+            for (let i=0; i<materials.length; i++) {
                 materials[i].map = sortAssets[i] 
                 materials[i].needsUpdate = true
             }

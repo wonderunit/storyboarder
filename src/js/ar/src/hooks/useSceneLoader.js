@@ -2,6 +2,8 @@ import {useEffect, useMemo} from 'react'
 
 import getFilepathForModelByType from './../../../xr/src/helpers/get-filepath-for-model-by-type'
 import getFilepathForImage from './../../../xr/src/helpers/get-filepath-for-image'
+import getFilepathForEnv from '../../../xr/src/helpers/get-filepath-for-env'
+
 import {useAssetsManager} from '../../../xr/src/hooks/use-assets-manager'
 
 import * as BonesHelper from "../../../xr/src/three/BonesHelper"
@@ -20,6 +22,12 @@ const useSceneLoader = (sceneObjects, world, additionalAssets = []) => {
       }))
     }
 
+    if (world.environmentMap.background.length) {
+      world.environmentMap.background.map(file => {
+        requestAsset(getFilepathForEnv({file}))
+      }) 
+    }
+
     let models = Object.values(sceneObjects)
     .filter(o => o.model != null)
     .filter(o => !(o.type === 'object' && o.model === 'box'))
@@ -34,7 +42,7 @@ const useSceneLoader = (sceneObjects, world, additionalAssets = []) => {
     additionalAssets.map(requestAsset)
 
     return resourcesToLoad.concat(models, images, additionalAssets)
-  }, [sceneObjects, world.environment.file, requestAsset])
+  }, [sceneObjects, world.environment.file, requestAsset, world.environmentMap.background])
   
   const boneGLTF = getAsset('/data/system/dummies/bone.glb')
   useEffect(() => {
