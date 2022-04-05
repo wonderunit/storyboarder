@@ -96,12 +96,16 @@ const Pagination = ({ project, pages, gridDim, pageToPreview, isBusy, send }) =>
   const onNext = preventDefault(event => send('INCREMENT_PAGE_TO_PREVIEW'))
 
   return h(['div.pagination', { className: isBusy ? 'busy' : null }, [
-    ['button.pagination__previous-button', { onClick: onPrevious, style: { visibility: canPrevious ? 'visible' : 'hidden' } }, 'Previous'],
+    ['div',
+      ['button.pagination__previous-button', { onClick: onPrevious, style: { visibility: canPrevious ? 'visible' : 'hidden' } }, 'Previous']
+    ],
     ['div.pagination__status', [
       ['span', 'Page\u00A0'],
       ['span.pagination__current', current], ['span', '/'], ['span.pagination__total', total]
     ]],
-    ['button.pagination__next-button', { onClick: onNext, style: { visibility: canNext ? 'visible' : 'hidden' } }, 'Next']
+    ['div',
+      ['button.pagination__next-button', { onClick: onNext, style: { visibility: canNext ? 'visible' : 'hidden' } }, 'Next']
+    ]
   ]])
 }
 

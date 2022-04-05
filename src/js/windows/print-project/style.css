@@ -436,6 +436,13 @@ form.busy * {
 .pagination .pagination__previous-button:hover {
   color: rgba(255, 255, 255, 1.0);
 }
+.pagination div:not(.pagination__status) {
+  display: flex;
+  width: 20%;
+}
+.pagination div:not(.pagination__status):last-child {
+    justify-content: flex-end;
+}
 .pagination .pagination__status {
   display: flex;
   justify-content: center;
