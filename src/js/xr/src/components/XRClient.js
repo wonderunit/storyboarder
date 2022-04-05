@@ -79,9 +79,10 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
     }
     
     const cancelHelmetTween = tweenObjectMatrix(hmdRef.current, props.matrix)
-    const cancelLControllerTween = tweenObjectMatrix(leftControllerRef.current, props.controllers[0])
+// !!! CHECK OUT index -------------
+    const cancelLControllerTween = tweenObjectMatrix(leftControllerRef.current, props.controllers[0]) 
     const cancelRControllerTween = tweenObjectMatrix(rightControllerRef.current, props.controllers[1])
-    
+// !!! -----------------------------
     return () => {
       cancelHelmetTween()
       cancelLControllerTween()

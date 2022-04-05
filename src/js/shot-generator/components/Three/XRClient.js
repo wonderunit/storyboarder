@@ -43,7 +43,7 @@ const XRClient = React.memo((props) => {
       self.traverse(child => child.layers.disable(SHOT_LAYERS))
     }
   )
-  
+
   const hmdRef = useRef(null)
   const leftControllerRef = useRef(null)
   const rightControllerRef = useRef(null)
@@ -102,8 +102,8 @@ const XRClient = React.memo((props) => {
     }
     
     const cancelHelmetTween = tweenObjectMatrix(hmdRef.current, props.matrix)
-    const cancelLControllerTween = tweenObjectMatrix(leftControllerRef.current, props.controllers[0])
-    const cancelRControllerTween = tweenObjectMatrix(rightControllerRef.current, props.controllers[1])
+    const cancelLControllerTween = tweenObjectMatrix(leftControllerRef.current, props.controllers[1])
+    const cancelRControllerTween = tweenObjectMatrix(rightControllerRef.current, props.controllers[0])
     
     return () => {
       cancelHelmetTween()
