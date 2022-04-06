@@ -5,6 +5,7 @@ import { useUpdate } from 'react-three-fiber'
 import * as VirtualCamera from '../components/VirtualCamera'
 
 import tweenObjectMatrix from "../../../shared/helpers/tweenObjectMatrix"
+import useVisuControllers from '../../../shared/THREE/hooks/useVisuControllers'
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -35,6 +36,8 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
   const hmdRef = useRef(null)
   const leftControllerRef = useRef(null)
   const rightControllerRef = useRef(null)
+
+  const { visuLC, visuRC } = useVisuControllers({controllers: props.controllers})
 
   const meshes = useMemo(() => {
     const result = {
@@ -79,10 +82,9 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
     }
     
     const cancelHelmetTween = tweenObjectMatrix(hmdRef.current, props.matrix)
-// !!! CHECK OUT index -------------
-    const cancelLControllerTween = tweenObjectMatrix(leftControllerRef.current, props.controllers[0]) 
-    const cancelRControllerTween = tweenObjectMatrix(rightControllerRef.current, props.controllers[1])
-// !!! -----------------------------
+    const cancelLControllerTween = tweenObjectMatrix(leftControllerRef.current, props.controllers[1]) 
+    const cancelRControllerTween = tweenObjectMatrix(rightControllerRef.current, props.controllers[0])
+
     return () => {
       cancelHelmetTween()
       cancelLControllerTween()
@@ -103,8 +105,8 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
     scale={ [1.0, 1.0, 1.0] }
   >
     <group ref={hmdRef}>{meshes.helmet}</group>
-    <group ref={leftControllerRef}>{meshes.controller[0]}</group>
-    <group ref={rightControllerRef}>{meshes.controller[1]}</group>
+    <group ref={leftControllerRef} visible = {visuLC}>{meshes.controller[0]}</group>
+    <group ref={rightControllerRef} visible = {visuRC}>{meshes.controller[1]}</group>
   </group>
 })
 
