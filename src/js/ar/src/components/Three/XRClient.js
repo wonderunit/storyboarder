@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import React, { useMemo, useEffect, useRef } from 'react'
 
 import tweenObjectMatrix from "../../../../shared/helpers/tweenObjectMatrix"
+import useVisuControllers from '../../../../shared/THREE/hooks/useVisuControllers'
 
 const materialFactory = () => new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -32,6 +33,8 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
   const hmdRef = useRef(null)
   const leftControllerRef = useRef(null)
   const rightControllerRef = useRef(null)
+
+  const { visuLC, visuRC } = useVisuControllers({controllers: props.controllers})
 
   const meshes = useMemo(() => {
     const result = {
@@ -101,8 +104,8 @@ const XRClient = React.memo(({helmet, controller, ...props}) => {
   >
 
     <group ref={hmdRef}>{meshes.helmet}</group>
-    <group ref={leftControllerRef}>{meshes.controller[0]}</group>
-    <group ref={rightControllerRef}>{meshes.controller[1]}</group>
+    <group ref={leftControllerRef} visible = {visuLC}>{meshes.controller[0]}</group>
+    <group ref={rightControllerRef} visible = {visuRC}>{meshes.controller[1]}</group>
   </group>
 })
 
