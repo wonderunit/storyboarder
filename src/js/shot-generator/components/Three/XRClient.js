@@ -9,6 +9,7 @@ import { patchMaterial, setSelected } from "../../helpers/outlineMaterial"
 import path from "path"
 
 import tweenObjectMatrix from "../../../shared/helpers/tweenObjectMatrix"
+import useVisuControllers from '../../../shared/THREE/hooks/useVisuControllers'
 
 const materialFactory = () => patchMaterial(new THREE.MeshToonMaterial({
   color: 0xcccccc,
@@ -50,6 +51,8 @@ const XRClient = React.memo((props) => {
 
   const {asset: helmet} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'hmd.glb'))
   const {asset: controller} = useAsset(path.join(window.__dirname, 'data', 'shot-generator', 'xr', 'controller.glb'))
+
+  const { visuLC, visuRC } = useVisuControllers({controllers: props.controllers})
 
   const meshes = useMemo(() => {
     const result = {
@@ -126,8 +129,8 @@ const XRClient = React.memo((props) => {
     scale={ [1.0, 1.0, 1.0] }
   >
     <group ref={hmdRef}>{meshes.helmet}</group>
-    <group ref={leftControllerRef}>{meshes.controller[0]}</group>
-    <group ref={rightControllerRef}>{meshes.controller[1]}</group>
+    <group ref={leftControllerRef} visible = {visuLC}>{meshes.controller[0]}</group>
+    <group ref={rightControllerRef} visible = {visuRC}>{meshes.controller[1]}</group>
   </group>
 })
 
