@@ -9,6 +9,7 @@ import { plyLoader } from './plyLoader'
 import { rgbeLoader } from './rgbeLoader'
 import { exrLoader } from './exrLoader'
 import { textureLoader } from './textureLoader'
+import { objectLoader } from './objectLoader'
 
 
 const SGLoaders = {
@@ -21,6 +22,7 @@ const SGLoaders = {
     '.stl': stlLoader,
     '.3ds': tdsLoader,
     '.ply': plyLoader,
+    '.json': objectLoader,
 
     '.hdr': rgbeLoader,
     '.exr': exrLoader,

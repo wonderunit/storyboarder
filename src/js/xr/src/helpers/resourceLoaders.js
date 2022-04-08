@@ -151,6 +151,13 @@ export const onHDRImageBufferLoad = (buffer, url) => {
   })
 }
 
+export const onObjectBufferLoad = (buffer, url) => {
+  return new Promise((resolve, reject) => {
+    const loader = new THREE.ObjectLoader()
+    resolve(loader.parse(JSON.parse(new TextDecoder().decode(buffer))))
+  })
+}
+
 export const XRBufferLoaders = {
 
   '.gltf': onGLTFBufferLoad,
@@ -161,6 +168,7 @@ export const XRBufferLoaders = {
   '.stl': onStlBufferLoad,
   '.3ds': on3dsBufferLoad,
   '.ply': onPLYBufferLoad,
+  '.json': onObjectBufferLoad,
 
   '.hdr': onHDRImageBufferLoad,
   '.exr': onEXRImageBufferLoad,
