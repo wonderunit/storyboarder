@@ -1,2 +1,2 @@
-const generate = require('./generate')
+const generate = require('./generate').default
 module.exports = generate

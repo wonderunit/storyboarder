@@ -70,6 +70,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.node$/,
+        loader: "node-loader",
+      },
+      {
         test: /\.(js|jsx)$/,
         exclude: /(node_modules|bower_components)/,
         use: {
@@ -143,7 +147,12 @@ module.exports = {
   ],
   resolve: {
     alias: {
-      'events': 'node_modules/events/index.js'
+      'events': 'node_modules/events/index.js',
+      'unicode-properties': 'unicode-properties/unicode-properties.cjs.js',
+      'pdfkit': 'pdfkit/js/pdfkit.js'
+    },
+    fallback: {
+      crypto: require.resolve('crypto-browserify')
     }
   }
 }
