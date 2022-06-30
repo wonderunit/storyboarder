@@ -301,7 +301,7 @@ class AudioFileControlView {
       // audiofileTextEl.innerHTML = util.truncateMiddle(boardAudio.filename)
       audiofileTextEl.innerHTML = '<span>' +
                                     // '<span class="paren">(</span>' +
-                                    'Audio' + // : 3s 44.1khz 16bit
+                                    `Audio: ${boardAudio.duration}ms` + // : 3s 44.1khz 16bit
                                     // '<span class="paren">)</span>' +
                                   '</span>'
 
