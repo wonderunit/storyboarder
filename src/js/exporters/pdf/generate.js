@@ -1,25 +1,25 @@
-const path = require('path')
-const PDFDocument = require('pdfkit')
-const v = require('@thi.ng/vectors')
-const { Rect } = require('@thi.ng/geom')
-const moment = require('moment')
-const fs = require('fs')
+import path from 'path'
+import PDFDocument from 'pdfkit'
+import * as v from '@thi.ng/vectors'
+import { Rect } from '@thi.ng/geom'
+import moment from 'moment'
+import fs from 'fs'
 
-const pkg = require('../../../../package.json')
+import pkg from '../../../../package.json'
 
-const groupByPage = require('./group-by-page')
-const stringContainsForeign = require('./string-contains-foreign')
-const formatMsecs = require('./format-msecs')
+import groupByPage from './group-by-page'
+import stringContainsForeign from './string-contains-foreign'
+import formatMsecs from './format-msecs'
 
-const {
+import {
   boardDuration,
   boardFilenameForPosterFrame,
   boardFileImageSize
-} = require('../../models/board')
+} from '../../models/board'
 
-const {
+import {
   sceneDuration
-} = require('../../models/scene')
+} from '../../models/scene'
 
 const fontPath = path.join('.', 'src', 'fonts')
 const THIN = path.join(fontPath, 'thicccboi', 'THICCCBOI-Thin.woff2')
@@ -931,4 +931,4 @@ const drawBoardBordersRow = (doc, options, cfg) => {
   doc.restore()
 }
 
-module.exports = generate
+export default generate
