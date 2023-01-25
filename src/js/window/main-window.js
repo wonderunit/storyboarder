@@ -4677,7 +4677,7 @@ let loadScene = async (sceneNumber) => {
         let id
 
         if (node.scene_id) {
-          id = node.scene_id
+          id = util.findSceneId(node.scene_id)
         } else {
           id = 'G' + sceneCount
         }
