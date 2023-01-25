@@ -754,12 +754,7 @@ let processFountainData = (data, create, update) => {
         metadata.sceneCount++
         let id
         if (node.scene_id) {
-          id = node.scene_id.split('-')
-          if (id.length>1) {
-            id = id[1]
-          } else {
-            id = id[0]
-          }
+          id = node.scene_id
         } else {
           id = 'G' + metadata.sceneCount
         }
