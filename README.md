@@ -1,7 +1,5 @@
 # Storyboarder
 
-export NODE_OPTIONS=--openssl-legacy-provider
-
 
 Storyboarder makes it easy to visualize a story as fast you can draw stick figures. Quickly draw to test if a story idea works. Create and show animatics to others. Express your story idea without making a movie.
 
