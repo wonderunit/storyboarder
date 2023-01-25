@@ -36,7 +36,7 @@ var insertSceneIds = function (script) {
           meta = meta[2]
           text = text.replace(regex.scene_number, '')
         } else {
-          src[i] = trim(src[i]) + ' #' + sceneCount + '-' + util.uidGen(5) + '#' + eol(src[i])
+          src[i] = trim(src[i]) + ' #' + util.uuid4() + '#' + eol(src[i])
           addedIds = true
         }
       }

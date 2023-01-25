@@ -22,9 +22,9 @@ let msToTime = (s)=> {
   }
 }
 
-let uidGen = (chars)=> {
-  return ("00000" + (Math.random()*Math.pow(36,chars) << 0).toString(36)).slice(-chars).toUpperCase()
-}
+// let uidGen = (chars)=> {
+//   return ("00000" + (Math.random()*Math.pow(36,chars) << 0).toString(36)).slice(-chars).toUpperCase()
+// }
 
 // via https://gist.github.com/kaizhu256/4482069
 let uuid4 = () => {

@@ -77,7 +77,7 @@ const boardDurationWithAudio = (scene, board) =>
   )
 
 const assignUid = board => {
-  board.uid = util.uidGen(5)
+  board.uid = util.uuid4()
   return board
 }
 

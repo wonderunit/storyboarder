@@ -41,7 +41,7 @@ const readFdxFile = async filepath => {
 
 
 // mutates fdxObj
-const insertSceneIds = (fdxObj, generateNumber = () => util.uidGen(5)) => {
+const insertSceneIds = (fdxObj, generateNumber = () => util.uuid4()) => {
   let inserted = []
   fdxObj.FinalDraft.Content[0].Paragraph.forEach((element, i) => {
     switch (element.$.Type) {

@@ -2207,7 +2207,7 @@ const renderScene = async () => {
 ///////////////////////////////////////////////////////////////
 
 let insertNewBoardDataAtPosition = (position) => {
-  let uid = util.uidGen(5)
+  let uid = util.uuid4()
 
   let board = {
     uid: uid,
@@ -6055,7 +6055,7 @@ const importFromWorksheet = async (imageArray) => {
   // related: insertNewBoardDataAtPosition, migrateBoards
   for (let i = 0; i < imageArray.length; i++) {
     let board = {}
-    let uid = util.uidGen(5)
+    let uid = util.uuid4(5)
     board.uid = uid
     board.url = 'board-' + (insertAt + i) + '-' + board.uid + '.png'
     board.layers = {
