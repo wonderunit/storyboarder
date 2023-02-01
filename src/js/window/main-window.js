@@ -2207,7 +2207,7 @@ const renderScene = async () => {
 ///////////////////////////////////////////////////////////////
 
 let insertNewBoardDataAtPosition = (position) => {
-  let uid = util.uidGen(5)
+  let uid = util.uuid4()
 
   let board = {
     uid: uid,
@@ -4677,12 +4677,7 @@ let loadScene = async (sceneNumber) => {
         let id
 
         if (node.scene_id) {
-          id = node.scene_id.split('-')
-          if (id.length>1) {
-            id = id[1]
-          } else {
-            id = id[0]
-          }
+          id = util.findSceneId(node.scene_id)
         } else {
           id = 'G' + sceneCount
         }
@@ -4690,6 +4685,10 @@ let loadScene = async (sceneNumber) => {
         for (var directory of boardsDirectoryFolders) {
           let directoryId = directory.split('-')
           directoryId = directoryId[directoryId.length - 1]
+          if(directoryId != id){
+            //Try to find an uuid4 in the folder name as a fallback for scenes with uuidv4
+            directoryId = util.findSceneId(directory)
+          }
           if (directoryId == id) {
             directoryFound = true
             foundDirectoryName = directory
@@ -6055,7 +6054,7 @@ const importFromWorksheet = async (imageArray) => {
   // related: insertNewBoardDataAtPosition, migrateBoards
   for (let i = 0; i < imageArray.length; i++) {
     let board = {}
-    let uid = util.uidGen(5)
+    let uid = util.uuid4(5)
     board.uid = uid
     board.url = 'board-' + (insertAt + i) + '-' + board.uid + '.png'
     board.layers = {

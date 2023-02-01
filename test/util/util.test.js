@@ -28,6 +28,13 @@ describe('util', () => {
       'this-is-some-text-with-spaces')
   })
 
+  it('findSceneId', () => {
+    assert.equal(util.findSceneId('Scene-1-INT-DRISKILL-HOTEL-SEMINAR-ROOM-DAY-805852b7-0976-41a7-b3cb-7bc72c092512'),
+      '805852b7-0976-41a7-b3cb-7bc72c092512')
+    assert.equal(util.findSceneId('Scene-1-INT-DRISKILL-HOTEL-SEMINAR-ROOM-DAY-sNq91'),
+      'sNq91')
+  })
+
   it('colorToNumber', () => {
     assert.equal(util.colorToNumber(Color('#ff05ff')), 0xff05ff)
   })

@@ -40,7 +40,7 @@ const scenesFromScriptData = (
     Object.fromEntries(
       getDirectories(path.join(path.dirname(filepath), 'storyboards'))
         .filter(dir => dir.match(/-backup$/) == null)
-        .map(name => [last(name.split('-')), name])
+        .map(name => [util.findSceneId(name), name])
     )
 
   return scriptData
@@ -60,7 +60,7 @@ const scenesFromScriptData = (
         }
       } else {
         // load data from disk
-        let dir = directoriesBySceneId[last(scene.scene_id.split('-'))]
+        let dir = directoriesBySceneId[scene.scene_id]
         let storyboarderFilePath = path.join(path.dirname(filepath), 'storyboards', dir, `${dir}.storyboarder`)
         return {
           sceneId: scene.scene_id,

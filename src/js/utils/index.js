@@ -1,3 +1,4 @@
+const { last } = require('ramda')
 let { acceleratorAsHtml } = require('./accelerator')
 
 let msToTime = (s)=> {
@@ -22,9 +23,9 @@ let msToTime = (s)=> {
   }
 }
 
-let uidGen = (chars)=> {
-  return ("00000" + (Math.random()*Math.pow(36,chars) << 0).toString(36)).slice(-chars).toUpperCase()
-}
+// let uidGen = (chars)=> {
+//   return ("00000" + (Math.random()*Math.pow(36,chars) << 0).toString(36)).slice(-chars).toUpperCase()
+// }
 
 // via https://gist.github.com/kaizhu256/4482069
 let uuid4 = () => {
@@ -50,6 +51,14 @@ let uuid4 = () => {
     }
   }
   return uuid
+}
+
+let findUuid = (str) => {
+  return str.match(/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/)[0]
+}
+
+let findSceneId = (str) => {
+  return findUuid(str) || last(str.split('-'))
 }
 
 let wordCount = (text)=>  {
@@ -223,8 +232,9 @@ const numberToColor = number =>
 
 module.exports = {
   msToTime,
-  uidGen,
   uuid4,
+  findUuid,
+  findSceneId,
   durationOfWords,
   range,
   norm,
